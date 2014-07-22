@@ -20,12 +20,15 @@ package org.apache.hadoop.hive.ql.exec;
 
 import static org.apache.hadoop.hive.ql.exec.Utilities.getFileExtension;
 
+import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
 import junit.framework.TestCase;
 
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -36,6 +39,7 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFFromUtcTimestamp;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.mapred.JobConf;
+import org.junit.Test;
 
 public class TestUtilities extends TestCase {
 
@@ -105,5 +109,24 @@ public class TestUtilities extends TestCase {
       assertEquals("Invalid table name " + tablename, ex.getMessage());
     }
   }
+
+  @Test
+  public void testFSUmaskReset() throws Exception {
+    // ensure that FS Umask is not reset (HIVE-7001)
+    checkFSUMaskReset(true);
+    checkFSUMaskReset(false);
+  }
+
+  private void checkFSUMaskReset(boolean recursiveArg) throws IllegalArgumentException, IOException {
+    final String FS_MASK_PARAM = "fs.permissions.umask-mode";
+    final String FS_MASK_VAL = "055";
+    HiveConf conf = new HiveConf();
+    String dir = System.getProperty("test.tmp.dir") + "/testUtilitiesUMaskReset";
+    conf.set(FS_MASK_PARAM, FS_MASK_VAL);
+    Utilities.createDirsWithPermission(conf, new Path(dir), new FsPermission((short) 00777),
+        recursiveArg);
+    assertEquals(conf.get(FS_MASK_PARAM), FS_MASK_VAL);
+  }
+
 
 }

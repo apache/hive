@@ -160,14 +160,12 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
     this.joinFilterObjectInspectors = clone.joinFilterObjectInspectors;
   }
 
-
-  protected static <T extends JoinDesc> ObjectInspector getJoinOutputObjectInspector(
-      Byte[] order, List<ObjectInspector>[] aliasToObjectInspectors,
-      T conf) {
+  private <T extends JoinDesc> ObjectInspector getJoinOutputObjectInspector(
+      Byte[] order, List<ObjectInspector>[] aliasToObjectInspectors, T conf) {
     List<ObjectInspector> structFieldObjectInspectors = new ArrayList<ObjectInspector>();
     for (Byte alias : order) {
-      List<ObjectInspector> oiList = aliasToObjectInspectors[alias];
-      if (oiList != null) {
+      List<ObjectInspector> oiList = getValueObjectInspectors(alias, aliasToObjectInspectors);
+      if (oiList != null && !oiList.isEmpty()) {
         structFieldObjectInspectors.addAll(oiList);
       }
     }
@@ -176,6 +174,11 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
         .getStandardStructObjectInspector(conf.getOutputColumnNames(),
         structFieldObjectInspectors);
     return joinOutputObjectInspector;
+  }
+
+  protected List<ObjectInspector> getValueObjectInspectors(
+      byte alias, List<ObjectInspector>[] aliasToObjectInspectors) {
+    return aliasToObjectInspectors[alias];
   }
 
   protected Configuration hconf;
@@ -272,7 +275,7 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
           rowContainerStandardObjectInspectors[pos],
           alias, 1, spillTableDesc, conf, !hasFilter(pos), reporter);
 
-      values.add(dummyObj[pos]);
+      values.addRow(dummyObj[pos]);
       dummyObjVectors[pos] = values;
 
       // if serde is null, the input doesn't need to be spilled out
@@ -690,7 +693,7 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
         }
 
         if (alw.rowCount() == 0) {
-          alw.add(dummyObj[i]);
+          alw.addRow(dummyObj[i]);
           hasNulls = true;
         } else if (condn[i].getPreserved()) {
           preserve = true;
@@ -728,7 +731,7 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
         } else {
           if (alw.rowCount() == 0) {
             hasEmpty = true;
-            alw.add(dummyObj[i]);
+            alw.addRow(dummyObj[i]);
           } else if (!hasEmpty && alw.rowCount() == 1) {
             if (hasAnyFiltered(alias, alw.rowIter().first())) {
               hasEmpty = true;

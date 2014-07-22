@@ -15,6 +15,7 @@ STAGE PLANS:
           field delimiter: 	
           input format: org.apache.hadoop.mapred.TextInputFormat
           output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+          serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           name: INPUTDDL3
 
 PREHOOK: query: CREATE TABLE INPUTDDL3(key INT, value STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t' STORED AS TEXTFILE
@@ -26,7 +27,9 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@INPUTDDL3
 PREHOOK: query: DESCRIBE INPUTDDL3
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@inputddl3
 POSTHOOK: query: DESCRIBE INPUTDDL3
 POSTHOOK: type: DESCTABLE
-key                 	int                 	None                
-value               	string              	None                
+POSTHOOK: Input: default@inputddl3
+key                 	int                 	                    
+value               	string              	                    

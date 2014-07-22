@@ -42,8 +42,6 @@ EXPLAIN
 INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '1')
 SELECT a.key, a.value FROM test_table1 a WHERE a.ds = '1'
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -92,8 +90,6 @@ POSTHOOK: query: drop table test_table2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_table2
 POSTHOOK: Output: default@test_table2
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: CREATE TABLE test_table2 (key INT, value STRING) PARTITIONED BY (ds STRING)
 CLUSTERED BY (key) SORTED BY (key desc) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
@@ -103,8 +99,6 @@ CLUSTERED BY (key) SORTED BY (key desc) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_table2
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: -- Insert data into the bucketed table by selecting from another bucketed table
 -- This should be a map-reduce operation since the sort orders does not match
 EXPLAIN
@@ -117,8 +111,6 @@ EXPLAIN
 INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '1')
 SELECT a.key, a.value FROM test_table1 a WHERE a.ds = '1'
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -176,8 +168,6 @@ POSTHOOK: query: drop table test_table2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_table2
 POSTHOOK: Output: default@test_table2
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: CREATE TABLE test_table2 (key INT, value STRING) PARTITIONED BY (ds STRING)
 CLUSTERED BY (key) SORTED BY (key, value) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
@@ -187,8 +177,6 @@ CLUSTERED BY (key) SORTED BY (key, value) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_table2
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: -- Insert data into the bucketed table by selecting from another bucketed table
 -- This should be a map-reduce operation since the sort columns do not match
 EXPLAIN
@@ -201,8 +189,6 @@ EXPLAIN
 INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '1')
 SELECT a.key, a.value FROM test_table1 a WHERE a.ds = '1'
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -260,8 +246,6 @@ POSTHOOK: query: drop table test_table2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_table2
 POSTHOOK: Output: default@test_table2
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: CREATE TABLE test_table2 (key INT, value STRING) PARTITIONED BY (ds STRING)
 CLUSTERED BY (key) SORTED BY (value) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
@@ -271,8 +255,6 @@ CLUSTERED BY (key) SORTED BY (value) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_table2
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: -- Insert data into the bucketed table by selecting from another bucketed table
 -- This should be a map-reduce operation since the sort columns do not match
 EXPLAIN
@@ -285,8 +267,6 @@ EXPLAIN
 INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '1')
 SELECT a.key, a.value FROM test_table1 a WHERE a.ds = '1'
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -344,8 +324,6 @@ POSTHOOK: query: drop table test_table2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_table2
 POSTHOOK: Output: default@test_table2
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: CREATE TABLE test_table2 (key INT, value STRING) PARTITIONED BY (ds STRING)
 CLUSTERED BY (key) SORTED BY (key) INTO 4 BUCKETS
 PREHOOK: type: CREATETABLE
@@ -355,8 +333,6 @@ CLUSTERED BY (key) SORTED BY (key) INTO 4 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_table2
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: -- Insert data into the bucketed table by selecting from another bucketed table
 -- This should be a map-reduce operation since the number of buckets do not match
 EXPLAIN
@@ -369,8 +345,6 @@ EXPLAIN
 INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '1')
 SELECT a.key, a.value FROM test_table1 a WHERE a.ds = '1'
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -428,8 +402,6 @@ POSTHOOK: query: drop table test_table2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_table2
 POSTHOOK: Output: default@test_table2
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: CREATE TABLE test_table2 (key INT, value STRING) PARTITIONED BY (ds STRING)
 CLUSTERED BY (key) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
@@ -439,8 +411,6 @@ CLUSTERED BY (key) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_table2
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: -- Insert data into the bucketed table by selecting from another bucketed table
 -- This should be a map-reduce operation since sort columns do not match
 EXPLAIN
@@ -453,8 +423,6 @@ EXPLAIN
 INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '1')
 SELECT a.key, a.value FROM test_table1 a WHERE a.ds = '1'
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

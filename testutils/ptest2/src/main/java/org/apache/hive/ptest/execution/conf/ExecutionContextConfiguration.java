@@ -37,11 +37,14 @@ public class ExecutionContextConfiguration {
   public static final String WORKING_DIRECTORY = "workingDirectory";
   public static final String PROFILE_DIRECTORY = "profileDirectory";
   public static final String MAX_LOG_DIRS_PER_PROFILE = "maxLogDirectoriesPerProfile";
+  private static final String MAX_RSYNC_THREADS = "maxRsyncThreads";
+  private static final int MAX_RSYNC_THREADS_DEFAULT = 10;
   private final ExecutionContextProvider mExecutionContextProvider;
   private final String mWorkingDirectory;
   private final String mGlobalLogDirectory;
   private final String mProfileDirectory;
   private final int mMaxLogDirectoriesPerProfile;
+  private final int mMaxRsyncThreads;
 
   @VisibleForTesting
   public ExecutionContextConfiguration(Context context)
@@ -52,6 +55,7 @@ public class ExecutionContextConfiguration {
     Preconditions.checkArgument(!mProfileDirectory.isEmpty(), PROFILE_DIRECTORY + " is required");
     mGlobalLogDirectory = Dirs.create(new File(mWorkingDirectory, "logs")).getAbsolutePath();
     mMaxLogDirectoriesPerProfile = context.getInteger(MAX_LOG_DIRS_PER_PROFILE, 10);
+    mMaxRsyncThreads = context.getInteger(MAX_RSYNC_THREADS, MAX_RSYNC_THREADS_DEFAULT);
     String executionContextProviderBuilder = context.getString("executionContextProvider",
         FixedExecutionContextProvider.Builder.class.getName()).trim();
     try {
@@ -65,6 +69,9 @@ public class ExecutionContextConfiguration {
     } catch (Exception e) {
       throw Throwables.propagate(e);
     }
+  }
+  public int getMaxRsyncThreads() {
+    return mMaxRsyncThreads;
   }
   public int getMaxLogDirectoriesPerProfile() {
     return mMaxLogDirectoriesPerProfile;

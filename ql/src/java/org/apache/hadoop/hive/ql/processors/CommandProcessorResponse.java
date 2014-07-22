@@ -22,33 +22,58 @@ import org.apache.hadoop.hive.metastore.api.Schema;
 
 /**
  * Encapsulates the basic response info returned by classes the implement the
- * <code>CommandProcessor</code> interfaace. Typically <code>errorMessage</code>
+ * <code>CommandProcessor</code> interface. Typically <code>errorMessage</code>
  * and <code>SQLState</code> will only be set if the <code>responseCode</code>
  * is not 0.
  */
 public class CommandProcessorResponse {
-  private int responseCode;
-  private String errorMessage;
-  private String SQLState;
-  private Schema resSchema;
+  private final int responseCode;
+  private final String errorMessage;
+  private final String SQLState;
+  private final Schema resSchema;
+
+  private final Throwable exception;
 
   public CommandProcessorResponse(int responseCode) {
-    this(responseCode, null, null);
+    this(responseCode, null, null, null, null);
   }
 
   public CommandProcessorResponse(int responseCode, String errorMessage, String SQLState) {
-    this(responseCode, errorMessage, SQLState, null);
+    this(responseCode, errorMessage, SQLState, null, null);
+  }
+
+  public CommandProcessorResponse(int responseCode, String errorMessage, String SQLState, Throwable exception) {
+    this(responseCode, errorMessage, SQLState, null, exception);
   }
 
   public CommandProcessorResponse(int responseCode, String errorMessage, String SQLState, Schema schema) {
+    this(responseCode, errorMessage, SQLState, schema, null);
+  }
+
+  /**
+   * Create CommandProcessorResponse object indicating an error.
+   * Creates new CommandProcessorResponse with responseCode=1, and sets message
+   * from exception argument
+   *
+   * @param e
+   * @return
+   */
+  public static CommandProcessorResponse create(Exception e) {
+    return new CommandProcessorResponse(1, e.getMessage(), null);
+  }
+
+  public CommandProcessorResponse(int responseCode, String errorMessage, String SQLState,
+      Schema schema, Throwable exception) {
     this.responseCode = responseCode;
     this.errorMessage = errorMessage;
     this.SQLState = SQLState;
     this.resSchema = schema;
+    this.exception = exception;
   }
 
   public int getResponseCode() { return responseCode; }
   public String getErrorMessage() { return errorMessage; }
   public String getSQLState() { return SQLState; }
   public Schema getSchema() { return resSchema; }
+  public Throwable getException() { return exception; }
 }

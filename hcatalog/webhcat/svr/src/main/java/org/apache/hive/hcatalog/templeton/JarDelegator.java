@@ -98,6 +98,10 @@ public class JarDelegator extends LauncherDelegator {
       args.add("-D");
       args.add(TempletonControllerJob.TOKEN_FILE_ARG_PLACEHOLDER);
 
+      //add mapreduce job tag placeholder
+      args.add("-D");
+      args.add(TempletonControllerJob.MAPREDUCE_JOB_TAGS_ARG_PLACEHOLDER);
+
       for (String d : defines) {
         args.add("-D");
         args.add(TempletonUtils.quoteForWindows(d));

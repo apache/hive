@@ -31,7 +31,6 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.io.InputFormatChecker;
-import org.apache.hadoop.hive.ql.io.orc.Reader.FileMetaInfo;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.io.NullWritable;
@@ -48,7 +47,7 @@ import org.apache.hadoop.mapred.Reporter;
 public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, VectorizedRowBatch>
     implements InputFormatChecker, VectorizedInputFormatInterface {
 
-  private static class VectorizedOrcRecordReader
+  static class VectorizedOrcRecordReader
       implements RecordReader<NullWritable, VectorizedRowBatch> {
     private final org.apache.hadoop.hive.ql.io.orc.RecordReader reader;
     private final long offset;
@@ -60,14 +59,14 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
     VectorizedOrcRecordReader(Reader file, Configuration conf,
         FileSplit fileSplit) throws IOException {
       List<OrcProto.Type> types = file.getTypes();
-      boolean[] includedColumns = OrcInputFormat.findIncludedColumns(types, conf);
-      String[] columnNames = OrcInputFormat.getIncludedColumnNames(types, includedColumns, conf);
-      SearchArgument sarg = OrcInputFormat.createSarg(types, conf);
-
+      Reader.Options options = new Reader.Options();
       this.offset = fileSplit.getStart();
       this.length = fileSplit.getLength();
-      this.reader = file.rows(offset, length, includedColumns, sarg, columnNames);
+      options.range(offset, length);
+      OrcInputFormat.setIncludedColumns(options, types, conf, true);
+      OrcInputFormat.setSearchArgument(options, types, conf, true);
 
+      this.reader = file.rowsOptions(options);
       try {
         rbCtx = new VectorizedRowBatchCtx();
         rbCtx.init(conf, fileSplit);
@@ -93,7 +92,6 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
           addPartitionCols = false;
         }
         reader.nextBatch(value);
-        rbCtx.convertRowBatchBlobToVectorizedBatch((Object) value, value.size, value);
       } catch (Exception e) {
         throw new RuntimeException(e);
       }
@@ -108,13 +106,11 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
 
     @Override
     public VectorizedRowBatch createValue() {
-      VectorizedRowBatch result = null;
       try {
-        result = rbCtx.createVectorizedRowBatch();
+        return rbCtx.createVectorizedRowBatch();
       } catch (HiveException e) {
         throw new RuntimeException("Error creating a batch", e);
       }
-      return result;
     }
 
     @Override
@@ -146,25 +142,15 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
     reporter.setStatus(fSplit.toString());
 
     Path path = fSplit.getPath();
-    FileSystem fs = path.getFileSystem(conf);
 
-    Reader reader = null;
-
-    if(!(fSplit instanceof OrcSplit)){
-      //If CombineHiveInputFormat is used, it works with FileSplit and not OrcSplit
-      reader = OrcFile.createReader(fs, path, conf);
-    } else {
-      //We have OrcSplit, which may have footer metadata cached, so use the appropriate reader
-      //constructor
+    OrcFile.ReaderOptions opts = OrcFile.readerOptions(conf);
+    if(fSplit instanceof OrcSplit){
       OrcSplit orcSplit = (OrcSplit) fSplit;
       if (orcSplit.hasFooter()) {
-        FileMetaInfo fMetaInfo = orcSplit.getFileMetaInfo();
-        reader = OrcFile.createReader(fs, path, fMetaInfo, conf);
-      } else {
-        reader = OrcFile.createReader(fs, path, conf);
+        opts.fileMetaInfo(orcSplit.getFileMetaInfo());
       }
     }
-
+    Reader reader = OrcFile.createReader(path, opts);
     return new VectorizedOrcRecordReader(reader, conf, fSplit);
   }
 
@@ -177,7 +163,8 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
     }
     for (FileStatus file : files) {
       try {
-        OrcFile.createReader(fs, file.getPath(), conf);
+        OrcFile.createReader(file.getPath(),
+            OrcFile.readerOptions(conf).filesystem(fs));
       } catch (IOException e) {
         return false;
       }

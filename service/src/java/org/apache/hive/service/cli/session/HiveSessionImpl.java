@@ -34,8 +34,10 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.exec.FetchFormatter;
 import org.apache.hadoop.hive.ql.exec.ListSinkOperator;
 import org.apache.hadoop.hive.ql.history.HiveHistory;
+import org.apache.hadoop.hive.ql.processors.SetProcessor;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.common.util.HiveVersionInfo;
+import org.apache.hive.service.auth.HiveAuthFactory;
 import org.apache.hive.service.cli.FetchOrientation;
 import org.apache.hive.service.cli.GetInfoType;
 import org.apache.hive.service.cli.GetInfoValue;
@@ -67,6 +69,7 @@ public class HiveSessionImpl implements HiveSession {
   private final String password;
   private final HiveConf hiveConf;
   private final SessionState sessionState;
+  private String ipAddress;
 
   private static final String FETCH_WORK_SERDE_CLASS =
       "org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe";
@@ -79,18 +82,13 @@ public class HiveSessionImpl implements HiveSession {
   private final Set<OperationHandle> opHandleSet = new HashSet<OperationHandle>();
 
   public HiveSessionImpl(TProtocolVersion protocol, String username, String password,
-      HiveConf serverhiveConf, Map<String, String> sessionConfMap) {
+      HiveConf serverhiveConf, Map<String, String> sessionConfMap, String ipAddress) {
     this.username = username;
     this.password = password;
     this.sessionHandle = new SessionHandle(protocol);
     this.hiveConf = new HiveConf(serverhiveConf);
+    this.ipAddress = ipAddress;
 
-    //set conf properties specified by user from client side
-    if (sessionConfMap != null) {
-      for (Map.Entry<String, String> entry : sessionConfMap.entrySet()) {
-        hiveConf.set(entry.getKey(), entry.getValue());
-      }
-    }
     // set an explicit session name to control the download directory name
     hiveConf.set(ConfVars.HIVESESSIONID.varname,
         sessionHandle.getHandleIdentifier().toString());
@@ -98,9 +96,29 @@ public class HiveSessionImpl implements HiveSession {
     hiveConf.set(ListSinkOperator.OUTPUT_FORMATTER,
         FetchFormatter.ThriftFormatter.class.getName());
     hiveConf.setInt(ListSinkOperator.OUTPUT_PROTOCOL, protocol.getValue());
+
     sessionState = new SessionState(hiveConf, username);
+    sessionState.setUserIpAddress(ipAddress);
     sessionState.setIsHiveServerQuery(true);
     SessionState.start(sessionState);
+
+    //set conf properties specified by user from client side
+    if (sessionConfMap != null) {
+      configureSession(sessionConfMap);
+    }
+  }
+
+  private void configureSession(Map<String, String> sessionConfMap) {
+    for (Map.Entry<String, String> entry : sessionConfMap.entrySet()) {
+      String key = entry.getKey();
+      if (key.startsWith("set:")) {
+        SetProcessor.setVariable(key.substring(4), entry.getValue());
+      } else if (key.startsWith("use:")) {
+        SessionState.get().setCurrentDatabase(entry.getValue());
+      } else {
+        hiveConf.verifyAndSet(key, entry.getValue());
+      }
+    }
   }
 
   @Override
@@ -127,6 +145,11 @@ public class HiveSessionImpl implements HiveSession {
     this.operationManager = operationManager;
   }
 
+  @Override
+  public void open() {
+    SessionState.start(sessionState);
+  }
+
   protected synchronized void acquire() throws HiveSQLException {
     // need to make sure that the this connections session state is
     // stored in the thread local for sessions.
@@ -135,7 +158,7 @@ public class HiveSessionImpl implements HiveSession {
 
   protected synchronized void release() {
     assert sessionState != null;
-    // no need to release sessionState...
+    SessionState.detachSession();
   }
 
   @Override
@@ -402,10 +425,10 @@ public class HiveSessionImpl implements HiveSession {
         hiveHist.closeStream();
       }
       sessionState.close();
-      release();
     } catch (IOException ioe) {
-      release();
       throw new HiveSQLException("Failure to close", ioe);
+    } finally {
+      release();
     }
   }
 
@@ -418,6 +441,7 @@ public class HiveSessionImpl implements HiveSession {
   public String getUserName() {
     return username;
   }
+
   @Override
   public void setUserName(String userName) {
     this.username = userName;
@@ -478,5 +502,43 @@ public class HiveSessionImpl implements HiveSession {
 
   protected HiveSession getSession() {
     return this;
+  }
+
+  @Override
+  public String getIpAddress() {
+    return ipAddress;
+  }
+
+  @Override
+  public void setIpAddress(String ipAddress) {
+    this.ipAddress = ipAddress;
+  }
+
+  @Override
+  public String getDelegationToken(HiveAuthFactory authFactory, String owner, String renewer)
+      throws HiveSQLException {
+    HiveAuthFactory.verifyProxyAccess(getUsername(), owner, getIpAddress(), getHiveConf());
+    return authFactory.getDelegationToken(owner, renewer);
+  }
+
+  @Override
+  public void cancelDelegationToken(HiveAuthFactory authFactory, String tokenStr)
+      throws HiveSQLException {
+    HiveAuthFactory.verifyProxyAccess(getUsername(), getUserFromToken(authFactory, tokenStr),
+        getIpAddress(), getHiveConf());
+    authFactory.cancelDelegationToken(tokenStr);
+  }
+
+  @Override
+  public void renewDelegationToken(HiveAuthFactory authFactory, String tokenStr)
+      throws HiveSQLException {
+    HiveAuthFactory.verifyProxyAccess(getUsername(), getUserFromToken(authFactory, tokenStr),
+        getIpAddress(), getHiveConf());
+    authFactory.renewDelegationToken(tokenStr);
+  }
+
+  // extract the real user from the given token string
+  private String getUserFromToken(HiveAuthFactory authFactory, String tokenStr) throws HiveSQLException {
+    return authFactory.getUserFromToken(tokenStr);
   }
 }

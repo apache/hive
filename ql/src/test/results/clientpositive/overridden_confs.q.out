@@ -3,5 +3,5 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 Key: hive.exec.post.hooks, Value: org.apache.hadoop.hive.ql.hooks.VerifyOverriddenConfigsHook
-Key: hive.config.doesnt.exit, Value: abc
+Key: some.hive.config.doesnt.exit, Value: abc
 500

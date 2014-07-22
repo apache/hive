@@ -64,10 +64,9 @@ CAST(1 AS BIGINT) ^ CAST(3 AS BIGINT)
 
 FROM dest1
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: dest1.c1 SIMPLE []
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -91,6 +90,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT round(1.0), round(1.5), round(-1.5), floor(1.0), floor(1.5), floor(-1.5), sqrt(1.0), sqrt(-1.0), sqrt(0.0), ceil(1.0), ceil(1.5), ceil(-1.5), ceiling(1.0), rand(3), +3, -3, 1++2, 1+-2, 
 ~1, 
@@ -142,5 +143,4 @@ FROM dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: dest1.c1 SIMPLE []
 1.0	2.0	-2.0	1	1	-2	1.0	NULL	0.0	1	2	-1	1	0.731057369148862	3	-3	3	-1	-2	-2	-2	-2	0	0	0	0	3	3	3	3	2	2	2	2

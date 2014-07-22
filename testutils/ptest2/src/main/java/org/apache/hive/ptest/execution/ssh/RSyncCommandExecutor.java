@@ -30,20 +30,20 @@ import org.slf4j.Logger;
 
 
 public class RSyncCommandExecutor {
-
   private final Logger mLogger;
+  private final int mMaxRsyncThreads;
   private final LocalCommandFactory mLocalCommandFactory;
   private final Semaphore mSemaphore;
   private volatile boolean mShutdown;
 
-  public RSyncCommandExecutor(Logger logger, LocalCommandFactory localCommandFactory) {
+  public RSyncCommandExecutor(Logger logger, int maxRsyncThreads, LocalCommandFactory localCommandFactory) {
     mLogger = logger;
+    mMaxRsyncThreads = Math.min(Runtime.getRuntime().availableProcessors() * 5, maxRsyncThreads);
     mLocalCommandFactory = localCommandFactory;
-    mSemaphore = new Semaphore(Math.min(Runtime.getRuntime().availableProcessors() * 5, 10));
+    mSemaphore = new Semaphore(mMaxRsyncThreads);
     mShutdown = false;
-  }
-  public RSyncCommandExecutor(Logger logger) {
-    this(logger, new LocalCommandFactory(logger));
+    mLogger.info("RSyncCommandExecutor has " + mMaxRsyncThreads + " threads on " + Runtime.getRuntime()
+      .availableProcessors() + " cpus");
   }
 
   /**

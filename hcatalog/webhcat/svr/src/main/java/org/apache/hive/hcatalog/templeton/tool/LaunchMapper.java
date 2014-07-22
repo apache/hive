@@ -24,11 +24,15 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.hive.shims.HadoopShims.WebHCatJTShim;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.JobID;
 import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.Shell;
+import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.hcatalog.templeton.BadParam;
 import org.apache.hive.hcatalog.templeton.LauncherDelegator;
 
@@ -79,8 +83,8 @@ public class LaunchMapper extends Mapper<NullWritable, NullWritable, Text, Text>
     }
     if(conf.get(PigConstants.PIG_OPTS) != null) {
       StringBuilder pigOpts = new StringBuilder();
-      for(String prop : conf.get(PigConstants.PIG_OPTS).split(",")) {
-        pigOpts.append("-D").append(prop).append(" ");
+      for(String prop : StringUtils.split(conf.get(PigConstants.PIG_OPTS))) {
+        pigOpts.append("-D").append(StringUtils.unEscapeString(prop)).append(" ");
       }
       env.put(PigConstants.PIG_OPTS, pigOpts.toString());
     }
@@ -88,6 +92,11 @@ public class LaunchMapper extends Mapper<NullWritable, NullWritable, Text, Text>
   protected Process startJob(Context context, String user, String overrideClasspath)
     throws IOException, InterruptedException {
     Configuration conf = context.getConfiguration();
+
+    // Kill previously launched child MR jobs started by this launcher to prevent having
+    // same jobs running side-by-side
+    killLauncherChildJobs(conf, context.getJobID().toString());
+
     copyLocal(COPY_NAME, conf);
     String[] jarArgs = TempletonUtils.decodeArray(conf.get(JAR_ARGS_NAME));
 
@@ -100,41 +109,108 @@ public class LaunchMapper extends Mapper<NullWritable, NullWritable, Text, Text>
     Map<String, String> env = TempletonUtils.hadoopUserEnv(user, overrideClasspath);
     handlePigEnvVars(conf, env);
     List<String> jarArgsList = new LinkedList<String>(Arrays.asList(jarArgs));
+    handleTokenFile(jarArgsList, JobSubmissionConstants.TOKEN_FILE_ARG_PLACEHOLDER, "mapreduce.job.credentials.binary");
+    handleTokenFile(jarArgsList, JobSubmissionConstants.TOKEN_FILE_ARG_PLACEHOLDER_TEZ, "tez.credentials.path");
+    handleMapReduceJobTag(jarArgsList, JobSubmissionConstants.MAPREDUCE_JOB_TAGS_ARG_PLACEHOLDER,
+        JobSubmissionConstants.MAPREDUCE_JOB_TAGS, context.getJobID().toString());
+    return TrivialExecService.getInstance().run(jarArgsList, removeEnv, env);
+  }
+
+  /**
+   * Kills child jobs of this launcher that have been tagged with this job's ID.
+   */
+  private void killLauncherChildJobs(Configuration conf, String jobId) throws IOException {
+    // Extract the launcher job submit/start time and use that to scope down
+    // the search interval when we look for child jobs
+    long startTime = getTempletonLaunchTime(conf);
+    UserGroupInformation ugi = UserGroupInformation.getCurrentUser();
+    WebHCatJTShim tracker = ShimLoader.getHadoopShims().getWebHCatShim(conf, ugi);
+    try {
+      tracker.killJobs(jobId, startTime);
+    } finally {
+      tracker.close();
+    }
+  }
+
+  /**
+   * Retrieves the templeton launcher job submit time from the configuration.
+   * If not available throws.
+   */
+  private long getTempletonLaunchTime(Configuration conf) {
+    long startTime = 0L;
+    try {
+      String launchTimeStr = conf.get(JobSubmissionConstants.TEMPLETON_JOB_LAUNCH_TIME_NAME);
+      LOG.info("Launch time = " + launchTimeStr);
+      if (launchTimeStr != null && launchTimeStr.length() > 0) {
+        startTime = Long.parseLong(launchTimeStr);
+      }
+    } catch(NumberFormatException nfe) {
+      throw new RuntimeException("Could not parse Templeton job launch time", nfe);
+    }
+
+    if (startTime == 0L) {
+      throw new RuntimeException(String.format("Launch time property '%s' not found",
+          JobSubmissionConstants.TEMPLETON_JOB_LAUNCH_TIME_NAME));
+    }
+
+    return startTime;
+  }
+
+  /**
+   * Replace placeholder with actual "prop=file".  This is done multiple times (possibly) since
+   * Tez and MR use different property names
+   */
+  private static void handleTokenFile(List<String> jarArgsList, String tokenPlaceHolder, String tokenProperty) throws IOException {
     String tokenFile = System.getenv("HADOOP_TOKEN_FILE_LOCATION");
-
-
     if (tokenFile != null) {
       //Token is available, so replace the placeholder
       tokenFile = tokenFile.replaceAll("\"", "");
-      String tokenArg = "mapreduce.job.credentials.binary=" + tokenFile;
+      String tokenArg = tokenProperty + "=" + tokenFile;
       if (Shell.WINDOWS) {
         try {
           tokenArg = TempletonUtils.quoteForWindows(tokenArg);
         } catch (BadParam e) {
-          String msg = "cannot pass " + tokenFile + " to mapreduce.job.credentials.binary";
+          String msg = "cannot pass " + tokenFile + " to " + tokenProperty;
           LOG.error(msg, e);
           throw new IOException(msg, e);
         }
       }
       for(int i=0; i<jarArgsList.size(); i++){
         String newArg =
-                jarArgsList.get(i).replace(TOKEN_FILE_ARG_PLACEHOLDER, tokenArg);
+          jarArgsList.get(i).replace(tokenPlaceHolder, tokenArg);
         jarArgsList.set(i, newArg);
       }
-
     }else{
       //No token, so remove the placeholder arg
       Iterator<String> it = jarArgsList.iterator();
       while(it.hasNext()){
         String arg = it.next();
-        if(arg.contains(TOKEN_FILE_ARG_PLACEHOLDER)){
+        if(arg.contains(tokenPlaceHolder)){
           it.remove();
         }
       }
     }
-    boolean overrideLog4jProps = conf.get(OVERRIDE_CONTAINER_LOG4J_PROPS) == null ?
-            false : Boolean.valueOf(conf.get(OVERRIDE_CONTAINER_LOG4J_PROPS));
-    return TrivialExecService.getInstance().run(jarArgsList, removeEnv, env, overrideLog4jProps);
+  }
+
+  /**
+   * Replace the placeholder mapreduce tags with our MR jobid so that all child jobs
+   * get tagged with it. This is used on launcher task restart to prevent from having
+   * same jobs running in parallel.
+   */
+  private static void handleMapReduceJobTag(List<String> jarArgsList, String placeholder,
+      String mapReduceJobTagsProp, String currentJobId) throws IOException {
+    String arg = String.format("%s=%s", mapReduceJobTagsProp, currentJobId);
+    for(int i = 0; i < jarArgsList.size(); i++) {
+      if (jarArgsList.get(i).contains(placeholder)) {
+        String newArg = jarArgsList.get(i).replace(placeholder, arg);
+        jarArgsList.set(i, newArg);
+        return;
+      }
+    }
+
+    // Unexpected error, placeholder tag is not found, throw
+    throw new RuntimeException(
+        String.format("Unexpected Error: Tag '%s' not found in the list of launcher args", placeholder));
   }
 
   private void copyLocal(String var, Configuration conf) throws IOException {

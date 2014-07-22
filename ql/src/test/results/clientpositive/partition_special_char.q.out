@@ -37,11 +37,10 @@ POSTHOOK: Lineage: sc_part PARTITION(ts=2011-01-11+15:18:26).key SIMPLE [(sc)sc.
 POSTHOOK: Lineage: sc_part PARTITION(ts=2011-01-11+16:18:26).key SIMPLE [(sc)sc.FieldSchema(name:_c0, type:string, comment:null), ]
 PREHOOK: query: show partitions sc_part
 PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@sc_part
 POSTHOOK: query: show partitions sc_part
 POSTHOOK: type: SHOWPARTITIONS
-POSTHOOK: Lineage: sc_part PARTITION(ts=2011-01-11+14:18:26).key SIMPLE [(sc)sc.FieldSchema(name:_c0, type:string, comment:null), ]
-POSTHOOK: Lineage: sc_part PARTITION(ts=2011-01-11+15:18:26).key SIMPLE [(sc)sc.FieldSchema(name:_c0, type:string, comment:null), ]
-POSTHOOK: Lineage: sc_part PARTITION(ts=2011-01-11+16:18:26).key SIMPLE [(sc)sc.FieldSchema(name:_c0, type:string, comment:null), ]
+POSTHOOK: Input: default@sc_part
 ts=2011-01-11+14%3A18%3A26
 ts=2011-01-11+15%3A18%3A26
 ts=2011-01-11+16%3A18%3A26
@@ -59,9 +58,6 @@ POSTHOOK: Input: default@sc_part@ts=2011-01-11+14%3A18%3A26
 POSTHOOK: Input: default@sc_part@ts=2011-01-11+15%3A18%3A26
 POSTHOOK: Input: default@sc_part@ts=2011-01-11+16%3A18%3A26
 #### A masked pattern was here ####
-POSTHOOK: Lineage: sc_part PARTITION(ts=2011-01-11+14:18:26).key SIMPLE [(sc)sc.FieldSchema(name:_c0, type:string, comment:null), ]
-POSTHOOK: Lineage: sc_part PARTITION(ts=2011-01-11+15:18:26).key SIMPLE [(sc)sc.FieldSchema(name:_c0, type:string, comment:null), ]
-POSTHOOK: Lineage: sc_part PARTITION(ts=2011-01-11+16:18:26).key SIMPLE [(sc)sc.FieldSchema(name:_c0, type:string, comment:null), ]
 3
 PREHOOK: query: insert overwrite table sc_part partition(ts) select * from sc
 PREHOOK: type: QUERY
@@ -74,21 +70,14 @@ POSTHOOK: Output: default@sc_part@ts=2011-01-11+14%3A18%3A26
 POSTHOOK: Output: default@sc_part@ts=2011-01-11+15%3A18%3A26
 POSTHOOK: Output: default@sc_part@ts=2011-01-11+16%3A18%3A26
 POSTHOOK: Lineage: sc_part PARTITION(ts=2011-01-11+14:18:26).key SIMPLE [(sc)sc.FieldSchema(name:_c0, type:string, comment:null), ]
-POSTHOOK: Lineage: sc_part PARTITION(ts=2011-01-11+14:18:26).key SIMPLE [(sc)sc.FieldSchema(name:_c0, type:string, comment:null), ]
 POSTHOOK: Lineage: sc_part PARTITION(ts=2011-01-11+15:18:26).key SIMPLE [(sc)sc.FieldSchema(name:_c0, type:string, comment:null), ]
-POSTHOOK: Lineage: sc_part PARTITION(ts=2011-01-11+15:18:26).key SIMPLE [(sc)sc.FieldSchema(name:_c0, type:string, comment:null), ]
-POSTHOOK: Lineage: sc_part PARTITION(ts=2011-01-11+16:18:26).key SIMPLE [(sc)sc.FieldSchema(name:_c0, type:string, comment:null), ]
 POSTHOOK: Lineage: sc_part PARTITION(ts=2011-01-11+16:18:26).key SIMPLE [(sc)sc.FieldSchema(name:_c0, type:string, comment:null), ]
 PREHOOK: query: show partitions sc_part
 PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@sc_part
 POSTHOOK: query: show partitions sc_part
 POSTHOOK: type: SHOWPARTITIONS
-POSTHOOK: Lineage: sc_part PARTITION(ts=2011-01-11+14:18:26).key SIMPLE [(sc)sc.FieldSchema(name:_c0, type:string, comment:null), ]
-POSTHOOK: Lineage: sc_part PARTITION(ts=2011-01-11+14:18:26).key SIMPLE [(sc)sc.FieldSchema(name:_c0, type:string, comment:null), ]
-POSTHOOK: Lineage: sc_part PARTITION(ts=2011-01-11+15:18:26).key SIMPLE [(sc)sc.FieldSchema(name:_c0, type:string, comment:null), ]
-POSTHOOK: Lineage: sc_part PARTITION(ts=2011-01-11+15:18:26).key SIMPLE [(sc)sc.FieldSchema(name:_c0, type:string, comment:null), ]
-POSTHOOK: Lineage: sc_part PARTITION(ts=2011-01-11+16:18:26).key SIMPLE [(sc)sc.FieldSchema(name:_c0, type:string, comment:null), ]
-POSTHOOK: Lineage: sc_part PARTITION(ts=2011-01-11+16:18:26).key SIMPLE [(sc)sc.FieldSchema(name:_c0, type:string, comment:null), ]
+POSTHOOK: Input: default@sc_part
 ts=2011-01-11+14%3A18%3A26
 ts=2011-01-11+15%3A18%3A26
 ts=2011-01-11+16%3A18%3A26
@@ -106,10 +95,4 @@ POSTHOOK: Input: default@sc_part@ts=2011-01-11+14%3A18%3A26
 POSTHOOK: Input: default@sc_part@ts=2011-01-11+15%3A18%3A26
 POSTHOOK: Input: default@sc_part@ts=2011-01-11+16%3A18%3A26
 #### A masked pattern was here ####
-POSTHOOK: Lineage: sc_part PARTITION(ts=2011-01-11+14:18:26).key SIMPLE [(sc)sc.FieldSchema(name:_c0, type:string, comment:null), ]
-POSTHOOK: Lineage: sc_part PARTITION(ts=2011-01-11+14:18:26).key SIMPLE [(sc)sc.FieldSchema(name:_c0, type:string, comment:null), ]
-POSTHOOK: Lineage: sc_part PARTITION(ts=2011-01-11+15:18:26).key SIMPLE [(sc)sc.FieldSchema(name:_c0, type:string, comment:null), ]
-POSTHOOK: Lineage: sc_part PARTITION(ts=2011-01-11+15:18:26).key SIMPLE [(sc)sc.FieldSchema(name:_c0, type:string, comment:null), ]
-POSTHOOK: Lineage: sc_part PARTITION(ts=2011-01-11+16:18:26).key SIMPLE [(sc)sc.FieldSchema(name:_c0, type:string, comment:null), ]
-POSTHOOK: Lineage: sc_part PARTITION(ts=2011-01-11+16:18:26).key SIMPLE [(sc)sc.FieldSchema(name:_c0, type:string, comment:null), ]
 3

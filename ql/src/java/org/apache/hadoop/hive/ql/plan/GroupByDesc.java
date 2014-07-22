@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.apache.hadoop.hive.ql.udf.UDFType;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
+import org.apache.hive.common.util.AnnotationUtils;
 
 /**
  * GroupByDesc.
@@ -228,7 +229,7 @@ public class GroupByDesc extends AbstractOperatorDesc {
     for (AggregationDesc ad : aggregators) {
       if (!ad.getDistinct()) {
         GenericUDAFEvaluator udafEval = ad.getGenericUDAFEvaluator();
-        UDFType annot = udafEval.getClass().getAnnotation(UDFType.class);
+        UDFType annot = AnnotationUtils.getAnnotation(udafEval.getClass(), UDFType.class);
         if (annot == null || !annot.distinctLike()) {
           return false;
         }

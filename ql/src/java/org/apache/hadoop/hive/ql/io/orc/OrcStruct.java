@@ -77,7 +77,15 @@ final public class OrcStruct implements Writable {
     }
   }
 
-   @Override
+  /**
+   * Destructively make this object link to other's values.
+   * @param other the value to point to
+   */
+  void linkFields(OrcStruct other) {
+    fields = other.fields;
+  }
+
+  @Override
   public void write(DataOutput dataOutput) throws IOException {
     throw new UnsupportedOperationException("write unsupported");
   }
@@ -158,6 +166,11 @@ final public class OrcStruct implements Writable {
     }
 
     @Override
+    public int getFieldID() {
+      return offset;
+    }
+
+    @Override
     public String getFieldComment() {
       return null;
     }
@@ -169,6 +182,11 @@ final public class OrcStruct implements Writable {
     protected OrcStructInspector() {
       super();
     }
+
+    OrcStructInspector(List<StructField> fields) {
+      this.fields = fields;
+    }
+
     OrcStructInspector(StructTypeInfo info) {
       ArrayList<String> fieldNames = info.getAllStructFieldNames();
       ArrayList<TypeInfo> fieldTypes = info.getAllStructFieldTypeInfos();
@@ -207,11 +225,23 @@ final public class OrcStruct implements Writable {
 
     @Override
     public Object getStructFieldData(Object object, StructField field) {
-      return ((OrcStruct) object).fields[((Field) field).offset];
+      if (object == null) {
+        return null;
+      }
+      int offset = ((Field) field).offset;
+      OrcStruct struct = (OrcStruct) object;
+      if (offset >= struct.fields.length) {
+        return null;
+      }
+
+      return struct.fields[offset];
     }
 
     @Override
     public List<Object> getStructFieldsDataAsList(Object object) {
+      if (object == null) {
+        return null;
+      }
       OrcStruct struct = (OrcStruct) object;
       List<Object> result = new ArrayList<Object>(struct.fields.length);
       for (Object child: struct.fields) {
@@ -490,11 +520,11 @@ final public class OrcStruct implements Writable {
             return PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(
                 (PrimitiveTypeInfo) info);
           case TIMESTAMP:
-            return PrimitiveObjectInspectorFactory.javaTimestampObjectInspector;
+            return PrimitiveObjectInspectorFactory.writableTimestampObjectInspector;
           case DATE:
-            return PrimitiveObjectInspectorFactory.javaDateObjectInspector;
+            return PrimitiveObjectInspectorFactory.writableDateObjectInspector;
           case DECIMAL:
-            return PrimitiveObjectInspectorFactory.getPrimitiveJavaObjectInspector(
+            return PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(
                 (PrimitiveTypeInfo)info);
           default:
             throw new IllegalArgumentException("Unknown primitive type " +
@@ -551,13 +581,13 @@ final public class OrcStruct implements Writable {
         return PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(
             TypeInfoFactory.getVarcharTypeInfo(type.getMaximumLength()));
       case TIMESTAMP:
-        return PrimitiveObjectInspectorFactory.javaTimestampObjectInspector;
+        return PrimitiveObjectInspectorFactory.writableTimestampObjectInspector;
       case DATE:
-        return PrimitiveObjectInspectorFactory.javaDateObjectInspector;
+        return PrimitiveObjectInspectorFactory.writableDateObjectInspector;
       case DECIMAL:
         int precision = type.hasPrecision() ? type.getPrecision() : HiveDecimal.SYSTEM_DEFAULT_PRECISION;
         int scale =  type.hasScale()? type.getScale() : HiveDecimal.SYSTEM_DEFAULT_SCALE;
-        return PrimitiveObjectInspectorFactory.getPrimitiveJavaObjectInspector(
+        return PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(
             TypeInfoFactory.getDecimalTypeInfo(precision, scale));
       case STRUCT:
         return new OrcStructInspector(columnId, types);

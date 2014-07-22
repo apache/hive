@@ -19,11 +19,9 @@
 package org.apache.hive.service.cli.thrift;
 
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
 
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hive.service.auth.HiveAuthFactory.AuthTypes;
-import org.apache.thrift.transport.TTransport;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -40,7 +38,6 @@ import org.junit.BeforeClass;
 public class TestThriftBinaryCLIService extends ThriftCLIServiceTest {
 
   private static String transportMode = "binary";
-  private static TTransport transport;
 
   /**
    * @throws java.lang.Exception
@@ -57,20 +54,12 @@ public class TestThriftBinaryCLIService extends ThriftCLIServiceTest {
     hiveConf.setBoolVar(ConfVars.HIVE_SERVER2_ENABLE_DOAS, false);
     hiveConf.setVar(ConfVars.HIVE_SERVER2_THRIFT_BIND_HOST, host);
     hiveConf.setIntVar(ConfVars.HIVE_SERVER2_THRIFT_PORT, port);
-    hiveConf.setVar(ConfVars.HIVE_SERVER2_AUTHENTICATION, AuthTypes.NOSASL.toString());
+    hiveConf.setVar(ConfVars.HIVE_SERVER2_AUTHENTICATION, AuthTypes.NONE.toString());
     hiveConf.setVar(ConfVars.HIVE_SERVER2_TRANSPORT_MODE, transportMode);
 
     startHiveServer2WithConf(hiveConf);
 
-    // Open a binary transport
-    // Fail if the transport doesn't open
-    transport = createBinaryTransport();
-    try {
-      transport.open();
-    }
-    catch (Exception e) {
-      fail("Exception: " + e);
-    }
+    client = getServiceClientInternal();
   }
 
   /**
@@ -87,9 +76,7 @@ public class TestThriftBinaryCLIService extends ThriftCLIServiceTest {
   @Override
   @Before
   public void setUp() throws Exception {
-    // Create and set the client
-    initClient(transport);
-    assertNotNull(client);
+
   }
 
   /**

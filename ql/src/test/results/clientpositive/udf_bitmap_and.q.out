@@ -47,8 +47,6 @@ POSTHOOK: query: select ewah_bitmap_and(a,b) from bitmap_test
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@bitmap_test
 #### A masked pattern was here ####
-POSTHOOK: Lineage: bitmap_test.a EXPRESSION []
-POSTHOOK: Lineage: bitmap_test.b EXPRESSION []
 [13,1,4,2,0]
 [13,1,4,2,0]
 [13,1,4,2,0]
@@ -67,5 +65,3 @@ POSTHOOK: query: drop table bitmap_test
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@bitmap_test
 POSTHOOK: Output: default@bitmap_test
-POSTHOOK: Lineage: bitmap_test.a EXPRESSION []
-POSTHOOK: Lineage: bitmap_test.b EXPRESSION []

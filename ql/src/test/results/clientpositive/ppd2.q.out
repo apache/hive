@@ -28,7 +28,8 @@ where b.cc>1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-1
@@ -48,8 +49,8 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
-                  key expressions: _col0 (type: string), _col1 (type: bigint)
-                  sort order: +-
+                  key expressions: _col0 (type: string)
+                  sort order: +
                   Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: bigint)
@@ -60,28 +61,47 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 14 Data size: 2805 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: _col0 (type: string), _col1 (type: bigint)
-            outputColumnNames: _col0, _col1
-            Statistics: Num rows: 14 Data size: 2805 Basic stats: COMPLETE Column stats: NONE
-            Filter Operator
-              predicate: (_col1 > 1) (type: boolean)
+          Filter Operator
+            predicate: (_col1 > 1) (type: boolean)
+            Statistics: Num rows: 4 Data size: 801 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: _col0 (type: string), _col1 (type: bigint)
+              outputColumnNames: _col0, _col1
               Statistics: Num rows: 4 Data size: 801 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: _col0 (type: string), _col1 (type: bigint)
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 4 Data size: 801 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 4 Data size: 801 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              File Output Operator
+                compressed: false
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-2
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              key expressions: _col0 (type: string), _col1 (type: bigint)
+              sort order: +-
+              Map-reduce partition columns: _col0 (type: string)
+              Statistics: Num rows: 4 Data size: 801 Basic stats: COMPLETE Column stats: NONE
+      Reduce Operator Tree:
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: bigint)
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 4 Data size: 801 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 4 Data size: 801 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select b.key,b.cc
 from (
@@ -277,7 +297,7 @@ WHERE sub.tag_student > 0
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -308,6 +328,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: EXPLAIN 
 SELECT x.key, x.value as v1, y.key  FROM SRC x JOIN SRC y ON (x.key = y.key)  where x.key = 20 CLUSTER BY v1
@@ -318,7 +340,7 @@ POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-1
@@ -328,39 +350,38 @@ STAGE PLANS:
             alias: y
             Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key = 20) (type: boolean)
-              Statistics: Num rows: 29 Data size: 2906 Basic stats: COMPLETE Column stats: NONE
+              predicate: (key is not null and (key = 20)) (type: boolean)
+              Statistics: Num rows: 14 Data size: 1402 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: key (type: string)
                 sort order: +
                 Map-reduce partition columns: key (type: string)
-                Statistics: Num rows: 29 Data size: 2906 Basic stats: COMPLETE Column stats: NONE
-                value expressions: key (type: string)
+                Statistics: Num rows: 14 Data size: 1402 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: x
             Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key = 20) (type: boolean)
-              Statistics: Num rows: 14 Data size: 2805 Basic stats: COMPLETE Column stats: NONE
+              predicate: (key is not null and (key = 20)) (type: boolean)
+              Statistics: Num rows: 7 Data size: 1402 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: key (type: string)
                 sort order: +
                 Map-reduce partition columns: key (type: string)
-                Statistics: Num rows: 14 Data size: 2805 Basic stats: COMPLETE Column stats: NONE
-                value expressions: key (type: string), value (type: string)
+                Statistics: Num rows: 7 Data size: 1402 Basic stats: COMPLETE Column stats: NONE
+                value expressions: value (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
           condition expressions:
-            0 {VALUE._col0} {VALUE._col1}
-            1 {VALUE._col0}
+            0 {KEY.reducesinkkey0} {VALUE._col0}
+            1 {KEY.reducesinkkey0}
           outputColumnNames: _col0, _col1, _col4
-          Statistics: Num rows: 31 Data size: 3196 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 15 Data size: 1542 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: _col0 (type: string), _col1 (type: string), _col4 (type: string)
             outputColumnNames: _col0, _col1, _col2
-            Statistics: Num rows: 31 Data size: 3196 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 15 Data size: 1542 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
               table:
@@ -376,14 +397,16 @@ STAGE PLANS:
               key expressions: _col1 (type: string)
               sort order: +
               Map-reduce partition columns: _col1 (type: string)
-              Statistics: Num rows: 31 Data size: 3196 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
+              Statistics: Num rows: 15 Data size: 1542 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col0 (type: string), _col2 (type: string)
       Reduce Operator Tree:
-        Extract
-          Statistics: Num rows: 31 Data size: 3196 Basic stats: COMPLETE Column stats: NONE
+        Select Operator
+          expressions: VALUE._col0 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col1 (type: string)
+          outputColumnNames: _col0, _col1, _col2
+          Statistics: Num rows: 15 Data size: 1542 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 31 Data size: 3196 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 15 Data size: 1542 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -392,6 +415,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: explain
 select b.key,b.cc
@@ -423,7 +448,8 @@ where b.cc>1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-1
@@ -446,8 +472,8 @@ STAGE PLANS:
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
-                    key expressions: _col0 (type: string), _col1 (type: bigint)
-                    sort order: +-
+                    key expressions: _col0 (type: string)
+                    sort order: +
                     Map-reduce partition columns: _col0 (type: string)
                     Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col1 (type: bigint)
@@ -462,24 +488,47 @@ STAGE PLANS:
             expressions: _col0 (type: string), _col1 (type: bigint)
             outputColumnNames: _col0, _col1
             Statistics: Num rows: 14 Data size: 2805 Basic stats: COMPLETE Column stats: NONE
-            Filter Operator
-              predicate: (_col1 > 1) (type: boolean)
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-2
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              key expressions: _col0 (type: string), _col1 (type: bigint)
+              sort order: +-
+              Map-reduce partition columns: _col0 (type: string)
+              Statistics: Num rows: 14 Data size: 2805 Basic stats: COMPLETE Column stats: NONE
+      Reduce Operator Tree:
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: bigint)
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 14 Data size: 2805 Basic stats: COMPLETE Column stats: NONE
+          Filter Operator
+            predicate: (_col1 > 1) (type: boolean)
+            Statistics: Num rows: 4 Data size: 801 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: _col0 (type: string), _col1 (type: bigint)
+              outputColumnNames: _col0, _col1
               Statistics: Num rows: 4 Data size: 801 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: _col0 (type: string), _col1 (type: bigint)
-                outputColumnNames: _col0, _col1
+              File Output Operator
+                compressed: false
                 Statistics: Num rows: 4 Data size: 801 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 4 Data size: 801 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select b.key,b.cc
 from (

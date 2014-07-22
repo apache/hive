@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
+import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
@@ -152,6 +153,10 @@ public class FetchTask extends Task<FetchWork> implements Serializable {
     } finally {
       totalRows += sink.getNumRows();
     }
+  }
+
+  public boolean isFetchFrom(FileSinkDesc fs) {
+    return fs.getFinalDirName().equals(work.getTblDir());
   }
 
   @Override

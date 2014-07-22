@@ -32,6 +32,9 @@ import java.util.TreeSet;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.Heartbeater;
+import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.tez.dag.api.TezException;
@@ -75,7 +78,7 @@ public class TezJobMonitor {
         try {
           for (TezSessionState s: TezSessionState.getOpenSessions()) {
             System.err.println("Shutting down tez session.");
-            s.close(false);
+            TezSessionPoolManager.getInstance().close(s);
           }
         } catch (Exception e) {
           // ignore
@@ -93,9 +96,12 @@ public class TezJobMonitor {
    * status retrieval.
    *
    * @param dagClient client that was used to kick off the job
+   * @param txnMgr transaction manager for this operation
+   * @param conf configuration file for this operation
    * @return int 0 - success, 1 - killed, 2 - failed
    */
-  public int monitorExecution(final DAGClient dagClient) throws InterruptedException {
+  public int monitorExecution(final DAGClient dagClient, HiveTxnManager txnMgr,
+                              HiveConf conf) throws InterruptedException {
     DAGStatus status = null;
     completed = new HashSet<String>();
 
@@ -106,6 +112,7 @@ public class TezJobMonitor {
     DAGStatus.State lastState = null;
     String lastReport = null;
     Set<StatusGetOpts> opts = new HashSet<StatusGetOpts>();
+    Heartbeater heartbeater = new Heartbeater(txnMgr, conf);
 
     shutdownList.add(dagClient);
 
@@ -119,6 +126,7 @@ public class TezJobMonitor {
         status = dagClient.getDAGStatus(opts);
         Map<String, Progress> progressMap = status.getVertexProgress();
         DAGStatus.State state = status.getState();
+        heartbeater.heartbeat();
 
         if (state != lastState || state == RUNNING) {
           lastState = state;
@@ -208,8 +216,10 @@ public class TezJobMonitor {
     SortedSet<String> keys = new TreeSet<String>(progressMap.keySet());
     for (String s: keys) {
       Progress progress = progressMap.get(s);
-      int complete = progress.getSucceededTaskCount();
-      int total = progress.getTotalTaskCount();
+      final int complete = progress.getSucceededTaskCount();
+      final int total = progress.getTotalTaskCount();
+      final int running = progress.getRunningTaskCount();
+      final int failed = progress.getFailedTaskCount();
       if (total <= 0) {
         reportBuffer.append(String.format("%s: -/-\t", s, complete, total));
       } else {
@@ -217,7 +227,22 @@ public class TezJobMonitor {
           completed.add(s);
           perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_RUN_VERTEX + s);
         }
-        reportBuffer.append(String.format("%s: %d/%d\t", s, complete, total));
+        if(complete < total && (complete > 0 || running > 0 || failed > 0)) {
+          /* vertex is started, but not complete */
+          if (failed > 0) {
+            reportBuffer.append(String.format("%s: %d(+%d,-%d)/%d\t", s, complete, running, failed, total));
+          } else {
+            reportBuffer.append(String.format("%s: %d(+%d)/%d\t", s, complete, running, total));
+          }
+        } else {
+          /* vertex is waiting for input/slots or complete */
+          if (failed > 0) {
+            /* tasks finished but some failed */
+            reportBuffer.append(String.format("%s: %d(-%d)/%d\t", s, complete, failed, total));
+          } else {
+            reportBuffer.append(String.format("%s: %d/%d\t", s, complete, total));
+          }
+        }
       }
     }
 

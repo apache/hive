@@ -80,7 +80,7 @@ public class TestSemanticAnalysis extends HCatBaseTest {
     assertEquals(0, resp.getResponseCode());
     ArrayList<String> result = new ArrayList<String>();
     hcatDriver.getResults(result);
-    assertTrue(result.get(0).contains("mydb.db"));
+    assertTrue(result.get(0).contains("mydb"));   // location is not shown in test mode
     hcatDriver.run("drop database mydb cascade");
   }
 

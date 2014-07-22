@@ -25,12 +25,14 @@ import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
+import javax.security.auth.login.LoginException;
+import javax.security.sasl.AuthenticationException;
 import javax.security.sasl.AuthorizeCallback;
 import javax.security.sasl.SaslException;
 
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hive.service.auth.PlainSaslServer.ExternalAuthenticationCallback;
 import org.apache.hive.service.auth.PlainSaslServer.SaslPlainProvider;
+import org.apache.hive.service.auth.AuthenticationProviderFactory.AuthMethods;
 import org.apache.hive.service.cli.thrift.TCLIService;
 import org.apache.hive.service.cli.thrift.TCLIService.Iface;
 import org.apache.hive.service.cli.thrift.ThriftCLIService;
@@ -44,24 +46,35 @@ import org.apache.thrift.transport.TTransportFactory;
 public class PlainSaslHelper {
 
   private static class PlainServerCallbackHandler implements CallbackHandler {
+    private final AuthMethods authMethod;
+    public PlainServerCallbackHandler(String authMethodStr) throws AuthenticationException {
+      authMethod = AuthMethods.getValidAuthMethod(authMethodStr);
+    }
 
     @Override
     public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
-      ExternalAuthenticationCallback ac = null;
+      String userName = null;
+      String passWord = null;
+      AuthorizeCallback ac = null;
+
       for (int i = 0; i < callbacks.length; i++) {
-        if (callbacks[i] instanceof ExternalAuthenticationCallback) {
-          ac = (ExternalAuthenticationCallback) callbacks[i];
-          break;
+        if (callbacks[i] instanceof NameCallback) {
+          NameCallback nc = (NameCallback)callbacks[i];
+          userName = nc.getName();
+        } else if (callbacks[i] instanceof PasswordCallback) {
+          PasswordCallback pc = (PasswordCallback)callbacks[i];
+          passWord = new String(pc.getPassword());
+        } else if (callbacks[i] instanceof AuthorizeCallback) {
+          ac = (AuthorizeCallback) callbacks[i];
         } else {
           throw new UnsupportedCallbackException(callbacks[i]);
         }
       }
-
+      PasswdAuthenticationProvider provider =
+            AuthenticationProviderFactory.getAuthenticationProvider(authMethod);
+      provider.Authenticate(userName, passWord);
       if (ac != null) {
-        PasswdAuthenticationProvider provider =
-            AuthenticationProviderFactory.getAuthenticationProvider(ac.getAuthMethod());
-        provider.Authenticate(ac.getUserName(), ac.getPasswd());
-        ac.setAuthenticated(true);
+        ac.setAuthorized(true);
       }
     }
   }
@@ -97,20 +110,16 @@ public class PlainSaslHelper {
   private static class SQLPlainProcessorFactory extends TProcessorFactory {
     private final ThriftCLIService service;
     private final HiveConf conf;
-    private final boolean doAsEnabled;
 
     public SQLPlainProcessorFactory(ThriftCLIService service) {
       super(null);
       this.service = service;
       this.conf = service.getHiveConf();
-      this.doAsEnabled = conf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS);
     }
 
     @Override
     public TProcessor getProcessor(TTransport trans) {
-      TProcessor baseProcessor =  new TCLIService.Processor<Iface>(service);
-      return doAsEnabled ? new TUGIContainingProcessor(baseProcessor, conf) :
-            new TSetIpAddressProcessor<Iface>(service);
+      return new TSetIpAddressProcessor<Iface>(service);
     }
   }
 
@@ -123,11 +132,16 @@ public class PlainSaslHelper {
     java.security.Security.addProvider(new SaslPlainProvider());
   }
 
-  public static TTransportFactory getPlainTransportFactory(String authTypeStr) {
+  public static TTransportFactory getPlainTransportFactory(String authTypeStr)
+      throws LoginException {
     TSaslServerTransport.Factory saslFactory = new TSaslServerTransport.Factory();
-    saslFactory.addServerDefinition("PLAIN",
-        authTypeStr, null, new HashMap<String, String>(),
-        new PlainServerCallbackHandler());
+    try {
+      saslFactory.addServerDefinition("PLAIN",
+          authTypeStr, null, new HashMap<String, String>(),
+          new PlainServerCallbackHandler(authTypeStr));
+    } catch (AuthenticationException e) {
+      throw new LoginException ("Error setting callback handler" + e);
+    }
     return saslFactory;
   }
 

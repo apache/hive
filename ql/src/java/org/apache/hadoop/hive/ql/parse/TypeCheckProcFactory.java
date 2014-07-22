@@ -987,7 +987,7 @@ public final class TypeCheckProcFactory {
         // descendant nodes, DFS traversal ensures that the error only needs to
         // be cleared once. Also, for a case like
         // SELECT concat(value, concat(value))... the logic still works as the
-        // error is only set with the first 'value'; all node pocessors quit
+        // error is only set with the first 'value'; all node processors quit
         // early if the global error is set.
 
         if (isDescendant(nd, ctx.getErrorSrcNode())) {
@@ -1087,6 +1087,11 @@ public final class TypeCheckProcFactory {
       boolean isFunction = (expr.getType() == HiveParser.TOK_FUNCTION ||
           expr.getType() == HiveParser.TOK_FUNCTIONSTAR ||
           expr.getType() == HiveParser.TOK_FUNCTIONDI);
+
+      if (!ctx.isAllowDistinctFunctions() && expr.getType() == HiveParser.TOK_FUNCTIONDI) {
+        throw new SemanticException(
+            SemanticAnalyzer.generateErrorMessage(expr, ErrorMsg.DISTINCT_NOT_SUPPORTED.getMsg()));
+      }
 
       // Create all children
       int childrenBegin = (isFunction ? 1 : 0);

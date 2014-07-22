@@ -29,12 +29,11 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
-
-import javax.security.auth.login.LoginException;
+import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -47,8 +46,10 @@ import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
+import org.apache.hadoop.hive.ql.plan.TezEdgeProperty;
+import org.apache.hadoop.hive.ql.plan.TezEdgeProperty.EdgeType;
 import org.apache.hadoop.hive.ql.plan.TezWork;
-import org.apache.hadoop.hive.ql.plan.TezWork.EdgeType;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.yarn.api.records.LocalResource;
@@ -59,7 +60,6 @@ import org.apache.tez.dag.api.Edge;
 import org.apache.tez.dag.api.EdgeProperty;
 import org.apache.tez.dag.api.ProcessorDescriptor;
 import org.apache.tez.dag.api.SessionNotRunning;
-import org.apache.tez.dag.api.TezException;
 import org.apache.tez.dag.api.Vertex;
 import org.apache.tez.dag.api.client.DAGClient;
 import org.junit.After;
@@ -92,7 +92,7 @@ public class TestTezTask {
     when(path.getFileSystem(any(Configuration.class))).thenReturn(fs);
     when(utils.getTezDir(any(Path.class))).thenReturn(path);
     when(utils.createVertex(any(JobConf.class), any(BaseWork.class), any(Path.class), any(LocalResource.class),
-        any(List.class), any(FileSystem.class), any(Context.class), anyBoolean())).thenAnswer(new Answer<Vertex>() {
+        any(List.class), any(FileSystem.class), any(Context.class), anyBoolean(), any(TezWork.class))).thenAnswer(new Answer<Vertex>() {
 
           @Override
           public Vertex answer(InvocationOnMock invocation) throws Throwable {
@@ -103,7 +103,7 @@ public class TestTezTask {
         });
 
     when(utils.createEdge(any(JobConf.class), any(Vertex.class), any(JobConf.class),
-        any(Vertex.class), any(EdgeType.class))).thenAnswer(new Answer<Edge>() {
+        any(Vertex.class), any(TezEdgeProperty.class))).thenAnswer(new Answer<Edge>() {
 
           @Override
           public Edge answer(InvocationOnMock invocation) throws Throwable {
@@ -145,9 +145,10 @@ public class TestTezTask {
     rws[0].setReducer(op);
     rws[1].setReducer(op);
 
-    work.connect(mws[0], rws[0], EdgeType.SIMPLE_EDGE);
-    work.connect(mws[1], rws[0], EdgeType.SIMPLE_EDGE);
-    work.connect(rws[0], rws[1], EdgeType.SIMPLE_EDGE);
+    TezEdgeProperty edgeProp = new TezEdgeProperty(EdgeType.SIMPLE_EDGE);
+    work.connect(mws[0], rws[0], edgeProp);
+    work.connect(mws[1], rws[0], edgeProp);
+    work.connect(rws[0], rws[1], edgeProp);
 
     task = new TezTask(utils);
     task.setWork(work);
@@ -156,15 +157,18 @@ public class TestTezTask {
     conf = new JobConf();
     appLr = mock(LocalResource.class);
 
+    SessionState.start(new HiveConf());
     session = mock(TezSession.class);
     sessionState = mock(TezSessionState.class);
     when(sessionState.getSession()).thenReturn(session);
-    when(session.submitDAG(any(DAG.class))).thenThrow(new SessionNotRunning(""))
+    when(session.submitDAG(any(DAG.class), any(Map.class)))
+      .thenThrow(new SessionNotRunning(""))
       .thenReturn(mock(DAGClient.class));
   }
 
   @After
   public void tearDown() throws Exception {
+    SessionState.get().close();
     utils = null;
     work = null;
     task = null;
@@ -174,7 +178,7 @@ public class TestTezTask {
 
   @Test
   public void testBuildDag() throws IllegalArgumentException, IOException, Exception {
-    DAG dag = task.build(conf, work, path, appLr, new Context(conf));
+    DAG dag = task.build(conf, work, path, appLr, null, new Context(conf));
     for (BaseWork w: work.getAllWork()) {
       Vertex v = dag.getVertex(w.getName());
       assertNotNull(v);
@@ -194,19 +198,18 @@ public class TestTezTask {
 
   @Test
   public void testEmptyWork() throws IllegalArgumentException, IOException, Exception {
-    DAG dag = task.build(conf, new TezWork(""), path, appLr, new Context(conf));
+    DAG dag = task.build(conf, new TezWork(""), path, appLr, null, new Context(conf));
     assertEquals(dag.getVertices().size(), 0);
   }
 
   @Test
-  public void testSubmit() throws LoginException, IllegalArgumentException,
-  IOException, TezException, InterruptedException, URISyntaxException, HiveException {
+  public void testSubmit() throws Exception {
     DAG dag = new DAG("test");
-    task.submit(conf, dag, path, appLr, sessionState);
+    task.submit(conf, dag, path, appLr, sessionState, new LinkedList());
     // validate close/reopen
-    verify(sessionState, times(1)).open(any(String.class), any(HiveConf.class));
-    verify(sessionState, times(1)).close(eq(true));
-    verify(session, times(2)).submitDAG(any(DAG.class));
+    verify(sessionState, times(1)).open(any(HiveConf.class));
+    verify(sessionState, times(1)).close(eq(false));  // now uses pool after HIVE-7043
+    verify(session, times(2)).submitDAG(any(DAG.class), any(Map.class));
   }
 
   @Test

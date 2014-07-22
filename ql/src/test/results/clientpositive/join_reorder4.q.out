@@ -48,63 +48,96 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain select /*+ STREAMTABLE(a) */ a.*, b.*, c.* from T1 a join T2 b on a.key1=b.key2 join T3 c on a.key1=c.key3
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-4 is a root stage
-  Stage-0 is a root stage
+  Stage-5 is a root stage
+  Stage-4 depends on stages: Stage-5
+  Stage-0 depends on stages: Stage-4
 
 STAGE PLANS:
+  Stage: Stage-5
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        a 
+          Fetch Operator
+            limit: -1
+        c 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        a 
+          TableScan
+            alias: a
+            Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
+            Filter Operator
+              predicate: key1 is not null (type: boolean)
+              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+              HashTable Sink Operator
+                condition expressions:
+                  0 {val1}
+                  1 {key2} {val2}
+                  2 {val3}
+                keys:
+                  0 key1 (type: string)
+                  1 key2 (type: string)
+                  2 key3 (type: string)
+        c 
+          TableScan
+            alias: c
+            Statistics: Num rows: 0 Data size: 20 Basic stats: PARTIAL Column stats: NONE
+            Filter Operator
+              predicate: key3 is not null (type: boolean)
+              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+              HashTable Sink Operator
+                condition expressions:
+                  0 {val1}
+                  1 {key2} {val2}
+                  2 {val3}
+                keys:
+                  0 key1 (type: string)
+                  1 key2 (type: string)
+                  2 key3 (type: string)
+
   Stage: Stage-4
     Map Reduce
       Map Operator Tree:
           TableScan
             alias: b
             Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
-            Map Join Operator
-              condition map:
-                   Inner Join 0 to 1
-                   Inner Join 0 to 2
-              condition expressions:
-                0 {key1} {val1}
-                1 {key2} {val2}
-                2 {key3} {val3}
-              keys:
-                0 key1 (type: string)
-                1 key2 (type: string)
-                2 key3 (type: string)
-              outputColumnNames: _col0, _col1, _col4, _col5, _col8, _col9
-              Statistics: Num rows: 0 Data size: 66 Basic stats: PARTIAL Column stats: NONE
-              Select Operator
-                expressions: _col0 (type: string), _col1 (type: string), _col4 (type: string), _col5 (type: string), _col8 (type: string), _col9 (type: string)
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                Statistics: Num rows: 0 Data size: 66 Basic stats: PARTIAL Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 0 Data size: 66 Basic stats: PARTIAL Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Filter Operator
+              predicate: key2 is not null (type: boolean)
+              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+              Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                     Inner Join 0 to 2
+                condition expressions:
+                  0 {key1} {val1}
+                  1 {key2} {val2}
+                  2 {key3} {val3}
+                keys:
+                  0 key1 (type: string)
+                  1 key2 (type: string)
+                  2 key3 (type: string)
+                outputColumnNames: _col0, _col1, _col4, _col5, _col8, _col9
+                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: string), _col1 (type: string), _col4 (type: string), _col5 (type: string), _col8 (type: string), _col9 (type: string)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            a 
-              Fetch Operator
-                limit: -1
-            c 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            a 
-              TableScan
-                alias: a
-                Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
-            c 
-              TableScan
-                alias: c
-                Statistics: Num rows: 0 Data size: 20 Basic stats: PARTIAL Column stats: NONE
 
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select /*+ STREAMTABLE(a) */ a.*, b.*, c.* from T1 a join T2 b on a.key1=b.key2 join T3 c on a.key1=c.key3
 PREHOOK: type: QUERY
@@ -124,63 +157,96 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain select /*+ STREAMTABLE(b) */ a.*, b.*, c.* from T1 a join T2 b on a.key1=b.key2 join T3 c on a.key1=c.key3
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-4 is a root stage
-  Stage-0 is a root stage
+  Stage-5 is a root stage
+  Stage-4 depends on stages: Stage-5
+  Stage-0 depends on stages: Stage-4
 
 STAGE PLANS:
+  Stage: Stage-5
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        a 
+          Fetch Operator
+            limit: -1
+        c 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        a 
+          TableScan
+            alias: a
+            Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
+            Filter Operator
+              predicate: key1 is not null (type: boolean)
+              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+              HashTable Sink Operator
+                condition expressions:
+                  0 {val1}
+                  1 {key2} {val2}
+                  2 {val3}
+                keys:
+                  0 key1 (type: string)
+                  1 key2 (type: string)
+                  2 key3 (type: string)
+        c 
+          TableScan
+            alias: c
+            Statistics: Num rows: 0 Data size: 20 Basic stats: PARTIAL Column stats: NONE
+            Filter Operator
+              predicate: key3 is not null (type: boolean)
+              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+              HashTable Sink Operator
+                condition expressions:
+                  0 {val1}
+                  1 {key2} {val2}
+                  2 {val3}
+                keys:
+                  0 key1 (type: string)
+                  1 key2 (type: string)
+                  2 key3 (type: string)
+
   Stage: Stage-4
     Map Reduce
       Map Operator Tree:
           TableScan
             alias: b
             Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
-            Map Join Operator
-              condition map:
-                   Inner Join 0 to 1
-                   Inner Join 0 to 2
-              condition expressions:
-                0 {key1} {val1}
-                1 {key2} {val2}
-                2 {key3} {val3}
-              keys:
-                0 key1 (type: string)
-                1 key2 (type: string)
-                2 key3 (type: string)
-              outputColumnNames: _col0, _col1, _col4, _col5, _col8, _col9
-              Statistics: Num rows: 0 Data size: 66 Basic stats: PARTIAL Column stats: NONE
-              Select Operator
-                expressions: _col0 (type: string), _col1 (type: string), _col4 (type: string), _col5 (type: string), _col8 (type: string), _col9 (type: string)
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                Statistics: Num rows: 0 Data size: 66 Basic stats: PARTIAL Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 0 Data size: 66 Basic stats: PARTIAL Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Filter Operator
+              predicate: key2 is not null (type: boolean)
+              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+              Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                     Inner Join 0 to 2
+                condition expressions:
+                  0 {key1} {val1}
+                  1 {key2} {val2}
+                  2 {key3} {val3}
+                keys:
+                  0 key1 (type: string)
+                  1 key2 (type: string)
+                  2 key3 (type: string)
+                outputColumnNames: _col0, _col1, _col4, _col5, _col8, _col9
+                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: string), _col1 (type: string), _col4 (type: string), _col5 (type: string), _col8 (type: string), _col9 (type: string)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            a 
-              Fetch Operator
-                limit: -1
-            c 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            a 
-              TableScan
-                alias: a
-                Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
-            c 
-              TableScan
-                alias: c
-                Statistics: Num rows: 0 Data size: 20 Basic stats: PARTIAL Column stats: NONE
 
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select /*+ STREAMTABLE(b) */ a.*, b.*, c.* from T1 a join T2 b on a.key1=b.key2 join T3 c on a.key1=c.key3
 PREHOOK: type: QUERY
@@ -200,63 +266,96 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain select /*+ STREAMTABLE(c) */ a.*, b.*, c.* from T1 a join T2 b on a.key1=b.key2 join T3 c on a.key1=c.key3
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-4 is a root stage
-  Stage-0 is a root stage
+  Stage-5 is a root stage
+  Stage-4 depends on stages: Stage-5
+  Stage-0 depends on stages: Stage-4
 
 STAGE PLANS:
+  Stage: Stage-5
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        a 
+          Fetch Operator
+            limit: -1
+        c 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        a 
+          TableScan
+            alias: a
+            Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
+            Filter Operator
+              predicate: key1 is not null (type: boolean)
+              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+              HashTable Sink Operator
+                condition expressions:
+                  0 {val1}
+                  1 {key2} {val2}
+                  2 {val3}
+                keys:
+                  0 key1 (type: string)
+                  1 key2 (type: string)
+                  2 key3 (type: string)
+        c 
+          TableScan
+            alias: c
+            Statistics: Num rows: 0 Data size: 20 Basic stats: PARTIAL Column stats: NONE
+            Filter Operator
+              predicate: key3 is not null (type: boolean)
+              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+              HashTable Sink Operator
+                condition expressions:
+                  0 {val1}
+                  1 {key2} {val2}
+                  2 {val3}
+                keys:
+                  0 key1 (type: string)
+                  1 key2 (type: string)
+                  2 key3 (type: string)
+
   Stage: Stage-4
     Map Reduce
       Map Operator Tree:
           TableScan
             alias: b
             Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
-            Map Join Operator
-              condition map:
-                   Inner Join 0 to 1
-                   Inner Join 0 to 2
-              condition expressions:
-                0 {key1} {val1}
-                1 {key2} {val2}
-                2 {key3} {val3}
-              keys:
-                0 key1 (type: string)
-                1 key2 (type: string)
-                2 key3 (type: string)
-              outputColumnNames: _col0, _col1, _col4, _col5, _col8, _col9
-              Statistics: Num rows: 0 Data size: 66 Basic stats: PARTIAL Column stats: NONE
-              Select Operator
-                expressions: _col0 (type: string), _col1 (type: string), _col4 (type: string), _col5 (type: string), _col8 (type: string), _col9 (type: string)
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                Statistics: Num rows: 0 Data size: 66 Basic stats: PARTIAL Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 0 Data size: 66 Basic stats: PARTIAL Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Filter Operator
+              predicate: key2 is not null (type: boolean)
+              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+              Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                     Inner Join 0 to 2
+                condition expressions:
+                  0 {key1} {val1}
+                  1 {key2} {val2}
+                  2 {key3} {val3}
+                keys:
+                  0 key1 (type: string)
+                  1 key2 (type: string)
+                  2 key3 (type: string)
+                outputColumnNames: _col0, _col1, _col4, _col5, _col8, _col9
+                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: string), _col1 (type: string), _col4 (type: string), _col5 (type: string), _col8 (type: string), _col9 (type: string)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            a 
-              Fetch Operator
-                limit: -1
-            c 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            a 
-              TableScan
-                alias: a
-                Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
-            c 
-              TableScan
-                alias: c
-                Statistics: Num rows: 0 Data size: 20 Basic stats: PARTIAL Column stats: NONE
 
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select /*+ STREAMTABLE(c) */ a.*, b.*, c.* from T1 a join T2 b on a.key1=b.key2 join T3 c on a.key1=c.key3
 PREHOOK: type: QUERY

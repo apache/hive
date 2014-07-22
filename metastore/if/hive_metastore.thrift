@@ -70,6 +70,42 @@ enum PartitionEventType {
   LOAD_DONE = 1,
 }
 
+// Enums for transaction and lock management 
+enum TxnState {
+    COMMITTED = 1,
+    ABORTED = 2,
+    OPEN = 3,
+}
+
+enum LockLevel {
+    DB = 1,
+    TABLE = 2,
+    PARTITION = 3,
+}
+
+enum LockState {
+    ACQUIRED = 1,       // requester has the lock
+    WAITING = 2,        // requester is waiting for the lock and should call checklock at a later point to see if the lock has been obtained.
+    ABORT = 3,          // the lock has been aborted, most likely due to timeout
+    NOT_ACQUIRED = 4,   // returned only with lockNoWait, indicates the lock was not available and was not acquired
+}
+
+enum LockType {
+    SHARED_READ = 1,
+    SHARED_WRITE = 2,
+    EXCLUSIVE = 3,
+}
+
+enum CompactionType {
+    MINOR = 1,
+    MAJOR = 2,
+}
+
+enum GrantRevokeType {
+    GRANT = 1,
+    REVOKE = 2,
+}
+
 struct HiveObjectRef{
   1: HiveObjectType objectType,
   2: string dbName,
@@ -103,15 +139,62 @@ struct PrincipalPrivilegeSet {
   3: map<string, list<PrivilegeGrantInfo>> rolePrivileges, //role name -> privilege grant info
 }
 
+struct GrantRevokePrivilegeRequest {
+  1: GrantRevokeType requestType;
+  2: PrivilegeBag privileges;
+  3: optional bool revokeGrantOption;  // Only for revoke request
+}
+
+struct GrantRevokePrivilegeResponse {
+  1: optional bool success;
+}
+
 struct Role {
   1: string roleName,
   2: i32 createTime,
   3: string ownerName,
-  4: optional string principalName,
-  5: optional string principalType,
-  6: optional bool grantOption,
-  7: optional i32 grantTime,
-  8: optional string grantor
+}
+
+// Representation of a grant for a principal to a role
+struct RolePrincipalGrant {
+  1: string roleName,
+  2: string principalName,
+  3: PrincipalType principalType,
+  4: bool grantOption,
+  5: i32 grantTime,
+  6: string grantorName,
+  7: PrincipalType grantorPrincipalType
+}
+
+struct GetRoleGrantsForPrincipalRequest {
+  1: required string principal_name,
+  2: required PrincipalType principal_type
+}
+
+struct GetRoleGrantsForPrincipalResponse {
+  1: required list<RolePrincipalGrant> principalGrants;
+}
+
+struct GetPrincipalsInRoleRequest {
+  1: required string roleName;
+}
+
+struct GetPrincipalsInRoleResponse {
+  1: required list<RolePrincipalGrant> principalGrants;
+}
+
+struct GrantRevokeRoleRequest {
+  1: GrantRevokeType requestType;
+  2: string roleName;
+  3: string principalName;
+  4: PrincipalType principalType;
+  5: optional string grantor;            // Needed for grant
+  6: optional PrincipalType grantorType; // Needed for grant
+  7: optional bool grantOption;
+}
+
+struct GrantRevokeRoleResponse {
+  1: optional bool success;
 }
 
 // namespace for tables
@@ -176,6 +259,7 @@ struct Table {
   11: string viewExpandedText,         // expanded view text, null for non-view
   12: string tableType,                 // table type enum, e.g. EXTERNAL_TABLE
   13: optional PrincipalPrivilegeSet privileges,
+  14: optional bool temporary=false
 }
 
 struct Partition {
@@ -210,15 +294,15 @@ struct BooleanColumnStatsData {
 }
 
 struct DoubleColumnStatsData {
-1: required double lowValue,
-2: required double highValue,
+1: optional double lowValue,
+2: optional double highValue,
 3: required i64 numNulls,
 4: required i64 numDVs
 }
 
 struct LongColumnStatsData {
-1: required i64 lowValue,
-2: required i64 highValue,
+1: optional i64 lowValue,
+2: optional i64 highValue,
 3: required i64 numNulls,
 4: required i64 numDVs
 }
@@ -236,12 +320,26 @@ struct BinaryColumnStatsData {
 3: required i64 numNulls
 }
 
+
+struct Decimal {
+1: required binary unscaled,
+3: required i16 scale
+}
+
+struct DecimalColumnStatsData {
+1: optional Decimal lowValue,
+2: optional Decimal highValue,
+3: required i64 numNulls,
+4: required i64 numDVs
+}
+
 union ColumnStatisticsData {
 1: BooleanColumnStatsData booleanStats,
 2: LongColumnStatsData longStats,
 3: DoubleColumnStatsData doubleStats,
 4: StringColumnStatsData stringStats,
-5: BinaryColumnStatsData binaryStats
+5: BinaryColumnStatsData binaryStats,
+6: DecimalColumnStatsData decimalStats
 }
 
 struct ColumnStatisticsObj {
@@ -383,6 +481,132 @@ struct Function {
   8: list<ResourceUri> resourceUris,
 }
 
+// Structs for transaction and locks
+struct TxnInfo {
+    1: required i64 id,
+    2: required TxnState state,
+    3: required string user,        // used in 'show transactions' to help admins find who has open transactions
+    4: required string hostname,    // used in 'show transactions' to help admins find who has open transactions
+}
+
+struct GetOpenTxnsInfoResponse {
+    1: required i64 txn_high_water_mark,
+    2: required list<TxnInfo> open_txns,
+}
+
+struct GetOpenTxnsResponse {
+    1: required i64 txn_high_water_mark,
+    2: required set<i64> open_txns,
+}
+
+struct OpenTxnRequest {
+    1: required i32 num_txns,
+    2: required string user,
+    3: required string hostname,
+}
+
+struct OpenTxnsResponse {
+    1: required list<i64> txn_ids,
+}
+
+struct AbortTxnRequest {
+    1: required i64 txnid,
+}
+
+struct CommitTxnRequest {
+    1: required i64 txnid,
+}
+
+struct LockComponent {
+    1: required LockType type,
+    2: required LockLevel level,
+    3: required string dbname,
+    4: optional string tablename,
+    5: optional string partitionname,
+}
+
+struct LockRequest {
+    1: required list<LockComponent> component,
+    2: optional i64 txnid,
+    3: required string user,     // used in 'show locks' to help admins find who has open locks
+    4: required string hostname, // used in 'show locks' to help admins find who has open locks
+}
+
+struct LockResponse {
+    1: required i64 lockid,
+    2: required LockState state,
+}
+
+struct CheckLockRequest {
+    1: required i64 lockid,
+}
+
+struct UnlockRequest {
+    1: required i64 lockid,
+}
+
+struct ShowLocksRequest {
+}
+
+struct ShowLocksResponseElement {
+    1: required i64 lockid,
+    2: required string dbname,
+    3: optional string tablename,
+    4: optional string partname,
+    5: required LockState state,
+    6: required LockType type,
+    7: optional i64 txnid,
+    8: required i64 lastheartbeat,
+    9: optional i64 acquiredat,
+    10: required string user,
+    11: required string hostname,
+}
+
+struct ShowLocksResponse {
+    1: list<ShowLocksResponseElement> locks,
+}
+
+struct HeartbeatRequest {
+    1: optional i64 lockid,
+    2: optional i64 txnid
+}
+
+struct HeartbeatTxnRangeRequest {
+    1: required i64 min,
+    2: required i64 max
+}
+
+struct HeartbeatTxnRangeResponse {
+    1: required set<i64> aborted,
+    2: required set<i64> nosuch
+}
+
+struct CompactionRequest {
+    1: required string dbname,
+    2: required string tablename,
+    3: optional string partitionname,
+    4: required CompactionType type,
+    5: optional string runas,
+}
+
+struct ShowCompactRequest {
+}
+
+struct ShowCompactResponseElement {
+    1: required string dbname,
+    2: required string tablename,
+    3: required string partitionname,
+    4: required CompactionType type,
+    5: required string state,
+    6: required string workerid,
+    7: required i64 start,
+    8: required string runAs,
+}
+
+struct ShowCompactResponse {
+    1: required list<ShowCompactResponseElement> compacts,
+}
+
 exception MetaException {
   1: string message
 }
@@ -429,6 +653,23 @@ exception ConfigValSecurityException {
 
 exception InvalidInputException {
   1: string message
+}
+
+// Transaction and lock exceptions
+exception NoSuchTxnException {
+    1: string message
+}
+
+exception TxnAbortedException {
+    1: string message
+}
+
+exception TxnOpenException {
+    1: string message
+}
+
+exception NoSuchLockException {
+    1: string message
 }
 
 /**
@@ -746,19 +987,35 @@ service ThriftHiveMetastore extends fb303.FacebookService
   bool create_role(1:Role role) throws(1:MetaException o1)
   bool drop_role(1:string role_name) throws(1:MetaException o1)
   list<string> get_role_names() throws(1:MetaException o1)
+  // Deprecated, use grant_revoke_role()
   bool grant_role(1:string role_name, 2:string principal_name, 3:PrincipalType principal_type,
     4:string grantor, 5:PrincipalType grantorType, 6:bool grant_option) throws(1:MetaException o1)
+  // Deprecated, use grant_revoke_role()
   bool revoke_role(1:string role_name, 2:string principal_name, 3:PrincipalType principal_type)
                         throws(1:MetaException o1)
   list<Role> list_roles(1:string principal_name, 2:PrincipalType principal_type) throws(1:MetaException o1)
+  GrantRevokeRoleResponse grant_revoke_role(1:GrantRevokeRoleRequest request) throws(1:MetaException o1)
+
+  // get all role-grants for users/roles that have been granted the given role
+  // Note that in the returned list of RolePrincipalGrants, the roleName is
+  // redundant as it would match the role_name argument of this function
+  GetPrincipalsInRoleResponse get_principals_in_role(1: GetPrincipalsInRoleRequest request) throws(1:MetaException o1)
+
+  // get grant information of all roles granted to the given principal
+  // Note that in the returned list of RolePrincipalGrants, the principal name,type is
+  // redundant as it would match the principal name,type arguments of this function
+  GetRoleGrantsForPrincipalResponse get_role_grants_for_principal(1: GetRoleGrantsForPrincipalRequest request) throws(1:MetaException o1)
 
   PrincipalPrivilegeSet get_privilege_set(1:HiveObjectRef hiveObject, 2:string user_name,
     3: list<string> group_names) throws(1:MetaException o1)
   list<HiveObjectPrivilege> list_privileges(1:string principal_name, 2:PrincipalType principal_type,
     3: HiveObjectRef hiveObject) throws(1:MetaException o1)
 
+  // Deprecated, use grant_revoke_privileges()
   bool grant_privileges(1:PrivilegeBag privileges) throws(1:MetaException o1)
+  // Deprecated, use grant_revoke_privileges()
   bool revoke_privileges(1:PrivilegeBag privileges) throws(1:MetaException o1)
+  GrantRevokePrivilegeResponse grant_revoke_privileges(1:GrantRevokePrivilegeRequest request) throws(1:MetaException o1);
 
   // this is used by metastore client to send UGI information to metastore server immediately
   // after setting up a connection.
@@ -776,6 +1033,24 @@ service ThriftHiveMetastore extends fb303.FacebookService
 
   // method to cancel delegation token obtained from metastore server
   void cancel_delegation_token(1:string token_str_form) throws (1:MetaException o1)
+
+  // Transaction and lock management calls
+  // Get just list of open transactions
+  GetOpenTxnsResponse get_open_txns()
+  // Get list of open transactions with state (open, aborted)
+  GetOpenTxnsInfoResponse get_open_txns_info()
+  OpenTxnsResponse open_txns(1:OpenTxnRequest rqst)
+  void abort_txn(1:AbortTxnRequest rqst) throws (1:NoSuchTxnException o1)
+  void commit_txn(1:CommitTxnRequest rqst) throws (1:NoSuchTxnException o1, 2:TxnAbortedException o2)
+  LockResponse lock(1:LockRequest rqst) throws (1:NoSuchTxnException o1, 2:TxnAbortedException o2)
+  LockResponse check_lock(1:CheckLockRequest rqst)
+    throws (1:NoSuchTxnException o1, 2:TxnAbortedException o2, 3:NoSuchLockException o3)
+  void unlock(1:UnlockRequest rqst) throws (1:NoSuchLockException o1, 2:TxnOpenException o2)
+  ShowLocksResponse show_locks(1:ShowLocksRequest rqst)
+  void heartbeat(1:HeartbeatRequest ids) throws (1:NoSuchLockException o1, 2:NoSuchTxnException o2, 3:TxnAbortedException o3)
+  HeartbeatTxnRangeResponse heartbeat_txn_range(1:HeartbeatTxnRangeRequest txns)
+  void compact(1:CompactionRequest rqst) 
+  ShowCompactResponse show_compact(1:ShowCompactRequest rqst)
 }
 
 // * Note about the DDL_TIME: When creating or altering a table or a partition,
@@ -807,6 +1082,7 @@ const string META_TABLE_DB        = "db",
 const string META_TABLE_LOCATION  = "location",
 const string META_TABLE_SERDE     = "serde",
 const string META_TABLE_PARTITION_COLUMNS = "partition_columns",
+const string META_TABLE_PARTITION_COLUMN_TYPES = "partition_columns.types",
 const string FILE_INPUT_FORMAT    = "file.inputformat",
 const string FILE_OUTPUT_FORMAT   = "file.outputformat",
 const string META_TABLE_STORAGE   = "storage_handler",

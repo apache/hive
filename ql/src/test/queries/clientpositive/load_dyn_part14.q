@@ -1,7 +1,9 @@
 -- EXCLUDE_OS_WINDOWS
 -- excluded on windows because of difference in file name encoding logic
 
-create table if not exists nzhang_part14 (key string) 
+-- SORT_QUERY_RESULTS
+
+create table if not exists nzhang_part14 (key string)
   partitioned by (value string);
 
 describe extended nzhang_part14;
@@ -31,7 +33,6 @@ select key, value from (
 
 show partitions nzhang_part14;
 
-select * from nzhang_part14 where value <> 'a'
-order by key, value;
+select * from nzhang_part14 where value <> 'a';
 
 

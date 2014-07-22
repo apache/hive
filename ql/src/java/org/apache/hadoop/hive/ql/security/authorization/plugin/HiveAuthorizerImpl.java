@@ -21,6 +21,7 @@ import java.util.List;
 
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
 import org.apache.hadoop.hive.common.classification.InterfaceStability.Evolving;
+import org.apache.hadoop.hive.conf.HiveConf;
 
 /**
  * Convenience implementation of HiveAuthorizer.
@@ -66,11 +67,6 @@ public class HiveAuthorizerImpl implements HiveAuthorizer {
   }
 
   @Override
-  public List<HiveRole> getRoles(HivePrincipal hivePrincipal) throws HiveAuthzPluginException, HiveAccessControlException {
-    return accessController.getRoles(hivePrincipal);
-  }
-
-  @Override
   public void grantRole(List<HivePrincipal> hivePrincipals, List<String> roles,
       boolean grantOption, HivePrincipal grantorPrinc) throws HiveAuthzPluginException, HiveAccessControlException {
     accessController.grantRole(hivePrincipals, roles, grantOption, grantorPrinc);
@@ -84,8 +80,9 @@ public class HiveAuthorizerImpl implements HiveAuthorizer {
 
   @Override
   public void checkPrivileges(HiveOperationType hiveOpType, List<HivePrivilegeObject> inputHObjs,
-      List<HivePrivilegeObject> outputHObjs) throws HiveAuthzPluginException, HiveAccessControlException {
-    authValidator.checkPrivileges(hiveOpType, inputHObjs, outputHObjs);
+      List<HivePrivilegeObject> outputHObjs, HiveAuthzContext context)
+      throws HiveAuthzPluginException, HiveAccessControlException {
+    authValidator.checkPrivileges(hiveOpType, inputHObjs, outputHObjs, context);
   }
 
   @Override
@@ -110,11 +107,24 @@ public class HiveAuthorizerImpl implements HiveAuthorizer {
   }
 
   @Override
-  public List<HiveRole> getCurrentRoles() throws HiveAuthzPluginException {
-    return accessController.getCurrentRoles();
+  public List<String> getCurrentRoleNames() throws HiveAuthzPluginException {
+    return accessController.getCurrentRoleNames();
   }
- // other access control functions
-//   void validateAuthority(HiveAction, inputs, outputs){
-//     authValidator.validateAuthority(HiveAction, inputs, outputs);
-//   }
+
+  @Override
+  public List<HiveRoleGrant> getPrincipalGrantInfoForRole(String roleName)
+      throws HiveAuthzPluginException, HiveAccessControlException {
+    return accessController.getPrincipalGrantInfoForRole(roleName);
+  }
+
+  @Override
+  public List<HiveRoleGrant> getRoleGrantInfoForPrincipal(HivePrincipal principal)
+      throws HiveAuthzPluginException, HiveAccessControlException {
+    return accessController.getRoleGrantInfoForPrincipal(principal);
+  }
+
+  @Override
+  public void applyAuthorizationConfigPolicy(HiveConf hiveConf) {
+    accessController.applyAuthorizationConfigPolicy(hiveConf);
+  }
 }

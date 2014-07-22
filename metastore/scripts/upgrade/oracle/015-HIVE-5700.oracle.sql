@@ -1,15 +1,6 @@
 -- Normalize the date partition column values as best we can. No schema changes.
 
-CREATE FUNCTION hive13_to_date(date_str IN VARCHAR2)
-RETURN DATE
-IS dt DATE;
-BEGIN
-  dt := TO_DATE(date_str, 'YYYY-MM-DD');
-  RETURN dt;
-EXCEPTION
-  WHEN others THEN RETURN null;
-END;
-/
+CREATE FUNCTION hive13_to_date(date_str IN VARCHAR2) RETURN DATE IS dt DATE; BEGIN dt := TO_DATE(date_str, 'YYYY-MM-DD'); RETURN dt; EXCEPTION WHEN others THEN RETURN null; END;/
 
 MERGE INTO PARTITION_KEY_VALS
 USING (

@@ -20,6 +20,11 @@ package org.apache.hadoop.hive.ql.lockmgr;
 
 import java.util.List;
 
+/**
+ * Manager for locks in Hive.  Users should not instantiate a lock manager
+ * directly.  Instead they should get an instance from their instance of
+ * {@link HiveTxnManager}.
+ */
 public interface HiveLockManager {
 
   public void setContext(HiveLockManagerCtx ctx) throws LockException;

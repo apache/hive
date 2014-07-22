@@ -14,5 +14,5 @@ describe columnTable;
 
 SET hive.vectorized.execution.enabled=true;
 
-SELECT key, value FROM columnTable;
+SELECT key, value FROM columnTable ORDER BY key;
 

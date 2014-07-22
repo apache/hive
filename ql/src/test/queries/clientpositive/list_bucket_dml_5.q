@@ -9,6 +9,7 @@ set mapred.input.dir.recursive=true;
 -- list bucketing DML: multiple skewed columns. 2 stages
 
 -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
+-- SORT_QUERY_RESULTS
 
 -- create a skewed table
 create table list_bucketing_dynamic_part (key String, value String) 
@@ -28,11 +29,11 @@ desc formatted list_bucketing_dynamic_part partition (ds='2008-04-08', hr='12');
 select count(1) from srcpart where ds='2008-04-08';
 select count(1) from list_bucketing_dynamic_part where ds='2008-04-08';
 
-select key, value from srcpart where ds='2008-04-08' and key = "103" and value ="val_103" ORDER BY key, value;
+select key, value from srcpart where ds='2008-04-08' and key = "103" and value ="val_103";
 set hive.optimize.listbucketing=true;
 explain extended
-select key, value, ds, hr from list_bucketing_dynamic_part where ds='2008-04-08' and key = "103" and value ="val_103" ORDER BY key, value, ds, hr;
-select key, value, ds, hr from list_bucketing_dynamic_part where ds='2008-04-08' and key = "103" and value ="val_103" ORDER BY key, value, ds, hr;
+select key, value, ds, hr from list_bucketing_dynamic_part where ds='2008-04-08' and key = "103" and value ="val_103";
+select key, value, ds, hr from list_bucketing_dynamic_part where ds='2008-04-08' and key = "103" and value ="val_103";
 
 -- clean up resources
 drop table list_bucketing_dynamic_part;

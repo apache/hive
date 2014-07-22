@@ -1,6 +1,8 @@
 set hive.map.aggr=true;
 set hive.groupby.skewindata=false;
 
+-- SORT_QUERY_RESULTS
+
 CREATE TABLE T1(key STRING, val STRING) STORED AS TEXTFILE;
 
 LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1;
@@ -8,28 +10,24 @@ LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1;
 EXPLAIN
 SELECT key, val, count(1) FROM T1 GROUP BY key, val with rollup;
 
-SELECT key, val, count(1) FROM T1 GROUP BY key, val with rollup
-ORDER BY key, val;
+SELECT key, val, count(1) FROM T1 GROUP BY key, val with rollup;
 
 EXPLAIN
 SELECT key, count(distinct val) FROM T1 GROUP BY key with rollup;
 
-SELECT key, count(distinct val) FROM T1 GROUP BY key with rollup
-ORDER BY key;
+SELECT key, count(distinct val) FROM T1 GROUP BY key with rollup;
 
 set hive.groupby.skewindata=true;
 
 EXPLAIN
 SELECT key, val, count(1) FROM T1 GROUP BY key, val with rollup;
 
-SELECT key, val, count(1) FROM T1 GROUP BY key, val with rollup
-ORDER BY key, val;
+SELECT key, val, count(1) FROM T1 GROUP BY key, val with rollup;
 
 EXPLAIN
 SELECT key, count(distinct val) FROM T1 GROUP BY key with rollup;
 
-SELECT key, count(distinct val) FROM T1 GROUP BY key with rollup
-ORDER BY key;
+SELECT key, count(distinct val) FROM T1 GROUP BY key with rollup;
 
 
 set hive.multigroupby.singlereducer=true;

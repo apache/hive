@@ -76,13 +76,9 @@ POSTHOOK: query: explain select l_shipdate, count(l_shipdate)
 from lineitem
 group by l_shipdate
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._bucketname SIMPLE [(lineitem)lineitem.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._count_of_l_shipdate EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._offsets EXPRESSION [(lineitem)lineitem.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__.l_shipdate SIMPLE [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -129,6 +125,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select l_shipdate, count(l_shipdate)
 from lineitem
@@ -144,10 +142,6 @@ order by l_shipdate
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@lineitem
 #### A masked pattern was here ####
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._bucketname SIMPLE [(lineitem)lineitem.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._count_of_l_shipdate EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._offsets EXPRESSION [(lineitem)lineitem.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__.l_shipdate SIMPLE [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
 1992-04-27	1
 1992-07-02	1
 1992-07-10	1
@@ -251,13 +245,9 @@ POSTHOOK: query: explain select l_shipdate, count(l_shipdate)
 from lineitem
 group by l_shipdate
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._bucketname SIMPLE [(lineitem)lineitem.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._count_of_l_shipdate EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._offsets EXPRESSION [(lineitem)lineitem.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__.l_shipdate SIMPLE [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -272,7 +262,6 @@ STAGE PLANS:
               Statistics: Num rows: 95 Data size: 8675 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: sum(_count_of_l_shipdate)
-                bucketGroup: true
                 keys: l_shipdate (type: string)
                 mode: hash
                 outputColumnNames: _col0, _col1
@@ -305,6 +294,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select l_shipdate, count(l_shipdate)
 from lineitem
@@ -320,10 +311,6 @@ order by l_shipdate
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@default__lineitem_lineitem_lshipdate_idx__
 #### A masked pattern was here ####
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._bucketname SIMPLE [(lineitem)lineitem.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._count_of_l_shipdate EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._offsets EXPRESSION [(lineitem)lineitem.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__.l_shipdate SIMPLE [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
 1992-04-27	1
 1992-07-02	1
 1992-07-10	1
@@ -433,14 +420,10 @@ from lineitem
 group by year(l_shipdate), month(l_shipdate) 
 order by year, month
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._bucketname SIMPLE [(lineitem)lineitem.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._count_of_l_shipdate EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._offsets EXPRESSION [(lineitem)lineitem.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__.l_shipdate SIMPLE [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-1
@@ -506,6 +489,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select year(l_shipdate) as year,
         month(l_shipdate) as month,
@@ -525,10 +510,6 @@ order by year, month
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@lineitem
 #### A masked pattern was here ####
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._bucketname SIMPLE [(lineitem)lineitem.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._count_of_l_shipdate EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._offsets EXPRESSION [(lineitem)lineitem.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__.l_shipdate SIMPLE [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
 1992	4	1
 1992	7	3
 1993	4	2
@@ -586,14 +567,10 @@ from lineitem
 group by year(l_shipdate), month(l_shipdate) 
 order by year, month
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._bucketname SIMPLE [(lineitem)lineitem.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._count_of_l_shipdate EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._offsets EXPRESSION [(lineitem)lineitem.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__.l_shipdate SIMPLE [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-1
@@ -659,6 +636,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select year(l_shipdate) as year,
         month(l_shipdate) as month,
@@ -678,10 +657,6 @@ order by year, month
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@default__lineitem_lineitem_lshipdate_idx__
 #### A masked pattern was here ####
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._bucketname SIMPLE [(lineitem)lineitem.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._count_of_l_shipdate EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._offsets EXPRESSION [(lineitem)lineitem.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__.l_shipdate SIMPLE [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
 1992	4	1
 1992	7	3
 1993	4	2
@@ -765,15 +740,11 @@ lastyear.monthly_shipments as monthly_shipments_delta
         )  thisyear
   on lastyear.month = thisyear.month
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._bucketname SIMPLE [(lineitem)lineitem.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._count_of_l_shipdate EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._offsets EXPRESSION [(lineitem)lineitem.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__.l_shipdate SIMPLE [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-3
   Stage-3 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-1
@@ -846,7 +817,7 @@ STAGE PLANS:
           outputColumnNames: _col1, _col2, _col4, _col5
           Statistics: Num rows: 25 Data size: 2308 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: _col1 (type: int), _col4 (type: int), ((_col5 - _col2) / _col2) (type: decimal(38,19))
+            expressions: _col1 (type: int), _col4 (type: int), ((_col5 - _col2) / _col2) (type: double)
             outputColumnNames: _col0, _col1, _col2
             Statistics: Num rows: 25 Data size: 2308 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
@@ -903,6 +874,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: explain  select l_shipdate, cnt
 from (select l_shipdate, count(l_shipdate) as cnt from lineitem group by l_shipdate
@@ -916,14 +889,10 @@ union all
 select l_shipdate, l_orderkey as cnt
 from lineitem) dummy
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._bucketname SIMPLE [(lineitem)lineitem.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._count_of_l_shipdate EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._offsets EXPRESSION [(lineitem)lineitem.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__.l_shipdate SIMPLE [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-1
@@ -938,7 +907,6 @@ STAGE PLANS:
               Statistics: Num rows: 95 Data size: 8675 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: sum(_count_of_l_shipdate)
-                bucketGroup: true
                 keys: l_shipdate (type: string)
                 mode: hash
                 outputColumnNames: _col0, _col1
@@ -1008,6 +976,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: CREATE TABLE tbl(key int, value int)
 PREHOOK: type: CREATETABLE
@@ -1016,19 +986,11 @@ POSTHOOK: query: CREATE TABLE tbl(key int, value int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._bucketname SIMPLE [(lineitem)lineitem.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._count_of_l_shipdate EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._offsets EXPRESSION [(lineitem)lineitem.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__.l_shipdate SIMPLE [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
 PREHOOK: query: CREATE INDEX tbl_key_idx ON TABLE tbl(key) AS 'org.apache.hadoop.hive.ql.index.AggregateIndexHandler' WITH DEFERRED REBUILD IDXPROPERTIES("AGGREGATES"="count(key)")
 PREHOOK: type: CREATEINDEX
 POSTHOOK: query: CREATE INDEX tbl_key_idx ON TABLE tbl(key) AS 'org.apache.hadoop.hive.ql.index.AggregateIndexHandler' WITH DEFERRED REBUILD IDXPROPERTIES("AGGREGATES"="count(key)")
 POSTHOOK: type: CREATEINDEX
 POSTHOOK: Output: default@default__tbl_tbl_key_idx__
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._bucketname SIMPLE [(lineitem)lineitem.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._count_of_l_shipdate EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._offsets EXPRESSION [(lineitem)lineitem.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__.l_shipdate SIMPLE [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
 PREHOOK: query: ALTER INDEX tbl_key_idx ON tbl REBUILD
 PREHOOK: type: ALTERINDEX_REBUILD
 PREHOOK: Input: default@tbl
@@ -1037,10 +999,6 @@ POSTHOOK: query: ALTER INDEX tbl_key_idx ON tbl REBUILD
 POSTHOOK: type: ALTERINDEX_REBUILD
 POSTHOOK: Input: default@tbl
 POSTHOOK: Output: default@default__tbl_tbl_key_idx__
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._bucketname SIMPLE [(lineitem)lineitem.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._count_of_l_shipdate EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._offsets EXPRESSION [(lineitem)lineitem.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__.l_shipdate SIMPLE [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
 POSTHOOK: Lineage: default__tbl_tbl_key_idx__._bucketname SIMPLE [(tbl)tbl.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__tbl_tbl_key_idx__._count_of_key EXPRESSION [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: default__tbl_tbl_key_idx__._offsets EXPRESSION [(tbl)tbl.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
@@ -1049,17 +1007,9 @@ PREHOOK: query: EXPLAIN select key, count(key) from tbl where key = 1 group by k
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN select key, count(key) from tbl where key = 1 group by key
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._bucketname SIMPLE [(lineitem)lineitem.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._count_of_l_shipdate EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._offsets EXPRESSION [(lineitem)lineitem.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__.l_shipdate SIMPLE [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._bucketname SIMPLE [(tbl)tbl.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._count_of_key EXPRESSION [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._offsets EXPRESSION [(tbl)tbl.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__.key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -1077,7 +1027,6 @@ STAGE PLANS:
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 Group By Operator
                   aggregations: sum(_count_of_key)
-                  bucketGroup: true
                   keys: key (type: int)
                   mode: hash
                   outputColumnNames: _col0, _col1
@@ -1110,22 +1059,16 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: EXPLAIN select key, count(key) from tbl group by key
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN select key, count(key) from tbl group by key
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._bucketname SIMPLE [(lineitem)lineitem.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._count_of_l_shipdate EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._offsets EXPRESSION [(lineitem)lineitem.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__.l_shipdate SIMPLE [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._bucketname SIMPLE [(tbl)tbl.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._count_of_key EXPRESSION [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._offsets EXPRESSION [(tbl)tbl.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__.key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -1140,7 +1083,6 @@ STAGE PLANS:
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Group By Operator
                 aggregations: sum(_count_of_key)
-                bucketGroup: true
                 keys: key (type: int)
                 mode: hash
                 outputColumnNames: _col0, _col1
@@ -1173,22 +1115,16 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: EXPLAIN select count(1) from tbl
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN select count(1) from tbl
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._bucketname SIMPLE [(lineitem)lineitem.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._count_of_l_shipdate EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._offsets EXPRESSION [(lineitem)lineitem.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__.l_shipdate SIMPLE [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._bucketname SIMPLE [(tbl)tbl.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._count_of_key EXPRESSION [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._offsets EXPRESSION [(tbl)tbl.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__.key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -1229,22 +1165,16 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: EXPLAIN select count(key) from tbl
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN select count(key) from tbl
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._bucketname SIMPLE [(lineitem)lineitem.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._count_of_l_shipdate EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._offsets EXPRESSION [(lineitem)lineitem.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__.l_shipdate SIMPLE [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._bucketname SIMPLE [(tbl)tbl.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._count_of_key EXPRESSION [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._offsets EXPRESSION [(tbl)tbl.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__.key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -1287,22 +1217,16 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: EXPLAIN select key FROM tbl GROUP BY key
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN select key FROM tbl GROUP BY key
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._bucketname SIMPLE [(lineitem)lineitem.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._count_of_l_shipdate EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._offsets EXPRESSION [(lineitem)lineitem.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__.l_shipdate SIMPLE [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._bucketname SIMPLE [(tbl)tbl.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._count_of_key EXPRESSION [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._offsets EXPRESSION [(tbl)tbl.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__.key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -1346,22 +1270,16 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: EXPLAIN select key FROM tbl GROUP BY value, key
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN select key FROM tbl GROUP BY value, key
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._bucketname SIMPLE [(lineitem)lineitem.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._count_of_l_shipdate EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._offsets EXPRESSION [(lineitem)lineitem.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__.l_shipdate SIMPLE [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._bucketname SIMPLE [(tbl)tbl.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._count_of_key EXPRESSION [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._offsets EXPRESSION [(tbl)tbl.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__.key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -1405,22 +1323,16 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: EXPLAIN select key FROM tbl WHERE key = 3 GROUP BY key
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN select key FROM tbl WHERE key = 3 GROUP BY key
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._bucketname SIMPLE [(lineitem)lineitem.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._count_of_l_shipdate EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._offsets EXPRESSION [(lineitem)lineitem.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__.l_shipdate SIMPLE [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._bucketname SIMPLE [(tbl)tbl.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._count_of_key EXPRESSION [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._offsets EXPRESSION [(tbl)tbl.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__.key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -1467,22 +1379,16 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: EXPLAIN select key FROM tbl WHERE value = 2 GROUP BY key
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN select key FROM tbl WHERE value = 2 GROUP BY key
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._bucketname SIMPLE [(lineitem)lineitem.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._count_of_l_shipdate EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._offsets EXPRESSION [(lineitem)lineitem.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__.l_shipdate SIMPLE [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._bucketname SIMPLE [(tbl)tbl.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._count_of_key EXPRESSION [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._offsets EXPRESSION [(tbl)tbl.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__.key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -1529,22 +1435,16 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: EXPLAIN select key FROM tbl GROUP BY key, substr(key,2,3)
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN select key FROM tbl GROUP BY key, substr(key,2,3)
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._bucketname SIMPLE [(lineitem)lineitem.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._count_of_l_shipdate EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._offsets EXPRESSION [(lineitem)lineitem.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__.l_shipdate SIMPLE [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._bucketname SIMPLE [(tbl)tbl.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._count_of_key EXPRESSION [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._offsets EXPRESSION [(tbl)tbl.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__.key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -1588,22 +1488,16 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: EXPLAIN select key, value FROM tbl GROUP BY value, key
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN select key, value FROM tbl GROUP BY value, key
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._bucketname SIMPLE [(lineitem)lineitem.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._count_of_l_shipdate EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._offsets EXPRESSION [(lineitem)lineitem.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__.l_shipdate SIMPLE [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._bucketname SIMPLE [(tbl)tbl.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._count_of_key EXPRESSION [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._offsets EXPRESSION [(tbl)tbl.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__.key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -1647,22 +1541,16 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: EXPLAIN select key, value FROM tbl WHERE value = 1 GROUP BY key, value
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN select key, value FROM tbl WHERE value = 1 GROUP BY key, value
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._bucketname SIMPLE [(lineitem)lineitem.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._count_of_l_shipdate EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._offsets EXPRESSION [(lineitem)lineitem.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__.l_shipdate SIMPLE [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._bucketname SIMPLE [(tbl)tbl.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._count_of_key EXPRESSION [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._offsets EXPRESSION [(tbl)tbl.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__.key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -1709,22 +1597,16 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: EXPLAIN select DISTINCT key FROM tbl
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN select DISTINCT key FROM tbl
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._bucketname SIMPLE [(lineitem)lineitem.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._count_of_l_shipdate EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._offsets EXPRESSION [(lineitem)lineitem.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__.l_shipdate SIMPLE [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._bucketname SIMPLE [(tbl)tbl.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._count_of_key EXPRESSION [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._offsets EXPRESSION [(tbl)tbl.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__.key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -1768,22 +1650,16 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: EXPLAIN select DISTINCT key FROM tbl
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN select DISTINCT key FROM tbl
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._bucketname SIMPLE [(lineitem)lineitem.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._count_of_l_shipdate EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._offsets EXPRESSION [(lineitem)lineitem.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__.l_shipdate SIMPLE [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._bucketname SIMPLE [(tbl)tbl.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._count_of_key EXPRESSION [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._offsets EXPRESSION [(tbl)tbl.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__.key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -1827,22 +1703,16 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: EXPLAIN select DISTINCT key FROM tbl
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN select DISTINCT key FROM tbl
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._bucketname SIMPLE [(lineitem)lineitem.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._count_of_l_shipdate EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._offsets EXPRESSION [(lineitem)lineitem.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__.l_shipdate SIMPLE [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._bucketname SIMPLE [(tbl)tbl.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._count_of_key EXPRESSION [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._offsets EXPRESSION [(tbl)tbl.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__.key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -1886,22 +1756,16 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: EXPLAIN select DISTINCT key, value FROM tbl
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN select DISTINCT key, value FROM tbl
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._bucketname SIMPLE [(lineitem)lineitem.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._count_of_l_shipdate EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._offsets EXPRESSION [(lineitem)lineitem.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__.l_shipdate SIMPLE [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._bucketname SIMPLE [(tbl)tbl.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._count_of_key EXPRESSION [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._offsets EXPRESSION [(tbl)tbl.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__.key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -1945,22 +1809,16 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: EXPLAIN select DISTINCT key, value FROM tbl WHERE value = 2
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN select DISTINCT key, value FROM tbl WHERE value = 2
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._bucketname SIMPLE [(lineitem)lineitem.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._count_of_l_shipdate EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._offsets EXPRESSION [(lineitem)lineitem.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__.l_shipdate SIMPLE [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._bucketname SIMPLE [(tbl)tbl.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._count_of_key EXPRESSION [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._offsets EXPRESSION [(tbl)tbl.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__.key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -2007,22 +1865,16 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: EXPLAIN select DISTINCT key, value FROM tbl WHERE value = 2 AND key = 3
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN select DISTINCT key, value FROM tbl WHERE value = 2 AND key = 3
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._bucketname SIMPLE [(lineitem)lineitem.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._count_of_l_shipdate EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._offsets EXPRESSION [(lineitem)lineitem.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__.l_shipdate SIMPLE [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._bucketname SIMPLE [(tbl)tbl.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._count_of_key EXPRESSION [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._offsets EXPRESSION [(tbl)tbl.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__.key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -2069,22 +1921,16 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: EXPLAIN select DISTINCT key, value FROM tbl WHERE value = key
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN select DISTINCT key, value FROM tbl WHERE value = key
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._bucketname SIMPLE [(lineitem)lineitem.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._count_of_l_shipdate EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._offsets EXPRESSION [(lineitem)lineitem.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__.l_shipdate SIMPLE [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._bucketname SIMPLE [(tbl)tbl.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._count_of_key EXPRESSION [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._offsets EXPRESSION [(tbl)tbl.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__.key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -2131,22 +1977,16 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: EXPLAIN select DISTINCT key, substr(value,2,3) FROM tbl WHERE value = key
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN select DISTINCT key, substr(value,2,3) FROM tbl WHERE value = key
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._bucketname SIMPLE [(lineitem)lineitem.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._count_of_l_shipdate EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._offsets EXPRESSION [(lineitem)lineitem.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__.l_shipdate SIMPLE [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._bucketname SIMPLE [(tbl)tbl.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._count_of_key EXPRESSION [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._offsets EXPRESSION [(tbl)tbl.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__.key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -2193,22 +2033,16 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: EXPLAIN select DISTINCT key, substr(value,2,3) FROM tbl
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN select DISTINCT key, substr(value,2,3) FROM tbl
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._bucketname SIMPLE [(lineitem)lineitem.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._count_of_l_shipdate EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._offsets EXPRESSION [(lineitem)lineitem.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__.l_shipdate SIMPLE [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._bucketname SIMPLE [(tbl)tbl.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._count_of_key EXPRESSION [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._offsets EXPRESSION [(tbl)tbl.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__.key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -2252,22 +2086,16 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: EXPLAIN select * FROM (select DISTINCT key, value FROM tbl) v1 WHERE v1.value = 2
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN select * FROM (select DISTINCT key, value FROM tbl) v1 WHERE v1.value = 2
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._bucketname SIMPLE [(lineitem)lineitem.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._count_of_l_shipdate EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._offsets EXPRESSION [(lineitem)lineitem.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__.l_shipdate SIMPLE [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._bucketname SIMPLE [(tbl)tbl.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._count_of_key EXPRESSION [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._offsets EXPRESSION [(tbl)tbl.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__.key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -2314,6 +2142,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: DROP TABLE tbl
 PREHOOK: type: DROPTABLE
@@ -2323,14 +2153,6 @@ POSTHOOK: query: DROP TABLE tbl
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tbl
 POSTHOOK: Output: default@tbl
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._bucketname SIMPLE [(lineitem)lineitem.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._count_of_l_shipdate EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._offsets EXPRESSION [(lineitem)lineitem.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__.l_shipdate SIMPLE [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._bucketname SIMPLE [(tbl)tbl.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._count_of_key EXPRESSION [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._offsets EXPRESSION [(tbl)tbl.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__.key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
 PREHOOK: query: CREATE TABLE tblpart (key int, value string) PARTITIONED BY (ds string, hr int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -2338,14 +2160,6 @@ POSTHOOK: query: CREATE TABLE tblpart (key int, value string) PARTITIONED BY (ds
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tblpart
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._bucketname SIMPLE [(lineitem)lineitem.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._count_of_l_shipdate EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._offsets EXPRESSION [(lineitem)lineitem.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__.l_shipdate SIMPLE [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._bucketname SIMPLE [(tbl)tbl.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._count_of_key EXPRESSION [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._offsets EXPRESSION [(tbl)tbl.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__.key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
 PREHOOK: query: INSERT OVERWRITE TABLE tblpart PARTITION (ds='2008-04-08', hr=11) SELECT key, value FROM srcpart WHERE ds = '2008-04-08' AND hr = 11
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
@@ -2356,14 +2170,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Output: default@tblpart@ds=2008-04-08/hr=11
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._bucketname SIMPLE [(lineitem)lineitem.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._count_of_l_shipdate EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._offsets EXPRESSION [(lineitem)lineitem.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__.l_shipdate SIMPLE [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._bucketname SIMPLE [(tbl)tbl.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._count_of_key EXPRESSION [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._offsets EXPRESSION [(tbl)tbl.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__.key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: INSERT OVERWRITE TABLE tblpart PARTITION (ds='2008-04-08', hr=12) SELECT key, value FROM srcpart WHERE ds = '2008-04-08' AND hr = 12
@@ -2376,16 +2182,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Output: default@tblpart@ds=2008-04-08/hr=12
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._bucketname SIMPLE [(lineitem)lineitem.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._count_of_l_shipdate EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._offsets EXPRESSION [(lineitem)lineitem.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__.l_shipdate SIMPLE [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._bucketname SIMPLE [(tbl)tbl.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._count_of_key EXPRESSION [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._offsets EXPRESSION [(tbl)tbl.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__.key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: INSERT OVERWRITE TABLE tblpart PARTITION (ds='2008-04-09', hr=11) SELECT key, value FROM srcpart WHERE ds = '2008-04-09' AND hr = 11
@@ -2398,18 +2194,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Output: default@tblpart@ds=2008-04-09/hr=11
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._bucketname SIMPLE [(lineitem)lineitem.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._count_of_l_shipdate EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._offsets EXPRESSION [(lineitem)lineitem.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__.l_shipdate SIMPLE [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._bucketname SIMPLE [(tbl)tbl.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._count_of_key EXPRESSION [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._offsets EXPRESSION [(tbl)tbl.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__.key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: INSERT OVERWRITE TABLE tblpart PARTITION (ds='2008-04-09', hr=12) SELECT key, value FROM srcpart WHERE ds = '2008-04-09' AND hr = 12
@@ -2422,20 +2206,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 POSTHOOK: Output: default@tblpart@ds=2008-04-09/hr=12
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._bucketname SIMPLE [(lineitem)lineitem.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._count_of_l_shipdate EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._offsets EXPRESSION [(lineitem)lineitem.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__.l_shipdate SIMPLE [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._bucketname SIMPLE [(tbl)tbl.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._count_of_key EXPRESSION [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._offsets EXPRESSION [(tbl)tbl.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__.key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: CREATE INDEX tbl_part_index ON TABLE tblpart(key) AS 'org.apache.hadoop.hive.ql.index.AggregateIndexHandler' WITH DEFERRED REBUILD IDXPROPERTIES("AGGREGATES"="count(key)")
@@ -2443,22 +2213,6 @@ PREHOOK: type: CREATEINDEX
 POSTHOOK: query: CREATE INDEX tbl_part_index ON TABLE tblpart(key) AS 'org.apache.hadoop.hive.ql.index.AggregateIndexHandler' WITH DEFERRED REBUILD IDXPROPERTIES("AGGREGATES"="count(key)")
 POSTHOOK: type: CREATEINDEX
 POSTHOOK: Output: default@default__tblpart_tbl_part_index__
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._bucketname SIMPLE [(lineitem)lineitem.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._count_of_l_shipdate EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._offsets EXPRESSION [(lineitem)lineitem.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__.l_shipdate SIMPLE [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._bucketname SIMPLE [(tbl)tbl.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._count_of_key EXPRESSION [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._offsets EXPRESSION [(tbl)tbl.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__.key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: ALTER INDEX tbl_part_index ON tblpart PARTITION (ds='2008-04-08', hr=11) REBUILD
 PREHOOK: type: ALTERINDEX_REBUILD
 PREHOOK: Input: default@tblpart
@@ -2469,53 +2223,17 @@ POSTHOOK: type: ALTERINDEX_REBUILD
 POSTHOOK: Input: default@tblpart
 POSTHOOK: Input: default@tblpart@ds=2008-04-08/hr=11
 POSTHOOK: Output: default@default__tblpart_tbl_part_index__@ds=2008-04-08/hr=11
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._bucketname SIMPLE [(lineitem)lineitem.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._count_of_l_shipdate EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._offsets EXPRESSION [(lineitem)lineitem.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__.l_shipdate SIMPLE [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._bucketname SIMPLE [(tbl)tbl.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._count_of_key EXPRESSION [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._offsets EXPRESSION [(tbl)tbl.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__.key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=11)._bucketname SIMPLE [(tblpart)tblpart.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=11)._count_of_key EXPRESSION [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=11)._offsets EXPRESSION [(tblpart)tblpart.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: EXPLAIN SELECT key, count(key) FROM tblpart WHERE ds='2008-04-09' AND hr=12 AND key < 10 GROUP BY key
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN SELECT key, count(key) FROM tblpart WHERE ds='2008-04-09' AND hr=12 AND key < 10 GROUP BY key
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._bucketname SIMPLE [(lineitem)lineitem.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._count_of_l_shipdate EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._offsets EXPRESSION [(lineitem)lineitem.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__.l_shipdate SIMPLE [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._bucketname SIMPLE [(tbl)tbl.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._count_of_key EXPRESSION [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._offsets EXPRESSION [(tbl)tbl.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__.key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=11)._bucketname SIMPLE [(tblpart)tblpart.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=11)._count_of_key EXPRESSION [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=11)._offsets EXPRESSION [(tblpart)tblpart.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -2565,6 +2283,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: ALTER INDEX tbl_part_index ON tblpart PARTITION (ds='2008-04-08', hr=12) REBUILD
 PREHOOK: type: ALTERINDEX_REBUILD
@@ -2576,30 +2296,10 @@ POSTHOOK: type: ALTERINDEX_REBUILD
 POSTHOOK: Input: default@tblpart
 POSTHOOK: Input: default@tblpart@ds=2008-04-08/hr=12
 POSTHOOK: Output: default@default__tblpart_tbl_part_index__@ds=2008-04-08/hr=12
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._bucketname SIMPLE [(lineitem)lineitem.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._count_of_l_shipdate EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._offsets EXPRESSION [(lineitem)lineitem.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__.l_shipdate SIMPLE [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._bucketname SIMPLE [(tbl)tbl.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._count_of_key EXPRESSION [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._offsets EXPRESSION [(tbl)tbl.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__.key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=11)._bucketname SIMPLE [(tblpart)tblpart.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=11)._count_of_key EXPRESSION [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=11)._offsets EXPRESSION [(tblpart)tblpart.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=12)._bucketname SIMPLE [(tblpart)tblpart.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=12)._count_of_key EXPRESSION [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=12)._offsets EXPRESSION [(tblpart)tblpart.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: ALTER INDEX tbl_part_index ON tblpart PARTITION (ds='2008-04-09', hr=11) REBUILD
 PREHOOK: type: ALTERINDEX_REBUILD
 PREHOOK: Input: default@tblpart
@@ -2610,34 +2310,10 @@ POSTHOOK: type: ALTERINDEX_REBUILD
 POSTHOOK: Input: default@tblpart
 POSTHOOK: Input: default@tblpart@ds=2008-04-09/hr=11
 POSTHOOK: Output: default@default__tblpart_tbl_part_index__@ds=2008-04-09/hr=11
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._bucketname SIMPLE [(lineitem)lineitem.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._count_of_l_shipdate EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._offsets EXPRESSION [(lineitem)lineitem.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__.l_shipdate SIMPLE [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._bucketname SIMPLE [(tbl)tbl.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._count_of_key EXPRESSION [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._offsets EXPRESSION [(tbl)tbl.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__.key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=11)._bucketname SIMPLE [(tblpart)tblpart.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=11)._count_of_key EXPRESSION [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=11)._offsets EXPRESSION [(tblpart)tblpart.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=12)._bucketname SIMPLE [(tblpart)tblpart.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=12)._count_of_key EXPRESSION [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=12)._offsets EXPRESSION [(tblpart)tblpart.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=11)._bucketname SIMPLE [(tblpart)tblpart.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=11)._count_of_key EXPRESSION [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=11)._offsets EXPRESSION [(tblpart)tblpart.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: ALTER INDEX tbl_part_index ON tblpart PARTITION (ds='2008-04-09', hr=12) REBUILD
 PREHOOK: type: ALTERINDEX_REBUILD
 PREHOOK: Input: default@tblpart
@@ -2648,77 +2324,17 @@ POSTHOOK: type: ALTERINDEX_REBUILD
 POSTHOOK: Input: default@tblpart
 POSTHOOK: Input: default@tblpart@ds=2008-04-09/hr=12
 POSTHOOK: Output: default@default__tblpart_tbl_part_index__@ds=2008-04-09/hr=12
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._bucketname SIMPLE [(lineitem)lineitem.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._count_of_l_shipdate EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._offsets EXPRESSION [(lineitem)lineitem.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__.l_shipdate SIMPLE [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._bucketname SIMPLE [(tbl)tbl.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._count_of_key EXPRESSION [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._offsets EXPRESSION [(tbl)tbl.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__.key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=11)._bucketname SIMPLE [(tblpart)tblpart.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=11)._count_of_key EXPRESSION [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=11)._offsets EXPRESSION [(tblpart)tblpart.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=12)._bucketname SIMPLE [(tblpart)tblpart.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=12)._count_of_key EXPRESSION [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=12)._offsets EXPRESSION [(tblpart)tblpart.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=11)._bucketname SIMPLE [(tblpart)tblpart.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=11)._count_of_key EXPRESSION [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=11)._offsets EXPRESSION [(tblpart)tblpart.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(tblpart)tblpart.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=12)._count_of_key EXPRESSION [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=12)._offsets EXPRESSION [(tblpart)tblpart.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: EXPLAIN SELECT key, count(key) FROM tblpart WHERE ds='2008-04-09' AND hr=12 AND key < 10 GROUP BY key
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN SELECT key, count(key) FROM tblpart WHERE ds='2008-04-09' AND hr=12 AND key < 10 GROUP BY key
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._bucketname SIMPLE [(lineitem)lineitem.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._count_of_l_shipdate EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._offsets EXPRESSION [(lineitem)lineitem.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__.l_shipdate SIMPLE [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._bucketname SIMPLE [(tbl)tbl.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._count_of_key EXPRESSION [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._offsets EXPRESSION [(tbl)tbl.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__.key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=11)._bucketname SIMPLE [(tblpart)tblpart.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=11)._count_of_key EXPRESSION [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=11)._offsets EXPRESSION [(tblpart)tblpart.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=12)._bucketname SIMPLE [(tblpart)tblpart.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=12)._count_of_key EXPRESSION [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=12)._offsets EXPRESSION [(tblpart)tblpart.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=11)._bucketname SIMPLE [(tblpart)tblpart.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=11)._count_of_key EXPRESSION [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=11)._offsets EXPRESSION [(tblpart)tblpart.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(tblpart)tblpart.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=12)._count_of_key EXPRESSION [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=12)._offsets EXPRESSION [(tblpart)tblpart.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -2768,43 +2384,13 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: DROP INDEX tbl_part_index on tblpart
 PREHOOK: type: DROPINDEX
 POSTHOOK: query: DROP INDEX tbl_part_index on tblpart
 POSTHOOK: type: DROPINDEX
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._bucketname SIMPLE [(lineitem)lineitem.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._count_of_l_shipdate EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._offsets EXPRESSION [(lineitem)lineitem.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__.l_shipdate SIMPLE [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._bucketname SIMPLE [(tbl)tbl.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._count_of_key EXPRESSION [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._offsets EXPRESSION [(tbl)tbl.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__.key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=11)._bucketname SIMPLE [(tblpart)tblpart.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=11)._count_of_key EXPRESSION [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=11)._offsets EXPRESSION [(tblpart)tblpart.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=12)._bucketname SIMPLE [(tblpart)tblpart.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=12)._count_of_key EXPRESSION [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=12)._offsets EXPRESSION [(tblpart)tblpart.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=11)._bucketname SIMPLE [(tblpart)tblpart.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=11)._count_of_key EXPRESSION [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=11)._offsets EXPRESSION [(tblpart)tblpart.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(tblpart)tblpart.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=12)._count_of_key EXPRESSION [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=12)._offsets EXPRESSION [(tblpart)tblpart.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: DROP TABLE tblpart
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tblpart
@@ -2813,38 +2399,6 @@ POSTHOOK: query: DROP TABLE tblpart
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tblpart
 POSTHOOK: Output: default@tblpart
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._bucketname SIMPLE [(lineitem)lineitem.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._count_of_l_shipdate EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._offsets EXPRESSION [(lineitem)lineitem.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__.l_shipdate SIMPLE [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._bucketname SIMPLE [(tbl)tbl.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._count_of_key EXPRESSION [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._offsets EXPRESSION [(tbl)tbl.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__.key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=11)._bucketname SIMPLE [(tblpart)tblpart.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=11)._count_of_key EXPRESSION [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=11)._offsets EXPRESSION [(tblpart)tblpart.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=12)._bucketname SIMPLE [(tblpart)tblpart.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=12)._count_of_key EXPRESSION [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=12)._offsets EXPRESSION [(tblpart)tblpart.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=11)._bucketname SIMPLE [(tblpart)tblpart.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=11)._count_of_key EXPRESSION [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=11)._offsets EXPRESSION [(tblpart)tblpart.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(tblpart)tblpart.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=12)._count_of_key EXPRESSION [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=12)._offsets EXPRESSION [(tblpart)tblpart.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: CREATE TABLE tbl(key int, value int) ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -2852,38 +2406,6 @@ POSTHOOK: query: CREATE TABLE tbl(key int, value int) ROW FORMAT DELIMITED FIELD
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._bucketname SIMPLE [(lineitem)lineitem.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._count_of_l_shipdate EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._offsets EXPRESSION [(lineitem)lineitem.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__.l_shipdate SIMPLE [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._bucketname SIMPLE [(tbl)tbl.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._count_of_key EXPRESSION [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._offsets EXPRESSION [(tbl)tbl.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__.key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=11)._bucketname SIMPLE [(tblpart)tblpart.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=11)._count_of_key EXPRESSION [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=11)._offsets EXPRESSION [(tblpart)tblpart.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=12)._bucketname SIMPLE [(tblpart)tblpart.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=12)._count_of_key EXPRESSION [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=12)._offsets EXPRESSION [(tblpart)tblpart.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=11)._bucketname SIMPLE [(tblpart)tblpart.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=11)._count_of_key EXPRESSION [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=11)._offsets EXPRESSION [(tblpart)tblpart.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(tblpart)tblpart.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=12)._count_of_key EXPRESSION [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=12)._offsets EXPRESSION [(tblpart)tblpart.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/tbl.txt' OVERWRITE INTO TABLE tbl
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
@@ -2892,75 +2414,11 @@ POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/tbl.txt' OVERWRITE INT
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@tbl
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._bucketname SIMPLE [(lineitem)lineitem.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._count_of_l_shipdate EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._offsets EXPRESSION [(lineitem)lineitem.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__.l_shipdate SIMPLE [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._bucketname SIMPLE [(tbl)tbl.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._count_of_key EXPRESSION [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._offsets EXPRESSION [(tbl)tbl.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__.key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=11)._bucketname SIMPLE [(tblpart)tblpart.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=11)._count_of_key EXPRESSION [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=11)._offsets EXPRESSION [(tblpart)tblpart.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=12)._bucketname SIMPLE [(tblpart)tblpart.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=12)._count_of_key EXPRESSION [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=12)._offsets EXPRESSION [(tblpart)tblpart.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=11)._bucketname SIMPLE [(tblpart)tblpart.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=11)._count_of_key EXPRESSION [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=11)._offsets EXPRESSION [(tblpart)tblpart.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(tblpart)tblpart.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=12)._count_of_key EXPRESSION [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=12)._offsets EXPRESSION [(tblpart)tblpart.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: CREATE INDEX tbl_key_idx ON TABLE tbl(key) AS 'org.apache.hadoop.hive.ql.index.AggregateIndexHandler' WITH DEFERRED REBUILD IDXPROPERTIES("AGGREGATES"="count(key)")
 PREHOOK: type: CREATEINDEX
 POSTHOOK: query: CREATE INDEX tbl_key_idx ON TABLE tbl(key) AS 'org.apache.hadoop.hive.ql.index.AggregateIndexHandler' WITH DEFERRED REBUILD IDXPROPERTIES("AGGREGATES"="count(key)")
 POSTHOOK: type: CREATEINDEX
 POSTHOOK: Output: default@default__tbl_tbl_key_idx__
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._bucketname SIMPLE [(lineitem)lineitem.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._count_of_l_shipdate EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._offsets EXPRESSION [(lineitem)lineitem.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__.l_shipdate SIMPLE [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._bucketname SIMPLE [(tbl)tbl.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._count_of_key EXPRESSION [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._offsets EXPRESSION [(tbl)tbl.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__.key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=11)._bucketname SIMPLE [(tblpart)tblpart.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=11)._count_of_key EXPRESSION [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=11)._offsets EXPRESSION [(tblpart)tblpart.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=12)._bucketname SIMPLE [(tblpart)tblpart.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=12)._count_of_key EXPRESSION [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=12)._offsets EXPRESSION [(tblpart)tblpart.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=11)._bucketname SIMPLE [(tblpart)tblpart.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=11)._count_of_key EXPRESSION [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=11)._offsets EXPRESSION [(tblpart)tblpart.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(tblpart)tblpart.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=12)._count_of_key EXPRESSION [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=12)._offsets EXPRESSION [(tblpart)tblpart.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: ALTER INDEX tbl_key_idx ON tbl REBUILD
 PREHOOK: type: ALTERINDEX_REBUILD
 PREHOOK: Input: default@tbl
@@ -2969,86 +2427,18 @@ POSTHOOK: query: ALTER INDEX tbl_key_idx ON tbl REBUILD
 POSTHOOK: type: ALTERINDEX_REBUILD
 POSTHOOK: Input: default@tbl
 POSTHOOK: Output: default@default__tbl_tbl_key_idx__
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._bucketname SIMPLE [(lineitem)lineitem.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._count_of_l_shipdate EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._offsets EXPRESSION [(lineitem)lineitem.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__.l_shipdate SIMPLE [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._bucketname SIMPLE [(tbl)tbl.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__tbl_tbl_key_idx__._bucketname SIMPLE [(tbl)tbl.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__tbl_tbl_key_idx__._count_of_key EXPRESSION [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._count_of_key EXPRESSION [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._offsets EXPRESSION [(tbl)tbl.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 POSTHOOK: Lineage: default__tbl_tbl_key_idx__._offsets EXPRESSION [(tbl)tbl.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 POSTHOOK: Lineage: default__tbl_tbl_key_idx__.key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__.key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=11)._bucketname SIMPLE [(tblpart)tblpart.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=11)._count_of_key EXPRESSION [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=11)._offsets EXPRESSION [(tblpart)tblpart.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=12)._bucketname SIMPLE [(tblpart)tblpart.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=12)._count_of_key EXPRESSION [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=12)._offsets EXPRESSION [(tblpart)tblpart.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=11)._bucketname SIMPLE [(tblpart)tblpart.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=11)._count_of_key EXPRESSION [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=11)._offsets EXPRESSION [(tblpart)tblpart.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(tblpart)tblpart.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=12)._count_of_key EXPRESSION [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=12)._offsets EXPRESSION [(tblpart)tblpart.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: explain select key, count(key) from tbl group by key order by key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select key, count(key) from tbl group by key order by key
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._bucketname SIMPLE [(lineitem)lineitem.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._count_of_l_shipdate EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._offsets EXPRESSION [(lineitem)lineitem.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__.l_shipdate SIMPLE [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._bucketname SIMPLE [(tbl)tbl.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._bucketname SIMPLE [(tbl)tbl.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._count_of_key EXPRESSION [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._count_of_key EXPRESSION [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._offsets EXPRESSION [(tbl)tbl.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._offsets EXPRESSION [(tbl)tbl.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__.key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__.key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=11)._bucketname SIMPLE [(tblpart)tblpart.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=11)._count_of_key EXPRESSION [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=11)._offsets EXPRESSION [(tblpart)tblpart.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=12)._bucketname SIMPLE [(tblpart)tblpart.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=12)._count_of_key EXPRESSION [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=12)._offsets EXPRESSION [(tblpart)tblpart.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=11)._bucketname SIMPLE [(tblpart)tblpart.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=11)._count_of_key EXPRESSION [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=11)._offsets EXPRESSION [(tblpart)tblpart.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(tblpart)tblpart.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=12)._count_of_key EXPRESSION [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=12)._offsets EXPRESSION [(tblpart)tblpart.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-1
@@ -3114,6 +2504,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select key, count(key) from tbl group by key order by key
 PREHOOK: type: QUERY
@@ -3123,42 +2515,6 @@ POSTHOOK: query: select key, count(key) from tbl group by key order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl
 #### A masked pattern was here ####
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._bucketname SIMPLE [(lineitem)lineitem.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._count_of_l_shipdate EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._offsets EXPRESSION [(lineitem)lineitem.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__.l_shipdate SIMPLE [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._bucketname SIMPLE [(tbl)tbl.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._bucketname SIMPLE [(tbl)tbl.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._count_of_key EXPRESSION [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._count_of_key EXPRESSION [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._offsets EXPRESSION [(tbl)tbl.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._offsets EXPRESSION [(tbl)tbl.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__.key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__.key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=11)._bucketname SIMPLE [(tblpart)tblpart.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=11)._count_of_key EXPRESSION [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=11)._offsets EXPRESSION [(tblpart)tblpart.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=12)._bucketname SIMPLE [(tblpart)tblpart.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=12)._count_of_key EXPRESSION [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=12)._offsets EXPRESSION [(tblpart)tblpart.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=11)._bucketname SIMPLE [(tblpart)tblpart.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=11)._count_of_key EXPRESSION [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=11)._offsets EXPRESSION [(tblpart)tblpart.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(tblpart)tblpart.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=12)._count_of_key EXPRESSION [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=12)._offsets EXPRESSION [(tblpart)tblpart.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 1	1
 2	3
 3	2
@@ -3169,46 +2525,10 @@ PREHOOK: query: explain select key, count(key) from tbl group by key order by ke
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select key, count(key) from tbl group by key order by key
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._bucketname SIMPLE [(lineitem)lineitem.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._count_of_l_shipdate EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._offsets EXPRESSION [(lineitem)lineitem.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__.l_shipdate SIMPLE [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._bucketname SIMPLE [(tbl)tbl.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._bucketname SIMPLE [(tbl)tbl.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._count_of_key EXPRESSION [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._count_of_key EXPRESSION [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._offsets EXPRESSION [(tbl)tbl.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._offsets EXPRESSION [(tbl)tbl.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__.key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__.key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=11)._bucketname SIMPLE [(tblpart)tblpart.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=11)._count_of_key EXPRESSION [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=11)._offsets EXPRESSION [(tblpart)tblpart.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=12)._bucketname SIMPLE [(tblpart)tblpart.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=12)._count_of_key EXPRESSION [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=12)._offsets EXPRESSION [(tblpart)tblpart.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=11)._bucketname SIMPLE [(tblpart)tblpart.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=11)._count_of_key EXPRESSION [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=11)._offsets EXPRESSION [(tblpart)tblpart.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(tblpart)tblpart.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=12)._count_of_key EXPRESSION [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=12)._offsets EXPRESSION [(tblpart)tblpart.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-1
@@ -3223,7 +2543,6 @@ STAGE PLANS:
               Statistics: Num rows: 6 Data size: 430 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: sum(_count_of_key)
-                bucketGroup: true
                 keys: key (type: int)
                 mode: hash
                 outputColumnNames: _col0, _col1
@@ -3275,6 +2594,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select key, count(key) from tbl group by key order by key
 PREHOOK: type: QUERY
@@ -3284,42 +2605,6 @@ POSTHOOK: query: select key, count(key) from tbl group by key order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@default__tbl_tbl_key_idx__
 #### A masked pattern was here ####
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._bucketname SIMPLE [(lineitem)lineitem.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._count_of_l_shipdate EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._offsets EXPRESSION [(lineitem)lineitem.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__.l_shipdate SIMPLE [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._bucketname SIMPLE [(tbl)tbl.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._bucketname SIMPLE [(tbl)tbl.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._count_of_key EXPRESSION [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._count_of_key EXPRESSION [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._offsets EXPRESSION [(tbl)tbl.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._offsets EXPRESSION [(tbl)tbl.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__.key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__.key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=11)._bucketname SIMPLE [(tblpart)tblpart.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=11)._count_of_key EXPRESSION [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=11)._offsets EXPRESSION [(tblpart)tblpart.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=12)._bucketname SIMPLE [(tblpart)tblpart.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=12)._count_of_key EXPRESSION [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=12)._offsets EXPRESSION [(tblpart)tblpart.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=11)._bucketname SIMPLE [(tblpart)tblpart.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=11)._count_of_key EXPRESSION [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=11)._offsets EXPRESSION [(tblpart)tblpart.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(tblpart)tblpart.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=12)._count_of_key EXPRESSION [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=12)._offsets EXPRESSION [(tblpart)tblpart.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 1	1
 2	3
 3	2
@@ -3334,39 +2619,3 @@ POSTHOOK: query: DROP TABLE tbl
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tbl
 POSTHOOK: Output: default@tbl
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._bucketname SIMPLE [(lineitem)lineitem.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._count_of_l_shipdate EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._offsets EXPRESSION [(lineitem)lineitem.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__.l_shipdate SIMPLE [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._bucketname SIMPLE [(tbl)tbl.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._bucketname SIMPLE [(tbl)tbl.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._count_of_key EXPRESSION [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._count_of_key EXPRESSION [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._offsets EXPRESSION [(tbl)tbl.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__._offsets EXPRESSION [(tbl)tbl.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__.key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tbl_tbl_key_idx__.key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=11)._bucketname SIMPLE [(tblpart)tblpart.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=11)._count_of_key EXPRESSION [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=11)._offsets EXPRESSION [(tblpart)tblpart.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=12)._bucketname SIMPLE [(tblpart)tblpart.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=12)._count_of_key EXPRESSION [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=12)._offsets EXPRESSION [(tblpart)tblpart.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=11)._bucketname SIMPLE [(tblpart)tblpart.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=11)._count_of_key EXPRESSION [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=11)._offsets EXPRESSION [(tblpart)tblpart.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(tblpart)tblpart.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=12)._count_of_key EXPRESSION [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=12)._offsets EXPRESSION [(tblpart)tblpart.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__tblpart_tbl_part_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(tblpart)tblpart.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]

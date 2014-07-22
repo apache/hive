@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.security.authorization;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler;
+import org.apache.hadoop.hive.ql.metadata.AuthorizationException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 public class DefaultHiveMetastoreAuthorizationProvider extends BitSetCheckedAuthorizationProvider
@@ -33,6 +34,11 @@ public class DefaultHiveMetastoreAuthorizationProvider extends BitSetCheckedAuth
   @Override
   public void setMetaStoreHandler(HMSHandler handler) {
     hive_db.setHandler(handler);
+  }
+
+  @Override
+  public void authorizeAuthorizationApiInvocation() throws HiveException, AuthorizationException {
+    // default no-op implementation
   }
 
 

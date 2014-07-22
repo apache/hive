@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.lang.builder.HashCodeBuilder;
@@ -71,7 +72,7 @@ public class ExprNodeGenericFuncDesc extends ExprNodeDesc implements
   //Is this an expression that should perform a comparison for sorted searches
   private boolean isSortedExpr;
 
-  public ExprNodeGenericFuncDesc() {
+  public ExprNodeGenericFuncDesc() {;
   }
 
   /* If the function has an explicit name like func(args) then call a
@@ -236,15 +237,19 @@ public class ExprNodeGenericFuncDesc extends ExprNodeDesc implements
 
     if (requiredJars != null) {
       SessionState.ResourceType t = SessionState.find_resource_type("JAR");
-      for (String jarPath : requiredJars) {
-        ss.add_resource(t, jarPath);
+      try {
+        ss.add_resources(t, Arrays.asList(requiredJars));
+      } catch (Exception e) {
+        throw new UDFArgumentException(e);
       }
     }
 
     if (requiredFiles != null) {
       SessionState.ResourceType t = SessionState.find_resource_type("FILE");
-      for (String filePath : requiredFiles) {
-        ss.add_resource(t, filePath);
+      try {
+        ss.add_resources(t, Arrays.asList(requiredFiles));
+      } catch (Exception e) {
+        throw new UDFArgumentException(e);
       }
     }
 

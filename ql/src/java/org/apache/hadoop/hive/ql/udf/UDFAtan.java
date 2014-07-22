@@ -18,39 +18,27 @@
 
 package org.apache.hadoop.hive.ql.udf;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncATanDoubleToDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncATanLongToDouble;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 
-@Description(
-    name = "atan",
-    value = "_FUNC_(x) - returns the atan (arctan) of x (x is in radians)",
-    extended = "Example:\n " +
-        "  > SELECT _FUNC_(0) FROM src LIMIT 1;\n" +
-        "  0"
-    )
+@Description(name = "atan",
+             value = "_FUNC_(x) - returns the atan (arctan) of x (x is in radians)",
+             extended = "Example:\n "
+                        + "  > SELECT _FUNC_(0) FROM src LIMIT 1;\n"
+                        + "  0"
+)
 @VectorizedExpressions({FuncATanLongToDouble.class, FuncATanDoubleToDouble.class})
 public class UDFAtan extends UDFMath {
 
-  @SuppressWarnings("unused")
-  private static Log LOG = LogFactory.getLog(UDFAtan.class.getName());
+  private final DoubleWritable result = new DoubleWritable();
 
-  DoubleWritable result = new DoubleWritable();
-
-  public UDFAtan() {
-  }
-
-  public DoubleWritable evaluate(DoubleWritable x)  {
-    if (x == null) {
-      return null;
-    } else {
-      result.set(Math.atan(x.get()));
-      return result;
-    }
+  @Override
+  protected DoubleWritable doEvaluate(DoubleWritable a) {
+    result.set(Math.atan(a.get()));
+    return result;
   }
 
 }

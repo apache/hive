@@ -23,8 +23,6 @@ POSTHOOK: query: SELECT key, value FROM test_src order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_src
 #### A masked pattern was here ####
-POSTHOOK: Lineage: test_src.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_src.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 0	val_0
 0	val_0
 0	val_0

@@ -65,4 +65,11 @@ public interface Writer {
    * @return row count
    */
   long getNumberOfRows();
+
+  /**
+   * Write an intermediate footer on the file such that if the file is
+   * truncated to the returned offset, it would be a valid ORC file.
+   * @return the offset that would be a valid end location for an ORC file
+   */
+  long writeIntermediateFooter() throws IOException;
 }

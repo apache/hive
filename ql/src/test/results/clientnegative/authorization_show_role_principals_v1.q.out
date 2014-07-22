@@ -1,0 +1,5 @@
+PREHOOK: query: -- This test will fail because the command is not currently supported in auth mode v1
+show principals role1
+PREHOOK: type: SHOW_ROLE_PRINCIPALS
+Error in role operation show_role_principals on role name role1, error message Show role principals is not currently supported in authorization mode V1
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask

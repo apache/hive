@@ -34,8 +34,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@texternal
 POSTHOOK: Input: default@texternal@insertdate=2008-01-01
 #### A masked pattern was here ####
-POSTHOOK: Lineage: texternal PARTITION(insertdate=2008-01-01).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: texternal PARTITION(insertdate=2008-01-01).val SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 238	val_238	2008-01-01
 86	val_86	2008-01-01
 311	val_311	2008-01-01

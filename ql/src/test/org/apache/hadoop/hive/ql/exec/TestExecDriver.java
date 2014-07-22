@@ -34,6 +34,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.DriverContext;
+import org.apache.hadoop.hive.ql.WindowsPathUtil;
 import org.apache.hadoop.hive.ql.exec.mr.ExecDriver;
 import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
 import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
@@ -59,6 +60,7 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.mapred.TextInputFormat;
+import org.apache.hadoop.util.Shell;
 
 /**
  * Mimics the actual query compiler in generating end to end plans and testing
@@ -69,16 +71,26 @@ public class TestExecDriver extends TestCase {
 
   static HiveConf conf;
 
-  private static final String tmpdir = System.getProperty("test.tmp.dir");
+  private static final String tmpdir;
   private static final Log LOG = LogFactory.getLog(TestExecDriver.class);
-  private static final Path tmppath = new Path(tmpdir);
+  private static final Path tmppath;
   private static Hive db;
   private static FileSystem fs;
 
   static {
     try {
       conf = new HiveConf(ExecDriver.class);
+      conf.setBoolVar(HiveConf.ConfVars.SUBMITVIACHILD, true);
+      conf.setBoolVar(HiveConf.ConfVars.SUBMITLOCALTASKVIACHILD, true);
+
       SessionState.start(conf);
+
+      //convert possible incompatible Windows path in config
+      if (Shell.WINDOWS) {
+        WindowsPathUtil.convertPathsFromWindowsToHdfs(conf);
+      }
+      tmpdir = System.getProperty("test.tmp.dir");
+      tmppath = new Path(tmpdir);
 
       fs = FileSystem.get(conf);
       if (fs.exists(tmppath) && !fs.getFileStatus(tmppath).isDir()) {
@@ -125,7 +137,7 @@ public class TestExecDriver extends TestCase {
         db.dropTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, src, true, true);
         db.createTable(src, cols, null, TextInputFormat.class,
             IgnoreKeyTextOutputFormat.class);
-        db.loadTable(hadoopDataFile[i], src, false, false);
+        db.loadTable(hadoopDataFile[i], src, false, false, true, false);
         i++;
       }
 
@@ -161,7 +173,8 @@ public class TestExecDriver extends TestCase {
     }
     FSDataInputStream fi_test = fs.open((fs.listStatus(di_test))[0].getPath());
 
-    if (!Utilities.contentsEqual(fi_gold, fi_test, false)) {
+    boolean ignoreWhitespace = Shell.WINDOWS;
+    if (!Utilities.contentsEqual(fi_gold, fi_test, ignoreWhitespace)) {
       LOG.error(di_test.toString() + " does not match " + datafile);
       assertEquals(false, true);
     }
@@ -308,7 +321,7 @@ public class TestExecDriver extends TestCase {
 
     addMapWork(mr, src2, "b", op2);
     ReduceWork rWork = new ReduceWork();
-    rWork.setNumReduceTasks(Integer.valueOf(5));
+    rWork.setNumReduceTasks(Integer.valueOf(1));
     rWork.setNeedsTagging(true);
     rWork.setKeyDesc(op1.getConf().getKeySerializeInfo());
     rWork.getTagToValueDesc().add(op1.getConf().getValueSerializeInfo());

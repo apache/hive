@@ -112,6 +112,13 @@ public class LineageInfo implements Serializable {
     public Partition getPartition() {
       return this.part;
     }
+
+    @Override
+    public String toString() {
+      return isPartition() ?
+          part.getDbName() + "." + part.getTableName() + "@" + part.getValues() :
+          tab.getDbName() + "." + tab.getTableName();
+    }
   }
 
   /**
@@ -190,6 +197,11 @@ public class LineageInfo implements Serializable {
       }
       return true;
     }
+
+    @Override
+    public String toString() {
+      return dc + ":" + fld;
+    }
   }
 
   /**
@@ -242,6 +254,11 @@ public class LineageInfo implements Serializable {
     public void setColumn(FieldSchema column) {
       this.column = column;
     }
+
+    @Override
+    public String toString() {
+      return tabAlias + ":" + column;
+    }
   }
 
   public static class TableAliasInfo implements Serializable {
@@ -287,6 +304,11 @@ public class LineageInfo implements Serializable {
      */
     public void setTable(Table table) {
       this.table = table;
+    }
+
+    @Override
+    public String toString() {
+      return table.getDbName() + "." + table.getTableName() + "(" + alias + ")";
     }
   }
 
@@ -356,6 +378,11 @@ public class LineageInfo implements Serializable {
     public void setBaseCols(List<BaseColumnInfo> baseCols) {
       this.baseCols = baseCols;
     }
+
+    @Override
+    public String toString() {
+      return "[" + type + "]" + baseCols;
+    }
   }
 
   /**
@@ -400,5 +427,9 @@ public class LineageInfo implements Serializable {
    */
   public Set<Map.Entry<DependencyKey, Dependency>> entrySet() {
     return index.entrySet();
+  }
+
+  public void clear() {
+    index.clear();
   }
 }

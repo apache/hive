@@ -25,6 +25,4 @@ POSTHOOK: query: SELECT sum(a.cnt)  FROM tst1 a JOIN tst1 b ON a.key = b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tst1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: tst1.cnt EXPRESSION [(src)a.null, ]
-POSTHOOK: Lineage: tst1.key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
 500

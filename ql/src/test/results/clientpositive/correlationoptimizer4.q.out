@@ -67,7 +67,7 @@ STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
   Stage-3 depends on stages: Stage-2
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-3
 
 STAGE PLANS:
   Stage: Stage-1
@@ -76,28 +76,36 @@ STAGE PLANS:
           TableScan
             alias: x
             Statistics: Num rows: 7 Data size: 30 Basic stats: COMPLETE Column stats: NONE
-            Reduce Output Operator
-              key expressions: key (type: int)
-              sort order: +
-              Map-reduce partition columns: key (type: int)
-              Statistics: Num rows: 7 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 4 Data size: 17 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: key (type: int)
+                sort order: +
+                Map-reduce partition columns: key (type: int)
+                Statistics: Num rows: 4 Data size: 17 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: z
             Statistics: Num rows: 7 Data size: 30 Basic stats: COMPLETE Column stats: NONE
-            Reduce Output Operator
-              key expressions: key (type: int)
-              sort order: +
-              Map-reduce partition columns: key (type: int)
-              Statistics: Num rows: 7 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 4 Data size: 17 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: key (type: int)
+                sort order: +
+                Map-reduce partition columns: key (type: int)
+                Statistics: Num rows: 4 Data size: 17 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: y
             Statistics: Num rows: 7 Data size: 30 Basic stats: COMPLETE Column stats: NONE
-            Reduce Output Operator
-              key expressions: key (type: int)
-              sort order: +
-              Map-reduce partition columns: key (type: int)
-              Statistics: Num rows: 7 Data size: 30 Basic stats: COMPLETE Column stats: NONE
-              value expressions: key (type: int)
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 4 Data size: 17 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: key (type: int)
+                sort order: +
+                Map-reduce partition columns: key (type: int)
+                Statistics: Num rows: 4 Data size: 17 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -105,20 +113,20 @@ STAGE PLANS:
                Inner Join 1 to 2
           condition expressions:
             0 
-            1 {VALUE._col0}
+            1 {KEY.reducesinkkey0}
             2 
           outputColumnNames: _col4
-          Statistics: Num rows: 15 Data size: 66 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 8 Data size: 37 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: _col4 (type: int)
             outputColumnNames: _col4
-            Statistics: Num rows: 15 Data size: 66 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 8 Data size: 37 Basic stats: COMPLETE Column stats: NONE
             Group By Operator
               aggregations: count(1)
               keys: _col4 (type: int)
               mode: hash
               outputColumnNames: _col0, _col1
-              Statistics: Num rows: 15 Data size: 66 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 8 Data size: 37 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
                 table:
@@ -134,7 +142,7 @@ STAGE PLANS:
               key expressions: _col0 (type: int)
               sort order: +
               Map-reduce partition columns: _col0 (type: int)
-              Statistics: Num rows: 15 Data size: 66 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 8 Data size: 37 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col1 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
@@ -142,11 +150,11 @@ STAGE PLANS:
           keys: KEY._col0 (type: int)
           mode: mergepartial
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 7 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 4 Data size: 18 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: _col0 (type: int), _col1 (type: bigint)
             outputColumnNames: _col0, _col1
-            Statistics: Num rows: 7 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 4 Data size: 18 Basic stats: COMPLETE Column stats: NONE
             Group By Operator
               aggregations: sum(hash(_col0)), sum(hash(_col1))
               mode: hash
@@ -188,6 +196,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT y.key AS key, count(1) AS cnt
@@ -223,7 +233,7 @@ POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-1
@@ -232,38 +242,46 @@ STAGE PLANS:
           TableScan
             alias: x
             Statistics: Num rows: 7 Data size: 30 Basic stats: COMPLETE Column stats: NONE
-            Reduce Output Operator
-              key expressions: key (type: int)
-              sort order: +
-              Map-reduce partition columns: key (type: int)
-              Statistics: Num rows: 7 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 4 Data size: 17 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: key (type: int)
+                sort order: +
+                Map-reduce partition columns: key (type: int)
+                Statistics: Num rows: 4 Data size: 17 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: z
             Statistics: Num rows: 7 Data size: 30 Basic stats: COMPLETE Column stats: NONE
-            Reduce Output Operator
-              key expressions: key (type: int)
-              sort order: +
-              Map-reduce partition columns: key (type: int)
-              Statistics: Num rows: 7 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 4 Data size: 17 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: key (type: int)
+                sort order: +
+                Map-reduce partition columns: key (type: int)
+                Statistics: Num rows: 4 Data size: 17 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: y
             Statistics: Num rows: 7 Data size: 30 Basic stats: COMPLETE Column stats: NONE
-            Reduce Output Operator
-              key expressions: key (type: int)
-              sort order: +
-              Map-reduce partition columns: key (type: int)
-              Statistics: Num rows: 7 Data size: 30 Basic stats: COMPLETE Column stats: NONE
-              value expressions: key (type: int)
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 4 Data size: 17 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: key (type: int)
+                sort order: +
+                Map-reduce partition columns: key (type: int)
+                Statistics: Num rows: 4 Data size: 17 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Demux Operator
-          Statistics: Num rows: 21 Data size: 90 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 12 Data size: 51 Basic stats: COMPLETE Column stats: NONE
           Join Operator
             condition map:
                  Inner Join 0 to 1
                  Inner Join 1 to 2
             condition expressions:
               0 
-              1 {VALUE._col0}
+              1 {KEY.reducesinkkey0}
               2 
             outputColumnNames: _col4
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
@@ -324,6 +342,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT y.key AS key, count(1) AS cnt
@@ -359,76 +379,107 @@ FROM (SELECT y.key AS key, count(1) AS cnt
       GROUP BY y.key) tmp
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-2 is a root stage
+  Stage-7 is a root stage
+  Stage-2 depends on stages: Stage-7
   Stage-3 depends on stages: Stage-2
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-3
 
 STAGE PLANS:
+  Stage: Stage-7
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        tmp:x 
+          Fetch Operator
+            limit: -1
+        tmp:y 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        tmp:x 
+          TableScan
+            alias: x
+            Statistics: Num rows: 7 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 4 Data size: 17 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                condition expressions:
+                  0 
+                  1 
+                  2 
+                keys:
+                  0 key (type: int)
+                  1 key (type: int)
+                  2 key (type: int)
+        tmp:y 
+          TableScan
+            alias: y
+            Statistics: Num rows: 7 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 4 Data size: 17 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                condition expressions:
+                  0 
+                  1 
+                  2 
+                keys:
+                  0 key (type: int)
+                  1 key (type: int)
+                  2 key (type: int)
+
   Stage: Stage-2
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: x
+            alias: z
             Statistics: Num rows: 7 Data size: 30 Basic stats: COMPLETE Column stats: NONE
-            Map Join Operator
-              condition map:
-                   Inner Join 0 to 1
-                   Inner Join 1 to 2
-              condition expressions:
-                0 
-                1 {key}
-                2 
-              keys:
-                0 key (type: int)
-                1 key (type: int)
-                2 key (type: int)
-              outputColumnNames: _col4
-              Statistics: Num rows: 15 Data size: 66 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: _col4 (type: int)
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 4 Data size: 17 Basic stats: COMPLETE Column stats: NONE
+              Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                     Inner Join 1 to 2
+                condition expressions:
+                  0 
+                  1 {key}
+                  2 
+                keys:
+                  0 key (type: int)
+                  1 key (type: int)
+                  2 key (type: int)
                 outputColumnNames: _col4
-                Statistics: Num rows: 15 Data size: 66 Basic stats: COMPLETE Column stats: NONE
-                Group By Operator
-                  aggregations: count(1)
-                  keys: _col4 (type: int)
-                  mode: hash
-                  outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 15 Data size: 66 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: int)
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: int)
-                    Statistics: Num rows: 15 Data size: 66 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col1 (type: bigint)
+                Statistics: Num rows: 8 Data size: 37 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col4 (type: int)
+                  outputColumnNames: _col4
+                  Statistics: Num rows: 8 Data size: 37 Basic stats: COMPLETE Column stats: NONE
+                  Group By Operator
+                    aggregations: count(1)
+                    keys: _col4 (type: int)
+                    mode: hash
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 8 Data size: 37 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: int)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: int)
+                      Statistics: Num rows: 8 Data size: 37 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col1 (type: bigint)
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            tmp:y 
-              Fetch Operator
-                limit: -1
-            tmp:z 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            tmp:y 
-              TableScan
-                alias: y
-                Statistics: Num rows: 7 Data size: 30 Basic stats: COMPLETE Column stats: NONE
-            tmp:z 
-              TableScan
-                alias: z
-                Statistics: Num rows: 7 Data size: 30 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
           keys: KEY._col0 (type: int)
           mode: mergepartial
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 7 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 4 Data size: 18 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: _col0 (type: int), _col1 (type: bigint)
             outputColumnNames: _col0, _col1
-            Statistics: Num rows: 7 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 4 Data size: 18 Basic stats: COMPLETE Column stats: NONE
             Group By Operator
               aggregations: sum(hash(_col0)), sum(hash(_col1))
               mode: hash
@@ -470,6 +521,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT y.key AS key, count(1) AS cnt
@@ -510,7 +563,7 @@ STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
   Stage-3 depends on stages: Stage-2
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-3
 
 STAGE PLANS:
   Stage: Stage-1
@@ -524,7 +577,6 @@ STAGE PLANS:
               sort order: +
               Map-reduce partition columns: key (type: int)
               Statistics: Num rows: 7 Data size: 30 Basic stats: COMPLETE Column stats: NONE
-              value expressions: key (type: int)
           TableScan
             alias: z
             Statistics: Num rows: 7 Data size: 30 Basic stats: COMPLETE Column stats: NONE
@@ -547,7 +599,7 @@ STAGE PLANS:
                Left Outer Join0 to 1
                Left Outer Join1 to 2
           condition expressions:
-            0 {VALUE._col0}
+            0 {KEY.reducesinkkey0}
             1 
             2 
           outputColumnNames: _col0
@@ -631,6 +683,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT x.key AS key, count(1) AS cnt
@@ -666,7 +720,7 @@ POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-1
@@ -680,7 +734,6 @@ STAGE PLANS:
               sort order: +
               Map-reduce partition columns: key (type: int)
               Statistics: Num rows: 7 Data size: 30 Basic stats: COMPLETE Column stats: NONE
-              value expressions: key (type: int)
           TableScan
             alias: z
             Statistics: Num rows: 7 Data size: 30 Basic stats: COMPLETE Column stats: NONE
@@ -705,7 +758,7 @@ STAGE PLANS:
                  Left Outer Join0 to 1
                  Left Outer Join1 to 2
             condition expressions:
-              0 {VALUE._col0}
+              0 {KEY.reducesinkkey0}
               1 
               2 
             outputColumnNames: _col0
@@ -767,6 +820,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT x.key AS key, count(1) AS cnt
@@ -809,7 +864,7 @@ STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
   Stage-3 depends on stages: Stage-2
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-3
 
 STAGE PLANS:
   Stage: Stage-1
@@ -839,7 +894,6 @@ STAGE PLANS:
               sort order: +
               Map-reduce partition columns: key (type: int)
               Statistics: Num rows: 7 Data size: 30 Basic stats: COMPLETE Column stats: NONE
-              value expressions: key (type: int)
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -847,7 +901,7 @@ STAGE PLANS:
                Left Outer Join1 to 2
           condition expressions:
             0 
-            1 {VALUE._col0}
+            1 {KEY.reducesinkkey0}
             2 
           outputColumnNames: _col4
           Statistics: Num rows: 15 Data size: 66 Basic stats: COMPLETE Column stats: NONE
@@ -930,6 +984,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT y.key AS key, count(1) AS cnt
@@ -970,7 +1026,7 @@ STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
   Stage-3 depends on stages: Stage-2
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-3
 
 STAGE PLANS:
   Stage: Stage-1
@@ -992,7 +1048,6 @@ STAGE PLANS:
               sort order: +
               Map-reduce partition columns: key (type: int)
               Statistics: Num rows: 7 Data size: 30 Basic stats: COMPLETE Column stats: NONE
-              value expressions: key (type: int)
           TableScan
             alias: y
             Statistics: Num rows: 7 Data size: 30 Basic stats: COMPLETE Column stats: NONE
@@ -1009,7 +1064,7 @@ STAGE PLANS:
           condition expressions:
             0 
             1 
-            2 {VALUE._col0}
+            2 {KEY.reducesinkkey0}
           outputColumnNames: _col8
           Statistics: Num rows: 15 Data size: 66 Basic stats: COMPLETE Column stats: NONE
           Select Operator
@@ -1091,6 +1146,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT z.key AS key, count(1) AS cnt
@@ -1126,7 +1183,7 @@ POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-1
@@ -1148,7 +1205,6 @@ STAGE PLANS:
               sort order: +
               Map-reduce partition columns: key (type: int)
               Statistics: Num rows: 7 Data size: 30 Basic stats: COMPLETE Column stats: NONE
-              value expressions: key (type: int)
           TableScan
             alias: y
             Statistics: Num rows: 7 Data size: 30 Basic stats: COMPLETE Column stats: NONE
@@ -1167,7 +1223,7 @@ STAGE PLANS:
             condition expressions:
               0 
               1 
-              2 {VALUE._col0}
+              2 {KEY.reducesinkkey0}
             outputColumnNames: _col8
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             Select Operator
@@ -1227,6 +1283,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT z.key AS key, count(1) AS cnt
@@ -1269,7 +1327,7 @@ STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
   Stage-3 depends on stages: Stage-2
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-3
 
 STAGE PLANS:
   Stage: Stage-1
@@ -1299,7 +1357,6 @@ STAGE PLANS:
               sort order: +
               Map-reduce partition columns: key (type: int)
               Statistics: Num rows: 7 Data size: 30 Basic stats: COMPLETE Column stats: NONE
-              value expressions: key (type: int)
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -1307,7 +1364,7 @@ STAGE PLANS:
                Right Outer Join1 to 2
           condition expressions:
             0 
-            1 {VALUE._col0}
+            1 {KEY.reducesinkkey0}
             2 
           outputColumnNames: _col4
           Statistics: Num rows: 15 Data size: 66 Basic stats: COMPLETE Column stats: NONE
@@ -1390,6 +1447,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT y.key AS key, count(1) AS cnt
@@ -1430,7 +1489,7 @@ STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
   Stage-3 depends on stages: Stage-2
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-3
 
 STAGE PLANS:
   Stage: Stage-1
@@ -1460,7 +1519,6 @@ STAGE PLANS:
               sort order: +
               Map-reduce partition columns: key (type: int)
               Statistics: Num rows: 7 Data size: 30 Basic stats: COMPLETE Column stats: NONE
-              value expressions: key (type: int)
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -1468,7 +1526,7 @@ STAGE PLANS:
                Outer Join 1 to 2
           condition expressions:
             0 
-            1 {VALUE._col0}
+            1 {KEY.reducesinkkey0}
             2 
           outputColumnNames: _col4
           Statistics: Num rows: 15 Data size: 66 Basic stats: COMPLETE Column stats: NONE
@@ -1551,6 +1609,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT y.key AS key, count(1) AS cnt
@@ -1587,7 +1647,7 @@ STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
   Stage-3 depends on stages: Stage-2
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-3
 
 STAGE PLANS:
   Stage: Stage-1
@@ -1617,7 +1677,6 @@ STAGE PLANS:
               sort order: +
               Map-reduce partition columns: key (type: int)
               Statistics: Num rows: 7 Data size: 30 Basic stats: COMPLETE Column stats: NONE
-              value expressions: key (type: int)
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -1625,7 +1684,7 @@ STAGE PLANS:
                Outer Join 1 to 2
           condition expressions:
             0 
-            1 {VALUE._col0}
+            1 {KEY.reducesinkkey0}
             2 
           outputColumnNames: _col4
           Statistics: Num rows: 15 Data size: 66 Basic stats: COMPLETE Column stats: NONE
@@ -1708,6 +1767,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT y.key AS key, count(1) AS cnt

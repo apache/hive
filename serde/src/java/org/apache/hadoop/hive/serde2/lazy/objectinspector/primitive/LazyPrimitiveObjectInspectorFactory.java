@@ -46,6 +46,13 @@ public final class LazyPrimitiveObjectInspectorFactory {
 
   public static final LazyBooleanObjectInspector LAZY_BOOLEAN_OBJECT_INSPECTOR =
       new LazyBooleanObjectInspector();
+
+  public static final LazyBooleanObjectInspector LAZY_EXT_BOOLEAN_OBJECT_INSPECTOR =
+      new LazyBooleanObjectInspector();
+  static {
+    LAZY_EXT_BOOLEAN_OBJECT_INSPECTOR.setExtendedLiteral(true);
+  }
+
   public static final LazyByteObjectInspector LAZY_BYTE_OBJECT_INSPECTOR =
       new LazyByteObjectInspector();
   public static final LazyShortObjectInspector LAZY_SHORT_OBJECT_INSPECTOR =
@@ -104,11 +111,18 @@ public final class LazyPrimitiveObjectInspectorFactory {
 
   public static AbstractPrimitiveLazyObjectInspector<?> getLazyObjectInspector(
       PrimitiveTypeInfo typeInfo, boolean escaped, byte escapeChar) {
+    return getLazyObjectInspector(typeInfo, escaped, escapeChar, false);
+  }
+
+  public static AbstractPrimitiveLazyObjectInspector<?> getLazyObjectInspector(
+      PrimitiveTypeInfo typeInfo, boolean escaped, byte escapeChar, boolean extBoolean) {
     PrimitiveCategory primitiveCategory = typeInfo.getPrimitiveCategory();
 
     switch(primitiveCategory) {
     case STRING:
       return getLazyStringObjectInspector(escaped, escapeChar);
+    case BOOLEAN:
+      return getLazyBooleanObjectInspector(extBoolean);
     default:
      return getLazyObjectInspector(typeInfo);
     }
@@ -152,6 +166,10 @@ public final class LazyPrimitiveObjectInspectorFactory {
       cachedLazyStringObjectInspector.put(signature, result);
     }
     return result;
+  }
+
+  private static LazyBooleanObjectInspector getLazyBooleanObjectInspector(boolean extLiteral) {
+    return extLiteral ? LAZY_EXT_BOOLEAN_OBJECT_INSPECTOR : LAZY_BOOLEAN_OBJECT_INSPECTOR;
   }
 
 }

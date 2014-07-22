@@ -21,11 +21,13 @@ package org.apache.hadoop.hive.ql.io;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.Map.Entry;
 
 import org.apache.commons.logging.Log;
@@ -35,6 +37,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.io.HiveIOExceptionHandlerUtil;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
@@ -44,9 +47,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
-import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
-import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.Writable;
@@ -186,14 +187,12 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
   /**
    * A cache of InputFormat instances.
    */
-  protected static Map<Class, InputFormat<WritableComparable, Writable>> inputFormats;
+  protected static Map<Class, InputFormat<WritableComparable, Writable>> inputFormats 
+    = new ConcurrentHashMap<Class, InputFormat<WritableComparable, Writable>>();
 
   public static InputFormat<WritableComparable, Writable> getInputFormatFromCache(
     Class inputFormatClass, JobConf job) throws IOException {
 
-    if (inputFormats == null) {
-      inputFormats = new HashMap<Class, InputFormat<WritableComparable, Writable>>();
-    }
     if (!inputFormats.containsKey(inputFormatClass)) {
       try {
         InputFormat<WritableComparable, Writable> newInstance = (InputFormat<WritableComparable, Writable>) ReflectionUtils
@@ -284,7 +283,9 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       if (headerCount != 0 || footerCount != 0) {
         
         // Input file has header or footer, cannot be splitted.
-        conf.setLong("mapred.min.split.size", Long.MAX_VALUE);
+        conf.setLong(
+            ShimLoader.getHadoopShims().getHadoopConfNames().get("MAPREDMINSPLITSIZE"),
+            Long.MAX_VALUE);
       }
     }
 
@@ -306,10 +307,6 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
         try {
           List<Path> paths = Utilities.getInputPathsTez(job, mrwork);
           dirs = paths.toArray(new Path[paths.size()]);
-          if (dirs.length == 0) {
-            // if we still don't have any files it's time to fail.
-            throw new IOException("No input paths specified in job");
-          }
         } catch (Exception e) {
           throw new IOException("Could not create input files", e);
         }
@@ -325,6 +322,12 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     TableDesc currentTable = null;
     TableScanOperator currentTableScan = null;
 
+    boolean pushDownProjection = false;
+    //Buffers to hold filter pushdown information
+    StringBuilder readColumnsBuffer = new StringBuilder(newjob.
+      get(ColumnProjectionUtils.READ_COLUMN_IDS_CONF_STR, ""));;
+    StringBuilder readColumnNamesBuffer = new StringBuilder(newjob.
+      get(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR, ""));
     // for each dir, get the InputFormat, and do getSplits.
     for (Path dir : dirs) {
       PartitionDesc part = getPartitionDescFromPath(pathToPartitionInfo, dir);
@@ -340,9 +343,13 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
         Operator op = mrwork.getAliasToWork().get(aliases.get(0));
         if ((op != null) && (op instanceof TableScanOperator)) {
           tableScan = (TableScanOperator) op;
+          //Reset buffers to store filter push down columns
+          readColumnsBuffer.setLength(0);
+          readColumnNamesBuffer.setLength(0);
           // push down projections.
-          ColumnProjectionUtils.appendReadColumns(
-              newjob, tableScan.getNeededColumnIDs(), tableScan.getNeededColumns());
+          ColumnProjectionUtils.appendReadColumns(readColumnsBuffer, readColumnNamesBuffer,
+            tableScan.getNeededColumnIDs(), tableScan.getNeededColumns());
+          pushDownProjection = true;
           // push down filters
           pushFilters(newjob, tableScan);
         }
@@ -370,13 +377,23 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       currentTable = table;
       currentInputFormatClass = inputFormatClass;
     }
+    if (pushDownProjection) {
+      newjob.setBoolean(ColumnProjectionUtils.READ_ALL_COLUMNS, false);
+      newjob.set(ColumnProjectionUtils.READ_COLUMN_IDS_CONF_STR, readColumnsBuffer.toString());
+      newjob.set(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR, readColumnNamesBuffer.toString());
+      LOG.info(ColumnProjectionUtils.READ_COLUMN_IDS_CONF_STR + "=" + readColumnsBuffer.toString());
+      LOG.info(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR + "=" + readColumnNamesBuffer.toString());
+    }
 
-    LOG.info("Generating splits");
-    addSplitsForGroup(currentDirs, currentTableScan, newjob,
-        getInputFormatFromCache(currentInputFormatClass, job),
-        currentInputFormatClass, currentDirs.size()*(numSplits / dirs.length),
-        currentTable, result);
+    if (dirs.length != 0) {
+      LOG.info("Generating splits");
+      addSplitsForGroup(currentDirs, currentTableScan, newjob,
+          getInputFormatFromCache(currentInputFormatClass, job),
+          currentInputFormatClass, currentDirs.size()*(numSplits / dirs.length),
+          currentTable, result);
+    }
 
+    Utilities.clearWorkMapForConf(job);
     LOG.info("number of splits " + result.size());
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.GET_SPLITS);
     return result.toArray(new HiveInputSplit[result.size()]);
@@ -391,7 +408,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     }
     if (partDesc == null) {
       throw new IOException("cannot find dir = " + dir.toString()
-          + " in partToPartitionInfo!");
+          + " in " + pathToPartitionInfo);
     }
 
     return partDesc;
@@ -411,6 +428,13 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     ExprNodeGenericFuncDesc filterExpr = (ExprNodeGenericFuncDesc)scanDesc.getFilterExpr();
     if (filterExpr == null) {
       return;
+    }
+
+    Serializable filterObject = scanDesc.getFilterObject();
+    if (filterObject != null) {
+      jobConf.set(
+          TableScanDesc.FILTER_OBJECT_CONF_STR,
+          Utilities.serializeObject(filterObject));
     }
 
     String filterText = filterExpr.getExprString();

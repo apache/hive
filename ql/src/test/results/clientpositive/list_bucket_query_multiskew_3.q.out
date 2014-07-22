@@ -16,6 +16,7 @@ PREHOOK: query: -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
 create table fact_daily (key String, value String) 
 partitioned by (ds String, hr String)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)	
 
 -- List bucketing query logic test case. We simulate the directory structure by DML here.
@@ -34,6 +35,7 @@ POSTHOOK: query: -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
 create table fact_daily (key String, value String) 
 partitioned by (ds String, hr String)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@fact_daily
 PREHOOK: query: -- partition no skew
 insert overwrite table fact_daily partition (ds = '1', hr = '1')
@@ -51,20 +53,20 @@ POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=1).key SIMPLE [(src)src.FieldSch
 POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: describe formatted fact_daily PARTITION (ds = '1', hr='1')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@fact_daily
 POSTHOOK: query: describe formatted fact_daily PARTITION (ds = '1', hr='1')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Input: default@fact_daily
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	None                
-value               	string              	None                
+key                 	string              	                    
+value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-ds                  	string              	None                
-hr                  	string              	None                
+ds                  	string              	                    
+hr                  	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[1, 1]              	 
@@ -101,8 +103,6 @@ alter table fact_daily skewed by (key, value) on (('484','val_484'),('238','val_
 POSTHOOK: type: ALTERTABLE_SKEWED
 POSTHOOK: Input: default@fact_daily
 POSTHOOK: Output: default@fact_daily
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: insert overwrite table fact_daily partition (ds = '1', hr = '2')
 select key, value from src
 PREHOOK: type: QUERY
@@ -113,28 +113,24 @@ select key, value from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@fact_daily@ds=1/hr=2
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=2).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: describe formatted fact_daily PARTITION (ds = '1', hr='2')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@fact_daily
 POSTHOOK: query: describe formatted fact_daily PARTITION (ds = '1', hr='2')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=2).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Input: default@fact_daily
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	None                
-value               	string              	None                
+key                 	string              	                    
+value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-ds                  	string              	None                
-hr                  	string              	None                
+ds                  	string              	                    
+hr                  	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[1, 2]              	 
@@ -176,10 +172,6 @@ alter table fact_daily skewed by (key, value) on (('327','val_327')) stored as D
 POSTHOOK: type: ALTERTABLE_SKEWED
 POSTHOOK: Input: default@fact_daily
 POSTHOOK: Output: default@fact_daily
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=2).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: insert overwrite table fact_daily partition (ds = '1', hr = '3')
 select key, value from src
 PREHOOK: type: QUERY
@@ -190,32 +182,24 @@ select key, value from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@fact_daily@ds=1/hr=3
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=2).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=3).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=3).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: describe formatted fact_daily PARTITION (ds = '1', hr='3')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@fact_daily
 POSTHOOK: query: describe formatted fact_daily PARTITION (ds = '1', hr='3')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=2).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=3).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=3).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Input: default@fact_daily
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	None                
-value               	string              	None                
+key                 	string              	                    
+value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-ds                  	string              	None                
-hr                  	string              	None                
+ds                  	string              	                    
+hr                  	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[1, 3]              	 
@@ -255,12 +239,6 @@ POSTHOOK: query: -- query non-skewed partition
 explain extended
 select * from fact_daily where ds = '1' and  hr='1' and key='145'
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=2).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=3).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=3).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -294,7 +272,7 @@ TOK_QUERY
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -348,12 +326,14 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
+              columns.comments  
               columns.types string:string
 #### A masked pattern was here ####
               name default.fact_daily
               numFiles 1
               numRows 500
               partition_columns ds/hr
+              partition_columns.types string:string
               rawDataSize 5312
               serialization.ddl struct fact_daily { string key, string value}
               serialization.format 1
@@ -367,10 +347,12 @@ STAGE PLANS:
               properties:
                 bucket_count -1
                 columns key,value
+                columns.comments  
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.fact_daily
                 partition_columns ds/hr
+                partition_columns.types string:string
                 serialization.ddl struct fact_daily { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -384,6 +366,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select * from fact_daily where ds = '1' and  hr='1' and key='145'
 PREHOOK: type: QUERY
@@ -395,12 +379,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@fact_daily
 POSTHOOK: Input: default@fact_daily@ds=1/hr=1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=2).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=3).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=3).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 145	val_145	1	1
 PREHOOK: query: explain extended
 select count(*) from fact_daily where ds = '1' and  hr='1'
@@ -408,12 +386,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
 select count(*) from fact_daily where ds = '1' and  hr='1'
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=2).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=3).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=3).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -443,7 +415,7 @@ TOK_QUERY
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -465,6 +437,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   tag: -1
                   value expressions: _col0 (type: bigint)
+                  auto parallelism: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -480,12 +453,14 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
+              columns.comments  
               columns.types string:string
 #### A masked pattern was here ####
               name default.fact_daily
               numFiles 1
               numRows 500
               partition_columns ds/hr
+              partition_columns.types string:string
               rawDataSize 5312
               serialization.ddl struct fact_daily { string key, string value}
               serialization.format 1
@@ -499,10 +474,12 @@ STAGE PLANS:
               properties:
                 bucket_count -1
                 columns key,value
+                columns.comments  
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.fact_daily
                 partition_columns ds/hr
+                partition_columns.types string:string
                 serialization.ddl struct fact_daily { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -548,6 +525,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select count(*) from fact_daily where ds = '1' and  hr='1'
 PREHOOK: type: QUERY
@@ -559,12 +538,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@fact_daily
 POSTHOOK: Input: default@fact_daily@ds=1/hr=1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=2).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=3).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=3).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 500
 PREHOOK: query: -- query skewed partition
 explain extended
@@ -574,12 +547,6 @@ POSTHOOK: query: -- query skewed partition
 explain extended
 SELECT * FROM fact_daily WHERE ds='1' and hr='2' and (key='484' and value='val_484')
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=2).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=3).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=3).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -618,7 +585,7 @@ TOK_QUERY
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -672,12 +639,14 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
+              columns.comments  
               columns.types string:string
 #### A masked pattern was here ####
               name default.fact_daily
               numFiles 3
               numRows 500
               partition_columns ds/hr
+              partition_columns.types string:string
               rawDataSize 5312
               serialization.ddl struct fact_daily { string key, string value}
               serialization.format 1
@@ -691,10 +660,12 @@ STAGE PLANS:
               properties:
                 bucket_count -1
                 columns key,value
+                columns.comments  
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.fact_daily
                 partition_columns ds/hr
+                partition_columns.types string:string
                 serialization.ddl struct fact_daily { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -708,6 +679,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT * FROM fact_daily WHERE ds='1' and hr='2' and (key='484' and value='val_484')
 PREHOOK: type: QUERY
@@ -719,12 +692,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@fact_daily
 POSTHOOK: Input: default@fact_daily@ds=1/hr=2
 #### A masked pattern was here ####
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=2).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=3).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=3).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 484	val_484	1	2
 PREHOOK: query: -- query another skewed partition
 explain extended
@@ -734,12 +701,6 @@ POSTHOOK: query: -- query another skewed partition
 explain extended
 SELECT * FROM fact_daily WHERE ds='1' and hr='3' and (key='327' and value='val_327')
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=2).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=3).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=3).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -778,7 +739,7 @@ TOK_QUERY
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -832,12 +793,14 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
+              columns.comments  
               columns.types string:string
 #### A masked pattern was here ####
               name default.fact_daily
               numFiles 2
               numRows 500
               partition_columns ds/hr
+              partition_columns.types string:string
               rawDataSize 5312
               serialization.ddl struct fact_daily { string key, string value}
               serialization.format 1
@@ -851,10 +814,12 @@ STAGE PLANS:
               properties:
                 bucket_count -1
                 columns key,value
+                columns.comments  
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.fact_daily
                 partition_columns ds/hr
+                partition_columns.types string:string
                 serialization.ddl struct fact_daily { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -868,6 +833,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT * FROM fact_daily WHERE ds='1' and hr='3' and (key='327' and value='val_327')
 PREHOOK: type: QUERY
@@ -879,12 +846,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@fact_daily
 POSTHOOK: Input: default@fact_daily@ds=1/hr=3
 #### A masked pattern was here ####
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=2).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=3).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=3).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 327	val_327	1	3
 327	val_327	1	3
 327	val_327	1	3

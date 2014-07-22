@@ -329,6 +329,9 @@ public class GenVectorCode extends Task {
       {"FilterColumnBetween", "long", "!"},
       {"FilterColumnBetween", "double", "!"},
 
+        {"FilterDecimalColumnBetween", ""},
+        {"FilterDecimalColumnBetween", "!"},
+
       {"ColumnCompareColumn", "Equal", "long", "double", "=="},
       {"ColumnCompareColumn", "Equal", "double", "double", "=="},
       {"ColumnCompareColumn", "NotEqual", "long", "double", "!="},
@@ -659,6 +662,8 @@ public class GenVectorCode extends Task {
         generateFilterStringColumnCompareScalar(tdesc);
       } else if (tdesc[0].equals("FilterStringColumnBetween")) {
         generateFilterStringColumnBetween(tdesc);
+      } else if (tdesc[0].equals("FilterDecimalColumnBetween")) {
+        generateFilterDecimalColumnBetween(tdesc);
       } else if (tdesc[0].equals("StringColumnCompareScalar")) {
         generateStringColumnCompareScalar(tdesc);
       } else if (tdesc[0].equals("FilterStringScalarCompareColumn")) {
@@ -696,6 +701,20 @@ public class GenVectorCode extends Task {
     String className = "FilterStringColumn" + (optionalNot.equals("!") ? "Not" : "")
         + "Between";
         // Read the template into a string, expand it, and write it.
+    File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
+    String templateString = readFile(templateFile);
+    templateString = templateString.replaceAll("<ClassName>", className);
+    templateString = templateString.replaceAll("<OptionalNot>", optionalNot);
+
+    writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
+        className, templateString);
+  }
+
+  private void generateFilterDecimalColumnBetween(String[] tdesc) throws IOException {
+    String optionalNot = tdesc[1];
+    String className = "FilterDecimalColumn" + (optionalNot.equals("!") ? "Not" : "")
+        + "Between";
+    // Read the template into a string, expand it, and write it.
     File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
     String templateString = readFile(templateFile);
     templateString = templateString.replaceAll("<ClassName>", className);

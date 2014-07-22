@@ -210,7 +210,7 @@ public class GroupByOptimizer implements Transform {
       if (removeReduceSink) {
         convertGroupByMapSideSortedGroupBy(hiveConf, groupByOp, depth);
       }
-      else if (optimizeDistincts) {
+      else if (optimizeDistincts && !HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED)) {
         // In test mode, dont change the query plan. However, setup a query property
         pGraphContext.getQueryProperties().setHasMapGroupBy(true);
         if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_MAP_GROUPBY_SORT_TESTMODE)) {

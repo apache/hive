@@ -13,6 +13,7 @@ PREHOOK: query: -- This is to test the union->selectstar->filesink optimization
 
 create table inputTbl1(key string, val string) stored as textfile
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- This is to test the union->selectstar->filesink optimization
 -- Union of 2 map-reduce subqueries is performed followed by select star and a file sink
 -- and the results are written to a table using dynamic partitions.
@@ -28,17 +29,22 @@ POSTHOOK: query: -- This is to test the union->selectstar->filesink optimization
 
 create table inputTbl1(key string, val string) stored as textfile
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@inputTbl1
 PREHOOK: query: create table outputTbl1(key string, values bigint) partitioned by (ds string) stored as rcfile
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table outputTbl1(key string, values bigint) partitioned by (ds string) stored as rcfile
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@outputTbl1
 PREHOOK: query: load data local inpath '../../data/files/T1.txt' into table inputTbl1
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@inputtbl1
 POSTHOOK: query: load data local inpath '../../data/files/T1.txt' into table inputTbl1
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@inputtbl1
 PREHOOK: query: explain
 insert overwrite table outputTbl1 partition (ds)
@@ -187,21 +193,19 @@ POSTHOOK: Lineage: outputtbl1 PARTITION(ds=2).key EXPRESSION [(inputtbl1)inputtb
 POSTHOOK: Lineage: outputtbl1 PARTITION(ds=2).values EXPRESSION [(inputtbl1)inputtbl1.null, (inputtbl1)inputtbl1.null, ]
 PREHOOK: query: desc formatted outputTbl1
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@outputtbl1
 POSTHOOK: query: desc formatted outputTbl1
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Lineage: outputtbl1 PARTITION(ds=1).key EXPRESSION [(inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), (inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1 PARTITION(ds=1).values EXPRESSION [(inputtbl1)inputtbl1.null, (inputtbl1)inputtbl1.null, ]
-POSTHOOK: Lineage: outputtbl1 PARTITION(ds=2).key EXPRESSION [(inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), (inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1 PARTITION(ds=2).values EXPRESSION [(inputtbl1)inputtbl1.null, (inputtbl1)inputtbl1.null, ]
+POSTHOOK: Input: default@outputtbl1
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	None                
-values              	bigint              	None                
+key                 	string              	                    
+values              	bigint              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-ds                  	string              	None                
+ds                  	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -225,12 +229,10 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: show partitions outputTbl1
 PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@outputtbl1
 POSTHOOK: query: show partitions outputTbl1
 POSTHOOK: type: SHOWPARTITIONS
-POSTHOOK: Lineage: outputtbl1 PARTITION(ds=1).key EXPRESSION [(inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), (inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1 PARTITION(ds=1).values EXPRESSION [(inputtbl1)inputtbl1.null, (inputtbl1)inputtbl1.null, ]
-POSTHOOK: Lineage: outputtbl1 PARTITION(ds=2).key EXPRESSION [(inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), (inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1 PARTITION(ds=2).values EXPRESSION [(inputtbl1)inputtbl1.null, (inputtbl1)inputtbl1.null, ]
+POSTHOOK: Input: default@outputtbl1
 ds=1
 ds=2
 PREHOOK: query: select * from outputTbl1 where ds = '1' order by key, values
@@ -243,10 +245,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@outputtbl1
 POSTHOOK: Input: default@outputtbl1@ds=1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: outputtbl1 PARTITION(ds=1).key EXPRESSION [(inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), (inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1 PARTITION(ds=1).values EXPRESSION [(inputtbl1)inputtbl1.null, (inputtbl1)inputtbl1.null, ]
-POSTHOOK: Lineage: outputtbl1 PARTITION(ds=2).key EXPRESSION [(inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), (inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1 PARTITION(ds=2).values EXPRESSION [(inputtbl1)inputtbl1.null, (inputtbl1)inputtbl1.null, ]
 1	1	1
 2	1	1
 3	1	1
@@ -262,10 +260,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@outputtbl1
 POSTHOOK: Input: default@outputtbl1@ds=2
 #### A masked pattern was here ####
-POSTHOOK: Lineage: outputtbl1 PARTITION(ds=1).key EXPRESSION [(inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), (inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1 PARTITION(ds=1).values EXPRESSION [(inputtbl1)inputtbl1.null, (inputtbl1)inputtbl1.null, ]
-POSTHOOK: Lineage: outputtbl1 PARTITION(ds=2).key EXPRESSION [(inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), (inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1 PARTITION(ds=2).values EXPRESSION [(inputtbl1)inputtbl1.null, (inputtbl1)inputtbl1.null, ]
 1	1	2
 2	1	2
 3	1	2

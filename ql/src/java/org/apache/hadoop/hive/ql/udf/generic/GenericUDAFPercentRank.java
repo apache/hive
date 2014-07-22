@@ -49,12 +49,12 @@ public class GenericUDAFPercentRank extends GenericUDAFRank
 	static final Log LOG = LogFactory.getLog(GenericUDAFPercentRank.class.getName());
 
 	@Override
-  protected GenericUDAFRankEvaluator createEvaluator()
+  protected GenericUDAFAbstractRankEvaluator createEvaluator()
 	{
 		return new GenericUDAFPercentRankEvaluator();
 	}
 
-	public static class GenericUDAFPercentRankEvaluator extends GenericUDAFRankEvaluator
+	public static class GenericUDAFPercentRankEvaluator extends GenericUDAFAbstractRankEvaluator
 	{
 		@Override
 		public ObjectInspector init(Mode m, ObjectInspector[] parameters) throws HiveException

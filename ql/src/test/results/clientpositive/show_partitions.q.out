@@ -1,33 +1,43 @@
 PREHOOK: query: SHOW PARTITIONS srcpart
 PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@srcpart
 POSTHOOK: query: SHOW PARTITIONS srcpart
 POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@srcpart
 ds=2008-04-08/hr=11
 ds=2008-04-08/hr=12
 ds=2008-04-09/hr=11
 ds=2008-04-09/hr=12
 PREHOOK: query: SHOW PARTITIONS default.srcpart
 PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@srcpart
 POSTHOOK: query: SHOW PARTITIONS default.srcpart
 POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@srcpart
 ds=2008-04-08/hr=11
 ds=2008-04-08/hr=12
 ds=2008-04-09/hr=11
 ds=2008-04-09/hr=12
 PREHOOK: query: SHOW PARTITIONS srcpart PARTITION(hr='11')
 PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@srcpart
 POSTHOOK: query: SHOW PARTITIONS srcpart PARTITION(hr='11')
 POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@srcpart
 ds=2008-04-08/hr=11
 ds=2008-04-09/hr=11
 PREHOOK: query: SHOW PARTITIONS srcpart PARTITION(ds='2008-04-08')
 PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@srcpart
 POSTHOOK: query: SHOW PARTITIONS srcpart PARTITION(ds='2008-04-08')
 POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@srcpart
 ds=2008-04-08/hr=11
 ds=2008-04-08/hr=12
 PREHOOK: query: SHOW PARTITIONS srcpart PARTITION(ds='2008-04-08', hr='12')
 PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@srcpart
 POSTHOOK: query: SHOW PARTITIONS srcpart PARTITION(ds='2008-04-08', hr='12')
 POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@srcpart
 ds=2008-04-08/hr=12

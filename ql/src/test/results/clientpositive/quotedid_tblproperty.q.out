@@ -11,7 +11,9 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@xyz
 PREHOOK: query: describe xyz
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@xyz
 POSTHOOK: query: describe xyz
 POSTHOOK: type: DESCTABLE
-valid_colname       	string              	from deserializer   
-invalid.colname     	string              	from deserializer   
+POSTHOOK: Input: default@xyz
+valid_colname       	string              	                    
+invalid.colname     	string              	                    

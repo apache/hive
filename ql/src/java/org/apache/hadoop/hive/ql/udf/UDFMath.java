@@ -22,16 +22,29 @@ import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 
+/**
+ * This class can be used for math based UDFs that only have an evaluate method for {@code doubles}. By extending from
+ * this class these UDFs will automatically support decimals as well.
+ */
 public abstract class UDFMath extends UDF {
-  private final DoubleWritable doubleWritable = new DoubleWritable();
 
-  public UDFMath() {
-  }
+  private final DoubleWritable doubleWritable = new DoubleWritable();
 
   /**
    * For subclass to implement.
    */
-  public abstract DoubleWritable evaluate(DoubleWritable a);
+  protected abstract DoubleWritable doEvaluate(DoubleWritable a);
+
+  /**
+   * Returns {@code null} if the passed in value is {@code} and passes on to {@link #doEvaluate(DoubleWritable)} if not.
+   */
+  public final DoubleWritable evaluate(DoubleWritable a) {
+    if (a == null) {
+      return null;
+    }
+
+    return doEvaluate(a);
+  }
 
   /**
    * Convert HiveDecimal to a double and call evaluate() on it.
@@ -43,7 +56,7 @@ public abstract class UDFMath extends UDF {
 
     double d = writable.getHiveDecimal().bigDecimalValue().doubleValue();
     doubleWritable.set(d);
-    return evaluate(doubleWritable);
+    return doEvaluate(doubleWritable);
   }
 
 }

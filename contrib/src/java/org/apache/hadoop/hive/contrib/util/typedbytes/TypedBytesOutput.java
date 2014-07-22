@@ -27,7 +27,6 @@ import java.util.Set;
 import java.util.Map.Entry;
 
 import org.apache.hadoop.io.WritableUtils;
-import org.apache.hadoop.record.Buffer;
 
 /**
  * Provides functionality for writing typed bytes.
@@ -77,9 +76,7 @@ public class TypedBytesOutput {
    * @throws IOException
    */
   public void write(Object obj) throws IOException {
-    if (obj instanceof Buffer) {
-      writeBytes(((Buffer) obj).get());
-    } else if (obj instanceof Byte) {
+    if (obj instanceof Byte) {
       writeByte((Byte) obj);
     } else if (obj instanceof Boolean) {
       writeBool((Boolean) obj);

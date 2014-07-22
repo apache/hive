@@ -28,8 +28,7 @@ public abstract class HiveGroupConverter extends GroupConverter {
       return null;
     }
     if (type.isPrimitive()) {
-      return ETypeConverter.getNewConverter(type.asPrimitiveType().getPrimitiveTypeName().javaType,
-          index, parent);
+      return ETypeConverter.getNewConverter(type.asPrimitiveType(), index, parent);
     } else {
       if (type.asGroupType().getRepetition() == Repetition.REPEATED) {
         return new ArrayWritableGroupConverter(type.asGroupType(), parent, index);

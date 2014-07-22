@@ -24,10 +24,10 @@ hiveserver2() {
   fi
   JAR=${HIVE_LIB}/hive-service-*.jar
 
-  exec $HADOOP jar $JAR $CLASS "$@"
+  exec $HADOOP jar $JAR $CLASS $HIVE_OPTS "$@"
 }
 
 hiveserver2_help() {
-  hiveserver2 -h
+  hiveserver2 -H
 }
 

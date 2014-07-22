@@ -20,20 +20,37 @@ package org.apache.hadoop.hive.metastore.events;
 
 import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.Table;
+
+import java.util.Arrays;
+import java.util.List;
 
 public class PreAddPartitionEvent extends PreEventContext {
 
-  private final Partition partition;
+  private final Table table;
+  private final List<Partition> partitions;
 
-  public PreAddPartitionEvent (Partition partition, HMSHandler handler) {
+  public PreAddPartitionEvent (Table table, List<Partition> partitions, HMSHandler handler) {
     super(PreEventType.ADD_PARTITION, handler);
-    this.partition = partition;
+    this.table = table;
+    this.partitions = partitions;
+  }
+
+  public PreAddPartitionEvent(Table table, Partition partition, HMSHandler handler) {
+    this(table, Arrays.asList(partition), handler);
   }
 
   /**
-   * @return the partition
+   * @return the partitions
    */
-  public Partition getPartition() {
-    return partition;
+  public List<Partition> getPartitions() {
+    return partitions;
+  }
+
+  /**
+   * @return the table
+   */
+  public Table getTable() {
+    return table ;
   }
 }

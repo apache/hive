@@ -53,12 +53,12 @@ public class GenericUDAFCumeDist extends GenericUDAFRank
 	static final Log LOG = LogFactory.getLog(GenericUDAFCumeDist.class.getName());
 
 	@Override
-  protected GenericUDAFRankEvaluator createEvaluator()
+  protected GenericUDAFAbstractRankEvaluator createEvaluator()
 	{
 		return new GenericUDAFCumeDistEvaluator();
 	}
 
-  public static class GenericUDAFCumeDistEvaluator extends GenericUDAFRankEvaluator
+  public static class GenericUDAFCumeDistEvaluator extends GenericUDAFAbstractRankEvaluator
   {
     @Override
     public ObjectInspector init(Mode m, ObjectInspector[] parameters) throws HiveException

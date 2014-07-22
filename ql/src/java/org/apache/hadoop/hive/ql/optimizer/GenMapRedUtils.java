@@ -20,10 +20,12 @@ package org.apache.hadoop.hive.ql.optimizer;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -46,8 +48,10 @@ import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.MoveTask;
+import org.apache.hadoop.hive.ql.exec.NodeUtils;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
+import org.apache.hadoop.hive.ql.exec.OperatorUtils;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.SMBMapJoinOperator;
@@ -842,6 +846,13 @@ public final class GenMapRedUtils {
           setKeyAndValueDesc(work.getReduceWork(), op);
         }
       }
+    } else if (task != null && (task.getWork() instanceof TezWork)) {
+      TezWork work = (TezWork)task.getWork();
+      for (BaseWork w : work.getAllWorkUnsorted()) {
+        if (w instanceof MapWork) {
+          ((MapWork)w).deriveExplainAttributes();
+        }
+      }
     }
 
     if (task.getChildTasks() == null) {
@@ -917,6 +928,7 @@ public final class GenMapRedUtils {
     }
     tableScanOp.setNeededColumnIDs(neededColumnIds);
     tableScanOp.setNeededColumns(neededColumnNames);
+    tableScanOp.setReferencedColumns(neededColumnNames);
     return tableScanOp;
   }
 
@@ -1737,6 +1749,14 @@ public final class GenMapRedUtils {
     return confirmedPartns;
   }
 
+  public static List<String> getPartitionColumns(QBParseInfo parseInfo) {
+    tableSpec tblSpec = parseInfo.getTableSpec();
+    if (tblSpec.tableHandle.isPartitioned()) {
+      return new ArrayList<String>(tblSpec.getPartSpec().keySet());
+    }
+    return Collections.emptyList();
+  }
+
   public static List<Path> getInputPathsForPartialScan(QBParseInfo parseInfo, StringBuffer aggregationKey) 
     throws SemanticException {
     List<Path> inputPaths = new ArrayList<Path>();
@@ -1758,6 +1778,38 @@ public final class GenMapRedUtils {
       assert false;
     }
     return inputPaths;
+  }
+
+  public static Set<String> findAliases(final MapWork work, Operator<?> startOp) {
+    Set<String> aliases = new LinkedHashSet<String>();
+    for (Operator<?> topOp : findTopOps(startOp, null)) {
+      String alias = findAlias(work, topOp);
+      if (alias != null) {
+        aliases.add(alias);
+      }
+    }
+    return aliases;
+  }
+
+  public static Set<Operator<?>> findTopOps(Operator<?> startOp, final Class<?> clazz) {
+    final Set<Operator<?>> operators = new LinkedHashSet<Operator<?>>();
+    OperatorUtils.iterateParents(startOp, new NodeUtils.Function<Operator<?>>() {
+      public void apply(Operator<?> argument) {
+        if (argument.getNumParent() == 0 && (clazz == null || clazz.isInstance(argument))) {
+          operators.add(argument);
+        }
+      }
+    });
+    return operators;
+  }
+
+  public static String findAlias(MapWork work, Operator<?> operator) {
+    for (Entry<String, Operator<?>> entry : work.getAliasToWork().entrySet()) {
+      if (entry.getValue() == operator) {
+        return entry.getKey();
+      }
+    }
+    return null;
   }
 
   private GenMapRedUtils() {

@@ -11,11 +11,13 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@k1
 PREHOOK: query: desc formatted k1
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@k1
 POSTHOOK: query: desc formatted k1
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@k1
 # col_name            	data_type           	comment             
 	 	 
-a                   	string              	None                
+a                   	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -55,11 +57,13 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@k1
 PREHOOK: query: desc formatted k1
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@k1
 POSTHOOK: query: desc formatted k1
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@k1
 # col_name            	data_type           	comment             
 	 	 
-a                   	string              	None                
+a                   	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -99,11 +103,13 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@k1
 PREHOOK: query: desc formatted k1
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@k1
 POSTHOOK: query: desc formatted k1
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@k1
 # col_name            	data_type           	comment             
 	 	 
-a                   	string              	None                
+a                   	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 

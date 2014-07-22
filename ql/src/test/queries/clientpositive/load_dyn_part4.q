@@ -1,3 +1,5 @@
+-- SORT_QUERY_RESULTS
+
 show partitions srcpart;
 
 

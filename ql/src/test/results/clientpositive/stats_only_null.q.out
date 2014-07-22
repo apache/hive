@@ -47,10 +47,6 @@ POSTHOOK: query: insert into table stats_null_part partition(dt='2010') select *
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@temps_null
 POSTHOOK: Output: default@stats_null_part@dt=2010
-POSTHOOK: Lineage: stats_null.a SIMPLE [(temps_null)temps_null.FieldSchema(name:a, type:double, comment:null), ]
-POSTHOOK: Lineage: stats_null.b SIMPLE [(temps_null)temps_null.FieldSchema(name:b, type:int, comment:null), ]
-POSTHOOK: Lineage: stats_null.c SIMPLE [(temps_null)temps_null.FieldSchema(name:c, type:string, comment:null), ]
-POSTHOOK: Lineage: stats_null.d SIMPLE [(temps_null)temps_null.FieldSchema(name:d, type:smallint, comment:null), ]
 POSTHOOK: Lineage: stats_null_part PARTITION(dt=2010).a SIMPLE [(temps_null)temps_null.FieldSchema(name:a, type:double, comment:null), ]
 POSTHOOK: Lineage: stats_null_part PARTITION(dt=2010).b SIMPLE [(temps_null)temps_null.FieldSchema(name:b, type:int, comment:null), ]
 POSTHOOK: Lineage: stats_null_part PARTITION(dt=2010).c SIMPLE [(temps_null)temps_null.FieldSchema(name:c, type:string, comment:null), ]
@@ -63,14 +59,6 @@ POSTHOOK: query: insert into table stats_null_part partition(dt='2011') select *
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@temps_null
 POSTHOOK: Output: default@stats_null_part@dt=2011
-POSTHOOK: Lineage: stats_null.a SIMPLE [(temps_null)temps_null.FieldSchema(name:a, type:double, comment:null), ]
-POSTHOOK: Lineage: stats_null.b SIMPLE [(temps_null)temps_null.FieldSchema(name:b, type:int, comment:null), ]
-POSTHOOK: Lineage: stats_null.c SIMPLE [(temps_null)temps_null.FieldSchema(name:c, type:string, comment:null), ]
-POSTHOOK: Lineage: stats_null.d SIMPLE [(temps_null)temps_null.FieldSchema(name:d, type:smallint, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2010).a SIMPLE [(temps_null)temps_null.FieldSchema(name:a, type:double, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2010).b SIMPLE [(temps_null)temps_null.FieldSchema(name:b, type:int, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2010).c SIMPLE [(temps_null)temps_null.FieldSchema(name:c, type:string, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2010).d SIMPLE [(temps_null)temps_null.FieldSchema(name:d, type:smallint, comment:null), ]
 POSTHOOK: Lineage: stats_null_part PARTITION(dt=2011).a SIMPLE [(temps_null)temps_null.FieldSchema(name:a, type:double, comment:null), ]
 POSTHOOK: Lineage: stats_null_part PARTITION(dt=2011).b SIMPLE [(temps_null)temps_null.FieldSchema(name:b, type:int, comment:null), ]
 POSTHOOK: Lineage: stats_null_part PARTITION(dt=2011).c SIMPLE [(temps_null)temps_null.FieldSchema(name:c, type:string, comment:null), ]
@@ -81,21 +69,9 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain 
 select count(*), count(a), count(b), count(c), count(d) from stats_null
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: stats_null.a SIMPLE [(temps_null)temps_null.FieldSchema(name:a, type:double, comment:null), ]
-POSTHOOK: Lineage: stats_null.b SIMPLE [(temps_null)temps_null.FieldSchema(name:b, type:int, comment:null), ]
-POSTHOOK: Lineage: stats_null.c SIMPLE [(temps_null)temps_null.FieldSchema(name:c, type:string, comment:null), ]
-POSTHOOK: Lineage: stats_null.d SIMPLE [(temps_null)temps_null.FieldSchema(name:d, type:smallint, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2010).a SIMPLE [(temps_null)temps_null.FieldSchema(name:a, type:double, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2010).b SIMPLE [(temps_null)temps_null.FieldSchema(name:b, type:int, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2010).c SIMPLE [(temps_null)temps_null.FieldSchema(name:c, type:string, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2010).d SIMPLE [(temps_null)temps_null.FieldSchema(name:d, type:smallint, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2011).a SIMPLE [(temps_null)temps_null.FieldSchema(name:a, type:double, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2011).b SIMPLE [(temps_null)temps_null.FieldSchema(name:b, type:int, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2011).c SIMPLE [(temps_null)temps_null.FieldSchema(name:c, type:string, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2011).d SIMPLE [(temps_null)temps_null.FieldSchema(name:d, type:smallint, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -138,6 +114,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: explain 
 select count(*), count(a), count(b), count(c), count(d) from stats_null_part
@@ -145,21 +123,9 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain 
 select count(*), count(a), count(b), count(c), count(d) from stats_null_part
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: stats_null.a SIMPLE [(temps_null)temps_null.FieldSchema(name:a, type:double, comment:null), ]
-POSTHOOK: Lineage: stats_null.b SIMPLE [(temps_null)temps_null.FieldSchema(name:b, type:int, comment:null), ]
-POSTHOOK: Lineage: stats_null.c SIMPLE [(temps_null)temps_null.FieldSchema(name:c, type:string, comment:null), ]
-POSTHOOK: Lineage: stats_null.d SIMPLE [(temps_null)temps_null.FieldSchema(name:d, type:smallint, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2010).a SIMPLE [(temps_null)temps_null.FieldSchema(name:a, type:double, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2010).b SIMPLE [(temps_null)temps_null.FieldSchema(name:b, type:int, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2010).c SIMPLE [(temps_null)temps_null.FieldSchema(name:c, type:string, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2010).d SIMPLE [(temps_null)temps_null.FieldSchema(name:d, type:smallint, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2011).a SIMPLE [(temps_null)temps_null.FieldSchema(name:a, type:double, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2011).b SIMPLE [(temps_null)temps_null.FieldSchema(name:b, type:int, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2011).c SIMPLE [(temps_null)temps_null.FieldSchema(name:c, type:string, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2011).d SIMPLE [(temps_null)temps_null.FieldSchema(name:d, type:smallint, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -202,6 +168,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: analyze table stats_null compute statistics for columns a,b,c,d
 PREHOOK: type: QUERY
@@ -211,18 +179,6 @@ POSTHOOK: query: analyze table stats_null compute statistics for columns a,b,c,d
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@stats_null
 #### A masked pattern was here ####
-POSTHOOK: Lineage: stats_null.a SIMPLE [(temps_null)temps_null.FieldSchema(name:a, type:double, comment:null), ]
-POSTHOOK: Lineage: stats_null.b SIMPLE [(temps_null)temps_null.FieldSchema(name:b, type:int, comment:null), ]
-POSTHOOK: Lineage: stats_null.c SIMPLE [(temps_null)temps_null.FieldSchema(name:c, type:string, comment:null), ]
-POSTHOOK: Lineage: stats_null.d SIMPLE [(temps_null)temps_null.FieldSchema(name:d, type:smallint, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2010).a SIMPLE [(temps_null)temps_null.FieldSchema(name:a, type:double, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2010).b SIMPLE [(temps_null)temps_null.FieldSchema(name:b, type:int, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2010).c SIMPLE [(temps_null)temps_null.FieldSchema(name:c, type:string, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2010).d SIMPLE [(temps_null)temps_null.FieldSchema(name:d, type:smallint, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2011).a SIMPLE [(temps_null)temps_null.FieldSchema(name:a, type:double, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2011).b SIMPLE [(temps_null)temps_null.FieldSchema(name:b, type:int, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2011).c SIMPLE [(temps_null)temps_null.FieldSchema(name:c, type:string, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2011).d SIMPLE [(temps_null)temps_null.FieldSchema(name:d, type:smallint, comment:null), ]
 PREHOOK: query: analyze table stats_null_part partition(dt='2010') compute statistics for columns a,b,c,d
 PREHOOK: type: QUERY
 PREHOOK: Input: default@stats_null_part
@@ -233,18 +189,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@stats_null_part
 POSTHOOK: Input: default@stats_null_part@dt=2010
 #### A masked pattern was here ####
-POSTHOOK: Lineage: stats_null.a SIMPLE [(temps_null)temps_null.FieldSchema(name:a, type:double, comment:null), ]
-POSTHOOK: Lineage: stats_null.b SIMPLE [(temps_null)temps_null.FieldSchema(name:b, type:int, comment:null), ]
-POSTHOOK: Lineage: stats_null.c SIMPLE [(temps_null)temps_null.FieldSchema(name:c, type:string, comment:null), ]
-POSTHOOK: Lineage: stats_null.d SIMPLE [(temps_null)temps_null.FieldSchema(name:d, type:smallint, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2010).a SIMPLE [(temps_null)temps_null.FieldSchema(name:a, type:double, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2010).b SIMPLE [(temps_null)temps_null.FieldSchema(name:b, type:int, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2010).c SIMPLE [(temps_null)temps_null.FieldSchema(name:c, type:string, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2010).d SIMPLE [(temps_null)temps_null.FieldSchema(name:d, type:smallint, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2011).a SIMPLE [(temps_null)temps_null.FieldSchema(name:a, type:double, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2011).b SIMPLE [(temps_null)temps_null.FieldSchema(name:b, type:int, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2011).c SIMPLE [(temps_null)temps_null.FieldSchema(name:c, type:string, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2011).d SIMPLE [(temps_null)temps_null.FieldSchema(name:d, type:smallint, comment:null), ]
 PREHOOK: query: analyze table stats_null_part partition(dt='2011') compute statistics for columns a,b,c,d
 PREHOOK: type: QUERY
 PREHOOK: Input: default@stats_null_part
@@ -255,45 +199,23 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@stats_null_part
 POSTHOOK: Input: default@stats_null_part@dt=2011
 #### A masked pattern was here ####
-POSTHOOK: Lineage: stats_null.a SIMPLE [(temps_null)temps_null.FieldSchema(name:a, type:double, comment:null), ]
-POSTHOOK: Lineage: stats_null.b SIMPLE [(temps_null)temps_null.FieldSchema(name:b, type:int, comment:null), ]
-POSTHOOK: Lineage: stats_null.c SIMPLE [(temps_null)temps_null.FieldSchema(name:c, type:string, comment:null), ]
-POSTHOOK: Lineage: stats_null.d SIMPLE [(temps_null)temps_null.FieldSchema(name:d, type:smallint, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2010).a SIMPLE [(temps_null)temps_null.FieldSchema(name:a, type:double, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2010).b SIMPLE [(temps_null)temps_null.FieldSchema(name:b, type:int, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2010).c SIMPLE [(temps_null)temps_null.FieldSchema(name:c, type:string, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2010).d SIMPLE [(temps_null)temps_null.FieldSchema(name:d, type:smallint, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2011).a SIMPLE [(temps_null)temps_null.FieldSchema(name:a, type:double, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2011).b SIMPLE [(temps_null)temps_null.FieldSchema(name:b, type:int, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2011).c SIMPLE [(temps_null)temps_null.FieldSchema(name:c, type:string, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2011).d SIMPLE [(temps_null)temps_null.FieldSchema(name:d, type:smallint, comment:null), ]
 PREHOOK: query: describe formatted stats_null_part partition (dt='2010')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats_null_part
 POSTHOOK: query: describe formatted stats_null_part partition (dt='2010')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Lineage: stats_null.a SIMPLE [(temps_null)temps_null.FieldSchema(name:a, type:double, comment:null), ]
-POSTHOOK: Lineage: stats_null.b SIMPLE [(temps_null)temps_null.FieldSchema(name:b, type:int, comment:null), ]
-POSTHOOK: Lineage: stats_null.c SIMPLE [(temps_null)temps_null.FieldSchema(name:c, type:string, comment:null), ]
-POSTHOOK: Lineage: stats_null.d SIMPLE [(temps_null)temps_null.FieldSchema(name:d, type:smallint, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2010).a SIMPLE [(temps_null)temps_null.FieldSchema(name:a, type:double, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2010).b SIMPLE [(temps_null)temps_null.FieldSchema(name:b, type:int, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2010).c SIMPLE [(temps_null)temps_null.FieldSchema(name:c, type:string, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2010).d SIMPLE [(temps_null)temps_null.FieldSchema(name:d, type:smallint, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2011).a SIMPLE [(temps_null)temps_null.FieldSchema(name:a, type:double, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2011).b SIMPLE [(temps_null)temps_null.FieldSchema(name:b, type:int, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2011).c SIMPLE [(temps_null)temps_null.FieldSchema(name:c, type:string, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2011).d SIMPLE [(temps_null)temps_null.FieldSchema(name:d, type:smallint, comment:null), ]
+POSTHOOK: Input: default@stats_null_part
 # col_name            	data_type           	comment             
 	 	 
-a                   	double              	None                
-b                   	int                 	None                
-c                   	string              	None                
-d                   	smallint            	None                
+a                   	double              	                    
+b                   	int                 	                    
+c                   	string              	                    
+d                   	smallint            	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-dt                  	string              	None                
+dt                  	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[2010]              	 
@@ -322,31 +244,21 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: describe formatted stats_null_part partition (dt='2011')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats_null_part
 POSTHOOK: query: describe formatted stats_null_part partition (dt='2011')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Lineage: stats_null.a SIMPLE [(temps_null)temps_null.FieldSchema(name:a, type:double, comment:null), ]
-POSTHOOK: Lineage: stats_null.b SIMPLE [(temps_null)temps_null.FieldSchema(name:b, type:int, comment:null), ]
-POSTHOOK: Lineage: stats_null.c SIMPLE [(temps_null)temps_null.FieldSchema(name:c, type:string, comment:null), ]
-POSTHOOK: Lineage: stats_null.d SIMPLE [(temps_null)temps_null.FieldSchema(name:d, type:smallint, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2010).a SIMPLE [(temps_null)temps_null.FieldSchema(name:a, type:double, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2010).b SIMPLE [(temps_null)temps_null.FieldSchema(name:b, type:int, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2010).c SIMPLE [(temps_null)temps_null.FieldSchema(name:c, type:string, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2010).d SIMPLE [(temps_null)temps_null.FieldSchema(name:d, type:smallint, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2011).a SIMPLE [(temps_null)temps_null.FieldSchema(name:a, type:double, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2011).b SIMPLE [(temps_null)temps_null.FieldSchema(name:b, type:int, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2011).c SIMPLE [(temps_null)temps_null.FieldSchema(name:c, type:string, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2011).d SIMPLE [(temps_null)temps_null.FieldSchema(name:d, type:smallint, comment:null), ]
+POSTHOOK: Input: default@stats_null_part
 # col_name            	data_type           	comment             
 	 	 
-a                   	double              	None                
-b                   	int                 	None                
-c                   	string              	None                
-d                   	smallint            	None                
+a                   	double              	                    
+b                   	int                 	                    
+c                   	string              	                    
+d                   	smallint            	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-dt                  	string              	None                
+dt                  	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[2011]              	 
@@ -379,18 +291,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain 
 select count(*), count(a), count(b), count(c), count(d) from stats_null
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: stats_null.a SIMPLE [(temps_null)temps_null.FieldSchema(name:a, type:double, comment:null), ]
-POSTHOOK: Lineage: stats_null.b SIMPLE [(temps_null)temps_null.FieldSchema(name:b, type:int, comment:null), ]
-POSTHOOK: Lineage: stats_null.c SIMPLE [(temps_null)temps_null.FieldSchema(name:c, type:string, comment:null), ]
-POSTHOOK: Lineage: stats_null.d SIMPLE [(temps_null)temps_null.FieldSchema(name:d, type:smallint, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2010).a SIMPLE [(temps_null)temps_null.FieldSchema(name:a, type:double, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2010).b SIMPLE [(temps_null)temps_null.FieldSchema(name:b, type:int, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2010).c SIMPLE [(temps_null)temps_null.FieldSchema(name:c, type:string, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2010).d SIMPLE [(temps_null)temps_null.FieldSchema(name:d, type:smallint, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2011).a SIMPLE [(temps_null)temps_null.FieldSchema(name:a, type:double, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2011).b SIMPLE [(temps_null)temps_null.FieldSchema(name:b, type:int, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2011).c SIMPLE [(temps_null)temps_null.FieldSchema(name:c, type:string, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2011).d SIMPLE [(temps_null)temps_null.FieldSchema(name:d, type:smallint, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -398,6 +298,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: explain 
 select count(*), count(a), count(b), count(c), count(d) from stats_null_part
@@ -405,18 +307,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain 
 select count(*), count(a), count(b), count(c), count(d) from stats_null_part
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: stats_null.a SIMPLE [(temps_null)temps_null.FieldSchema(name:a, type:double, comment:null), ]
-POSTHOOK: Lineage: stats_null.b SIMPLE [(temps_null)temps_null.FieldSchema(name:b, type:int, comment:null), ]
-POSTHOOK: Lineage: stats_null.c SIMPLE [(temps_null)temps_null.FieldSchema(name:c, type:string, comment:null), ]
-POSTHOOK: Lineage: stats_null.d SIMPLE [(temps_null)temps_null.FieldSchema(name:d, type:smallint, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2010).a SIMPLE [(temps_null)temps_null.FieldSchema(name:a, type:double, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2010).b SIMPLE [(temps_null)temps_null.FieldSchema(name:b, type:int, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2010).c SIMPLE [(temps_null)temps_null.FieldSchema(name:c, type:string, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2010).d SIMPLE [(temps_null)temps_null.FieldSchema(name:d, type:smallint, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2011).a SIMPLE [(temps_null)temps_null.FieldSchema(name:a, type:double, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2011).b SIMPLE [(temps_null)temps_null.FieldSchema(name:b, type:int, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2011).c SIMPLE [(temps_null)temps_null.FieldSchema(name:c, type:string, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2011).d SIMPLE [(temps_null)temps_null.FieldSchema(name:d, type:smallint, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -424,6 +314,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select count(*), count(a), count(b), count(c), count(d) from stats_null
 PREHOOK: type: QUERY
@@ -431,18 +323,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: select count(*), count(a), count(b), count(c), count(d) from stats_null
 POSTHOOK: type: QUERY
 #### A masked pattern was here ####
-POSTHOOK: Lineage: stats_null.a SIMPLE [(temps_null)temps_null.FieldSchema(name:a, type:double, comment:null), ]
-POSTHOOK: Lineage: stats_null.b SIMPLE [(temps_null)temps_null.FieldSchema(name:b, type:int, comment:null), ]
-POSTHOOK: Lineage: stats_null.c SIMPLE [(temps_null)temps_null.FieldSchema(name:c, type:string, comment:null), ]
-POSTHOOK: Lineage: stats_null.d SIMPLE [(temps_null)temps_null.FieldSchema(name:d, type:smallint, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2010).a SIMPLE [(temps_null)temps_null.FieldSchema(name:a, type:double, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2010).b SIMPLE [(temps_null)temps_null.FieldSchema(name:b, type:int, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2010).c SIMPLE [(temps_null)temps_null.FieldSchema(name:c, type:string, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2010).d SIMPLE [(temps_null)temps_null.FieldSchema(name:d, type:smallint, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2011).a SIMPLE [(temps_null)temps_null.FieldSchema(name:a, type:double, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2011).b SIMPLE [(temps_null)temps_null.FieldSchema(name:b, type:int, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2011).c SIMPLE [(temps_null)temps_null.FieldSchema(name:c, type:string, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2011).d SIMPLE [(temps_null)temps_null.FieldSchema(name:d, type:smallint, comment:null), ]
 10	8	8	10	10
 PREHOOK: query: select count(*), count(a), count(b), count(c), count(d) from stats_null_part
 PREHOOK: type: QUERY
@@ -450,18 +330,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: select count(*), count(a), count(b), count(c), count(d) from stats_null_part
 POSTHOOK: type: QUERY
 #### A masked pattern was here ####
-POSTHOOK: Lineage: stats_null.a SIMPLE [(temps_null)temps_null.FieldSchema(name:a, type:double, comment:null), ]
-POSTHOOK: Lineage: stats_null.b SIMPLE [(temps_null)temps_null.FieldSchema(name:b, type:int, comment:null), ]
-POSTHOOK: Lineage: stats_null.c SIMPLE [(temps_null)temps_null.FieldSchema(name:c, type:string, comment:null), ]
-POSTHOOK: Lineage: stats_null.d SIMPLE [(temps_null)temps_null.FieldSchema(name:d, type:smallint, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2010).a SIMPLE [(temps_null)temps_null.FieldSchema(name:a, type:double, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2010).b SIMPLE [(temps_null)temps_null.FieldSchema(name:b, type:int, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2010).c SIMPLE [(temps_null)temps_null.FieldSchema(name:c, type:string, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2010).d SIMPLE [(temps_null)temps_null.FieldSchema(name:d, type:smallint, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2011).a SIMPLE [(temps_null)temps_null.FieldSchema(name:a, type:double, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2011).b SIMPLE [(temps_null)temps_null.FieldSchema(name:b, type:int, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2011).c SIMPLE [(temps_null)temps_null.FieldSchema(name:c, type:string, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2011).d SIMPLE [(temps_null)temps_null.FieldSchema(name:d, type:smallint, comment:null), ]
 10	8	8	10	10
 PREHOOK: query: drop table stats_null
 PREHOOK: type: DROPTABLE
@@ -471,18 +339,6 @@ POSTHOOK: query: drop table stats_null
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@stats_null
 POSTHOOK: Output: default@stats_null
-POSTHOOK: Lineage: stats_null.a SIMPLE [(temps_null)temps_null.FieldSchema(name:a, type:double, comment:null), ]
-POSTHOOK: Lineage: stats_null.b SIMPLE [(temps_null)temps_null.FieldSchema(name:b, type:int, comment:null), ]
-POSTHOOK: Lineage: stats_null.c SIMPLE [(temps_null)temps_null.FieldSchema(name:c, type:string, comment:null), ]
-POSTHOOK: Lineage: stats_null.d SIMPLE [(temps_null)temps_null.FieldSchema(name:d, type:smallint, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2010).a SIMPLE [(temps_null)temps_null.FieldSchema(name:a, type:double, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2010).b SIMPLE [(temps_null)temps_null.FieldSchema(name:b, type:int, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2010).c SIMPLE [(temps_null)temps_null.FieldSchema(name:c, type:string, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2010).d SIMPLE [(temps_null)temps_null.FieldSchema(name:d, type:smallint, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2011).a SIMPLE [(temps_null)temps_null.FieldSchema(name:a, type:double, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2011).b SIMPLE [(temps_null)temps_null.FieldSchema(name:b, type:int, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2011).c SIMPLE [(temps_null)temps_null.FieldSchema(name:c, type:string, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2011).d SIMPLE [(temps_null)temps_null.FieldSchema(name:d, type:smallint, comment:null), ]
 PREHOOK: query: drop table stats_null_part
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@stats_null_part
@@ -491,18 +347,6 @@ POSTHOOK: query: drop table stats_null_part
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@stats_null_part
 POSTHOOK: Output: default@stats_null_part
-POSTHOOK: Lineage: stats_null.a SIMPLE [(temps_null)temps_null.FieldSchema(name:a, type:double, comment:null), ]
-POSTHOOK: Lineage: stats_null.b SIMPLE [(temps_null)temps_null.FieldSchema(name:b, type:int, comment:null), ]
-POSTHOOK: Lineage: stats_null.c SIMPLE [(temps_null)temps_null.FieldSchema(name:c, type:string, comment:null), ]
-POSTHOOK: Lineage: stats_null.d SIMPLE [(temps_null)temps_null.FieldSchema(name:d, type:smallint, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2010).a SIMPLE [(temps_null)temps_null.FieldSchema(name:a, type:double, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2010).b SIMPLE [(temps_null)temps_null.FieldSchema(name:b, type:int, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2010).c SIMPLE [(temps_null)temps_null.FieldSchema(name:c, type:string, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2010).d SIMPLE [(temps_null)temps_null.FieldSchema(name:d, type:smallint, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2011).a SIMPLE [(temps_null)temps_null.FieldSchema(name:a, type:double, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2011).b SIMPLE [(temps_null)temps_null.FieldSchema(name:b, type:int, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2011).c SIMPLE [(temps_null)temps_null.FieldSchema(name:c, type:string, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2011).d SIMPLE [(temps_null)temps_null.FieldSchema(name:d, type:smallint, comment:null), ]
 PREHOOK: query: drop table temps_null
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@temps_null
@@ -511,15 +355,3 @@ POSTHOOK: query: drop table temps_null
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@temps_null
 POSTHOOK: Output: default@temps_null
-POSTHOOK: Lineage: stats_null.a SIMPLE [(temps_null)temps_null.FieldSchema(name:a, type:double, comment:null), ]
-POSTHOOK: Lineage: stats_null.b SIMPLE [(temps_null)temps_null.FieldSchema(name:b, type:int, comment:null), ]
-POSTHOOK: Lineage: stats_null.c SIMPLE [(temps_null)temps_null.FieldSchema(name:c, type:string, comment:null), ]
-POSTHOOK: Lineage: stats_null.d SIMPLE [(temps_null)temps_null.FieldSchema(name:d, type:smallint, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2010).a SIMPLE [(temps_null)temps_null.FieldSchema(name:a, type:double, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2010).b SIMPLE [(temps_null)temps_null.FieldSchema(name:b, type:int, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2010).c SIMPLE [(temps_null)temps_null.FieldSchema(name:c, type:string, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2010).d SIMPLE [(temps_null)temps_null.FieldSchema(name:d, type:smallint, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2011).a SIMPLE [(temps_null)temps_null.FieldSchema(name:a, type:double, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2011).b SIMPLE [(temps_null)temps_null.FieldSchema(name:b, type:int, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2011).c SIMPLE [(temps_null)temps_null.FieldSchema(name:c, type:string, comment:null), ]
-POSTHOOK: Lineage: stats_null_part PARTITION(dt=2011).d SIMPLE [(temps_null)temps_null.FieldSchema(name:d, type:smallint, comment:null), ]

@@ -30,6 +30,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.serde2.ByteStream.Output;
+import org.apache.hadoop.hive.serde2.ByteStream.RandomAccessOutput;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinaryUtils;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinaryUtils.VInt;
 import org.apache.hadoop.io.WritableComparable;
@@ -151,7 +152,7 @@ public class TimestampWritable implements WritableComparable<TimestampWritable> 
     timestampEmpty = true;
   }
 
-  public void writeToByteStream(Output byteStream) {
+  public void writeToByteStream(RandomAccessOutput byteStream) {
     checkBytes();
     byteStream.write(currentBytes, offset, getTotalLength());
   }

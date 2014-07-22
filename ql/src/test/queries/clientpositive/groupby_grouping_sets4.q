@@ -1,5 +1,8 @@
 set hive.merge.mapfiles = false;
 set hive.merge.mapredfiles = false;
+
+-- SORT_QUERY_RESULTS
+
 -- Set merging to false above to make the explain more readable
 
 CREATE TABLE T1(a STRING, b STRING, c STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY ' ' STORED AS TEXTFILE; 
@@ -12,13 +15,13 @@ SELECT * FROM
 (SELECT a, b, count(*) from T1 where a < 3 group by a, b with cube) subq1
 join
 (SELECT a, b, count(*) from T1 where a < 3 group by a, b with cube) subq2
-on subq1.a = subq2.a order by subq1.a, subq1.b, subq2.a, subq2.b;
+on subq1.a = subq2.a;
 
 SELECT * FROM
 (SELECT a, b, count(*) from T1 where a < 3 group by a, b with cube) subq1
 join
 (SELECT a, b, count(*) from T1 where a < 3 group by a, b with cube) subq2
-on subq1.a = subq2.a order by subq1.a, subq1.b, subq2.a, subq2.b;
+on subq1.a = subq2.a;
 
 set hive.new.job.grouping.set.cardinality=2;
 
@@ -29,11 +32,11 @@ SELECT * FROM
 (SELECT a, b, count(*) from T1 where a < 3 group by a, b with cube) subq1
 join
 (SELECT a, b, count(*) from T1 where a < 3 group by a, b with cube) subq2
-on subq1.a = subq2.a order by subq1.a, subq1.b, subq2.a, subq2.b;
+on subq1.a = subq2.a;
 
 SELECT * FROM
 (SELECT a, b, count(*) from T1 where a < 3 group by a, b with cube) subq1
 join
 (SELECT a, b, count(*) from T1 where a < 3 group by a, b with cube) subq2
-on subq1.a = subq2.a order by subq1.a, subq1.b, subq2.a, subq2.b;
+on subq1.a = subq2.a;
 

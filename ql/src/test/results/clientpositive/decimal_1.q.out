@@ -19,11 +19,13 @@ POSTHOOK: Input: default@decimal_1
 POSTHOOK: Output: default@decimal_1
 PREHOOK: query: desc decimal_1
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@decimal_1
 POSTHOOK: query: desc decimal_1
 POSTHOOK: type: DESCTABLE
-t                   	decimal(4,2)        	from deserializer   
-u                   	decimal(5,0)        	from deserializer   
-v                   	decimal(10,0)       	from deserializer   
+POSTHOOK: Input: default@decimal_1
+t                   	decimal(4,2)        	                    
+u                   	decimal(5,0)        	                    
+v                   	decimal(10,0)       	                    
 PREHOOK: query: insert overwrite table decimal_1
   select cast('17.29' as decimal(4,2)), 3.1415926BD, 3115926.54321BD from src tablesample (1 rows)
 PREHOOK: type: QUERY
@@ -45,9 +47,6 @@ POSTHOOK: query: select cast(t as boolean) from decimal_1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: decimal_1.t EXPRESSION []
-POSTHOOK: Lineage: decimal_1.u EXPRESSION []
-POSTHOOK: Lineage: decimal_1.v EXPRESSION []
 true
 PREHOOK: query: select cast(t as tinyint) from decimal_1
 PREHOOK: type: QUERY
@@ -57,9 +56,6 @@ POSTHOOK: query: select cast(t as tinyint) from decimal_1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: decimal_1.t EXPRESSION []
-POSTHOOK: Lineage: decimal_1.u EXPRESSION []
-POSTHOOK: Lineage: decimal_1.v EXPRESSION []
 17
 PREHOOK: query: select cast(t as smallint) from decimal_1
 PREHOOK: type: QUERY
@@ -69,9 +65,6 @@ POSTHOOK: query: select cast(t as smallint) from decimal_1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: decimal_1.t EXPRESSION []
-POSTHOOK: Lineage: decimal_1.u EXPRESSION []
-POSTHOOK: Lineage: decimal_1.v EXPRESSION []
 17
 PREHOOK: query: select cast(t as int) from decimal_1
 PREHOOK: type: QUERY
@@ -81,9 +74,6 @@ POSTHOOK: query: select cast(t as int) from decimal_1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: decimal_1.t EXPRESSION []
-POSTHOOK: Lineage: decimal_1.u EXPRESSION []
-POSTHOOK: Lineage: decimal_1.v EXPRESSION []
 17
 PREHOOK: query: select cast(t as bigint) from decimal_1
 PREHOOK: type: QUERY
@@ -93,9 +83,6 @@ POSTHOOK: query: select cast(t as bigint) from decimal_1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: decimal_1.t EXPRESSION []
-POSTHOOK: Lineage: decimal_1.u EXPRESSION []
-POSTHOOK: Lineage: decimal_1.v EXPRESSION []
 17
 PREHOOK: query: select cast(t as float) from decimal_1
 PREHOOK: type: QUERY
@@ -105,9 +92,6 @@ POSTHOOK: query: select cast(t as float) from decimal_1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: decimal_1.t EXPRESSION []
-POSTHOOK: Lineage: decimal_1.u EXPRESSION []
-POSTHOOK: Lineage: decimal_1.v EXPRESSION []
 17.29
 PREHOOK: query: select cast(t as double) from decimal_1
 PREHOOK: type: QUERY
@@ -117,9 +101,6 @@ POSTHOOK: query: select cast(t as double) from decimal_1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: decimal_1.t EXPRESSION []
-POSTHOOK: Lineage: decimal_1.u EXPRESSION []
-POSTHOOK: Lineage: decimal_1.v EXPRESSION []
 17.29
 PREHOOK: query: select cast(t as string) from decimal_1
 PREHOOK: type: QUERY
@@ -129,9 +110,6 @@ POSTHOOK: query: select cast(t as string) from decimal_1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: decimal_1.t EXPRESSION []
-POSTHOOK: Lineage: decimal_1.u EXPRESSION []
-POSTHOOK: Lineage: decimal_1.v EXPRESSION []
 17.29
 PREHOOK: query: select cast(t as timestamp) from decimal_1
 PREHOOK: type: QUERY
@@ -141,9 +119,6 @@ POSTHOOK: query: select cast(t as timestamp) from decimal_1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: decimal_1.t EXPRESSION []
-POSTHOOK: Lineage: decimal_1.u EXPRESSION []
-POSTHOOK: Lineage: decimal_1.v EXPRESSION []
 1969-12-31 16:00:17.29
 PREHOOK: query: drop table decimal_1
 PREHOOK: type: DROPTABLE
@@ -153,6 +128,3 @@ POSTHOOK: query: drop table decimal_1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@decimal_1
 POSTHOOK: Output: default@decimal_1
-POSTHOOK: Lineage: decimal_1.t EXPRESSION []
-POSTHOOK: Lineage: decimal_1.u EXPRESSION []
-POSTHOOK: Lineage: decimal_1.v EXPRESSION []

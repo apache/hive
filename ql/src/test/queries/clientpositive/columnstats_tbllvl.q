@@ -23,6 +23,15 @@ analyze table UserVisits_web_text_none compute statistics for columns sourceIP, 
 
 analyze table UserVisits_web_text_none compute statistics for columns sourceIP, avgTimeOnSite, adRevenue;
 
+explain 
+analyze table UserVisits_web_text_none compute statistics for columns;
+
+analyze table UserVisits_web_text_none compute statistics for columns;
+
+describe formatted UserVisits_web_text_none destURL;
+describe formatted UserVisits_web_text_none adRevenue;
+describe formatted UserVisits_web_text_none avgTimeOnSite;
+ 
 CREATE TABLE empty_tab(
    a int,
    b double,

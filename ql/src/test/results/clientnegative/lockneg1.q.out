@@ -23,14 +23,10 @@ PREHOOK: query: LOCK TABLE tstsrc SHARED
 PREHOOK: type: LOCKTABLE
 POSTHOOK: query: LOCK TABLE tstsrc SHARED
 POSTHOOK: type: LOCKTABLE
-POSTHOOK: Lineage: tstsrc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tstsrc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: LOCK TABLE tstsrc SHARED
 PREHOOK: type: LOCKTABLE
 POSTHOOK: query: LOCK TABLE tstsrc SHARED
 POSTHOOK: type: LOCKTABLE
-POSTHOOK: Lineage: tstsrc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tstsrc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: LOCK TABLE tstsrc EXCLUSIVE
 PREHOOK: type: LOCKTABLE
 conflicting lock present for default@tstsrc mode EXCLUSIVE

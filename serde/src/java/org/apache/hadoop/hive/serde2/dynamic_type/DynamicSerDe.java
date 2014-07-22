@@ -219,7 +219,7 @@ public class DynamicSerDe extends AbstractSerDe {
       e.printStackTrace();
       throw new SerDeException(e);
     }
-    ret.set(bos_.getData(), 0, bos_.getCount());
+    ret.set(bos_.getData(), 0, bos_.getLength());
     return ret;
   }
 

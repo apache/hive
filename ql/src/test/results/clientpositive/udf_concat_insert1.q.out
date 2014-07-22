@@ -25,8 +25,6 @@ POSTHOOK: query: SELECT dest1.* FROM dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: dest1.key EXPRESSION []
-POSTHOOK: Lineage: dest1.value EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 1234	0
 1234	10
 1234	11

@@ -44,12 +44,13 @@ import org.apache.hadoop.util.ReflectionUtils;
  * An {@link org.apache.hadoop.mapred.InputFormat} for Plain files with
  * {@link Deserializer} records.
  */
+@Deprecated
 public class FlatFileInputFormat<T> extends
     FileInputFormat<Void, FlatFileInputFormat.RowContainer<T>> {
 
   /**
    * A work-around until HADOOP-1230 is fixed.
-   * 
+   *
    * Allows boolean next(k,v) to be called by reference but still allow the
    * deserializer to create a new object (i.e., row) on every call to next.
    */
@@ -61,7 +62,7 @@ public class FlatFileInputFormat<T> extends
    * An implementation of SerializationContext is responsible for looking up the
    * Serialization implementation for the given RecordReader. Potentially based
    * on the Configuration or some other mechanism
-   * 
+   *
    * The SerializationFactory does not give this functionality since: 1.
    * Requires Serialization implementations to be specified in the Configuration
    * a-priori (although same as setting a SerializationContext) 2. Does not
@@ -73,7 +74,7 @@ public class FlatFileInputFormat<T> extends
 
     /**
      * An {@link Serialization} object for objects of type S.
-     * 
+     *
      * @return a serialization object for this context
      */
     Serialization<S> getSerialization() throws IOException;
@@ -93,7 +94,7 @@ public class FlatFileInputFormat<T> extends
    * An implementation of {@link SerializationContext} that reads the
    * Serialization class and specific subclass to be deserialized from the
    * JobConf.
-   * 
+   *
    */
   public static class SerializationContextFromConf<S> implements
       FlatFileInputFormat.SerializationContext<S> {
@@ -110,10 +111,12 @@ public class FlatFileInputFormat<T> extends
      */
     private Configuration conf;
 
+    @Override
     public void setConf(Configuration conf) {
       this.conf = conf;
     }
 
+    @Override
     public Configuration getConf() {
       return conf;
     }
@@ -123,6 +126,7 @@ public class FlatFileInputFormat<T> extends
      * @exception does
      *              not currently throw IOException
      */
+    @Override
     public Class<S> getRealClass() throws IOException {
       return (Class<S>) conf.getClass(SerializationSubclassKey, null,
           Object.class);
@@ -130,7 +134,7 @@ public class FlatFileInputFormat<T> extends
 
     /**
      * Looks up and instantiates the Serialization Object
-     * 
+     *
      * Important to note here that we are not relying on the Hadoop
      * SerializationFactory part of the Serialization framework. This is because
      * in the case of Non-Writable Objects, we cannot make any assumptions about
@@ -139,11 +143,12 @@ public class FlatFileInputFormat<T> extends
      * Serialization classes. The SerializationFactory currently returns the
      * first (de)serializer that is compatible with the class to be
      * deserialized; in this context, that assumption isn't necessarily true.
-     * 
+     *
      * @return the serialization object for this context
      * @exception does
      *              not currently throw any IOException
      */
+    @Override
     public Serialization<S> getSerialization() throws IOException {
       Class<Serialization<S>> tClass = (Class<Serialization<S>>) conf.getClass(
           SerializationImplKey, null, Serialization.class);
@@ -154,11 +159,12 @@ public class FlatFileInputFormat<T> extends
 
   /**
    * An {@link RecordReader} for plain files with {@link Deserializer} records
-   * 
+   *
    * Reads one row at a time of type R. R is intended to be a base class of
    * something such as: Record, Writable, Text, ...
-   * 
+   *
    */
+  @Deprecated
   public class FlatFileRecordReader<R> implements
       RecordReader<Void, FlatFileInputFormat.RowContainer<R>> {
 
@@ -211,7 +217,7 @@ public class FlatFileInputFormat<T> extends
     /**
      * FlatFileRecordReader constructor constructs the underlying stream
      * (potentially decompressed) and creates the deserializer.
-     * 
+     *
      * @param conf
      *          the jobconf
      * @param split
@@ -245,7 +251,7 @@ public class FlatFileInputFormat<T> extends
           .getClass(SerializationContextImplKey,
           SerializationContextFromConf.class);
 
-      sinfo = (SerializationContext<R>)ReflectionUtils.newInstance(sinfoClass, conf);
+      sinfo = ReflectionUtils.newInstance(sinfoClass, conf);
 
       // Get the Serialization object and the class being deserialized
       Serialization<R> serialization = sinfo.getSerialization();
@@ -264,6 +270,7 @@ public class FlatFileInputFormat<T> extends
     /**
      * @return null
      */
+    @Override
     public Void createKey() {
       return null;
     }
@@ -271,15 +278,16 @@ public class FlatFileInputFormat<T> extends
     /**
      * @return a new R instance.
      */
+    @Override
     public RowContainer<R> createValue() {
       RowContainer<R> r = new RowContainer<R>();
-      r.row = (R)ReflectionUtils.newInstance(realRowClass, conf);
+      r.row = ReflectionUtils.newInstance(realRowClass, conf);
       return r;
     }
 
     /**
      * Returns the next row # and value.
-     * 
+     *
      * @param key
      *          - void as these files have a value only
      * @param value
@@ -290,6 +298,7 @@ public class FlatFileInputFormat<T> extends
      * @exception IOException
      *              from the deserializer
      */
+    @Override
     public synchronized boolean next(Void key, RowContainer<R> value) throws IOException {
       if (isEOF || in.available() == 0) {
         isEOF = true;
@@ -311,6 +320,7 @@ public class FlatFileInputFormat<T> extends
       }
     }
 
+    @Override
     public synchronized float getProgress() throws IOException {
       // this assumes no splitting
       if (end == 0) {
@@ -322,6 +332,7 @@ public class FlatFileInputFormat<T> extends
       }
     }
 
+    @Override
     public synchronized long getPos() throws IOException {
       // assumes deserializer is not buffering itself
       // position over uncompressed stream. not sure what
@@ -329,6 +340,7 @@ public class FlatFileInputFormat<T> extends
       return fsin.getPos();
     }
 
+    @Override
     public synchronized void close() throws IOException {
       // assuming that this closes the underlying streams
       deserializer.close();

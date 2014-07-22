@@ -52,8 +52,6 @@ POSTHOOK: query: select * from tt
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tt
 #### A masked pattern was here ####
-POSTHOOK: Lineage: tt.a EXPRESSION []
-POSTHOOK: Lineage: tt.b SIMPLE []
 NULL	NULL
 NULL	NULL
 NULL	NULL
@@ -67,8 +65,6 @@ POSTHOOK: query: create table tt_b(a int, b string) row format serde "org.apache
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tt_b
-POSTHOOK: Lineage: tt.a EXPRESSION []
-POSTHOOK: Lineage: tt.b SIMPLE []
 PREHOOK: query: insert overwrite table tt_b select null, null from temp_null
 PREHOOK: type: QUERY
 PREHOOK: Input: default@temp_null
@@ -77,8 +73,6 @@ POSTHOOK: query: insert overwrite table tt_b select null, null from temp_null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@temp_null
 POSTHOOK: Output: default@tt_b
-POSTHOOK: Lineage: tt.a EXPRESSION []
-POSTHOOK: Lineage: tt.b SIMPLE []
 POSTHOOK: Lineage: tt_b.a EXPRESSION []
 POSTHOOK: Lineage: tt_b.b EXPRESSION []
 PREHOOK: query: select * from tt_b
@@ -89,10 +83,6 @@ POSTHOOK: query: select * from tt_b
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tt_b
 #### A masked pattern was here ####
-POSTHOOK: Lineage: tt.a EXPRESSION []
-POSTHOOK: Lineage: tt.b SIMPLE []
-POSTHOOK: Lineage: tt_b.a EXPRESSION []
-POSTHOOK: Lineage: tt_b.b EXPRESSION []
 NULL	NULL
 NULL	NULL
 NULL	NULL
@@ -107,10 +97,6 @@ POSTHOOK: query: insert overwrite directory "target/warehouse/null_columns.out" 
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@temp_null
 POSTHOOK: Output: target/warehouse/null_columns.out
-POSTHOOK: Lineage: tt.a EXPRESSION []
-POSTHOOK: Lineage: tt.b SIMPLE []
-POSTHOOK: Lineage: tt_b.a EXPRESSION []
-POSTHOOK: Lineage: tt_b.b EXPRESSION []
 \N\N
 \N\N
 \N\N
@@ -124,10 +110,6 @@ POSTHOOK: query: create table temp_null2 (key string, value string) partitioned 
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@temp_null2
-POSTHOOK: Lineage: tt.a EXPRESSION []
-POSTHOOK: Lineage: tt.b SIMPLE []
-POSTHOOK: Lineage: tt_b.a EXPRESSION []
-POSTHOOK: Lineage: tt_b.b EXPRESSION []
 PREHOOK: query: insert overwrite table temp_null2 partition(ds='2010-04-01') select '1',NULL from src limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -138,10 +120,6 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@temp_null2@ds=2010-04-01
 POSTHOOK: Lineage: temp_null2 PARTITION(ds=2010-04-01).key SIMPLE []
 POSTHOOK: Lineage: temp_null2 PARTITION(ds=2010-04-01).value SIMPLE []
-POSTHOOK: Lineage: tt.a EXPRESSION []
-POSTHOOK: Lineage: tt.b SIMPLE []
-POSTHOOK: Lineage: tt_b.a EXPRESSION []
-POSTHOOK: Lineage: tt_b.b EXPRESSION []
 PREHOOK: query: select * from temp_null2 where ds is not null
 PREHOOK: type: QUERY
 PREHOOK: Input: default@temp_null2
@@ -152,10 +130,4 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@temp_null2
 POSTHOOK: Input: default@temp_null2@ds=2010-04-01
 #### A masked pattern was here ####
-POSTHOOK: Lineage: temp_null2 PARTITION(ds=2010-04-01).key SIMPLE []
-POSTHOOK: Lineage: temp_null2 PARTITION(ds=2010-04-01).value SIMPLE []
-POSTHOOK: Lineage: tt.a EXPRESSION []
-POSTHOOK: Lineage: tt.b SIMPLE []
-POSTHOOK: Lineage: tt_b.a EXPRESSION []
-POSTHOOK: Lineage: tt_b.b EXPRESSION []
 1	NULL	2010-04-01

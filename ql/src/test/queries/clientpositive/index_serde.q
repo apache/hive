@@ -1,3 +1,6 @@
+set hive.stats.dbclass=fs;
+
+-- SORT_QUERY_RESULTS
 -- Want to ensure we can build and use indices on tables stored with SerDes
 -- Build the (Avro backed) table
 CREATE TABLE doctors 
@@ -42,8 +45,8 @@ SET hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
 SET hive.optimize.index.filter=true;
 SET hive.optimize.index.filter.compact.minsize=0;
 
-EXPLAIN SELECT * FROM doctors WHERE number > 6 ORDER BY number;
-SELECT * FROM doctors WHERE number > 6 ORDER BY number;
+EXPLAIN SELECT * FROM doctors WHERE number > 6;
+SELECT * FROM doctors WHERE number > 6;
 
 DROP INDEX doctors_index ON doctors;
 DROP TABLE doctors;

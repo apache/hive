@@ -198,6 +198,11 @@ public class ColumnInfo implements Serializable {
   }
 
   @Override
+  public int hashCode() {
+    return internalName.hashCode() + typeName.hashCode();
+  }
+
+  @Override
   public boolean equals(Object obj) {
     if (!(obj instanceof ColumnInfo) || (obj == null)) {
       return false;

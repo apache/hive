@@ -17,13 +17,15 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@stored_as_dirs_multiple
 PREHOOK: query: describe formatted stored_as_dirs_multiple
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stored_as_dirs_multiple
 POSTHOOK: query: describe formatted stored_as_dirs_multiple
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stored_as_dirs_multiple
 # col_name            	data_type           	comment             
 	 	 
-col1                	string              	None                
-col2                	int                 	None                
-col3                	string              	None                
+col1                	string              	                    
+col2                	int                 	                    
+col3                	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -60,13 +62,15 @@ POSTHOOK: Input: default@stored_as_dirs_multiple
 POSTHOOK: Output: default@stored_as_dirs_multiple
 PREHOOK: query: describe formatted stored_as_dirs_multiple
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stored_as_dirs_multiple
 POSTHOOK: query: describe formatted stored_as_dirs_multiple
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stored_as_dirs_multiple
 # col_name            	data_type           	comment             
 	 	 
-col1                	string              	None                
-col2                	int                 	None                
-col3                	string              	None                
+col1                	string              	                    
+col2                	int                 	                    
+col3                	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -108,13 +112,15 @@ POSTHOOK: Input: default@stored_as_dirs_multiple
 POSTHOOK: Output: default@stored_as_dirs_multiple
 PREHOOK: query: describe formatted stored_as_dirs_multiple
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stored_as_dirs_multiple
 POSTHOOK: query: describe formatted stored_as_dirs_multiple
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stored_as_dirs_multiple
 # col_name            	data_type           	comment             
 	 	 
-col1                	string              	None                
-col2                	int                 	None                
-col3                	string              	None                
+col1                	string              	                    
+col2                	int                 	                    
+col3                	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -163,12 +169,14 @@ POSTHOOK: Input: default@stored_as_dirs_single
 POSTHOOK: Output: default@stored_as_dirs_single
 PREHOOK: query: describe formatted stored_as_dirs_single
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stored_as_dirs_single
 POSTHOOK: query: describe formatted stored_as_dirs_single
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stored_as_dirs_single
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	None                
-value               	string              	None                
+key                 	string              	                    
+value               	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -211,12 +219,14 @@ POSTHOOK: Input: default@stored_as_dirs_single
 POSTHOOK: Output: default@stored_as_dirs_single
 PREHOOK: query: describe formatted stored_as_dirs_single
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stored_as_dirs_single
 POSTHOOK: query: describe formatted stored_as_dirs_single
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stored_as_dirs_single
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	None                
-value               	string              	None                
+key                 	string              	                    
+value               	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -258,12 +268,14 @@ POSTHOOK: Input: default@stored_as_dirs_single
 POSTHOOK: Output: default@stored_as_dirs_single
 PREHOOK: query: describe formatted stored_as_dirs_single
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stored_as_dirs_single
 POSTHOOK: query: describe formatted stored_as_dirs_single
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stored_as_dirs_single
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	None                
-value               	string              	None                
+key                 	string              	                    
+value               	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -305,12 +317,14 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@stored_as_dirs_single_like
 PREHOOK: query: describe formatted stored_as_dirs_single_like
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stored_as_dirs_single_like
 POSTHOOK: query: describe formatted stored_as_dirs_single_like
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stored_as_dirs_single_like
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	None                
-value               	string              	None                
+key                 	string              	                    
+value               	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 

@@ -19,21 +19,23 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@INPUTDDL8
 PREHOOK: query: DESCRIBE EXTENDED INPUTDDL8
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@inputddl8
 POSTHOOK: query: DESCRIBE EXTENDED INPUTDDL8
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@inputddl8
 aint                	int                 	from deserializer   
 astring             	string              	from deserializer   
 lint                	array<int>          	from deserializer   
 lstring             	array<string>       	from deserializer   
 lintstring          	array<struct<myint:int,mystring:string,underscore_int:int>>	from deserializer   
 mstringstring       	map<string,string>  	from deserializer   
-ds                  	string              	None                
-country             	string              	None                
+ds                  	string              	                    
+country             	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-ds                  	string              	None                
-country             	string              	None                
+ds                  	string              	                    
+country             	string              	                    
 	 	 
 #### A masked pattern was here ####

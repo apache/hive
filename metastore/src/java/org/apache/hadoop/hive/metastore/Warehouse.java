@@ -51,8 +51,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.Partition;
-import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -71,7 +69,6 @@ public class Warehouse {
 
   private MetaStoreFS fsHandler = null;
   private boolean storageAuthCheck = false;
-  private boolean inheritPerms = false;
 
   public Warehouse(Configuration conf) throws MetaException {
     this.conf = conf;
@@ -83,8 +80,6 @@ public class Warehouse {
     fsHandler = getMetaStoreFsHandler(conf);
     storageAuthCheck = HiveConf.getBoolVar(conf,
         HiveConf.ConfVars.METASTORE_AUTHORIZATION_STORAGE_AUTH_CHECKS);
-    inheritPerms = HiveConf.getBoolVar(conf,
-        HiveConf.ConfVars.HIVE_WAREHOUSE_SUBDIR_INHERIT_PERMS);
   }
 
   private MetaStoreFS getMetaStoreFsHandler(Configuration conf)
@@ -107,13 +102,17 @@ public class Warehouse {
   /**
    * Helper functions to convert IOException to MetaException
    */
-  public FileSystem getFs(Path f) throws MetaException {
+  public static FileSystem getFs(Path f, Configuration conf) throws MetaException {
     try {
       return f.getFileSystem(conf);
     } catch (IOException e) {
       MetaStoreUtils.logAndThrowMetaException(e);
     }
     return null;
+  }
+
+  public FileSystem getFs(Path f) throws MetaException {
+    return getFs(f, conf);
   }
 
   public static void closeFs(FileSystem fs) throws MetaException {
@@ -140,10 +139,14 @@ public class Warehouse {
    *          Path to be canonicalized
    * @return Path with canonical scheme and authority
    */
-  public Path getDnsPath(Path path) throws MetaException {
-    FileSystem fs = getFs(path);
+  public static Path getDnsPath(Path path, Configuration conf) throws MetaException {
+    FileSystem fs = getFs(path, conf);
     return (new Path(fs.getUri().getScheme(), fs.getUri().getAuthority(), path
         .toUri().getPath()));
+  }
+
+  public Path getDnsPath(Path path) throws MetaException {
+    return getDnsPath(path, conf);
   }
 
   /**
@@ -179,31 +182,18 @@ public class Warehouse {
     return new Path(getWhRoot(), dbName.toLowerCase() + DATABASE_WAREHOUSE_SUFFIX);
   }
 
-
   public Path getTablePath(Database db, String tableName)
       throws MetaException {
     return getDnsPath(new Path(getDatabasePath(db), tableName.toLowerCase()));
   }
 
-  public boolean mkdirs(Path f) throws MetaException {
+  public boolean mkdirs(Path f, boolean inheritPermCandidate) throws MetaException {
+    boolean inheritPerms = HiveConf.getBoolVar(conf,
+      HiveConf.ConfVars.HIVE_WAREHOUSE_SUBDIR_INHERIT_PERMS) && inheritPermCandidate;
     FileSystem fs = null;
     try {
       fs = getFs(f);
-      LOG.debug("Creating directory if it doesn't exist: " + f);
-      //Check if the directory already exists. We want to change the permission
-      //to that of the parent directory only for newly created directories.
-      if (this.inheritPerms) {
-        try {
-          return fs.getFileStatus(f).isDir();
-        } catch (FileNotFoundException ignore) {
-        }
-      }
-      boolean success = fs.mkdirs(f);
-      if (this.inheritPerms && success) {
-        // Set the permission of parent directory.
-        fs.setPermission(f, fs.getFileStatus(f.getParent()).getPermission());
-      }
-      return success;
+      return FileUtils.mkdir(fs, f, inheritPerms, conf);
     } catch (IOException e) {
       closeFs(fs);
       MetaStoreUtils.logAndThrowMetaException(e);
@@ -212,11 +202,13 @@ public class Warehouse {
   }
 
   public boolean renameDir(Path sourcePath, Path destPath) throws MetaException {
-    FileSystem fs = null;
+    return renameDir(sourcePath, destPath, false);
+  }
+
+  public boolean renameDir(Path sourcePath, Path destPath, boolean inheritPerms) throws MetaException {
     try {
-      fs = getFs(sourcePath);
-      fs.rename(sourcePath, destPath);
-      return true;
+      FileSystem fs = getFs(sourcePath);
+      return FileUtils.renameWithPerms(fs, sourcePath, destPath, inheritPerms, conf);
     } catch (Exception ex) {
       MetaStoreUtils.logAndThrowMetaException(ex);
     }
@@ -510,35 +502,11 @@ public class Warehouse {
     try {
       Path path = new Path(desc.getLocation());
       FileSystem fileSys = path.getFileSystem(conf);
-      /* consider sub-directory created from list bucketing. */
-      int listBucketingDepth = calculateListBucketingDMLDepth(desc);
-      return HiveStatsUtils.getFileStatusRecurse(path, (1 + listBucketingDepth), fileSys);
+      return HiveStatsUtils.getFileStatusRecurse(path, -1, fileSys);
     } catch (IOException ioe) {
       MetaStoreUtils.logAndThrowMetaException(ioe);
     }
     return null;
-  }
-
-  /**
-   * List bucketing will introduce sub-directories.
-   * calculate it here in order to go to the leaf directory
-   * so that we can count right number of files.
-   * @param desc
-   * @return
-   */
-  private static int calculateListBucketingDMLDepth(StorageDescriptor desc) {
-    // list bucketing will introduce more files
-    int listBucketingDepth = 0;
-    SkewedInfo skewedInfo = desc.getSkewedInfo();
-    if ((skewedInfo != null) && (skewedInfo.getSkewedColNames() != null)
-        && (skewedInfo.getSkewedColNames().size() > 0)
-        && (skewedInfo.getSkewedColValues() != null)
-        && (skewedInfo.getSkewedColValues().size() > 0)
-        && (skewedInfo.getSkewedColValueLocationMaps() != null)
-        && (skewedInfo.getSkewedColValueLocationMaps().size() > 0)) {
-      listBucketingDepth = skewedInfo.getSkewedColNames().size();
-    }
-    return listBucketingDepth;
   }
 
   /**
@@ -551,7 +519,7 @@ public class Warehouse {
     Path tablePath = getTablePath(db, table.getTableName());
     try {
       FileSystem fileSys = tablePath.getFileSystem(conf);
-      return HiveStatsUtils.getFileStatusRecurse(tablePath, 1, fileSys);
+      return HiveStatsUtils.getFileStatusRecurse(tablePath, -1, fileSys);
     } catch (IOException ioe) {
       MetaStoreUtils.logAndThrowMetaException(ioe);
     }
@@ -570,7 +538,15 @@ public class Warehouse {
   public static String makePartName(List<FieldSchema> partCols,
       List<String> vals, String defaultStr) throws MetaException {
     if ((partCols.size() != vals.size()) || (partCols.size() == 0)) {
-      throw new MetaException("Invalid partition key & values");
+      String errorStr = "Invalid partition key & values; keys [";
+      for (FieldSchema fs : partCols) {
+        errorStr += (fs.getName() + ", ");
+      }
+      errorStr += "], values [";
+      for (String val : vals) {
+        errorStr += (val + ", ");
+      }
+      throw new MetaException(errorStr + "]");
     }
     List<String> colNames = new ArrayList<String>();
     for (FieldSchema col: partCols) {

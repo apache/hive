@@ -18,6 +18,8 @@
 package org.apache.hadoop.hive.ql.exec.vector;
 
 import java.io.IOException;
+import java.sql.Date;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -27,7 +29,11 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.type.Decimal128;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
@@ -37,13 +43,19 @@ import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hadoop.io.DataOutputBuffer;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.FileSplit;
 
@@ -55,6 +67,8 @@ import org.apache.hadoop.mapred.FileSplit;
  */
 public class VectorizedRowBatchCtx {
 
+  private static final Log LOG = LogFactory.getLog(VectorizedRowBatchCtx.class.getName());
+
   // OI for raw row data (EG without partition cols)
   private StructObjectInspector rawRowOI;
 
@@ -65,8 +79,11 @@ public class VectorizedRowBatchCtx {
   private Deserializer deserializer;
 
   // Hash map of partition values. Key=TblColName value=PartitionValue
-  private Map<String, String> partitionValues;
-
+  private Map<String, Object> partitionValues;
+  
+  //partition types
+  private Map<String, PrimitiveCategory> partitionTypes;  
+  
   // Column projection list - List of column indexes to include. This
   // list does not contain partition columns
   private List<Integer> colsToInclude;
@@ -86,11 +103,13 @@ public class VectorizedRowBatchCtx {
    *          Hash map of partition values. Key=TblColName value=PartitionValue
    */
   public VectorizedRowBatchCtx(StructObjectInspector rawRowOI, StructObjectInspector rowOI,
-      Deserializer deserializer, Map<String, String> partitionValues) {
+      Deserializer deserializer, Map<String, Object> partitionValues, 
+      Map<String, PrimitiveCategory> partitionTypes) {
     this.rowOI = rowOI;
     this.rawRowOI = rawRowOI;
     this.deserializer = deserializer;
     this.partitionValues = partitionValues;
+    this.partitionTypes = partitionTypes;
   }
 
   /**
@@ -158,7 +177,8 @@ public class VectorizedRowBatchCtx {
 
     Class serdeclass = hiveConf.getClassByName(part.getSerdeClassName());
     Deserializer partDeserializer = (Deserializer) serdeclass.newInstance(); 
-    partDeserializer.initialize(hiveConf, partProps);
+    SerDeUtils.initializeSerDe(partDeserializer, hiveConf, part.getTableDesc().getProperties(),
+                               partProps);
     StructObjectInspector partRawRowObjectInspector = (StructObjectInspector) partDeserializer
         .getObjectInspector();
 
@@ -173,25 +193,47 @@ public class VectorizedRowBatchCtx {
       // raw row object inspector (row with out partition col)
       LinkedHashMap<String, String> partSpec = part.getPartSpec();
       String[] partKeys = pcols.trim().split("/");
+      String pcolTypes = partProps.getProperty(hive_metastoreConstants.META_TABLE_PARTITION_COLUMN_TYPES);      
+      String[] partKeyTypes = pcolTypes.trim().split(":");      
+      
+      if (partKeys.length  > partKeyTypes.length) {
+        throw new HiveException("Internal error : partKeys length, " +partKeys.length +
+                " greater than partKeyTypes length, " + partKeyTypes.length);
+      }
+      
       List<String> partNames = new ArrayList<String>(partKeys.length);
-      partitionValues = new LinkedHashMap<String, String>();
-      List<ObjectInspector> partObjectInspectors = new ArrayList<ObjectInspector>(
-          partKeys.length);
+      List<ObjectInspector> partObjectInspectors = new ArrayList<ObjectInspector>(partKeys.length);
+      partitionValues = new LinkedHashMap<String, Object>();
+      partitionTypes = new LinkedHashMap<String, PrimitiveCategory>();
       for (int i = 0; i < partKeys.length; i++) {
         String key = partKeys[i];
         partNames.add(key);
+        ObjectInspector objectInspector = null;
+        Object objectVal; 
         if (partSpec == null) {
           // for partitionless table, initialize partValue to empty string.
           // We can have partitionless table even if we have partition keys
           // when there is only only partition selected and the partition key is not
           // part of the projection/include list.
-          partitionValues.put(key, "");
+          objectVal = null;
+          objectInspector = PrimitiveObjectInspectorFactory.javaStringObjectInspector;
+          partitionTypes.put(key, PrimitiveCategory.STRING);       
         } else {
-          partitionValues.put(key, partSpec.get(key));
+          // Create a Standard java object Inspector
+          objectInspector = TypeInfoUtils.getStandardJavaObjectInspectorFromTypeInfo(
+              TypeInfoFactory.getPrimitiveTypeInfo(partKeyTypes[i]));
+          objectVal = 
+              ObjectInspectorConverters.
+              getConverter(PrimitiveObjectInspectorFactory.
+                  javaStringObjectInspector, objectInspector).
+                  convert(partSpec.get(key));              
+          partitionTypes.put(key, TypeInfoFactory.getPrimitiveTypeInfo(partKeyTypes[i]).getPrimitiveCategory());
         }
-
-        partObjectInspectors
-            .add(PrimitiveObjectInspectorFactory.writableStringObjectInspector);
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Partition column: name: " + key + ", value: " + objectVal + ", type: " + partitionTypes.get(key));
+        }
+        partitionValues.put(key, objectVal);
+        partObjectInspectors.add(objectInspector);
       }
 
       // Create partition OI
@@ -213,7 +255,7 @@ public class VectorizedRowBatchCtx {
 
     colsToInclude = ColumnProjectionUtils.getReadColumnIDs(hiveConf);
   }
-
+  
   /**
    * Creates a Vectorized row batch and the column vectors.
    *
@@ -230,7 +272,7 @@ public class VectorizedRowBatchCtx {
       // in the included list.
       if ((colsToInclude == null) || colsToInclude.contains(j)
           || ((partitionValues != null) &&
-              (partitionValues.get(fieldRefs.get(j).getFieldName()) != null))) {
+              partitionValues.containsKey(fieldRefs.get(j).getFieldName()))) {
         ObjectInspector foi = fieldRefs.get(j).getFieldObjectInspector();
         switch (foi.getCategory()) {
         case PRIMITIVE: {
@@ -274,8 +316,7 @@ public class VectorizedRowBatchCtx {
               + foi.getCategory());
         default:
           throw new HiveException("Unknown ObjectInspector category!");
-
-        }
+        }    
       }
     }
     result.numCols = fieldRefs.size();
@@ -293,14 +334,17 @@ public class VectorizedRowBatchCtx {
    *          Row blob (serialized version of row)
    * @param batch
    *          Vectorized batch to which the row is added
+   * @param buffer a buffer to copy strings into
    * @throws HiveException
    * @throws SerDeException
    */
-  public void addRowToBatch(int rowIndex, Writable rowBlob, VectorizedRowBatch batch)
-      throws HiveException, SerDeException
+  public void addRowToBatch(int rowIndex, Writable rowBlob,
+                            VectorizedRowBatch batch,
+                            DataOutputBuffer buffer
+                            ) throws HiveException, SerDeException
   {
     Object row = this.deserializer.deserialize(rowBlob);
-    VectorizedBatchUtil.AddRowToBatch(row, this.rawRowOI, rowIndex, batch);
+    VectorizedBatchUtil.addRowToBatch(row, this.rawRowOI, rowIndex, batch, buffer);
   }
 
   /**
@@ -334,7 +378,7 @@ public class VectorizedRowBatchCtx {
     }
     throw new HiveException("Not able to find column name in row object inspector");
   }
-
+  
   /**
    * Add the partition values to the batch
    *
@@ -344,17 +388,165 @@ public class VectorizedRowBatchCtx {
   public void addPartitionColsToBatch(VectorizedRowBatch batch) throws HiveException
   {
     int colIndex;
-    String value;
-    BytesColumnVector bcv;
+    Object value;
+    PrimitiveCategory pCategory;
     if (partitionValues != null) {
       for (String key : partitionValues.keySet()) {
         colIndex = getColIndexBasedOnColName(key);
         value = partitionValues.get(key);
-        bcv = (BytesColumnVector) batch.cols[colIndex];
-        bcv.setRef(0, value.getBytes(), 0, value.length());
-        bcv.isRepeating = true;
-        bcv.isNull[0] = false;
-        bcv.noNulls = true;
+        pCategory = partitionTypes.get(key);
+        
+        switch (pCategory) {
+        case BOOLEAN: {
+          LongColumnVector lcv = (LongColumnVector) batch.cols[colIndex];
+          if (value == null) {
+            lcv.noNulls = false;
+            lcv.isNull[0] = true;
+            lcv.isRepeating = true;
+          } else { 
+            lcv.fill((Boolean)value == true ? 1 : 0);
+            lcv.isNull[0] = false;
+          }
+        }
+        break;          
+        
+        case BYTE: {
+          LongColumnVector lcv = (LongColumnVector) batch.cols[colIndex];
+          if (value == null) {
+            lcv.noNulls = false;
+            lcv.isNull[0] = true;
+            lcv.isRepeating = true;
+          } else { 
+            lcv.fill((Byte)value);
+            lcv.isNull[0] = false;
+          }
+        }
+        break;             
+        
+        case SHORT: {
+          LongColumnVector lcv = (LongColumnVector) batch.cols[colIndex];
+          if (value == null) {
+            lcv.noNulls = false;
+            lcv.isNull[0] = true;
+            lcv.isRepeating = true;
+          } else { 
+            lcv.fill((Short)value);
+            lcv.isNull[0] = false;
+          }
+        }
+        break;
+        
+        case INT: {
+          LongColumnVector lcv = (LongColumnVector) batch.cols[colIndex];
+          if (value == null) {
+            lcv.noNulls = false;
+            lcv.isNull[0] = true;
+            lcv.isRepeating = true;
+          } else { 
+            lcv.fill((Integer)value);
+            lcv.isNull[0] = false;
+          }          
+        }
+        break;
+        
+        case LONG: {
+          LongColumnVector lcv = (LongColumnVector) batch.cols[colIndex];
+          if (value == null) {
+            lcv.noNulls = false;
+            lcv.isNull[0] = true;
+            lcv.isRepeating = true;
+          } else { 
+            lcv.fill((Long)value);
+            lcv.isNull[0] = false;
+          }          
+        }
+        break;
+        
+        case DATE: {
+          LongColumnVector lcv = (LongColumnVector) batch.cols[colIndex];
+          if (value == null) {
+            lcv.noNulls = false;
+            lcv.isNull[0] = true;
+            lcv.isRepeating = true;
+          } else { 
+            lcv.fill(((Date)value).getTime());
+            lcv.isNull[0] = false;
+          }          
+        }
+        break;
+        
+        case TIMESTAMP: {
+          LongColumnVector lcv = (LongColumnVector) batch.cols[colIndex];
+          if (value == null) {
+            lcv.noNulls = false;
+            lcv.isNull[0] = true;
+            lcv.isRepeating = true;
+          } else { 
+            lcv.fill((long)(((Timestamp) value).getTime()));
+            lcv.isNull[0] = false;
+          }
+        }
+        break;
+        
+        case FLOAT: {
+          DoubleColumnVector dcv = (DoubleColumnVector) batch.cols[colIndex];
+          if (value == null) {
+            dcv.noNulls = false;
+            dcv.isNull[0] = true;
+            dcv.isRepeating = true;
+          } else {
+            dcv.fill((Float) value);
+            dcv.isNull[0] = false;
+          }          
+        }
+        break;
+        
+        case DOUBLE: {
+          DoubleColumnVector dcv = (DoubleColumnVector) batch.cols[colIndex];
+          if (value == null) {
+            dcv.noNulls = false;
+            dcv.isNull[0] = true;
+            dcv.isRepeating = true;
+          } else {
+            dcv.fill((Double) value);
+            dcv.isNull[0] = false;
+          }
+        }
+        break;
+        
+        case DECIMAL: {
+          DecimalColumnVector dv = (DecimalColumnVector) batch.cols[colIndex];
+          if (value == null) {
+            dv.noNulls = false;
+            dv.isNull[0] = true;
+            dv.isRepeating = true;
+          } else {
+            HiveDecimal hd = (HiveDecimal)(value);
+            dv.vector[0] = new Decimal128(hd.toString(), (short)hd.scale());
+            dv.isRepeating = true;
+            dv.isNull[0] = false;      
+          }
+        }
+        break;
+          
+        case STRING: {
+          BytesColumnVector bcv = (BytesColumnVector) batch.cols[colIndex];
+          String sVal = (String)value;
+          if (sVal == null) {
+            bcv.noNulls = false;
+            bcv.isNull[0] = true;
+            bcv.isRepeating = true;
+          } else {
+            bcv.fill(sVal.getBytes()); 
+            bcv.isNull[0] = false;
+          }
+        }
+        break;
+        
+        default:
+          throw new HiveException("Unable to recognize the partition type " + pCategory + 
+              " for column " + key);
+        }
       }
     }
   }
@@ -402,4 +594,17 @@ public class VectorizedRowBatchCtx {
     }
   }
 
+  public VectorColumnAssign[] buildObjectAssigners(VectorizedRowBatch outputBatch)
+        throws HiveException {
+    List<? extends StructField> fieldRefs = rowOI.getAllStructFieldRefs();
+    assert outputBatch.numCols == fieldRefs.size();
+    VectorColumnAssign[] assigners = new VectorColumnAssign[fieldRefs.size()];
+    for(int i = 0; i < assigners.length; ++i) {
+        StructField fieldRef = fieldRefs.get(i);
+        ObjectInspector fieldOI = fieldRef.getFieldObjectInspector();
+        assigners[i] = VectorColumnAssignFactory.buildObjectAssign(
+                outputBatch, i, fieldOI);
+    }
+    return assigners;
+  }
 }

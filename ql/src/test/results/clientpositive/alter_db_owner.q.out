@@ -1,0 +1,31 @@
+PREHOOK: query: create database db_alter_onr
+PREHOOK: type: CREATEDATABASE
+POSTHOOK: query: create database db_alter_onr
+POSTHOOK: type: CREATEDATABASE
+PREHOOK: query: describe database db_alter_onr
+PREHOOK: type: DESCDATABASE
+POSTHOOK: query: describe database db_alter_onr
+POSTHOOK: type: DESCDATABASE
+db_alter_onr		location/in/test	hive_test_user	USER	
+#### A masked pattern was here ####
+PREHOOK: type: ALTERDATABASE_OWNER
+PREHOOK: Output: database:db_alter_onr
+#### A masked pattern was here ####
+POSTHOOK: type: ALTERDATABASE_OWNER
+POSTHOOK: Output: database:db_alter_onr
+PREHOOK: query: describe database db_alter_onr
+PREHOOK: type: DESCDATABASE
+POSTHOOK: query: describe database db_alter_onr
+POSTHOOK: type: DESCDATABASE
+db_alter_onr		location/in/test	user1	USER	
+#### A masked pattern was here ####
+PREHOOK: type: ALTERDATABASE_OWNER
+PREHOOK: Output: database:db_alter_onr
+#### A masked pattern was here ####
+POSTHOOK: type: ALTERDATABASE_OWNER
+POSTHOOK: Output: database:db_alter_onr
+PREHOOK: query: describe database db_alter_onr
+PREHOOK: type: DESCDATABASE
+POSTHOOK: query: describe database db_alter_onr
+POSTHOOK: type: DESCDATABASE
+db_alter_onr		location/in/test	role1	ROLE	

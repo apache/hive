@@ -23,18 +23,20 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.JavaUtils;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.ProtectMode;
 import org.apache.hadoop.hive.metastore.TableType;
@@ -52,11 +54,11 @@ import org.apache.hadoop.hive.ql.io.HivePassThroughOutputFormat;
 import org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.Writable;
@@ -95,13 +97,19 @@ public class Table implements Serializable {
   }
 
   public Table(org.apache.hadoop.hive.metastore.api.Table table) {
+    initialize(table);
+  }
+
+  // Do initialization here, so as to keep the ctor minimal.
+  protected void initialize(org.apache.hadoop.hive.metastore.api.Table table) {
     tTable = table;
-    if (!isView()) {
-      // This will set up field: inputFormatClass
-      getInputFormatClass();
-      // This will set up field: outputFormatClass
-      getOutputFormatClass();
-    }
+    // Note that we do not set up fields like inputFormatClass, outputFormatClass
+    // and deserializer because the Partition needs to be accessed from across
+    // the metastore side as well, which will result in attempting to load
+    // the class associated with them, which might not be available, and
+    // the main reason to instantiate them would be to pre-cache them for
+    // performance. Since those fields are null/cache-check by their accessors
+    // anyway, that's not a concern.
   }
 
   public Table(String databaseName, String tableName) {
@@ -129,9 +137,9 @@ public class Table implements Serializable {
   }
 
   /**
-   * Initialize an emtpy table.
+   * Initialize an empty table.
    */
-  static org.apache.hadoop.hive.metastore.api.Table
+  public static org.apache.hadoop.hive.metastore.api.Table
   getEmptyTable(String databaseName, String tableName) {
     StorageDescriptor sd = new StorageDescriptor();
     {
@@ -163,6 +171,10 @@ public class Table implements Serializable {
       t.setTableType(TableType.MANAGED_TABLE.toString());
       t.setDbName(databaseName);
       t.setTableName(tableName);
+      t.setOwner(SessionState.getUserFromAuthenticator());
+      // set create time
+      t.setCreateTime((int) (System.currentTimeMillis() / 1000));
+
     }
     return t;
   }
@@ -198,37 +210,11 @@ public class Table implements Serializable {
       assert(getViewExpandedText() == null);
     }
 
-    Iterator<FieldSchema> iterCols = getCols().iterator();
-    List<String> colNames = new ArrayList<String>();
-    while (iterCols.hasNext()) {
-      String colName = iterCols.next().getName();
-      if (!MetaStoreUtils.validateColumnName(colName)) {
-        throw new HiveException("Invalid column name '" + colName
-            + "' in the table definition");
-      }
-      Iterator<String> iter = colNames.iterator();
-      while (iter.hasNext()) {
-        String oldColName = iter.next();
-        if (colName.equalsIgnoreCase(oldColName)) {
-          throw new HiveException("Duplicate column name " + colName
-              + " in the table definition.");
-        }
-      }
-      colNames.add(colName.toLowerCase());
-    }
+    validateColumns(getCols(), getPartCols());
+  }
 
-    if (getPartCols() != null) {
-      // there is no overlap between columns and partitioning columns
-      Iterator<FieldSchema> partColsIter = getPartCols().iterator();
-      while (partColsIter.hasNext()) {
-        String partCol = partColsIter.next().getName();
-        if (colNames.contains(partCol.toLowerCase())) {
-          throw new HiveException("Partition column name " + partCol
-              + " conflicts with table columns.");
-        }
-      }
-    }
-    return;
+  public StorageDescriptor getSd() {
+    return tTable.getSd();
   }
 
   public void setInputFormatClass(Class<? extends InputFormat> inputFormatClass) {
@@ -610,18 +596,18 @@ public class Table implements Serializable {
   }
 
   public List<FieldSchema> getCols() {
-    boolean getColsFromSerDe = SerDeUtils.shouldGetColsFromSerDe(
-      getSerializationLib());
-    if (!getColsFromSerDe) {
-      return tTable.getSd().getCols();
-    } else {
-      try {
+
+    String serializationLib = getSerializationLib();
+    try {
+      if (hasMetastoreBasedSchema(Hive.get().getConf(), serializationLib)) {
+        return tTable.getSd().getCols();
+      } else {
         return Hive.getFieldsFromDeserializer(getTableName(), getDeserializer());
-      } catch (HiveException e) {
-        LOG.error("Unable to get field from serde: " + getSerializationLib(), e);
       }
-      return new ArrayList<FieldSchema>();
+    } catch (HiveException e) {
+      LOG.error("Unable to get field from serde: " + serializationLib, e);
     }
+    return new ArrayList<FieldSchema>();
   }
 
   /**
@@ -655,10 +641,14 @@ public class Table implements Serializable {
    *
    * @param srcf
    *          Source directory
+   * @param isSrcLocal
+   *          If the source directory is LOCAL
    */
-  protected void replaceFiles(Path srcf) throws HiveException {
+  protected void replaceFiles(Path srcf, boolean isSrcLocal)
+      throws HiveException {
     Path tableDest = getPath();
-    Hive.replaceFiles(srcf, tableDest, tableDest, Hive.get().getConf());
+    Hive.replaceFiles(srcf, tableDest, tableDest, Hive.get().getConf(),
+        isSrcLocal);
   }
 
   /**
@@ -666,12 +656,14 @@ public class Table implements Serializable {
    *
    * @param srcf
    *          Files to be moved. Leaf directories or globbed file paths
+   * @param isSrcLocal
+   *          If the source directory is LOCAL
    */
-  protected void copyFiles(Path srcf) throws HiveException {
+  protected void copyFiles(Path srcf, boolean isSrcLocal) throws HiveException {
     FileSystem fs;
     try {
       fs = getDataLocation().getFileSystem(Hive.get().getConf());
-      Hive.copyFiles(Hive.get().getConf(), srcf, getPath(), fs);
+      Hive.copyFiles(Hive.get().getConf(), srcf, getPath(), fs, isSrcLocal);
     } catch (IOException e) {
       throw new HiveException("addFiles: filesystem error in check phase", e);
     }
@@ -977,5 +969,49 @@ public class Table implements Serializable {
     } catch (Exception e) {
       throw new RuntimeException("Cannot get path ", e);
     }
+  }
+
+  public boolean isTemporary() {
+    return tTable.isTemporary();
+  }
+
+  public static boolean hasMetastoreBasedSchema(HiveConf conf, StorageDescriptor serde) {
+    return hasMetastoreBasedSchema(conf, serde.getSerdeInfo().getSerializationLib());
+  }
+
+  public static boolean hasMetastoreBasedSchema(HiveConf conf, String serdeLib) {
+    return StringUtils.isEmpty(serdeLib) ||
+        conf.getStringCollection(ConfVars.SERDESUSINGMETASTOREFORSCHEMA.varname).contains(serdeLib);
+  }
+
+  public static void validateColumns(List<FieldSchema> columns, List<FieldSchema> partCols)
+      throws HiveException {
+    List<String> colNames = new ArrayList<String>();
+    for (FieldSchema partCol: columns) {
+      String colName = normalize(partCol.getName());
+      if (colNames.contains(colName)) {
+        throw new HiveException("Duplicate column name " + colName
+            + " in the table definition.");
+      }
+      colNames.add(colName);
+    }
+    if (partCols != null) {
+      // there is no overlap between columns and partitioning columns
+      for (FieldSchema partCol: partCols) {
+        String colName = normalize(partCol.getName());
+        if (colNames.contains(colName)) {
+          throw new HiveException("Partition column name " + colName
+              + " conflicts with table columns.");
+        }
+      }
+    }
+  }
+
+  private static String normalize(String colName) throws HiveException {
+    if (!MetaStoreUtils.validateColumnName(colName)) {
+      throw new HiveException("Invalid column name '" + colName
+          + "' in the table definition");
+    }
+    return colName.toLowerCase();
   }
 };

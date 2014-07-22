@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.hadoop.hive.common.type.Decimal128;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggregateExpression;
@@ -82,6 +83,13 @@ public class VectorUDAFAvgDecimal extends VectorAggregateExpression {
       public int getVariableSize() {
         throw new UnsupportedOperationException();
       }
+
+      @Override
+      public void reset() {
+        isNull = true;
+        sum.zeroClear();
+        count = 0L;
+      }
     }
 
     private VectorExpression inputExpression;
@@ -139,7 +147,7 @@ public class VectorUDAFAvgDecimal extends VectorAggregateExpression {
       // expected type for the row-mode aggregation
       // For decimal, the type is "same number of integer digits and 4 more decimal digits"
       
-      DecimalTypeInfo dtiSum = GenericUDAFAverage.deriveSumTypeInfo(inputScale, inputPrecision);
+      DecimalTypeInfo dtiSum = GenericUDAFAverage.deriveSumFieldTypeInfo(inputPrecision, inputScale);
       this.sumScale = (short) dtiSum.scale();
       this.sumPrecision = (short) dtiSum.precision();
       
@@ -462,7 +470,7 @@ public class VectorUDAFAvgDecimal extends VectorAggregateExpression {
     @Override
     public void reset(AggregationBuffer agg) throws HiveException {
       Aggregation myAgg = (Aggregation) agg;
-      myAgg.isNull = true;
+      myAgg.reset();
     }
 
     @Override
@@ -475,8 +483,7 @@ public class VectorUDAFAvgDecimal extends VectorAggregateExpression {
       else {
         assert(0 < myagg.count);
         resultCount.set (myagg.count);
-        int bufferIndex = myagg.sum.fastSerializeForHiveDecimal(scratch);
-        resultSum.set(scratch.getBytes(bufferIndex), (int) sumScale);
+        resultSum.set(HiveDecimal.create(myagg.sum.toBigDecimal()));
         return partialResult;
       }
     }

@@ -12,8 +12,10 @@ STAGE PLANS:
 
 PREHOOK: query: CREATE TEMPORARY FUNCTION test_avg AS 'org.apache.hadoop.hive.ql.udf.generic.GenericUDAFAverage'
 PREHOOK: type: CREATEFUNCTION
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TEMPORARY FUNCTION test_avg AS 'org.apache.hadoop.hive.ql.udf.generic.GenericUDAFAverage'
 POSTHOOK: type: CREATEFUNCTION
+POSTHOOK: Output: database:default
 PREHOOK: query: EXPLAIN
 SELECT
     test_avg(1),
@@ -28,7 +30,7 @@ FROM src
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -49,7 +51,7 @@ STAGE PLANS:
                 Reduce Output Operator
                   sort order: 
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-                  value expressions: _col0 (type: struct<count:bigint,sum:double>), _col1 (type: struct<count:bigint,sum:double>)
+                  value expressions: _col0 (type: struct<count:bigint,sum:double,input:int>), _col1 (type: struct<count:bigint,sum:double,input:string>)
       Reduce Operator Tree:
         Group By Operator
           aggregations: test_avg(VALUE._col0), test_avg(VALUE._col1)
@@ -71,6 +73,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT
     test_avg(1),
@@ -89,5 +93,7 @@ POSTHOOK: Input: default@src
 1.0	260.182
 PREHOOK: query: DROP TEMPORARY FUNCTIOn test_avg
 PREHOOK: type: DROPFUNCTION
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TEMPORARY FUNCTIOn test_avg
 POSTHOOK: type: DROPFUNCTION
+POSTHOOK: Output: database:default

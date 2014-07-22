@@ -27,8 +27,6 @@ POSTHOOK: query: select * from tmp_tmp ORDER BY key ASC, value ASC
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmp_tmp
 #### A masked pattern was here ####
-POSTHOOK: Lineage: tmp_tmp.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tmp_tmp.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
 1	2	NULL
 1	2	NULL
 1	NULL
@@ -48,5 +46,3 @@ POSTHOOK: query: drop table tmp_tmp
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tmp_tmp
 POSTHOOK: Output: default@tmp_tmp
-POSTHOOK: Lineage: tmp_tmp.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tmp_tmp.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]

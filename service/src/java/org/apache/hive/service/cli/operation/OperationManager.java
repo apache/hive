@@ -22,11 +22,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hive.service.AbstractService;
 import org.apache.hive.service.cli.FetchOrientation;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.OperationHandle;
+import org.apache.hive.service.cli.OperationState;
 import org.apache.hive.service.cli.OperationStatus;
 import org.apache.hive.service.cli.RowSet;
 import org.apache.hive.service.cli.TableSchema;
@@ -37,6 +40,8 @@ import org.apache.hive.service.cli.session.HiveSession;
  *
  */
 public class OperationManager extends AbstractService {
+
+  private final Log LOG = LogFactory.getLog(OperationManager.class.getName());
 
   private HiveConf hiveConf;
   private final Map<OperationHandle, Operation> handleToOperation =
@@ -124,7 +129,8 @@ public class OperationManager extends AbstractService {
     return operation;
   }
 
-  public synchronized Operation getOperation(OperationHandle operationHandle) throws HiveSQLException {
+  public synchronized Operation getOperation(OperationHandle operationHandle)
+      throws HiveSQLException {
     Operation operation = handleToOperation.get(operationHandle);
     if (operation == null) {
       throw new HiveSQLException("Invalid OperationHandle: " + operationHandle);
@@ -140,12 +146,26 @@ public class OperationManager extends AbstractService {
     return handleToOperation.remove(opHandle);
   }
 
-  public OperationStatus getOperationStatus(OperationHandle opHandle) throws HiveSQLException {
+  public OperationStatus getOperationStatus(OperationHandle opHandle)
+      throws HiveSQLException {
     return getOperation(opHandle).getStatus();
   }
 
   public void cancelOperation(OperationHandle opHandle) throws HiveSQLException {
-    getOperation(opHandle).cancel();
+    Operation operation = getOperation(opHandle);
+    OperationState opState = operation.getStatus().getState();
+    if (opState == OperationState.CANCELED ||
+        opState == OperationState.CLOSED ||
+        opState == OperationState.FINISHED ||
+        opState == OperationState.ERROR ||
+        opState == OperationState.UNKNOWN) {
+      // Cancel should be a no-op in either cases
+      LOG.debug(opHandle + ": Operation is already aborted in state - " + opState);
+    }
+    else {
+      LOG.debug(opHandle + ": Attempting to cancel from state - " + opState);
+      operation.cancel();
+    }
   }
 
   public void closeOperation(OperationHandle opHandle) throws HiveSQLException {
@@ -161,7 +181,8 @@ public class OperationManager extends AbstractService {
     return getOperation(opHandle).getResultSetSchema();
   }
 
-  public RowSet getOperationNextRowSet(OperationHandle opHandle) throws HiveSQLException {
+  public RowSet getOperationNextRowSet(OperationHandle opHandle)
+      throws HiveSQLException {
     return getOperation(opHandle).getNextRowSet();
   }
 

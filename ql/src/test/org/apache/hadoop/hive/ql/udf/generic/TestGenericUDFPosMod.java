@@ -36,7 +36,7 @@ import org.apache.hadoop.io.LongWritable;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class TestGenericUDFPosMod {
+public class TestGenericUDFPosMod extends TestGenericUDFOPNumeric {
 
   @Test
   public void testPosModByZero1() throws HiveException {

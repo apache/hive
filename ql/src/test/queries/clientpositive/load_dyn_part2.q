@@ -1,3 +1,4 @@
+-- SORT_QUERY_RESULTS
 
 create table if not exists nzhang_part_bucket (key string, value string) 
   partitioned by (ds string, hr string) 
@@ -16,8 +17,8 @@ insert overwrite table nzhang_part_bucket partition (ds='2010-03-23', hr) select
 
 show partitions nzhang_part_bucket;
 
-select * from nzhang_part_bucket where ds='2010-03-23' and hr='11' order by key;
-select * from nzhang_part_bucket where ds='2010-03-23' and hr='12' order by key;
+select * from nzhang_part_bucket where ds='2010-03-23' and hr='11';
+select * from nzhang_part_bucket where ds='2010-03-23' and hr='12';
 
 
 

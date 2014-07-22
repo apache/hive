@@ -24,12 +24,14 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.io.HivePassThroughOutputFormat;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.Deserializer;
+import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.mapred.InputFormat;
 
 /**
@@ -62,7 +64,8 @@ public class TableDesc implements Serializable, Cloneable {
 
   public Class<? extends Deserializer> getDeserializerClass() {
     try {
-      return (Class<? extends Deserializer>) Class.forName(getSerdeClassName());
+      return (Class<? extends Deserializer>) Class.forName(
+          getSerdeClassName(), true, JavaUtils.getClassLoader());
     } catch (ClassNotFoundException e) {
       throw new RuntimeException(e);
     }
@@ -77,7 +80,7 @@ public class TableDesc implements Serializable, Cloneable {
    */
   public Deserializer getDeserializer() throws Exception {
     Deserializer de = getDeserializerClass().newInstance();
-    de.initialize(null, properties);
+    SerDeUtils.initializeSerDe(de, null, properties, null);
     return de;
   }
 

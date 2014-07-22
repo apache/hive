@@ -13,6 +13,7 @@ set hive.merge.smallfiles.avgsize=0;
 -- EXCLUDE_OS_WINDOWS
 -- excluded on windows because of difference in file name encoding logic
 
+-- SORT_QUERY_RESULTS
 
 create table combine2(key string) partitioned by (value string);
 
@@ -35,9 +36,9 @@ select * from (
 show partitions combine2;
 
 explain
-select key, value from combine2 where value is not null order by key;
+select key, value from combine2 where value is not null;
 
-select key, value from combine2 where value is not null order by key;
+select key, value from combine2 where value is not null;
 
 explain extended
 select count(1) from combine2 where value is not null;

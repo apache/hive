@@ -21,6 +21,9 @@ package org.apache.hadoop.hive.ql.plan;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 
 /**
  * ReduceSinkDesc.
@@ -74,10 +77,21 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
 
   private int numReducers;
 
+  /**
+   * Bucket information
+   */
+  private int numBuckets;
+  private List<ExprNodeDesc> bucketCols;
+
   private int topN = -1;
   private float topNMemoryUsage = -1;
   private boolean mapGroupBy;  // for group-by, values with same key on top-K should be forwarded
+  //flag used to control how TopN handled for PTF/Windowing partitions.
+  private boolean isPTFReduceSink = false; 
+  private boolean skipTag; // Skip writing tags when feeding into mapjoin hashtable
+  private Boolean autoParallel = null; // Is reducer auto-parallelism enabled, disabled or unset
 
+  private static transient Log LOG = LogFactory.getLog(ReduceSinkDesc.class);
   public ReduceSinkDesc() {
   }
 
@@ -100,6 +114,8 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
     this.keySerializeInfo = keySerializeInfo;
     this.valueSerializeInfo = valueSerializeInfo;
     this.distinctColumnIndices = distinctColumnIndices;
+    this.setNumBuckets(-1);
+    this.setBucketCols(null);
   }
 
   @Override
@@ -122,6 +138,11 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
     desc.setPartitionCols((ArrayList<ExprNodeDesc>) getPartitionCols().clone());
     desc.setKeySerializeInfo((TableDesc) getKeySerializeInfo().clone());
     desc.setValueSerializeInfo((TableDesc) getValueSerializeInfo().clone());
+    desc.setNumBuckets(numBuckets);
+    desc.setBucketCols(bucketCols);
+    desc.setStatistics(this.getStatistics());
+    desc.setSkipTag(skipTag);
+    desc.autoParallel = autoParallel;
     return desc;
   }
 
@@ -234,6 +255,14 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
     this.mapGroupBy = mapGroupBy;
   }
 
+  public boolean isPTFReduceSink() {
+    return isPTFReduceSink;
+  }
+
+  public void setPTFReduceSink(boolean isPTFReduceSink) {
+    this.isPTFReduceSink = isPTFReduceSink;
+  }
+
   /**
    * Returns the number of reducers for the map-reduce job. -1 means to decide
    * the number of reducers at runtime. This enables Hive to estimate the number
@@ -298,5 +327,44 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
 
   public void setOutputName(String outputName) {
     this.outputName = outputName;
+  }
+
+  public int getNumBuckets() {
+    return numBuckets;
+  }
+
+  public void setNumBuckets(int numBuckets) {
+    this.numBuckets = numBuckets;
+  }
+
+  public List<ExprNodeDesc> getBucketCols() {
+    return bucketCols;
+  }
+
+  public void setBucketCols(List<ExprNodeDesc> bucketCols) {
+    this.bucketCols = bucketCols;
+  }
+
+  public void setSkipTag(boolean value) {
+    this.skipTag = value;
+  }
+
+  public boolean getSkipTag() {
+    return skipTag;
+  }
+
+  @Explain(displayName = "auto parallelism", normalExplain = false)
+  public final boolean isAutoParallel() {
+    return (autoParallel != null) && autoParallel;
+  }
+
+  public final void setAutoParallel(final boolean autoParallel) {
+    // we don't allow turning on auto parallel once it has been
+    // explicitly turned off. That is to avoid scenarios where
+    // auto parallelism could break assumptions about number of
+    // reducers or hash function.
+    if (this.autoParallel == null || this.autoParallel == true) {
+      this.autoParallel = autoParallel;
+    }
   }
 }

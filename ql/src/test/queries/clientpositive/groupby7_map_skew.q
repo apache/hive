@@ -2,6 +2,8 @@ set hive.map.aggr=true;
 set hive.groupby.skewindata=true;
 set mapred.reduce.tasks=31;
 
+-- SORT_QUERY_RESULTS
+
 CREATE TABLE DEST1(key INT, value STRING) STORED AS TEXTFILE;
 CREATE TABLE DEST2(key INT, value STRING) STORED AS TEXTFILE;
 

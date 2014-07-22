@@ -1,5 +1,5 @@
 set hive.users.in.admin.role=hive_admin_user;
-set hive.security.authorization.manager=org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory;
+set hive.security.authorization.manager=org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactoryForTest;
 set hive.security.authenticator.manager=org.apache.hadoop.hive.ql.security.SessionStateConfigUserAuthenticator;
 set user.name=hive_admin_user;
 set role ADMIN;
@@ -22,7 +22,10 @@ grant all on table tpriv_current_role to user user3;
 set role role2;
 -- switch to role2, grant should work
 grant all on table tpriv_current_role to user user4;
+
+set user.name=user4;
 show grant user user4 on table tpriv_current_role;
+set user.name=user2;
 
 set role PUBLIC;
 -- set role to public, should fail as role2 is not one of the current roles

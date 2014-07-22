@@ -30,10 +30,10 @@ public class TestMapJoinRowContainer {
   @Test
   public void testSerialization() throws Exception {
     MapJoinRowContainer container1 = new MapJoinEagerRowContainer();
-    container1.add(new Object[]{ new Text("f0"), null, new ShortWritable((short)0xf)});
-    container1.add(Arrays.asList(new Object[]{ null, new Text("f1"), new ShortWritable((short)0xf)}));
-    container1.add(new Object[]{ null, null, new ShortWritable((short)0xf)});
-    container1.add(Arrays.asList(new Object[]{ new Text("f0"), new Text("f1"), new ShortWritable((short)0x1)}));
+    container1.addRow(new Object[]{ new Text("f0"), null, new ShortWritable((short)0xf)});
+    container1.addRow(Arrays.asList(new Object[]{ null, new Text("f1"), new ShortWritable((short)0xf)}));
+    container1.addRow(new Object[]{ null, null, new ShortWritable((short)0xf)});
+    container1.addRow(Arrays.asList(new Object[]{ new Text("f0"), new Text("f1"), new ShortWritable((short)0x1)}));
     MapJoinRowContainer container2 = Utilities.serde(container1, "f0,f1,filter", "string,string,smallint");
     Utilities.testEquality(container1, container2);
     Assert.assertEquals(4, container1.rowCount());

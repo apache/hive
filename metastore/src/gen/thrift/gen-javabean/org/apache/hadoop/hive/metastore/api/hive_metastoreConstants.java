@@ -67,6 +67,8 @@ public class hive_metastoreConstants {
 
   public static final String META_TABLE_PARTITION_COLUMNS = "partition_columns";
 
+  public static final String META_TABLE_PARTITION_COLUMN_TYPES = "partition_columns.types";
+
   public static final String FILE_INPUT_FORMAT = "file.inputformat";
 
   public static final String FILE_OUTPUT_FORMAT = "file.outputformat";

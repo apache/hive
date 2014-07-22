@@ -30,11 +30,15 @@ public class AlterDatabaseDesc extends DDLDesc implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
+  // Only altering the database property and owner is currently supported
+  public static enum ALTER_DB_TYPES {
+    ALTER_PROPERTY, ALTER_OWNER
+  };
+
+  ALTER_DB_TYPES alterType;
   String databaseName;
-  String locationUri;
-  String comment;
-  boolean ifNotExists;
   Map<String, String> dbProperties;
+  PrincipalDesc ownerPrincipal;
 
   /**
    * For serialization only.
@@ -42,31 +46,20 @@ public class AlterDatabaseDesc extends DDLDesc implements Serializable {
   public AlterDatabaseDesc() {
   }
 
-  public AlterDatabaseDesc(String databaseName, String comment,
-      String locationUri, boolean ifNotExists) {
+  public AlterDatabaseDesc(String databaseName, Map<String, String> dbProps) {
     super();
     this.databaseName = databaseName;
-    this.comment = comment;
-    this.locationUri = locationUri;
-    this.ifNotExists = ifNotExists;
-    this.dbProperties = null;
+    this.dbProperties = dbProps;
+    this.setAlterType(ALTER_DB_TYPES.ALTER_PROPERTY);
   }
 
-  public AlterDatabaseDesc(String databaseName, boolean ifNotExists) {
-    this(databaseName, null, null, ifNotExists);
+  public AlterDatabaseDesc(String databaseName, PrincipalDesc ownerPrincipal) {
+    this.databaseName = databaseName;
+    this.setOwnerPrincipal(ownerPrincipal);
+    this.setAlterType(ALTER_DB_TYPES.ALTER_OWNER);
   }
 
-
-
-  @Explain(displayName="if not exists", displayOnlyOnTrue = true)
-  public boolean getIfNotExists() {
-    return ifNotExists;
-  }
-
-  public void setIfNotExists(boolean ifNotExists) {
-    this.ifNotExists = ifNotExists;
-  }
-
+  @Explain(displayName="properties")
   public Map<String, String> getDatabaseProperties() {
     return dbProperties;
   }
@@ -84,21 +77,20 @@ public class AlterDatabaseDesc extends DDLDesc implements Serializable {
     this.databaseName = databaseName;
   }
 
-  @Explain(displayName="comment")
-  public String getComment() {
-    return comment;
+  @Explain(displayName="owner")
+  public PrincipalDesc getOwnerPrincipal() {
+    return ownerPrincipal;
   }
 
-  public void setComment(String comment) {
-    this.comment = comment;
+  public void setOwnerPrincipal(PrincipalDesc ownerPrincipal) {
+    this.ownerPrincipal = ownerPrincipal;
   }
 
-  @Explain(displayName="locationUri")
-  public String getLocationUri() {
-    return locationUri;
+  public ALTER_DB_TYPES getAlterType() {
+    return alterType;
   }
 
-  public void setLocationUri(String locationUri) {
-    this.locationUri = locationUri;
+  public void setAlterType(ALTER_DB_TYPES alterType) {
+    this.alterType = alterType;
   }
 }

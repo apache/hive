@@ -38,7 +38,6 @@ POSTHOOK: query: select d, date '2011-01-01' from date_4 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@date_4
 #### A masked pattern was here ####
-POSTHOOK: Lineage: date_4.d SIMPLE []
 2011-01-01	2011-01-01
 PREHOOK: query: drop table date_4
 PREHOOK: type: DROPTABLE
@@ -48,4 +47,3 @@ POSTHOOK: query: drop table date_4
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@date_4
 POSTHOOK: Output: default@date_4
-POSTHOOK: Lineage: date_4.d SIMPLE []

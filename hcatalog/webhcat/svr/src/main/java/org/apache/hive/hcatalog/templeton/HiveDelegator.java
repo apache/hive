@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.exec.ExecuteException;
+import org.apache.hive.hcatalog.templeton.tool.JobSubmissionConstants;
 import org.apache.hive.hcatalog.templeton.tool.TempletonControllerJob;
 import org.apache.hive.hcatalog.templeton.tool.TempletonUtils;
 
@@ -76,7 +77,16 @@ public class HiveDelegator extends LauncherDelegator {
       args.add("--hiveconf");
       args.add(TempletonControllerJob.TOKEN_FILE_ARG_PLACEHOLDER);
 
-      for (String prop : appConf.getStrings(AppConfig.HIVE_PROPS_NAME)) {
+      //this is needed specifcally for Hive on Tez (in addition to
+      //JobSubmissionConstants.TOKEN_FILE_ARG_PLACEHOLDER)
+      args.add("--hiveconf");
+      args.add(JobSubmissionConstants.TOKEN_FILE_ARG_PLACEHOLDER_TEZ);
+
+      //add mapreduce job tag placeholder
+      args.add("--hiveconf");
+      args.add(TempletonControllerJob.MAPREDUCE_JOB_TAGS_ARG_PLACEHOLDER);
+
+      for (String prop : appConf.hiveProps()) {
         args.add("--hiveconf");
         args.add(TempletonUtils.quoteForWindows(prop));
       }

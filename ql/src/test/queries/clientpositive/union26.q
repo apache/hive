@@ -1,4 +1,6 @@
-EXPLAIN 
+-- SORT_QUERY_RESULTS
+
+EXPLAIN
 SELECT 
 count(1) as counts,
 key,
@@ -40,7 +42,7 @@ select key, value
 FROM srcpart LATERAL VIEW explode(array(1,2,3)) myTable AS myCol
 WHERE ds='2008-04-08' and hr='11'
 ) a
-group by key, value order by key, value
+group by key, value
 ;
 
 
@@ -85,5 +87,5 @@ select key, value
 FROM srcpart LATERAL VIEW explode(array(1,2,3)) myTable AS myCol
 WHERE ds='2008-04-08' and hr='11'
 ) a
-group by key, value order by key, value
+group by key, value
 ;

@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDe;
+import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
@@ -108,7 +109,7 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
         LOG.debug("Column types: " + types);
         props.setProperty(serdeConstants.LIST_COLUMN_TYPES, types);
       }
-      serde.initialize(new Configuration(), props);
+      SerDeUtils.initializeSerDe(serde, new Configuration(), props, null);
 
     } catch (Exception ex) {
       ex.printStackTrace();

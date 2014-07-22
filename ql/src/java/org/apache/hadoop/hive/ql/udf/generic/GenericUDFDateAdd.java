@@ -27,6 +27,10 @@ import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFDateAddColCol;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFDateAddColScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFDateAddScalarCol;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
@@ -59,6 +63,7 @@ import org.apache.hadoop.io.IntWritable;
         + "Example:\n "
         + "  > SELECT _FUNC_('2009-30-07', 1) FROM src LIMIT 1;\n"
         + "  '2009-31-07'")
+@VectorizedExpressions({VectorUDFDateAddColScalar.class, VectorUDFDateAddScalarCol.class, VectorUDFDateAddColCol.class})
 public class GenericUDFDateAdd extends GenericUDF {
   private transient SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
   private transient TimestampConverter timestampConverter;
@@ -91,6 +96,9 @@ public class GenericUDFDateAdd extends GenericUDF {
     ObjectInspector outputOI = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
     switch (inputType1) {
     case STRING:
+    case VARCHAR:
+    case CHAR:
+      inputType1 = PrimitiveCategory.STRING;
       textConverter = ObjectInspectorConverters.getConverter(
         (PrimitiveObjectInspector) arguments[0],
         PrimitiveObjectInspectorFactory.writableStringObjectInspector);
@@ -124,7 +132,14 @@ public class GenericUDFDateAdd extends GenericUDF {
   @Override
   public Object evaluate(DeferredObject[] arguments) throws HiveException {
 
+    if (arguments[0].get() == null) {
+      return null;
+    }
     IntWritable toBeAdded = (IntWritable) intWritableConverter.convert(arguments[1].get());
+    if (toBeAdded == null) {
+      return null;
+    }
+
     switch (inputType1) {
     case STRING:
       String dateString = textConverter.convert(arguments[0].get()).toString();

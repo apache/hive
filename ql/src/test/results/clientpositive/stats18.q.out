@@ -20,13 +20,13 @@ PREHOOK: query: -- Load a file into a existing partition
 -- Some other stats (numRows, rawDataSize) should be cleared
 desc formatted stats_part partition (ds='2010-04-08', hr='13')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats_part
 POSTHOOK: query: -- Load a file into a existing partition
 -- Some stats (numFiles, totalSize) should be updated correctly
 -- Some other stats (numRows, rawDataSize) should be cleared
 desc formatted stats_part partition (ds='2010-04-08', hr='13')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Lineage: stats_part PARTITION(ds=2010-04-08,hr=13).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_part PARTITION(ds=2010-04-08,hr=13).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Input: default@stats_part
 # col_name            	data_type           	comment             
 	 	 
 key                 	string              	default             
@@ -35,8 +35,8 @@ value               	string              	default
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-ds                  	string              	None                
-hr                  	string              	None                
+ds                  	string              	                    
+hr                  	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[2010-04-08, 13]    	 
@@ -71,14 +71,12 @@ POSTHOOK: query: load data local inpath '../../data/files/srcbucket20.txt' INTO 
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@stats_part@ds=2010-04-08/hr=13
-POSTHOOK: Lineage: stats_part PARTITION(ds=2010-04-08,hr=13).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_part PARTITION(ds=2010-04-08,hr=13).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: desc formatted stats_part partition (ds='2010-04-08', hr='13')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats_part
 POSTHOOK: query: desc formatted stats_part partition (ds='2010-04-08', hr='13')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Lineage: stats_part PARTITION(ds=2010-04-08,hr=13).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_part PARTITION(ds=2010-04-08,hr=13).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Input: default@stats_part
 # col_name            	data_type           	comment             
 	 	 
 key                 	string              	default             
@@ -87,8 +85,8 @@ value               	string              	default
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-ds                  	string              	None                
-hr                  	string              	None                
+ds                  	string              	                    
+hr                  	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[2010-04-08, 13]    	 
@@ -119,8 +117,6 @@ PREHOOK: query: drop table stats_src
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table stats_src
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Lineage: stats_part PARTITION(ds=2010-04-08,hr=13).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_part PARTITION(ds=2010-04-08,hr=13).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: drop table stats_part
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@stats_part
@@ -129,5 +125,3 @@ POSTHOOK: query: drop table stats_part
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@stats_part
 POSTHOOK: Output: default@stats_part
-POSTHOOK: Lineage: stats_part PARTITION(ds=2010-04-08,hr=13).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_part PARTITION(ds=2010-04-08,hr=13).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]

@@ -25,9 +25,11 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.URLDecoder;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -89,7 +91,7 @@ public class TempletonUtils {
   public static final Pattern JAR_COMPLETE = Pattern.compile(" map \\d+%\\s+reduce \\d+%$");
   public static final Pattern PIG_COMPLETE = Pattern.compile(" \\d+% complete$");
   //looking for map = 100%,  reduce = 100%
-  public static final Pattern HIVE_COMPLETE = Pattern.compile(" map = \\d+%,\\s+reduce = \\d+%$");
+  public static final Pattern HIVE_COMPLETE = Pattern.compile(" map = (\\d+%),\\s+reduce = (\\d+%).*$");
 
   /**
    * Extract the percent complete line from Pig or Jar jobs.
@@ -105,15 +107,7 @@ public class TempletonUtils {
     
     Matcher hive = HIVE_COMPLETE.matcher(line);
     if(hive.find()) {
-      StringBuilder sb = new StringBuilder(hive.group().trim());
-      String[] toRemove = {"= ", ", "};
-      for(String pattern : toRemove) {
-        int pos;
-        while((pos = sb.indexOf(pattern)) >= 0) {
-          sb.delete(pos, pos + pattern.length());
-        }
-      }
-      return sb.toString();//normalized to look like JAR_COMPLETE
+      return "map " + hive.group(1) + " reduce " + hive.group(2);
     }
     return null;
   }
@@ -353,5 +347,41 @@ public class TempletonUtils {
       args.add("/c");
       args.add("call");
     }
+  }
+
+  /**
+   * replaces all occurrences of "\," with ","; returns {@code s} if no modifications needed
+   */
+  public static String unEscapeString(String s) {
+    return s != null && s.contains("\\,") ? StringUtils.unEscapeString(s) : s;
+  }
+
+  /**
+   * Find a jar that contains a class of the same name and which
+   * file name matches the given pattern.
+   *
+   * @param clazz the class to find.
+   * @param fileNamePattern regex pattern that must match the jar full path
+   * @return a jar file that contains the class, or null
+   */
+  public static String findContainingJar(Class<?> clazz, String fileNamePattern) {
+    ClassLoader loader = clazz.getClassLoader();
+    String classFile = clazz.getName().replaceAll("\\.", "/") + ".class";
+    try {
+      for(final Enumeration<URL> itr = loader.getResources(classFile);
+          itr.hasMoreElements();) {
+        final URL url = itr.nextElement();
+        if ("jar".equals(url.getProtocol())) {
+          String toReturn = url.getPath();
+          if (fileNamePattern == null || toReturn.matches(fileNamePattern)) {
+            toReturn = URLDecoder.decode(toReturn, "UTF-8");
+            return toReturn.replaceAll("!.*$", "");
+          }
+        }
+      }
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+    return null;
   }
 }

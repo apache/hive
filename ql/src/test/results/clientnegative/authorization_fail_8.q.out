@@ -1,0 +1,11 @@
+PREHOOK: query: create table authorization_fail (key int, value string) partitioned by (ds string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: create table authorization_fail (key int, value string) partitioned by (ds string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@authorization_fail
+PREHOOK: query: GRANT SELECT ON authorization_fail TO USER user2 WITH GRANT OPTION
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@authorization_fail
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. null

@@ -30,7 +30,10 @@ import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.persistence.MapJoinKeyObject;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinKey;
+import org.apache.hadoop.hive.ql.exec.persistence.MapJoinKey;
+import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainer.ReusableGetAdaptor;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriterFactory;
@@ -39,6 +42,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
+import org.apache.hadoop.hive.serde2.ByteStream.Output;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 
@@ -70,7 +74,6 @@ public class VectorMapJoinOperator extends MapJoinOperator implements Vectorizat
   private VectorExpression[] bigTableValueExpressions;
 
   private transient VectorizedRowBatch outputBatch;
-  private transient MapJoinKeyEvaluator keyEvaluator;
   private transient VectorExpressionWriter[] valueWriters;
   private transient Map<ObjectInspector, VectorColumnAssign[]> outputVectorAssigners;
 
@@ -87,9 +90,6 @@ public class VectorMapJoinOperator extends MapJoinOperator implements Vectorizat
     super();
   }
 
-  private interface MapJoinKeyEvaluator {
-      MapJoinKey evaluate(VectorHashKeyWrapper kw) throws HiveException;
-  }
 
   public VectorMapJoinOperator (VectorizationContext vContext, OperatorDesc conf)
     throws HiveException {
@@ -139,30 +139,10 @@ public class VectorMapJoinOperator extends MapJoinOperator implements Vectorizat
 
     vrbCtx = new VectorizedRowBatchCtx();
     vrbCtx.init(hconf, this.fileKey, (StructObjectInspector) this.outputObjInspector);
-    
+
     outputBatch = vrbCtx.createVectorizedRowBatch();
 
     keyWrapperBatch =VectorHashKeyWrapperBatch.compileKeyWrapperBatch(keyExpressions);
-
-    // This key evaluator translates from the vectorized VectorHashKeyWrapper format
-    // into the row-mode MapJoinKey
-    keyEvaluator = new MapJoinKeyEvaluator() {
-      private MapJoinKey key;
-
-      public MapJoinKeyEvaluator init() {
-        key = new MapJoinKey(new Object[keyExpressions.length]);
-        return this;
-      }
-
-      @Override
-      public MapJoinKey evaluate(VectorHashKeyWrapper kw) throws HiveException {
-        Object[] keyValues = key.getKey();
-        for(int i=0; i<keyExpressions.length; ++i) {
-          keyValues[i] = keyWrapperBatch.getWritableKeyValue(kw, i, keyOutputWriters[i]);
-        }
-        return key;
-      };
-    }.init();
 
     Map<Byte, List<ExprNodeDesc>> valueExpressions = conf.getExprs();
     List<ExprNodeDesc> bigTableExpressions = valueExpressions.get(posBigTable);
@@ -256,9 +236,9 @@ public class VectorMapJoinOperator extends MapJoinOperator implements Vectorizat
   }
 
   @Override
-  protected MapJoinKey computeMapJoinKey(Object row, byte alias) throws HiveException {
-    VectorizedRowBatch inBatch = (VectorizedRowBatch) row;
-    return keyEvaluator.evaluate(keyValues[batchIndex]);
+  protected void setMapJoinKey(ReusableGetAdaptor dest, Object row, byte alias)
+      throws HiveException {
+    dest.setFromVector(keyValues[batchIndex], keyOutputWriters, keyWrapperBatch);
   }
 
   @Override

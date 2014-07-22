@@ -91,7 +91,6 @@ public class TestPassProperties {
     try {
       Configuration conf = new Configuration();
       conf.set("hive.metastore.uris", "thrift://no.such.machine:10888");
-      conf.set("hive.metastore.local", "false");
       Job job = new Job(conf, "Write-hcat-seq-table");
       job.setJarByClass(TestPassProperties.class);
 

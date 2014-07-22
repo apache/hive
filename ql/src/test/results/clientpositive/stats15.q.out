@@ -23,14 +23,12 @@ POSTHOOK: query: analyze table stats_src compute statistics
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@stats_src
 POSTHOOK: Output: default@stats_src
-POSTHOOK: Lineage: stats_src.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_src.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: desc formatted stats_src
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats_src
 POSTHOOK: query: desc formatted stats_src
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Lineage: stats_src.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_src.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Input: default@stats_src
 # col_name            	data_type           	comment             
 	 	 
 key                 	string              	default             
@@ -47,7 +45,7 @@ Table Parameters:
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
 	numRows             	500                 
-	rawDataSize         	5312                
+	rawDataSize         	0                   
 	totalSize           	5812                
 #### A masked pattern was here ####
 	 	 
@@ -68,8 +66,6 @@ POSTHOOK: query: create table stats_part like srcpart
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@stats_part
-POSTHOOK: Lineage: stats_src.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_src.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: insert overwrite table stats_part partition (ds='2010-04-08', hr = '11') select key, value from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -80,8 +76,6 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@stats_part@ds=2010-04-08/hr=11
 POSTHOOK: Lineage: stats_part PARTITION(ds=2010-04-08,hr=11).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: stats_part PARTITION(ds=2010-04-08,hr=11).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_src.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_src.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: insert overwrite table stats_part partition (ds='2010-04-08', hr = '12') select key, value from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -90,12 +84,8 @@ POSTHOOK: query: insert overwrite table stats_part partition (ds='2010-04-08', h
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@stats_part@ds=2010-04-08/hr=12
-POSTHOOK: Lineage: stats_part PARTITION(ds=2010-04-08,hr=11).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_part PARTITION(ds=2010-04-08,hr=11).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: stats_part PARTITION(ds=2010-04-08,hr=12).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: stats_part PARTITION(ds=2010-04-08,hr=12).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_src.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_src.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: analyze table stats_part partition(ds='2010-04-08', hr='11') compute statistics
 PREHOOK: type: QUERY
 PREHOOK: Input: default@stats_part
@@ -108,12 +98,6 @@ POSTHOOK: Input: default@stats_part
 POSTHOOK: Input: default@stats_part@ds=2010-04-08/hr=11
 POSTHOOK: Output: default@stats_part
 POSTHOOK: Output: default@stats_part@ds=2010-04-08/hr=11
-POSTHOOK: Lineage: stats_part PARTITION(ds=2010-04-08,hr=11).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_part PARTITION(ds=2010-04-08,hr=11).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_part PARTITION(ds=2010-04-08,hr=12).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_part PARTITION(ds=2010-04-08,hr=12).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_src.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_src.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: analyze table stats_part partition(ds='2010-04-08', hr='12') compute statistics
 PREHOOK: type: QUERY
 PREHOOK: Input: default@stats_part
@@ -126,12 +110,6 @@ POSTHOOK: Input: default@stats_part
 POSTHOOK: Input: default@stats_part@ds=2010-04-08/hr=12
 POSTHOOK: Output: default@stats_part
 POSTHOOK: Output: default@stats_part@ds=2010-04-08/hr=12
-POSTHOOK: Lineage: stats_part PARTITION(ds=2010-04-08,hr=11).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_part PARTITION(ds=2010-04-08,hr=11).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_part PARTITION(ds=2010-04-08,hr=12).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_part PARTITION(ds=2010-04-08,hr=12).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_src.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_src.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: insert overwrite table stats_part partition (ds='2010-04-08', hr = '13') select key, value from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -140,26 +118,14 @@ POSTHOOK: query: insert overwrite table stats_part partition (ds='2010-04-08', h
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@stats_part@ds=2010-04-08/hr=13
-POSTHOOK: Lineage: stats_part PARTITION(ds=2010-04-08,hr=11).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_part PARTITION(ds=2010-04-08,hr=11).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_part PARTITION(ds=2010-04-08,hr=12).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_part PARTITION(ds=2010-04-08,hr=12).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: stats_part PARTITION(ds=2010-04-08,hr=13).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: stats_part PARTITION(ds=2010-04-08,hr=13).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_src.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_src.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: desc formatted stats_part
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats_part
 POSTHOOK: query: desc formatted stats_part
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Lineage: stats_part PARTITION(ds=2010-04-08,hr=11).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_part PARTITION(ds=2010-04-08,hr=11).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_part PARTITION(ds=2010-04-08,hr=12).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_part PARTITION(ds=2010-04-08,hr=12).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_part PARTITION(ds=2010-04-08,hr=13).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_part PARTITION(ds=2010-04-08,hr=13).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_src.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_src.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Input: default@stats_part
 # col_name            	data_type           	comment             
 	 	 
 key                 	string              	default             
@@ -168,8 +134,8 @@ value               	string              	default
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-ds                  	string              	None                
-hr                  	string              	None                
+ds                  	string              	                    
+hr                  	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -193,16 +159,10 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: desc formatted stats_part partition (ds='2010-04-08', hr = '11')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats_part
 POSTHOOK: query: desc formatted stats_part partition (ds='2010-04-08', hr = '11')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Lineage: stats_part PARTITION(ds=2010-04-08,hr=11).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_part PARTITION(ds=2010-04-08,hr=11).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_part PARTITION(ds=2010-04-08,hr=12).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_part PARTITION(ds=2010-04-08,hr=12).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_part PARTITION(ds=2010-04-08,hr=13).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_part PARTITION(ds=2010-04-08,hr=13).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_src.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_src.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Input: default@stats_part
 # col_name            	data_type           	comment             
 	 	 
 key                 	string              	default             
@@ -211,8 +171,8 @@ value               	string              	default
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-ds                  	string              	None                
-hr                  	string              	None                
+ds                  	string              	                    
+hr                  	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[2010-04-08, 11]    	 
@@ -225,7 +185,7 @@ Partition Parameters:
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
 	numRows             	500                 
-	rawDataSize         	5312                
+	rawDataSize         	0                   
 	totalSize           	5812                
 #### A masked pattern was here ####
 	 	 
@@ -241,16 +201,10 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: desc formatted stats_part partition (ds='2010-04-08', hr = '12')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats_part
 POSTHOOK: query: desc formatted stats_part partition (ds='2010-04-08', hr = '12')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Lineage: stats_part PARTITION(ds=2010-04-08,hr=11).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_part PARTITION(ds=2010-04-08,hr=11).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_part PARTITION(ds=2010-04-08,hr=12).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_part PARTITION(ds=2010-04-08,hr=12).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_part PARTITION(ds=2010-04-08,hr=13).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_part PARTITION(ds=2010-04-08,hr=13).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_src.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_src.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Input: default@stats_part
 # col_name            	data_type           	comment             
 	 	 
 key                 	string              	default             
@@ -259,8 +213,8 @@ value               	string              	default
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-ds                  	string              	None                
-hr                  	string              	None                
+ds                  	string              	                    
+hr                  	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[2010-04-08, 12]    	 
@@ -273,7 +227,7 @@ Partition Parameters:
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
 	numRows             	500                 
-	rawDataSize         	5312                
+	rawDataSize         	0                   
 	totalSize           	5812                
 #### A masked pattern was here ####
 	 	 
@@ -307,26 +261,12 @@ POSTHOOK: Output: default@stats_part
 POSTHOOK: Output: default@stats_part@ds=2010-04-08/hr=11
 POSTHOOK: Output: default@stats_part@ds=2010-04-08/hr=12
 POSTHOOK: Output: default@stats_part@ds=2010-04-08/hr=13
-POSTHOOK: Lineage: stats_part PARTITION(ds=2010-04-08,hr=11).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_part PARTITION(ds=2010-04-08,hr=11).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_part PARTITION(ds=2010-04-08,hr=12).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_part PARTITION(ds=2010-04-08,hr=12).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_part PARTITION(ds=2010-04-08,hr=13).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_part PARTITION(ds=2010-04-08,hr=13).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_src.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_src.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: desc formatted stats_part
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats_part
 POSTHOOK: query: desc formatted stats_part
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Lineage: stats_part PARTITION(ds=2010-04-08,hr=11).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_part PARTITION(ds=2010-04-08,hr=11).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_part PARTITION(ds=2010-04-08,hr=12).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_part PARTITION(ds=2010-04-08,hr=12).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_part PARTITION(ds=2010-04-08,hr=13).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_part PARTITION(ds=2010-04-08,hr=13).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_src.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_src.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Input: default@stats_part
 # col_name            	data_type           	comment             
 	 	 
 key                 	string              	default             
@@ -335,8 +275,8 @@ value               	string              	default
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-ds                  	string              	None                
-hr                  	string              	None                
+ds                  	string              	                    
+hr                  	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -366,14 +306,6 @@ POSTHOOK: query: drop table stats_src
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@stats_src
 POSTHOOK: Output: default@stats_src
-POSTHOOK: Lineage: stats_part PARTITION(ds=2010-04-08,hr=11).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_part PARTITION(ds=2010-04-08,hr=11).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_part PARTITION(ds=2010-04-08,hr=12).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_part PARTITION(ds=2010-04-08,hr=12).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_part PARTITION(ds=2010-04-08,hr=13).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_part PARTITION(ds=2010-04-08,hr=13).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_src.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_src.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: drop table stats_part
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@stats_part
@@ -382,11 +314,3 @@ POSTHOOK: query: drop table stats_part
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@stats_part
 POSTHOOK: Output: default@stats_part
-POSTHOOK: Lineage: stats_part PARTITION(ds=2010-04-08,hr=11).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_part PARTITION(ds=2010-04-08,hr=11).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_part PARTITION(ds=2010-04-08,hr=12).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_part PARTITION(ds=2010-04-08,hr=12).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_part PARTITION(ds=2010-04-08,hr=13).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_part PARTITION(ds=2010-04-08,hr=13).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_src.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_src.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]

@@ -10,5 +10,7 @@ PREHOOK: query: show roles
 PREHOOK: type: SHOW_ROLES
 POSTHOOK: query: show roles
 POSTHOOK: type: SHOW_ROLES
+admin
+public
 role1
 role2

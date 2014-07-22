@@ -18,10 +18,13 @@
 
 package org.apache.hadoop.hive.ql.processors;
 
+import java.util.Arrays;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.parse.VariableSubstitution;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 
@@ -35,9 +38,11 @@ public class AddResourceProcessor implements CommandProcessor {
       .getName());
   public static final LogHelper console = new LogHelper(LOG);
 
+  @Override
   public void init() {
   }
 
+  @Override
   public CommandProcessorResponse run(String command) {
     SessionState ss = SessionState.get();
     command = new VariableSubstitution().substitute(ss.getConf(),command);
@@ -50,14 +55,20 @@ public class AddResourceProcessor implements CommandProcessor {
           + "] <value> [<value>]*");
       return new CommandProcessorResponse(1);
     }
-    for (int i = 1; i < tokens.length; i++) {
-      String resourceFile = ss.add_resource(t, tokens[i]);
-      if(resourceFile == null){
-        String errMsg = tokens[i]+" does not exist.";
-        return new CommandProcessorResponse(1,errMsg,null);
-      }
+
+    CommandProcessorResponse authErrResp =
+        CommandUtil.authorizeCommand(ss, HiveOperationType.ADD, Arrays.asList(tokens));
+    if(authErrResp != null){
+      // there was an authorization issue
+      return authErrResp;
     }
 
+    try {
+      ss.add_resources(t,
+          Arrays.asList(Arrays.copyOfRange(tokens, 1, tokens.length)));
+    } catch (Exception e) {
+      return CommandProcessorResponse.create(e);
+    }
     return new CommandProcessorResponse(0);
   }
 

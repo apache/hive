@@ -97,5 +97,4 @@ POSTHOOK: query: select * from tst_dest30
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tst_dest30
 #### A masked pattern was here ####
-POSTHOOK: Lineage: tst_dest30.a EXPRESSION [(src)src.null, ]
 18

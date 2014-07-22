@@ -28,13 +28,6 @@ POSTHOOK: query: select * from intable where d in (29098519.0) and f in (1410.0)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@intable
 #### A masked pattern was here ####
-POSTHOOK: Lineage: intable.b EXPRESSION []
-POSTHOOK: Lineage: intable.d SIMPLE []
-POSTHOOK: Lineage: intable.f EXPRESSION []
-POSTHOOK: Lineage: intable.i SIMPLE []
-POSTHOOK: Lineage: intable.l SIMPLE []
-POSTHOOK: Lineage: intable.s SIMPLE []
-POSTHOOK: Lineage: intable.t EXPRESSION []
 false	2.9098519E7	1410.0	996	40408519555	test_string	12
 PREHOOK: query: drop table intable
 PREHOOK: type: DROPTABLE
@@ -44,10 +37,3 @@ POSTHOOK: query: drop table intable
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@intable
 POSTHOOK: Output: default@intable
-POSTHOOK: Lineage: intable.b EXPRESSION []
-POSTHOOK: Lineage: intable.d SIMPLE []
-POSTHOOK: Lineage: intable.f EXPRESSION []
-POSTHOOK: Lineage: intable.i SIMPLE []
-POSTHOOK: Lineage: intable.l SIMPLE []
-POSTHOOK: Lineage: intable.s SIMPLE []
-POSTHOOK: Lineage: intable.t EXPRESSION []

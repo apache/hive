@@ -1,3 +1,5 @@
+-- SORT_QUERY_RESULTS
+
 create table orc_split_elim (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) stored as orc;
 
 load data local inpath '../../data/files/orc_split_elim.orc' into table orc_split_elim;
@@ -61,43 +63,43 @@ select count(*) from orc_split_elim where userid<=0;
 SET hive.optimize.index.filter=false;
 
 -- 5 mappers
-select userid,string1,subtype,decimal1,ts from orc_split_elim where userid<=2 order by userid;
+select userid,string1,subtype,decimal1,ts from orc_split_elim where userid<=2;
 
 SET hive.optimize.index.filter=true;
 -- 1 mapper
-select userid,string1,subtype,decimal1,ts from orc_split_elim where userid<=2 order by userid;
+select userid,string1,subtype,decimal1,ts from orc_split_elim where userid<=2;
 SET hive.optimize.index.filter=false;
 
 -- 5 mappers
-select userid,string1,subtype,decimal1,ts from orc_split_elim where userid<=5 order by userid;
+select userid,string1,subtype,decimal1,ts from orc_split_elim where userid<=5;
 
 SET hive.optimize.index.filter=true;
 -- 2 mappers
-select userid,string1,subtype,decimal1,ts from orc_split_elim where userid<=5 order by userid;
+select userid,string1,subtype,decimal1,ts from orc_split_elim where userid<=5;
 SET hive.optimize.index.filter=false;
 
 -- 5 mappers
-select userid,string1,subtype,decimal1,ts from orc_split_elim where userid<=13 order by userid;
+select userid,string1,subtype,decimal1,ts from orc_split_elim where userid<=13;
 
 SET hive.optimize.index.filter=true;
 -- 3 mappers
-select userid,string1,subtype,decimal1,ts from orc_split_elim where userid<=13 order by userid;
+select userid,string1,subtype,decimal1,ts from orc_split_elim where userid<=13;
 SET hive.optimize.index.filter=false;
 
 -- 5 mappers
-select userid,string1,subtype,decimal1,ts from orc_split_elim where userid<=29 order by userid;
+select userid,string1,subtype,decimal1,ts from orc_split_elim where userid<=29;
 
 SET hive.optimize.index.filter=true;
 -- 4 mappers
-select userid,string1,subtype,decimal1,ts from orc_split_elim where userid<=29 order by userid;
+select userid,string1,subtype,decimal1,ts from orc_split_elim where userid<=29;
 SET hive.optimize.index.filter=false;
 
 -- 5 mappers
-select userid,string1,subtype,decimal1,ts from orc_split_elim where userid<=70 order by userid;
+select userid,string1,subtype,decimal1,ts from orc_split_elim where userid<=70;
 
 SET hive.optimize.index.filter=true;
 -- 5 mappers
-select userid,string1,subtype,decimal1,ts from orc_split_elim where userid<=70 order by userid;
+select userid,string1,subtype,decimal1,ts from orc_split_elim where userid<=70;
 SET hive.optimize.index.filter=false;
 
 -- partitioned table
@@ -110,59 +112,59 @@ load data local inpath '../../data/files/orc_split_elim.orc' into table orc_spli
 load data local inpath '../../data/files/orc_split_elim.orc' into table orc_split_elim_part partition(country='us', year=2001);
 
 -- 10 mapper - no split elimination
-select userid,string1,subtype,decimal1,ts from orc_split_elim_part where userid<=2 and country='us'order by userid;
+select userid,string1,subtype,decimal1,ts from orc_split_elim_part where userid<=2 and country='us';
 
 SET hive.optimize.index.filter=true;
 -- 2 mapper - split elimination
-select userid,string1,subtype,decimal1,ts from orc_split_elim_part where userid<=2 and country='us' order by userid;
+select userid,string1,subtype,decimal1,ts from orc_split_elim_part where userid<=2 and country='us';
 SET hive.optimize.index.filter=false;
 
 -- 10 mapper - no split elimination
-select userid,string1,subtype,decimal1,ts from orc_split_elim_part where userid<=2 and country='us' and (year=2000 or year=2001) order by userid;
+select userid,string1,subtype,decimal1,ts from orc_split_elim_part where userid<=2 and country='us' and (year=2000 or year=2001);
 
 SET hive.optimize.index.filter=true;
 -- 2 mapper - split elimination
-select userid,string1,subtype,decimal1,ts from orc_split_elim_part where userid<=2 and country='us' and (year=2000 or year=2001) order by userid;
+select userid,string1,subtype,decimal1,ts from orc_split_elim_part where userid<=2 and country='us' and (year=2000 or year=2001);
 SET hive.optimize.index.filter=false;
 
 -- 10 mapper - no split elimination
-select userid,string1,subtype,decimal1,ts from orc_split_elim_part where userid<=2 and country='us' and year=2000 order by userid;
+select userid,string1,subtype,decimal1,ts from orc_split_elim_part where userid<=2 and country='us' and year=2000;
 
 SET hive.optimize.index.filter=true;
 -- 1 mapper - split elimination
-select userid,string1,subtype,decimal1,ts from orc_split_elim_part where userid<=2 and country='us' and year=2000 order by userid;
+select userid,string1,subtype,decimal1,ts from orc_split_elim_part where userid<=2 and country='us' and year=2000;
 SET hive.optimize.index.filter=false;
 
 -- 10 mapper - no split elimination
-select userid,string1,subtype,decimal1,ts from orc_split_elim_part where userid<=5 and country='us' order by userid;
+select userid,string1,subtype,decimal1,ts from orc_split_elim_part where userid<=5 and country='us';
 
 SET hive.optimize.index.filter=true;
 -- 4 mapper - split elimination
-select userid,string1,subtype,decimal1,ts from orc_split_elim_part where userid<=5 and country='us' order by userid;
+select userid,string1,subtype,decimal1,ts from orc_split_elim_part where userid<=5 and country='us';
 SET hive.optimize.index.filter=false;
 
 -- 10 mapper - no split elimination
-select userid,string1,subtype,decimal1,ts from orc_split_elim_part where userid<=5 and country='us' and (year=2000 or year=2001) order by userid;
+select userid,string1,subtype,decimal1,ts from orc_split_elim_part where userid<=5 and country='us' and (year=2000 or year=2001);
 
 SET hive.optimize.index.filter=true;
 -- 4 mapper - split elimination
-select userid,string1,subtype,decimal1,ts from orc_split_elim_part where userid<=5 and country='us' and (year=2000 or year=2001) order by userid;
+select userid,string1,subtype,decimal1,ts from orc_split_elim_part where userid<=5 and country='us' and (year=2000 or year=2001);
 SET hive.optimize.index.filter=false;
 
 -- 10 mapper - no split elimination
-select userid,string1,subtype,decimal1,ts from orc_split_elim_part where userid<=5 and country='us' and year=2000 order by userid;
+select userid,string1,subtype,decimal1,ts from orc_split_elim_part where userid<=5 and country='us' and year=2000;
 
 SET hive.optimize.index.filter=true;
 -- 2 mapper - split elimination
-select userid,string1,subtype,decimal1,ts from orc_split_elim_part where userid<=5 and country='us' and year=2000 order by userid;
+select userid,string1,subtype,decimal1,ts from orc_split_elim_part where userid<=5 and country='us' and year=2000;
 SET hive.optimize.index.filter=false;
 
 -- 0 mapper - no split elimination
-select userid,string1,subtype,decimal1,ts from orc_split_elim_part where userid<=70 and country='in' order by userid;
-select userid,string1,subtype,decimal1,ts from orc_split_elim_part where userid<=70 and country='us' and year=2002 order by userid;
+select userid,string1,subtype,decimal1,ts from orc_split_elim_part where userid<=70 and country='in';
+select userid,string1,subtype,decimal1,ts from orc_split_elim_part where userid<=70 and country='us' and year=2002;
 
 SET hive.optimize.index.filter=true;
 -- 0 mapper - split elimination
-select userid,string1,subtype,decimal1,ts from orc_split_elim_part where userid<=70 and country='in' order by userid;
-select userid,string1,subtype,decimal1,ts from orc_split_elim_part where userid<=70 and country='us' and year=2002 order by userid;
+select userid,string1,subtype,decimal1,ts from orc_split_elim_part where userid<=70 and country='in';
+select userid,string1,subtype,decimal1,ts from orc_split_elim_part where userid<=70 and country='us' and year=2002;
 SET hive.optimize.index.filter=false;

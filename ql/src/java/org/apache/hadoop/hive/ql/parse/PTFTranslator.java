@@ -85,6 +85,7 @@ import org.apache.hadoop.hive.ql.udf.ptf.TableFunctionResolver;
 import org.apache.hadoop.hive.ql.udf.ptf.WindowingTableFunction.WindowingTableFunctionResolver;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -136,6 +137,7 @@ public class PTFTranslator {
     ptfDesc.setCfg(hCfg);
     ptfDesc.setLlInfo(llInfo);
     translatePTFChain();
+    PTFDeserializer.alterOutputOIForStreaming(ptfDesc);
     return ptfDesc;
   }
 
@@ -220,6 +222,8 @@ public class PTFTranslator {
     wdwTFnDef.setOutputShape(wdwOutShape);
 
     tFn.setupOutputOI();
+
+    PTFDeserializer.alterOutputOIForStreaming(ptfDesc);
 
     return ptfDesc;
   }
@@ -626,9 +630,7 @@ public class PTFTranslator {
   private ShapeDetails setupTableFnShape(String fnName, ShapeDetails inpShape,
       StructObjectInspector OI, List<String> columnNames, RowResolver rr)
       throws SemanticException {
-    if (fnName.equals(FunctionRegistry.NOOP_TABLE_FUNCTION)
-        || fnName.equals(
-            FunctionRegistry.NOOP_MAP_TABLE_FUNCTION)) {
+    if (FunctionRegistry.isNoopFunction(fnName)) {
       return setupShapeForNoop(inpShape, OI, columnNames, rr);
     }
     return setupShape(OI, columnNames, rr);
@@ -814,7 +816,7 @@ public class PTFTranslator {
     p.setProperty(
         org.apache.hadoop.hive.serde.serdeConstants.LIST_COLUMN_TYPES,
         serdePropsMap.get(org.apache.hadoop.hive.serde.serdeConstants.LIST_COLUMN_TYPES));
-    serDe.initialize(cfg, p);
+    SerDeUtils.initializeSerDe(serDe, cfg, p, null);
     return serDe;
   }
 
@@ -878,8 +880,7 @@ public class PTFTranslator {
       StructObjectInspector rowObjectInspector,
       List<String> outputColNames, RowResolver inputRR) throws SemanticException {
 
-    if (tbFnName.equals(FunctionRegistry.NOOP_TABLE_FUNCTION) ||
-        tbFnName.equals(FunctionRegistry.NOOP_MAP_TABLE_FUNCTION)) {
+    if (FunctionRegistry.isNoopFunction(tbFnName)) {
       return buildRowResolverForNoop(tabAlias, rowObjectInspector, inputRR);
     }
 

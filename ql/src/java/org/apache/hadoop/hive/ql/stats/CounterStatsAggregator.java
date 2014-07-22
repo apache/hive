@@ -32,7 +32,7 @@ import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RunningJob;
 
-public class CounterStatsAggregator implements StatsAggregator {
+public class CounterStatsAggregator implements StatsAggregator, StatsCollectionTaskIndependent {
 
   private static final Log LOG = LogFactory.getLog(CounterStatsAggregator.class.getName());
 

@@ -220,7 +220,7 @@ public class PartialScanTask extends Task<PartialScanWork> implements
       // Finally SUBMIT the JOB!
       rj = jc.submitJob(job);
 
-      returnVal = jobExecHelper.progress(rj, jc);
+      returnVal = jobExecHelper.progress(rj, jc, null);
       success = (returnVal == 0);
 
     } catch (Exception e) {
@@ -248,7 +248,7 @@ public class PartialScanTask extends Task<PartialScanWork> implements
           if (returnVal != 0) {
             rj.killJob();
           }
-          HadoopJobExecHelper.runningJobKillURIs.remove(rj.getJobID());
+          HadoopJobExecHelper.runningJobs.remove(rj);
           jobID = rj.getID().toString();
         }
       } catch (Exception e) {

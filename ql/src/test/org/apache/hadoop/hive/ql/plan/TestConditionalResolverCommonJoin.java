@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.plan;
 
 import junit.framework.Assert;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.DDLTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.junit.Test;
 
@@ -27,6 +28,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 public class TestConditionalResolverCommonJoin {
 
@@ -43,30 +46,35 @@ public class TestConditionalResolverCommonJoin {
     aliasToKnownSize.put("alias2", 2048l);
     aliasToKnownSize.put("alias3", 4096l);
 
+    DDLTask task1 = new DDLTask();
+    task1.setId("alias2");
+    DDLTask task2 = new DDLTask();
+    task2.setId("alias3");
+
     // joins alias1, alias2, alias3 (alias1 was not eligible for big pos)
-    HashMap<String, Task<? extends Serializable>> aliasToTask =
-        new HashMap<String, Task<? extends Serializable>>();
-    aliasToTask.put("alias2", null);
-    aliasToTask.put("alias3", null);
+    HashMap<Task<? extends Serializable>, Set<String>> taskToAliases =
+        new HashMap<Task<? extends Serializable>, Set<String>>();
+    taskToAliases.put(task1, new HashSet<String>(Arrays.asList("alias2")));
+    taskToAliases.put(task2, new HashSet<String>(Arrays.asList("alias3")));
 
     ConditionalResolverCommonJoin.ConditionalResolverCommonJoinCtx ctx =
         new ConditionalResolverCommonJoin.ConditionalResolverCommonJoinCtx();
     ctx.setPathToAliases(pathToAliases);
-    ctx.setAliasToTask(aliasToTask);
+    ctx.setTaskToAliases(taskToAliases);
     ctx.setAliasToKnownSize(aliasToKnownSize);
 
     HiveConf conf = new HiveConf();
     conf.setLongVar(HiveConf.ConfVars.HIVESMALLTABLESFILESIZE, 4096);
 
     // alias3 only can be selected
-    String resolved = resolver.resolveMapJoinTask(ctx, conf);
-    Assert.assertEquals("alias3", resolved);
+    Task resolved = resolver.resolveMapJoinTask(ctx, conf);
+    Assert.assertEquals("alias3", resolved.getId());
 
     conf.setLongVar(HiveConf.ConfVars.HIVESMALLTABLESFILESIZE, 65536);
 
     // alias1, alias2, alias3 all can be selected but overriden by biggest one (alias3)
     resolved = resolver.resolveMapJoinTask(ctx, conf);
-    Assert.assertEquals("alias3", resolved);
+    Assert.assertEquals("alias3", resolved.getId());
 
     conf.setLongVar(HiveConf.ConfVars.HIVESMALLTABLESFILESIZE, 2048);
 

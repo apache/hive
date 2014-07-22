@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.metastore;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import junit.framework.Assert;
 
@@ -369,7 +368,7 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   }
 
   @Override
-  public boolean revokeRole(Role role, String userName, PrincipalType principalType)
+  public boolean revokeRole(Role role, String userName, PrincipalType principalType, boolean grantOption)
       throws MetaException, NoSuchObjectException {
 
     return false;
@@ -463,8 +462,8 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   }
 
   @Override
-  public boolean revokePrivileges(PrivilegeBag privileges) throws InvalidObjectException,
-      MetaException, NoSuchObjectException {
+  public boolean revokePrivileges(PrivilegeBag privileges, boolean grantOption)
+      throws InvalidObjectException, MetaException, NoSuchObjectException {
 
     return false;
   }
@@ -484,6 +483,11 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   @Override
   public List<MRoleMap> listRoles(String principalName, PrincipalType principalType) {
 
+    return null;
+  }
+
+  @Override
+  public List<MRoleMap> listRoleMembers(String roleName) {
     return null;
   }
 
@@ -637,6 +641,7 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   }
 
 
+  @Override
   public boolean deletePartitionColumnStatistics(String dbName, String tableName,
     String partName, List<String> partVals, String colName)
     throws NoSuchObjectException, MetaException, InvalidObjectException,
@@ -651,6 +656,7 @@ public class DummyRawStoreForJdoConnection implements RawStore {
     return false;
   }
 
+  @Override
   public boolean updatePartitionColumnStatistics(ColumnStatistics statsObj,List<String> partVals)
     throws NoSuchObjectException, MetaException, InvalidObjectException {
     return false;
@@ -692,6 +698,7 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   public void dropPartitions(String dbName, String tblName, List<String> partNames) {
   }
 
+  @Override
   public void createFunction(Function func) throws InvalidObjectException,
       MetaException {
   }
@@ -718,6 +725,8 @@ public class DummyRawStoreForJdoConnection implements RawStore {
       throws MetaException {
     return null;
   }
+
+
 }
 
 

@@ -18,6 +18,8 @@
 package org.apache.hadoop.hive.common;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -45,6 +47,22 @@ public class HiveStatsUtils {
    */
   public static FileStatus[] getFileStatusRecurse(Path path, int level, FileSystem fs)
       throws IOException {
+
+    // if level is <0, the return all files/directories under the specified path
+    if ( level < 0) {
+      List<FileStatus> result = new ArrayList<FileStatus>();
+      try {
+        FileStatus fileStatus = fs.getFileStatus(path);
+        FileUtils.listStatusRecursively(fs, fileStatus, result);
+      } catch (IOException e) {
+        // globStatus() API returns empty FileStatus[] when the specified path
+        // does not exist. But getFileStatus() throw IOException. To mimic the
+        // similar behavior we will return empty array on exception. For external
+        // tables, the path of the table will not exists during table creation
+        return new FileStatus[0];
+      }
+      return result.toArray(new FileStatus[result.size()]);
+    }
 
     // construct a path pattern (e.g., /*/*) to find all dynamically generated paths
     StringBuilder sb = new StringBuilder(path.toUri().getPath());

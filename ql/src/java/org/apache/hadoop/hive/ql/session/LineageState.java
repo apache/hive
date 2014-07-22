@@ -116,4 +116,13 @@ public class LineageState {
   public void setIndex(Index index) {
     this.index = index;
   }
+
+  /**
+   * Clear all lineage states
+   */
+  public void clear() {
+    dirToFop.clear();
+    linfo.clear();
+    index.clear();
+  }
 }

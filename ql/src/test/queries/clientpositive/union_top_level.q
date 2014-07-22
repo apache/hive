@@ -1,3 +1,5 @@
+-- SORT_QUERY_RESULTS
+
 -- top level
 explain
 select key, 0 as value from src where key % 3 == 0 limit 3

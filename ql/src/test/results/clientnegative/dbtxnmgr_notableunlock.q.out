@@ -1,0 +1,14 @@
+PREHOOK: query: drop table if exists drop_notableunlock
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists drop_notableunlock
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table drop_notableunlock (c int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: create table drop_notableunlock (c int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@drop_notableunlock
+PREHOOK: query: unlock table drop_notableunlock
+PREHOOK: type: UNLOCKTABLE
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Current transaction manager does not support explicit lock requests.  Transaction manager:   org.apache.hadoop.hive.ql.lockmgr.DbTxnManager

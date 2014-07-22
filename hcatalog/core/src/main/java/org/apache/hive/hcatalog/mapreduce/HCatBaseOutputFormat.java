@@ -43,14 +43,6 @@ public abstract class HCatBaseOutputFormat extends OutputFormat<WritableComparab
 //  static final private Log LOG = LogFactory.getLog(HCatBaseOutputFormat.class);
 
   /**
-   * @see org.apache.hive.hcatalog.mapreduce.HCatBaseOutputFormat#getTableSchema(org.apache.hadoop.conf.Configuration)
-   * @deprecated Use {@link #getTableSchema(org.apache.hadoop.conf.Configuration)}
-   */
-  public static HCatSchema getTableSchema(JobContext context) throws IOException {
-    return getTableSchema(context.getConfiguration());
-  }
-
-  /**
    * Gets the table schema for the table specified in the HCatOutputFormat.setOutput call
    * on the specified job context.
    * @param conf the Configuration object
@@ -81,7 +73,7 @@ public abstract class HCatBaseOutputFormat extends OutputFormat<WritableComparab
    */
   protected OutputFormat<WritableComparable<?>, HCatRecord> getOutputFormat(JobContext context) 
     throws IOException {
-    OutputJobInfo jobInfo = getJobInfo(context);
+    OutputJobInfo jobInfo = getJobInfo(context.getConfiguration());
     HiveStorageHandler storageHandler = HCatUtil.getStorageHandler(context.getConfiguration(), 
         jobInfo.getTableInfo().getStorerInfo());
     // Always configure storage handler with jobproperties/jobconf before calling any methods on it
@@ -94,14 +86,6 @@ public abstract class HCatBaseOutputFormat extends OutputFormat<WritableComparab
       return new DefaultOutputFormatContainer(ReflectionUtils.newInstance(
           storageHandler.getOutputFormatClass(),context.getConfiguration()));
     }
-  }
-
-  /**
-   * @see org.apache.hive.hcatalog.mapreduce.HCatBaseOutputFormat#getJobInfo(org.apache.hadoop.conf.Configuration)
-   * @deprecated use {@link #getJobInfo(org.apache.hadoop.conf.Configuration)}
-   */
-  public static OutputJobInfo getJobInfo(JobContext jobContext) throws IOException {
-    return getJobInfo(jobContext.getConfiguration());
   }
 
   /**

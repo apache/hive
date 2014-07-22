@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -35,6 +36,7 @@ import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -46,6 +48,10 @@ import org.apache.hadoop.util.StringUtils;
  **/
 
 public abstract class Task<T extends Serializable> implements Serializable, Node {
+
+  static {
+    PTFUtils.makeTransient(Task.class, "fetchSource");
+  }
 
   private static final long serialVersionUID = 1L;
   public transient HashMap<String, Long> taskCounters;
@@ -86,6 +92,8 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
 
   protected String id;
   protected T work;
+
+  private transient boolean fetchSource;
 
   public static enum FeedType {
     DYNAMIC_PARTITIONS, // list of dynamic partitions
@@ -188,6 +196,10 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
     return childTasks;
   }
 
+  public int getNumChild() {
+    return childTasks == null ? 0 : childTasks.size();
+  }
+
   public void setParentTasks(List<Task<? extends Serializable>> parentTasks) {
     this.parentTasks = parentTasks;
   }
@@ -196,10 +208,13 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
     return parentTasks;
   }
 
+  public int getNumParent() {
+    return parentTasks == null ? 0 : parentTasks.size();
+  }
+
   public Task<? extends Serializable> getBackupTask() {
     return backupTask;
   }
-
 
   public void setBackupTask(Task<? extends Serializable> backupTask) {
     this.backupTask = backupTask;
@@ -352,6 +367,10 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
     return work;
   }
 
+  public Collection<MapWork> getMapWork() {
+    return Collections.<MapWork>emptyList();
+  }
+
   public void setId(String id) {
     this.id = id;
   }
@@ -376,7 +395,7 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
     return false;
   }
 
-  public Operator<? extends OperatorDesc> getReducer() {
+  public Operator<? extends OperatorDesc> getReducer(MapWork work) {
     return null;
   }
 
@@ -514,8 +533,24 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
     this.console = console;
   }
 
+  public boolean isFetchSource() {
+    return fetchSource;
+  }
+
+  public void setFetchSource(boolean fetchSource) {
+    this.fetchSource = fetchSource;
+  }
+
   @Override
   public String toString() {
     return getId() + ":" + getType();
+  }
+
+  public int hashCode() {
+    return toString().hashCode();
+  }
+
+  public boolean equals(Object obj) {
+    return toString().equals(String.valueOf(obj));
   }
 }

@@ -141,8 +141,6 @@ POSTHOOK: query: SELECT * FROM tmptable x SORT BY x.key, x.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmptable
 #### A masked pattern was here ####
-POSTHOOK: Lineage: tmptable.key EXPRESSION [(src1)s2.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tmptable.value EXPRESSION [(src)s1.null, (src1)s2.FieldSchema(name:value, type:string, comment:default), ]
 	
 	
 	
@@ -171,14 +169,14 @@ POSTHOOK: Lineage: tmptable.value EXPRESSION [(src)s1.null, (src1)s2.FieldSchema
 tst1	500
 PREHOOK: query: DESCRIBE FORMATTED tmptable
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tmptable
 POSTHOOK: query: DESCRIBE FORMATTED tmptable
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Lineage: tmptable.key EXPRESSION [(src1)s2.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tmptable.value EXPRESSION [(src)s1.null, (src1)s2.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Input: default@tmptable
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	None                
-value               	string              	None                
+key                 	string              	                    
+value               	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -219,18 +217,16 @@ load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE tmptable
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@tmptable
-POSTHOOK: Lineage: tmptable.key EXPRESSION [(src1)s2.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tmptable.value EXPRESSION [(src)s1.null, (src1)s2.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: DESCRIBE FORMATTED tmptable
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tmptable
 POSTHOOK: query: DESCRIBE FORMATTED tmptable
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Lineage: tmptable.key EXPRESSION [(src1)s2.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tmptable.value EXPRESSION [(src)s1.null, (src1)s2.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Input: default@tmptable
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	None                
-value               	string              	None                
+key                 	string              	                    
+value               	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 

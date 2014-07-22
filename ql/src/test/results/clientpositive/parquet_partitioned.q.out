@@ -1,6 +1,10 @@
-PREHOOK: query: DROP TABLE parquet_partitioned_staging
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+DROP TABLE parquet_partitioned_staging
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE parquet_partitioned_staging
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+DROP TABLE parquet_partitioned_staging
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: DROP TABLE parquet_partitioned
 PREHOOK: type: DROPTABLE
@@ -40,17 +44,19 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@parquet_partitioned
 PREHOOK: query: DESCRIBE FORMATTED parquet_partitioned
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@parquet_partitioned
 POSTHOOK: query: DESCRIBE FORMATTED parquet_partitioned
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@parquet_partitioned
 # col_name            	data_type           	comment             
 	 	 
-id                  	int                 	from deserializer   
-str                 	string              	from deserializer   
+id                  	int                 	                    
+str                 	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-part                	string              	None                
+part                	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -116,10 +122,6 @@ POSTHOOK: Input: default@parquet_partitioned
 POSTHOOK: Input: default@parquet_partitioned@part=part1
 POSTHOOK: Input: default@parquet_partitioned@part=part2
 #### A masked pattern was here ####
-POSTHOOK: Lineage: parquet_partitioned PARTITION(part=part1).id SIMPLE [(parquet_partitioned_staging)parquet_partitioned_staging.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: parquet_partitioned PARTITION(part=part1).str SIMPLE [(parquet_partitioned_staging)parquet_partitioned_staging.FieldSchema(name:str, type:string, comment:null), ]
-POSTHOOK: Lineage: parquet_partitioned PARTITION(part=part2).id SIMPLE [(parquet_partitioned_staging)parquet_partitioned_staging.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: parquet_partitioned PARTITION(part=part2).str SIMPLE [(parquet_partitioned_staging)parquet_partitioned_staging.FieldSchema(name:str, type:string, comment:null), ]
 1	foo	part1
 2	bar	part2
 3	baz	part2
@@ -135,10 +137,6 @@ POSTHOOK: Input: default@parquet_partitioned
 POSTHOOK: Input: default@parquet_partitioned@part=part1
 POSTHOOK: Input: default@parquet_partitioned@part=part2
 #### A masked pattern was here ####
-POSTHOOK: Lineage: parquet_partitioned PARTITION(part=part1).id SIMPLE [(parquet_partitioned_staging)parquet_partitioned_staging.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: parquet_partitioned PARTITION(part=part1).str SIMPLE [(parquet_partitioned_staging)parquet_partitioned_staging.FieldSchema(name:str, type:string, comment:null), ]
-POSTHOOK: Lineage: parquet_partitioned PARTITION(part=part2).id SIMPLE [(parquet_partitioned_staging)parquet_partitioned_staging.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: parquet_partitioned PARTITION(part=part2).str SIMPLE [(parquet_partitioned_staging)parquet_partitioned_staging.FieldSchema(name:str, type:string, comment:null), ]
 part1	1
 part2	2
 PREHOOK: query: SELECT * FROM parquet_partitioned
@@ -153,10 +151,6 @@ POSTHOOK: Input: default@parquet_partitioned
 POSTHOOK: Input: default@parquet_partitioned@part=part1
 POSTHOOK: Input: default@parquet_partitioned@part=part2
 #### A masked pattern was here ####
-POSTHOOK: Lineage: parquet_partitioned PARTITION(part=part1).id SIMPLE [(parquet_partitioned_staging)parquet_partitioned_staging.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: parquet_partitioned PARTITION(part=part1).str SIMPLE [(parquet_partitioned_staging)parquet_partitioned_staging.FieldSchema(name:str, type:string, comment:null), ]
-POSTHOOK: Lineage: parquet_partitioned PARTITION(part=part2).id SIMPLE [(parquet_partitioned_staging)parquet_partitioned_staging.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: parquet_partitioned PARTITION(part=part2).str SIMPLE [(parquet_partitioned_staging)parquet_partitioned_staging.FieldSchema(name:str, type:string, comment:null), ]
 1	foo	part1
 2	bar	part2
 3	baz	part2
@@ -172,9 +166,5 @@ POSTHOOK: Input: default@parquet_partitioned
 POSTHOOK: Input: default@parquet_partitioned@part=part1
 POSTHOOK: Input: default@parquet_partitioned@part=part2
 #### A masked pattern was here ####
-POSTHOOK: Lineage: parquet_partitioned PARTITION(part=part1).id SIMPLE [(parquet_partitioned_staging)parquet_partitioned_staging.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: parquet_partitioned PARTITION(part=part1).str SIMPLE [(parquet_partitioned_staging)parquet_partitioned_staging.FieldSchema(name:str, type:string, comment:null), ]
-POSTHOOK: Lineage: parquet_partitioned PARTITION(part=part2).id SIMPLE [(parquet_partitioned_staging)parquet_partitioned_staging.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: parquet_partitioned PARTITION(part=part2).str SIMPLE [(parquet_partitioned_staging)parquet_partitioned_staging.FieldSchema(name:str, type:string, comment:null), ]
 part1	1
 part2	2

@@ -562,13 +562,13 @@ public class SkewedInfo implements org.apache.thrift.TBase<SkewedInfo, SkewedInf
           case 1: // SKEWED_COL_NAMES
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list98 = iprot.readListBegin();
-                struct.skewedColNames = new ArrayList<String>(_list98.size);
-                for (int _i99 = 0; _i99 < _list98.size; ++_i99)
+                org.apache.thrift.protocol.TList _list114 = iprot.readListBegin();
+                struct.skewedColNames = new ArrayList<String>(_list114.size);
+                for (int _i115 = 0; _i115 < _list114.size; ++_i115)
                 {
-                  String _elem100; // optional
-                  _elem100 = iprot.readString();
-                  struct.skewedColNames.add(_elem100);
+                  String _elem116; // optional
+                  _elem116 = iprot.readString();
+                  struct.skewedColNames.add(_elem116);
                 }
                 iprot.readListEnd();
               }
@@ -580,23 +580,23 @@ public class SkewedInfo implements org.apache.thrift.TBase<SkewedInfo, SkewedInf
           case 2: // SKEWED_COL_VALUES
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list101 = iprot.readListBegin();
-                struct.skewedColValues = new ArrayList<List<String>>(_list101.size);
-                for (int _i102 = 0; _i102 < _list101.size; ++_i102)
+                org.apache.thrift.protocol.TList _list117 = iprot.readListBegin();
+                struct.skewedColValues = new ArrayList<List<String>>(_list117.size);
+                for (int _i118 = 0; _i118 < _list117.size; ++_i118)
                 {
-                  List<String> _elem103; // optional
+                  List<String> _elem119; // optional
                   {
-                    org.apache.thrift.protocol.TList _list104 = iprot.readListBegin();
-                    _elem103 = new ArrayList<String>(_list104.size);
-                    for (int _i105 = 0; _i105 < _list104.size; ++_i105)
+                    org.apache.thrift.protocol.TList _list120 = iprot.readListBegin();
+                    _elem119 = new ArrayList<String>(_list120.size);
+                    for (int _i121 = 0; _i121 < _list120.size; ++_i121)
                     {
-                      String _elem106; // optional
-                      _elem106 = iprot.readString();
-                      _elem103.add(_elem106);
+                      String _elem122; // optional
+                      _elem122 = iprot.readString();
+                      _elem119.add(_elem122);
                     }
                     iprot.readListEnd();
                   }
-                  struct.skewedColValues.add(_elem103);
+                  struct.skewedColValues.add(_elem119);
                 }
                 iprot.readListEnd();
               }
@@ -608,25 +608,25 @@ public class SkewedInfo implements org.apache.thrift.TBase<SkewedInfo, SkewedInf
           case 3: // SKEWED_COL_VALUE_LOCATION_MAPS
             if (schemeField.type == org.apache.thrift.protocol.TType.MAP) {
               {
-                org.apache.thrift.protocol.TMap _map107 = iprot.readMapBegin();
-                struct.skewedColValueLocationMaps = new HashMap<List<String>,String>(2*_map107.size);
-                for (int _i108 = 0; _i108 < _map107.size; ++_i108)
+                org.apache.thrift.protocol.TMap _map123 = iprot.readMapBegin();
+                struct.skewedColValueLocationMaps = new HashMap<List<String>,String>(2*_map123.size);
+                for (int _i124 = 0; _i124 < _map123.size; ++_i124)
                 {
-                  List<String> _key109; // required
-                  String _val110; // required
+                  List<String> _key125; // required
+                  String _val126; // required
                   {
-                    org.apache.thrift.protocol.TList _list111 = iprot.readListBegin();
-                    _key109 = new ArrayList<String>(_list111.size);
-                    for (int _i112 = 0; _i112 < _list111.size; ++_i112)
+                    org.apache.thrift.protocol.TList _list127 = iprot.readListBegin();
+                    _key125 = new ArrayList<String>(_list127.size);
+                    for (int _i128 = 0; _i128 < _list127.size; ++_i128)
                     {
-                      String _elem113; // optional
-                      _elem113 = iprot.readString();
-                      _key109.add(_elem113);
+                      String _elem129; // optional
+                      _elem129 = iprot.readString();
+                      _key125.add(_elem129);
                     }
                     iprot.readListEnd();
                   }
-                  _val110 = iprot.readString();
-                  struct.skewedColValueLocationMaps.put(_key109, _val110);
+                  _val126 = iprot.readString();
+                  struct.skewedColValueLocationMaps.put(_key125, _val126);
                 }
                 iprot.readMapEnd();
               }
@@ -652,9 +652,9 @@ public class SkewedInfo implements org.apache.thrift.TBase<SkewedInfo, SkewedInf
         oprot.writeFieldBegin(SKEWED_COL_NAMES_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.skewedColNames.size()));
-          for (String _iter114 : struct.skewedColNames)
+          for (String _iter130 : struct.skewedColNames)
           {
-            oprot.writeString(_iter114);
+            oprot.writeString(_iter130);
           }
           oprot.writeListEnd();
         }
@@ -664,13 +664,13 @@ public class SkewedInfo implements org.apache.thrift.TBase<SkewedInfo, SkewedInf
         oprot.writeFieldBegin(SKEWED_COL_VALUES_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.LIST, struct.skewedColValues.size()));
-          for (List<String> _iter115 : struct.skewedColValues)
+          for (List<String> _iter131 : struct.skewedColValues)
           {
             {
-              oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, _iter115.size()));
-              for (String _iter116 : _iter115)
+              oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, _iter131.size()));
+              for (String _iter132 : _iter131)
               {
-                oprot.writeString(_iter116);
+                oprot.writeString(_iter132);
               }
               oprot.writeListEnd();
             }
@@ -683,17 +683,17 @@ public class SkewedInfo implements org.apache.thrift.TBase<SkewedInfo, SkewedInf
         oprot.writeFieldBegin(SKEWED_COL_VALUE_LOCATION_MAPS_FIELD_DESC);
         {
           oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.LIST, org.apache.thrift.protocol.TType.STRING, struct.skewedColValueLocationMaps.size()));
-          for (Map.Entry<List<String>, String> _iter117 : struct.skewedColValueLocationMaps.entrySet())
+          for (Map.Entry<List<String>, String> _iter133 : struct.skewedColValueLocationMaps.entrySet())
           {
             {
-              oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, _iter117.getKey().size()));
-              for (String _iter118 : _iter117.getKey())
+              oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, _iter133.getKey().size()));
+              for (String _iter134 : _iter133.getKey())
               {
-                oprot.writeString(_iter118);
+                oprot.writeString(_iter134);
               }
               oprot.writeListEnd();
             }
-            oprot.writeString(_iter117.getValue());
+            oprot.writeString(_iter133.getValue());
           }
           oprot.writeMapEnd();
         }
@@ -730,22 +730,22 @@ public class SkewedInfo implements org.apache.thrift.TBase<SkewedInfo, SkewedInf
       if (struct.isSetSkewedColNames()) {
         {
           oprot.writeI32(struct.skewedColNames.size());
-          for (String _iter119 : struct.skewedColNames)
+          for (String _iter135 : struct.skewedColNames)
           {
-            oprot.writeString(_iter119);
+            oprot.writeString(_iter135);
           }
         }
       }
       if (struct.isSetSkewedColValues()) {
         {
           oprot.writeI32(struct.skewedColValues.size());
-          for (List<String> _iter120 : struct.skewedColValues)
+          for (List<String> _iter136 : struct.skewedColValues)
           {
             {
-              oprot.writeI32(_iter120.size());
-              for (String _iter121 : _iter120)
+              oprot.writeI32(_iter136.size());
+              for (String _iter137 : _iter136)
               {
-                oprot.writeString(_iter121);
+                oprot.writeString(_iter137);
               }
             }
           }
@@ -754,16 +754,16 @@ public class SkewedInfo implements org.apache.thrift.TBase<SkewedInfo, SkewedInf
       if (struct.isSetSkewedColValueLocationMaps()) {
         {
           oprot.writeI32(struct.skewedColValueLocationMaps.size());
-          for (Map.Entry<List<String>, String> _iter122 : struct.skewedColValueLocationMaps.entrySet())
+          for (Map.Entry<List<String>, String> _iter138 : struct.skewedColValueLocationMaps.entrySet())
           {
             {
-              oprot.writeI32(_iter122.getKey().size());
-              for (String _iter123 : _iter122.getKey())
+              oprot.writeI32(_iter138.getKey().size());
+              for (String _iter139 : _iter138.getKey())
               {
-                oprot.writeString(_iter123);
+                oprot.writeString(_iter139);
               }
             }
-            oprot.writeString(_iter122.getValue());
+            oprot.writeString(_iter138.getValue());
           }
         }
       }
@@ -775,59 +775,59 @@ public class SkewedInfo implements org.apache.thrift.TBase<SkewedInfo, SkewedInf
       BitSet incoming = iprot.readBitSet(3);
       if (incoming.get(0)) {
         {
-          org.apache.thrift.protocol.TList _list124 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-          struct.skewedColNames = new ArrayList<String>(_list124.size);
-          for (int _i125 = 0; _i125 < _list124.size; ++_i125)
+          org.apache.thrift.protocol.TList _list140 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+          struct.skewedColNames = new ArrayList<String>(_list140.size);
+          for (int _i141 = 0; _i141 < _list140.size; ++_i141)
           {
-            String _elem126; // optional
-            _elem126 = iprot.readString();
-            struct.skewedColNames.add(_elem126);
+            String _elem142; // optional
+            _elem142 = iprot.readString();
+            struct.skewedColNames.add(_elem142);
           }
         }
         struct.setSkewedColNamesIsSet(true);
       }
       if (incoming.get(1)) {
         {
-          org.apache.thrift.protocol.TList _list127 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.LIST, iprot.readI32());
-          struct.skewedColValues = new ArrayList<List<String>>(_list127.size);
-          for (int _i128 = 0; _i128 < _list127.size; ++_i128)
+          org.apache.thrift.protocol.TList _list143 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.LIST, iprot.readI32());
+          struct.skewedColValues = new ArrayList<List<String>>(_list143.size);
+          for (int _i144 = 0; _i144 < _list143.size; ++_i144)
           {
-            List<String> _elem129; // optional
+            List<String> _elem145; // optional
             {
-              org.apache.thrift.protocol.TList _list130 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-              _elem129 = new ArrayList<String>(_list130.size);
-              for (int _i131 = 0; _i131 < _list130.size; ++_i131)
+              org.apache.thrift.protocol.TList _list146 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+              _elem145 = new ArrayList<String>(_list146.size);
+              for (int _i147 = 0; _i147 < _list146.size; ++_i147)
               {
-                String _elem132; // optional
-                _elem132 = iprot.readString();
-                _elem129.add(_elem132);
+                String _elem148; // optional
+                _elem148 = iprot.readString();
+                _elem145.add(_elem148);
               }
             }
-            struct.skewedColValues.add(_elem129);
+            struct.skewedColValues.add(_elem145);
           }
         }
         struct.setSkewedColValuesIsSet(true);
       }
       if (incoming.get(2)) {
         {
-          org.apache.thrift.protocol.TMap _map133 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.LIST, org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-          struct.skewedColValueLocationMaps = new HashMap<List<String>,String>(2*_map133.size);
-          for (int _i134 = 0; _i134 < _map133.size; ++_i134)
+          org.apache.thrift.protocol.TMap _map149 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.LIST, org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+          struct.skewedColValueLocationMaps = new HashMap<List<String>,String>(2*_map149.size);
+          for (int _i150 = 0; _i150 < _map149.size; ++_i150)
           {
-            List<String> _key135; // required
-            String _val136; // required
+            List<String> _key151; // required
+            String _val152; // required
             {
-              org.apache.thrift.protocol.TList _list137 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-              _key135 = new ArrayList<String>(_list137.size);
-              for (int _i138 = 0; _i138 < _list137.size; ++_i138)
+              org.apache.thrift.protocol.TList _list153 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+              _key151 = new ArrayList<String>(_list153.size);
+              for (int _i154 = 0; _i154 < _list153.size; ++_i154)
               {
-                String _elem139; // optional
-                _elem139 = iprot.readString();
-                _key135.add(_elem139);
+                String _elem155; // optional
+                _elem155 = iprot.readString();
+                _key151.add(_elem155);
               }
             }
-            _val136 = iprot.readString();
-            struct.skewedColValueLocationMaps.put(_key135, _val136);
+            _val152 = iprot.readString();
+            struct.skewedColValueLocationMaps.put(_key151, _val152);
           }
         }
         struct.setSkewedColValueLocationMapsIsSet(true);

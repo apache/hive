@@ -36,6 +36,8 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.Type;
 import org.apache.hadoop.hive.metastore.tools.HiveMetaTool;
+import org.apache.hadoop.hive.ql.io.avro.AvroContainerInputFormat;
+import org.apache.hadoop.hive.ql.io.avro.AvroContainerOutputFormat;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.avro.AvroSerdeUtils;
 import org.apache.hadoop.util.StringUtils;
@@ -117,6 +119,8 @@ public class TestHiveMetaTool extends TestCase {
       sd.getParameters().put(AvroSerdeUtils.SCHEMA_URL, avroUri);
       sd.getSerdeInfo().setSerializationLib(
           org.apache.hadoop.hive.serde2.avro.AvroSerDe.class.getName());
+      sd.setInputFormat(AvroContainerInputFormat.class.getName());
+      sd.setOutputFormat(AvroContainerOutputFormat.class.getName());
       tbl.setPartitionKeys(new ArrayList<FieldSchema>());
       client.createTable(tbl);
 
@@ -141,6 +145,9 @@ public class TestHiveMetaTool extends TestCase {
       sd.getParameters().put(AvroSerdeUtils.SCHEMA_URL, badAvroUri);
       sd.getSerdeInfo().setSerializationLib(
           org.apache.hadoop.hive.serde2.avro.AvroSerDe.class.getName());
+      sd.setInputFormat(AvroContainerInputFormat.class.getName());
+      sd.setOutputFormat(AvroContainerOutputFormat.class.getName());
+      
       tbl.setPartitionKeys(new ArrayList<FieldSchema>());
       client.createTable(tbl);
       client.close();

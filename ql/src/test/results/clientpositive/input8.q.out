@@ -116,9 +116,6 @@ POSTHOOK: query: SELECT dest1.* FROM dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: dest1.c1 EXPRESSION []
-POSTHOOK: Lineage: dest1.c2 EXPRESSION [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1.c3 EXPRESSION []
 NULL	NULL	NULL
 NULL	NULL	NULL
 NULL	NULL	NULL

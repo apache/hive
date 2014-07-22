@@ -41,9 +41,11 @@ PREHOOK: query: DROP DATABASE IF EXISTS hbaseDB CASCADE
 PREHOOK: type: DROPDATABASE
 PREHOOK: Input: database:hbasedb
 PREHOOK: Output: database:hbasedb
+PREHOOK: Output: hbasedb@hbase_table_0
 POSTHOOK: query: DROP DATABASE IF EXISTS hbaseDB CASCADE
 POSTHOOK: type: DROPDATABASE
 POSTHOOK: Input: database:hbasedb
 POSTHOOK: Output: database:hbasedb
+POSTHOOK: Output: hbasedb@hbase_table_0
 Command failed with exit code = -1
 Query returned non-zero code: -1, cause: null

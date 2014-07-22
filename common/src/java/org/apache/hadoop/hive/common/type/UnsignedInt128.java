@@ -15,6 +15,7 @@
  */
 package org.apache.hadoop.hive.common.type;
 
+import java.io.Serializable;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
@@ -35,7 +36,7 @@ import org.apache.hive.common.util.Decimal128FastBuffer;
  * SQL (e.g., exact POWER/SQRT).</li>
  * </ul>
  */
-public final class UnsignedInt128 implements Comparable<UnsignedInt128> {
+public final class UnsignedInt128 implements Comparable<UnsignedInt128>, Serializable {
 
   /** Number of ints to store this object. */
   public static final int INT_COUNT = 4;
@@ -61,7 +62,7 @@ public final class UnsignedInt128 implements Comparable<UnsignedInt128> {
    * Int32 elements as little-endian (v[0] is least significant) unsigned
    * integers.
    */
-  private final int[] v = new int[INT_COUNT];
+  private int[] v = new int[INT_COUNT];
 
   /**
    * Number of leading non-zero elements in {@link #v}. For example, if the
@@ -70,7 +71,7 @@ public final class UnsignedInt128 implements Comparable<UnsignedInt128> {
    *
    * @see #updateCount()
    */
-  private transient byte count;
+  private byte count;
 
   /**
    * Determines the number of ints to store one value.
@@ -978,6 +979,63 @@ public final class UnsignedInt128 implements Comparable<UnsignedInt128> {
         reversed[i] = buf[nonZeroBufCount - i - 1];
       }
       return new String(reversed);
+    }
+  }
+
+  /**
+   * Similar to {@link #toFormalString()} but returns an array of digits
+   * instead of string. The length of the array and the count of trailing
+   * zeros are returned in the array passed at first and second positions
+   * respectively.
+   * @param meta Array of size two that is populated with length of the returned array
+   *             and the count of trailing zeros.
+   * @return Digits of the this value
+   * @throws NullPointerException if meta is null.
+   * @throws ArrayIndexOutOfBoundsException if meta is less than size two.
+   */
+  public char [] getDigitsArray(int [] meta) {
+    char[] buf = new char[MAX_DIGITS + 1];
+    int bufCount = 0;
+    int nonZeroBufCount = 0;
+    int trailingZeros = 0;
+
+    final int tenScale = SqlMathUtil.MAX_POWER_TEN_INT31;
+    final int tenPower = SqlMathUtil.POWER_TENS_INT31[tenScale];
+    UnsignedInt128 tmp = new UnsignedInt128(this);
+
+    while (!tmp.isZero()) {
+      int remainder = tmp.divideDestructive(tenPower);
+      for (int i = 0; i < tenScale && bufCount < buf.length; ++i) {
+        int digit = remainder % 10;
+        remainder /= 10;
+        buf[bufCount] = (char) (digit + '0');
+        ++bufCount;
+        if (digit != 0) {
+          nonZeroBufCount = bufCount;
+        }
+        if (nonZeroBufCount == 0) {
+
+          // Count zeros until first non-zero digit is encountered.
+          trailingZeros++;
+        }
+      }
+    }
+
+    if (bufCount == 0) {
+      meta[0] = 1;
+      meta[1] = 1;
+      buf[0] = '0';
+      return buf;
+    } else {
+      // Reverse in place
+      for (int i = 0, j = nonZeroBufCount - 1; i < j; i++, j--) {
+        char t = buf[i];
+        buf[i] = buf[j];
+        buf[j] = t;
+      }
+      meta[0] = nonZeroBufCount;
+      meta[1] = trailingZeros;
+      return buf;
     }
   }
 
@@ -2001,6 +2059,8 @@ public final class UnsignedInt128 implements Comparable<UnsignedInt128> {
       SqlMathUtil.throwOverflowException();
     }
 
+    result.updateCount();
+
     return cmp > 0 ? (byte) 1 : (byte) -1;
   }
 
@@ -2418,7 +2478,7 @@ public final class UnsignedInt128 implements Comparable<UnsignedInt128> {
     }
   }
 
-  /** Updates the value of {@link #cnt} by checking {@link #v}. */
+  /** Updates the value of {@link #count} by checking {@link #v}. */
   private void updateCount() {
     if (v[3] != 0) {
       this.count = (byte) 4;
@@ -2634,4 +2694,30 @@ public final class UnsignedInt128 implements Comparable<UnsignedInt128> {
       }
       return value;
     }
+
+  public int[] getV() {
+    return v;
+  }
+
+  /**
+   * This setter is only for de-serialization, should not be used otherwise.
+   */
+  public void setV(int [] v) {
+    this.v[0] = v[0];
+    this.v[1] = v[1];
+    this.v[2] = v[2];
+    this.v[3] = v[3];
+    updateCount();
+  }
+
+  public byte getCount() {
+    return count;
+  }
+
+  /**
+   * This setter is only for de-serialization, should not be used otherwise.
+   */
+  public void setCount(byte count) {
+    this.count = count;
+  }
 }

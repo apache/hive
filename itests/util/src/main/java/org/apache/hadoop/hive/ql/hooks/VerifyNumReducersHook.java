@@ -17,7 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.hooks;
 
-import java.util.List;
+import java.util.Map;
 
 import junit.framework.Assert;
 
@@ -42,9 +42,10 @@ public class VerifyNumReducersHook implements ExecuteWithHookContext {
     Assert.assertNotNull("SessionState returned null");
 
     int expectedReducers = hookContext.getConf().getInt(BUCKET_CONFIG, 0);
-    List<MapRedStats> stats = ss.getLastMapRedStatsList();
+    Map<String, MapRedStats> stats = ss.getMapRedStats();
     Assert.assertEquals("Number of MapReduce jobs is incorrect", 1, stats.size());
 
-    Assert.assertEquals("NumReducers is incorrect", expectedReducers, stats.get(0).getNumReduce());
+    MapRedStats stat = stats.values().iterator().next();
+    Assert.assertEquals("NumReducers is incorrect", expectedReducers, stat.getNumReduce());
   }
 }

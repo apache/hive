@@ -52,8 +52,10 @@ POSTHOOK: type: IMPORT
 POSTHOOK: Output: importer@exim_department
 PREHOOK: query: describe extended exim_department
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: importer@exim_department
 POSTHOOK: query: describe extended exim_department
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: importer@exim_department
 dep_id              	int                 	department id       
 	 	 
 #### A masked pattern was here ####

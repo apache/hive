@@ -119,11 +119,6 @@ if [ "$(ls -1 $HCAT_PREFIX/share/hcatalog/hive-hcatalog-core-[0-9]*.jar | wc -l)
 fi
 HCAT_JAR=`ls $HCAT_PREFIX/share/hcatalog/hive-hcatalog-core-[0-9]*.jar`
 
-# Find the storage-handler jars.
-for jar in ${HCAT_PREFIX}/share/hcatalog/storage-handlers/*/lib/*.jar ; do
-	HADOOP_CLASSPATH=$HADOOP_CLASSPATH:$jar
-done
-
 # Add all of the other jars to our classpath
 for jar in ${HIVE_LIB_DIR}/*.jar ; do
 	HADOOP_CLASSPATH=$HADOOP_CLASSPATH:$jar
@@ -142,6 +137,11 @@ elif [ "${HIVE_AUX_JARS_PATH}" != "" ]; then
   HADOOP_CLASSPATH=$HADOOP_CLASSPATH:$HIVE_AUX_JARS_PATH
 fi
 
+# also pass hive classpath to hadoop
+if [ "$HIVE_CLASSPATH" != "" ]; then
+  export HADOOP_CLASSPATH="${HADOOP_CLASSPATH}:${HIVE_CLASSPATH}";
+fi
+
 # Put external jars, hcat jar, and config file in the classpath
 HADOOP_CLASSPATH=${HADOOP_CLASSPATH}:${HCAT_CLASSPATH}:${HCAT_JAR}:${HIVE_CONF_DIR}
 
@@ -150,7 +150,7 @@ HADOOP_CLASSPATH=${HADOOP_CLASSPATH}:${HCAT_CLASSPATH}:${HCAT_JAR}:${HIVE_CONF_D
 HBASE_HOME=${HBASE_HOME:-"/usr/lib/hbase"}
 HBASE_CONF_DIR=${HBASE_CONF_DIR:-"${HBASE_HOME}/conf"}
 if [ -d ${HBASE_HOME} ] ; then
-   for jar in $(find $HBASE_HOME -name *.jar -not -name thrift\*.jar); do
+   for jar in $(find $HBASE_HOME -name '*.jar' -not -name '*thrift*'); do
       HBASE_CLASSPATH=$HBASE_CLASSPATH:${jar}
    done
    export HADOOP_CLASSPATH="${HADOOP_CLASSPATH}:${HBASE_CLASSPATH}"
@@ -161,6 +161,11 @@ fi
 
 export HADOOP_CLASSPATH=$HADOOP_CLASSPATH
 export HADOOP_OPTS=$HADOOP_OPTS
+
+if [ ! -d "${HADOOP_LIBEXEC_DIR}" ]; then
+  export HADOOP_LIBEXEC_DIR=$HADOOP_PREFIX/libexec;
+fi
+
 # run it
 if [ "$debug" == "true" ]; then
 	echo "Would run:"

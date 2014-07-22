@@ -56,9 +56,10 @@ STAGE PLANS:
                 key expressions: _col0 (type: string), _col1 (type: string)
                 sort order: --
                 Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col0 (type: string), _col1 (type: string)
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
+          outputColumnNames: _col0, _col1
           Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
           Limit
             Number of rows: 5
@@ -112,8 +113,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@destintable
 POSTHOOK: Input: default@destintable@ds=2011-11-11/hr=11
 #### A masked pattern was here ####
-POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11,hr=11).one SIMPLE [(sourcetable)sourcetable.FieldSchema(name:one, type:string, comment:null), ]
-POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11,hr=11).two SIMPLE [(sourcetable)sourcetable.FieldSchema(name:two, type:string, comment:null), ]
 98	val_98
 98	val_98
 97	val_97
@@ -125,8 +124,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE destinTable PARTITION (ds='2011-11-11', hr='11') if not exists
 SELECT one,two FROM sourceTable WHERE ds='2011-11-11' AND hr='12' order by one desc, two desc limit 5
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11,hr=11).one SIMPLE [(sourcetable)sourcetable.FieldSchema(name:one, type:string, comment:null), ]
-POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11,hr=11).two SIMPLE [(sourcetable)sourcetable.FieldSchema(name:two, type:string, comment:null), ]
 STAGE DEPENDENCIES:
 
 STAGE PLANS:
@@ -136,8 +133,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: INSERT OVERWRITE TABLE destinTable PARTITION (ds='2011-11-11', hr='11') if not exists
 SELECT one,two FROM sourceTable WHERE ds='2011-11-11' AND hr='12' order by one desc, two desc limit 5
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11,hr=11).one SIMPLE [(sourcetable)sourcetable.FieldSchema(name:one, type:string, comment:null), ]
-POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11,hr=11).two SIMPLE [(sourcetable)sourcetable.FieldSchema(name:two, type:string, comment:null), ]
 PREHOOK: query: select one,two from destinTable order by one desc, two desc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@destintable
@@ -148,8 +143,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@destintable
 POSTHOOK: Input: default@destintable@ds=2011-11-11/hr=11
 #### A masked pattern was here ####
-POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11,hr=11).one SIMPLE [(sourcetable)sourcetable.FieldSchema(name:one, type:string, comment:null), ]
-POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11,hr=11).two SIMPLE [(sourcetable)sourcetable.FieldSchema(name:two, type:string, comment:null), ]
 98	val_98
 98	val_98
 97	val_97
@@ -163,8 +156,6 @@ POSTHOOK: query: drop table destinTable
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@destintable
 POSTHOOK: Output: default@destintable
-POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11,hr=11).one SIMPLE [(sourcetable)sourcetable.FieldSchema(name:one, type:string, comment:null), ]
-POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11,hr=11).two SIMPLE [(sourcetable)sourcetable.FieldSchema(name:two, type:string, comment:null), ]
 PREHOOK: query: CREATE TABLE destinTable (one string,two string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -172,14 +163,10 @@ POSTHOOK: query: CREATE TABLE destinTable (one string,two string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@destinTable
-POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11,hr=11).one SIMPLE [(sourcetable)sourcetable.FieldSchema(name:one, type:string, comment:null), ]
-POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11,hr=11).two SIMPLE [(sourcetable)sourcetable.FieldSchema(name:two, type:string, comment:null), ]
 PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE destinTable SELECT one,two FROM sourceTable WHERE ds='2011-11-11' AND hr='11' order by one desc, two desc limit 5
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE destinTable SELECT one,two FROM sourceTable WHERE ds='2011-11-11' AND hr='11' order by one desc, two desc limit 5
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11,hr=11).one SIMPLE [(sourcetable)sourcetable.FieldSchema(name:one, type:string, comment:null), ]
-POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11,hr=11).two SIMPLE [(sourcetable)sourcetable.FieldSchema(name:two, type:string, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -200,9 +187,10 @@ STAGE PLANS:
                 key expressions: _col0 (type: string), _col1 (type: string)
                 sort order: --
                 Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col0 (type: string), _col1 (type: string)
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
+          outputColumnNames: _col0, _col1
           Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
           Limit
             Number of rows: 5
@@ -241,8 +229,6 @@ POSTHOOK: Input: default@sourcetable@ds=2011-11-11/hr=11
 POSTHOOK: Output: default@destintable
 POSTHOOK: Lineage: destintable.one SIMPLE [(sourcetable)sourcetable.FieldSchema(name:one, type:string, comment:null), ]
 POSTHOOK: Lineage: destintable.two SIMPLE [(sourcetable)sourcetable.FieldSchema(name:two, type:string, comment:null), ]
-POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11,hr=11).one SIMPLE [(sourcetable)sourcetable.FieldSchema(name:one, type:string, comment:null), ]
-POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11,hr=11).two SIMPLE [(sourcetable)sourcetable.FieldSchema(name:two, type:string, comment:null), ]
 PREHOOK: query: drop table destinTable
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@destintable
@@ -251,10 +237,6 @@ POSTHOOK: query: drop table destinTable
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@destintable
 POSTHOOK: Output: default@destintable
-POSTHOOK: Lineage: destintable.one SIMPLE [(sourcetable)sourcetable.FieldSchema(name:one, type:string, comment:null), ]
-POSTHOOK: Lineage: destintable.two SIMPLE [(sourcetable)sourcetable.FieldSchema(name:two, type:string, comment:null), ]
-POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11,hr=11).one SIMPLE [(sourcetable)sourcetable.FieldSchema(name:one, type:string, comment:null), ]
-POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11,hr=11).two SIMPLE [(sourcetable)sourcetable.FieldSchema(name:two, type:string, comment:null), ]
 PREHOOK: query: drop table sourceTable
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@sourcetable
@@ -263,7 +245,3 @@ POSTHOOK: query: drop table sourceTable
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@sourcetable
 POSTHOOK: Output: default@sourcetable
-POSTHOOK: Lineage: destintable.one SIMPLE [(sourcetable)sourcetable.FieldSchema(name:one, type:string, comment:null), ]
-POSTHOOK: Lineage: destintable.two SIMPLE [(sourcetable)sourcetable.FieldSchema(name:two, type:string, comment:null), ]
-POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11,hr=11).one SIMPLE [(sourcetable)sourcetable.FieldSchema(name:one, type:string, comment:null), ]
-POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11,hr=11).two SIMPLE [(sourcetable)sourcetable.FieldSchema(name:two, type:string, comment:null), ]

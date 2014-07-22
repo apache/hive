@@ -24,7 +24,9 @@ import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.Mode;
+import org.apache.hadoop.hive.ql.parse.WindowingSpec.BoundarySpec;
+import org.apache.hadoop.hive.ql.plan.ptf.BoundaryDef;
+import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
@@ -179,6 +181,41 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
       return result;
     }
 
+    @Override
+    public GenericUDAFEvaluator getWindowingEvaluator(WindowFrameDef wFrmDef) {
+
+      BoundaryDef start = wFrmDef.getStart();
+      BoundaryDef end = wFrmDef.getEnd();
+
+      return new GenericUDAFStreamingEvaluator.SumAvgEnhancer<HiveDecimalWritable, HiveDecimal>(
+          this, start.getAmt(), end.getAmt()) {
+
+        @Override
+        protected HiveDecimalWritable getNextResult(
+            org.apache.hadoop.hive.ql.udf.generic.GenericUDAFStreamingEvaluator.SumAvgEnhancer<HiveDecimalWritable, HiveDecimal>.SumAvgStreamingState ss)
+            throws HiveException {
+          SumHiveDecimalAgg myagg = (SumHiveDecimalAgg) ss.wrappedBuf;
+          HiveDecimal r = myagg.empty ? null : myagg.sum;
+          if (ss.numPreceding != BoundarySpec.UNBOUNDED_AMOUNT
+              && (ss.numRows - ss.numFollowing) >= (ss.numPreceding + 1)) {
+            HiveDecimal d = (HiveDecimal) ss.intermediateVals.remove(0);
+            d = d == null ? HiveDecimal.ZERO : d;
+            r = r == null ? null : r.subtract(d);
+          }
+
+          return r == null ? null : new HiveDecimalWritable(r);
+        }
+
+        @Override
+        protected HiveDecimal getCurrentIntermediateResult(
+            org.apache.hadoop.hive.ql.udf.generic.GenericUDAFStreamingEvaluator.SumAvgEnhancer<HiveDecimalWritable, HiveDecimal>.SumAvgStreamingState ss)
+            throws HiveException {
+          SumHiveDecimalAgg myagg = (SumHiveDecimalAgg) ss.wrappedBuf;
+          return myagg.empty ? null : myagg.sum;
+        }
+
+      };
+    }
   }
 
   /**
@@ -264,6 +301,41 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
       return result;
     }
 
+    @Override
+    public GenericUDAFEvaluator getWindowingEvaluator(WindowFrameDef wFrmDef) {
+      BoundaryDef start = wFrmDef.getStart();
+      BoundaryDef end = wFrmDef.getEnd();
+
+      return new GenericUDAFStreamingEvaluator.SumAvgEnhancer<DoubleWritable, Double>(this,
+          start.getAmt(), end.getAmt()) {
+
+        @Override
+        protected DoubleWritable getNextResult(
+            org.apache.hadoop.hive.ql.udf.generic.GenericUDAFStreamingEvaluator.SumAvgEnhancer<DoubleWritable, Double>.SumAvgStreamingState ss)
+            throws HiveException {
+          SumDoubleAgg myagg = (SumDoubleAgg) ss.wrappedBuf;
+          Double r = myagg.empty ? null : myagg.sum;
+          if (ss.numPreceding != BoundarySpec.UNBOUNDED_AMOUNT
+              && (ss.numRows - ss.numFollowing) >= (ss.numPreceding + 1)) {
+            Double d = (Double) ss.intermediateVals.remove(0);
+            d = d == null ? 0.0 : d;
+            r = r == null ? null : r - d;
+          }
+
+          return r == null ? null : new DoubleWritable(r);
+        }
+
+        @Override
+        protected Double getCurrentIntermediateResult(
+            org.apache.hadoop.hive.ql.udf.generic.GenericUDAFStreamingEvaluator.SumAvgEnhancer<DoubleWritable, Double>.SumAvgStreamingState ss)
+            throws HiveException {
+          SumDoubleAgg myagg = (SumDoubleAgg) ss.wrappedBuf;
+          return myagg.empty ? null : new Double(myagg.sum);
+        }
+
+      };
+    }
+
   }
 
   /**
@@ -346,6 +418,41 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
       return result;
     }
 
+    @Override
+    public GenericUDAFEvaluator getWindowingEvaluator(WindowFrameDef wFrmDef) {
+
+      BoundaryDef start = wFrmDef.getStart();
+      BoundaryDef end = wFrmDef.getEnd();
+
+      return new GenericUDAFStreamingEvaluator.SumAvgEnhancer<LongWritable, Long>(this,
+          start.getAmt(), end.getAmt()) {
+
+        @Override
+        protected LongWritable getNextResult(
+            org.apache.hadoop.hive.ql.udf.generic.GenericUDAFStreamingEvaluator.SumAvgEnhancer<LongWritable, Long>.SumAvgStreamingState ss)
+            throws HiveException {
+          SumLongAgg myagg = (SumLongAgg) ss.wrappedBuf;
+          Long r = myagg.empty ? null : myagg.sum;
+          if (ss.numPreceding != BoundarySpec.UNBOUNDED_AMOUNT
+              && (ss.numRows - ss.numFollowing) >= (ss.numPreceding + 1)) {
+            Long d = (Long) ss.intermediateVals.remove(0);
+            d = d == null ? 0 : d;
+            r = r == null ? null : r - d;
+          }
+
+          return r == null ? null : new LongWritable(r);
+        }
+
+        @Override
+        protected Long getCurrentIntermediateResult(
+            org.apache.hadoop.hive.ql.udf.generic.GenericUDAFStreamingEvaluator.SumAvgEnhancer<LongWritable, Long>.SumAvgStreamingState ss)
+            throws HiveException {
+          SumLongAgg myagg = (SumLongAgg) ss.wrappedBuf;
+          return myagg.empty ? null : new Long(myagg.sum);
+        }
+
+      };
+    }
   }
 
 }

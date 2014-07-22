@@ -9,8 +9,10 @@ POSTHOOK: type: CREATEINDEX
 POSTHOOK: Output: default@default__src_src_index_8__
 PREHOOK: query: desc extended default__src_src_index_8__
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@default__src_src_index_8__
 POSTHOOK: query: desc extended default__src_src_index_8__
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@default__src_src_index_8__
 key                 	string              	default             
 _bucketname         	string              	                    
 _offsets            	array<bigint>       	                    
@@ -22,8 +24,10 @@ POSTHOOK: query: alter index src_index_8 on src set IDXPROPERTIES ("prop1"="val1
 POSTHOOK: type: ALTERINDEX_PROPS
 PREHOOK: query: desc extended default__src_src_index_8__
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@default__src_src_index_8__
 POSTHOOK: query: desc extended default__src_src_index_8__
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@default__src_src_index_8__
 key                 	string              	default             
 _bucketname         	string              	                    
 _offsets            	array<bigint>       	                    

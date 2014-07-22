@@ -442,6 +442,21 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("list_roles\n");
   }
 
+  void grant_revoke_role(GrantRevokeRoleResponse& _return, const GrantRevokeRoleRequest& request) {
+    // Your implementation goes here
+    printf("grant_revoke_role\n");
+  }
+
+  void get_principals_in_role(GetPrincipalsInRoleResponse& _return, const GetPrincipalsInRoleRequest& request) {
+    // Your implementation goes here
+    printf("get_principals_in_role\n");
+  }
+
+  void get_role_grants_for_principal(GetRoleGrantsForPrincipalResponse& _return, const GetRoleGrantsForPrincipalRequest& request) {
+    // Your implementation goes here
+    printf("get_role_grants_for_principal\n");
+  }
+
   void get_privilege_set(PrincipalPrivilegeSet& _return, const HiveObjectRef& hiveObject, const std::string& user_name, const std::vector<std::string> & group_names) {
     // Your implementation goes here
     printf("get_privilege_set\n");
@@ -462,6 +477,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("revoke_privileges\n");
   }
 
+  void grant_revoke_privileges(GrantRevokePrivilegeResponse& _return, const GrantRevokePrivilegeRequest& request) {
+    // Your implementation goes here
+    printf("grant_revoke_privileges\n");
+  }
+
   void set_ugi(std::vector<std::string> & _return, const std::string& user_name, const std::vector<std::string> & group_names) {
     // Your implementation goes here
     printf("set_ugi\n");
@@ -480,6 +500,71 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
   void cancel_delegation_token(const std::string& token_str_form) {
     // Your implementation goes here
     printf("cancel_delegation_token\n");
+  }
+
+  void get_open_txns(GetOpenTxnsResponse& _return) {
+    // Your implementation goes here
+    printf("get_open_txns\n");
+  }
+
+  void get_open_txns_info(GetOpenTxnsInfoResponse& _return) {
+    // Your implementation goes here
+    printf("get_open_txns_info\n");
+  }
+
+  void open_txns(OpenTxnsResponse& _return, const OpenTxnRequest& rqst) {
+    // Your implementation goes here
+    printf("open_txns\n");
+  }
+
+  void abort_txn(const AbortTxnRequest& rqst) {
+    // Your implementation goes here
+    printf("abort_txn\n");
+  }
+
+  void commit_txn(const CommitTxnRequest& rqst) {
+    // Your implementation goes here
+    printf("commit_txn\n");
+  }
+
+  void lock(LockResponse& _return, const LockRequest& rqst) {
+    // Your implementation goes here
+    printf("lock\n");
+  }
+
+  void check_lock(LockResponse& _return, const CheckLockRequest& rqst) {
+    // Your implementation goes here
+    printf("check_lock\n");
+  }
+
+  void unlock(const UnlockRequest& rqst) {
+    // Your implementation goes here
+    printf("unlock\n");
+  }
+
+  void show_locks(ShowLocksResponse& _return, const ShowLocksRequest& rqst) {
+    // Your implementation goes here
+    printf("show_locks\n");
+  }
+
+  void heartbeat(const HeartbeatRequest& ids) {
+    // Your implementation goes here
+    printf("heartbeat\n");
+  }
+
+  void heartbeat_txn_range(HeartbeatTxnRangeResponse& _return, const HeartbeatTxnRangeRequest& txns) {
+    // Your implementation goes here
+    printf("heartbeat_txn_range\n");
+  }
+
+  void compact(const CompactionRequest& rqst) {
+    // Your implementation goes here
+    printf("compact\n");
+  }
+
+  void show_compact(ShowCompactResponse& _return, const ShowCompactRequest& rqst) {
+    // Your implementation goes here
+    printf("show_compact\n");
   }
 
 };

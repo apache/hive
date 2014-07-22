@@ -68,8 +68,10 @@ public class TestUseDatabase extends TestCase {
     assertEquals(0, response.getResponseCode());
     assertNull(response.getErrorMessage());
 
-    response = hcatDriver.run("alter table " + tblName + " set fileformat INPUTFORMAT 'org.apache.hadoop.hive.ql.io.RCFileInputFormat' OUTPUTFORMAT " +
-        "'org.apache.hadoop.hive.ql.io.RCFileOutputFormat' inputdriver 'mydriver' outputdriver 'yourdriver'");
+    response = hcatDriver.run("alter table " + tblName + " set fileformat "
+        + "INPUTFORMAT  'org.apache.hadoop.hive.ql.io.RCFileInputFormat' "
+        + "OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.RCFileOutputFormat' "
+        + "serde 'org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe' inputdriver 'mydriver' outputdriver 'yourdriver'");
     assertEquals(0, response.getResponseCode());
     assertNull(response.getErrorMessage());
 

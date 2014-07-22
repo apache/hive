@@ -48,6 +48,7 @@ import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.columnar.BytesRefArrayWritable;
 import org.apache.hadoop.hive.serde2.columnar.BytesRefWritable;
 import org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe;
@@ -58,6 +59,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
@@ -112,7 +114,7 @@ public class TestRCFile {
     serDe = new ColumnarSerDe();
     // Create the SerDe
     tbl = createProperties();
-    serDe.initialize(conf, tbl);
+    SerDeUtils.initializeSerDe(serDe, conf, tbl, null);
     try {
       bytesArray = new byte[][] {"123".getBytes("UTF-8"),
           "456".getBytes("UTF-8"), "789".getBytes("UTF-8"),
@@ -426,7 +428,7 @@ public class TestRCFile {
     AbstractSerDe serDe = new ColumnarSerDe();
     // Create the SerDe
     Properties tbl = createProperties();
-    serDe.initialize(conf, tbl);
+    SerDeUtils.initializeSerDe(serDe, conf, tbl, null);
 
     String usage = "Usage: RCFile " + "[-count N]" + " file";
     if (args.length == 0) {
@@ -622,7 +624,7 @@ public class TestRCFile {
     int writeCount = 2500;
     Configuration cloneConf = new Configuration(conf);
     RCFileOutputFormat.setColumnNumber(cloneConf, bytesArray.length);
-    cloneConf.setInt(RCFile.RECORD_INTERVAL_CONF_STR, intervalRecordCount);
+    cloneConf.setInt(HiveConf.ConfVars.HIVE_RCFILE_RECORD_INTERVAL.varname, intervalRecordCount);
     RCFile.Writer writer = new RCFile.Writer(fs, cloneConf, testFile, null, codec);
 
     BytesRefArrayWritable bytes = new BytesRefArrayWritable(bytesArray.length);
@@ -640,7 +642,9 @@ public class TestRCFile {
     RCFileInputFormat inputFormat = new RCFileInputFormat();
     JobConf jobconf = new JobConf(cloneConf);
     jobconf.set("mapred.input.dir", testDir.toString());
-    jobconf.setLong("mapred.min.split.size", fileLen);
+    jobconf.setLong(
+        ShimLoader.getHadoopShims().getHadoopConfNames().get("MAPREDMINSPLITSIZE"),
+        fileLen);
     InputSplit[] splits = inputFormat.getSplits(jobconf, 1);
     RCFileRecordReader rr = new RCFileRecordReader(jobconf, (FileSplit)splits[0]);
     long lastSync = 0;
@@ -686,7 +690,7 @@ public class TestRCFile {
     fs.delete(testFile, true);
     Configuration cloneConf = new Configuration(conf);
     RCFileOutputFormat.setColumnNumber(cloneConf, bytesArray.length);
-    cloneConf.setInt(RCFile.RECORD_INTERVAL_CONF_STR, intervalRecordCount);
+    cloneConf.setInt(HiveConf.ConfVars.HIVE_RCFILE_RECORD_INTERVAL.varname, intervalRecordCount);
 
     RCFile.Writer writer = new RCFile.Writer(fs, cloneConf, testFile, null, codec);
 
@@ -707,7 +711,9 @@ public class TestRCFile {
     RCFileInputFormat inputFormat = new RCFileInputFormat();
     JobConf jonconf = new JobConf(cloneConf);
     jonconf.set("mapred.input.dir", testDir.toString());
-    jonconf.setLong("mapred.min.split.size", minSplitSize);
+    jonconf.setLong(
+        ShimLoader.getHadoopShims().getHadoopConfNames().get("MAPREDMINSPLITSIZE"),
+        minSplitSize);
     InputSplit[] splits = inputFormat.getSplits(jonconf, splitNumber);
     assertEquals("splits length should be " + splitNumber, splits.length, splitNumber);
     int readCount = 0;

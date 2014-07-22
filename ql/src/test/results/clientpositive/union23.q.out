@@ -18,7 +18,7 @@ order by s.key2, s.value2
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -41,7 +41,6 @@ STAGE PLANS:
                     key expressions: _col0 (type: string), _col1 (type: string)
                     sort order: ++
                     Statistics: Num rows: 58 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col0 (type: string), _col1 (type: string)
           TableScan
             alias: src
             Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
@@ -66,9 +65,10 @@ STAGE PLANS:
                       key expressions: _col0 (type: string), _col1 (type: string)
                       sort order: ++
                       Statistics: Num rows: 58 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: _col0 (type: string), _col1 (type: string)
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
+          outputColumnNames: _col0, _col1
           Statistics: Num rows: 58 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
@@ -81,6 +81,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select s.key2, s.value2
 from (

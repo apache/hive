@@ -60,6 +60,22 @@ public class StageIDsRearranger implements PhysicalPlanResolver {
     return tasks;
   }
 
+  public static List<Task> getFetchSources(List<Task<?>> tasks) {
+    final List<Task> sources = new ArrayList<Task>();
+    TaskTraverse traverse = new TaskTraverse() {
+      @Override
+      protected void accepted(Task<?> task) {
+        if (task.getNumChild() == 0 && task.isFetchSource()) {
+          sources.add(task);
+        }
+      }
+    };
+    for (Task<? extends Serializable> task : tasks) {
+      traverse.traverse(task);
+    }
+    return sources;
+  }
+
   public static List<Task> getExplainOrder(HiveConf conf, List<Task<?>> tasks) {
     for (Task<? extends Serializable> task : tasks) {
       task.setRootTask(true);
@@ -105,10 +121,6 @@ public class StageIDsRearranger implements PhysicalPlanResolver {
       protected boolean isReady(Task<?> task) {
         return type == ArrangeType.NONE || type == ArrangeType.IDONLY || super.isReady(task);
       }
-      @Override
-      protected List<Task<?>> next(Task<?> task) {
-        return getChildTasks(task);
-      }
     };
     for (Task<? extends Serializable> task : tasks) {
       traverse.traverse(task);
@@ -147,7 +159,9 @@ public class StageIDsRearranger implements PhysicalPlanResolver {
     protected void rejected(Task<?> child) {
     }
 
-    protected abstract List<Task<?>> next(Task<?> task);
+    protected List<Task<?>> next(Task<?> task) {
+      return getChildTasks(task);
+    }
 
     protected List<Task<?>> getChildTasks(Task<?> task) {
       if (task instanceof ConditionalTask) {

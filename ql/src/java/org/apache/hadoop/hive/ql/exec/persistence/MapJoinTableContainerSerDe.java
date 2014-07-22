@@ -49,11 +49,16 @@ public class MapJoinTableContainerSerDe {
   }
 
   @SuppressWarnings({"unchecked"})
-  public MapJoinTableContainer load(ObjectInputStream in) 
+  /**
+   * Loads the table container. Only used on MR path.
+   * @param in Input stream.
+   * @return Loaded table.
+   */
+  public MapJoinPersistableTableContainer load(ObjectInputStream in)
       throws HiveException {
     SerDe keySerDe = keyContext.getSerDe();
     SerDe valueSerDe = valueContext.getSerDe();
-    MapJoinTableContainer tableContainer;
+    MapJoinPersistableTableContainer tableContainer;
     try {
       String name = in.readUTF();
       Map<String, String> metaData = (Map<String, String>) in.readObject();
@@ -68,7 +73,7 @@ public class MapJoinTableContainerSerDe {
       Writable valueContainer = valueSerDe.getSerializedClass().newInstance();    
       int numKeys = in.readInt();
       for (int keyIndex = 0; keyIndex < numKeys; keyIndex++) {
-        MapJoinKey key = new MapJoinKey();
+        MapJoinKeyObject key = new MapJoinKeyObject();
         key.read(keyContext, in, keyContainer);
         MapJoinEagerRowContainer values = new MapJoinEagerRowContainer();
         values.read(valueContext, in, valueContainer);
@@ -81,7 +86,7 @@ public class MapJoinTableContainerSerDe {
       throw new HiveException("Error while trying to create table container", e);
     }
   }
-  public void persist(ObjectOutputStream out, MapJoinTableContainer tableContainer)
+  public void persist(ObjectOutputStream out, MapJoinPersistableTableContainer tableContainer)
       throws HiveException {
     int numKeys = tableContainer.size();
     try { 
@@ -105,17 +110,20 @@ public class MapJoinTableContainerSerDe {
   }
   
   public static void persistDummyTable(ObjectOutputStream out) throws IOException {
-    MapJoinTableContainer tableContainer = new HashMapWrapper();
+    MapJoinPersistableTableContainer tableContainer = new HashMapWrapper();
     out.writeUTF(tableContainer.getClass().getName());
     out.writeObject(tableContainer.getMetaData());
     out.writeInt(tableContainer.size());
   }
-  
-  private MapJoinTableContainer create(String name, Map<String, String> metaData) throws HiveException {
+
+  private MapJoinPersistableTableContainer create(
+      String name, Map<String, String> metaData) throws HiveException {
     try {
       @SuppressWarnings("unchecked")
-      Class<? extends MapJoinTableContainer> clazz = (Class<? extends MapJoinTableContainer>) Class.forName(name);
-      Constructor<? extends MapJoinTableContainer> constructor = clazz.getDeclaredConstructor(Map.class);
+      Class<? extends MapJoinPersistableTableContainer> clazz =
+          (Class<? extends MapJoinPersistableTableContainer>)Class.forName(name);
+      Constructor<? extends MapJoinPersistableTableContainer> constructor =
+          clazz.getDeclaredConstructor(Map.class);
       return constructor.newInstance(metaData);
     } catch (Exception e) {
       String msg = "Error while attemping to create table container" +

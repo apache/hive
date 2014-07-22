@@ -1,0 +1,53 @@
+PREHOOK: query: -- ensure that drop database cascade works
+create database dba1
+PREHOOK: type: CREATEDATABASE
+POSTHOOK: query: -- ensure that drop database cascade works
+create database dba1
+POSTHOOK: type: CREATEDATABASE
+PREHOOK: query: create table dba1.tab1(i int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:dba1
+POSTHOOK: query: create table dba1.tab1(i int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:dba1
+POSTHOOK: Output: dba1@tab1
+PREHOOK: query: drop database dba1 cascade
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:dba1
+PREHOOK: Output: database:dba1
+PREHOOK: Output: dba1@tab1
+POSTHOOK: query: drop database dba1 cascade
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:dba1
+POSTHOOK: Output: database:dba1
+POSTHOOK: Output: dba1@tab1
+PREHOOK: query: -- check if drop database fails if the db has a table for which user does not have permission
+create database dba2
+PREHOOK: type: CREATEDATABASE
+POSTHOOK: query: -- check if drop database fails if the db has a table for which user does not have permission
+create database dba2
+POSTHOOK: type: CREATEDATABASE
+PREHOOK: query: create table dba2.tab2(i int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:dba2
+POSTHOOK: query: create table dba2.tab2(i int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:dba2
+POSTHOOK: Output: dba2@tab2
+PREHOOK: query: set role ADMIN
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: set role ADMIN
+POSTHOOK: type: SHOW_ROLES
+#### A masked pattern was here ####
+PREHOOK: type: ALTERDATABASE_OWNER
+PREHOOK: Output: database:dba2
+#### A masked pattern was here ####
+POSTHOOK: type: ALTERDATABASE_OWNER
+POSTHOOK: Output: database:dba2
+PREHOOK: query: show current roles
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: show current roles
+POSTHOOK: type: SHOW_ROLES
+public
+
+FAILED: HiveAccessControlException Permission denied. Principal [name=user2, type=USER] does not have following privileges on Object [type=TABLE_OR_VIEW, name=dba2.tab2] for operation DROPDATABASE : [OBJECT OWNERSHIP]

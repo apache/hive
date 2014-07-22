@@ -17,9 +17,9 @@
  */
 package org.apache.hadoop.hive.conf;
 
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.util.Shell;
 import org.apache.hive.common.util.HiveTestUtils;
 import org.junit.Assert;
 import org.junit.Test;
@@ -35,15 +35,21 @@ public class TestHiveConf {
   @Test
   public void testHiveSitePath() throws Exception {
     String expectedPath = HiveTestUtils.getFileFromClasspath("hive-site.xml");
-    Assert.assertEquals(expectedPath, new HiveConf().getHiveSiteLocation().getPath());
+    String hiveSiteLocation = HiveConf.getHiveSiteLocation().getPath();
+    if (Shell.WINDOWS) {
+      // Do case-insensitive comparison on Windows, as drive letter can have different case.
+      expectedPath = expectedPath.toLowerCase();
+      hiveSiteLocation = hiveSiteLocation.toLowerCase();
+    }
+    Assert.assertEquals(expectedPath, hiveSiteLocation);
   }
 
   private void checkHadoopConf(String name, String expectedHadoopVal) throws Exception {
-    Assert.assertEquals(expectedHadoopVal, new Configuration().get(name));
+    Assert.assertEquals(expectedHadoopVal, new JobConf(HiveConf.class).get(name));
   }
 
   private void checkConfVar(ConfVars var, String expectedConfVarVal) throws Exception {
-    Assert.assertEquals(expectedConfVarVal, var.defaultVal);
+    Assert.assertEquals(expectedConfVarVal, var.getDefaultValue());
   }
 
   private void checkHiveConf(String name, String expectedHiveVal) throws Exception {
@@ -80,7 +86,7 @@ public class TestHiveConf {
     checkHiveConf("test.property1", "hive-site.xml");
 
     // Test HiveConf property variable substitution in hive-site.xml
-    checkHiveConf("test.var.hiveconf.property", ConfVars.DEFAULTPARTITIONNAME.defaultVal);
+    checkHiveConf("test.var.hiveconf.property", ConfVars.DEFAULTPARTITIONNAME.getDefaultValue());
   }
 
   @Test

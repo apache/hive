@@ -41,8 +41,6 @@ POSTHOOK: query: select * from date_3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@date_3
 #### A masked pattern was here ####
-POSTHOOK: Lineage: date_3.c1 SIMPLE []
-POSTHOOK: Lineage: date_3.c2 EXPRESSION []
 1	2011-01-01
 PREHOOK: query: drop table date_3
 PREHOOK: type: DROPTABLE
@@ -52,5 +50,3 @@ POSTHOOK: query: drop table date_3
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@date_3
 POSTHOOK: Output: default@date_3
-POSTHOOK: Lineage: date_3.c1 SIMPLE []
-POSTHOOK: Lineage: date_3.c2 EXPRESSION []

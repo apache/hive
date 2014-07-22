@@ -112,9 +112,6 @@ public class StandardStructObjectInspector extends
   protected void init(List<String> structFieldNames,
       List<ObjectInspector> structFieldObjectInspectors,
       List<String> structFieldComments) {
-    assert (structFieldNames.size() == structFieldObjectInspectors.size());
-    assert (structFieldComments == null ||
-            (structFieldNames.size() == structFieldComments.size()));
 
     fields = new ArrayList<MyField>(structFieldNames.size());
     for (int i = 0; i < structFieldNames.size(); i++) {
@@ -182,7 +179,6 @@ public class StandardStructObjectInspector extends
       LOG.warn("ignoring similar errors.");
     }
     int fieldID = f.getFieldID();
-    assert (fieldID >= 0 && fieldID < fields.size());
 
     if (fieldID >= listSize) {
       return null;
@@ -205,7 +201,6 @@ public class StandardStructObjectInspector extends
       data = java.util.Arrays.asList((Object[]) data);
     }
     List<Object> list = (List<Object>) data;
-    assert (list.size() == fields.size());
     return list;
   }
 

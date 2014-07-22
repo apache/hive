@@ -29,6 +29,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -122,6 +123,12 @@ public class GenMRFileSink1 implements NodeProcessor {
       }
     }
 
+    FetchTask fetchTask = parseCtx.getFetchTask();
+    if (fetchTask != null && currTask.getNumChild() == 0) {
+      if (fetchTask.isFetchFrom(fileSinkDesc)) {
+        currTask.setFetchSource(true);
+      }
+    }
     return true;
   }
 

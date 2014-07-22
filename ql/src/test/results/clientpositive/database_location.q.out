@@ -6,7 +6,7 @@ PREHOOK: query: DESCRIBE DATABASE EXTENDED db1
 PREHOOK: type: DESCDATABASE
 POSTHOOK: query: DESCRIBE DATABASE EXTENDED db1
 POSTHOOK: type: DESCDATABASE
-#### A masked pattern was here ####
+db1		location/in/test	hive_test_user	USER	
 PREHOOK: query: USE db1
 PREHOOK: type: SWITCHDATABASE
 POSTHOOK: query: USE db1
@@ -20,12 +20,14 @@ POSTHOOK: Output: database:db1
 POSTHOOK: Output: db1@table_db1
 PREHOOK: query: DESCRIBE FORMATTED table_db1
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: db1@table_db1
 POSTHOOK: query: DESCRIBE FORMATTED table_db1
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: db1@table_db1
 # col_name            	data_type           	comment             
 	 	 
-name                	string              	None                
-value               	int                 	None                
+name                	string              	                    
+value               	int                 	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	db1                 	 
@@ -66,7 +68,7 @@ PREHOOK: query: DESCRIBE DATABASE EXTENDED db2
 PREHOOK: type: DESCDATABASE
 POSTHOOK: query: DESCRIBE DATABASE EXTENDED db2
 POSTHOOK: type: DESCDATABASE
-#### A masked pattern was here ####
+db2	database 2	location/in/test	hive_test_user	USER	
 PREHOOK: query: USE db2
 PREHOOK: type: SWITCHDATABASE
 POSTHOOK: query: USE db2
@@ -80,12 +82,14 @@ POSTHOOK: Output: database:db2
 POSTHOOK: Output: db2@table_db2
 PREHOOK: query: DESCRIBE FORMATTED table_db2
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: db2@table_db2
 POSTHOOK: query: DESCRIBE FORMATTED table_db2
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: db2@table_db2
 # col_name            	data_type           	comment             
 	 	 
-name                	string              	None                
-value               	int                 	None                
+name                	string              	                    
+value               	int                 	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	db2                 	 

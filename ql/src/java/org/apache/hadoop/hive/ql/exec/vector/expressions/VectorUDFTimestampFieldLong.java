@@ -24,9 +24,10 @@ import java.util.Calendar;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.serde2.io.DateWritable;
 
 /**
- * Abstract class to return various fields from a Timestamp.
+ * Abstract class to return various fields from a Timestamp or Date.
  */
 public abstract class VectorUDFTimestampFieldLong extends VectorExpression {
 
@@ -75,8 +76,13 @@ public abstract class VectorUDFTimestampFieldLong extends VectorExpression {
     return ts;
   }
 
-  protected long getField(long time) {
+  protected long getTimestampField(long time) {
     calendar.setTime(getTimestamp(time));
+    return calendar.get(field);
+  }
+
+  protected long getDateField(long days) {
+    calendar.setTimeInMillis(DateWritable.daysToMillis((int) days));
     return calendar.get(field);
   }
 
@@ -96,38 +102,78 @@ public abstract class VectorUDFTimestampFieldLong extends VectorExpression {
     /* true for all algebraic UDFs with no state */
     outV.isRepeating = inputCol.isRepeating;
 
-    if (inputCol.noNulls) {
-      outV.noNulls = true;
-      if (batch.selectedInUse) {
-        for(int j=0; j < n; j++) {
-          int i = sel[j];
-          outV.vector[i] = getField(inputCol.vector[i]);
-        }
-      } else {
-        for(int i = 0; i < n; i++) {
-          outV.vector[i] = getField(inputCol.vector[i]);
-        }
-      }
-    } else {
-      // Handle case with nulls. Don't do function if the value is null, to save time,
-      // because calling the function can be expensive.
-      outV.noNulls = false;
-      if (batch.selectedInUse) {
-        for(int j=0; j < n; j++) {
-          int i = sel[j];
-          outV.isNull[i] = inputCol.isNull[i];
-          if (!inputCol.isNull[i]) {
-            outV.vector[i] = getField(inputCol.vector[i]);
+    switch (inputTypes[0]) {
+      case TIMESTAMP:
+        if (inputCol.noNulls) {
+          outV.noNulls = true;
+          if (batch.selectedInUse) {
+            for(int j=0; j < n; j++) {
+              int i = sel[j];
+              outV.vector[i] = getTimestampField(inputCol.vector[i]);
+            }
+          } else {
+            for(int i = 0; i < n; i++) {
+              outV.vector[i] = getTimestampField(inputCol.vector[i]);
+            }
+          }
+        } else {
+          // Handle case with nulls. Don't do function if the value is null, to save time,
+          // because calling the function can be expensive.
+          outV.noNulls = false;
+          if (batch.selectedInUse) {
+            for(int j=0; j < n; j++) {
+              int i = sel[j];
+              outV.isNull[i] = inputCol.isNull[i];
+              if (!inputCol.isNull[i]) {
+                outV.vector[i] = getTimestampField(inputCol.vector[i]);
+              }
+            }
+          } else {
+            for(int i = 0; i < n; i++) {
+              outV.isNull[i] = inputCol.isNull[i];
+              if (!inputCol.isNull[i]) {
+                outV.vector[i] = getTimestampField(inputCol.vector[i]);
+              }
+            }
           }
         }
-      } else {
-        for(int i = 0; i < n; i++) {
-          outV.isNull[i] = inputCol.isNull[i];
-          if (!inputCol.isNull[i]) {
-            outV.vector[i] = getField(inputCol.vector[i]);
+        break;
+
+      case DATE:
+        if (inputCol.noNulls) {
+          outV.noNulls = true;
+          if (batch.selectedInUse) {
+            for(int j=0; j < n; j++) {
+              int i = sel[j];
+              outV.vector[i] = getDateField(inputCol.vector[i]);
+            }
+          } else {
+            for(int i = 0; i < n; i++) {
+              outV.vector[i] = getDateField(inputCol.vector[i]);
+            }
+          }
+        } else {
+          // Handle case with nulls. Don't do function if the value is null, to save time,
+          // because calling the function can be expensive.
+          outV.noNulls = false;
+          if (batch.selectedInUse) {
+            for(int j=0; j < n; j++) {
+              int i = sel[j];
+              outV.isNull[i] = inputCol.isNull[i];
+              if (!inputCol.isNull[i]) {
+                outV.vector[i] = getDateField(inputCol.vector[i]);
+              }
+            }
+          } else {
+            for(int i = 0; i < n; i++) {
+              outV.isNull[i] = inputCol.isNull[i];
+              if (!inputCol.isNull[i]) {
+                outV.vector[i] = getDateField(inputCol.vector[i]);
+              }
+            }
           }
         }
-      }
+        break;
     }
   }
 

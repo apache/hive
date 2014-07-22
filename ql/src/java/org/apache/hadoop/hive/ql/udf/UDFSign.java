@@ -18,8 +18,6 @@
 
 package org.apache.hadoop.hive.ql.udf;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
@@ -30,38 +28,30 @@ import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.io.IntWritable;
 
-@Description(
-    name = "sign",
-    value = "_FUNC_(x) - returns the sign of x )",
-    extended = "Example:\n " +
-    		"  > SELECT _FUNC_(40) FROM src LIMIT 1;\n" +
-    		"  1"
-    )
+@Description(name = "sign",
+             value = "_FUNC_(x) - returns the sign of x )",
+             extended = "Example:\n "
+                        + "  > SELECT _FUNC_(40) FROM src LIMIT 1;\n"
+                        + "  1"
+)
 @VectorizedExpressions({FuncSignLongToDouble.class, FuncSignDoubleToDouble.class, FuncSignDecimalToLong.class})
 public class UDFSign extends UDF {
 
-  @SuppressWarnings("unused")
-  private static Log LOG = LogFactory.getLog(UDFSign.class.getName());
-  DoubleWritable result = new DoubleWritable();
-  IntWritable intWritable = new IntWritable();
-
-  public UDFSign() {
-  }
+  private final DoubleWritable result = new DoubleWritable();
+  private final IntWritable intWritable = new IntWritable();
 
   /**
    * Take sign of a
    */
-  public DoubleWritable evaluate(DoubleWritable a)  {
+  public DoubleWritable evaluate(DoubleWritable a) {
     if (a == null) {
       return null;
     }
-    if (a.get()==0) {
+    if (a.get() == 0) {
       result.set(0);
-    }
-    else if (a.get()>0) {
+    } else if (a.get() > 0) {
       result.set(1);
-    }
-    else {
+    } else {
       result.set(-1);
     }
     return result;
@@ -69,10 +59,12 @@ public class UDFSign extends UDF {
 
   /**
    * Get the sign of the decimal input
+   *
    * @param dec decimal input
+   *
    * @return -1, 0, or 1 representing the sign of the input decimal
    */
-  public IntWritable evaluate(HiveDecimalWritable dec)  {
+  public IntWritable evaluate(HiveDecimalWritable dec) {
     if (dec == null || dec.getHiveDecimal() == null) {
       return null;
     }

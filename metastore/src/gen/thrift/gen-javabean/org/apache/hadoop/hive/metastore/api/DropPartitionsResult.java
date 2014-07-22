@@ -342,14 +342,14 @@ public class DropPartitionsResult implements org.apache.thrift.TBase<DropPartiti
           case 1: // PARTITIONS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list330 = iprot.readListBegin();
-                struct.partitions = new ArrayList<Partition>(_list330.size);
-                for (int _i331 = 0; _i331 < _list330.size; ++_i331)
+                org.apache.thrift.protocol.TList _list346 = iprot.readListBegin();
+                struct.partitions = new ArrayList<Partition>(_list346.size);
+                for (int _i347 = 0; _i347 < _list346.size; ++_i347)
                 {
-                  Partition _elem332; // optional
-                  _elem332 = new Partition();
-                  _elem332.read(iprot);
-                  struct.partitions.add(_elem332);
+                  Partition _elem348; // optional
+                  _elem348 = new Partition();
+                  _elem348.read(iprot);
+                  struct.partitions.add(_elem348);
                 }
                 iprot.readListEnd();
               }
@@ -376,9 +376,9 @@ public class DropPartitionsResult implements org.apache.thrift.TBase<DropPartiti
           oprot.writeFieldBegin(PARTITIONS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.partitions.size()));
-            for (Partition _iter333 : struct.partitions)
+            for (Partition _iter349 : struct.partitions)
             {
-              _iter333.write(oprot);
+              _iter349.write(oprot);
             }
             oprot.writeListEnd();
           }
@@ -410,9 +410,9 @@ public class DropPartitionsResult implements org.apache.thrift.TBase<DropPartiti
       if (struct.isSetPartitions()) {
         {
           oprot.writeI32(struct.partitions.size());
-          for (Partition _iter334 : struct.partitions)
+          for (Partition _iter350 : struct.partitions)
           {
-            _iter334.write(oprot);
+            _iter350.write(oprot);
           }
         }
       }
@@ -424,14 +424,14 @@ public class DropPartitionsResult implements org.apache.thrift.TBase<DropPartiti
       BitSet incoming = iprot.readBitSet(1);
       if (incoming.get(0)) {
         {
-          org.apache.thrift.protocol.TList _list335 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-          struct.partitions = new ArrayList<Partition>(_list335.size);
-          for (int _i336 = 0; _i336 < _list335.size; ++_i336)
+          org.apache.thrift.protocol.TList _list351 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+          struct.partitions = new ArrayList<Partition>(_list351.size);
+          for (int _i352 = 0; _i352 < _list351.size; ++_i352)
           {
-            Partition _elem337; // optional
-            _elem337 = new Partition();
-            _elem337.read(iprot);
-            struct.partitions.add(_elem337);
+            Partition _elem353; // optional
+            _elem353 = new Partition();
+            _elem353.read(iprot);
+            struct.partitions.add(_elem353);
           }
         }
         struct.setPartitionsIsSet(true);

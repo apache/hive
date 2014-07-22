@@ -13,8 +13,9 @@ module TProtocolVersion
   HIVE_CLI_SERVICE_PROTOCOL_V4 = 3
   HIVE_CLI_SERVICE_PROTOCOL_V5 = 4
   HIVE_CLI_SERVICE_PROTOCOL_V6 = 5
-  VALUE_MAP = {0 => "HIVE_CLI_SERVICE_PROTOCOL_V1", 1 => "HIVE_CLI_SERVICE_PROTOCOL_V2", 2 => "HIVE_CLI_SERVICE_PROTOCOL_V3", 3 => "HIVE_CLI_SERVICE_PROTOCOL_V4", 4 => "HIVE_CLI_SERVICE_PROTOCOL_V5", 5 => "HIVE_CLI_SERVICE_PROTOCOL_V6"}
-  VALID_VALUES = Set.new([HIVE_CLI_SERVICE_PROTOCOL_V1, HIVE_CLI_SERVICE_PROTOCOL_V2, HIVE_CLI_SERVICE_PROTOCOL_V3, HIVE_CLI_SERVICE_PROTOCOL_V4, HIVE_CLI_SERVICE_PROTOCOL_V5, HIVE_CLI_SERVICE_PROTOCOL_V6]).freeze
+  HIVE_CLI_SERVICE_PROTOCOL_V7 = 6
+  VALUE_MAP = {0 => "HIVE_CLI_SERVICE_PROTOCOL_V1", 1 => "HIVE_CLI_SERVICE_PROTOCOL_V2", 2 => "HIVE_CLI_SERVICE_PROTOCOL_V3", 3 => "HIVE_CLI_SERVICE_PROTOCOL_V4", 4 => "HIVE_CLI_SERVICE_PROTOCOL_V5", 5 => "HIVE_CLI_SERVICE_PROTOCOL_V6", 6 => "HIVE_CLI_SERVICE_PROTOCOL_V7"}
+  VALID_VALUES = Set.new([HIVE_CLI_SERVICE_PROTOCOL_V1, HIVE_CLI_SERVICE_PROTOCOL_V2, HIVE_CLI_SERVICE_PROTOCOL_V3, HIVE_CLI_SERVICE_PROTOCOL_V4, HIVE_CLI_SERVICE_PROTOCOL_V5, HIVE_CLI_SERVICE_PROTOCOL_V6, HIVE_CLI_SERVICE_PROTOCOL_V7]).freeze
 end
 
 module TTypeId
@@ -1628,6 +1629,122 @@ class TFetchResultsResp
     STATUS => {:type => ::Thrift::Types::STRUCT, :name => 'status', :class => ::TStatus},
     HASMOREROWS => {:type => ::Thrift::Types::BOOL, :name => 'hasMoreRows', :optional => true},
     RESULTS => {:type => ::Thrift::Types::STRUCT, :name => 'results', :class => ::TRowSet, :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field status is unset!') unless @status
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class TGetDelegationTokenReq
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  SESSIONHANDLE = 1
+  OWNER = 2
+  RENEWER = 3
+
+  FIELDS = {
+    SESSIONHANDLE => {:type => ::Thrift::Types::STRUCT, :name => 'sessionHandle', :class => ::TSessionHandle},
+    OWNER => {:type => ::Thrift::Types::STRING, :name => 'owner'},
+    RENEWER => {:type => ::Thrift::Types::STRING, :name => 'renewer'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field sessionHandle is unset!') unless @sessionHandle
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field owner is unset!') unless @owner
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field renewer is unset!') unless @renewer
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class TGetDelegationTokenResp
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  STATUS = 1
+  DELEGATIONTOKEN = 2
+
+  FIELDS = {
+    STATUS => {:type => ::Thrift::Types::STRUCT, :name => 'status', :class => ::TStatus},
+    DELEGATIONTOKEN => {:type => ::Thrift::Types::STRING, :name => 'delegationToken', :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field status is unset!') unless @status
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class TCancelDelegationTokenReq
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  SESSIONHANDLE = 1
+  DELEGATIONTOKEN = 2
+
+  FIELDS = {
+    SESSIONHANDLE => {:type => ::Thrift::Types::STRUCT, :name => 'sessionHandle', :class => ::TSessionHandle},
+    DELEGATIONTOKEN => {:type => ::Thrift::Types::STRING, :name => 'delegationToken'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field sessionHandle is unset!') unless @sessionHandle
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field delegationToken is unset!') unless @delegationToken
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class TCancelDelegationTokenResp
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  STATUS = 1
+
+  FIELDS = {
+    STATUS => {:type => ::Thrift::Types::STRUCT, :name => 'status', :class => ::TStatus}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field status is unset!') unless @status
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class TRenewDelegationTokenReq
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  SESSIONHANDLE = 1
+  DELEGATIONTOKEN = 2
+
+  FIELDS = {
+    SESSIONHANDLE => {:type => ::Thrift::Types::STRUCT, :name => 'sessionHandle', :class => ::TSessionHandle},
+    DELEGATIONTOKEN => {:type => ::Thrift::Types::STRING, :name => 'delegationToken'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field sessionHandle is unset!') unless @sessionHandle
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field delegationToken is unset!') unless @delegationToken
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class TRenewDelegationTokenResp
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  STATUS = 1
+
+  FIELDS = {
+    STATUS => {:type => ::Thrift::Types::STRUCT, :name => 'status', :class => ::TStatus}
   }
 
   def struct_fields; FIELDS; end

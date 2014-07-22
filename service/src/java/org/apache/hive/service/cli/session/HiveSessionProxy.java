@@ -54,23 +54,14 @@ public class HiveSessionProxy implements InvocationHandler {
   public Object invoke(Object arg0, final Method method, final Object[] args)
       throws Throwable {
     try {
+      if (method.getDeclaringClass() == HiveSessionBase.class) {
+        return invoke(method, args);
+      }
       return ShimLoader.getHadoopShims().doAs(ugi,
         new PrivilegedExceptionAction<Object> () {
           @Override
           public Object run() throws HiveSQLException {
-            try {
-              return method.invoke(base, args);
-            } catch (InvocationTargetException e) {
-              if (e.getCause() instanceof HiveSQLException) {
-                throw (HiveSQLException)e.getCause();
-              } else {
-                throw new RuntimeException(e.getCause());
-              }
-            } catch (IllegalArgumentException e) {
-              throw new RuntimeException(e);
-            } catch (IllegalAccessException e) {
-              throw new RuntimeException(e);
-            }
+            return invoke(method, args);
           }
         });
     } catch (UndeclaredThrowableException e) {
@@ -83,5 +74,19 @@ public class HiveSessionProxy implements InvocationHandler {
     }
   }
 
+  private Object invoke(final Method method, final Object[] args) throws HiveSQLException {
+    try {
+      return method.invoke(base, args);
+    } catch (InvocationTargetException e) {
+      if (e.getCause() instanceof HiveSQLException) {
+        throw (HiveSQLException)e.getCause();
+      }
+      throw new RuntimeException(e.getCause());
+    } catch (IllegalArgumentException e) {
+      throw new RuntimeException(e);
+    } catch (IllegalAccessException e) {
+      throw new RuntimeException(e);
+    }
+  }
 }
 

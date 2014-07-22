@@ -23,6 +23,8 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.LogUtils;
 import org.apache.hadoop.hive.common.LogUtils.LogInitializationException;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.ql.exec.tez.TezSessionPoolManager;
 import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.hive.service.CompositeService;
 import org.apache.hive.service.cli.CLIService;
@@ -42,6 +44,7 @@ public class HiveServer2 extends CompositeService {
 
   public HiveServer2() {
     super("HiveServer2");
+    HiveConf.setLoadHiveServer2Config(true);
   }
 
 
@@ -73,6 +76,17 @@ public class HiveServer2 extends CompositeService {
   @Override
   public synchronized void stop() {
     super.stop();
+    // there should already be an instance of the session pool manager.
+    // if not, ignoring is fine while stopping the hive server.
+    HiveConf hiveConf = this.getHiveConf();
+    if (hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_TEZ_INITIALIZE_DEFAULT_SESSIONS)) {
+      try {
+        TezSessionPoolManager.getInstance().stop();
+      } catch (Exception e) {
+        LOG.error("Tez session pool manager stop had an error during stop of hive server");
+        e.printStackTrace();
+      }
+    }
   }
 
   private static void startHiveServer2() throws Throwable {
@@ -85,6 +99,11 @@ public class HiveServer2 extends CompositeService {
         server = new HiveServer2();
         server.init(hiveConf);
         server.start();
+        if (hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_TEZ_INITIALIZE_DEFAULT_SESSIONS)) {
+          TezSessionPoolManager sessionPool = TezSessionPoolManager.getInstance();
+          sessionPool.setupPool(hiveConf);
+          sessionPool.startPool();
+        }
         break;
       } catch (Throwable throwable) {
         if(++attempts >= maxAttempts) {
@@ -123,7 +142,7 @@ public class HiveServer2 extends CompositeService {
       // before any of the other core hive classes are loaded
       String initLog4jMessage = LogUtils.initHiveLog4j();
       LOG.debug(initLog4jMessage);
-      
+
       HiveStringUtils.startupShutdownMessage(HiveServer2.class, args, LOG);
       //log debug message from "oproc" after log4j initialize properly
       LOG.debug(oproc.getDebugMessage().toString());

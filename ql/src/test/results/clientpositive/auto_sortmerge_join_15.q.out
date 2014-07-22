@@ -30,8 +30,6 @@ POSTHOOK: query: insert overwrite table tbl2 select * from src where key < 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@tbl2
-POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: explain
@@ -40,19 +38,34 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select count(*) FROM tbl1 a LEFT OUTER JOIN tbl2 b ON a.key = b.key
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 STAGE DEPENDENCIES:
-  Stage-4 is a root stage , consists of Stage-3, Stage-1
-  Stage-3 has a backup stage: Stage-1
+  Stage-4 is a root stage , consists of Stage-5, Stage-1
+  Stage-5 has a backup stage: Stage-1
+  Stage-3 depends on stages: Stage-5
   Stage-1
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-3, Stage-1
 
 STAGE PLANS:
   Stage: Stage-4
     Conditional Operator
+
+  Stage: Stage-5
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        b 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        b 
+          TableScan
+            alias: b
+            HashTable Sink Operator
+              condition expressions:
+                0 
+                1 
+              keys:
+                0 key (type: int)
+                1 key (type: int)
 
   Stage: Stage-3
     Map Reduce
@@ -78,14 +91,6 @@ STAGE PLANS:
                     value expressions: _col0 (type: bigint)
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            b 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            b 
-              TableScan
-                alias: b
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
@@ -142,6 +147,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: explain
 select count(*) FROM tbl1 a RIGHT OUTER JOIN tbl2 b ON a.key = b.key
@@ -149,19 +156,34 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select count(*) FROM tbl1 a RIGHT OUTER JOIN tbl2 b ON a.key = b.key
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 STAGE DEPENDENCIES:
-  Stage-4 is a root stage , consists of Stage-3, Stage-1
-  Stage-3 has a backup stage: Stage-1
+  Stage-4 is a root stage , consists of Stage-5, Stage-1
+  Stage-5 has a backup stage: Stage-1
+  Stage-3 depends on stages: Stage-5
   Stage-1
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-3, Stage-1
 
 STAGE PLANS:
   Stage: Stage-4
     Conditional Operator
+
+  Stage: Stage-5
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        a 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        a 
+          TableScan
+            alias: a
+            HashTable Sink Operator
+              condition expressions:
+                0 
+                1 
+              keys:
+                0 key (type: int)
+                1 key (type: int)
 
   Stage: Stage-3
     Map Reduce
@@ -187,14 +209,6 @@ STAGE PLANS:
                     value expressions: _col0 (type: bigint)
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            a 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            a 
-              TableScan
-                alias: a
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
@@ -251,4 +265,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 

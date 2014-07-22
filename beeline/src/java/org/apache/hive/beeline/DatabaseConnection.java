@@ -49,19 +49,20 @@ class DatabaseConnection {
   private DatabaseMetaData meta;
   private final String driver;
   private final String url;
-  private final String username;
-  private final String password;
+  private final Properties info;
   private Schema schema = null;
   private Completor sqlCompletor = null;
 
+  public boolean isClosed() {
+    return (null == connection);
+  }
 
   public DatabaseConnection(BeeLine beeLine, String driver, String url,
-      String username, String password) throws SQLException {
+       Properties info) throws SQLException {
     this.beeLine = beeLine;
     this.driver = driver;
-    this.username = username;
-    this.password = password;
     this.url = url;
+    this.info = info;
   }
 
   @Override
@@ -102,15 +103,6 @@ class DatabaseConnection {
 
   /**
    * Connection to the specified data source.
-   *
-   * @param driver
-   *          the driver class
-   * @param url
-   *          the connection URL
-   * @param username
-   *          the username
-   * @param password
-   *          the password
    */
   boolean connect() throws SQLException {
     try {
@@ -133,9 +125,6 @@ class DatabaseConnection {
       return beeLine.error(e);
     }
 
-    Properties info = new Properties();
-    info.put(HIVE_AUTH_USER, username);
-    info.put(HIVE_AUTH_PASSWD, password);
     Map<String, String> hiveVars = beeLine.getOpts().getHiveVariables();
     for (Map.Entry<String, String> var : hiveVars.entrySet()) {
       info.put(HIVE_VAR_PREFIX + var.getKey(), var.getValue());

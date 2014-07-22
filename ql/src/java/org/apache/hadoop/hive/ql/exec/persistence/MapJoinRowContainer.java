@@ -27,12 +27,12 @@ import org.apache.hadoop.hive.serde2.SerDeException;
 
 public interface MapJoinRowContainer extends AbstractRowContainer<List<Object>> {
 
-  public byte getAliasFilter() throws HiveException;
+  byte getAliasFilter() throws HiveException;
 
-  public MapJoinRowContainer copy() throws HiveException;
+  MapJoinRowContainer copy() throws HiveException;
 
-  public void add(Object[] value) throws HiveException;
+  void addRow(Object[] value) throws HiveException;
 
-  public void write(MapJoinObjectSerDeContext valueContext, ObjectOutputStream out)
+  void write(MapJoinObjectSerDeContext valueContext, ObjectOutputStream out)
       throws IOException, SerDeException;
 }

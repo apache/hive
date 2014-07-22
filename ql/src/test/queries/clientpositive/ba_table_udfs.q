@@ -1,3 +1,5 @@
+-- SORT_QUERY_RESULTS
+
 USE default;
 
 CREATE TABLE dest1(bytes1 BINARY,
@@ -32,5 +34,4 @@ SELECT
   UNBASE64(BASE64(bytes1)),
   HEX(ENCODE(string, 'US-ASCII')),
   DECODE(ENCODE(string, 'US-ASCII'), 'US-ASCII')
-FROM dest1
-ORDER BY bytes2;
+FROM dest1;

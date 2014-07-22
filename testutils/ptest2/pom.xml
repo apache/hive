@@ -86,32 +86,32 @@ limitations under the License.
     <dependency>
       <groupId>org.apache.jclouds</groupId>
       <artifactId>jclouds-core</artifactId>
-      <version>1.7.0</version>
+      <version>1.7.3</version>
     </dependency>
     <dependency>
       <groupId>org.apache.jclouds</groupId>
       <artifactId>jclouds-compute</artifactId>
-      <version>1.7.0</version>
+      <version>1.7.3</version>
     </dependency>
     <dependency>
       <groupId>org.apache.jclouds.provider</groupId>
       <artifactId>aws-ec2</artifactId>
-      <version>1.7.0</version>
+      <version>1.7.3</version>
     </dependency>
     <dependency>
       <groupId>org.apache.jclouds.api</groupId>
       <artifactId>ec2</artifactId>
-      <version>1.7.0</version>
+      <version>1.7.3</version>
     </dependency>
     <dependency>
       <groupId>org.apache.jclouds.driver</groupId>
       <artifactId>jclouds-sshj</artifactId>
-      <version>1.7.0</version>
+      <version>1.7.3</version>
     </dependency>
     <dependency>
       <groupId>org.apache.jclouds.driver</groupId>
       <artifactId>jclouds-log4j</artifactId>
-      <version>1.7.0</version>
+      <version>1.7.3</version>
     </dependency>
     <dependency>
       <groupId>org.apache.velocity</groupId>

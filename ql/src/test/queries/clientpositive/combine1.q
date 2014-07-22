@@ -7,11 +7,13 @@ set mapred.max.split.size=256;
 
 set mapred.output.compression.codec=org.apache.hadoop.io.compress.GzipCodec;
 
+-- SORT_QUERY_RESULTS
+
 create table combine1_1(key string, value string) stored as textfile;
 
 insert overwrite table combine1_1
 select * from src;
 
 
-select key, value from combine1_1 ORDER BY key ASC, value ASC;
+select key, value from combine1_1;
 

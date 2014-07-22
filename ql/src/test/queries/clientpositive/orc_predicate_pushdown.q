@@ -1,3 +1,5 @@
+-- SORT_QUERY_RESULTS
+
 CREATE TABLE orc_pred(t tinyint,
            si smallint,
            i int,
@@ -87,28 +89,28 @@ SELECT t, s FROM orc_pred
   WHERE t <=> -1
   AND s IS NOT NULL
   AND s LIKE 'bob%'
-  ORDER BY s;
+  ;
 
 SET hive.optimize.index.filter=true;
 SELECT t, s FROM orc_pred
   WHERE t <=> -1
   AND s IS NOT NULL
   AND s LIKE 'bob%'
-  ORDER BY s;
+  ;
 SET hive.optimize.index.filter=false;
 
 EXPLAIN SELECT t, s FROM orc_pred
   WHERE t <=> -1
   AND s IS NOT NULL
   AND s LIKE 'bob%'
-  ORDER BY s;
+  ;
 
 SET hive.optimize.index.filter=true;
 EXPLAIN SELECT t, s FROM orc_pred
   WHERE t <=> -1
   AND s IS NOT NULL
   AND s LIKE 'bob%'
-  ORDER BY s;
+  ;
 SET hive.optimize.index.filter=false;
 
 SELECT t, s FROM orc_pred

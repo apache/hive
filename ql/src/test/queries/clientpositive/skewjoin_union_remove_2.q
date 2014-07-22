@@ -1,4 +1,3 @@
-set hive.internal.ddl.list.bucketing.enable=true;
 set hive.optimize.skewjoin.compiletime = true;
 set hive.mapred.supports.subdirectories=true;
 

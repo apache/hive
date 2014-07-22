@@ -43,7 +43,7 @@ SELECT a, b, avg(c), count(*) from T1 group by a, b with cube
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -67,7 +67,7 @@ STAGE PLANS:
                   sort order: +++
                   Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: string)
                   Statistics: Num rows: 0 Data size: 72 Basic stats: PARTIAL Column stats: NONE
-                  value expressions: _col3 (type: struct<count:bigint,sum:double>), _col4 (type: bigint)
+                  value expressions: _col3 (type: struct<count:bigint,sum:double,input:string>), _col4 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
           aggregations: avg(VALUE._col0), count(VALUE._col1)
@@ -90,6 +90,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT a, b, avg(c), count(*) from T1 group by a, b with cube
 PREHOOK: type: QUERY
@@ -128,7 +130,7 @@ POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-1
@@ -152,7 +154,7 @@ STAGE PLANS:
                   sort order: ++
                   Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                   Statistics: Num rows: 0 Data size: 72 Basic stats: PARTIAL Column stats: NONE
-                  value expressions: _col2 (type: struct<count:bigint,sum:double>), _col3 (type: bigint)
+                  value expressions: _col2 (type: struct<count:bigint,sum:double,input:string>), _col3 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
           aggregations: avg(VALUE._col0), count(VALUE._col1)
@@ -176,7 +178,7 @@ STAGE PLANS:
               sort order: +++
               Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: string)
               Statistics: Num rows: 0 Data size: 72 Basic stats: PARTIAL Column stats: NONE
-              value expressions: _col3 (type: struct<count:bigint,sum:double>), _col4 (type: bigint)
+              value expressions: _col3 (type: struct<count:bigint,sum:double,input:string>), _col4 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
           aggregations: avg(VALUE._col0), count(VALUE._col1)
@@ -199,6 +201,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT a, b, avg(c), count(*) from T1 group by a, b with cube
 PREHOOK: type: QUERY

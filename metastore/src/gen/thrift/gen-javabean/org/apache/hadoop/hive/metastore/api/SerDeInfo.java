@@ -529,15 +529,15 @@ public class SerDeInfo implements org.apache.thrift.TBase<SerDeInfo, SerDeInfo._
           case 3: // PARAMETERS
             if (schemeField.type == org.apache.thrift.protocol.TType.MAP) {
               {
-                org.apache.thrift.protocol.TMap _map88 = iprot.readMapBegin();
-                struct.parameters = new HashMap<String,String>(2*_map88.size);
-                for (int _i89 = 0; _i89 < _map88.size; ++_i89)
+                org.apache.thrift.protocol.TMap _map104 = iprot.readMapBegin();
+                struct.parameters = new HashMap<String,String>(2*_map104.size);
+                for (int _i105 = 0; _i105 < _map104.size; ++_i105)
                 {
-                  String _key90; // required
-                  String _val91; // required
-                  _key90 = iprot.readString();
-                  _val91 = iprot.readString();
-                  struct.parameters.put(_key90, _val91);
+                  String _key106; // required
+                  String _val107; // required
+                  _key106 = iprot.readString();
+                  _val107 = iprot.readString();
+                  struct.parameters.put(_key106, _val107);
                 }
                 iprot.readMapEnd();
               }
@@ -573,10 +573,10 @@ public class SerDeInfo implements org.apache.thrift.TBase<SerDeInfo, SerDeInfo._
         oprot.writeFieldBegin(PARAMETERS_FIELD_DESC);
         {
           oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, struct.parameters.size()));
-          for (Map.Entry<String, String> _iter92 : struct.parameters.entrySet())
+          for (Map.Entry<String, String> _iter108 : struct.parameters.entrySet())
           {
-            oprot.writeString(_iter92.getKey());
-            oprot.writeString(_iter92.getValue());
+            oprot.writeString(_iter108.getKey());
+            oprot.writeString(_iter108.getValue());
           }
           oprot.writeMapEnd();
         }
@@ -619,10 +619,10 @@ public class SerDeInfo implements org.apache.thrift.TBase<SerDeInfo, SerDeInfo._
       if (struct.isSetParameters()) {
         {
           oprot.writeI32(struct.parameters.size());
-          for (Map.Entry<String, String> _iter93 : struct.parameters.entrySet())
+          for (Map.Entry<String, String> _iter109 : struct.parameters.entrySet())
           {
-            oprot.writeString(_iter93.getKey());
-            oprot.writeString(_iter93.getValue());
+            oprot.writeString(_iter109.getKey());
+            oprot.writeString(_iter109.getValue());
           }
         }
       }
@@ -642,15 +642,15 @@ public class SerDeInfo implements org.apache.thrift.TBase<SerDeInfo, SerDeInfo._
       }
       if (incoming.get(2)) {
         {
-          org.apache.thrift.protocol.TMap _map94 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-          struct.parameters = new HashMap<String,String>(2*_map94.size);
-          for (int _i95 = 0; _i95 < _map94.size; ++_i95)
+          org.apache.thrift.protocol.TMap _map110 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+          struct.parameters = new HashMap<String,String>(2*_map110.size);
+          for (int _i111 = 0; _i111 < _map110.size; ++_i111)
           {
-            String _key96; // required
-            String _val97; // required
-            _key96 = iprot.readString();
-            _val97 = iprot.readString();
-            struct.parameters.put(_key96, _val97);
+            String _key112; // required
+            String _val113; // required
+            _key112 = iprot.readString();
+            _val113 = iprot.readString();
+            struct.parameters.put(_key112, _val113);
           }
         }
         struct.setParametersIsSet(true);

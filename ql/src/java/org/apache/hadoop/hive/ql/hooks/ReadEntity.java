@@ -41,6 +41,11 @@ public class ReadEntity extends Entity implements Serializable {
   // For example in the case of "select * from V join T ..." T would be direct dependency
   private boolean isDirect = true;
 
+  // Note that we do not need a lock for this entity.  This is used by operations like alter
+  // table ... partition where its actually the partition that needs locked even though the table
+  // is marked as being read.  Defaults to true as that is the most common case.
+  private boolean needsLock = true;
+
   // For views, the entities can be nested - by default, entities are at the top level
   private final Set<ReadEntity> parents = new HashSet<ReadEntity>();
 
@@ -147,6 +152,11 @@ public class ReadEntity extends Entity implements Serializable {
     this.isDirect = isDirect;
   }
 
+  public boolean needsLock() {
+    return needsLock;
+  }
 
-
+  public void noLockNeeded() {
+    needsLock = false;
+  }
 }

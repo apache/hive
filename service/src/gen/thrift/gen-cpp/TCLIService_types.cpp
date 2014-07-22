@@ -16,7 +16,8 @@ int _kTProtocolVersionValues[] = {
   TProtocolVersion::HIVE_CLI_SERVICE_PROTOCOL_V3,
   TProtocolVersion::HIVE_CLI_SERVICE_PROTOCOL_V4,
   TProtocolVersion::HIVE_CLI_SERVICE_PROTOCOL_V5,
-  TProtocolVersion::HIVE_CLI_SERVICE_PROTOCOL_V6
+  TProtocolVersion::HIVE_CLI_SERVICE_PROTOCOL_V6,
+  TProtocolVersion::HIVE_CLI_SERVICE_PROTOCOL_V7
 };
 const char* _kTProtocolVersionNames[] = {
   "HIVE_CLI_SERVICE_PROTOCOL_V1",
@@ -24,9 +25,10 @@ const char* _kTProtocolVersionNames[] = {
   "HIVE_CLI_SERVICE_PROTOCOL_V3",
   "HIVE_CLI_SERVICE_PROTOCOL_V4",
   "HIVE_CLI_SERVICE_PROTOCOL_V5",
-  "HIVE_CLI_SERVICE_PROTOCOL_V6"
+  "HIVE_CLI_SERVICE_PROTOCOL_V6",
+  "HIVE_CLI_SERVICE_PROTOCOL_V7"
 };
-const std::map<int, const char*> _TProtocolVersion_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(6, _kTProtocolVersionValues, _kTProtocolVersionNames), ::apache::thrift::TEnumIterator(-1, NULL, NULL));
+const std::map<int, const char*> _TProtocolVersion_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(7, _kTProtocolVersionValues, _kTProtocolVersionNames), ::apache::thrift::TEnumIterator(-1, NULL, NULL));
 
 int _kTTypeIdValues[] = {
   TTypeId::BOOLEAN_TYPE,
@@ -6324,6 +6326,469 @@ void swap(TFetchResultsResp &a, TFetchResultsResp &b) {
   swap(a.hasMoreRows, b.hasMoreRows);
   swap(a.results, b.results);
   swap(a.__isset, b.__isset);
+}
+
+const char* TGetDelegationTokenReq::ascii_fingerprint = "07EA0311716A27924914E4354ED22D6C";
+const uint8_t TGetDelegationTokenReq::binary_fingerprint[16] = {0x07,0xEA,0x03,0x11,0x71,0x6A,0x27,0x92,0x49,0x14,0xE4,0x35,0x4E,0xD2,0x2D,0x6C};
+
+uint32_t TGetDelegationTokenReq::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+  bool isset_sessionHandle = false;
+  bool isset_owner = false;
+  bool isset_renewer = false;
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += this->sessionHandle.read(iprot);
+          isset_sessionHandle = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->owner);
+          isset_owner = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->renewer);
+          isset_renewer = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  if (!isset_sessionHandle)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
+  if (!isset_owner)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
+  if (!isset_renewer)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
+  return xfer;
+}
+
+uint32_t TGetDelegationTokenReq::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  xfer += oprot->writeStructBegin("TGetDelegationTokenReq");
+
+  xfer += oprot->writeFieldBegin("sessionHandle", ::apache::thrift::protocol::T_STRUCT, 1);
+  xfer += this->sessionHandle.write(oprot);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("owner", ::apache::thrift::protocol::T_STRING, 2);
+  xfer += oprot->writeString(this->owner);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("renewer", ::apache::thrift::protocol::T_STRING, 3);
+  xfer += oprot->writeString(this->renewer);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(TGetDelegationTokenReq &a, TGetDelegationTokenReq &b) {
+  using ::std::swap;
+  swap(a.sessionHandle, b.sessionHandle);
+  swap(a.owner, b.owner);
+  swap(a.renewer, b.renewer);
+}
+
+const char* TGetDelegationTokenResp::ascii_fingerprint = "C0E132DC412CEA08D771EAC38CEA1DA6";
+const uint8_t TGetDelegationTokenResp::binary_fingerprint[16] = {0xC0,0xE1,0x32,0xDC,0x41,0x2C,0xEA,0x08,0xD7,0x71,0xEA,0xC3,0x8C,0xEA,0x1D,0xA6};
+
+uint32_t TGetDelegationTokenResp::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+  bool isset_status = false;
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += this->status.read(iprot);
+          isset_status = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->delegationToken);
+          this->__isset.delegationToken = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  if (!isset_status)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
+  return xfer;
+}
+
+uint32_t TGetDelegationTokenResp::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  xfer += oprot->writeStructBegin("TGetDelegationTokenResp");
+
+  xfer += oprot->writeFieldBegin("status", ::apache::thrift::protocol::T_STRUCT, 1);
+  xfer += this->status.write(oprot);
+  xfer += oprot->writeFieldEnd();
+
+  if (this->__isset.delegationToken) {
+    xfer += oprot->writeFieldBegin("delegationToken", ::apache::thrift::protocol::T_STRING, 2);
+    xfer += oprot->writeString(this->delegationToken);
+    xfer += oprot->writeFieldEnd();
+  }
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(TGetDelegationTokenResp &a, TGetDelegationTokenResp &b) {
+  using ::std::swap;
+  swap(a.status, b.status);
+  swap(a.delegationToken, b.delegationToken);
+  swap(a.__isset, b.__isset);
+}
+
+const char* TCancelDelegationTokenReq::ascii_fingerprint = "1A3D66269336B7EC66998BFE1BECDE75";
+const uint8_t TCancelDelegationTokenReq::binary_fingerprint[16] = {0x1A,0x3D,0x66,0x26,0x93,0x36,0xB7,0xEC,0x66,0x99,0x8B,0xFE,0x1B,0xEC,0xDE,0x75};
+
+uint32_t TCancelDelegationTokenReq::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+  bool isset_sessionHandle = false;
+  bool isset_delegationToken = false;
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += this->sessionHandle.read(iprot);
+          isset_sessionHandle = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->delegationToken);
+          isset_delegationToken = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  if (!isset_sessionHandle)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
+  if (!isset_delegationToken)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
+  return xfer;
+}
+
+uint32_t TCancelDelegationTokenReq::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  xfer += oprot->writeStructBegin("TCancelDelegationTokenReq");
+
+  xfer += oprot->writeFieldBegin("sessionHandle", ::apache::thrift::protocol::T_STRUCT, 1);
+  xfer += this->sessionHandle.write(oprot);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("delegationToken", ::apache::thrift::protocol::T_STRING, 2);
+  xfer += oprot->writeString(this->delegationToken);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(TCancelDelegationTokenReq &a, TCancelDelegationTokenReq &b) {
+  using ::std::swap;
+  swap(a.sessionHandle, b.sessionHandle);
+  swap(a.delegationToken, b.delegationToken);
+}
+
+const char* TCancelDelegationTokenResp::ascii_fingerprint = "7142E89F09DC7C5F6FA916C7393F46C2";
+const uint8_t TCancelDelegationTokenResp::binary_fingerprint[16] = {0x71,0x42,0xE8,0x9F,0x09,0xDC,0x7C,0x5F,0x6F,0xA9,0x16,0xC7,0x39,0x3F,0x46,0xC2};
+
+uint32_t TCancelDelegationTokenResp::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+  bool isset_status = false;
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += this->status.read(iprot);
+          isset_status = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  if (!isset_status)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
+  return xfer;
+}
+
+uint32_t TCancelDelegationTokenResp::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  xfer += oprot->writeStructBegin("TCancelDelegationTokenResp");
+
+  xfer += oprot->writeFieldBegin("status", ::apache::thrift::protocol::T_STRUCT, 1);
+  xfer += this->status.write(oprot);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(TCancelDelegationTokenResp &a, TCancelDelegationTokenResp &b) {
+  using ::std::swap;
+  swap(a.status, b.status);
+}
+
+const char* TRenewDelegationTokenReq::ascii_fingerprint = "1A3D66269336B7EC66998BFE1BECDE75";
+const uint8_t TRenewDelegationTokenReq::binary_fingerprint[16] = {0x1A,0x3D,0x66,0x26,0x93,0x36,0xB7,0xEC,0x66,0x99,0x8B,0xFE,0x1B,0xEC,0xDE,0x75};
+
+uint32_t TRenewDelegationTokenReq::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+  bool isset_sessionHandle = false;
+  bool isset_delegationToken = false;
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += this->sessionHandle.read(iprot);
+          isset_sessionHandle = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->delegationToken);
+          isset_delegationToken = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  if (!isset_sessionHandle)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
+  if (!isset_delegationToken)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
+  return xfer;
+}
+
+uint32_t TRenewDelegationTokenReq::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  xfer += oprot->writeStructBegin("TRenewDelegationTokenReq");
+
+  xfer += oprot->writeFieldBegin("sessionHandle", ::apache::thrift::protocol::T_STRUCT, 1);
+  xfer += this->sessionHandle.write(oprot);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("delegationToken", ::apache::thrift::protocol::T_STRING, 2);
+  xfer += oprot->writeString(this->delegationToken);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(TRenewDelegationTokenReq &a, TRenewDelegationTokenReq &b) {
+  using ::std::swap;
+  swap(a.sessionHandle, b.sessionHandle);
+  swap(a.delegationToken, b.delegationToken);
+}
+
+const char* TRenewDelegationTokenResp::ascii_fingerprint = "7142E89F09DC7C5F6FA916C7393F46C2";
+const uint8_t TRenewDelegationTokenResp::binary_fingerprint[16] = {0x71,0x42,0xE8,0x9F,0x09,0xDC,0x7C,0x5F,0x6F,0xA9,0x16,0xC7,0x39,0x3F,0x46,0xC2};
+
+uint32_t TRenewDelegationTokenResp::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+  bool isset_status = false;
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += this->status.read(iprot);
+          isset_status = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  if (!isset_status)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
+  return xfer;
+}
+
+uint32_t TRenewDelegationTokenResp::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  xfer += oprot->writeStructBegin("TRenewDelegationTokenResp");
+
+  xfer += oprot->writeFieldBegin("status", ::apache::thrift::protocol::T_STRUCT, 1);
+  xfer += this->status.write(oprot);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(TRenewDelegationTokenResp &a, TRenewDelegationTokenResp &b) {
+  using ::std::swap;
+  swap(a.status, b.status);
 }
 
 }}}}} // namespace

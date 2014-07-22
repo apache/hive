@@ -33,20 +33,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.ql.exec.ColumnInfo;
-import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
-import org.apache.hadoop.hive.ql.exec.FilterOperator;
-import org.apache.hadoop.hive.ql.exec.GroupByOperator;
-import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
-import org.apache.hadoop.hive.ql.exec.Operator;
-import org.apache.hadoop.hive.ql.exec.OperatorFactory;
-import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
-import org.apache.hadoop.hive.ql.exec.SMBMapJoinOperator;
-import org.apache.hadoop.hive.ql.exec.SelectOperator;
-import org.apache.hadoop.hive.ql.exec.TableScanOperator;
-import org.apache.hadoop.hive.ql.exec.Task;
-import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.ql.exec.*;
 import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
@@ -65,8 +52,7 @@ import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.lib.TaskGraphWalker;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.parse.RowResolver;
+import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.AbstractOperatorDesc;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
@@ -190,6 +176,11 @@ public class Vectorizer implements PhysicalPlanResolver {
     supportedGenericUDFs.add(UDFWeekOfYear.class);
     supportedGenericUDFs.add(GenericUDFToUnixTimeStamp.class);
 
+    supportedGenericUDFs.add(GenericUDFDateAdd.class);
+    supportedGenericUDFs.add(GenericUDFDateSub.class);
+    supportedGenericUDFs.add(GenericUDFDate.class);
+    supportedGenericUDFs.add(GenericUDFDateDiff.class);
+
     supportedGenericUDFs.add(UDFLike.class);
     supportedGenericUDFs.add(UDFRegExp.class);
     supportedGenericUDFs.add(UDFSubstr.class);
@@ -231,6 +222,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     supportedGenericUDFs.add(GenericUDFCase.class);
     supportedGenericUDFs.add(GenericUDFWhen.class);
     supportedGenericUDFs.add(GenericUDFCoalesce.class);
+    supportedGenericUDFs.add(GenericUDFElt.class);
 
     // For type casts
     supportedGenericUDFs.add(UDFToLong.class);
@@ -243,6 +235,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     supportedGenericUDFs.add(UDFToString.class);
     supportedGenericUDFs.add(GenericUDFTimestamp.class);
     supportedGenericUDFs.add(GenericUDFToDecimal.class);
+    supportedGenericUDFs.add(GenericUDFToDate.class);
 
     // For conditional expressions
     supportedGenericUDFs.add(GenericUDFIf.class);
@@ -364,7 +357,7 @@ public class Vectorizer implements PhysicalPlanResolver {
         Object... nodeOutputs) throws SemanticException {
       for (Node n : stack) {
         Operator<? extends OperatorDesc> op = (Operator<? extends OperatorDesc>) n;
-        if (op.getType().equals(OperatorType.REDUCESINK) &&
+        if ((op.getType().equals(OperatorType.REDUCESINK) || op.getType().equals(OperatorType.FILESINK)) &&
             op.getParentOperators().get(0).getType().equals(OperatorType.GROUPBY)) {
           return new Boolean(true);
         }
@@ -381,7 +374,9 @@ public class Vectorizer implements PhysicalPlanResolver {
   class VectorizationNodeProcessor implements NodeProcessor {
 
     private final MapWork mWork;
-    private final Map<String, VectorizationContext> vectorizationContexts =
+
+    // This is used to extract scratch column types for each file key
+    private final Map<String, VectorizationContext> scratchColumnContext =
         new HashMap<String, VectorizationContext>();
 
     private final Map<Operator<? extends OperatorDesc>, VectorizationContext> vContextsByTSOp =
@@ -397,8 +392,8 @@ public class Vectorizer implements PhysicalPlanResolver {
     public Map<String, Map<Integer, String>> getScratchColumnVectorTypes() {
       Map<String, Map<Integer, String>> scratchColumnVectorTypes =
           new HashMap<String, Map<Integer, String>>();
-      for (String onefile : vectorizationContexts.keySet()) {
-        VectorizationContext vc = vectorizationContexts.get(onefile);
+      for (String onefile : scratchColumnContext.keySet()) {
+        VectorizationContext vc = scratchColumnContext.get(onefile);
         Map<Integer, String> cmap = vc.getOutputColumnTypeMap();
         scratchColumnVectorTypes.put(onefile, cmap);
       }
@@ -408,8 +403,8 @@ public class Vectorizer implements PhysicalPlanResolver {
     public Map<String, Map<String, Integer>> getScratchColumnMap() {
       Map<String, Map<String, Integer>> scratchColumnMap =
           new HashMap<String, Map<String, Integer>>();
-      for(String oneFile: vectorizationContexts.keySet()) {
-        VectorizationContext vc = vectorizationContexts.get(oneFile);
+      for(String oneFile: scratchColumnContext.keySet()) {
+        VectorizationContext vc = scratchColumnContext.get(oneFile);
         Map<String, Integer> cmap = vc.getColumnMap();
         scratchColumnMap.put(oneFile, cmap);
       }
@@ -425,7 +420,7 @@ public class Vectorizer implements PhysicalPlanResolver {
       VectorizationContext vContext = null;
 
       if (op instanceof TableScanOperator) {
-        vContext = getVectorizationContext(op, physicalContext);
+        vContext = getVectorizationContext((TableScanOperator) op, physicalContext);
         for (String onefile : mWork.getPathToAliases().keySet()) {
           List<String> aliases = mWork.getPathToAliases().get(onefile);
           for (String alias : aliases) {
@@ -436,7 +431,7 @@ public class Vectorizer implements PhysicalPlanResolver {
               // Each partition gets a copy
               //
               vContext.setFileKey(onefile);
-              vectorizationContexts.put(onefile, vContext);
+              scratchColumnContext.put(onefile, vContext);
               break;
             }
           }
@@ -456,7 +451,7 @@ public class Vectorizer implements PhysicalPlanResolver {
 
       assert vContext != null;
 
-      if (op.getType().equals(OperatorType.REDUCESINK) &&
+      if ((op.getType().equals(OperatorType.REDUCESINK) || op.getType().equals(OperatorType.FILESINK)) &&
           op.getParentOperators().get(0).getType().equals(OperatorType.GROUPBY)) {
         // No need to vectorize
         if (!opsDone.contains(op)) {
@@ -475,7 +470,7 @@ public class Vectorizer implements PhysicalPlanResolver {
               VectorizationContextRegion vcRegion = (VectorizationContextRegion) vectorOp;
               VectorizationContext vOutContext = vcRegion.getOuputVectorizationContext();
               vContextsByTSOp.put(op, vOutContext);
-              vectorizationContexts.put(vOutContext.getFileKey(), vOutContext);
+              scratchColumnContext.put(vOutContext.getFileKey(), vOutContext);
             }
           }
         } catch (HiveException e) {
@@ -647,11 +642,21 @@ public class Vectorizer implements PhysicalPlanResolver {
   }
 
   private boolean validateExprNodeDescRecursive(ExprNodeDesc desc) {
+    if (desc instanceof ExprNodeColumnDesc) {
+      ExprNodeColumnDesc c = (ExprNodeColumnDesc) desc;
+      // Currently, we do not support vectorized virtual columns (see HIVE-5570).
+      for (VirtualColumn vc : VirtualColumn.VIRTUAL_COLUMNS) {
+        if (c.getColumn().equals(vc.getName())) {
+            LOG.info("Cannot vectorize virtual column " + c.getColumn());
+            return false;
+        }
+      }
+    }
     String typeName = desc.getTypeInfo().getTypeName();
     boolean ret = validateDataType(typeName);
     if (!ret) {
       if (LOG.isDebugEnabled()) {
-        LOG.debug("Cannot vectorize " + desc.getExprString() + " of type " + typeName);
+        LOG.debug("Cannot vectorize " + desc.toString() + " of type " + typeName);
       }
       return false;
     }
@@ -687,7 +692,7 @@ public class Vectorizer implements PhysicalPlanResolver {
         // TODO: this cannot happen - VectorizationContext throws in such cases.
         return false;
       }
-    } catch (HiveException e) {
+    } catch (Exception e) {
       if (LOG.isDebugEnabled()) {
         LOG.debug("Failed to vectorize", e);
       }
@@ -723,24 +728,21 @@ public class Vectorizer implements PhysicalPlanResolver {
     return supportedDataTypesPattern.matcher(type.toLowerCase()).matches();
   }
 
-  private VectorizationContext getVectorizationContext(Operator<? extends OperatorDesc> op,
+  private VectorizationContext getVectorizationContext(TableScanOperator op,
       PhysicalContext pctx) {
-    RowResolver rr = pctx.getParseContext().getOpParseCtx().get(op).getRowResolver();
+    RowSchema rs = op.getSchema();
 
     Map<String, Integer> cmap = new HashMap<String, Integer>();
     int columnCount = 0;
-    for (ColumnInfo c : rr.getColumnInfos()) {
-      if (!c.getIsVirtualCol()) {
+    for (ColumnInfo c : rs.getSignature()) {
+      // Earlier, validation code should have eliminated virtual columns usage (HIVE-5560).
+      if (!isVirtualColumn(c)) {
         cmap.put(c.getInternalName(), columnCount++);
       }
     }
-    Table tab = pctx.getParseContext().getTopToTable().get(op);
-    if (tab.getPartitionKeys() != null) {
-      for (FieldSchema fs : tab.getPartitionKeys()) {
-        cmap.put(fs.getName(), columnCount++);
-      }
-    }
-    return new VectorizationContext(cmap, columnCount);
+
+    VectorizationContext vc =  new VectorizationContext(cmap, columnCount);
+    return vc;
   }
 
   Operator<? extends OperatorDesc> vectorizeOperator(Operator<? extends OperatorDesc> op,
@@ -778,5 +780,17 @@ public class Vectorizer implements PhysicalPlanResolver {
       ((AbstractOperatorDesc) vectorOp.getConf()).setVectorMode(true);
     }
     return vectorOp;
+  }
+
+  private boolean isVirtualColumn(ColumnInfo column) {
+
+    // Not using method column.getIsVirtualCol() because partitioning columns are also
+    // treated as virtual columns in ColumnInfo.
+    for (VirtualColumn vc : VirtualColumn.VIRTUAL_COLUMNS) {
+      if (column.getInternalName().equals(vc.getName())) {
+        return true;
+      }
+    }
+    return false;
   }
 }

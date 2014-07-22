@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hive.service.AbstractService;
 import org.apache.hive.service.auth.HiveAuthFactory;
+import org.apache.hive.service.auth.TSetIpAddressProcessor;
 import org.apache.hive.service.cli.CLIService;
 import org.apache.hive.service.cli.FetchOrientation;
 import org.apache.hive.service.cli.GetInfoType;
@@ -41,6 +42,7 @@ import org.apache.hive.service.cli.OperationStatus;
 import org.apache.hive.service.cli.RowSet;
 import org.apache.hive.service.cli.SessionHandle;
 import org.apache.hive.service.cli.TableSchema;
+import org.apache.hive.service.cli.session.SessionManager;
 import org.apache.thrift.TException;
 import org.apache.thrift.server.TServer;
 
@@ -111,6 +113,75 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
     super.stop();
   }
 
+  @Override
+  public TGetDelegationTokenResp GetDelegationToken(TGetDelegationTokenReq req)
+      throws TException {
+    TGetDelegationTokenResp resp = new TGetDelegationTokenResp();
+
+    if (hiveAuthFactory == null) {
+      resp.setStatus(unsecureTokenErrorStatus());
+    } else {
+      try {
+        String token = cliService.getDelegationToken(
+            new SessionHandle(req.getSessionHandle()),
+            hiveAuthFactory, req.getOwner(), req.getRenewer());
+        resp.setDelegationToken(token);
+        resp.setStatus(OK_STATUS);
+      } catch (HiveSQLException e) {
+        LOG.error("Error obtaining delegation token", e);
+        TStatus tokenErrorStatus = HiveSQLException.toTStatus(e);
+        tokenErrorStatus.setSqlState("42000");
+        resp.setStatus(tokenErrorStatus);
+      }
+    }
+    return resp;
+  }
+
+  @Override
+  public TCancelDelegationTokenResp CancelDelegationToken(TCancelDelegationTokenReq req)
+      throws TException {
+    TCancelDelegationTokenResp resp = new TCancelDelegationTokenResp();
+
+    if (hiveAuthFactory == null) {
+      resp.setStatus(unsecureTokenErrorStatus());
+    } else {
+      try {
+        cliService.cancelDelegationToken(new SessionHandle(req.getSessionHandle()),
+            hiveAuthFactory, req.getDelegationToken());
+        resp.setStatus(OK_STATUS);
+      } catch (HiveSQLException e) {
+        LOG.error("Error canceling delegation token", e);
+        resp.setStatus(HiveSQLException.toTStatus(e));
+      }
+    }
+    return resp;
+  }
+
+  @Override
+  public TRenewDelegationTokenResp RenewDelegationToken(TRenewDelegationTokenReq req)
+      throws TException {
+    TRenewDelegationTokenResp resp = new TRenewDelegationTokenResp();
+    if (hiveAuthFactory == null) {
+      resp.setStatus(unsecureTokenErrorStatus());
+    } else {
+      try {
+        cliService.renewDelegationToken(new SessionHandle(req.getSessionHandle()),
+            hiveAuthFactory, req.getDelegationToken());
+        resp.setStatus(OK_STATUS);
+      } catch (HiveSQLException e) {
+        LOG.error("Error obtaining renewing token", e);
+        resp.setStatus(HiveSQLException.toTStatus(e));
+      }
+    }
+    return resp;
+  }
+
+  private TStatus unsecureTokenErrorStatus() {
+    TStatus errorStatus = new TStatus(TStatusCode.ERROR_STATUS);
+    errorStatus.setErrorMessage("Delegation token only supported over remote " +
+        "client with kerberos authentication");
+    return errorStatus;
+  }
 
   @Override
   public TOpenSessionResp OpenSession(TOpenSessionReq req) throws TException {
@@ -129,31 +200,68 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
     return resp;
   }
 
-  private String getUserName(TOpenSessionReq req) {
-    if (hiveAuthFactory != null
-        && hiveAuthFactory.getRemoteUser() != null) {
-      return hiveAuthFactory.getRemoteUser();
-    } else {
-      return req.getUsername();
+  private String getIpAddress() {
+    String clientIpAddress;
+    // Http transport mode.
+    // We set the thread local ip address, in ThriftHttpServlet.
+    if (cliService.getHiveConf().getVar(
+        ConfVars.HIVE_SERVER2_TRANSPORT_MODE).equalsIgnoreCase("http")) {
+      clientIpAddress = SessionManager.getIpAddress();
     }
+    else {
+      // Kerberos
+      if (isKerberosAuthMode()) {
+        clientIpAddress = hiveAuthFactory.getIpAddress();
+      }
+      // Except kerberos, NOSASL
+      else {
+        clientIpAddress = TSetIpAddressProcessor.getUserIpAddress();
+      }
+    }
+    LOG.debug("Client's IP Address: " + clientIpAddress);
+    return clientIpAddress;
   }
 
+  private String getUserName(TOpenSessionReq req) throws HiveSQLException {
+    String userName = null;
+    // Kerberos
+    if (isKerberosAuthMode()) {
+      userName = hiveAuthFactory.getRemoteUser();
+    }
+    // Except kerberos, NOSASL
+    if (userName == null) {
+      userName = TSetIpAddressProcessor.getUserName();
+    }
+    // Http transport mode.
+    // We set the thread local username, in ThriftHttpServlet.
+    if (cliService.getHiveConf().getVar(
+        ConfVars.HIVE_SERVER2_TRANSPORT_MODE).equalsIgnoreCase("http")) {
+      userName = SessionManager.getUserName();
+    }
+    if (userName == null) {
+      userName = req.getUsername();
+    }
+    return getProxyUser(userName, req.getConfiguration(), getIpAddress());
+  }
+
+  /**
+   * Create a session handle
+   * @param req
+   * @param res
+   * @return
+   * @throws HiveSQLException
+   * @throws LoginException
+   * @throws IOException
+   */
   SessionHandle getSessionHandle(TOpenSessionReq req, TOpenSessionResp res)
       throws HiveSQLException, LoginException, IOException {
-
     String userName = getUserName(req);
-    TProtocolVersion protocol = getMinVersion(CLIService.SERVER_VERSION, req.getClient_protocol());
-
+    TProtocolVersion protocol = getMinVersion(CLIService.SERVER_VERSION,
+        req.getClient_protocol());
     SessionHandle sessionHandle;
-    if (cliService.getHiveConf().getVar(ConfVars.HIVE_SERVER2_AUTHENTICATION)
-        .equals(HiveAuthFactory.AuthTypes.KERBEROS.toString()) &&
-        cliService.getHiveConf().getBoolVar(ConfVars.HIVE_SERVER2_ENABLE_DOAS)) {
-      String delegationTokenStr = null;
-      try {
-        delegationTokenStr = cliService.getDelegationTokenFromMetaStore(userName);
-      } catch (UnsupportedOperationException e) {
-        // The delegation token is not applicable in the given deployment mode
-      }
+    if (cliService.getHiveConf().getBoolVar(ConfVars.HIVE_SERVER2_ENABLE_DOAS) &&
+        (userName != null)) {
+      String delegationTokenStr = getDelegationToken(userName);
       sessionHandle = cliService.openSessionWithImpersonation(protocol, userName,
           req.getPassword(), req.getConfiguration(), delegationTokenStr);
     } else {
@@ -162,6 +270,21 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
     }
     res.setServerProtocolVersion(protocol);
     return sessionHandle;
+  }
+
+
+  private String getDelegationToken(String userName)
+      throws HiveSQLException, LoginException, IOException {
+    if (userName == null || !cliService.getHiveConf().getVar(ConfVars.HIVE_SERVER2_AUTHENTICATION)
+        .equals(HiveAuthFactory.AuthTypes.KERBEROS.toString())) {
+      return null;
+    }
+    try {
+      return cliService.getDelegationTokenFromMetaStore(userName);
+    } catch (UnsupportedOperationException e) {
+      // The delegation token is not applicable in the given deployment mode
+    }
+    return null;
   }
 
   private TProtocolVersion getMinVersion(TProtocolVersion... versions) {
@@ -420,4 +543,57 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
 
   @Override
   public abstract void run();
+
+  /**
+   * If the proxy user name is provided then check privileges to substitute the user.
+   * @param realUser
+   * @param sessionConf
+   * @param ipAddress
+   * @return
+   * @throws HiveSQLException
+   */
+  private String getProxyUser(String realUser, Map<String, String> sessionConf,
+      String ipAddress) throws HiveSQLException {
+    String proxyUser = null;
+    // Http transport mode.
+    // We set the thread local proxy username, in ThriftHttpServlet.
+    if (cliService.getHiveConf().getVar(
+        ConfVars.HIVE_SERVER2_TRANSPORT_MODE).equalsIgnoreCase("http")) {
+      proxyUser = SessionManager.getProxyUserName();
+      LOG.debug("Proxy user from query string: " + proxyUser);
+    }
+
+    if (proxyUser == null && sessionConf != null && sessionConf.containsKey(HiveAuthFactory.HS2_PROXY_USER)) {
+      String proxyUserFromThriftBody = sessionConf.get(HiveAuthFactory.HS2_PROXY_USER);
+      LOG.debug("Proxy user from thrift body: " + proxyUserFromThriftBody);
+      proxyUser = proxyUserFromThriftBody;
+    }
+
+    if (proxyUser == null) {
+      return realUser;
+    }
+
+    // check whether substitution is allowed
+    if (!hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ALLOW_USER_SUBSTITUTION)) {
+      throw new HiveSQLException("Proxy user substitution is not allowed");
+    }
+
+    // If there's no authentication, then directly substitute the user
+    if (HiveAuthFactory.AuthTypes.NONE.toString().
+        equalsIgnoreCase(hiveConf.getVar(ConfVars.HIVE_SERVER2_AUTHENTICATION))) {
+      return proxyUser;
+    }
+
+    // Verify proxy user privilege of the realUser for the proxyUser
+    HiveAuthFactory.verifyProxyAccess(realUser, proxyUser, ipAddress, hiveConf);
+    LOG.debug("Verified proxy user: " + proxyUser);
+    return proxyUser;
+  }
+
+  private boolean isKerberosAuthMode() {
+    return cliService.getHiveConf().getVar(ConfVars.HIVE_SERVER2_AUTHENTICATION)
+        .equals(HiveAuthFactory.AuthTypes.KERBEROS.toString());
+  }
+
 }
+

@@ -27,6 +27,7 @@ import java.util.Properties;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.ByteStream;
@@ -46,7 +47,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
-import org.apache.hadoop.io.BytesWritable;
+import org.apache.hadoop.io.BinaryComparable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 
@@ -129,6 +130,8 @@ public class LazySimpleSerDe extends AbstractSerDe {
     byte escapeChar;
     boolean[] needsEscape;
 
+    boolean extendedBooleanLiteral;
+
     public List<TypeInfo> getColumnTypes() {
       return columnTypes;
     }
@@ -192,7 +195,7 @@ public class LazySimpleSerDe extends AbstractSerDe {
         .getColumnNames(), serdeParams.getColumnTypes(), serdeParams
         .getSeparators(), serdeParams.getNullSequence(), serdeParams
         .isLastColumnTakesRest(), serdeParams.isEscaped(), serdeParams
-        .getEscapeChar());
+        .getEscapeChar(), serdeParams.extendedBooleanLiteral);
 
     cachedLazyStruct = (LazyStruct) LazyFactory
         .createLazyObject(cachedObjectInspector);
@@ -207,7 +210,6 @@ public class LazySimpleSerDe extends AbstractSerDe {
     stats = new SerDeStats();
     lastOperationSerialize = false;
     lastOperationDeserialize = false;
-
   }
 
   public static SerDeParameters initSerdeParams(Configuration job,
@@ -308,6 +310,8 @@ public class LazySimpleSerDe extends AbstractSerDe {
       }
     }
 
+    serdeParams.extendedBooleanLiteral = job == null ? false :
+        job.getBoolean(ConfVars.HIVE_LAZYSIMPLE_EXTENDED_BOOLEAN_LITERAL.varname, false);
     return serdeParams;
   }
 
@@ -330,19 +334,9 @@ public class LazySimpleSerDe extends AbstractSerDe {
     if (byteArrayRef == null) {
       byteArrayRef = new ByteArrayRef();
     }
-    if (field instanceof BytesWritable) {
-      BytesWritable b = (BytesWritable) field;
-      // For backward-compatibility with hadoop 0.17
-      byteArrayRef.setData(b.getBytes());
-      cachedLazyStruct.init(byteArrayRef, 0, b.getLength());
-    } else if (field instanceof Text) {
-      Text t = (Text) field;
-      byteArrayRef.setData(t.getBytes());
-      cachedLazyStruct.init(byteArrayRef, 0, t.getLength());
-    } else {
-      throw new SerDeException(getClass().toString()
-          + ": expects either BytesWritable or Text object!");
-    }
+    BinaryComparable b = (BinaryComparable) field;
+    byteArrayRef.setData(b.getBytes());
+    cachedLazyStruct.init(byteArrayRef, 0, b.getLength());
     lastOperationSerialize = false;
     lastOperationDeserialize = true;
     return cachedLazyStruct;
@@ -426,8 +420,8 @@ public class LazySimpleSerDe extends AbstractSerDe {
     // TODO: The copy of data is unnecessary, but there is no work-around
     // since we cannot directly set the private byte[] field inside Text.
     serializeCache
-        .set(serializeStream.getData(), 0, serializeStream.getCount());
-    serializedSize = serializeStream.getCount();
+        .set(serializeStream.getData(), 0, serializeStream.getLength());
+    serializedSize = serializeStream.getLength();
     lastOperationSerialize = true;
     lastOperationDeserialize = false;
     return serializeCache;

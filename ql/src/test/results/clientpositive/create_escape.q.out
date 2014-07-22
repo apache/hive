@@ -11,16 +11,20 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table1
 PREHOOK: query: DESCRIBE table1
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@table1
 POSTHOOK: query: DESCRIBE table1
 POSTHOOK: type: DESCTABLE
-a                   	string              	None                
-b                   	string              	None                
+POSTHOOK: Input: default@table1
+a                   	string              	                    
+b                   	string              	                    
 PREHOOK: query: DESCRIBE EXTENDED table1
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@table1
 POSTHOOK: query: DESCRIBE EXTENDED table1
 POSTHOOK: type: DESCTABLE
-a                   	string              	None                
-b                   	string              	None                
+POSTHOOK: Input: default@table1
+a                   	string              	                    
+b                   	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: INSERT OVERWRITE TABLE table1 SELECT key, '\\\t\\' FROM src WHERE key = 86
@@ -41,6 +45,4 @@ POSTHOOK: query: SELECT * FROM table1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: table1.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: table1.b SIMPLE []
 86	\	\

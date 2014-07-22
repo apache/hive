@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.optimizer.lineage;
 
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
+import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 
 /**
@@ -68,5 +69,9 @@ public class ExprProcCtx implements NodeProcessorCtx {
    */
   public Operator<? extends OperatorDesc> getInputOperator() {
     return inpOp;
+  }
+
+  public RowResolver getResolver() {
+    return lctx.getParseCtx().getOpParseCtx().get(inpOp).getRowResolver();
   }
 }

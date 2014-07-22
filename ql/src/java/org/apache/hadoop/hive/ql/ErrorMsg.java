@@ -18,17 +18,17 @@
 
 package org.apache.hadoop.hive.ql;
 
-import java.text.MessageFormat;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import org.antlr.runtime.tree.Tree;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.ASTNodeOrigin;
+
+import java.text.MessageFormat;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * List of all error messages.
@@ -75,7 +75,6 @@ public enum ErrorMsg {
   INVALID_JOIN_CONDITION_2(10018, "Neither left nor right aliases encountered in JOIN"),
   INVALID_JOIN_CONDITION_3(10019, "OR not supported in JOIN currently"),
   INVALID_TRANSFORM(10020, "TRANSFORM with other SELECT columns not supported"),
-  DUPLICATE_GROUPBY_KEY(10021, "Repeated key in GROUP BY"),
   UNSUPPORTED_MULTIPLE_DISTINCTS(10022, "DISTINCT on different columns not supported" +
       " with skew in data"),
   NO_SUBQUERY_ALIAS(10023, "No alias for subquery"),
@@ -371,11 +370,35 @@ public enum ErrorMsg {
   INVALID_HDFS_URI(10251, "{0} is not a hdfs uri", true),
   INVALID_DIR(10252, "{0} is not a directory", true),
   NO_VALID_LOCATIONS(10253, "Could not find any valid location to place the jars. " +
-  "Please update hive.jar.directory or hive.user.install.directory with a valid location", false),
+      "Please update hive.jar.directory or hive.user.install.directory with a valid location", false),
   UNNSUPPORTED_AUTHORIZATION_PRINCIPAL_TYPE_GROUP(10254,
       "Principal type GROUP is not supported in this authorization setting", "28000"),
   INVALID_TABLE_NAME(10255, "Invalid table name {0}", true),
   INSERT_INTO_IMMUTABLE_TABLE(10256, "Inserting into a non-empty immutable table is not allowed"),
+
+  TXNMGR_NOT_SPECIFIED(10260, "Transaction manager not specified correctly, " +
+      "set hive.txn.manager"),
+  TXNMGR_NOT_INSTANTIATED(10261, "Transaction manager could not be " +
+      "instantiated, check hive.txn.manager"),
+  TXN_NO_SUCH_TRANSACTION(10262, "No record of transaction could be found, " +
+      "may have timed out"),
+  TXN_ABORTED(10263, "Transaction manager has aborted the transaction."),
+
+  LOCK_NO_SUCH_LOCK(10270, "No record of lock could be found, " +
+      "may have timed out"),
+  LOCK_REQUEST_UNSUPPORTED(10271, "Current transaction manager does not " +
+      "support explicit lock requests.  Transaction manager:  "),
+
+  METASTORE_COMMUNICATION_FAILED(10280, "Error communicating with the " +
+      "metastore"),
+  METASTORE_COULD_NOT_INITIATE(10281, "Unable to initiate connection to the " +
+      "metastore."),
+  INVALID_COMPACTION_TYPE(10282, "Invalid compaction type, supported values are 'major' and " +
+      "'minor'"),
+  NO_COMPACTION_PARTITION(10283, "You must specify a partition to compact for partitioned tables"),
+  TOO_MANY_COMPACTION_PARTITIONS(10284, "Compaction can only be requested on one partition at a " +
+      "time."),
+  DISTINCT_NOT_SUPPORTED(10285, "Distinct keyword is not support in current context"),
 
   //========================== 20000 range starts here ========================//
   SCRIPT_INIT_ERROR(20000, "Unable to initialize custom script."),
@@ -388,6 +411,8 @@ public enum ErrorMsg {
   DYNAMIC_PARTITIONS_TOO_MANY_PER_NODE_ERROR(20004, "Fatal error occurred when node " +
       "tried to create too many dynamic partitions. The maximum number of dynamic partitions " +
       "is controlled by hive.exec.max.dynamic.partitions and hive.exec.max.dynamic.partitions.pernode. "),
+  PARTITION_SCAN_LIMIT_EXCEEDED(20005, "Number of partitions scanned (={0}) on table {1} exceeds limit" +
+      " (={2}). This is controlled by hive.limit.query.max.table.partition.", true),
 
   //========================== 30000 range starts here ========================//
   STATSPUBLISHER_NOT_OBTAINED(30000, "StatsPublisher cannot be obtained. " +
@@ -413,12 +438,8 @@ public enum ErrorMsg {
 
   COLUMNSTATSCOLLECTOR_INVALID_PART_KEY(30005, "Invalid partitioning key specified in ANALYZE " +
     "statement"),
-  COLUMNSTATSCOLLECTOR_INCORRECT_NUM_PART_KEY(30006, "Incorrect number of partitioning key " +
-    "specified in ANALYZE statement"),
   COLUMNSTATSCOLLECTOR_INVALID_PARTITION(30007, "Invalid partitioning key/value specified in " +
     "ANALYZE statement"),
-  COLUMNSTATSCOLLECTOR_INVALID_SYNTAX(30008, "Dynamic partitioning is not supported yet while " +
-    "gathering column statistics through ANALYZE statement"),
   COLUMNSTATSCOLLECTOR_PARSE_ERROR(30009, "Encountered parse error while parsing rewritten query"),
   COLUMNSTATSCOLLECTOR_IO_ERROR(30010, "Encountered I/O exception while parsing rewritten query"),
   DROP_COMMAND_NOT_ALLOWED_FOR_PARTITION(30011, "Partition protected from being dropped"),

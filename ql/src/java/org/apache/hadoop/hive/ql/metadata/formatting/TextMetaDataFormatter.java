@@ -35,6 +35,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -57,9 +58,11 @@ class TextMetaDataFormatter implements MetaDataFormatter {
    * If -1, then the current terminal width is auto-detected and used.
    */
   private final int prettyOutputNumCols;
+  private final boolean showPartColsSeparately;
 
-  public TextMetaDataFormatter(int prettyOutputNumCols) {
+  public TextMetaDataFormatter(int prettyOutputNumCols, boolean partColsSeparately) {
     this.prettyOutputNumCols = prettyOutputNumCols;
+    this.showPartColsSeparately = partColsSeparately;
   }
 
   /**
@@ -114,7 +117,7 @@ class TextMetaDataFormatter implements MetaDataFormatter {
   public void describeTable(DataOutputStream outStream,  String colPath,
       String tableName, Table tbl, Partition part, List<FieldSchema> cols,
       boolean isFormatted, boolean isExt, boolean isPretty,
-      boolean isOutputPadded) throws HiveException {
+      boolean isOutputPadded, List<ColumnStatisticsObj> colStats) throws HiveException {
     try {
       String output;
       if (colPath.equals(tableName)) {
@@ -123,9 +126,9 @@ class TextMetaDataFormatter implements MetaDataFormatter {
             MetaDataPrettyFormatUtils.getAllColumnsInformation(
                 cols, partCols, prettyOutputNumCols)
                 :
-                  MetaDataFormatUtils.getAllColumnsInformation(cols, partCols, isFormatted, isOutputPadded);
+                  MetaDataFormatUtils.getAllColumnsInformation(cols, partCols, isFormatted, isOutputPadded, showPartColsSeparately);
       } else {
-        output = MetaDataFormatUtils.getAllColumnsInformation(cols, isFormatted, isOutputPadded);
+        output = MetaDataFormatUtils.getAllColumnsInformation(cols, isFormatted, isOutputPadded, colStats);
       }
       outStream.write(output.getBytes("UTF-8"));
 

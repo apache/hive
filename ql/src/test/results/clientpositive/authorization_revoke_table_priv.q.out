@@ -22,6 +22,11 @@ PREHOOK: type: SHOW_GRANT
 POSTHOOK: query: SHOW GRANT USER user2 ON TABLE table_priv_rev
 POSTHOOK: type: SHOW_GRANT
 default	table_priv_rev			user2	USER	INSERT	false	-1	user1
+PREHOOK: query: SHOW GRANT USER user2 ON ALL
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: SHOW GRANT USER user2 ON ALL
+POSTHOOK: type: SHOW_GRANT
+default	table_priv_rev			user2	USER	INSERT	false	-1	user1
 PREHOOK: query: -- revoke insert privilege from user2
 REVOKE INSERT ON TABLE table_priv_rev FROM USER user2
 PREHOOK: type: REVOKE_PRIVILEGE
@@ -47,6 +52,11 @@ POSTHOOK: Output: default@table_priv_rev
 PREHOOK: query: SHOW GRANT USER user2 ON TABLE table_priv_rev
 PREHOOK: type: SHOW_GRANT
 POSTHOOK: query: SHOW GRANT USER user2 ON TABLE table_priv_rev
+POSTHOOK: type: SHOW_GRANT
+default	table_priv_rev			user2	USER	INSERT	false	-1	user1
+PREHOOK: query: SHOW GRANT USER user2 ON ALL
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: SHOW GRANT USER user2 ON ALL
 POSTHOOK: type: SHOW_GRANT
 default	table_priv_rev			user2	USER	INSERT	false	-1	user1
 PREHOOK: query: -- grant select privilege to user2, with grant option
@@ -111,6 +121,13 @@ POSTHOOK: type: SHOW_GRANT
 default	table_priv_rev			user2	USER	DELETE	false	-1	user1
 default	table_priv_rev			user2	USER	INSERT	false	-1	user1
 default	table_priv_rev			user2	USER	SELECT	true	-1	user1
+PREHOOK: query: SHOW GRANT USER user2 ON ALL
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: SHOW GRANT USER user2 ON ALL
+POSTHOOK: type: SHOW_GRANT
+default	table_priv_rev			user2	USER	DELETE	false	-1	user1
+default	table_priv_rev			user2	USER	INSERT	false	-1	user1
+default	table_priv_rev			user2	USER	SELECT	true	-1	user1
 PREHOOK: query: -- revoke DELETE privilege from user2
 REVOKE DELETE ON TABLE table_priv_rev FROM USER user2
 PREHOOK: type: REVOKE_PRIVILEGE
@@ -138,6 +155,19 @@ PREHOOK: type: SHOW_GRANT
 POSTHOOK: query: SHOW GRANT USER user2 ON TABLE table_priv_rev
 POSTHOOK: type: SHOW_GRANT
 default	table_priv_rev			user2	USER	SELECT	true	-1	user1
+PREHOOK: query: -- revoke grant option for select privilege from user2
+REVOKE GRANT OPTION FOR SELECT ON TABLE table_priv_rev FROM USER user2
+PREHOOK: type: REVOKE_PRIVILEGE
+PREHOOK: Output: default@table_priv_rev
+POSTHOOK: query: -- revoke grant option for select privilege from user2
+REVOKE GRANT OPTION FOR SELECT ON TABLE table_priv_rev FROM USER user2
+POSTHOOK: type: REVOKE_PRIVILEGE
+POSTHOOK: Output: default@table_priv_rev
+PREHOOK: query: SHOW GRANT USER user2 ON TABLE table_priv_rev
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: SHOW GRANT USER user2 ON TABLE table_priv_rev
+POSTHOOK: type: SHOW_GRANT
+default	table_priv_rev			user2	USER	SELECT	false	-1	user1
 PREHOOK: query: -- revoke select privilege from user2
 REVOKE SELECT ON TABLE table_priv_rev FROM USER user2
 PREHOOK: type: REVOKE_PRIVILEGE
@@ -149,6 +179,10 @@ POSTHOOK: Output: default@table_priv_rev
 PREHOOK: query: SHOW GRANT USER user2 ON TABLE table_priv_rev
 PREHOOK: type: SHOW_GRANT
 POSTHOOK: query: SHOW GRANT USER user2 ON TABLE table_priv_rev
+POSTHOOK: type: SHOW_GRANT
+PREHOOK: query: SHOW GRANT USER user2 ON ALL
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: SHOW GRANT USER user2 ON ALL
 POSTHOOK: type: SHOW_GRANT
 PREHOOK: query: -- grant all followed by revoke all
 GRANT ALL ON table_priv_rev TO USER user2

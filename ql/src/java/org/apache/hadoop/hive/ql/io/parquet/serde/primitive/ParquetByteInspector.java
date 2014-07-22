@@ -35,6 +35,11 @@ public class ParquetByteInspector extends AbstractPrimitiveJavaObjectInspector i
   }
 
   @Override
+  public Object getPrimitiveJavaObject(final Object o) {
+    return o == null ? null : get(o);
+  }
+
+  @Override
   public Object create(final byte val) {
     return new ByteWritable(val);
   }
@@ -51,6 +56,7 @@ public class ParquetByteInspector extends AbstractPrimitiveJavaObjectInspector i
     if (o instanceof IntWritable) {
       return (byte) ((IntWritable) o).get();
     }
+
     return ((ByteWritable) o).get();
   }
 }

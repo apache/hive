@@ -44,7 +44,6 @@ import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.GenMapRedUtils;
 import org.apache.hadoop.hive.ql.plan.ColumnStatsDesc;
 import org.apache.hadoop.hive.ql.plan.ColumnStatsWork;
@@ -132,6 +131,13 @@ public abstract class TaskCompiler {
         LOG.info("For FetchTask, LIMIT " + globalLimitCtx.getGlobalLimit() + " > " + fetchLimit
             + ". Doesn't qualify limit optimiztion.");
         globalLimitCtx.disableOpt();
+
+      }
+      if (qb.getParseInfo().getOuterQueryLimit() == 0) {
+        // Believe it or not, some tools do generate queries with limit 0 and than expect
+        // query to run quickly. Lets meet their requirement.
+        LOG.info("Limit 0. No query execution needed.");
+        return;
       }
     } else if (!isCStats) {
       for (LoadTableDesc ltd : loadTableWork) {
@@ -163,17 +169,15 @@ public abstract class TaskCompiler {
           String loc = qb.getTableDesc().getLocation();
           if (loc == null) {
             // get the table's default location
-            Table dumpTable;
             Path targetPath;
             try {
-              dumpTable = db.newTable(qb.getTableDesc().getTableName());
-              if (!db.databaseExists(dumpTable.getDbName())) {
-                throw new SemanticException("ERROR: The database " + dumpTable.getDbName()
+              String[] names = Utilities.getDbTableName(qb.getTableDesc().getTableName());
+              if (!db.databaseExists(names[0])) {
+                throw new SemanticException("ERROR: The database " + names[0]
                     + " does not exist.");
               }
               Warehouse wh = new Warehouse(conf);
-              targetPath = wh.getTablePath(db.getDatabase(dumpTable.getDbName()), dumpTable
-                  .getTableName());
+              targetPath = wh.getTablePath(db.getDatabase(names[0]), names[1]);
             } catch (HiveException e) {
               throw new SemanticException(e);
             } catch (MetaException e) {
@@ -221,7 +225,7 @@ public abstract class TaskCompiler {
       // generate a DDL task and make it a dependent task of the leaf
       CreateTableDesc crtTblDesc = qb.getTableDesc();
 
-      crtTblDesc.validate();
+      crtTblDesc.validate(conf);
 
       // Clear the output for CTAS since we don't need the output from the
       // mapredWork, the
@@ -286,7 +290,6 @@ public abstract class TaskCompiler {
     ColumnStatsWork cStatsWork = null;
     FetchWork fetch = null;
     String tableName = qbParseInfo.getTableName();
-    String partName = qbParseInfo.getPartName();
     List<String> colName = qbParseInfo.getColName();
     List<String> colType = qbParseInfo.getColType();
     boolean isTblLevel = qbParseInfo.isTblLvl();
@@ -300,7 +303,7 @@ public abstract class TaskCompiler {
     fetch = new FetchWork(loadFileWork.get(0).getSourcePath(),
         resultTab, qb.getParseInfo().getOuterQueryLimit());
 
-    ColumnStatsDesc cStatsDesc = new ColumnStatsDesc(tableName, partName,
+    ColumnStatsDesc cStatsDesc = new ColumnStatsDesc(tableName,
         colName, colType, isTblLevel);
     cStatsWork = new ColumnStatsWork(fetch, cStatsDesc);
     cStatsTask = (ColumnStatsTask) TaskFactory.get(cStatsWork, conf);
@@ -339,7 +342,7 @@ public abstract class TaskCompiler {
   /*
    * Called at the beginning of the compile phase to have another chance to optimize the operator plan
    */
-  protected void optimizeOperatorPlan(ParseContext pCtxSet, Set<ReadEntity> inputs, 
+  protected void optimizeOperatorPlan(ParseContext pCtxSet, Set<ReadEntity> inputs,
       Set<WriteEntity> outputs) throws SemanticException {
   }
 
@@ -364,7 +367,8 @@ public abstract class TaskCompiler {
    * Create a clone of the parse context
    */
   public ParseContext getParseContext(ParseContext pCtx, List<Task<? extends Serializable>> rootTasks) {
-    return new ParseContext(conf, pCtx.getQB(), pCtx.getParseTree(),
+    ParseContext clone = new ParseContext(conf,
+        pCtx.getQB(), pCtx.getParseTree(),
         pCtx.getOpToPartPruner(), pCtx.getOpToPartList(), pCtx.getTopOps(),
         pCtx.getTopSelOps(), pCtx.getOpParseCtx(), pCtx.getJoinContext(),
         pCtx.getSmbMapJoinContext(), pCtx.getTopToTable(), pCtx.getTopToProps(),
@@ -377,5 +381,9 @@ public abstract class TaskCompiler {
         pCtx.getOpToPartToSkewedPruner(), pCtx.getViewAliasToInput(),
         pCtx.getReduceSinkOperatorsAddedByEnforceBucketingSorting(),
         pCtx.getQueryProperties());
+    clone.setFetchTask(pCtx.getFetchTask());
+    clone.setLineageInfo(pCtx.getLineageInfo());
+    clone.setMapJoinContext(pCtx.getMapJoinContext());
+    return clone;
   }
 }

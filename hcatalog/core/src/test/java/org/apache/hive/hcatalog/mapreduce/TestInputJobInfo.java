@@ -37,12 +37,4 @@ public class TestInputJobInfo extends HCatBaseTest {
     Assert.assertEquals("value", jobInfo.getProperties().getProperty("key"));
   }
 
-  @Test
-  public void test3ArgCreate() throws Exception {
-    InputJobInfo jobInfo = InputJobInfo.create("Db", "Table", "Filter");
-    Assert.assertEquals("Db", jobInfo.getDatabaseName());
-    Assert.assertEquals("Table", jobInfo.getTableName());
-    Assert.assertEquals("Filter", jobInfo.getFilter());
-    Assert.assertEquals(0, jobInfo.getProperties().size());
-  }
 }

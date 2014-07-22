@@ -18,10 +18,8 @@
 
 package org.apache.hadoop.hive.ql.exec.persistence;
 
-
 import java.io.DataInput;
 import java.io.DataOutput;
-import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.util.AbstractCollection;
 import java.util.AbstractList;
@@ -31,8 +29,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.NoSuchElementException;
-
-import javax.naming.OperationNotSupportedException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -115,7 +111,7 @@ public class LazyFlatRowContainer extends AbstractCollection<Object>
   // Implementation of AbstractRowContainer and assorted methods
 
   @Override
-  public void add(List<Object> t) throws HiveException {
+  public void addRow(List<Object> t) throws HiveException {
     LOG.debug("Add is called with " + t.size() + " objects");
     // This is not called when building HashTable; we don't expect it to be called ever.
     int offset = prepareForAdd(t.size());
@@ -126,7 +122,7 @@ public class LazyFlatRowContainer extends AbstractCollection<Object>
   }
 
   @Override
-  public void add(Object[] value) throws HiveException {
+  public void addRow(Object[] value) throws HiveException {
     LOG.debug("Add is called with " + value.length + " objects");
     // This is not called when building HashTable; we don't expect it to be called ever.
     int offset = prepareForAdd(value.length);

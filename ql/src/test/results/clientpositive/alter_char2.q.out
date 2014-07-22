@@ -36,7 +36,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alter_char2
 POSTHOOK: Input: default@alter_char2@hr=1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: alter_char2 PARTITION(hr=1).c1 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 val_238                                                                                                                                                                                                                                                        	7
 PREHOOK: query: alter table alter_char2 change column c1 c1 char(10)
 PREHOOK: type: ALTERTABLE_RENAMECOL
@@ -46,7 +45,6 @@ POSTHOOK: query: alter table alter_char2 change column c1 c1 char(10)
 POSTHOOK: type: ALTERTABLE_RENAMECOL
 POSTHOOK: Input: default@alter_char2
 POSTHOOK: Output: default@alter_char2
-POSTHOOK: Lineage: alter_char2 PARTITION(hr=1).c1 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: select hr, c1, length(c1) from alter_char2 where hr = 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alter_char2
@@ -57,7 +55,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alter_char2
 POSTHOOK: Input: default@alter_char2@hr=1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: alter_char2 PARTITION(hr=1).c1 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 1	val_238   	7
 PREHOOK: query: insert overwrite table alter_char2 partition (hr=2)
   select key from src limit 1
@@ -69,7 +66,6 @@ POSTHOOK: query: insert overwrite table alter_char2 partition (hr=2)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@alter_char2@hr=2
-POSTHOOK: Lineage: alter_char2 PARTITION(hr=1).c1 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: alter_char2 PARTITION(hr=2).c1 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: select hr, c1, length(c1) from alter_char2 where hr = 1
 PREHOOK: type: QUERY
@@ -81,8 +77,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alter_char2
 POSTHOOK: Input: default@alter_char2@hr=1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: alter_char2 PARTITION(hr=1).c1 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: alter_char2 PARTITION(hr=2).c1 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 1	val_238   	7
 PREHOOK: query: select hr, c1, length(c1) from alter_char2 where hr = 2
 PREHOOK: type: QUERY
@@ -94,6 +88,4 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alter_char2
 POSTHOOK: Input: default@alter_char2@hr=2
 #### A masked pattern was here ####
-POSTHOOK: Lineage: alter_char2 PARTITION(hr=1).c1 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: alter_char2 PARTITION(hr=2).c1 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 2	238       	3

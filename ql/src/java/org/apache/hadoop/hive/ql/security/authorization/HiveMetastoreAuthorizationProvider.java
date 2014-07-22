@@ -19,6 +19,8 @@
 package org.apache.hadoop.hive.ql.security.authorization;
 
 import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler;
+import org.apache.hadoop.hive.ql.metadata.AuthorizationException;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 /**
  * HiveMetastoreAuthorizationProvider : An extension of HiveAuthorizaytionProvider
@@ -36,5 +38,11 @@ public interface HiveMetastoreAuthorizationProvider extends HiveAuthorizationPro
    * @param handler
    */
   void setMetaStoreHandler(HMSHandler handler);
+
+  /**
+   * Authorize metastore authorization api call.
+   */
+  void authorizeAuthorizationApiInvocation() throws HiveException, AuthorizationException;
+
 
 }

@@ -35,7 +35,7 @@ STAGE PLANS:
                 Reduce Output Operator
                   sort order: 
                   Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
-                  value expressions: _col0 (type: bigint), _col1 (type: bigint), _col2 (type: struct<count:bigint,sum:double>), _col3 (type: int), _col4 (type: int)
+                  value expressions: _col0 (type: bigint), _col1 (type: bigint), _col2 (type: struct<count:bigint,sum:double,input:int>), _col3 (type: int), _col4 (type: int)
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0), sum(VALUE._col1), avg(VALUE._col2), min(VALUE._col3), max(VALUE._col4)
@@ -91,9 +91,4 @@ POSTHOOK: query: SELECT dest1.* FROM dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: dest1.c1 EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: dest1.c2 EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: dest1.c3 EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: dest1.c4 EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: dest1.c5 EXPRESSION [(src)src.null, ]
 0	NULL	NULL	NULL	NULL

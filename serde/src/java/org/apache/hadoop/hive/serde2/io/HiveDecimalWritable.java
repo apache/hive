@@ -24,8 +24,10 @@ import java.math.BigInteger;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.common.type.Decimal128;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.serde2.ByteStream.Output;
+import org.apache.hadoop.hive.serde2.ByteStream.RandomAccessOutput;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinaryUtils;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinaryUtils.VInt;
 import org.apache.hadoop.hive.serde2.typeinfo.HiveDecimalUtils;
@@ -119,7 +121,15 @@ public class HiveDecimalWritable implements WritableComparable<HiveDecimalWritab
     return getHiveDecimal().compareTo(that.getHiveDecimal());
   }
 
-  public void writeToByteStream(Output byteStream) {
+  public static void writeToByteStream(Decimal128 dec, Output byteStream) {
+    HiveDecimal hd = HiveDecimal.create(dec.toBigDecimal());
+    LazyBinaryUtils.writeVInt(byteStream, hd.scale());
+    byte[] bytes = hd.unscaledValue().toByteArray();
+    LazyBinaryUtils.writeVInt(byteStream, bytes.length);
+    byteStream.write(bytes, 0, bytes.length);
+  }
+
+  public void writeToByteStream(RandomAccessOutput byteStream) {
     LazyBinaryUtils.writeVInt(byteStream, scale);
     LazyBinaryUtils.writeVInt(byteStream, internalStorage.length);
     byteStream.write(internalStorage, 0, internalStorage.length);

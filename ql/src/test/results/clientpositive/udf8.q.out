@@ -23,18 +23,15 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dest1
 POSTHOOK: Lineage: dest1.c1 SIMPLE []
-POSTHOOK: Lineage: dest1.c1 SIMPLE []
 PREHOOK: query: EXPLAIN
 SELECT avg(c1), sum(c1), count(c1) FROM dest1
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT avg(c1), sum(c1), count(c1) FROM dest1
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: dest1.c1 SIMPLE []
-POSTHOOK: Lineage: dest1.c1 SIMPLE []
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -55,7 +52,7 @@ STAGE PLANS:
                 Reduce Output Operator
                   sort order: 
                   Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col0 (type: struct<count:bigint,sum:double>), _col1 (type: double), _col2 (type: bigint)
+                  value expressions: _col0 (type: struct<count:bigint,sum:double,input:string>), _col1 (type: double), _col2 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
           aggregations: avg(VALUE._col0), sum(VALUE._col1), count(VALUE._col2)
@@ -77,6 +74,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT avg(c1), sum(c1), count(c1) FROM dest1
 PREHOOK: type: QUERY
@@ -86,6 +85,4 @@ POSTHOOK: query: SELECT avg(c1), sum(c1), count(c1) FROM dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: dest1.c1 SIMPLE []
-POSTHOOK: Lineage: dest1.c1 SIMPLE []
 1.0	1.0	1

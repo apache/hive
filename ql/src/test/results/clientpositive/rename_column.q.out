@@ -7,11 +7,13 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@kv_rename_test
 PREHOOK: query: DESCRIBE kv_rename_test
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@kv_rename_test
 POSTHOOK: query: DESCRIBE kv_rename_test
 POSTHOOK: type: DESCTABLE
-a                   	int                 	None                
-b                   	int                 	None                
-c                   	int                 	None                
+POSTHOOK: Input: default@kv_rename_test
+a                   	int                 	                    
+b                   	int                 	                    
+c                   	int                 	                    
 PREHOOK: query: ALTER TABLE kv_rename_test CHANGE a a STRING
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: default@kv_rename_test
@@ -22,11 +24,13 @@ POSTHOOK: Input: default@kv_rename_test
 POSTHOOK: Output: default@kv_rename_test
 PREHOOK: query: DESCRIBE kv_rename_test
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@kv_rename_test
 POSTHOOK: query: DESCRIBE kv_rename_test
 POSTHOOK: type: DESCTABLE
-a                   	string              	None                
-b                   	int                 	None                
-c                   	int                 	None                
+POSTHOOK: Input: default@kv_rename_test
+a                   	string              	                    
+b                   	int                 	                    
+c                   	int                 	                    
 PREHOOK: query: ALTER TABLE kv_rename_test CHANGE a a1 INT
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: default@kv_rename_test
@@ -37,11 +41,13 @@ POSTHOOK: Input: default@kv_rename_test
 POSTHOOK: Output: default@kv_rename_test
 PREHOOK: query: DESCRIBE kv_rename_test
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@kv_rename_test
 POSTHOOK: query: DESCRIBE kv_rename_test
 POSTHOOK: type: DESCTABLE
-a1                  	int                 	None                
-b                   	int                 	None                
-c                   	int                 	None                
+POSTHOOK: Input: default@kv_rename_test
+a1                  	int                 	                    
+b                   	int                 	                    
+c                   	int                 	                    
 PREHOOK: query: ALTER TABLE kv_rename_test CHANGE a1 a2 INT FIRST
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: default@kv_rename_test
@@ -52,11 +58,13 @@ POSTHOOK: Input: default@kv_rename_test
 POSTHOOK: Output: default@kv_rename_test
 PREHOOK: query: DESCRIBE kv_rename_test
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@kv_rename_test
 POSTHOOK: query: DESCRIBE kv_rename_test
 POSTHOOK: type: DESCTABLE
-a2                  	int                 	None                
-b                   	int                 	None                
-c                   	int                 	None                
+POSTHOOK: Input: default@kv_rename_test
+a2                  	int                 	                    
+b                   	int                 	                    
+c                   	int                 	                    
 PREHOOK: query: ALTER TABLE kv_rename_test CHANGE a2 a INT AFTER b
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: default@kv_rename_test
@@ -67,11 +75,13 @@ POSTHOOK: Input: default@kv_rename_test
 POSTHOOK: Output: default@kv_rename_test
 PREHOOK: query: DESCRIBE kv_rename_test
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@kv_rename_test
 POSTHOOK: query: DESCRIBE kv_rename_test
 POSTHOOK: type: DESCTABLE
-b                   	int                 	None                
-a                   	int                 	None                
-c                   	int                 	None                
+POSTHOOK: Input: default@kv_rename_test
+b                   	int                 	                    
+a                   	int                 	                    
+c                   	int                 	                    
 PREHOOK: query: ALTER TABLE kv_rename_test CHANGE a a1 INT COMMENT 'test comment1'
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: default@kv_rename_test
@@ -82,11 +92,13 @@ POSTHOOK: Input: default@kv_rename_test
 POSTHOOK: Output: default@kv_rename_test
 PREHOOK: query: DESCRIBE kv_rename_test
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@kv_rename_test
 POSTHOOK: query: DESCRIBE kv_rename_test
 POSTHOOK: type: DESCTABLE
-b                   	int                 	None                
+POSTHOOK: Input: default@kv_rename_test
+b                   	int                 	                    
 a1                  	int                 	test comment1       
-c                   	int                 	None                
+c                   	int                 	                    
 PREHOOK: query: ALTER TABLE kv_rename_test CHANGE a1 a2 INT COMMENT 'test comment2' FIRST
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: default@kv_rename_test
@@ -97,11 +109,13 @@ POSTHOOK: Input: default@kv_rename_test
 POSTHOOK: Output: default@kv_rename_test
 PREHOOK: query: DESCRIBE kv_rename_test
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@kv_rename_test
 POSTHOOK: query: DESCRIBE kv_rename_test
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@kv_rename_test
 a2                  	int                 	test comment2       
-b                   	int                 	None                
-c                   	int                 	None                
+b                   	int                 	                    
+c                   	int                 	                    
 PREHOOK: query: ALTER TABLE kv_rename_test CHANGE COLUMN a2 a INT AFTER b
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: default@kv_rename_test
@@ -112,11 +126,13 @@ POSTHOOK: Input: default@kv_rename_test
 POSTHOOK: Output: default@kv_rename_test
 PREHOOK: query: DESCRIBE kv_rename_test
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@kv_rename_test
 POSTHOOK: query: DESCRIBE kv_rename_test
 POSTHOOK: type: DESCTABLE
-b                   	int                 	None                
+POSTHOOK: Input: default@kv_rename_test
+b                   	int                 	                    
 a                   	int                 	test comment2       
-c                   	int                 	None                
+c                   	int                 	                    
 PREHOOK: query: DROP TABLE kv_rename_test
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@kv_rename_test
@@ -157,11 +173,13 @@ POSTHOOK: Output: database:kv_rename_test_db
 POSTHOOK: Output: kv_rename_test_db@kv_rename_test
 PREHOOK: query: DESCRIBE kv_rename_test
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: kv_rename_test_db@kv_rename_test
 POSTHOOK: query: DESCRIBE kv_rename_test
 POSTHOOK: type: DESCTABLE
-a                   	int                 	None                
-b                   	int                 	None                
-c                   	int                 	None                
+POSTHOOK: Input: kv_rename_test_db@kv_rename_test
+a                   	int                 	                    
+b                   	int                 	                    
+c                   	int                 	                    
 PREHOOK: query: ALTER TABLE kv_rename_test CHANGE a a STRING
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: kv_rename_test_db@kv_rename_test
@@ -172,11 +190,13 @@ POSTHOOK: Input: kv_rename_test_db@kv_rename_test
 POSTHOOK: Output: kv_rename_test_db@kv_rename_test
 PREHOOK: query: DESCRIBE kv_rename_test
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: kv_rename_test_db@kv_rename_test
 POSTHOOK: query: DESCRIBE kv_rename_test
 POSTHOOK: type: DESCTABLE
-a                   	string              	None                
-b                   	int                 	None                
-c                   	int                 	None                
+POSTHOOK: Input: kv_rename_test_db@kv_rename_test
+a                   	string              	                    
+b                   	int                 	                    
+c                   	int                 	                    
 PREHOOK: query: ALTER TABLE kv_rename_test CHANGE a a1 INT
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: kv_rename_test_db@kv_rename_test
@@ -187,11 +207,13 @@ POSTHOOK: Input: kv_rename_test_db@kv_rename_test
 POSTHOOK: Output: kv_rename_test_db@kv_rename_test
 PREHOOK: query: DESCRIBE kv_rename_test
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: kv_rename_test_db@kv_rename_test
 POSTHOOK: query: DESCRIBE kv_rename_test
 POSTHOOK: type: DESCTABLE
-a1                  	int                 	None                
-b                   	int                 	None                
-c                   	int                 	None                
+POSTHOOK: Input: kv_rename_test_db@kv_rename_test
+a1                  	int                 	                    
+b                   	int                 	                    
+c                   	int                 	                    
 PREHOOK: query: ALTER TABLE kv_rename_test CHANGE a1 a2 INT FIRST
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: kv_rename_test_db@kv_rename_test
@@ -202,11 +224,13 @@ POSTHOOK: Input: kv_rename_test_db@kv_rename_test
 POSTHOOK: Output: kv_rename_test_db@kv_rename_test
 PREHOOK: query: DESCRIBE kv_rename_test
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: kv_rename_test_db@kv_rename_test
 POSTHOOK: query: DESCRIBE kv_rename_test
 POSTHOOK: type: DESCTABLE
-a2                  	int                 	None                
-b                   	int                 	None                
-c                   	int                 	None                
+POSTHOOK: Input: kv_rename_test_db@kv_rename_test
+a2                  	int                 	                    
+b                   	int                 	                    
+c                   	int                 	                    
 PREHOOK: query: ALTER TABLE kv_rename_test CHANGE a2 a INT AFTER b
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: kv_rename_test_db@kv_rename_test
@@ -217,11 +241,13 @@ POSTHOOK: Input: kv_rename_test_db@kv_rename_test
 POSTHOOK: Output: kv_rename_test_db@kv_rename_test
 PREHOOK: query: DESCRIBE kv_rename_test
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: kv_rename_test_db@kv_rename_test
 POSTHOOK: query: DESCRIBE kv_rename_test
 POSTHOOK: type: DESCTABLE
-b                   	int                 	None                
-a                   	int                 	None                
-c                   	int                 	None                
+POSTHOOK: Input: kv_rename_test_db@kv_rename_test
+b                   	int                 	                    
+a                   	int                 	                    
+c                   	int                 	                    
 PREHOOK: query: ALTER TABLE kv_rename_test CHANGE a a1 INT COMMENT 'test comment1'
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: kv_rename_test_db@kv_rename_test
@@ -232,11 +258,13 @@ POSTHOOK: Input: kv_rename_test_db@kv_rename_test
 POSTHOOK: Output: kv_rename_test_db@kv_rename_test
 PREHOOK: query: DESCRIBE kv_rename_test
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: kv_rename_test_db@kv_rename_test
 POSTHOOK: query: DESCRIBE kv_rename_test
 POSTHOOK: type: DESCTABLE
-b                   	int                 	None                
+POSTHOOK: Input: kv_rename_test_db@kv_rename_test
+b                   	int                 	                    
 a1                  	int                 	test comment1       
-c                   	int                 	None                
+c                   	int                 	                    
 PREHOOK: query: ALTER TABLE kv_rename_test CHANGE a1 a2 INT COMMENT 'test comment2' FIRST
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: kv_rename_test_db@kv_rename_test
@@ -247,11 +275,13 @@ POSTHOOK: Input: kv_rename_test_db@kv_rename_test
 POSTHOOK: Output: kv_rename_test_db@kv_rename_test
 PREHOOK: query: DESCRIBE kv_rename_test
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: kv_rename_test_db@kv_rename_test
 POSTHOOK: query: DESCRIBE kv_rename_test
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: kv_rename_test_db@kv_rename_test
 a2                  	int                 	test comment2       
-b                   	int                 	None                
-c                   	int                 	None                
+b                   	int                 	                    
+c                   	int                 	                    
 PREHOOK: query: ALTER TABLE kv_rename_test CHANGE COLUMN a2 a INT AFTER b
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: kv_rename_test_db@kv_rename_test
@@ -262,11 +292,13 @@ POSTHOOK: Input: kv_rename_test_db@kv_rename_test
 POSTHOOK: Output: kv_rename_test_db@kv_rename_test
 PREHOOK: query: DESCRIBE kv_rename_test
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: kv_rename_test_db@kv_rename_test
 POSTHOOK: query: DESCRIBE kv_rename_test
 POSTHOOK: type: DESCTABLE
-b                   	int                 	None                
+POSTHOOK: Input: kv_rename_test_db@kv_rename_test
+b                   	int                 	                    
 a                   	int                 	test comment2       
-c                   	int                 	None                
+c                   	int                 	                    
 PREHOOK: query: DROP TABLE kv_rename_test
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: kv_rename_test_db@kv_rename_test

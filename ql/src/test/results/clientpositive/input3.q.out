@@ -7,10 +7,12 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@TEST3a
 PREHOOK: query: DESCRIBE TEST3a
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test3a
 POSTHOOK: query: DESCRIBE TEST3a
 POSTHOOK: type: DESCTABLE
-a                   	int                 	None                
-b                   	double              	None                
+POSTHOOK: Input: default@test3a
+a                   	int                 	                    
+b                   	double              	                    
 PREHOOK: query: CREATE TABLE TEST3b(A ARRAY<INT>, B DOUBLE, C MAP<DOUBLE, INT>) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -20,11 +22,13 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@TEST3b
 PREHOOK: query: DESCRIBE TEST3b
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test3b
 POSTHOOK: query: DESCRIBE TEST3b
 POSTHOOK: type: DESCTABLE
-a                   	array<int>          	None                
-b                   	double              	None                
-c                   	map<double,int>     	None                
+POSTHOOK: Input: default@test3b
+a                   	array<int>          	                    
+b                   	double              	                    
+c                   	map<double,int>     	                    
 PREHOOK: query: SHOW TABLES
 PREHOOK: type: SHOWTABLES
 POSTHOOK: query: SHOW TABLES
@@ -67,12 +71,14 @@ POSTHOOK: Input: default@test3b
 POSTHOOK: Output: default@test3b
 PREHOOK: query: DESCRIBE TEST3b
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test3b
 POSTHOOK: query: DESCRIBE TEST3b
 POSTHOOK: type: DESCTABLE
-a                   	array<int>          	None                
-b                   	double              	None                
-c                   	map<double,int>     	None                
-x                   	double              	None                
+POSTHOOK: Input: default@test3b
+a                   	array<int>          	                    
+b                   	double              	                    
+c                   	map<double,int>     	                    
+x                   	double              	                    
 PREHOOK: query: EXPLAIN
 ALTER TABLE TEST3b RENAME TO TEST3c
 PREHOOK: type: ALTERTABLE_RENAME
@@ -101,12 +107,14 @@ POSTHOOK: Output: default@TEST3c
 POSTHOOK: Output: default@test3b
 PREHOOK: query: DESCRIBE TEST3c
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test3c
 POSTHOOK: query: DESCRIBE TEST3c
 POSTHOOK: type: DESCTABLE
-a                   	array<int>          	None                
-b                   	double              	None                
-c                   	map<double,int>     	None                
-x                   	double              	None                
+POSTHOOK: Input: default@test3c
+a                   	array<int>          	                    
+b                   	double              	                    
+c                   	map<double,int>     	                    
+x                   	double              	                    
 PREHOOK: query: SHOW TABLES
 PREHOOK: type: SHOWTABLES
 POSTHOOK: query: SHOW TABLES
@@ -149,9 +157,11 @@ POSTHOOK: Input: default@test3c
 POSTHOOK: Output: default@test3c
 PREHOOK: query: DESCRIBE EXTENDED TEST3c
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test3c
 POSTHOOK: query: DESCRIBE EXTENDED TEST3c
 POSTHOOK: type: DESCTABLE
-r1                  	int                 	None                
-r2                  	double              	None                
+POSTHOOK: Input: default@test3c
+r1                  	int                 	                    
+r2                  	double              	                    
 	 	 
 #### A masked pattern was here ####

@@ -90,16 +90,20 @@ Stripes:
     Encoding column 1: DIRECT_V2
     Encoding column 2: DIRECT_V2
     Encoding column 3: DIRECT_V2
-  Stripe: offset: 1800000 data: 177935 rows: 1000 tail: 67 index: 813
-    Stream: column 0 section ROW_INDEX start: 1800000 length 10
-    Stream: column 1 section ROW_INDEX start: 1800010 length 36
-    Stream: column 2 section ROW_INDEX start: 1800046 length 39
-    Stream: column 3 section ROW_INDEX start: 1800085 length 728
-    Stream: column 1 section DATA start: 1800813 length 4007
-    Stream: column 2 section DATA start: 1804820 length 8007
-    Stream: column 3 section DATA start: 1812827 length 164661
-    Stream: column 3 section LENGTH start: 1977488 length 1260
+  Stripe: offset: 1751794 data: 177935 rows: 1000 tail: 67 index: 813
+    Stream: column 0 section ROW_INDEX start: 1751794 length 10
+    Stream: column 1 section ROW_INDEX start: 1751804 length 36
+    Stream: column 2 section ROW_INDEX start: 1751840 length 39
+    Stream: column 3 section ROW_INDEX start: 1751879 length 728
+    Stream: column 1 section DATA start: 1752607 length 4007
+    Stream: column 2 section DATA start: 1756614 length 8007
+    Stream: column 3 section DATA start: 1764621 length 164661
+    Stream: column 3 section LENGTH start: 1929282 length 1260
     Encoding column 0: DIRECT
     Encoding column 1: DIRECT_V2
     Encoding column 2: DIRECT_V2
     Encoding column 3: DIRECT_V2
+
+File length: 1932446 bytes
+Padding length: 0 bytes
+Padding ratio: 0%

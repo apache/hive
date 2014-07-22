@@ -21,6 +21,7 @@ package org.apache.hive.hcatalog.cli;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 import junit.framework.TestCase;
@@ -42,8 +43,11 @@ import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.Type;
+import org.apache.hadoop.hive.ql.io.HiveInputFormat;
+import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hive.hcatalog.ExitException;
 import org.apache.hive.hcatalog.NoExitSecurityManager;
@@ -84,7 +88,6 @@ public class TestPermsGrp extends TestCase {
     System.setSecurityManager(new NoExitSecurityManager());
 
     hcatConf = new HiveConf(this.getClass());
-    hcatConf.set("hive.metastore.local", "false");
     hcatConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://127.0.0.1:" + msPort);
     hcatConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES, 3);
     hcatConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTFAILURERETRIES, 3);
@@ -230,6 +233,12 @@ public class TestPermsGrp extends TestCase {
     tbl.setDbName(dbName);
     tbl.setTableName(tblName);
     StorageDescriptor sd = new StorageDescriptor();
+    sd.setSerdeInfo(new SerDeInfo());
+    sd.getSerdeInfo().setName(tblName);
+    sd.getSerdeInfo().setParameters(new HashMap<String, String>());
+    sd.getSerdeInfo().setSerializationLib(LazySimpleSerDe.class.getName());
+    sd.setInputFormat(HiveInputFormat.class.getName());
+    sd.setOutputFormat(HiveOutputFormat.class.getName());
     tbl.setSd(sd);
     sd.setCols(typ1.getFields());
 

@@ -1,0 +1,79 @@
+PREHOOK: query: create database foo
+PREHOOK: type: CREATEDATABASE
+POSTHOOK: query: create database foo
+POSTHOOK: type: CREATEDATABASE
+PREHOOK: query: use foo
+PREHOOK: type: SWITCHDATABASE
+POSTHOOK: query: use foo
+POSTHOOK: type: SWITCHDATABASE
+PREHOOK: query: create table T1(key string, val string) partitioned by (ds string) stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:foo
+POSTHOOK: query: create table T1(key string, val string) partitioned by (ds string) stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:foo
+POSTHOOK: Output: foo@T1
+PREHOOK: query: alter table T1 add partition (ds='today')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: foo@t1
+POSTHOOK: query: alter table T1 add partition (ds='today')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: foo@t1
+POSTHOOK: Output: foo@t1@ds=today
+PREHOOK: query: create view V1 as select key from T1
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: foo@t1
+POSTHOOK: query: create view V1 as select key from T1
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: foo@t1
+POSTHOOK: Output: foo@V1
+PREHOOK: query: show tables
+PREHOOK: type: SHOWTABLES
+POSTHOOK: query: show tables
+POSTHOOK: type: SHOWTABLES
+t1
+v1
+PREHOOK: query: describe T1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: foo@t1
+POSTHOOK: query: describe T1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: foo@t1
+key                 	string              	                    
+val                 	string              	                    
+ds                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	                    
+PREHOOK: query: drop view V1
+PREHOOK: type: DROPVIEW
+PREHOOK: Input: foo@v1
+PREHOOK: Output: foo@v1
+POSTHOOK: query: drop view V1
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: foo@v1
+POSTHOOK: Output: foo@v1
+PREHOOK: query: drop table T1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: foo@t1
+PREHOOK: Output: foo@t1
+POSTHOOK: query: drop table T1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: foo@t1
+POSTHOOK: Output: foo@t1
+PREHOOK: query: show databases
+PREHOOK: type: SHOWDATABASES
+POSTHOOK: query: show databases
+POSTHOOK: type: SHOWDATABASES
+default
+foo
+PREHOOK: query: drop database foo
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:foo
+PREHOOK: Output: database:foo
+POSTHOOK: query: drop database foo
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:foo
+POSTHOOK: Output: database:foo

@@ -99,7 +99,7 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
   public FileOutputCommitterContainer(JobContext context,
                     org.apache.hadoop.mapred.OutputCommitter baseCommitter) throws IOException {
     super(context, baseCommitter);
-    jobInfo = HCatOutputFormat.getJobInfo(context);
+    jobInfo = HCatOutputFormat.getJobInfo(context.getConfiguration());
     dynamicPartitioningUsed = jobInfo.isDynamicPartitioningUsed();
 
     this.partitionsDiscovered = !dynamicPartitioningUsed;
@@ -177,7 +177,7 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
         }
       }
       Path src;
-      OutputJobInfo jobInfo = HCatOutputFormat.getJobInfo(jobContext);
+      OutputJobInfo jobInfo = HCatOutputFormat.getJobInfo(jobContext.getConfiguration());
       Path tblPath = new Path(jobInfo.getTableInfo().getTableLocation());
       if (dynamicPartitioningUsed) {
         if (!customDynamicLocationUsed) {
@@ -215,41 +215,41 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
 
   @Override
   public void commitJob(JobContext jobContext) throws IOException {
-    try {
-      if (dynamicPartitioningUsed) {
-        discoverPartitions(jobContext);
-        // Commit each partition so it gets moved out of the job work
-        // dir
-        for (JobContext context : contextDiscoveredByPath.values()) {
-          new JobConf(context.getConfiguration())
-              .getOutputCommitter().commitJob(context);
-        }
+    if (dynamicPartitioningUsed) {
+      discoverPartitions(jobContext);
+      // Commit each partition so it gets moved out of the job work
+      // dir
+      for (JobContext context : contextDiscoveredByPath.values()) {
+        new JobConf(context.getConfiguration())
+            .getOutputCommitter().commitJob(context);
       }
-      if (getBaseOutputCommitter() != null && !dynamicPartitioningUsed) {
-        getBaseOutputCommitter().commitJob(
-            HCatMapRedUtil.createJobContext(jobContext));
-      }
-      registerPartitions(jobContext);
-      // create _SUCCESS FILE if so requested.
-      OutputJobInfo jobInfo = HCatOutputFormat.getJobInfo(jobContext);
-      if (getOutputDirMarking(jobContext.getConfiguration())) {
-        Path outputPath = new Path(jobInfo.getLocation());
-        FileSystem fileSys = outputPath.getFileSystem(jobContext
-            .getConfiguration());
-        // create a file in the folder to mark it
-        if (fileSys.exists(outputPath)) {
-          Path filePath = new Path(outputPath,
-              SUCCEEDED_FILE_NAME);
-          if (!fileSys.exists(filePath)) { // may have been
-                           // created by
-                           // baseCommitter.commitJob()
-            fileSys.create(filePath).close();
-          }
-        }
-      }
-    } finally {
-      cancelDelegationTokens(jobContext);
     }
+    if (getBaseOutputCommitter() != null && !dynamicPartitioningUsed) {
+      getBaseOutputCommitter().commitJob(
+          HCatMapRedUtil.createJobContext(jobContext));
+    }
+    registerPartitions(jobContext);
+    // create _SUCCESS FILE if so requested.
+    OutputJobInfo jobInfo = HCatOutputFormat.getJobInfo(jobContext.getConfiguration());
+    if (getOutputDirMarking(jobContext.getConfiguration())) {
+      Path outputPath = new Path(jobInfo.getLocation());
+      FileSystem fileSys = outputPath.getFileSystem(jobContext
+          .getConfiguration());
+      // create a file in the folder to mark it
+      if (fileSys.exists(outputPath)) {
+        Path filePath = new Path(outputPath,
+            SUCCEEDED_FILE_NAME);
+        if (!fileSys.exists(filePath)) { // may have been
+                         // created by
+                         // baseCommitter.commitJob()
+          fileSys.create(filePath).close();
+        }
+      }
+    }
+
+    // Commit has succeeded (since no exceptions have been thrown.)
+    // Safe to cancel delegation tokens now.
+    cancelDelegationTokens(jobContext);
   }
 
   @Override
@@ -666,7 +666,7 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
   private void discoverPartitions(JobContext context) throws IOException {
     if (!partitionsDiscovered) {
       //      LOG.info("discover ptns called");
-      OutputJobInfo jobInfo = HCatOutputFormat.getJobInfo(context);
+      OutputJobInfo jobInfo = HCatOutputFormat.getJobInfo(context.getConfiguration());
 
       harProcessor.setEnabled(jobInfo.getHarRequested());
 
@@ -739,7 +739,7 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
     if (dynamicPartitioningUsed){
       discoverPartitions(context);
     }
-    OutputJobInfo jobInfo = HCatOutputFormat.getJobInfo(context);
+    OutputJobInfo jobInfo = HCatOutputFormat.getJobInfo(context.getConfiguration());
     Configuration conf = context.getConfiguration();
     Table table = new Table(jobInfo.getTableInfo().getTable());
     Path tblPath = new Path(table.getTTable().getSd().getLocation());
@@ -970,7 +970,7 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
   }
 
   private void cancelDelegationTokens(JobContext context) throws IOException{
-    LOG.info("Cancelling deletgation token for the job.");
+    LOG.info("Cancelling delegation token for the job.");
     HiveMetaStoreClient client = null;
     try {
       HiveConf hiveConf = HCatUtil

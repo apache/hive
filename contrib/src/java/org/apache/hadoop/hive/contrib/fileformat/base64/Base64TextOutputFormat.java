@@ -24,7 +24,7 @@ import java.util.Properties;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.ql.io.FSRecordWriter;
+import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
@@ -53,13 +53,13 @@ public class Base64TextOutputFormat<K extends WritableComparable, V extends Writ
    * Base64RecordWriter.
    *
    */
-  public static class Base64RecordWriter implements FSRecordWriter,
+  public static class Base64RecordWriter implements RecordWriter,
       JobConfigurable {
 
-    FSRecordWriter writer;
+    RecordWriter writer;
     BytesWritable bytesWritable;
 
-    public Base64RecordWriter(FSRecordWriter writer) {
+    public Base64RecordWriter(RecordWriter writer) {
       this.writer = writer;
       bytesWritable = new BytesWritable();
     }
@@ -119,7 +119,7 @@ public class Base64TextOutputFormat<K extends WritableComparable, V extends Writ
   }
 
   @Override
-  public FSRecordWriter getHiveRecordWriter(JobConf jc, Path finalOutPath,
+  public RecordWriter getHiveRecordWriter(JobConf jc, Path finalOutPath,
       Class<? extends Writable> valueClass, boolean isCompressed,
       Properties tableProperties, Progressable progress) throws IOException {
 

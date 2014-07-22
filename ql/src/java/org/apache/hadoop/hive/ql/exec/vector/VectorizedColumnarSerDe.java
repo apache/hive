@@ -29,7 +29,9 @@ import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.columnar.BytesRefArrayWritable;
 import org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe;
+import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.lazy.LazyDate;
 import org.apache.hadoop.hive.serde2.lazy.LazyLong;
 import org.apache.hadoop.hive.serde2.lazy.LazyTimestamp;
 import org.apache.hadoop.hive.serde2.lazy.LazyUtils;
@@ -38,6 +40,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.io.DataOutputBuffer;
 import org.apache.hadoop.io.ObjectWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
@@ -58,7 +61,7 @@ public class VectorizedColumnarSerDe extends ColumnarSerDe implements Vectorized
   /**
    * Serialize a vectorized row batch
    *
-   * @param obj
+   * @param vrg
    *          Vectorized row batch to serialize
    * @param objInspector
    *          The ObjectInspector for the row object
@@ -166,6 +169,11 @@ public class VectorizedColumnarSerDe extends ColumnarSerDe implements Vectorized
                 tw.set(t);
                 LazyTimestamp.writeUTF8(serializeVectorStream, tw);
                 break;
+              case DATE:
+                LongColumnVector dacv = (LongColumnVector) batch.cols[k];
+                DateWritable daw = new DateWritable((int) dacv.vector[rowIndex]);
+                LazyDate.writeUTF8(serializeVectorStream, daw);
+                break;
               default:
                 throw new UnsupportedOperationException(
                     "Vectorizaton is not supported for datatype:"
@@ -186,8 +194,8 @@ public class VectorizedColumnarSerDe extends ColumnarSerDe implements Vectorized
           }
 
           byteRow.get(k).set(serializeVectorStream.getData(), count, serializeVectorStream
-              .getCount() - count);
-          count = serializeVectorStream.getCount();
+              .getLength() - count);
+          count = serializeVectorStream.getLength();
         }
 
       }
@@ -213,7 +221,7 @@ public class VectorizedColumnarSerDe extends ColumnarSerDe implements Vectorized
 
     // Ideally this should throw  UnsupportedOperationException as the serde is
     // vectorized serde. But since RC file reader does not support vectorized reading this
-    // is left as it is. This function will be called from VectorizedRowBatchCtx::AddRowToBatch
+    // is left as it is. This function will be called from VectorizedRowBatchCtx::addRowToBatch
     // to deserialize the row one by one and populate the batch. Once RC file reader supports vectorized
     // reading this serde and be standalone serde with no dependency on ColumnarSerDe.
     return super.deserialize(blob);
@@ -244,10 +252,13 @@ public class VectorizedColumnarSerDe extends ColumnarSerDe implements Vectorized
       VectorizedRowBatch reuseBatch) throws SerDeException {
 
     BytesRefArrayWritable[] refArray = (BytesRefArrayWritable[]) rowBlob;
+    DataOutputBuffer buffer = new DataOutputBuffer();
     for (int i = 0; i < rowsInBlob; i++) {
       Object row = deserialize(refArray[i]);
       try {
-        VectorizedBatchUtil.AddRowToBatch(row, (StructObjectInspector) cachedObjectInspector, i, reuseBatch);
+        VectorizedBatchUtil.addRowToBatch(row,
+            (StructObjectInspector) cachedObjectInspector, i,
+            reuseBatch, buffer);
       } catch (HiveException e) {
         throw new SerDeException(e);
       }

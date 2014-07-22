@@ -19,19 +19,32 @@
 package org.apache.hadoop.hive.ql.exec.persistence;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
-public abstract class AbstractMapJoinTableContainer implements MapJoinTableContainer {
+public abstract class AbstractMapJoinTableContainer implements MapJoinPersistableTableContainer {
   private final Map<String, String> metaData;
+
+  protected static final String THESHOLD_NAME = "threshold";
+  protected static final String LOAD_NAME = "load";
+
+  /** Creates metadata for implementation classes' ctors from threshold and load factor. */
+  protected static Map<String, String> createConstructorMetaData(int threshold, float loadFactor) {
+    Map<String, String> metaData = new HashMap<String, String>();
+    metaData.put(THESHOLD_NAME, String.valueOf(threshold));
+    metaData.put(LOAD_NAME, String.valueOf(loadFactor));
+    return metaData;
+  }
 
   protected AbstractMapJoinTableContainer(Map<String, String> metaData) {
     this.metaData = metaData;
   }
+
   @Override
   public Map<String, String> getMetaData() {
     return Collections.unmodifiableMap(metaData);
   }
-  
+
   protected void putMetaData(String key, String value) {
     metaData.put(key, value);
   }

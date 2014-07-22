@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.plan;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.PTFUtils;
 import org.apache.hadoop.hive.ql.parse.LeadLagInfo;
@@ -42,7 +43,7 @@ public class PTFDesc extends AbstractOperatorDesc {
    */
   boolean isMapSide = false;
 
-  transient HiveConf cfg;
+  transient Configuration cfg;
 
   static{
     PTFUtils.makeTransient(PTFDesc.class, "llInfo");
@@ -81,11 +82,11 @@ public class PTFDesc extends AbstractOperatorDesc {
     this.isMapSide = isMapSide;
   }
 
-  public HiveConf getCfg() {
+  public Configuration getCfg() {
     return cfg;
   }
 
-  public void setCfg(HiveConf cfg) {
+  public void setCfg(Configuration cfg) {
     this.cfg = cfg;
   }
 

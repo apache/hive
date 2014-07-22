@@ -1,3 +1,5 @@
+-- SORT_QUERY_RESULTS
+
 CREATE TABLE dest_j1(key STRING, cnt1 INT, cnt2 INT);
 
 set hive.auto.convert.join=true;
@@ -17,4 +19,4 @@ SELECT subq1.key, subq1.cnt, subq2.cnt
 FROM (select x.key, count(1) as cnt from src1 x group by x.key) subq1 JOIN 
      (select y.key, count(1) as cnt from src y group by y.key) subq2 ON (subq1.key = subq2.key);
 
-select * from dest_j1 x order by x.key;
+select * from dest_j1;

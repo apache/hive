@@ -19,8 +19,6 @@ PREHOOK: query: show table extended like load_overwrite
 PREHOOK: type: SHOW_TABLESTATUS
 POSTHOOK: query: show table extended like load_overwrite
 POSTHOOK: type: SHOW_TABLESTATUS
-POSTHOOK: Lineage: load_overwrite.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: load_overwrite.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 tableName:load_overwrite
 #### A masked pattern was here ####
 inputformat:org.apache.hadoop.mapred.TextInputFormat
@@ -42,8 +40,6 @@ POSTHOOK: query: select count(*) from load_overwrite
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@load_overwrite
 #### A masked pattern was here ####
-POSTHOOK: Lineage: load_overwrite.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: load_overwrite.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 500
 PREHOOK: query: load data local inpath '../../data/files/kv1.txt' into table load_overwrite
 PREHOOK: type: LOAD
@@ -53,14 +49,10 @@ POSTHOOK: query: load data local inpath '../../data/files/kv1.txt' into table lo
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@load_overwrite
-POSTHOOK: Lineage: load_overwrite.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: load_overwrite.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: show table extended like load_overwrite
 PREHOOK: type: SHOW_TABLESTATUS
 POSTHOOK: query: show table extended like load_overwrite
 POSTHOOK: type: SHOW_TABLESTATUS
-POSTHOOK: Lineage: load_overwrite.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: load_overwrite.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 tableName:load_overwrite
 #### A masked pattern was here ####
 inputformat:org.apache.hadoop.mapred.TextInputFormat
@@ -82,8 +74,6 @@ POSTHOOK: query: select count(*) from load_overwrite
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@load_overwrite
 #### A masked pattern was here ####
-POSTHOOK: Lineage: load_overwrite.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: load_overwrite.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 1000
 PREHOOK: query: load data local inpath '../../data/files/kv1.txt' overwrite into table load_overwrite
 PREHOOK: type: LOAD
@@ -93,14 +83,10 @@ POSTHOOK: query: load data local inpath '../../data/files/kv1.txt' overwrite int
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@load_overwrite
-POSTHOOK: Lineage: load_overwrite.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: load_overwrite.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: show table extended like load_overwrite
 PREHOOK: type: SHOW_TABLESTATUS
 POSTHOOK: query: show table extended like load_overwrite
 POSTHOOK: type: SHOW_TABLESTATUS
-POSTHOOK: Lineage: load_overwrite.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: load_overwrite.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 tableName:load_overwrite
 #### A masked pattern was here ####
 inputformat:org.apache.hadoop.mapred.TextInputFormat
@@ -122,6 +108,4 @@ POSTHOOK: query: select count(*) from load_overwrite
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@load_overwrite
 #### A masked pattern was here ####
-POSTHOOK: Lineage: load_overwrite.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: load_overwrite.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 500

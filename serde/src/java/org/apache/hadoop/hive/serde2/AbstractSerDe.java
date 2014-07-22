@@ -32,6 +32,25 @@ import org.apache.hadoop.io.Writable;
 public abstract class AbstractSerDe implements SerDe {
 
   /**
+   * Initialize the SerDe. By default, this will use one set of properties, either the
+   * table properties or the partition properties. If a SerDe needs access to both sets,
+   * it should override this method.
+   *
+   * Eventually, once all SerDes have implemented this method,
+   * we should convert it to an abstract method.
+   *
+   * @param configuration        Hadoop configuration
+   * @param tableProperties      Table properties
+   * @param partitionProperties  Partition properties
+   * @throws SerDeException
+   */
+  public void initialize(Configuration configuration, Properties tableProperties,
+                         Properties partitionProperties) throws SerDeException {
+    initialize(configuration,
+               SerDeUtils.createOverlayedProperties(tableProperties, partitionProperties));
+  }
+
+  /**
    * Initialize the HiveSerializer.
    *
    * @param conf
@@ -40,6 +59,7 @@ public abstract class AbstractSerDe implements SerDe {
    *          table properties
    * @throws SerDeException
    */
+  @Deprecated
   public abstract void initialize(Configuration conf, Properties tbl) throws SerDeException;
 
   /**

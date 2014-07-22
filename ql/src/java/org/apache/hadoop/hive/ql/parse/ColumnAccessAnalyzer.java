@@ -22,8 +22,8 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 
 public class ColumnAccessAnalyzer {
@@ -44,9 +44,23 @@ public class ColumnAccessAnalyzer {
     for (TableScanOperator op : topOps.keySet()) {
       Table table = topOps.get(op);
       String tableName = table.getCompleteName();
-      List<FieldSchema> tableCols = table.getCols();
-      for (int i : op.getNeededColumnIDs()) {
-        columnAccessInfo.add(tableName, tableCols.get(i).getName());
+      List<String> referenced = op.getReferencedColumns();
+      for (String column : referenced) {
+        columnAccessInfo.add(tableName, column);
+      }
+      if (table.isPartitioned()) {
+        PrunedPartitionList parts;
+        try {
+          parts = pGraphContext.getPrunedPartitions(table.getTableName(), op);
+        } catch (HiveException e) {
+          LOG.error(org.apache.hadoop.util.StringUtils.stringifyException(e));
+          throw new SemanticException(e.getMessage(), e);
+        }
+        if (parts.getReferredPartCols() != null) {
+          for (String partKey : parts.getReferredPartCols()) {
+            columnAccessInfo.add(tableName, partKey);
+          }
+        }
       }
     }
     return columnAccessInfo;

@@ -23,6 +23,8 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.mapred.JobConf;
 
+import java.io.Serializable;
+
 /**
  * HiveStoragePredicateHandler is an optional companion to {@link
  * HiveStorageHandler}; it should only be implemented by handlers which
@@ -67,6 +69,11 @@ public interface HiveStoragePredicateHandler {
      * will pass this into the storage handler's input format.
      */
     public ExprNodeGenericFuncDesc pushedPredicate;
+
+    /**
+     * Serialized format for filter
+     */
+    public Serializable pushedPredicateObject;
 
     /**
      * Portion of predicate to be post-evaluated by Hive for any rows

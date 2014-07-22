@@ -1,50 +1,52 @@
 PREHOOK: query: -- enable sql standard authorization
 -- role granting without role keyword
+-- also test role being treated as case insensitive
 set role ADMIN
 PREHOOK: type: SHOW_ROLES
 POSTHOOK: query: -- enable sql standard authorization
 -- role granting without role keyword
+-- also test role being treated as case insensitive
 set role ADMIN
 POSTHOOK: type: SHOW_ROLES
-PREHOOK: query: create role src_role2
+PREHOOK: query: create role src_Role2
 PREHOOK: type: CREATEROLE
-POSTHOOK: query: create role src_role2
+POSTHOOK: query: create role src_Role2
 POSTHOOK: type: CREATEROLE
-PREHOOK: query: grant  src_role2 to user user2
+PREHOOK: query: grant SRC_role2 to user user2
 PREHOOK: type: GRANT_ROLE
-POSTHOOK: query: grant  src_role2 to user user2
+POSTHOOK: query: grant SRC_role2 to user user2
 POSTHOOK: type: GRANT_ROLE
 PREHOOK: query: show role grant user user2
 PREHOOK: type: SHOW_ROLE_GRANT
 POSTHOOK: query: show role grant user user2
 POSTHOOK: type: SHOW_ROLE_GRANT
-PUBLIC	-1			false	-1	
-src_role2	-1	user2	USER	false	-1	hive_admin_user
+public	false	-1	
+src_role2	false	-1	hive_admin_user
 PREHOOK: query: show roles
 PREHOOK: type: SHOW_ROLES
 POSTHOOK: query: show roles
 POSTHOOK: type: SHOW_ROLES
-ADMIN
-PUBLIC
+admin
+public
 src_role2
 
 PREHOOK: query: -- revoke role without role keyword
-revoke src_role2 from user user2
+revoke src_rolE2 from user user2
 PREHOOK: type: REVOKE_ROLE
 POSTHOOK: query: -- revoke role without role keyword
-revoke src_role2 from user user2
+revoke src_rolE2 from user user2
 POSTHOOK: type: REVOKE_ROLE
 PREHOOK: query: show role grant user user2
 PREHOOK: type: SHOW_ROLE_GRANT
 POSTHOOK: query: show role grant user user2
 POSTHOOK: type: SHOW_ROLE_GRANT
-PUBLIC	-1			false	-1	
+public	false	-1	
 PREHOOK: query: show roles
 PREHOOK: type: SHOW_ROLES
 POSTHOOK: query: show roles
 POSTHOOK: type: SHOW_ROLES
-ADMIN
-PUBLIC
+admin
+public
 src_role2
 
 PREHOOK: query: ----------------------------------------
@@ -59,16 +61,28 @@ POSTHOOK: query: ----------------------------------------
 
 create role src_role_wadmin
 POSTHOOK: type: CREATEROLE
-PREHOOK: query: grant  src_role_wadmin to user user2 with admin option
+PREHOOK: query: grant src_role_wadmin to user user2 with admin option
 PREHOOK: type: GRANT_ROLE
-POSTHOOK: query: grant  src_role_wadmin to user user2 with admin option
+POSTHOOK: query: grant src_role_wadmin to user user2 with admin option
 POSTHOOK: type: GRANT_ROLE
 PREHOOK: query: show role grant user user2
 PREHOOK: type: SHOW_ROLE_GRANT
 POSTHOOK: query: show role grant user user2
 POSTHOOK: type: SHOW_ROLE_GRANT
-PUBLIC	-1			false	-1	
-src_role_wadmin	-1	user2	USER	true	-1	hive_admin_user
+public	false	-1	
+src_role_wadmin	true	-1	hive_admin_user
+PREHOOK: query: -- revoke admin option
+revoke admin option for src_role_wadmin from user user2
+PREHOOK: type: REVOKE_ROLE
+POSTHOOK: query: -- revoke admin option
+revoke admin option for src_role_wadmin from user user2
+POSTHOOK: type: REVOKE_ROLE
+PREHOOK: query: show role grant user user2
+PREHOOK: type: SHOW_ROLE_GRANT
+POSTHOOK: query: show role grant user user2
+POSTHOOK: type: SHOW_ROLE_GRANT
+public	false	-1	
+src_role_wadmin	false	-1	hive_admin_user
 PREHOOK: query: -- revoke role without role keyword
 revoke src_role_wadmin from user user2
 PREHOOK: type: REVOKE_ROLE
@@ -79,38 +93,38 @@ PREHOOK: query: show role grant user user2
 PREHOOK: type: SHOW_ROLE_GRANT
 POSTHOOK: query: show role grant user user2
 POSTHOOK: type: SHOW_ROLE_GRANT
-PUBLIC	-1			false	-1	
+public	false	-1	
 PREHOOK: query: -- drop roles
 show roles
 PREHOOK: type: SHOW_ROLES
 POSTHOOK: query: -- drop roles
 show roles
 POSTHOOK: type: SHOW_ROLES
-ADMIN
-PUBLIC
+admin
+public
 src_role2
 src_role_wadmin
 
-PREHOOK: query: drop role src_role2
+PREHOOK: query: drop role Src_role2
 PREHOOK: type: DROPROLE
-POSTHOOK: query: drop role src_role2
+POSTHOOK: query: drop role Src_role2
 POSTHOOK: type: DROPROLE
 PREHOOK: query: show roles
 PREHOOK: type: SHOW_ROLES
 POSTHOOK: query: show roles
 POSTHOOK: type: SHOW_ROLES
-ADMIN
-PUBLIC
+admin
+public
 src_role_wadmin
 
-PREHOOK: query: drop role src_role_wadmin
+PREHOOK: query: drop role sRc_role_wadmin
 PREHOOK: type: DROPROLE
-POSTHOOK: query: drop role src_role_wadmin
+POSTHOOK: query: drop role sRc_role_wadmin
 POSTHOOK: type: DROPROLE
 PREHOOK: query: show roles
 PREHOOK: type: SHOW_ROLES
 POSTHOOK: query: show roles
 POSTHOOK: type: SHOW_ROLES
-ADMIN
-PUBLIC
+admin
+public
 

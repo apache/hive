@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Stack;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileStatus;
@@ -75,7 +74,7 @@ abstract public class AbstractBucketJoinProc implements NodeProcessor {
   abstract public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
       Object... nodeOutputs) throws SemanticException;
 
-  private static List<String> getBucketFilePathsOfPartition(
+  public static List<String> getBucketFilePathsOfPartition(
       Path location, ParseContext pGraphContext) throws SemanticException {
     List<String> fileNames = new ArrayList<String>();
     try {
@@ -134,7 +133,7 @@ abstract public class AbstractBucketJoinProc implements NodeProcessor {
       ParseContext pGraphContext,
       BucketJoinProcCtx context) throws SemanticException {
 
-    QBJoinTree joinCtx = this.pGraphContext.getMapJoinContext().get(mapJoinOp);
+    QBJoinTree joinCtx = pGraphContext.getMapJoinContext().get(mapJoinOp);
     if (joinCtx == null) {
       return false;
     }
@@ -454,7 +453,7 @@ abstract public class AbstractBucketJoinProc implements NodeProcessor {
     return converted;
   }
 
-  public List<String> toColumns(List<ExprNodeDesc> keys) {
+  public static List<String> toColumns(List<ExprNodeDesc> keys) {
     List<String> columns = new ArrayList<String>();
     for (ExprNodeDesc key : keys) {
       if (!(key instanceof ExprNodeColumnDesc)) {

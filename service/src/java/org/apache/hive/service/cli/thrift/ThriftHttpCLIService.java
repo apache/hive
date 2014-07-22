@@ -20,9 +20,13 @@ package org.apache.hive.service.cli.thrift;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.Shell;
+import org.apache.hive.service.auth.HiveAuthFactory;
 import org.apache.hive.service.auth.HiveAuthFactory.AuthTypes;
 import org.apache.hive.service.cli.CLIService;
+import org.apache.thrift.TProcessor;
+import org.apache.thrift.TProcessorFactory;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocolFactory;
 import org.apache.thrift.server.TServlet;
@@ -59,32 +63,23 @@ public class ThriftHttpCLIService extends ThriftCLIService {
       minWorkerThreads = hiveConf.getIntVar(ConfVars.HIVE_SERVER2_THRIFT_HTTP_MIN_WORKER_THREADS);
       maxWorkerThreads = hiveConf.getIntVar(ConfVars.HIVE_SERVER2_THRIFT_HTTP_MAX_WORKER_THREADS);
 
-      String httpPath =  hiveConf.getVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_HTTP_PATH);
-      // The config parameter can be like "path", "/path", "/path/", "path/*", "/path1/path2/*" and so on.
-      // httpPath should end up as "/*", "/path/*" or "/path1/../pathN/*"
-      if(httpPath == null || httpPath.equals("")) {
-        httpPath = "/*";
-      }
-      else {
-        if(!httpPath.startsWith("/")) {
-          httpPath = "/" + httpPath;
-        }
-        if(httpPath.endsWith("/")) {
-          httpPath = httpPath + "*";
-        }
-        if(!httpPath.endsWith("/*")) {
-          httpPath = httpPath + "/*";
-        }
-      }
+      String httpPath =  getHttpPath(hiveConf.getVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_HTTP_PATH));
 
       httpServer = new org.eclipse.jetty.server.Server();
       QueuedThreadPool threadPool = new QueuedThreadPool();
       threadPool.setMinThreads(minWorkerThreads);
       threadPool.setMaxThreads(maxWorkerThreads);
       httpServer.setThreadPool(threadPool);
-      SelectChannelConnector connector;
-      Boolean useSsl = hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_USE_SSL);
+
+      SelectChannelConnector connector = new SelectChannelConnector();;
+      boolean useSsl = hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_USE_SSL);
       String schemeName = useSsl ? "https" : "http";
+      String authType = hiveConf.getVar(ConfVars.HIVE_SERVER2_AUTHENTICATION);
+      // Set during the init phase of HiveServer2 if auth mode is kerberos
+      // UGI for the hive/_HOST (kerberos) principal
+      UserGroupInformation serviceUGI = cliService.getServiceUGI();
+      // UGI for the http/_HOST (SPNego) principal
+      UserGroupInformation httpUGI = cliService.getHttpUGI();
 
       if (useSsl) {
         String keyStorePath = hiveConf.getVar(ConfVars.HIVE_SERVER2_SSL_KEYSTORE_PATH).trim();
@@ -97,8 +92,6 @@ public class ThriftHttpCLIService extends ThriftCLIService {
         sslContextFactory.setKeyStorePath(keyStorePath);
         sslContextFactory.setKeyStorePassword(keyStorePassword);
         connector = new SslSelectChannelConnector(sslContextFactory);
-      } else {
-        connector = new SelectChannelConnector();
       }
 
       connector.setPort(portNum);
@@ -106,14 +99,19 @@ public class ThriftHttpCLIService extends ThriftCLIService {
       connector.setReuseAddress(!Shell.WINDOWS);
       httpServer.addConnector(connector);
 
-      TCLIService.Processor<ThriftCLIService> processor =
-          new TCLIService.Processor<ThriftCLIService>(new EmbeddedThriftBinaryCLIService());
+      hiveAuthFactory = new HiveAuthFactory(hiveConf);
+      TProcessorFactory processorFactory = hiveAuthFactory.getAuthProcFactory(this);
+      TProcessor processor = processorFactory.getProcessor(null);
 
       TProtocolFactory protocolFactory = new TBinaryProtocol.Factory();
-      TServlet thriftHttpServlet = new ThriftHttpServlet(processor, protocolFactory);
 
-      final ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
+      TServlet thriftHttpServlet = new ThriftHttpServlet(processor, protocolFactory,
+          authType, serviceUGI, httpUGI);
+
+      final ServletContextHandler context = new ServletContextHandler(
+          ServletContextHandler.SESSIONS);
       context.setContextPath("/");
+
       httpServer.setHandler(context);
       context.addServlet(new ServletHolder(thriftHttpServlet), httpPath);
 
@@ -130,38 +128,52 @@ public class ThriftHttpCLIService extends ThriftCLIService {
   }
 
   /**
+   * The config parameter can be like "path", "/path", "/path/", "path/*", "/path1/path2/*" and so on.
+   * httpPath should end up as "/*", "/path/*" or "/path1/../pathN/*"
+   * @param httpPath
+   * @return
+   */
+  private String getHttpPath(String httpPath) {
+    if(httpPath == null || httpPath.equals("")) {
+      httpPath = "/*";
+    }
+    else {
+      if(!httpPath.startsWith("/")) {
+        httpPath = "/" + httpPath;
+      }
+      if(httpPath.endsWith("/")) {
+        httpPath = httpPath + "*";
+      }
+      if(!httpPath.endsWith("/*")) {
+        httpPath = httpPath + "/*";
+      }
+    }
+    return httpPath;
+  }
+
+  /**
    * Verify that this configuration is supported by transportMode of HTTP
    * @param hiveConf
    */
   private static void verifyHttpConfiguration(HiveConf hiveConf) {
     String authType = hiveConf.getVar(ConfVars.HIVE_SERVER2_AUTHENTICATION);
 
-    // error out if KERBEROS or LDAP mode is being used, it is not supported
-    if(authType.equalsIgnoreCase(AuthTypes.KERBEROS.toString()) ||
-        authType.equalsIgnoreCase(AuthTypes.LDAP.toString()) ||
-        authType.equalsIgnoreCase(AuthTypes.CUSTOM.toString())) {
+    // Error out if KERBEROS auth mode is being used and use SSL is also set to true
+    if(authType.equalsIgnoreCase(AuthTypes.KERBEROS.toString()) &&
+        hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_USE_SSL)) {
       String msg = ConfVars.HIVE_SERVER2_AUTHENTICATION + " setting of " +
-          authType + " is currently not supported with " +
-          ConfVars.HIVE_SERVER2_TRANSPORT_MODE + " setting of http";
+          authType + " is not supported with " +
+          ConfVars.HIVE_SERVER2_USE_SSL + " set to true";
       LOG.fatal(msg);
       throw new RuntimeException(msg);
     }
 
-    // Throw exception here
+    // Warn that SASL is not used in http mode
     if(authType.equalsIgnoreCase(AuthTypes.NONE.toString())) {
       // NONE in case of thrift mode uses SASL
       LOG.warn(ConfVars.HIVE_SERVER2_AUTHENTICATION + " setting to " +
-          authType + ". SASL is not supported with http transportMode," +
+          authType + ". SASL is not supported with http transport mode," +
           " so using equivalent of " + AuthTypes.NOSASL);
-    }
-
-    // doAs is currently not supported with http
-    if(hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_ENABLE_DOAS)) {
-      String msg = ConfVars.HIVE_SERVER2_ENABLE_DOAS + " setting of " +
-          "true is currently not supported with " +
-          ConfVars.HIVE_SERVER2_TRANSPORT_MODE + " setting of http";
-      LOG.fatal(msg);
-      throw new RuntimeException(msg);
     }
   }
 

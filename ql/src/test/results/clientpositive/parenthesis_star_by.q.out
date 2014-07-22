@@ -2538,11 +2538,11 @@ POSTHOOK: Input: default@src
 97	val_97
 98	val_98
 98	val_98
-PREHOOK: query: SELECT key, value FROM src ORDER BY (key ASC, value ASC)
+PREHOOK: query: SELECT key, value FROM src ORDER BY key ASC, value ASC
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT key, value FROM src ORDER BY (key ASC, value ASC)
+POSTHOOK: query: SELECT key, value FROM src ORDER BY key ASC, value ASC
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####

@@ -527,7 +527,7 @@ POSTHOOK: query: EXPLAIN SELECT avg(dec), sum(dec) FROM DECIMAL_PRECISION
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -548,7 +548,7 @@ STAGE PLANS:
                 Reduce Output Operator
                   sort order: 
                   Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col0 (type: struct<count:bigint,sum:decimal(24,14)>), _col1 (type: decimal(30,10))
+                  value expressions: _col0 (type: struct<count:bigint,sum:decimal(30,10),input:decimal(20,10)>), _col1 (type: decimal(30,10))
       Reduce Operator Tree:
         Group By Operator
           aggregations: avg(VALUE._col0), sum(VALUE._col1)
@@ -570,6 +570,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT avg(dec), sum(dec) FROM DECIMAL_PRECISION
 PREHOOK: type: QUERY

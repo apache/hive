@@ -11,8 +11,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_table
 PREHOOK: query: DESC FORMATTED test_table
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_table
 POSTHOOK: query: DESC FORMATTED test_table
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test_table
 # col_name            	data_type           	comment             
 	 	 
 key                 	string              	default             
@@ -52,8 +54,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_table1
 PREHOOK: query: DESC FORMATTED test_table1
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_table1
 POSTHOOK: query: DESC FORMATTED test_table1
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test_table1
 # col_name            	data_type           	comment             
 	 	 
 key                 	string              	default             
@@ -93,8 +97,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_table2
 PREHOOK: query: DESC FORMATTED test_table2
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_table2
 POSTHOOK: query: DESC FORMATTED test_table2
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test_table2
 # col_name            	data_type           	comment             
 	 	 
 key                 	string              	default             
@@ -135,8 +141,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_table3
 PREHOOK: query: DESC FORMATTED test_table3
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_table3
 POSTHOOK: query: DESC FORMATTED test_table3
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test_table3
 # col_name            	data_type           	comment             
 	 	 
 key                 	string              	default             
@@ -184,12 +192,14 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_table4
 PREHOOK: query: DESC FORMATTED test_table4
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_table4
 POSTHOOK: query: DESC FORMATTED test_table4
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test_table4
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	None                
-value               	string              	None                
+key                 	string              	                    
+value               	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 

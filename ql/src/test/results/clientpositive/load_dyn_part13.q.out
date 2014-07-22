@@ -1,7 +1,9 @@
 PREHOOK: query: show partitions srcpart
 PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@srcpart
 POSTHOOK: query: show partitions srcpart
 POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@srcpart
 ds=2008-04-08/hr=11
 ds=2008-04-08/hr=12
 ds=2008-04-09/hr=11
@@ -15,18 +17,20 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@nzhang_part13
 PREHOOK: query: describe extended nzhang_part13
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@nzhang_part13
 POSTHOOK: query: describe extended nzhang_part13
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@nzhang_part13
 key                 	string              	default             
 value               	string              	default             
-ds                  	string              	None                
-hr                  	string              	None                
+ds                  	string              	                    
+hr                  	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-ds                  	string              	None                
-hr                  	string              	None                
+ds                  	string              	                    
+hr                  	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: explain
@@ -156,12 +160,10 @@ POSTHOOK: Lineage: nzhang_part13 PARTITION(ds=2010-03-03,hr=33).key EXPRESSION [
 POSTHOOK: Lineage: nzhang_part13 PARTITION(ds=2010-03-03,hr=33).value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: show partitions nzhang_part13
 PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@nzhang_part13
 POSTHOOK: query: show partitions nzhang_part13
 POSTHOOK: type: SHOWPARTITIONS
-POSTHOOK: Lineage: nzhang_part13 PARTITION(ds=2010-03-03,hr=22).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: nzhang_part13 PARTITION(ds=2010-03-03,hr=22).value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: nzhang_part13 PARTITION(ds=2010-03-03,hr=33).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: nzhang_part13 PARTITION(ds=2010-03-03,hr=33).value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Input: default@nzhang_part13
 ds=2010-03-03/hr=22
 ds=2010-03-03/hr=33
 PREHOOK: query: select * from nzhang_part13 where ds is not null and hr is not null
@@ -176,10 +178,6 @@ POSTHOOK: Input: default@nzhang_part13
 POSTHOOK: Input: default@nzhang_part13@ds=2010-03-03/hr=22
 POSTHOOK: Input: default@nzhang_part13@ds=2010-03-03/hr=33
 #### A masked pattern was here ####
-POSTHOOK: Lineage: nzhang_part13 PARTITION(ds=2010-03-03,hr=22).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: nzhang_part13 PARTITION(ds=2010-03-03,hr=22).value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: nzhang_part13 PARTITION(ds=2010-03-03,hr=33).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: nzhang_part13 PARTITION(ds=2010-03-03,hr=33).value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
 15	val_15	2010-03-03	22
 17	val_17	2010-03-03	22
 0	val_0	2010-03-03	22

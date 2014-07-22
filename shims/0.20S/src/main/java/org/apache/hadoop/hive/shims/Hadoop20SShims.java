@@ -20,33 +20,36 @@ package org.apache.hadoop.hive.shims;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Comparator;
-import java.util.Iterator;
 import java.net.URI;
+import java.net.URL;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.filecache.DistributedCache;
 import org.apache.hadoop.fs.BlockLocation;
 import org.apache.hadoop.fs.FSDataInputStream;
+import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.FsShell;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.fs.ProxyFileSystem;
 import org.apache.hadoop.fs.Trash;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
-import org.apache.hadoop.hive.shims.HadoopShims.DirectDecompressorShim;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.compress.CompressionCodec;
-import org.apache.hadoop.mapred.JobTracker;
-import org.apache.hadoop.mapred.MiniMRCluster;
 import org.apache.hadoop.mapred.ClusterStatus;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.JobInProgress;
+import org.apache.hadoop.mapred.JobTracker;
+import org.apache.hadoop.mapred.MiniMRCluster;
 import org.apache.hadoop.mapred.TaskLogServlet;
 import org.apache.hadoop.mapred.WebHCatJTShim20S;
+import org.apache.hadoop.mapred.lib.TotalOrderPartitioner;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.hadoop.mapreduce.JobID;
@@ -55,9 +58,9 @@ import org.apache.hadoop.mapreduce.OutputFormat;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.TaskAttemptID;
 import org.apache.hadoop.mapreduce.TaskID;
-import org.apache.hadoop.util.Progressable;
-import org.apache.hadoop.mapred.lib.TotalOrderPartitioner;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.util.Progressable;
+import org.apache.hadoop.util.VersionInfo;
 
 
 /**
@@ -170,9 +173,16 @@ public class Hadoop20SShims extends HadoopShimsSecure {
   /**
    * Returns a shim to wrap MiniMrCluster
    */
+  @Override
   public MiniMrShim getMiniMrCluster(Configuration conf, int numberOfTaskTrackers,
                                      String nameNode, int numDir) throws IOException {
     return new MiniMrShim(conf, numberOfTaskTrackers, nameNode, numDir);
+  }
+
+  @Override
+  public MiniMrShim getMiniTezCluster(Configuration conf, int numberOfTaskTrackers,
+                                      String nameNode, int numDir) throws IOException {
+    throw new IOException("Cannot run tez on current hadoop, Version: " + VersionInfo.getVersion());
   }
 
   /**
@@ -194,7 +204,18 @@ public class Hadoop20SShims extends HadoopShimsSecure {
 
     @Override
     public void shutdown() throws IOException {
-      mr.shutdown();
+      MiniMRCluster.JobTrackerRunner runner = mr.getJobTrackerRunner();
+      JobTracker tracker = runner.getJobTracker();
+      if (tracker != null) {
+        for (JobInProgress running : tracker.getRunningJobs()) {
+          try {
+            running.kill();
+          } catch (Exception e) {
+            // ignore
+          }
+        }
+      }
+      runner.shutdown();
     }
 
     @Override
@@ -207,6 +228,7 @@ public class Hadoop20SShims extends HadoopShimsSecure {
   // incompatibility between hadoop 1 and 2 wrt MiniDFSCluster and we
   // need to have two different shim classes even though they are
   // exactly the same.
+  @Override
   public HadoopShims.MiniDFSShim getMiniDfs(Configuration conf,
       int numDataNodes,
       boolean format,
@@ -225,10 +247,12 @@ public class Hadoop20SShims extends HadoopShimsSecure {
       this.cluster = cluster;
     }
 
+    @Override
     public FileSystem getFileSystem() throws IOException {
       return cluster.getFileSystem();
     }
 
+    @Override
     public void shutdown() {
       cluster.shutdown();
     }
@@ -343,6 +367,10 @@ public class Hadoop20SShims extends HadoopShimsSecure {
           return DistributedCache.CACHE_FILES;
         case CACHE_SYMLINK:
           return DistributedCache.CACHE_SYMLINK;
+        case CLASSPATH_ARCHIVES:
+          return "mapred.job.classpath.archives";
+        case CLASSPATH_FILES:
+          return "mapred.job.classpath.files";
       }
 
       return "";
@@ -360,35 +388,68 @@ public class Hadoop20SShims extends HadoopShimsSecure {
   }
 
   @Override
-  public Iterator<FileStatus> listLocatedStatus(final FileSystem fs,
-                                                final Path path,
-                                                final PathFilter filter
-  ) throws IOException {
-    return new Iterator<FileStatus>() {
-      private final FileStatus[] result = fs.listStatus(path, filter);
-      private int current = 0;
-
-      @Override
-      public boolean hasNext() {
-        return current < result.length;
-      }
-
-      @Override
-      public FileStatus next() {
-        return result[current++];
-      }
-
-      @Override
-      public void remove() {
-        throw new IllegalArgumentException("Not supported");
-      }
-    };
+  public List<FileStatus> listLocatedStatus(final FileSystem fs,
+                                            final Path path,
+                                            final PathFilter filter
+                                            ) throws IOException {
+    return Arrays.asList(fs.listStatus(path, filter));
   }
 
   @Override
   public BlockLocation[] getLocations(FileSystem fs,
                                       FileStatus status) throws IOException {
     return fs.getFileBlockLocations(status, 0, status.getLen());
+  }
+
+  @Override
+  public void hflush(FSDataOutputStream stream) throws IOException {
+    stream.sync();
+  }
+
+  @Override
+  public HdfsFileStatus getFullFileStatus(Configuration conf, FileSystem fs, Path file)
+      throws IOException {
+    return new Hadoop20SFileStatus(fs.getFileStatus(file));
+  }
+
+  @Override
+  public void setFullFileStatus(Configuration conf, HdfsFileStatus sourceStatus,
+    FileSystem fs, Path target) throws IOException {
+    String group = sourceStatus.getFileStatus().getGroup();
+    String permission = Integer.toString(sourceStatus.getFileStatus().getPermission().toShort(), 8);
+    //use FsShell to change group and permissions recursively
+    try {
+      FsShell fshell = new FsShell();
+      fshell.setConf(conf);
+      run(fshell, new String[]{"-chgrp", "-R", group, target.toString()});
+      run(fshell, new String[]{"-chmod", "-R", permission, target.toString()});
+    } catch (Exception e) {
+      throw new IOException("Unable to set permissions of " + target, e);
+    }
+    try {
+      if (LOG.isDebugEnabled()) {  //some trace logging
+        getFullFileStatus(conf, fs, target).debugLog();
+      }
+    } catch (Exception e) {
+      //ignore.
+    }
+  }
+
+  public class Hadoop20SFileStatus implements HdfsFileStatus {
+    private FileStatus fileStatus;
+    public Hadoop20SFileStatus(FileStatus fileStatus) {
+      this.fileStatus = fileStatus;
+    }
+    @Override
+    public FileStatus getFileStatus() {
+      return fileStatus;
+    }
+    @Override
+    public void debugLog() {
+      if (fileStatus != null) {
+        LOG.debug(fileStatus.toString());
+      }
+    }
   }
 
   @Override
@@ -404,8 +465,8 @@ public class Hadoop20SShims extends HadoopShimsSecure {
     ret.put("HADOOPMAPREDINPUTDIRRECURSIVE", "mapred.input.dir.recursive");
     ret.put("MAPREDMAXSPLITSIZE", "mapred.max.split.size");
     ret.put("MAPREDMINSPLITSIZE", "mapred.min.split.size");
-    ret.put("MAPREDMINSPLITSIZEPERNODE", "mapred.min.split.size.per.rack");
-    ret.put("MAPREDMINSPLITSIZEPERRACK", "mapred.min.split.size.per.node");
+    ret.put("MAPREDMINSPLITSIZEPERNODE", "mapred.min.split.size.per.node");
+    ret.put("MAPREDMINSPLITSIZEPERRACK", "mapred.min.split.size.per.rack");
     ret.put("HADOOPNUMREDUCERS", "mapred.reduce.tasks");
     ret.put("HADOOPJOBNAME", "mapred.job.name");
     ret.put("HADOOPSPECULATIVEEXECREDUCERS", "mapred.reduce.tasks.speculative.execution");
@@ -425,9 +486,25 @@ public class Hadoop20SShims extends HadoopShimsSecure {
     /* not supported */
     return null;
   }
-  
+
   @Override
   public Configuration getConfiguration(org.apache.hadoop.mapreduce.JobContext context) {
     return context.getConfiguration();
+  }
+
+  @Override
+  public FileSystem getNonCachedFileSystem(URI uri, Configuration conf) throws IOException {
+    boolean origDisableHDFSCache =
+        conf.getBoolean("fs." + uri.getScheme() + ".impl.disable.cache", false);
+    // hadoop-1 compatible flag.
+    conf.setBoolean("fs." + uri.getScheme() + ".impl.disable.cache", true);
+    FileSystem fs = FileSystem.get(uri, conf);
+    conf.setBoolean("fs." + uri.getScheme() + ".impl.disable.cache", origDisableHDFSCache);
+    return fs;
+  }
+
+  @Override
+  public void getMergedCredentials(JobConf jobConf) throws IOException {
+    throw new IOException("Merging of credentials not supported in this version of hadoop");
   }
 }

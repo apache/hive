@@ -182,6 +182,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
    *
    * @return true if fatal errors happened during job execution, false otherwise.
    */
+  @Override
   public boolean checkFatalErrors(Counters ctrs, StringBuilder errMsg) {
      Counters.Counter cntr = ctrs.findCounter(
         HiveConf.getVar(job, HiveConf.ConfVars.HIVECOUNTERGROUP),
@@ -354,8 +355,8 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
           //upload archive file to hdfs
           Path hdfsFilePath =Utilities.generateTarPath(hdfsPath, stageId);
           short replication = (short) job.getInt("mapred.submit.replication", 10);
-          hdfs.setReplication(hdfsFilePath, replication);
           hdfs.copyFromLocalFile(archivePath, hdfsFilePath);
+          hdfs.setReplication(hdfsFilePath, replication);
           LOG.info("Upload 1 archive file  from" + archivePath + " to: " + hdfsFilePath);
 
           //add the archive file to distributed cache
@@ -365,7 +366,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
         }
       }
       work.configureJobConf(job);
-      List<Path> inputPaths = Utilities.getInputPaths(job, mWork, emptyScratchDir, ctx);
+      List<Path> inputPaths = Utilities.getInputPaths(job, mWork, emptyScratchDir, ctx, false);
       Utilities.setInputPaths(job, inputPaths);
 
       Utilities.setMapRedWork(job, work, ctx.getMRTmpPath());
@@ -422,7 +423,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
         HiveConf.setVar(job, HiveConf.ConfVars.METASTOREPWD, pwd);
       }
 
-      returnVal = jobExecHelper.progress(rj, jc);
+      returnVal = jobExecHelper.progress(rj, jc, ctx.getHiveTxnManager());
       success = (returnVal == 0);
     } catch (Exception e) {
       e.printStackTrace();
@@ -450,7 +451,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
           if (returnVal != 0) {
             rj.killJob();
           }
-          HadoopJobExecHelper.runningJobKillURIs.remove(rj.getJobID());
+          HadoopJobExecHelper.runningJobs.remove(rj);
           jobID = rj.getID().toString();
         }
       } catch (Exception e) {
@@ -550,8 +551,8 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
       HiveConf.setVar(conf, ConfVars.HIVEINPUTFORMAT, mWork.getInputformat());
     }
     if (mWork.getIndexIntermediateFile() != null) {
-      conf.set("hive.index.compact.file", mWork.getIndexIntermediateFile());
-      conf.set("hive.index.blockfilter.file", mWork.getIndexIntermediateFile());
+      conf.set(ConfVars.HIVE_INDEX_COMPACT_FILE.varname, mWork.getIndexIntermediateFile());
+      conf.set(ConfVars.HIVE_INDEX_BLOCKFILTER_FILE.varname, mWork.getIndexIntermediateFile());
     }
 
     // Intentionally overwrites anything the user may have put here
@@ -731,7 +732,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
       memoryMXBean = ManagementFactory.getMemoryMXBean();
       MapredLocalWork plan = Utilities.deserializePlan(pathData, MapredLocalWork.class, conf);
       MapredLocalTask ed = new MapredLocalTask(plan, conf, isSilent);
-      ret = ed.executeFromChildJVM(new DriverContext());
+      ret = ed.executeInProcess(new DriverContext());
 
     } else {
       MapredWork plan = Utilities.deserializePlan(pathData, MapredWork.class, conf);
@@ -785,6 +786,11 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
       }
     }
     return " -jobconffile " + hConfFilePath.toString();
+  }
+
+  @Override
+  public Collection<MapWork> getMapWork() {
+    return Collections.<MapWork>singleton(getWork().getMapWork());
   }
 
   @Override

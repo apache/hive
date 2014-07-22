@@ -1,7 +1,11 @@
-PREHOOK: query: create table combine1_1(key string, value string) stored as textfile
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+create table combine1_1(key string, value string) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-POSTHOOK: query: create table combine1_1(key string, value string) stored as textfile
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+create table combine1_1(key string, value string) stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@combine1_1
@@ -17,16 +21,14 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@combine1_1
 POSTHOOK: Lineage: combine1_1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: combine1_1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: select key, value from combine1_1 ORDER BY key ASC, value ASC
+PREHOOK: query: select key, value from combine1_1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@combine1_1
 #### A masked pattern was here ####
-POSTHOOK: query: select key, value from combine1_1 ORDER BY key ASC, value ASC
+POSTHOOK: query: select key, value from combine1_1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@combine1_1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: combine1_1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: combine1_1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 0	val_0
 0	val_0
 0	val_0

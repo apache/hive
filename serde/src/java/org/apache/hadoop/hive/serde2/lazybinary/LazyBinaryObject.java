@@ -27,7 +27,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
  * A LazyBinaryObject can represent any primitive object or hierarchical object
  * like string, list, map or struct.
  */
-public abstract class LazyBinaryObject<OI extends ObjectInspector> extends LazyObjectBase {
+public abstract class LazyBinaryObject<OI extends ObjectInspector> implements LazyObjectBase {
 
   OI oi;
 

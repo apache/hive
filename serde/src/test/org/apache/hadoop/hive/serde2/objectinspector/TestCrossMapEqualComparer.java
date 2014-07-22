@@ -26,6 +26,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.ByteStream;
 import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.SerDeParameters;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory.ObjectInspectorOptions;
@@ -100,7 +101,7 @@ public class TestCrossMapEqualComparer extends TestCase {
     tbl.setProperty(serdeConstants.LIST_COLUMN_TYPES, ObjectInspectorUtils.getFieldTypes(oi1));
     SerDeParameters serdeParams = LazySimpleSerDe.initSerdeParams(conf, tbl,
         LazySimpleSerDe.class.getName());
-    serde.initialize(conf, tbl);
+    SerDeUtils.initializeSerDe(serde, conf, tbl, null);
     ObjectInspector oi2 = serde.getObjectInspector();
 
     Object o2 = serializeAndDeserialize(o1, oi1, serde, serdeParams);
@@ -154,7 +155,7 @@ public class TestCrossMapEqualComparer extends TestCase {
     tbl.setProperty(serdeConstants.LIST_COLUMN_TYPES, ObjectInspectorUtils.getFieldTypes(oi1));
     SerDeParameters serdeParams = LazySimpleSerDe.initSerdeParams(conf, tbl,
         LazySimpleSerDe.class.getName());
-    serde.initialize(conf, tbl);
+    SerDeUtils.initializeSerDe(serde, conf, tbl, null);
     ObjectInspector oi2 = serde.getObjectInspector();
 
     Object o2 = serializeAndDeserialize(o1, oi1, serde, serdeParams);

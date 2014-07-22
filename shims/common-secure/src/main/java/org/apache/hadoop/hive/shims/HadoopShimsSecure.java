@@ -26,50 +26,49 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.FsShell;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.io.HiveIOExceptionHandlerUtil;
-import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.thrift.DelegationTokenIdentifier;
 import org.apache.hadoop.hive.thrift.DelegationTokenSelector;
 import org.apache.hadoop.http.HtmlQuoting;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.ClusterStatus;
 import org.apache.hadoop.mapred.FileInputFormat;
-import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.JobContext;
-import org.apache.hadoop.mapred.JobStatus;
 import org.apache.hadoop.mapred.OutputCommitter;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
-import org.apache.hadoop.mapred.RunningJob;
 import org.apache.hadoop.mapred.TaskAttemptContext;
-import org.apache.hadoop.mapred.TaskCompletionEvent;
-import org.apache.hadoop.mapred.TaskID;
 import org.apache.hadoop.mapred.lib.CombineFileInputFormat;
 import org.apache.hadoop.mapred.lib.CombineFileSplit;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.security.authorize.ProxyUsers;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.security.token.TokenIdentifier;
 import org.apache.hadoop.security.token.TokenSelector;
 import org.apache.hadoop.tools.HadoopArchives;
 import org.apache.hadoop.util.Progressable;
 import org.apache.hadoop.util.ToolRunner;
+
+import com.google.common.primitives.Longs;
 
 /**
  * Base implemention for shims against secure Hadoop 0.20.3/0.23.
@@ -101,16 +100,10 @@ public abstract class HadoopShimsSecure implements HadoopShims {
       _isShrinked = false;
     }
 
-    public InputSplitShim(CombineFileSplit old) throws IOException {
-      super(old.getJob(), old.getPaths(), old.getStartOffsets(),
-          old.getLengths(), dedup(old.getLocations()));
+    public InputSplitShim(JobConf conf, Path[] paths, long[] startOffsets,
+      long[] lengths, String[] locations) throws IOException {
+      super(conf, paths, startOffsets, lengths, dedup(locations));
       _isShrinked = false;
-    }
-
-    private static String[] dedup(String[] locations) {
-      Set<String> dedup = new HashSet<String>();
-      Collections.addAll(dedup, locations);
-      return dedup.toArray(new String[dedup.size()]);
     }
 
     @Override
@@ -342,12 +335,22 @@ public abstract class HadoopShimsSecure implements HadoopShims {
 
       InputSplit[] splits = (InputSplit[]) super.getSplits(job, numSplits);
 
-      InputSplitShim[] isplits = new InputSplitShim[splits.length];
+      ArrayList<InputSplitShim> inputSplitShims = new ArrayList<InputSplitShim>();
       for (int pos = 0; pos < splits.length; pos++) {
-        isplits[pos] = new InputSplitShim((CombineFileSplit)splits[pos]);
+        CombineFileSplit split = (CombineFileSplit) splits[pos];
+        Set<Integer> dirIndices = getDirIndices(split.getPaths(), job);
+        if (dirIndices.size() != split.getPaths().length) {
+          List<Path> prunedPaths = prune(dirIndices, Arrays.asList(split.getPaths()));
+          List<Long> prunedStartOffsets = prune(dirIndices, Arrays.asList(
+            ArrayUtils.toObject(split.getStartOffsets())));
+          List<Long> prunedLengths = prune(dirIndices, Arrays.asList(
+            ArrayUtils.toObject(split.getLengths())));
+          inputSplitShims.add(new InputSplitShim(job, prunedPaths.toArray(new Path[prunedPaths.size()]),
+            Longs.toArray(prunedStartOffsets),
+            Longs.toArray(prunedLengths), split.getLocations()));
+        }
       }
-
-      return isplits;
+      return inputSplitShims.toArray(new InputSplitShim[inputSplitShims.size()]);
     }
 
     public InputSplitShim getInputSplitShim() throws IOException {
@@ -459,12 +462,39 @@ public abstract class HadoopShimsSecure implements HadoopShims {
     return token != null ? token.encodeToUrlString() : null;
   }
 
+  /**
+   * Create a delegation token object for the given token string and service.
+   * Add the token to given UGI
+   */
   @Override
   public void setTokenStr(UserGroupInformation ugi, String tokenStr, String tokenService) throws IOException {
+    Token<DelegationTokenIdentifier> delegationToken = createToken(tokenStr, tokenService);
+    ugi.addToken(delegationToken);
+  }
+
+  /**
+   * Add a given service to delegation token string.
+   */
+  @Override
+  public String addServiceToToken(String tokenStr, String tokenService)
+  throws IOException {
+    Token<DelegationTokenIdentifier> delegationToken = createToken(tokenStr, tokenService);
+    return delegationToken.encodeToUrlString();
+  }
+
+  /**
+   * Create a new token using the given string and service
+   * @param tokenStr
+   * @param tokenService
+   * @return
+   * @throws IOException
+   */
+  private Token<DelegationTokenIdentifier> createToken(String tokenStr, String tokenService)
+      throws IOException {
     Token<DelegationTokenIdentifier> delegationToken = new Token<DelegationTokenIdentifier>();
     delegationToken.decodeFromUrlString(tokenStr);
     delegationToken.setService(new Text(tokenService));
-    ugi.addToken(delegationToken);
+    return delegationToken;
   }
 
   @Override
@@ -498,6 +528,14 @@ public abstract class HadoopShimsSecure implements HadoopShims {
   }
 
   @Override
+  public void authorizeProxyAccess(String proxyUser, UserGroupInformation realUserUgi,
+      String ipAddress,  Configuration conf) throws IOException {
+    ProxyUsers.refreshSuperUserGroupsConfiguration(conf);
+    ProxyUsers.authorize(UserGroupInformation.createProxyUser(proxyUser, realUserUgi),
+        ipAddress, conf);
+  }
+
+  @Override
   public boolean isSecurityEnabled() {
     return UserGroupInformation.isSecurityEnabled();
   }
@@ -520,6 +558,13 @@ public abstract class HadoopShimsSecure implements HadoopShims {
   public void loginUserFromKeytab(String principal, String keytabFile) throws IOException {
     String hostPrincipal = SecurityUtil.getServerPrincipal(principal, "0.0.0.0");
     UserGroupInformation.loginUserFromKeytab(hostPrincipal, keytabFile);
+  }
+
+  @Override
+  public UserGroupInformation loginUserFromKeytabAndReturnUGI(
+      String principal, String keytabFile) throws IOException {
+    String hostPrincipal = SecurityUtil.getServerPrincipal(principal, "0.0.0.0");
+    return UserGroupInformation.loginUserFromKeytabAndReturnUGI(hostPrincipal, keytabFile);
   }
 
   @Override
@@ -546,7 +591,8 @@ public abstract class HadoopShimsSecure implements HadoopShims {
   abstract public JobTrackerState getJobTrackerState(ClusterStatus clusterStatus) throws Exception;
 
   @Override
-  abstract public org.apache.hadoop.mapreduce.TaskAttemptContext newTaskAttemptContext(Configuration conf, final Progressable progressable);
+  abstract public org.apache.hadoop.mapreduce.TaskAttemptContext newTaskAttemptContext(
+      Configuration conf, final Progressable progressable);
 
   @Override
   abstract public org.apache.hadoop.mapreduce.JobContext newJobContext(Job job);
@@ -571,8 +617,50 @@ public abstract class HadoopShimsSecure implements HadoopShims {
 
   @Override
   abstract public boolean moveToAppropriateTrash(FileSystem fs, Path path, Configuration conf)
-          throws IOException;
+      throws IOException;
 
   @Override
   abstract public FileSystem createProxyFileSystem(FileSystem fs, URI uri);
+
+  @Override
+  abstract public FileSystem getNonCachedFileSystem(URI uri, Configuration conf) throws IOException;
+
+  protected void run(FsShell shell, String[] command) throws Exception {
+    LOG.debug(ArrayUtils.toString(command));
+    int retval = shell.run(command);
+    LOG.debug("Return value is :" + retval);
+  }
+
+  /**
+   * CombineFileInputFormat sometimes returns directories as splits, need to prune them.
+   */
+  private static Set<Integer> getDirIndices(Path[] paths, JobConf conf) throws IOException {
+    Set<Integer> result = new HashSet<Integer>();
+    for (int i = 0; i < paths.length; i++) {
+      FileSystem fs = paths[i].getFileSystem(conf);
+      if (!fs.isFile(paths[i])) {
+        result.add(i);
+      }
+    }
+    return result;
+  }
+
+  private static <K> List<K> prune(Set<Integer> indicesToPrune, List<K> elms) {
+    List<K> result = new ArrayList<K>();
+    int i = 0;
+    for (K elm : elms) {
+      if (indicesToPrune.contains(i)) {
+        continue;
+      }
+      result.add(elm);
+      i++;
+    }
+    return result;
+  }
+
+  private static String[] dedup(String[] locations) throws IOException {
+    Set<String> dedup = new HashSet<String>();
+    Collections.addAll(dedup, locations);
+    return dedup.toArray(new String[dedup.size()]);
+  }
 }

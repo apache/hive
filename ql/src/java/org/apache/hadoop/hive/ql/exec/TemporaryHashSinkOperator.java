@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.HashTableSinkDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
@@ -27,6 +29,12 @@ import java.io.IOException;
 public class TemporaryHashSinkOperator extends HashTableSinkOperator {
   public TemporaryHashSinkOperator(MapJoinDesc desc) {
     conf = new HashTableSinkDesc(desc);
+
+    // Sanity check the config.
+    assert conf.getHashtableMemoryUsage() != 0;
+    if (conf.getHashtableMemoryUsage() == 0) {
+      LOG.error("Hash table memory usage not set in map join operator; non-staged load may fail");
+    }
   }
 
   @Override

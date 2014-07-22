@@ -32,13 +32,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.OpTraits;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
@@ -96,6 +96,11 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   }
 
   private boolean useBucketizedHiveInputFormat;
+
+  // dummy operator (for not increasing seqId)
+  private Operator(String name) {
+    id = name;
+  }
 
   public Operator() {
     id = String.valueOf(seqId.getAndIncrement());
@@ -333,7 +338,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
       return;
     }
 
-    LOG.info("Initializing Self " + id + " " + getName());
+    LOG.info("Initializing Self " + this);
 
     if (inputOIs != null) {
       inputObjInspectors = inputOIs;
@@ -492,6 +497,8 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
 
     LOG.debug("Starting group for children:");
     for (Operator<? extends OperatorDesc> op : childOperators) {
+      op.setGroupKeyObjectInspector(groupKeyOI);
+      op.setGroupKeyObject(groupKeyObject);
       op.startGroup();
     }
 
@@ -543,6 +550,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
         if(parent==null){
           continue;
         }
+        LOG.debug("allInitializedParentsAreClosed? parent.state = " + parent.state);
         if (!(parent.state == State.CLOSE || parent.state == State.UNINIT)) {
           return false;
         }
@@ -562,6 +570,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
 
     // check if all parents are finished
     if (!allInitializedParentsAreClosed()) {
+      LOG.debug("Not all parent operators are closed. Not closing.");
       return;
     }
 
@@ -582,6 +591,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
       }
 
       for (Operator<? extends OperatorDesc> op : childOperators) {
+        LOG.debug("Closing child = " + op);
         op.close(abort);
       }
 
@@ -958,6 +968,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   }
 
   protected transient Object groupKeyObject;
+  protected transient ObjectInspector groupKeyOI;
 
   public String getOperatorId() {
     return operatorId;
@@ -1243,6 +1254,25 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     }
     return null;
   }
+  
+  public OpTraits getOpTraits() {
+    if (conf != null) {
+      return conf.getOpTraits();
+    }
+    
+    return null;
+  }
+  
+  public void setOpTraits(OpTraits metaInfo) {
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Setting traits ("+metaInfo+") on "+this);
+    }
+    if (conf != null) {
+      conf.setOpTraits(metaInfo);
+    } else {
+      LOG.warn("Cannot set traits when there's no descriptor: "+this);
+    }
+  }
 
   public void setStatistics(Statistics stats) {
     if (LOG.isDebugEnabled()) {
@@ -1253,5 +1283,23 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     } else {
       LOG.warn("Cannot set stats when there's no descriptor: "+this);
     }
+  }
+
+  public void setGroupKeyObjectInspector(ObjectInspector keyObjectInspector) {
+    this.groupKeyOI = keyObjectInspector;
+  }
+
+  public ObjectInspector getGroupKeyObjectInspector() {
+    return groupKeyOI;
+  }
+
+  public static Operator createDummy() {
+    return new DummyOperator();
+  }
+
+  private static class DummyOperator extends Operator {
+    public DummyOperator() { super("dummy"); }
+    public void processOp(Object row, int tag) { }
+    public OperatorType getType() { return null; }
   }
 }

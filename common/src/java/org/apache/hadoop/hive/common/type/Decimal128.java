@@ -90,7 +90,7 @@ public final class Decimal128 extends Number implements Comparable<Decimal128> {
    * @serial
    * @see #getUnscaledValue()
    */
-  private final UnsignedInt128 unscaledValue;
+  private UnsignedInt128 unscaledValue;
 
   /**
    * The scale of this Decimal128, as returned by {@link #getScale()}. Unlike
@@ -264,6 +264,18 @@ public final class Decimal128 extends Number implements Comparable<Decimal128> {
     this.unscaledValue.update(o.unscaledValue);
     this.scale = o.scale;
     this.signum = o.signum;
+    return this;
+  }
+
+  /**
+   * Copy the value of given object and assigns a custom scale.
+   *
+   * @param o
+   *          object to copy from
+   */
+  public Decimal128 update(Decimal128 o, short scale) {
+    update(o);
+    this.changeScaleDestructive(scale);
     return this;
   }
 
@@ -731,8 +743,7 @@ public final class Decimal128 extends Number implements Comparable<Decimal128> {
 
   /**
    * Serializes the value in a format compatible with the BigDecimal's own representation
-   * @param bytes
-   * @param offset
+   * @param scratch
    */
   public int fastSerializeForHiveDecimal( Decimal128FastBuffer scratch) {
     return this.unscaledValue.fastSerializeForHiveDecimal(scratch, this.signum);
@@ -1502,7 +1513,7 @@ public final class Decimal128 extends Number implements Comparable<Decimal128> {
       cmp = this.unscaledValue.compareToScaleTen(val.unscaledValue,
           (short) (this.scale - val.scale));
     } else {
-      cmp = val.unscaledValue.compareToScaleTen(this.unscaledValue,
+      cmp = - val.unscaledValue.compareToScaleTen(this.unscaledValue,
           (short) (val.scale - this.scale));
     }
     return cmp * this.signum;
@@ -1576,28 +1587,24 @@ public final class Decimal128 extends Number implements Comparable<Decimal128> {
    */
   @Override
   public long longValue() {
+
+    // Avoid allocating temporary variables for special cases: signum or scale is zero
     if (signum == 0) {
       return 0L;
     }
-
-    long ret;
-    UnsignedInt128 tmp;
     if (scale == 0) {
+      long ret;
       ret = this.unscaledValue.getV1();
       ret <<= 32L;
       ret |= SqlMathUtil.LONG_MASK & this.unscaledValue.getV0();
+      if (signum >= 0) {
+        return ret;
+      } else {
+        return -ret;
+      }
     } else {
-      tmp = new UnsignedInt128(this.unscaledValue);
-      tmp.scaleDownTenDestructive(scale);
-      ret = tmp.getV1();
-      ret <<= 32L;
-      ret |= SqlMathUtil.LONG_MASK & tmp.getV0();
-    }
-
-    if (signum >= 0) {
-      return ret;
-    } else {
-      return -ret;
+      HiveDecimal hd = HiveDecimal.create(this.toBigDecimal());
+      return hd.longValue();
     }
   }
 
@@ -1716,6 +1723,67 @@ public final class Decimal128 extends Number implements Comparable<Decimal128> {
     if (scale > MAX_SCALE) {
       throw new ArithmeticException("Beyond possible Decimal128 scaling");
     }
+  }
+
+  /**
+   * Temporary array used in {@link #getHiveDecimalString}
+   */
+  private int [] tmpArray = new int[2];
+
+  /**
+   * Returns the string representation of this value. It discards the trailing zeros
+   * in the fractional part to match the HiveDecimal's string representation. However,
+   * don't use this string representation for the reconstruction of the object.
+   *
+   * @return string representation of this value
+   */
+  public String getHiveDecimalString() {
+    if (this.signum == 0) {
+      return "0";
+    }
+
+    StringBuilder buf = new StringBuilder(50);
+    if (this.signum < 0) {
+      buf.append('-');
+    }
+
+    char [] unscaled = this.unscaledValue.getDigitsArray(tmpArray);
+    int unscaledLength = tmpArray[0];
+    int trailingZeros = tmpArray[1];
+    int numIntegerDigits = unscaledLength - this.scale;
+    if (numIntegerDigits > 0) {
+
+      // write out integer part first
+      // then write out fractional part
+      for (int i=0; i < numIntegerDigits; i++) {
+        buf.append(unscaled[i]);
+      }
+
+      if (this.scale > trailingZeros) {
+        buf.append('.');
+        for (int i = numIntegerDigits; i < (unscaledLength - trailingZeros); i++) {
+          buf.append(unscaled[i]);
+        }
+      }
+    } else {
+
+      // no integer part
+      buf.append('0');
+
+      if (this.scale > trailingZeros) {
+
+        // fractional part has, starting with zeros
+        buf.append('.');
+        for (int i = unscaledLength; i < this.scale; ++i) {
+          buf.append('0');
+        }
+        for (int i = 0; i < (unscaledLength - trailingZeros); i++) {
+          buf.append(unscaled[i]);
+        }
+      }
+    }
+
+    return new String(buf);
   }
 
   /**
@@ -1891,6 +1959,27 @@ public final class Decimal128 extends Number implements Comparable<Decimal128> {
     this.signum = this.unscaledValue.fastUpdateFromInternalStorage(internalStorage);
 
     return this;
+  }
+
+  /**
+   * This setter is only for de-serialization, should not be used otherwise.
+   */
+  public void setUnscaledValue(UnsignedInt128 unscaledValue) {
+    this.unscaledValue = unscaledValue;
+  }
+
+  /**
+   * This setter is only for de-serialization, should not be used otherwise.
+   */
+  public void setScale(short scale) {
+    this.scale = scale;
+  }
+
+  /**
+   * This setter is only for de-serialization, should not be used otherwise.
+   */
+  public void setSignum(byte signum) {
+    this.signum = signum;
   }
 }
 

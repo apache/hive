@@ -31,6 +31,9 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
+import org.apache.hadoop.hive.serde2.lazybinary.LazyBinaryFactory;
+import org.apache.hadoop.hive.serde2.lazybinary.LazyBinaryMap;
+import org.apache.hadoop.hive.serde2.lazybinary.objectinspector.LazyBinaryObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
@@ -156,6 +159,7 @@ public class TestLazyArrayMapStruct extends TestCase {
 
         assertEquals("{2:'def',-1:null,0:'0',8:'abc'}".replace('\'', '\"'),
             SerDeUtils.getJSONString(b, oi));
+        assertEquals(4, b.getMapSize());
       }
 
       {
@@ -179,8 +183,72 @@ public class TestLazyArrayMapStruct extends TestCase {
             .getMapValueElement(new Text("8"))).getWritableObject());
         assertNull(b.getMapValueElement(new Text("-")));
 
-        assertEquals("{'2':'d\\tf','2':'d','-1':null,'0':'0','8':'abc'}"
+        assertEquals("{'2':'d\\tf','-1':null,'0':'0','8':'abc'}"
             .replace('\'', '\"'), SerDeUtils.getJSONString(b, oi));
+        assertEquals(4, b.getMapSize());
+      }
+
+    } catch (Throwable e) {
+      e.printStackTrace();
+      throw e;
+    }
+  }
+
+  /**
+   * Test the LazyMap class.
+   */
+  public void testLazyMapWithDuplicateKeys() throws Throwable {
+    try {
+      {
+        // Map of Integer to String
+        Text nullSequence = new Text("\\N");
+        ObjectInspector oi = LazyFactory
+            .createLazyObjectInspector(TypeInfoUtils
+            .getTypeInfosFromTypeString("map<int,string>").get(0),
+            new byte[] {(byte) 1, (byte) 2}, 0, nullSequence, false,
+            (byte) 0);
+        LazyMap b = (LazyMap) LazyFactory.createLazyObject(oi);
+        byte[] data = new byte[] {'2', 2, 'd', 'e', 'f', 1, '-', '1', 2, '\\',
+            'N', 1, '0', 2, '0', 1, '2', 2, 'a', 'b', 'c'};
+        TestLazyPrimitive.initLazyObject(b, data, 0, data.length);
+
+        assertEquals(new Text("def"), ((LazyString) b
+            .getMapValueElement(new IntWritable(2))).getWritableObject());
+        assertNull(b.getMapValueElement(new IntWritable(-1)));
+        assertEquals(new Text("0"), ((LazyString) b
+            .getMapValueElement(new IntWritable(0))).getWritableObject());
+        assertNull(b.getMapValueElement(new IntWritable(12345)));
+
+        assertEquals("{2:'def',-1:null,0:'0'}".replace('\'', '\"'),
+            SerDeUtils.getJSONString(b, oi));
+
+        assertEquals(3, b.getMapSize());
+        assertEquals(3, b.getMap().size());
+      }
+
+      {
+        // Map of String to String
+        Text nullSequence = new Text("\\N");
+        ObjectInspector oi = LazyFactory.createLazyObjectInspector(
+            TypeInfoUtils.getTypeInfosFromTypeString("map<string,string>").get(
+            0), new byte[] {(byte) '#', (byte) '\t'}, 0, nullSequence,
+            false, (byte) 0);
+        LazyMap b = (LazyMap) LazyFactory.createLazyObject(oi);
+        byte[] data = new byte[] {'2', '\t', 'd', '\t', 'f', '#', '2', '\t',
+            'd', '#', '-', '1', '#', '0', '\t', '0', '#', '2', '\t', 'a', 'b', 'c'};
+        TestLazyPrimitive.initLazyObject(b, data, 0, data.length);
+
+        assertEquals(new Text("d\tf"), ((LazyString) b
+            .getMapValueElement(new Text("2"))).getWritableObject());
+        assertNull(b.getMapValueElement(new Text("-1")));
+        assertEquals(new Text("0"), ((LazyString) b
+            .getMapValueElement(new Text("0"))).getWritableObject());
+
+        assertEquals("{'2':'d\\tf','-1':null,'0':'0'}"
+            .replace('\'', '\"'), SerDeUtils.getJSONString(b, oi));
+
+        assertEquals(3, b.getMapSize());
+        assertEquals(3, b.getMap().size());
       }
 
     } catch (Throwable e) {
@@ -243,7 +311,7 @@ public class TestLazyArrayMapStruct extends TestCase {
         data = new Text(": : : :");
         TestLazyPrimitive.initLazyObject(o, data.getBytes(), 0, data
             .getLength());
-        assertEquals("{'a':null,'b':['',''],'c':{'':null,'':null},'d':':'}"
+        assertEquals("{'a':null,'b':['',''],'c':{'':null},'d':':'}"
             .replace("'", "\""), SerDeUtils.getJSONString(o, oi));
 
         data = new Text("= = = =");
@@ -517,7 +585,7 @@ public class TestLazyArrayMapStruct extends TestCase {
     Configuration conf = new Configuration();
     tableProp.setProperty("columns", "narray");
     tableProp.setProperty("columns.types", schema.toString());
-    serDe.initialize(conf, tableProp);
+    SerDeUtils.initializeSerDe(serDe, conf, tableProp, null);
 
     //create the serialized string for type
     byte[] separators = serDe.serdeParams.getSeparators();

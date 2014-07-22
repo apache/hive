@@ -94,7 +94,7 @@ public class LazyBinaryColumnarSerDe extends ColumnarSerDeBase {
     List<? extends StructField> fields = soi.getAllStructFieldRefs();
     List<Object> list = soi.getStructFieldsDataAsList(obj);
 
-    boolean warnedOnceNullMapKey = false;
+    LazyBinarySerDe.BooleanRef warnedOnceNullMapKey = new LazyBinarySerDe.BooleanRef(false);
     serializeStream.reset();
     serializedSize = 0;
     int streamOffset = 0;
@@ -114,11 +114,11 @@ public class LazyBinaryColumnarSerDe extends ColumnarSerDeBase {
         LazyBinarySerDe.serialize(serializeStream, f, foi, true, warnedOnceNullMapKey);
       }
       field[i].set(serializeStream.getData(), streamOffset, serializeStream
-          .getCount()
+          .getLength()
           - streamOffset);
-      streamOffset = serializeStream.getCount();
+      streamOffset = serializeStream.getLength();
     }
-    serializedSize = serializeStream.getCount();
+    serializedSize = serializeStream.getLength();
     lastOperationSerialize = true;
     lastOperationDeserialize = false;
     return serializeCache;

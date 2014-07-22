@@ -38,6 +38,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
+import org.apache.hadoop.hive.ql.exec.ExplainTask;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -109,6 +110,10 @@ public class QueryPlan implements Serializable {
   }
 
   public QueryPlan(String queryString, BaseSemanticAnalyzer sem, Long startTime) {
+    this(queryString, sem, startTime, null);
+  }
+
+  public QueryPlan(String queryString, BaseSemanticAnalyzer sem, Long startTime, String queryId) {
     this.queryString = queryString;
 
     rootTasks = new ArrayList<Task<? extends Serializable>>();
@@ -123,9 +128,9 @@ public class QueryPlan implements Serializable {
     columnAccessInfo = sem.getColumnAccessInfo();
     idToTableNameMap = new HashMap<String, String>(sem.getIdToTableNameMap());
 
-    queryId = makeQueryId();
+    this.queryId = queryId == null ? makeQueryId() : queryId;
     query = new org.apache.hadoop.hive.ql.plan.api.Query();
-    query.setQueryId(queryId);
+    query.setQueryId(this.queryId);
     query.putToQueryAttributes("queryString", this.queryString);
     queryProperties = sem.getQueryProperties();
     queryStartTime = startTime;
@@ -139,7 +144,7 @@ public class QueryPlan implements Serializable {
     return queryId;
   }
 
-  private String makeQueryId() {
+  public static String makeQueryId() {
     GregorianCalendar gc = new GregorianCalendar();
     String userid = System.getProperty("user.name");
 
@@ -388,9 +393,6 @@ public class QueryPlan implements Serializable {
           done.add(task.getId() + "_MAP");
         }
         if (mrTask.hasReduce()) {
-          Collection<Operator<? extends OperatorDesc>> reducerTopOps =
-            new ArrayList<Operator<? extends OperatorDesc>>();
-          reducerTopOps.add(mrTask.getWork().getReduceWork().getReducer());
           if (mrTask.reduceStarted()) {
             started.add(task.getId() + "_REDUCE");
           }
@@ -584,6 +586,10 @@ public class QueryPlan implements Serializable {
     return sb.toString();
   }
 
+  public boolean isExplain() {
+    return rootTasks.size() == 1 && rootTasks.get(0) instanceof ExplainTask;
+  }
+
   @Override
   public String toString() {
     try {
@@ -648,6 +654,10 @@ public class QueryPlan implements Serializable {
 
   public void setRootTasks(ArrayList<Task<? extends Serializable>> rootTasks) {
     this.rootTasks = rootTasks;
+  }
+
+  public boolean isForExplain() {
+    return rootTasks.size() == 1 && rootTasks.get(0) instanceof ExplainTask;
   }
 
   public FetchTask getFetchTask() {

@@ -29,12 +29,6 @@
 </property>
 
 <property>
-  <name>hive.metastore.local</name>
-  <value>false</value>
-  <description>controls whether to connect to remove metastore server or open a new metastore server in Hive Client JVM</description>
-</property>
-
-<property>
   <name>javax.jdo.option.ConnectionURL</name>
   <value>jdbc:mysql://DBHOSTNAME/hivemetastoredb?createDatabaseIfNotExist=true</value>
   <description>JDBC connect string for a JDBC metastore</description>
@@ -114,7 +108,7 @@
 
 <property>
   <name>hive.security.authorization.manager</name>
-  <value>org.apache.hcatalog.security.StorageDelegationAuthorizationProvider</value>
+  <value>org.apache.hadoop.hive.ql.security.authorization.StorageBasedAuthorizationProvider</value>
   <description>the hive client authorization manager class name.
   The user defined authorization class should implement interface org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider.
   HCatalog uses a model, where authorization checks are delegated to the storage layer (hdfs, hbase, ...).

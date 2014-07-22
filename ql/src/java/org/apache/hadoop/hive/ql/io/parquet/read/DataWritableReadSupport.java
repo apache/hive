@@ -46,7 +46,8 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
 
   private static final String TABLE_SCHEMA = "table_schema";
   public static final String HIVE_SCHEMA_KEY = "HIVE_TABLE_SCHEMA";
-
+  public static final String PARQUET_COLUMN_INDEX_ACCESS = "parquet.column.index.access";  
+  
   /**
    * From a string which columns names (including hive column), return a list
    * of string columns
@@ -95,7 +96,8 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
       for (final Integer idx : indexColumnsWanted) {
         typeListWanted.add(tableSchema.getType(listColumns.get(idx)));
       }
-      requestedSchemaByUser = new MessageType(fileSchema.getName(), typeListWanted);
+      requestedSchemaByUser = resolveSchemaAccess(new MessageType(fileSchema.getName(), 
+              typeListWanted), fileSchema, configuration);
 
       return new ReadContext(requestedSchemaByUser, contextMetadata);
     } else {
@@ -123,8 +125,31 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
       throw new IllegalStateException("ReadContext not initialized properly. " +
         "Don't know the Hive Schema.");
     }
-    final MessageType tableSchema = MessageTypeParser.
-        parseMessageType(metadata.get(HIVE_SCHEMA_KEY));
+    final MessageType tableSchema = resolveSchemaAccess(MessageTypeParser.
+        parseMessageType(metadata.get(HIVE_SCHEMA_KEY)), fileSchema, configuration);
+    
     return new DataWritableRecordConverter(readContext.getRequestedSchema(), tableSchema);
+  }
+  
+  /**
+  * Determine the file column names based on the position within the requested columns and 
+  * use that as the requested schema.
+  */
+  private MessageType resolveSchemaAccess(MessageType requestedSchema, MessageType fileSchema, 
+          Configuration configuration) {
+    if(configuration.getBoolean(PARQUET_COLUMN_INDEX_ACCESS, false)) {
+      final List<String> listColumns = getColumns(configuration.get(IOConstants.COLUMNS));
+        
+      List<Type> requestedTypes = new ArrayList<Type>();
+        
+      for(Type t : requestedSchema.getFields()) {
+        int index = listColumns.indexOf(t.getName());
+        requestedTypes.add(fileSchema.getType(index));
+      }
+          
+      requestedSchema = new MessageType(requestedSchema.getName(), requestedTypes);
+    }
+      
+    return requestedSchema;
   }
 }

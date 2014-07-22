@@ -15,8 +15,10 @@ POSTHOOK: query: create database mydb
 POSTHOOK: type: CREATEDATABASE
 PREHOOK: query: create function mydb.func1 as 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFUpper'
 PREHOOK: type: CREATEFUNCTION
+PREHOOK: Output: database:mydb
 POSTHOOK: query: create function mydb.func1 as 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFUpper'
 POSTHOOK: type: CREATEFUNCTION
+POSTHOOK: Output: database:mydb
 PREHOOK: query: show functions mydb.func1
 PREHOOK: type: SHOWFUNCTIONS
 POSTHOOK: query: show functions mydb.func1
@@ -33,8 +35,10 @@ POSTHOOK: Input: default@src
 ABC
 PREHOOK: query: drop function mydb.func1
 PREHOOK: type: DROPFUNCTION
+PREHOOK: Output: database:mydb
 POSTHOOK: query: drop function mydb.func1
 POSTHOOK: type: DROPFUNCTION
+POSTHOOK: Output: database:mydb
 PREHOOK: query: -- function should now be gone
 show functions mydb.func1
 PREHOOK: type: SHOWFUNCTIONS
@@ -44,9 +48,11 @@ POSTHOOK: type: SHOWFUNCTIONS
 PREHOOK: query: -- To test function name resolution
 create function mydb.qtest_get_java_boolean as 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFUpper'
 PREHOOK: type: CREATEFUNCTION
+PREHOOK: Output: database:mydb
 POSTHOOK: query: -- To test function name resolution
 create function mydb.qtest_get_java_boolean as 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFUpper'
 POSTHOOK: type: CREATEFUNCTION
+POSTHOOK: Output: database:mydb
 PREHOOK: query: use default
 PREHOOK: type: SWITCHDATABASE
 POSTHOOK: query: use default
@@ -79,8 +85,10 @@ POSTHOOK: Input: default@src
 ABC	NULL	ABC
 PREHOOK: query: drop function mydb.qtest_get_java_boolean
 PREHOOK: type: DROPFUNCTION
+PREHOOK: Output: database:mydb
 POSTHOOK: query: drop function mydb.qtest_get_java_boolean
 POSTHOOK: type: DROPFUNCTION
+POSTHOOK: Output: database:mydb
 PREHOOK: query: drop database mydb cascade
 PREHOOK: type: DROPDATABASE
 PREHOOK: Input: database:mydb

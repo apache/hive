@@ -119,11 +119,4 @@ POSTHOOK: query: select dest1.* FROM dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: dest1.c1 EXPRESSION []
-POSTHOOK: Lineage: dest1.c2 EXPRESSION []
-POSTHOOK: Lineage: dest1.c3 EXPRESSION []
-POSTHOOK: Lineage: dest1.c4 EXPRESSION []
-POSTHOOK: Lineage: dest1.c5 EXPRESSION []
-POSTHOOK: Lineage: dest1.c6 EXPRESSION []
-POSTHOOK: Lineage: dest1.c7 EXPRESSION []
 5	5.0	5.0	5.0	5	true	1

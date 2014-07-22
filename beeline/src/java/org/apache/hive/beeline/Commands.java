@@ -22,6 +22,8 @@
  */
 package org.apache.hive.beeline;
 
+import org.apache.hadoop.io.IOUtils;
+
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileReader;
@@ -43,6 +45,8 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
+
+import org.apache.hadoop.hive.common.cli.ShellCmdExecutor;
 
 
 public class Commands {
@@ -657,6 +661,36 @@ public class Commands {
     return execute(line, false);
   }
 
+  public boolean sh(String line) {
+    if (line == null || line.length() == 0) {
+      return false;
+    }
+
+    if (!line.startsWith("sh")) {
+      return false;
+    }
+
+    line = line.substring("sh".length()).trim();
+
+    // Support variable substitution. HIVE-6791.
+    // line = new VariableSubstitution().substitute(new HiveConf(BeeLine.class), line.trim());
+
+    try {
+      ShellCmdExecutor executor = new ShellCmdExecutor(line, beeLine.getOutputStream(),
+          beeLine.getErrorStream());
+      int ret = executor.execute();
+      if (ret != 0) {
+        beeLine.output("Command failed with exit code = " + ret);
+        return false;
+      }
+      return true;
+    } catch (Exception e) {
+      beeLine.error("Exception raised from Shell command " + e);
+      beeLine.error(e);
+      return false;
+    }
+  }
+
   public boolean call(String line) {
     return execute(line, true);
   }
@@ -801,8 +835,8 @@ public class Commands {
     try {
       if (beeLine.getDatabaseConnection().getConnection() != null
           && !(beeLine.getDatabaseConnection().getConnection().isClosed())) {
-        beeLine.info(beeLine.loc("closing",
-            beeLine.getDatabaseConnection().getConnection().getClass().getName()));
+        int index = beeLine.getDatabaseConnections().getIndex();
+        beeLine.info(beeLine.loc("closing", index, beeLine.getDatabaseConnection()));
         beeLine.getDatabaseConnection().getConnection().close();
       } else {
         beeLine.info(beeLine.loc("already-closed"));
@@ -831,7 +865,12 @@ public class Commands {
 
     for (int i = 1; i < parts.length; i++) {
       Properties props = new Properties();
-      props.load(new FileInputStream(parts[i]));
+      InputStream stream = new FileInputStream(parts[i]);
+      try {
+        props.load(stream);
+      } finally {
+        IOUtils.closeStream(stream);
+      }
       if (connect(props)) {
         successes++;
       }
@@ -876,6 +915,7 @@ public class Commands {
     if (pass != null) {
       props.setProperty("password", pass);
     }
+
     return connect(props);
   }
 
@@ -922,6 +962,7 @@ public class Commands {
         "javax.jdo.option.ConnectionPassword",
         "ConnectionPassword",
     });
+    String auth = getProperty(props, new String[] {"auth"});
 
     if (url == null || url.length() == 0) {
       return beeLine.error("Property \"url\" is required");
@@ -937,15 +978,25 @@ public class Commands {
     if (username == null) {
       username = beeLine.getConsoleReader().readLine("Enter username for " + url + ": ");
     }
+    props.setProperty("user", username);
     if (password == null) {
       password = beeLine.getConsoleReader().readLine("Enter password for " + url + ": ",
           new Character('*'));
     }
+    props.setProperty("password", password);
+
+    if (auth == null) {
+      auth = beeLine.getOpts().getAuthType();
+    }
+    if (auth != null) {
+      props.setProperty("auth", auth);
+    }
 
     try {
       beeLine.getDatabaseConnections().setConnection(
-          new DatabaseConnection(beeLine, driver, url, username, password));
+          new DatabaseConnection(beeLine, driver, url, props));
       beeLine.getDatabaseConnection().getConnection();
+      beeLine.runInit();
 
       beeLine.setCompletions();
       return true;
@@ -1171,8 +1222,8 @@ public class Commands {
     } catch (Exception e) {
       beeLine.handleException(e);
     }
-    beeLine.output(beeLine.loc("record-closed", beeLine.getRecordOutputFile()));
     beeLine.setRecordOutputFile(null);
+    beeLine.output(beeLine.loc("record-closed", beeLine.getRecordOutputFile()));
     return true;
   }
 
@@ -1191,8 +1242,9 @@ public class Commands {
     }
 
     try {
-      beeLine.setRecordOutputFile(new OutputFile(parts[1]));
-      beeLine.output(beeLine.loc("record-started", beeLine.getRecordOutputFile()));
+      OutputFile recordOutput = new OutputFile(parts[1]);
+      beeLine.output(beeLine.loc("record-started", recordOutput));
+      beeLine.setRecordOutputFile(recordOutput);
       return true;
     } catch (Exception e) {
       return beeLine.error(e);

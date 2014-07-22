@@ -27,8 +27,10 @@ import org.apache.hadoop.io.WritableComparator;
 
 /**
  * ByteWritable.
- *
+ * Looks like this has been phased out in favor of org.apache.hadoop.hive.serde2.io.ByteWritable.
+ * This class should eventually be removed.
  */
+@Deprecated
 public class ByteWritable implements WritableComparable {
   private int value;
 

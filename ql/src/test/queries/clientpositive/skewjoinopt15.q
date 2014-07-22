@@ -1,5 +1,4 @@
 set hive.mapred.supports.subdirectories=true;
-set hive.internal.ddl.list.bucketing.enable=true;
 set hive.optimize.skewjoin.compiletime = true;
 
 CREATE TABLE tmpT1(key STRING, val STRING) STORED AS TEXTFILE;

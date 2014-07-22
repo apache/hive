@@ -28,6 +28,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
@@ -35,7 +36,7 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
-import org.apache.hadoop.hive.ql.stats.CounterStatsPublisher;
+import org.apache.hadoop.hive.ql.stats.StatsCollectionTaskIndependent;
 import org.apache.hadoop.hive.ql.stats.StatsPublisher;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
@@ -64,6 +65,8 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
 
   private transient int rowLimit = -1;
   private transient int currCount = 0;
+
+  private String defaultPartitionName;
 
   public TableDesc getTableDesc() {
     return tableDesc;
@@ -145,8 +148,9 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
             (StructObjectInspector) inputObjInspectors[0], ObjectInspectorCopyOption.WRITABLE);
 
         for (Object o : writable) {
-          assert (o != null && o.toString().length() > 0);
-          values.add(o.toString());
+          // It's possible that a parition column may have NULL value, in which case the row belongs
+          // to the special partition, __HIVE_DEFAULT_PARTITION__.
+          values.add(o == null ? defaultPartitionName : o.toString());
         }
         partitionSpecs = FileUtils.makePartName(conf.getPartColumns(), values);
         LOG.info("Stats Gathering found a new partition spec = " + partitionSpecs);
@@ -205,6 +209,7 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
       jc = new JobConf(hconf);
     }
 
+    defaultPartitionName = HiveConf.getVar(hconf, HiveConf.ConfVars.DEFAULTPARTITIONNAME);
     currentStat = null;
     stats = new HashMap<String, Stat>();
     if (conf.getPartColumns() == null || conf.getPartColumns().size() == 0) {
@@ -238,31 +243,28 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
     return "TS";
   }
 
-  // This 'neededColumnIDs' field is included in this operator class instead of
-  // its desc class.The reason is that 1)tableScanDesc can not be instantiated,
-  // and 2) it will fail some join and union queries if this is added forcibly
-  // into tableScanDesc.
-  // Both neededColumnIDs and neededColumns should never be null.
-  // When neededColumnIDs is an empty list,
-  // it means no needed column (e.g. we do not need any column to evaluate
-  // SELECT count(*) FROM t).
-  List<Integer> neededColumnIDs;
-  List<String> neededColumns;
-
   public void setNeededColumnIDs(List<Integer> orign_columns) {
-    neededColumnIDs = orign_columns;
+    conf.setNeededColumnIDs(orign_columns);
   }
 
   public List<Integer> getNeededColumnIDs() {
-    return neededColumnIDs;
+    return conf.getNeededColumnIDs();
   }
 
   public void setNeededColumns(List<String> columnNames) {
-    neededColumns = columnNames;
+    conf.setNeededColumns(columnNames);
   }
 
   public List<String> getNeededColumns() {
-    return neededColumns;
+    return conf.getNeededColumns();
+  }
+
+  public void setReferencedColumns(List<String> referencedColumns) {
+    conf.setReferencedColumns(referencedColumns);
+  }
+
+  public List<String> getReferencedColumns() {
+    return conf.getReferencedColumns();
   }
 
   @Override
@@ -293,8 +295,8 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
 
       int maxKeyLength = conf.getMaxStatsKeyPrefixLength();
       String key = Utilities.getHashedStatsPrefix(prefix, maxKeyLength);
-      if (!(statsPublisher instanceof CounterStatsPublisher)) {
-        // stats publisher except counter type needs postfix 'taskID'
+      if (!(statsPublisher instanceof StatsCollectionTaskIndependent)) {
+        // stats publisher except counter or fs type needs postfix 'taskID'
         key = Utilities.join(prefix, taskID);
       }
       for(String statType : stats.get(pspecs).getStoredStats()) {
@@ -330,6 +332,7 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
     TableScanOperator ts = (TableScanOperator) super.clone();
     ts.setNeededColumnIDs(new ArrayList<Integer>(getNeededColumnIDs()));
     ts.setNeededColumns(new ArrayList<String>(getNeededColumns()));
+    ts.setReferencedColumns(new ArrayList<String>(getReferencedColumns()));
     return ts;
   }
 

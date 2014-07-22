@@ -1,7 +1,9 @@
 PREHOOK: query: CREATE TEMPORARY FUNCTION example_avg AS 'org.apache.hadoop.hive.contrib.udaf.example.UDAFExampleAvg'
 PREHOOK: type: CREATEFUNCTION
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TEMPORARY FUNCTION example_avg AS 'org.apache.hadoop.hive.contrib.udaf.example.UDAFExampleAvg'
 POSTHOOK: type: CREATEFUNCTION
+POSTHOOK: Output: database:default
 PREHOOK: query: EXPLAIN
 SELECT example_avg(substr(value,5)),
        example_avg(IF(substr(value,5) > 250, NULL, substr(value,5)))
@@ -14,7 +16,7 @@ FROM src
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -57,6 +59,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT example_avg(substr(value,5)),
        example_avg(IF(substr(value,5) > 250, NULL, substr(value,5)))
@@ -73,5 +77,7 @@ POSTHOOK: Input: default@src
 260.182	134.82926829268294
 PREHOOK: query: DROP TEMPORARY FUNCTION example_avg
 PREHOOK: type: DROPFUNCTION
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TEMPORARY FUNCTION example_avg
 POSTHOOK: type: DROPFUNCTION
+POSTHOOK: Output: database:default

@@ -29,9 +29,11 @@ import junit.framework.TestCase;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.RCFile;
 import org.apache.hadoop.hive.ql.io.RCFileOutputFormat;
 import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.columnar.BytesRefArrayWritable;
 import org.apache.hadoop.hive.serde2.columnar.BytesRefWritable;
 import org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe;
@@ -75,7 +77,7 @@ public class TestRCFileMapReduceInputFormat extends TestCase {
       serDe = new ColumnarSerDe();
       // Create the SerDe
       tbl = createProperties();
-      serDe.initialize(conf, tbl);
+      SerDeUtils.initializeSerDe(serDe, conf, tbl, null);
     } catch (Exception e) {
     }
   }
@@ -209,7 +211,7 @@ public class TestRCFileMapReduceInputFormat extends TestCase {
     fs.delete(testFile, true);
     Configuration cloneConf = new Configuration(conf);
     RCFileOutputFormat.setColumnNumber(cloneConf, bytesArray.length);
-    cloneConf.setInt(RCFile.RECORD_INTERVAL_CONF_STR, intervalRecordCount);
+    cloneConf.setInt(HiveConf.ConfVars.HIVE_RCFILE_RECORD_INTERVAL.varname, intervalRecordCount);
 
     RCFile.Writer writer = new RCFile.Writer(fs, cloneConf, testFile, null, codec);
 
@@ -228,7 +230,8 @@ public class TestRCFileMapReduceInputFormat extends TestCase {
     Configuration jonconf = new Configuration(cloneConf);
     jonconf.set("mapred.input.dir", testDir.toString());
     JobContext context = new Job(jonconf);
-    context.getConfiguration().setLong("mapred.max.split.size", maxSplitSize);
+    context.getConfiguration().setLong(
+        ShimLoader.getHadoopShims().getHadoopConfNames().get("MAPREDMAXSPLITSIZE"), maxSplitSize);
     List<InputSplit> splits = inputFormat.getSplits(context);
     assertEquals("splits length should be " + splitNumber, splits.size(), splitNumber);
     int readCount = 0;

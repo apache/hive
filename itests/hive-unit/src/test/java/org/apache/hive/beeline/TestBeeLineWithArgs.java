@@ -25,7 +25,9 @@ import static org.junit.Assert.fail;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.io.PrintStream;
+import java.io.StringBufferInputStream;
 import java.io.UnsupportedEncodingException;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -70,6 +72,9 @@ public class TestBeeLineWithArgs {
   @BeforeClass
   public static void preTests() throws Exception {
     HiveConf hiveConf = new HiveConf();
+    // Set to non-zk lock manager to prevent HS2 from trying to connect
+    hiveConf.setVar(HiveConf.ConfVars.HIVE_LOCK_MANAGER, "org.apache.hadoop.hive.ql.lockmgr.EmbeddedLockManager");
+
     //  hiveConf.logVars(System.err);
     // System.err.flush();
 
@@ -135,21 +140,22 @@ public class TestBeeLineWithArgs {
   }
 
   /**
-   * Execute a script with "beeline -f"
-   * @param scriptFileName The name of the script to execute
-   * @throws Any exception while executing
+   * Execute a script with "beeline -f or -i"
+   *
    * @return The stderr and stdout from running the script
    */
-  private String testCommandLineScript(List<String> argList) throws Throwable {
+  private String testCommandLineScript(List<String> argList, InputStream inputStream)
+      throws Throwable {
     BeeLine beeLine = new BeeLine();
     ByteArrayOutputStream os = new ByteArrayOutputStream();
     PrintStream beelineOutputStream = new PrintStream(os);
     beeLine.setOutputStream(beelineOutputStream);
     beeLine.setErrorStream(beelineOutputStream);
     String[] args = argList.toArray(new String[argList.size()]);
-    beeLine.begin(args, null);
+    beeLine.begin(args, inputStream);
     String output = os.toString("UTF8");
 
+    beeLine.close();
     return output;
   }
 
@@ -166,9 +172,6 @@ public class TestBeeLineWithArgs {
   private void testScriptFile(String testName, String scriptText, String expectedPattern,
       boolean shouldMatch, List<String> argList) throws Throwable {
 
-    long startTime = System.currentTimeMillis();
-    System.out.println(">>> STARTED " + testName);
-
     // Put the script content in a temp file
     File scriptFile = File.createTempFile(testName, "temp");
     scriptFile.deleteOnExit();
@@ -176,17 +179,49 @@ public class TestBeeLineWithArgs {
     os.print(scriptText);
     os.close();
 
-    argList.add("-f");
-    argList.add(scriptFile.getAbsolutePath());
+    System.out.println(">>> STARTED -f " + testName);
+    {
+      List<String> copy = new ArrayList<String>(argList);
+      copy.add("-f");
+      copy.add(scriptFile.getAbsolutePath());
 
-    String output = testCommandLineScript(argList);
-    boolean matches = output.contains(expectedPattern);
-    if (shouldMatch != matches) {
-      //failed
-      fail(testName + ": Output" + output + " should" +  (shouldMatch ? "" : " not") +
-          " contain " + expectedPattern);
+      String output = testCommandLineScript(copy, null);
+      boolean matches = output.contains(expectedPattern);
+      if (shouldMatch != matches) {
+        //failed
+        fail(testName + ": Output" + output + " should" +  (shouldMatch ? "" : " not") +
+            " contain " + expectedPattern);
+      }
+    }
+
+    System.out.println(">>> STARTED -i " + testName);
+    {
+      List<String> copy = new ArrayList<String>(argList);
+      copy.add("-i");
+      copy.add(scriptFile.getAbsolutePath());
+
+      String output = testCommandLineScript(copy, new StringBufferInputStream("!quit\n"));
+      boolean matches = output.contains(expectedPattern);
+      if (shouldMatch != matches) {
+        //failed
+        fail(testName + ": Output" + output + " should" +  (shouldMatch ? "" : " not") +
+            " contain " + expectedPattern);
+      }
     }
     scriptFile.delete();
+  }
+  
+  /**
+   * Test that BeeLine will read comment lines that start with whitespace
+   * @throws Throwable
+   */
+  @Test
+  public void testWhitespaceBeforeCommentScriptFile() throws Throwable {
+	  final String TEST_NAME = "testWhitespaceBeforeCommentScriptFile";
+	  final String SCRIPT_TEXT = " 	 	-- comment has spaces and tabs before it\n 	 	# comment has spaces and tabs before it\n";
+	  final String EXPECTED_PATTERN = "cannot recognize input near '<EOF>'";
+	  List<String> argList = getBaseArgs(JDBC_URL);
+	  testScriptFile(TEST_NAME, SCRIPT_TEXT, EXPECTED_PATTERN, false, argList);
   }
 
   /**
@@ -274,6 +309,14 @@ public class TestBeeLineWithArgs {
     testScriptFile(TEST_NAME, SCRIPT_TEXT, EXPECTED_PATTERN, false, argList);
   }
 
+  @Test
+  public void testBeelineShellCommand() throws Throwable {
+    List<String> argList = getBaseArgs(JDBC_URL);
+    final String TEST_NAME = "testBeelineShellCommand";
+    final String SCRIPT_TEXT = "!sh echo \"hello world.\" > hw.txt\n!sh cat hw.txt\n!rm hw.txt";
+    final String EXPECTED_PATTERN = "hello world";
+    testScriptFile(TEST_NAME, SCRIPT_TEXT, EXPECTED_PATTERN, true, argList);
+  }
 
   /**
    * Select null from table , check how null is printed
@@ -369,7 +412,7 @@ public class TestBeeLineWithArgs {
     argList.add(scriptFile.getAbsolutePath());
 
     try {
-        String output = testCommandLineScript(argList);
+        String output = testCommandLineScript(argList, null);
       long elapsedTime = (System.currentTimeMillis() - startTime)/1000;
       String time = "(" + elapsedTime + "s)";
       if (output.contains(EXPECTED_PATTERN)) {
@@ -427,7 +470,10 @@ public class TestBeeLineWithArgs {
 	  argList.add("--hivevar");
     argList.add("DUMMY_TBL=embedded_table");
     final String TEST_NAME = "testEmbeddedBeelineConnection";
-    final String SCRIPT_TEXT = "create table ${DUMMY_TBL} (d int);\nshow tables;\n";
+    // Set to non-zk lock manager to avoid trying to connect to zookeeper
+    final String SCRIPT_TEXT =
+        "set hive.lock.manager=org.apache.hadoop.hive.ql.lockmgr.EmbeddedLockManager;\n" +
+        "create table ${DUMMY_TBL} (d int);\nshow tables;\n";
     final String EXPECTED_PATTERN = "embedded_table";
     testScriptFile(TEST_NAME, SCRIPT_TEXT, EXPECTED_PATTERN, true, argList);
   }

@@ -1,6 +1,8 @@
 set hive.exec.dynamic.partition.mode=nonstrict;
 set hive.exec.dynamic.partition=true;
 
+-- SORT_QUERY_RESULTS
+
 DROP TABLE parquet_partitioned_staging;
 DROP TABLE parquet_partitioned;
 

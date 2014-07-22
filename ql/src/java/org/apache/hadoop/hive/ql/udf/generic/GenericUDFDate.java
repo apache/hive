@@ -25,11 +25,15 @@ import java.util.Date;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFDateLong;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFDateString;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
@@ -46,6 +50,7 @@ import org.apache.hadoop.io.Text;
     extended = "Example:\n "
         + "  > SELECT _FUNC_('2009-07-30 04:17:52') FROM src LIMIT 1;\n"
         + "  '2009-07-30'")
+@VectorizedExpressions({VectorUDFDateString.class, VectorUDFDateLong.class})
 public class GenericUDFDate extends GenericUDF {
   private transient SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
   private transient TimestampConverter timestampConverter;
@@ -59,14 +64,20 @@ public class GenericUDFDate extends GenericUDF {
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
     if (arguments.length != 1) {
       throw new UDFArgumentLengthException(
-          "to_date() requires 1 argument, got " + arguments.length);
+        "to_date() requires 1 argument, got " + arguments.length);
+    }
+    if (arguments[0].getCategory() != Category.PRIMITIVE) {
+      throw new UDFArgumentException("to_date() only accepts STRING/TIMESTAMP/DATEWRITABLE types, got "
+          + arguments[0].getTypeName());
     }
     argumentOI = (PrimitiveObjectInspector) arguments[0];
     inputType = argumentOI.getPrimitiveCategory();
     ObjectInspector outputOI = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
     switch (inputType) {
+    case CHAR:
+    case VARCHAR:
     case STRING:
-      // textConverter = new TextConverter(argumentOI);
+      inputType = PrimitiveCategory.STRING;
       textConverter = ObjectInspectorConverters.getConverter(
         argumentOI, PrimitiveObjectInspectorFactory.writableStringObjectInspector);
       break;
@@ -87,6 +98,10 @@ public class GenericUDFDate extends GenericUDF {
 
   @Override
   public Object evaluate(DeferredObject[] arguments) throws HiveException {
+    if (arguments[0].get() == null) {
+      return null;
+    }
+
     switch (inputType) {
     case STRING:
       Date date;
