@@ -28,7 +28,7 @@ public class SparkTask extends Task<SparkWork> {
 
   @Override
   public int execute(DriverContext driverContext) {
-    SparkClient client = SparkClient.getInstance();
+    SparkClient client = SparkClient.getInstance(driverContext.getCtx().getConf());
     return client.execute(driverContext, getWork());
   }
 
