@@ -737,7 +737,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         firePreEvent(new PreCreateDatabaseEvent(db, this));
 
         if (!wh.isDir(dbPath)) {
-          if (!wh.mkdirs(dbPath, false)) {
+          if (!wh.mkdirs(dbPath, true)) {
             throw new MetaException("Unable to create database path " + dbPath +
                 ", failed to create database " + db.getName());
           }
