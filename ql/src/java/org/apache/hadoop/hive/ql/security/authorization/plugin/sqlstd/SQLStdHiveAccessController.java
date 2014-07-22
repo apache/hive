@@ -350,17 +350,22 @@ public class SQLStdHiveAccessController implements HiveAccessController {
         + " allowed get principals in a role. " + ADMIN_ONLY_MSG);
     }
     try {
-      GetPrincipalsInRoleResponse princGrantInfo =
-          metastoreClientFactory.getHiveMetastoreClient().get_principals_in_role(new GetPrincipalsInRoleRequest(roleName));
-
-      List<HiveRoleGrant> hiveRoleGrants = new ArrayList<HiveRoleGrant>();
-      for(RolePrincipalGrant thriftRoleGrant :  princGrantInfo.getPrincipalGrants()){
-        hiveRoleGrants.add(new HiveRoleGrant(thriftRoleGrant));
-      }
-      return hiveRoleGrants;
+      return getHiveRoleGrants(metastoreClientFactory.getHiveMetastoreClient(), roleName);
     } catch (Exception e) {
       throw new HiveAuthzPluginException("Error getting principals for all roles", e);
     }
+  }
+
+  public static List<HiveRoleGrant> getHiveRoleGrants(IMetaStoreClient client, String roleName)
+      throws Exception {
+    GetPrincipalsInRoleRequest request = new GetPrincipalsInRoleRequest(roleName);
+    GetPrincipalsInRoleResponse princGrantInfo = client.get_principals_in_role(request);
+
+    List<HiveRoleGrant> hiveRoleGrants = new ArrayList<HiveRoleGrant>();
+    for(RolePrincipalGrant thriftRoleGrant :  princGrantInfo.getPrincipalGrants()){
+      hiveRoleGrants.add(new HiveRoleGrant(thriftRoleGrant));
+    }
+    return hiveRoleGrants;
   }
 
   @Override
@@ -416,7 +421,7 @@ public class SQLStdHiveAccessController implements HiveAccessController {
 
         HivePrivilegeObject resPrivObj = new HivePrivilegeObject(
             getPluginObjType(msObjRef.getObjectType()), msObjRef.getDbName(),
-            msObjRef.getObjectName());
+            msObjRef.getObjectName(), msObjRef.getPartValues(), msObjRef.getColumnName());
 
         // result grantor principal
         HivePrincipal grantorPrincipal = new HivePrincipal(msGrantInfo.getGrantor(),

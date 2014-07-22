@@ -18,8 +18,8 @@
 
 package org.apache.hive.jdbc;
 
-import static org.apache.hadoop.hive.ql.exec.ExplainTask.EXPL_COLUMN_NAME;
 import static org.apache.hadoop.hive.conf.SystemVariables.SET_COLUMN_NAME;
+import static org.apache.hadoop.hive.ql.exec.ExplainTask.EXPL_COLUMN_NAME;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -53,7 +53,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.processors.DfsProcessor;
-import org.apache.hadoop.hive.ql.processors.SetProcessor;
 import org.apache.hive.common.util.HiveVersionInfo;
 import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
 import org.apache.hive.service.cli.operation.ClassicTableTypeMapping;
@@ -1997,7 +1996,7 @@ public class TestJdbcDriver2 {
     assertEquals("", res.getString(4));     // column
     assertEquals("hive_test_user", res.getString(5));
     assertEquals("USER", res.getString(6));
-    assertEquals("Select", res.getString(7));
+    assertEquals("SELECT", res.getString(7));
     assertEquals(false, res.getBoolean(8)); // grant option
     assertEquals(-1, res.getLong(9));
     assertNotNull(res.getString(10));       // grantor

@@ -18,8 +18,8 @@
 
 package org.apache.hadoop.hive.jdbc;
 
-import static org.apache.hadoop.hive.ql.exec.ExplainTask.EXPL_COLUMN_NAME;
 import static org.apache.hadoop.hive.conf.SystemVariables.SET_COLUMN_NAME;
+import static org.apache.hadoop.hive.ql.exec.ExplainTask.EXPL_COLUMN_NAME;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -1158,7 +1158,7 @@ public class TestJdbcDriver extends TestCase {
     assertEquals("", res.getString(4));     // column
     assertEquals("hive_test_user", res.getString(5));
     assertEquals("USER", res.getString(6));
-    assertEquals("Select", res.getString(7));
+    assertEquals("SELECT", res.getString(7));
     assertEquals(false, res.getBoolean(8)); // grant option
     assertEquals(-1, res.getLong(9));
     assertNotNull(res.getString(10));       // grantor
