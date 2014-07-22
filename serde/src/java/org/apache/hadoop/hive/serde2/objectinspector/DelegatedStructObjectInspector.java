@@ -56,6 +56,9 @@ public class DelegatedStructObjectInspector extends StructObjectInspector {
     public ObjectInspector getFieldObjectInspector() {
       return field.getFieldObjectInspector();
     }
+    public int getFieldID() {
+      return field.getFieldID();
+    }
     public String getFieldComment() {
       return field.getFieldComment();
     }

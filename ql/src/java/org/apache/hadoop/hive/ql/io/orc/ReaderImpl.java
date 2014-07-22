@@ -24,7 +24,6 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -36,7 +35,6 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.Type;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
-import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.io.Text;
@@ -68,10 +66,7 @@ final class ReaderImpl implements Reader {
   // memory footprint.
   private final ByteBuffer footerByteBuffer;
 
-  private static final PerfLogger perfLogger = PerfLogger.getPerfLogger();
-  private static final String CLASS_NAME = ReaderImpl.class.getName();
-
-  private static class StripeInformationImpl
+  static class StripeInformationImpl
       implements StripeInformation {
     private final OrcProto.StripeInformation stripe;
 
@@ -123,7 +118,7 @@ final class ReaderImpl implements Reader {
   }
 
   @Override
-  public Iterable<String> getMetadataKeys() {
+  public List<String> getMetadataKeys() {
     List<String> result = new ArrayList<String>();
     for(OrcProto.UserMetadataItem item: footer.getMetadataList()) {
       result.add(item.getName());
@@ -141,6 +136,15 @@ final class ReaderImpl implements Reader {
     throw new IllegalArgumentException("Can't find user metadata " + key);
   }
 
+  public boolean hasMetadataValue(String key) {
+    for(OrcProto.UserMetadataItem item: footer.getMetadataList()) {
+      if (item.hasName() && item.getName().equals(key)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   @Override
   public CompressionKind getCompression() {
     return compressionKind;
@@ -152,32 +156,12 @@ final class ReaderImpl implements Reader {
   }
 
   @Override
-  public Iterable<StripeInformation> getStripes() {
-    return new Iterable<org.apache.hadoop.hive.ql.io.orc.StripeInformation>(){
-
-      @Override
-      public Iterator<org.apache.hadoop.hive.ql.io.orc.StripeInformation> iterator() {
-        return new Iterator<org.apache.hadoop.hive.ql.io.orc.StripeInformation>(){
-          private final Iterator<OrcProto.StripeInformation> inner =
-            footer.getStripesList().iterator();
-
-          @Override
-          public boolean hasNext() {
-            return inner.hasNext();
-          }
-
-          @Override
-          public org.apache.hadoop.hive.ql.io.orc.StripeInformation next() {
-            return new StripeInformationImpl(inner.next());
-          }
-
-          @Override
-          public void remove() {
-            throw new UnsupportedOperationException("remove unsupported");
-          }
-        };
-      }
-    };
+  public List<StripeInformation> getStripes() {
+    List<StripeInformation> result = new ArrayList<StripeInformation>();
+    for(OrcProto.StripeInformation info: footer.getStripesList()) {
+      result.add(new StripeInformationImpl(info));
+    }
+    return result;
   }
 
   @Override
@@ -287,22 +271,33 @@ final class ReaderImpl implements Reader {
   }
 
   /**
-   * Constructor that extracts metadata information from file footer
-   * @param fs
-   * @param path
-   * @param conf
+  * Constructor that let's the user specify additional options.
+   * @param path pathname for file
+   * @param options options for reading
    * @throws IOException
    */
-  ReaderImpl(FileSystem fs, Path path, Configuration conf) throws IOException {
+  ReaderImpl(Path path, OrcFile.ReaderOptions options) throws IOException {
+    FileSystem fs = options.getFilesystem();
+    if (fs == null) {
+      fs = path.getFileSystem(options.getConfiguration());
+    }
     this.fileSystem = fs;
     this.path = path;
-    this.conf = conf;
+    this.conf = options.getConfiguration();
 
-    FileMetaInfo footerMetaData = extractMetaInfoFromFooter(fs, path);
-
-    MetaInfoObjExtractor rInfo = new MetaInfoObjExtractor(footerMetaData.compressionType,
-        footerMetaData.bufferSize, footerMetaData.metadataSize, footerMetaData.footerBuffer);
-
+    FileMetaInfo footerMetaData;
+    if (options.getFileMetaInfo() != null) {
+      footerMetaData = options.getFileMetaInfo();
+    } else {
+      footerMetaData = extractMetaInfoFromFooter(fs, path,
+          options.getMaxLength());
+    }
+    MetaInfoObjExtractor rInfo =
+        new MetaInfoObjExtractor(footerMetaData.compressionType,
+                                 footerMetaData.bufferSize,
+                                 footerMetaData.metadataSize,
+                                 footerMetaData.footerBuffer
+                                 );
     this.footerByteBuffer = footerMetaData.footerBuffer;
     this.compressionKind = rInfo.compressionKind;
     this.codec = rInfo.codec;
@@ -314,43 +309,21 @@ final class ReaderImpl implements Reader {
   }
 
 
-  /**
-   * Constructor that takes already saved footer meta information. Used for creating RecordReader
-   * from saved information in InputSplit
-   * @param fs
-   * @param path
-   * @param fMetaInfo
-   * @param conf
-   * @throws IOException
-   */
-  ReaderImpl(FileSystem fs, Path path, FileMetaInfo fMetaInfo, Configuration conf)
-      throws IOException {
-    this.fileSystem = fs;
-    this.path = path;
-    this.conf = conf;
-
-    MetaInfoObjExtractor rInfo = new MetaInfoObjExtractor(
-            fMetaInfo.compressionType,
-            fMetaInfo.bufferSize,
-            fMetaInfo.metadataSize,
-            fMetaInfo.footerBuffer
-            );
-    this.footerByteBuffer = fMetaInfo.footerBuffer;
-    this.compressionKind = rInfo.compressionKind;
-    this.codec = rInfo.codec;
-    this.bufferSize = rInfo.bufferSize;
-    this.metadataSize = rInfo.metadataSize;
-    this.metadata = rInfo.metadata;
-    this.footer = rInfo.footer;
-    this.inspector = rInfo.inspector;
-  }
-
-
-  private static FileMetaInfo extractMetaInfoFromFooter(FileSystem fs, Path path) throws IOException {
+  private static FileMetaInfo extractMetaInfoFromFooter(FileSystem fs,
+                                                        Path path,
+                                                        long maxFileLength
+                                                        ) throws IOException {
     FSDataInputStream file = fs.open(path);
 
+    // figure out the size of the file using the option or filesystem
+    long size;
+    if (maxFileLength == Long.MAX_VALUE) {
+      size = fs.getFileStatus(path).getLen();
+    } else {
+      size = maxFileLength;
+    }
+
     //read last bytes into buffer to get PostScript
-    long size = fs.getFileStatus(path).getLen();
     int readSize = (int) Math.min(size, DIRECTORY_SIZE_GUESS);
     file.seek(size - readSize);
     ByteBuffer buffer = ByteBuffer.allocate(readSize);
@@ -463,37 +436,70 @@ final class ReaderImpl implements Reader {
     }
   }
 
+  /**
+   * FileMetaInfo - represents file metadata stored in footer and postscript sections of the file
+   * that is useful for Reader implementation
+   *
+   */
+  static class FileMetaInfo{
+    final String compressionType;
+    final int bufferSize;
+    final int metadataSize;
+    final ByteBuffer footerBuffer;
+    FileMetaInfo(String compressionType, int bufferSize, int metadataSize,
+                 ByteBuffer footerBuffer){
+      this.compressionType = compressionType;
+      this.bufferSize = bufferSize;
+      this.metadataSize = metadataSize;
+      this.footerBuffer = footerBuffer;
+    }
+  }
+
   public FileMetaInfo getFileMetaInfo(){
-    return new FileMetaInfo(compressionKind.toString(), bufferSize, metadataSize, footerByteBuffer);
+    return new FileMetaInfo(compressionKind.toString(), bufferSize,
+        metadataSize, footerByteBuffer);
   }
 
 
 
   @Override
+  public RecordReader rows() throws IOException {
+    return rowsOptions(new Options());
+  }
+
+  @Override
+  public RecordReader rowsOptions(Options options) throws IOException {
+    LOG.info("Reading ORC rows from " + path + " with " + options);
+    boolean[] include = options.getInclude();
+    // if included columns is null, then include all columns
+    if (include == null) {
+      include = new boolean[footer.getTypesCount()];
+      Arrays.fill(include, true);
+      options.include(include);
+    }
+    return new RecordReaderImpl(this.getStripes(), fileSystem, path,
+        options, footer.getTypesList(), codec, bufferSize,
+        footer.getRowIndexStride(), conf);
+  }
+
+
+  @Override
   public RecordReader rows(boolean[] include) throws IOException {
-    return rows(0, Long.MAX_VALUE, include, null, null);
+    return rowsOptions(new Options().include(include));
   }
 
   @Override
   public RecordReader rows(long offset, long length, boolean[] include
                            ) throws IOException {
-    return rows(offset, length, include, null, null);
+    return rowsOptions(new Options().include(include).range(offset, length));
   }
 
   @Override
   public RecordReader rows(long offset, long length, boolean[] include,
                            SearchArgument sarg, String[] columnNames
                            ) throws IOException {
-
-    // if included columns is null, then include all columns
-    if (include == null) {
-      include = new boolean[footer.getTypesCount()];
-      Arrays.fill(include, true);
-    }
-
-    return new RecordReaderImpl(this.getStripes(), fileSystem,  path, offset,
-        length, footer.getTypesList(), codec, bufferSize,
-        include, footer.getRowIndexStride(), sarg, columnNames, conf);
+    return rowsOptions(new Options().include(include).range(offset, length)
+        .searchArgument(sarg, columnNames));
   }
 
   @Override
@@ -531,6 +537,8 @@ final class ReaderImpl implements Reader {
       // statistics is not required as protocol buffers takes care of it.
       return colStat.getBinaryStatistics().getSum();
     case STRING:
+    case CHAR:
+    case VARCHAR:
       // old orc format doesn't support sum for string statistics. checking for
       // existence is not required as protocol buffers takes care of it.
 
@@ -583,7 +591,7 @@ final class ReaderImpl implements Reader {
       // index for the requested field
       int idxStart = type.getSubtypes(fieldIdx);
 
-      int idxEnd = 0;
+      int idxEnd;
 
       // if the specified is the last field and then end index will be last
       // column index

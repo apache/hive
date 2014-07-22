@@ -1,9 +1,13 @@
-PREHOOK: query: create table if not exists nzhang_part_bucket (key string, value string) 
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+create table if not exists nzhang_part_bucket (key string, value string) 
   partitioned by (ds string, hr string) 
   clustered by (key) into 10 buckets
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-POSTHOOK: query: create table if not exists nzhang_part_bucket (key string, value string) 
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+create table if not exists nzhang_part_bucket (key string, value string) 
   partitioned by (ds string, hr string) 
   clustered by (key) into 10 buckets
 POSTHOOK: type: CREATETABLE
@@ -11,18 +15,20 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@nzhang_part_bucket
 PREHOOK: query: describe extended nzhang_part_bucket
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@nzhang_part_bucket
 POSTHOOK: query: describe extended nzhang_part_bucket
 POSTHOOK: type: DESCTABLE
-key                 	string              	None                
-value               	string              	None                
-ds                  	string              	None                
-hr                  	string              	None                
+POSTHOOK: Input: default@nzhang_part_bucket
+key                 	string              	                    
+value               	string              	                    
+ds                  	string              	                    
+hr                  	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-ds                  	string              	None                
-hr                  	string              	None                
+ds                  	string              	                    
+hr                  	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: explain
@@ -113,28 +119,22 @@ POSTHOOK: Lineage: nzhang_part_bucket PARTITION(ds=2010-03-23,hr=12).key SIMPLE 
 POSTHOOK: Lineage: nzhang_part_bucket PARTITION(ds=2010-03-23,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: show partitions nzhang_part_bucket
 PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@nzhang_part_bucket
 POSTHOOK: query: show partitions nzhang_part_bucket
 POSTHOOK: type: SHOWPARTITIONS
-POSTHOOK: Lineage: nzhang_part_bucket PARTITION(ds=2010-03-23,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: nzhang_part_bucket PARTITION(ds=2010-03-23,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: nzhang_part_bucket PARTITION(ds=2010-03-23,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: nzhang_part_bucket PARTITION(ds=2010-03-23,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Input: default@nzhang_part_bucket
 ds=2010-03-23/hr=11
 ds=2010-03-23/hr=12
-PREHOOK: query: select * from nzhang_part_bucket where ds='2010-03-23' and hr='11' order by key
+PREHOOK: query: select * from nzhang_part_bucket where ds='2010-03-23' and hr='11'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_part_bucket
 PREHOOK: Input: default@nzhang_part_bucket@ds=2010-03-23/hr=11
 #### A masked pattern was here ####
-POSTHOOK: query: select * from nzhang_part_bucket where ds='2010-03-23' and hr='11' order by key
+POSTHOOK: query: select * from nzhang_part_bucket where ds='2010-03-23' and hr='11'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_part_bucket
 POSTHOOK: Input: default@nzhang_part_bucket@ds=2010-03-23/hr=11
 #### A masked pattern was here ####
-POSTHOOK: Lineage: nzhang_part_bucket PARTITION(ds=2010-03-23,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: nzhang_part_bucket PARTITION(ds=2010-03-23,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: nzhang_part_bucket PARTITION(ds=2010-03-23,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: nzhang_part_bucket PARTITION(ds=2010-03-23,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 0	val_0	2010-03-23	11
 0	val_0	2010-03-23	11
 0	val_0	2010-03-23	11
@@ -1135,20 +1135,16 @@ POSTHOOK: Lineage: nzhang_part_bucket PARTITION(ds=2010-03-23,hr=12).value SIMPL
 98	val_98	2010-03-23	11
 98	val_98	2010-03-23	11
 98	val_98	2010-03-23	11
-PREHOOK: query: select * from nzhang_part_bucket where ds='2010-03-23' and hr='12' order by key
+PREHOOK: query: select * from nzhang_part_bucket where ds='2010-03-23' and hr='12'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_part_bucket
 PREHOOK: Input: default@nzhang_part_bucket@ds=2010-03-23/hr=12
 #### A masked pattern was here ####
-POSTHOOK: query: select * from nzhang_part_bucket where ds='2010-03-23' and hr='12' order by key
+POSTHOOK: query: select * from nzhang_part_bucket where ds='2010-03-23' and hr='12'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_part_bucket
 POSTHOOK: Input: default@nzhang_part_bucket@ds=2010-03-23/hr=12
 #### A masked pattern was here ####
-POSTHOOK: Lineage: nzhang_part_bucket PARTITION(ds=2010-03-23,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: nzhang_part_bucket PARTITION(ds=2010-03-23,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: nzhang_part_bucket PARTITION(ds=2010-03-23,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: nzhang_part_bucket PARTITION(ds=2010-03-23,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 0	val_0	2010-03-23	12
 0	val_0	2010-03-23	12
 0	val_0	2010-03-23	12

@@ -20,24 +20,54 @@ package org.apache.hadoop.hive.ql.io.orc;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Collections;
+import java.util.List;
 import java.util.Random;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
+import org.apache.hadoop.io.LongWritable;
+import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestName;
 
+import com.google.common.collect.Lists;
 import com.google.common.primitives.Longs;
 
 public class TestBitPack {
 
   private static final int SIZE = 100;
   private static Random rand = new Random(100);
+  Path workDir = new Path(System.getProperty("test.tmp.dir", "target" + File.separator + "test"
+      + File.separator + "tmp"));
+
+  Configuration conf;
+  FileSystem fs;
+  Path testFilePath;
+
+  @Rule
+  public TestName testCaseName = new TestName();
+
+  @Before
+  public void openFileSystem() throws Exception {
+    conf = new Configuration();
+    fs = FileSystem.getLocal(conf);
+    testFilePath = new Path(workDir, "TestOrcFile." + testCaseName.getMethodName() + ".orc");
+    fs.delete(testFilePath, false);
+  }
 
   private long[] deltaEncode(long[] inp) {
     long[] output = new long[inp.length];
-    for(int i = 0; i < inp.length; i++) {
-      output[i] = SerializationUtils.zigzagEncode(inp[i]);
+    SerializationUtils utils = new SerializationUtils();
+    for (int i = 0; i < inp.length; i++) {
+      output[i] = utils.zigzagEncode(inp[i]);
     }
     return output;
   }
@@ -53,7 +83,7 @@ public class TestBitPack {
 
   private void runTest(int numBits) throws IOException {
     long[] inp = new long[SIZE];
-    for(int i = 0; i < SIZE; i++) {
+    for (int i = 0; i < SIZE; i++) {
       long val = 0;
       if (numBits <= 32) {
         if (numBits == 1) {
@@ -73,24 +103,20 @@ public class TestBitPack {
     long minInput = Collections.min(Longs.asList(deltaEncoded));
     long maxInput = Collections.max(Longs.asList(deltaEncoded));
     long rangeInput = maxInput - minInput;
-    int fixedWidth = SerializationUtils.findClosestNumBits(rangeInput);
+    SerializationUtils utils = new SerializationUtils();
+    int fixedWidth = utils.findClosestNumBits(rangeInput);
     TestInStream.OutputCollector collect = new TestInStream.OutputCollector();
     OutStream output = new OutStream("test", SIZE, null, collect);
-    SerializationUtils.writeInts(deltaEncoded, 0, deltaEncoded.length,
-        fixedWidth, output);
+    utils.writeInts(deltaEncoded, 0, deltaEncoded.length, fixedWidth, output);
     output.flush();
     ByteBuffer inBuf = ByteBuffer.allocate(collect.buffer.size());
     collect.buffer.setByteBuffer(inBuf, 0, collect.buffer.size());
     inBuf.flip();
     long[] buff = new long[SIZE];
-    SerializationUtils.readInts(buff, 0, SIZE, fixedWidth,
-                                InStream.create("test",
-                                                new ByteBuffer[]{inBuf},
-                                                new long[]{0},
-                                                inBuf.remaining(),
-                                                null, SIZE));
-    for(int i = 0; i < SIZE; i++) {
-      buff[i] = SerializationUtils.zigzagDecode(buff[i]);
+    utils.readInts(buff, 0, SIZE, fixedWidth, InStream.create("test", new ByteBuffer[] { inBuf },
+        new long[] { 0 }, inBuf.remaining(), null, SIZE));
+    for (int i = 0; i < SIZE; i++) {
+      buff[i] = utils.zigzagDecode(buff[i]);
     }
     assertEquals(numBits, fixedWidth);
     assertArrayEquals(inp, buff);
@@ -254,5 +280,37 @@ public class TestBitPack {
   @Test
   public void test64BitPacking64Bit() throws IOException {
     runTest(64);
+  }
+
+  @Test
+  public void testBitPack64Large() throws Exception {
+    ObjectInspector inspector;
+    synchronized (TestOrcFile.class) {
+      inspector = ObjectInspectorFactory.getReflectionObjectInspector(Long.class,
+          ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
+    }
+
+    int size = 1080832;
+    long[] inp = new long[size];
+    Random rand = new Random(1234);
+    for (int i = 0; i < size; i++) {
+      inp[i] = rand.nextLong();
+    }
+    List<Long> input = Lists.newArrayList(Longs.asList(inp));
+
+    Writer writer = OrcFile.createWriter(testFilePath,
+        OrcFile.writerOptions(conf).inspector(inspector).compress(CompressionKind.ZLIB));
+    for (Long l : input) {
+      writer.addRow(l);
+    }
+    writer.close();
+
+    Reader reader = OrcFile.createReader(testFilePath, OrcFile.readerOptions(conf).filesystem(fs));
+    RecordReader rows = reader.rows();
+    int idx = 0;
+    while (rows.hasNext()) {
+      Object row = rows.next(null);
+      assertEquals(input.get(idx++).longValue(), ((LongWritable) row).get());
+    }
   }
 }

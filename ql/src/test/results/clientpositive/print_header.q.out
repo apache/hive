@@ -1,3 +1,4 @@
+Warning: Shuffle Join JOIN[8][tables = [src1, src2]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: SELECT src1.key as k1, src1.value as v1, 
        src2.key as k2, src2.value as v2 FROM 
   (SELECT * FROM src WHERE src.key < 10) src1 
@@ -37,7 +38,7 @@ POSTHOOK: query: SELECT src.key, sum(substr(src.value,5)) FROM src GROUP BY src.
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-key	_c1
+src.key	_c1
 0	0.0
 10	10.0
 100	200.0

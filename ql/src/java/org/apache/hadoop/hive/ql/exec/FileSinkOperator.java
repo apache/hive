@@ -33,25 +33,25 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
-import org.apache.hadoop.hive.ql.ErrorMsg;
-import org.apache.hadoop.hive.ql.io.FSRecordWriter;
-import org.apache.hadoop.hive.ql.io.FSRecordWriter.StatsProvidingRecordWriter;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.metadata.HiveFatalException;
+import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.io.StatsProvidingRecordWriter;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.io.HivePartitioner;
 import org.apache.hadoop.hive.ql.io.HivePassThroughOutputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.HiveFatalException;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
+import org.apache.hadoop.hive.ql.plan.FileSinkDesc.DPSortState;
 import org.apache.hadoop.hive.ql.plan.ListBucketingCtx;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.SkewedColumnPositionPair;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
-import org.apache.hadoop.hive.ql.stats.CounterStatsPublisher;
+import org.apache.hadoop.hive.ql.stats.StatsCollectionTaskIndependent;
 import org.apache.hadoop.hive.ql.stats.StatsPublisher;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeStats;
@@ -66,6 +66,8 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.util.ReflectionUtils;
+
+import com.google.common.collect.Lists;
 
 /**
  * File Sink operator implementation.
@@ -85,13 +87,19 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   protected transient int dpStartCol; // start column # for DP columns
   protected transient List<String> dpVals; // array of values corresponding to DP columns
   protected transient List<Object> dpWritables;
-  protected transient FSRecordWriter[] rowOutWriters; // row specific RecordWriters
+  protected transient RecordWriter[] rowOutWriters; // row specific RecordWriters
   protected transient int maxPartitions;
   protected transient ListBucketingCtx lbCtx;
   protected transient boolean isSkewedStoredAsSubDirectories;
   protected transient boolean statsCollectRawDataSize;
   private transient boolean[] statsFromRecordWriter;
   private transient boolean isCollectRWStats;
+  private transient FSPaths prevFsp;
+  private transient FSPaths fpaths;
+  private transient ObjectInspector keyOI;
+  private transient List<Object> keyWritables;
+  private transient List<String> keys;
+  private transient int numKeyColToRead;
 
   /**
    * RecordWriter.
@@ -108,7 +116,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     Path taskOutputTempPath;
     Path[] outPaths;
     Path[] finalPaths;
-    FSRecordWriter[] outWriters;
+    RecordWriter[] outWriters;
     Stat stat;
 
     public FSPaths() {
@@ -119,7 +127,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       taskOutputTempPath = Utilities.toTaskTempPath(specPath);
       outPaths = new Path[numFiles];
       finalPaths = new Path[numFiles];
-      outWriters = new FSRecordWriter[numFiles];
+      outWriters = new RecordWriter[numFiles];
       stat = new Stat();
     }
 
@@ -141,11 +149,11 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       }
     }
 
-    public void setOutWriters(FSRecordWriter[] out) {
+    public void setOutWriters(RecordWriter[] out) {
       outWriters = out;
     }
 
-    public FSRecordWriter[] getOutWriters() {
+    public RecordWriter[] getOutWriters() {
       return outWriters;
     }
 
@@ -271,6 +279,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       numFiles = conf.getNumFiles();
       dpCtx = conf.getDynPartCtx();
       lbCtx = conf.getLbCtx();
+      fsp = prevFsp = null;
       valToPaths = new HashMap<String, FSPaths>();
       taskId = Utilities.getTaskId(hconf);
       initializeSpecPath();
@@ -316,6 +325,20 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       if (lbCtx != null) {
         lbSetup();
       }
+
+      int numPart = 0;
+      int numBuck = 0;
+      if (conf.getPartitionCols() != null && !conf.getPartitionCols().isEmpty()) {
+        numPart = conf.getPartitionCols().size();
+      }
+
+      // bucket number will exists only in PARTITION_BUCKET_SORTED mode
+      if (conf.getDpSortState().equals(DPSortState.PARTITION_BUCKET_SORTED)) {
+        numBuck = 1;
+      }
+      numKeyColToRead = numPart + numBuck;
+      keys = Lists.newArrayListWithCapacity(numKeyColToRead);
+      keyWritables = Lists.newArrayListWithCapacity(numKeyColToRead);
 
       if (!bDynParts) {
         fsp = new FSPaths(specPath);
@@ -422,56 +445,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
           bucketMap.put(bucketNum, filesIdx);
           taskId = Utilities.replaceTaskIdFromFilename(Utilities.getTaskId(hconf), bucketNum);
         }
-        if (isNativeTable) {
-          fsp.finalPaths[filesIdx] = fsp.getFinalPath(taskId, fsp.tmpPath, null);
-          LOG.info("Final Path: FS " + fsp.finalPaths[filesIdx]);
-          fsp.outPaths[filesIdx] = fsp.getTaskOutPath(taskId);
-          LOG.info("Writing to temp file: FS " + fsp.outPaths[filesIdx]);
-        } else {
-          fsp.finalPaths[filesIdx] = fsp.outPaths[filesIdx] = specPath;
-        }
-        try {
-          // The reason to keep these instead of using
-          // OutputFormat.getRecordWriter() is that
-          // getRecordWriter does not give us enough control over the file name that
-          // we create.
-          String extension = Utilities.getFileExtension(jc, isCompressed,
-              hiveOutputFormat);
-          if (!bDynParts && !this.isSkewedStoredAsSubDirectories) {
-            fsp.finalPaths[filesIdx] = fsp.getFinalPath(taskId, parent, extension);
-          } else {
-            fsp.finalPaths[filesIdx] = fsp.getFinalPath(taskId, fsp.tmpPath, extension);
-          }
-
-        } catch (Exception e) {
-          e.printStackTrace();
-          throw new HiveException(e);
-        }
-        LOG.info("New Final Path: FS " + fsp.finalPaths[filesIdx]);
-
-        if (isNativeTable) {
-          try {
-            // in recent hadoop versions, use deleteOnExit to clean tmp files.
-            autoDelete = fs.deleteOnExit(fsp.outPaths[filesIdx]);
-          } catch (IOException e) {
-            throw new HiveException(e);
-          }
-        }
-
-        Utilities.copyTableJobPropertiesToConf(conf.getTableInfo(), jc);
-        // only create bucket files only if no dynamic partitions,
-        // buckets of dynamic partitions will be created for each newly created partition
-        fsp.outWriters[filesIdx] = HiveFileFormatUtils.getHiveRecordWriter(
-            jc, conf.getTableInfo(), outputClass, conf, fsp.outPaths[filesIdx],
-            reporter);
-        // If the record writer provides stats, get it from there instead of the serde
-        statsFromRecordWriter[filesIdx] = fsp.outWriters[filesIdx] instanceof StatsProvidingRecordWriter;
-        // increment the CREATED_FILES counter
-        if (reporter != null) {
-          reporter.incrCounter(HiveConf.getVar(hconf, HiveConf.ConfVars.HIVECOUNTERGROUP),
-                               Operator.HIVECOUNTERCREATEDFILES,
-                               1);
-        }
+        createBucketForFileIdx(fsp, filesIdx);
         filesIdx++;
       }
       assert filesIdx == numFiles;
@@ -480,14 +454,58 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       if (isNativeTable) {
         autoDelete = fs.deleteOnExit(fsp.outPaths[0]);
       }
-    } catch (HiveException e) {
-      throw e;
     } catch (Exception e) {
       e.printStackTrace();
       throw new HiveException(e);
     }
 
     filesCreated = true;
+  }
+
+  protected void createBucketForFileIdx(FSPaths fsp, int filesIdx) throws HiveException {
+    try {
+      if (isNativeTable) {
+        fsp.finalPaths[filesIdx] = fsp.getFinalPath(taskId, fsp.tmpPath, null);
+        LOG.info("Final Path: FS " + fsp.finalPaths[filesIdx]);
+        fsp.outPaths[filesIdx] = fsp.getTaskOutPath(taskId);
+        LOG.info("Writing to temp file: FS " + fsp.outPaths[filesIdx]);
+      } else {
+        fsp.finalPaths[filesIdx] = fsp.outPaths[filesIdx] = specPath;
+      }
+      // The reason to keep these instead of using
+      // OutputFormat.getRecordWriter() is that
+      // getRecordWriter does not give us enough control over the file name that
+      // we create.
+      String extension = Utilities.getFileExtension(jc, isCompressed, hiveOutputFormat);
+      if (!bDynParts && !this.isSkewedStoredAsSubDirectories) {
+        fsp.finalPaths[filesIdx] = fsp.getFinalPath(taskId, parent, extension);
+      } else {
+        fsp.finalPaths[filesIdx] = fsp.getFinalPath(taskId, fsp.tmpPath, extension);
+      }
+
+      LOG.info("New Final Path: FS " + fsp.finalPaths[filesIdx]);
+
+      if (isNativeTable) {
+        // in recent hadoop versions, use deleteOnExit to clean tmp files.
+        autoDelete = fs.deleteOnExit(fsp.outPaths[filesIdx]);
+      }
+
+      Utilities.copyTableJobPropertiesToConf(conf.getTableInfo(), jc);
+      // only create bucket files only if no dynamic partitions,
+      // buckets of dynamic partitions will be created for each newly created partition
+      fsp.outWriters[filesIdx] = HiveFileFormatUtils.getHiveRecordWriter(jc, conf.getTableInfo(),
+          outputClass, conf, fsp.outPaths[filesIdx], reporter);
+      // If the record writer provides stats, get it from there instead of the serde
+      statsFromRecordWriter[filesIdx] = fsp.outWriters[filesIdx] instanceof StatsProvidingRecordWriter;
+      // increment the CREATED_FILES counter
+      if (reporter != null) {
+        reporter.incrCounter(HiveConf.getVar(hconf, HiveConf.ConfVars.HIVECOUNTERGROUP),
+            Operator.HIVECOUNTERCREATEDFILES, 1);
+      }
+
+    } catch (IOException e) {
+      throw new HiveException(e);
+    }
   }
 
   /**
@@ -514,8 +532,6 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     /* Create list bucketing sub-directory only if stored-as-directories is on. */
     String lbDirName = null;
     lbDirName = (lbCtx == null) ? null : generateListBucketingDirName(row);
-
-    FSPaths fpaths;
 
     if (!bDynParts && !filesCreated) {
       if (lbDirName != null) {
@@ -548,7 +564,13 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         }
         // use SubStructObjectInspector to serialize the non-partitioning columns in the input row
         recordValue = serializer.serialize(row, subSetOI);
-        fpaths = getDynOutPaths(dpVals, lbDirName);
+
+        // when dynamic partition sorting is not used, the DPSortState will be NONE
+        // in which we will fall back to old method of file system path creation
+        // i.e, having as many record writers as distinct values in partition column
+        if (conf.getDpSortState().equals(DPSortState.NONE)) {
+          fpaths = getDynOutPaths(dpVals, lbDirName);
+        }
 
       } else {
         if (lbDirName != null) {
@@ -576,7 +598,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       }
 
 
-      FSRecordWriter rowOutWriter = null;
+      RecordWriter rowOutWriter = null;
 
       if (row_count != null) {
         row_count.set(row_count.get() + 1);
@@ -647,8 +669,10 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       fsp2.taskOutputTempPath =
         new Path(fsp2.taskOutputTempPath, dirName);
     }
-    createBucketFiles(fsp2);
-    valToPaths.put(dirName, fsp2);
+    if(!conf.getDpSortState().equals(DPSortState.PARTITION_BUCKET_SORTED)) {
+      createBucketFiles(fsp2);
+      valToPaths.put(dirName, fsp2);
+    }
     return fsp2;
   }
 
@@ -705,9 +729,16 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     // get the path corresponding to the dynamic partition columns,
     String dpDir = getDynPartDirectory(row, dpColNames, numDynParts);
 
+    String pathKey = null;
     if (dpDir != null) {
-      dpDir = appendListBucketingDirName(lbDirName, dpDir);
-      FSPaths fsp2 = valToPaths.get(dpDir);
+      dpDir = appendToSource(lbDirName, dpDir);
+      pathKey = dpDir;
+      if(conf.getDpSortState().equals(DPSortState.PARTITION_BUCKET_SORTED)) {
+        String buckNum = row.get(row.size() - 1);
+        taskId = Utilities.replaceTaskIdFromFilename(Utilities.getTaskId(hconf), buckNum);
+        pathKey = appendToSource(taskId, dpDir);
+      }
+      FSPaths fsp2 = valToPaths.get(pathKey);
 
       if (fsp2 == null) {
         // check # of dp
@@ -717,7 +748,39 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
                ErrorMsg.DYNAMIC_PARTITIONS_TOO_MANY_PER_NODE_ERROR.getErrorCodedMsg()
                + "Maximum was set to: " + maxPartitions);
         }
+
+        if (!conf.getDpSortState().equals(DPSortState.NONE) && prevFsp != null) {
+          // close the previous fsp as it is no longer needed
+          prevFsp.closeWriters(false);
+
+          // since we are closing the previous fsp's record writers, we need to see if we can get
+          // stats from the record writer and store in the previous fsp that is cached
+          if (conf.isGatherStats() && isCollectRWStats) {
+            RecordWriter outWriter = prevFsp.outWriters[0];
+            if (outWriter != null) {
+              SerDeStats stats = ((StatsProvidingRecordWriter) outWriter).getStats();
+              if (stats != null) {
+                prevFsp.stat.addToStat(StatsSetupConst.RAW_DATA_SIZE, stats.getRawDataSize());
+                prevFsp.stat.addToStat(StatsSetupConst.ROW_COUNT, stats.getRowCount());
+              }
+            }
+          }
+
+          // let writers release the memory for garbage collection
+          prevFsp.outWriters[0] = null;
+
+          prevFsp = null;
+        }
+
         fsp2 = createNewPaths(dpDir);
+        if (prevFsp == null) {
+          prevFsp = fsp2;
+        }
+
+        if(conf.getDpSortState().equals(DPSortState.PARTITION_BUCKET_SORTED)) {
+          createBucketForFileIdx(fsp2, 0);
+          valToPaths.put(pathKey, fsp2);
+        }
       }
       fp = fsp2;
     } else {
@@ -727,17 +790,16 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   }
 
   /**
-   * Append list bucketing dir name to original dir name.
-   * Skewed columns cannot be partitioned columns.
-   * @param lbDirName
-   * @param dpDir
+   * Append dir to source dir
+   * @param appendDir
+   * @param srcDir
    * @return
    */
-  private String appendListBucketingDirName(String lbDirName, String dpDir) {
-    StringBuilder builder = new StringBuilder(dpDir);
-    dpDir = (lbDirName == null) ? dpDir : builder.append(Path.SEPARATOR).append(lbDirName)
+  private String appendToSource(String appendDir, String srcDir) {
+    StringBuilder builder = new StringBuilder(srcDir);
+    srcDir = (appendDir == null) ? srcDir : builder.append(Path.SEPARATOR).append(appendDir)
           .toString();
-    return dpDir;
+    return srcDir;
   }
 
   // given the current input row, the mapping for input col info to dp columns, and # of dp cols,
@@ -746,6 +808,26 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   private String getDynPartDirectory(List<String> row, List<String> dpColNames, int numDynParts) {
     assert row.size() == numDynParts && numDynParts == dpColNames.size() : "data length is different from num of DP columns";
     return FileUtils.makePartName(dpColNames, row);
+  }
+
+  @Override
+  public void startGroup() throws HiveException {
+    if (!conf.getDpSortState().equals(DPSortState.NONE)) {
+      keyOI = getGroupKeyObjectInspector();
+      keys.clear();
+      keyWritables.clear();
+      ObjectInspectorUtils.partialCopyToStandardObject(keyWritables, getGroupKeyObject(), 0,
+          numKeyColToRead, (StructObjectInspector) keyOI, ObjectInspectorCopyOption.WRITABLE);
+
+      for (Object o : keyWritables) {
+        if (o == null || o.toString().length() == 0) {
+          keys.add(dpCtx.getDefaultPartitionName());
+        } else {
+          keys.add(o.toString());
+        }
+      }
+      fpaths = getDynOutPaths(keys, null);
+    }
   }
 
   @Override
@@ -768,7 +850,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         // accumulated statistics which will be aggregated in case of spray writers
         if (conf.isGatherStats() && isCollectRWStats) {
           for (int idx = 0; idx < fsp.outWriters.length; idx++) {
-            FSRecordWriter outWriter = fsp.outWriters[idx];
+            RecordWriter outWriter = fsp.outWriters[idx];
             if (outWriter != null) {
               SerDeStats stats = ((StatsProvidingRecordWriter) outWriter).getStats();
               if (stats != null) {
@@ -795,6 +877,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         fsp.abortWriters(fs, abort, !autoDelete && isNativeTable);
       }
     }
+    fsp = prevFsp = null;
   }
 
   /**
@@ -901,11 +984,25 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     String spSpec = conf.getStaticSpec();
 
     int maxKeyLength = conf.getMaxStatsKeyPrefixLength();
-    boolean counterStats = statsPublisher instanceof CounterStatsPublisher;
+    boolean taskIndependent = statsPublisher instanceof StatsCollectionTaskIndependent;
 
     for (Map.Entry<String, FSPaths> entry : valToPaths.entrySet()) {
       String fspKey = entry.getKey();     // DP/LB
       FSPaths fspValue = entry.getValue();
+
+      // for bucketed tables, hive.optimize.sort.dynamic.partition optimization
+      // adds the taskId to the fspKey.
+      if (conf.getDpSortState().equals(DPSortState.PARTITION_BUCKET_SORTED)) {
+        taskID = Utilities.getTaskIdFromFilename(fspKey);
+        // if length of (prefix/ds=__HIVE_DEFAULT_PARTITION__/000000_0) is greater than max key prefix
+        // and if (prefix/ds=10/000000_0) is less than max key prefix, then former will get hashed
+        // to a smaller prefix (MD5hash/000000_0) and later will stored as such in staging stats table.
+        // When stats gets aggregated in StatsTask only the keys that starts with "prefix" will be fetched.
+        // Now that (prefix/ds=__HIVE_DEFAULT_PARTITION__) is hashed to a smaller prefix it will
+        // not be retrieved from staging table and hence not aggregated. To avoid this issue
+        // we will remove the taskId from the key which is redundant anyway.
+        fspKey = fspKey.split(taskID)[0];
+      }
 
       // split[0] = DP, split[1] = LB
       String[] split = splitKey(fspKey);
@@ -913,11 +1010,10 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       String lbSpec = split[1];
 
       String prefix;
-      String postfix;
-      if (counterStats) {
+      String postfix=null;
+      if (taskIndependent) {
         // key = "database.table/SP/DP/"LB/
         prefix = conf.getTableInfo().getTableName();
-        postfix = Utilities.join(lbSpec);
       } else {
         // key = "prefix/SP/DP/"LB/taskID/
         prefix = conf.getStatsAggPrefix();

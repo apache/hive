@@ -1,3 +1,5 @@
+-- SORT_QUERY_RESULTS
+
 drop table union_date_1;
 drop table union_date_2;
 
@@ -24,7 +26,7 @@ select * from (
   select fl_num, fl_date from union_date_1
   union all
   select fl_num, fl_date from union_date_2
-) union_result order by fl_date, fl_num;
+) union_result;
 
 drop table union_date_1;
 drop table union_date_2;

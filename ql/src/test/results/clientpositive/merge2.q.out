@@ -138,8 +138,6 @@ POSTHOOK: query: select * from test1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: test1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test1.val EXPRESSION [(src)src.null, ]
 0	3
 10	1
 100	2
@@ -457,8 +455,6 @@ POSTHOOK: query: drop table test1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test1
 POSTHOOK: Output: default@test1
-POSTHOOK: Lineage: test1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test1.val EXPRESSION [(src)src.null, ]
 PREHOOK: query: create table test_src(key string, value string) partitioned by (ds string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -466,8 +462,6 @@ POSTHOOK: query: create table test_src(key string, value string) partitioned by 
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_src
-POSTHOOK: Lineage: test1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test1.val EXPRESSION [(src)src.null, ]
 PREHOOK: query: create table test1(key string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -475,8 +469,6 @@ POSTHOOK: query: create table test1(key string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test1
-POSTHOOK: Lineage: test1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test1.val EXPRESSION [(src)src.null, ]
 PREHOOK: query: insert overwrite table test_src partition(ds='101') select * from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -485,8 +477,6 @@ POSTHOOK: query: insert overwrite table test_src partition(ds='101') select * fr
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@test_src@ds=101
-POSTHOOK: Lineage: test1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test1.val EXPRESSION [(src)src.null, ]
 POSTHOOK: Lineage: test_src PARTITION(ds=101).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_src PARTITION(ds=101).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: insert overwrite table test_src partition(ds='102') select * from src
@@ -497,10 +487,6 @@ POSTHOOK: query: insert overwrite table test_src partition(ds='102') select * fr
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@test_src@ds=102
-POSTHOOK: Lineage: test1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test1.val EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_src PARTITION(ds=101).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_src PARTITION(ds=101).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: test_src PARTITION(ds=102).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_src PARTITION(ds=102).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: explain 
@@ -509,12 +495,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain 
 insert overwrite table test1 select key from test_src
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: test1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test1.val EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_src PARTITION(ds=101).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_src PARTITION(ds=101).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_src PARTITION(ds=102).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_src PARTITION(ds=102).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
@@ -609,26 +589,13 @@ POSTHOOK: Input: default@test_src
 POSTHOOK: Input: default@test_src@ds=101
 POSTHOOK: Input: default@test_src@ds=102
 POSTHOOK: Output: default@test1
-POSTHOOK: Lineage: test1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test1.key SIMPLE [(test_src)test_src.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: test1.val EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_src PARTITION(ds=101).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_src PARTITION(ds=101).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_src PARTITION(ds=102).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_src PARTITION(ds=102).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: explain
 insert overwrite table test1 select key from test_src
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 insert overwrite table test1 select key from test_src
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: test1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test1.key SIMPLE [(test_src)test_src.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: test1.val EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_src PARTITION(ds=101).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_src PARTITION(ds=101).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_src PARTITION(ds=102).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_src PARTITION(ds=102).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
@@ -723,11 +690,4 @@ POSTHOOK: Input: default@test_src
 POSTHOOK: Input: default@test_src@ds=101
 POSTHOOK: Input: default@test_src@ds=102
 POSTHOOK: Output: default@test1
-POSTHOOK: Lineage: test1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test1.key SIMPLE [(test_src)test_src.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: test1.key SIMPLE [(test_src)test_src.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: test1.val EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_src PARTITION(ds=101).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_src PARTITION(ds=101).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_src PARTITION(ds=102).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_src PARTITION(ds=102).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]

@@ -1,3 +1,5 @@
+-- SORT_QUERY_RESULTS
+
 -- verify that new joins bring in correct schemas (including evolved schemas)
 
 CREATE TABLE doctors4
@@ -73,7 +75,6 @@ DESCRIBE episodes;
 LOAD DATA LOCAL INPATH '../../data/files/episodes.avro' INTO TABLE episodes;
 
 SELECT e.title, e.air_date, d.first_name, d.last_name, d.extra_field, e.air_date
-FROM doctors4 d JOIN episodes e ON (d.number=e.doctor)
-ORDER BY d.last_name, e.title;
+FROM doctors4 d JOIN episodes e ON (d.number=e.doctor);
 
 

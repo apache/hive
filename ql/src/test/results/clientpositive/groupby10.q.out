@@ -201,12 +201,6 @@ POSTHOOK: query: SELECT * from dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: dest1.key SIMPLE [(input)input.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest1.val1 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest1.val2 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest2.key SIMPLE [(input)input.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest2.val1 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest2.val2 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
 27	1	1
 66	1	1
 86	1	1
@@ -235,12 +229,6 @@ POSTHOOK: query: SELECT * from dest2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest2
 #### A masked pattern was here ####
-POSTHOOK: Lineage: dest1.key SIMPLE [(input)input.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest1.val1 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest1.val2 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest2.key SIMPLE [(input)input.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest2.val1 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest2.val2 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
 27	27	27
 66	66	66
 86	86	86
@@ -271,12 +259,6 @@ FROM INPUT
 INSERT OVERWRITE TABLE dest1 SELECT INPUT.key, count(substr(INPUT.value,5)), count(distinct substr(INPUT.value,5)) GROUP BY INPUT.key
 INSERT OVERWRITE TABLE dest2 SELECT INPUT.key, sum(substr(INPUT.value,5)), sum(distinct substr(INPUT.value,5))   GROUP BY INPUT.key
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: dest1.key SIMPLE [(input)input.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest1.val1 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest1.val2 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest2.key SIMPLE [(input)input.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest2.val1 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest2.val2 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-3 depends on stages: Stage-2
@@ -428,16 +410,10 @@ POSTHOOK: Input: default@input
 POSTHOOK: Output: default@dest1
 POSTHOOK: Output: default@dest2
 POSTHOOK: Lineage: dest1.key SIMPLE [(input)input.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest1.key SIMPLE [(input)input.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest1.val1 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: dest1.val1 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: dest1.val2 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest1.val2 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest2.key SIMPLE [(input)input.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: dest2.key SIMPLE [(input)input.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: dest2.val1 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest2.val1 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest2.val2 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: dest2.val2 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: SELECT * from dest1
 PREHOOK: type: QUERY
@@ -447,18 +423,6 @@ POSTHOOK: query: SELECT * from dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: dest1.key SIMPLE [(input)input.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest1.key SIMPLE [(input)input.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest1.val1 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest1.val1 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest1.val2 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest1.val2 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest2.key SIMPLE [(input)input.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest2.key SIMPLE [(input)input.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest2.val1 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest2.val1 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest2.val2 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest2.val2 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
 27	1	1
 66	1	1
 86	1	1
@@ -487,18 +451,6 @@ POSTHOOK: query: SELECT * from dest2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest2
 #### A masked pattern was here ####
-POSTHOOK: Lineage: dest1.key SIMPLE [(input)input.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest1.key SIMPLE [(input)input.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest1.val1 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest1.val1 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest1.val2 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest1.val2 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest2.key SIMPLE [(input)input.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest2.key SIMPLE [(input)input.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest2.val1 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest2.val1 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest2.val2 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest2.val2 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
 27	27	27
 66	66	66
 86	86	86
@@ -531,18 +483,6 @@ FROM INPUT
 INSERT OVERWRITE TABLE dest1 SELECT INPUT.key, sum(distinct substr(INPUT.value,5)), count(distinct substr(INPUT.value,5)) GROUP BY INPUT.key
 INSERT OVERWRITE TABLE dest2 SELECT INPUT.key, sum(distinct substr(INPUT.value,5)), avg(distinct substr(INPUT.value,5)) GROUP BY INPUT.key
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: dest1.key SIMPLE [(input)input.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest1.key SIMPLE [(input)input.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest1.val1 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest1.val1 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest1.val2 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest1.val2 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest2.key SIMPLE [(input)input.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest2.key SIMPLE [(input)input.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest2.val1 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest2.val1 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest2.val2 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest2.val2 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-3 depends on stages: Stage-2
@@ -645,7 +585,7 @@ STAGE PLANS:
               sort order: +
               Map-reduce partition columns: _col0 (type: int)
               Statistics: Num rows: 2 Data size: 280 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col1 (type: double), _col2 (type: struct<count:bigint,sum:double>)
+              value expressions: _col1 (type: double), _col2 (type: struct<count:bigint,sum:double,input:string>)
       Reduce Operator Tree:
         Group By Operator
           aggregations: sum(VALUE._col0), avg(VALUE._col1)
@@ -694,22 +634,10 @@ POSTHOOK: Input: default@input
 POSTHOOK: Output: default@dest1
 POSTHOOK: Output: default@dest2
 POSTHOOK: Lineage: dest1.key SIMPLE [(input)input.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest1.key SIMPLE [(input)input.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest1.key SIMPLE [(input)input.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest1.val1 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest1.val1 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: dest1.val1 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: dest1.val2 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest1.val2 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest1.val2 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest2.key SIMPLE [(input)input.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest2.key SIMPLE [(input)input.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: dest2.key SIMPLE [(input)input.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: dest2.val1 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest2.val1 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest2.val1 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest2.val2 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest2.val2 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: dest2.val2 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: SELECT * from dest1
 PREHOOK: type: QUERY
@@ -719,24 +647,6 @@ POSTHOOK: query: SELECT * from dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: dest1.key SIMPLE [(input)input.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest1.key SIMPLE [(input)input.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest1.key SIMPLE [(input)input.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest1.val1 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest1.val1 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest1.val1 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest1.val2 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest1.val2 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest1.val2 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest2.key SIMPLE [(input)input.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest2.key SIMPLE [(input)input.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest2.key SIMPLE [(input)input.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest2.val1 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest2.val1 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest2.val1 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest2.val2 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest2.val2 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest2.val2 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
 27	27	1
 66	66	1
 86	86	1
@@ -765,24 +675,6 @@ POSTHOOK: query: SELECT * from dest2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest2
 #### A masked pattern was here ####
-POSTHOOK: Lineage: dest1.key SIMPLE [(input)input.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest1.key SIMPLE [(input)input.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest1.key SIMPLE [(input)input.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest1.val1 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest1.val1 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest1.val1 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest1.val2 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest1.val2 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest1.val2 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest2.key SIMPLE [(input)input.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest2.key SIMPLE [(input)input.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest2.key SIMPLE [(input)input.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest2.val1 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest2.val1 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest2.val1 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest2.val2 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest2.val2 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest2.val2 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
 27	27	27
 66	66	66
 86	86	86

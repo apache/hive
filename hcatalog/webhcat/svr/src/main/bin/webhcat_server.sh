@@ -38,8 +38,9 @@ function real_script_name() {
 }
 
 function usage() {
-        echo "usage: $0 [start|stop|foreground]"
+        echo "usage: $0 [start|startDebug|stop|foreground]"
         echo "  start           Start the Webhcat Server"
+        echo "  startDebug      Start the Webhcat Server listening for debugger on port 5005"
         echo "  stop            Stop the Webhcat Server"
         echo "  foreground      Run the Webhcat Server in the foreground"
         exit 1
@@ -211,13 +212,7 @@ else
 fi
 
 if [[ -z "$WEBHCAT_LOG4J" ]]; then
-        if [[ -f "$base_dir/conf/webhcat-log4j.properties" ]]; then
-                WEBHCAT_LOG4J="$base_dir/conf/webhcat-log4j.properties";
-        elif [[ -f "$base_dir/conf/webhcat-log4j.properties" ]]; then
-                WEBHCAT_LOG4J="$base_dir/conf/webhcat-log4j.properties";
-        else
-                WEBHCAT_LOG4J="webhcat-log4j.properties";
-        fi
+  WEBHCAT_LOG4J="file://$base_dir/etc/webhcat/webhcat-log4j.properties";
 fi
 
 export HADOOP_USER_CLASSPATH_FIRST=true
@@ -229,6 +224,10 @@ start_cmd="$HADOOP_PREFIX/bin/hadoop jar $JAR org.apache.hive.hcatalog.templeton
 cmd=$1
 case $cmd in
         start)
+                start_webhcat
+                ;;
+        startDebug)
+                export HADOOP_OPTS="${HADOOP_OPTS} -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005"
                 start_webhcat
                 ;;
         stop)

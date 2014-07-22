@@ -97,6 +97,13 @@ public class VectorizedRowBatch implements Writable {
   }
 
   /**
+   * Returns the maximum size of the batch (number of rows it can hold)
+   */
+  public int getMaxSize() {
+      return selected.length;
+  }
+
+  /**
    * Return count of qualifying rows.
    *
    * @return number of rows that have not been filtered out

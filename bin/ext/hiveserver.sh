@@ -26,7 +26,7 @@ hiveserver() {
 
   # hadoop 20 or newer - skip the aux_jars option and hiveconf
 
-  exec $HADOOP jar $JAR $CLASS "$@"
+  exec $HADOOP jar $JAR $CLASS $HIVE_OPTS "$@"
 }
 
 hiveserver_help() {

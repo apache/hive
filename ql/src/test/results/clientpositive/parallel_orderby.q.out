@@ -48,9 +48,10 @@ STAGE PLANS:
                 key expressions: _col0 (type: string), _col1 (type: string)
                 sort order: ++
                 Statistics: Num rows: 2 Data size: 560 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col0 (type: string), _col1 (type: string)
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
+          outputColumnNames: _col0, _col1
           Statistics: Num rows: 2 Data size: 560 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
@@ -73,6 +74,7 @@ STAGE PLANS:
           columns: key string, value string
           input format: org.apache.hadoop.mapred.TextInputFormat
           output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+          serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           name: total_ordered
 
   Stage: Stage-2
@@ -87,12 +89,14 @@ POSTHOOK: Input: default@src5
 POSTHOOK: Output: default@total_ordered
 PREHOOK: query: desc formatted total_ordered
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@total_ordered
 POSTHOOK: query: desc formatted total_ordered
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@total_ordered
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	None                
-value               	string              	None                
+key                 	string              	                    
+value               	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -196,12 +200,14 @@ POSTHOOK: Input: default@src5
 POSTHOOK: Output: default@total_ordered
 PREHOOK: query: desc formatted total_ordered
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@total_ordered
 POSTHOOK: query: desc formatted total_ordered
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@total_ordered
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	None                
-value               	string              	None                
+key                 	string              	                    
+value               	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 

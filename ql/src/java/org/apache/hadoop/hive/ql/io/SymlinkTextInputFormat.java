@@ -213,13 +213,6 @@ public class SymlinkTextInputFormat extends SymbolicInputFormat implements
     }
   }
 
-  /**
-   * For backward compatibility with hadoop 0.17.
-   */
-  public void validateInput(JobConf job) throws IOException {
-    // do nothing
-  }
-
   @Override
   public ContentSummary getContentSummary(Path p, JobConf job)
       throws IOException {

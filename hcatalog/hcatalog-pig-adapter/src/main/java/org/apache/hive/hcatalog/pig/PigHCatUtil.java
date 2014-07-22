@@ -146,7 +146,6 @@ class PigHCatUtil {
     HiveConf hiveConf = new HiveConf(clazz);
 
     if (serverUri != null) {
-      hiveConf.set("hive.metastore.local", "false");
       hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, serverUri.trim());
     }
 
@@ -382,6 +381,10 @@ class PigHCatUtil {
    * @return object in Pig value system 
    */
   public static Object extractPigObject(Object o, HCatFieldSchema hfs) throws Exception {
+    /*Note that HCatRecordSerDe.serializePrimitiveField() will be called before this, thus some
+    * type promotion/conversion may occur: e.g. Short to Integer.  We should refactor this so
+    * that it's hapenning in one place per module/product that we are integrating with.
+    * All Pig conversion should be done here, etc.*/
     if(o == null) {
       return null;
     }

@@ -14,8 +14,10 @@ POSTHOOK: Output: default@addpart1
 POSTHOOK: Output: default@addpart1@b=f/c=s
 PREHOOK: query: show partitions addpart1
 PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@addpart1
 POSTHOOK: query: show partitions addpart1
 POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@addpart1
 b=f/c=s
 PREHOOK: query: alter table addpart1 add partition (b='f', c='')
 PREHOOK: type: ALTERTABLE_ADDPARTS

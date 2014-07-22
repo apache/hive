@@ -120,6 +120,9 @@ class MemoryManager {
     if (val != null) {
       writerList.remove(path);
       totalAllocation -= val.allocation;
+      if (writerList.isEmpty()) {
+        rowsAddedSinceCheck = 0;
+      }
       updateScale(false);
     }
     if(writerList.isEmpty()) {
@@ -159,7 +162,7 @@ class MemoryManager {
    * Notify all of the writers that they should check their memory usage.
    * @throws IOException
    */
-  private void notifyWriters() throws IOException {
+  void notifyWriters() throws IOException {
     LOG.debug("Notifying writers after " + rowsAddedSinceCheck);
     for(WriterInfo writer: writerList.values()) {
       boolean flushed = writer.callback.checkMemory(currentScale);

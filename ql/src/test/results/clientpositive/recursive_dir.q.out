@@ -2,17 +2,23 @@ PREHOOK: query: -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
 
 CREATE TABLE fact_daily(x int) PARTITIONED BY (ds STRING)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
 
 CREATE TABLE fact_daily(x int) PARTITIONED BY (ds STRING)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@fact_daily
 PREHOOK: query: CREATE TABLE fact_tz(x int) PARTITIONED BY (ds STRING, hr STRING)
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE fact_tz(x int) PARTITIONED BY (ds STRING, hr STRING)
 #### A masked pattern was here ####
 POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@fact_tz
 PREHOOK: query: INSERT OVERWRITE TABLE fact_tz PARTITION (ds='1', hr='1')
 SELECT key+11 FROM src WHERE key=484
@@ -33,17 +39,17 @@ POSTHOOK: query: ALTER TABLE fact_daily SET TBLPROPERTIES('EXTERNAL'='TRUE')
 POSTHOOK: type: ALTERTABLE_PROPERTIES
 POSTHOOK: Input: default@fact_daily
 POSTHOOK: Output: default@fact_daily
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=1).x EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: ALTER TABLE fact_daily ADD PARTITION (ds='1')
 #### A masked pattern was here ####
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Input: default@fact_daily
+#### A masked pattern was here ####
+PREHOOK: Output: default@fact_daily
 POSTHOOK: query: ALTER TABLE fact_daily ADD PARTITION (ds='1')
 #### A masked pattern was here ####
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Input: default@fact_daily
+#### A masked pattern was here ####
+POSTHOOK: Output: default@fact_daily
 POSTHOOK: Output: default@fact_daily@ds=1
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=1).x EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: SELECT * FROM fact_daily WHERE ds='1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@fact_daily
@@ -54,7 +60,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@fact_daily
 POSTHOOK: Input: default@fact_daily@ds=1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=1).x EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 495	1
 PREHOOK: query: SELECT count(1) FROM fact_daily WHERE ds='1'
 PREHOOK: type: QUERY
@@ -66,5 +71,4 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@fact_daily
 POSTHOOK: Input: default@fact_daily@ds=1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=1).x EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 1

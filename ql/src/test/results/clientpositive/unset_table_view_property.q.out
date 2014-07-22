@@ -24,16 +24,15 @@ PREHOOK: query: SHOW TBLPROPERTIES testTable
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES testTable
 POSTHOOK: type: SHOW_TBLPROPERTIES
-numFiles	0
-#### A masked pattern was here ####
+COLUMN_STATS_ACCURATE	false
+a	1
 c	3
 #### A masked pattern was here ####
-a	1
-COLUMN_STATS_ACCURATE	false
-#### A masked pattern was here ####
+numFiles	0
 numRows	-1
-totalSize	0
 rawDataSize	-1
+totalSize	0
+#### A masked pattern was here ####
 PREHOOK: query: -- UNSET all the properties
 ALTER TABLE testTable UNSET TBLPROPERTIES ('a', 'c')
 PREHOOK: type: ALTERTABLE_PROPERTIES
@@ -48,13 +47,13 @@ PREHOOK: query: SHOW TBLPROPERTIES testTable
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES testTable
 POSTHOOK: type: SHOW_TBLPROPERTIES
-numFiles	0
-#### A masked pattern was here ####
 COLUMN_STATS_ACCURATE	false
 #### A masked pattern was here ####
+numFiles	0
 numRows	-1
-totalSize	0
 rawDataSize	-1
+totalSize	0
+#### A masked pattern was here ####
 PREHOOK: query: ALTER TABLE testTable SET TBLPROPERTIES ('a'='1', 'c'='3', 'd'='4')
 PREHOOK: type: ALTERTABLE_PROPERTIES
 PREHOOK: Input: default@testtable
@@ -67,17 +66,16 @@ PREHOOK: query: SHOW TBLPROPERTIES testTable
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES testTable
 POSTHOOK: type: SHOW_TBLPROPERTIES
-d	4
-numFiles	0
-#### A masked pattern was here ####
-c	3
-#### A masked pattern was here ####
-a	1
 COLUMN_STATS_ACCURATE	false
+a	1
+c	3
+d	4
 #### A masked pattern was here ####
+numFiles	0
 numRows	-1
-totalSize	0
 rawDataSize	-1
+totalSize	0
+#### A masked pattern was here ####
 PREHOOK: query: -- UNSET a subset of the properties
 ALTER TABLE testTable UNSET TBLPROPERTIES ('a', 'd')
 PREHOOK: type: ALTERTABLE_PROPERTIES
@@ -92,15 +90,14 @@ PREHOOK: query: SHOW TBLPROPERTIES testTable
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES testTable
 POSTHOOK: type: SHOW_TBLPROPERTIES
-numFiles	0
-#### A masked pattern was here ####
+COLUMN_STATS_ACCURATE	false
 c	3
 #### A masked pattern was here ####
-COLUMN_STATS_ACCURATE	false
-#### A masked pattern was here ####
+numFiles	0
 numRows	-1
-totalSize	0
 rawDataSize	-1
+totalSize	0
+#### A masked pattern was here ####
 PREHOOK: query: -- the same property being UNSET multiple times
 ALTER TABLE testTable UNSET TBLPROPERTIES ('c', 'c', 'c')
 PREHOOK: type: ALTERTABLE_PROPERTIES
@@ -115,13 +112,13 @@ PREHOOK: query: SHOW TBLPROPERTIES testTable
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES testTable
 POSTHOOK: type: SHOW_TBLPROPERTIES
-numFiles	0
-#### A masked pattern was here ####
 COLUMN_STATS_ACCURATE	false
 #### A masked pattern was here ####
+numFiles	0
 numRows	-1
-totalSize	0
 rawDataSize	-1
+totalSize	0
+#### A masked pattern was here ####
 PREHOOK: query: ALTER TABLE testTable SET TBLPROPERTIES ('a'='1', 'b' = '2', 'c'='3', 'd'='4')
 PREHOOK: type: ALTERTABLE_PROPERTIES
 PREHOOK: Input: default@testtable
@@ -134,18 +131,17 @@ PREHOOK: query: SHOW TBLPROPERTIES testTable
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES testTable
 POSTHOOK: type: SHOW_TBLPROPERTIES
-d	4
-numFiles	0
-#### A masked pattern was here ####
+COLUMN_STATS_ACCURATE	false
+a	1
 b	2
 c	3
+d	4
 #### A masked pattern was here ####
-a	1
-COLUMN_STATS_ACCURATE	false
-#### A masked pattern was here ####
+numFiles	0
 numRows	-1
-totalSize	0
 rawDataSize	-1
+totalSize	0
+#### A masked pattern was here ####
 PREHOOK: query: -- UNSET a subset of the properties and some non-existed properties using IF EXISTS
 ALTER TABLE testTable UNSET TBLPROPERTIES IF EXISTS ('b', 'd', 'b', 'f')
 PREHOOK: type: ALTERTABLE_PROPERTIES
@@ -160,16 +156,15 @@ PREHOOK: query: SHOW TBLPROPERTIES testTable
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES testTable
 POSTHOOK: type: SHOW_TBLPROPERTIES
-numFiles	0
-#### A masked pattern was here ####
+COLUMN_STATS_ACCURATE	false
+a	1
 c	3
 #### A masked pattern was here ####
-a	1
-COLUMN_STATS_ACCURATE	false
-#### A masked pattern was here ####
+numFiles	0
 numRows	-1
-totalSize	0
 rawDataSize	-1
+totalSize	0
+#### A masked pattern was here ####
 PREHOOK: query: -- UNSET a subset of the properties and some non-existed properties using IF EXISTS
 ALTER TABLE testTable UNSET TBLPROPERTIES IF EXISTS ('b', 'd', 'c', 'f', 'x', 'y', 'z')
 PREHOOK: type: ALTERTABLE_PROPERTIES
@@ -184,14 +179,14 @@ PREHOOK: query: SHOW TBLPROPERTIES testTable
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES testTable
 POSTHOOK: type: SHOW_TBLPROPERTIES
-numFiles	0
-#### A masked pattern was here ####
-a	1
 COLUMN_STATS_ACCURATE	false
+a	1
 #### A masked pattern was here ####
+numFiles	0
 numRows	-1
-totalSize	0
 rawDataSize	-1
+totalSize	0
+#### A masked pattern was here ####
 PREHOOK: query: -- UNSET VIEW PROPERTIES
 CREATE VIEW testView AS SELECT value FROM src WHERE key=86
 PREHOOK: type: CREATEVIEW
@@ -246,9 +241,9 @@ POSTHOOK: query: SHOW TBLPROPERTIES testView
 POSTHOOK: type: SHOW_TBLPROPERTIES
 #### A masked pattern was here ####
 propA	100
-#### A masked pattern was here ####
-propD	400
 propC	300
+propD	400
+#### A masked pattern was here ####
 PREHOOK: query: -- UNSET a subset of the properties
 ALTER VIEW testView UNSET TBLPROPERTIES ('propA', 'propC')
 PREHOOK: type: ALTERVIEW_PROPERTIES
@@ -265,6 +260,7 @@ POSTHOOK: query: SHOW TBLPROPERTIES testView
 POSTHOOK: type: SHOW_TBLPROPERTIES
 #### A masked pattern was here ####
 propD	400
+#### A masked pattern was here ####
 PREHOOK: query: -- the same property being UNSET multiple times
 ALTER VIEW testView UNSET TBLPROPERTIES ('propD', 'propD', 'propD')
 PREHOOK: type: ALTERVIEW_PROPERTIES
@@ -295,9 +291,9 @@ POSTHOOK: type: SHOW_TBLPROPERTIES
 #### A masked pattern was here ####
 propA	100
 propB	200
-#### A masked pattern was here ####
-propD	400
 propC	300
+propD	400
+#### A masked pattern was here ####
 PREHOOK: query: -- UNSET a subset of the properties and some non-existed properties using IF EXISTS
 ALTER VIEW testView UNSET TBLPROPERTIES IF EXISTS ('propC', 'propD', 'propD', 'propC', 'propZ')
 PREHOOK: type: ALTERVIEW_PROPERTIES

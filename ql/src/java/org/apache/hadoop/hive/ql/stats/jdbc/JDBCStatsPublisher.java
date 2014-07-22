@@ -259,6 +259,8 @@ public class JDBCStatsPublisher implements StatsPublisher {
    */
   @Override
   public boolean init(Configuration hconf) {
+    Statement stmt = null;
+    ResultSet rs = null;
     try {
       this.hiveconf = hconf;
       connectionString = HiveConf.getVar(hconf, HiveConf.ConfVars.HIVESTATSDBCONNECTIONSTRING);
@@ -268,23 +270,37 @@ public class JDBCStatsPublisher implements StatsPublisher {
         DriverManager.setLoginTimeout(timeout);
         conn = DriverManager.getConnection(connectionString);
 
-        Statement stmt = conn.createStatement();
+        stmt = conn.createStatement();
         stmt.setQueryTimeout(timeout);
 
         // Check if the table exists
         DatabaseMetaData dbm = conn.getMetaData();
-        ResultSet rs = dbm.getTables(null, null, JDBCStatsUtils.getStatTableName(), null);
+        rs = dbm.getTables(null, null, JDBCStatsUtils.getStatTableName(), null);
         boolean tblExists = rs.next();
         if (!tblExists) { // Table does not exist, create it
           String createTable = JDBCStatsUtils.getCreate("");
-          stmt.executeUpdate(createTable);
-          stmt.close();
-        }
-        closeConnection();
+          stmt.executeUpdate(createTable);          
+        }      
       }
     } catch (Exception e) {
       LOG.error("Error during JDBC initialization. ", e);
       return false;
+    } finally {
+      if(rs != null) {
+        try {
+          rs.close();
+        } catch (SQLException e) {
+          // do nothing
+        }
+      }
+      if(stmt != null) {
+        try {
+          stmt.close();
+        } catch (SQLException e) {
+          // do nothing
+        }
+      }
+      closeConnection();
     }
     return true;
   }

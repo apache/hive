@@ -23,13 +23,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.hadoop.hive.serde2.SerDeStatsStruct;
+import org.apache.hadoop.hive.serde2.StructObject;
 import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
 import org.apache.hadoop.hive.serde2.lazy.LazyObjectBase;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 
-public abstract class ColumnarStructBase implements SerDeStatsStruct {
+public abstract class ColumnarStructBase implements StructObject, SerDeStatsStruct {
 
   class FieldInfo {
     LazyObjectBase field;

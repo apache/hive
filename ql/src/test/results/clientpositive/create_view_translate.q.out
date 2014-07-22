@@ -15,11 +15,13 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@v
 PREHOOK: query: describe formatted v
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@v
 POSTHOOK: query: describe formatted v
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@v
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	None                
+key                 	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -55,12 +57,14 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@w
 PREHOOK: query: describe formatted w
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@w
 POSTHOOK: query: describe formatted w
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@w
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	None                
-value               	string              	None                
+key                 	string              	                    
+value               	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 

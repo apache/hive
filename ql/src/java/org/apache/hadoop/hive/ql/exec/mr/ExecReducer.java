@@ -134,7 +134,7 @@ public class ExecReducer extends MapReduceBase implements Reducer {
       keyTableDesc = gWork.getKeyDesc();
       inputKeyDeserializer = (SerDe) ReflectionUtils.newInstance(keyTableDesc
           .getDeserializerClass(), null);
-      inputKeyDeserializer.initialize(null, keyTableDesc.getProperties());
+      SerDeUtils.initializeSerDe(inputKeyDeserializer, null, keyTableDesc.getProperties(), null);
       keyObjectInspector = inputKeyDeserializer.getObjectInspector();
       valueTableDesc = new TableDesc[gWork.getTagToValueDesc().size()];
       for (int tag = 0; tag < gWork.getTagToValueDesc().size(); tag++) {
@@ -142,14 +142,15 @@ public class ExecReducer extends MapReduceBase implements Reducer {
         valueTableDesc[tag] = gWork.getTagToValueDesc().get(tag);
         inputValueDeserializer[tag] = (SerDe) ReflectionUtils.newInstance(
             valueTableDesc[tag].getDeserializerClass(), null);
-        inputValueDeserializer[tag].initialize(null, valueTableDesc[tag]
-            .getProperties());
+        SerDeUtils.initializeSerDe(inputValueDeserializer[tag], null,
+                                   valueTableDesc[tag].getProperties(), null);
         valueObjectInspector[tag] = inputValueDeserializer[tag]
             .getObjectInspector();
 
         ArrayList<ObjectInspector> ois = new ArrayList<ObjectInspector>();
         ois.add(keyObjectInspector);
         ois.add(valueObjectInspector[tag]);
+        reducer.setGroupKeyObjectInspector(keyObjectInspector);
         rowObjectInspector[tag] = ObjectInspectorFactory
             .getStandardStructObjectInspector(Utilities.reduceFieldNameList, ois);
       }
@@ -227,8 +228,8 @@ public class ExecReducer extends MapReduceBase implements Reducer {
 
         groupKey.set(keyWritable.get(), 0, keyWritable.getSize());
         l4j.trace("Start Group");
-        reducer.startGroup();
         reducer.setGroupKeyObject(keyObject);
+        reducer.startGroup();
       }
       // System.err.print(keyObject.toString());
       while (values.hasNext()) {

@@ -26,6 +26,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
@@ -57,7 +58,7 @@ public class TestLazySimpleSerDe extends TestCase {
       tbl.setProperty("columns.types",
           "tinyint:smallint:int:bigint:double:string:int:string:binary");
       tbl.setProperty(serdeConstants.SERIALIZATION_NULL_FORMAT, "NULL");
-      serDe.initialize(conf, tbl);
+      SerDeUtils.initializeSerDe(serDe, conf, tbl, null);
 
       // Data
       Text t = new Text("123\t456\t789\t1000\t5.3\thive and hadoop\t1.\tNULL\t");
@@ -124,7 +125,7 @@ public class TestLazySimpleSerDe extends TestCase {
       Configuration conf = new Configuration();
       Properties tbl = createProperties();
       tbl.setProperty(serdeConstants.SERIALIZATION_LAST_COLUMN_TAKES_REST, "true");
-      serDe.initialize(conf, tbl);
+      SerDeUtils.initializeSerDe(serDe, conf, tbl, null);
 
       // Data
       Text t = new Text("123\t456\t789\t1000\t5.3\thive and hadoop\t1.\ta\tb\t");
@@ -152,7 +153,7 @@ public class TestLazySimpleSerDe extends TestCase {
       LazySimpleSerDe serDe = new LazySimpleSerDe();
       Configuration conf = new Configuration();
       Properties tbl = createProperties();
-      serDe.initialize(conf, tbl);
+      SerDeUtils.initializeSerDe(serDe, conf, tbl, null);
 
       // Data
       Text t = new Text("123\t456\t789\t1000\t5.3\thive and hadoop\t1.\ta\tb\t");
@@ -180,7 +181,7 @@ public class TestLazySimpleSerDe extends TestCase {
       LazySimpleSerDe serDe = new LazySimpleSerDe();
       Configuration conf = new Configuration();
       Properties tbl = createProperties();
-      serDe.initialize(conf, tbl);
+      SerDeUtils.initializeSerDe(serDe, conf, tbl, null);
 
       // Data
       Text t = new Text("123\t456\t789\t1000\t5.3\t");

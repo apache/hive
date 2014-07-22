@@ -49,7 +49,9 @@ class TableOutputFormat implements OutputFormat {
     for (; rows.hasNext();) {
       Rows.Row row = (Rows.Row) rows.next();
       ColorBuffer cbuf = getOutputString(rows, row);
-      cbuf = cbuf.truncate(width);
+      if (beeLine.getOpts().getTruncateTable()) {
+        cbuf = cbuf.truncate(width);
+      }
 
       if (index == 0)  {
         sb.setLength(0);
@@ -61,18 +63,22 @@ class TableOutputFormat implements OutputFormat {
         }
 
         headerCols = cbuf;
-        header = beeLine.getColorBuffer()
-            .green(sb.toString())
-            .truncate(headerCols.getVisibleLength());
+        header = beeLine.getColorBuffer().green(sb.toString());
+        if (beeLine.getOpts().getTruncateTable()) {
+          header = header.truncate(headerCols.getVisibleLength());
+        }
       }
 
-      if (index == 0 ||
-          (beeLine.getOpts().getHeaderInterval() > 0
-              && index % beeLine.getOpts().getHeaderInterval() == 0
-              && beeLine.getOpts().getShowHeader())) {
-        printRow(header, true);
-        printRow(headerCols, false);
-        printRow(header, true);
+      if (beeLine.getOpts().getShowHeader()) {
+        if (index == 0 ||
+            (index - 1 > 0 && ((index - 1) % beeLine.getOpts().getHeaderInterval() == 0))
+           ) {
+          printRow(header, true);
+          printRow(headerCols, false);
+          printRow(header, true);
+        }
+      } else if (index == 0) {
+          printRow(header, true);
       }
 
       if (index != 0) {
@@ -81,7 +87,7 @@ class TableOutputFormat implements OutputFormat {
       index++;
     }
 
-    if (header != null && beeLine.getOpts().getShowHeader()) {
+    if (header != null) {
       printRow(header, true);
     }
 

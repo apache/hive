@@ -37,9 +37,14 @@ public final class VectorUDFMonthLong extends VectorUDFTimestampFieldLong {
   }
 
   @Override
-  protected long getField(long time) {
+  protected long getTimestampField(long time) {
     /* january is 0 */
-    return 1 + super.getField(time);
+    return 1 + super.getTimestampField(time);
   }
 
+  @Override
+  protected long getDateField(long days) {
+    /* january is 0 */
+    return 1 + super.getDateField(days);
+  }
 }

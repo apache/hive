@@ -1,2 +1,18 @@
-Command failed with exit code = -1
-Query returned non-zero code: -1, cause: null
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@header_footer_table_1
+PREHOOK: query: SELECT * FROM header_footer_table_1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@header_footer_table_1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM header_footer_table_1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@header_footer_table_1
+#### A masked pattern was here ####
+Failed with exception java.io.IOException:java.io.IOException: footer number exceeds the limit defined in hive.file.max.footer

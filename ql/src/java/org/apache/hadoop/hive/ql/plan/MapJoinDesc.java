@@ -43,12 +43,16 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
 
   private int posBigTable;
 
+  private Map<Byte, int[]> valueIndices;
   private Map<Byte, List<Integer>> retainList;
 
   private transient String bigTableAlias;
 
   // for tez. used to remember which position maps to which logical input
   private Map<Integer, String> parentToInput = new HashMap<Integer, String>();
+  
+  // for tez. used to remember which type of a Bucket Map Join this is.
+  private boolean customBucketMapJoin;
 
   // table alias (small) --> input file name (big) --> target file names (small)
   private Map<String, Map<String, List<String>>> aliasBucketFileNameMapping;
@@ -61,6 +65,9 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
   // flag for bucket map join. One usage is to set BucketizedHiveInputFormat
   private boolean isBucketMapJoin;
 
+  // Hash table memory usage allowed; used in case of non-staged mapjoin.
+  private float hashtableMemoryUsage;
+
   public MapJoinDesc() {
     bigTableBucketNumMapping = new LinkedHashMap<String, Integer>();
   }
@@ -71,6 +78,7 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
     this.keyTblDesc = clone.keyTblDesc;
     this.valueTblDescs = clone.valueTblDescs;
     this.posBigTable = clone.posBigTable;
+    this.valueIndices = clone.valueIndices;
     this.retainList = clone.retainList;
     this.bigTableAlias = clone.bigTableAlias;
     this.aliasBucketFileNameMapping = clone.aliasBucketFileNameMapping;
@@ -78,6 +86,7 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
     this.bigTablePartSpecToFileMapping = clone.bigTablePartSpecToFileMapping;
     this.dumpFilePrefix = clone.dumpFilePrefix;
     this.parentToInput = clone.parentToInput;
+    this.customBucketMapJoin = clone.customBucketMapJoin;
   }
 
   public MapJoinDesc(final Map<Byte, List<ExprNodeDesc>> keys,
@@ -116,6 +125,18 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
 
   public void setParentToInput(Map<Integer, String> parentToInput) {
     this.parentToInput = parentToInput;
+  }
+
+  public Map<Byte, int[]> getValueIndices() {
+    return valueIndices;
+  }
+
+  public void setValueIndices(Map<Byte, int[]> valueIndices) {
+    this.valueIndices = valueIndices;
+  }
+
+  public int[] getValueIndex(byte alias) {
+    return valueIndices == null ? null : valueIndices.get(alias);
   }
 
   public Map<Byte, List<Integer>> getRetainList() {
@@ -268,5 +289,21 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
 
   public void setBucketMapJoin(boolean isBucketMapJoin) {
     this.isBucketMapJoin = isBucketMapJoin;
+  }
+
+  public void setHashTableMemoryUsage(float hashtableMemoryUsage) {
+    this.hashtableMemoryUsage = hashtableMemoryUsage;
+  }
+
+  public float getHashTableMemoryUsage() {
+    return hashtableMemoryUsage;
+  }
+  
+  public void setCustomBucketMapJoin(boolean customBucketMapJoin) {
+    this.customBucketMapJoin = customBucketMapJoin;
+  }
+  
+  public boolean getCustomBucketMapJoin() {
+    return this.customBucketMapJoin;
   }
 }

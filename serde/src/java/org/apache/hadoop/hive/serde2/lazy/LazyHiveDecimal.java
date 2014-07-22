@@ -17,6 +17,9 @@
  */
 package org.apache.hadoop.hive.serde2.lazy;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
 
 import org.apache.commons.logging.Log;
@@ -33,6 +36,7 @@ public class LazyHiveDecimal extends LazyPrimitive<LazyHiveDecimalObjectInspecto
 
   private final int precision;
   private final int scale;
+  private static final byte[] nullBytes = new byte[]{0x0, 0x0, 0x0, 0x0};
 
   public LazyHiveDecimal(LazyHiveDecimalObjectInspector oi) {
     super(oi);
@@ -93,4 +97,19 @@ public class LazyHiveDecimal extends LazyPrimitive<LazyHiveDecimalObjectInspecto
     return data;
   }
 
+  /**
+   * Writes HiveDecimal object to output stream as string
+   * @param outputStream
+   * @param hiveDecimal
+   * @throws IOException
+   */
+  public static void writeUTF8(OutputStream outputStream, HiveDecimal hiveDecimal)
+    throws IOException {
+    if (hiveDecimal == null) {
+      outputStream.write(nullBytes);
+    } else {
+      ByteBuffer b = Text.encode(hiveDecimal.toString());
+      outputStream.write(b.array(), 0, b.limit());
+    }
+  }
 }

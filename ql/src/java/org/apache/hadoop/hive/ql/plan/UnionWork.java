@@ -28,6 +28,7 @@ import java.util.HashSet;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
+import org.apache.hadoop.mapred.JobConf;
 
 /**
  * Simple wrapper for union all cases. All contributing work for a union all
@@ -67,5 +68,8 @@ public class UnionWork extends BaseWork {
 
   public Set<UnionOperator> getUnionOperators() {
     return unionOperators;
+  }
+
+  public void configureJobConf(JobConf job) {
   }
 }

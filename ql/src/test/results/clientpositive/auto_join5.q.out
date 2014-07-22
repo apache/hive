@@ -62,7 +62,7 @@ STAGE PLANS:
                 Statistics: Num rows: 3 Data size: 601 Basic stats: COMPLETE Column stats: NONE
                 HashTable Sink Operator
                   condition expressions:
-                    0 {_col0} {_col1}
+                    0 {_col1}
                     1 {_col0} {_col1}
                   keys:
                     0 _col0 (type: string)
@@ -164,8 +164,4 @@ POSTHOOK: query: SELECT sum(hash(dest1.c1,dest1.c2,dest1.c3,dest1.c4)) FROM dest
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: dest1.c1 EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1.c2 SIMPLE [(src)src1.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1.c3 EXPRESSION [(src)src2.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1.c4 SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 9766083196

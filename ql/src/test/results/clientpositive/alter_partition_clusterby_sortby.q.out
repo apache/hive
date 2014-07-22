@@ -27,17 +27,19 @@ POSTHOOK: Input: default@alter_table_partition_clusterby_sortby@c=abc
 POSTHOOK: Output: default@alter_table_partition_clusterby_sortby@c=abc
 PREHOOK: query: desc formatted alter_table_partition_clusterby_sortby partition(c='abc')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_table_partition_clusterby_sortby
 POSTHOOK: query: desc formatted alter_table_partition_clusterby_sortby partition(c='abc')
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_table_partition_clusterby_sortby
 # col_name            	data_type           	comment             
 	 	 
-a                   	int                 	None                
-b                   	int                 	None                
+a                   	int                 	                    
+b                   	int                 	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-c                   	string              	None                
+c                   	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[abc]               	 
@@ -80,17 +82,19 @@ POSTHOOK: Input: default@alter_table_partition_clusterby_sortby@c=abc
 POSTHOOK: Output: default@alter_table_partition_clusterby_sortby@c=abc
 PREHOOK: query: desc formatted alter_table_partition_clusterby_sortby partition(c='abc')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_table_partition_clusterby_sortby
 POSTHOOK: query: desc formatted alter_table_partition_clusterby_sortby partition(c='abc')
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_table_partition_clusterby_sortby
 # col_name            	data_type           	comment             
 	 	 
-a                   	int                 	None                
-b                   	int                 	None                
+a                   	int                 	                    
+b                   	int                 	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-c                   	string              	None                
+c                   	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[abc]               	 
@@ -133,17 +137,19 @@ POSTHOOK: Input: default@alter_table_partition_clusterby_sortby@c=abc
 POSTHOOK: Output: default@alter_table_partition_clusterby_sortby@c=abc
 PREHOOK: query: desc formatted alter_table_partition_clusterby_sortby partition(c='abc')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_table_partition_clusterby_sortby
 POSTHOOK: query: desc formatted alter_table_partition_clusterby_sortby partition(c='abc')
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_table_partition_clusterby_sortby
 # col_name            	data_type           	comment             
 	 	 
-a                   	int                 	None                
-b                   	int                 	None                
+a                   	int                 	                    
+b                   	int                 	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-c                   	string              	None                
+c                   	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[abc]               	 
@@ -175,19 +181,21 @@ PREHOOK: query: -- Table properties should be unchanged
 
 desc formatted alter_table_partition_clusterby_sortby
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_table_partition_clusterby_sortby
 POSTHOOK: query: -- Table properties should be unchanged
 
 desc formatted alter_table_partition_clusterby_sortby
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_table_partition_clusterby_sortby
 # col_name            	data_type           	comment             
 	 	 
-a                   	int                 	None                
-b                   	int                 	None                
+a                   	int                 	                    
+b                   	int                 	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-c                   	string              	None                
+c                   	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 

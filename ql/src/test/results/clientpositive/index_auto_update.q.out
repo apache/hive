@@ -28,8 +28,6 @@ POSTHOOK: query: -- Build an index on temp.
 CREATE INDEX temp_index ON TABLE temp(key) as 'COMPACT' WITH DEFERRED REBUILD
 POSTHOOK: type: CREATEINDEX
 POSTHOOK: Output: default@default__temp_temp_index__
-POSTHOOK: Lineage: temp.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: temp.val SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: ALTER INDEX temp_index ON temp REBUILD
 PREHOOK: type: ALTERINDEX_REBUILD
 PREHOOK: Input: default@temp
@@ -41,36 +39,29 @@ POSTHOOK: Output: default@default__temp_temp_index__
 POSTHOOK: Lineage: default__temp_temp_index__._bucketname SIMPLE [(temp)temp.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__temp_temp_index__._offsets EXPRESSION [(temp)temp.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 POSTHOOK: Lineage: default__temp_temp_index__.key SIMPLE [(temp)temp.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: temp.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: temp.val SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: -- overwrite temp table so index is out of date
 EXPLAIN INSERT OVERWRITE TABLE temp SELECT * FROM src
 PREHOOK: type: QUERY
 POSTHOOK: query: -- overwrite temp table so index is out of date
 EXPLAIN INSERT OVERWRITE TABLE temp SELECT * FROM src
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: default__temp_temp_index__._bucketname SIMPLE [(temp)temp.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__temp_temp_index__._offsets EXPRESSION [(temp)temp.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__temp_temp_index__.key SIMPLE [(temp)temp.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: temp.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: temp.val SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 STAGE DEPENDENCIES:
-  Stage-4 is a root stage
-  Stage-10 depends on stages: Stage-4 , consists of Stage-7, Stage-6, Stage-8
-  Stage-7
-  Stage-0 depends on stages: Stage-7, Stage-6, Stage-9
-  Stage-1 depends on stages: Stage-0
-  Stage-0 depends on stages: Stage-1
+  Stage-6 is a root stage
+  Stage-12 depends on stages: Stage-6 , consists of Stage-9, Stage-8, Stage-10
+  Stage-9
+  Stage-0 depends on stages: Stage-9, Stage-8, Stage-11
   Stage-2 depends on stages: Stage-0
-  null depends on stages: Stage-1
+  Stage-1 depends on stages: Stage-2
   Stage-3 depends on stages: Stage-1
-  Stage-5 depends on stages: Stage-0
-  Stage-6
+  Stage-4 depends on stages: Stage-2
+  Stage-5 depends on stages: Stage-2
+  Stage-7 depends on stages: Stage-0
   Stage-8
-  Stage-9 depends on stages: Stage-8
+  Stage-10
+  Stage-11 depends on stages: Stage-10
 
 STAGE PLANS:
-  Stage: Stage-4
+  Stage: Stage-6
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -89,10 +80,10 @@ STAGE PLANS:
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.temp
 
-  Stage: Stage-10
+  Stage: Stage-12
     Conditional Operator
 
-  Stage: Stage-7
+  Stage: Stage-9
     Move Operator
       files:
           hdfs directory: true
@@ -108,7 +99,7 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.temp
 
-  Stage: Stage-1
+  Stage: Stage-2
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -143,7 +134,7 @@ STAGE PLANS:
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   name: default.default__temp_temp_index__
 
-  Stage: Stage-0
+  Stage: Stage-1
     Move Operator
       tables:
           replace: true
@@ -153,27 +144,15 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.default__temp_temp_index__
 
-  Stage: Stage-2
+  Stage: Stage-3
     Stats-Aggr Operator
 
-  Stage: null
-
-  Stage: Stage-3
+  Stage: Stage-4
 
   Stage: Stage-5
-    Stats-Aggr Operator
 
-  Stage: Stage-6
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            File Output Operator
-              compressed: false
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.temp
+  Stage: Stage-7
+    Stats-Aggr Operator
 
   Stage: Stage-8
     Map Reduce
@@ -187,7 +166,19 @@ STAGE PLANS:
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   name: default.temp
 
-  Stage: Stage-9
+  Stage: Stage-10
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.temp
+
+  Stage: Stage-11
     Move Operator
       files:
           hdfs directory: true
@@ -204,27 +195,14 @@ POSTHOOK: Input: default@src
 POSTHOOK: Input: default@temp
 POSTHOOK: Output: default@temp
 POSTHOOK: Lineage: default__temp_temp_index__._bucketname SIMPLE [(temp)temp.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__temp_temp_index__._bucketname SIMPLE [(temp)temp.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__temp_temp_index__._offsets EXPRESSION [(temp)temp.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 POSTHOOK: Lineage: default__temp_temp_index__._offsets EXPRESSION [(temp)temp.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 POSTHOOK: Lineage: default__temp_temp_index__.key SIMPLE [(temp)temp.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: default__temp_temp_index__.key SIMPLE [(temp)temp.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: temp.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: temp.val SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: -- query should return indexed values
 EXPLAIN SELECT * FROM temp WHERE key  = 86
 PREHOOK: type: QUERY
 POSTHOOK: query: -- query should return indexed values
 EXPLAIN SELECT * FROM temp WHERE key  = 86
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: default__temp_temp_index__._bucketname SIMPLE [(temp)temp.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__temp_temp_index__._bucketname SIMPLE [(temp)temp.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__temp_temp_index__._offsets EXPRESSION [(temp)temp.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__temp_temp_index__._offsets EXPRESSION [(temp)temp.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__temp_temp_index__.key SIMPLE [(temp)temp.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: default__temp_temp_index__.key SIMPLE [(temp)temp.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: temp.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: temp.val SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
   Stage-8 depends on stages: Stage-3 , consists of Stage-5, Stage-4, Stage-6
@@ -234,7 +212,7 @@ STAGE DEPENDENCIES:
   Stage-4
   Stage-6
   Stage-7 depends on stages: Stage-6
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-3
@@ -323,6 +301,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT * FROM temp WHERE key  = 86
 PREHOOK: type: QUERY
@@ -334,14 +314,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@default__temp_temp_index__
 POSTHOOK: Input: default@temp
 #### A masked pattern was here ####
-POSTHOOK: Lineage: default__temp_temp_index__._bucketname SIMPLE [(temp)temp.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__temp_temp_index__._bucketname SIMPLE [(temp)temp.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__temp_temp_index__._offsets EXPRESSION [(temp)temp.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__temp_temp_index__._offsets EXPRESSION [(temp)temp.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__temp_temp_index__.key SIMPLE [(temp)temp.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: default__temp_temp_index__.key SIMPLE [(temp)temp.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: temp.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: temp.val SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 86	val_86
 PREHOOK: query: DROP table temp
 PREHOOK: type: DROPTABLE
@@ -351,11 +323,3 @@ POSTHOOK: query: DROP table temp
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@temp
 POSTHOOK: Output: default@temp
-POSTHOOK: Lineage: default__temp_temp_index__._bucketname SIMPLE [(temp)temp.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__temp_temp_index__._bucketname SIMPLE [(temp)temp.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__temp_temp_index__._offsets EXPRESSION [(temp)temp.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__temp_temp_index__._offsets EXPRESSION [(temp)temp.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__temp_temp_index__.key SIMPLE [(temp)temp.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: default__temp_temp_index__.key SIMPLE [(temp)temp.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: temp.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: temp.val SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]

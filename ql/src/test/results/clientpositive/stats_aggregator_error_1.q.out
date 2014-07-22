@@ -36,8 +36,6 @@ POSTHOOK: query: select count(1) from tmptable
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmptable
 #### A masked pattern was here ####
-POSTHOOK: Lineage: tmptable.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tmptable.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 500
 PREHOOK: query: INSERT OVERWRITE TABLE tmptable select * from src
 PREHOOK: type: QUERY
@@ -48,8 +46,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@tmptable
 POSTHOOK: Lineage: tmptable.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tmptable.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tmptable.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: tmptable.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: select count(1) from tmptable
 PREHOOK: type: QUERY
@@ -59,10 +55,6 @@ POSTHOOK: query: select count(1) from tmptable
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmptable
 #### A masked pattern was here ####
-POSTHOOK: Lineage: tmptable.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tmptable.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tmptable.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tmptable.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 500
 PREHOOK: query: INSERT OVERWRITE TABLE tmptable select * from src
 PREHOOK: type: QUERY
@@ -73,10 +65,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@tmptable
 POSTHOOK: Lineage: tmptable.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tmptable.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tmptable.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tmptable.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tmptable.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: tmptable.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: select count(1) from tmptable
 PREHOOK: type: QUERY
@@ -86,12 +74,6 @@ POSTHOOK: query: select count(1) from tmptable
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmptable
 #### A masked pattern was here ####
-POSTHOOK: Lineage: tmptable.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tmptable.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tmptable.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tmptable.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tmptable.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tmptable.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 500
 PREHOOK: query: INSERT OVERWRITE TABLE tmptable select * from src
 PREHOOK: type: QUERY
@@ -103,12 +85,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@tmptable
 POSTHOOK: Lineage: tmptable.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tmptable.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tmptable.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tmptable.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tmptable.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tmptable.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tmptable.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: tmptable.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: select count(1) from tmptable
 PREHOOK: type: QUERY
@@ -118,12 +94,4 @@ POSTHOOK: query: select count(1) from tmptable
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmptable
 #### A masked pattern was here ####
-POSTHOOK: Lineage: tmptable.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tmptable.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tmptable.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tmptable.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tmptable.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tmptable.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tmptable.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tmptable.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 500

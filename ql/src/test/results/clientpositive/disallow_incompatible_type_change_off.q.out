@@ -34,8 +34,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_table123
 POSTHOOK: Input: default@test_table123@ds=foo1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: test_table123 PARTITION(ds=foo1).a SIMPLE []
-POSTHOOK: Lineage: test_table123 PARTITION(ds=foo1).b EXPRESSION []
 1	{"a1":"b1"}	foo1
 PREHOOK: query: -- This should now work as hive.metastore.disallow.incompatible.col.type.changes is false
 ALTER TABLE test_table123 REPLACE COLUMNS (a INT, b STRING)
@@ -47,5 +45,3 @@ ALTER TABLE test_table123 REPLACE COLUMNS (a INT, b STRING)
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
 POSTHOOK: Input: default@test_table123
 POSTHOOK: Output: default@test_table123
-POSTHOOK: Lineage: test_table123 PARTITION(ds=foo1).a SIMPLE []
-POSTHOOK: Lineage: test_table123 PARTITION(ds=foo1).b EXPRESSION []

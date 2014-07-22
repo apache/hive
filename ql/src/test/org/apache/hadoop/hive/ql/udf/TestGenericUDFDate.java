@@ -45,6 +45,11 @@ public class TestGenericUDFDate extends TestCase {
     Text output = (Text) udf.evaluate(args);
 
     assertEquals("to_date() test for STRING failed ", "2009-07-30", output.toString());
+
+    // Try with null args
+    DeferredObject[] nullArgs = { new DeferredJavaObject(null) };
+    output = (Text) udf.evaluate(nullArgs);
+    assertNull("to_date() with null STRING", output);
   }
 
   public void testTimestampToDate() throws HiveException {
@@ -59,6 +64,11 @@ public class TestGenericUDFDate extends TestCase {
     Text output = (Text) udf.evaluate(args);
 
     assertEquals("to_date() test for TIMESTAMP failed ", "2009-07-30", output.toString());
+
+    // Try with null args
+    DeferredObject[] nullArgs = { new DeferredJavaObject(null) };
+    output = (Text) udf.evaluate(nullArgs);
+    assertNull("to_date() with null TIMESTAMP", output);
   }
 
   public void testDateWritablepToDate() throws HiveException {
@@ -72,6 +82,11 @@ public class TestGenericUDFDate extends TestCase {
     Text output = (Text) udf.evaluate(args);
 
     assertEquals("to_date() test for DATEWRITABLE failed ", "2009-07-30", output.toString());
+
+    // Try with null args
+    DeferredObject[] nullArgs = { new DeferredJavaObject(null) };
+    output = (Text) udf.evaluate(nullArgs);
+    assertNull("to_date() with null DATE", output);
   }
 
 }

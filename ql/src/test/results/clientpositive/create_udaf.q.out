@@ -12,8 +12,10 @@ STAGE PLANS:
 
 PREHOOK: query: CREATE TEMPORARY FUNCTION test_max AS 'org.apache.hadoop.hive.ql.udf.UDAFTestMax'
 PREHOOK: type: CREATEFUNCTION
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TEMPORARY FUNCTION test_max AS 'org.apache.hadoop.hive.ql.udf.UDAFTestMax'
 POSTHOOK: type: CREATEFUNCTION
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE dest1(col INT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -38,7 +40,6 @@ POSTHOOK: query: SELECT dest1.* FROM dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: dest1.col EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 7
 PREHOOK: query: -- cover all the other value types:
 SELECT test_max(CAST(length(src.value) AS SMALLINT)) FROM src
@@ -50,7 +51,6 @@ SELECT test_max(CAST(length(src.value) AS SMALLINT)) FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: Lineage: dest1.col EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 7
 PREHOOK: query: SELECT test_max(CAST(length(src.value) AS BIGINT)) FROM src
 PREHOOK: type: QUERY
@@ -60,7 +60,6 @@ POSTHOOK: query: SELECT test_max(CAST(length(src.value) AS BIGINT)) FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: Lineage: dest1.col EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 7
 PREHOOK: query: SELECT test_max(CAST(length(src.value) AS DOUBLE)) FROM src
 PREHOOK: type: QUERY
@@ -70,7 +69,6 @@ POSTHOOK: query: SELECT test_max(CAST(length(src.value) AS DOUBLE)) FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: Lineage: dest1.col EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 7.0
 PREHOOK: query: SELECT test_max(CAST(length(src.value) AS FLOAT)) FROM src
 PREHOOK: type: QUERY
@@ -80,7 +78,6 @@ POSTHOOK: query: SELECT test_max(CAST(length(src.value) AS FLOAT)) FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: Lineage: dest1.col EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 7.0
 PREHOOK: query: SELECT test_max(substr(src.value,5)) FROM src
 PREHOOK: type: QUERY
@@ -90,10 +87,10 @@ POSTHOOK: query: SELECT test_max(substr(src.value,5)) FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: Lineage: dest1.col EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 98
 PREHOOK: query: DROP TEMPORARY FUNCTION test_max
 PREHOOK: type: DROPFUNCTION
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TEMPORARY FUNCTION test_max
 POSTHOOK: type: DROPFUNCTION
-POSTHOOK: Lineage: dest1.col EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Output: database:default

@@ -1,3 +1,4 @@
+set hive.stats.dbclass=fs;
 set hive.compute.query.using.stats=true;
 create table over10k(
            t tinyint,
@@ -47,3 +48,4 @@ select count(*), count(1), sum(1), sum(2), count(s), count(bo), count(bin), coun
 
 drop table stats_tbl_part;
 set hive.compute.query.using.stats=false;
+set hive.stats.dbclass=jdbc:derby;

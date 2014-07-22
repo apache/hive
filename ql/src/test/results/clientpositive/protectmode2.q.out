@@ -19,9 +19,11 @@ POSTHOOK: Input: default@tbl1
 POSTHOOK: Output: default@tbl1
 PREHOOK: query: desc extended tbl1
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tbl1
 POSTHOOK: query: desc extended tbl1
 POSTHOOK: type: DESCTABLE
-col                 	string              	None                
+POSTHOOK: Input: default@tbl1
+col                 	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: alter table tbl1 enable no_drop
@@ -34,9 +36,11 @@ POSTHOOK: Input: default@tbl1
 POSTHOOK: Output: default@tbl1
 PREHOOK: query: desc extended tbl1
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tbl1
 POSTHOOK: query: desc extended tbl1
 POSTHOOK: type: DESCTABLE
-col                 	string              	None                
+POSTHOOK: Input: default@tbl1
+col                 	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: alter table tbl1 disable no_drop cascade
@@ -49,9 +53,11 @@ POSTHOOK: Input: default@tbl1
 POSTHOOK: Output: default@tbl1
 PREHOOK: query: desc extended tbl1
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tbl1
 POSTHOOK: query: desc extended tbl1
 POSTHOOK: type: DESCTABLE
-col                 	string              	None                
+POSTHOOK: Input: default@tbl1
+col                 	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: alter table tbl1 disable no_drop
@@ -112,16 +118,18 @@ POSTHOOK: Input: default@tbl2
 POSTHOOK: Output: default@tbl2
 PREHOOK: query: desc formatted tbl2
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tbl2
 POSTHOOK: query: desc formatted tbl2
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tbl2
 # col_name            	data_type           	comment             
 	 	 
-col                 	string              	None                
+col                 	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-p                   	string              	None                
+p                   	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -154,16 +162,18 @@ POSTHOOK: Input: default@tbl2
 POSTHOOK: Output: default@tbl2
 PREHOOK: query: desc formatted tbl2
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tbl2
 POSTHOOK: query: desc formatted tbl2
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tbl2
 # col_name            	data_type           	comment             
 	 	 
-col                 	string              	None                
+col                 	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-p                   	string              	None                
+p                   	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 

@@ -1,0 +1,23 @@
+PREHOOK: query: create table T1(key string, val string) stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: create table T1(key string, val string) stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@T1
+PREHOOK: query: alter table T1 compact 'major'
+PREHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: query: alter table T1 compact 'major'
+POSTHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: query: alter table T1 compact 'minor'
+PREHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: query: alter table T1 compact 'minor'
+POSTHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: query: drop table T1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@t1
+PREHOOK: Output: default@t1
+POSTHOOK: query: drop table T1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: default@t1

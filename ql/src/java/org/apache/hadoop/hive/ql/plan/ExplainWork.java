@@ -27,6 +27,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
+import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 
 /**
  * ExplainWork.
@@ -49,6 +50,9 @@ public class ExplainWork implements Serializable {
 
   boolean appendTaskType;
 
+  boolean authorize;
+
+  private transient BaseSemanticAnalyzer analyzer;
 
   public ExplainWork() {
   }
@@ -58,21 +62,24 @@ public class ExplainWork implements Serializable {
       List<Task<? extends Serializable>> rootTasks,
       Task<? extends Serializable> fetchTask,
       String astStringTree,
-      HashSet<ReadEntity> inputs,
+      BaseSemanticAnalyzer analyzer,
       boolean extended,
       boolean formatted,
       boolean dependency,
-      boolean logical) {
+      boolean logical,
+      boolean authorize) {
     this.resFile = resFile;
     this.rootTasks = new ArrayList<Task<? extends Serializable>>(rootTasks);
     this.fetchTask = fetchTask;
     this.astStringTree = astStringTree;
-    this.inputs = inputs;
+    this.analyzer = analyzer;
+    this.inputs = analyzer.getInputs();
     this.extended = extended;
     this.formatted = formatted;
     this.dependency = dependency;
     this.logical = logical;
     this.pCtx = pCtx;
+    this.authorize = authorize;
   }
 
   public Path getResFile() {
@@ -161,5 +168,17 @@ public class ExplainWork implements Serializable {
 
   public void setAppendTaskType(boolean appendTaskType) {
     this.appendTaskType = appendTaskType;
+  }
+
+  public boolean isAuthorize() {
+    return authorize;
+  }
+
+  public void setAuthorize(boolean authorize) {
+    this.authorize = authorize;
+  }
+
+  public BaseSemanticAnalyzer getAnalyzer() {
+    return analyzer;
   }
 }

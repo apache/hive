@@ -83,6 +83,13 @@ public class <ClassName> extends VectorAggregateExpression {
         JavaDataModel model = JavaDataModel.get();
         return model.lengthForByteArrayOfSize(bytes.length);
       }
+
+      @Override
+      public void reset () {
+        isNull = true;
+        length = 0;
+      }
+
     }
 
     private VectorExpression inputExpression;
@@ -352,7 +359,7 @@ public class <ClassName> extends VectorAggregateExpression {
     @Override
     public void reset(AggregationBuffer agg) throws HiveException {
       Aggregation myAgg = (Aggregation) agg;
-      myAgg.isNull = true;
+      myAgg.reset();
     }
 
     @Override

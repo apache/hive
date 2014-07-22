@@ -166,6 +166,17 @@ public interface SearchArgument {
   public TruthValue evaluate(TruthValue[] leaves);
 
   /**
+   * Serialize the SARG as a kyro object and return the base64 string.
+   *
+   * Hive should replace the current XML-based AST serialization for predicate pushdown
+   * with the Kryo serialization of the SARG because the representation is much more
+   * compact and focused on what is needed for predicate pushdown.
+   *
+   * @return the serialized SARG
+   */
+  public String toKryo();
+
+  /**
    * A factory for creating SearchArguments. Java doesn't allow static methods
    * in interfaces. *DOH*
    */
@@ -176,6 +187,10 @@ public interface SearchArgument {
 
     public Builder newBuilder() {
       return SearchArgumentImpl.newBuilder();
+    }
+
+    public SearchArgument create(String kryo) {
+      return SearchArgumentImpl.fromKryo(kryo);
     }
   }
 

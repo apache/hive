@@ -22,7 +22,7 @@ import java.io.IOException;
 import java.util.Properties;
 
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.ql.io.FSRecordWriter;
+import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.LongWritable;
@@ -36,20 +36,20 @@ public class Rot13OutputFormat
   extends HiveIgnoreKeyTextOutputFormat<LongWritable,Text> {
 
   @Override
-  public FSRecordWriter
+  public RecordWriter
     getHiveRecordWriter(JobConf jc,
                         Path outPath,
                         Class<? extends Writable> valueClass,
                         boolean isCompressed,
                         Properties tableProperties,
                         Progressable progress) throws IOException {
-    final FSRecordWriter result =
+    final RecordWriter result =
       super.getHiveRecordWriter(jc,outPath,valueClass,isCompressed,
         tableProperties,progress);
     final Reporter reporter = (Reporter) progress;
     reporter.setStatus("got here");
     System.out.println("Got a reporter " + reporter);
-    return new FSRecordWriter() {
+    return new RecordWriter() {
       @Override
       public void write(Writable w) throws IOException {
         if (w instanceof Text) {

@@ -22,7 +22,7 @@ PREHOOK: query: describe database db2
 PREHOOK: type: DESCDATABASE
 POSTHOOK: query: describe database db2
 POSTHOOK: type: DESCDATABASE
-#### A masked pattern was here ####
+db2		location/in/test	hive_test_user	USER	
 PREHOOK: query: describe database extended db2
 PREHOOK: type: DESCDATABASE
 POSTHOOK: query: describe database extended db2
@@ -32,10 +32,12 @@ PREHOOK: query: alter database db2 set dbproperties (
   'new.property' = 'some new props',
   'hive.warehouse.dir' = 'new/warehouse/dir')
 PREHOOK: type: ALTERDATABASE
+PREHOOK: Output: database:db2
 POSTHOOK: query: alter database db2 set dbproperties (
   'new.property' = 'some new props',
   'hive.warehouse.dir' = 'new/warehouse/dir')
 POSTHOOK: type: ALTERDATABASE
+POSTHOOK: Output: database:db2
 PREHOOK: query: describe database extended db2
 PREHOOK: type: DESCDATABASE
 POSTHOOK: query: describe database extended db2

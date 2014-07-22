@@ -1,5 +1,5 @@
 set hive.users.in.admin.role=hive_admin_user;
-set hive.security.authorization.manager=org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory;
+set hive.security.authorization.manager=org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactoryForTest;
 set hive.security.authenticator.manager=org.apache.hadoop.hive.ql.security.SessionStateConfigUserAuthenticator;
 set user.name=hive_admin_user;
 
@@ -24,13 +24,14 @@ show role grant user user_sauth;
 
 --table grant to role
 
-grant select on table src_autho_test to role src_role;
+-- also verify case insesitive behavior of role name
+grant select on table src_autho_test to role Src_ROle;
 
 show grant role src_role on table src_autho_test;
-revoke select on table src_autho_test from role src_role;
+revoke select on table src_autho_test from role src_rolE;
 
 -- drop role
-drop role src_role;
+drop role SRc_role;
 
 set hive.security.authorization.enabled=false;
 drop table src_autho_test;

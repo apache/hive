@@ -25,6 +25,8 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.WindowFunctionDescription;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.AggregationBuffer;
 
 @WindowFunctionDescription
 (
@@ -53,9 +55,25 @@ public class GenericUDAFLead extends GenericUDAFLeadLag {
 
   public static class GenericUDAFLeadEvaluator extends GenericUDAFLeadLagEvaluator {
 
+    public GenericUDAFLeadEvaluator() {
+    }
+
+    /*
+     * used to initialize Streaming Evaluator.
+     */
+    protected GenericUDAFLeadEvaluator(GenericUDAFLeadLagEvaluator src) {
+      super(src);
+    }
+
     @Override
     protected LeadLagBuffer getNewLLBuffer() throws HiveException {
      return new LeadBuffer();
+    }
+    
+    @Override
+    public GenericUDAFEvaluator getWindowingEvaluator(WindowFrameDef wFrmDef) {
+
+      return new GenericUDAFLeadEvaluatorStreaming(this);
     }
 
   }
@@ -101,6 +119,36 @@ public class GenericUDAFLead extends GenericUDAFLeadLag {
       return values;
     }
 
+  }
+
+  /*
+   * StreamingEval: wrap regular eval. on getNext remove first row from values
+   * and return it.
+   */
+  static class GenericUDAFLeadEvaluatorStreaming extends
+      GenericUDAFLeadEvaluator implements ISupportStreamingModeForWindowing {
+
+    protected GenericUDAFLeadEvaluatorStreaming(GenericUDAFLeadLagEvaluator src) {
+      super(src);
+    }
+
+    @Override
+    public Object getNextResult(AggregationBuffer agg) throws HiveException {
+      LeadBuffer lb = (LeadBuffer) agg;
+      if (!lb.values.isEmpty()) {
+        Object res = lb.values.remove(0);
+        if (res == null) {
+          return ISupportStreamingModeForWindowing.NULL_RESULT;
+        }
+        return res;
+      }
+      return null;
+    }
+
+    @Override
+    public int getRowsRemainingAfterTerminate() throws HiveException {
+      return getAmt();
+    }
   }
 
 }

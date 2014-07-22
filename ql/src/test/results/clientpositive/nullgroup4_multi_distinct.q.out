@@ -6,7 +6,7 @@ select count(1), count(distinct x.value), count(distinct substr(x.value, 5)) fro
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -32,7 +32,7 @@ STAGE PLANS:
                     key expressions: _col0 (type: string), _col1 (type: string)
                     sort order: ++
                     Statistics: Num rows: 14 Data size: 2805 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col2 (type: bigint), _col3 (type: bigint), _col4 (type: bigint)
+                    value expressions: _col2 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0), count(DISTINCT KEY._col0:0._col0), count(DISTINCT KEY._col0:1._col0)
@@ -54,6 +54,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select count(1), count(distinct x.value), count(distinct substr(x.value, 5)) from src x where x.key = 9999
 PREHOOK: type: QUERY
@@ -72,7 +74,7 @@ select count(1), count(distinct x.value), count(distinct substr(x.value, 5)) fro
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -92,7 +94,6 @@ STAGE PLANS:
                   key expressions: value (type: string), substr(value, 5) (type: string)
                   sort order: ++
                   Statistics: Num rows: 14 Data size: 2805 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: 1 (type: int)
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(1), count(DISTINCT KEY._col0:0._col0), count(DISTINCT KEY._col0:1._col0)
@@ -114,6 +115,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select count(1), count(distinct x.value), count(distinct substr(x.value, 5)) from src x where x.key = 9999
 PREHOOK: type: QUERY

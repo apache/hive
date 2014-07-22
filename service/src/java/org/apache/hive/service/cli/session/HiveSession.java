@@ -21,48 +21,19 @@ package org.apache.hive.service.cli.session;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
-import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hive.service.auth.HiveAuthFactory;
 import org.apache.hive.service.cli.FetchOrientation;
 import org.apache.hive.service.cli.GetInfoType;
 import org.apache.hive.service.cli.GetInfoValue;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.OperationHandle;
 import org.apache.hive.service.cli.RowSet;
-import org.apache.hive.service.cli.SessionHandle;
 import org.apache.hive.service.cli.TableSchema;
-import org.apache.hive.service.cli.operation.OperationManager;
-import org.apache.hive.service.cli.thrift.TProtocolVersion;
 
-public interface HiveSession {
+public interface HiveSession extends HiveSessionBase {
 
-  TProtocolVersion getProtocolVersion();
-
-  /**
-   * Set the session manager for the session
-   * @param sessionManager
-   */
-  public void setSessionManager(SessionManager sessionManager);
-
-  /**
-   * Get the session manager for the session
-   */
-  public SessionManager getSessionManager();
-
-  /**
-   * Set operation manager for the session
-   * @param operationManager
-   */
-  public void setOperationManager(OperationManager operationManager);
-
-  public SessionHandle getSessionHandle();
-
-  public String getUsername();
-
-  public String getPassword();
-
-  public HiveConf getHiveConf();
+  public void open();
 
   public IMetaStoreClient getMetaStoreClient() throws HiveSQLException;
 
@@ -178,9 +149,12 @@ public interface HiveSession {
 
   public RowSet fetchResults(OperationHandle opHandle) throws HiveSQLException;
 
-  public SessionState getSessionState();
+  public String getDelegationToken(HiveAuthFactory authFactory, String owner,
+      String renewer) throws HiveSQLException;
 
-  public String getUserName();
+  public void cancelDelegationToken(HiveAuthFactory authFactory, String tokenStr)
+      throws HiveSQLException;
 
-  public void setUserName(String userName);
+  public void renewDelegationToken(HiveAuthFactory authFactory, String tokenStr)
+      throws HiveSQLException;
 }

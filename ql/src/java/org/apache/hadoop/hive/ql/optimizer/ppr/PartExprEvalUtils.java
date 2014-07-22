@@ -22,19 +22,24 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import org.apache.hadoop.hive.common.ObjectPair;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluatorFactory;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
 public class PartExprEvalUtils {
   /**
@@ -47,19 +52,32 @@ public class PartExprEvalUtils {
    * @throws HiveException
    */
   static synchronized public Object evalExprWithPart(ExprNodeDesc expr,
-      LinkedHashMap<String, String> partSpec, List<VirtualColumn> vcs,
+      Partition p, List<VirtualColumn> vcs,
       StructObjectInspector rowObjectInspector) throws HiveException {
+    LinkedHashMap<String, String> partSpec = p.getSpec();
+    Properties partProps = p.getSchema();
+    String pcolTypes = partProps.getProperty(hive_metastoreConstants.META_TABLE_PARTITION_COLUMN_TYPES);
+    String[] partKeyTypes = pcolTypes.trim().split(":");
+
+    if (partSpec.size() != partKeyTypes.length) {
+        throw new HiveException("Internal error : Partition Spec size, " + partProps.size() +
+                " doesn't match partition key definition size, " + partKeyTypes.length);
+    }
     boolean hasVC = vcs != null && !vcs.isEmpty();
     Object[] rowWithPart = new Object[hasVC ? 3 : 2];
     // Create the row object
     ArrayList<String> partNames = new ArrayList<String>();
-    ArrayList<String> partValues = new ArrayList<String>();
+    ArrayList<Object> partValues = new ArrayList<Object>();
     ArrayList<ObjectInspector> partObjectInspectors = new ArrayList<ObjectInspector>();
+    int i=0;
     for (Map.Entry<String, String> entry : partSpec.entrySet()) {
       partNames.add(entry.getKey());
-      partValues.add(entry.getValue());
-      partObjectInspectors
-          .add(PrimitiveObjectInspectorFactory.javaStringObjectInspector);
+      ObjectInspector oi = PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector
+          (TypeInfoFactory.getPrimitiveTypeInfo(partKeyTypes[i++]));
+      partValues.add(ObjectInspectorConverters.getConverter(
+          PrimitiveObjectInspectorFactory.javaStringObjectInspector, oi)
+          .convert(entry.getValue()));
+      partObjectInspectors.add(oi);
     }
     StructObjectInspector partObjectInspector = ObjectInspectorFactory
         .getStandardStructObjectInspector(partNames, partObjectInspectors);

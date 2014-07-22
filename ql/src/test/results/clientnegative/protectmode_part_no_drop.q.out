@@ -31,16 +31,18 @@ POSTHOOK: Input: default@tbl_protectmode_no_drop@p=p1
 POSTHOOK: Output: default@tbl_protectmode_no_drop@p=p1
 PREHOOK: query: desc extended tbl_protectmode_no_drop partition (p='p1')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tbl_protectmode_no_drop
 POSTHOOK: query: desc extended tbl_protectmode_no_drop partition (p='p1')
 POSTHOOK: type: DESCTABLE
-c1                  	string              	None                
-c2                  	string              	None                
-p                   	string              	None                
+POSTHOOK: Input: default@tbl_protectmode_no_drop
+c1                  	string              	                    
+c2                  	string              	                    
+p                   	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-p                   	string              	None                
+p                   	string              	                    
 	 	 
 #### A masked pattern was here ####
 FAILED: SemanticException [Error 30011]: Partition protected from being dropped default@tbl_protectmode_no_drop@p=p1

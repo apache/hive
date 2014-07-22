@@ -14,6 +14,8 @@ POSTHOOK: Output: default@default_partition_name
 POSTHOOK: Output: default@default_partition_name@ds=__HIVE_DEFAULT_PARTITION__
 PREHOOK: query: show partitions default_partition_name
 PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@default_partition_name
 POSTHOOK: query: show partitions default_partition_name
 POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@default_partition_name
 ds=__HIVE_DEFAULT_PARTITION__

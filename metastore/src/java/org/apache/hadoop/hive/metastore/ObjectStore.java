@@ -133,6 +133,7 @@ import org.apache.thrift.TException;
 import org.datanucleus.store.rdbms.exceptions.MissingTableException;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 
 /**
@@ -514,7 +515,7 @@ public class ObjectStore implements RawStore, Configurable {
 
   /**
    * Alter the database object in metastore. Currently only the parameters
-   * of the database can be changed.
+   * of the database or the owner can be changed.
    * @param dbName the database name
    * @param db the Hive Database object
    * @throws MetaException
@@ -528,8 +529,11 @@ public class ObjectStore implements RawStore, Configurable {
     boolean committed = false;
     try {
       mdb = getMDatabase(dbName);
-      // currently only allow changing database parameters
       mdb.setParameters(db.getParameters());
+      mdb.setOwnerName(db.getOwnerName());
+      if (db.getOwnerType() != null) {
+        mdb.setOwnerType(db.getOwnerType().name());
+      }
       openTransaction();
       pm.makePersistent(mdb);
       committed = commitTransaction();
@@ -943,6 +947,16 @@ public class ObjectStore implements RawStore, Configurable {
     return tables;
   }
 
+  /** Makes shallow copy of a list to avoid DataNucleus mucking with our objects. */
+  private <T> List<T> convertList(List<T> dnList) {
+    return (dnList == null) ? null : Lists.newArrayList(dnList);
+  }
+
+  /** Makes shallow copy of a map to avoid DataNucleus mucking with our objects. */
+  private <K, V> Map<K, V> convertMap(Map<K, V> dnMap) {
+    return (dnMap == null) ? null : Maps.newHashMap(dnMap);
+  }
+
   private Table convertToTable(MTable mtbl) throws MetaException {
     if (mtbl == null) {
       return null;
@@ -961,9 +975,8 @@ public class ObjectStore implements RawStore, Configurable {
     return new Table(mtbl.getTableName(), mtbl.getDatabase().getName(), mtbl
         .getOwner(), mtbl.getCreateTime(), mtbl.getLastAccessTime(), mtbl
         .getRetention(), convertToStorageDescriptor(mtbl.getSd()),
-        convertToFieldSchemas(mtbl.getPartitionKeys()), mtbl.getParameters(),
-        mtbl.getViewOriginalText(), mtbl.getViewExpandedText(),
-        tableType);
+        convertToFieldSchemas(mtbl.getPartitionKeys()), convertMap(mtbl.getParameters()),
+        mtbl.getViewOriginalText(), mtbl.getViewExpandedText(), tableType);
   }
 
   private MTable convertToMTable(Table tbl) throws InvalidObjectException,
@@ -1054,8 +1067,7 @@ public class ObjectStore implements RawStore, Configurable {
     if (ms == null) {
       throw new MetaException("Invalid SerDeInfo object");
     }
-    return new SerDeInfo(ms.getName(), ms.getSerializationLib(), ms
-        .getParameters());
+    return new SerDeInfo(ms.getName(), ms.getSerializationLib(), convertMap(ms.getParameters()));
   }
 
   private MSerDeInfo converToMSerDeInfo(SerDeInfo ms) throws MetaException {
@@ -1091,9 +1103,9 @@ public class ObjectStore implements RawStore, Configurable {
     StorageDescriptor sd = new StorageDescriptor(noFS ? null : convertToFieldSchemas(mFieldSchemas),
         msd.getLocation(), msd.getInputFormat(), msd.getOutputFormat(), msd
         .isCompressed(), msd.getNumBuckets(), converToSerDeInfo(msd
-        .getSerDeInfo()), msd.getBucketCols(), convertToOrders(msd
-        .getSortCols()), msd.getParameters());
-    SkewedInfo skewedInfo = new SkewedInfo(msd.getSkewedColNames(),
+        .getSerDeInfo()), convertList(msd.getBucketCols()), convertToOrders(msd
+        .getSortCols()), convertMap(msd.getParameters()));
+    SkewedInfo skewedInfo = new SkewedInfo(convertList(msd.getSkewedColNames()),
         convertToSkewedValues(msd.getSkewedColValues()),
         covertToSkewedMap(msd.getSkewedColValueLocationMaps()));
     sd.setSkewedInfo(skewedInfo);
@@ -1412,10 +1424,10 @@ public class ObjectStore implements RawStore, Configurable {
     if (mpart == null) {
       return null;
     }
-    return new Partition(mpart.getValues(), mpart.getTable().getDatabase()
+    return new Partition(convertList(mpart.getValues()), mpart.getTable().getDatabase()
         .getName(), mpart.getTable().getTableName(), mpart.getCreateTime(),
         mpart.getLastAccessTime(), convertToStorageDescriptor(mpart.getSd()),
-        mpart.getParameters());
+        convertMap(mpart.getParameters()));
   }
 
   private Partition convertToPart(String dbName, String tblName, MPartition mpart)
@@ -1423,9 +1435,9 @@ public class ObjectStore implements RawStore, Configurable {
     if (mpart == null) {
       return null;
     }
-    return new Partition(mpart.getValues(), dbName, tblName, mpart.getCreateTime(),
-        mpart.getLastAccessTime(), convertToStorageDescriptor(mpart.getSd(), false),
-        mpart.getParameters());
+    return new Partition(convertList(mpart.getValues()), dbName, tblName,
+        mpart.getCreateTime(), mpart.getLastAccessTime(),
+        convertToStorageDescriptor(mpart.getSd(), false), convertMap(mpart.getParameters()));
   }
 
   @Override
@@ -2841,7 +2853,7 @@ public class ObjectStore implements RawStore, Configurable {
           "Underlying index table does not exist for the given index.");
     }
 
-    return new MIndex(index.getIndexName(), origTable, index.getCreateTime(),
+    return new MIndex(index.getIndexName().toLowerCase(), origTable, index.getCreateTime(),
         index.getLastAccessTime(), index.getParameters(), indexTable, msd,
         index.getIndexHandlerClass(), index.isDeferredRebuild());
   }
@@ -2882,7 +2894,7 @@ public class ObjectStore implements RawStore, Configurable {
         "origTable.tableName == t1 && origTable.database.name == t2 && indexName == t3");
       query.declareParameters("java.lang.String t1, java.lang.String t2, java.lang.String t3");
       query.setUnique(true);
-      midx = (MIndex) query.execute(originalTblName, dbName, indexName);
+      midx = (MIndex) query.execute(originalTblName, dbName, indexName.toLowerCase());
       pm.retrieve(midx);
       commited = commitTransaction();
     } finally {
@@ -3028,6 +3040,7 @@ public class ObjectStore implements RawStore, Configurable {
     boolean success = false;
     boolean commited = false;
     try {
+      openTransaction();
       MRoleMap roleMap = null;
       try {
         roleMap = this.getMSecurityUserRoleMap(userName, principalType, role
@@ -3038,7 +3051,9 @@ public class ObjectStore implements RawStore, Configurable {
         throw new InvalidObjectException("Principal " + userName
             + " already has the role " + role.getRoleName());
       }
-      openTransaction();
+      if (principalType == PrincipalType.ROLE) {
+        validateRole(userName);
+      }
       MRole mRole = getMRole(role.getRoleName());
       long now = System.currentTimeMillis()/1000;
       MRoleMap roleMember = new MRoleMap(userName, principalType.toString(),
@@ -3054,14 +3069,39 @@ public class ObjectStore implements RawStore, Configurable {
     return success;
   }
 
+  /**
+   * Verify that role with given name exists, if not throw exception
+   * @param roleName
+   * @throws NoSuchObjectException
+   */
+  private void validateRole(String roleName) throws NoSuchObjectException {
+    // if grantee is a role, check if it exists
+    MRole granteeRole = getMRole(roleName);
+    if (granteeRole == null) {
+      throw new NoSuchObjectException("Role " + roleName + " does not exist");
+    }
+  }
+
   @Override
-  public boolean revokeRole(Role role, String userName, PrincipalType principalType) throws MetaException, NoSuchObjectException {
+  public boolean revokeRole(Role role, String userName, PrincipalType principalType,
+      boolean grantOption) throws MetaException, NoSuchObjectException {
     boolean success = false;
     try {
       openTransaction();
       MRoleMap roleMember = getMSecurityUserRoleMap(userName, principalType,
           role.getRoleName());
-      pm.deletePersistent(roleMember);
+      if (grantOption) {
+        // Revoke with grant option - only remove the grant option but keep the role.
+        if (roleMember.getGrantOption()) {
+          roleMember.setGrantOption(false);
+        } else {
+          throw new MetaException("User " + userName
+              + " does not have grant option with role " + role.getRoleName());
+        }
+      } else {
+        // No grant option in revoke, remove the whole role.
+        pm.deletePersistent(roleMember);
+      }
       success = commitTransaction();
     } finally {
       if (!success) {
@@ -3102,7 +3142,7 @@ public class ObjectStore implements RawStore, Configurable {
       if (mRol != null) {
         // first remove all the membership, the membership that this role has
         // been granted
-        List<MRoleMap> roleMap = listRoleMembers(mRol);
+        List<MRoleMap> roleMap = listRoleMembers(mRol.getRoleName());
         if (roleMap.size() > 0) {
           pm.deletePersistentAll(roleMap);
         }
@@ -3139,7 +3179,7 @@ public class ObjectStore implements RawStore, Configurable {
         }
         List<MPartitionColumnPrivilege> partColumnGrants = listPrincipalAllPartitionColumnGrants(
             mRol.getRoleName(), PrincipalType.ROLE);
-        if (tblColumnGrants.size() > 0) {
+        if (partColumnGrants.size() > 0) {
           pm.deletePersistentAll(partColumnGrants);
         }
         // finally remove the role
@@ -3223,7 +3263,20 @@ public class ObjectStore implements RawStore, Configurable {
         rollbackTransaction();
       }
     }
+
+    if (principalType == PrincipalType.USER) {
+      // All users belong to public role implicitly, add that role
+      if (mRoleMember == null) {
+        mRoleMember = new ArrayList<MRoleMap>();
+      } else {
+        mRoleMember = new ArrayList<MRoleMap>(mRoleMember);
+      }
+      MRole publicRole = new MRole(HiveMetaStore.PUBLIC, 0, HiveMetaStore.PUBLIC);
+      mRoleMember.add(new MRoleMap(principalName, principalType.toString(), publicRole, 0,
+          null, null, false));
+    }
     return mRoleMember;
+
   }
 
   @SuppressWarnings("unchecked")
@@ -3673,6 +3726,10 @@ public class ObjectStore implements RawStore, Configurable {
           boolean grantOption = privDef.getGrantInfo().isGrantOption();
           privSet.clear();
 
+          if(principalType == PrincipalType.ROLE){
+            validateRole(userName);
+          }
+
           if (hiveObject.getObjectType() == HiveObjectType.GLOBAL) {
             List<MGlobalPrivilege> globalPrivs = this
                 .listPrincipalGlobalGrants(userName, principalType);
@@ -3859,7 +3916,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public boolean revokePrivileges(PrivilegeBag privileges)
+  public boolean revokePrivileges(PrivilegeBag privileges, boolean grantOption)
       throws InvalidObjectException, MetaException, NoSuchObjectException {
     boolean committed = false;
     try {
@@ -3893,6 +3950,14 @@ public class ObjectStore implements RawStore, Configurable {
                   String userGrantPrivs = userGrant.getPrivilege();
                   if (privilege.equals(userGrantPrivs)) {
                     found = true;
+                    if (grantOption) {
+                      if (userGrant.getGrantOption()) {
+                        userGrant.setGrantOption(false);
+                      } else {
+                        throw new MetaException("User " + userName
+                            + " does not have grant option with privilege " + privilege);
+                      }
+                    }
                     persistentObjs.add(userGrant);
                     break;
                   }
@@ -3916,6 +3981,14 @@ public class ObjectStore implements RawStore, Configurable {
                   String dbGrantPriv = dbGrant.getPrivilege();
                   if (privilege.equals(dbGrantPriv)) {
                     found = true;
+                    if (grantOption) {
+                      if (dbGrant.getGrantOption()) {
+                        dbGrant.setGrantOption(false);
+                      } else {
+                        throw new MetaException("User " + userName
+                            + " does not have grant option with privilege " + privilege);
+                      }
+                    }
                     persistentObjs.add(dbGrant);
                     break;
                   }
@@ -3937,6 +4010,14 @@ public class ObjectStore implements RawStore, Configurable {
                 String tableGrantPriv = tabGrant.getPrivilege();
                 if (privilege.equalsIgnoreCase(tableGrantPriv)) {
                   found = true;
+                  if (grantOption) {
+                    if (tabGrant.getGrantOption()) {
+                      tabGrant.setGrantOption(false);
+                    } else {
+                      throw new MetaException("User " + userName
+                          + " does not have grant option with privilege " + privilege);
+                    }
+                  }
                   persistentObjs.add(tabGrant);
                   break;
                 }
@@ -3963,6 +4044,14 @@ public class ObjectStore implements RawStore, Configurable {
                 String partPriv = partGrant.getPrivilege();
                 if (partPriv.equalsIgnoreCase(privilege)) {
                   found = true;
+                  if (grantOption) {
+                    if (partGrant.getGrantOption()) {
+                      partGrant.setGrantOption(false);
+                    } else {
+                      throw new MetaException("User " + userName
+                          + " does not have grant option with privilege " + privilege);
+                    }
+                  }
                   persistentObjs.add(partGrant);
                   break;
                 }
@@ -3994,6 +4083,14 @@ public class ObjectStore implements RawStore, Configurable {
                     String colPriv = col.getPrivilege();
                     if (colPriv.equalsIgnoreCase(privilege)) {
                       found = true;
+                      if (grantOption) {
+                        if (col.getGrantOption()) {
+                          col.setGrantOption(false);
+                        } else {
+                          throw new MetaException("User " + userName
+                              + " does not have grant option with privilege " + privilege);
+                        }
+                      }
                       persistentObjs.add(col);
                       break;
                     }
@@ -4018,6 +4115,14 @@ public class ObjectStore implements RawStore, Configurable {
                     String colPriv = col.getPrivilege();
                     if (colPriv.equalsIgnoreCase(privilege)) {
                       found = true;
+                      if (grantOption) {
+                        if (col.getGrantOption()) {
+                          col.setGrantOption(false);
+                        } else {
+                          throw new MetaException("User " + userName
+                              + " does not have grant option with privilege " + privilege);
+                        }
+                      }
                       persistentObjs.add(col);
                       break;
                     }
@@ -4038,7 +4143,12 @@ public class ObjectStore implements RawStore, Configurable {
       }
 
       if (persistentObjs.size() > 0) {
-        pm.deletePersistentAll(persistentObjs);
+        if (grantOption) {
+          // If grant option specified, only update the privilege, don't remove it.
+          // Grant option has already been removed from the privileges in the section above
+        } else {
+          pm.deletePersistentAll(persistentObjs);
+        }
       }
       committed = commitTransaction();
     } finally {
@@ -4050,8 +4160,8 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @SuppressWarnings("unchecked")
-  private List<MRoleMap> listRoleMembers(
-      MRole mRol) {
+  @Override
+  public List<MRoleMap> listRoleMembers(String roleName) {
     boolean success = false;
     List<MRoleMap> mRoleMemeberList = null;
     try {
@@ -4062,7 +4172,7 @@ public class ObjectStore implements RawStore, Configurable {
       query.declareParameters("java.lang.String t1");
       query.setUnique(false);
       mRoleMemeberList = (List<MRoleMap>) query.execute(
-          mRol.getRoleName());
+          roleName);
       LOG.debug("Done executing query for listMSecurityUserRoleMember");
       pm.retrieveAll(mRoleMemeberList);
       success = commitTransaction();
@@ -4143,11 +4253,11 @@ public class ObjectStore implements RawStore, Configurable {
     try {
       openTransaction();
       LOG.debug("Executing listPrincipalDBGrants");
-      Query query = pm.newQuery(MDBPrivilege.class,
-          "principalName == t1 && principalType == t2 && database.name == t3");
-      query
-          .declareParameters("java.lang.String t1, java.lang.String t2, java.lang.String t3");
-      mSecurityDBList = (List<MDBPrivilege>) query.executeWithArray(principalName, principalType.toString(), dbName);
+        Query query = pm.newQuery(MDBPrivilege.class,
+            "principalName == t1 && principalType == t2 && database.name == t3");
+        query
+            .declareParameters("java.lang.String t1, java.lang.String t2, java.lang.String t3");
+        mSecurityDBList = (List<MDBPrivilege>) query.executeWithArray(principalName, principalType.toString(), dbName);
       LOG.debug("Done executing query for listPrincipalDBGrants");
       pm.retrieveAll(mSecurityDBList);
       success = commitTransaction();
@@ -4196,11 +4306,16 @@ public class ObjectStore implements RawStore, Configurable {
     try {
       openTransaction();
       LOG.debug("Executing listPrincipalAllDBGrant");
-      Query query = pm.newQuery(MDBPrivilege.class,
-          "principalName == t1 && principalType == t2");
-      query
-          .declareParameters("java.lang.String t1, java.lang.String t2");
-      mSecurityDBList = (List<MDBPrivilege>) query.execute(principalName, principalType.toString());
+      if (principalName != null && principalType != null) {
+        Query query = pm.newQuery(MDBPrivilege.class,
+            "principalName == t1 && principalType == t2");
+        query
+            .declareParameters("java.lang.String t1, java.lang.String t2");
+        mSecurityDBList = (List<MDBPrivilege>) query.execute(principalName, principalType.toString());
+      } else {
+        Query query = pm.newQuery(MDBPrivilege.class);
+        mSecurityDBList = (List<MDBPrivilege>) query.execute();
+      }
       LOG.debug("Done executing query for listPrincipalAllDBGrant");
       pm.retrieveAll(mSecurityDBList);
       success = commitTransaction();
@@ -4601,11 +4716,17 @@ public class ObjectStore implements RawStore, Configurable {
     try {
       openTransaction();
       LOG.debug("Executing listPrincipalPartitionColumnGrantsAll");
-      Query query = pm.newQuery(MPartitionColumnPrivilege.class,
-          "principalName == t1 && principalType == t2");
-      query.declareParameters("java.lang.String t1, java.lang.String t2");
-      List<MPartitionColumnPrivilege> mSecurityTabPartList = (List<MPartitionColumnPrivilege>)
-          query.executeWithArray(principalName, principalType.toString());
+      List<MPartitionColumnPrivilege> mSecurityTabPartList;
+      if (principalName != null && principalType != null) {
+        Query query = pm.newQuery(MPartitionColumnPrivilege.class,
+            "principalName == t1 && principalType == t2");
+        query.declareParameters("java.lang.String t1, java.lang.String t2");
+        mSecurityTabPartList = (List<MPartitionColumnPrivilege>)
+            query.executeWithArray(principalName, principalType.toString());
+      } else {
+        Query query = pm.newQuery(MPartitionColumnPrivilege.class);
+        mSecurityTabPartList = (List<MPartitionColumnPrivilege>) query.execute();
+      }
       LOG.debug("Done executing query for listPrincipalPartitionColumnGrantsAll");
       pm.retrieveAll(mSecurityTabPartList);
       List<HiveObjectPrivilege> result = convertPartCols(mSecurityTabPartList);
@@ -4700,11 +4821,17 @@ public class ObjectStore implements RawStore, Configurable {
     try {
       openTransaction();
       LOG.debug("Executing listPrincipalAllTableGrants");
-      Query query = pm.newQuery(MTablePrivilege.class,
-          "principalName == t1 && principalType == t2");
-      query.declareParameters("java.lang.String t1, java.lang.String t2");
-      List<MTablePrivilege> mSecurityTabPartList = (List<MTablePrivilege>) query.execute(
-          principalName, principalType.toString());
+      List<MTablePrivilege> mSecurityTabPartList;
+      if (principalName != null && principalType != null) {
+        Query query = pm.newQuery(MTablePrivilege.class,
+            "principalName == t1 && principalType == t2");
+        query.declareParameters("java.lang.String t1, java.lang.String t2");
+        mSecurityTabPartList = (List<MTablePrivilege>) query.execute(
+            principalName, principalType.toString());
+      } else {
+        Query query = pm.newQuery(MTablePrivilege.class);
+        mSecurityTabPartList = (List<MTablePrivilege>) query.execute();
+      }
       LOG.debug("Done executing query for listPrincipalAllTableGrants");
       pm.retrieveAll(mSecurityTabPartList);
       List<HiveObjectPrivilege> result = convertTable(mSecurityTabPartList);
@@ -4795,11 +4922,17 @@ public class ObjectStore implements RawStore, Configurable {
     try {
       openTransaction();
       LOG.debug("Executing listPrincipalPartitionGrantsAll");
-      Query query = pm.newQuery(MPartitionPrivilege.class,
-          "principalName == t1 && principalType == t2");
-      query.declareParameters("java.lang.String t1, java.lang.String t2");
-      List<MPartitionPrivilege> mSecurityTabPartList = (List<MPartitionPrivilege>)
-          query.execute(principalName, principalType.toString());
+      List<MPartitionPrivilege> mSecurityTabPartList;
+      if (principalName != null && principalType != null) {
+        Query query = pm.newQuery(MPartitionPrivilege.class,
+            "principalName == t1 && principalType == t2");
+        query.declareParameters("java.lang.String t1, java.lang.String t2");
+        mSecurityTabPartList = (List<MPartitionPrivilege>)
+            query.execute(principalName, principalType.toString());
+      } else {
+        Query query = pm.newQuery(MPartitionPrivilege.class);
+        mSecurityTabPartList = (List<MPartitionPrivilege>) query.execute();
+      }
       LOG.debug("Done executing query for listPrincipalPartitionGrantsAll");
       pm.retrieveAll(mSecurityTabPartList);
       List<HiveObjectPrivilege> result = convertPartition(mSecurityTabPartList);
@@ -4892,11 +5025,18 @@ public class ObjectStore implements RawStore, Configurable {
     try {
       openTransaction();
       LOG.debug("Executing listPrincipalTableColumnGrantsAll");
-      Query query = pm.newQuery(MTableColumnPrivilege.class,
-          "principalName == t1 && principalType == t2");
-      query.declareParameters("java.lang.String t1, java.lang.String t2");
-      List<MTableColumnPrivilege> mSecurityTabPartList = (List<MTableColumnPrivilege>)
-          query.execute(principalName, principalType.toString());
+
+      List<MTableColumnPrivilege> mSecurityTabPartList;
+      if (principalName != null && principalType != null) {
+        Query query = pm.newQuery(MTableColumnPrivilege.class,
+            "principalName == t1 && principalType == t2");
+        query.declareParameters("java.lang.String t1, java.lang.String t2");
+        mSecurityTabPartList = (List<MTableColumnPrivilege>)
+            query.execute(principalName, principalType.toString());
+      } else {
+        Query query = pm.newQuery(MTableColumnPrivilege.class);
+        mSecurityTabPartList = (List<MTableColumnPrivilege>) query.execute();
+      }
       LOG.debug("Done executing query for listPrincipalTableColumnGrantsAll");
       pm.retrieveAll(mSecurityTabPartList);
       List<HiveObjectPrivilege> result = convertTableCols(mSecurityTabPartList);

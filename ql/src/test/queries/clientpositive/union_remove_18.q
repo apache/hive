@@ -50,4 +50,4 @@ show partitions outputTbl1;
 set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
 select * from outputTbl1 where ds = '11' order by key, values;
 select * from outputTbl1 where ds = '18' order by key, values;
-select * from outputTbl1 where ds is not null order by key, values;
+select * from outputTbl1 where ds is not null order by key, values, ds;

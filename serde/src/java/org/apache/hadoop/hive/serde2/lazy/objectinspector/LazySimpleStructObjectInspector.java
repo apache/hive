@@ -18,16 +18,12 @@
 
 package org.apache.hadoop.hive.serde2.lazy.objectinspector;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.serde2.lazy.LazyStruct;
+import org.apache.hadoop.hive.serde2.BaseStructObjectInspector;
+import org.apache.hadoop.hive.serde2.StructObject;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
-import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.Text;
 
 /**
@@ -40,55 +36,8 @@ import org.apache.hadoop.io.Text;
  * Always use the ObjectInspectorFactory to create new ObjectInspector objects,
  * instead of directly creating an instance of this class.
  */
-public class LazySimpleStructObjectInspector extends StructObjectInspector {
+public class LazySimpleStructObjectInspector extends BaseStructObjectInspector {
 
-  public static final Log LOG = LogFactory
-      .getLog(LazySimpleStructObjectInspector.class.getName());
-
-  protected static class MyField implements StructField {
-    protected int fieldID;
-    protected String fieldName;
-    protected ObjectInspector fieldObjectInspector;
-    protected String fieldComment;
-
-    protected MyField() {
-      super();
-    }
-    public MyField(int fieldID, String fieldName,
-        ObjectInspector fieldObjectInspector) {
-      this.fieldID = fieldID;
-      this.fieldName = fieldName.toLowerCase();
-      this.fieldObjectInspector = fieldObjectInspector;
-    }
-
-    public MyField(int fieldID, String fieldName, ObjectInspector fieldObjectInspector, String fieldComment) {
-      this(fieldID, fieldName, fieldObjectInspector);
-      this.fieldComment = fieldComment;
-    }
-
-    public int getFieldID() {
-      return fieldID;
-    }
-
-    public String getFieldName() {
-      return fieldName;
-    }
-
-    public ObjectInspector getFieldObjectInspector() {
-      return fieldObjectInspector;
-    }
-
-    public String getFieldComment() {
-      return fieldComment;
-    }
-
-    @Override
-    public String toString() {
-      return "" + fieldID + ":" + fieldName;
-    }
-  }
-
-  private List<MyField> fields;
   private byte separator;
   private Text nullSequence;
   private boolean lastColumnTakesRest;
@@ -98,9 +47,18 @@ public class LazySimpleStructObjectInspector extends StructObjectInspector {
   protected LazySimpleStructObjectInspector() {
     super();
   }
+
+  protected LazySimpleStructObjectInspector(
+      List<StructField> fields, byte separator, Text nullSequence) {
+    init(fields);
+    this.separator = separator;
+    this.nullSequence = nullSequence;
+  }
+
   /**
    * Call ObjectInspectorFactory.getLazySimpleStructObjectInspector instead.
    */
+  @Deprecated
   protected LazySimpleStructObjectInspector(List<String> structFieldNames,
       List<ObjectInspector> structFieldObjectInspectors, byte separator,
       Text nullSequence, boolean lastColumnTakesRest, boolean escaped,
@@ -122,60 +80,12 @@ public class LazySimpleStructObjectInspector extends StructObjectInspector {
       List<String> structFieldComments, byte separator,
       Text nullSequence, boolean lastColumnTakesRest, boolean escaped,
       byte escapeChar) {
-    assert (structFieldNames.size() == structFieldObjectInspectors.size());
-    assert (structFieldComments == null ||
-            structFieldNames.size() == structFieldComments.size());
-
+    init(structFieldNames, structFieldObjectInspectors, structFieldComments);
     this.separator = separator;
     this.nullSequence = nullSequence;
     this.lastColumnTakesRest = lastColumnTakesRest;
     this.escaped = escaped;
     this.escapeChar = escapeChar;
-
-    fields = new ArrayList<MyField>(structFieldNames.size());
-    for (int i = 0; i < structFieldNames.size(); i++) {
-      fields.add(new MyField(i, structFieldNames.get(i),
-          structFieldObjectInspectors.get(i),
-          structFieldComments == null ? null : structFieldComments.get(i)));
-    }
-  }
-
-  protected LazySimpleStructObjectInspector(List<StructField> fields,
-      byte separator, Text nullSequence) {
-    init(fields, separator, nullSequence);
-  }
-
-  protected void init(List<StructField> fields, byte separator,
-      Text nullSequence) {
-    this.separator = separator;
-    this.nullSequence = nullSequence;
-
-    this.fields = new ArrayList<MyField>(fields.size());
-    for (int i = 0; i < fields.size(); i++) {
-      this.fields.add(new MyField(i, fields.get(i).getFieldName(), fields
-          .get(i).getFieldObjectInspector(), fields.get(i).getFieldComment()));
-    }
-  }
-
-  @Override
-  public String getTypeName() {
-    return ObjectInspectorUtils.getStandardStructTypeName(this);
-  }
-
-  @Override
-  public final Category getCategory() {
-    return Category.STRUCT;
-  }
-
-  // Without Data
-  @Override
-  public StructField getStructFieldRef(String fieldName) {
-    return ObjectInspectorUtils.getStandardStructFieldRef(fieldName, fields);
-  }
-
-  @Override
-  public List<? extends StructField> getAllStructFieldRefs() {
-    return fields;
   }
 
   // With Data
@@ -184,7 +94,7 @@ public class LazySimpleStructObjectInspector extends StructObjectInspector {
     if (data == null) {
       return null;
     }
-    LazyStruct struct = (LazyStruct) data;
+    StructObject struct = (StructObject) data;
     MyField f = (MyField) fieldRef;
 
     int fieldID = f.getFieldID();
@@ -198,15 +108,8 @@ public class LazySimpleStructObjectInspector extends StructObjectInspector {
     if (data == null) {
       return null;
     }
-
-    // Iterate over all the fields picking up the nested structs within them
-    List<Object> result = new ArrayList<Object>(fields.size());
-
-    for (MyField myField : fields) {
-      result.add(getStructFieldData(data, myField));
-    }
-
-    return result;
+    StructObject struct = (StructObject) data;
+    return struct.getFieldsAsList();
   }
 
   // For LazyStruct

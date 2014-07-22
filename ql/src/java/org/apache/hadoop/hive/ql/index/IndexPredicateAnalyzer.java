@@ -40,6 +40,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
+import org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
@@ -57,10 +58,17 @@ public class IndexPredicateAnalyzer {
 
   private final Set<String> udfNames;
   private final Set<String> allowedColumnNames;
+  private FieldValidator fieldValidator;
+
+  private boolean acceptsFields;
 
   public IndexPredicateAnalyzer() {
     udfNames = new HashSet<String>();
     allowedColumnNames = new HashSet<String>();
+  }
+
+  public void setFieldValidator(FieldValidator fieldValidator) {
+    this.fieldValidator = fieldValidator;
   }
 
   /**
@@ -175,11 +183,19 @@ public class IndexPredicateAnalyzer {
     ExprNodeDesc expr1 = (ExprNodeDesc) nodeOutputs[0];
     ExprNodeDesc expr2 = (ExprNodeDesc) nodeOutputs[1];
     ExprNodeDesc[] extracted = ExprNodeDescUtils.extractComparePair(expr1, expr2);
-    if (extracted == null) {
+    if (extracted == null || (extracted.length > 2 && !acceptsFields)) {
       return expr;
     }
-    if (extracted.length > 2) {
+
+    ExprNodeColumnDesc columnDesc;
+    ExprNodeConstantDesc constantDesc;
+    if (extracted[0] instanceof ExprNodeConstantDesc) {
       genericUDF = genericUDF.flip();
+      columnDesc = (ExprNodeColumnDesc) extracted[1];
+      constantDesc = (ExprNodeConstantDesc) extracted[0];
+    } else {
+      columnDesc = (ExprNodeColumnDesc) extracted[0];
+      constantDesc = (ExprNodeConstantDesc) extracted[1];
     }
 
     String udfName = genericUDF.getUdfName();
@@ -187,10 +203,17 @@ public class IndexPredicateAnalyzer {
       return expr;
     }
 
-    ExprNodeColumnDesc columnDesc = (ExprNodeColumnDesc) extracted[0];
-    ExprNodeConstantDesc constantDesc = (ExprNodeConstantDesc) extracted[1];
     if (!allowedColumnNames.contains(columnDesc.getColumn())) {
       return expr;
+    }
+
+    String[] fields = null;
+    if (extracted.length > 2) {
+      ExprNodeFieldDesc fieldDesc = (ExprNodeFieldDesc) extracted[2];
+      if (!isValidField(fieldDesc)) {
+        return expr;
+      }
+      fields = ExprNodeDescUtils.extractFields(fieldDesc);
     }
 
     searchConditions.add(
@@ -198,11 +221,16 @@ public class IndexPredicateAnalyzer {
         columnDesc,
         udfName,
         constantDesc,
-        expr));
+        expr,
+        fields));
 
     // we converted the expression to a search condition, so
     // remove it from the residual predicate
-    return null;
+    return fields == null ? null : expr;
+  }
+
+  private boolean isValidField(ExprNodeFieldDesc field) {
+    return fieldValidator == null || fieldValidator.validate(field);
   }
 
   /**
@@ -231,5 +259,28 @@ public class IndexPredicateAnalyzer {
         children);
     }
     return expr;
+  }
+
+  public void setAcceptsFields(boolean acceptsFields) {
+    this.acceptsFields = acceptsFields;
+  }
+
+  public static interface FieldValidator {
+    boolean validate(ExprNodeFieldDesc exprNodeDesc);
+  }
+
+  public static IndexPredicateAnalyzer createAnalyzer(boolean equalOnly) {
+
+    IndexPredicateAnalyzer analyzer = new IndexPredicateAnalyzer();
+    analyzer.addComparisonOp("org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual");
+    if (equalOnly) {
+      return analyzer;
+    }
+    analyzer.addComparisonOp("org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrGreaterThan");
+    analyzer.addComparisonOp("org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrLessThan");
+    analyzer.addComparisonOp("org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPLessThan");
+    analyzer.addComparisonOp("org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPGreaterThan");
+
+    return analyzer;
   }
 }

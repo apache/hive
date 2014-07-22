@@ -38,24 +38,26 @@ POSTHOOK: query: alter table exim_employee add partition (emp_country='in', emp_
 POSTHOOK: type: ALTERTABLE_ADDPARTS
 POSTHOOK: Output: default@exim_employee
 POSTHOOK: Output: default@exim_employee@emp_country=in/emp_state=tn
+PREHOOK: query: alter table exim_employee set fileformat 
+	inputformat  "org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat" 
+	outputformat "org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat"
+        serde        "org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe"
+PREHOOK: type: ALTERTABLE_FILEFORMAT
+PREHOOK: Input: default@exim_employee
+PREHOOK: Output: default@exim_employee
+POSTHOOK: query: alter table exim_employee set fileformat 
+	inputformat  "org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat" 
+	outputformat "org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat"
+        serde        "org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe"
+POSTHOOK: type: ALTERTABLE_FILEFORMAT
+POSTHOOK: Input: default@exim_employee
+POSTHOOK: Output: default@exim_employee
 PREHOOK: query: alter table exim_employee set serde "org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe" with serdeproperties ('serialization.format'='2')
 PREHOOK: type: ALTERTABLE_SERIALIZER
 PREHOOK: Input: default@exim_employee
 PREHOOK: Output: default@exim_employee
 POSTHOOK: query: alter table exim_employee set serde "org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe" with serdeproperties ('serialization.format'='2')
 POSTHOOK: type: ALTERTABLE_SERIALIZER
-POSTHOOK: Input: default@exim_employee
-POSTHOOK: Output: default@exim_employee
-PREHOOK: query: alter table exim_employee set fileformat 
-	inputformat "org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat" 
-	outputformat "org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat"
-PREHOOK: type: ALTERTABLE_FILEFORMAT
-PREHOOK: Input: default@exim_employee
-PREHOOK: Output: default@exim_employee
-POSTHOOK: query: alter table exim_employee set fileformat 
-	inputformat "org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat" 
-	outputformat "org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat"
-POSTHOOK: type: ALTERTABLE_FILEFORMAT
 POSTHOOK: Input: default@exim_employee
 POSTHOOK: Output: default@exim_employee
 PREHOOK: query: alter table exim_employee add partition (emp_country='in', emp_state='ka')
@@ -101,13 +103,15 @@ POSTHOOK: Output: importer@exim_employee@emp_country=in/emp_state=ka
 POSTHOOK: Output: importer@exim_employee@emp_country=in/emp_state=tn
 PREHOOK: query: describe extended exim_employee
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: importer@exim_employee
 POSTHOOK: query: describe extended exim_employee
 POSTHOOK: type: DESCTABLE
-emp_id              	int                 	from deserializer   
-emp_name            	string              	from deserializer   
-emp_dob             	string              	from deserializer   
-emp_sex             	string              	from deserializer   
-emp_dept            	int                 	from deserializer   
+POSTHOOK: Input: importer@exim_employee
+emp_id              	int                 	employee id         
+emp_name            	string              	                    
+emp_dob             	string              	employee date of birth
+emp_sex             	string              	M/F                 
+emp_dept            	int                 	                    
 emp_country         	string              	2-char code         
 emp_state           	string              	2-char code         
 	 	 
@@ -120,13 +124,15 @@ emp_state           	string              	2-char code
 #### A masked pattern was here ####
 PREHOOK: query: describe extended exim_employee partition (emp_country='in', emp_state='tn')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: importer@exim_employee
 POSTHOOK: query: describe extended exim_employee partition (emp_country='in', emp_state='tn')
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: importer@exim_employee
 emp_id              	int                 	employee id         
-emp_name            	string              	None                
+emp_name            	string              	                    
 emp_dob             	string              	employee date of birth
 emp_sex             	string              	M/F                 
-emp_dept            	int                 	None                
+emp_dept            	int                 	                    
 emp_country         	string              	2-char code         
 emp_state           	string              	2-char code         
 	 	 
@@ -139,13 +145,15 @@ emp_state           	string              	2-char code
 #### A masked pattern was here ####
 PREHOOK: query: describe extended exim_employee partition (emp_country='in', emp_state='ka')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: importer@exim_employee
 POSTHOOK: query: describe extended exim_employee partition (emp_country='in', emp_state='ka')
 POSTHOOK: type: DESCTABLE
-emp_id              	int                 	from deserializer   
-emp_name            	string              	from deserializer   
-emp_dob             	string              	from deserializer   
-emp_sex             	string              	from deserializer   
-emp_dept            	int                 	from deserializer   
+POSTHOOK: Input: importer@exim_employee
+emp_id              	int                 	employee id         
+emp_name            	string              	                    
+emp_dob             	string              	employee date of birth
+emp_sex             	string              	M/F                 
+emp_dept            	int                 	                    
 emp_country         	string              	2-char code         
 emp_state           	string              	2-char code         
 	 	 

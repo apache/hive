@@ -17,12 +17,13 @@ THISSERVICE=schemaTool
 export SERVICE_LIST="${SERVICE_LIST}${THISSERVICE} "
 
 schemaTool() {
-
+  HIVE_OPTS=''
   CLASS=org.apache.hive.beeline.HiveSchemaTool
   execHiveCmd $CLASS "$@"
 }
 
 schemaTool_help () {
+  HIVE_OPTS=''
   CLASS=org.apache.hive.beeline.HiveSchemaTool
   execHiveCmd $CLASS "--help"
 }

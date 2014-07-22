@@ -17,20 +17,24 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table1
 PREHOOK: query: DESCRIBE table1
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@table1
 POSTHOOK: query: DESCRIBE table1
 POSTHOOK: type: DESCTABLE
-a                   	string              	None                
-b                   	array<string>       	None                
-c                   	array<map<string,string>>	None                
-d                   	map<string,array<string>>	None                
+POSTHOOK: Input: default@table1
+a                   	string              	                    
+b                   	array<string>       	                    
+c                   	array<map<string,string>>	                    
+d                   	map<string,array<string>>	                    
 PREHOOK: query: DESCRIBE EXTENDED table1
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@table1
 POSTHOOK: query: DESCRIBE EXTENDED table1
 POSTHOOK: type: DESCTABLE
-a                   	string              	None                
-b                   	array<string>       	None                
-c                   	array<map<string,string>>	None                
-d                   	map<string,array<string>>	None                
+POSTHOOK: Input: default@table1
+a                   	string              	                    
+b                   	array<string>       	                    
+c                   	array<map<string,string>>	                    
+d                   	map<string,array<string>>	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/create_nested_type.txt' OVERWRITE INTO TABLE table1

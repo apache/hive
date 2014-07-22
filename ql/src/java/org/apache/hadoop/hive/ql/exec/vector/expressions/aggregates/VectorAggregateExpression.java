@@ -38,6 +38,8 @@ public abstract class VectorAggregateExpression  implements Serializable {
    */
   public static interface AggregationBuffer extends Serializable {
     int getVariableSize();
+
+    void reset();
   };
 
   public abstract AggregationBuffer getNewAggregationBuffer() throws HiveException;

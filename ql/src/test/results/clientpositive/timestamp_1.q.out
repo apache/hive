@@ -36,7 +36,6 @@ POSTHOOK: query: select cast(t as boolean) from timestamp_1 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
 true
 PREHOOK: query: select cast(t as tinyint) from timestamp_1 limit 1
 PREHOOK: type: QUERY
@@ -46,7 +45,6 @@ POSTHOOK: query: select cast(t as tinyint) from timestamp_1 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
 77
 PREHOOK: query: select cast(t as smallint) from timestamp_1 limit 1
 PREHOOK: type: QUERY
@@ -56,7 +54,6 @@ POSTHOOK: query: select cast(t as smallint) from timestamp_1 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
 -4787
 PREHOOK: query: select cast(t as int) from timestamp_1 limit 1
 PREHOOK: type: QUERY
@@ -66,7 +63,6 @@ POSTHOOK: query: select cast(t as int) from timestamp_1 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
 1293872461
 PREHOOK: query: select cast(t as bigint) from timestamp_1 limit 1
 PREHOOK: type: QUERY
@@ -76,7 +72,6 @@ POSTHOOK: query: select cast(t as bigint) from timestamp_1 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
 1293872461
 PREHOOK: query: select cast(t as float) from timestamp_1 limit 1
 PREHOOK: type: QUERY
@@ -86,7 +81,6 @@ POSTHOOK: query: select cast(t as float) from timestamp_1 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
 1.29387251E9
 PREHOOK: query: select cast(t as double) from timestamp_1 limit 1
 PREHOOK: type: QUERY
@@ -96,7 +90,6 @@ POSTHOOK: query: select cast(t as double) from timestamp_1 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
 1.293872461E9
 PREHOOK: query: select cast(t as string) from timestamp_1 limit 1
 PREHOOK: type: QUERY
@@ -106,7 +99,6 @@ POSTHOOK: query: select cast(t as string) from timestamp_1 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
 2011-01-01 01:01:01
 PREHOOK: query: insert overwrite table timestamp_1
   select '2011-01-01 01:01:01' from src tablesample (1 rows)
@@ -119,7 +111,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@timestamp_1
 POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
 PREHOOK: query: select cast(t as boolean) from timestamp_1 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_1
@@ -128,8 +119,6 @@ POSTHOOK: query: select cast(t as boolean) from timestamp_1 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
 true
 PREHOOK: query: select cast(t as tinyint) from timestamp_1 limit 1
 PREHOOK: type: QUERY
@@ -139,8 +128,6 @@ POSTHOOK: query: select cast(t as tinyint) from timestamp_1 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
 77
 PREHOOK: query: select cast(t as smallint) from timestamp_1 limit 1
 PREHOOK: type: QUERY
@@ -150,8 +137,6 @@ POSTHOOK: query: select cast(t as smallint) from timestamp_1 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
 -4787
 PREHOOK: query: select cast(t as int) from timestamp_1 limit 1
 PREHOOK: type: QUERY
@@ -161,8 +146,6 @@ POSTHOOK: query: select cast(t as int) from timestamp_1 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
 1293872461
 PREHOOK: query: select cast(t as bigint) from timestamp_1 limit 1
 PREHOOK: type: QUERY
@@ -172,8 +155,6 @@ POSTHOOK: query: select cast(t as bigint) from timestamp_1 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
 1293872461
 PREHOOK: query: select cast(t as float) from timestamp_1 limit 1
 PREHOOK: type: QUERY
@@ -183,8 +164,6 @@ POSTHOOK: query: select cast(t as float) from timestamp_1 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
 1.29387251E9
 PREHOOK: query: select cast(t as double) from timestamp_1 limit 1
 PREHOOK: type: QUERY
@@ -194,8 +173,6 @@ POSTHOOK: query: select cast(t as double) from timestamp_1 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
 1.293872461E9
 PREHOOK: query: select cast(t as string) from timestamp_1 limit 1
 PREHOOK: type: QUERY
@@ -205,8 +182,6 @@ POSTHOOK: query: select cast(t as string) from timestamp_1 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
 2011-01-01 01:01:01
 PREHOOK: query: insert overwrite table timestamp_1
   select '2011-01-01 01:01:01.1' from src tablesample (1 rows)
@@ -219,8 +194,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@timestamp_1
 POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
 PREHOOK: query: select cast(t as boolean) from timestamp_1 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_1
@@ -229,9 +202,6 @@ POSTHOOK: query: select cast(t as boolean) from timestamp_1 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
 true
 PREHOOK: query: select cast(t as tinyint) from timestamp_1 limit 1
 PREHOOK: type: QUERY
@@ -241,9 +211,6 @@ POSTHOOK: query: select cast(t as tinyint) from timestamp_1 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
 77
 PREHOOK: query: select cast(t as smallint) from timestamp_1 limit 1
 PREHOOK: type: QUERY
@@ -253,9 +220,6 @@ POSTHOOK: query: select cast(t as smallint) from timestamp_1 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
 -4787
 PREHOOK: query: select cast(t as int) from timestamp_1 limit 1
 PREHOOK: type: QUERY
@@ -265,9 +229,6 @@ POSTHOOK: query: select cast(t as int) from timestamp_1 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
 1293872461
 PREHOOK: query: select cast(t as bigint) from timestamp_1 limit 1
 PREHOOK: type: QUERY
@@ -277,9 +238,6 @@ POSTHOOK: query: select cast(t as bigint) from timestamp_1 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
 1293872461
 PREHOOK: query: select cast(t as float) from timestamp_1 limit 1
 PREHOOK: type: QUERY
@@ -289,9 +247,6 @@ POSTHOOK: query: select cast(t as float) from timestamp_1 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
 1.29387251E9
 PREHOOK: query: select cast(t as double) from timestamp_1 limit 1
 PREHOOK: type: QUERY
@@ -301,9 +256,6 @@ POSTHOOK: query: select cast(t as double) from timestamp_1 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
 1.2938724611E9
 PREHOOK: query: select cast(t as string) from timestamp_1 limit 1
 PREHOOK: type: QUERY
@@ -313,9 +265,6 @@ POSTHOOK: query: select cast(t as string) from timestamp_1 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
 2011-01-01 01:01:01.1
 PREHOOK: query: insert overwrite table timestamp_1
   select '2011-01-01 01:01:01.0001' from src tablesample (1 rows)
@@ -328,9 +277,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@timestamp_1
 POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
 PREHOOK: query: select cast(t as boolean) from timestamp_1 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_1
@@ -339,10 +285,6 @@ POSTHOOK: query: select cast(t as boolean) from timestamp_1 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
 true
 PREHOOK: query: select cast(t as tinyint) from timestamp_1 limit 1
 PREHOOK: type: QUERY
@@ -352,10 +294,6 @@ POSTHOOK: query: select cast(t as tinyint) from timestamp_1 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
 77
 PREHOOK: query: select cast(t as smallint) from timestamp_1 limit 1
 PREHOOK: type: QUERY
@@ -365,10 +303,6 @@ POSTHOOK: query: select cast(t as smallint) from timestamp_1 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
 -4787
 PREHOOK: query: select cast(t as int) from timestamp_1 limit 1
 PREHOOK: type: QUERY
@@ -378,10 +312,6 @@ POSTHOOK: query: select cast(t as int) from timestamp_1 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
 1293872461
 PREHOOK: query: select cast(t as bigint) from timestamp_1 limit 1
 PREHOOK: type: QUERY
@@ -391,10 +321,6 @@ POSTHOOK: query: select cast(t as bigint) from timestamp_1 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
 1293872461
 PREHOOK: query: select cast(t as float) from timestamp_1 limit 1
 PREHOOK: type: QUERY
@@ -404,10 +330,6 @@ POSTHOOK: query: select cast(t as float) from timestamp_1 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
 1.29387251E9
 PREHOOK: query: select cast(t as double) from timestamp_1 limit 1
 PREHOOK: type: QUERY
@@ -417,10 +339,6 @@ POSTHOOK: query: select cast(t as double) from timestamp_1 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
 1.2938724610001E9
 PREHOOK: query: select cast(t as string) from timestamp_1 limit 1
 PREHOOK: type: QUERY
@@ -430,10 +348,6 @@ POSTHOOK: query: select cast(t as string) from timestamp_1 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
 2011-01-01 01:01:01.0001
 PREHOOK: query: insert overwrite table timestamp_1
   select '2011-01-01 01:01:01.000100000' from src tablesample (1 rows)
@@ -446,10 +360,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@timestamp_1
 POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
 PREHOOK: query: select cast(t as boolean) from timestamp_1 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_1
@@ -458,11 +368,6 @@ POSTHOOK: query: select cast(t as boolean) from timestamp_1 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
 true
 PREHOOK: query: select cast(t as tinyint) from timestamp_1 limit 1
 PREHOOK: type: QUERY
@@ -472,11 +377,6 @@ POSTHOOK: query: select cast(t as tinyint) from timestamp_1 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
 77
 PREHOOK: query: select cast(t as smallint) from timestamp_1 limit 1
 PREHOOK: type: QUERY
@@ -486,11 +386,6 @@ POSTHOOK: query: select cast(t as smallint) from timestamp_1 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
 -4787
 PREHOOK: query: select cast(t as int) from timestamp_1 limit 1
 PREHOOK: type: QUERY
@@ -500,11 +395,6 @@ POSTHOOK: query: select cast(t as int) from timestamp_1 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
 1293872461
 PREHOOK: query: select cast(t as bigint) from timestamp_1 limit 1
 PREHOOK: type: QUERY
@@ -514,11 +404,6 @@ POSTHOOK: query: select cast(t as bigint) from timestamp_1 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
 1293872461
 PREHOOK: query: select cast(t as float) from timestamp_1 limit 1
 PREHOOK: type: QUERY
@@ -528,11 +413,6 @@ POSTHOOK: query: select cast(t as float) from timestamp_1 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
 1.29387251E9
 PREHOOK: query: select cast(t as double) from timestamp_1 limit 1
 PREHOOK: type: QUERY
@@ -542,11 +422,6 @@ POSTHOOK: query: select cast(t as double) from timestamp_1 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
 1.2938724610001E9
 PREHOOK: query: select cast(t as string) from timestamp_1 limit 1
 PREHOOK: type: QUERY
@@ -556,11 +431,6 @@ POSTHOOK: query: select cast(t as string) from timestamp_1 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
 2011-01-01 01:01:01.0001
 PREHOOK: query: insert overwrite table timestamp_1
   select '2011-01-01 01:01:01.001000011' from src tablesample (1 rows)
@@ -573,11 +443,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@timestamp_1
 POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
 PREHOOK: query: select cast(t as boolean) from timestamp_1 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_1
@@ -586,12 +451,6 @@ POSTHOOK: query: select cast(t as boolean) from timestamp_1 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
 true
 PREHOOK: query: select cast(t as tinyint) from timestamp_1 limit 1
 PREHOOK: type: QUERY
@@ -601,12 +460,6 @@ POSTHOOK: query: select cast(t as tinyint) from timestamp_1 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
 77
 PREHOOK: query: select cast(t as smallint) from timestamp_1 limit 1
 PREHOOK: type: QUERY
@@ -616,12 +469,6 @@ POSTHOOK: query: select cast(t as smallint) from timestamp_1 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
 -4787
 PREHOOK: query: select cast(t as int) from timestamp_1 limit 1
 PREHOOK: type: QUERY
@@ -631,12 +478,6 @@ POSTHOOK: query: select cast(t as int) from timestamp_1 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
 1293872461
 PREHOOK: query: select cast(t as bigint) from timestamp_1 limit 1
 PREHOOK: type: QUERY
@@ -646,12 +487,6 @@ POSTHOOK: query: select cast(t as bigint) from timestamp_1 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
 1293872461
 PREHOOK: query: select cast(t as float) from timestamp_1 limit 1
 PREHOOK: type: QUERY
@@ -661,12 +496,6 @@ POSTHOOK: query: select cast(t as float) from timestamp_1 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
 1.29387251E9
 PREHOOK: query: select cast(t as double) from timestamp_1 limit 1
 PREHOOK: type: QUERY
@@ -676,12 +505,6 @@ POSTHOOK: query: select cast(t as double) from timestamp_1 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
 1.293872461001E9
 PREHOOK: query: select cast(t as string) from timestamp_1 limit 1
 PREHOOK: type: QUERY
@@ -691,12 +514,6 @@ POSTHOOK: query: select cast(t as string) from timestamp_1 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
 2011-01-01 01:01:01.001000011
 PREHOOK: query: drop table timestamp_1
 PREHOOK: type: DROPTABLE
@@ -706,9 +523,3 @@ POSTHOOK: query: drop table timestamp_1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@timestamp_1
 POSTHOOK: Output: default@timestamp_1
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
-POSTHOOK: Lineage: timestamp_1.t EXPRESSION []

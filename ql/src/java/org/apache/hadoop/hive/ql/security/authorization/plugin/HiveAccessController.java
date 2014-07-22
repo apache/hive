@@ -21,6 +21,7 @@ import java.util.List;
 
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
 import org.apache.hadoop.hive.common.classification.InterfaceStability.Evolving;
+import org.apache.hadoop.hive.conf.HiveConf;
 
 /**
  * Interface that is invoked by access control commands, including grant/revoke role/privileges,
@@ -45,9 +46,6 @@ public interface HiveAccessController {
   void dropRole(String roleName)
       throws HiveAuthzPluginException, HiveAccessControlException;
 
-  List<HiveRole> getRoles(HivePrincipal hivePrincipal)
-      throws HiveAuthzPluginException, HiveAccessControlException;
-
   void grantRole(List<HivePrincipal> hivePrincipals, List<String> roles, boolean grantOption,
       HivePrincipal grantorPrinc)
           throws HiveAuthzPluginException, HiveAccessControlException;
@@ -64,5 +62,13 @@ public interface HiveAccessController {
 
   void setCurrentRole(String roleName) throws HiveAuthzPluginException, HiveAccessControlException;
 
-  List<HiveRole> getCurrentRoles() throws HiveAuthzPluginException;
+  List<String> getCurrentRoleNames() throws HiveAuthzPluginException;
+
+  List<HiveRoleGrant> getPrincipalGrantInfoForRole(String roleName) throws HiveAuthzPluginException,
+      HiveAccessControlException;
+
+  List<HiveRoleGrant> getRoleGrantInfoForPrincipal(HivePrincipal principal) throws HiveAuthzPluginException,
+      HiveAccessControlException;
+
+  void applyAuthorizationConfigPolicy(HiveConf hiveConf);
 }

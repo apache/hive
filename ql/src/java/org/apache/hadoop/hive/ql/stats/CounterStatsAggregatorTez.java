@@ -33,12 +33,12 @@ import org.apache.tez.common.counters.TezCounters;
  * using hadoop counters. They will be published using special keys and
  * then retrieved on the client after the insert/ctas statement ran.
  */
-public class CounterStatsAggregatorTez implements StatsAggregator {
+public class CounterStatsAggregatorTez implements StatsAggregator, StatsCollectionTaskIndependent {
 
   private static final Log LOG = LogFactory.getLog(CounterStatsAggregatorTez.class.getName());
 
   private TezCounters counters;
-  private CounterStatsAggregator mrAggregator;
+  private final CounterStatsAggregator mrAggregator;
   private boolean delegate;
 
   public CounterStatsAggregatorTez() {

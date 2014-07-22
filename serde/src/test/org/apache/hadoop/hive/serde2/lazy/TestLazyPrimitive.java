@@ -438,7 +438,7 @@ public class TestLazyPrimitive extends TestCase {
         out.reset();
         LazyInteger.writeUTF8(out, v);
         Text t = new Text();
-        t.set(out.getData(), 0, out.getCount());
+        t.set(out.getData(), 0, out.getLength());
         assertEquals(String.valueOf(v), t.toString());
       }
 
@@ -458,7 +458,7 @@ public class TestLazyPrimitive extends TestCase {
         out.reset();
         LazyLong.writeUTF8(out, v);
         Text t = new Text();
-        t.set(out.getData(), 0, out.getCount());
+        t.set(out.getData(), 0, out.getLength());
         assertEquals(String.valueOf(v), t.toString());
       }
 

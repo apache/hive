@@ -443,36 +443,50 @@ public final class VectorExpressionWriterFactory {
       }
   }
 
+  /**
+   * Compiles the appropriate vector expression writers based on a struct object
+   * inspector.
+   */
+  public static VectorExpressionWriter[] genVectorStructExpressionWritables(
+      StructObjectInspector oi) throws HiveException {
+    VectorExpressionWriter[] writers = new VectorExpressionWriter[oi.getAllStructFieldRefs().size()];
+    final List<? extends StructField> fields = oi.getAllStructFieldRefs();
+    int i = 0;
+    for(StructField field : fields) {
+      writers[i++] = genVectorExpressionWritable(field.getFieldObjectInspector());
+    }
+    return writers;
+  }
+
   private static VectorExpressionWriter genVectorExpressionWritableDecimal(
       SettableHiveDecimalObjectInspector fieldObjInspector) throws HiveException {
 
     return new VectorExpressionWriterDecimal() {
-      private HiveDecimal hd;
       private Object obj;
 
       public VectorExpressionWriter init(SettableHiveDecimalObjectInspector objInspector) throws HiveException {
         super.init(objInspector);
-        hd = HiveDecimal.create(BigDecimal.ZERO);
         obj = initValue(null);
         return this;
       }
 
       @Override
       public Object writeValue(Decimal128 value) throws HiveException {
-        hd.setNormalize(value.toBigDecimal());
-        ((SettableHiveDecimalObjectInspector) this.objectInspector).set(obj, hd);
-        return obj;
+        return ((SettableHiveDecimalObjectInspector) this.objectInspector).set(obj,
+            HiveDecimal.create(value.toBigDecimal()));
       }
 
       @Override
       public Object setValue(Object field, Decimal128 value) {
-        hd.setNormalize(value.toBigDecimal());
-        ((SettableHiveDecimalObjectInspector) this.objectInspector).set(field, hd);
-        return field;
+        if (null == field) {
+          field = initValue(null);
+        }
+        return ((SettableHiveDecimalObjectInspector) this.objectInspector).set(field,
+            HiveDecimal.create(value.toBigDecimal()));
       }
 
       @Override
-      public Object initValue(Object ignored) throws HiveException {
+      public Object initValue(Object ignored) {
         return ((SettableHiveDecimalObjectInspector) this.objectInspector).create(
             HiveDecimal.create(BigDecimal.ZERO));
       }
@@ -1045,7 +1059,7 @@ public final class VectorExpressionWriterFactory {
     @Override
     public Object writeValue(ColumnVector column, int row)
         throws HiveException {
-      throw new HiveException("Should never reach here");
+      return baseWriter.writeValue(column, row);
     }
 
     @Override

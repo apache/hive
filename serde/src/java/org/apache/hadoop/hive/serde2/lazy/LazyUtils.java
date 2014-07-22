@@ -28,7 +28,6 @@ import java.util.Arrays;
 import java.util.Properties;
 
 import org.apache.commons.codec.binary.Base64;
-import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
@@ -261,9 +260,8 @@ public final class LazyUtils {
       break;
     }
     case DECIMAL: {
-      HiveDecimal bd = ((HiveDecimalObjectInspector) oi).getPrimitiveJavaObject(o);
-      ByteBuffer b = Text.encode(bd.toString());
-      out.write(b.array(), 0, b.limit());
+      LazyHiveDecimal.writeUTF8(out,
+        ((HiveDecimalObjectInspector) oi).getPrimitiveJavaObject(o));
       break;
     }
     default: {

@@ -26,29 +26,25 @@ import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 
 /**
  * UDFExp.
- *
  */
 @Description(name = "exp",
-    value = "_FUNC_(x) - Returns e to the power of x",
-    extended = "Example:\n "
-    + "  > SELECT _FUNC_(0) FROM src LIMIT 1;\n" + "  1")
+             value = "_FUNC_(x) - Returns e to the power of x",
+             extended = "Example:\n "
+                        + "  > SELECT _FUNC_(0) FROM src LIMIT 1;\n"
+                        + "  1"
+)
 @VectorizedExpressions({FuncExpDoubleToDouble.class, FuncExpLongToDouble.class})
 public class UDFExp extends UDFMath {
-  private final DoubleWritable result = new DoubleWritable();
 
-  public UDFExp() {
-  }
+  private final DoubleWritable result = new DoubleWritable();
 
   /**
    * Raise e (the base of natural logarithm) to the power of a.
    */
-  public DoubleWritable evaluate(DoubleWritable a) {
-    if (a == null) {
-      return null;
-    } else {
-      result.set(Math.exp(a.get()));
-      return result;
-    }
+  @Override
+  protected DoubleWritable doEvaluate(DoubleWritable a) {
+    result.set(Math.exp(a.get()));
+    return result;
   }
 
 }

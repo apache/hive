@@ -41,9 +41,6 @@ SELECT concat_ws(dest1.c1, dest1.c2, dest1.c3),
        concat_ws(NULL, dest1.c1, dest1.c2, dest1.c3),
        concat_ws('**', dest1.c1, NULL, dest1.c3) FROM dest1
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: dest1.c1 SIMPLE []
-POSTHOOK: Lineage: dest1.c2 SIMPLE []
-POSTHOOK: Lineage: dest1.c3 SIMPLE []
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -75,9 +72,6 @@ POSTHOOK: query: SELECT concat_ws(dest1.c1, dest1.c2, dest1.c3),
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: dest1.c1 SIMPLE []
-POSTHOOK: Lineage: dest1.c2 SIMPLE []
-POSTHOOK: Lineage: dest1.c3 SIMPLE []
 xyzabc8675309	abc,xyz,8675309	NULL	abc**8675309
 PREHOOK: query: -- evalutes function for array of strings
 EXPLAIN
@@ -99,9 +93,6 @@ SELECT concat_ws('.', array('www', 'face', 'book', 'com'), '1234'),
        concat_ws('[]', array('www'), 'face', array('book', 'com', '1234')),
        concat_ws('AAA', array('www'), array('face', 'book', 'com'), '1234') FROM dest1 tablesample (1 rows)
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: dest1.c1 SIMPLE []
-POSTHOOK: Lineage: dest1.c2 SIMPLE []
-POSTHOOK: Lineage: dest1.c3 SIMPLE []
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -140,9 +131,6 @@ POSTHOOK: query: SELECT concat_ws('.', array('www', 'face', 'book', 'com'), '123
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: dest1.c1 SIMPLE []
-POSTHOOK: Lineage: dest1.c2 SIMPLE []
-POSTHOOK: Lineage: dest1.c3 SIMPLE []
 www.face.book.com.1234	www-face-book-com-1234	wwwFfaceFbookFcomF1234	www_face_book_com_1234	www**face**book**com**1234	www[]face[]book[]com[]1234	wwwAAAfaceAAAbookAAAcomAAA1234
 PREHOOK: query: SELECT concat_ws(NULL, array('www', 'face', 'book', 'com'), '1234'),
        concat_ws(NULL, 'www', array('face', 'book', 'com'), '1234'),
@@ -164,7 +152,4 @@ POSTHOOK: query: SELECT concat_ws(NULL, array('www', 'face', 'book', 'com'), '12
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: dest1.c1 SIMPLE []
-POSTHOOK: Lineage: dest1.c2 SIMPLE []
-POSTHOOK: Lineage: dest1.c3 SIMPLE []
 NULL	NULL	NULL	NULL	NULL	NULL	NULL

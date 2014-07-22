@@ -21,18 +21,18 @@ POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=6:30pm).key SIMPLE [(src1)
 POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=6:30pm).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: desc alter_coltype
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_coltype
 POSTHOOK: query: desc alter_coltype
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=6:30pm).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=6:30pm).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
-key                 	string              	None                
-value               	string              	None                
-dt                  	string              	None                
-ts                  	string              	None                
+POSTHOOK: Input: default@alter_coltype
+key                 	string              	                    
+value               	string              	                    
+dt                  	string              	                    
+ts                  	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-dt                  	string              	None                
-ts                  	string              	None                
+dt                  	string              	                    
+ts                  	string              	                    
 FAILED: ParseException line 4:47 cannot recognize input near 'time' ')' '<EOF>' in column type

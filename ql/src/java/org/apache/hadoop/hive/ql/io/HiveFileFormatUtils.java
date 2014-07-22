@@ -32,6 +32,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.HivePassThroughOutputFormat;
@@ -116,7 +117,7 @@ public final class HiveFileFormatUtils {
    * get a RealOutputFormatClassName corresponding to the HivePassThroughOutputFormat
    */
   @SuppressWarnings("unchecked")
-  public static String getRealOutputFormatClassName() 
+  public static String getRealOutputFormatClassName()
   {
     return realoutputFormat;
   }
@@ -245,7 +246,7 @@ public final class HiveFileFormatUtils {
     return true;
   }
 
-  public static FSRecordWriter getHiveRecordWriter(JobConf jc,
+  public static RecordWriter getHiveRecordWriter(JobConf jc,
       TableDesc tableInfo, Class<? extends Writable> outputClass,
       FileSinkDesc conf, Path outPath, Reporter reporter) throws HiveException {
     boolean storagehandlerofhivepassthru = false;
@@ -286,7 +287,7 @@ public final class HiveFileFormatUtils {
     }
   }
 
-  public static FSRecordWriter getRecordWriter(JobConf jc,
+  public static RecordWriter getRecordWriter(JobConf jc,
       HiveOutputFormat<?, ?> hiveOutputFormat,
       final Class<? extends Writable> valueClass, boolean isCompressed,
       Properties tableProp, Path outPath, Reporter reporter

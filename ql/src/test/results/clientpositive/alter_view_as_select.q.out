@@ -11,14 +11,16 @@ POSTHOOK: Input: default@srcpart
 POSTHOOK: Output: default@testView
 PREHOOK: query: DESCRIBE FORMATTED testView
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@testview
 POSTHOOK: query: DESCRIBE FORMATTED testView
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@testview
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	None                
-value               	string              	None                
-ds                  	string              	None                
-hr                  	string              	None                
+key                 	string              	                    
+value               	string              	                    
+ds                  	string              	                    
+hr                  	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -50,11 +52,13 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@testview
 PREHOOK: query: DESCRIBE FORMATTED testView
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@testview
 POSTHOOK: query: DESCRIBE FORMATTED testView
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@testview
 # col_name            	data_type           	comment             
 	 	 
-value               	string              	None                
+value               	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -94,12 +98,14 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@testview
 PREHOOK: query: DESCRIBE FORMATTED testView
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@testview
 POSTHOOK: query: DESCRIBE FORMATTED testView
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@testview
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	None                
-value               	string              	None                
+key                 	string              	                    
+value               	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 

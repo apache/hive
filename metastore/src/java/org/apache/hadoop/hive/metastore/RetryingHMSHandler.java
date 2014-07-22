@@ -129,9 +129,9 @@ public class RetryingHMSHandler implements InvocationHandler {
           // Due to reflection, the jdo exception is wrapped in
           // invocationTargetException
           caughtException = e.getCause();
-        } else if (e.getCause() instanceof NoSuchObjectException) {
+        } else if (e.getCause() instanceof NoSuchObjectException || e.getTargetException().getCause() instanceof NoSuchObjectException) {
           String methodName = method.getName();
-          if (!methodName.startsWith("get_table") && !methodName.startsWith("get_partition")) {
+          if (!methodName.startsWith("get_table") && !methodName.startsWith("get_partition") && !methodName.startsWith("get_function")) {
             LOG.error(ExceptionUtils.getStackTrace(e.getCause()));
           }
           throw e.getCause();

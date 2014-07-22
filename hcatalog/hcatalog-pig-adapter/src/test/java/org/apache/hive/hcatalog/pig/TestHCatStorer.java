@@ -211,6 +211,13 @@ public class TestHCatStorer extends HCatBaseTest {
                                  String expectedValue) throws Exception {
     pigValueRangeTest(tblName, hiveType, pigType, goal, inputValue, expectedValue, null);
   }
+
+  /**
+   * this should be overridden in subclass to test with different file formats
+   */
+  String getStorageFormat() {
+    return "RCFILE";
+  }
   /**
    * This is used to test how Pig values of various data types which are out of range for Hive target
    * column are handled.  Currently the options are to raise an error or write NULL.
@@ -234,7 +241,7 @@ public class TestHCatStorer extends HCatBaseTest {
     throws Exception {
     TestHCatLoader.dropTable(tblName, driver);
     final String field = "f1";
-    TestHCatLoader.createTable(tblName, field + " " + hiveType, null, driver, "RCFILE");
+    TestHCatLoader.createTable(tblName, field + " " + hiveType, null, driver, getStorageFormat());
     HcatTestUtils.createTestDataFile(INPUT_FILE_NAME, new String[] {inputValue});
     LOG.debug("File=" + INPUT_FILE_NAME);
     dumpFile(INPUT_FILE_NAME);
@@ -312,7 +319,7 @@ public class TestHCatStorer extends HCatBaseTest {
     final String tblName = "junit_date_char";
     TestHCatLoader.dropTable(tblName, driver);
     TestHCatLoader.createTable(tblName,
-      "id int, char5 char(5), varchar10 varchar(10), dec52 decimal(5,2)", null, driver, "RCFILE");
+      "id int, char5 char(5), varchar10 varchar(10), dec52 decimal(5,2)", null, driver, getStorageFormat());
     int NUM_ROWS = 5;
     String[] rows = new String[NUM_ROWS];
     for(int i = 0; i < NUM_ROWS; i++) {
@@ -351,14 +358,14 @@ public class TestHCatStorer extends HCatBaseTest {
         rowFromPig.append(t.get(i)).append("\t");
       }
       rowFromPig.setLength(rowFromPig.length() - 1);
-      Assert.assertEquals("Comparing Pig to Raw data", rowFromPig.toString(), rows[numRowsRead]);
+      Assert.assertEquals("Comparing Pig to Raw data", rows[numRowsRead], rowFromPig.toString());
       //see comment at "Dumping rows via SQL..." for why this doesn't work (for all types)
       //Assert.assertEquals("Comparing Pig to Hive", rowFromPig.toString(), l.get(numRowsRead));
       numRowsRead++;
     }
     Assert.assertEquals("Expected " + NUM_ROWS + " rows; got " + numRowsRead + " file=" + INPUT_FILE_NAME, NUM_ROWS, numRowsRead);
   }
-  private static void dumpFile(String fileName) throws Exception {
+  static void dumpFile(String fileName) throws Exception {
     File file = new File(fileName);
     BufferedReader reader = new BufferedReader(new FileReader(file));
     String line = null;
@@ -372,7 +379,7 @@ public class TestHCatStorer extends HCatBaseTest {
   public void testPartColsInData() throws IOException, CommandNeedRetryException {
 
     driver.run("drop table junit_unparted");
-    String createTable = "create table junit_unparted(a int) partitioned by (b string) stored as RCFILE";
+    String createTable = "create table junit_unparted(a int) partitioned by (b string) stored as " + getStorageFormat();
     int retCode = driver.run(createTable).getResponseCode();
     if (retCode != 0) {
       throw new IOException("Failed to create table.");
@@ -408,7 +415,7 @@ public class TestHCatStorer extends HCatBaseTest {
 
     driver.run("drop table employee");
     String createTable = "CREATE TABLE employee (emp_id INT, emp_name STRING, emp_start_date STRING , emp_gender STRING ) " +
-      " PARTITIONED BY (emp_country STRING , emp_state STRING ) STORED AS RCFILE";
+      " PARTITIONED BY (emp_country STRING , emp_state STRING ) STORED AS " + getStorageFormat();
 
     int retCode = driver.run(createTable).getResponseCode();
     if (retCode != 0) {
@@ -450,7 +457,7 @@ public class TestHCatStorer extends HCatBaseTest {
   public void testStoreInPartiitonedTbl() throws IOException, CommandNeedRetryException {
 
     driver.run("drop table junit_unparted");
-    String createTable = "create table junit_unparted(a int) partitioned by (b string) stored as RCFILE";
+    String createTable = "create table junit_unparted(a int) partitioned by (b string) stored as " + getStorageFormat();
     int retCode = driver.run(createTable).getResponseCode();
     if (retCode != 0) {
       throw new IOException("Failed to create table.");
@@ -484,7 +491,7 @@ public class TestHCatStorer extends HCatBaseTest {
   @Test
   public void testNoAlias() throws IOException, CommandNeedRetryException {
     driver.run("drop table junit_parted");
-    String createTable = "create table junit_parted(a int, b string) partitioned by (ds string) stored as RCFILE";
+    String createTable = "create table junit_parted(a int, b string) partitioned by (ds string) stored as " + getStorageFormat();
     int retCode = driver.run(createTable).getResponseCode();
     if (retCode != 0) {
       throw new IOException("Failed to create table.");
@@ -527,7 +534,7 @@ public class TestHCatStorer extends HCatBaseTest {
   public void testStoreMultiTables() throws IOException, CommandNeedRetryException {
 
     driver.run("drop table junit_unparted");
-    String createTable = "create table junit_unparted(a int, b string) stored as RCFILE";
+    String createTable = "create table junit_unparted(a int, b string) stored as " + getStorageFormat();
     int retCode = driver.run(createTable).getResponseCode();
     if (retCode != 0) {
       throw new IOException("Failed to create table.");
@@ -582,7 +589,7 @@ public class TestHCatStorer extends HCatBaseTest {
   public void testStoreWithNoSchema() throws IOException, CommandNeedRetryException {
 
     driver.run("drop table junit_unparted");
-    String createTable = "create table junit_unparted(a int, b string) stored as RCFILE";
+    String createTable = "create table junit_unparted(a int, b string) stored as " + getStorageFormat();
     int retCode = driver.run(createTable).getResponseCode();
     if (retCode != 0) {
       throw new IOException("Failed to create table.");
@@ -621,7 +628,7 @@ public class TestHCatStorer extends HCatBaseTest {
   public void testStoreWithNoCtorArgs() throws IOException, CommandNeedRetryException {
 
     driver.run("drop table junit_unparted");
-    String createTable = "create table junit_unparted(a int, b string) stored as RCFILE";
+    String createTable = "create table junit_unparted(a int, b string) stored as " + getStorageFormat();
     int retCode = driver.run(createTable).getResponseCode();
     if (retCode != 0) {
       throw new IOException("Failed to create table.");
@@ -660,7 +667,7 @@ public class TestHCatStorer extends HCatBaseTest {
   public void testEmptyStore() throws IOException, CommandNeedRetryException {
 
     driver.run("drop table junit_unparted");
-    String createTable = "create table junit_unparted(a int, b string) stored as RCFILE";
+    String createTable = "create table junit_unparted(a int, b string) stored as " + getStorageFormat();
     int retCode = driver.run(createTable).getResponseCode();
     if (retCode != 0) {
       throw new IOException("Failed to create table.");
@@ -696,7 +703,7 @@ public class TestHCatStorer extends HCatBaseTest {
   public void testBagNStruct() throws IOException, CommandNeedRetryException {
     driver.run("drop table junit_unparted");
     String createTable = "create table junit_unparted(b string,a struct<a1:int>,  arr_of_struct array<string>, " +
-      "arr_of_struct2 array<struct<s1:string,s2:string>>,  arr_of_struct3 array<struct<s3:string>>) stored as RCFILE";
+      "arr_of_struct2 array<struct<s1:string,s2:string>>,  arr_of_struct3 array<struct<s3:string>>) stored as " + getStorageFormat();
     int retCode = driver.run(createTable).getResponseCode();
     if (retCode != 0) {
       throw new IOException("Failed to create table.");
@@ -729,7 +736,7 @@ public class TestHCatStorer extends HCatBaseTest {
   public void testStoreFuncAllSimpleTypes() throws IOException, CommandNeedRetryException {
 
     driver.run("drop table junit_unparted");
-    String createTable = "create table junit_unparted(a int, b float, c double, d bigint, e string, h boolean, f binary, g binary) stored as RCFILE";
+    String createTable = "create table junit_unparted(a int, b float, c double, d bigint, e string, h boolean, f binary, g binary) stored as " + getStorageFormat();
     int retCode = driver.run(createTable).getResponseCode();
     if (retCode != 0) {
       throw new IOException("Failed to create table.");
@@ -784,7 +791,7 @@ public class TestHCatStorer extends HCatBaseTest {
   public void testStoreFuncSimple() throws IOException, CommandNeedRetryException {
 
     driver.run("drop table junit_unparted");
-    String createTable = "create table junit_unparted(a int, b string) stored as RCFILE";
+    String createTable = "create table junit_unparted(a int, b string) stored as " + getStorageFormat();
     int retCode = driver.run(createTable).getResponseCode();
     if (retCode != 0) {
       throw new IOException("Failed to create table.");
@@ -826,7 +833,7 @@ public class TestHCatStorer extends HCatBaseTest {
 
     driver.run("drop table if exists employee");
     String createTable = "CREATE TABLE employee (emp_id INT, emp_name STRING, emp_start_date STRING , emp_gender STRING ) " +
-      " PARTITIONED BY (emp_country STRING , emp_state STRING ) STORED AS RCFILE";
+      " PARTITIONED BY (emp_country STRING , emp_state STRING ) STORED AS " + getStorageFormat();
 
     int retCode = driver.run(createTable).getResponseCode();
     if (retCode != 0) {
@@ -863,7 +870,7 @@ public class TestHCatStorer extends HCatBaseTest {
 
     driver.run("drop table if exists employee");
     String createTable = "CREATE TABLE employee (emp_id INT, emp_name STRING, emp_start_date STRING , emp_gender STRING ) " +
-      " PARTITIONED BY (emp_country STRING , emp_state STRING ) STORED AS RCFILE";
+      " PARTITIONED BY (emp_country STRING , emp_state STRING ) STORED AS " + getStorageFormat();
 
     int retCode = driver.run(createTable).getResponseCode();
     if (retCode != 0) {
@@ -900,7 +907,7 @@ public class TestHCatStorer extends HCatBaseTest {
 
     driver.run("drop table if exists employee");
     String createTable = "CREATE TABLE employee (emp_id INT, emp_name STRING, emp_start_date STRING , emp_gender STRING ) " +
-      " PARTITIONED BY (emp_country STRING , emp_state STRING ) STORED AS RCFILE";
+      " PARTITIONED BY (emp_country STRING , emp_state STRING ) STORED AS " + getStorageFormat();
 
     int retCode = driver.run(createTable).getResponseCode();
     if (retCode != 0) {
@@ -928,7 +935,7 @@ public class TestHCatStorer extends HCatBaseTest {
     throws IOException, CommandNeedRetryException {
 
     driver.run("drop table ptn_fail");
-    String createTable = "create table ptn_fail(a int, c string) partitioned by (b string) stored as RCFILE";
+    String createTable = "create table ptn_fail(a int, c string) partitioned by (b string) stored as " + getStorageFormat();
     int retCode = driver.run(createTable).getResponseCode();
     if (retCode != 0) {
       throw new IOException("Failed to create table.");

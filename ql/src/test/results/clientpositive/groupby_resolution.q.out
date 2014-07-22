@@ -4,7 +4,7 @@ POSTHOOK: query: explain select key, count(*) from src b group by b.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -44,6 +44,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: explain select b.key, count(*) from src b group by key
 PREHOOK: type: QUERY
@@ -51,7 +53,7 @@ POSTHOOK: query: explain select b.key, count(*) from src b group by key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -91,6 +93,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: explain select key, count(*) from src b group by b.key
 PREHOOK: type: QUERY
@@ -99,7 +103,7 @@ POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-1
@@ -163,6 +167,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: explain select b.key, count(*) from src b group by key
 PREHOOK: type: QUERY
@@ -171,7 +177,7 @@ POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-1
@@ -235,6 +241,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: explain select key, count(*) from src b group by b.key
 PREHOOK: type: QUERY
@@ -242,7 +250,7 @@ POSTHOOK: query: explain select key, count(*) from src b group by b.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -289,6 +297,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: explain select b.key, count(*) from src b group by key
 PREHOOK: type: QUERY
@@ -296,7 +306,7 @@ POSTHOOK: query: explain select b.key, count(*) from src b group by key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -343,6 +353,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: explain select key, count(*) from src b group by b.key
 PREHOOK: type: QUERY
@@ -351,7 +363,7 @@ POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-1
@@ -422,6 +434,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: explain select b.key, count(*) from src b group by key
 PREHOOK: type: QUERY
@@ -430,7 +444,7 @@ POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-1
@@ -501,12 +515,15 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: -- windowing after group by
 select key, count(*), rank() over(order by count(*))
 from src b
 where key < '12'
 group by b.key
+order by b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -515,27 +532,29 @@ select key, count(*), rank() over(order by count(*))
 from src b
 where key < '12'
 group by b.key
+order by b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
+0	3	12
 10	1	1
-105	1	1
-11	1	1
-111	1	1
-114	1	1
-116	1	1
-118	2	7
 100	2	7
 103	2	7
 104	2	7
+105	1	1
+11	1	1
+111	1	1
 113	2	7
-0	3	12
+114	1	1
+116	1	1
+118	2	7
 119	3	12
 PREHOOK: query: -- having after group by
 select key, count(*)
 from src b
 group by b.key
 having key < '12'
+order by b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -544,6 +563,7 @@ select key, count(*)
 from src b
 group by b.key
 having key < '12'
+order by b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -565,6 +585,7 @@ select key, count(*), rank() over(order by count(*))
 from src b
 group by b.key
 having key < '12'
+order by b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -573,21 +594,22 @@ select key, count(*), rank() over(order by count(*))
 from src b
 group by b.key
 having key < '12'
+order by b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
+0	3	12
 10	1	1
-105	1	1
-11	1	1
-111	1	1
-114	1	1
-116	1	1
-118	2	7
 100	2	7
 103	2	7
 104	2	7
+105	1	1
+11	1	1
+111	1	1
 113	2	7
-0	3	12
+114	1	1
+116	1	1
+118	2	7
 119	3	12
 PREHOOK: query: explain
 select key, count(*), rank() over(order by count(*))
@@ -605,7 +627,7 @@ STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
   Stage-3 depends on stages: Stage-2
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-3
 
 STAGE PLANS:
   Stage: Stage-1
@@ -701,6 +723,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: -- order by
 select key 
@@ -743,7 +767,7 @@ SELECT x.key, x.value as key FROM SRC x CLUSTER BY key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -761,9 +785,11 @@ STAGE PLANS:
                 sort order: +
                 Map-reduce partition columns: _col0 (type: string)
                 Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col0 (type: string), _col1 (type: string)
+                value expressions: _col1 (type: string)
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string)
+          outputColumnNames: _col0, _col1
           Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
@@ -776,4 +802,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 

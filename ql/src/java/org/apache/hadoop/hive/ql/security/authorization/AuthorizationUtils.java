@@ -23,12 +23,16 @@ import org.apache.hadoop.hive.metastore.api.HiveObjectType;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeGrantInfo;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.hooks.Entity;
 import org.apache.hadoop.hive.ql.hooks.Entity.Type;
+import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.hooks.WriteEntity.WriteType;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrincipal;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrincipal.HivePrincipalType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilege;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivObjectActionType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
 
 /**
@@ -108,12 +112,13 @@ public class AuthorizationUtils {
    * @param privilege
    * @param grantorPrincipal
    * @param grantOption
+   * @param grantTime
    * @return
    * @throws HiveException
    */
   public static PrivilegeGrantInfo getThriftPrivilegeGrantInfo(HivePrivilege privilege,
-      HivePrincipal grantorPrincipal, boolean grantOption) throws HiveException {
-    return new PrivilegeGrantInfo(privilege.getName(), 0 /* time gets added by server */,
+      HivePrincipal grantorPrincipal, boolean grantOption, int grantTime) throws HiveException {
+    return new PrivilegeGrantInfo(privilege.getName(), grantTime,
         grantorPrincipal.getName(), getThriftPrincipalType(grantorPrincipal.getType()), grantOption);
   }
 
@@ -125,6 +130,9 @@ public class AuthorizationUtils {
    * @throws HiveException
    */
   public static HiveObjectType getThriftHiveObjType(HivePrivilegeObjectType type) throws HiveException {
+    if (type == null) {
+      return null;
+    }
     switch(type){
     case DATABASE:
       return HiveObjectType.DATABASE;
@@ -149,9 +157,29 @@ public class AuthorizationUtils {
    * @throws HiveException
    */
   public static HiveObjectRef getThriftHiveObjectRef(HivePrivilegeObject privObj) throws HiveException {
+    if (privObj == null) {
+      return null;
+    }
     HiveObjectType objType = getThriftHiveObjType(privObj.getType());
     return new HiveObjectRef(objType, privObj.getDbname(), privObj.getTableViewURI(), null, null);
   }
 
+  public static HivePrivObjectActionType getActionType(Entity privObject) {
+    HivePrivObjectActionType actionType = HivePrivObjectActionType.OTHER;
+    if (privObject instanceof WriteEntity) {
+      WriteType writeType = ((WriteEntity) privObject).getWriteType();
+      switch (writeType) {
+      case INSERT:
+        return HivePrivObjectActionType.INSERT;
+      case INSERT_OVERWRITE:
+        return HivePrivObjectActionType.INSERT_OVERWRITE;
+      default:
+        // Ignore other types for purposes of authorization, we are interested only
+        // in INSERT vs INSERT_OVERWRITE as of now
+        break;
+      }
+    }
+    return actionType;
+  }
 
 }

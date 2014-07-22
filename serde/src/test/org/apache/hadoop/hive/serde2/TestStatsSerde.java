@@ -61,7 +61,7 @@ public class TestStatsSerde extends TestCase {
       LazySimpleSerDe serDe = new LazySimpleSerDe();
       Configuration conf = new Configuration();
       Properties tbl = createProperties();
-      serDe.initialize(conf, tbl);
+      SerDeUtils.initializeSerDe(serDe, conf, tbl, null);
 
       // Data
       Text t = new Text("123\t456\t789\t1000\t5.3\thive and hadoop\t1.\tNULL");
@@ -137,7 +137,7 @@ public class TestStatsSerde extends TestCase {
       schema.setProperty(serdeConstants.LIST_COLUMN_TYPES, fieldTypes);
 
       LazyBinarySerDe serDe = new LazyBinarySerDe();
-      serDe.initialize(new Configuration(), schema);
+      SerDeUtils.initializeSerDe(serDe, new Configuration(), schema, null);
 
       deserializeAndSerializeLazyBinary(serDe, rows, rowOI);
       System.out.println("test: testLazyBinarySerDe - OK");
@@ -183,7 +183,7 @@ public class TestStatsSerde extends TestCase {
       ColumnarSerDe serDe = new ColumnarSerDe();
       Configuration conf = new Configuration();
       Properties tbl = createProperties();
-      serDe.initialize(conf, tbl);
+      SerDeUtils.initializeSerDe(serDe, conf, tbl, null);
 
       // Data
       BytesRefArrayWritable braw = new BytesRefArrayWritable(8);

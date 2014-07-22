@@ -18,6 +18,7 @@ skewed by (c1, c2) on  (('466','val_466'),('287','val_287'),('82','val_82'))
 stored as directories
 stored as rcfile
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table stats_list_bucket (
   c1 string,
   c2 string
@@ -26,6 +27,7 @@ skewed by (c1, c2) on  (('466','val_466'),('287','val_287'),('82','val_82'))
 stored as directories
 stored as rcfile
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@stats_list_bucket
 PREHOOK: query: -- Make sure we use hashed IDs during stats publishing.
 -- Try partitioned table with list bucketing.
@@ -49,20 +51,20 @@ POSTHOOK: Lineage: stats_list_bucket PARTITION(ds=2008-04-08,hr=11).c1 SIMPLE [(
 POSTHOOK: Lineage: stats_list_bucket PARTITION(ds=2008-04-08,hr=11).c2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: desc formatted stats_list_bucket partition (ds = '2008-04-08',  hr = '11')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats_list_bucket
 POSTHOOK: query: desc formatted stats_list_bucket partition (ds = '2008-04-08',  hr = '11')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Lineage: stats_list_bucket PARTITION(ds=2008-04-08,hr=11).c1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_list_bucket PARTITION(ds=2008-04-08,hr=11).c2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Input: default@stats_list_bucket
 # col_name            	data_type           	comment             
 	 	 
-c1                  	string              	None                
-c2                  	string              	None                
+c1                  	string              	                    
+c2                  	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-ds                  	string              	None                
-hr                  	string              	None                
+ds                  	string              	                    
+hr                  	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[2008-04-08, 11]    	 
@@ -72,6 +74,7 @@ Table:              	stats_list_bucket
 Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
 	numFiles            	4                   
 	numRows             	500                 
 	rawDataSize         	4812                
@@ -104,6 +107,7 @@ skewed by (c1, c2) on  (('466','val_466'),('287','val_287'),('82','val_82'))
 stored as directories
 stored as rcfile
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- Also try non-partitioned table with list bucketing.
 -- Stats should show the same number of rows.
 
@@ -115,9 +119,8 @@ skewed by (c1, c2) on  (('466','val_466'),('287','val_287'),('82','val_82'))
 stored as directories
 stored as rcfile
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@stats_list_bucket_1
-POSTHOOK: Lineage: stats_list_bucket PARTITION(ds=2008-04-08,hr=11).c1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_list_bucket PARTITION(ds=2008-04-08,hr=11).c2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: insert overwrite table stats_list_bucket_1
   select key, value from src
 PREHOOK: type: QUERY
@@ -128,22 +131,18 @@ POSTHOOK: query: insert overwrite table stats_list_bucket_1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@stats_list_bucket_1
-POSTHOOK: Lineage: stats_list_bucket PARTITION(ds=2008-04-08,hr=11).c1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_list_bucket PARTITION(ds=2008-04-08,hr=11).c2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: stats_list_bucket_1.c1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: stats_list_bucket_1.c2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: desc formatted stats_list_bucket_1
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats_list_bucket_1
 POSTHOOK: query: desc formatted stats_list_bucket_1
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Lineage: stats_list_bucket PARTITION(ds=2008-04-08,hr=11).c1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_list_bucket PARTITION(ds=2008-04-08,hr=11).c2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_list_bucket_1.c1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_list_bucket_1.c2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Input: default@stats_list_bucket_1
 # col_name            	data_type           	comment             
 	 	 
-c1                  	string              	None                
-c2                  	string              	None                
+c1                  	string              	                    
+c2                  	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -153,8 +152,8 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
 	numFiles            	4                   
-	numPartitions       	0                   
 	numRows             	500                 
 	rawDataSize         	4812                
 	totalSize           	5522                
@@ -171,6 +170,8 @@ Sort Columns:       	[]
 Stored As SubDirectories:	Yes                 	 
 Skewed Columns:     	[c1, c2]            	 
 Skewed Values:      	[[466, val_466], [287, val_287], [82, val_82]]	 
+#### A masked pattern was here ####
+Skewed Value to Truncated Path:	{[82, val_82]=/stats_list_bucket_1/c1=82/c2=val_82, [466, val_466]=/stats_list_bucket_1/c1=466/c2=val_466, [287, val_287]=/stats_list_bucket_1/c1=287/c2=val_287}	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: drop table stats_list_bucket
@@ -181,10 +182,6 @@ POSTHOOK: query: drop table stats_list_bucket
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@stats_list_bucket
 POSTHOOK: Output: default@stats_list_bucket
-POSTHOOK: Lineage: stats_list_bucket PARTITION(ds=2008-04-08,hr=11).c1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_list_bucket PARTITION(ds=2008-04-08,hr=11).c2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_list_bucket_1.c1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_list_bucket_1.c2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: drop table stats_list_bucket_1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@stats_list_bucket_1
@@ -193,7 +190,3 @@ POSTHOOK: query: drop table stats_list_bucket_1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@stats_list_bucket_1
 POSTHOOK: Output: default@stats_list_bucket_1
-POSTHOOK: Lineage: stats_list_bucket PARTITION(ds=2008-04-08,hr=11).c1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_list_bucket PARTITION(ds=2008-04-08,hr=11).c2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_list_bucket_1.c1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_list_bucket_1.c2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]

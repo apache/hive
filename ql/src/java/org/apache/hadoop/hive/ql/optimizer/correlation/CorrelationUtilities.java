@@ -23,9 +23,11 @@ import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.ExtractOperator;
@@ -276,24 +278,29 @@ public final class CorrelationUtilities {
    * @return the TableScanOperator traced from startPoint. Null, if the search encounters any
    * ReduceSinkOperator.
    */
-  protected static TableScanOperator findTableScanOperator(
-      Operator<? extends OperatorDesc> startPoint) {
-    Operator<? extends OperatorDesc> thisOp = startPoint.getParentOperators().get(0);
-    while (true) {
-      if (thisOp.getName().equals(ReduceSinkOperator.getOperatorName())) {
-        return null;
-      } else if (thisOp.getName().equals(TableScanOperator.getOperatorName())) {
-        return (TableScanOperator) thisOp;
-      } else {
-        if (thisOp.getParentOperators() != null) {
-          thisOp = thisOp.getParentOperators().get(0);
-        } else {
-          break;
-        }
-      }
+  protected static Set<TableScanOperator> findTableScanOperators(Operator<?> startPoint) {
+    if (startPoint instanceof ReduceSinkOperator) {
+      assert startPoint.getNumParent() == 1; // for now
+      startPoint = startPoint.getParentOperators().get(0);
     }
-    return null;
+    return findTableScanOperators(startPoint, new LinkedHashSet<TableScanOperator>());
   }
+
+  private static Set<TableScanOperator> findTableScanOperators(Operator<?> current,
+      Set<TableScanOperator> found) {
+    if (current instanceof TableScanOperator) {
+      found.add((TableScanOperator) current);
+      return found;
+    }
+    if (current instanceof ReduceSinkOperator || current.getNumParent() == 0) {
+      return found;
+    }
+    for (Operator<?> parent : current.getParentOperators()) {
+      findTableScanOperators(parent, found);
+    }
+    return found;
+  }
+
 
   /**
    * Find all sibling ReduceSinkOperators (which have the same child operator of op) of op (op
@@ -469,6 +476,12 @@ public final class CorrelationUtilities {
 
     child.setParentOperators(Utilities.makeList(newOperator));
     parent.setChildOperators(Utilities.makeList(newOperator));
+  }
+
+  public static void removeOperator(Operator<?> target, ParseContext context) {
+    assert target.getNumParent() == 1 && target.getNumChild() == 1;
+    removeOperator(target,
+        target.getChildOperators().get(0), target.getParentOperators().get(0), context);
   }
 
   protected static void removeOperator(Operator<?> target, Operator<?> child, Operator<?> parent,

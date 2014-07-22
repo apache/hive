@@ -28,11 +28,12 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -40,17 +41,23 @@ import java.util.TreeMap;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.physical.StageIDsRearranger;
+import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.ExplainWork;
-import org.apache.hadoop.hive.ql.plan.TezWork;
+import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
+import org.apache.hadoop.hive.ql.security.authorization.AuthorizationFactory;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.util.StringUtils;
+import org.apache.hive.common.util.AnnotationUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -62,7 +69,7 @@ import org.json.JSONObject;
 public class ExplainTask extends Task<ExplainWork> implements Serializable {
   private static final long serialVersionUID = 1L;
   public static final String EXPL_COLUMN_NAME = "Explain";
-  private Set<Operator<?>> visitedOps = new HashSet<Operator<?>>();
+  private final Set<Operator<?>> visitedOps = new HashSet<Operator<?>>();
   private boolean isLogical = false;
 
   public ExplainTask() {
@@ -136,7 +143,9 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     }
 
     if (work.getParseContext() != null) {
-      out.print("LOGICAL PLAN:");
+      if (out != null) {
+        out.print("LOGICAL PLAN:");
+      }
       JSONObject jsonPlan = outputMap(work.getParseContext().getTopOps(), true,
                                       out, jsonOutput, work.getExtended(), 0);
       if (out != null) {
@@ -160,7 +169,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
 
   public JSONObject getJSONPlan(PrintStream out, String ast, List<Task<?>> tasks, Task<?> fetchTask,
       boolean jsonOutput, boolean isExtended, boolean appendTaskType) throws Exception {
-    
+
     // If the user asked for a formatted output, dump the json output
     // in the output stream
     JSONObject outJSONObject = new JSONObject();
@@ -184,7 +193,10 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     List<Task> ordered = StageIDsRearranger.getExplainOrder(conf, tasks);
 
     if (fetchTask != null) {
-      fetchTask.setRootTask(true);  // todo HIVE-3925
+      fetchTask.setParentTasks((List)StageIDsRearranger.getFetchSources(tasks));
+      if (fetchTask.getNumParent() == 0) {
+        fetchTask.setRootTask(true);
+      }
       ordered.add(fetchTask);
     }
 
@@ -206,7 +218,46 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
       outJSONObject.put("STAGE PLANS", jsonPlan);
     }
 
+    if (fetchTask != null) {
+      fetchTask.setParentTasks(null);
+    }
+
     return jsonOutput ? outJSONObject : null;
+  }
+
+  private List<String> toString(Collection<?> objects) {
+    List<String> list = new ArrayList<String>();
+    for (Object object : objects) {
+      list.add(String.valueOf(object));
+    }
+    return list;
+  }
+
+  private Object toJson(String header, String message, PrintStream out, ExplainWork work)
+      throws Exception {
+    if (work.isFormatted()) {
+      return message;
+    }
+    out.print(header);
+    out.println(": ");
+    out.print(indentString(2));
+    out.println(message);
+    return null;
+  }
+
+  private Object toJson(String header, List<String> messages, PrintStream out, ExplainWork work)
+      throws Exception {
+    if (work.isFormatted()) {
+      return new JSONArray(messages);
+    }
+    out.print(header);
+    out.println(": ");
+    for (String message : messages) {
+      out.print(indentString(2));
+      out.print(message);
+      out.println();
+    }
+    return null;
   }
 
   @Override
@@ -223,6 +274,14 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
         if (work.isFormatted()) {
           out.print(jsonLogicalPlan);
         }
+      } else if (work.isAuthorize()) {
+        JSONObject jsonAuth = collectAuthRelatedEntities(out, work);
+        if (work.isFormatted()) {
+          out.print(jsonAuth);
+        }
+      } else if (work.getDependency()) {
+        JSONObject jsonDependencies = getJSONDependencies(work);
+        out.print(jsonDependencies);
       } else {
         if (work.getDependency()) {
           JSONObject jsonDependencies = getJSONDependencies(work);
@@ -249,7 +308,62 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     }
   }
 
-  private String indentString(int indent) {
+  private JSONObject collectAuthRelatedEntities(PrintStream out, ExplainWork work)
+      throws Exception {
+
+    BaseSemanticAnalyzer analyzer = work.getAnalyzer();
+    HiveOperation operation = SessionState.get().getHiveOperation();
+
+    JSONObject object = new JSONObject();
+    Object jsonInput = toJson("INPUTS", toString(analyzer.getInputs()), out, work);
+    if (work.isFormatted()) {
+      object.put("INPUTS", jsonInput);
+    }
+    Object jsonOutput = toJson("OUTPUTS", toString(analyzer.getOutputs()), out, work);
+    if (work.isFormatted()) {
+      object.put("OUTPUTS", jsonOutput);
+    }
+    String userName = SessionState.get().getAuthenticator().getUserName();
+    Object jsonUser = toJson("CURRENT_USER", userName, out, work);
+    if (work.isFormatted()) {
+      object.put("CURRENT_USER", jsonUser);
+    }
+    Object jsonOperation = toJson("OPERATION", operation.name(), out, work);
+    if (work.isFormatted()) {
+      object.put("OPERATION", jsonOperation);
+    }
+    if (analyzer.skipAuthorization()) {
+      return object;
+    }
+
+    final List<String> exceptions = new ArrayList<String>();
+    Object delegate = SessionState.get().getActiveAuthorizer();
+    if (delegate != null) {
+      Class itface = SessionState.get().getAuthorizerInterface();
+      Object authorizer = AuthorizationFactory.create(delegate, itface,
+          new AuthorizationFactory.AuthorizationExceptionHandler() {
+            public void exception(Exception exception) {
+              exceptions.add(exception.getMessage());
+            }
+          });
+
+      SessionState.get().setActiveAuthorizer(authorizer);
+      try {
+        Driver.doAuthorization(analyzer, "");
+      } finally {
+        SessionState.get().setActiveAuthorizer(delegate);
+      }
+    }
+    if (!exceptions.isEmpty()) {
+      Object jsonFails = toJson("AUTHORIZATION_FAILURES", exceptions, out, work);
+      if (work.isFormatted()) {
+        object.put("AUTHORIZATION_FAILURES", jsonFails);
+      }
+    }
+    return object;
+  }
+
+  private static String indentString(int indent) {
     StringBuilder sb = new StringBuilder();
     for (int i = 0; i < indent; ++i) {
       sb.append(" ");
@@ -285,7 +399,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
         }
       }
       else if (ent.getValue() instanceof List) {
-        if (ent.getValue() != null && !((List<?>)ent.getValue()).isEmpty() 
+        if (ent.getValue() != null && !((List<?>)ent.getValue()).isEmpty()
             && ((List<?>)ent.getValue()).get(0) != null &&
             ((List<?>)ent.getValue()).get(0) instanceof TezWork.Dependency) {
           if (out != null) {
@@ -414,7 +528,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
   private JSONObject outputPlan(Serializable work, PrintStream out,
       boolean extended, boolean jsonOutput, int indent, String appendToHeader) throws Exception {
     // Check if work has an explain annotation
-    Annotation note = work.getClass().getAnnotation(Explain.class);
+    Annotation note = AnnotationUtils.getAnnotation(work.getClass(), Explain.class);
 
     String keyJSONObject = null;
 
@@ -473,7 +587,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
 
     for (Method m : methods) {
       int prop_indents = jsonOutput ? 0 : indent + 2;
-      note = m.getAnnotation(Explain.class);
+      note = AnnotationUtils.getAnnotation(m, Explain.class);
 
       if (note instanceof Explain) {
         Explain xpl_note = (Explain) note;
@@ -794,6 +908,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
    *
    */
   public class MethodComparator implements Comparator<Method> {
+    @Override
     public int compare(Method m1, Method m2) {
       return m1.getName().compareTo(m2.getName());
     }

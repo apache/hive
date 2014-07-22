@@ -19,10 +19,13 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.apache.hadoop.hive.ql.io.parquet.serde.primitive.ParquetPrimitiveInspectorFactory;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.SettableStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
@@ -75,6 +78,8 @@ public class ArrayWritableObjectInspector extends SettableStructObjectInspector 
       return PrimitiveObjectInspectorFactory.writableLongObjectInspector;
     } else if (typeInfo.equals(TypeInfoFactory.stringTypeInfo)) {
       return ParquetPrimitiveInspectorFactory.parquetStringInspector;
+    }  else if (typeInfo instanceof DecimalTypeInfo) {
+      return PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector((DecimalTypeInfo) typeInfo);
     } else if (typeInfo.getCategory().equals(Category.STRUCT)) {
       return new ArrayWritableObjectInspector((StructTypeInfo) typeInfo);
     } else if (typeInfo.getCategory().equals(Category.LIST)) {
@@ -89,14 +94,22 @@ public class ArrayWritableObjectInspector extends SettableStructObjectInspector 
       } else {
         return new StandardParquetHiveMapInspector(getObjectInspector(keyTypeInfo), getObjectInspector(valueTypeInfo));
       }
-    } else if (typeInfo.equals(TypeInfoFactory.timestampTypeInfo)) {
-      throw new UnsupportedOperationException("timestamp not implemented yet");
     } else if (typeInfo.equals(TypeInfoFactory.byteTypeInfo)) {
       return ParquetPrimitiveInspectorFactory.parquetByteInspector;
     } else if (typeInfo.equals(TypeInfoFactory.shortTypeInfo)) {
       return ParquetPrimitiveInspectorFactory.parquetShortInspector;
+    } else if (typeInfo.equals(TypeInfoFactory.timestampTypeInfo)) {
+      return PrimitiveObjectInspectorFactory.writableTimestampObjectInspector;
+    } else if (typeInfo.equals(TypeInfoFactory.dateTypeInfo)) {
+      throw new UnsupportedOperationException("Parquet does not support date. See HIVE-6384");
+    } else if (typeInfo.getTypeName().toLowerCase().startsWith(serdeConstants.DECIMAL_TYPE_NAME)) {
+      throw new UnsupportedOperationException("Parquet does not support decimal. See HIVE-6384");
+    } else if (typeInfo.getTypeName().toLowerCase().startsWith(serdeConstants.CHAR_TYPE_NAME)) {
+      throw new UnsupportedOperationException("Parquet does not support char. See HIVE-6384");
+    } else if (typeInfo.getTypeName().toLowerCase().startsWith(serdeConstants.VARCHAR_TYPE_NAME)) {
+      throw new UnsupportedOperationException("Parquet does not support varchar. See HIVE-6384");
     } else {
-      throw new IllegalArgumentException("Unknown field info: " + typeInfo);
+      throw new UnsupportedOperationException("Unknown field type: " + typeInfo);
     }
 
   }
@@ -125,6 +138,13 @@ public class ArrayWritableObjectInspector extends SettableStructObjectInspector 
     if (data instanceof ArrayWritable) {
       final ArrayWritable arr = (ArrayWritable) data;
       return arr.get()[((StructFieldImpl) fieldRef).getIndex()];
+    }
+
+    //since setStructFieldData and create return a list, getStructFieldData should be able to
+    //handle list data. This is required when table serde is ParquetHiveSerDe and partition serde
+    //is something else.
+    if (data instanceof List) {
+      return ((List) data).get(((StructFieldImpl) fieldRef).getIndex());
     }
 
     throw new UnsupportedOperationException("Cannot inspect " + data.getClass().getCanonicalName());
@@ -217,6 +237,11 @@ public class ArrayWritableObjectInspector extends SettableStructObjectInspector 
     @Override
     public ObjectInspector getFieldObjectInspector() {
       return inspector;
+    }
+
+    @Override
+    public int getFieldID() {
+      return index;
     }
   }
 }

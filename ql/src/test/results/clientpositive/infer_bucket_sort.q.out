@@ -27,19 +27,19 @@ POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema
 POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
 PREHOOK: query: DESCRIBE FORMATTED test_table PARTITION (part = '1')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_table
 POSTHOOK: query: DESCRIBE FORMATTED test_table PARTITION (part = '1')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
+POSTHOOK: Input: default@test_table
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	None                
-value               	string              	None                
+key                 	string              	                    
+value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-part                	string              	None                
+part                	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[1]                 	 
@@ -80,25 +80,21 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@test_table@part=1
 POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
 PREHOOK: query: DESCRIBE FORMATTED test_table PARTITION (part = '1')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_table
 POSTHOOK: query: DESCRIBE FORMATTED test_table PARTITION (part = '1')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
+POSTHOOK: Input: default@test_table
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	None                
-value               	string              	None                
+key                 	string              	                    
+value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-part                	string              	None                
+part                	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[1]                 	 
@@ -137,31 +133,23 @@ SELECT a.key, a.value FROM src a JOIN src b ON a.key = b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@test_table@part=1
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
 POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: DESCRIBE FORMATTED test_table PARTITION (part = '1')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_table
 POSTHOOK: query: DESCRIBE FORMATTED test_table PARTITION (part = '1')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Input: default@test_table
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	None                
-value               	string              	None                
+key                 	string              	                    
+value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-part                	string              	None                
+part                	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[1]                 	 
@@ -200,35 +188,23 @@ SELECT a.key, a.value FROM src a JOIN src b ON a.key = b.key AND a.value = b.val
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@test_table@part=1
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
 POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: DESCRIBE FORMATTED test_table PARTITION (part = '1')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_table
 POSTHOOK: query: DESCRIBE FORMATTED test_table PARTITION (part = '1')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Input: default@test_table
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	None                
-value               	string              	None                
+key                 	string              	                    
+value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-part                	string              	None                
+part                	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[1]                 	 
@@ -267,39 +243,23 @@ SELECT a.key, '1' FROM src a JOIN src b ON a.key = b.key AND a.value = b.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@test_table@part=1
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
 POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE []
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: DESCRIBE FORMATTED test_table PARTITION (part = '1')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_table
 POSTHOOK: query: DESCRIBE FORMATTED test_table PARTITION (part = '1')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE []
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Input: default@test_table
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	None                
-value               	string              	None                
+key                 	string              	                    
+value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-part                	string              	None                
+part                	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[1]                 	 
@@ -338,43 +298,23 @@ SELECT a.key, c.value FROM src a JOIN src b ON (a.key = b.key) JOIN src c ON (b.
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@test_table@part=1
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE []
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: DESCRIBE FORMATTED test_table PARTITION (part = '1')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_table
 POSTHOOK: query: DESCRIBE FORMATTED test_table PARTITION (part = '1')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE []
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Input: default@test_table
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	None                
-value               	string              	None                
+key                 	string              	                    
+value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-part                	string              	None                
+part                	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[1]                 	 
@@ -413,47 +353,23 @@ SELECT a.key, c.value FROM src a JOIN src b ON (a.key = b.key) JOIN src c ON (b.
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@test_table@part=1
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE []
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: DESCRIBE FORMATTED test_table PARTITION (part = '1')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_table
 POSTHOOK: query: DESCRIBE FORMATTED test_table PARTITION (part = '1')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE []
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Input: default@test_table
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	None                
-value               	string              	None                
+key                 	string              	                    
+value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-part                	string              	None                
+part                	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[1]                 	 
@@ -493,50 +409,22 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@test_table@part=1
 POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE []
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: DESCRIBE FORMATTED test_table PARTITION (part = '1')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_table
 POSTHOOK: query: DESCRIBE FORMATTED test_table PARTITION (part = '1')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE []
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Input: default@test_table
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	None                
-value               	string              	None                
+key                 	string              	                    
+value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-part                	string              	None                
+part                	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[1]                 	 
@@ -577,53 +465,21 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@test_table@part=1
 POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE []
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: DESCRIBE FORMATTED test_table PARTITION (part = '1')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_table
 POSTHOOK: query: DESCRIBE FORMATTED test_table PARTITION (part = '1')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE []
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Input: default@test_table
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	None                
-value               	string              	None                
+key                 	string              	                    
+value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-part                	string              	None                
+part                	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[1]                 	 
@@ -664,57 +520,21 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@test_table@part=1
 POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE []
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: DESCRIBE FORMATTED test_table PARTITION (part = '1')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_table
 POSTHOOK: query: DESCRIBE FORMATTED test_table PARTITION (part = '1')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE []
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Input: default@test_table
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	None                
-value               	string              	None                
+key                 	string              	                    
+value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-part                	string              	None                
+part                	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[1]                 	 
@@ -755,61 +575,21 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@test_table@part=1
 POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE []
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: DESCRIBE FORMATTED test_table PARTITION (part = '1')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_table
 POSTHOOK: query: DESCRIBE FORMATTED test_table PARTITION (part = '1')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE []
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Input: default@test_table
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	None                
-value               	string              	None                
+key                 	string              	                    
+value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-part                	string              	None                
+part                	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[1]                 	 
@@ -850,65 +630,21 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@test_table@part=1
 POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE []
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: DESCRIBE FORMATTED test_table PARTITION (part = '1')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_table
 POSTHOOK: query: DESCRIBE FORMATTED test_table PARTITION (part = '1')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE []
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Input: default@test_table
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	None                
-value               	string              	None                
+key                 	string              	                    
+value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-part                	string              	None                
+part                	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[1]                 	 
@@ -947,71 +683,23 @@ SELECT key, value from (SELECT a.key, b.value FROM src a JOIN src b ON (a.key = 
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@test_table@part=1
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE []
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)b.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: DESCRIBE FORMATTED test_table PARTITION (part = '1')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_table
 POSTHOOK: query: DESCRIBE FORMATTED test_table PARTITION (part = '1')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE []
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)b.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Input: default@test_table
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	None                
-value               	string              	None                
+key                 	string              	                    
+value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-part                	string              	None                
+part                	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[1]                 	 
@@ -1050,75 +738,23 @@ SELECT k, value FROM (SELECT a.key as k, b.value FROM src a JOIN src b ON (a.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@test_table@part=1
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE []
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)b.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)b.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: DESCRIBE FORMATTED test_table PARTITION (part = '1')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_table
 POSTHOOK: query: DESCRIBE FORMATTED test_table PARTITION (part = '1')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE []
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)b.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)b.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Input: default@test_table
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	None                
-value               	string              	None                
+key                 	string              	                    
+value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-part                	string              	None                
+part                	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[1]                 	 
@@ -1158,78 +794,22 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@test_table@part=1
 POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE []
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)b.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)b.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: DESCRIBE FORMATTED test_table PARTITION (part = '1')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_table
 POSTHOOK: query: DESCRIBE FORMATTED test_table PARTITION (part = '1')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE []
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)b.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)b.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Input: default@test_table
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	None                
-value               	string              	None                
+key                 	string              	                    
+value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-part                	string              	None                
+part                	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[1]                 	 
@@ -1269,82 +849,22 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@test_table@part=1
 POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE []
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)b.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)b.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: DESCRIBE FORMATTED test_table PARTITION (part = '1')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_table
 POSTHOOK: query: DESCRIBE FORMATTED test_table PARTITION (part = '1')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE []
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)b.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)b.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Input: default@test_table
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	None                
-value               	string              	None                
+key                 	string              	                    
+value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-part                	string              	None                
+part                	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[1]                 	 
@@ -1384,86 +904,22 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@test_table@part=1
 POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE []
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)b.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)b.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: DESCRIBE FORMATTED test_table PARTITION (part = '1')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_table
 POSTHOOK: query: DESCRIBE FORMATTED test_table PARTITION (part = '1')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE []
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)b.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)b.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Input: default@test_table
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	None                
-value               	string              	None                
+key                 	string              	                    
+value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-part                	string              	None                
+part                	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[1]                 	 
@@ -1503,90 +959,22 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@test_table@part=1
 POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE []
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)b.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)b.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: DESCRIBE FORMATTED test_table PARTITION (part = '1')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_table
 POSTHOOK: query: DESCRIBE FORMATTED test_table PARTITION (part = '1')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE []
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)b.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)b.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Input: default@test_table
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	None                
-value               	string              	None                
+key                 	string              	                    
+value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-part                	string              	None                
+part                	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[1]                 	 
@@ -1625,95 +1013,23 @@ SELECT key, value FROM (SELECT key FROM src group by key) a lateral view explode
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@test_table@part=1
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE []
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)b.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)b.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
 POSTHOOK: Lineage: test_table PARTITION(part=1).key SCRIPT []
 POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: DESCRIBE FORMATTED test_table PARTITION (part = '1')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_table
 POSTHOOK: query: DESCRIBE FORMATTED test_table PARTITION (part = '1')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE []
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)b.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)b.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SCRIPT []
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Input: default@test_table
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	None                
-value               	string              	None                
+key                 	string              	                    
+value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-part                	string              	None                
+part                	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[1]                 	 
@@ -1754,99 +1070,23 @@ SELECT count(1), value FROM (SELECT key, count(1) as value FROM src group by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@test_table@part=1
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE []
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)b.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)b.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SCRIPT []
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table PARTITION(part=1).key EXPRESSION [(src)src.null, ]
 POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
 PREHOOK: query: DESCRIBE FORMATTED test_table PARTITION (part = '1')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_table
 POSTHOOK: query: DESCRIBE FORMATTED test_table PARTITION (part = '1')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE []
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)b.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)b.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SCRIPT []
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
+POSTHOOK: Input: default@test_table
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	None                
-value               	string              	None                
+key                 	string              	                    
+value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-part                	string              	None                
+part                	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[1]                 	 
@@ -1887,103 +1127,23 @@ SELECT value, key FROM (SELECT key, count(1) as value FROM src group by key) a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@test_table@part=1
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE []
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)b.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)b.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SCRIPT []
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
 POSTHOOK: Lineage: test_table PARTITION(part=1).key EXPRESSION [(src)src.null, ]
 POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: DESCRIBE FORMATTED test_table PARTITION (part = '1')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_table
 POSTHOOK: query: DESCRIBE FORMATTED test_table PARTITION (part = '1')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE []
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)b.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)b.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SCRIPT []
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Input: default@test_table
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	None                
-value               	string              	None                
+key                 	string              	                    
+value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-part                	string              	None                
+part                	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[1]                 	 
@@ -2023,106 +1183,22 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@test_table@part=1
 POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE []
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)b.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)b.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SCRIPT []
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: DESCRIBE FORMATTED test_table PARTITION (part = '1')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_table
 POSTHOOK: query: DESCRIBE FORMATTED test_table PARTITION (part = '1')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE []
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)b.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)b.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SCRIPT []
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Input: default@test_table
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	None                
-value               	string              	None                
+key                 	string              	                    
+value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-part                	string              	None                
+part                	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[1]                 	 
@@ -2162,110 +1238,22 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@test_table@part=1
 POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE []
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)b.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)b.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SCRIPT []
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: DESCRIBE FORMATTED test_table PARTITION (part = '1')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_table
 POSTHOOK: query: DESCRIBE FORMATTED test_table PARTITION (part = '1')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE []
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)b.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)b.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SCRIPT []
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Input: default@test_table
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	None                
-value               	string              	None                
+key                 	string              	                    
+value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-part                	string              	None                
+part                	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[1]                 	 
@@ -2304,115 +1292,23 @@ SELECT TRANSFORM (a.key, a.value) USING 'cat' AS (key, value) FROM (SELECT key, 
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@test_table@part=1
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE []
 POSTHOOK: Lineage: test_table PARTITION(part=1).key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.null, ]
 POSTHOOK: Lineage: test_table PARTITION(part=1).value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)b.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)b.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SCRIPT []
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: DESCRIBE FORMATTED test_table PARTITION (part = '1')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_table
 POSTHOOK: query: DESCRIBE FORMATTED test_table PARTITION (part = '1')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE []
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)b.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)b.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SCRIPT []
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Input: default@test_table
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	None                
-value               	string              	None                
+key                 	string              	                    
+value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-part                	string              	None                
+part                	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[1]                 	 
@@ -2451,119 +1347,23 @@ SELECT key, value FROM (SELECT concat(key, "a") AS key, value, count(*)  FROM sr
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@test_table@part=1
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE []
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table PARTITION(part=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)b.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)b.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SCRIPT []
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: DESCRIBE FORMATTED test_table PARTITION (part = '1')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_table
 POSTHOOK: query: DESCRIBE FORMATTED test_table PARTITION (part = '1')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE []
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)b.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)b.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SCRIPT []
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).key EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Input: default@test_table
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	None                
-value               	string              	None                
+key                 	string              	                    
+value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-part                	string              	None                
+part                	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[1]                 	 

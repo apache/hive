@@ -27,19 +27,23 @@ import org.apache.hadoop.hive.common.type.Decimal128;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.BooleanWritable;
+import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.Writable;
 
 /**
  * This class is used as a static factory for VectorColumnAssign.
@@ -87,7 +91,7 @@ public class VectorColumnAssignFactory {
     }
 
     protected void assignNull(int index) {
-      VectorizedBatchUtil.SetNullColIsNullValue(outCol, index);
+      VectorizedBatchUtil.setNullColIsNullValue(outCol, index);
     }
 
     @Override
@@ -213,10 +217,31 @@ public class VectorColumnAssignFactory {
   public static VectorColumnAssign buildObjectAssign(VectorizedRowBatch outputBatch,
       int outColIndex, ObjectInspector objInspector) throws HiveException {
     PrimitiveObjectInspector poi = (PrimitiveObjectInspector) objInspector;
+    return buildObjectAssign(outputBatch, outColIndex, poi.getPrimitiveCategory());
+  }
+
+  public static VectorColumnAssign buildObjectAssign(VectorizedRowBatch outputBatch,
+      int outColIndex, PrimitiveCategory category) throws HiveException {
     VectorColumnAssign outVCA = null;
     ColumnVector destCol = outputBatch.cols[outColIndex];
-    if (destCol instanceof LongColumnVector) {
-      switch(poi.getPrimitiveCategory()) {
+    if (destCol == null) {
+      switch(category) {
+      case VOID:
+        outVCA = new VectorLongColumnAssign() {
+          // This is a dummy assigner
+          @Override
+          public void assignObjectValue(Object val, int destIndex) throws HiveException {
+            // This is no-op, there is no column to assign to and val is expected to be null
+            assert (val == null);
+          }
+        };
+        break;
+      default:
+        throw new HiveException("Incompatible (null) vector column and primitive category " +
+            category);
+      }
+    } else if (destCol instanceof LongColumnVector) {
+      switch(category) {
       case BOOLEAN:
         outVCA = new VectorLongColumnAssign() {
           @Override
@@ -302,13 +327,27 @@ public class VectorColumnAssignFactory {
           }
         }.init(outputBatch, (LongColumnVector) destCol);
         break;
+      case DATE:
+        outVCA = new VectorLongColumnAssign() {
+          @Override
+          public void assignObjectValue(Object val, int destIndex) throws HiveException {
+            if (val == null) {
+              assignNull(destIndex);
+            }
+            else {
+              DateWritable bw = (DateWritable) val;
+              assignLong(bw.getDays(), destIndex);
+            }
+          }
+        }.init(outputBatch, (LongColumnVector) destCol);
+        break;
       default:
         throw new HiveException("Incompatible Long vector column and primitive category " +
-            poi.getPrimitiveCategory());
+            category);
       }
     }
     else if (destCol instanceof DoubleColumnVector) {
-      switch(poi.getPrimitiveCategory()) {
+      switch(category) {
       case DOUBLE:
         outVCA = new VectorDoubleColumnAssign() {
           @Override
@@ -339,11 +378,26 @@ public class VectorColumnAssignFactory {
         break;
       default:
         throw new HiveException("Incompatible Double vector column and primitive category " +
-            poi.getPrimitiveCategory());
+            category);
       }
     }
     else if (destCol instanceof BytesColumnVector) {
-      switch(poi.getPrimitiveCategory()) {
+      switch(category) {
+      case BINARY:
+        outVCA = new VectorBytesColumnAssign() {
+          @Override
+          public void assignObjectValue(Object val, int destIndex) throws HiveException {
+            if (val == null) {
+              assignNull(destIndex);
+            }
+            else {
+              BytesWritable bw = (BytesWritable) val;
+              byte[] bytes = bw.getBytes();
+              assignBytes(bytes, 0, bytes.length, destIndex);
+            }
+          }
+        }.init(outputBatch, (BytesColumnVector) destCol);
+        break;
       case STRING:
         outVCA = new VectorBytesColumnAssign() {
           @Override
@@ -361,11 +415,11 @@ public class VectorColumnAssignFactory {
         break;
       default:
         throw new HiveException("Incompatible Bytes vector column and primitive category " +
-            poi.getPrimitiveCategory());
+            category);
       }
     }
     else if (destCol instanceof DecimalColumnVector) {
-      switch(poi.getPrimitiveCategory()) {
+      switch(category) {
       case DECIMAL:
         outVCA = new VectorDecimalColumnAssign() {
           @Override
@@ -382,7 +436,7 @@ public class VectorColumnAssignFactory {
           break;
         default:
           throw new HiveException("Incompatible Decimal vector column and primitive category " +
-              poi.getPrimitiveCategory());
+              category);
         }
     }
     else {
@@ -412,6 +466,41 @@ public class VectorColumnAssignFactory {
       StructField columnRef = soi.getStructFieldRef(columnName);
       ObjectInspector valueOI = columnRef.getFieldObjectInspector();
       vcas[i] = buildObjectAssign(outputBatch, columnIndex, valueOI);
+    }
+    return vcas;
+  }
+
+  public static VectorColumnAssign[] buildAssigners(VectorizedRowBatch outputBatch,
+      Writable[] writables) throws HiveException {
+    VectorColumnAssign[] vcas = new VectorColumnAssign[outputBatch.numCols];
+    for (int i = 0; i < writables.length; ++i) {
+      if (writables[i] == null) {
+        assert(outputBatch.cols[i] == null);
+        vcas[i] = buildObjectAssign(outputBatch, i, PrimitiveCategory.VOID);
+      } else if (writables[i] instanceof ByteWritable) {
+        vcas[i] = buildObjectAssign(outputBatch, i, PrimitiveCategory.BYTE);
+      } else if (writables[i] instanceof ShortWritable) {
+        vcas[i] = buildObjectAssign(outputBatch, i, PrimitiveCategory.SHORT);
+      } else if (writables[i] instanceof IntWritable) {
+        vcas[i] = buildObjectAssign(outputBatch, i, PrimitiveCategory.INT);
+      } else if (writables[i] instanceof LongWritable) {
+        vcas[i] = buildObjectAssign(outputBatch, i, PrimitiveCategory.LONG);
+      } else if (writables[i] instanceof FloatWritable) {
+        vcas[i] = buildObjectAssign(outputBatch, i, PrimitiveCategory.FLOAT);
+      } else if (writables[i] instanceof DoubleWritable) {
+        vcas[i] = buildObjectAssign(outputBatch, i, PrimitiveCategory.DOUBLE);
+      } else if (writables[i] instanceof Text) {
+        vcas[i] = buildObjectAssign(outputBatch, i, PrimitiveCategory.STRING);
+      } else if (writables[i] instanceof BytesWritable) {
+        vcas[i] = buildObjectAssign(outputBatch, i, PrimitiveCategory.BINARY);
+      } else if (writables[i] instanceof TimestampWritable) {
+        vcas[i] = buildObjectAssign(outputBatch, i, PrimitiveCategory.TIMESTAMP);
+      } else if (writables[i] instanceof BooleanWritable) {
+        vcas[i] = buildObjectAssign(outputBatch, i, PrimitiveCategory.BOOLEAN);
+      } else {
+        throw new HiveException("Unimplemented vector assigner for writable type " +
+           writables[i].getClass());
+      }
     }
     return vcas;
   }

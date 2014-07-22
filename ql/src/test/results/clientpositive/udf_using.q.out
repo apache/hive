@@ -1,11 +1,15 @@
 #### A masked pattern was here ####
 PREHOOK: type: CREATEFUNCTION
+PREHOOK: Output: database:default
 #### A masked pattern was here ####
 POSTHOOK: type: CREATEFUNCTION
+POSTHOOK: Output: database:default
 PREHOOK: query: create table udf_using (c1 string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table udf_using (c1 string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@udf_using
 PREHOOK: query: insert overwrite table udf_using select 'Joe' from src limit 2
 PREHOOK: type: QUERY
@@ -24,7 +28,6 @@ POSTHOOK: query: select c1, lookup(c1) from udf_using
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@udf_using
 #### A masked pattern was here ####
-POSTHOOK: Lineage: udf_using.c1 SIMPLE []
 Joe	2
 Joe	2
 PREHOOK: query: drop table udf_using
@@ -35,10 +38,10 @@ POSTHOOK: query: drop table udf_using
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@udf_using
 POSTHOOK: Output: default@udf_using
-POSTHOOK: Lineage: udf_using.c1 SIMPLE []
 PREHOOK: query: drop function lookup
 PREHOOK: type: DROPFUNCTION
+PREHOOK: Output: database:default
 POSTHOOK: query: drop function lookup
 POSTHOOK: type: DROPFUNCTION
-POSTHOOK: Lineage: udf_using.c1 SIMPLE []
+POSTHOOK: Output: database:default
 #### A masked pattern was here ####

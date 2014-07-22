@@ -51,18 +51,24 @@ public class VectorUDAFSumDecimal extends VectorAggregateExpression {
       transient private Decimal128 sum = new Decimal128();
       transient private boolean isNull;
 
-      public void sumValue(Decimal128 value) {
+      public void sumValue(Decimal128 value, short scale) {
         if (isNull) {
-          sum.update(value);
+          sum.update(value, scale);
           isNull = false;
         } else {
-          sum.addDestructive(value, value.getScale());
+          sum.addDestructive(value, scale);
         }
       }
 
       @Override
       public int getVariableSize() {
         throw new UnsupportedOperationException();
+      }
+
+      @Override
+      public void reset() {
+        isNull = true;
+        sum.zeroClear();
       }
     }
 
@@ -110,16 +116,19 @@ public class VectorUDAFSumDecimal extends VectorAggregateExpression {
         if (inputVector.isRepeating) {
           iterateNoNullsRepeatingWithAggregationSelection(
             aggregationBufferSets, aggregateIndex,
-            vector[0], batchSize);
+            vector[0], inputVector.scale,
+            batchSize);
         } else {
           if (batch.selectedInUse) {
             iterateNoNullsSelectionWithAggregationSelection(
               aggregationBufferSets, aggregateIndex,
-              vector, batch.selected, batchSize);
+              vector, inputVector.scale,
+              batch.selected, batchSize);
           } else {
             iterateNoNullsWithAggregationSelection(
               aggregationBufferSets, aggregateIndex,
-              vector, batchSize);
+              vector, inputVector.scale,
+              batchSize);
           }
         }
       } else {
@@ -127,21 +136,25 @@ public class VectorUDAFSumDecimal extends VectorAggregateExpression {
           if (batch.selectedInUse) {
             iterateHasNullsRepeatingSelectionWithAggregationSelection(
               aggregationBufferSets, aggregateIndex,
-              vector[0], batchSize, batch.selected, inputVector.isNull);
+              vector[0], inputVector.scale,
+              batchSize, batch.selected, inputVector.isNull);
           } else {
             iterateHasNullsRepeatingWithAggregationSelection(
               aggregationBufferSets, aggregateIndex,
-              vector[0], batchSize, inputVector.isNull);
+              vector[0], inputVector.scale,
+              batchSize, inputVector.isNull);
           }
         } else {
           if (batch.selectedInUse) {
             iterateHasNullsSelectionWithAggregationSelection(
               aggregationBufferSets, aggregateIndex,
-              vector, batchSize, batch.selected, inputVector.isNull);
+              vector, inputVector.scale,
+              batchSize, batch.selected, inputVector.isNull);
           } else {
             iterateHasNullsWithAggregationSelection(
               aggregationBufferSets, aggregateIndex,
-              vector, batchSize, inputVector.isNull);
+              vector,inputVector.scale,
+              batchSize, inputVector.isNull);
           }
         }
       }
@@ -151,6 +164,7 @@ public class VectorUDAFSumDecimal extends VectorAggregateExpression {
       VectorAggregationBufferRow[] aggregationBufferSets,
       int aggregateIndex,
       Decimal128 value,
+      short scale,
       int batchSize) {
 
       for (int i=0; i < batchSize; ++i) {
@@ -158,7 +172,7 @@ public class VectorUDAFSumDecimal extends VectorAggregateExpression {
           aggregationBufferSets,
           aggregateIndex,
           i);
-        myagg.sumValue(value);
+        myagg.sumValue(value, scale);
       }
     }
 
@@ -166,6 +180,7 @@ public class VectorUDAFSumDecimal extends VectorAggregateExpression {
       VectorAggregationBufferRow[] aggregationBufferSets,
       int aggregateIndex,
       Decimal128[] values,
+      short scale,
       int[] selection,
       int batchSize) {
 
@@ -174,7 +189,7 @@ public class VectorUDAFSumDecimal extends VectorAggregateExpression {
           aggregationBufferSets,
           aggregateIndex,
           i);
-        myagg.sumValue(values[selection[i]]);
+        myagg.sumValue(values[selection[i]], scale);
       }
     }
 
@@ -182,13 +197,14 @@ public class VectorUDAFSumDecimal extends VectorAggregateExpression {
       VectorAggregationBufferRow[] aggregationBufferSets,
       int aggregateIndex,
       Decimal128[] values,
+      short scale,
       int batchSize) {
       for (int i=0; i < batchSize; ++i) {
         Aggregation myagg = getCurrentAggregationBuffer(
           aggregationBufferSets,
           aggregateIndex,
           i);
-        myagg.sumValue(values[i]);
+        myagg.sumValue(values[i], scale);
       }
     }
 
@@ -196,6 +212,7 @@ public class VectorUDAFSumDecimal extends VectorAggregateExpression {
       VectorAggregationBufferRow[] aggregationBufferSets,
       int aggregateIndex,
       Decimal128 value,
+      short scale,
       int batchSize,
       int[] selection,
       boolean[] isNull) {
@@ -206,7 +223,7 @@ public class VectorUDAFSumDecimal extends VectorAggregateExpression {
             aggregationBufferSets,
             aggregateIndex,
             i);
-          myagg.sumValue(value);
+          myagg.sumValue(value, scale);
         }
       }
 
@@ -216,6 +233,7 @@ public class VectorUDAFSumDecimal extends VectorAggregateExpression {
       VectorAggregationBufferRow[] aggregationBufferSets,
       int aggregateIndex,
       Decimal128 value,
+      short scale,
       int batchSize,
       boolean[] isNull) {
 
@@ -225,7 +243,7 @@ public class VectorUDAFSumDecimal extends VectorAggregateExpression {
             aggregationBufferSets,
             aggregateIndex,
             i);
-          myagg.sumValue(value);
+          myagg.sumValue(value, scale);
         }
       }
     }
@@ -234,6 +252,7 @@ public class VectorUDAFSumDecimal extends VectorAggregateExpression {
       VectorAggregationBufferRow[] aggregationBufferSets,
       int aggregateIndex,
       Decimal128[] values,
+      short scale,
       int batchSize,
       int[] selection,
       boolean[] isNull) {
@@ -245,7 +264,7 @@ public class VectorUDAFSumDecimal extends VectorAggregateExpression {
             aggregationBufferSets,
             aggregateIndex,
             j);
-          myagg.sumValue(values[i]);
+          myagg.sumValue(values[i], scale);
         }
       }
    }
@@ -254,6 +273,7 @@ public class VectorUDAFSumDecimal extends VectorAggregateExpression {
       VectorAggregationBufferRow[] aggregationBufferSets,
       int aggregateIndex,
       Decimal128[] values,
+      short scale,
       int batchSize,
       boolean[] isNull) {
 
@@ -263,7 +283,7 @@ public class VectorUDAFSumDecimal extends VectorAggregateExpression {
             aggregationBufferSets,
             aggregateIndex,
             i);
-          myagg.sumValue(values[i]);
+          myagg.sumValue(values[i], scale);
         }
       }
    }
@@ -289,35 +309,36 @@ public class VectorUDAFSumDecimal extends VectorAggregateExpression {
       Decimal128[] vector = inputVector.vector;
 
       if (inputVector.isRepeating) {
-        if (inputVector.noNulls) {
-        if (myagg.isNull) {
-          myagg.isNull = false;
-          myagg.sum.zeroClear();
+        if ((inputVector.noNulls) || !inputVector.isNull[0]) {
+          if (myagg.isNull) {
+            myagg.isNull = false;
+            myagg.sum.zeroClear();
+          }
+          scratchDecimal.update(batchSize);
+          scratchDecimal.multiplyDestructive(vector[0], inputVector.scale);
+          myagg.sum.addDestructive(scratchDecimal, inputVector.scale);
         }
-        scratchDecimal.update(batchSize);
-        scratchDecimal.multiplyDestructive(vector[0], vector[0].getScale());
-        myagg.sum.update(scratchDecimal);
-      }
         return;
       }
 
       if (!batch.selectedInUse && inputVector.noNulls) {
-        iterateNoSelectionNoNulls(myagg, vector, batchSize);
+        iterateNoSelectionNoNulls(myagg, vector, inputVector.scale, batchSize);
       }
       else if (!batch.selectedInUse) {
-        iterateNoSelectionHasNulls(myagg, vector, batchSize, inputVector.isNull);
+        iterateNoSelectionHasNulls(myagg, vector, inputVector.scale, batchSize, inputVector.isNull);
       }
       else if (inputVector.noNulls){
-        iterateSelectionNoNulls(myagg, vector, batchSize, batch.selected);
+        iterateSelectionNoNulls(myagg, vector, inputVector.scale, batchSize, batch.selected);
       }
       else {
-        iterateSelectionHasNulls(myagg, vector, batchSize, inputVector.isNull, batch.selected);
+        iterateSelectionHasNulls(myagg, vector, inputVector.scale, batchSize, inputVector.isNull, batch.selected);
       }
     }
 
     private void iterateSelectionHasNulls(
         Aggregation myagg,
         Decimal128[] vector,
+        short scale,
         int batchSize,
         boolean[] isNull,
         int[] selected) {
@@ -330,7 +351,7 @@ public class VectorUDAFSumDecimal extends VectorAggregateExpression {
             myagg.isNull = false;
             myagg.sum.zeroClear();
           }
-          myagg.sum.addDestructive(value, value.getScale());
+          myagg.sum.addDestructive(value, scale);
         }
       }
     }
@@ -338,6 +359,7 @@ public class VectorUDAFSumDecimal extends VectorAggregateExpression {
     private void iterateSelectionNoNulls(
         Aggregation myagg,
         Decimal128[] vector,
+        short scale,
         int batchSize,
         int[] selected) {
 
@@ -348,13 +370,14 @@ public class VectorUDAFSumDecimal extends VectorAggregateExpression {
 
       for (int i=0; i< batchSize; ++i) {
         Decimal128 value = vector[selected[i]];
-        myagg.sum.addDestructive(value, value.getScale());
+        myagg.sum.addDestructive(value, scale);
       }
     }
 
     private void iterateNoSelectionHasNulls(
         Aggregation myagg,
         Decimal128[] vector,
+        short scale,
         int batchSize,
         boolean[] isNull) {
 
@@ -365,7 +388,7 @@ public class VectorUDAFSumDecimal extends VectorAggregateExpression {
             myagg.sum.zeroClear();
             myagg.isNull = false;
           }
-          myagg.sum.addDestructive(value, value.getScale());
+          myagg.sum.addDestructive(value, scale);
         }
       }
     }
@@ -373,6 +396,7 @@ public class VectorUDAFSumDecimal extends VectorAggregateExpression {
     private void iterateNoSelectionNoNulls(
         Aggregation myagg,
         Decimal128[] vector,
+        short scale,
         int batchSize) {
       if (myagg.isNull) {
         myagg.sum.zeroClear();
@@ -381,7 +405,7 @@ public class VectorUDAFSumDecimal extends VectorAggregateExpression {
 
       for (int i=0;i<batchSize;++i) {
         Decimal128 value = vector[i];
-        myagg.sum.addDestructive(value, value.getScale());
+        myagg.sum.addDestructive(value, scale);
       }
     }
 
@@ -393,7 +417,7 @@ public class VectorUDAFSumDecimal extends VectorAggregateExpression {
     @Override
     public void reset(AggregationBuffer agg) throws HiveException {
       Aggregation myAgg = (Aggregation) agg;
-      myAgg.isNull = true;
+      myAgg.reset();
     }
 
     @Override

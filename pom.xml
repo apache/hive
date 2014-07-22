@@ -14,10 +14,14 @@
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-
+  <parent>
+    <groupId>org.apache</groupId>
+    <artifactId>apache</artifactId>
+    <version>14</version>
+  </parent>
   <groupId>org.apache.hive</groupId>
   <artifactId>hive</artifactId>
-  <version>0.13.0-SNAPSHOT</version>
+  <version>0.14.0-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Hive</name>
@@ -47,22 +51,26 @@
   </modules>
 
   <properties>
-    <hive.version.shortname>0.13.0</hive.version.shortname>
+    <hive.version.shortname>0.14.0</hive.version.shortname>
 
     <!-- Build Properties -->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.useIncrementalCompilation>false</maven.compiler.useIncrementalCompilation>
-    <maven.repo.local>${user.home}/.m2/repository</maven.repo.local>
+    <maven.repo.local>${settings.localRepository}</maven.repo.local>
     <hive.path.to.root>.</hive.path.to.root>
+    <hive.jdbc.driver.classifier>standalone</hive.jdbc.driver.classifier>
 
     <!-- Test Properties -->
+    <test.extra.path></test.extra.path>
+    <test.hive.hadoop.classpath>${maven.test.classpath}</test.hive.hadoop.classpath>
+    <test.log4j.scheme>file://</test.log4j.scheme>
     <test.tmp.dir>${project.build.directory}/tmp</test.tmp.dir>
+    <test.tmp.dir.uri>file://${test.tmp.dir}</test.tmp.dir.uri>
     <test.warehouse.dir>${project.build.directory}/warehouse</test.warehouse.dir>
     <test.warehouse.scheme>pfile://</test.warehouse.scheme>
 
     <!-- Plugin and Plugin Dependency Versions -->
     <ant.contrib.version>1.0b3</ant.contrib.version>
-    <build.helper.maven.plugin.version>1.8</build.helper.maven.plugin.version>
     <datanucleus.maven.plugin.version>3.3.0-release</datanucleus.maven.plugin.version>
     <maven.antrun.plugin.version>1.7</maven.antrun.plugin.version>
     <maven.assembly.plugin.version>2.3</maven.assembly.plugin.version>
@@ -71,9 +79,12 @@
     <maven.install.plugin.version>2.4</maven.install.plugin.version>
     <maven.jar.plugin.version>2.2</maven.jar.plugin.version>
     <maven.javadoc.plugin.version>2.4</maven.javadoc.plugin.version>
-    <maven.shade.plugin.version>2.1</maven.shade.plugin.version>
+    <maven.shade.plugin.version>2.2</maven.shade.plugin.version>
     <maven.surefire.plugin.version>2.16</maven.surefire.plugin.version>
     <maven.war.plugin.version>2.4</maven.war.plugin.version>
+    <maven.dependency.plugin.version>2.8</maven.dependency.plugin.version>
+    <maven.eclipse.plugin.version>2.9</maven.eclipse.plugin.version>
+    <maven.build-helper.plugin.version>1.8</maven.build-helper.plugin.version>
 
     <!-- Library Dependency Versions -->
     <activemq.version>5.5.0</activemq.version>
@@ -81,9 +92,9 @@
     <antlr.version>3.4</antlr.version>
     <avro.version>1.7.5</avro.version>
     <bonecp.version>0.8.0.RELEASE</bonecp.version>
-    <datanucleus-api-jdo.version>3.2.1</datanucleus-api-jdo.version>
-    <datanucleus-core.version>3.2.2</datanucleus-core.version>
-    <datanucleus-rdbms.version>3.2.1</datanucleus-rdbms.version>
+    <datanucleus-api-jdo.version>3.2.6</datanucleus-api-jdo.version>
+    <datanucleus-core.version>3.2.10</datanucleus-core.version>
+    <datanucleus-rdbms.version>3.2.9</datanucleus-rdbms.version>
     <commons-cli.version>1.2</commons-cli.version>
     <commons-codec.version>1.4</commons-codec.version>
     <commons-compress.version>1.4.1</commons-compress.version>
@@ -98,43 +109,42 @@
     <groovy.version>2.1.6</groovy.version>
     <hadoop-20.version>0.20.2</hadoop-20.version>
     <hadoop-20S.version>1.2.1</hadoop-20S.version>
-    <hadoop-23.version>2.3.0</hadoop-23.version>
+    <hadoop-23.version>2.4.0</hadoop-23.version>
+    <hadoop.bin.path>${basedir}/${hive.path.to.root}/testutils/hadoop</hadoop.bin.path>
     <hbase.hadoop1.version>0.96.0-hadoop1</hbase.hadoop1.version>
     <hbase.hadoop2.version>0.96.0-hadoop2</hbase.hadoop2.version>
     <!-- httpcomponents are not always in version sync -->
-    <httpcomponents.client.version>4.3.2</httpcomponents.client.version>
-    <httpcomponents.core.version>4.3.1</httpcomponents.core.version>
+    <httpcomponents.client.version>4.2.5</httpcomponents.client.version>
+    <httpcomponents.core.version>4.2.5</httpcomponents.core.version>
     <jackson.version>1.9.2</jackson.version>
     <javaewah.version>0.3.2</javaewah.version>
     <javolution.version>5.5.1</javolution.version>
     <jdo-api.version>3.0.1</jdo-api.version>
-    <!-- TODO figure out how to reconcile jetty versions -->
-    <jetty.version>6.1.26</jetty.version>
-    <jetty.webhcat.version>7.6.0.v20120127</jetty.webhcat.version>
-    <jetty.hive-service.version>7.6.0.v20120127</jetty.hive-service.version>
+    <jetty.version>7.6.0.v20120127</jetty.version>
     <jersey.version>1.14</jersey.version>
     <jline.version>0.9.94</jline.version>
     <jms.version>1.1</jms.version>
+    <jodd.version>3.5.2</jodd.version>
     <json.version>20090211</json.version>
     <junit.version>4.10</junit.version>
     <kryo.version>2.22</kryo.version>
     <libfb303.version>0.9.0</libfb303.version>
     <libthrift.version>0.9.0</libthrift.version>
     <log4j.version>1.2.16</log4j.version>
-    <mockito-all.version>1.8.2</mockito-all.version>
+    <mockito-all.version>1.9.5</mockito-all.version>
     <mina.version>2.0.0-M5</mina.version>
     <!--netty is not a direct dependency but due to a change
         in artifact name and given that zookeeper < 3.5
         requires netty < 3.6.0 we force hadoops version
       -->
     <netty.version>3.4.0.Final</netty.version>
-    <parquet.version>1.3.2</parquet.version>
+    <parquet.version>1.5.0</parquet.version>
     <pig.version>0.12.0</pig.version>
     <protobuf.version>2.5.0</protobuf.version>
     <stax.version>1.0.1</stax.version>
     <slf4j.version>1.7.5</slf4j.version>
     <ST4.version>4.0.4</ST4.version>
-    <tez.version>0.3.0-incubating</tez.version>
+    <tez.version>0.4.0-incubating</tez.version>
     <tempus-fugit.version>1.1</tempus-fugit.version>
     <snappy.version>0.2</snappy.version>
     <wadl-resourcedoc-doclet.version>1.4</wadl-resourcedoc-doclet.version>
@@ -142,6 +152,7 @@
     <xerces.version>2.9.1</xerces.version>
     <zookeeper.version>3.4.5</zookeeper.version>
     <jpam.version>1.1</jpam.version>
+    <felix.version>2.4.0</felix.version>
   </properties>
 
   <repositories>
@@ -254,6 +265,11 @@
         <groupId>com.sun.jersey.contribs</groupId>
         <artifactId>wadl-resourcedoc-doclet</artifactId>
         <version>${wadl-resourcedoc-doclet.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.sun.jersey</groupId>
+        <artifactId>jersey-servlet</artifactId>
+        <version>${jersey.version}</version>
       </dependency>
       <dependency>
         <groupId>commons-cli</groupId>
@@ -369,6 +385,7 @@
       <dependency>
         <groupId>org.apache.avro</groupId>
         <artifactId>avro-mapred</artifactId>
+        <classifier>hadoop2</classifier>
         <version>${avro.version}</version>
       </dependency>
       <dependency>
@@ -450,7 +467,7 @@
       <dependency>
         <groupId>org.eclipse.jetty.aggregate</groupId>
         <artifactId>jetty-all-server</artifactId>
-        <version>${jetty.webhcat.version}</version>
+        <version>${jetty.version}</version>
       </dependency>
       <dependency>
         <groupId>org.datanucleus</groupId>
@@ -481,16 +498,6 @@
         <groupId>org.mockito</groupId>
         <artifactId>mockito-all</artifactId>
         <version>${mockito-all.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.mortbay.jetty</groupId>
-        <artifactId>jetty</artifactId>
-        <version>${jetty.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.mortbay.jetty</groupId>
-        <artifactId>jetty-util</artifactId>
-        <version>${jetty.version}</version>
       </dependency>
       <dependency>
         <groupId>org.slf4j</groupId>
@@ -568,6 +575,17 @@
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-eclipse-plugin</artifactId>
+          <version>${maven.eclipse.plugin.version}</version>
+          <configuration>
+            <downloadJavadocs>true</downloadJavadocs>
+            <downloadSources>true</downloadSources>
+            <workspaceActiveCodeStyleProfileName>Hive</workspaceActiveCodeStyleProfileName>
+            <workspaceCodeStylesURL>${basedir}/dev-support/eclipse-styles.xml</workspaceCodeStylesURL>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-enforcer-plugin</artifactId>
           <version>${maven.enforcer.plugin.version}</version>
         </plugin>
@@ -604,11 +622,6 @@
           <version>${maven.war.plugin.version}</version>
         </plugin>
         <plugin>
-          <groupId>org.codehaus.mojo</groupId>
-          <artifactId>build-helper-maven-plugin</artifactId>
-          <version>${build.helper.maven.plugin.version}</version>
-        </plugin>
-        <plugin>
           <groupId>org.datanucleus</groupId>
           <artifactId>datanucleus-maven-plugin</artifactId>
           <version>${datanucleus.maven.plugin.version}</version>
@@ -619,6 +632,21 @@
               <version>${datanucleus-core.version}</version>
             </dependency>
           </dependencies>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.felix</groupId>
+          <artifactId>maven-bundle-plugin</artifactId>
+          <version>${felix.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-dependency-plugin</artifactId>
+          <version>${maven.dependency.plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>build-helper-maven-plugin</artifactId>
+          <version>${maven.build-helper.plugin.version}</version>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -701,7 +729,7 @@
           <redirectTestOutputToFile>true</redirectTestOutputToFile>
           <reuseForks>false</reuseForks>
           <failIfNoTests>false</failIfNoTests>
-          <argLine>-Xmx1024m -XX:MaxPermSize=256m</argLine>
+          <argLine>-Xmx2048m -XX:MaxPermSize=512m</argLine>
           <additionalClasspathElements>
             <additionalClasspathElement>${test.tmp.dir}/conf</additionalClasspathElement>
             <additionalClasspathElement>${basedir}/${hive.path.to.root}/conf</additionalClasspathElement>
@@ -710,7 +738,8 @@
             <TZ>US/Pacific</TZ>
             <LANG>en_US.UTF-8</LANG>
             <HADOOP_CLASSPATH>${test.tmp.dir}/conf:${basedir}/${hive.path.to.root}/conf</HADOOP_CLASSPATH>
-            <HIVE_HADOOP_TEST_CLASSPATH>${maven.test.classpath}</HIVE_HADOOP_TEST_CLASSPATH>
+            <HIVE_HADOOP_TEST_CLASSPATH>${test.hive.hadoop.classpath}</HIVE_HADOOP_TEST_CLASSPATH>
+            <PATH>${env.PATH}${test.extra.path}</PATH>
           </environmentVariables>
           <systemPropertyVariables>
             <build.dir>${project.build.directory}</build.dir>
@@ -719,7 +748,7 @@
             <!-- required by a few tests to find the derby jar -->
             <derby.version>${derby.version}</derby.version>
             <derby.stream.error.file>${test.tmp.dir}/derby.log</derby.stream.error.file>
-            <hadoop.bin.path>${basedir}/${hive.path.to.root}/testutils/hadoop</hadoop.bin.path>
+            <hadoop.bin.path>${hadoop.bin.path}</hadoop.bin.path>
             <!-- required by Hadoop's JobHistory -->
             <hadoop.log.dir>${test.tmp.dir}</hadoop.log.dir>
             <hive.root>${basedir}/${hive.path.to.root}/</hive.root>
@@ -727,7 +756,7 @@
             <!-- required for hive-exec jar path and tests which reference a jar -->
             <maven.local.repository>${maven.repo.local}</maven.local.repository>
             <mapred.job.tracker>local</mapred.job.tracker>
-            <log4j.configuration>file://${test.tmp.dir}/conf/hive-log4j.properties</log4j.configuration>
+            <log4j.configuration>${test.log4j.scheme}${test.tmp.dir}/conf/hive-log4j.properties</log4j.configuration>
             <log4j.debug>true</log4j.debug>
             <!-- don't diry up /tmp -->
             <java.io.tmpdir>${test.tmp.dir}</java.io.tmpdir>
@@ -737,11 +766,14 @@
             <test.data.files>${basedir}/${hive.path.to.root}/data/files</test.data.files>
             <test.data.dir>${basedir}/${hive.path.to.root}/data/files</test.data.dir>
             <test.tmp.dir>${test.tmp.dir}</test.tmp.dir>
+            <test.tmp.dir.uri>${test.tmp.dir.uri}</test.tmp.dir.uri>
             <test.dfs.mkdir>${test.dfs.mkdir}</test.dfs.mkdir>
             <test.output.overwrite>${test.output.overwrite}</test.output.overwrite>
             <test.warehouse.dir>${test.warehouse.scheme}${test.warehouse.dir}</test.warehouse.dir>
+            <java.net.preferIPv4Stack>true</java.net.preferIPv4Stack>
             <!-- EnforceReadOnlyTables hook and QTestUtil -->
             <test.src.tables>src,src1,srcbucket,srcbucket2,src_json,src_thrift,src_sequencefile,srcpart,alltypesorc</test.src.tables>
+            <java.security.krb5.conf>${test.tmp.dir}/conf/krb5.conf</java.security.krb5.conf>
           </systemPropertyVariables>
         </configuration>
       </plugin>
@@ -953,6 +985,11 @@
             <version>${hadoop-23.version}</version>
           </dependency>
           <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-minikdc</artifactId>
+            <version>${hadoop-23.version}</version>
+          </dependency>
+          <dependency>
             <groupId>org.apache.hbase</groupId>
             <artifactId>hbase-common</artifactId>
             <version>${hbase.hadoop2.version}</version>
@@ -972,8 +1009,57 @@
             <artifactId>hbase-server</artifactId>
             <version>${hbase.hadoop2.version}</version>
           </dependency>
+          <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-minicluster</artifactId>
+            <version>${hadoop-23.version}</version>
+          </dependency>
         </dependencies>
       </dependencyManagement>
+    </profile>
+    <profile>
+      <!-- Windows-specific settings to allow unit tests to work -->
+      <id>windows-test</id>
+      <activation>
+        <os>
+          <family>Windows</family>
+       </os>
+      </activation>
+      <build>
+        <plugins>
+          <!-- maven.test.classpath (used for HIVE_HADOOP_TEST_CLASSPATH) exceeds the 8K Windows -->
+          <!-- command shell limit which causes tests which call hadoop command to fail.         -->
+          <!-- Workaround is to copy all necessary jars to a single location to shorten the      -->
+          <!-- the length of the environment variable.                                           -->
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-dependency-plugin</artifactId>
+            <version>2.8</version>
+            <executions>
+              <execution>
+                <id>copy-dependencies</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>copy-dependencies</goal>
+                </goals>
+                <configuration>
+                  <outputDirectory>${project.build.directory}/deplibs/</outputDirectory>
+                  <overWriteReleases>false</overWriteReleases>
+                  <overWriteSnapshots>false</overWriteSnapshots>
+                  <overWriteIfNewer>true</overWriteIfNewer>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+      <properties>
+        <hadoop.bin.path>${basedir}/${hive.path.to.root}/testutils/hadoop.cmd</hadoop.bin.path>
+        <test.extra.path>;${env.HADOOP_HOME}/bin</test.extra.path>
+        <test.hive.hadoop.classpath>${project.build.directory}/deplibs/*</test.hive.hadoop.classpath>
+        <test.tmp.dir.uri>file:///${test.tmp.dir}</test.tmp.dir.uri>
+        <test.log4j.scheme>file:/</test.log4j.scheme>
+      </properties>
     </profile>
   </profiles>
 </project>

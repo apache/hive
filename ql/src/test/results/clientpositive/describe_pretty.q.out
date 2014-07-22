@@ -53,6 +53,7 @@ PREHOOK: query: -- There will be an extra tab at the end of each comment line in
 
 DESCRIBE PRETTY test_table
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_table
 POSTHOOK: query: -- There will be an extra tab at the end of each comment line in the output.
 -- This is because DESCRIBE <table_name> command separates the column, type and
 -- comment field using a \t. DESCRIBE PRETTY <table_name> uses spaces instead 
@@ -69,6 +70,7 @@ POSTHOOK: query: -- There will be an extra tab at the end of each comment line i
 
 DESCRIBE PRETTY test_table
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test_table
 col_name           data_type     comment	 	 
 	 	 
 col1               int           col1 one line comment	 	 
@@ -91,11 +93,13 @@ col6               string        This comment has a very long single word ABCDEF
                                  GHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvzxyz12	 	 
                                  3 which will not fit in a line by itself for	 	 
                                  small column widths.	 	 
-col7_nocomment     string        None	 	 
+col7_nocomment     string        	 	 
 PREHOOK: query: DESCRIBE PRETTY test_table
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_table
 POSTHOOK: query: DESCRIBE PRETTY test_table
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test_table
 col_name           data_type     comment	 	 
 	 	 
 col1               int           col1 one line comment	 	 
@@ -109,11 +113,13 @@ col5               string        col5 very long multi-line comment where each li
                                  into multiple lines.  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin in dolor nisl, sodales	 	 
                                  adipiscing tortor. Integer venenatis	 	 
 col6               string        This comment has a very long single word ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvzxyz123 which will not fit in a line by itself for small column widths.	 	 
-col7_nocomment     string        None	 	 
+col7_nocomment     string        	 	 
 PREHOOK: query: DESCRIBE PRETTY test_table
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_table
 POSTHOOK: query: DESCRIBE PRETTY test_table
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test_table
 col_name           data_type     comment	 	 
 	 	 
 col1               int           col1 one line	 	 
@@ -157,11 +163,13 @@ col6               string        This comment has
                                  fit in a line by	 	 
                                  itself for small	 	 
                                  column widths.	 	 
-col7_nocomment     string        None	 	 
+col7_nocomment     string        	 	 
 PREHOOK: query: DESCRIBE PRETTY test_table
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_table
 POSTHOOK: query: DESCRIBE PRETTY test_table
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test_table
 col_name           data_type     comment	 	 
 	 	 
 col1               int           col1 one line comment	 	 
@@ -192,7 +200,7 @@ col6               string        This comment has a very
                                  will not fit in a line by	 	 
                                  itself for small column	 	 
                                  widths.	 	 
-col7_nocomment     string        None	 	 
+col7_nocomment     string        	 	 
 PREHOOK: query: CREATE TABLE test_table_very_long_column_name(
     col1 INT COMMENT 'col1 one line comment',
     col2_abcdefghiklmnopqrstuvxyz STRING COMMENT 'col2
@@ -216,8 +224,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_table_very_long_column_name
 PREHOOK: query: DESCRIBE PRETTY test_table_very_long_column_name
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_table_very_long_column_name
 POSTHOOK: query: DESCRIBE PRETTY test_table_very_long_column_name
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test_table_very_long_column_name
 col_name                          data_type     comment	 	 
 	 	 
 col1                              int           col1 one line comment	 	 
@@ -232,8 +242,10 @@ col4                              string        col4 very long comment that is
                                                 lines	 	 
 PREHOOK: query: DESCRIBE PRETTY test_table_very_long_column_name
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_table_very_long_column_name
 POSTHOOK: query: DESCRIBE PRETTY test_table_very_long_column_name
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test_table_very_long_column_name
 col_name                          data_type     comment	 	 
 	 	 
 col1                              int           col1 one	 	 
@@ -297,8 +309,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_table_partitioned
 PREHOOK: query: DESCRIBE PRETTY test_table_partitioned
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_table_partitioned
 POSTHOOK: query: DESCRIBE PRETTY test_table_partitioned
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test_table_partitioned
 col_name           data_type     comment	 	 
 	 	 
 col1               int           col1 one line comment	 	 
@@ -329,10 +343,10 @@ col6               string        This comment has a very
                                  will not fit in a line by	 	 
                                  itself for small column	 	 
                                  widths.	 	 
-col7_nocomment     string        None	 	 
-ds                 string        None	 	 
+col7_nocomment     string        	 	 
+ds                 string        	 	 
 	 	 
 # Partition Information	 	 
 col_name           data_type     comment	 	 
 	 	 
-ds                 string        None	 	 
+ds                 string        	 	 

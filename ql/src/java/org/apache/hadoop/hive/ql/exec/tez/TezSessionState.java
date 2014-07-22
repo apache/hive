@@ -19,32 +19,45 @@ package org.apache.hadoop.hive.ql.exec.tez;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
 import javax.security.auth.login.LoginException;
 
+import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.yarn.api.records.LocalResource;
 import org.apache.tez.client.AMConfiguration;
+import org.apache.tez.client.PreWarmContext;
 import org.apache.tez.client.TezSession;
 import org.apache.tez.client.TezSessionConfiguration;
 import org.apache.tez.dag.api.SessionNotRunning;
 import org.apache.tez.dag.api.TezConfiguration;
 import org.apache.tez.dag.api.TezException;
-import org.apache.tez.client.PreWarmContext;
+import org.apache.tez.mapreduce.hadoop.MRHelpers;
 
 /**
  * Holds session state related to Tez
@@ -60,6 +73,12 @@ public class TezSessionState {
   private TezSession session;
   private String sessionId;
   private DagUtils utils;
+  private String queueName;
+  private boolean defaultQueue = false;
+  private String user;
+
+  private final Set<String> additionalFilesNotFromConf = new HashSet<String>();
+  private final Set<LocalResource> localizedResources = new HashSet<LocalResource>();
 
   private static List<TezSessionState> openSessions
     = Collections.synchronizedList(new LinkedList<TezSessionState>());
@@ -76,8 +95,9 @@ public class TezSessionState {
    * Constructor. We do not automatically connect, because we only want to
    * load tez classes when the user has tez installed.
    */
-  public TezSessionState() {
+  public TezSessionState(String sessionId) {
     this(DagUtils.getInstance());
+    this.sessionId = sessionId;
   }
 
   /**
@@ -95,6 +115,15 @@ public class TezSessionState {
     return openSessions;
   }
 
+  public static String makeSessionId() {
+    return UUID.randomUUID().toString();
+  }
+
+  public void open(HiveConf conf)
+      throws IOException, LoginException, URISyntaxException, TezException {
+    open(conf, null);
+  }
+
   /**
    * Creates a tez session. A session is tied to either a cli/hs2 session. You can
    * submit multiple DAGs against a session (as long as they are executed serially).
@@ -103,14 +132,26 @@ public class TezSessionState {
    * @throws LoginException
    * @throws TezException
    */
-  public void open(String sessionId, HiveConf conf)
-      throws IOException, LoginException, URISyntaxException, TezException {
-
-    this.sessionId = sessionId;
+  public void open(HiveConf conf, String[] additionalFiles)
+    throws IOException, LoginException, IllegalArgumentException, URISyntaxException, TezException {
     this.conf = conf;
+
+    UserGroupInformation ugi;
+    ugi = ShimLoader.getHadoopShims().getUGIForConf(conf);
+    user = ShimLoader.getHadoopShims().getShortUserName(ugi);
+    LOG.info("User of session id " + sessionId + " is " + user);
 
     // create the tez tmp dir
     tezScratchDir = createTezDir(sessionId);
+
+    additionalFilesNotFromConf.clear();
+    if (additionalFiles != null) {
+      for (String originalFile : additionalFiles) {
+        additionalFilesNotFromConf.add(originalFile);
+      }
+    }
+
+    refreshLocalResourcesFromConf(conf);
 
     // generate basic tez config
     TezConfiguration tezConfig = new TezConfiguration(conf);
@@ -119,22 +160,29 @@ public class TezSessionState {
 
     // unless already installed on all the cluster nodes, we'll have to
     // localize hive-exec.jar as well.
-    appJarLr = createHiveExecLocalResource();
+    appJarLr = createJarLocalResource(utils.getExecJarPathLocal());
 
     // configuration for the application master
     Map<String, LocalResource> commonLocalResources = new HashMap<String, LocalResource>();
     commonLocalResources.put(utils.getBaseName(appJarLr), appJarLr);
+    for (LocalResource lr : localizedResources) {
+      commonLocalResources.put(utils.getBaseName(lr), lr);
+    }
 
-    AMConfiguration amConfig = new AMConfiguration(null, commonLocalResources,
-         tezConfig, null);
+    // Create environment for AM.
+    Map<String, String> amEnv = new HashMap<String, String>();
+    MRHelpers.updateEnvironmentForMRAM(conf, amEnv);
+
+    AMConfiguration amConfig = new AMConfiguration(amEnv, commonLocalResources, tezConfig, null);
 
     // configuration for the session
     TezSessionConfiguration sessionConfig = new TezSessionConfiguration(amConfig, tezConfig);
 
     // and finally we're ready to create and start the session
-    session = new TezSession("HIVE-"+sessionId, sessionConfig);
+    session = new TezSession("HIVE-" + sessionId, sessionConfig);
 
-    LOG.info("Opening new Tez Session (id: "+sessionId+", scratch dir: "+tezScratchDir+")");
+    LOG.info("Opening new Tez Session (id: " + sessionId
+        + ", scratch dir: " + tezScratchDir + ")");
 
     session.start();
 
@@ -142,8 +190,7 @@ public class TezSessionState {
       int n = HiveConf.getIntVar(conf, ConfVars.HIVE_PREWARM_NUM_CONTAINERS);
       LOG.info("Prewarming " + n + " containers  (id: " + sessionId
           + ", scratch dir: " + tezScratchDir + ")");
-      PreWarmContext context = utils.createPreWarmContext(sessionConfig, n,
-          commonLocalResources);
+      PreWarmContext context = utils.createPreWarmContext(sessionConfig, n, commonLocalResources);
       try {
         session.preWarm(context);
       } catch (InterruptedException ie) {
@@ -159,6 +206,37 @@ public class TezSessionState {
     conf.set("mapreduce.tez.session.tokill-application-id", session.getApplicationId().toString());
 
     openSessions.add(this);
+  }
+
+  public void refreshLocalResourcesFromConf(HiveConf conf)
+    throws IOException, LoginException, IllegalArgumentException, URISyntaxException, TezException {
+
+    String dir = tezScratchDir.toString();
+
+    localizedResources.clear();
+
+    // these are local resources set through add file, jar, etc
+    List<LocalResource> lrs = utils.localizeTempFilesFromConf(dir, conf);
+    if (lrs != null) {
+      localizedResources.addAll(lrs);
+    }
+
+    // these are local resources that are set through the mr "tmpjars" property
+    List<LocalResource> handlerLr = utils.localizeTempFiles(dir, conf,
+      additionalFilesNotFromConf.toArray(new String[additionalFilesNotFromConf.size()]));
+
+    if (handlerLr != null) {
+      localizedResources.addAll(handlerLr);
+    }
+  }
+
+  public boolean hasResources(String[] localAmResources) {
+    if (localAmResources == null || localAmResources.length == 0) return true;
+    if (additionalFilesNotFromConf.isEmpty()) return false;
+    for (String s : localAmResources) {
+      if (!additionalFilesNotFromConf.contains(s)) return false;
+    }
+    return true;
   }
 
   /**
@@ -182,13 +260,20 @@ public class TezSessionState {
     }
 
     if (!keepTmpDir) {
-      FileSystem fs = tezScratchDir.getFileSystem(conf);
-      fs.delete(tezScratchDir, true);
+      cleanupScratchDir();
     }
     session = null;
     tezScratchDir = null;
     conf = null;
     appJarLr = null;
+    additionalFilesNotFromConf.clear();
+    localizedResources.clear();
+  }
+
+  public void cleanupScratchDir () throws IOException {
+    FileSystem fs = tezScratchDir.getFileSystem(conf);
+    fs.delete(tezScratchDir, true);
+    tezScratchDir = null;
   }
 
   public String getSessionId() {
@@ -212,15 +297,16 @@ public class TezSessionState {
    * be used with Tez. Assumes scratchDir exists.
    */
   private Path createTezDir(String sessionId)
-      throws IOException {
+    throws IOException {
 
     // tez needs its own scratch dir (per session)
-    Path tezDir = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCHDIR),
-        TEZ_DIR);
+    Path tezDir = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCHDIR), TEZ_DIR);
     tezDir = new Path(tezDir, sessionId);
     FileSystem fs = tezDir.getFileSystem(conf);
-    fs.mkdirs(tezDir);
-
+    FsPermission fsPermission = new FsPermission((short)00777);
+    Utilities.createDirsWithPermission(conf, tezDir, fsPermission, true);
+    // Make sure the path is normalized (we expect validation to pass since we just created it).
+    tezDir = DagUtils.validateTargetDir(tezDir, conf).getPath();
     // don't keep the directory around on non-clean exit
     fs.deleteOnExit(tezDir);
 
@@ -228,75 +314,79 @@ public class TezSessionState {
   }
 
   /**
-   * Returns a local resource representing the hive-exec jar. This resource will
-   * be used to execute the plan on the cluster.
+   * Returns a local resource representing a jar.
+   * This resource will be used to execute the plan on the cluster.
+   * @param localJarPath Local path to the jar to be localized.
    * @return LocalResource corresponding to the localized hive exec resource.
    * @throws IOException when any file system related call fails.
    * @throws LoginException when we are unable to determine the user.
    * @throws URISyntaxException when current jar location cannot be determined.
    */
-  private LocalResource createHiveExecLocalResource()
-      throws IOException, LoginException, URISyntaxException {
-    String hiveJarDir = conf.getVar(HiveConf.ConfVars.HIVE_JAR_DIRECTORY);
-    String currentVersionPathStr = utils.getExecJarPathLocal();
-    String currentJarName = utils.getResourceBaseName(currentVersionPathStr);
-    FileSystem fs = null;
-    Path jarPath = null;
-    FileStatus dirStatus = null;
+  private LocalResource createJarLocalResource(String localJarPath)
+      throws IOException, LoginException, IllegalArgumentException,
+      FileNotFoundException {
+    FileStatus destDirStatus = utils.getHiveJarDirectory(conf);
+    assert destDirStatus != null;
+    Path destDirPath = destDirStatus.getPath();
 
-    if (hiveJarDir != null) {
-      // check if it is a valid directory in HDFS
-      Path hiveJarDirPath = new Path(hiveJarDir);
-      fs = hiveJarDirPath.getFileSystem(conf);
+    Path localFile = new Path(localJarPath);
+    String sha = getSha(localFile);
 
-      if (!(fs instanceof DistributedFileSystem)) {
-        throw new IOException(ErrorMsg.INVALID_HDFS_URI.format(hiveJarDir));
-      }
+    String destFileName = localFile.getName();
 
-      try {
-        dirStatus = fs.getFileStatus(hiveJarDirPath);
-      } catch (FileNotFoundException fe) {
-        // do nothing
-      }
-      if ((dirStatus != null) && (dirStatus.isDir())) {
-        FileStatus[] listFileStatus = fs.listStatus(hiveJarDirPath);
-        for (FileStatus fstatus : listFileStatus) {
-          String jarName = utils.getResourceBaseName(fstatus.getPath().toString());
-          if (jarName.equals(currentJarName)) {
-            // we have found the jar we need.
-            jarPath = fstatus.getPath();
-            return utils.localizeResource(null, jarPath, conf);
-          }
-        }
+    // Now, try to find the file based on SHA and name. Currently we require exact name match.
+    // We could also allow cutting off versions and other stuff provided that SHA matches...
+    destFileName = FilenameUtils.removeExtension(destFileName) + "-" + sha
+        + FilenameUtils.EXTENSION_SEPARATOR + FilenameUtils.getExtension(destFileName);
 
-        // jar wasn't in the directory, copy the one in current use
-        if (jarPath == null) {
-          Path dest = new Path(hiveJarDir + "/" + currentJarName);
-          return utils.localizeResource(new Path(currentVersionPathStr), dest, conf);
-        }
-      }
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("The destination file name for [" + localJarPath + "] is " + destFileName);
     }
 
-    /*
-     * specified location does not exist or is not a directory
-     * try to push the jar to the hdfs location pointed by
-     * config variable HIVE_INSTALL_DIR. Path will be
-     * HIVE_INSTALL_DIR/{username}/.hiveJars/
-     */
-    if ((hiveJarDir == null) || (dirStatus == null) ||
-        ((dirStatus != null) && (!dirStatus.isDir()))) {
-      Path dest = utils.getDefaultDestDir(conf);
-      String destPathStr = dest.toString();
-      String jarPathStr = destPathStr + "/" + currentJarName;
-      dirStatus = fs.getFileStatus(dest);
-      if (dirStatus.isDir()) {
-        return utils.localizeResource(new Path(currentVersionPathStr), new Path(jarPathStr), conf);
-      } else {
-        throw new IOException(ErrorMsg.INVALID_DIR.format(dest.toString()));
+    // TODO: if this method is ever called on more than one jar, getting the dir and the
+    //       list need to be refactored out to be done only once.
+    Path destFile = new Path(destDirPath.toString() + "/" + destFileName);
+    return utils.localizeResource(localFile, destFile, conf);
+  }
+
+
+  private String getSha(Path localFile) throws IOException, IllegalArgumentException {
+    InputStream is = null;
+    try {
+      FileSystem localFs = FileSystem.getLocal(conf);
+      is = localFs.open(localFile);
+      return DigestUtils.sha256Hex(is);
+    } finally {
+      if (is != null) {
+        is.close();
       }
     }
+  }
+  public void setQueueName(String queueName) {
+    this.queueName = queueName;
+  }
 
-    // we couldn't find any valid locations. Throw exception
-    throw new IOException(ErrorMsg.NO_VALID_LOCATIONS.getMsg());
+  public String getQueueName() {
+    return queueName;
+  }
+
+  public void setDefault() {
+    defaultQueue  = true;
+  }
+
+  public boolean isDefault() {
+    return defaultQueue;
+  }
+
+  public HiveConf getConf() {
+    return conf;
+  }
+
+  public List<LocalResource> getLocalizedResources() {
+    return new ArrayList<LocalResource>(localizedResources);
+  }
+
+  public String getUser() {
+    return user;
   }
 }

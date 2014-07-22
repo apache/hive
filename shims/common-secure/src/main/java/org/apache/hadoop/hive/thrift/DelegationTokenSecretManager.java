@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.thrift;
 
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
 import java.io.IOException;
 
 import org.apache.hadoop.io.Text;
@@ -82,6 +84,17 @@ public class DelegationTokenSecretManager
     Token<DelegationTokenIdentifier> t = new Token<DelegationTokenIdentifier>(
         ident, this);
     return t.encodeToUrlString();
+  }
+
+  public String getUserFromToken(String tokenStr) throws IOException {
+    Token<DelegationTokenIdentifier> delegationToken = new Token<DelegationTokenIdentifier>();
+    delegationToken.decodeFromUrlString(tokenStr);
+
+    ByteArrayInputStream buf = new ByteArrayInputStream(delegationToken.getIdentifier());
+    DataInputStream in = new DataInputStream(buf);
+    DelegationTokenIdentifier id = createIdentifier();
+    id.readFields(in);
+    return id.getUser().getShortUserName();
   }
 }
 

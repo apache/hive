@@ -32,9 +32,6 @@ import java.util.List;
  */
 public class ReducerTimeStatsPerJob {
 
-  // stores the JobId of the job
-  private final String jobId;
-
   // Stores the temporal statistics in milliseconds for reducers
   // specific to a Job
   private final long minimumTime;
@@ -47,8 +44,7 @@ public class ReducerTimeStatsPerJob {
    * Computes the temporal run time statistics of the reducers
    * for a specific JobId.
    */
-  public ReducerTimeStatsPerJob(List<Integer> reducersRunTimes, String jobId) {
-    this.jobId = jobId;
+  public ReducerTimeStatsPerJob(List<Integer> reducersRunTimes) {
 
     // If no Run times present, then set -1, indicating no values
     if (!reducersRunTimes.isEmpty()) {
@@ -103,9 +99,4 @@ public class ReducerTimeStatsPerJob {
   public double getStandardDeviationTime() {
     return this.standardDeviationTime;
   }
-
-  public String getJobId() {
-    return this.jobId;
-  }
-
 }

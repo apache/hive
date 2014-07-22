@@ -17,16 +17,15 @@ PREHOOK: query: SHOW TBLPROPERTIES testTable
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES testTable
 POSTHOOK: type: SHOW_TBLPROPERTIES
-numFiles	0
-#### A masked pattern was here ####
+COLUMN_STATS_ACCURATE	false
+a	1
 c	3
 #### A masked pattern was here ####
-a	1
-COLUMN_STATS_ACCURATE	false
-#### A masked pattern was here ####
+numFiles	0
 numRows	-1
-totalSize	0
 rawDataSize	-1
+totalSize	0
+#### A masked pattern was here ####
 FAILED: SemanticException [Error 10215]: Please use the following syntax if not sure whether the property existed or not:
 ALTER TABLE tableName UNSET TBLPROPERTIES IF EXISTS (key1, key2, ...)
  The following property z does not exist in testtable

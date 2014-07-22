@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.google.common.collect.Iterators;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.io.Text;
@@ -215,41 +216,51 @@ public class UDFJson extends UDF {
     return json;
   }
 
-  List<Object> jsonList = new ArrayList<Object>();
+  private transient AddingList jsonList = new AddingList();
+
+  private static class AddingList extends ArrayList<Object> {
+    @Override
+    public Iterator<Object> iterator() {
+      return Iterators.forArray(toArray());
+    }
+    @Override
+    public void removeRange(int fromIndex, int toIndex) {
+      super.removeRange(fromIndex, toIndex);
+    }
+  };
 
   @SuppressWarnings("unchecked")
   private Object extract_json_withindex(Object json, ArrayList<String> indexList) {
 
     jsonList.clear();
     jsonList.add(json);
-    Iterator<String> itr = indexList.iterator();
-    while (itr.hasNext()) {
-      String index = itr.next();
-      List<Object> tmp_jsonList = new ArrayList<Object>();
+    for (String index : indexList) {
+      int targets = jsonList.size();
       if (index.equalsIgnoreCase("*")) {
-        for (int i = 0; i < jsonList.size(); i++) {
-          Object array = jsonList.get(i);
+        for (Object array : jsonList) {
           if (array instanceof List) {
             for (int j = 0; j < ((List<Object>)array).size(); j++) {
-              tmp_jsonList.add(((List<Object>)array).get(j));
+              jsonList.add(((List<Object>)array).get(j));
             }
           }
         }
-        jsonList = tmp_jsonList;
       } else {
-        for (int i = 0; i < (jsonList).size(); i++) {
-          Object array = jsonList.get(i);
+        for (Object array : jsonList) {
           int indexValue = Integer.parseInt(index);
           if (!(array instanceof List)) {
             continue;
           }
-          if (indexValue >= ((List<Object>)array).size()) {
-            return null;
+          List<Object> list = (List<Object>) array;
+          if (indexValue >= list.size()) {
+            continue;
           }
-          tmp_jsonList.add(((List<Object>)array).get(indexValue));
-          jsonList = tmp_jsonList;
+          jsonList.add(list.get(indexValue));
         }
       }
+      if (jsonList.size() == targets) {
+        return null;
+      }
+      jsonList.removeRange(0, targets);
     }
     if (jsonList.isEmpty()) {
       return null;

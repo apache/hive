@@ -756,8 +756,7 @@ public class MatchPath extends TableFunctionEvaluator
     private void fixResultExprString()
     {
       String r = resultExprString.trim();
-      String prefix = r.substring(0, 6);
-      if (!prefix.toLowerCase().equals("select"))
+      if (r.length()<6 || !r.substring(0, 6).toLowerCase().equals("select"))
       {
         r = "select " + r;
       }

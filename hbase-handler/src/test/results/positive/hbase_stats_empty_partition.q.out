@@ -23,19 +23,19 @@ POSTHOOK: Lineage: tmptable PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(n
 POSTHOOK: Lineage: tmptable PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: describe formatted tmptable partition (part = '1')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tmptable
 POSTHOOK: query: describe formatted tmptable partition (part = '1')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Lineage: tmptable PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tmptable PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Input: default@tmptable
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	None                
-value               	string              	None                
+key                 	string              	                    
+value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-part                	string              	None                
+part                	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[1]                 	 

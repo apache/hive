@@ -4,7 +4,7 @@ POSTHOOK: query: EXPLAIN SELECT count(value) AS c FROM src GROUP BY key HAVING c
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -54,6 +54,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT count(value) AS c FROM src GROUP BY key HAVING c > 3
 PREHOOK: type: QUERY
@@ -79,7 +81,7 @@ POSTHOOK: query: EXPLAIN SELECT key, max(value) AS c FROM src GROUP BY key HAVIN
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -129,6 +131,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT key, max(value) AS c FROM src GROUP BY key HAVING key != 302
 PREHOOK: type: QUERY
@@ -452,7 +456,7 @@ POSTHOOK: query: EXPLAIN SELECT key FROM src GROUP BY key HAVING max(value) > "v
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -502,6 +506,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT key FROM src GROUP BY key HAVING max(value) > "val_255"
 PREHOOK: type: QUERY
@@ -716,7 +722,7 @@ POSTHOOK: query: EXPLAIN SELECT key FROM src where key > 300 GROUP BY key HAVING
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -769,6 +775,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT key FROM src where key > 300 GROUP BY key HAVING max(value) > "val_255"
 PREHOOK: type: QUERY
@@ -909,7 +917,7 @@ POSTHOOK: query: EXPLAIN SELECT key, max(value) FROM src GROUP BY key HAVING max
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -959,6 +967,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT key, max(value) FROM src GROUP BY key HAVING max(value) > "val_255"
 PREHOOK: type: QUERY

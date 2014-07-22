@@ -1,4 +1,5 @@
 PREHOOK: query: -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)	
+-- SORT_QUERY_RESULTS
 
 -- List bucketing query logic test case. We simulate the directory structure by DML here.
 -- Test condition: 
@@ -16,7 +17,9 @@ partitioned by (ds String, hr String)
 skewed by (key, value) on (('484','val_484'),('238','val_238')) 
 stored as DIRECTORIES
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)	
+-- SORT_QUERY_RESULTS
 
 -- List bucketing query logic test case. We simulate the directory structure by DML here.
 -- Test condition: 
@@ -34,6 +37,7 @@ partitioned by (ds String, hr String)
 skewed by (key, value) on (('484','val_484'),('238','val_238')) 
 stored as DIRECTORIES
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@fact_daily
 PREHOOK: query: insert overwrite table fact_daily partition (ds = '1', hr = '4')
 select key, value from src
@@ -49,20 +53,20 @@ POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=4).key SIMPLE [(src)src.FieldSch
 POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=4).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: describe formatted fact_daily PARTITION (ds = '1', hr='4')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@fact_daily
 POSTHOOK: query: describe formatted fact_daily PARTITION (ds = '1', hr='4')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=4).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=4).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Input: default@fact_daily
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	None                
-value               	string              	None                
+key                 	string              	                    
+value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-ds                  	string              	None                
-hr                  	string              	None                
+ds                  	string              	                    
+hr                  	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[1, 4]              	 
@@ -104,19 +108,15 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@fact_daily
 POSTHOOK: Input: default@fact_daily@ds=1/hr=4
 #### A masked pattern was here ####
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=4).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=4).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 500
 PREHOOK: query: -- pruner only pick up default directory
 -- explain plan shows which directory selected: Truncated Path -> Alias
-explain extended SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and value= 'val_484' ORDER BY key, value
+explain extended SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and value= 'val_484'
 PREHOOK: type: QUERY
 POSTHOOK: query: -- pruner only pick up default directory
 -- explain plan shows which directory selected: Truncated Path -> Alias
-explain extended SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and value= 'val_484' ORDER BY key, value
+explain extended SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and value= 'val_484'
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=4).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=4).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -150,18 +150,11 @@ TOK_QUERY
                TOK_TABLE_OR_COL
                   value
                'val_484'
-      TOK_ORDERBY
-         TOK_TABSORTCOLNAMEASC
-            TOK_TABLE_OR_COL
-               key
-         TOK_TABSORTCOLNAMEASC
-            TOK_TABLE_OR_COL
-               value
 
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -179,12 +172,27 @@ STAGE PLANS:
                 expressions: key (type: string), value (type: string)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                Reduce Output Operator
-                  key expressions: _col0 (type: string), _col1 (type: string)
-                  sort order: ++
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+#### A masked pattern was here ####
+                  NumFilesPerFileSink: 1
                   Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                  tag: -1
-                  value expressions: _col0 (type: string), _col1 (type: string)
+#### A masked pattern was here ####
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      properties:
+                        columns _col0,_col1
+                        columns.types string:string
+                        escape.delim \
+                        hive.serialization.extend.nesting.levels true
+                        serialization.format 1
+                        serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  TotalFiles: 1
+                  GatherStats: false
+                  MultiFileSpray: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -200,12 +208,14 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
+              columns.comments  
               columns.types string:string
 #### A masked pattern was here ####
               name default.fact_daily
               numFiles 3
               numRows 500
               partition_columns ds/hr
+              partition_columns.types string:string
               rawDataSize 5312
               serialization.ddl struct fact_daily { string key, string value}
               serialization.format 1
@@ -219,10 +229,12 @@ STAGE PLANS:
               properties:
                 bucket_count -1
                 columns key,value
+                columns.comments  
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.fact_daily
                 partition_columns ds/hr
+                partition_columns.types string:string
                 serialization.ddl struct fact_daily { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -242,12 +254,14 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
+              columns.comments  
               columns.types string:string
 #### A masked pattern was here ####
               name default.fact_daily
               numFiles 3
               numRows 500
               partition_columns ds/hr
+              partition_columns.types string:string
               rawDataSize 5312
               serialization.ddl struct fact_daily { string key, string value}
               serialization.format 1
@@ -261,10 +275,12 @@ STAGE PLANS:
               properties:
                 bucket_count -1
                 columns key,value
+                columns.comments  
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.fact_daily
                 partition_columns ds/hr
+                partition_columns.types string:string
                 serialization.ddl struct fact_daily { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -275,61 +291,34 @@ STAGE PLANS:
       Truncated Path -> Alias:
         /fact_daily/ds=1/hr=4/HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME/HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME [fact_daily]
         /fact_daily/ds=1/hr=4/key=484/value=val_484 [fact_daily]
-      Needs Tagging: false
-      Reduce Operator Tree:
-        Extract
-          Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            GlobalTableId: 0
-#### A masked pattern was here ####
-            NumFilesPerFileSink: 1
-            Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-#### A masked pattern was here ####
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                properties:
-                  columns _col0,_col1
-                  columns.types string:string
-                  escape.delim \
-                  hive.serialization.extend.nesting.levels true
-                  serialization.format 1
-                  serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            TotalFiles: 1
-            GatherStats: false
-            MultiFileSpray: false
 
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: -- List Bucketing Query
-SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and value= 'val_484' ORDER BY key, value
+SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and value= 'val_484'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@fact_daily
 PREHOOK: Input: default@fact_daily@ds=1/hr=4
 #### A masked pattern was here ####
 POSTHOOK: query: -- List Bucketing Query
-SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and value= 'val_484' ORDER BY key, value
+SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and value= 'val_484'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@fact_daily
 POSTHOOK: Input: default@fact_daily@ds=1/hr=4
 #### A masked pattern was here ####
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=4).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=4).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 484	val_484
 PREHOOK: query: -- pruner only pick up default directory
 -- explain plan shows which directory selected: Truncated Path -> Alias
-explain extended SELECT key FROM fact_daily WHERE ds='1' and hr='4' and key= '406' ORDER BY key
+explain extended SELECT key FROM fact_daily WHERE ds='1' and hr='4' and key= '406'
 PREHOOK: type: QUERY
 POSTHOOK: query: -- pruner only pick up default directory
 -- explain plan shows which directory selected: Truncated Path -> Alias
-explain extended SELECT key FROM fact_daily WHERE ds='1' and hr='4' and key= '406' ORDER BY key
+explain extended SELECT key FROM fact_daily WHERE ds='1' and hr='4' and key= '406'
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=4).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=4).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -360,15 +349,11 @@ TOK_QUERY
                TOK_TABLE_OR_COL
                   key
                '406'
-      TOK_ORDERBY
-         TOK_TABSORTCOLNAMEASC
-            TOK_TABLE_OR_COL
-               key
 
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -386,12 +371,27 @@ STAGE PLANS:
                 expressions: key (type: string)
                 outputColumnNames: _col0
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                Reduce Output Operator
-                  key expressions: _col0 (type: string)
-                  sort order: +
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+#### A masked pattern was here ####
+                  NumFilesPerFileSink: 1
                   Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                  tag: -1
-                  value expressions: _col0 (type: string)
+#### A masked pattern was here ####
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      properties:
+                        columns _col0
+                        columns.types string
+                        escape.delim \
+                        hive.serialization.extend.nesting.levels true
+                        serialization.format 1
+                        serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  TotalFiles: 1
+                  GatherStats: false
+                  MultiFileSpray: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -407,12 +407,14 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
+              columns.comments  
               columns.types string:string
 #### A masked pattern was here ####
               name default.fact_daily
               numFiles 3
               numRows 500
               partition_columns ds/hr
+              partition_columns.types string:string
               rawDataSize 5312
               serialization.ddl struct fact_daily { string key, string value}
               serialization.format 1
@@ -426,10 +428,12 @@ STAGE PLANS:
               properties:
                 bucket_count -1
                 columns key,value
+                columns.comments  
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.fact_daily
                 partition_columns ds/hr
+                partition_columns.types string:string
                 serialization.ddl struct fact_daily { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -439,64 +443,37 @@ STAGE PLANS:
             name: default.fact_daily
       Truncated Path -> Alias:
         /fact_daily/ds=1/hr=4/HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME/HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME [fact_daily]
-      Needs Tagging: false
-      Reduce Operator Tree:
-        Extract
-          Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            GlobalTableId: 0
-#### A masked pattern was here ####
-            NumFilesPerFileSink: 1
-            Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-#### A masked pattern was here ####
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                properties:
-                  columns _col0
-                  columns.types string
-                  escape.delim \
-                  hive.serialization.extend.nesting.levels true
-                  serialization.format 1
-                  serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            TotalFiles: 1
-            GatherStats: false
-            MultiFileSpray: false
 
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: -- List Bucketing Query
-SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and key= '406' ORDER BY key
+SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and key= '406'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@fact_daily
 PREHOOK: Input: default@fact_daily@ds=1/hr=4
 #### A masked pattern was here ####
 POSTHOOK: query: -- List Bucketing Query
-SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and key= '406' ORDER BY key
+SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and key= '406'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@fact_daily
 POSTHOOK: Input: default@fact_daily@ds=1/hr=4
 #### A masked pattern was here ####
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=4).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=4).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 406	val_406
 406	val_406
 406	val_406
 406	val_406
 PREHOOK: query: -- pruner only pick up skewed-value directory
 -- explain plan shows which directory selected: Truncated Path -> Alias
-explain extended SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and ( (key='484' and value ='val_484')  or (key='238' and value= 'val_238')) ORDER BY key, value
+explain extended SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and ( (key='484' and value ='val_484')  or (key='238' and value= 'val_238'))
 PREHOOK: type: QUERY
 POSTHOOK: query: -- pruner only pick up skewed-value directory
 -- explain plan shows which directory selected: Truncated Path -> Alias
-explain extended SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and ( (key='484' and value ='val_484')  or (key='238' and value= 'val_238')) ORDER BY key, value
+explain extended SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and ( (key='484' and value ='val_484')  or (key='238' and value= 'val_238'))
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=4).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=4).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -545,18 +522,11 @@ TOK_QUERY
                      TOK_TABLE_OR_COL
                         value
                      'val_238'
-      TOK_ORDERBY
-         TOK_TABSORTCOLNAMEASC
-            TOK_TABLE_OR_COL
-               key
-         TOK_TABSORTCOLNAMEASC
-            TOK_TABLE_OR_COL
-               value
 
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -574,12 +544,27 @@ STAGE PLANS:
                 expressions: key (type: string), value (type: string)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                Reduce Output Operator
-                  key expressions: _col0 (type: string), _col1 (type: string)
-                  sort order: ++
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+#### A masked pattern was here ####
+                  NumFilesPerFileSink: 1
                   Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                  tag: -1
-                  value expressions: _col0 (type: string), _col1 (type: string)
+#### A masked pattern was here ####
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      properties:
+                        columns _col0,_col1
+                        columns.types string:string
+                        escape.delim \
+                        hive.serialization.extend.nesting.levels true
+                        serialization.format 1
+                        serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  TotalFiles: 1
+                  GatherStats: false
+                  MultiFileSpray: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -595,12 +580,14 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
+              columns.comments  
               columns.types string:string
 #### A masked pattern was here ####
               name default.fact_daily
               numFiles 3
               numRows 500
               partition_columns ds/hr
+              partition_columns.types string:string
               rawDataSize 5312
               serialization.ddl struct fact_daily { string key, string value}
               serialization.format 1
@@ -614,10 +601,12 @@ STAGE PLANS:
               properties:
                 bucket_count -1
                 columns key,value
+                columns.comments  
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.fact_daily
                 partition_columns ds/hr
+                partition_columns.types string:string
                 serialization.ddl struct fact_daily { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -637,12 +626,14 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
+              columns.comments  
               columns.types string:string
 #### A masked pattern was here ####
               name default.fact_daily
               numFiles 3
               numRows 500
               partition_columns ds/hr
+              partition_columns.types string:string
               rawDataSize 5312
               serialization.ddl struct fact_daily { string key, string value}
               serialization.format 1
@@ -656,10 +647,12 @@ STAGE PLANS:
               properties:
                 bucket_count -1
                 columns key,value
+                columns.comments  
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.fact_daily
                 partition_columns ds/hr
+                partition_columns.types string:string
                 serialization.ddl struct fact_daily { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -670,50 +663,25 @@ STAGE PLANS:
       Truncated Path -> Alias:
         /fact_daily/ds=1/hr=4/key=238/value=val_238 [fact_daily]
         /fact_daily/ds=1/hr=4/key=484/value=val_484 [fact_daily]
-      Needs Tagging: false
-      Reduce Operator Tree:
-        Extract
-          Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            GlobalTableId: 0
-#### A masked pattern was here ####
-            NumFilesPerFileSink: 1
-            Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-#### A masked pattern was here ####
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                properties:
-                  columns _col0,_col1
-                  columns.types string:string
-                  escape.delim \
-                  hive.serialization.extend.nesting.levels true
-                  serialization.format 1
-                  serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            TotalFiles: 1
-            GatherStats: false
-            MultiFileSpray: false
 
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: -- List Bucketing Query
-SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and ( (key='484' and value ='val_484')  or (key='238' and value= 'val_238')) ORDER BY key, value
+SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and ( (key='484' and value ='val_484')  or (key='238' and value= 'val_238'))
 PREHOOK: type: QUERY
 PREHOOK: Input: default@fact_daily
 PREHOOK: Input: default@fact_daily@ds=1/hr=4
 #### A masked pattern was here ####
 POSTHOOK: query: -- List Bucketing Query
-SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and ( (key='484' and value ='val_484')  or (key='238' and value= 'val_238')) ORDER BY key, value
+SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and ( (key='484' and value ='val_484')  or (key='238' and value= 'val_238'))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@fact_daily
 POSTHOOK: Input: default@fact_daily@ds=1/hr=4
 #### A masked pattern was here ####
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=4).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=4).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 238	val_238
 238	val_238
 484	val_484
@@ -727,5 +695,3 @@ drop table fact_daily
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@fact_daily
 POSTHOOK: Output: default@fact_daily
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=4).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=4).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]

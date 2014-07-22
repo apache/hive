@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
@@ -138,7 +139,7 @@ public class SkewJoinHandler {
       try {
         SerDe serializer = (SerDe) ReflectionUtils.newInstance(tblDesc.get(
             alias).getDeserializerClass(), null);
-        serializer.initialize(null, tblDesc.get(alias).getProperties());
+        SerDeUtils.initializeSerDe(serializer, null, tblDesc.get(alias).getProperties(), null);
         tblSerializers.put((byte) i, serializer);
       } catch (SerDeException e) {
         LOG.error("Skewjoin will be disabled due to " + e.getMessage(), e);
@@ -316,8 +317,6 @@ public class SkewJoinHandler {
     Path outPath = getOperatorOutputPath(specPath);
     Path finalPath = getOperatorFinalPath(specPath);
     FileSystem fs = outPath.getFileSystem(hconf);
-    // for local file system in Hadoop-0.17.2.1, it will throw IOException when
-    // file not existing.
     try {
       if (!fs.rename(outPath, finalPath)) {
         throw new IOException("Unable to rename output to: " + finalPath);
@@ -326,11 +325,6 @@ public class SkewJoinHandler {
       if (!ignoreNonExisting) {
         throw e;
       }
-    } catch (IOException e) {
-      if (!fs.exists(outPath) && ignoreNonExisting) {
-        return;
-      }
-      throw e;
     }
   }
 

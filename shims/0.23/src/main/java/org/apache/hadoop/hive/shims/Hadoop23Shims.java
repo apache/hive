@@ -17,43 +17,46 @@
  */
 package org.apache.hadoop.hive.shims;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.lang.Integer;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.HashMap;
 import java.net.URI;
-import java.nio.ByteBuffer;
-import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.BlockLocation;
 import org.apache.hadoop.fs.FSDataInputStream;
+import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.FsShell;
 import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.fs.ProxyFileSystem;
 import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.fs.Trash;
+import org.apache.hadoop.fs.permission.AclEntry;
+import org.apache.hadoop.fs.permission.AclEntryScope;
+import org.apache.hadoop.fs.permission.AclEntryType;
+import org.apache.hadoop.fs.permission.AclStatus;
+import org.apache.hadoop.fs.permission.FsAction;
+import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
-import org.apache.hadoop.hive.shims.HadoopShims.ByteBufferPoolShim;
-import org.apache.hadoop.hive.shims.HadoopShims.DirectCompressionType;
-import org.apache.hadoop.hive.shims.HadoopShims.DirectDecompressorShim;
-import org.apache.hadoop.hive.shims.HadoopShims.ZeroCopyReaderShim;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.compress.CompressionCodec;
 import org.apache.hadoop.mapred.ClusterStatus;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.MiniMRCluster;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.WebHCatJTShim23;
+import org.apache.hadoop.mapred.lib.TotalOrderPartitioner;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.hadoop.mapreduce.JobID;
@@ -64,12 +67,15 @@ import org.apache.hadoop.mapreduce.TaskID;
 import org.apache.hadoop.mapreduce.TaskType;
 import org.apache.hadoop.mapreduce.task.JobContextImpl;
 import org.apache.hadoop.mapreduce.task.TaskAttemptContextImpl;
-import org.apache.hadoop.mapreduce.util.HostUtil;
 import org.apache.hadoop.net.NetUtils;
-import org.apache.hadoop.util.Progressable;
-import org.apache.hadoop.mapred.lib.TotalOrderPartitioner;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.util.Progressable;
 import org.apache.tez.test.MiniTezCluster;
+
+import com.google.common.base.Joiner;
+import com.google.common.base.Objects;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
 
 /**
  * Implemention of shims against Hadoop 0.23.0.
@@ -101,11 +107,9 @@ public class Hadoop23Shims extends HadoopShimsSecure {
       LOG.warn("Can't fetch tasklog: TaskLogServlet is not supported in MR2 mode.");
       return null;
     } else {
-      // if the cluster is running in MR1 mode, using HostUtil to construct TaskLogURL
-      URL taskTrackerHttpURL = new URL(taskTrackerHttpAddress);
-      return HostUtil.getTaskLogUrl(taskTrackerHttpURL.getHost(),
-        Integer.toString(taskTrackerHttpURL.getPort()),
-        taskAttemptId);
+      // Was using Hadoop-internal API to get tasklogs, disable until  MAPREDUCE-5857 is fixed.
+      LOG.warn("Can't fetch tasklog: TaskLogServlet is not supported in MR1 mode.");
+      return null;
     }
   }
 
@@ -176,6 +180,10 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     return conf.get("yarn.resourcemanager.webapp.address");
   }
 
+  protected boolean isExtendedAclEnabled(Configuration conf) {
+    return Objects.equal(conf.get("dfs.namenode.acls.enabled"), "true");
+  }
+
   @Override
   public long getDefaultBlockSize(FileSystem fs, Path path) {
     return fs.getDefaultBlockSize(path);
@@ -210,6 +218,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   /**
    * Returns a shim to wrap MiniMrCluster
    */
+  @Override
   public MiniMrShim getMiniMrCluster(Configuration conf, int numberOfTaskTrackers,
                                      String nameNode, int numDir) throws IOException {
     return new MiniMrShim(conf, numberOfTaskTrackers, nameNode, numDir);
@@ -268,6 +277,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   /**
    * Returns a shim to wrap MiniMrTez
    */
+  @Override
   public MiniMrShim getMiniTezCluster(Configuration conf, int numberOfTaskTrackers,
                                      String nameNode, int numDir) throws IOException {
     return new MiniTezShim(conf, numberOfTaskTrackers, nameNode, numDir);
@@ -336,6 +346,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   // incompatibility between hadoop 1 and 2 wrt MiniDFSCluster and we
   // need to have two different shim classes even though they are
   // exactly the same.
+  @Override
   public HadoopShims.MiniDFSShim getMiniDfs(Configuration conf,
       int numDataNodes,
       boolean format,
@@ -355,10 +366,12 @@ public class Hadoop23Shims extends HadoopShimsSecure {
       this.cluster = cluster;
     }
 
+    @Override
     public FileSystem getFileSystem() throws IOException {
       return cluster.getFileSystem();
     }
 
+    @Override
     public void shutdown() {
       cluster.shutdown();
     }
@@ -447,6 +460,10 @@ public class Hadoop23Shims extends HadoopShimsSecure {
           return MRJobConfig.CACHE_FILES;
         case CACHE_SYMLINK:
           return MRJobConfig.CACHE_SYMLINK;
+        case CLASSPATH_ARCHIVES:
+          return MRJobConfig.CLASSPATH_ARCHIVES;
+        case CLASSPATH_FILES:
+          return MRJobConfig.CLASSPATH_FILES;
       }
 
       return "";
@@ -465,51 +482,19 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   }
 
   @Override
-  public Iterator<FileStatus> listLocatedStatus(final FileSystem fs,
-                                                final Path path,
-                                                final PathFilter filter
-  ) throws IOException {
-    return new Iterator<FileStatus>() {
-      private final RemoteIterator<LocatedFileStatus> inner =
-          fs.listLocatedStatus(path);
-      private FileStatus next;
-      {
-        next = null;
-        while (inner.hasNext() && next == null) {
-          next = inner.next();
-          if (filter != null && !filter.accept(next.getPath())) {
-            next = null;
-          }
-        }
+  public List<FileStatus> listLocatedStatus(final FileSystem fs,
+                                            final Path path,
+                                            final PathFilter filter
+                                           ) throws IOException {
+    RemoteIterator<LocatedFileStatus> itr = fs.listLocatedStatus(path);
+    List<FileStatus> result = new ArrayList<FileStatus>();
+    while(itr.hasNext()) {
+      FileStatus stat = itr.next();
+      if (filter == null || filter.accept(stat.getPath())) {
+        result.add(stat);
       }
-
-      @Override
-      public boolean hasNext() {
-        return next != null;
-      }
-
-      @Override
-      public FileStatus next() {
-        FileStatus result = next;
-        next = null;
-        try {
-          while (inner.hasNext() && next == null) {
-            next = inner.next();
-            if (filter != null && !filter.accept(next.getPath())) {
-              next = null;
-            }
-          }
-        } catch (IOException ioe) {
-          throw new IllegalArgumentException("Iterator exception", ioe);
-        }
-        return result;
-      }
-
-      @Override
-      public void remove() {
-        throw new IllegalArgumentException("Not supported");
-      }
-    };
+    }
+    return result;
   }
 
   @Override
@@ -520,6 +505,120 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     } else {
       return fs.getFileBlockLocations(status, 0, status.getLen());
     }
+  }
+
+  @Override
+  public void hflush(FSDataOutputStream stream) throws IOException {
+    stream.hflush();
+  }
+
+  @Override
+  public HdfsFileStatus getFullFileStatus(Configuration conf, FileSystem fs,
+      Path file) throws IOException {
+    FileStatus fileStatus = fs.getFileStatus(file);
+    AclStatus aclStatus = null;
+    if (isExtendedAclEnabled(conf)) {
+      aclStatus = fs.getAclStatus(file);
+    }
+    return new Hadoop23FileStatus(fileStatus, aclStatus);
+  }
+
+  @Override
+  public void setFullFileStatus(Configuration conf, HdfsFileStatus sourceStatus,
+    FileSystem fs, Path target) throws IOException {
+    String group = sourceStatus.getFileStatus().getGroup();
+    //use FsShell to change group, permissions, and extended ACL's recursively
+    try {
+      FsShell fsShell = new FsShell();
+      fsShell.setConf(conf);
+      run(fsShell, new String[]{"-chgrp", "-R", group, target.toString()});
+
+      if (isExtendedAclEnabled(conf)) {
+        AclStatus aclStatus = ((Hadoop23FileStatus) sourceStatus).getAclStatus();
+        List<AclEntry> aclEntries = aclStatus.getEntries();
+        removeBaseAclEntries(aclEntries);
+
+        //the ACL api's also expect the tradition user/group/other permission in the form of ACL
+        FsPermission sourcePerm = sourceStatus.getFileStatus().getPermission();
+        aclEntries.add(newAclEntry(AclEntryScope.ACCESS, AclEntryType.USER, sourcePerm.getUserAction()));
+        aclEntries.add(newAclEntry(AclEntryScope.ACCESS, AclEntryType.GROUP, sourcePerm.getGroupAction()));
+        aclEntries.add(newAclEntry(AclEntryScope.ACCESS, AclEntryType.OTHER, sourcePerm.getOtherAction()));
+
+        //construct the -setfacl command
+        String aclEntry = Joiner.on(",").join(aclStatus.getEntries());
+        run(fsShell, new String[]{"-setfacl", "-R", "--set", aclEntry, target.toString()});
+      } else {
+        String permission = Integer.toString(sourceStatus.getFileStatus().getPermission().toShort(), 8);
+        run(fsShell, new String[]{"-chmod", "-R", permission, target.toString()});
+      }
+    } catch (Exception e) {
+      throw new IOException("Unable to set permissions of " + target, e);
+    }
+    try {
+      if (LOG.isDebugEnabled()) {  //some trace logging
+        getFullFileStatus(conf, fs, target).debugLog();
+      }
+    } catch (Exception e) {
+      //ignore.
+    }
+  }
+
+  public class Hadoop23FileStatus implements HdfsFileStatus {
+    private FileStatus fileStatus;
+    private AclStatus aclStatus;
+    public Hadoop23FileStatus(FileStatus fileStatus, AclStatus aclStatus) {
+      this.fileStatus = fileStatus;
+      this.aclStatus = aclStatus;
+    }
+    @Override
+    public FileStatus getFileStatus() {
+      return fileStatus;
+    }
+    public AclStatus getAclStatus() {
+      return aclStatus;
+    }
+    @Override
+    public void debugLog() {
+      if (fileStatus != null) {
+        LOG.debug(fileStatus.toString());
+      }
+      if (aclStatus != null) {
+        LOG.debug(aclStatus.toString());
+      }
+    }
+  }
+
+  /**
+   * Create a new AclEntry with scope, type and permission (no name).
+   *
+   * @param scope
+   *          AclEntryScope scope of the ACL entry
+   * @param type
+   *          AclEntryType ACL entry type
+   * @param permission
+   *          FsAction set of permissions in the ACL entry
+   * @return AclEntry new AclEntry
+   */
+  private AclEntry newAclEntry(AclEntryScope scope, AclEntryType type,
+      FsAction permission) {
+    return new AclEntry.Builder().setScope(scope).setType(type)
+        .setPermission(permission).build();
+  }
+
+  /**
+   * Removes basic permission acls (unamed acls) from the list of acl entries
+   * @param entries acl entries to remove from.
+   */
+  private void removeBaseAclEntries(List<AclEntry> entries) {
+    Iterables.removeIf(entries, new Predicate<AclEntry>() {
+      @Override
+      public boolean apply(AclEntry input) {
+          if (input.getName() == null) {
+            return true;
+          }
+          return false;
+      }
+  });
   }
 
   class ProxyFileSystem23 extends ProxyFileSystem {
@@ -568,8 +667,8 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     ret.put("HADOOPMAPREDINPUTDIRRECURSIVE", "mapreduce.input.fileinputformat.input.dir.recursive");
     ret.put("MAPREDMAXSPLITSIZE", "mapreduce.input.fileinputformat.split.maxsize");
     ret.put("MAPREDMINSPLITSIZE", "mapreduce.input.fileinputformat.split.minsize");
-    ret.put("MAPREDMINSPLITSIZEPERNODE", "mapreduce.input.fileinputformat.split.minsize.per.rack");
-    ret.put("MAPREDMINSPLITSIZEPERRACK", "mapreduce.input.fileinputformat.split.minsize.per.node");
+    ret.put("MAPREDMINSPLITSIZEPERNODE", "mapreduce.input.fileinputformat.split.minsize.per.node");
+    ret.put("MAPREDMINSPLITSIZEPERRACK", "mapreduce.input.fileinputformat.split.minsize.per.rack");
     ret.put("HADOOPNUMREDUCERS", "mapreduce.job.reduces");
     ret.put("HADOOPJOBNAME", "mapreduce.job.name");
     ret.put("HADOOPSPECULATIVEEXECREDUCERS", "mapreduce.reduce.speculative");
@@ -595,9 +694,19 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     /* not supported */
     return null;
   }
-  
+
   @Override
   public Configuration getConfiguration(org.apache.hadoop.mapreduce.JobContext context) {
     return context.getConfiguration();
+  }
+
+  @Override
+  public FileSystem getNonCachedFileSystem(URI uri, Configuration conf) throws IOException {
+    return FileSystem.newInstance(uri, conf);
+  }
+
+  @Override
+  public void getMergedCredentials(JobConf jobConf) throws IOException {
+    jobConf.getCredentials().mergeAll(UserGroupInformation.getCurrentUser().getCredentials());
   }
 }

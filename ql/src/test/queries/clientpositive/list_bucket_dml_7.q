@@ -9,6 +9,7 @@ set hive.merge.mapredfiles=false;
 set hive.merge.rcfile.block.level=true;
 
 -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
+-- SORT_QUERY_RESULTS
 
 -- list bucketing DML : dynamic partition (one level) , merge , one skewed column
 -- DML without merge files mixed with small and big files:
@@ -64,7 +65,7 @@ set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
 explain extended
 select * from list_bucketing_dynamic_part where key = '484' and value = 'val_484';
 select * from list_bucketing_dynamic_part where key = '484' and value = 'val_484';
-select * from srcpart where ds = '2008-04-08' and key = '484' and value = 'val_484' order by hr;
+select * from srcpart where ds = '2008-04-08' and key = '484' and value = 'val_484';
 
 -- clean up
 drop table list_bucketing_dynamic_part;

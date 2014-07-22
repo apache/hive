@@ -15,7 +15,7 @@ stored as rcfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@analyze_srcpart_partial_scan
-PREHOOK: query: insert overwrite table analyze_srcpart_partial_scan partition (ds, hr) select * from srcpart where ds is not null
+PREHOOK: query: insert overwrite table analyze_srcpart_partial_scan partition (ds, hr) select * from srcpart where ds is not null order by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
@@ -23,7 +23,7 @@ PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 PREHOOK: Output: default@analyze_srcpart_partial_scan
-POSTHOOK: query: insert overwrite table analyze_srcpart_partial_scan partition (ds, hr) select * from srcpart where ds is not null
+POSTHOOK: query: insert overwrite table analyze_srcpart_partial_scan partition (ds, hr) select * from srcpart where ds is not null order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
@@ -44,26 +44,20 @@ POSTHOOK: Lineage: analyze_srcpart_partial_scan PARTITION(ds=2008-04-09,hr=12).k
 POSTHOOK: Lineage: analyze_srcpart_partial_scan PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: describe formatted analyze_srcpart_partial_scan PARTITION(ds='2008-04-08',hr=11)
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@analyze_srcpart_partial_scan
 POSTHOOK: query: describe formatted analyze_srcpart_partial_scan PARTITION(ds='2008-04-08',hr=11)
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Lineage: analyze_srcpart_partial_scan PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: analyze_srcpart_partial_scan PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: analyze_srcpart_partial_scan PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: analyze_srcpart_partial_scan PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: analyze_srcpart_partial_scan PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: analyze_srcpart_partial_scan PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: analyze_srcpart_partial_scan PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: analyze_srcpart_partial_scan PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Input: default@analyze_srcpart_partial_scan
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	None                
-value               	string              	None                
+key                 	string              	                    
+value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-ds                  	string              	None                
-hr                  	string              	None                
+ds                  	string              	                    
+hr                  	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[2008-04-08, 11]    	 
@@ -77,7 +71,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	-1                  
 	rawDataSize         	-1                  
-	totalSize           	5293                
+	totalSize           	5077                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

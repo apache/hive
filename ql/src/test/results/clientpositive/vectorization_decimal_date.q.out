@@ -11,7 +11,7 @@ POSTHOOK: query: EXPLAIN SELECT cdate, cdecimal from date_decimal_test where cin
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -42,6 +42,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 10
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT cdate, cdecimal from date_decimal_test where cint IS NOT NULL AND cdouble IS NOT NULL LIMIT 10
 PREHOOK: type: QUERY

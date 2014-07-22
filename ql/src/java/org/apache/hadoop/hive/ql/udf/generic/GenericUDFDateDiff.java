@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.udf.generic;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
 
@@ -28,6 +27,10 @@ import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFDateDiffColCol;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFDateDiffColScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFDateDiffScalarCol;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
@@ -38,7 +41,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter.TimestampConverter;
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.IntWritable;
 
 /**
@@ -57,6 +59,7 @@ import org.apache.hadoop.io.IntWritable;
         + "Example:\n "
         + "  > SELECT _FUNC_('2009-30-07', '2009-31-07') FROM src LIMIT 1;\n"
         + "  1")
+@VectorizedExpressions({VectorUDFDateDiffColScalar.class, VectorUDFDateDiffColCol.class, VectorUDFDateDiffScalarCol.class})
 public class GenericUDFDateDiff extends GenericUDF {
   private transient SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
   private transient Converter inputConverter1;
@@ -110,9 +113,14 @@ public class GenericUDFDateDiff extends GenericUDF {
     throws HiveException {
     assert(converter != null);
     assert(argument != null);
+    if (argument.get() == null) {
+      return null;
+    }
     Date date = new Date();
     switch (inputType) {
     case STRING:
+    case VARCHAR:
+    case CHAR:
       String dateString = converter.convert(argument.get()).toString();
       try {
         date = formatter.parse(dateString);
@@ -146,6 +154,8 @@ public class GenericUDFDateDiff extends GenericUDF {
     Converter converter;
     switch (inputType) {
     case STRING:
+    case VARCHAR:
+    case CHAR:
       converter = ObjectInspectorConverters.getConverter(
         (PrimitiveObjectInspector) arguments[i],
         PrimitiveObjectInspectorFactory.writableStringObjectInspector);

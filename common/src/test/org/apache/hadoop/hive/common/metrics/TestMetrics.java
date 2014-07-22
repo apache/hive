@@ -197,6 +197,7 @@ public class TestMetrics {
   
   @Test
   public void testScopeConcurrency() throws Exception {
+    MetricsScope fooScope = Metrics.startScope(scopeName);
     final int threads = 10;
     ExecutorService executorService = Executors.newFixedThreadPool(threads);
     for (int i=0; i<threads; i++) {
@@ -211,12 +212,13 @@ public class TestMetrics {
     }
     executorService.shutdown();
     assertTrue(executorService.awaitTermination(periodMs * 3 * threads, TimeUnit.MILLISECONDS));
-    
-    final MetricsScope fooScope = Metrics.getScope(scopeName);
+
+    fooScope = Metrics.getScope(scopeName);
     assertEquals(Long.valueOf(3 * threads), fooScope.getNumCounter());
     assertTrue(fooScope.getTimeCounter().longValue() > 3 * periodMs * threads);
     Double avgT = (Double)Metrics.get("foo.avg_t");
     assertTrue(avgT.doubleValue() > periodMs);
+    Metrics.endScope(scopeName);
   }
   
   void testScopeImpl(int n) throws Exception {

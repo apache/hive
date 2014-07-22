@@ -10,6 +10,7 @@ PREHOOK: query: -- This is to test the union->selectstar->filesink optimization
 
 create table inputTbl1(key string, val string) stored as textfile
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- This is to test the union->selectstar->filesink optimization
 -- Union of 2 map-reduce subqueries is performed followed by select star and a file sink
 -- There is no need to write the temporary results of the sub-queries, and then read them 
@@ -22,17 +23,22 @@ POSTHOOK: query: -- This is to test the union->selectstar->filesink optimization
 
 create table inputTbl1(key string, val string) stored as textfile
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@inputTbl1
 PREHOOK: query: create table outputTbl1(key string, values bigint) stored as textfile
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table outputTbl1(key string, values bigint) stored as textfile
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@outputTbl1
 PREHOOK: query: load data local inpath '../../data/files/T1.txt' into table inputTbl1
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@inputtbl1
 POSTHOOK: query: load data local inpath '../../data/files/T1.txt' into table inputTbl1
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@inputtbl1
 PREHOOK: query: explain
 insert overwrite table outputTbl1
@@ -176,14 +182,14 @@ POSTHOOK: Lineage: outputtbl1.key EXPRESSION [(inputtbl1)inputtbl1.FieldSchema(n
 POSTHOOK: Lineage: outputtbl1.values EXPRESSION [(inputtbl1)inputtbl1.null, (inputtbl1)inputtbl1.null, ]
 PREHOOK: query: desc formatted outputTbl1
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@outputtbl1
 POSTHOOK: query: desc formatted outputTbl1
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Lineage: outputtbl1.key EXPRESSION [(inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), (inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1.values EXPRESSION [(inputtbl1)inputtbl1.null, (inputtbl1)inputtbl1.null, ]
+POSTHOOK: Input: default@outputtbl1
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	None                
-values              	bigint              	None                
+key                 	string              	                    
+values              	bigint              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -193,6 +199,11 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	false               
+	numFiles            	2                   
+	numRows             	-1                  
+	rawDataSize         	-1                  
+	totalSize           	40                  
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -213,8 +224,6 @@ POSTHOOK: query: select * from outputTbl1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@outputtbl1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: outputtbl1.key EXPRESSION [(inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), (inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1.values EXPRESSION [(inputtbl1)inputtbl1.null, (inputtbl1)inputtbl1.null, ]
 1	1
 2	1
 3	1
@@ -245,8 +254,6 @@ FROM (
   SELECT key, count(1) as values from inputTbl1 group by key
 ) a where a.key = 7
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: outputtbl1.key EXPRESSION [(inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), (inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1.values EXPRESSION [(inputtbl1)inputtbl1.null, (inputtbl1)inputtbl1.null, ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1, Stage-2
@@ -374,8 +381,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@inputtbl1
 POSTHOOK: Output: default@outputtbl1
 POSTHOOK: Lineage: outputtbl1.key EXPRESSION [(inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), (inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1.key EXPRESSION [(inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), (inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1.values EXPRESSION [(inputtbl1)inputtbl1.null, (inputtbl1)inputtbl1.null, ]
 POSTHOOK: Lineage: outputtbl1.values EXPRESSION [(inputtbl1)inputtbl1.null, (inputtbl1)inputtbl1.null, ]
 PREHOOK: query: select * from outputTbl1
 PREHOOK: type: QUERY
@@ -385,10 +390,6 @@ POSTHOOK: query: select * from outputTbl1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@outputtbl1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: outputtbl1.key EXPRESSION [(inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), (inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1.key EXPRESSION [(inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), (inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1.values EXPRESSION [(inputtbl1)inputtbl1.null, (inputtbl1)inputtbl1.null, ]
-POSTHOOK: Lineage: outputtbl1.values EXPRESSION [(inputtbl1)inputtbl1.null, (inputtbl1)inputtbl1.null, ]
 7	1
 7	1
 PREHOOK: query: -- filters and sub-queries should be fine
@@ -417,10 +418,6 @@ FROM (
 ) a
 ) b where b.key >= 7
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: outputtbl1.key EXPRESSION [(inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), (inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1.key EXPRESSION [(inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), (inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1.values EXPRESSION [(inputtbl1)inputtbl1.null, (inputtbl1)inputtbl1.null, ]
-POSTHOOK: Lineage: outputtbl1.values EXPRESSION [(inputtbl1)inputtbl1.null, (inputtbl1)inputtbl1.null, ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1, Stage-2
@@ -562,10 +559,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@inputtbl1
 POSTHOOK: Output: default@outputtbl1
 POSTHOOK: Lineage: outputtbl1.key EXPRESSION [(inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), (inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1.key EXPRESSION [(inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), (inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1.key EXPRESSION [(inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), (inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1.values EXPRESSION [(inputtbl1)inputtbl1.null, (inputtbl1)inputtbl1.null, ]
-POSTHOOK: Lineage: outputtbl1.values EXPRESSION [(inputtbl1)inputtbl1.null, (inputtbl1)inputtbl1.null, ]
 POSTHOOK: Lineage: outputtbl1.values EXPRESSION [(inputtbl1)inputtbl1.null, (inputtbl1)inputtbl1.null, ]
 PREHOOK: query: select * from outputTbl1 order by key, values
 PREHOOK: type: QUERY
@@ -575,12 +568,6 @@ POSTHOOK: query: select * from outputTbl1 order by key, values
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@outputtbl1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: outputtbl1.key EXPRESSION [(inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), (inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1.key EXPRESSION [(inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), (inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1.key EXPRESSION [(inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), (inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1.values EXPRESSION [(inputtbl1)inputtbl1.null, (inputtbl1)inputtbl1.null, ]
-POSTHOOK: Lineage: outputtbl1.values EXPRESSION [(inputtbl1)inputtbl1.null, (inputtbl1)inputtbl1.null, ]
-POSTHOOK: Lineage: outputtbl1.values EXPRESSION [(inputtbl1)inputtbl1.null, (inputtbl1)inputtbl1.null, ]
 14.0	1
 14.0	1
 16.0	2

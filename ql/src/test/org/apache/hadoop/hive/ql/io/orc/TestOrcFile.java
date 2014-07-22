@@ -41,13 +41,13 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
-
-import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_ORC_ZEROCOPY;
-
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -72,7 +72,6 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hive.common.util.HiveTestUtils;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -80,6 +79,8 @@ import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
+
+import com.google.common.collect.Lists;
 
 /**
  * Tests for the top level reader/streamFactory of ORC files.
@@ -115,9 +116,7 @@ public class TestOrcFile {
 
     MiddleStruct(InnerStruct... items) {
       list.clear();
-      for(InnerStruct item: items) {
-        list.add(item);
-      }
+      list.addAll(Arrays.asList(items));
     }
   }
 
@@ -172,9 +171,7 @@ public class TestOrcFile {
 
   private static List<InnerStruct> list(InnerStruct... items) {
     List<InnerStruct> result = new ArrayList<InnerStruct>();
-    for(InnerStruct s: items) {
-      result.add(s);
-    }
+    result.addAll(Arrays.asList(items));
     return result;
   }
 
@@ -219,7 +216,7 @@ public class TestOrcFile {
   public void openFileSystem () throws Exception {
     conf = new Configuration();
     if(zeroCopy) {
-      conf.setBoolean(HIVE_ORC_ZEROCOPY.varname, zeroCopy);
+      conf.setBoolean(HiveConf.ConfVars.HIVE_ORC_ZEROCOPY.varname, zeroCopy);
     }
     fs = FileSystem.getLocal(conf);
     testFilePath = new Path(workDir, "TestOrcFile." +
@@ -229,8 +226,10 @@ public class TestOrcFile {
 
   @Test
   public void testReadFormat_0_11() throws Exception {
-    Path oldFilePath = new Path(HiveTestUtils.getFileFromClasspath("orc-file-11-format.orc"));
-    Reader reader = OrcFile.createReader(fs, oldFilePath, conf);
+    Path oldFilePath =
+        new Path(HiveTestUtils.getFileFromClasspath("orc-file-11-format.orc"));
+    Reader reader = OrcFile.createReader(oldFilePath,
+        OrcFile.readerOptions(conf).filesystem(fs));
 
     int stripeCount = 0;
     int rowCount = 0;
@@ -330,7 +329,7 @@ public class TestOrcFile {
         .getStructFieldRef("decimal1").getFieldObjectInspector();
     StringObjectInspector mk = (StringObjectInspector) ma
         .getMapKeyObjectInspector();
-    RecordReader rows = reader.rows(null);
+    RecordReader rows = reader.rows();
     Object row = rows.next(null);
     assertNotNull(row);
     // check the contents of the first row
@@ -476,6 +475,47 @@ public class TestOrcFile {
   }
 
   @Test
+  public void testTimestamp() throws Exception {
+    ObjectInspector inspector;
+    synchronized (TestOrcFile.class) {
+      inspector = ObjectInspectorFactory.getReflectionObjectInspector(Timestamp.class,
+          ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
+    }
+
+    Writer writer = OrcFile.createWriter(testFilePath,
+        OrcFile.writerOptions(conf).inspector(inspector).stripeSize(100000).bufferSize(10000)
+            .version(OrcFile.Version.V_0_11));
+    List<Timestamp> tslist = Lists.newArrayList();
+    tslist.add(Timestamp.valueOf("9999-01-01 00:00:00.000999"));
+    tslist.add(Timestamp.valueOf("2003-01-01 00:00:00.000000222"));
+    tslist.add(Timestamp.valueOf("1999-01-01 00:00:00.999999999"));
+    tslist.add(Timestamp.valueOf("1995-01-01 00:00:00.688888888"));
+    tslist.add(Timestamp.valueOf("2002-01-01 00:00:00.1"));
+    tslist.add(Timestamp.valueOf("2010-03-02 00:00:00.000009001"));
+    tslist.add(Timestamp.valueOf("2005-01-01 00:00:00.000002229"));
+    tslist.add(Timestamp.valueOf("2006-01-01 00:00:00.900203003"));
+    tslist.add(Timestamp.valueOf("2003-01-01 00:00:00.800000007"));
+    tslist.add(Timestamp.valueOf("1996-08-02 00:00:00.723100809"));
+    tslist.add(Timestamp.valueOf("1998-11-02 00:00:00.857340643"));
+    tslist.add(Timestamp.valueOf("2008-10-02 00:00:00"));
+
+    for (Timestamp ts : tslist) {
+      writer.addRow(ts);
+    }
+
+    writer.close();
+
+    Reader reader = OrcFile.createReader(testFilePath,
+        OrcFile.readerOptions(conf).filesystem(fs));
+    RecordReader rows = reader.rows(null);
+    int idx = 0;
+    while (rows.hasNext()) {
+      Object row = rows.next(null);
+      assertEquals(tslist.get(idx++).getNanos(), ((TimestampWritable) row).getNanos());
+    }
+  }
+
+  @Test
   public void testStringAndBinaryStatistics() throws Exception {
 
     ObjectInspector inspector;
@@ -493,7 +533,8 @@ public class TestOrcFile {
     writer.addRow(new SimpleStruct(bytes(0,1,2,3,4,5), null));
     writer.addRow(new SimpleStruct(null, "hi"));
     writer.close();
-    Reader reader = OrcFile.createReader(fs, testFilePath, conf);
+    Reader reader = OrcFile.createReader(testFilePath,
+        OrcFile.readerOptions(conf).filesystem(fs));
 
     // check the stats
     ColumnStatistics[] stats = reader.getStatistics();
@@ -524,7 +565,7 @@ public class TestOrcFile {
         getStructFieldRef("bytes1").getFieldObjectInspector();
     StringObjectInspector st = (StringObjectInspector) readerInspector.
         getStructFieldRef("string1").getFieldObjectInspector();
-    RecordReader rows = reader.rows(null);
+    RecordReader rows = reader.rows();
     Object row = rows.next(null);
     assertNotNull(row);
     // check the contents of the first row
@@ -589,7 +630,8 @@ public class TestOrcFile {
     }
 
     writer.close();
-    Reader reader = OrcFile.createReader(fs, testFilePath, conf);
+    Reader reader = OrcFile.createReader(testFilePath,
+        OrcFile.readerOptions(conf).filesystem(fs));
     Metadata metadata = reader.getMetadata();
     int numStripes = metadata.getStripeStatistics().size();
     assertEquals(3, numStripes);
@@ -601,9 +643,9 @@ public class TestOrcFile {
     assertEquals(5000, ss2.getColumnStatistics()[0].getNumberOfValues());
     assertEquals(1000, ss3.getColumnStatistics()[0].getNumberOfValues());
 
-    assertEquals(5000, ((IntegerColumnStatistics)ss1.getColumnStatistics()[1]).getNumberOfValues());
-    assertEquals(5000, ((IntegerColumnStatistics)ss2.getColumnStatistics()[1]).getNumberOfValues());
-    assertEquals(1000, ((IntegerColumnStatistics)ss3.getColumnStatistics()[1]).getNumberOfValues());
+    assertEquals(5000, (ss1.getColumnStatistics()[1]).getNumberOfValues());
+    assertEquals(5000, (ss2.getColumnStatistics()[1]).getNumberOfValues());
+    assertEquals(1000, (ss3.getColumnStatistics()[1]).getNumberOfValues());
     assertEquals(1, ((IntegerColumnStatistics)ss1.getColumnStatistics()[1]).getMinimum());
     assertEquals(2, ((IntegerColumnStatistics)ss2.getColumnStatistics()[1]).getMinimum());
     assertEquals(3, ((IntegerColumnStatistics)ss3.getColumnStatistics()[1]).getMinimum());
@@ -614,9 +656,9 @@ public class TestOrcFile {
     assertEquals(10000, ((IntegerColumnStatistics)ss2.getColumnStatistics()[1]).getSum());
     assertEquals(3000, ((IntegerColumnStatistics)ss3.getColumnStatistics()[1]).getSum());
 
-    assertEquals(5000, ((StringColumnStatistics)ss1.getColumnStatistics()[2]).getNumberOfValues());
-    assertEquals(5000, ((StringColumnStatistics)ss2.getColumnStatistics()[2]).getNumberOfValues());
-    assertEquals(1000, ((StringColumnStatistics)ss3.getColumnStatistics()[2]).getNumberOfValues());
+    assertEquals(5000, (ss1.getColumnStatistics()[2]).getNumberOfValues());
+    assertEquals(5000, (ss2.getColumnStatistics()[2]).getNumberOfValues());
+    assertEquals(1000, (ss3.getColumnStatistics()[2]).getNumberOfValues());
     assertEquals("one", ((StringColumnStatistics)ss1.getColumnStatistics()[2]).getMinimum());
     assertEquals("two", ((StringColumnStatistics)ss2.getColumnStatistics()[2]).getMinimum());
     assertEquals("three", ((StringColumnStatistics)ss3.getColumnStatistics()[2]).getMinimum());
@@ -627,7 +669,7 @@ public class TestOrcFile {
     assertEquals(15000, ((StringColumnStatistics)ss2.getColumnStatistics()[2]).getSum());
     assertEquals(5000, ((StringColumnStatistics)ss3.getColumnStatistics()[2]).getSum());
 
-    RecordReaderImpl recordReader = (RecordReaderImpl) reader.rows(null);
+    RecordReaderImpl recordReader = (RecordReaderImpl) reader.rows();
     OrcProto.RowIndex[] index = recordReader.readRowIndex(0);
     assertEquals(3, index.length);
     List<OrcProto.RowIndexEntry> items = index[1].getEntryList();
@@ -668,7 +710,8 @@ public class TestOrcFile {
         list(inner(100000000, "cat"), inner(-100000, "in"), inner(1234, "hat")),
         map(inner(5, "chani"), inner(1, "mauddib"))));
     writer.close();
-    Reader reader = OrcFile.createReader(fs, testFilePath, conf);
+    Reader reader = OrcFile.createReader(testFilePath,
+        OrcFile.readerOptions(conf).filesystem(fs));
 
     Metadata metadata = reader.getMetadata();
 
@@ -744,13 +787,9 @@ public class TestOrcFile {
         getStructFieldRef("list").getFieldObjectInspector();
     MapObjectInspector ma = (MapObjectInspector) readerInspector.
         getStructFieldRef("map").getFieldObjectInspector();
-    StructObjectInspector lc = (StructObjectInspector)
-        li.getListElementObjectInspector();
     StringObjectInspector mk = (StringObjectInspector)
         ma.getMapKeyObjectInspector();
-    StructObjectInspector mv = (StructObjectInspector)
-        ma.getMapValueObjectInspector();
-    RecordReader rows = reader.rows(null);
+    RecordReader rows = reader.rows();
     Object row = rows.next(null);
     assertNotNull(row);
     // check the contents of the first row
@@ -918,7 +957,8 @@ public class TestOrcFile {
       writer.addRow(inner(x, y));
     }
     writer.close();
-    Reader reader = OrcFile.createReader(fs, testFilePath, conf);
+    Reader reader = OrcFile.createReader(testFilePath,
+        OrcFile.readerOptions(conf).filesystem(fs));
 
     // check out the statistics
     ColumnStatistics[] stats = reader.getStatistics();
@@ -982,8 +1022,9 @@ public class TestOrcFile {
                                          .compress(CompressionKind.NONE)
                                          .bufferSize(100));
     writer.close();
-    Reader reader = OrcFile.createReader(fs, testFilePath, conf);
-    assertEquals(false, reader.rows(null).hasNext());
+    Reader reader = OrcFile.createReader(testFilePath,
+        OrcFile.readerOptions(conf).filesystem(fs));
+    assertEquals(false, reader.rows().hasNext());
     assertEquals(CompressionKind.NONE, reader.getCompression());
     assertEquals(0, reader.getNumberOfRows());
     assertEquals(0, reader.getCompressionSize());
@@ -1019,7 +1060,8 @@ public class TestOrcFile {
         null, null, null, null));
     writer.addUserMetadata("clobber", byteBuf(5,7,11,13,17,19));
     writer.close();
-    Reader reader = OrcFile.createReader(fs, testFilePath, conf);
+    Reader reader = OrcFile.createReader(testFilePath,
+        OrcFile.readerOptions(conf).filesystem(fs));
     assertEquals(byteBuf(5,7,11,13,17,19), reader.getMetadataValue("clobber"));
     assertEquals(byteBuf(1,2,3,4,5,6,7,-1,-2,127,-128),
         reader.getMetadataValue("my.meta"));
@@ -1083,15 +1125,15 @@ public class TestOrcFile {
     OrcStruct row = new OrcStruct(3);
     OrcUnion union = new OrcUnion();
     row.setFieldValue(1, union);
-    row.setFieldValue(0, Timestamp.valueOf("2000-03-12 15:00:00"));
+    row.setFieldValue(0, new TimestampWritable(Timestamp.valueOf("2000-03-12 15:00:00")));
     HiveDecimal value = HiveDecimal.create("12345678.6547456");
-    row.setFieldValue(2, value);
+    row.setFieldValue(2, new HiveDecimalWritable(value));
     union.set((byte) 0, new IntWritable(42));
     writer.addRow(row);
-    row.setFieldValue(0, Timestamp.valueOf("2000-03-20 12:00:00.123456789"));
+    row.setFieldValue(0, new TimestampWritable(Timestamp.valueOf("2000-03-20 12:00:00.123456789")));
     union.set((byte) 1, new Text("hello"));
     value = HiveDecimal.create("-5643.234");
-    row.setFieldValue(2, value);
+    row.setFieldValue(2, new HiveDecimalWritable(value));
     writer.addRow(row);
     row.setFieldValue(0, null);
     row.setFieldValue(1, null);
@@ -1103,21 +1145,21 @@ public class TestOrcFile {
     union.set((byte) 1, null);
     writer.addRow(row);
     union.set((byte) 0, new IntWritable(200000));
-    row.setFieldValue(0, Timestamp.valueOf("1900-01-01 00:00:00"));
+    row.setFieldValue(0, new TimestampWritable(Timestamp.valueOf("1900-01-01 00:00:00")));
     value = HiveDecimal.create("10000000000000000000");
-    row.setFieldValue(2, value);
+    row.setFieldValue(2, new HiveDecimalWritable(value));
     writer.addRow(row);
     Random rand = new Random(42);
     for(int i=1900; i < 2200; ++i) {
-      row.setFieldValue(0, Timestamp.valueOf(i + "-05-05 12:34:56." + i));
+      row.setFieldValue(0, new TimestampWritable(Timestamp.valueOf(i + "-05-05 12:34:56." + i)));
       if ((i & 1) == 0) {
         union.set((byte) 0, new IntWritable(i*i));
       } else {
-        union.set((byte) 1, new Text(new Integer(i*i).toString()));
+        union.set((byte) 1, new Text(Integer.toString(i * i)));
       }
       value = HiveDecimal.create(new BigInteger(64, rand),
           rand.nextInt(18));
-      row.setFieldValue(2, value);
+      row.setFieldValue(2, new HiveDecimalWritable(value));
       if (maxValue.compareTo(value) < 0) {
         maxValue = value;
       }
@@ -1137,7 +1179,8 @@ public class TestOrcFile {
     union.set((byte) 0, new IntWritable(138));
     writer.addRow(row);
     writer.close();
-    Reader reader = OrcFile.createReader(fs, testFilePath, conf);
+    Reader reader = OrcFile.createReader(testFilePath,
+        OrcFile.readerOptions(conf).filesystem(fs));
     assertEquals(false, reader.getMetadataKeys().iterator().hasNext());
     assertEquals(5309, reader.getNumberOfRows());
     DecimalColumnStatistics stats =
@@ -1163,7 +1206,7 @@ public class TestOrcFile {
     assertEquals(reader.getNumberOfRows(), rowCount);
     assertEquals(2, stripeCount);
     assertEquals(reader.getContentLength(), currentOffset);
-    RecordReader rows = reader.rows(null);
+    RecordReader rows = reader.rows();
     assertEquals(0, rows.getRowNumber());
     assertEquals(0.0, rows.getProgress(), 0.000001);
     assertEquals(true, rows.hasNext());
@@ -1172,19 +1215,21 @@ public class TestOrcFile {
     inspector = reader.getObjectInspector();
     assertEquals("struct<time:timestamp,union:uniontype<int,string>,decimal:decimal(38,18)>",
         inspector.getTypeName());
-    assertEquals(Timestamp.valueOf("2000-03-12 15:00:00"),
+    assertEquals(new TimestampWritable(Timestamp.valueOf("2000-03-12 15:00:00")),
         row.getFieldValue(0));
     union = (OrcUnion) row.getFieldValue(1);
     assertEquals(0, union.getTag());
     assertEquals(new IntWritable(42), union.getObject());
-    assertEquals(HiveDecimal.create("12345678.6547456"), row.getFieldValue(2));
+    assertEquals(new HiveDecimalWritable(HiveDecimal.create("12345678.6547456")),
+        row.getFieldValue(2));
     row = (OrcStruct) rows.next(row);
     assertEquals(2, rows.getRowNumber());
-    assertEquals(Timestamp.valueOf("2000-03-20 12:00:00.123456789"),
+    assertEquals(new TimestampWritable(Timestamp.valueOf("2000-03-20 12:00:00.123456789")),
         row.getFieldValue(0));
     assertEquals(1, union.getTag());
     assertEquals(new Text("hello"), union.getObject());
-    assertEquals(HiveDecimal.create("-5643.234"), row.getFieldValue(2));
+    assertEquals(new HiveDecimalWritable(HiveDecimal.create("-5643.234")),
+        row.getFieldValue(2));
     row = (OrcStruct) rows.next(row);
     assertEquals(null, row.getFieldValue(0));
     assertEquals(null, row.getFieldValue(1));
@@ -1201,25 +1246,25 @@ public class TestOrcFile {
     assertEquals(null, union.getObject());
     assertEquals(null, row.getFieldValue(2));
     row = (OrcStruct) rows.next(row);
-    assertEquals(Timestamp.valueOf("1900-01-01 00:00:00"),
+    assertEquals(new TimestampWritable(Timestamp.valueOf("1900-01-01 00:00:00")),
         row.getFieldValue(0));
     assertEquals(new IntWritable(200000), union.getObject());
-    assertEquals(HiveDecimal.create("10000000000000000000"),
+    assertEquals(new HiveDecimalWritable(HiveDecimal.create("10000000000000000000")),
                  row.getFieldValue(2));
     rand = new Random(42);
     for(int i=1900; i < 2200; ++i) {
       row = (OrcStruct) rows.next(row);
-      assertEquals(Timestamp.valueOf(i + "-05-05 12:34:56." + i),
+      assertEquals(new TimestampWritable(Timestamp.valueOf(i + "-05-05 12:34:56." + i)),
           row.getFieldValue(0));
       if ((i & 1) == 0) {
         assertEquals(0, union.getTag());
         assertEquals(new IntWritable(i*i), union.getObject());
       } else {
         assertEquals(1, union.getTag());
-        assertEquals(new Text(new Integer(i*i).toString()), union.getObject());
+        assertEquals(new Text(Integer.toString(i * i)), union.getObject());
       }
-      assertEquals(HiveDecimal.create(new BigInteger(64, rand),
-                                   rand.nextInt(18)), row.getFieldValue(2));
+      assertEquals(new HiveDecimalWritable(HiveDecimal.create(new BigInteger(64, rand),
+                                   rand.nextInt(18))), row.getFieldValue(2));
     }
     for(int i=0; i < 5000; ++i) {
       row = (OrcStruct) rows.next(row);
@@ -1236,11 +1281,11 @@ public class TestOrcFile {
     assertEquals(reader.getNumberOfRows(), rows.getRowNumber());
     rows.seekToRow(1);
     row = (OrcStruct) rows.next(row);
-    assertEquals(Timestamp.valueOf("2000-03-20 12:00:00.123456789"),
+    assertEquals(new TimestampWritable(Timestamp.valueOf("2000-03-20 12:00:00.123456789")),
         row.getFieldValue(0));
     assertEquals(1, union.getTag());
     assertEquals(new Text("hello"), union.getObject());
-    assertEquals(HiveDecimal.create("-5643.234"), row.getFieldValue(2));
+    assertEquals(new HiveDecimalWritable(HiveDecimal.create("-5643.234")), row.getFieldValue(2));
     rows.close();
   }
 
@@ -1268,8 +1313,9 @@ public class TestOrcFile {
           Integer.toHexString(rand.nextInt())));
     }
     writer.close();
-    Reader reader = OrcFile.createReader(fs, testFilePath, conf);
-    RecordReader rows = reader.rows(null);
+    Reader reader = OrcFile.createReader(testFilePath,
+        OrcFile.readerOptions(conf).filesystem(fs));
+    RecordReader rows = reader.rows();
     rand = new Random(12);
     OrcStruct row = null;
     for(int i=0; i < 10000; ++i) {
@@ -1311,13 +1357,14 @@ public class TestOrcFile {
       }
     }
     writer.close();
-    Reader reader = OrcFile.createReader(fs, testFilePath, conf);
+    Reader reader = OrcFile.createReader(testFilePath,
+        OrcFile.readerOptions(conf).filesystem(fs));
     assertEquals(50000, reader.getNumberOfRows());
     assertEquals(0, reader.getRowIndexStride());
     StripeInformation stripe = reader.getStripes().iterator().next();
     assertEquals(true, stripe.getDataLength() != 0);
     assertEquals(0, stripe.getIndexLength());
-    RecordReader rows = reader.rows(null);
+    RecordReader rows = reader.rows();
     rand = new Random(24);
     OrcStruct row = null;
     for(int i=0; i < 10000; ++i) {
@@ -1374,10 +1421,124 @@ public class TestOrcFile {
           byteValues, words, i));
     }
     writer.close();
-    writer = null;
-    Reader reader = OrcFile.createReader(fs, testFilePath, conf);
+    Reader reader = OrcFile.createReader(testFilePath,
+        OrcFile.readerOptions(conf).filesystem(fs));
     assertEquals(COUNT, reader.getNumberOfRows());
-    RecordReader rows = reader.rows(null);
+    RecordReader rows = reader.rows();
+    OrcStruct row = null;
+    for(int i=COUNT-1; i >= 0; --i) {
+      rows.seekToRow(i);
+      row = (OrcStruct) rows.next(row);
+      BigRow expected = createRandomRow(intValues, doubleValues,
+          stringValues, byteValues, words, i);
+      assertEquals(expected.boolean1.booleanValue(),
+          ((BooleanWritable) row.getFieldValue(0)).get());
+      assertEquals(expected.byte1.byteValue(),
+          ((ByteWritable) row.getFieldValue(1)).get());
+      assertEquals(expected.short1.shortValue(),
+          ((ShortWritable) row.getFieldValue(2)).get());
+      assertEquals(expected.int1.intValue(),
+          ((IntWritable) row.getFieldValue(3)).get());
+      assertEquals(expected.long1.longValue(),
+          ((LongWritable) row.getFieldValue(4)).get());
+      assertEquals(expected.float1,
+          ((FloatWritable) row.getFieldValue(5)).get(), 0.0001);
+      assertEquals(expected.double1,
+          ((DoubleWritable) row.getFieldValue(6)).get(), 0.0001);
+      assertEquals(expected.bytes1, row.getFieldValue(7));
+      assertEquals(expected.string1, row.getFieldValue(8));
+      List<InnerStruct> expectedList = expected.middle.list;
+      List<OrcStruct> actualList =
+          (List<OrcStruct>) ((OrcStruct) row.getFieldValue(9)).getFieldValue(0);
+      compareList(expectedList, actualList);
+      compareList(expected.list, (List<OrcStruct>) row.getFieldValue(10));
+    }
+    rows.close();
+    Iterator<StripeInformation> stripeIterator =
+      reader.getStripes().iterator();
+    long offsetOfStripe2 = 0;
+    long offsetOfStripe4 = 0;
+    long lastRowOfStripe2 = 0;
+    for(int i = 0; i < 5; ++i) {
+      StripeInformation stripe = stripeIterator.next();
+      if (i < 2) {
+        lastRowOfStripe2 += stripe.getNumberOfRows();
+      } else if (i == 2) {
+        offsetOfStripe2 = stripe.getOffset();
+        lastRowOfStripe2 += stripe.getNumberOfRows() - 1;
+      } else if (i == 4) {
+        offsetOfStripe4 = stripe.getOffset();
+      }
+    }
+    boolean[] columns = new boolean[reader.getStatistics().length];
+    columns[5] = true; // long colulmn
+    columns[9] = true; // text column
+    rows = reader.rowsOptions(new Reader.Options()
+        .range(offsetOfStripe2, offsetOfStripe4 - offsetOfStripe2)
+        .include(columns));
+    rows.seekToRow(lastRowOfStripe2);
+    for(int i = 0; i < 2; ++i) {
+      row = (OrcStruct) rows.next(row);
+      BigRow expected = createRandomRow(intValues, doubleValues,
+                                        stringValues, byteValues, words,
+                                        (int) (lastRowOfStripe2 + i));
+
+      assertEquals(expected.long1.longValue(),
+          ((LongWritable) row.getFieldValue(4)).get());
+      assertEquals(expected.string1, row.getFieldValue(8));
+    }
+    rows.close();
+  }
+
+  @Test
+  public void testZeroCopySeek() throws Exception {
+    ObjectInspector inspector;
+    synchronized (TestOrcFile.class) {
+      inspector = ObjectInspectorFactory.getReflectionObjectInspector
+          (BigRow.class, ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
+    }
+    Writer writer = OrcFile.createWriter(testFilePath,
+                                         OrcFile.writerOptions(conf)
+                                         .inspector(inspector)
+                                         .stripeSize(200000)
+                                         .bufferSize(65536)
+                                         .rowIndexStride(1000));
+    Random rand = new Random(42);
+    final int COUNT=32768;
+    long[] intValues= new long[COUNT];
+    double[] doubleValues = new double[COUNT];
+    String[] stringValues = new String[COUNT];
+    BytesWritable[] byteValues = new BytesWritable[COUNT];
+    String[] words = new String[128];
+    for(int i=0; i < words.length; ++i) {
+      words[i] = Integer.toHexString(rand.nextInt());
+    }
+    for(int i=0; i < COUNT/2; ++i) {
+      intValues[2*i] = rand.nextLong();
+      intValues[2*i+1] = intValues[2*i];
+      stringValues[2*i] = words[rand.nextInt(words.length)];
+      stringValues[2*i+1] = stringValues[2*i];
+    }
+    for(int i=0; i < COUNT; ++i) {
+      doubleValues[i] = rand.nextDouble();
+      byte[] buf = new byte[20];
+      rand.nextBytes(buf);
+      byteValues[i] = new BytesWritable(buf);
+    }
+    for(int i=0; i < COUNT; ++i) {
+      writer.addRow(createRandomRow(intValues, doubleValues, stringValues,
+          byteValues, words, i));
+    }
+    writer.close();
+    writer = null;
+    Reader reader = OrcFile.createReader(testFilePath,
+        OrcFile.readerOptions(conf).filesystem(fs));
+    assertEquals(COUNT, reader.getNumberOfRows());
+    /* enable zero copy record reader */
+    Configuration conf = new Configuration();
+    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_ORC_ZEROCOPY, true);
+    RecordReader rows = reader.rows();
+    /* all tests are identical to the other seek() tests */
     OrcStruct row = null;
     for(int i=COUNT-1; i >= 0; --i) {
       rows.seekToRow(i);
@@ -1426,8 +1587,10 @@ public class TestOrcFile {
     boolean[] columns = new boolean[reader.getStatistics().length];
     columns[5] = true; // long colulmn
     columns[9] = true; // text column
-    rows = reader.rows(offsetOfStripe2, offsetOfStripe4 - offsetOfStripe2,
-                       columns);
+    /* use zero copy record reader */
+    rows = reader.rowsOptions(new Reader.Options()
+        .range(offsetOfStripe2, offsetOfStripe4 - offsetOfStripe2)
+        .include(columns));
     rows.seekToRow(lastRowOfStripe2);
     for(int i = 0; i < 2; ++i) {
       row = (OrcStruct) rows.next(row);
@@ -1445,7 +1608,8 @@ public class TestOrcFile {
   private void compareInner(InnerStruct expect,
                             OrcStruct actual) throws Exception {
     if (expect == null || actual == null) {
-      assertEquals(expect, actual);
+      assertEquals(null, expect);
+      assertEquals(null, actual);
     } else {
       assertEquals(expect.int1, ((IntWritable) actual.getFieldValue(0)).get());
       assertEquals(expect.string1, actual.getFieldValue(1));
@@ -1542,7 +1706,8 @@ public class TestOrcFile {
     }
     writer.close();
     assertEquals(null, memory.path);
-    Reader reader = OrcFile.createReader(fs, testFilePath, conf);
+    Reader reader = OrcFile.createReader(testFilePath,
+        OrcFile.readerOptions(conf).filesystem(fs));
     int i = 0;
     for(StripeInformation stripe: reader.getStripes()) {
       i += 1;
@@ -1567,7 +1732,8 @@ public class TestOrcFile {
       writer.addRow(new InnerStruct(i*300, Integer.toHexString(10*i)));
     }
     writer.close();
-    Reader reader = OrcFile.createReader(fs, testFilePath, conf);
+    Reader reader = OrcFile.createReader(testFilePath,
+        OrcFile.readerOptions(conf).filesystem(fs));
     assertEquals(3500, reader.getNumberOfRows());
 
     SearchArgument sarg = SearchArgument.FACTORY.newBuilder()
@@ -1578,9 +1744,10 @@ public class TestOrcFile {
           .lessThan("int1", 600000)
         .end()
         .build();
-    RecordReader rows = reader.rows(0L, Long.MAX_VALUE,
-        new boolean[]{true, true, true}, sarg,
-        new String[]{null, "int1", "string1"});
+    RecordReader rows = reader.rowsOptions(new Reader.Options()
+        .range(0L, Long.MAX_VALUE)
+        .include(new boolean[]{true, true, true})
+        .searchArgument(sarg, new String[]{null, "int1", "string1"}));
     assertEquals(1000L, rows.getRowNumber());
     OrcStruct row = null;
     for(int i=1000; i < 2000; ++i) {
@@ -1598,9 +1765,10 @@ public class TestOrcFile {
           .lessThan("int1", 0)
         .end()
         .build();
-    rows = reader.rows(0L, Long.MAX_VALUE,
-        new boolean[]{true, true, true}, sarg,
-        new String[]{null, "int1", "string1"});
+    rows = reader.rowsOptions(new Reader.Options()
+        .range(0L, Long.MAX_VALUE)
+        .include(new boolean[]{true, true, true})
+        .searchArgument(sarg, new String[]{null, "int1", "string1"}));
     assertEquals(3500L, rows.getRowNumber());
     assertTrue(!rows.hasNext());
 
@@ -1613,9 +1781,10 @@ public class TestOrcFile {
           .end()
         .end()
         .build();
-    rows = reader.rows(0L, Long.MAX_VALUE,
-        new boolean[]{true, true, true}, sarg,
-        new String[]{null, "int1", "string1"});
+    rows = reader.rowsOptions(new Reader.Options()
+        .range(0L, Long.MAX_VALUE)
+        .include(new boolean[]{true, true, true})
+        .searchArgument(sarg, new String[]{null, "int1", "string1"}));
     row = null;
     for(int i=0; i < 1000; ++i) {
       assertTrue(rows.hasNext());

@@ -24,7 +24,6 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
@@ -231,8 +230,8 @@ public interface RawStore extends Configurable {
       String grantor, PrincipalType grantorType, boolean grantOption)
       throws MetaException, NoSuchObjectException, InvalidObjectException;
 
-  public abstract boolean revokeRole(Role role, String userName, PrincipalType principalType)
-      throws MetaException, NoSuchObjectException;
+  public abstract boolean revokeRole(Role role, String userName, PrincipalType principalType,
+      boolean grantOption) throws MetaException, NoSuchObjectException;
 
   public abstract PrincipalPrivilegeSet getUserPrivilegeSet(String userName,
       List<String> groupNames) throws InvalidObjectException, MetaException;
@@ -274,7 +273,7 @@ public interface RawStore extends Configurable {
   public abstract boolean grantPrivileges (PrivilegeBag privileges)
       throws InvalidObjectException, MetaException, NoSuchObjectException;
 
-  public abstract boolean revokePrivileges  (PrivilegeBag privileges)
+  public abstract boolean revokePrivileges  (PrivilegeBag privileges, boolean grantOption)
   throws InvalidObjectException, MetaException, NoSuchObjectException;
 
   public abstract org.apache.hadoop.hive.metastore.api.Role getRole(
@@ -284,6 +283,15 @@ public interface RawStore extends Configurable {
 
   public List<MRoleMap> listRoles(String principalName,
       PrincipalType principalType);
+
+
+  /**
+   * Get the role to principal grant mapping for given role
+   * @param roleName
+   * @return
+   */
+  public List<MRoleMap> listRoleMembers(String roleName);
+
 
   public abstract Partition getPartitionWithAuth(String dbName, String tblName,
       List<String> partVals, String user_name, List<String> group_names)

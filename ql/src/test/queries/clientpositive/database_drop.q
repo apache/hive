@@ -8,6 +8,7 @@ CREATE DATABASE db5;
 SHOW DATABASES;
 USE db5;
 
+set hive.stats.dbclass=fs;
 dfs ${system:test.dfs.mkdir} ${system:test.tmp.dir}/dbcascade/temp;
 dfs -rmr ${system:test.tmp.dir}/dbcascade;
 dfs ${system:test.dfs.mkdir} ${system:test.tmp.dir}/dbcascade;

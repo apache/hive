@@ -70,7 +70,7 @@ public class UDFToString extends UDF {
     } else {
       out.reset();
       LazyInteger.writeUTF8NoException(out, i.get());
-      t.set(out.getData(), 0, out.getCount());
+      t.set(out.getData(), 0, out.getLength());
       return t;
     }
   }
@@ -81,7 +81,7 @@ public class UDFToString extends UDF {
     } else {
       out.reset();
       LazyInteger.writeUTF8NoException(out, i.get());
-      t.set(out.getData(), 0, out.getCount());
+      t.set(out.getData(), 0, out.getLength());
       return t;
     }
   }
@@ -92,7 +92,7 @@ public class UDFToString extends UDF {
     } else {
       out.reset();
       LazyInteger.writeUTF8NoException(out, i.get());
-      t.set(out.getData(), 0, out.getCount());
+      t.set(out.getData(), 0, out.getLength());
       return t;
     }
   }
@@ -103,7 +103,7 @@ public class UDFToString extends UDF {
     } else {
       out.reset();
       LazyLong.writeUTF8NoException(out, i.get());
-      t.set(out.getData(), 0, out.getCount());
+      t.set(out.getData(), 0, out.getLength());
       return t;
     }
   }

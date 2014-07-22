@@ -28,26 +28,24 @@ import org.apache.hadoop.hive.serde2.io.DoubleWritable;
  * Implementation of the SQRT UDF found in many databases.
  */
 @Description(name = "sqrt",
-    value = "_FUNC_(x) - returns the square root of x",
-    extended = "Example:\n "
-    + "  > SELECT _FUNC_(4) FROM src LIMIT 1;\n" + "  2")
+             value = "_FUNC_(x) - returns the square root of x",
+             extended = "Example:\n "
+                        + "  > SELECT _FUNC_(4) FROM src LIMIT 1;\n"
+                        + "  2")
 @VectorizedExpressions({FuncSqrtLongToDouble.class, FuncSqrtDoubleToDouble.class})
 public class UDFSqrt extends UDFMath {
+
   private final DoubleWritable result = new DoubleWritable();
 
-  public UDFSqrt() {
-  }
-
   /**
-   * Return NULL for NULL or negative inputs; otherwise, return the square root.
+   * Return NULL for negative inputs; otherwise, return the square root.
    */
-  public DoubleWritable evaluate(DoubleWritable i) {
-    if (i == null) {
-      return null;
-    } else if (i.get() < 0) {
+  @Override
+  protected DoubleWritable doEvaluate(DoubleWritable a) {
+    if (a.get() < 0) {
       return null;
     } else {
-      result.set(Math.sqrt(i.get()));
+      result.set(Math.sqrt(a.get()));
       return result;
     }
   }

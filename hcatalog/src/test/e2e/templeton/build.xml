@@ -87,17 +87,20 @@
              if group=3, then 3 .conf files will be processed in parallel
              if conf.file=2 there will be 2 thread per .conf file, each thread 
              executing a single group (identified by 'name' element) -->
-        <property name="fork.factor.group" value="5"/>
-        <property name="fork.factor.conf.file" value="5"/>
+        <property name="fork.factor.group" value="3"/>
+        <property name="fork.factor.conf.file" value="3"/>
         <property name="e2e.debug" value="false"/>
         <property name="tests.to.run" value=""/>
 
-        <exec executable="./test_harness.pl" dir="${test.location}" failonerror="true">
+        <exec executable="perl" dir="${test.location}" failonerror="true">
             <env key="HARNESS_ROOT" value="."/>
             <env key="DRIVER_ROOT" value="${basedir}/drivers"/>
             <env key="TH_WORKING_DIR" value="${test.location}"/>
             <env key="TH_INPDIR_LOCAL" value="${inpdir.local}"/>
             <env key="TH_INPDIR_HDFS" value="${inpdir.hdfs}"/>
+            <env key="DB_CONNECTION_STRING" value="${db.connection.string}"/>
+            <env key="DB_USER_NAME" value="${db.user.name}"/>
+            <env key="DB_PASSWORD" value="${db.password}"/>
             <env key="TH_OUT" value="."/>
             <env key="TH_ROOT" value="."/>
             <env key="FORK_FACTOR_GROUP" value="${fork.factor.group}"/>
@@ -109,6 +112,7 @@
             <env key="HARNESS_CONF" value="${basedir}/conf/default.conf"/>
             <env key="SECURE_MODE" value="${secure.mode}"/>
             <env key="HADOOP_VERSION" value="${hadoopversion}"/>
+            <arg value="./test_harness.pl"/>
             <arg line="${tests.to.run}"/>
             <arg value="${basedir}/tests/serverstatus.conf"/>
             <arg value="${basedir}/tests/jobsubmission_streaming.conf"/>
@@ -125,7 +129,7 @@
         <property name="fork.factor.conf.file" value="1"/>
         <property name="e2e.debug" value="false"/>
         <property name="tests.to.run" value=""/>
-        <exec executable="./test_harness.pl" dir="${test.location}" failonerror="true">
+        <exec executable="perl" dir="${test.location}" failonerror="true">
             <env key="HARNESS_ROOT" value="."/>
             <env key="DRIVER_ROOT" value="${basedir}/drivers"/>
             <env key="TH_WORKING_DIR" value="${test.location}"/>
@@ -145,6 +149,7 @@
             <env key="HARNESS_CONF" value="${basedir}/conf/default.conf"/>
             <env key="SECURE_MODE" value="${secure.mode}"/>
             <env key="KEYTAB_DIR" value="${keytab.dir}"/>
+            <arg value="./test_harness.pl"/>
             <arg line="${tests.to.run}"/>
             <arg value="${basedir}/tests/hcatperms.conf"/>
             <arg value="${basedir}/tests/jobstatus.conf"/>
@@ -166,7 +171,7 @@
             <isset property="doas.user.tmp"/>
         </condition>
 
-        <exec executable="./test_harness.pl" dir="${test.location}" failonerror="true">
+        <exec executable="perl" dir="${test.location}" failonerror="true">
             <env key="HARNESS_ROOT" value="."/>
             <env key="TH_WORKING_DIR" value="${test.location}"/>
             <env key="TH_INPDIR_LOCAL" value="${inpdir.local}"/>
@@ -182,6 +187,7 @@
             <env key="DOAS_USER" value="${doas.user}"/>
             <env key="HARNESS_CONF" value="${basedir}/conf/default.conf"/>
             <env key="SECURE_MODE" value="${secure.mode}"/>
+            <arg value="./test_harness.pl"/>
             <arg line="${tests.to.run}"/>
             <arg value="${basedir}/tests/doas.conf"/>
         </exec>

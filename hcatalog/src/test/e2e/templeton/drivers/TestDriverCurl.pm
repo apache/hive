@@ -188,6 +188,9 @@ sub globalSetup
 
     $globalHash->{'inpdir_local'} = $ENV{'TH_INPDIR_LOCAL'};
     $globalHash->{'inpdir_hdfs'} = $ENV{'TH_INPDIR_HDFS'};
+    $globalHash->{'db_connection_string'} = $ENV{'DB_CONNECTION_STRING'};
+    $globalHash->{'db_user_name'} = $ENV{'DB_USER_NAME'};
+    $globalHash->{'db_password'} = $ENV{'DB_PASSWORD'};
 
     $globalHash->{'is_secure_mode'} = $ENV{'SECURE_MODE'};
 
@@ -355,6 +358,9 @@ sub replaceParametersInArg
     $arg =~ s/:OUTDIR:/$outdir/g;
     $arg =~ s/:INPDIR_HDFS:/$testCmd->{'inpdir_hdfs'}/g;
     $arg =~ s/:INPDIR_LOCAL:/$testCmd->{'inpdir_local'}/g;
+    $arg =~ s/:DB_CONNECTION_STRING:/$testCmd->{'db_connection_string'}/g;
+    $arg =~ s/:DB_USER_NAME:/$testCmd->{'db_user_name'}/g;
+    $arg =~ s/:DB_PASSWORD:/$testCmd->{'db_password'}/g;
     $arg =~ s/:TNUM:/$testCmd->{'num'}/g;
     return $arg;
   }
@@ -457,6 +463,11 @@ sub execCurlCmd(){
   my $method = $testCmd->{ $argPrefix . 'method'};
 
   my $url = $testCmd->{ $argPrefix . 'url'};
+
+  #allow curl to make insecure ssl connections and transfers
+  if ($url =~ /^https:/) {
+    push @curl_cmd, '-k';
+  }
 
   my @options = ();
   if (defined $testCmd->{$argPrefix . 'post_options'}) {
@@ -666,6 +677,9 @@ sub compare
           @sorted_filtered_body = sort { $a cmp $b } @filtered_body;
         }
         my $value = $path->value(\@sorted_filtered_body);
+        if (JSON::is_bool($value)) {
+          $value = $value ? 'true' : 'false';
+        }
         
         if ($value !~ /$regex_expected_value/s) {
           print $log "$0::$subName INFO check failed:"
@@ -708,6 +722,9 @@ sub compare
             (!ref($json_field_val) && ! UNIVERSAL::isa(\$json_field_val,'SCALAR')) ){
           #flatten the object into a string
           $json_field_val = dump($json_field_val);
+        }
+        if (JSON::is_bool($json_field_val)) {
+          $json_field_val = $json_field_val ? 'true' : 'false';
         }
         my $regex_expected_value = $json_matches->{$key};
         print $log "Comparing $key: $json_field_val with regex /$regex_expected_value/\n";
@@ -819,7 +836,7 @@ sub compare
           #first wait for job completion
           while ($NUM_RETRIES-- > 0) {
             $jobComplete = $res_hash->{'status'}->{'jobComplete'};
-            if (defined $jobComplete && lc($jobComplete) eq "true") {
+            if (defined $jobComplete && (lc($jobComplete) eq "true" || lc($jobComplete) eq "1")) {
               last;
             }
             sleep $SLEEP_BETWEEN_RETRIES;
@@ -827,7 +844,7 @@ sub compare
             $json = new JSON;
             $res_hash = $json->utf8->decode($jobResult->{'body'});
           }
-          if ( (!defined $jobComplete) || lc($jobComplete) ne "true") {
+          if ( (!defined $jobComplete) || (lc($jobComplete) ne "true" && lc($jobComplete) ne "1")) {
             print $log "$0::$subName WARN check failed: " 
               . " timeout on wait for job completion ";
             $result = 0;
@@ -1112,7 +1129,7 @@ sub getJobResult{
   my $testCmdBasics = $self->copyTestBasicConfig($testCmd);
   $testCmdBasics->{'method'} = 'GET';
   $testCmdBasics->{'num'} = $testCmdBasics->{'num'} . "_jobStatusCheck";
-  $testCmdBasics->{'url'} = ':TEMPLETON_URL:/templeton/v1/queue/' 
+  $testCmdBasics->{'url'} = ':TEMPLETON_URL:/templeton/v1/jobs/'
     . $jobid . '?' . "user.name=:UNAME:" ;
   return $self->execCurlCmd($testCmdBasics, "", $log);
 }
@@ -1122,7 +1139,7 @@ sub killJob{
   my $testCmdBasics = $self->copyTestBasicConfig($testCmd);
   $testCmdBasics->{'method'} = 'DELETE';
   $testCmdBasics->{'num'} = $testCmdBasics->{'num'} . "_killJob";
-  $testCmdBasics->{'url'} = ':TEMPLETON_URL:/templeton/v1/queue/' 
+  $testCmdBasics->{'url'} = ':TEMPLETON_URL:/templeton/v1/jobs/'
     . $jobid . '?' . "user.name=:UNAME:" ;
   return $self->execCurlCmd($testCmdBasics, "", $log);
 }

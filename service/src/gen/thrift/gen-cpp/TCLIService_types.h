@@ -23,7 +23,8 @@ struct TProtocolVersion {
     HIVE_CLI_SERVICE_PROTOCOL_V3 = 2,
     HIVE_CLI_SERVICE_PROTOCOL_V4 = 3,
     HIVE_CLI_SERVICE_PROTOCOL_V5 = 4,
-    HIVE_CLI_SERVICE_PROTOCOL_V6 = 5
+    HIVE_CLI_SERVICE_PROTOCOL_V6 = 5,
+    HIVE_CLI_SERVICE_PROTOCOL_V7 = 6
   };
 };
 
@@ -3717,6 +3718,272 @@ class TFetchResultsResp {
 };
 
 void swap(TFetchResultsResp &a, TFetchResultsResp &b);
+
+
+class TGetDelegationTokenReq {
+ public:
+
+  static const char* ascii_fingerprint; // = "07EA0311716A27924914E4354ED22D6C";
+  static const uint8_t binary_fingerprint[16]; // = {0x07,0xEA,0x03,0x11,0x71,0x6A,0x27,0x92,0x49,0x14,0xE4,0x35,0x4E,0xD2,0x2D,0x6C};
+
+  TGetDelegationTokenReq() : owner(), renewer() {
+  }
+
+  virtual ~TGetDelegationTokenReq() throw() {}
+
+  TSessionHandle sessionHandle;
+  std::string owner;
+  std::string renewer;
+
+  void __set_sessionHandle(const TSessionHandle& val) {
+    sessionHandle = val;
+  }
+
+  void __set_owner(const std::string& val) {
+    owner = val;
+  }
+
+  void __set_renewer(const std::string& val) {
+    renewer = val;
+  }
+
+  bool operator == (const TGetDelegationTokenReq & rhs) const
+  {
+    if (!(sessionHandle == rhs.sessionHandle))
+      return false;
+    if (!(owner == rhs.owner))
+      return false;
+    if (!(renewer == rhs.renewer))
+      return false;
+    return true;
+  }
+  bool operator != (const TGetDelegationTokenReq &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const TGetDelegationTokenReq & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(TGetDelegationTokenReq &a, TGetDelegationTokenReq &b);
+
+typedef struct _TGetDelegationTokenResp__isset {
+  _TGetDelegationTokenResp__isset() : delegationToken(false) {}
+  bool delegationToken;
+} _TGetDelegationTokenResp__isset;
+
+class TGetDelegationTokenResp {
+ public:
+
+  static const char* ascii_fingerprint; // = "C0E132DC412CEA08D771EAC38CEA1DA6";
+  static const uint8_t binary_fingerprint[16]; // = {0xC0,0xE1,0x32,0xDC,0x41,0x2C,0xEA,0x08,0xD7,0x71,0xEA,0xC3,0x8C,0xEA,0x1D,0xA6};
+
+  TGetDelegationTokenResp() : delegationToken() {
+  }
+
+  virtual ~TGetDelegationTokenResp() throw() {}
+
+  TStatus status;
+  std::string delegationToken;
+
+  _TGetDelegationTokenResp__isset __isset;
+
+  void __set_status(const TStatus& val) {
+    status = val;
+  }
+
+  void __set_delegationToken(const std::string& val) {
+    delegationToken = val;
+    __isset.delegationToken = true;
+  }
+
+  bool operator == (const TGetDelegationTokenResp & rhs) const
+  {
+    if (!(status == rhs.status))
+      return false;
+    if (__isset.delegationToken != rhs.__isset.delegationToken)
+      return false;
+    else if (__isset.delegationToken && !(delegationToken == rhs.delegationToken))
+      return false;
+    return true;
+  }
+  bool operator != (const TGetDelegationTokenResp &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const TGetDelegationTokenResp & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(TGetDelegationTokenResp &a, TGetDelegationTokenResp &b);
+
+
+class TCancelDelegationTokenReq {
+ public:
+
+  static const char* ascii_fingerprint; // = "1A3D66269336B7EC66998BFE1BECDE75";
+  static const uint8_t binary_fingerprint[16]; // = {0x1A,0x3D,0x66,0x26,0x93,0x36,0xB7,0xEC,0x66,0x99,0x8B,0xFE,0x1B,0xEC,0xDE,0x75};
+
+  TCancelDelegationTokenReq() : delegationToken() {
+  }
+
+  virtual ~TCancelDelegationTokenReq() throw() {}
+
+  TSessionHandle sessionHandle;
+  std::string delegationToken;
+
+  void __set_sessionHandle(const TSessionHandle& val) {
+    sessionHandle = val;
+  }
+
+  void __set_delegationToken(const std::string& val) {
+    delegationToken = val;
+  }
+
+  bool operator == (const TCancelDelegationTokenReq & rhs) const
+  {
+    if (!(sessionHandle == rhs.sessionHandle))
+      return false;
+    if (!(delegationToken == rhs.delegationToken))
+      return false;
+    return true;
+  }
+  bool operator != (const TCancelDelegationTokenReq &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const TCancelDelegationTokenReq & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(TCancelDelegationTokenReq &a, TCancelDelegationTokenReq &b);
+
+
+class TCancelDelegationTokenResp {
+ public:
+
+  static const char* ascii_fingerprint; // = "7142E89F09DC7C5F6FA916C7393F46C2";
+  static const uint8_t binary_fingerprint[16]; // = {0x71,0x42,0xE8,0x9F,0x09,0xDC,0x7C,0x5F,0x6F,0xA9,0x16,0xC7,0x39,0x3F,0x46,0xC2};
+
+  TCancelDelegationTokenResp() {
+  }
+
+  virtual ~TCancelDelegationTokenResp() throw() {}
+
+  TStatus status;
+
+  void __set_status(const TStatus& val) {
+    status = val;
+  }
+
+  bool operator == (const TCancelDelegationTokenResp & rhs) const
+  {
+    if (!(status == rhs.status))
+      return false;
+    return true;
+  }
+  bool operator != (const TCancelDelegationTokenResp &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const TCancelDelegationTokenResp & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(TCancelDelegationTokenResp &a, TCancelDelegationTokenResp &b);
+
+
+class TRenewDelegationTokenReq {
+ public:
+
+  static const char* ascii_fingerprint; // = "1A3D66269336B7EC66998BFE1BECDE75";
+  static const uint8_t binary_fingerprint[16]; // = {0x1A,0x3D,0x66,0x26,0x93,0x36,0xB7,0xEC,0x66,0x99,0x8B,0xFE,0x1B,0xEC,0xDE,0x75};
+
+  TRenewDelegationTokenReq() : delegationToken() {
+  }
+
+  virtual ~TRenewDelegationTokenReq() throw() {}
+
+  TSessionHandle sessionHandle;
+  std::string delegationToken;
+
+  void __set_sessionHandle(const TSessionHandle& val) {
+    sessionHandle = val;
+  }
+
+  void __set_delegationToken(const std::string& val) {
+    delegationToken = val;
+  }
+
+  bool operator == (const TRenewDelegationTokenReq & rhs) const
+  {
+    if (!(sessionHandle == rhs.sessionHandle))
+      return false;
+    if (!(delegationToken == rhs.delegationToken))
+      return false;
+    return true;
+  }
+  bool operator != (const TRenewDelegationTokenReq &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const TRenewDelegationTokenReq & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(TRenewDelegationTokenReq &a, TRenewDelegationTokenReq &b);
+
+
+class TRenewDelegationTokenResp {
+ public:
+
+  static const char* ascii_fingerprint; // = "7142E89F09DC7C5F6FA916C7393F46C2";
+  static const uint8_t binary_fingerprint[16]; // = {0x71,0x42,0xE8,0x9F,0x09,0xDC,0x7C,0x5F,0x6F,0xA9,0x16,0xC7,0x39,0x3F,0x46,0xC2};
+
+  TRenewDelegationTokenResp() {
+  }
+
+  virtual ~TRenewDelegationTokenResp() throw() {}
+
+  TStatus status;
+
+  void __set_status(const TStatus& val) {
+    status = val;
+  }
+
+  bool operator == (const TRenewDelegationTokenResp & rhs) const
+  {
+    if (!(status == rhs.status))
+      return false;
+    return true;
+  }
+  bool operator != (const TRenewDelegationTokenResp &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const TRenewDelegationTokenResp & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(TRenewDelegationTokenResp &a, TRenewDelegationTokenResp &b);
 
 }}}}} // namespace
 

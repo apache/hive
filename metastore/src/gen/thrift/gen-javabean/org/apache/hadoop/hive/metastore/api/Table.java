@@ -47,6 +47,7 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
   private static final org.apache.thrift.protocol.TField VIEW_EXPANDED_TEXT_FIELD_DESC = new org.apache.thrift.protocol.TField("viewExpandedText", org.apache.thrift.protocol.TType.STRING, (short)11);
   private static final org.apache.thrift.protocol.TField TABLE_TYPE_FIELD_DESC = new org.apache.thrift.protocol.TField("tableType", org.apache.thrift.protocol.TType.STRING, (short)12);
   private static final org.apache.thrift.protocol.TField PRIVILEGES_FIELD_DESC = new org.apache.thrift.protocol.TField("privileges", org.apache.thrift.protocol.TType.STRUCT, (short)13);
+  private static final org.apache.thrift.protocol.TField TEMPORARY_FIELD_DESC = new org.apache.thrift.protocol.TField("temporary", org.apache.thrift.protocol.TType.BOOL, (short)14);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -67,6 +68,7 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
   private String viewExpandedText; // required
   private String tableType; // required
   private PrincipalPrivilegeSet privileges; // optional
+  private boolean temporary; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -82,7 +84,8 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
     VIEW_ORIGINAL_TEXT((short)10, "viewOriginalText"),
     VIEW_EXPANDED_TEXT((short)11, "viewExpandedText"),
     TABLE_TYPE((short)12, "tableType"),
-    PRIVILEGES((short)13, "privileges");
+    PRIVILEGES((short)13, "privileges"),
+    TEMPORARY((short)14, "temporary");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -123,6 +126,8 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
           return TABLE_TYPE;
         case 13: // PRIVILEGES
           return PRIVILEGES;
+        case 14: // TEMPORARY
+          return TEMPORARY;
         default:
           return null;
       }
@@ -166,8 +171,9 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
   private static final int __CREATETIME_ISSET_ID = 0;
   private static final int __LASTACCESSTIME_ISSET_ID = 1;
   private static final int __RETENTION_ISSET_ID = 2;
+  private static final int __TEMPORARY_ISSET_ID = 3;
   private byte __isset_bitfield = 0;
-  private _Fields optionals[] = {_Fields.PRIVILEGES};
+  private _Fields optionals[] = {_Fields.PRIVILEGES,_Fields.TEMPORARY};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -200,11 +206,15 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.PRIVILEGES, new org.apache.thrift.meta_data.FieldMetaData("privileges", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, PrincipalPrivilegeSet.class)));
+    tmpMap.put(_Fields.TEMPORARY, new org.apache.thrift.meta_data.FieldMetaData("temporary", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(Table.class, metaDataMap);
   }
 
   public Table() {
+    this.temporary = false;
+
   }
 
   public Table(
@@ -293,6 +303,7 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
     if (other.isSetPrivileges()) {
       this.privileges = new PrincipalPrivilegeSet(other.privileges);
     }
+    this.temporary = other.temporary;
   }
 
   public Table deepCopy() {
@@ -317,6 +328,8 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
     this.viewExpandedText = null;
     this.tableType = null;
     this.privileges = null;
+    this.temporary = false;
+
   }
 
   public String getTableName() {
@@ -641,6 +654,28 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
     }
   }
 
+  public boolean isTemporary() {
+    return this.temporary;
+  }
+
+  public void setTemporary(boolean temporary) {
+    this.temporary = temporary;
+    setTemporaryIsSet(true);
+  }
+
+  public void unsetTemporary() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __TEMPORARY_ISSET_ID);
+  }
+
+  /** Returns true if field temporary is set (has been assigned a value) and false otherwise */
+  public boolean isSetTemporary() {
+    return EncodingUtils.testBit(__isset_bitfield, __TEMPORARY_ISSET_ID);
+  }
+
+  public void setTemporaryIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __TEMPORARY_ISSET_ID, value);
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case TABLE_NAME:
@@ -747,6 +782,14 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
       }
       break;
 
+    case TEMPORARY:
+      if (value == null) {
+        unsetTemporary();
+      } else {
+        setTemporary((Boolean)value);
+      }
+      break;
+
     }
   }
 
@@ -791,6 +834,9 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
     case PRIVILEGES:
       return getPrivileges();
 
+    case TEMPORARY:
+      return Boolean.valueOf(isTemporary());
+
     }
     throw new IllegalStateException();
   }
@@ -828,6 +874,8 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
       return isSetTableType();
     case PRIVILEGES:
       return isSetPrivileges();
+    case TEMPORARY:
+      return isSetTemporary();
     }
     throw new IllegalStateException();
   }
@@ -962,6 +1010,15 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
         return false;
     }
 
+    boolean this_present_temporary = true && this.isSetTemporary();
+    boolean that_present_temporary = true && that.isSetTemporary();
+    if (this_present_temporary || that_present_temporary) {
+      if (!(this_present_temporary && that_present_temporary))
+        return false;
+      if (this.temporary != that.temporary)
+        return false;
+    }
+
     return true;
   }
 
@@ -1033,6 +1090,11 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
     builder.append(present_privileges);
     if (present_privileges)
       builder.append(privileges);
+
+    boolean present_temporary = true && (isSetTemporary());
+    builder.append(present_temporary);
+    if (present_temporary)
+      builder.append(temporary);
 
     return builder.toHashCode();
   }
@@ -1175,6 +1237,16 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetTemporary()).compareTo(typedOther.isSetTemporary());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetTemporary()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.temporary, typedOther.temporary);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -1288,6 +1360,12 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
       }
       first = false;
     }
+    if (isSetTemporary()) {
+      if (!first) sb.append(", ");
+      sb.append("temporary:");
+      sb.append(this.temporary);
+      first = false;
+    }
     sb.append(")");
     return sb.toString();
   }
@@ -1399,14 +1477,14 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
           case 8: // PARTITION_KEYS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list174 = iprot.readListBegin();
-                struct.partitionKeys = new ArrayList<FieldSchema>(_list174.size);
-                for (int _i175 = 0; _i175 < _list174.size; ++_i175)
+                org.apache.thrift.protocol.TList _list190 = iprot.readListBegin();
+                struct.partitionKeys = new ArrayList<FieldSchema>(_list190.size);
+                for (int _i191 = 0; _i191 < _list190.size; ++_i191)
                 {
-                  FieldSchema _elem176; // optional
-                  _elem176 = new FieldSchema();
-                  _elem176.read(iprot);
-                  struct.partitionKeys.add(_elem176);
+                  FieldSchema _elem192; // optional
+                  _elem192 = new FieldSchema();
+                  _elem192.read(iprot);
+                  struct.partitionKeys.add(_elem192);
                 }
                 iprot.readListEnd();
               }
@@ -1418,15 +1496,15 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
           case 9: // PARAMETERS
             if (schemeField.type == org.apache.thrift.protocol.TType.MAP) {
               {
-                org.apache.thrift.protocol.TMap _map177 = iprot.readMapBegin();
-                struct.parameters = new HashMap<String,String>(2*_map177.size);
-                for (int _i178 = 0; _i178 < _map177.size; ++_i178)
+                org.apache.thrift.protocol.TMap _map193 = iprot.readMapBegin();
+                struct.parameters = new HashMap<String,String>(2*_map193.size);
+                for (int _i194 = 0; _i194 < _map193.size; ++_i194)
                 {
-                  String _key179; // required
-                  String _val180; // required
-                  _key179 = iprot.readString();
-                  _val180 = iprot.readString();
-                  struct.parameters.put(_key179, _val180);
+                  String _key195; // required
+                  String _val196; // required
+                  _key195 = iprot.readString();
+                  _val196 = iprot.readString();
+                  struct.parameters.put(_key195, _val196);
                 }
                 iprot.readMapEnd();
               }
@@ -1464,6 +1542,14 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
               struct.privileges = new PrincipalPrivilegeSet();
               struct.privileges.read(iprot);
               struct.setPrivilegesIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 14: // TEMPORARY
+            if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
+              struct.temporary = iprot.readBool();
+              struct.setTemporaryIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -1514,9 +1600,9 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
         oprot.writeFieldBegin(PARTITION_KEYS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.partitionKeys.size()));
-          for (FieldSchema _iter181 : struct.partitionKeys)
+          for (FieldSchema _iter197 : struct.partitionKeys)
           {
-            _iter181.write(oprot);
+            _iter197.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -1526,10 +1612,10 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
         oprot.writeFieldBegin(PARAMETERS_FIELD_DESC);
         {
           oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, struct.parameters.size()));
-          for (Map.Entry<String, String> _iter182 : struct.parameters.entrySet())
+          for (Map.Entry<String, String> _iter198 : struct.parameters.entrySet())
           {
-            oprot.writeString(_iter182.getKey());
-            oprot.writeString(_iter182.getValue());
+            oprot.writeString(_iter198.getKey());
+            oprot.writeString(_iter198.getValue());
           }
           oprot.writeMapEnd();
         }
@@ -1556,6 +1642,11 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
           struct.privileges.write(oprot);
           oprot.writeFieldEnd();
         }
+      }
+      if (struct.isSetTemporary()) {
+        oprot.writeFieldBegin(TEMPORARY_FIELD_DESC);
+        oprot.writeBool(struct.temporary);
+        oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
@@ -1614,7 +1705,10 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
       if (struct.isSetPrivileges()) {
         optionals.set(12);
       }
-      oprot.writeBitSet(optionals, 13);
+      if (struct.isSetTemporary()) {
+        optionals.set(13);
+      }
+      oprot.writeBitSet(optionals, 14);
       if (struct.isSetTableName()) {
         oprot.writeString(struct.tableName);
       }
@@ -1639,19 +1733,19 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
       if (struct.isSetPartitionKeys()) {
         {
           oprot.writeI32(struct.partitionKeys.size());
-          for (FieldSchema _iter183 : struct.partitionKeys)
+          for (FieldSchema _iter199 : struct.partitionKeys)
           {
-            _iter183.write(oprot);
+            _iter199.write(oprot);
           }
         }
       }
       if (struct.isSetParameters()) {
         {
           oprot.writeI32(struct.parameters.size());
-          for (Map.Entry<String, String> _iter184 : struct.parameters.entrySet())
+          for (Map.Entry<String, String> _iter200 : struct.parameters.entrySet())
           {
-            oprot.writeString(_iter184.getKey());
-            oprot.writeString(_iter184.getValue());
+            oprot.writeString(_iter200.getKey());
+            oprot.writeString(_iter200.getValue());
           }
         }
       }
@@ -1667,12 +1761,15 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
       if (struct.isSetPrivileges()) {
         struct.privileges.write(oprot);
       }
+      if (struct.isSetTemporary()) {
+        oprot.writeBool(struct.temporary);
+      }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, Table struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(13);
+      BitSet incoming = iprot.readBitSet(14);
       if (incoming.get(0)) {
         struct.tableName = iprot.readString();
         struct.setTableNameIsSet(true);
@@ -1704,29 +1801,29 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
       }
       if (incoming.get(7)) {
         {
-          org.apache.thrift.protocol.TList _list185 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-          struct.partitionKeys = new ArrayList<FieldSchema>(_list185.size);
-          for (int _i186 = 0; _i186 < _list185.size; ++_i186)
+          org.apache.thrift.protocol.TList _list201 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+          struct.partitionKeys = new ArrayList<FieldSchema>(_list201.size);
+          for (int _i202 = 0; _i202 < _list201.size; ++_i202)
           {
-            FieldSchema _elem187; // optional
-            _elem187 = new FieldSchema();
-            _elem187.read(iprot);
-            struct.partitionKeys.add(_elem187);
+            FieldSchema _elem203; // optional
+            _elem203 = new FieldSchema();
+            _elem203.read(iprot);
+            struct.partitionKeys.add(_elem203);
           }
         }
         struct.setPartitionKeysIsSet(true);
       }
       if (incoming.get(8)) {
         {
-          org.apache.thrift.protocol.TMap _map188 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-          struct.parameters = new HashMap<String,String>(2*_map188.size);
-          for (int _i189 = 0; _i189 < _map188.size; ++_i189)
+          org.apache.thrift.protocol.TMap _map204 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+          struct.parameters = new HashMap<String,String>(2*_map204.size);
+          for (int _i205 = 0; _i205 < _map204.size; ++_i205)
           {
-            String _key190; // required
-            String _val191; // required
-            _key190 = iprot.readString();
-            _val191 = iprot.readString();
-            struct.parameters.put(_key190, _val191);
+            String _key206; // required
+            String _val207; // required
+            _key206 = iprot.readString();
+            _val207 = iprot.readString();
+            struct.parameters.put(_key206, _val207);
           }
         }
         struct.setParametersIsSet(true);
@@ -1747,6 +1844,10 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
         struct.privileges = new PrincipalPrivilegeSet();
         struct.privileges.read(iprot);
         struct.setPrivilegesIsSet(true);
+      }
+      if (incoming.get(13)) {
+        struct.temporary = iprot.readBool();
+        struct.setTemporaryIsSet(true);
       }
     }
   }

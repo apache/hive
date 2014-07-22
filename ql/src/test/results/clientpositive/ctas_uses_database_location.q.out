@@ -74,6 +74,7 @@ STAGE PLANS:
           columns: key string, value string
           input format: org.apache.hadoop.mapred.TextInputFormat
           output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+          serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           name: table_db1
 
   Stage: Stage-2
@@ -118,12 +119,14 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: db1@table_db1
 PREHOOK: query: DESCRIBE FORMATTED table_db1
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: db1@table_db1
 POSTHOOK: query: DESCRIBE FORMATTED table_db1
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: db1@table_db1
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	None                
-value               	string              	None                
+key                 	string              	                    
+value               	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	db1                 	 

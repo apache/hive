@@ -101,7 +101,7 @@ public class HCatInputFormat extends HCatBaseInputFormat {
   }
 
   /**
-   * @deprecated As of 0.13
+   * @deprecated as of 0.13, slated for removal with 0.15
    * Use {@link #setInput(org.apache.hadoop.conf.Configuration, String, String, String)} instead,
    * to specify a partition filter to directly initialize the input with.
    */

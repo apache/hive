@@ -90,7 +90,7 @@ public class GetTypeInfoOperation extends MetadataOperation {
         Object[] rowData = new Object[] {
             type.getName(), // TYPE_NAME
             type.toJavaSQLType(), // DATA_TYPE
-            type.getPrecision(), // PRECISION
+            type.getMaxPrecision(), // PRECISION
             type.getLiteralPrefix(), // LITERAL_PREFIX
             type.getLiteralSuffix(), // LITERAL_SUFFIX
             type.getCreateParams(), // CREATE_PARAMS

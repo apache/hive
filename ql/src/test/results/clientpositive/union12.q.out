@@ -274,8 +274,6 @@ POSTHOOK: query: select * from tmptable x sort by x.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmptable
 #### A masked pattern was here ####
-POSTHOOK: Lineage: tmptable.key EXPRESSION []
-POSTHOOK: Lineage: tmptable.value EXPRESSION [(src)s1.null, (src1)s2.null, (srcbucket)s3.null, ]
 tst1	500
 tst2	25
 tst3	1000

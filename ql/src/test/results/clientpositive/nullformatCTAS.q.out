@@ -21,12 +21,14 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@base_tab
 PREHOOK: query: DESCRIBE EXTENDED base_tab
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@base_tab
 POSTHOOK: query: DESCRIBE EXTENDED base_tab
 POSTHOOK: type: DESCTABLE
-a                   	string              	None                
-b                   	string              	None                
-c                   	string              	None                
-d                   	string              	None                
+POSTHOOK: Input: default@base_tab
+a                   	string              	                    
+b                   	string              	                    
+c                   	string              	                    
+d                   	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: -- table with non-default null format
@@ -93,6 +95,7 @@ STAGE PLANS:
           columns: a string, b string
           input format: org.apache.hadoop.mapred.TextInputFormat
           output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+          serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           name: null_tab3
 
   Stage: Stage-2
@@ -139,10 +142,12 @@ POSTHOOK: Input: default@base_tab
 POSTHOOK: Output: default@null_tab3
 PREHOOK: query: DESCRIBE EXTENDED null_tab3
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@null_tab3
 POSTHOOK: query: DESCRIBE EXTENDED null_tab3
 POSTHOOK: type: DESCTABLE
-a                   	string              	None                
-b                   	string              	None                
+POSTHOOK: Input: default@null_tab3
+a                   	string              	                    
+b                   	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: SHOW CREATE TABLE null_tab3
@@ -151,7 +156,7 @@ PREHOOK: Input: default@null_tab3
 POSTHOOK: query: SHOW CREATE TABLE null_tab3
 POSTHOOK: type: SHOW_CREATETABLE
 POSTHOOK: Input: default@null_tab3
-CREATE  TABLE `null_tab3`(
+CREATE TABLE `null_tab3`(
   `a` string, 
   `b` string)
 ROW FORMAT DELIMITED 
@@ -163,12 +168,12 @@ OUTPUTFORMAT
 LOCATION
 #### A masked pattern was here ####
 TBLPROPERTIES (
-  'numFiles'='1', 
   'COLUMN_STATS_ACCURATE'='true', 
-#### A masked pattern was here ####
+  'numFiles'='1', 
   'numRows'='10', 
+  'rawDataSize'='70', 
   'totalSize'='80', 
-  'rawDataSize'='70')
+#### A masked pattern was here ####
 1.01
 1.01
 1.01

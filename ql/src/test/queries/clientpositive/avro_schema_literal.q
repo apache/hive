@@ -25,7 +25,8 @@ TBLPROPERTIES ('avro.schema.literal'='{
     { "name":"enum1", "type":{"type":"enum", "name":"enum1_values", "symbols":["BLUE","RED", "GREEN"]} },
     { "name":"nullableint", "type":["int", "null"] },
     { "name":"bytes1", "type":"bytes" },
-    { "name":"fixed1", "type":{"type":"fixed", "name":"threebytes", "size":3} }
+    { "name":"fixed1", "type":{"type":"fixed", "name":"threebytes", "size":3} },
+    { "name":"dec1", "type":{"type":"bytes", "logicalType":"decimal", "precision":5, "scale":2} }
   ] }');
 
 DESCRIBE avro1;

@@ -62,7 +62,6 @@ public final class PcrExprProcFactory {
       throws SemanticException {
     StructObjectInspector rowObjectInspector;
     Table tbl = p.getTable();
-    LinkedHashMap<String, String> partSpec = p.getSpec();
 
     try {
       rowObjectInspector = (StructObjectInspector) tbl
@@ -72,7 +71,7 @@ public final class PcrExprProcFactory {
     }
 
     try {
-      return PartExprEvalUtils.evalExprWithPart(expr, partSpec, vcs, rowObjectInspector);
+      return PartExprEvalUtils.evalExprWithPart(expr, p, vcs, rowObjectInspector);
     } catch (HiveException e) {
       throw new SemanticException(e);
     }

@@ -40,7 +40,7 @@ STAGE PLANS:
                   sort order: ++
                   Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col2 (type: bigint), _col3 (type: double)
+                  value expressions: _col3 (type: double)
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(DISTINCT KEY._col1:0._col0), sum(VALUE._col1)
@@ -87,17 +87,14 @@ POSTHOOK: Output: default@dest1
 POSTHOOK: Lineage: dest1.c1 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.c2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-PREHOOK: query: SELECT dest1.* FROM dest1
+PREHOOK: query: SELECT dest1.* FROM dest1 order by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT dest1.* FROM dest1
+POSTHOOK: query: SELECT dest1.* FROM dest1 order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: dest1.c1 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1.c2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 0	1	00.0
 1	71	116414.0
 2	69	225571.0

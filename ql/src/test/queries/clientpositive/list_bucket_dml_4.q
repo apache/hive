@@ -8,6 +8,7 @@ set hive.merge.mapfiles=false;
 set hive.merge.mapredfiles=false;
 
 -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
+-- SORT_QUERY_RESULTS
 
 -- list bucketing DML: static partition. multiple skewed columns. merge.
 -- ds=2008-04-08/hr=11/HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME:
@@ -63,9 +64,9 @@ select count(*) from list_bucketing_static_part;
 set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
 set hive.optimize.listbucketing=true;
 explain extended
-select * from list_bucketing_static_part where ds = '2008-04-08' and  hr = '11' and key = '484' and value = 'val_484' ORDER BY key, value, ds, hr;
-select * from list_bucketing_static_part where ds = '2008-04-08' and  hr = '11' and key = '484' and value = 'val_484' ORDER BY key, value, ds, hr;
-select * from srcpart where ds = '2008-04-08' and key = '484' and value = 'val_484' ORDER BY key, value;
+select * from list_bucketing_static_part where ds = '2008-04-08' and  hr = '11' and key = '484' and value = 'val_484';
+select * from list_bucketing_static_part where ds = '2008-04-08' and  hr = '11' and key = '484' and value = 'val_484';
+select * from srcpart where ds = '2008-04-08' and key = '484' and value = 'val_484';
 
 -- clean up
 drop table list_bucketing_static_part;

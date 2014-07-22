@@ -11,10 +11,12 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_authorization_7
 PREHOOK: query: DESCRIBE src_authorization_7
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@src_authorization_7
 POSTHOOK: query: DESCRIBE src_authorization_7
 POSTHOOK: type: DESCTABLE
-key                 	int                 	None                
-value               	string              	None                
+POSTHOOK: Input: default@src_authorization_7
+key                 	int                 	                    
+value               	string              	                    
 PREHOOK: query: DROP TABLE  src_authorization_7
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@src_authorization_7
@@ -40,10 +42,12 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_authorization_7
 PREHOOK: query: DESCRIBE src_authorization_7
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@src_authorization_7
 POSTHOOK: query: DESCRIBE src_authorization_7
 POSTHOOK: type: DESCTABLE
-key                 	int                 	None                
-value               	string              	None                
+POSTHOOK: Input: default@src_authorization_7
+key                 	int                 	                    
+value               	string              	                    
 PREHOOK: query: DROP TABLE  src_authorization_7
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@src_authorization_7

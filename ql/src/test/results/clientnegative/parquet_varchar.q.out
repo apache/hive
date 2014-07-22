@@ -1,0 +1,8 @@
+PREHOOK: query: drop table if exists parquet_varchar
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists parquet_varchar
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table parquet_varchar (t varchar(10)) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. java.lang.UnsupportedOperationException: Parquet does not support varchar. See HIVE-6384

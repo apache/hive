@@ -21,15 +21,17 @@ import java.text.NumberFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.ql.exec.tez.TezProcessor.KVOutputCollector;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputCollector;
+import org.apache.hadoop.util.StringUtils;
 import org.apache.tez.common.TezUtils;
+import org.apache.tez.mapreduce.input.MRInputLegacy;
 import org.apache.tez.mapreduce.processor.MRTaskReporter;
 import org.apache.tez.runtime.api.Event;
 import org.apache.tez.runtime.api.LogicalIOProcessor;
@@ -43,6 +45,9 @@ import org.apache.tez.runtime.library.api.KeyValueWriter;
  * Does what ExecMapper and ExecReducer does for hive in MR framework.
  */
 public class TezProcessor implements LogicalIOProcessor {
+
+
+
   private static final Log LOG = LogFactory.getLog(TezProcessor.class);
   private boolean isMap = false;
 
@@ -70,9 +75,9 @@ public class TezProcessor implements LogicalIOProcessor {
 
   @Override
   public void close() throws IOException {
-    if(rproc != null){
-      rproc.close();
-    }
+    // we have to close in the processor's run method, because tez closes inputs
+    // before calling close (TEZ-955) and we might need to read inputs
+    // when we flush the pipeline.
   }
 
   @Override
@@ -114,61 +119,111 @@ public class TezProcessor implements LogicalIOProcessor {
     String taskAttemptIdStr = taskAttemptIdBuilder.toString();
     this.jobConf.set("mapred.task.id", taskAttemptIdStr);
     this.jobConf.set("mapreduce.task.attempt.id", taskAttemptIdStr);
+    this.jobConf.setInt("mapred.task.partition",processorContext.getTaskIndex());
   }
 
   @Override
   public void run(Map<String, LogicalInput> inputs, Map<String, LogicalOutput> outputs)
       throws Exception {
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_RUN_PROCESSOR);
-    // in case of broadcast-join read the broadcast edge inputs
-    // (possibly asynchronously)
 
-    LOG.info("Running map: " + processorContext.getUniqueIdentifier());
-    for (LogicalInput input : inputs.values()) {
-      input.start();
+    Throwable originalThrowable = null;
+
+    try{
+      perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_RUN_PROCESSOR);
+      // in case of broadcast-join read the broadcast edge inputs
+      // (possibly asynchronously)
+
+      LOG.info("Running task: " + processorContext.getUniqueIdentifier());
+
+      if (isMap) {
+        rproc = new MapRecordProcessor();
+        MRInputLegacy mrInput = getMRInput(inputs);
+        try {
+          mrInput.init();
+        } catch (IOException e) {
+          throw new RuntimeException("Failed while initializing MRInput", e);
+        }
+      } else {
+        rproc = new ReduceRecordProcessor();
+      }
+
+      TezCacheAccess cacheAccess = TezCacheAccess.createInstance(jobConf);
+      // Start the actual Inputs. After MRInput initialization.
+      for (Entry<String, LogicalInput> inputEntry : inputs.entrySet()) {
+        if (!cacheAccess.isInputCached(inputEntry.getKey())) {
+          LOG.info("Input: " + inputEntry.getKey() + " is not cached");
+          inputEntry.getValue().start();
+        } else {
+          LOG.info("Input: " + inputEntry.getKey() + " is already cached. Skipping start");
+        }
+      }
+
+      // Outputs will be started later by the individual Processors.
+
+      MRTaskReporter mrReporter = new MRTaskReporter(processorContext);
+      rproc.init(jobConf, processorContext, mrReporter, inputs, outputs);
+      rproc.run();
+
+      //done - output does not need to be committed as hive does not use outputcommitter
+      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_RUN_PROCESSOR);
+    } catch (Throwable t) {
+      originalThrowable = t;
+    } finally {
+      if (originalThrowable != null && originalThrowable instanceof Error) {
+        LOG.error(StringUtils.stringifyException(originalThrowable));
+        throw new RuntimeException(originalThrowable);
+      }
+
+      try {
+        if(rproc != null){
+          rproc.close();
+        }
+      } catch (Throwable t) {
+        if (originalThrowable == null) {
+          originalThrowable = t;
+        }
+      }
+      if (originalThrowable != null) {
+        LOG.error(StringUtils.stringifyException(originalThrowable));
+        throw new RuntimeException(originalThrowable);
+      }
     }
-    for (LogicalOutput output : outputs.values()) {
-      output.start();
-    }
-
-    Map<String, OutputCollector> outMap = new HashMap<String, OutputCollector>();
-
-    for (String outputName: outputs.keySet()) {
-      LOG.info("Handling output: " + outputName);
-      KeyValueWriter kvWriter = (KeyValueWriter) outputs.get(outputName).getWriter();
-      OutputCollector collector = new KVOutputCollector(kvWriter);
-      outMap.put(outputName, collector);
-    }
-
-    if(isMap){
-      rproc = new MapRecordProcessor();
-    }
-    else{
-      rproc = new ReduceRecordProcessor();
-    }
-
-    MRTaskReporter mrReporter = new MRTaskReporter(processorContext);
-    rproc.init(jobConf, mrReporter, inputs, outMap);
-    rproc.run();
-
-    //done - output does not need to be committed as hive does not use outputcommitter
-    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_RUN_PROCESSOR);
   }
 
   /**
-   * KVOutputCollector. OutputCollector that writes using KVWriter
+   * KVOutputCollector. OutputCollector that writes using KVWriter.
+   * Must be initialized before it is used.
    *
    */
-  static class KVOutputCollector implements OutputCollector {
-    private final KeyValueWriter output;
+  static class TezKVOutputCollector implements OutputCollector {
+    private KeyValueWriter writer;
+    private final LogicalOutput output;
 
-    KVOutputCollector(KeyValueWriter output) {
-      this.output = output;
+    TezKVOutputCollector(LogicalOutput logicalOutput) {
+      this.output = logicalOutput;
+    }
+
+    void initialize() throws Exception {
+      this.writer = (KeyValueWriter) output.getWriter();
     }
 
     public void collect(Object key, Object value) throws IOException {
-        output.write(key, value);
+      writer.write(key, value);
     }
   }
 
+  static  MRInputLegacy getMRInput(Map<String, LogicalInput> inputs) {
+    //there should be only one MRInput
+    MRInputLegacy theMRInput = null;
+    for(LogicalInput inp : inputs.values()){
+      if(inp instanceof MRInputLegacy){
+        if(theMRInput != null){
+          throw new IllegalArgumentException("Only one MRInput is expected");
+        }
+        //a better logic would be to find the alias
+        theMRInput = (MRInputLegacy)inp;
+      }
+    }
+    return theMRInput;
+  }
 }

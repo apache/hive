@@ -9,7 +9,7 @@ POSTHOOK: query: EXPLAIN SELECT x, y FROM src LATERAL VIEW STACK(2, 'x', array(1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -67,6 +67,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 2
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: EXPLAIN SELECT x, y FROM src LATERAL VIEW STACK(2, 'x', array(1), 'z', array(4)) a AS x, y LIMIT 2
 PREHOOK: type: QUERY
@@ -74,7 +76,7 @@ POSTHOOK: query: EXPLAIN SELECT x, y FROM src LATERAL VIEW STACK(2, 'x', array(1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -132,6 +134,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 2
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT x, y FROM src LATERAL VIEW STACK(2, 'x', array(1), 'z') a AS x, y LIMIT 2
 PREHOOK: type: QUERY

@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql;
 import static org.apache.hadoop.hive.metastore.MetaStoreUtils.DEFAULT_DATABASE_NAME;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -32,6 +33,7 @@ import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.Serializable;
@@ -63,6 +65,9 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.zookeeper.MiniZooKeeperCluster;
 import org.apache.hadoop.hive.cli.CliDriver;
 import org.apache.hadoop.hive.cli.CliSessionState;
+import org.apache.hadoop.hive.common.io.DigestPrintStream;
+import org.apache.hadoop.hive.common.io.SortAndDigestPrintStream;
+import org.apache.hadoop.hive.common.io.SortPrintStream;
 import org.apache.hadoop.hive.common.io.CachingPrintStream;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -71,7 +76,6 @@ import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.exec.Utilities.StreamPrinter;
 import org.apache.hadoop.hive.ql.exec.vector.util.AllVectorTypesRecord;
 import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.lockmgr.zookeeper.ZooKeeperHiveLockManager;
@@ -87,13 +91,13 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.thrift.ThriftDeserializer;
 import org.apache.hadoop.hive.serde2.thrift.test.Complex;
-import org.apache.hadoop.hive.shims.Hadoop23Shims;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
 import org.apache.hadoop.mapred.TextInputFormat;
 import org.apache.hadoop.util.Shell;
+import org.apache.hive.common.util.StreamPrinter;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.tools.ant.BuildException;
 import org.apache.zookeeper.WatchedEvent;
@@ -119,6 +123,9 @@ public class QTestUtil {
   private final TreeMap<String, String> qMap;
   private final Set<String> qSkipSet;
   private final Set<String> qSortSet;
+  private final Set<String> qSortQuerySet;
+  private final Set<String> qHashQuerySet;
+  private final Set<String> qSortNHashQuerySet;
   private static final String SORT_SUFFIX = ".sorted";
   public static final HashSet<String> srcTables = new HashSet<String>();
   private static MiniClusterType clusterType = MiniClusterType.none;
@@ -259,7 +266,7 @@ public class QTestUtil {
       mr.setupConfiguration(conf);
 
       // set fs.default.name to the uri of mini-dfs
-      String dfsUriString = getHdfsUriString(dfs.getFileSystem().getUri().toString());
+      String dfsUriString = WindowsPathUtil.getHdfsUriString(dfs.getFileSystem().getUri().toString());
       conf.setVar(HiveConf.ConfVars.HADOOPFS, dfsUriString);
       // hive.metastore.warehouse.dir needs to be set relative to the mini-dfs
       conf.setVar(HiveConf.ConfVars.METASTOREWAREHOUSE,
@@ -270,47 +277,8 @@ public class QTestUtil {
     // Windows paths should be converted after MiniMrShim.setupConfiguration()
     // since setupConfiguration may overwrite configuration values.
     if (Shell.WINDOWS) {
-      convertPathsFromWindowsToHdfs();
+      WindowsPathUtil.convertPathsFromWindowsToHdfs(conf);
     }
-  }
-
-  private void convertPathsFromWindowsToHdfs() {
-    // Following local paths are used as HDFS paths in unit tests.
-    // It works well in Unix as the path notation in Unix and HDFS is more or less same.
-    // But when it comes to Windows, drive letter separator ':' & backslash '\" are invalid
-    // characters in HDFS so we need to converts these local paths to HDFS paths before using them
-    // in unit tests.
-
-    // hive.exec.scratchdir needs to be set relative to the mini-dfs
-    String orgWarehouseDir = conf.getVar(HiveConf.ConfVars.METASTOREWAREHOUSE);
-    conf.setVar(HiveConf.ConfVars.METASTOREWAREHOUSE, getHdfsUriString(orgWarehouseDir));
-
-    String orgTestTempDir = System.getProperty("test.tmp.dir");
-    System.setProperty("test.tmp.dir", getHdfsUriString(orgTestTempDir));
-
-    String orgTestDataDir = System.getProperty("test.src.data.dir");
-    System.setProperty("test.src.data.dir", getHdfsUriString(orgTestDataDir));
-
-    String orgScratchDir = conf.getVar(HiveConf.ConfVars.SCRATCHDIR);
-    conf.setVar(HiveConf.ConfVars.SCRATCHDIR, getHdfsUriString(orgScratchDir));
-
-    if (miniMr) {
-      String orgAuxJarFolder = conf.getAuxJars();
-      conf.setAuxJars(getHdfsUriString("file://" + orgAuxJarFolder));
-    }
-  }
-
-  private String getHdfsUriString(String uriStr) {
-    assert uriStr != null;
-    if(Shell.WINDOWS) {
-      // If the URI conversion is from Windows to HDFS then replace the '\' with '/'
-      // and remove the windows single drive letter & colon from absolute path.
-      return uriStr.replace('\\', '/')
-        .replaceFirst("/[c-zC-Z]:", "/")
-        .replaceFirst("^[c-zC-Z]:", "");
-    }
-
-    return uriStr;
   }
 
   public enum MiniClusterType {
@@ -349,6 +317,9 @@ public class QTestUtil {
     qMap = new TreeMap<String, String>();
     qSkipSet = new HashSet<String>();
     qSortSet = new HashSet<String>();
+    qSortQuerySet = new HashSet<String>();
+    qHashQuerySet = new HashSet<String>();
+    qSortNHashQuerySet = new HashSet<String>();
     this.clusterType = clusterType;
 
     HadoopShims shims = ShimLoader.getHadoopShims();
@@ -365,13 +336,11 @@ public class QTestUtil {
     if (clusterType != MiniClusterType.none) {
       dfs = shims.getMiniDfs(conf, numberOfDataNodes, true, null);
       FileSystem fs = dfs.getFileSystem();
+      String uriString = WindowsPathUtil.getHdfsUriString(fs.getUri().toString());
       if (clusterType == MiniClusterType.tez) {
-        if (!(shims instanceof Hadoop23Shims)) {
-          throw new Exception("Cannot run tez on hadoop-1, Version: "+this.hadoopVer);
-        }
-        mr = ((Hadoop23Shims)shims).getMiniTezCluster(conf, 4, getHdfsUriString(fs.getUri().toString()), 1);
+        mr = shims.getMiniTezCluster(conf, 4, uriString, 1);
       } else {
-        mr = shims.getMiniMrCluster(conf, 4, getHdfsUriString(fs.getUri().toString()), 1);
+        mr = shims.getMiniMrCluster(conf, 4, uriString, 1);
       }
     }
 
@@ -442,15 +411,24 @@ public class QTestUtil {
       qSkipSet.add(qf.getName());
     }
 
-    if (checkNeedsSort(qf.getName(), query)) {
+    if (matches(SORT_BEFORE_DIFF, query)) {
       qSortSet.add(qf.getName());
+    } else if (matches(SORT_QUERY_RESULTS, query)) {
+      qSortQuerySet.add(qf.getName());
+    } else if (matches(HASH_QUERY_RESULTS, query)) {
+      qHashQuerySet.add(qf.getName());
+    } else if (matches(SORT_AND_HASH_QUERY_RESULTS, query)) {
+      qSortNHashQuerySet.add(qf.getName());
     }
   }
 
-  private boolean checkNeedsSort(String fileName, String query) {
-    Pattern pattern = Pattern.compile("-- SORT_BEFORE_DIFF");
-    Matcher matcher = pattern.matcher(query);
+  private static final Pattern SORT_BEFORE_DIFF = Pattern.compile("-- SORT_BEFORE_DIFF");
+  private static final Pattern SORT_QUERY_RESULTS = Pattern.compile("-- SORT_QUERY_RESULTS");
+  private static final Pattern HASH_QUERY_RESULTS = Pattern.compile("-- HASH_QUERY_RESULTS");
+  private static final Pattern SORT_AND_HASH_QUERY_RESULTS = Pattern.compile("-- SORT_AND_HASH_QUERY_RESULTS");
 
+  private boolean matches(Pattern pattern, String query) {
+    Matcher matcher = pattern.matcher(query);
     if (matcher.find()) {
       return true;
     }
@@ -584,6 +562,19 @@ public class QTestUtil {
         // Drop cascade, may need to drop functions
         db.dropDatabase(dbName, true, true, true);
       }
+    }
+
+    // delete remaining directories for external tables (can affect stats for following tests)
+    try {
+      Path p = new Path(testWarehouse);
+      FileSystem fileSystem = p.getFileSystem(conf);
+      for (FileStatus status : fileSystem.listStatus(p)) {
+        if (status.isDir() && !srcTables.contains(status.getPath().getName())) {
+          fileSystem.delete(status.getPath(), true);
+        }
+      }
+    } catch (IllegalArgumentException e) {
+      // ignore.. provides invalid url sometimes intentionally
     }
     SessionState.get().setCurrentDatabase(DEFAULT_DATABASE_NAME);
 
@@ -836,6 +827,7 @@ public class QTestUtil {
 
     HiveConf.setVar(conf, HiveConf.ConfVars.HIVE_AUTHENTICATOR_MANAGER,
     "org.apache.hadoop.hive.ql.security.DummyAuthenticator");
+    Utilities.clearWorkMap();
     CliSessionState ss = new CliSessionState(conf);
     assert ss != null;
     ss.in = System.in;
@@ -849,10 +841,17 @@ public class QTestUtil {
       stdoutName = tname + ".out";
     }
 
-    File outf = new File(logDir);
-    outf = new File(outf, stdoutName);
-    FileOutputStream fo = new FileOutputStream(outf);
-    ss.out = new PrintStream(fo, true, "UTF-8");
+    File outf = new File(logDir, stdoutName);
+    OutputStream fo = new BufferedOutputStream(new FileOutputStream(outf));
+    if (qSortQuerySet.contains(tname)) {
+      ss.out = new SortPrintStream(fo, "UTF-8");
+    } else if (qHashQuerySet.contains(tname)) {
+      ss.out = new DigestPrintStream(fo, "UTF-8");
+    } else if (qSortNHashQuerySet.contains(tname)) {
+      ss.out = new SortAndDigestPrintStream(fo, "UTF-8");
+    } else {
+      ss.out = new PrintStream(fo, true, "UTF-8");
+    }
     ss.err = new CachingPrintStream(fo, true, "UTF-8");
     ss.setIsSilent(true);
     SessionState oldSs = SessionState.get();
@@ -1266,7 +1265,8 @@ public class QTestUtil {
       "^Deleted.*",
       ".*DagName:.*",
       ".*Input:.*/data/files/.*",
-      ".*Output:.*/data/files/.*"
+      ".*Output:.*/data/files/.*",
+      ".*total number of created files now is.*"
   });
 
   public int checkCliDriverResults(String tname) throws Exception {

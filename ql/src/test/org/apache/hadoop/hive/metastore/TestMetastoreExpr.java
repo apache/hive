@@ -40,11 +40,14 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.io.HiveInputFormat;
+import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.util.StringUtils;
@@ -239,6 +242,9 @@ public class TestMetastoreExpr extends TestCase {
     sd.getSerdeInfo().getParameters()
         .put(serdeConstants.SERIALIZATION_FORMAT, "1");
     sd.setSortCols(new ArrayList<Order>());
+    sd.getSerdeInfo().setSerializationLib(LazySimpleSerDe.class.getName());
+    sd.setInputFormat(HiveInputFormat.class.getName());
+    sd.setOutputFormat(HiveOutputFormat.class.getName());
     tbl.setSd(sd);
   }
 

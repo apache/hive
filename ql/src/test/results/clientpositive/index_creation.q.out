@@ -41,8 +41,10 @@ POSTHOOK: type: CREATEINDEX
 POSTHOOK: Output: default@default__src_src_index_2__
 PREHOOK: query: desc extended default__src_src_index_2__
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@default__src_src_index_2__
 POSTHOOK: query: desc extended default__src_src_index_2__
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@default__src_src_index_2__
 key                 	string              	default             
 _bucketname         	string              	                    
 _offsets            	array<bigint>       	                    
@@ -55,8 +57,10 @@ POSTHOOK: type: CREATEINDEX
 POSTHOOK: Output: default@src_idx_src_index_3
 PREHOOK: query: desc extended src_idx_src_index_3
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@src_idx_src_index_3
 POSTHOOK: query: desc extended src_idx_src_index_3
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@src_idx_src_index_3
 key                 	string              	default             
 _bucketname         	string              	                    
 _offsets            	array<bigint>       	                    
@@ -69,8 +73,10 @@ POSTHOOK: type: CREATEINDEX
 POSTHOOK: Output: default@default__src_src_index_4__
 PREHOOK: query: desc extended default__src_src_index_4__
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@default__src_src_index_4__
 POSTHOOK: query: desc extended default__src_src_index_4__
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@default__src_src_index_4__
 key                 	string              	default             
 _bucketname         	string              	                    
 _offsets            	array<bigint>       	                    
@@ -83,8 +89,10 @@ POSTHOOK: type: CREATEINDEX
 POSTHOOK: Output: default@default__src_src_index_5__
 PREHOOK: query: desc extended default__src_src_index_5__
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@default__src_src_index_5__
 POSTHOOK: query: desc extended default__src_src_index_5__
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@default__src_src_index_5__
 key                 	string              	default             
 _bucketname         	string              	                    
 _offsets            	array<bigint>       	                    
@@ -97,8 +105,10 @@ POSTHOOK: type: CREATEINDEX
 POSTHOOK: Output: default@default__src_src_index_6__
 PREHOOK: query: desc extended default__src_src_index_6__
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@default__src_src_index_6__
 POSTHOOK: query: desc extended default__src_src_index_6__
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@default__src_src_index_6__
 key                 	string              	default             
 _bucketname         	string              	                    
 _offsets            	array<bigint>       	                    
@@ -111,8 +121,10 @@ POSTHOOK: type: CREATEINDEX
 POSTHOOK: Output: default@src_idx_src_index_7
 PREHOOK: query: desc extended src_idx_src_index_7
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@src_idx_src_index_7
 POSTHOOK: query: desc extended src_idx_src_index_7
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@src_idx_src_index_7
 key                 	string              	default             
 _bucketname         	string              	                    
 _offsets            	array<bigint>       	                    
@@ -125,8 +137,10 @@ POSTHOOK: type: CREATEINDEX
 POSTHOOK: Output: default@default__src_src_index_8__
 PREHOOK: query: desc extended default__src_src_index_8__
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@default__src_src_index_8__
 POSTHOOK: query: desc extended default__src_src_index_8__
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@default__src_src_index_8__
 key                 	string              	default             
 _bucketname         	string              	                    
 _offsets            	array<bigint>       	                    
@@ -139,8 +153,10 @@ POSTHOOK: type: CREATEINDEX
 POSTHOOK: Output: default@default__src_src_index_9__
 PREHOOK: query: desc extended default__src_src_index_9__
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@default__src_src_index_9__
 POSTHOOK: query: desc extended default__src_src_index_9__
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@default__src_src_index_9__
 key                 	string              	default             
 _bucketname         	string              	                    
 _offsets            	array<bigint>       	                    
@@ -176,9 +192,6 @@ POSTHOOK: query: create index x2 on table `_t`(`_i`,`_j`) as 'compact' WITH DEFE
 REBUILD
 POSTHOOK: type: CREATEINDEX
 POSTHOOK: Output: default@default___t_x2__
-POSTHOOK: Lineage: default___t_x__._bucketname SIMPLE [(_t)_t.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default___t_x__._j SIMPLE [(_t)_t.FieldSchema(name:_j, type:int, comment:null), ]
-POSTHOOK: Lineage: default___t_x__._offsets EXPRESSION [(_t)_t.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 PREHOOK: query: alter index x2 on `_t` rebuild
 PREHOOK: type: ALTERINDEX_REBUILD
 PREHOOK: Input: default@_t
@@ -191,97 +204,38 @@ POSTHOOK: Lineage: default___t_x2__._bucketname SIMPLE [(_t)_t.FieldSchema(name:
 POSTHOOK: Lineage: default___t_x2__._i SIMPLE [(_t)_t.FieldSchema(name:_i, type:int, comment:null), ]
 POSTHOOK: Lineage: default___t_x2__._j SIMPLE [(_t)_t.FieldSchema(name:_j, type:int, comment:null), ]
 POSTHOOK: Lineage: default___t_x2__._offsets EXPRESSION [(_t)_t.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default___t_x__._bucketname SIMPLE [(_t)_t.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default___t_x__._j SIMPLE [(_t)_t.FieldSchema(name:_j, type:int, comment:null), ]
-POSTHOOK: Lineage: default___t_x__._offsets EXPRESSION [(_t)_t.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 PREHOOK: query: drop index src_index_2 on src
 PREHOOK: type: DROPINDEX
 POSTHOOK: query: drop index src_index_2 on src
 POSTHOOK: type: DROPINDEX
-POSTHOOK: Lineage: default___t_x2__._bucketname SIMPLE [(_t)_t.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default___t_x2__._i SIMPLE [(_t)_t.FieldSchema(name:_i, type:int, comment:null), ]
-POSTHOOK: Lineage: default___t_x2__._j SIMPLE [(_t)_t.FieldSchema(name:_j, type:int, comment:null), ]
-POSTHOOK: Lineage: default___t_x2__._offsets EXPRESSION [(_t)_t.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default___t_x__._bucketname SIMPLE [(_t)_t.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default___t_x__._j SIMPLE [(_t)_t.FieldSchema(name:_j, type:int, comment:null), ]
-POSTHOOK: Lineage: default___t_x__._offsets EXPRESSION [(_t)_t.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 PREHOOK: query: drop index src_index_3 on src
 PREHOOK: type: DROPINDEX
 POSTHOOK: query: drop index src_index_3 on src
 POSTHOOK: type: DROPINDEX
-POSTHOOK: Lineage: default___t_x2__._bucketname SIMPLE [(_t)_t.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default___t_x2__._i SIMPLE [(_t)_t.FieldSchema(name:_i, type:int, comment:null), ]
-POSTHOOK: Lineage: default___t_x2__._j SIMPLE [(_t)_t.FieldSchema(name:_j, type:int, comment:null), ]
-POSTHOOK: Lineage: default___t_x2__._offsets EXPRESSION [(_t)_t.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default___t_x__._bucketname SIMPLE [(_t)_t.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default___t_x__._j SIMPLE [(_t)_t.FieldSchema(name:_j, type:int, comment:null), ]
-POSTHOOK: Lineage: default___t_x__._offsets EXPRESSION [(_t)_t.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 PREHOOK: query: drop index src_index_4 on src
 PREHOOK: type: DROPINDEX
 POSTHOOK: query: drop index src_index_4 on src
 POSTHOOK: type: DROPINDEX
-POSTHOOK: Lineage: default___t_x2__._bucketname SIMPLE [(_t)_t.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default___t_x2__._i SIMPLE [(_t)_t.FieldSchema(name:_i, type:int, comment:null), ]
-POSTHOOK: Lineage: default___t_x2__._j SIMPLE [(_t)_t.FieldSchema(name:_j, type:int, comment:null), ]
-POSTHOOK: Lineage: default___t_x2__._offsets EXPRESSION [(_t)_t.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default___t_x__._bucketname SIMPLE [(_t)_t.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default___t_x__._j SIMPLE [(_t)_t.FieldSchema(name:_j, type:int, comment:null), ]
-POSTHOOK: Lineage: default___t_x__._offsets EXPRESSION [(_t)_t.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 PREHOOK: query: drop index src_index_5 on src
 PREHOOK: type: DROPINDEX
 POSTHOOK: query: drop index src_index_5 on src
 POSTHOOK: type: DROPINDEX
-POSTHOOK: Lineage: default___t_x2__._bucketname SIMPLE [(_t)_t.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default___t_x2__._i SIMPLE [(_t)_t.FieldSchema(name:_i, type:int, comment:null), ]
-POSTHOOK: Lineage: default___t_x2__._j SIMPLE [(_t)_t.FieldSchema(name:_j, type:int, comment:null), ]
-POSTHOOK: Lineage: default___t_x2__._offsets EXPRESSION [(_t)_t.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default___t_x__._bucketname SIMPLE [(_t)_t.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default___t_x__._j SIMPLE [(_t)_t.FieldSchema(name:_j, type:int, comment:null), ]
-POSTHOOK: Lineage: default___t_x__._offsets EXPRESSION [(_t)_t.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 PREHOOK: query: drop index src_index_6 on src
 PREHOOK: type: DROPINDEX
 POSTHOOK: query: drop index src_index_6 on src
 POSTHOOK: type: DROPINDEX
-POSTHOOK: Lineage: default___t_x2__._bucketname SIMPLE [(_t)_t.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default___t_x2__._i SIMPLE [(_t)_t.FieldSchema(name:_i, type:int, comment:null), ]
-POSTHOOK: Lineage: default___t_x2__._j SIMPLE [(_t)_t.FieldSchema(name:_j, type:int, comment:null), ]
-POSTHOOK: Lineage: default___t_x2__._offsets EXPRESSION [(_t)_t.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default___t_x__._bucketname SIMPLE [(_t)_t.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default___t_x__._j SIMPLE [(_t)_t.FieldSchema(name:_j, type:int, comment:null), ]
-POSTHOOK: Lineage: default___t_x__._offsets EXPRESSION [(_t)_t.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 PREHOOK: query: drop index src_index_7 on src
 PREHOOK: type: DROPINDEX
 POSTHOOK: query: drop index src_index_7 on src
 POSTHOOK: type: DROPINDEX
-POSTHOOK: Lineage: default___t_x2__._bucketname SIMPLE [(_t)_t.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default___t_x2__._i SIMPLE [(_t)_t.FieldSchema(name:_i, type:int, comment:null), ]
-POSTHOOK: Lineage: default___t_x2__._j SIMPLE [(_t)_t.FieldSchema(name:_j, type:int, comment:null), ]
-POSTHOOK: Lineage: default___t_x2__._offsets EXPRESSION [(_t)_t.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default___t_x__._bucketname SIMPLE [(_t)_t.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default___t_x__._j SIMPLE [(_t)_t.FieldSchema(name:_j, type:int, comment:null), ]
-POSTHOOK: Lineage: default___t_x__._offsets EXPRESSION [(_t)_t.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 PREHOOK: query: drop index src_index_8 on src
 PREHOOK: type: DROPINDEX
 POSTHOOK: query: drop index src_index_8 on src
 POSTHOOK: type: DROPINDEX
-POSTHOOK: Lineage: default___t_x2__._bucketname SIMPLE [(_t)_t.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default___t_x2__._i SIMPLE [(_t)_t.FieldSchema(name:_i, type:int, comment:null), ]
-POSTHOOK: Lineage: default___t_x2__._j SIMPLE [(_t)_t.FieldSchema(name:_j, type:int, comment:null), ]
-POSTHOOK: Lineage: default___t_x2__._offsets EXPRESSION [(_t)_t.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default___t_x__._bucketname SIMPLE [(_t)_t.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default___t_x__._j SIMPLE [(_t)_t.FieldSchema(name:_j, type:int, comment:null), ]
-POSTHOOK: Lineage: default___t_x__._offsets EXPRESSION [(_t)_t.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 PREHOOK: query: drop index src_index_9 on src
 PREHOOK: type: DROPINDEX
 POSTHOOK: query: drop index src_index_9 on src
 POSTHOOK: type: DROPINDEX
-POSTHOOK: Lineage: default___t_x2__._bucketname SIMPLE [(_t)_t.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default___t_x2__._i SIMPLE [(_t)_t.FieldSchema(name:_i, type:int, comment:null), ]
-POSTHOOK: Lineage: default___t_x2__._j SIMPLE [(_t)_t.FieldSchema(name:_j, type:int, comment:null), ]
-POSTHOOK: Lineage: default___t_x2__._offsets EXPRESSION [(_t)_t.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default___t_x__._bucketname SIMPLE [(_t)_t.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default___t_x__._j SIMPLE [(_t)_t.FieldSchema(name:_j, type:int, comment:null), ]
-POSTHOOK: Lineage: default___t_x__._offsets EXPRESSION [(_t)_t.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 PREHOOK: query: drop table `_t`
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@_t
@@ -290,24 +244,10 @@ POSTHOOK: query: drop table `_t`
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@_t
 POSTHOOK: Output: default@_t
-POSTHOOK: Lineage: default___t_x2__._bucketname SIMPLE [(_t)_t.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default___t_x2__._i SIMPLE [(_t)_t.FieldSchema(name:_i, type:int, comment:null), ]
-POSTHOOK: Lineage: default___t_x2__._j SIMPLE [(_t)_t.FieldSchema(name:_j, type:int, comment:null), ]
-POSTHOOK: Lineage: default___t_x2__._offsets EXPRESSION [(_t)_t.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default___t_x__._bucketname SIMPLE [(_t)_t.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default___t_x__._j SIMPLE [(_t)_t.FieldSchema(name:_j, type:int, comment:null), ]
-POSTHOOK: Lineage: default___t_x__._offsets EXPRESSION [(_t)_t.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 PREHOOK: query: show tables
 PREHOOK: type: SHOWTABLES
 POSTHOOK: query: show tables
 POSTHOOK: type: SHOWTABLES
-POSTHOOK: Lineage: default___t_x2__._bucketname SIMPLE [(_t)_t.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default___t_x2__._i SIMPLE [(_t)_t.FieldSchema(name:_i, type:int, comment:null), ]
-POSTHOOK: Lineage: default___t_x2__._j SIMPLE [(_t)_t.FieldSchema(name:_j, type:int, comment:null), ]
-POSTHOOK: Lineage: default___t_x2__._offsets EXPRESSION [(_t)_t.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default___t_x__._bucketname SIMPLE [(_t)_t.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default___t_x__._j SIMPLE [(_t)_t.FieldSchema(name:_j, type:int, comment:null), ]
-POSTHOOK: Lineage: default___t_x__._offsets EXPRESSION [(_t)_t.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 alltypesorc
 src
 src1

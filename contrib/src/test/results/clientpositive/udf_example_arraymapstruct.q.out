@@ -1,15 +1,21 @@
 PREHOOK: query: CREATE TEMPORARY FUNCTION example_arraysum    AS 'org.apache.hadoop.hive.contrib.udf.example.UDFExampleArraySum'
 PREHOOK: type: CREATEFUNCTION
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TEMPORARY FUNCTION example_arraysum    AS 'org.apache.hadoop.hive.contrib.udf.example.UDFExampleArraySum'
 POSTHOOK: type: CREATEFUNCTION
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TEMPORARY FUNCTION example_mapconcat   AS 'org.apache.hadoop.hive.contrib.udf.example.UDFExampleMapConcat'
 PREHOOK: type: CREATEFUNCTION
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TEMPORARY FUNCTION example_mapconcat   AS 'org.apache.hadoop.hive.contrib.udf.example.UDFExampleMapConcat'
 POSTHOOK: type: CREATEFUNCTION
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TEMPORARY FUNCTION example_structprint AS 'org.apache.hadoop.hive.contrib.udf.example.UDFExampleStructPrint'
 PREHOOK: type: CREATEFUNCTION
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TEMPORARY FUNCTION example_structprint AS 'org.apache.hadoop.hive.contrib.udf.example.UDFExampleStructPrint'
 POSTHOOK: type: CREATEFUNCTION
+POSTHOOK: Output: database:default
 PREHOOK: query: EXPLAIN
 SELECT example_arraysum(lint), example_mapconcat(mstringstring), example_structprint(lintstring[0])
 FROM src_thrift
@@ -20,7 +26,7 @@ FROM src_thrift
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -44,6 +50,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT example_arraysum(lint), example_mapconcat(mstringstring), example_structprint(lintstring[0])
 FROM src_thrift
@@ -68,13 +76,19 @@ POSTHOOK: Input: default@src_thrift
 NULL	NULL	NULL
 PREHOOK: query: DROP TEMPORARY FUNCTION example_arraysum
 PREHOOK: type: DROPFUNCTION
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TEMPORARY FUNCTION example_arraysum
 POSTHOOK: type: DROPFUNCTION
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TEMPORARY FUNCTION example_mapconcat
 PREHOOK: type: DROPFUNCTION
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TEMPORARY FUNCTION example_mapconcat
 POSTHOOK: type: DROPFUNCTION
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TEMPORARY FUNCTION example_structprint
 PREHOOK: type: DROPFUNCTION
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TEMPORARY FUNCTION example_structprint
 POSTHOOK: type: DROPFUNCTION
+POSTHOOK: Output: database:default

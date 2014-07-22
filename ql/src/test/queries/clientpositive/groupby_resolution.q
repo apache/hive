@@ -24,19 +24,22 @@ explain select b.key, count(*) from src b group by key;
 select key, count(*), rank() over(order by count(*))
 from src b
 where key < '12'
-group by b.key;
+group by b.key
+order by b.key;
 
 -- having after group by
 select key, count(*)
 from src b
 group by b.key
-having key < '12';
+having key < '12'
+order by b.key;
 
 -- having and windowing
 select key, count(*), rank() over(order by count(*))
 from src b
 group by b.key
 having key < '12'
+order by b.key
 ;
 
 explain

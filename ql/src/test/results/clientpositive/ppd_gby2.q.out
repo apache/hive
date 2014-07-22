@@ -15,7 +15,7 @@ POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-1
@@ -106,6 +106,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT max(src1.c1), src1.c2 
 FROM
@@ -145,7 +147,7 @@ POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-1
@@ -181,7 +183,7 @@ STAGE PLANS:
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
-            predicate: ((_col0 > 'val_200') and ((_col1 > 30) or (_col0 < 'val_400'))) (type: boolean)
+            predicate: ((_col1 > 30) or (_col0 < 'val_400')) (type: boolean)
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             Select Operator
               expressions: _col0 (type: string), _col1 (type: bigint)
@@ -232,6 +234,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT max(src1.c1), src1.c2 
 FROM

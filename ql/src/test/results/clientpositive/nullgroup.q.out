@@ -6,7 +6,7 @@ select count(1) from src x where x.key > 9999
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -50,6 +50,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select count(1) from src x where x.key > 9999
 PREHOOK: type: QUERY
@@ -68,7 +70,7 @@ select count(1) from src x where x.key > 9999
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -112,6 +114,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select count(1) from src x where x.key > 9999
 PREHOOK: type: QUERY
@@ -131,7 +135,7 @@ POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-1
@@ -149,7 +153,6 @@ STAGE PLANS:
                   sort order: 
                   Map-reduce partition columns: rand() (type: double)
                   Statistics: Num rows: 19 Data size: 1903 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: 1 (type: int)
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(1)
@@ -192,6 +195,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select count(1) from src x where x.key > 9999
 PREHOOK: type: QUERY
@@ -210,7 +215,7 @@ select count(1) from src x where x.key > 9999
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -227,7 +232,6 @@ STAGE PLANS:
                 Reduce Output Operator
                   sort order: 
                   Statistics: Num rows: 19 Data size: 1903 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: 1 (type: int)
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(1)
@@ -249,6 +253,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select count(1) from src x where x.key > 9999
 PREHOOK: type: QUERY

@@ -33,6 +33,16 @@ public class IndexSearchCondition
   private ExprNodeConstantDesc constantDesc;
   private ExprNodeGenericFuncDesc comparisonExpr;
 
+  private String[] fields;
+
+  public IndexSearchCondition(
+      ExprNodeColumnDesc columnDesc,
+      String comparisonOp,
+      ExprNodeConstantDesc constantDesc,
+      ExprNodeGenericFuncDesc comparisonExpr) {
+    this(columnDesc, comparisonOp, constantDesc, comparisonExpr, null);
+  }
+
   /**
    * Constructs a search condition, which takes the form
    * <pre>column-ref comparison-op constant-value</pre>.
@@ -50,12 +60,14 @@ public class IndexSearchCondition
     ExprNodeColumnDesc columnDesc,
     String comparisonOp,
     ExprNodeConstantDesc constantDesc,
-    ExprNodeGenericFuncDesc comparisonExpr) {
+    ExprNodeGenericFuncDesc comparisonExpr,
+    String[] fields) {
 
     this.columnDesc = columnDesc;
     this.comparisonOp = comparisonOp;
     this.constantDesc = constantDesc;
     this.comparisonExpr = comparisonExpr;
+    this.fields = fields;
   }
 
   public void setColumnDesc(ExprNodeColumnDesc columnDesc) {
@@ -88,6 +100,10 @@ public class IndexSearchCondition
 
   public ExprNodeGenericFuncDesc getComparisonExpr() {
     return comparisonExpr;
+  }
+
+  public String[] getFields() {
+    return fields;
   }
 
   @Override

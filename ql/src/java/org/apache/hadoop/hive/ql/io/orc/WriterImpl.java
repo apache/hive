@@ -20,12 +20,15 @@ package org.apache.hadoop.hive.ql.io.orc;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.lang.management.ManagementFactory;
 import java.nio.ByteBuffer;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+
+import com.google.common.annotations.VisibleForTesting;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -35,10 +38,13 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.io.IOConstants;
+import org.apache.hadoop.hive.ql.io.orc.OrcFile.EncodingStrategy;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndexEntry;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeStatistics;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.Type;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
+import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
@@ -94,15 +100,20 @@ class WriterImpl implements Writer, MemoryManager.Callback {
   // HDFS requires blocks < 2GB and multiples of 512, so pick 1.5GB
   private static final long MAX_BLOCK_SIZE = 1536 * 1024 * 1024;
 
+  // threshold above which buffer size will be automatically resized
+  private static final int COLUMN_COUNT_THRESHOLD = 1000;
+
   private final FileSystem fs;
   private final Path path;
-  private final long stripeSize;
+  private final long defaultStripeSize;
+  private long adjustedStripeSize;
   private final int rowIndexStride;
   private final CompressionKind compress;
   private final CompressionCodec codec;
   private final boolean addBlockPadding;
   private final int bufferSize;
   private final long blockSize;
+  private final float paddingTolerance;
   // the streams that make up the current stripe
   private final Map<StreamName, BufferedStream> streams =
     new TreeMap<StreamName, BufferedStream>();
@@ -118,6 +129,7 @@ class WriterImpl implements Writer, MemoryManager.Callback {
   private long rowsInStripe = 0;
   private long rawDataSize = 0;
   private int rowsInIndex = 0;
+  private int stripesAtLastFlush = -1;
   private final List<OrcProto.StripeInformation> stripes =
     new ArrayList<OrcProto.StripeInformation>();
   private final Map<String, ByteString> userMetadata =
@@ -130,6 +142,9 @@ class WriterImpl implements Writer, MemoryManager.Callback {
   private final MemoryManager memoryManager;
   private final OrcFile.Version version;
   private final Configuration conf;
+  private final OrcFile.WriterCallback callback;
+  private final OrcFile.WriterContext callbackContext;
+  private final OrcFile.EncodingStrategy encodingStrategy;
 
   WriterImpl(FileSystem fs,
              Path path,
@@ -141,28 +156,120 @@ class WriterImpl implements Writer, MemoryManager.Callback {
              int rowIndexStride,
              MemoryManager memoryManager,
              boolean addBlockPadding,
-             OrcFile.Version version) throws IOException {
+             OrcFile.Version version,
+             OrcFile.WriterCallback callback,
+             OrcFile.EncodingStrategy encodingStrategy,
+             float paddingTolerance,
+             long blockSizeValue) throws IOException {
     this.fs = fs;
     this.path = path;
     this.conf = conf;
-    this.stripeSize = stripeSize;
+    this.callback = callback;
+    if (callback != null) {
+      callbackContext = new OrcFile.WriterContext(){
+
+        @Override
+        public Writer getWriter() {
+          return WriterImpl.this;
+        }
+      };
+    } else {
+      callbackContext = null;
+    }
+    this.adjustedStripeSize = stripeSize;
+    this.defaultStripeSize = stripeSize;
     this.version = version;
+    this.encodingStrategy = encodingStrategy;
     this.addBlockPadding = addBlockPadding;
-    // pick large block size to minimize block over or under hangs
-    this.blockSize = Math.min(MAX_BLOCK_SIZE, 2 * stripeSize);
+    this.blockSize = blockSizeValue;
+    this.paddingTolerance = paddingTolerance;
     this.compress = compress;
-    this.bufferSize = bufferSize;
     this.rowIndexStride = rowIndexStride;
     this.memoryManager = memoryManager;
     buildIndex = rowIndexStride > 0;
     codec = createCodec(compress);
+    this.bufferSize = getEstimatedBufferSize(bufferSize);
     treeWriter = createTreeWriter(inspector, streamFactory, false);
     if (buildIndex && rowIndexStride < MIN_ROW_INDEX_STRIDE) {
       throw new IllegalArgumentException("Row stride must be at least " +
           MIN_ROW_INDEX_STRIDE);
     }
+
     // ensure that we are able to handle callbacks before we register ourselves
     memoryManager.addWriter(path, stripeSize, this);
+  }
+
+  int getEstimatedBufferSize(int bs) {
+    String colNames = conf.get(IOConstants.COLUMNS);
+    long availableMem = getMemoryAvailableForORC();
+    if (colNames != null) {
+      final int numCols = colNames.split(",").length;
+      if (numCols > COLUMN_COUNT_THRESHOLD) {
+        // In BufferedStream, there are 3 outstream buffers (compressed,
+        // uncompressed and overflow) and list of previously compressed buffers.
+        // Since overflow buffer is rarely used, lets consider only 2 allocation.
+        // Also, initially, the list of compression buffers will be empty.
+        final int outStreamBuffers = codec == null ? 1 : 2;
+
+        // max possible streams per column is 5. For string columns, there is
+        // ROW_INDEX, PRESENT, DATA, LENGTH, DICTIONARY_DATA streams.
+        final int maxStreams = 5;
+
+        // Lets assume 10% memory for holding dictionary in memory and other
+        // object allocations
+        final long miscAllocation = (long) (0.1f * availableMem);
+
+        // compute the available memory
+        final long remainingMem = availableMem - miscAllocation;
+
+        int estBufferSize = (int) (remainingMem /
+            (maxStreams * outStreamBuffers * numCols));
+        estBufferSize = getClosestBufferSize(estBufferSize, bs);
+        if (estBufferSize > bs) {
+          estBufferSize = bs;
+        }
+
+        LOG.info("WIDE TABLE - Number of columns: " + numCols +
+            " Chosen compression buffer size: " + estBufferSize);
+        return estBufferSize;
+      }
+    }
+    return bs;
+  }
+
+  private int getClosestBufferSize(int estBufferSize, int bs) {
+    final int kb4 = 4 * 1024;
+    final int kb8 = 8 * 1024;
+    final int kb16 = 16 * 1024;
+    final int kb32 = 32 * 1024;
+    final int kb64 = 64 * 1024;
+    final int kb128 = 128 * 1024;
+    final int kb256 = 256 * 1024;
+    if (estBufferSize <= kb4) {
+      return kb4;
+    } else if (estBufferSize > kb4 && estBufferSize <= kb8) {
+      return kb8;
+    } else if (estBufferSize > kb8 && estBufferSize <= kb16) {
+      return kb16;
+    } else if (estBufferSize > kb16 && estBufferSize <= kb32) {
+      return kb32;
+    } else if (estBufferSize > kb32 && estBufferSize <= kb64) {
+      return kb64;
+    } else if (estBufferSize > kb64 && estBufferSize <= kb128) {
+      return kb128;
+    } else {
+      return kb256;
+    }
+  }
+
+  // the assumption is only one ORC writer open at a time, which holds true for
+  // most of the cases. HIVE-6455 forces single writer case.
+  private long getMemoryAvailableForORC() {
+    HiveConf.ConfVars poolVar = HiveConf.ConfVars.HIVE_ORC_FILE_MEMORY_POOL;
+    double maxLoad = conf.getFloat(poolVar.varname, poolVar.defaultFloatVal);
+    long totalMemoryPool = Math.round(ManagementFactory.getMemoryMXBean().
+        getHeapMemoryUsage().getMax() * maxLoad);
+    return totalMemoryPool;
   }
 
   static CompressionCodec createCodec(CompressionKind kind) {
@@ -194,7 +301,7 @@ class WriterImpl implements Writer, MemoryManager.Callback {
 
   @Override
   public synchronized boolean checkMemory(double newScale) throws IOException {
-    long limit = (long) Math.round(stripeSize * newScale);
+    long limit = (long) Math.round(adjustedStripeSize * newScale);
     long size = estimateStripeSize();
     if (LOG.isDebugEnabled()) {
       LOG.debug("ORC writer " + path + " size = " + size + " limit = " +
@@ -387,6 +494,14 @@ class WriterImpl implements Writer, MemoryManager.Callback {
     }
 
     /**
+     * Get the encoding strategy to use.
+     * @return encoding strategy
+     */
+    public EncodingStrategy getEncodingStrategy() {
+      return encodingStrategy;
+    }
+
+    /**
      * Get the writer's configuration.
      * @return configuration
      */
@@ -480,9 +595,14 @@ class WriterImpl implements Writer, MemoryManager.Callback {
     }
 
     IntegerWriter createIntegerWriter(PositionedOutputStream output,
-                                      boolean signed, boolean isDirectV2) {
+                                      boolean signed, boolean isDirectV2,
+                                      StreamFactory writer) {
       if (isDirectV2) {
-        return new RunLengthIntegerWriterV2(output, signed);
+        boolean alignedBitpacking = false;
+        if (writer.getEncodingStrategy().equals(EncodingStrategy.SPEED)) {
+          alignedBitpacking = true;
+        }
+        return new RunLengthIntegerWriterV2(output, signed, alignedBitpacking);
       } else {
         return new RunLengthIntegerWriter(output, signed);
       }
@@ -727,7 +847,7 @@ class WriterImpl implements Writer, MemoryManager.Callback {
       PositionedOutputStream out = writer.createStream(id,
           OrcProto.Stream.Kind.DATA);
       this.isDirectV2 = isNewWriteFormat(writer);
-      this.writer = createIntegerWriter(out, true, isDirectV2);
+      this.writer = createIntegerWriter(out, true, isDirectV2, writer);
       if (inspector instanceof IntObjectInspector) {
         intInspector = (IntObjectInspector) inspector;
         shortInspector = null;
@@ -789,6 +909,7 @@ class WriterImpl implements Writer, MemoryManager.Callback {
 
   private static class FloatTreeWriter extends TreeWriter {
     private final PositionedOutputStream stream;
+    private final SerializationUtils utils;
 
     FloatTreeWriter(int columnId,
                       ObjectInspector inspector,
@@ -797,6 +918,7 @@ class WriterImpl implements Writer, MemoryManager.Callback {
       super(columnId, inspector, writer, nullable);
       this.stream = writer.createStream(id,
           OrcProto.Stream.Kind.DATA);
+      this.utils = new SerializationUtils();
       recordPosition(rowIndexPosition);
     }
 
@@ -806,7 +928,7 @@ class WriterImpl implements Writer, MemoryManager.Callback {
       if (obj != null) {
         float val = ((FloatObjectInspector) inspector).get(obj);
         indexStatistics.updateDouble(val);
-        SerializationUtils.writeFloat(stream, val);
+        utils.writeFloat(stream, val);
       }
     }
 
@@ -827,6 +949,7 @@ class WriterImpl implements Writer, MemoryManager.Callback {
 
   private static class DoubleTreeWriter extends TreeWriter {
     private final PositionedOutputStream stream;
+    private final SerializationUtils utils;
 
     DoubleTreeWriter(int columnId,
                     ObjectInspector inspector,
@@ -835,6 +958,7 @@ class WriterImpl implements Writer, MemoryManager.Callback {
       super(columnId, inspector, writer, nullable);
       this.stream = writer.createStream(id,
           OrcProto.Stream.Kind.DATA);
+      this.utils = new SerializationUtils();
       recordPosition(rowIndexPosition);
     }
 
@@ -844,7 +968,7 @@ class WriterImpl implements Writer, MemoryManager.Callback {
       if (obj != null) {
         double val = ((DoubleObjectInspector) inspector).get(obj);
         indexStatistics.updateDouble(val);
-        SerializationUtils.writeDouble(stream, val);
+        utils.writeDouble(stream, val);
       }
     }
 
@@ -892,15 +1016,15 @@ class WriterImpl implements Writer, MemoryManager.Callback {
       stringOutput = writer.createStream(id,
           OrcProto.Stream.Kind.DICTIONARY_DATA);
       lengthOutput = createIntegerWriter(writer.createStream(id,
-          OrcProto.Stream.Kind.LENGTH), false, isDirectV2);
+          OrcProto.Stream.Kind.LENGTH), false, isDirectV2, writer);
       rowOutput = createIntegerWriter(writer.createStream(id,
-          OrcProto.Stream.Kind.DATA), false, isDirectV2);
+          OrcProto.Stream.Kind.DATA), false, isDirectV2, writer);
       recordPosition(rowIndexPosition);
       rowIndexValueCount.add(0L);
       buildIndex = writer.buildIndex();
       directStreamOutput = writer.createStream(id, OrcProto.Stream.Kind.DATA);
       directLengthOutput = createIntegerWriter(writer.createStream(id,
-          OrcProto.Stream.Kind.LENGTH), false, isDirectV2);
+          OrcProto.Stream.Kind.LENGTH), false, isDirectV2, writer);
       dictionaryKeySizeThreshold = writer.getConfiguration().getFloat(
         HiveConf.ConfVars.HIVE_ORC_DICTIONARY_KEY_SIZE_THRESHOLD.varname,
         HiveConf.ConfVars.HIVE_ORC_DICTIONARY_KEY_SIZE_THRESHOLD.
@@ -908,20 +1032,20 @@ class WriterImpl implements Writer, MemoryManager.Callback {
     }
 
     /**
-     * Method to retrieve string values from the value object, which can be overridden
+     * Method to retrieve text values from the value object, which can be overridden
      * by subclasses.
      * @param obj  value
-     * @return String value from obj
+     * @return Text text value from obj
      */
-    String getStringValue(Object obj) {
-      return ((StringObjectInspector) inspector).getPrimitiveJavaObject(obj);
+    Text getTextValue(Object obj) {
+      return ((StringObjectInspector) inspector).getPrimitiveWritableObject(obj);
     }
 
     @Override
     void write(Object obj) throws IOException {
       super.write(obj);
       if (obj != null) {
-        String val = getStringValue(obj);
+        Text val = getTextValue(obj);
         rows.add(dictionary.add(val));
         indexStatistics.updateString(val);
       }
@@ -1070,9 +1194,9 @@ class WriterImpl implements Writer, MemoryManager.Callback {
      * Override base class implementation to support char values.
      */
     @Override
-    String getStringValue(Object obj) {
+    Text getTextValue(Object obj) {
       return (((HiveCharObjectInspector) inspector)
-          .getPrimitiveJavaObject(obj)).getValue();
+          .getPrimitiveWritableObject(obj)).getTextValue();
     }
   }
 
@@ -1092,9 +1216,9 @@ class WriterImpl implements Writer, MemoryManager.Callback {
      * Override base class implementation to support varchar values.
      */
     @Override
-    String getStringValue(Object obj) {
+    Text getTextValue(Object obj) {
       return (((HiveVarcharObjectInspector) inspector)
-          .getPrimitiveJavaObject(obj)).getValue();
+          .getPrimitiveWritableObject(obj)).getTextValue();
     }
   }
 
@@ -1112,7 +1236,7 @@ class WriterImpl implements Writer, MemoryManager.Callback {
           OrcProto.Stream.Kind.DATA);
       this.isDirectV2 = isNewWriteFormat(writer);
       this.length = createIntegerWriter(writer.createStream(id,
-          OrcProto.Stream.Kind.LENGTH), false, isDirectV2);
+          OrcProto.Stream.Kind.LENGTH), false, isDirectV2, writer);
       recordPosition(rowIndexPosition);
     }
 
@@ -1171,9 +1295,9 @@ class WriterImpl implements Writer, MemoryManager.Callback {
       super(columnId, inspector, writer, nullable);
       this.isDirectV2 = isNewWriteFormat(writer);
       this.seconds = createIntegerWriter(writer.createStream(id,
-          OrcProto.Stream.Kind.DATA), true, isDirectV2);
+          OrcProto.Stream.Kind.DATA), true, isDirectV2, writer);
       this.nanos = createIntegerWriter(writer.createStream(id,
-          OrcProto.Stream.Kind.SECONDARY), false, isDirectV2);
+          OrcProto.Stream.Kind.SECONDARY), false, isDirectV2, writer);
       recordPosition(rowIndexPosition);
     }
 
@@ -1244,7 +1368,7 @@ class WriterImpl implements Writer, MemoryManager.Callback {
       PositionedOutputStream out = writer.createStream(id,
           OrcProto.Stream.Kind.DATA);
       this.isDirectV2 = isNewWriteFormat(writer);
-      this.writer = createIntegerWriter(out, true, isDirectV2);
+      this.writer = createIntegerWriter(out, true, isDirectV2, writer);
       recordPosition(rowIndexPosition);
     }
 
@@ -1297,7 +1421,7 @@ class WriterImpl implements Writer, MemoryManager.Callback {
       this.isDirectV2 = isNewWriteFormat(writer);
       valueStream = writer.createStream(id, OrcProto.Stream.Kind.DATA);
       this.scaleStream = createIntegerWriter(writer.createStream(id,
-          OrcProto.Stream.Kind.SECONDARY), true, isDirectV2);
+          OrcProto.Stream.Kind.SECONDARY), true, isDirectV2, writer);
       recordPosition(rowIndexPosition);
     }
 
@@ -1402,7 +1526,7 @@ class WriterImpl implements Writer, MemoryManager.Callback {
         createTreeWriter(listObjectInspector.getListElementObjectInspector(),
           writer, true);
       lengths = createIntegerWriter(writer.createStream(columnId,
-          OrcProto.Stream.Kind.LENGTH), false, isDirectV2);
+          OrcProto.Stream.Kind.LENGTH), false, isDirectV2, writer);
       recordPosition(rowIndexPosition);
     }
 
@@ -1464,7 +1588,7 @@ class WriterImpl implements Writer, MemoryManager.Callback {
       childrenWriters[1] =
         createTreeWriter(insp.getMapValueObjectInspector(), writer, true);
       lengths = createIntegerWriter(writer.createStream(columnId,
-          OrcProto.Stream.Kind.LENGTH), false, isDirectV2);
+          OrcProto.Stream.Kind.LENGTH), false, isDirectV2, writer);
       recordPosition(rowIndexPosition);
     }
 
@@ -1483,11 +1607,10 @@ class WriterImpl implements Writer, MemoryManager.Callback {
       super.write(obj);
       if (obj != null) {
         MapObjectInspector insp = (MapObjectInspector) inspector;
-        int len = insp.getMapSize(obj);
-        lengths.write(len);
         // this sucks, but it will have to do until we can get a better
         // accessor in the MapObjectInspector.
         Map<?, ?> valueMap = insp.getMap(obj);
+        lengths.write(valueMap.size());
         for(Map.Entry<?, ?> entry: valueMap.entrySet()) {
           childrenWriters[0].write(entry.getKey());
           childrenWriters[1].write(entry.getValue());
@@ -1728,7 +1851,8 @@ class WriterImpl implements Writer, MemoryManager.Callback {
     }
   }
 
-  private void ensureWriter() throws IOException {
+  @VisibleForTesting
+  FSDataOutputStream getStream() throws IOException {
     if (rawWriter == null) {
       rawWriter = fs.create(path, false, HDFS_BUFFER_SIZE,
                             fs.getDefaultReplication(), blockSize);
@@ -1738,6 +1862,7 @@ class WriterImpl implements Writer, MemoryManager.Callback {
                              new DirectStream(rawWriter));
       protobufWriter = CodedOutputStream.newInstance(writer);
     }
+    return rawWriter;
   }
 
   private void createRowIndexEntry() throws IOException {
@@ -1746,12 +1871,14 @@ class WriterImpl implements Writer, MemoryManager.Callback {
   }
 
   private void flushStripe() throws IOException {
-    ensureWriter();
+    getStream();
     if (buildIndex && rowsInIndex != 0) {
       createRowIndexEntry();
     }
     if (rowsInStripe != 0) {
-
+      if (callback != null) {
+        callback.preStripeWrite(callbackContext);
+      }
       // finalize the data for the stripe
       int requiredIndexEntries = rowIndexStride == 0 ? 0 :
           (int) ((rowsInStripe + rowIndexStride - 1) / rowIndexStride);
@@ -1782,18 +1909,49 @@ class WriterImpl implements Writer, MemoryManager.Callback {
       // Do we need to pad the file so the stripe doesn't straddle a block
       // boundary?
       long start = rawWriter.getPos();
-      long stripeSize = indexSize + dataSize + footer.getSerializedSize();
-      if (addBlockPadding &&
-          stripeSize < blockSize &&
-          (start % blockSize) + stripeSize > blockSize) {
+      final long currentStripeSize = indexSize + dataSize + footer.getSerializedSize();
+      final long available = blockSize - (start % blockSize);
+      final long overflow = currentStripeSize - adjustedStripeSize;
+      final float availRatio = (float) available / (float) defaultStripeSize;
+
+      if (availRatio > 0.0f && availRatio < 1.0f
+          && availRatio > paddingTolerance) {
+        // adjust default stripe size to fit into remaining space, also adjust
+        // the next stripe for correction based on the current stripe size
+        // and user specified padding tolerance. Since stripe size can overflow
+        // the default stripe size we should apply this correction to avoid
+        // writing portion of last stripe to next hdfs block.
+        float correction = overflow > 0 ? (float) overflow
+            / (float) adjustedStripeSize : 0.0f;
+
+        // correction should not be greater than user specified padding
+        // tolerance
+        correction = correction > paddingTolerance ? paddingTolerance
+            : correction;
+
+        // adjust next stripe size based on current stripe estimate correction
+        adjustedStripeSize = (long) ((1.0f - correction) * (availRatio * defaultStripeSize));
+      } else if (availRatio >= 1.0) {
+        adjustedStripeSize = defaultStripeSize;
+      }
+
+      if (availRatio < paddingTolerance && addBlockPadding) {
         long padding = blockSize - (start % blockSize);
         byte[] pad = new byte[(int) Math.min(HDFS_BUFFER_SIZE, padding)];
+        LOG.info(String.format("Padding ORC by %d bytes (<=  %.2f * %d)", 
+            padding, availRatio, defaultStripeSize));
         start += padding;
         while (padding > 0) {
           int writeLen = (int) Math.min(padding, pad.length);
           rawWriter.write(pad, 0, writeLen);
           padding -= writeLen;
         }
+        adjustedStripeSize = defaultStripeSize;
+      } else if (currentStripeSize < blockSize
+          && (start % blockSize) + currentStripeSize > blockSize) {
+        // even if you don't pad, reset the default stripe size when crossing a
+        // block boundary
+        adjustedStripeSize = defaultStripeSize;
       }
 
       // write out the data streams
@@ -1911,7 +2069,7 @@ class WriterImpl implements Writer, MemoryManager.Callback {
   }
 
   private int writeMetadata(long bodyLength) throws IOException {
-    ensureWriter();
+    getStream();
     OrcProto.Metadata.Builder builder = OrcProto.Metadata.newBuilder();
     for(OrcProto.StripeStatistics.Builder ssb : treeWriter.stripeStatsBuilders) {
       builder.addStripeStats(ssb.build());
@@ -1926,7 +2084,7 @@ class WriterImpl implements Writer, MemoryManager.Callback {
   }
 
   private int writeFooter(long bodyLength) throws IOException {
-    ensureWriter();
+    getStream();
     OrcProto.Footer.Builder builder = OrcProto.Footer.newBuilder();
     builder.setContentLength(bodyLength);
     builder.setHeaderLength(headerLength);
@@ -2010,6 +2168,9 @@ class WriterImpl implements Writer, MemoryManager.Callback {
 
   @Override
   public void close() throws IOException {
+    if (callback != null) {
+      callback.preFooterWrite(callbackContext);
+    }
     // remove us from the memory manager so that we don't get any callbacks
     memoryManager.removeWriter(path);
     // actually close the file
@@ -2038,5 +2199,23 @@ class WriterImpl implements Writer, MemoryManager.Callback {
   @Override
   public long getNumberOfRows() {
     return rowCount;
+  }
+
+  @Override
+  public synchronized long writeIntermediateFooter() throws IOException {
+    // flush any buffered rows
+    flushStripe();
+    // write a footer
+    if (stripesAtLastFlush != stripes.size()) {
+      if (callback != null) {
+        callback.preFooterWrite(callbackContext);
+      }
+      int metaLength = writeMetadata(rawWriter.getPos());
+      int footLength = writeFooter(rawWriter.getPos() - metaLength);
+      rawWriter.writeByte(writePostScript(footLength, metaLength));
+      stripesAtLastFlush = stripes.size();
+      OrcInputFormat.SHIMS.hflush(rawWriter);
+    }
+    return rawWriter.getPos();
   }
 }

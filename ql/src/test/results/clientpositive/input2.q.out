@@ -7,16 +7,20 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@TEST2a
 PREHOOK: query: DESCRIBE TEST2a
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test2a
 POSTHOOK: query: DESCRIBE TEST2a
 POSTHOOK: type: DESCTABLE
-a                   	int                 	None                
-b                   	double              	None                
+POSTHOOK: Input: default@test2a
+a                   	int                 	                    
+b                   	double              	                    
 PREHOOK: query: DESC TEST2a
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test2a
 POSTHOOK: query: DESC TEST2a
 POSTHOOK: type: DESCTABLE
-a                   	int                 	None                
-b                   	double              	None                
+POSTHOOK: Input: default@test2a
+a                   	int                 	                    
+b                   	double              	                    
 PREHOOK: query: CREATE TABLE TEST2b(A ARRAY<INT>, B DOUBLE, C MAP<DOUBLE, INT>) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -26,11 +30,13 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@TEST2b
 PREHOOK: query: DESCRIBE TEST2b
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test2b
 POSTHOOK: query: DESCRIBE TEST2b
 POSTHOOK: type: DESCTABLE
-a                   	array<int>          	None                
-b                   	double              	None                
-c                   	map<double,int>     	None                
+POSTHOOK: Input: default@test2b
+a                   	array<int>          	                    
+b                   	double              	                    
+c                   	map<double,int>     	                    
 PREHOOK: query: SHOW TABLES
 PREHOOK: type: SHOWTABLES
 POSTHOOK: query: SHOW TABLES
@@ -84,7 +90,7 @@ SHOW TABLES
 POSTHOOK: type: SHOWTABLES
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
-  Stage-1 is a root stage
+  Stage-1 depends on stages: Stage-0
 
 STAGE PLANS:
   Stage: Stage-0
@@ -95,4 +101,6 @@ STAGE PLANS:
   Stage: Stage-1
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 

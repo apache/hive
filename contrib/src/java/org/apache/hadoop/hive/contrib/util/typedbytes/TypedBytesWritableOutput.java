@@ -44,7 +44,6 @@ import org.apache.hadoop.io.VLongWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.WritableUtils;
-import org.apache.hadoop.record.Record;
 
 /**
  * Provides functionality for writing Writable objects as typed bytes.
@@ -139,8 +138,6 @@ public class TypedBytesWritableOutput {
       writeMap((MapWritable) w);
     } else if (w instanceof SortedMapWritable) {
       writeSortedMap((SortedMapWritable) w);
-    } else if (w instanceof Record) {
-      writeRecord((Record) w);
     } else if (w instanceof NullWritable || w == null) {
       writeNull();
     } else {
@@ -219,10 +216,6 @@ public class TypedBytesWritableOutput {
       write(entry.getKey());
       write(entry.getValue());
     }
-  }
-
-  public void writeRecord(Record r) throws IOException {
-    r.serialize(TypedBytesRecordOutput.get(out));
   }
 
   public void writeNull() throws IOException {

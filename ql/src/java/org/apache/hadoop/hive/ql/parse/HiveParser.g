@@ -163,6 +163,7 @@ TOK_SHOW_CREATETABLE;
 TOK_SHOW_TABLESTATUS;
 TOK_SHOW_TBLPROPERTIES;
 TOK_SHOWLOCKS;
+TOK_SHOWCONF;
 TOK_LOCKTABLE;
 TOK_UNLOCKTABLE;
 TOK_LOCKDB;
@@ -182,11 +183,6 @@ TOK_TABLEROWFORMATCOLLITEMS;
 TOK_TABLEROWFORMATMAPKEYS;
 TOK_TABLEROWFORMATLINES;
 TOK_TABLEROWFORMATNULL;
-TOK_TBLORCFILE;
-TOK_TBLPARQUETFILE;
-TOK_TBLSEQUENCEFILE;
-TOK_TBLTEXTFILE;
-TOK_TBLRCFILE;
 TOK_TABLEFILEFORMAT;
 TOK_FILEFORMAT_GENERIC;
 TOK_OFFLINE;
@@ -226,6 +222,7 @@ TOK_ALTERVIEW_DROPPARTS;
 TOK_ALTERVIEW_RENAME;
 TOK_VIEWPARTCOLS;
 TOK_EXPLAIN;
+TOK_EXPLAIN_SQ_REWRITE;
 TOK_TABLESERIALIZER;
 TOK_TABLEPROPERTIES;
 TOK_TABLEPROPLIST;
@@ -266,6 +263,8 @@ TOK_ROLE;
 TOK_RESOURCE_ALL;
 TOK_GRANT_WITH_OPTION;
 TOK_GRANT_WITH_ADMIN_OPTION;
+TOK_ADMIN_OPTION_FOR;
+TOK_GRANT_OPTION_FOR;
 TOK_PRIV_ALL;
 TOK_PRIV_ALTER_METADATA;
 TOK_PRIV_ALTER_DATA;
@@ -284,6 +283,7 @@ TOK_REVOKE_ROLE;
 TOK_SHOW_ROLE_GRANT;
 TOK_SHOW_ROLES;
 TOK_SHOW_SET_ROLE;
+TOK_SHOW_ROLE_PRINCIPALS;
 TOK_SHOWINDEXES;
 TOK_SHOWDBLOCKS;
 TOK_INDEXCOMMENT;
@@ -292,6 +292,7 @@ TOK_DATABASEPROPERTIES;
 TOK_DATABASELOCATION;
 TOK_DBPROPLIST;
 TOK_ALTERDATABASE_PROPERTIES;
+TOK_ALTERDATABASE_OWNER;
 TOK_TABNAME;
 TOK_TABSRC;
 TOK_RESTRICT;
@@ -326,6 +327,9 @@ TOK_FILE;
 TOK_JAR;
 TOK_RESOURCE_URI;
 TOK_RESOURCE_LIST;
+TOK_COMPACT;
+TOK_SHOW_COMPACTIONS;
+TOK_SHOW_TRANSACTIONS;
 }
 
 
@@ -350,6 +354,8 @@ import java.util.HashMap;
     xlateMap.put("KW_TRUE", "TRUE");
     xlateMap.put("KW_FALSE", "FALSE");
     xlateMap.put("KW_ALL", "ALL");
+    xlateMap.put("KW_NONE", "NONE");
+    xlateMap.put("KW_DEFAULT", "DEFAULT");
     xlateMap.put("KW_AND", "AND");
     xlateMap.put("KW_OR", "OR");
     xlateMap.put("KW_NOT", "NOT");
@@ -460,6 +466,8 @@ import java.util.HashMap;
     xlateMap.put("KW_VALUE_TYPE", "\$VALUE\$");
     xlateMap.put("KW_ELEM_TYPE", "\$ELEM\$");
     xlateMap.put("KW_DEFINED", "DEFINED");
+    xlateMap.put("KW_SUBQUERY", "SUBQUERY");
+    xlateMap.put("KW_REWRITE", "REWRITE");
 
     // Operators
     xlateMap.put("DOT", ".");
@@ -609,9 +617,17 @@ statement
 explainStatement
 @init { pushMsg("explain statement", state); }
 @after { popMsg(state); }
-	: KW_EXPLAIN (explainOptions=KW_EXTENDED|explainOptions=KW_FORMATTED|explainOptions=KW_DEPENDENCY|explainOptions=KW_LOGICAL)? execStatement
-      -> ^(TOK_EXPLAIN execStatement $explainOptions?)
+	: KW_EXPLAIN (
+	    explainOption* execStatement -> ^(TOK_EXPLAIN execStatement explainOption*)
+        |
+        KW_REWRITE queryStatementExpression[true] -> ^(TOK_EXPLAIN_SQ_REWRITE queryStatementExpression))
 	;
+
+explainOption
+@init { msgs.push("explain option"); }
+@after { msgs.pop(); }
+    : KW_EXTENDED|KW_FORMATTED|KW_DEPENDENCY|KW_LOGICAL|KW_AUTHORIZATION
+    ;
 
 execStatement
 @init { pushMsg("statement", state); }
@@ -676,6 +692,7 @@ ddlStatement
     | revokePrivileges
     | showGrants
     | showRoleGrants
+    | showRolePrincipals
     | showRoles
     | grantRole
     | revokeRole
@@ -785,7 +802,7 @@ databaseComment
 createTableStatement
 @init { pushMsg("create table statement", state); }
 @after { popMsg(state); }
-    : KW_CREATE (ext=KW_EXTERNAL)? KW_TABLE ifNotExists? name=tableName
+    : KW_CREATE (temp=KW_TEMPORARY)? (ext=KW_EXTERNAL)? KW_TABLE ifNotExists? name=tableName
       (  like=KW_LIKE likeName=tableName
          tableLocation?
          tablePropertiesPrefixed?
@@ -800,7 +817,7 @@ createTableStatement
          tablePropertiesPrefixed?
          (KW_AS selectStatementWithCTE)?
       )
-    -> ^(TOK_CREATETABLE $name $ext? ifNotExists?
+    -> ^(TOK_CREATETABLE $name $temp? $ext? ifNotExists?
          ^(TOK_LIKETABLE $likeName?)
          columnNameTypeList?
          tableComment?
@@ -974,6 +991,7 @@ alterDatabaseStatementSuffix
 @init { pushMsg("alter database statement", state); }
 @after { popMsg(state); }
     : alterDatabaseSuffixProperties
+    | alterDatabaseSuffixSetOwner
     ;
 
 alterDatabaseSuffixProperties
@@ -981,6 +999,13 @@ alterDatabaseSuffixProperties
 @after { popMsg(state); }
     : name=identifier KW_SET KW_DBPROPERTIES dbProperties
     -> ^(TOK_ALTERDATABASE_PROPERTIES $name dbProperties)
+    ;
+
+alterDatabaseSuffixSetOwner
+@init { pushMsg("alter database set owner", state); }
+@after { popMsg(state); }
+    : dbName=identifier KW_SET KW_OWNER principalName
+    -> ^(TOK_ALTERDATABASE_OWNER $dbName principalName)
     ;
 
 alterStatementSuffixRename
@@ -1110,6 +1135,7 @@ alterTblPartitionStatementSuffix
   | alterStatementSuffixBucketNum
   | alterTblPartitionStatementSuffixSkewedLocation
   | alterStatementSuffixClusterbySortby
+  | alterStatementSuffixCompact
   ;
 
 alterStatementSuffixFileFormat
@@ -1226,16 +1252,19 @@ alterStatementSuffixBucketNum
     -> ^(TOK_TABLEBUCKETS $num)
     ;
 
+alterStatementSuffixCompact
+@init { msgs.push("compaction request"); }
+@after { msgs.pop(); }
+    : KW_COMPACT compactType=StringLiteral
+    -> ^(TOK_COMPACT $compactType)
+    ;
+
+
 fileFormat
 @init { pushMsg("file format specification", state); }
 @after { popMsg(state); }
-    : KW_SEQUENCEFILE  -> ^(TOK_TBLSEQUENCEFILE)
-    | KW_TEXTFILE  -> ^(TOK_TBLTEXTFILE)
-    | KW_RCFILE  -> ^(TOK_TBLRCFILE)
-    | KW_ORCFILE -> ^(TOK_TBLORCFILE)
-    | KW_PARQUETFILE -> ^(TOK_TBLPARQUETFILE)
-    | KW_INPUTFORMAT inFmt=StringLiteral KW_OUTPUTFORMAT outFmt=StringLiteral (KW_INPUTDRIVER inDriver=StringLiteral KW_OUTPUTDRIVER outDriver=StringLiteral)?
-      -> ^(TOK_TABLEFILEFORMAT $inFmt $outFmt $inDriver? $outDriver?)
+    : KW_INPUTFORMAT inFmt=StringLiteral KW_OUTPUTFORMAT outFmt=StringLiteral KW_SERDE serdeCls=StringLiteral (KW_INPUTDRIVER inDriver=StringLiteral KW_OUTPUTDRIVER outDriver=StringLiteral)?
+      -> ^(TOK_TABLEFILEFORMAT $inFmt $outFmt $serdeCls $inDriver? $outDriver?)
     | genericSpec=identifier -> ^(TOK_FILEFORMAT_GENERIC $genericSpec)
     ;
 
@@ -1276,7 +1305,9 @@ descStatement
 analyzeStatement
 @init { pushMsg("analyze statement", state); }
 @after { popMsg(state); }
-    : KW_ANALYZE KW_TABLE (parttype=tableOrPartition) KW_COMPUTE KW_STATISTICS ((noscan=KW_NOSCAN) | (partialscan=KW_PARTIALSCAN) | (KW_FOR KW_COLUMNS statsColumnName=columnNameList))? -> ^(TOK_ANALYZE $parttype $noscan? $partialscan? $statsColumnName?)
+    : KW_ANALYZE KW_TABLE (parttype=tableOrPartition) KW_COMPUTE KW_STATISTICS ((noscan=KW_NOSCAN) | (partialscan=KW_PARTIALSCAN) 
+                                                      | (KW_FOR KW_COLUMNS (statsColumnName=columnNameList)?))?
+      -> ^(TOK_ANALYZE $parttype $noscan? $partialscan? KW_COLUMNS? $statsColumnName?)
     ;
 
 showStatement
@@ -1296,6 +1327,9 @@ showStatement
     | KW_SHOW KW_LOCKS KW_DATABASE (dbName=Identifier) (isExtended=KW_EXTENDED)? -> ^(TOK_SHOWDBLOCKS $dbName $isExtended?)
     | KW_SHOW (showOptions=KW_FORMATTED)? (KW_INDEX|KW_INDEXES) KW_ON showStmtIdentifier ((KW_FROM|KW_IN) db_name=identifier)?
     -> ^(TOK_SHOWINDEXES showStmtIdentifier $showOptions? $db_name?)
+    | KW_SHOW KW_COMPACTIONS -> ^(TOK_SHOW_COMPACTIONS)
+    | KW_SHOW KW_TRANSACTIONS -> ^(TOK_SHOW_TRANSACTIONS)
+    | KW_SHOW KW_CONF StringLiteral -> ^(TOK_SHOWCONF StringLiteral)
     ;
 
 lockStatement
@@ -1355,8 +1389,8 @@ grantPrivileges
 revokePrivileges
 @init {pushMsg("revoke privileges", state);}
 @afer {popMsg(state);}
-    : KW_REVOKE privilegeList privilegeObject? KW_FROM principalSpecification
-    -> ^(TOK_REVOKE privilegeList principalSpecification privilegeObject?)
+    : KW_REVOKE grantOptionFor? privilegeList privilegeObject? KW_FROM principalSpecification
+    -> ^(TOK_REVOKE privilegeList principalSpecification privilegeObject? grantOptionFor?)
     ;
 
 grantRole
@@ -1369,8 +1403,8 @@ grantRole
 revokeRole
 @init {pushMsg("revoke role", state);}
 @after {popMsg(state);}
-    : KW_REVOKE KW_ROLE? identifier (COMMA identifier)* KW_FROM principalSpecification withAdminOption?
-    -> ^(TOK_REVOKE_ROLE principalSpecification withAdminOption? identifier+)
+    : KW_REVOKE adminOptionFor? KW_ROLE? identifier (COMMA identifier)* KW_FROM principalSpecification
+    -> ^(TOK_REVOKE_ROLE principalSpecification adminOptionFor? identifier+)
     ;
 
 showRoleGrants
@@ -1379,6 +1413,7 @@ showRoleGrants
     : KW_SHOW KW_ROLE KW_GRANT principalName
     -> ^(TOK_SHOW_ROLE_GRANT principalName)
     ;
+
 
 showRoles
 @init {pushMsg("show roles", state);}
@@ -1407,6 +1442,14 @@ showGrants
     : KW_SHOW KW_GRANT principalName? (KW_ON privilegeIncludeColObject)?
     -> ^(TOK_SHOW_GRANT principalName? privilegeIncludeColObject?)
     ;
+
+showRolePrincipals
+@init {pushMsg("show role principals", state);}
+@after {popMsg(state);}
+    : KW_SHOW KW_PRINCIPALS roleName=identifier
+    -> ^(TOK_SHOW_ROLE_PRINCIPALS $roleName)
+    ;
+
 
 privilegeIncludeColObject
 @init {pushMsg("privilege object including columns", state);}
@@ -1483,6 +1526,20 @@ withGrantOption
     : KW_WITH KW_GRANT KW_OPTION
     -> ^(TOK_GRANT_WITH_OPTION)
     ;
+
+grantOptionFor
+@init {pushMsg("grant option for", state);}
+@after {popMsg(state);}
+    : KW_GRANT KW_OPTION KW_FOR
+    -> ^(TOK_GRANT_OPTION_FOR)
+;
+
+adminOptionFor
+@init {pushMsg("admin option for", state);}
+@after {popMsg(state);}
+    : KW_ADMIN KW_OPTION KW_FOR
+    -> ^(TOK_ADMIN_OPTION_FOR)
+;
 
 withAdminOption
 @init {pushMsg("with admin option", state);}
@@ -1759,12 +1816,7 @@ tableFileFormat
 @init { pushMsg("table file format specification", state); }
 @after { popMsg(state); }
     :
-      KW_STORED KW_AS KW_SEQUENCEFILE  -> TOK_TBLSEQUENCEFILE
-      | KW_STORED KW_AS KW_TEXTFILE  -> TOK_TBLTEXTFILE
-      | KW_STORED KW_AS KW_RCFILE  -> TOK_TBLRCFILE
-      | KW_STORED KW_AS KW_ORCFILE -> TOK_TBLORCFILE
-      | KW_STORED KW_AS KW_PARQUETFILE -> TOK_TBLPARQUETFILE
-      | KW_STORED KW_AS KW_INPUTFORMAT inFmt=StringLiteral KW_OUTPUTFORMAT outFmt=StringLiteral (KW_INPUTDRIVER inDriver=StringLiteral KW_OUTPUTDRIVER outDriver=StringLiteral)?
+      KW_STORED KW_AS KW_INPUTFORMAT inFmt=StringLiteral KW_OUTPUTFORMAT outFmt=StringLiteral (KW_INPUTDRIVER inDriver=StringLiteral KW_OUTPUTDRIVER outDriver=StringLiteral)?
       -> ^(TOK_TABLEFILEFORMAT $inFmt $outFmt $inDriver? $outDriver?)
       | KW_STORED KW_BY storageHandler=StringLiteral
          (KW_WITH KW_SERDEPROPERTIES serdeprops=tableProperties)?

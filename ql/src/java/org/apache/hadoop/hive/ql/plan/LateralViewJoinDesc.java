@@ -29,12 +29,14 @@ import java.util.ArrayList;
 public class LateralViewJoinDesc extends AbstractOperatorDesc {
   private static final long serialVersionUID = 1L;
 
+  private int numSelColumns;
   private ArrayList<String> outputInternalColNames;
 
   public LateralViewJoinDesc() {
   }
 
-  public LateralViewJoinDesc(ArrayList<String> outputInternalColNames) {
+  public LateralViewJoinDesc(int numSelColumns, ArrayList<String> outputInternalColNames) {
+    this.numSelColumns = numSelColumns;
     this.outputInternalColNames = outputInternalColNames;
   }
 
@@ -45,5 +47,13 @@ public class LateralViewJoinDesc extends AbstractOperatorDesc {
   @Explain(displayName = "outputColumnNames")
   public ArrayList<String> getOutputInternalColNames() {
     return outputInternalColNames;
+  }
+
+  public int getNumSelColumns() {
+    return numSelColumns;
+  }
+
+  public void setNumSelColumns(int numSelColumns) {
+    this.numSelColumns = numSelColumns;
   }
 }

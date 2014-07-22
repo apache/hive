@@ -21,18 +21,7 @@ package org.apache.hadoop.hive.ql.udf.generic;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleColModuloDoubleColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleColModuloDoubleScalar;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleColModuloLongColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleColModuloLongScalar;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleScalarModuloDoubleColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleScalarModuloLongColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColModuloDoubleColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColModuloDoubleScalar;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColModuloLongColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColModuloLongScalar;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongScalarModuloDoubleColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongScalarModuloLongColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.*;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
@@ -49,7 +38,9 @@ import org.apache.hadoop.io.LongWritable;
   LongColModuloLongScalar.class, LongColModuloDoubleScalar.class,
   DoubleColModuloLongScalar.class, DoubleColModuloDoubleScalar.class,
   LongScalarModuloLongColumn.class, LongScalarModuloDoubleColumn.class,
-  DoubleScalarModuloLongColumn.class, DoubleScalarModuloDoubleColumn.class})
+  DoubleScalarModuloLongColumn.class, DoubleScalarModuloDoubleColumn.class,
+  DecimalColModuloDecimalColumn.class, DecimalColModuloDecimalScalar.class,
+  DecimalScalarModuloDecimalColumn.class})
 public class GenericUDFOPMod extends GenericUDFBaseNumeric {
 
   public GenericUDFOPMod() {

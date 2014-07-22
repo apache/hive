@@ -27,7 +27,7 @@ import java.util.ArrayList;
 public class RowSchema implements Serializable {
 
   private static final long serialVersionUID = 1L;
-  private ArrayList<ColumnInfo> signature;
+  private ArrayList<ColumnInfo> signature = new ArrayList<ColumnInfo>();
 
   public RowSchema() {
   }
@@ -52,13 +52,11 @@ public class RowSchema implements Serializable {
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append('(');
-    if (signature != null) {
-      for (ColumnInfo col: signature) {
-        if (sb.length() > 1) {
-          sb.append(',');
-        }
-        sb.append(col.toString());
+    for (ColumnInfo col: signature) {
+      if (sb.length() > 1) {
+        sb.append(',');
       }
+      sb.append(col.toString());
     }
     sb.append(')');
     return sb.toString();

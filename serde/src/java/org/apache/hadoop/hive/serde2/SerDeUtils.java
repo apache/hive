@@ -21,9 +21,12 @@ package org.apache.hadoop.hive.serde2;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -67,49 +70,6 @@ public final class SerDeUtils {
   private static final String JSON_NULL = "null";
 
   public static final Log LOG = LogFactory.getLog(SerDeUtils.class.getName());
-
-  public static void registerSerDe(String name, Class<?> serde) {}
-
-  private static List<String> nativeSerDeNames = new ArrayList<String>();
-  static {
-    nativeSerDeNames
-        .add(org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe.class
-        .getName());
-    nativeSerDeNames
-        .add(org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe.class
-        .getName());
-    // For backward compatibility
-    nativeSerDeNames.add("org.apache.hadoop.hive.serde.thrift.columnsetSerDe");
-    nativeSerDeNames
-        .add(org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.class.getName());
-    nativeSerDeNames.add(org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe.class.getName());
-  }
-
-  public static boolean shouldGetColsFromSerDe(String serde) {
-    return (serde != null) && !nativeSerDeNames.contains(serde);
-  }
-
-  private static boolean initCoreSerDes = registerCoreSerDes();
-
-  protected static boolean registerCoreSerDes() {
-    // Eagerly load SerDes so they will register their symbolic names even on
-    // Lazy Loading JVMs
-    try {
-      // loading these classes will automatically register the short names
-      Class
-          .forName(org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe.class
-          .getName());
-      Class.forName(org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.class
-          .getName());
-      Class
-          .forName(org.apache.hadoop.hive.serde2.thrift.ThriftDeserializer.class
-          .getName());
-    } catch (ClassNotFoundException e) {
-      throw new RuntimeException(
-          "IMPOSSIBLE Exception: Unable to initialize core serdes", e);
-    }
-    return true;
-  }
 
   /**
    * Escape a String in JSON format.
@@ -525,6 +485,38 @@ public final class SerDeUtils {
     }
     default:
       throw new RuntimeException("Unknown type in ObjectInspector!");
+    }
+  }
+
+  /**
+   * Returns the union of table and partition properties,
+   * with partition properties taking precedence.
+   * @param tblProps
+   * @param partProps
+   * @return the overlayed properties
+   */
+  public static Properties createOverlayedProperties(Properties tblProps, Properties partProps) {
+    Properties props = new Properties(tblProps);
+    if (partProps != null) {
+      props.putAll(partProps);
+    }
+    return props;
+  }
+
+  /**
+   * Initializes a SerDe.
+   * @param serde
+   * @param tblProps
+   * @param partProps
+   * @throws SerDeException
+   */
+  public static void initializeSerDe(Deserializer deserializer, Configuration conf,
+                                            Properties tblProps, Properties partProps)
+                                                throws SerDeException {
+    if (deserializer instanceof AbstractSerDe) {
+      ((AbstractSerDe) deserializer).initialize(conf, tblProps, partProps);
+    } else {
+      deserializer.initialize(conf, createOverlayedProperties(tblProps, partProps));
     }
   }
 

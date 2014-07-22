@@ -26,75 +26,18 @@ import org.apache.hadoop.io.WritableComparator;
 
 /**
  * ByteWritable.
- *
+ * This class was created before the Hadoop version of this class was available, and needs to
+ * be kept around for backward compatibility of third-party UDFs/SerDes. We should consider
+ * removing this class in favor of directly using the Hadoop one in the next major release.
  */
-public class ByteWritable implements WritableComparable {
-  private byte value;
-
-  public void write(DataOutput out) throws IOException {
-    out.writeByte(value);
-  }
-
-  public void readFields(DataInput in) throws IOException {
-    value = in.readByte();
-  }
+public class ByteWritable extends org.apache.hadoop.io.ByteWritable {
 
   public ByteWritable(byte b) {
-    value = b;
+    super(b);
   }
 
   public ByteWritable() {
-    value = 0;
-  }
-
-  public void set(byte value) {
-    this.value = value;
-  }
-
-  public byte get() {
-    return value;
-  }
-
-  /** Compares two ByteWritables. */
-  public int compareTo(Object o) {
-    int thisValue = value;
-    int thatValue = ((ByteWritable) o).value;
-    return thisValue - thatValue;
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (o == null || o.getClass() != ByteWritable.class) {
-      return false;
-    }
-    return get() == ((ByteWritable) o).get();
-  }
-
-  @Override
-  public int hashCode() {
-    return value;
-  }
-
-  @Override
-  public String toString() {
-    return String.valueOf(get());
-  }
-
-  /** A Comparator optimized for BytesWritable. */
-  public static class Comparator extends WritableComparator {
-    public Comparator() {
-      super(ByteWritable.class);
-    }
-
-    /**
-     * Compare the buffers in serialized form.
-     */
-    @Override
-    public int compare(byte[] b1, int s1, int l1, byte[] b2, int s2, int l2) {
-      int a1 = b1[s1];
-      int a2 = b2[s2];
-      return a1 - a2;
-    }
+    super();
   }
 
   static { // register this comparator

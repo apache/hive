@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.ql.io.RCFileOutputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.columnar.BytesRefArrayWritable;
 import org.apache.hadoop.hive.serde2.columnar.BytesRefWritable;
 import org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe;
@@ -48,6 +49,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.BooleanWritable;
+import org.apache.hadoop.io.DataOutputBuffer;
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
@@ -95,7 +97,7 @@ public class TestVectorizedRowBatchCtx {
 
     try {
       serDe = new ColumnarSerDe();
-      serDe.initialize(conf, tbl);
+      SerDeUtils.initializeSerDe(serDe, conf, tbl, null);
     } catch (SerDeException e) {
       new RuntimeException(e);
     }
@@ -193,6 +195,7 @@ public class TestVectorizedRowBatchCtx {
   private VectorizedRowBatch GetRowBatch() throws SerDeException, HiveException, IOException {
 
     RCFile.Reader reader = new RCFile.Reader(fs, this.testFilePath, conf);
+    DataOutputBuffer buffer = new DataOutputBuffer();
 
     // Get object inspector
     StructObjectInspector oi = (StructObjectInspector) serDe
@@ -202,9 +205,9 @@ public class TestVectorizedRowBatchCtx {
     Assert.assertEquals("Field size should be 9", colCount, fieldRefs.size());
 
     // Create the context
-    VectorizedRowBatchCtx ctx = new VectorizedRowBatchCtx(oi, oi, serDe, null);
+    VectorizedRowBatchCtx ctx = new VectorizedRowBatchCtx(oi, oi, serDe, null, null);
     VectorizedRowBatch batch = ctx.createVectorizedRowBatch();
-    VectorizedBatchUtil.SetNoNullFields(true, batch);
+    VectorizedBatchUtil.setNoNullFields(batch);
 
     // Iterate thru the rows and populate the batch
     LongWritable rowID = new LongWritable();
@@ -213,7 +216,7 @@ public class TestVectorizedRowBatchCtx {
       BytesRefArrayWritable cols = new BytesRefArrayWritable();
       reader.getCurrentRow(cols);
       cols.resetValid(colCount);
-      ctx.addRowToBatch(i, cols, batch);
+      ctx.addRowToBatch(i, cols, batch, buffer);
     }
     reader.close();
     batch.size = 10;
@@ -332,7 +335,7 @@ public class TestVectorizedRowBatchCtx {
 
     // Test VectorizedColumnarSerDe
     VectorizedColumnarSerDe vcs = new VectorizedColumnarSerDe();
-    vcs.initialize(this.conf, tbl);
+    SerDeUtils.initializeSerDe(vcs, this.conf, tbl, null);
     Writable w = vcs.serializeVector(batch, (StructObjectInspector) serDe
         .getObjectInspector());
     BytesRefArrayWritable[] refArray = (BytesRefArrayWritable[]) ((ObjectWritable) w).get();

@@ -1,3 +1,5 @@
+set hive.exec.submitviachild=true;
+set hive.exec.submit.local.task.via.child=true;
 set hive.input.format=org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
 set mapred.max.split.size=300;
 set mapred.min.split.size=300;

@@ -11,14 +11,16 @@ POSTHOOK: Input: default@srcpart
 POSTHOOK: Output: default@v
 PREHOOK: query: describe formatted v
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@v
 POSTHOOK: query: describe formatted v
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@v
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	None                
-value               	string              	None                
-ds                  	string              	None                
-hr                  	string              	None                
+key                 	string              	                    
+value               	string              	                    
+ds                  	string              	                    
+hr                  	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -93,18 +95,20 @@ POSTHOOK: Input: default@v
 409	val_409	2008-04-08	11
 PREHOOK: query: describe formatted v
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@v
 POSTHOOK: query: describe formatted v
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@v
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	None                
-value               	string              	None                
+key                 	string              	                    
+value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-ds                  	string              	None                
-hr                  	string              	None                
+ds                  	string              	                    
+hr                  	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -129,8 +133,10 @@ View Original Text: 	select * from srcpart
 View Expanded Text: 	select `srcpart`.`key`, `srcpart`.`value`, `srcpart`.`ds`, `srcpart`.`hr` from `default`.`srcpart`	 
 PREHOOK: query: show partitions v
 PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@v
 POSTHOOK: query: show partitions v
 POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@v
 ds=2008-04-08/hr=11
 ds=2008-04-08/hr=12
 PREHOOK: query: -- altering partitioned view 1
@@ -159,17 +165,19 @@ val_409	2008-04-08	11
 val_409	2008-04-08	11
 PREHOOK: query: describe formatted v
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@v
 POSTHOOK: query: describe formatted v
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@v
 # col_name            	data_type           	comment             
 	 	 
-value               	string              	None                
+value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-ds                  	string              	None                
-hr                  	string              	None                
+ds                  	string              	                    
+hr                  	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -194,8 +202,10 @@ View Original Text: 	select value, ds, hr from srcpart
 View Expanded Text: 	select `srcpart`.`value`, `srcpart`.`ds`, `srcpart`.`hr` from `default`.`srcpart`	 
 PREHOOK: query: show partitions v
 PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@v
 POSTHOOK: query: show partitions v
 POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@v
 ds=2008-04-08/hr=11
 ds=2008-04-08/hr=12
 PREHOOK: query: -- altering partitioned view 2
@@ -224,18 +234,20 @@ POSTHOOK: Input: default@v
 409	val_409	2008-04-08	11
 PREHOOK: query: describe formatted v
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@v
 POSTHOOK: query: describe formatted v
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@v
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	None                
-value               	string              	None                
+key                 	string              	                    
+value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-ds                  	string              	None                
-hr                  	string              	None                
+ds                  	string              	                    
+hr                  	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -260,8 +272,10 @@ View Original Text: 	select key, value, ds, hr from srcpart
 View Expanded Text: 	select `srcpart`.`key`, `srcpart`.`value`, `srcpart`.`ds`, `srcpart`.`hr` from `default`.`srcpart`	 
 PREHOOK: query: show partitions v
 PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@v
 POSTHOOK: query: show partitions v
 POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@v
 ds=2008-04-08/hr=11
 ds=2008-04-08/hr=12
 PREHOOK: query: drop view v
@@ -307,18 +321,20 @@ POSTHOOK: Input: default@srcpart
 POSTHOOK: Output: default@v
 PREHOOK: query: describe formatted v
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@v
 POSTHOOK: query: describe formatted v
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@v
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	None                
-value               	string              	None                
+key                 	string              	                    
+value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-ds                  	string              	None                
-hr                  	string              	None                
+ds                  	string              	                    
+hr                  	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 

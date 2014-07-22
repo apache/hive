@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.ql.optimizer.correlation.ReduceSinkDeDuplication;
 import org.apache.hadoop.hive.ql.optimizer.index.RewriteGBUsingIndex;
 import org.apache.hadoop.hive.ql.optimizer.lineage.Generator;
 import org.apache.hadoop.hive.ql.optimizer.listbucketingpruner.ListBucketingPruner;
+import org.apache.hadoop.hive.ql.optimizer.metainfo.annotation.AnnotateWithOpTraits;
 import org.apache.hadoop.hive.ql.optimizer.pcr.PartitionConditionRemover;
 import org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner;
 import org.apache.hadoop.hive.ql.optimizer.stats.annotation.AnnotateWithStatistics;
@@ -62,16 +63,16 @@ public class Optimizer {
         transformations.add(new ListBucketingPruner());
       }
     }
+    if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTGROUPBY) ||
+        HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_MAP_GROUPBY_SORT)) {
+      transformations.add(new GroupByOptimizer());
+    }
     transformations.add(new ColumnPruner());
     if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_OPTIMIZE_SKEWJOIN_COMPILETIME)) {
       transformations.add(new SkewJoinOptimizer());
     }
     if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTGBYUSINGINDEX)) {
       transformations.add(new RewriteGBUsingIndex());
-    }
-    if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTGROUPBY) ||
-        HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_MAP_GROUPBY_SORT)) {
-      transformations.add(new GroupByOptimizer());
     }
     transformations.add(new SamplePruner());
     transformations.add(new MapJoinProcessor());
@@ -97,6 +98,12 @@ public class Optimizer {
 
     transformations.add(new UnionProcessor());
     transformations.add(new JoinReorder());
+    if(HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.DYNAMICPARTITIONING) &&
+        HiveConf.getVar(hiveConf, HiveConf.ConfVars.DYNAMICPARTITIONINGMODE).equals("nonstrict") &&
+        HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTSORTDYNAMICPARTITION) &&
+        !HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTLISTBUCKETING)) {
+      transformations.add(new SortedDynPartitionOptimizer());
+    }
     if(HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTREDUCEDEDUPLICATION)) {
       transformations.add(new ReduceSinkDeDuplication());
     }
@@ -118,7 +125,9 @@ public class Optimizer {
     if (pctx.getContext().getExplain() ||
         HiveConf.getVar(hiveConf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) {
       transformations.add(new AnnotateWithStatistics());
+      transformations.add(new AnnotateWithOpTraits());
     }
+
     transformations.add(new SimpleFetchOptimizer());  // must be called last
 
     if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEFETCHTASKAGGR)) {

@@ -18,6 +18,22 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import org.apache.hadoop.hive.common.ValidTxnList;
+import org.apache.hadoop.hive.metastore.api.CompactionType;
+import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
+import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
+import org.apache.hadoop.hive.metastore.api.HeartbeatTxnRangeResponse;
+import org.apache.hadoop.hive.metastore.api.LockRequest;
+import org.apache.hadoop.hive.metastore.api.LockResponse;
+import org.apache.hadoop.hive.metastore.api.NoSuchLockException;
+import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
+import org.apache.hadoop.hive.metastore.api.OpenTxnsResponse;
+import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
+import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
+import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
+import org.apache.hadoop.hive.metastore.api.TxnOpenException;
+import org.apache.thrift.TException;
+
 import java.util.List;
 import java.util.Map;
 
@@ -25,10 +41,19 @@ import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
+import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.ConfigValSecurityException;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Function;
+import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
+import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
+import org.apache.hadoop.hive.metastore.api.GetPrincipalsInRoleRequest;
+import org.apache.hadoop.hive.metastore.api.GetPrincipalsInRoleResponse;
+import org.apache.hadoop.hive.metastore.api.GetRoleGrantsForPrincipalRequest;
+import org.apache.hadoop.hive.metastore.api.GetRoleGrantsForPrincipalResponse;
+import org.apache.hadoop.hive.metastore.api.GrantRevokePrivilegeRequest;
+import org.apache.hadoop.hive.metastore.api.GrantRevokePrivilegeResponse;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
 import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
 import org.apache.hadoop.hive.metastore.api.Index;
@@ -36,15 +61,24 @@ import org.apache.hadoop.hive.metastore.api.InvalidInputException;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.InvalidPartitionException;
+import org.apache.hadoop.hive.metastore.api.LockRequest;
+import org.apache.hadoop.hive.metastore.api.LockResponse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.NoSuchLockException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
+import org.apache.hadoop.hive.metastore.api.OpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PartitionEventType;
 import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
 import org.apache.hadoop.hive.metastore.api.Role;
+import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
+import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
+import org.apache.hadoop.hive.metastore.api.TxnOpenException;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
@@ -159,7 +193,6 @@ public interface IMetaStoreClient {
    *           The table wasn't found.
    * @throws TException
    *           A thrift communication error occurred
-   * @throws ExistingDependentsException
    */
   public void dropTable(String dbname, String tableName, boolean deleteData,
       boolean ignoreUknownTab) throws MetaException, TException,
@@ -361,7 +394,9 @@ public interface IMetaStoreClient {
       List<String> partVals) throws NoSuchObjectException, MetaException, TException;
 
   /**
-   * @param partition
+   * @param partitionSpecs
+   * @param sourceDb
+   * @param sourceTable
    * @param destdb
    * @param destTableName
    * @return partition object
@@ -922,7 +957,7 @@ public interface IMetaStoreClient {
    * @throws TException
    */
   public boolean revoke_role(String role_name, String user_name,
-      PrincipalType principalType) throws MetaException, TException;
+      PrincipalType principalType, boolean grantOption) throws MetaException, TException;
 
   /**
    *
@@ -977,7 +1012,7 @@ public interface IMetaStoreClient {
    * @throws MetaException
    * @throws TException
    */
-  public boolean revoke_privileges(PrivilegeBag privileges)
+  public boolean revoke_privileges(PrivilegeBag privileges, boolean grantOption)
       throws MetaException, TException;
 
   /**
@@ -1020,10 +1055,248 @@ public interface IMetaStoreClient {
   public List<String> getFunctions(String dbName, String pattern)
       throws MetaException, TException;
 
+  /**
+   * Get a structure that details valid transactions.
+   * @return list of valid transactions
+   * @throws TException
+   */
+  public ValidTxnList getValidTxns() throws TException;
+
+  /**
+   * Initiate a transaction.
+   * @param user User who is opening this transaction.  This is the Hive user,
+   *             not necessarily the OS user.  It is assumed that this user has already been
+   *             authenticated and authorized at this point.
+   * @return transaction identifier
+   * @throws TException
+   */
+  public long openTxn(String user) throws TException;
+
+  /**
+   * Initiate a batch of transactions.  It is not guaranteed that the
+   * requested number of transactions will be instantiated.  The system has a
+   * maximum number instantiated per request, controlled by hive.txn.max
+   * .batch.open in hive-site.xml.  If the user requests more than this
+   * value, only the configured max will be returned.
+   *
+   * <p>Increasing the number of transactions requested in the batch will
+   * allow applications that stream data into Hive to place more commits in a
+   * single file, thus reducing load on the namenode and making reads of the
+   * data more efficient.  However, opening more transactions in a batch will
+   * also result in readers needing to keep a larger list of open
+   * transactions to ignore, potentially slowing their reads.  Users will
+   * need to test in their system to understand the optimal number of
+   * transactions to request in a batch.
+   * </p>
+   * @param user User who is opening this transaction.  This is the Hive user,
+   *             not necessarily the OS user.  It is assumed that this user has already been
+   *             authenticated and authorized at this point.
+   * @param numTxns number of requested transactions to open
+   * @return list of opened txn ids.  As noted above, this may be less than
+   * requested, so the user should check how many were returned rather than
+   * optimistically assuming that the result matches the request.
+   * @throws TException
+   */
+  public OpenTxnsResponse openTxns(String user, int numTxns) throws TException;
+
+  /**
+   * Rollback a transaction.  This will also unlock any locks associated with
+   * this transaction.
+   * @param txnid id of transaction to be rolled back.
+   * @throws NoSuchTxnException if the requested transaction does not exist.
+   * Note that this can result from the transaction having timed out and been
+   * deleted.
+   * @throws TException
+   */
+  public void rollbackTxn(long txnid) throws NoSuchTxnException, TException;
+
+  /**
+   * Commit a transaction.  This will also unlock any locks associated with
+   * this transaction.
+   * @param txnid id of transaction to be committed.
+   * @throws NoSuchTxnException if the requested transaction does not exist.
+   * This can result fro the transaction having timed out and been deleted by
+   * the compactor.
+   * @throws TxnAbortedException if the requested transaction has been
+   * aborted.  This can result from the transaction timing out.
+   * @throws TException
+   */
+  public void commitTxn(long txnid)
+      throws NoSuchTxnException, TxnAbortedException, TException;
+
+  /**
+   * Show the list of currently open transactions.  This is for use by "show transactions" in the
+   * grammar, not for applications that want to find a list of current transactions to work with.
+   * Those wishing the latter should call {@link #getValidTxns()}.
+   * @return List of currently opened transactions, included aborted ones.
+   * @throws TException
+   */
+  public GetOpenTxnsInfoResponse showTxns() throws TException;
+
+  /**
+   * Request a set of locks.  All locks needed for a particular query, DML,
+   * or DDL operation should be batched together and requested in one lock
+   * call.  This avoids deadlocks.  It also avoids blocking other users who
+   * only require some of the locks required by this user.
+   *
+   * <p>If the operation requires a transaction (INSERT, UPDATE,
+   * or DELETE) that transaction id must be provided as part this lock
+   * request.  All locks associated with a transaction will be released when
+   * that transaction is committed or rolled back.</p>
+   * *
+   * <p>Once a lock is acquired, {@link #heartbeat(long, long)} must be called
+   * on a regular basis to avoid the lock being timed out by the system.</p>
+   * @param request The lock request.  {@link LockRequestBuilder} can be used
+   *                construct this request.
+   * @return a lock response, which will provide two things,
+   * the id of the lock (to be used in all further calls regarding this lock)
+   * as well as a state of the lock.  If the state is ACQUIRED then the user
+   * can proceed.  If it is WAITING the user should wait and call
+   * {@link #checkLock(long)} before proceeding.  All components of the lock
+   * will have the same state.
+   * @throws NoSuchTxnException if the requested transaction does not exist.
+   * This can result fro the transaction having timed out and been deleted by
+   * the compactor.
+   * @throws TxnAbortedException if the requested transaction has been
+   * aborted.  This can result from the transaction timing out.
+   * @throws TException
+   */
+  public LockResponse lock(LockRequest request)
+      throws NoSuchTxnException, TxnAbortedException, TException;
+
+  /**
+   * Check the status of a set of locks requested via a
+   * {@link #lock(org.apache.hadoop.hive.metastore.api.LockRequest)} call.
+   * Once a lock is acquired, {@link #heartbeat(long, long)} must be called
+   * on a regular basis to avoid the lock being timed out by the system.
+   * @param lockid lock id returned by lock().
+   * @return a lock response, which will provide two things,
+   * the id of the lock (to be used in all further calls regarding this lock)
+   * as well as a state of the lock.  If the state is ACQUIRED then the user
+   * can proceed.  If it is WAITING the user should wait and call
+   * this method again before proceeding.  All components of the lock
+   * will have the same state.
+   * @throws NoSuchTxnException if the requested transaction does not exist.
+   * This can result fro the transaction having timed out and been deleted by
+   * the compactor.
+   * @throws TxnAbortedException if the requested transaction has been
+   * aborted.  This can result from the transaction timing out.
+   * @throws NoSuchLockException if the requested lockid does not exist.
+   * This can result from the lock timing out and being unlocked by the system.
+   * @throws TException
+   */
+  public LockResponse checkLock(long lockid)
+    throws NoSuchTxnException, TxnAbortedException, NoSuchLockException,
+      TException;
+
+  /**
+   * Unlock a set of locks.  This can only be called when the locks are not
+   * assocaited with a transaction.
+   * @param lockid lock id returned by
+   * {@link #lock(org.apache.hadoop.hive.metastore.api.LockRequest)}
+   * @throws NoSuchLockException if the requested lockid does not exist.
+   * This can result from the lock timing out and being unlocked by the system.
+   * @throws TxnOpenException if the locks are are associated with a
+   * transaction.
+   * @throws TException
+   */
+  public void unlock(long lockid)
+      throws NoSuchLockException, TxnOpenException, TException;
+
+  /**
+   * Show all currently held and waiting locks.
+   * @return List of currently held and waiting locks.
+   * @throws TException
+   */
+  public ShowLocksResponse showLocks() throws TException;
+
+  /**
+   * Send a heartbeat to indicate that the client holding these locks (if
+   * any) and that opened this transaction (if one exists) is still alive.
+   * The default timeout for transactions and locks is 300 seconds,
+   * though it is configurable.  To determine how often to heartbeat you will
+   * need to ask your system administrator how the metastore thrift service
+   * has been configured.
+   * @param txnid the id of the open transaction.  If no transaction is open
+   *              (it is a DDL or query) then this can be set to 0.
+   * @param lockid the id of the locks obtained.  If no locks have been
+   *               obtained then this can be set to 0.
+   * @throws NoSuchTxnException if the requested transaction does not exist.
+   * This can result fro the transaction having timed out and been deleted by
+   * the compactor.
+   * @throws TxnAbortedException if the requested transaction has been
+   * aborted.  This can result from the transaction timing out.
+   * @throws NoSuchLockException if the requested lockid does not exist.
+   * This can result from the lock timing out and being unlocked by the system.
+   * @throws TException
+   */
+  public void heartbeat(long txnid, long lockid)
+    throws NoSuchLockException, NoSuchTxnException, TxnAbortedException,
+      TException;
+
+  /**
+   * Send heartbeats for a range of transactions.  This is for the streaming ingest client that
+   * will have many transactions open at once.  Everyone else should use
+   * {@link #heartbeat(long, long)}.
+   * @param min minimum transaction id to heartbeat, inclusive
+   * @param max maximum transaction id to heartbeat, inclusive
+   * @return a pair of lists that tell which transactions in the list did not exist (they may
+   * have already been closed) and which were aborted.
+   * @throws TException
+   */
+  public HeartbeatTxnRangeResponse heartbeatTxnRange(long min, long max) throws TException;
+
+  /**
+   * Send a request to compact a table or partition.  This will not block until the compaction is
+   * complete.  It will instead put a request on the queue for that table or partition to be
+   * compacted.  No checking is done on the dbname, tableName, or partitionName to make sure they
+   * refer to valid objects.  It is assumed this has already been done by the caller.
+   * @param dbname Name of the database the table is in.  If null, this will be assumed to be
+   *               'default'.
+   * @param tableName Name of the table to be compacted.  This cannot be null.  If partitionName
+   *                  is null, this must be a non-partitioned table.
+   * @param partitionName Name of the partition to be compacted
+   * @param type Whether this is a major or minor compaction.
+   * @throws TException
+   */
+  public void compact(String dbname, String tableName, String partitionName,  CompactionType type)
+      throws TException;
+
+  /**
+   * Get a list of all current compactions.
+   * @return List of all current compactions.  This includes compactions waiting to happen,
+   * in progress, and finished but waiting to clean the existing files.
+   * @throws TException
+   */
+  public ShowCompactResponse showCompactions() throws TException;
 
   public class IncompatibleMetastoreException extends MetaException {
     public IncompatibleMetastoreException(String message) {
       super(message);
     }
   }
+
+  /**
+   * get all role-grants for users/roles that have been granted the given role
+   * Note that in the returned list of RolePrincipalGrants, the roleName is
+   * redundant as it would match the role_name argument of this function
+   * @param getPrincRoleReq
+   * @return
+   * @throws MetaException
+   * @throws TException
+   */
+  GetPrincipalsInRoleResponse get_principals_in_role(GetPrincipalsInRoleRequest getPrincRoleReq)
+      throws MetaException, TException;
+
+  /**
+   * get all role-grants for roles that have been granted to given principal
+   * Note that in the returned list of RolePrincipalGrants, the principal information
+   * redundant as it would match the principal information in request
+   * @param getRolePrincReq
+   * @return
+   * @throws MetaException
+   * @throws TException
+   */
+  GetRoleGrantsForPrincipalResponse get_role_grants_for_principal(
+      GetRoleGrantsForPrincipalRequest getRolePrincReq) throws MetaException, TException;
 }

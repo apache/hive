@@ -305,9 +305,9 @@ public class JdbcColumn {
     } else if (type.equalsIgnoreCase("bigint")) {
       return 10;
     } else if (type.equalsIgnoreCase("float")) {
-      return 2;
+      return 10;
     } else if (type.equalsIgnoreCase("double")) {
-      return 2;
+      return 10;
     } else if (type.equalsIgnoreCase("decimal")) {
       return 10;
     } else { // anything else including boolean and string is null

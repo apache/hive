@@ -18,7 +18,7 @@
 
 package org.apache.hadoop.hive.serde2.lazy;
 
-public abstract class LazyObjectBase {
+public interface LazyObjectBase {
 
   /**
    * Set the data for this LazyObjectBase. We take ByteArrayRef instead of byte[] so
@@ -33,12 +33,12 @@ public abstract class LazyObjectBase {
    *          The length of the data, starting from "start"
    * @see ByteArrayRef
    */
-  public abstract void init(ByteArrayRef bytes, int start, int length);
+  void init(ByteArrayRef bytes, int start, int length);
 
   /**
    * If the LazyObjectBase is a primitive Object, then deserialize it and return the
    * actual primitive Object. Otherwise (array, map, struct), return this.
    */
-  public abstract Object getObject();
+  Object getObject();
 
 }

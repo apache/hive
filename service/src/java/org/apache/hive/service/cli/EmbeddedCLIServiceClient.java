@@ -21,6 +21,8 @@ package org.apache.hive.service.cli;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hive.service.auth.HiveAuthFactory;
+
 
 /**
  * EmbeddedCLIServiceClient.
@@ -188,4 +190,22 @@ public class EmbeddedCLIServiceClient extends CLIServiceClient {
     return cliService.fetchResults(opHandle, orientation, maxRows);
   }
 
+
+  @Override
+  public String getDelegationToken(SessionHandle sessionHandle, HiveAuthFactory authFactory,
+         String owner, String renewer) throws HiveSQLException {
+    return cliService.getDelegationToken(sessionHandle, authFactory, owner, renewer);
+  }
+
+  @Override
+  public void cancelDelegationToken(SessionHandle sessionHandle, HiveAuthFactory authFactory,
+      String tokenStr) throws HiveSQLException {
+    cliService.cancelDelegationToken(sessionHandle, authFactory, tokenStr);
+  }
+
+  @Override
+  public void renewDelegationToken(SessionHandle sessionHandle, HiveAuthFactory authFactory,
+      String tokenStr) throws HiveSQLException {
+    cliService.renewDelegationToken(sessionHandle, authFactory, tokenStr);
+  }
 }

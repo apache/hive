@@ -120,7 +120,7 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
 
   transient boolean firstRow;
   transient long totalMemory;
-  transient boolean hashAggr;
+  protected transient boolean hashAggr;
   // The reduction is happening on the reducer, and the grouping key and
   // reduction keys are different.
   // For example: select a, count(distinct b) from T group by a

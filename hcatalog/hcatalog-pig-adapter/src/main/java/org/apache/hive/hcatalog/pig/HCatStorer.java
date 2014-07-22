@@ -96,7 +96,6 @@ public class HCatStorer extends HCatBaseStorer {
       throw e;
     }
     Properties udfProps = UDFContext.getUDFContext().getUDFProperties(this.getClass(), new String[]{sign});
-    //'Throw' is the default for backwards compatibility
     //downstream code expects it to be set to a valid value
     udfProps.put(ON_OORA_VALUE_PROP, configuredOptions.getOptionValue(ON_OOR_VALUE_OPT, getDefaultValue().name()));
     if(LOG.isDebugEnabled()) {
@@ -149,9 +148,6 @@ public class HCatStorer extends HCatBaseStorer {
    */
   @Override
   public void setStoreLocation(String location, Job job) throws IOException {
-    HCatContext.INSTANCE.setConf(job.getConfiguration()).getConf().get()
-      .setBoolean(HCatConstants.HCAT_DATA_TINY_SMALL_INT_PROMOTION, false);
-
     Configuration config = job.getConfiguration();
     config.set(INNER_SIGNATURE, INNER_SIGNATURE_PREFIX + "_" + sign);
     Properties udfProps = UDFContext.getUDFContext().getUDFProperties(
@@ -200,7 +196,7 @@ public class HCatStorer extends HCatBaseStorer {
         throw new PigException(he.getMessage(),
           PigHCatUtil.PIG_EXCEPTION_CODE, he);
       }
-      HCatSchema hcatTblSchema = HCatOutputFormat.getTableSchema(job);
+      HCatSchema hcatTblSchema = HCatOutputFormat.getTableSchema(job.getConfiguration());
       try {
         doSchemaValidations(pigSchema, hcatTblSchema);
       } catch (HCatException he) {

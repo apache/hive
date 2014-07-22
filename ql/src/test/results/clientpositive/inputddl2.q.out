@@ -15,6 +15,7 @@ STAGE PLANS:
           input format: org.apache.hadoop.mapred.TextInputFormat
           output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
           partition columns: ds string, country string
+          serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           name: INPUTDDL2
 
 PREHOOK: query: CREATE TABLE INPUTDDL2(key INT, value STRING) PARTITIONED BY(ds STRING, country STRING) STORED AS TEXTFILE
@@ -26,15 +27,17 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@INPUTDDL2
 PREHOOK: query: DESCRIBE INPUTDDL2
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@inputddl2
 POSTHOOK: query: DESCRIBE INPUTDDL2
 POSTHOOK: type: DESCTABLE
-key                 	int                 	None                
-value               	string              	None                
-ds                  	string              	None                
-country             	string              	None                
+POSTHOOK: Input: default@inputddl2
+key                 	int                 	                    
+value               	string              	                    
+ds                  	string              	                    
+country             	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-ds                  	string              	None                
-country             	string              	None                
+ds                  	string              	                    
+country             	string              	                    

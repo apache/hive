@@ -33,15 +33,17 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@vp1
 PREHOOK: query: DESCRIBE EXTENDED vp1
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@vp1
 POSTHOOK: query: DESCRIBE EXTENDED vp1
 POSTHOOK: type: DESCTABLE
-key                 	string              	None                
-value               	string              	None                
+POSTHOOK: Input: default@vp1
+key                 	string              	                    
+value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-value               	string              	None                
+value               	string              	                    
 	 	 
 #### A masked pattern was here ####
 FROM src	 	 
@@ -50,16 +52,18 @@ FROM `default`.`src`
 WHERE `src`.`key`=86, tableType:VIRTUAL_VIEW)		 
 PREHOOK: query: DESCRIBE FORMATTED vp1
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@vp1
 POSTHOOK: query: DESCRIBE FORMATTED vp1
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@vp1
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	None                
+key                 	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-value               	string              	None                
+value               	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -149,14 +153,18 @@ POSTHOOK: Input: default@vp1
 POSTHOOK: Output: default@vp1
 PREHOOK: query: SHOW PARTITIONS vp1
 PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@vp1
 POSTHOOK: query: SHOW PARTITIONS vp1
 POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@vp1
 value=val_86
 value=val_xyz
 PREHOOK: query: SHOW PARTITIONS vp1 PARTITION(value='val_86')
 PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@vp1
 POSTHOOK: query: SHOW PARTITIONS vp1 PARTITION(value='val_86')
 POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@vp1
 value=val_86
 PREHOOK: query: SHOW TABLE EXTENDED LIKE vp1
 PREHOOK: type: SHOW_TABLESTATUS
@@ -206,8 +214,10 @@ POSTHOOK: type: ALTERTABLE_DROPPARTS
 POSTHOOK: Input: default@vp1
 PREHOOK: query: SHOW PARTITIONS vp1
 PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@vp1
 POSTHOOK: query: SHOW PARTITIONS vp1
 POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@vp1
 value=val_86
 PREHOOK: query: -- Even though no partition predicate is specified in the next query,
 -- the WHERE clause inside of the view should satisfy strict mode.
@@ -245,18 +255,20 @@ POSTHOOK: Input: default@srcpart
 POSTHOOK: Output: default@vp2
 PREHOOK: query: DESCRIBE FORMATTED vp2
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@vp2
 POSTHOOK: query: DESCRIBE FORMATTED vp2
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@vp2
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	None                
-value               	string              	None                
-ds                  	string              	None                
+key                 	string              	                    
+value               	string              	                    
+ds                  	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-hr                  	string              	None                
+hr                  	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -356,16 +368,18 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@vp3
 PREHOOK: query: DESCRIBE FORMATTED vp3
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@vp3
 POSTHOOK: query: DESCRIBE FORMATTED vp3
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@vp3
 # col_name            	data_type           	comment             
 	 	 
-k                   	string              	None                
+k                   	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-v                   	string              	None                
+v                   	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 

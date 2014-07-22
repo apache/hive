@@ -32,6 +32,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
+import org.apache.hadoop.hive.ql.exec.ExtractOperator;
 import org.apache.hadoop.hive.ql.exec.ForwardOperator;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
@@ -41,6 +42,7 @@ import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.LineageInfo;
 import org.apache.hadoop.hive.ql.hooks.LineageInfo.BaseColumnInfo;
 import org.apache.hadoop.hive.ql.hooks.LineageInfo.Dependency;
@@ -52,6 +54,7 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.lib.Utils;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
+import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -213,8 +216,8 @@ public class OpProcFactory {
 
         // Otherwise look up the expression corresponding to this ci
         ExprNodeDesc expr = exprs.get(cnt++);
-        lCtx.getIndex().mergeDependency(op, ci,
-            ExprProcFactory.getExprDependency(lCtx, inpOp, expr));
+        Dependency dependency = ExprProcFactory.getExprDependency(lCtx, inpOp, expr);
+        lCtx.getIndex().mergeDependency(op, ci, dependency);
       }
 
       return null;
@@ -438,7 +441,6 @@ public class OpProcFactory {
       LineageCtx lCtx = (LineageCtx) procCtx;
       ReduceSinkOperator rop = (ReduceSinkOperator)nd;
 
-      ArrayList<ColumnInfo> col_infos = rop.getSchema().getSignature();
       Operator<? extends OperatorDesc> inpOp = getParent(stack);
       int cnt = 0;
 
@@ -450,15 +452,49 @@ public class OpProcFactory {
       }
 
       if (op instanceof GroupByOperator) {
+        ArrayList<ColumnInfo> col_infos = rop.getSchema().getSignature();
         for(ExprNodeDesc expr : rop.getConf().getKeyCols()) {
           lCtx.getIndex().putDependency(rop, col_infos.get(cnt++),
               ExprProcFactory.getExprDependency(lCtx, inpOp, expr));
         }
-      }
-
-      for(ExprNodeDesc expr : rop.getConf().getValueCols()) {
-        lCtx.getIndex().putDependency(rop, col_infos.get(cnt++),
-            ExprProcFactory.getExprDependency(lCtx, inpOp, expr));
+        for(ExprNodeDesc expr : rop.getConf().getValueCols()) {
+          lCtx.getIndex().putDependency(rop, col_infos.get(cnt++),
+              ExprProcFactory.getExprDependency(lCtx, inpOp, expr));
+        }
+      } else if (op instanceof ExtractOperator) {
+        ArrayList<ColumnInfo> col_infos = rop.getSchema().getSignature();
+        for(ExprNodeDesc expr : rop.getConf().getValueCols()) {
+          lCtx.getIndex().putDependency(rop, col_infos.get(cnt++),
+              ExprProcFactory.getExprDependency(lCtx, inpOp, expr));
+        }
+      } else {
+        RowResolver resolver = lCtx.getParseCtx().getOpParseCtx().get(rop).getRowResolver();
+        ReduceSinkDesc desc = rop.getConf();
+        List<ExprNodeDesc> keyCols = desc.getKeyCols();
+        ArrayList<String> keyColNames = desc.getOutputKeyColumnNames();
+        for (int i = 0; i < keyCols.size(); i++) {
+          // order-bys, joins
+          String[] nm = resolver.reverseLookup(Utilities.ReduceField.KEY + "." + keyColNames.get(i));
+          if (nm == null) {
+            continue;   // key in values
+          }
+          ColumnInfo column = resolver.get(nm[0], nm[1]);
+          lCtx.getIndex().putDependency(rop, column,
+              ExprProcFactory.getExprDependency(lCtx, inpOp, keyCols.get(i)));
+        }
+        List<ExprNodeDesc> valCols = desc.getValueCols();
+        ArrayList<String> valColNames = desc.getOutputValueColumnNames();
+        for (int i = 0; i < valCols.size(); i++) {
+          // todo: currently, bucketing,etc. makes RS differently with those for order-bys or joins
+          String[] nm = resolver.reverseLookup(valColNames.get(i));
+          if (nm == null) {
+            // order-bys, joins
+            nm = resolver.reverseLookup(Utilities.ReduceField.VALUE + "." + valColNames.get(i));
+          }
+          ColumnInfo column = resolver.get(nm[0], nm[1]);
+          lCtx.getIndex().putDependency(rop, column,
+              ExprProcFactory.getExprDependency(lCtx, inpOp, valCols.get(i)));
+        }
       }
 
       return null;

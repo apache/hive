@@ -35,8 +35,10 @@ POSTHOOK: Input: default@dummy
 POSTHOOK: Output: default@dummy
 PREHOOK: query: DESCRIBE FORMATTED dummy
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@dummy
 POSTHOOK: query: DESCRIBE FORMATTED dummy
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@dummy
 # col_name            	data_type           	comment             
 	 	 
 col1                	string              	한글_col1             

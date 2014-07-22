@@ -35,6 +35,11 @@ public class ParquetShortInspector extends AbstractPrimitiveJavaObjectInspector 
   }
 
   @Override
+  public Object getPrimitiveJavaObject(final Object o) {
+    return o == null ? null : get(o);
+  }
+
+  @Override
   public Object create(final short val) {
     return new ShortWritable(val);
   }
@@ -51,6 +56,7 @@ public class ParquetShortInspector extends AbstractPrimitiveJavaObjectInspector 
     if (o instanceof IntWritable) {
       return (short) ((IntWritable) o).get();
     }
+
     return ((ShortWritable) o).get();
   }
 }

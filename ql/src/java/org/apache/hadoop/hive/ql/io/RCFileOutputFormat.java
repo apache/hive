@@ -25,6 +25,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.serde2.columnar.BytesRefArrayWritable;
 import org.apache.hadoop.io.Writable;
@@ -57,7 +58,7 @@ public class RCFileOutputFormat extends
    */
   public static void setColumnNumber(Configuration conf, int columnNum) {
     assert columnNum > 0;
-    conf.setInt(RCFile.COLUMN_NUMBER_CONF_STR, columnNum);
+    conf.setInt(HiveConf.ConfVars.HIVE_RCFILE_COLUMN_NUMBER_CONF.varname, columnNum);
   }
 
   /**
@@ -67,7 +68,7 @@ public class RCFileOutputFormat extends
    * @return number of columns for RCFile's writer
    */
   public static int getColumnNumber(Configuration conf) {
-    return conf.getInt(RCFile.COLUMN_NUMBER_CONF_STR, 0);
+    return HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_RCFILE_COLUMN_NUMBER_CONF);
   }
 
   /** {@inheritDoc} */
@@ -118,7 +119,7 @@ public class RCFileOutputFormat extends
    * @throws IOException
    */
   @Override
-  public FSRecordWriter getHiveRecordWriter(
+  public org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter getHiveRecordWriter(
       JobConf jc, Path finalOutPath, Class<? extends Writable> valueClass,
       boolean isCompressed, Properties tableProperties, Progressable progress) throws IOException {
 
@@ -131,15 +132,16 @@ public class RCFileOutputFormat extends
     }
 
     RCFileOutputFormat.setColumnNumber(jc, cols.length);
-    final RCFile.Writer outWriter = Utilities.createRCFileWriter
-      (jc, finalOutPath.getFileSystem(jc),
-       finalOutPath, isCompressed);
+    final RCFile.Writer outWriter = Utilities.createRCFileWriter(jc,
+	finalOutPath.getFileSystem(jc), finalOutPath, isCompressed, progress);
 
-    return new FSRecordWriter() {
+    return new org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter() {
+      @Override
       public void write(Writable r) throws IOException {
         outWriter.append(r);
       }
 
+      @Override
       public void close(boolean abort) throws IOException {
         outWriter.close();
       }

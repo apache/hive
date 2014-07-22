@@ -26,29 +26,26 @@ import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 
 /**
  * UDFAcos.
- *
  */
-@Description(name = "acos", value = "_FUNC_(x) - returns the arc cosine of x if -1<=x<=1 or "
-    + "NULL otherwise", extended = "Example:\n"
-    + "  > SELECT _FUNC_(1) FROM src LIMIT 1;\n" + "  0\n"
-    + "  > SELECT _FUNC_(2) FROM src LIMIT 1;\n" + "  NULL")
+@Description(name = "acos",
+             value = "_FUNC_(x) - returns the arc cosine of x if -1<=x<=1 or " + "NULL otherwise",
+             extended = "Example:\n"
+                        + "  > SELECT _FUNC_(1) FROM src LIMIT 1;\n"
+                        + "  0\n"
+                        + "  > SELECT _FUNC_(2) FROM src LIMIT 1;\n"
+                        + "  NULL")
 @VectorizedExpressions({FuncACosLongToDouble.class, FuncACosDoubleToDouble.class})
 public class UDFAcos extends UDFMath {
-  private final DoubleWritable result = new DoubleWritable();
 
-  public UDFAcos() {
-  }
+  private final DoubleWritable result = new DoubleWritable();
 
   /**
    * Take Arc Cosine of a in radians.
    */
-  public DoubleWritable evaluate(DoubleWritable a) {
-    if (a == null) {
-      return null;
-    } else {
-      result.set(Math.acos(a.get()));
-      return result;
-    }
+  @Override
+  protected DoubleWritable doEvaluate(DoubleWritable a) {
+    result.set(Math.acos(a.get()));
+    return result;
   }
 
 }

@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.exec.persistence.PTFRowContainer;
@@ -46,17 +47,29 @@ public class PTFPartition {
   StructObjectInspector outputOI;
   private final PTFRowContainer<List<Object>> elems;
 
-  protected PTFPartition(HiveConf cfg,
+  protected PTFPartition(Configuration cfg,
       SerDe serDe, StructObjectInspector inputOI,
       StructObjectInspector outputOI)
+      throws HiveException {
+    this(cfg, serDe, inputOI, outputOI, true);
+  }
+  
+  protected PTFPartition(Configuration cfg,
+      SerDe serDe, StructObjectInspector inputOI,
+      StructObjectInspector outputOI,
+      boolean createElemContainer)
       throws HiveException {
     this.serDe = serDe;
     this.inputOI = inputOI;
     this.outputOI = outputOI;
-    int containerNumRows = HiveConf.getIntVar(cfg, ConfVars.HIVEJOINCACHESIZE);
-    elems = new PTFRowContainer<List<Object>>(containerNumRows, cfg, null);
-    elems.setSerDe(serDe, outputOI);
-    elems.setTableDesc(PTFRowContainer.createTableDesc(inputOI));
+    if ( createElemContainer ) {
+      int containerNumRows = HiveConf.getIntVar(cfg, ConfVars.HIVEJOINCACHESIZE);
+      elems = new PTFRowContainer<List<Object>>(containerNumRows, cfg, null);
+      elems.setSerDe(serDe, outputOI);
+      elems.setTableDesc(PTFRowContainer.createTableDesc(inputOI));
+    } else {
+      elems = null;
+    }
   }
 
   public void reset() throws HiveException {
@@ -90,11 +103,11 @@ public class PTFPartition {
     @SuppressWarnings("unchecked")
     List<Object> l = (List<Object>)
         ObjectInspectorUtils.copyToStandardObject(o, inputOI, ObjectInspectorCopyOption.WRITABLE);
-    elems.add(l);
+    elems.addRow(l);
   }
 
   public int size() {
-    return (int) elems.rowCount();
+    return elems.rowCount();
   }
 
   public PTFPartitionIterator<Object> iterator() throws HiveException {
@@ -130,11 +143,13 @@ public class PTFPartition {
       createTimeSz = PTFPartition.this.size();
     }
 
+    @Override
     public boolean hasNext() {
       checkForComodification();
       return idx < end;
     }
 
+    @Override
     public Object next() {
       checkForComodification();
       try {
@@ -144,6 +159,7 @@ public class PTFPartition {
       }
     }
 
+    @Override
     public void remove() {
       throw new UnsupportedOperationException();
     }
@@ -222,12 +238,22 @@ public class PTFPartition {
     void reset() throws HiveException;
   }
 
-  public static PTFPartition create(HiveConf cfg,
+  public static PTFPartition create(Configuration cfg,
       SerDe serDe,
       StructObjectInspector inputOI,
       StructObjectInspector outputOI)
       throws HiveException {
     return new PTFPartition(cfg, serDe, inputOI, outputOI);
+  }
+  
+  public static PTFRollingPartition createRolling(Configuration cfg,
+      SerDe serDe,
+      StructObjectInspector inputOI,
+      StructObjectInspector outputOI,
+      int precedingSpan,
+      int followingSpan)
+      throws HiveException {
+    return new PTFRollingPartition(cfg, serDe, inputOI, outputOI, precedingSpan, followingSpan);
   }
 
   public static StructObjectInspector setupPartitionOutputOI(SerDe serDe,

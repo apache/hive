@@ -18,11 +18,10 @@ PREHOOK: query: EXPLAIN SELECT * FROM src LATERAL VIEW explode(array(1,2,3)) myT
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN SELECT * FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol SORT BY key ASC, myCol ASC LIMIT 1
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: tmp_pyang_lv.inputs SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-1
@@ -48,7 +47,7 @@ STAGE PLANS:
                       key expressions: _col0 (type: string), _col2 (type: int)
                       sort order: ++
                       Statistics: Num rows: 58 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: int)
+                      value expressions: _col1 (type: string)
               Select Operator
                 expressions: array(1,2,3) (type: array<int>)
                 outputColumnNames: _col0
@@ -67,9 +66,11 @@ STAGE PLANS:
                         key expressions: _col0 (type: string), _col2 (type: int)
                         sort order: ++
                         Statistics: Num rows: 58 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: int)
+                        value expressions: _col1 (type: string)
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string), KEY.reducesinkkey1 (type: int)
+          outputColumnNames: _col0, _col1, _col2
           Statistics: Num rows: 58 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
           Limit
             Number of rows: 1
@@ -89,9 +90,11 @@ STAGE PLANS:
               key expressions: _col0 (type: string), _col2 (type: int)
               sort order: ++
               Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: int)
+              value expressions: _col1 (type: string)
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string), KEY.reducesinkkey1 (type: int)
+          outputColumnNames: _col0, _col1, _col2
           Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
           Limit
             Number of rows: 1
@@ -107,15 +110,16 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: EXPLAIN SELECT myTable.* FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol LIMIT 3
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN SELECT myTable.* FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol LIMIT 3
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: tmp_pyang_lv.inputs SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -173,15 +177,16 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 3
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: EXPLAIN SELECT myTable.myCol, myTable2.myCol2 FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol LATERAL VIEW explode(array('a', 'b', 'c')) myTable2 AS myCol2 LIMIT 9
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN SELECT myTable.myCol, myTable2.myCol2 FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol LATERAL VIEW explode(array('a', 'b', 'c')) myTable2 AS myCol2 LIMIT 9
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: tmp_pyang_lv.inputs SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -305,15 +310,16 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 9
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: EXPLAIN SELECT myTable2.* FROM src LATERAL VIEW explode(array(array(1,2,3))) myTable AS myCol LATERAL VIEW explode(myTable.myCol) myTable2 AS myCol2 LIMIT 3
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN SELECT myTable2.* FROM src LATERAL VIEW explode(array(array(1,2,3))) myTable AS myCol LATERAL VIEW explode(myTable.myCol) myTable2 AS myCol2 LIMIT 3
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: tmp_pyang_lv.inputs SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -433,6 +439,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 3
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: -- Verify that * selects columns from both tables
 SELECT * FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol SORT BY key ASC, myCol ASC LIMIT 1
@@ -444,7 +452,6 @@ SELECT * FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol SORT BY ke
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: Lineage: tmp_pyang_lv.inputs SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 0	val_0	1
 PREHOOK: query: -- TABLE.* should be supported
 SELECT myTable.* FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol LIMIT 3
@@ -456,7 +463,6 @@ SELECT myTable.* FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol LI
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: Lineage: tmp_pyang_lv.inputs SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 1
 2
 3
@@ -470,7 +476,6 @@ SELECT myTable.myCol, myTable2.myCol2 FROM src LATERAL VIEW explode(array(1,2,3)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: Lineage: tmp_pyang_lv.inputs SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 1	a
 1	b
 1	c
@@ -490,7 +495,6 @@ SELECT myTable2.* FROM src LATERAL VIEW explode(array(array(1,2,3))) myTable AS 
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: Lineage: tmp_pyang_lv.inputs SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 1
 2
 3
@@ -500,10 +504,9 @@ PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT myCol from tmp_pyang_lv LATERAL VIEW explode(array(1,2,3)) myTab as myCol limit 3
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: tmp_pyang_lv.inputs SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -561,6 +564,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 3
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT myCol from tmp_PYANG_lv LATERAL VIEW explode(array(1,2,3)) myTab as myCol limit 3
 PREHOOK: type: QUERY
@@ -570,7 +575,6 @@ POSTHOOK: query: SELECT myCol from tmp_PYANG_lv LATERAL VIEW explode(array(1,2,3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmp_pyang_lv
 #### A masked pattern was here ####
-POSTHOOK: Lineage: tmp_pyang_lv.inputs SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 1
 2
 3
@@ -581,7 +585,6 @@ POSTHOOK: query: CREATE TABLE tmp_pyang_src_rcfile (key string, value array<stri
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tmp_pyang_src_rcfile
-POSTHOOK: Lineage: tmp_pyang_lv.inputs SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: INSERT OVERWRITE TABLE tmp_pyang_src_rcfile SELECT key, array(value) FROM src ORDER BY key LIMIT 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -590,7 +593,6 @@ POSTHOOK: query: INSERT OVERWRITE TABLE tmp_pyang_src_rcfile SELECT key, array(v
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@tmp_pyang_src_rcfile
-POSTHOOK: Lineage: tmp_pyang_lv.inputs SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tmp_pyang_src_rcfile.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tmp_pyang_src_rcfile.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: SELECT key,value from tmp_pyang_src_rcfile LATERAL VIEW explode(value) myTable AS myCol
@@ -601,9 +603,6 @@ POSTHOOK: query: SELECT key,value from tmp_pyang_src_rcfile LATERAL VIEW explode
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmp_pyang_src_rcfile
 #### A masked pattern was here ####
-POSTHOOK: Lineage: tmp_pyang_lv.inputs SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tmp_pyang_src_rcfile.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tmp_pyang_src_rcfile.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 0	["val_0"]
 0	["val_0"]
 0	["val_0"]
@@ -632,9 +631,6 @@ POSTHOOK: query: SELECT myCol from tmp_pyang_src_rcfile LATERAL VIEW explode(val
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmp_pyang_src_rcfile
 #### A masked pattern was here ####
-POSTHOOK: Lineage: tmp_pyang_lv.inputs SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tmp_pyang_src_rcfile.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tmp_pyang_src_rcfile.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 val_0
 val_0
 val_0
@@ -663,9 +659,6 @@ POSTHOOK: query: SELECT * from tmp_pyang_src_rcfile LATERAL VIEW explode(value) 
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmp_pyang_src_rcfile
 #### A masked pattern was here ####
-POSTHOOK: Lineage: tmp_pyang_lv.inputs SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tmp_pyang_src_rcfile.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tmp_pyang_src_rcfile.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 0	["val_0"]	val_0
 0	["val_0"]	val_0
 0	["val_0"]	val_0
@@ -700,9 +693,6 @@ SELECT * from tmp_pyang_src_rcfile LATERAL VIEW explode(value) myTable AS myCol
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmp_pyang_src_rcfile
 #### A masked pattern was here ####
-POSTHOOK: Lineage: tmp_pyang_lv.inputs SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tmp_pyang_src_rcfile.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tmp_pyang_src_rcfile.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 0	["val_0"]
 0	["val_0"]
 0	["val_0"]
@@ -737,9 +727,6 @@ SELECT * from tmp_pyang_src_rcfile LATERAL VIEW explode(value) myTable AS myCol
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmp_pyang_src_rcfile
 #### A masked pattern was here ####
-POSTHOOK: Lineage: tmp_pyang_lv.inputs SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tmp_pyang_src_rcfile.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tmp_pyang_src_rcfile.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 val_0
 val_0
 val_0
@@ -774,9 +761,6 @@ SELECT key, value from tmp_pyang_src_rcfile LATERAL VIEW explode(value) myTable 
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmp_pyang_src_rcfile
 #### A masked pattern was here ####
-POSTHOOK: Lineage: tmp_pyang_lv.inputs SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tmp_pyang_src_rcfile.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tmp_pyang_src_rcfile.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 0
 0
 0
@@ -803,12 +787,9 @@ PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN SELECT value, myCol from (SELECT key, array(value[0]) AS value FROM tmp_pyang_src_rcfile GROUP BY value[0], key) a
 LATERAL VIEW explode(value) myTable AS myCol
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: tmp_pyang_lv.inputs SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tmp_pyang_src_rcfile.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tmp_pyang_src_rcfile.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -886,6 +867,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT value, myCol from (SELECT key, array(value[0]) AS value FROM tmp_pyang_src_rcfile GROUP BY value[0], key) a
 LATERAL VIEW explode(value) myTable AS myCol
@@ -897,9 +880,6 @@ LATERAL VIEW explode(value) myTable AS myCol
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmp_pyang_src_rcfile
 #### A masked pattern was here ####
-POSTHOOK: Lineage: tmp_pyang_lv.inputs SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tmp_pyang_src_rcfile.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tmp_pyang_src_rcfile.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 ["val_0"]	val_0
 ["val_10"]	val_10
 ["val_100"]	val_100

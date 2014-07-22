@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.PTFPartition;
@@ -48,6 +49,7 @@ import org.apache.hadoop.hive.ql.udf.ptf.TableFunctionEvaluator;
 import org.apache.hadoop.hive.ql.udf.ptf.TableFunctionResolver;
 import org.apache.hadoop.hive.ql.udf.ptf.WindowingTableFunction.WindowingTableFunctionResolver;
 import org.apache.hadoop.hive.serde2.SerDe;
+import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
@@ -63,10 +65,10 @@ public class PTFDeserializer {
 
   PTFDesc ptfDesc;
   StructObjectInspector inputOI;
-  HiveConf hConf;
+  Configuration hConf;
   LeadLagInfo llInfo;
 
-  public PTFDeserializer(PTFDesc ptfDesc, StructObjectInspector inputOI, HiveConf hConf) {
+  public PTFDeserializer(PTFDesc ptfDesc, StructObjectInspector inputOI, Configuration hConf) {
     super();
     this.ptfDesc = ptfDesc;
     ptfDesc.setCfg(hConf);
@@ -94,6 +96,8 @@ public class PTFDeserializer {
         initialize((PartitionedTableFunctionDef) currentDef);
       }
     }
+
+    PTFDeserializer.alterOutputOIForStreaming(ptfDesc);
   }
 
   public void initializeWindowing(WindowTableFunctionDef def) throws HiveException {
@@ -260,7 +264,7 @@ public class PTFDeserializer {
     try {
       SerDe serDe =  ReflectionUtils.newInstance(hConf.getClassByName(serdeClassName).
           asSubclass(SerDe.class), hConf);
-      serDe.initialize(hConf, serDeProps);
+      SerDeUtils.initializeSerDe(serDe, hConf, serDeProps, null);
       shp.setSerde(serDe);
       StructObjectInspector outOI = PTFPartition.setupPartitionOutputOI(serDe, OI);
       shp.setOI(outOI);
@@ -285,7 +289,7 @@ public class PTFDeserializer {
       @SuppressWarnings("unchecked")
       Class<? extends TableFunctionResolver> rCls = (Class<? extends TableFunctionResolver>)
           Class.forName(className);
-      return (TableFunctionResolver) ReflectionUtils.newInstance(rCls, null);
+      return ReflectionUtils.newInstance(rCls, null);
     } catch (Exception e) {
       throw new HiveException(e);
     }
@@ -328,6 +332,19 @@ public class PTFDeserializer {
     ArrayList<TypeInfo> fields = t.getAllStructFieldTypeInfos();
     return new ArrayList<?>[]
     {fnames, fields};
+  }
+
+  /*
+   * If the final PTF in a PTFChain can stream its output, then set the OI of its OutputShape
+   * to the OI returned by the TableFunctionEvaluator.
+   */
+  public static void alterOutputOIForStreaming(PTFDesc ptfDesc) {
+    PartitionedTableFunctionDef tDef = ptfDesc.getFuncDef();
+    TableFunctionEvaluator tEval = tDef.getTFunction();
+
+    if ( tEval.canIterateOutput() ) {
+      tDef.getOutputShape().setOI(tEval.getOutputOI());
+    }
   }
 
 }

@@ -17,12 +17,10 @@
  */
 package org.apache.hadoop.hive.ql.exec.tez.tools;
 
-import java.util.List;
+import java.util.IdentityHashMap;
+import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.tez.runtime.api.Input;
-import org.apache.tez.runtime.api.LogicalInput;
 import org.apache.tez.runtime.api.MergedLogicalInput;
 import org.apache.tez.runtime.api.Reader;
 
@@ -32,6 +30,8 @@ import org.apache.tez.runtime.api.Reader;
  */
 public class TezMergedLogicalInput extends MergedLogicalInput {
 
+  private Map<Input, Boolean> readyInputs = new IdentityHashMap<Input, Boolean>();
+  
   @Override
   public Reader getReader() throws Exception {
     return new InputMerger(getInputs());
@@ -39,6 +39,11 @@ public class TezMergedLogicalInput extends MergedLogicalInput {
 
   @Override
   public void setConstituentInputIsReady(Input input) {
-    // ignore notification
+    synchronized (this) {
+      readyInputs.put(input, Boolean.TRUE);
+    }
+    if (readyInputs.size() == getInputs().size()) {
+      informInputReady();
+    }
   }
 }

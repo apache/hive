@@ -25,7 +25,6 @@ insert into table vsmb_bucket_TXT select cint, cstring1 from alltypesorc limit 2
 set hive.vectorized.execution.enabled=true;
 set hive.optimize.bucketmapjoin = true;
 set hive.optimize.bucketmapjoin.sortedmerge = true;
-set hive.auto.convert.sortmerge.join.noconditionaltask = true;
 set hive.input.format = org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat;
 
 explain

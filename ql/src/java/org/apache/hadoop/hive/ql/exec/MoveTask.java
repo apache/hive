@@ -18,16 +18,6 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-import java.io.IOException;
-import java.io.Serializable;
-import java.security.AccessControlException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileStatus;
@@ -50,22 +40,22 @@ import org.apache.hadoop.hive.ql.io.rcfile.merge.BlockMergeTask;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLock;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockManager;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockObj;
+import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.physical.BucketingSortingCtx.BucketCol;
 import org.apache.hadoop.hive.ql.optimizer.physical.BucketingSortingCtx.SortCol;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
-import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
-import org.apache.hadoop.hive.ql.plan.LoadFileDesc;
-import org.apache.hadoop.hive.ql.plan.LoadMultiFilesDesc;
-import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
-import org.apache.hadoop.hive.ql.plan.MapWork;
-import org.apache.hadoop.hive.ql.plan.MapredWork;
-import org.apache.hadoop.hive.ql.plan.MoveWork;
+import org.apache.hadoop.hive.ql.plan.*;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.util.StringUtils;
+
+import java.io.IOException;
+import java.io.Serializable;
+import java.security.AccessControlException;
+import java.util.*;
 
 /**
  * MoveTask implementation.
@@ -88,17 +78,15 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
       String mesg_detail = " from " + sourcePath.toString();
       console.printInfo(mesg, mesg_detail);
 
-      // delete the output directory if it already exists
-      fs.delete(targetPath, true);
       // if source exists, rename. Otherwise, create a empty directory
       if (fs.exists(sourcePath)) {
         Path deletePath = null;
         // If it multiple level of folder are there fs.rename is failing so first
         // create the targetpath.getParent() if it not exist
         if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_INSERT_INTO_MULTILEVEL_DIRS)) {
-        deletePath = createTargetPath(targetPath, fs);
+          deletePath = createTargetPath(targetPath, fs);
         }
-        if (!fs.rename(sourcePath, targetPath)) {
+        if (!Hive.renameFile(conf, sourcePath, targetPath, fs, true, false)) {
           try {
             if (deletePath != null) {
               fs.delete(deletePath, true);
@@ -157,6 +145,9 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
         actualPath = actualPath.getParent();
       }
       fs.mkdirs(mkDirPath);
+      if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_WAREHOUSE_SUBDIR_INHERIT_PERMS)) {
+        fs.setPermission(mkDirPath, fs.getFileStatus(actualPath).getPermission());
+      }
     }
     return deletePath;
   }
@@ -175,7 +166,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
     }
 
     Context ctx = driverContext.getCtx();
-    HiveLockManager lockMgr = ctx.getHiveLockMgr();
+    HiveLockManager lockMgr = ctx.getHiveTxnManager().getLockManager();
     WriteEntity output = ctx.getLoadTableOutputMap().get(ltd);
     List<HiveLockObj> lockObjects = ctx.getOutputLockObjects().get(output);
     if (lockObjects == null) {
@@ -249,13 +240,13 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
           // Get all files from the src directory
           FileStatus[] dirs;
           ArrayList<FileStatus> files;
-          FileSystem fs;
+          FileSystem srcFs; // source filesystem
           try {
-            fs = table.getDataLocation().getFileSystem(conf);
-            dirs = fs.globStatus(tbd.getSourcePath());
+            srcFs = tbd.getSourcePath().getFileSystem(conf);
+            dirs = srcFs.globStatus(tbd.getSourcePath());
             files = new ArrayList<FileStatus>();
             for (int i = 0; (dirs != null && i < dirs.length); i++) {
-              files.addAll(Arrays.asList(fs.listStatus(dirs[i].getPath())));
+              files.addAll(Arrays.asList(srcFs.listStatus(dirs[i].getPath())));
               // We only check one file, so exit the loop when we have at least
               // one.
               if (files.size() > 0) {
@@ -269,7 +260,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
           if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVECHECKFILEFORMAT)) {
             // Check if the file format of the file matches that of the table.
             boolean flag = HiveFileFormatUtils.checkInputFormat(
-                fs, conf, tbd.getTable().getInputFileFormatClass(), files);
+                srcFs, conf, tbd.getTable().getInputFileFormatClass(), files);
             if (!flag) {
               throw new HiveException(
                   "Wrong file format. Please check the file's format.");
@@ -282,9 +273,12 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
         if (tbd.getPartitionSpec().size() == 0) {
           dc = new DataContainer(table.getTTable());
           db.loadTable(tbd.getSourcePath(), tbd.getTable()
-              .getTableName(), tbd.getReplace(), tbd.getHoldDDLTime());
+              .getTableName(), tbd.getReplace(), tbd.getHoldDDLTime(), work.isSrcLocal(),
+              isSkewedStoredAsDirs(tbd));
           if (work.getOutputs() != null) {
-            work.getOutputs().add(new WriteEntity(table));
+            work.getOutputs().add(new WriteEntity(table,
+                (tbd.getReplace() ? WriteEntity.WriteType.INSERT_OVERWRITE :
+                WriteEntity.WriteType.INSERT)));
           }
         } else {
           LOG.info("Partition is: " + tbd.getPartitionSpec().toString());
@@ -376,7 +370,9 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
                 updatePartitionBucketSortColumns(table, partn, bucketCols, numBuckets, sortCols);
               }
 
-              WriteEntity enty = new WriteEntity(partn);
+              WriteEntity enty = new WriteEntity(partn,
+                  (tbd.getReplace() ? WriteEntity.WriteType.INSERT_OVERWRITE :
+                      WriteEntity.WriteType.INSERT));
               if (work.getOutputs() != null) {
                 work.getOutputs().add(enty);
               }
@@ -407,17 +403,21 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
             db.validatePartitionNameCharacters(partVals);
             db.loadPartition(tbd.getSourcePath(), tbd.getTable().getTableName(),
                 tbd.getPartitionSpec(), tbd.getReplace(), tbd.getHoldDDLTime(),
-                tbd.getInheritTableSpecs(), isSkewedStoredAsDirs(tbd));
-          	Partition partn = db.getPartition(table, tbd.getPartitionSpec(), false);
+                tbd.getInheritTableSpecs(), isSkewedStoredAsDirs(tbd), work.isSrcLocal());
+            Partition partn = db.getPartition(table, tbd.getPartitionSpec(),
+                false);
 
-          	if (bucketCols != null || sortCols != null) {
-          	  updatePartitionBucketSortColumns(table, partn, bucketCols, numBuckets, sortCols);
+            if (bucketCols != null || sortCols != null) {
+              updatePartitionBucketSortColumns(table, partn, bucketCols,
+                  numBuckets, sortCols);
             }
 
           	dc = new DataContainer(table.getTTable(), partn.getTPartition());
           	// add this partition to post-execution hook
           	if (work.getOutputs() != null) {
-          	  work.getOutputs().add(new WriteEntity(partn));
+          	  work.getOutputs().add(new WriteEntity(partn,
+                  (tbd.getReplace() ? WriteEntity.WriteType.INSERT_OVERWRITE
+                      : WriteEntity.WriteType.INSERT)));
           	}
          }
         }

@@ -1,0 +1,31 @@
+PREHOOK: query: create database D1
+PREHOOK: type: CREATEDATABASE
+POSTHOOK: query: create database D1
+POSTHOOK: type: CREATEDATABASE
+PREHOOK: query: use D1
+PREHOOK: type: SWITCHDATABASE
+POSTHOOK: query: use D1
+POSTHOOK: type: SWITCHDATABASE
+PREHOOK: query: create table T1(key string, val string) stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:d1
+POSTHOOK: query: create table T1(key string, val string) stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: D1@T1
+POSTHOOK: Output: database:d1
+PREHOOK: query: alter table T1 compact 'major'
+PREHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: query: alter table T1 compact 'major'
+POSTHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: query: alter table T1 compact 'minor'
+PREHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: query: alter table T1 compact 'minor'
+POSTHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: query: drop table T1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: d1@t1
+PREHOOK: Output: d1@t1
+POSTHOOK: query: drop table T1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: d1@t1
+POSTHOOK: Output: d1@t1

@@ -31,8 +31,6 @@ POSTHOOK: query: insert overwrite table partition_date_1 partition(dt='2000-01-0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@partition_date_1@dt=2000-01-01/region=2
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=2).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: insert overwrite table partition_date_1 partition(dt='2013-12-10', region= '2020-20-20')
@@ -45,10 +43,6 @@ POSTHOOK: query: insert overwrite table partition_date_1 partition(dt='2013-12-1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@partition_date_1@dt=2013-12-10/region=2020-20-20
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=2).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-12-10,region=2020-20-20).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-12-10,region=2020-20-20).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: insert overwrite table partition_date_1 partition(dt='2013-08-08', region= '1') 
@@ -61,14 +55,8 @@ POSTHOOK: query: insert overwrite table partition_date_1 partition(dt='2013-08-0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@partition_date_1@dt=2013-08-08/region=1
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=2).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-12-10,region=2020-20-20).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-12-10,region=2020-20-20).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: insert overwrite table partition_date_1 partition(dt='2013-08-08', region= '10') 
   select * from src tablesample (11 rows)
 PREHOOK: type: QUERY
@@ -79,16 +67,8 @@ POSTHOOK: query: insert overwrite table partition_date_1 partition(dt='2013-08-0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@partition_date_1@dt=2013-08-08/region=10
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=2).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=10).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=10).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-12-10,region=2020-20-20).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-12-10,region=2020-20-20).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: select distinct dt from partition_date_1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_date_1
@@ -107,16 +87,6 @@ POSTHOOK: Input: default@partition_date_1@dt=2013-08-08/region=1
 POSTHOOK: Input: default@partition_date_1@dt=2013-08-08/region=10
 POSTHOOK: Input: default@partition_date_1@dt=2013-12-10/region=2020-20-20
 #### A masked pattern was here ####
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=2).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=10).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=10).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-12-10,region=2020-20-20).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-12-10,region=2020-20-20).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 2000-01-01
 2013-08-08
 2013-12-10
@@ -130,16 +100,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_date_1
 POSTHOOK: Input: default@partition_date_1@dt=2000-01-01/region=2
 #### A masked pattern was here ####
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=2).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=10).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=10).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-12-10,region=2020-20-20).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-12-10,region=2020-20-20).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 165	val_165	2000-01-01	2
 238	val_238	2000-01-01	2
 27	val_27	2000-01-01	2
@@ -159,16 +119,6 @@ POSTHOOK: Input: default@partition_date_1
 POSTHOOK: Input: default@partition_date_1@dt=2000-01-01/region=1
 POSTHOOK: Input: default@partition_date_1@dt=2000-01-01/region=2
 #### A masked pattern was here ####
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=2).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=10).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=10).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-12-10,region=2020-20-20).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-12-10,region=2020-20-20).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 15
 PREHOOK: query: -- 15.  Also try with string value in predicate
 select count(*) from partition_date_1 where dt = '2000-01-01'
@@ -184,16 +134,6 @@ POSTHOOK: Input: default@partition_date_1
 POSTHOOK: Input: default@partition_date_1@dt=2000-01-01/region=1
 POSTHOOK: Input: default@partition_date_1@dt=2000-01-01/region=2
 #### A masked pattern was here ####
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=2).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=10).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=10).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-12-10,region=2020-20-20).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-12-10,region=2020-20-20).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 15
 PREHOOK: query: -- 5
 select count(*) from partition_date_1 where dt = date '2000-01-01' and region = '2'
@@ -207,16 +147,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_date_1
 POSTHOOK: Input: default@partition_date_1@dt=2000-01-01/region=2
 #### A masked pattern was here ####
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=2).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=10).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=10).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-12-10,region=2020-20-20).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-12-10,region=2020-20-20).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 5
 PREHOOK: query: -- 11
 select count(*) from partition_date_1 where dt = date '2013-08-08' and region = '10'
@@ -230,16 +160,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_date_1
 POSTHOOK: Input: default@partition_date_1@dt=2013-08-08/region=10
 #### A masked pattern was here ####
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=2).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=10).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=10).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-12-10,region=2020-20-20).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-12-10,region=2020-20-20).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 11
 PREHOOK: query: -- 30
 select count(*) from partition_date_1 where region = '1'
@@ -255,16 +175,6 @@ POSTHOOK: Input: default@partition_date_1
 POSTHOOK: Input: default@partition_date_1@dt=2000-01-01/region=1
 POSTHOOK: Input: default@partition_date_1@dt=2013-08-08/region=1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=2).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=10).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=10).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-12-10,region=2020-20-20).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-12-10,region=2020-20-20).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 30
 PREHOOK: query: -- 0
 select count(*) from partition_date_1 where dt = date '2000-01-01' and region = '3'
@@ -276,16 +186,6 @@ select count(*) from partition_date_1 where dt = date '2000-01-01' and region = 
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_date_1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=2).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=10).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=10).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-12-10,region=2020-20-20).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-12-10,region=2020-20-20).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 0
 PREHOOK: query: -- 0
 select count(*) from partition_date_1 where dt = date '1999-01-01'
@@ -297,16 +197,6 @@ select count(*) from partition_date_1 where dt = date '1999-01-01'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_date_1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=2).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=10).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=10).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-12-10,region=2020-20-20).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-12-10,region=2020-20-20).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 0
 PREHOOK: query: -- Try other comparison operations
 
@@ -324,16 +214,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_date_1
 POSTHOOK: Input: default@partition_date_1@dt=2013-08-08/region=1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=2).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=10).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=10).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-12-10,region=2020-20-20).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-12-10,region=2020-20-20).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 20
 PREHOOK: query: -- 10
 select count(*) from partition_date_1 where dt < date '2000-01-02' and region = '1'
@@ -347,16 +227,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_date_1
 POSTHOOK: Input: default@partition_date_1@dt=2000-01-01/region=1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=2).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=10).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=10).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-12-10,region=2020-20-20).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-12-10,region=2020-20-20).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 10
 PREHOOK: query: -- 20
 select count(*) from partition_date_1 where dt >= date '2000-01-02' and region = '1'
@@ -370,16 +240,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_date_1
 POSTHOOK: Input: default@partition_date_1@dt=2013-08-08/region=1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=2).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=10).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=10).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-12-10,region=2020-20-20).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-12-10,region=2020-20-20).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 20
 PREHOOK: query: -- 10
 select count(*) from partition_date_1 where dt <= date '2000-01-01' and region = '1'
@@ -393,16 +253,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_date_1
 POSTHOOK: Input: default@partition_date_1@dt=2000-01-01/region=1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=2).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=10).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=10).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-12-10,region=2020-20-20).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-12-10,region=2020-20-20).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 10
 PREHOOK: query: -- 20
 select count(*) from partition_date_1 where dt <> date '2000-01-01' and region = '1'
@@ -416,16 +266,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_date_1
 POSTHOOK: Input: default@partition_date_1@dt=2013-08-08/region=1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=2).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=10).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=10).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-12-10,region=2020-20-20).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-12-10,region=2020-20-20).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 20
 PREHOOK: query: -- 10
 select count(*) from partition_date_1 where dt between date '1999-12-30' and date '2000-01-03' and region = '1'
@@ -439,16 +279,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_date_1
 POSTHOOK: Input: default@partition_date_1@dt=2000-01-01/region=1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=2).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=10).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=10).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-12-10,region=2020-20-20).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-12-10,region=2020-20-20).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 10
 PREHOOK: query: -- Try a string key with date-like strings
 
@@ -466,16 +296,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_date_1
 POSTHOOK: Input: default@partition_date_1@dt=2013-12-10/region=2020-20-20
 #### A masked pattern was here ####
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=2).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=10).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=10).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-12-10,region=2020-20-20).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-12-10,region=2020-20-20).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 5
 PREHOOK: query: -- 5
 select count(*) from partition_date_1 where region > '2010-01-01'
@@ -489,16 +309,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_date_1
 POSTHOOK: Input: default@partition_date_1@dt=2013-12-10/region=2020-20-20
 #### A masked pattern was here ####
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=2).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=10).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=10).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-12-10,region=2020-20-20).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-12-10,region=2020-20-20).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 5
 PREHOOK: query: drop table partition_date_1
 PREHOOK: type: DROPTABLE
@@ -508,13 +318,3 @@ POSTHOOK: query: drop table partition_date_1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@partition_date_1
 POSTHOOK: Output: default@partition_date_1
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=2).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=10).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=10).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-12-10,region=2020-20-20).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-12-10,region=2020-20-20).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]

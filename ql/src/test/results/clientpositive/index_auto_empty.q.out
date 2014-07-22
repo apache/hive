@@ -39,19 +39,13 @@ SELECT * FROM default__temp_temp_index__ WHERE key = 86
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@default__temp_temp_index__
 #### A masked pattern was here ####
-POSTHOOK: Lineage: default__temp_temp_index__._bucketname SIMPLE [(temp)temp.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__temp_temp_index__._offsets EXPRESSION [(temp)temp.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__temp_temp_index__.key SIMPLE [(temp)temp.FieldSchema(name:key, type:string, comment:null), ]
 PREHOOK: query: EXPLAIN SELECT * FROM temp WHERE key  = 86
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN SELECT * FROM temp WHERE key  = 86
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: default__temp_temp_index__._bucketname SIMPLE [(temp)temp.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__temp_temp_index__._offsets EXPRESSION [(temp)temp.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__temp_temp_index__.key SIMPLE [(temp)temp.FieldSchema(name:key, type:string, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -79,6 +73,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT * FROM temp WHERE key  = 86
 PREHOOK: type: QUERY
@@ -88,9 +84,6 @@ POSTHOOK: query: SELECT * FROM temp WHERE key  = 86
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@temp
 #### A masked pattern was here ####
-POSTHOOK: Lineage: default__temp_temp_index__._bucketname SIMPLE [(temp)temp.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__temp_temp_index__._offsets EXPRESSION [(temp)temp.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__temp_temp_index__.key SIMPLE [(temp)temp.FieldSchema(name:key, type:string, comment:null), ]
 PREHOOK: query: DROP table temp
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@temp
@@ -99,6 +92,3 @@ POSTHOOK: query: DROP table temp
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@temp
 POSTHOOK: Output: default@temp
-POSTHOOK: Lineage: default__temp_temp_index__._bucketname SIMPLE [(temp)temp.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__temp_temp_index__._offsets EXPRESSION [(temp)temp.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__temp_temp_index__.key SIMPLE [(temp)temp.FieldSchema(name:key, type:string, comment:null), ]

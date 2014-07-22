@@ -7,7 +7,7 @@ POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-1
@@ -24,7 +24,7 @@ STAGE PLANS:
                 sort order: +
                 Map-reduce partition columns: key (type: string)
                 Statistics: Num rows: 9 Data size: 1803 Basic stats: COMPLETE Column stats: NONE
-                value expressions: key (type: string), value (type: string)
+                value expressions: value (type: string)
           TableScan
             alias: src3
             Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
@@ -33,7 +33,7 @@ STAGE PLANS:
               sort order: +
               Map-reduce partition columns: key (type: string)
               Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
-              value expressions: key (type: string), value (type: string)
+              value expressions: value (type: string)
           TableScan
             alias: src1
             Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
@@ -42,20 +42,20 @@ STAGE PLANS:
               sort order: +
               Map-reduce partition columns: key (type: string)
               Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
-              value expressions: key (type: string), value (type: string)
+              value expressions: value (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
                Left Outer Join0 to 1
                Right Outer Join1 to 2
           condition expressions:
-            0 {VALUE._col0} {VALUE._col1}
-            1 {VALUE._col0} {VALUE._col1}
-            2 {VALUE._col0} {VALUE._col1}
+            0 {KEY.reducesinkkey0} {VALUE._col0}
+            1 {KEY.reducesinkkey0} {VALUE._col0}
+            2 {KEY.reducesinkkey0} {VALUE._col0}
           filter predicates:
-            0 {(VALUE._col0 < 10)}
+            0 {(KEY.reducesinkkey0 < 10)}
             1 
-            2 {(VALUE._col0 < 10)}
+            2 {(KEY.reducesinkkey0 < 10)}
           outputColumnNames: _col0, _col1, _col4, _col5, _col8, _col9
           Statistics: Num rows: 63 Data size: 12786 Basic stats: COMPLETE Column stats: NONE
           Select Operator
@@ -77,9 +77,10 @@ STAGE PLANS:
               key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: string)
               sort order: ++++++
               Statistics: Num rows: 63 Data size: 12786 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: string)
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string), KEY.reducesinkkey2 (type: string), KEY.reducesinkkey3 (type: string), KEY.reducesinkkey4 (type: string), KEY.reducesinkkey5 (type: string)
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
           Statistics: Num rows: 63 Data size: 12786 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
@@ -92,6 +93,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT * FROM src src1 LEFT OUTER JOIN src src2 ON (src1.key = src2.key AND src1.key < 10 AND src2.key > 10) RIGHT OUTER JOIN src src3 ON (src2.key = src3.key AND src3.key < 10) SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
 PREHOOK: type: QUERY

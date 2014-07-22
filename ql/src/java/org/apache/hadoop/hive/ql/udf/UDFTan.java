@@ -18,41 +18,30 @@
 
 package org.apache.hadoop.hive.ql.udf;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncTanDoubleToDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncTanLongToDouble;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 
-@Description(
-    name = "tan",
-    value = "_FUNC_(x) - returns the tangent of x (x is in radians)",
-    extended = "Example:\n " +
-    		"  > SELECT _FUNC_(0) FROM src LIMIT 1;\n" +
-    		"  1"
-    )
+@Description(name = "tan",
+             value = "_FUNC_(x) - returns the tangent of x (x is in radians)",
+             extended = "Example:\n "
+                        + "  > SELECT _FUNC_(0) FROM src LIMIT 1;\n"
+                        + "  1"
+)
 @VectorizedExpressions({FuncTanLongToDouble.class, FuncTanDoubleToDouble.class})
 public class UDFTan extends UDFMath {
 
-  @SuppressWarnings("unused")
-  private static Log LOG = LogFactory.getLog(UDFTan.class.getName());
-  DoubleWritable result = new DoubleWritable();
-
-  public UDFTan() {
-  }
+  private final DoubleWritable result = new DoubleWritable();
 
   /**
    * Take Tangent of a
    */
-  public DoubleWritable evaluate(DoubleWritable a)  {
-    if (a == null) {
-      return null;
-    } else {
-      result.set(Math.tan(a.get()));
-      return result;
-    }
+  @Override
+  protected DoubleWritable doEvaluate(DoubleWritable a) {
+    result.set(Math.tan(a.get()));
+    return result;
   }
 
 }

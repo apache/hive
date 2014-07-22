@@ -1,6 +1,8 @@
 set datanucleus.cache.collections=false;
 set hive.stats.autogather=true;
 
+-- SORT_AND_HASH_QUERY_RESULTS
+
 show partitions srcpart;
 
 drop table nzhang_part1;

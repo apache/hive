@@ -1,3 +1,6 @@
+set hive.stats.dbclass=fs;
+
+-- SORT_QUERY_RESULTS
 -- With multiple indexes, make sure we choose which to use in a consistent order
 
 CREATE INDEX src_key_index ON TABLE src(key) as 'COMPACT' WITH DEFERRED REBUILD;
@@ -9,8 +12,8 @@ SET hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
 SET hive.optimize.index.filter=true;
 SET hive.optimize.index.filter.compact.minsize=0;
 
-EXPLAIN SELECT key, value FROM src WHERE key=86 ORDER BY key;
-SELECT key, value FROM src WHERE key=86 ORDER BY key;
+EXPLAIN SELECT key, value FROM src WHERE key=86;
+SELECT key, value FROM src WHERE key=86;
 
 DROP INDEX src_key_index ON src;
 DROP INDEX src_val_index ON src;

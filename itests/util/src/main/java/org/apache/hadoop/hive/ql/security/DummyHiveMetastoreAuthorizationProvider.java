@@ -33,6 +33,10 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.security.authorization.HiveMetastoreAuthorizationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.Privilege;
 
+/**
+ * Dummy implementation for use by unit tests. Tracks the context of calls made to
+ * its authorize functions in {@link AuthCallContext}
+ */
 public class DummyHiveMetastoreAuthorizationProvider implements HiveMetastoreAuthorizationProvider {
 
 
@@ -43,7 +47,8 @@ public class DummyHiveMetastoreAuthorizationProvider implements HiveMetastoreAut
     DB,
     TABLE,
     PARTITION,
-    TABLE_AND_PARTITION
+    TABLE_AND_PARTITION,
+    AUTHORIZATION
   };
 
   class AuthCallContext {
@@ -199,6 +204,13 @@ public class DummyHiveMetastoreAuthorizationProvider implements HiveMetastoreAut
   public void setMetaStoreHandler(HMSHandler handler) {
     debugLog("DHMAP.setMetaStoreHandler");
   }
+
+  @Override
+  public void authorizeAuthorizationApiInvocation() throws HiveException, AuthorizationException {
+    debugLog("DHMAP.authorizeauthapi");
+    authCalls.add(new AuthCallContext(AuthCallContextType.AUTHORIZATION, null, null));
+  }
+
 
 
 }

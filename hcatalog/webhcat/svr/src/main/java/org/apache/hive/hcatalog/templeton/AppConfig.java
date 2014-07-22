@@ -19,9 +19,10 @@
 package org.apache.hive.hcatalog.templeton;
 
 import java.io.File;
-import java.io.StringBufferInputStream;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -32,8 +33,11 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.util.VersionInfo;
 import org.apache.hive.hcatalog.templeton.tool.JobState;
+import org.apache.hive.hcatalog.templeton.tool.TempletonUtils;
 import org.apache.hive.hcatalog.templeton.tool.ZooKeeperCleanup;
 import org.apache.hive.hcatalog.templeton.tool.ZooKeeperStorage;
 
@@ -97,6 +101,7 @@ public class AppConfig extends Configuration {
   public static final String PYTHON_NAME         = "templeton.python";
   public static final String HIVE_ARCHIVE_NAME   = "templeton.hive.archive";
   public static final String HIVE_PATH_NAME      = "templeton.hive.path";
+  public static final String MAPPER_MEMORY_MB    = "templeton.mapper.memory.mb";
   /**
    * see webhcat-default.xml
    */
@@ -105,12 +110,19 @@ public class AppConfig extends Configuration {
    * see webhcat-default.xml
    */
   public static final String HCAT_HOME_PATH      = "templeton.hcat.home";
+  /**
+   * is a comma separated list of name=value pairs;
+   * In case some value is itself a comma-separated list, the comma needs to
+   * be escaped with {@link org.apache.hadoop.util.StringUtils#ESCAPE_CHAR}.  See other usage
+   * of escape/unescape methods in {@link org.apache.hadoop.util.StringUtils} in webhcat.
+   */
   public static final String HIVE_PROPS_NAME     = "templeton.hive.properties";
+  public static final String SQOOP_ARCHIVE_NAME  = "templeton.sqoop.archive";
+  public static final String SQOOP_PATH_NAME     = "templeton.sqoop.path";
   public static final String LIB_JARS_NAME       = "templeton.libjars";
   public static final String PIG_ARCHIVE_NAME    = "templeton.pig.archive";
   public static final String PIG_PATH_NAME       = "templeton.pig.path";
   public static final String STREAMING_JAR_NAME  = "templeton.streaming.jar";
-  public static final String TEMPLETON_JAR_NAME  = "templeton.jar";
   public static final String OVERRIDE_JARS_NAME  = "templeton.override.jars";
   public static final String OVERRIDE_JARS_ENABLED = "templeton.override.enabled";
   public static final String TEMPLETON_CONTROLLER_MR_CHILD_OPTS 
@@ -132,6 +144,7 @@ public class AppConfig extends Configuration {
   public static final String HADOOP_SPECULATIVE_NAME
     = "mapred.map.tasks.speculative.execution";
   public static final String HADOOP_CHILD_JAVA_OPTS = "mapred.child.java.opts";
+  public static final String HADOOP_MAP_MEMORY_MB = "mapreduce.map.memory.mb";
   public static final String UNIT_TEST_MODE     = "templeton.unit.test.mode";
 
 
@@ -158,8 +171,49 @@ public class AppConfig extends Configuration {
       loadOneFileConfig(hadoopConfDir, fname);
     }
     ProxyUserSupport.processProxyuserConfig(this);
+    handleHiveProperties();
     LOG.info(dumpEnvironent());
   }
+  /**
+   * When auto-shipping hive tar (for example when hive query or pig script
+   * is submitted via webhcat), Hive client is launched on some remote node where Hive has not
+   * been installed.  We need pass some properties to that client to make sure it connects to the
+   * right Metastore, configures Tez, etc.  Here we look for such properties in hive config,
+   * and set a comma-separated list of key values in {@link #HIVE_PROPS_NAME}.
+   * Note that the user may choose to set the same keys in HIVE_PROPS_NAME directly, in which case
+   * those values should take precedence.
+   */
+  private void handleHiveProperties() {
+    HiveConf hiveConf = new HiveConf();//load hive-site.xml from classpath
+    List<String> interestingPropNames = Arrays.asList(
+      "hive.metastore.uris","hive.metastore.sasl.enabled",
+      "hive.metastore.execute.setugi","hive.execution.engine");
+
+    //each items is a "key=value" format
+    List<String> webhcatHiveProps = new ArrayList<String>(hiveProps());
+    for(String interestingPropName : interestingPropNames) {
+      String value = hiveConf.get(interestingPropName);
+      if(value != null) {
+        boolean found = false;
+        for(String whProp : webhcatHiveProps) {
+          if(whProp.startsWith(interestingPropName + "=")) {
+            found = true;
+            break;
+          }
+        }
+        if(!found) {
+          webhcatHiveProps.add(interestingPropName + "=" + value);
+        }
+      }
+    }
+    StringBuilder hiveProps = new StringBuilder();
+    for(String whProp : webhcatHiveProps) {
+      //make sure to escape separator char in prop values
+      hiveProps.append(hiveProps.length() > 0 ? "," : "").append(StringUtils.escapeString(whProp));
+    }
+    set(HIVE_PROPS_NAME, hiveProps.toString());
+  }
+
   private static void logConfigLoadAttempt(String path) {
     LOG.info("Attempting to load config file: " + path);
   }
@@ -189,7 +243,8 @@ public class AppConfig extends Configuration {
       }
     });
     for(Map.Entry<String, String> entry : configVals) {
-      sb.append(entry.getKey()).append('=').append(entry.getValue()).append('\n');
+      //use get() to make sure variable substitution works
+      sb.append(entry.getKey()).append('=').append(get(entry.getKey())).append('\n');
     }
     return sb.toString();
   }
@@ -231,7 +286,6 @@ public class AppConfig extends Configuration {
     return false;
   }
 
-  public String templetonJar()     { return get(TEMPLETON_JAR_NAME); }
   public String libJars()          { return get(LIB_JARS_NAME); }
   public String hadoopQueueName()  { return get(HADOOP_QUEUE_NAME); }
   public String clusterHadoop()    { return get(HADOOP_NAME); }
@@ -241,6 +295,8 @@ public class AppConfig extends Configuration {
   public String pigArchive()       { return get(PIG_ARCHIVE_NAME); }
   public String hivePath()         { return get(HIVE_PATH_NAME); }
   public String hiveArchive()      { return get(HIVE_ARCHIVE_NAME); }
+  public String sqoopPath()        { return get(SQOOP_PATH_NAME); }
+  public String sqoopArchive()     { return get(SQOOP_ARCHIVE_NAME); }
   public String streamingJar()     { return get(STREAMING_JAR_NAME); }
   public String kerberosSecret()   { return get(KERBEROS_SECRET); }
   public String kerberosPrincipal(){ return get(KERBEROS_PRINCIPAL); }
@@ -248,8 +304,20 @@ public class AppConfig extends Configuration {
   public String controllerMRChildOpts() { 
     return get(TEMPLETON_CONTROLLER_MR_CHILD_OPTS); 
   }
+  public String mapperMemoryMb()   { return get(MAPPER_MEMORY_MB); }
 
-
+  /**
+   * @see  #HIVE_PROPS_NAME
+   */
+  public Collection<String> hiveProps() {
+    String[] props= StringUtils.split(get(HIVE_PROPS_NAME));
+    //since raw data was (possibly) escaped to make split work,
+    //now need to remove escape chars so they don't interfere with downstream processing
+    for(int i = 0; i < props.length; i++) {
+      props[i] = TempletonUtils.unEscapeString(props[i]);
+    }
+    return Arrays.asList(props);
+  }
 
   public String[] overrideJars() {
     if (getBoolean(OVERRIDE_JARS_ENABLED, true))

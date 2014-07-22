@@ -100,7 +100,7 @@ public class SimpleFetchAggregation implements Transform {
 
       for (AggregationDesc aggregation : cGBY.getConf().getAggregators()) {
         List<ExprNodeDesc> parameters = aggregation.getParameters();
-        aggregation.setParameters(ExprNodeDescUtils.backtrack(parameters, cGBY, pGBY));
+        aggregation.setParameters(ExprNodeDescUtils.backtrack(parameters, cGBY, RS));
       }
 
       pctx.setFetchTabledesc(tsDesc);

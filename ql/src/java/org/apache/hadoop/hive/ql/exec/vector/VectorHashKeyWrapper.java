@@ -143,6 +143,11 @@ public class VectorHashKeyWrapper extends KeyWrapper {
   @Override
   protected Object clone() {
     VectorHashKeyWrapper clone = new VectorHashKeyWrapper();
+    duplicateTo(clone);
+    return clone;
+  }
+    
+  public void duplicateTo(VectorHashKeyWrapper clone) {
     clone.longValues = longValues.clone();
     clone.doubleValues = doubleValues.clone();
     clone.isNull = isNull.clone();
@@ -167,7 +172,6 @@ public class VectorHashKeyWrapper extends KeyWrapper {
     }
     clone.hashcode = hashcode;
     assert clone.equals(this);
-    return clone;
   }
 
   @Override
@@ -218,7 +222,8 @@ public class VectorHashKeyWrapper extends KeyWrapper {
   }
 
   public void assignDecimal(int index, Decimal128 value) {
-      decimalValues[index].update(value);
+    decimalValues[index].update(value);
+    isNull[longValues.length + doubleValues.length + byteValues.length + index] = false;
   }
 
   public void assignNullDecimal(int index) {

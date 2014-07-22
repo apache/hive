@@ -25,7 +25,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
  * A LazyObject can represent any primitive object or hierarchical object like
  * array, map or struct.
  */
-public abstract class LazyObject<OI extends ObjectInspector> extends LazyObjectBase {
+public abstract class LazyObject<OI extends ObjectInspector> implements LazyObjectBase {
 
   protected OI oi;
 

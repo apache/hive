@@ -23,7 +23,9 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
 
+import org.apache.hadoop.hive.common.type.Decimal128;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
@@ -39,27 +41,57 @@ public class TestConstantVectorExpression {
   public void testConstantExpression() {
     ConstantVectorExpression longCve = new ConstantVectorExpression(0, 17);
     ConstantVectorExpression doubleCve = new ConstantVectorExpression(1, 17.34);
-    ConstantVectorExpression bytesCve = new ConstantVectorExpression(2, "alpha".getBytes());
+    String str = "alpha";
+    ConstantVectorExpression bytesCve = new ConstantVectorExpression(2, str.getBytes());
+    Decimal128 decVal = new Decimal128(25.8, (short) 1);
+    ConstantVectorExpression decimalCve = new ConstantVectorExpression(3, decVal);
 
     int size = 20;
-    VectorizedRowBatch vrg = VectorizedRowGroupGenUtil.getVectorizedRowBatch(size, 3, 0);
+    VectorizedRowBatch vrg = VectorizedRowGroupGenUtil.getVectorizedRowBatch(size, 4, 0);
 
     LongColumnVector lcv = (LongColumnVector) vrg.cols[0];
     DoubleColumnVector dcv = new DoubleColumnVector(size);
     BytesColumnVector bcv = new BytesColumnVector(size);
+    DecimalColumnVector dv = new DecimalColumnVector(5, 1);
     vrg.cols[1] = dcv;
     vrg.cols[2] = bcv;
+    vrg.cols[3] = dv;
 
     longCve.evaluate(vrg);
     doubleCve.evaluate(vrg);
-    bytesCve.evaluate(vrg);
-
+    bytesCve.evaluate(vrg);  
+    decimalCve.evaluate(vrg);
     assertTrue(lcv.isRepeating);
     assertTrue(dcv.isRepeating);
     assertTrue(bcv.isRepeating);
     assertEquals(17, lcv.vector[0]);
     assertTrue(17.34 == dcv.vector[0]);
-    assertTrue(Arrays.equals("alpha".getBytes(), bcv.vector[0]));
+    
+    byte[] alphaBytes = "alpha".getBytes();
+    assertTrue(bcv.length[0] == alphaBytes.length);
+    assertTrue(sameFirstKBytes(alphaBytes, bcv.vector[0], alphaBytes.length)); 
+    // Evaluation of the bytes Constant Vector Expression after the vector is
+    // modified. 
+    ((BytesColumnVector) (vrg.cols[2])).vector[0] = "beta".getBytes();
+    bytesCve.evaluate(vrg);  
+    assertTrue(bcv.length[0] == alphaBytes.length);
+    assertTrue(sameFirstKBytes(alphaBytes, bcv.vector[0], alphaBytes.length)); 
+
+    assertTrue(25.8 == dv.vector[0].doubleValue());
+    // Evaluation of the decimal Constant Vector Expression after the vector is
+    // modified.    
+    ((DecimalColumnVector) (vrg.cols[3])).vector[0] = new Decimal128(39.7, (short) 1);
+    decimalCve.evaluate(vrg);
+    assertTrue(25.8 == dv.vector[0].doubleValue());    
+  }
+  
+  private boolean sameFirstKBytes(byte[] o1, byte[] o2, int k) {
+    for (int i = 0; i != k; i++) {
+      if (o1[i] != o2[i]) {
+        return false;
+      } 
+    }
+    return true;
   }
 
 }

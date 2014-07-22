@@ -27,7 +27,7 @@ ORDER BY KEY2 LIMIT 10
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -44,9 +44,10 @@ STAGE PLANS:
                 key expressions: _col0 (type: string)
                 sort order: +
                 Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col0 (type: string)
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: string)
+          outputColumnNames: _col0
           Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
           Limit
             Number of rows: 10
@@ -62,6 +63,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 10
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT a.KEY2
 FROM (SELECT INPUT4.*, INPUT4.KEY as KEY2

@@ -18,8 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.tez;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -28,29 +27,28 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.security.auth.login.LoginException;
-
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
+import org.apache.hadoop.hive.ql.plan.MapWork;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hadoop.hive.ql.plan.ReduceWork;
+import org.apache.hadoop.hive.ql.plan.TezEdgeProperty;
+import org.apache.hadoop.hive.ql.plan.TezEdgeProperty.EdgeType;
 import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.apache.hadoop.hive.ql.plan.UnionWork;
-import org.apache.hadoop.hive.ql.plan.TezWork.EdgeType;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.yarn.api.records.LocalResource;
-import org.apache.tez.client.TezSession;
 import org.apache.tez.common.counters.CounterGroup;
 import org.apache.tez.common.counters.TezCounter;
 import org.apache.tez.common.counters.TezCounters;
@@ -58,7 +56,6 @@ import org.apache.tez.dag.api.DAG;
 import org.apache.tez.dag.api.Edge;
 import org.apache.tez.dag.api.GroupInputEdge;
 import org.apache.tez.dag.api.SessionNotRunning;
-import org.apache.tez.dag.api.TezException;
 import org.apache.tez.dag.api.Vertex;
 import org.apache.tez.dag.api.VertexGroup;
 import org.apache.tez.dag.api.client.DAGClient;
@@ -78,7 +75,7 @@ public class TezTask extends Task<TezWork> {
 
   private TezCounters counters;
 
-  private DagUtils utils;
+  private final DagUtils utils;
 
   public TezTask() {
     this(DagUtils.getInstance());
@@ -102,60 +99,72 @@ public class TezTask extends Task<TezWork> {
     TezSessionState session = null;
 
     try {
-      // Get or create Context object. If we create it we have to clean
-      // it later as well.
+      // Get or create Context object. If we create it we have to clean it later as well.
       ctx = driverContext.getCtx();
       if (ctx == null) {
         ctx = new Context(conf);
         cleanContext = true;
       }
 
-      // Need to remove this static hack. But this is the way currently to
-      // get a session.
+      // Need to remove this static hack. But this is the way currently to get a session.
       SessionState ss = SessionState.get();
       session = ss.getTezSession();
+      session = TezSessionPoolManager.getInstance().getSession(session, conf, false);
+      ss.setTezSession(session);
 
-      // if we don't have one yet create it.
-      if (session == null) {
-        session = new TezSessionState();
-        ss.setTezSession(session);
-      }
+      // jobConf will hold all the configuration for hadoop, tez, and hive
+      JobConf jobConf = utils.createConfiguration(conf);
 
-      // if it's not running start it.
+      // Get all user jars from work (e.g. input format stuff).
+      String[] inputOutputJars = work.configureJobConfAndExtractJars(jobConf);
+
+      // we will localize all the files (jars, plans, hashtables) to the
+      // scratch dir. let's create this and tmp first.
+      Path scratchDir = ctx.getMRScratchDir();
+
+      // create the tez tmp dir
+      scratchDir = utils.createTezDir(scratchDir, conf);
+
       if (!session.isOpen()) {
         // can happen if the user sets the tez flag after the session was
         // established
         LOG.info("Tez session hasn't been created yet. Opening session");
-        session.open(ss.getSessionId(), conf);
+        session.open(conf, inputOutputJars);
+      } else {
+        session.refreshLocalResourcesFromConf(conf);
       }
 
-      // we will localize all the files (jars, plans, hashtables) to the
-      // scratch dir. let's create this first.
-      Path scratchDir = ctx.getMRScratchDir();
-
-      // create the tez tmp dir
-      utils.createTezDir(scratchDir, conf);
-
-      // jobConf will hold all the configuration for hadoop, tez, and hive
-      JobConf jobConf = utils.createConfiguration(conf);
+      List<LocalResource> additionalLr = session.getLocalizedResources();
+      
+      // log which resources we're adding (apart from the hive exec)
+      if (LOG.isDebugEnabled()) {
+        if (additionalLr == null || additionalLr.size() == 0) {
+          LOG.debug("No local resources to process (other than hive-exec)");
+        } else {
+          for (LocalResource lr: additionalLr) {
+            LOG.debug("Adding local resource: " + lr.getResource());
+          }
+        }
+      }
 
       // unless already installed on all the cluster nodes, we'll have to
       // localize hive-exec.jar as well.
       LocalResource appJarLr = session.getAppJarLr();
 
       // next we translate the TezWork to a Tez DAG
-      DAG dag = build(jobConf, work, scratchDir, appJarLr, ctx);
+      DAG dag = build(jobConf, work, scratchDir, appJarLr, additionalLr, ctx);
 
       // submit will send the job to the cluster and start executing
-      client = submit(jobConf, dag, scratchDir, appJarLr, session);
+      client = submit(jobConf, dag, scratchDir, appJarLr, session, additionalLr);
 
       // finally monitor will print progress until the job is done
       TezJobMonitor monitor = new TezJobMonitor();
-      rc = monitor.monitorExecution(client);
+      rc = monitor.monitorExecution(client, ctx.getHiveTxnManager(), conf);
 
       // fetch the counters
       Set<StatusGetOpts> statusGetOpts = EnumSet.of(StatusGetOpts.GET_COUNTERS);
       counters = client.getDAGStatus(statusGetOpts).getDAGCounters();
+      TezSessionPoolManager.getInstance().returnSession(session);
 
       if (LOG.isInfoEnabled()) {
         for (CounterGroup group: counters) {
@@ -188,23 +197,19 @@ public class TezTask extends Task<TezWork> {
   }
 
   DAG build(JobConf conf, TezWork work, Path scratchDir,
-      LocalResource appJarLr, Context ctx)
+      LocalResource appJarLr, List<LocalResource> additionalLr, Context ctx)
       throws Exception {
 
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_BUILD_DAG);
     Map<BaseWork, Vertex> workToVertex = new HashMap<BaseWork, Vertex>();
     Map<BaseWork, JobConf> workToConf = new HashMap<BaseWork, JobConf>();
 
-    // we need to get the user specified local resources for this dag
-    List<LocalResource> additionalLr = utils.localizeTempFiles(conf);
-
     // getAllWork returns a topologically sorted list, which we use to make
     // sure that vertices are created before they are used in edges.
     List<BaseWork> ws = work.getAllWork();
     Collections.reverse(ws);
 
-    Path tezDir = utils.getTezDir(scratchDir);
-    FileSystem fs = tezDir.getFileSystem(conf);
+    FileSystem fs = scratchDir.getFileSystem(conf);
 
     // the name of the dag is what is displayed in the AM/Job UI
     DAG dag = new DAG(work.getName());
@@ -225,7 +230,7 @@ public class TezTask extends Task<TezWork> {
         // split the children into vertices that make up the union and vertices that are
         // proper children of the union
         for (BaseWork v: work.getChildren(w)) {
-          EdgeType type = work.getEdgeProperty(w, v);
+          EdgeType type = work.getEdgeProperty(w, v).getEdgeType();
           if (type == EdgeType.CONTAINS) {
             unionWorkItems.add(v);
           } else {
@@ -241,15 +246,15 @@ public class TezTask extends Task<TezWork> {
           vertexArray[i++] = workToVertex.get(v);
         }
         VertexGroup group = dag.createVertexGroup(w.getName(), vertexArray);
-        
+
         // now hook up the children
         for (BaseWork v: children) {
           // need to pairwise patch up the configuration of the vertices
           for (BaseWork part: unionWorkItems) {
-            utils.updateConfigurationForEdge(workToConf.get(part), workToVertex.get(part), 
+            utils.updateConfigurationForEdge(workToConf.get(part), workToVertex.get(part),
                  workToConf.get(v), workToVertex.get(v));
           }
-          
+
           // finally we can create the grouped edge
           GroupInputEdge e = utils.createEdge(group, workToConf.get(v),
                workToVertex.get(v), work.getEdgeProperty(w, v));
@@ -259,22 +264,22 @@ public class TezTask extends Task<TezWork> {
       } else {
         // Regular vertices
         JobConf wxConf = utils.initializeVertexConf(conf, w);
-        Vertex wx = utils.createVertex(wxConf, w, tezDir, appJarLr, 
-          additionalLr, fs, ctx, !isFinal);
+        Vertex wx = utils.createVertex(wxConf, w, scratchDir, appJarLr,
+          additionalLr, fs, ctx, !isFinal, work);
         dag.addVertex(wx);
         utils.addCredentials(w, dag);
         perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_CREATE_VERTEX + w.getName());
         workToVertex.put(w, wx);
         workToConf.put(w, wxConf);
-        
+
         // add all dependencies (i.e.: edges) to the graph
         for (BaseWork v: work.getChildren(w)) {
           assert workToVertex.containsKey(v);
           Edge e = null;
 
-          EdgeType edgeType = work.getEdgeProperty(w, v);
-          
-          e = utils.createEdge(wxConf, wx, workToConf.get(v), workToVertex.get(v), edgeType);
+          TezEdgeProperty edgeProp = work.getEdgeProperty(w, v);
+
+          e = utils.createEdge(wxConf, wx, workToConf.get(v), workToVertex.get(v), edgeProp);
           dag.addEdge(e);
         }
       }
@@ -284,28 +289,31 @@ public class TezTask extends Task<TezWork> {
   }
 
   DAGClient submit(JobConf conf, DAG dag, Path scratchDir,
-      LocalResource appJarLr, TezSessionState sessionState)
-      throws IOException, TezException, InterruptedException,
-      LoginException, URISyntaxException, HiveException {
+      LocalResource appJarLr, TezSessionState sessionState,
+      List<LocalResource> additionalLr)
+      throws Exception {
 
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_SUBMIT_DAG);
     DAGClient dagClient = null;
 
+    Map<String, LocalResource> resourceMap = new HashMap<String, LocalResource>();
+    if (additionalLr != null) {
+      for (LocalResource lr: additionalLr) {
+        resourceMap.put(utils.getBaseName(lr), lr);
+      }
+    }
+
     try {
       // ready to start execution on the cluster
-      dagClient = sessionState.getSession().submitDAG(dag);
+      dagClient = sessionState.getSession().submitDAG(dag, resourceMap);
     } catch (SessionNotRunning nr) {
       console.printInfo("Tez session was closed. Reopening...");
 
       // close the old one, but keep the tmp files around
-      sessionState.close(true);
-
-      // (re)open the session
-      sessionState.open(sessionState.getSessionId(), this.conf);
-
+      TezSessionPoolManager.getInstance().closeAndOpen(sessionState, this.conf);
       console.printInfo("Session re-established.");
 
-      dagClient = sessionState.getSession().submitDAG(dag);
+      dagClient = sessionState.getSession().submitDAG(dag, resourceMap);
     }
 
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_SUBMIT_DAG);
@@ -349,5 +357,43 @@ public class TezTask extends Task<TezWork> {
   @Override
   public String getName() {
     return "TEZ";
+  }
+
+  @Override
+  public Collection<MapWork> getMapWork() {
+    List<MapWork> result = new LinkedList<MapWork>();
+    TezWork work = getWork();
+
+    // framework expects MapWork instances that have no physical parents (i.e.: union parent is
+    // fine, broadcast parent isn't)
+    for (BaseWork w: work.getAllWorkUnsorted()) {
+      if (w instanceof MapWork) {
+        List<BaseWork> parents = work.getParents(w);
+        boolean candidate = true;
+        for (BaseWork parent: parents) {
+          if (!(parent instanceof UnionWork)) {
+            candidate = false;
+          }
+        }
+        if (candidate) {
+          result.add((MapWork)w);
+        }
+      }
+    }
+    return result;
+  }
+
+  @Override
+  public Operator<? extends OperatorDesc> getReducer(MapWork mapWork) {
+    List<BaseWork> children = getWork().getChildren(mapWork);
+    if (children.size() != 1) {
+      return null;
+    }
+
+    if (!(children.get(0) instanceof ReduceWork)) {
+      return null;
+    }
+
+    return ((ReduceWork)children.get(0)).getReducer();
   }
 }

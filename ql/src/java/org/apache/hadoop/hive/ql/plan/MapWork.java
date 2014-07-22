@@ -114,6 +114,8 @@ public class MapWork extends BaseWork {
 
   private boolean useBucketizedHiveInputFormat;
 
+  private boolean useOneNullRowInputFormat;
+
   private Map<String, Map<Integer, String>> scratchColumnVectorTypes = null;
   private Map<String, Map<String, Integer>> scratchColumnMap = null;
   private boolean vectorMode = false;
@@ -172,6 +174,8 @@ public class MapWork extends BaseWork {
 
   /**
    * Derive additional attributes to be rendered by EXPLAIN.
+   * TODO: this method is relied upon by custom input formats to set jobconf properties.
+   *       This is madness? - This is Hive Storage Handlers!
    */
   public void deriveExplainAttributes() {
     if (pathToPartitionInfo != null) {
@@ -388,12 +392,21 @@ public class MapWork extends BaseWork {
   public void setInputformat(String inputformat) {
     this.inputformat = inputformat;
   }
+
   public boolean isUseBucketizedHiveInputFormat() {
     return useBucketizedHiveInputFormat;
   }
 
   public void setUseBucketizedHiveInputFormat(boolean useBucketizedHiveInputFormat) {
     this.useBucketizedHiveInputFormat = useBucketizedHiveInputFormat;
+  }
+
+  public void setUseOneNullRowInputFormat(boolean useOneNullRowInputFormat) {
+    this.useOneNullRowInputFormat = useOneNullRowInputFormat;
+  }
+
+  public boolean isUseOneNullRowInputFormat() {
+    return useOneNullRowInputFormat;
   }
 
   public QBJoinTree getJoinTree() {
@@ -495,6 +508,7 @@ public class MapWork extends BaseWork {
         samplingType == 2 ? "SAMPLING_ON_START" : null;
   }
 
+  @Override
   public void configureJobConf(JobConf job) {
     for (PartitionDesc partition : aliasToPartnInfo.values()) {
       PlanUtils.configureJobConf(partition.getTableDesc(), job);
@@ -531,4 +545,14 @@ public class MapWork extends BaseWork {
     this.vectorMode = vectorMode;
   }
 
+  public void logPathToAliases() {
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("LOGGING PATH TO ALIASES");
+      for (Map.Entry<String, ArrayList<String>> entry: pathToAliases.entrySet()) {
+        for (String a: entry.getValue()) {
+          LOG.debug("Path: " + entry.getKey() + ", Alias: " + a);
+        }
+      }
+    }
+  }
 }

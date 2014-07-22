@@ -53,8 +53,8 @@ public class TestExecutor extends Thread {
   private final BlockingQueue<Test> mTestQueue;
   private final PTest.Builder mPTestBuilder;
   private ExecutionContext mExecutionContext;
-
   private boolean execute;
+
   public TestExecutor(ExecutionContextConfiguration executionContextConfiguration,
       ExecutionContextProvider executionContextProvider,
       BlockingQueue<Test> testQueue, PTest.Builder pTestBuilder) {
@@ -111,10 +111,12 @@ public class TestExecutor extends Thread {
             testConfiguration.setPatch(startRequest.getPatchURL());
             testConfiguration.setJiraName(startRequest.getJiraName());
             testConfiguration.setClearLibraryCache(startRequest.isClearLibraryCache());
+            LocalCommandFactory localCommandFactory = new LocalCommandFactory(logger);
             PTest ptest = mPTestBuilder.build(testConfiguration, mExecutionContext,
                 test.getStartRequest().getTestHandle(), logDir,
-                new LocalCommandFactory(logger), new SSHCommandExecutor(logger),
-                new RSyncCommandExecutor(logger), logger);
+                localCommandFactory, new SSHCommandExecutor(logger),
+                new RSyncCommandExecutor(logger, mExecutionContextConfiguration.getMaxRsyncThreads(),
+                  localCommandFactory), logger);
             int result = ptest.run();
             if(result == Constants.EXIT_CODE_SUCCESS) {
               test.setStatus(Status.ok());

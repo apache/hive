@@ -44,8 +44,6 @@ POSTHOOK: query: insert overwrite table tbl2 select * from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@tbl2
-POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: insert overwrite table tbl3 select * from src
@@ -56,10 +54,6 @@ POSTHOOK: query: insert overwrite table tbl3 select * from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@tbl3
-POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: tbl3.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tbl3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: insert overwrite table tbl4 select * from src
@@ -70,12 +64,6 @@ POSTHOOK: query: insert overwrite table tbl4 select * from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@tbl4
-POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl3.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: tbl4.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tbl4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: -- A SMB join is being followed by a regular join on a non-bucketed table on a different key
@@ -96,18 +84,10 @@ POSTHOOK: query: -- A SMB join is being followed by a regular join on a non-buck
 -- a = TS[2]-MAPJOIN[11]
 explain select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join src c on c.value = a.value
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl3.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl4.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-3 depends on stages: Stage-2
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-3
 
 STAGE PLANS:
   Stage: Stage-2
@@ -116,28 +96,34 @@ STAGE PLANS:
           TableScan
             alias: c
             Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
-            Reduce Output Operator
-              key expressions: value (type: string)
-              sort order: +
-              Map-reduce partition columns: value (type: string)
-              Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: value is not null (type: boolean)
+              Statistics: Num rows: 29 Data size: 2906 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: value (type: string)
+                sort order: +
+                Map-reduce partition columns: value (type: string)
+                Statistics: Num rows: 29 Data size: 2906 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: a
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-            Sorted Merge Bucket Map Join Operator
-              condition map:
-                   Inner Join 0 to 1
-              condition expressions:
-                0 {value}
-                1 
-              keys:
-                0 key (type: int)
-                1 key (type: int)
-              outputColumnNames: _col1
-              Reduce Output Operator
-                key expressions: _col1 (type: string)
-                sort order: +
-                Map-reduce partition columns: _col1 (type: string)
+            Filter Operator
+              predicate: (key is not null and value is not null) (type: boolean)
+              Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
+              Sorted Merge Bucket Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                condition expressions:
+                  0 {value}
+                  1 
+                keys:
+                  0 key (type: int)
+                  1 key (type: int)
+                outputColumnNames: _col1
+                Reduce Output Operator
+                  key expressions: _col1 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col1 (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -182,6 +168,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join src c on c.value = a.value
 PREHOOK: type: QUERY
@@ -195,14 +183,6 @@ POSTHOOK: Input: default@src
 POSTHOOK: Input: default@tbl1
 POSTHOOK: Input: default@tbl2
 #### A masked pattern was here ####
-POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl3.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl4.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 2654
 PREHOOK: query: -- d = TS[0]-RS[7]-JOIN[8]-SEL[9]-FS[10]
 -- b = TS[1]-OP[13]-MAPJOIN[11]-RS[6]-JOIN[8]
@@ -214,18 +194,10 @@ POSTHOOK: query: -- d = TS[0]-RS[7]-JOIN[8]-SEL[9]-FS[10]
 -- a = TS[2]-MAPJOIN[11]
 explain select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join src d on d.value = a.value
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl3.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl4.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-1
@@ -234,28 +206,34 @@ STAGE PLANS:
           TableScan
             alias: d
             Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
-            Reduce Output Operator
-              key expressions: value (type: string)
-              sort order: +
-              Map-reduce partition columns: value (type: string)
-              Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: value is not null (type: boolean)
+              Statistics: Num rows: 29 Data size: 2906 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: value (type: string)
+                sort order: +
+                Map-reduce partition columns: value (type: string)
+                Statistics: Num rows: 29 Data size: 2906 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: a
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-            Sorted Merge Bucket Map Join Operator
-              condition map:
-                   Inner Join 0 to 1
-              condition expressions:
-                0 {value}
-                1 
-              keys:
-                0 key (type: int)
-                1 key (type: int)
-              outputColumnNames: _col1
-              Reduce Output Operator
-                key expressions: _col1 (type: string)
-                sort order: +
-                Map-reduce partition columns: _col1 (type: string)
+            Filter Operator
+              predicate: (key is not null and value is not null) (type: boolean)
+              Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
+              Sorted Merge Bucket Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                condition expressions:
+                  0 {value}
+                  1 
+                keys:
+                  0 key (type: int)
+                  1 key (type: int)
+                outputColumnNames: _col1
+                Reduce Output Operator
+                  key expressions: _col1 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col1 (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -300,6 +278,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join src d on d.value = a.value
 PREHOOK: type: QUERY
@@ -313,14 +293,6 @@ POSTHOOK: Input: default@src
 POSTHOOK: Input: default@tbl1
 POSTHOOK: Input: default@tbl2
 #### A masked pattern was here ####
-POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl3.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl4.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 2654
 PREHOOK: query: -- b = TS[0]-OP[13]-MAPJOIN[11]-RS[6]-JOIN[8]-SEL[9]-FS[10]
 -- a = TS[1]-MAPJOIN[11]
@@ -332,18 +304,10 @@ POSTHOOK: query: -- b = TS[0]-OP[13]-MAPJOIN[11]-RS[6]-JOIN[8]-SEL[9]-FS[10]
 -- h = TS[2]-RS[7]-JOIN[8]
 explain select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join src h on h.value = a.value
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl3.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl4.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-3 depends on stages: Stage-1
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-3
 
 STAGE PLANS:
   Stage: Stage-1
@@ -352,28 +316,34 @@ STAGE PLANS:
           TableScan
             alias: a
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-            Sorted Merge Bucket Map Join Operator
-              condition map:
-                   Inner Join 0 to 1
-              condition expressions:
-                0 {value}
-                1 
-              keys:
-                0 key (type: int)
-                1 key (type: int)
-              outputColumnNames: _col1
-              Reduce Output Operator
-                key expressions: _col1 (type: string)
-                sort order: +
-                Map-reduce partition columns: _col1 (type: string)
+            Filter Operator
+              predicate: (key is not null and value is not null) (type: boolean)
+              Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
+              Sorted Merge Bucket Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                condition expressions:
+                  0 {value}
+                  1 
+                keys:
+                  0 key (type: int)
+                  1 key (type: int)
+                outputColumnNames: _col1
+                Reduce Output Operator
+                  key expressions: _col1 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col1 (type: string)
           TableScan
             alias: h
             Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
-            Reduce Output Operator
-              key expressions: value (type: string)
-              sort order: +
-              Map-reduce partition columns: value (type: string)
-              Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: value is not null (type: boolean)
+              Statistics: Num rows: 29 Data size: 2906 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: value (type: string)
+                sort order: +
+                Map-reduce partition columns: value (type: string)
+                Statistics: Num rows: 29 Data size: 2906 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -418,6 +388,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join src h on h.value = a.value
 PREHOOK: type: QUERY
@@ -431,14 +403,6 @@ POSTHOOK: Input: default@src
 POSTHOOK: Input: default@tbl1
 POSTHOOK: Input: default@tbl2
 #### A masked pattern was here ####
-POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl3.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl4.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 2654
 PREHOOK: query: -- A SMB join is being followed by a regular join on a non-bucketed table on the same key
 explain select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join src c on c.key = a.key
@@ -446,71 +410,93 @@ PREHOOK: type: QUERY
 POSTHOOK: query: -- A SMB join is being followed by a regular join on a non-bucketed table on the same key
 explain select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join src c on c.key = a.key
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl3.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl4.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 STAGE DEPENDENCIES:
-  Stage-8 is a root stage , consists of Stage-5, Stage-6, Stage-7, Stage-1
-  Stage-5 has a backup stage: Stage-1
+  Stage-8 is a root stage , consists of Stage-9, Stage-10, Stage-11, Stage-1
+  Stage-9 has a backup stage: Stage-1
+  Stage-5 depends on stages: Stage-9
   Stage-2 depends on stages: Stage-1, Stage-5, Stage-6, Stage-7
-  Stage-6 has a backup stage: Stage-1
-  Stage-7 has a backup stage: Stage-1
+  Stage-10 has a backup stage: Stage-1
+  Stage-6 depends on stages: Stage-10
+  Stage-11 has a backup stage: Stage-1
+  Stage-7 depends on stages: Stage-11
   Stage-1
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-8
     Conditional Operator
+
+  Stage: Stage-9
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        b 
+          Fetch Operator
+            limit: -1
+        c 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        b 
+          TableScan
+            alias: b
+            Filter Operator
+              predicate: UDFToDouble(key) is not null (type: boolean)
+              HashTable Sink Operator
+                condition expressions:
+                  0 
+                  1 
+                  2 
+                keys:
+                  0 UDFToDouble(key) (type: double)
+                  1 UDFToDouble(key) (type: double)
+                  2 UDFToDouble(key) (type: double)
+        c 
+          TableScan
+            alias: c
+            Filter Operator
+              predicate: UDFToDouble(key) is not null (type: boolean)
+              HashTable Sink Operator
+                condition expressions:
+                  0 
+                  1 
+                  2 
+                keys:
+                  0 UDFToDouble(key) (type: double)
+                  1 UDFToDouble(key) (type: double)
+                  2 UDFToDouble(key) (type: double)
 
   Stage: Stage-5
     Map Reduce
       Map Operator Tree:
           TableScan
             alias: a
-            Map Join Operator
-              condition map:
-                   Inner Join 0 to 1
-                   Inner Join 0 to 2
-              condition expressions:
-                0 
-                1 
-                2 
-              keys:
-                0 UDFToDouble(key) (type: double)
-                1 UDFToDouble(key) (type: double)
-                2 UDFToDouble(key) (type: double)
-              Select Operator
-                Group By Operator
-                  aggregations: count()
-                  mode: hash
-                  outputColumnNames: _col0
-                  File Output Operator
-                    compressed: false
-                    table:
-                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+            Filter Operator
+              predicate: UDFToDouble(key) is not null (type: boolean)
+              Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                     Inner Join 0 to 2
+                condition expressions:
+                  0 
+                  1 
+                  2 
+                keys:
+                  0 UDFToDouble(key) (type: double)
+                  1 UDFToDouble(key) (type: double)
+                  2 UDFToDouble(key) (type: double)
+                Select Operator
+                  Group By Operator
+                    aggregations: count()
+                    mode: hash
+                    outputColumnNames: _col0
+                    File Output Operator
+                      compressed: false
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            b 
-              Fetch Operator
-                limit: -1
-            c 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            b 
-              TableScan
-                alias: b
-            c 
-              TableScan
-                alias: c
 
   Stage: Stage-2
     Map Reduce
@@ -538,95 +524,149 @@ STAGE PLANS:
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
+  Stage: Stage-10
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        a 
+          Fetch Operator
+            limit: -1
+        c 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        a 
+          TableScan
+            alias: a
+            Filter Operator
+              predicate: UDFToDouble(key) is not null (type: boolean)
+              HashTable Sink Operator
+                condition expressions:
+                  0 
+                  1 
+                  2 
+                keys:
+                  0 UDFToDouble(key) (type: double)
+                  1 UDFToDouble(key) (type: double)
+                  2 UDFToDouble(key) (type: double)
+        c 
+          TableScan
+            alias: c
+            Filter Operator
+              predicate: UDFToDouble(key) is not null (type: boolean)
+              HashTable Sink Operator
+                condition expressions:
+                  0 
+                  1 
+                  2 
+                keys:
+                  0 UDFToDouble(key) (type: double)
+                  1 UDFToDouble(key) (type: double)
+                  2 UDFToDouble(key) (type: double)
+
   Stage: Stage-6
     Map Reduce
       Map Operator Tree:
           TableScan
             alias: b
-            Map Join Operator
-              condition map:
-                   Inner Join 0 to 1
-                   Inner Join 0 to 2
-              condition expressions:
-                0 
-                1 
-                2 
-              keys:
-                0 UDFToDouble(key) (type: double)
-                1 UDFToDouble(key) (type: double)
-                2 UDFToDouble(key) (type: double)
-              Select Operator
-                Group By Operator
-                  aggregations: count()
-                  mode: hash
-                  outputColumnNames: _col0
-                  File Output Operator
-                    compressed: false
-                    table:
-                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+            Filter Operator
+              predicate: UDFToDouble(key) is not null (type: boolean)
+              Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                     Inner Join 0 to 2
+                condition expressions:
+                  0 
+                  1 
+                  2 
+                keys:
+                  0 UDFToDouble(key) (type: double)
+                  1 UDFToDouble(key) (type: double)
+                  2 UDFToDouble(key) (type: double)
+                Select Operator
+                  Group By Operator
+                    aggregations: count()
+                    mode: hash
+                    outputColumnNames: _col0
+                    File Output Operator
+                      compressed: false
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            a 
-              Fetch Operator
-                limit: -1
-            c 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            a 
-              TableScan
-                alias: a
-            c 
-              TableScan
-                alias: c
+
+  Stage: Stage-11
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        a 
+          Fetch Operator
+            limit: -1
+        b 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        a 
+          TableScan
+            alias: a
+            Filter Operator
+              predicate: UDFToDouble(key) is not null (type: boolean)
+              HashTable Sink Operator
+                condition expressions:
+                  0 
+                  1 
+                  2 
+                keys:
+                  0 UDFToDouble(key) (type: double)
+                  1 UDFToDouble(key) (type: double)
+                  2 UDFToDouble(key) (type: double)
+        b 
+          TableScan
+            alias: b
+            Filter Operator
+              predicate: UDFToDouble(key) is not null (type: boolean)
+              HashTable Sink Operator
+                condition expressions:
+                  0 
+                  1 
+                  2 
+                keys:
+                  0 UDFToDouble(key) (type: double)
+                  1 UDFToDouble(key) (type: double)
+                  2 UDFToDouble(key) (type: double)
 
   Stage: Stage-7
     Map Reduce
       Map Operator Tree:
           TableScan
             alias: c
-            Map Join Operator
-              condition map:
-                   Inner Join 0 to 1
-                   Inner Join 0 to 2
-              condition expressions:
-                0 
-                1 
-                2 
-              keys:
-                0 UDFToDouble(key) (type: double)
-                1 UDFToDouble(key) (type: double)
-                2 UDFToDouble(key) (type: double)
-              Select Operator
-                Group By Operator
-                  aggregations: count()
-                  mode: hash
-                  outputColumnNames: _col0
-                  File Output Operator
-                    compressed: false
-                    table:
-                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+            Filter Operator
+              predicate: UDFToDouble(key) is not null (type: boolean)
+              Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                     Inner Join 0 to 2
+                condition expressions:
+                  0 
+                  1 
+                  2 
+                keys:
+                  0 UDFToDouble(key) (type: double)
+                  1 UDFToDouble(key) (type: double)
+                  2 UDFToDouble(key) (type: double)
+                Select Operator
+                  Group By Operator
+                    aggregations: count()
+                    mode: hash
+                    outputColumnNames: _col0
+                    File Output Operator
+                      compressed: false
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            a 
-              Fetch Operator
-                limit: -1
-            b 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            a 
-              TableScan
-                alias: a
-            b 
-              TableScan
-                alias: b
 
   Stage: Stage-1
     Map Reduce
@@ -634,27 +674,36 @@ STAGE PLANS:
           TableScan
             alias: b
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-            Reduce Output Operator
-              key expressions: UDFToDouble(key) (type: double)
-              sort order: +
-              Map-reduce partition columns: UDFToDouble(key) (type: double)
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: UDFToDouble(key) is not null (type: boolean)
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: UDFToDouble(key) (type: double)
+                sort order: +
+                Map-reduce partition columns: UDFToDouble(key) (type: double)
+                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: c
             Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
-            Reduce Output Operator
-              key expressions: UDFToDouble(key) (type: double)
-              sort order: +
-              Map-reduce partition columns: UDFToDouble(key) (type: double)
-              Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: UDFToDouble(key) is not null (type: boolean)
+              Statistics: Num rows: 29 Data size: 2906 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: UDFToDouble(key) (type: double)
+                sort order: +
+                Map-reduce partition columns: UDFToDouble(key) (type: double)
+                Statistics: Num rows: 29 Data size: 2906 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: a
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-            Reduce Output Operator
-              key expressions: UDFToDouble(key) (type: double)
-              sort order: +
-              Map-reduce partition columns: UDFToDouble(key) (type: double)
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: UDFToDouble(key) is not null (type: boolean)
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: UDFToDouble(key) (type: double)
+                sort order: +
+                Map-reduce partition columns: UDFToDouble(key) (type: double)
+                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -664,9 +713,9 @@ STAGE PLANS:
             0 
             1 
             2 
-          Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
             Group By Operator
               aggregations: count()
               mode: hash
@@ -682,6 +731,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join src c on c.key = a.key
 PREHOOK: type: QUERY
@@ -695,14 +746,6 @@ POSTHOOK: Input: default@src
 POSTHOOK: Input: default@tbl1
 POSTHOOK: Input: default@tbl2
 #### A masked pattern was here ####
-POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl3.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl4.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 2654
 PREHOOK: query: -- A SMB join is being followed by a regular join on a bucketed table on the same key
 explain select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join tbl3 c on c.key = a.key
@@ -710,17 +753,9 @@ PREHOOK: type: QUERY
 POSTHOOK: query: -- A SMB join is being followed by a regular join on a bucketed table on the same key
 explain select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join tbl3 c on c.key = a.key
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl3.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl4.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -729,26 +764,29 @@ STAGE PLANS:
           TableScan
             alias: a
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-            Sorted Merge Bucket Map Join Operator
-              condition map:
-                   Inner Join 0 to 1
-                   Inner Join 0 to 2
-              condition expressions:
-                0 
-                1 
-                2 
-              keys:
-                0 key (type: int)
-                1 key (type: int)
-                2 key (type: int)
-              Select Operator
-                Group By Operator
-                  aggregations: count()
-                  mode: hash
-                  outputColumnNames: _col0
-                  Reduce Output Operator
-                    sort order: 
-                    value expressions: _col0 (type: bigint)
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+              Sorted Merge Bucket Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                     Inner Join 0 to 2
+                condition expressions:
+                  0 
+                  1 
+                  2 
+                keys:
+                  0 key (type: int)
+                  1 key (type: int)
+                  2 key (type: int)
+                Select Operator
+                  Group By Operator
+                    aggregations: count()
+                    mode: hash
+                    outputColumnNames: _col0
+                    Reduce Output Operator
+                      sort order: 
+                      value expressions: _col0 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
@@ -767,6 +805,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join tbl3 c on c.key = a.key
 PREHOOK: type: QUERY
@@ -780,14 +820,6 @@ POSTHOOK: Input: default@tbl1
 POSTHOOK: Input: default@tbl2
 POSTHOOK: Input: default@tbl3
 #### A masked pattern was here ####
-POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl3.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl4.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 2654
 PREHOOK: query: -- A SMB join is being followed by a regular join on a bucketed table on a different key
 explain select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join tbl4 c on c.value = a.value
@@ -795,18 +827,10 @@ PREHOOK: type: QUERY
 POSTHOOK: query: -- A SMB join is being followed by a regular join on a bucketed table on a different key
 explain select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join tbl4 c on c.value = a.value
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl3.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl4.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-3 depends on stages: Stage-2
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-3
 
 STAGE PLANS:
   Stage: Stage-2
@@ -815,28 +839,34 @@ STAGE PLANS:
           TableScan
             alias: c
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-            Reduce Output Operator
-              key expressions: value (type: string)
-              sort order: +
-              Map-reduce partition columns: value (type: string)
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: value is not null (type: boolean)
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: value (type: string)
+                sort order: +
+                Map-reduce partition columns: value (type: string)
+                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: a
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-            Sorted Merge Bucket Map Join Operator
-              condition map:
-                   Inner Join 0 to 1
-              condition expressions:
-                0 {value}
-                1 
-              keys:
-                0 key (type: int)
-                1 key (type: int)
-              outputColumnNames: _col1
-              Reduce Output Operator
-                key expressions: _col1 (type: string)
-                sort order: +
-                Map-reduce partition columns: _col1 (type: string)
+            Filter Operator
+              predicate: (key is not null and value is not null) (type: boolean)
+              Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
+              Sorted Merge Bucket Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                condition expressions:
+                  0 {value}
+                  1 
+                keys:
+                  0 key (type: int)
+                  1 key (type: int)
+                outputColumnNames: _col1
+                Reduce Output Operator
+                  key expressions: _col1 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col1 (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -881,6 +911,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join tbl4 c on c.value = a.value
 PREHOOK: type: QUERY
@@ -894,14 +926,6 @@ POSTHOOK: Input: default@tbl1
 POSTHOOK: Input: default@tbl2
 POSTHOOK: Input: default@tbl4
 #### A masked pattern was here ####
-POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl3.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl4.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 2654
 PREHOOK: query: -- A SMB join is being followed by a regular join on a non-bucketed table on a different key
 explain select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join src c on c.value = a.value
@@ -909,18 +933,10 @@ PREHOOK: type: QUERY
 POSTHOOK: query: -- A SMB join is being followed by a regular join on a non-bucketed table on a different key
 explain select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join src c on c.value = a.value
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl3.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl4.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-3 depends on stages: Stage-2
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-3
 
 STAGE PLANS:
   Stage: Stage-2
@@ -929,28 +945,34 @@ STAGE PLANS:
           TableScan
             alias: c
             Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
-            Reduce Output Operator
-              key expressions: value (type: string)
-              sort order: +
-              Map-reduce partition columns: value (type: string)
-              Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: value is not null (type: boolean)
+              Statistics: Num rows: 29 Data size: 2906 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: value (type: string)
+                sort order: +
+                Map-reduce partition columns: value (type: string)
+                Statistics: Num rows: 29 Data size: 2906 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: a
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-            Sorted Merge Bucket Map Join Operator
-              condition map:
-                   Inner Join 0 to 1
-              condition expressions:
-                0 {value}
-                1 
-              keys:
-                0 key (type: int)
-                1 key (type: int)
-              outputColumnNames: _col1
-              Reduce Output Operator
-                key expressions: _col1 (type: string)
-                sort order: +
-                Map-reduce partition columns: _col1 (type: string)
+            Filter Operator
+              predicate: (key is not null and value is not null) (type: boolean)
+              Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
+              Sorted Merge Bucket Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                condition expressions:
+                  0 {value}
+                  1 
+                keys:
+                  0 key (type: int)
+                  1 key (type: int)
+                outputColumnNames: _col1
+                Reduce Output Operator
+                  key expressions: _col1 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col1 (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -995,6 +1017,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join src c on c.value = a.value
 PREHOOK: type: QUERY
@@ -1008,14 +1032,6 @@ POSTHOOK: Input: default@src
 POSTHOOK: Input: default@tbl1
 POSTHOOK: Input: default@tbl2
 #### A masked pattern was here ####
-POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl3.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl4.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 2654
 PREHOOK: query: -- A SMB join is being followed by a regular join on a non-bucketed table on the same key
 explain select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join src c on c.key = a.key
@@ -1023,71 +1039,93 @@ PREHOOK: type: QUERY
 POSTHOOK: query: -- A SMB join is being followed by a regular join on a non-bucketed table on the same key
 explain select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join src c on c.key = a.key
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl3.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl4.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 STAGE DEPENDENCIES:
-  Stage-8 is a root stage , consists of Stage-5, Stage-6, Stage-7, Stage-1
-  Stage-5 has a backup stage: Stage-1
+  Stage-8 is a root stage , consists of Stage-9, Stage-10, Stage-11, Stage-1
+  Stage-9 has a backup stage: Stage-1
+  Stage-5 depends on stages: Stage-9
   Stage-2 depends on stages: Stage-1, Stage-5, Stage-6, Stage-7
-  Stage-6 has a backup stage: Stage-1
-  Stage-7 has a backup stage: Stage-1
+  Stage-10 has a backup stage: Stage-1
+  Stage-6 depends on stages: Stage-10
+  Stage-11 has a backup stage: Stage-1
+  Stage-7 depends on stages: Stage-11
   Stage-1
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-8
     Conditional Operator
+
+  Stage: Stage-9
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        b 
+          Fetch Operator
+            limit: -1
+        c 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        b 
+          TableScan
+            alias: b
+            Filter Operator
+              predicate: UDFToDouble(key) is not null (type: boolean)
+              HashTable Sink Operator
+                condition expressions:
+                  0 
+                  1 
+                  2 
+                keys:
+                  0 UDFToDouble(key) (type: double)
+                  1 UDFToDouble(key) (type: double)
+                  2 UDFToDouble(key) (type: double)
+        c 
+          TableScan
+            alias: c
+            Filter Operator
+              predicate: UDFToDouble(key) is not null (type: boolean)
+              HashTable Sink Operator
+                condition expressions:
+                  0 
+                  1 
+                  2 
+                keys:
+                  0 UDFToDouble(key) (type: double)
+                  1 UDFToDouble(key) (type: double)
+                  2 UDFToDouble(key) (type: double)
 
   Stage: Stage-5
     Map Reduce
       Map Operator Tree:
           TableScan
             alias: a
-            Map Join Operator
-              condition map:
-                   Inner Join 0 to 1
-                   Inner Join 0 to 2
-              condition expressions:
-                0 
-                1 
-                2 
-              keys:
-                0 UDFToDouble(key) (type: double)
-                1 UDFToDouble(key) (type: double)
-                2 UDFToDouble(key) (type: double)
-              Select Operator
-                Group By Operator
-                  aggregations: count()
-                  mode: hash
-                  outputColumnNames: _col0
-                  File Output Operator
-                    compressed: false
-                    table:
-                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+            Filter Operator
+              predicate: UDFToDouble(key) is not null (type: boolean)
+              Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                     Inner Join 0 to 2
+                condition expressions:
+                  0 
+                  1 
+                  2 
+                keys:
+                  0 UDFToDouble(key) (type: double)
+                  1 UDFToDouble(key) (type: double)
+                  2 UDFToDouble(key) (type: double)
+                Select Operator
+                  Group By Operator
+                    aggregations: count()
+                    mode: hash
+                    outputColumnNames: _col0
+                    File Output Operator
+                      compressed: false
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            b 
-              Fetch Operator
-                limit: -1
-            c 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            b 
-              TableScan
-                alias: b
-            c 
-              TableScan
-                alias: c
 
   Stage: Stage-2
     Map Reduce
@@ -1115,95 +1153,149 @@ STAGE PLANS:
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
+  Stage: Stage-10
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        a 
+          Fetch Operator
+            limit: -1
+        c 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        a 
+          TableScan
+            alias: a
+            Filter Operator
+              predicate: UDFToDouble(key) is not null (type: boolean)
+              HashTable Sink Operator
+                condition expressions:
+                  0 
+                  1 
+                  2 
+                keys:
+                  0 UDFToDouble(key) (type: double)
+                  1 UDFToDouble(key) (type: double)
+                  2 UDFToDouble(key) (type: double)
+        c 
+          TableScan
+            alias: c
+            Filter Operator
+              predicate: UDFToDouble(key) is not null (type: boolean)
+              HashTable Sink Operator
+                condition expressions:
+                  0 
+                  1 
+                  2 
+                keys:
+                  0 UDFToDouble(key) (type: double)
+                  1 UDFToDouble(key) (type: double)
+                  2 UDFToDouble(key) (type: double)
+
   Stage: Stage-6
     Map Reduce
       Map Operator Tree:
           TableScan
             alias: b
-            Map Join Operator
-              condition map:
-                   Inner Join 0 to 1
-                   Inner Join 0 to 2
-              condition expressions:
-                0 
-                1 
-                2 
-              keys:
-                0 UDFToDouble(key) (type: double)
-                1 UDFToDouble(key) (type: double)
-                2 UDFToDouble(key) (type: double)
-              Select Operator
-                Group By Operator
-                  aggregations: count()
-                  mode: hash
-                  outputColumnNames: _col0
-                  File Output Operator
-                    compressed: false
-                    table:
-                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+            Filter Operator
+              predicate: UDFToDouble(key) is not null (type: boolean)
+              Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                     Inner Join 0 to 2
+                condition expressions:
+                  0 
+                  1 
+                  2 
+                keys:
+                  0 UDFToDouble(key) (type: double)
+                  1 UDFToDouble(key) (type: double)
+                  2 UDFToDouble(key) (type: double)
+                Select Operator
+                  Group By Operator
+                    aggregations: count()
+                    mode: hash
+                    outputColumnNames: _col0
+                    File Output Operator
+                      compressed: false
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            a 
-              Fetch Operator
-                limit: -1
-            c 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            a 
-              TableScan
-                alias: a
-            c 
-              TableScan
-                alias: c
+
+  Stage: Stage-11
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        a 
+          Fetch Operator
+            limit: -1
+        b 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        a 
+          TableScan
+            alias: a
+            Filter Operator
+              predicate: UDFToDouble(key) is not null (type: boolean)
+              HashTable Sink Operator
+                condition expressions:
+                  0 
+                  1 
+                  2 
+                keys:
+                  0 UDFToDouble(key) (type: double)
+                  1 UDFToDouble(key) (type: double)
+                  2 UDFToDouble(key) (type: double)
+        b 
+          TableScan
+            alias: b
+            Filter Operator
+              predicate: UDFToDouble(key) is not null (type: boolean)
+              HashTable Sink Operator
+                condition expressions:
+                  0 
+                  1 
+                  2 
+                keys:
+                  0 UDFToDouble(key) (type: double)
+                  1 UDFToDouble(key) (type: double)
+                  2 UDFToDouble(key) (type: double)
 
   Stage: Stage-7
     Map Reduce
       Map Operator Tree:
           TableScan
             alias: c
-            Map Join Operator
-              condition map:
-                   Inner Join 0 to 1
-                   Inner Join 0 to 2
-              condition expressions:
-                0 
-                1 
-                2 
-              keys:
-                0 UDFToDouble(key) (type: double)
-                1 UDFToDouble(key) (type: double)
-                2 UDFToDouble(key) (type: double)
-              Select Operator
-                Group By Operator
-                  aggregations: count()
-                  mode: hash
-                  outputColumnNames: _col0
-                  File Output Operator
-                    compressed: false
-                    table:
-                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+            Filter Operator
+              predicate: UDFToDouble(key) is not null (type: boolean)
+              Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                     Inner Join 0 to 2
+                condition expressions:
+                  0 
+                  1 
+                  2 
+                keys:
+                  0 UDFToDouble(key) (type: double)
+                  1 UDFToDouble(key) (type: double)
+                  2 UDFToDouble(key) (type: double)
+                Select Operator
+                  Group By Operator
+                    aggregations: count()
+                    mode: hash
+                    outputColumnNames: _col0
+                    File Output Operator
+                      compressed: false
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            a 
-              Fetch Operator
-                limit: -1
-            b 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            a 
-              TableScan
-                alias: a
-            b 
-              TableScan
-                alias: b
 
   Stage: Stage-1
     Map Reduce
@@ -1211,27 +1303,36 @@ STAGE PLANS:
           TableScan
             alias: b
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-            Reduce Output Operator
-              key expressions: UDFToDouble(key) (type: double)
-              sort order: +
-              Map-reduce partition columns: UDFToDouble(key) (type: double)
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: UDFToDouble(key) is not null (type: boolean)
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: UDFToDouble(key) (type: double)
+                sort order: +
+                Map-reduce partition columns: UDFToDouble(key) (type: double)
+                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: c
             Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
-            Reduce Output Operator
-              key expressions: UDFToDouble(key) (type: double)
-              sort order: +
-              Map-reduce partition columns: UDFToDouble(key) (type: double)
-              Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: UDFToDouble(key) is not null (type: boolean)
+              Statistics: Num rows: 29 Data size: 2906 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: UDFToDouble(key) (type: double)
+                sort order: +
+                Map-reduce partition columns: UDFToDouble(key) (type: double)
+                Statistics: Num rows: 29 Data size: 2906 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: a
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-            Reduce Output Operator
-              key expressions: UDFToDouble(key) (type: double)
-              sort order: +
-              Map-reduce partition columns: UDFToDouble(key) (type: double)
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: UDFToDouble(key) is not null (type: boolean)
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: UDFToDouble(key) (type: double)
+                sort order: +
+                Map-reduce partition columns: UDFToDouble(key) (type: double)
+                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -1241,9 +1342,9 @@ STAGE PLANS:
             0 
             1 
             2 
-          Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
             Group By Operator
               aggregations: count()
               mode: hash
@@ -1259,6 +1360,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join src c on c.key = a.key
 PREHOOK: type: QUERY
@@ -1272,14 +1375,6 @@ POSTHOOK: Input: default@src
 POSTHOOK: Input: default@tbl1
 POSTHOOK: Input: default@tbl2
 #### A masked pattern was here ####
-POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl3.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl4.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 2654
 PREHOOK: query: -- A SMB join is being followed by a regular join on a bucketed table on the same key
 explain select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join tbl3 c on c.key = a.key
@@ -1287,67 +1382,89 @@ PREHOOK: type: QUERY
 POSTHOOK: query: -- A SMB join is being followed by a regular join on a bucketed table on the same key
 explain select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join tbl3 c on c.key = a.key
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl3.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl4.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 STAGE DEPENDENCIES:
-  Stage-7 is a root stage , consists of Stage-4, Stage-5, Stage-6, Stage-1
-  Stage-4 has a backup stage: Stage-1
-  Stage-5 has a backup stage: Stage-1
-  Stage-6 has a backup stage: Stage-1
+  Stage-7 is a root stage , consists of Stage-8, Stage-9, Stage-10, Stage-1
+  Stage-8 has a backup stage: Stage-1
+  Stage-4 depends on stages: Stage-8
+  Stage-9 has a backup stage: Stage-1
+  Stage-5 depends on stages: Stage-9
+  Stage-10 has a backup stage: Stage-1
+  Stage-6 depends on stages: Stage-10
   Stage-1
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-4, Stage-5, Stage-6, Stage-1
 
 STAGE PLANS:
   Stage: Stage-7
     Conditional Operator
+
+  Stage: Stage-8
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        b 
+          Fetch Operator
+            limit: -1
+        c 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        b 
+          TableScan
+            alias: b
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              HashTable Sink Operator
+                condition expressions:
+                  0 
+                  1 
+                  2 
+                keys:
+                  0 key (type: int)
+                  1 key (type: int)
+                  2 key (type: int)
+        c 
+          TableScan
+            alias: c
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              HashTable Sink Operator
+                condition expressions:
+                  0 
+                  1 
+                  2 
+                keys:
+                  0 key (type: int)
+                  1 key (type: int)
+                  2 key (type: int)
 
   Stage: Stage-4
     Map Reduce
       Map Operator Tree:
           TableScan
             alias: a
-            Map Join Operator
-              condition map:
-                   Inner Join 0 to 1
-                   Inner Join 0 to 2
-              condition expressions:
-                0 
-                1 
-                2 
-              keys:
-                0 key (type: int)
-                1 key (type: int)
-                2 key (type: int)
-              Select Operator
-                Group By Operator
-                  aggregations: count()
-                  mode: hash
-                  outputColumnNames: _col0
-                  Reduce Output Operator
-                    sort order: 
-                    value expressions: _col0 (type: bigint)
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                     Inner Join 0 to 2
+                condition expressions:
+                  0 
+                  1 
+                  2 
+                keys:
+                  0 key (type: int)
+                  1 key (type: int)
+                  2 key (type: int)
+                Select Operator
+                  Group By Operator
+                    aggregations: count()
+                    mode: hash
+                    outputColumnNames: _col0
+                    Reduce Output Operator
+                      sort order: 
+                      value expressions: _col0 (type: bigint)
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            b 
-              Fetch Operator
-                limit: -1
-            c 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            b 
-              TableScan
-                alias: b
-            c 
-              TableScan
-                alias: c
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
@@ -1362,48 +1479,75 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-9
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        a 
+          Fetch Operator
+            limit: -1
+        c 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        a 
+          TableScan
+            alias: a
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              HashTable Sink Operator
+                condition expressions:
+                  0 
+                  1 
+                  2 
+                keys:
+                  0 key (type: int)
+                  1 key (type: int)
+                  2 key (type: int)
+        c 
+          TableScan
+            alias: c
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              HashTable Sink Operator
+                condition expressions:
+                  0 
+                  1 
+                  2 
+                keys:
+                  0 key (type: int)
+                  1 key (type: int)
+                  2 key (type: int)
 
   Stage: Stage-5
     Map Reduce
       Map Operator Tree:
           TableScan
             alias: b
-            Map Join Operator
-              condition map:
-                   Inner Join 0 to 1
-                   Inner Join 0 to 2
-              condition expressions:
-                0 
-                1 
-                2 
-              keys:
-                0 key (type: int)
-                1 key (type: int)
-                2 key (type: int)
-              Select Operator
-                Group By Operator
-                  aggregations: count()
-                  mode: hash
-                  outputColumnNames: _col0
-                  Reduce Output Operator
-                    sort order: 
-                    value expressions: _col0 (type: bigint)
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                     Inner Join 0 to 2
+                condition expressions:
+                  0 
+                  1 
+                  2 
+                keys:
+                  0 key (type: int)
+                  1 key (type: int)
+                  2 key (type: int)
+                Select Operator
+                  Group By Operator
+                    aggregations: count()
+                    mode: hash
+                    outputColumnNames: _col0
+                    Reduce Output Operator
+                      sort order: 
+                      value expressions: _col0 (type: bigint)
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            a 
-              Fetch Operator
-                limit: -1
-            c 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            a 
-              TableScan
-                alias: a
-            c 
-              TableScan
-                alias: c
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
@@ -1419,47 +1563,74 @@ STAGE PLANS:
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
+  Stage: Stage-10
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        a 
+          Fetch Operator
+            limit: -1
+        b 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        a 
+          TableScan
+            alias: a
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              HashTable Sink Operator
+                condition expressions:
+                  0 
+                  1 
+                  2 
+                keys:
+                  0 key (type: int)
+                  1 key (type: int)
+                  2 key (type: int)
+        b 
+          TableScan
+            alias: b
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              HashTable Sink Operator
+                condition expressions:
+                  0 
+                  1 
+                  2 
+                keys:
+                  0 key (type: int)
+                  1 key (type: int)
+                  2 key (type: int)
+
   Stage: Stage-6
     Map Reduce
       Map Operator Tree:
           TableScan
             alias: c
-            Map Join Operator
-              condition map:
-                   Inner Join 0 to 1
-                   Inner Join 0 to 2
-              condition expressions:
-                0 
-                1 
-                2 
-              keys:
-                0 key (type: int)
-                1 key (type: int)
-                2 key (type: int)
-              Select Operator
-                Group By Operator
-                  aggregations: count()
-                  mode: hash
-                  outputColumnNames: _col0
-                  Reduce Output Operator
-                    sort order: 
-                    value expressions: _col0 (type: bigint)
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                     Inner Join 0 to 2
+                condition expressions:
+                  0 
+                  1 
+                  2 
+                keys:
+                  0 key (type: int)
+                  1 key (type: int)
+                  2 key (type: int)
+                Select Operator
+                  Group By Operator
+                    aggregations: count()
+                    mode: hash
+                    outputColumnNames: _col0
+                    Reduce Output Operator
+                      sort order: 
+                      value expressions: _col0 (type: bigint)
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            a 
-              Fetch Operator
-                limit: -1
-            b 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            a 
-              TableScan
-                alias: a
-            b 
-              TableScan
-                alias: b
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
@@ -1481,26 +1652,29 @@ STAGE PLANS:
           TableScan
             alias: a
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-            Sorted Merge Bucket Map Join Operator
-              condition map:
-                   Inner Join 0 to 1
-                   Inner Join 0 to 2
-              condition expressions:
-                0 
-                1 
-                2 
-              keys:
-                0 key (type: int)
-                1 key (type: int)
-                2 key (type: int)
-              Select Operator
-                Group By Operator
-                  aggregations: count()
-                  mode: hash
-                  outputColumnNames: _col0
-                  Reduce Output Operator
-                    sort order: 
-                    value expressions: _col0 (type: bigint)
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+              Sorted Merge Bucket Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                     Inner Join 0 to 2
+                condition expressions:
+                  0 
+                  1 
+                  2 
+                keys:
+                  0 key (type: int)
+                  1 key (type: int)
+                  2 key (type: int)
+                Select Operator
+                  Group By Operator
+                    aggregations: count()
+                    mode: hash
+                    outputColumnNames: _col0
+                    Reduce Output Operator
+                      sort order: 
+                      value expressions: _col0 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
@@ -1519,6 +1693,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join tbl3 c on c.key = a.key
 PREHOOK: type: QUERY
@@ -1532,14 +1708,6 @@ POSTHOOK: Input: default@tbl1
 POSTHOOK: Input: default@tbl2
 POSTHOOK: Input: default@tbl3
 #### A masked pattern was here ####
-POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl3.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl4.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 2654
 PREHOOK: query: -- A SMB join is being followed by a regular join on a bucketed table on a different key
 explain select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join tbl4 c on c.value = a.value
@@ -1547,18 +1715,10 @@ PREHOOK: type: QUERY
 POSTHOOK: query: -- A SMB join is being followed by a regular join on a bucketed table on a different key
 explain select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join tbl4 c on c.value = a.value
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl3.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl4.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-3 depends on stages: Stage-2
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-3
 
 STAGE PLANS:
   Stage: Stage-2
@@ -1567,28 +1727,34 @@ STAGE PLANS:
           TableScan
             alias: c
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-            Reduce Output Operator
-              key expressions: value (type: string)
-              sort order: +
-              Map-reduce partition columns: value (type: string)
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: value is not null (type: boolean)
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: value (type: string)
+                sort order: +
+                Map-reduce partition columns: value (type: string)
+                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: a
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-            Sorted Merge Bucket Map Join Operator
-              condition map:
-                   Inner Join 0 to 1
-              condition expressions:
-                0 {value}
-                1 
-              keys:
-                0 key (type: int)
-                1 key (type: int)
-              outputColumnNames: _col1
-              Reduce Output Operator
-                key expressions: _col1 (type: string)
-                sort order: +
-                Map-reduce partition columns: _col1 (type: string)
+            Filter Operator
+              predicate: (key is not null and value is not null) (type: boolean)
+              Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
+              Sorted Merge Bucket Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                condition expressions:
+                  0 {value}
+                  1 
+                keys:
+                  0 key (type: int)
+                  1 key (type: int)
+                outputColumnNames: _col1
+                Reduce Output Operator
+                  key expressions: _col1 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col1 (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -1633,6 +1799,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join tbl4 c on c.value = a.value
 PREHOOK: type: QUERY
@@ -1646,12 +1814,4 @@ POSTHOOK: Input: default@tbl1
 POSTHOOK: Input: default@tbl2
 POSTHOOK: Input: default@tbl4
 #### A masked pattern was here ####
-POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl3.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl4.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 2654

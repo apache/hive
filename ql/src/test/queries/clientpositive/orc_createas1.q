@@ -1,5 +1,6 @@
 set mapred.max.split.size=100;
 set mapred.min.split.size=1;
+set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
 
 DROP TABLE orc_createas1a;
 DROP TABLE orc_createas1b;

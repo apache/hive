@@ -24,12 +24,14 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.serde2.SerDeStatsStruct;
+import org.apache.hadoop.hive.serde2.StructObject;
 import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinaryUtils.RecordInfo;
 import org.apache.hadoop.hive.serde2.lazybinary.objectinspector.LazyBinaryStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.io.BinaryComparable;
 
 /**
  * LazyBinaryStruct is serialized as follows: start A B A B A B end bytes[] ->
@@ -42,8 +44,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
  * Following B, there is another section A and B. This pattern repeats until the
  * all struct fields are serialized.
  */
-public class LazyBinaryStruct extends
-    LazyBinaryNonPrimitive<LazyBinaryStructObjectInspector> implements SerDeStatsStruct {
+public class LazyBinaryStruct extends LazyBinaryNonPrimitive<LazyBinaryStructObjectInspector>
+    implements StructObject, SerDeStatsStruct {
 
   private static Log LOG = LogFactory.getLog(LazyBinaryStruct.class.getName());
 
@@ -197,6 +199,49 @@ public class LazyBinaryStruct extends
     return uncheckedGetField(fieldID);
   }
 
+  public static final class SingleFieldGetter {
+    private final LazyBinaryStructObjectInspector soi;
+    private final int fieldIndex;
+    private final RecordInfo recordInfo = new LazyBinaryUtils.RecordInfo();
+    private byte[] fieldBytes;
+    private int fieldStart, fieldLength;
+    public SingleFieldGetter(LazyBinaryStructObjectInspector soi, int fieldIndex) {
+      this.soi = soi;
+      this.fieldIndex = fieldIndex;
+    }
+
+    public void init(BinaryComparable src) {
+      List<? extends StructField> fieldRefs = soi.getAllStructFieldRefs();
+      fieldBytes = src.getBytes();
+      int length = src.getLength();
+      byte nullByte = fieldBytes[0];
+      int lastFieldByteEnd = 1, fieldStart = -1, fieldLength = -1;
+      for (int i = 0; i <= fieldIndex; i++) {
+        if ((nullByte & (1 << (i % 8))) != 0) {
+          LazyBinaryUtils.checkObjectByteInfo(fieldRefs.get(i)
+              .getFieldObjectInspector(), fieldBytes, lastFieldByteEnd, recordInfo);
+          fieldStart = lastFieldByteEnd + recordInfo.elementOffset;
+          fieldLength = recordInfo.elementSize;
+          lastFieldByteEnd = fieldStart + fieldLength;
+        } else {
+          fieldStart = fieldLength = -1;
+        }
+
+        if (7 == (i % 8)) {
+          nullByte = (lastFieldByteEnd < length) ? fieldBytes[lastFieldByteEnd] : 0;
+          ++lastFieldByteEnd;
+        }
+      }
+    }
+
+    public short getShort() {
+      assert (2 == fieldLength);
+      return LazyBinaryUtils.byteArrayToShort(fieldBytes, fieldStart);
+    }
+  }
+
+
+
   /**
    * Get the field out of the row without checking parsed. This is called by
    * both getField and getFieldsAsList.
@@ -230,12 +275,15 @@ public class LazyBinaryStruct extends
       parse();
     }
     if (cachedList == null) {
-      cachedList = new ArrayList<Object>();
+      cachedList = new ArrayList<Object>(fields.length);
+      for (int i = 0; i < fields.length; i++) {
+        cachedList.add(uncheckedGetField(i));
+      }
     } else {
-      cachedList.clear();
-    }
-    for (int i = 0; i < fields.length; i++) {
-      cachedList.add(uncheckedGetField(i));
+      assert fields.length == cachedList.size();
+      for (int i = 0; i < fields.length; i++) {
+        cachedList.set(i, uncheckedGetField(i));
+      }
     }
     return cachedList;
   }

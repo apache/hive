@@ -34,8 +34,6 @@ POSTHOOK: query: CREATE TABLE outputTbl1(key int, cnt int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@outputTbl1
-POSTHOOK: Lineage: t1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
 PREHOOK: query: -- The plan should be converted to a map-side group by if the group by key
 -- matches the sorted key. However, in test mode, the group by wont be converted.
 EXPLAIN
@@ -48,8 +46,6 @@ EXPLAIN
 INSERT OVERWRITE TABLE outputTbl1
 SELECT key, count(1) FROM T1 GROUP BY key
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: t1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

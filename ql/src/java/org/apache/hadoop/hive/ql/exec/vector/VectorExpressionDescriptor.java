@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec.vector;
 
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hive.common.util.AnnotationUtils;
 
 /**
  * Describes a vector expression and encapsulates the {@link Mode}, number of arguments,
@@ -199,7 +200,7 @@ public class VectorExpressionDescriptor {
       b.append(mode);
       b.append(", Argument Types = {");
       for (int i = 0; i < argCount; i++) {
-        if (i == 0) {
+        if (i != 0) {
           b.append(",");
         }
         b.append(argTypes[i]);
@@ -208,7 +209,7 @@ public class VectorExpressionDescriptor {
 
       b.append(", Input Expression Types = {");
       for (int i = 0; i < argCount; i++) {
-        if (i == 0) {
+        if (i != 0) {
           b.append(",");
         }
         b.append(exprTypes[i]);
@@ -219,7 +220,8 @@ public class VectorExpressionDescriptor {
   }
 
   public Class<?> getVectorExpressionClass(Class<?> udf, Descriptor descriptor) throws HiveException {
-    VectorizedExpressions annotation = udf.getAnnotation(VectorizedExpressions.class);
+    VectorizedExpressions annotation =
+        AnnotationUtils.getAnnotation(udf, VectorizedExpressions.class);
     if (annotation == null || annotation.value() == null) {
       return null;
     }

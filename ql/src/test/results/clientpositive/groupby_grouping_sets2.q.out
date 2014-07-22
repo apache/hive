@@ -24,7 +24,7 @@ POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-1
@@ -95,6 +95,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT a, b, count(*) from T1 group by a, b with cube
 PREHOOK: type: QUERY
@@ -128,7 +130,7 @@ POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-1
@@ -199,6 +201,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT a, b, sum(c) from T1 group by a, b with cube
 PREHOOK: type: QUERY
@@ -250,14 +254,10 @@ PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT a, b, sum(c+d) from T2 group by a, b with cube
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: t2.a SIMPLE [(t1)t1.FieldSchema(name:a, type:string, comment:null), ]
-POSTHOOK: Lineage: t2.b SIMPLE [(t1)t1.FieldSchema(name:b, type:string, comment:null), ]
-POSTHOOK: Lineage: t2.c EXPRESSION [(t1)t1.FieldSchema(name:c, type:string, comment:null), ]
-POSTHOOK: Lineage: t2.d EXPRESSION [(t1)t1.FieldSchema(name:c, type:string, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-1
@@ -328,6 +328,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT a, b, sum(c+d) from T2 group by a, b with cube
 PREHOOK: type: QUERY
@@ -337,10 +339,6 @@ POSTHOOK: query: SELECT a, b, sum(c+d) from T2 group by a, b with cube
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t2
 #### A masked pattern was here ####
-POSTHOOK: Lineage: t2.a SIMPLE [(t1)t1.FieldSchema(name:a, type:string, comment:null), ]
-POSTHOOK: Lineage: t2.b SIMPLE [(t1)t1.FieldSchema(name:b, type:string, comment:null), ]
-POSTHOOK: Lineage: t2.c EXPRESSION [(t1)t1.FieldSchema(name:c, type:string, comment:null), ]
-POSTHOOK: Lineage: t2.d EXPRESSION [(t1)t1.FieldSchema(name:c, type:string, comment:null), ]
 NULL	NULL	46
 NULL	1	8
 NULL	2	28

@@ -48,6 +48,7 @@ import javax.ws.rs.core.UriInfo;
 import org.apache.commons.exec.ExecuteException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.authentication.client.PseudoAuthenticator;
 import org.apache.hive.hcatalog.templeton.LauncherDelegator.JobType;
@@ -176,7 +177,18 @@ public class Server {
   }
 
   /**
-   * Get version of hive software being run by this WebHCat server
+   * Get version of sqoop software being run by this WebHCat server
+   */
+  @GET
+  @Path("version/sqoop")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response sqoopVersion()  throws IOException {
+    VersionDelegator d = new VersionDelegator(appConf);
+    return d.getVersion("sqoop");
+  }
+
+  /**
+   * Get version of pig software being run by this WebHCat server
    */
   @GET
   @Path("version/pig")
@@ -761,6 +773,47 @@ public class Server {
       statusdir, callback, usesHcatalog, getCompletedUrl(), enablelog);
   }
 
+   /**
+   * Run a Sqoop job.
+   * @param optionsFile  name of option file which contains Sqoop command to run
+   * @param otherFiles   additional files to be shipped to the launcher, such as option
+                         files which contain part of the Sqoop command
+   * @param statusdir    where the stderr/stdout of templeton controller job goes
+   * @param callback     URL which WebHCat will call when the sqoop job finishes
+   * @param enablelog    whether to collect mapreduce log into statusdir/logs
+   */
+  @POST
+  @Path("sqoop")
+  @Produces({MediaType.APPLICATION_JSON})
+  public EnqueueBean sqoop(@FormParam("command") String command,
+              @FormParam("optionsfile") String optionsFile,
+              @FormParam("files") String otherFiles,
+              @FormParam("statusdir") String statusdir,
+              @FormParam("callback") String callback,
+              @FormParam("enablelog") boolean enablelog)
+    throws NotAuthorizedException, BusyException, BadParam, QueueException,
+    ExecuteException, IOException, InterruptedException {
+    verifyUser();
+    if (command == null && optionsFile == null)
+      throw new BadParam("Must define Sqoop command or a optionsfile contains Sqoop command to run Sqoop job.");
+    if (command != null && optionsFile != null)
+      throw new BadParam("Cannot set command and optionsfile at the same time.");
+    checkEnableLogPrerequisite(enablelog, statusdir);
+
+    //add all function arguments to a map
+    Map<String, Object> userArgs = new HashMap<String, Object>();
+    userArgs.put("user.name", getDoAsUser());
+    userArgs.put("command", command);
+    userArgs.put("optionsfile", optionsFile);
+    userArgs.put("files", otherFiles);
+    userArgs.put("statusdir", statusdir);
+    userArgs.put("callback", callback);
+    userArgs.put("enablelog", Boolean.toString(enablelog));
+    SqoopDelegator d = new SqoopDelegator(appConf);
+    return d.run(getDoAsUser(), userArgs, command, optionsFile, otherFiles,
+      statusdir, callback, getCompletedUrl(), enablelog);
+  }
+
   /**
    * Run a Hive job.
    * @param execute    SQL statement to run, equivalent to "-e" from hive command line
@@ -810,49 +863,6 @@ public class Server {
     HiveDelegator d = new HiveDelegator(appConf);
     return d.run(getDoAsUser(), userArgs, execute, srcFile, defines, hiveArgs, otherFiles,
       statusdir, callback, getCompletedUrl(), enablelog);
-  }
-
-  /**
-   * Return the status of the jobid.
-   * @deprecated use GET jobs/{jobid} instead.
-   */
-  @Deprecated
-  @GET
-  @Path("queue/{jobid}")
-  @Produces({MediaType.APPLICATION_JSON})
-  public QueueStatusBean showQueueId(@PathParam("jobid") String jobid)
-    throws NotAuthorizedException, BadParam, IOException, InterruptedException {
-    return showJobId(jobid);
-  }
-
-  /**
-   * Kill a job in the queue.
-   * @deprecated use DELETE jobs/{jobid} instead.
-   */
-  @Deprecated
-  @DELETE
-  @Path("queue/{jobid}")
-  @Produces({MediaType.APPLICATION_JSON})
-  public QueueStatusBean deleteQueueId(@PathParam("jobid") String jobid)
-    throws NotAuthorizedException, BadParam, IOException, InterruptedException {
-    return deleteJobId(jobid);
-  }
-
-  /**
-   * Return all the known job ids for this user.
-   * @deprecated use GET jobs instead.
-   */
-  @Deprecated
-  @GET
-  @Path("queue")
-  @Produces({MediaType.APPLICATION_JSON})
-  public List<String> showQueueList(@QueryParam("showall") boolean showall)
-    throws NotAuthorizedException, BadParam, IOException, InterruptedException {
-
-    verifyUser();
-
-    ListDelegator d = new ListDelegator(appConf);
-    return d.run(getDoAsUser(), showall);
   }
 
   /**
@@ -1094,13 +1104,19 @@ public class Server {
     if (theSecurityContext == null) { 
       return null;
     }
+    String userName = null;
     if (theSecurityContext.getUserPrincipal() == null) {
+      userName = Main.UserNameHandler.getUserName(request);
+    }
+    else {
+      userName = theSecurityContext.getUserPrincipal().getName();
+    }
+    if(userName == null) {
       return null;
     }
     //map hue/foo.bar@something.com->hue since user group checks 
     // and config files are in terms of short name
-    return UserGroupInformation.createRemoteUser(
-        theSecurityContext.getUserPrincipal().getName()).getShortUserName();
+    return UserGroupInformation.createRemoteUser(userName).getShortUserName();
   }
 
   /**
@@ -1149,5 +1165,8 @@ public class Server {
   private void checkEnableLogPrerequisite(boolean enablelog, String statusdir) throws BadParam {
     if (enablelog && !TempletonUtils.isset(statusdir))
       throw new BadParam("enablelog is only applicable when statusdir is set");
+    if(enablelog && "0.23".equalsIgnoreCase(ShimLoader.getMajorVersion())) {
+      throw new BadParam("enablelog=true is only supported with Hadoop 1.x");
+    }
   }
 }

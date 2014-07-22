@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.serde2.lazy.LazyInteger;
 import org.apache.hadoop.hive.serde2.lazy.LazyLong;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
 
 /**
@@ -363,22 +364,22 @@ public class PrimitiveObjectInspectorConverter {
       case BYTE:
         out.reset();
         LazyInteger.writeUTF8NoException(out, ((ByteObjectInspector) inputOI).get(input));
-        t.set(out.getData(), 0, out.getCount());
+        t.set(out.getData(), 0, out.getLength());
         return t;
       case SHORT:
         out.reset();
         LazyInteger.writeUTF8NoException(out, ((ShortObjectInspector) inputOI).get(input));
-        t.set(out.getData(), 0, out.getCount());
+        t.set(out.getData(), 0, out.getLength());
         return t;
       case INT:
         out.reset();
         LazyInteger.writeUTF8NoException(out, ((IntObjectInspector) inputOI).get(input));
-        t.set(out.getData(), 0, out.getCount());
+        t.set(out.getData(), 0, out.getLength());
         return t;
       case LONG:
         out.reset();
         LazyLong.writeUTF8NoException(out, ((LongObjectInspector) inputOI).get(input));
-        t.set(out.getData(), 0, out.getCount());
+        t.set(out.getData(), 0, out.getLength());
         return t;
       case FLOAT:
         t.set(String.valueOf(((FloatObjectInspector) inputOI).get(input)));
@@ -419,7 +420,13 @@ public class PrimitiveObjectInspectorConverter {
             .getPrimitiveWritableObject(input).toString());
         return t;
       case BINARY:
-        t.set(((BinaryObjectInspector) inputOI).getPrimitiveWritableObject(input).getBytes());
+        BinaryObjectInspector binaryOI = (BinaryObjectInspector) inputOI;
+        if (binaryOI.preferWritable()) {
+          BytesWritable bytes = binaryOI.getPrimitiveWritableObject(input);
+          t.set(bytes.getBytes(), 0, bytes.getLength());
+        } else {
+          t.set(binaryOI.getPrimitiveJavaObject(input));
+        }
         return t;
       case DECIMAL:
         t.set(((HiveDecimalObjectInspector) inputOI).getPrimitiveWritableObject(input).toString());

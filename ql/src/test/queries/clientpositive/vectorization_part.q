@@ -4,3 +4,4 @@ insert overwrite table alltypesorc_part partition (ds='2011') select * from allt
 insert overwrite table alltypesorc_part partition (ds='2012') select * from alltypesorc limit 100;
 
 select count(cdouble), cint from alltypesorc_part where ds='2011' group by cint limit 10;
+select count(*) from alltypesorc_part A join alltypesorc_part B on A.ds=B.ds;

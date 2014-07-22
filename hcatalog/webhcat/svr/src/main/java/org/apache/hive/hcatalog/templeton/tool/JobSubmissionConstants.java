@@ -24,18 +24,34 @@ public interface JobSubmissionConstants {
   public static final String ENABLE_LOG = "templeton.enablelog";
   public static final String JOB_TYPE = "templeton.jobtype";
   public static final String JAR_ARGS_NAME = "templeton.args";
+  public static final String TEMPLETON_JOB_LAUNCH_TIME_NAME = "templeton.job.launch.time";
   public static final String OVERRIDE_CLASSPATH = "templeton.override-classpath";
-  public static final String OVERRIDE_CONTAINER_LOG4J_PROPS = "override.containerLog4j";
-  //name of file
-  static final String CONTAINER_LOG4J_PROPS = "override-container-log4j.properties";
   public static final String STDOUT_FNAME = "stdout";
   public static final String STDERR_FNAME = "stderr";
   public static final String EXIT_FNAME = "exit";
   public static final int WATCHER_TIMEOUT_SECS = 10;
   public static final int KEEP_ALIVE_MSEC = 60 * 1000;
-  public static final String TOKEN_FILE_ARG_PLACEHOLDER = "__WEBHCAT_TOKEN_FILE_LOCATION__";
+  /*
+   * The = sign in the string for TOKEN_FILE_ARG_PLACEHOLDER is required because
+   * org.apache.hadoop.util.GenericOptionsParser.preProcessForWindows() prepares
+   * arguments expecting an = sign. It will fail to prepare the arguments correctly
+   * without the = sign present.
+   */
+  public static final String TOKEN_FILE_ARG_PLACEHOLDER =
+    "__MR_JOB_CREDENTIALS_OPTION=WEBHCAT_TOKEN_FILE_LOCATION__";
+  public static final String TOKEN_FILE_ARG_PLACEHOLDER_TEZ =
+    "__TEZ_CREDENTIALS_OPTION=WEBHCAT_TOKEN_FILE_LOCATION_TEZ__";
+  // MRv2 job tag used to identify Templeton launcher child jobs. Each child job
+  // will be tagged with the parent jobid so that on launcher task restart, all
+  // previously running child jobs can be killed before the child job is launched
+  // again.
+  public static final String MAPREDUCE_JOB_TAGS = "mapreduce.job.tags";
+  public static final String MAPREDUCE_JOB_TAGS_ARG_PLACEHOLDER =
+    "__MR_JOB_TAGS_OPTION=MR_JOB_TAGS_JOBID__";
+
   /**
    * constants needed for Pig job submission
+   * The string values here are what Pig expects to see in it's environment
    */
   public static interface PigConstants {
     public static final String HIVE_HOME = "HIVE_HOME";

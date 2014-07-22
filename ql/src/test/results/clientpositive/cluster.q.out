@@ -6,7 +6,7 @@ SELECT * FROM SRC x where x.key = 10 CLUSTER BY x.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -27,9 +27,11 @@ STAGE PLANS:
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 14 Data size: 2805 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col0 (type: string), _col1 (type: string)
+                  value expressions: _col1 (type: string)
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string)
+          outputColumnNames: _col0, _col1
           Statistics: Num rows: 14 Data size: 2805 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
@@ -42,6 +44,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT * FROM SRC x where x.key = 10 CLUSTER BY x.key
 PREHOOK: type: QUERY
@@ -60,7 +64,7 @@ SELECT * FROM SRC x  where x.key = 20 CLUSTER BY key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -81,9 +85,11 @@ STAGE PLANS:
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 14 Data size: 2805 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col0 (type: string), _col1 (type: string)
+                  value expressions: _col1 (type: string)
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string)
+          outputColumnNames: _col0, _col1
           Statistics: Num rows: 14 Data size: 2805 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
@@ -96,6 +102,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT * FROM SRC x where x.key = 20 CLUSTER BY key
 PREHOOK: type: QUERY
@@ -114,7 +122,7 @@ SELECT x.* FROM SRC x where x.key = 20 CLUSTER BY key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -135,9 +143,11 @@ STAGE PLANS:
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 14 Data size: 2805 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col0 (type: string), _col1 (type: string)
+                  value expressions: _col1 (type: string)
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string)
+          outputColumnNames: _col0, _col1
           Statistics: Num rows: 14 Data size: 2805 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
@@ -150,6 +160,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT x.* FROM SRC x where x.key = 20 CLUSTER BY key
 PREHOOK: type: QUERY
@@ -168,7 +180,7 @@ SELECT x.*  FROM SRC x where x.key = 20 CLUSTER BY x.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -189,9 +201,11 @@ STAGE PLANS:
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 14 Data size: 2805 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col0 (type: string), _col1 (type: string)
+                  value expressions: _col1 (type: string)
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string)
+          outputColumnNames: _col0, _col1
           Statistics: Num rows: 14 Data size: 2805 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
@@ -204,6 +218,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT x.*  FROM SRC x where x.key = 20 CLUSTER BY x.key
 PREHOOK: type: QUERY
@@ -222,7 +238,7 @@ SELECT x.key, x.value as v1 FROM SRC x where x.key = 20 CLUSTER BY key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -243,9 +259,11 @@ STAGE PLANS:
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 14 Data size: 2805 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col0 (type: string), _col1 (type: string)
+                  value expressions: _col1 (type: string)
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string)
+          outputColumnNames: _col0, _col1
           Statistics: Num rows: 14 Data size: 2805 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
@@ -258,6 +276,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT x.key, x.value as v1 FROM SRC x where x.key = 20 CLUSTER BY key
 PREHOOK: type: QUERY
@@ -276,7 +296,7 @@ SELECT x.key, x.value as v1 FROM SRC x where x.key = 20 CLUSTER BY x.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -297,9 +317,11 @@ STAGE PLANS:
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 14 Data size: 2805 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col0 (type: string), _col1 (type: string)
+                  value expressions: _col1 (type: string)
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string)
+          outputColumnNames: _col0, _col1
           Statistics: Num rows: 14 Data size: 2805 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
@@ -312,6 +334,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT x.key, x.value as v1 FROM SRC x where x.key = 20 CLUSTER BY x.key
 PREHOOK: type: QUERY
@@ -330,7 +354,7 @@ SELECT x.key, x.value as v1  FROM SRC x where x.key = 20 CLUSTER BY v1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -351,9 +375,11 @@ STAGE PLANS:
                   sort order: +
                   Map-reduce partition columns: _col1 (type: string)
                   Statistics: Num rows: 14 Data size: 2805 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col0 (type: string), _col1 (type: string)
+                  value expressions: _col0 (type: string)
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: VALUE._col0 (type: string), KEY.reducesinkkey0 (type: string)
+          outputColumnNames: _col0, _col1
           Statistics: Num rows: 14 Data size: 2805 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
@@ -366,6 +392,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT x.key, x.value as v1  FROM SRC x where x.key = 20 CLUSTER BY v1
 PREHOOK: type: QUERY
@@ -384,7 +412,7 @@ SELECT y.* from (SELECT x.* FROM SRC x CLUSTER BY x.key) y where y.key = 20
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -393,37 +421,37 @@ STAGE PLANS:
           TableScan
             alias: x
             Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
-            Select Operator
-              expressions: key (type: string), value (type: string)
-              outputColumnNames: _col0, _col1
-              Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: _col0 (type: string)
-                sort order: +
-                Map-reduce partition columns: _col0 (type: string)
-                Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col0 (type: string), _col1 (type: string)
-      Reduce Operator Tree:
-        Extract
-          Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
-          Filter Operator
-            predicate: (_col0 = 20) (type: boolean)
-            Statistics: Num rows: 14 Data size: 2805 Basic stats: COMPLETE Column stats: NONE
-            Select Operator
-              expressions: _col0 (type: string), _col1 (type: string)
-              outputColumnNames: _col0, _col1
+            Filter Operator
+              predicate: (key = 20) (type: boolean)
               Statistics: Num rows: 14 Data size: 2805 Basic stats: COMPLETE Column stats: NONE
-              File Output Operator
-                compressed: false
+              Select Operator
+                expressions: key (type: string), value (type: string)
+                outputColumnNames: _col0, _col1
                 Statistics: Num rows: 14 Data size: 2805 Basic stats: COMPLETE Column stats: NONE
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
+                  Statistics: Num rows: 14 Data size: 2805 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: string)
+      Reduce Operator Tree:
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string)
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 14 Data size: 2805 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 14 Data size: 2805 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT y.* from (SELECT x.* FROM SRC x CLUSTER BY x.key) y where y.key = 20
 PREHOOK: type: QUERY
@@ -443,7 +471,7 @@ POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-1
@@ -453,39 +481,38 @@ STAGE PLANS:
             alias: y
             Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key = 20) (type: boolean)
-              Statistics: Num rows: 29 Data size: 2906 Basic stats: COMPLETE Column stats: NONE
+              predicate: (key is not null and (key = 20)) (type: boolean)
+              Statistics: Num rows: 14 Data size: 1402 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: key (type: string)
                 sort order: +
                 Map-reduce partition columns: key (type: string)
-                Statistics: Num rows: 29 Data size: 2906 Basic stats: COMPLETE Column stats: NONE
-                value expressions: key (type: string)
+                Statistics: Num rows: 14 Data size: 1402 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: x
             Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key = 20) (type: boolean)
-              Statistics: Num rows: 14 Data size: 2805 Basic stats: COMPLETE Column stats: NONE
+              predicate: (key is not null and (key = 20)) (type: boolean)
+              Statistics: Num rows: 7 Data size: 1402 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: key (type: string)
                 sort order: +
                 Map-reduce partition columns: key (type: string)
-                Statistics: Num rows: 14 Data size: 2805 Basic stats: COMPLETE Column stats: NONE
-                value expressions: key (type: string), value (type: string)
+                Statistics: Num rows: 7 Data size: 1402 Basic stats: COMPLETE Column stats: NONE
+                value expressions: value (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
           condition expressions:
-            0 {VALUE._col0} {VALUE._col1}
-            1 {VALUE._col0}
+            0 {KEY.reducesinkkey0} {VALUE._col0}
+            1 {KEY.reducesinkkey0}
           outputColumnNames: _col0, _col1, _col4
-          Statistics: Num rows: 31 Data size: 3196 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 15 Data size: 1542 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: _col0 (type: string), _col1 (type: string), _col4 (type: string)
             outputColumnNames: _col0, _col1, _col2
-            Statistics: Num rows: 31 Data size: 3196 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 15 Data size: 1542 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
               table:
@@ -501,14 +528,16 @@ STAGE PLANS:
               key expressions: _col1 (type: string)
               sort order: +
               Map-reduce partition columns: _col1 (type: string)
-              Statistics: Num rows: 31 Data size: 3196 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
+              Statistics: Num rows: 15 Data size: 1542 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col0 (type: string), _col2 (type: string)
       Reduce Operator Tree:
-        Extract
-          Statistics: Num rows: 31 Data size: 3196 Basic stats: COMPLETE Column stats: NONE
+        Select Operator
+          expressions: VALUE._col0 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col1 (type: string)
+          outputColumnNames: _col0, _col1, _col2
+          Statistics: Num rows: 15 Data size: 1542 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 31 Data size: 3196 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 15 Data size: 1542 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -517,6 +546,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT x.key, x.value as v1, y.key  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY v1
 PREHOOK: type: QUERY
@@ -536,7 +567,7 @@ POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-1
@@ -546,39 +577,39 @@ STAGE PLANS:
             alias: y
             Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key = 20) (type: boolean)
-              Statistics: Num rows: 14 Data size: 2805 Basic stats: COMPLETE Column stats: NONE
+              predicate: (key is not null and (key = 20)) (type: boolean)
+              Statistics: Num rows: 7 Data size: 1402 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: key (type: string)
                 sort order: +
                 Map-reduce partition columns: key (type: string)
-                Statistics: Num rows: 14 Data size: 2805 Basic stats: COMPLETE Column stats: NONE
-                value expressions: key (type: string), value (type: string)
+                Statistics: Num rows: 7 Data size: 1402 Basic stats: COMPLETE Column stats: NONE
+                value expressions: value (type: string)
           TableScan
             alias: x
             Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key = 20) (type: boolean)
-              Statistics: Num rows: 14 Data size: 2805 Basic stats: COMPLETE Column stats: NONE
+              predicate: (key is not null and (key = 20)) (type: boolean)
+              Statistics: Num rows: 7 Data size: 1402 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: key (type: string)
                 sort order: +
                 Map-reduce partition columns: key (type: string)
-                Statistics: Num rows: 14 Data size: 2805 Basic stats: COMPLETE Column stats: NONE
-                value expressions: key (type: string), value (type: string)
+                Statistics: Num rows: 7 Data size: 1402 Basic stats: COMPLETE Column stats: NONE
+                value expressions: value (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
           condition expressions:
-            0 {VALUE._col0} {VALUE._col1}
-            1 {VALUE._col0} {VALUE._col1}
+            0 {KEY.reducesinkkey0} {VALUE._col0}
+            1 {KEY.reducesinkkey0} {VALUE._col0}
           outputColumnNames: _col0, _col1, _col4, _col5
-          Statistics: Num rows: 15 Data size: 3085 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 7 Data size: 1542 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: _col0 (type: string), _col1 (type: string), _col4 (type: string), _col5 (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics: Num rows: 15 Data size: 3085 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 7 Data size: 1542 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
               table:
@@ -594,14 +625,16 @@ STAGE PLANS:
               key expressions: _col1 (type: string)
               sort order: +
               Map-reduce partition columns: _col1 (type: string)
-              Statistics: Num rows: 15 Data size: 3085 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string)
+              Statistics: Num rows: 7 Data size: 1542 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col0 (type: string), _col2 (type: string), _col3 (type: string)
       Reduce Operator Tree:
-        Extract
-          Statistics: Num rows: 15 Data size: 3085 Basic stats: COMPLETE Column stats: NONE
+        Select Operator
+          expressions: VALUE._col0 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: string)
+          outputColumnNames: _col0, _col1, _col2, _col3
+          Statistics: Num rows: 7 Data size: 1542 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 15 Data size: 3085 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 7 Data size: 1542 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -610,6 +643,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT x.key, x.value as v1, y.*  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY v1
 PREHOOK: type: QUERY
@@ -629,7 +664,7 @@ POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-1
@@ -639,39 +674,39 @@ STAGE PLANS:
             alias: y
             Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key = 20) (type: boolean)
-              Statistics: Num rows: 14 Data size: 2805 Basic stats: COMPLETE Column stats: NONE
+              predicate: (key is not null and (key = 20)) (type: boolean)
+              Statistics: Num rows: 7 Data size: 1402 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: key (type: string)
                 sort order: +
                 Map-reduce partition columns: key (type: string)
-                Statistics: Num rows: 14 Data size: 2805 Basic stats: COMPLETE Column stats: NONE
-                value expressions: key (type: string), value (type: string)
+                Statistics: Num rows: 7 Data size: 1402 Basic stats: COMPLETE Column stats: NONE
+                value expressions: value (type: string)
           TableScan
             alias: x
             Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key = 20) (type: boolean)
-              Statistics: Num rows: 14 Data size: 2805 Basic stats: COMPLETE Column stats: NONE
+              predicate: (key is not null and (key = 20)) (type: boolean)
+              Statistics: Num rows: 7 Data size: 1402 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: key (type: string)
                 sort order: +
                 Map-reduce partition columns: key (type: string)
-                Statistics: Num rows: 14 Data size: 2805 Basic stats: COMPLETE Column stats: NONE
-                value expressions: key (type: string), value (type: string)
+                Statistics: Num rows: 7 Data size: 1402 Basic stats: COMPLETE Column stats: NONE
+                value expressions: value (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
           condition expressions:
-            0 {VALUE._col0} {VALUE._col1}
-            1 {VALUE._col0} {VALUE._col1}
+            0 {KEY.reducesinkkey0} {VALUE._col0}
+            1 {KEY.reducesinkkey0} {VALUE._col0}
           outputColumnNames: _col0, _col1, _col4, _col5
-          Statistics: Num rows: 15 Data size: 3085 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 7 Data size: 1542 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: _col0 (type: string), _col1 (type: string), _col4 (type: string), _col5 (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics: Num rows: 15 Data size: 3085 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 7 Data size: 1542 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
               table:
@@ -687,14 +722,16 @@ STAGE PLANS:
               key expressions: _col0 (type: string)
               sort order: +
               Map-reduce partition columns: _col0 (type: string)
-              Statistics: Num rows: 15 Data size: 3085 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string)
+              Statistics: Num rows: 7 Data size: 1542 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col1 (type: string), _col2 (type: string), _col3 (type: string)
       Reduce Operator Tree:
-        Extract
-          Statistics: Num rows: 15 Data size: 3085 Basic stats: COMPLETE Column stats: NONE
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: string)
+          outputColumnNames: _col0, _col1, _col2, _col3
+          Statistics: Num rows: 7 Data size: 1542 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 15 Data size: 3085 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 7 Data size: 1542 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -703,6 +740,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT x.key, x.value as v1, y.*  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY x.key
 PREHOOK: type: QUERY
@@ -722,7 +761,7 @@ POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-1
@@ -732,39 +771,38 @@ STAGE PLANS:
             alias: y
             Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key = 20) (type: boolean)
-              Statistics: Num rows: 29 Data size: 2906 Basic stats: COMPLETE Column stats: NONE
+              predicate: (key is not null and (key = 20)) (type: boolean)
+              Statistics: Num rows: 14 Data size: 1402 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: key (type: string)
                 sort order: +
                 Map-reduce partition columns: key (type: string)
-                Statistics: Num rows: 29 Data size: 2906 Basic stats: COMPLETE Column stats: NONE
-                value expressions: key (type: string)
+                Statistics: Num rows: 14 Data size: 1402 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: x
             Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key = 20) (type: boolean)
-              Statistics: Num rows: 14 Data size: 2805 Basic stats: COMPLETE Column stats: NONE
+              predicate: (key is not null and (key = 20)) (type: boolean)
+              Statistics: Num rows: 7 Data size: 1402 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: key (type: string)
                 sort order: +
                 Map-reduce partition columns: key (type: string)
-                Statistics: Num rows: 14 Data size: 2805 Basic stats: COMPLETE Column stats: NONE
-                value expressions: key (type: string), value (type: string)
+                Statistics: Num rows: 7 Data size: 1402 Basic stats: COMPLETE Column stats: NONE
+                value expressions: value (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
           condition expressions:
-            0 {VALUE._col0} {VALUE._col1}
-            1 {VALUE._col0}
+            0 {KEY.reducesinkkey0} {VALUE._col0}
+            1 {KEY.reducesinkkey0}
           outputColumnNames: _col0, _col1, _col4
-          Statistics: Num rows: 31 Data size: 3196 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 15 Data size: 1542 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: _col0 (type: string), _col1 (type: string), _col4 (type: string)
             outputColumnNames: _col0, _col1, _col2
-            Statistics: Num rows: 31 Data size: 3196 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 15 Data size: 1542 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
               table:
@@ -780,14 +818,16 @@ STAGE PLANS:
               key expressions: _col0 (type: string)
               sort order: +
               Map-reduce partition columns: _col0 (type: string)
-              Statistics: Num rows: 31 Data size: 3196 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
+              Statistics: Num rows: 15 Data size: 1542 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col1 (type: string), _col2 (type: string)
       Reduce Operator Tree:
-        Extract
-          Statistics: Num rows: 31 Data size: 3196 Basic stats: COMPLETE Column stats: NONE
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string), VALUE._col1 (type: string)
+          outputColumnNames: _col0, _col1, _col2
+          Statistics: Num rows: 15 Data size: 1542 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 31 Data size: 3196 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 15 Data size: 1542 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -796,6 +836,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT x.key, x.value as v1, y.key as yk  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY key
 PREHOOK: type: QUERY
@@ -826,7 +868,7 @@ CLUSTER BY unioninput.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -853,7 +895,7 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 18 Data size: 3606 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: _col0 (type: string), _col1 (type: string)
+                      value expressions: _col1 (type: string)
           TableScan
             alias: src
             Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
@@ -875,9 +917,11 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 18 Data size: 3606 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: _col0 (type: string), _col1 (type: string)
+                      value expressions: _col1 (type: string)
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string)
+          outputColumnNames: _col0, _col1
           Statistics: Num rows: 18 Data size: 3606 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
@@ -890,6 +934,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT unioninput.*
 FROM (

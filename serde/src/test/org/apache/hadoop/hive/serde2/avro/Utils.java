@@ -33,6 +33,8 @@ class Utils {
   serializeAndDeserializeRecord(GenericData.Record record) throws IOException {
     AvroGenericRecordWritable garw = new AvroGenericRecordWritable(record);
     garw.setRecordReaderID(new UID());
+    // Assuming file schema is the same as record schema for testing purpose.
+    garw.setFileSchema(record.getSchema());
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     DataOutputStream daos = new DataOutputStream(baos);
     garw.write(daos);

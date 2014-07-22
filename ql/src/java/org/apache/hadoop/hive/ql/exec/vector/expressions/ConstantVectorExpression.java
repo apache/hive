@@ -93,14 +93,15 @@ public class ConstantVectorExpression extends VectorExpression {
     BytesColumnVector cv = (BytesColumnVector) vrg.cols[outputColumn];
     cv.isRepeating = true;
     cv.noNulls = true;
-    cv.setRef(0, bytesValue, 0, bytesValueLength);
+    cv.initBuffer();
+    cv.setVal(0, bytesValue, 0, bytesValueLength);
   }
 
   private void evaluateDecimal(VectorizedRowBatch vrg) {
     DecimalColumnVector dcv = (DecimalColumnVector) vrg.cols[outputColumn];
     dcv.isRepeating = true;
     dcv.noNulls = true;
-    dcv.vector[0] = decimalValue;
+    dcv.vector[0].update(decimalValue);
   }
 
   @Override
@@ -124,11 +125,6 @@ public class ConstantVectorExpression extends VectorExpression {
   @Override
   public int getOutputColumn() {
     return outputColumn;
-  }
-
-  @Override
-  public String getOutputType() {
-    return getTypeString();
   }
 
   public long getLongValue() {

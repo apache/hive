@@ -42,8 +42,6 @@ EXPLAIN
 INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '1')
 SELECT a.key, a.value, a.value FROM test_table1 a WHERE a.ds = '1'
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -105,8 +103,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_table1
 POSTHOOK: Input: default@test_table1@ds=1
 POSTHOOK: Output: default@test_table2@ds=1
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value1 SIMPLE [(test_table1)a.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value2 SIMPLE [(test_table1)a.FieldSchema(name:value, type:string, comment:null), ]
@@ -120,11 +116,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_table2
 POSTHOOK: Input: default@test_table2@ds=1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value1 SIMPLE [(test_table1)a.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value2 SIMPLE [(test_table1)a.FieldSchema(name:value, type:string, comment:null), ]
 500
 PREHOOK: query: select count(*) from test_table2 where ds = '1' and hash(key) % 2 = 0
 PREHOOK: type: QUERY
@@ -136,11 +127,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_table2
 POSTHOOK: Input: default@test_table2@ds=1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value1 SIMPLE [(test_table1)a.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value2 SIMPLE [(test_table1)a.FieldSchema(name:value, type:string, comment:null), ]
 242
 PREHOOK: query: select count(*) from test_table2 where ds = '1' and hash(key) % 2 = 1
 PREHOOK: type: QUERY
@@ -152,11 +138,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_table2
 POSTHOOK: Input: default@test_table2@ds=1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value1 SIMPLE [(test_table1)a.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value2 SIMPLE [(test_table1)a.FieldSchema(name:value, type:string, comment:null), ]
 258
 PREHOOK: query: CREATE TABLE test_table3 (key STRING, value1 int, value2 string) PARTITIONED BY (ds STRING)
 CLUSTERED BY (value1) SORTED BY (value1) INTO 2 BUCKETS
@@ -167,11 +148,6 @@ CLUSTERED BY (value1) SORTED BY (value1) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_table3
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value1 SIMPLE [(test_table1)a.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value2 SIMPLE [(test_table1)a.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: -- Insert data into the bucketed table by selecting from another bucketed table
 -- This should be a map-only operation, although the bucketing positions dont match
 EXPLAIN
@@ -184,11 +160,6 @@ EXPLAIN
 INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1')
 SELECT a.value, a.key, a.value FROM test_table1 a WHERE a.ds = '1'
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value1 SIMPLE [(test_table1)a.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value2 SIMPLE [(test_table1)a.FieldSchema(name:value, type:string, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -241,11 +212,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_table1
 POSTHOOK: Input: default@test_table1@ds=1
 POSTHOOK: Output: default@test_table3@ds=1
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value1 SIMPLE [(test_table1)a.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value2 SIMPLE [(test_table1)a.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value1 SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value2 SIMPLE [(test_table1)a.FieldSchema(name:value, type:string, comment:null), ]
@@ -259,14 +225,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_table3
 POSTHOOK: Input: default@test_table3@ds=1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value1 SIMPLE [(test_table1)a.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value2 SIMPLE [(test_table1)a.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value1 SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value2 SIMPLE [(test_table1)a.FieldSchema(name:value, type:string, comment:null), ]
 500
 PREHOOK: query: select count(*) from test_table3 where ds = '1' and hash(value1) % 2 = 0
 PREHOOK: type: QUERY
@@ -278,14 +236,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_table3
 POSTHOOK: Input: default@test_table3@ds=1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value1 SIMPLE [(test_table1)a.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value2 SIMPLE [(test_table1)a.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value1 SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value2 SIMPLE [(test_table1)a.FieldSchema(name:value, type:string, comment:null), ]
 247
 PREHOOK: query: select count(*) from test_table3 where ds = '1' and hash(value1) % 2 = 1
 PREHOOK: type: QUERY
@@ -297,14 +247,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_table3
 POSTHOOK: Input: default@test_table3@ds=1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value1 SIMPLE [(test_table1)a.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value2 SIMPLE [(test_table1)a.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value1 SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value2 SIMPLE [(test_table1)a.FieldSchema(name:value, type:string, comment:null), ]
 253
 PREHOOK: query: select count(*) from test_table3 tablesample (bucket 1 out of 2) s where ds = '1'
 PREHOOK: type: QUERY
@@ -316,14 +258,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_table3
 POSTHOOK: Input: default@test_table3@ds=1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value1 SIMPLE [(test_table1)a.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value2 SIMPLE [(test_table1)a.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value1 SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value2 SIMPLE [(test_table1)a.FieldSchema(name:value, type:string, comment:null), ]
 247
 PREHOOK: query: select count(*) from test_table3 tablesample (bucket 2 out of 2) s where ds = '1'
 PREHOOK: type: QUERY
@@ -335,14 +269,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_table3
 POSTHOOK: Input: default@test_table3@ds=1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value1 SIMPLE [(test_table1)a.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value2 SIMPLE [(test_table1)a.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value1 SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value2 SIMPLE [(test_table1)a.FieldSchema(name:value, type:string, comment:null), ]
 253
 PREHOOK: query: -- Insert data into the bucketed table by selecting from another bucketed table
 -- However, since an expression is being selected, it should involve a reducer
@@ -356,14 +282,6 @@ EXPLAIN
 INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '2')
 SELECT a.key+a.key, a.value, a.value FROM test_table1 a WHERE a.ds = '1'
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value1 SIMPLE [(test_table1)a.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value2 SIMPLE [(test_table1)a.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value1 SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value2 SIMPLE [(test_table1)a.FieldSchema(name:value, type:string, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

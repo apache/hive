@@ -29,23 +29,23 @@ public final class VectorUDFYearLong extends VectorUDFTimestampFieldLong {
 
   private static final long serialVersionUID = 1L;
   /* year boundaries in nanoseconds */
-  static transient final long[] YEAR_BOUNDARIES;
-  static transient final int MIN_YEAR = 1901;
-  static transient final int MAX_YEAR = 2038;
+  private static transient final long[] YEAR_BOUNDARIES;
+  private static transient final int MIN_YEAR = 1678;
+  private static transient final int MAX_YEAR = 2300;
 
   static {
     YEAR_BOUNDARIES = new long[MAX_YEAR-MIN_YEAR];
     Calendar c = Calendar.getInstance();
     c.setTimeInMillis(0); // c.set doesn't reset millis
     /* 1901 Jan is not with in range */
-    for(int year=MIN_YEAR+1; year <= 2038; year++) {
+    for(int year=MIN_YEAR+1; year <= MAX_YEAR; year++) {
       c.set(year, Calendar.JANUARY, 1, 0, 0, 0);
       YEAR_BOUNDARIES[year-MIN_YEAR-1] = c.getTimeInMillis()*1000*1000;
     }
   }
 
   @Override
-  protected long getField(long time) {
+  protected long getTimestampField(long time) {
     /* binarySearch is faster than a loop doing a[i] (no array out of bounds checks) */
     int year = Arrays.binarySearch(YEAR_BOUNDARIES, time);
     if(year >= 0) {

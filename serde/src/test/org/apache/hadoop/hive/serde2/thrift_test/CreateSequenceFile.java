@@ -75,7 +75,7 @@ public final class CreateSequenceFile {
     public BytesWritable serialize(TBase base) throws TException {
       bos.reset();
       base.write(outProtocol);
-      bw.set(bos.getData(), 0, bos.getCount());
+      bw.set(bos.getData(), 0, bos.getLength());
       return bw;
     }
   }

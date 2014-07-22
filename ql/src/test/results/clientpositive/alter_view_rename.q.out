@@ -14,11 +14,13 @@ POSTHOOK: Input: default@invites
 POSTHOOK: Output: default@view1
 PREHOOK: query: DESCRIBE EXTENDED view1
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@view1
 POSTHOOK: query: DESCRIBE EXTENDED view1
 POSTHOOK: type: DESCTABLE
-foo                 	int                 	None                
-bar                 	string              	None                
-ds                  	string              	None                
+POSTHOOK: Input: default@view1
+foo                 	int                 	                    
+bar                 	string              	                    
+ds                  	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: ALTER VIEW view1 RENAME TO view2
@@ -32,11 +34,13 @@ POSTHOOK: Output: default@view1
 POSTHOOK: Output: default@view2
 PREHOOK: query: DESCRIBE EXTENDED view2
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@view2
 POSTHOOK: query: DESCRIBE EXTENDED view2
 POSTHOOK: type: DESCTABLE
-foo                 	int                 	None                
-bar                 	string              	None                
-ds                  	string              	None                
+POSTHOOK: Input: default@view2
+foo                 	int                 	                    
+bar                 	string              	                    
+ds                  	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: SELECT * FROM view2

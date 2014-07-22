@@ -67,6 +67,9 @@ public class PhysicalOptimizer {
     if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVEMETADATAONLYQUERIES)) {
       resolvers.add(new MetadataOnlyOptimizer());
     }
+    if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVENULLSCANOPTIMIZE)) {
+      resolvers.add(new NullScanOptimizer());
+    }
     if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVESAMPLINGFORORDERBY)) {
       resolvers.add(new SamplingOptimizer());
     }
@@ -76,6 +79,10 @@ public class PhysicalOptimizer {
     // follow it.
     if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_INFER_BUCKET_SORT)) {
       resolvers.add(new BucketingSortingInferenceOptimizer());
+    }
+
+    if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_CHECK_CROSS_PRODUCT)) {
+      resolvers.add(new CrossProductCheck());
     }
 
     // Vectorization should be the last optimization, because it doesn't modify the plan

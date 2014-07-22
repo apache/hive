@@ -59,7 +59,6 @@ POSTHOOK: query: SELECT * FROM test_orc LIMIT 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_orc
 #### A masked pattern was here ####
-POSTHOOK: Lineage: test_orc.key SIMPLE [(src_null)src_null.FieldSchema(name:a, type:string, comment:null), ]
 1
 NULL
 NULL

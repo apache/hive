@@ -16,39 +16,53 @@
  * limitations under the License.
  */
 
- package org.apache.hadoop.hive.thrift;
+package org.apache.hadoop.hive.thrift;
 
- import java.io.IOException;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.thrift.TProcessor;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
 import org.apache.thrift.transport.TTransportFactory;
 
- /**
-  * This class is only overridden by the secure hadoop shim. It allows
-  * the Thrift SASL support to bridge to Hadoop's UserGroupInformation
-  * & DelegationToken infrastructure.
-  */
- public class HadoopThriftAuthBridge {
-   public Client createClient() {
-     throw new UnsupportedOperationException(
-       "The current version of Hadoop does not support Authentication");
-   }
+/**
+ * This class is only overridden by the secure hadoop shim. It allows
+ * the Thrift SASL support to bridge to Hadoop's UserGroupInformation
+ * & DelegationToken infrastructure.
+ */
+public class HadoopThriftAuthBridge {
+  public Client createClient() {
+    throw new UnsupportedOperationException(
+        "The current version of Hadoop does not support Authentication");
+  }
 
-   public Client createClientWithConf(String authType) {
-     throw new UnsupportedOperationException(
-       "The current version of Hadoop does not support Authentication");
-   }
+  public Client createClientWithConf(String authType) {
+    throw new UnsupportedOperationException(
+        "The current version of Hadoop does not support Authentication");
+  }
 
-   public Server createServer(String keytabFile, String principalConf)
-     throws TTransportException {
-     throw new UnsupportedOperationException(
-       "The current version of Hadoop does not support Authentication");
-   }
+  public UserGroupInformation getCurrentUGIWithConf(String authType)
+      throws IOException {
+    throw new UnsupportedOperationException(
+        "The current version of Hadoop does not support Authentication");
+  }
+
+
+  public String getServerPrincipal(String principalConfig, String host)
+      throws IOException {
+    throw new UnsupportedOperationException(
+        "The current version of Hadoop does not support Authentication");
+  }
+
+  public Server createServer(String keytabFile, String principalConf)
+      throws TTransportException {
+    throw new UnsupportedOperationException(
+        "The current version of Hadoop does not support Authentication");
+  }
 
 
   /**
@@ -58,44 +72,47 @@ import org.apache.thrift.transport.TTransportFactory;
    * @param conf
    * @return Hadoop SASL configuration
    */
-   public Map<String, String> getHadoopSaslProperties(Configuration conf) {
-     throw new UnsupportedOperationException(
-       "The current version of Hadoop does not support Authentication");
-   }
+  public Map<String, String> getHadoopSaslProperties(Configuration conf) {
+    throw new UnsupportedOperationException(
+        "The current version of Hadoop does not support Authentication");
+  }
 
-   public static abstract class Client {
-   /**
-    *
-    * @param principalConfig In the case of Kerberos authentication this will
-    * be the kerberos principal name, for DIGEST-MD5 (delegation token) based
-    * authentication this will be null
-    * @param host The metastore server host name
-    * @param methodStr "KERBEROS" or "DIGEST"
-    * @param tokenStrForm This is url encoded string form of
-    * org.apache.hadoop.security.token.
-    * @param underlyingTransport the underlying transport
-    * @return the transport
-    * @throws IOException
-    */
-     public abstract TTransport createClientTransport(
-             String principalConfig, String host,
-             String methodStr, String tokenStrForm, TTransport underlyingTransport,
-             Map<String, String> saslProps)
-             throws IOException;
-   }
+  public static abstract class Client {
+    /**
+     *
+     * @param principalConfig In the case of Kerberos authentication this will
+     * be the kerberos principal name, for DIGEST-MD5 (delegation token) based
+     * authentication this will be null
+     * @param host The metastore server host name
+     * @param methodStr "KERBEROS" or "DIGEST"
+     * @param tokenStrForm This is url encoded string form of
+     * org.apache.hadoop.security.token.
+     * @param underlyingTransport the underlying transport
+     * @return the transport
+     * @throws IOException
+     */
+    public abstract TTransport createClientTransport(
+        String principalConfig, String host,
+        String methodStr, String tokenStrForm, TTransport underlyingTransport,
+        Map<String, String> saslProps)
+            throws IOException;
+  }
 
-   public static abstract class Server {
-     public abstract TTransportFactory createTransportFactory(Map<String, String> saslProps) throws TTransportException;
-     public abstract TProcessor wrapProcessor(TProcessor processor);
-     public abstract TProcessor wrapNonAssumingProcessor(TProcessor processor);
-     public abstract InetAddress getRemoteAddress();
-     public abstract void startDelegationTokenSecretManager(Configuration conf,
-       Object hmsHandler) throws IOException;
-     public abstract String getRemoteUser();
-     public abstract String getDelegationToken(String owner, String renewer)
-     throws IOException, InterruptedException;
-     public abstract long renewDelegationToken(String tokenStrForm) throws IOException;
-     public abstract void cancelDelegationToken(String tokenStrForm) throws IOException;
-   }
- }
+  public static abstract class Server {
+    public abstract TTransportFactory createTransportFactory(Map<String, String> saslProps) throws TTransportException;
+    public abstract TProcessor wrapProcessor(TProcessor processor);
+    public abstract TProcessor wrapNonAssumingProcessor(TProcessor processor);
+    public abstract InetAddress getRemoteAddress();
+    public abstract void startDelegationTokenSecretManager(Configuration conf,
+        Object hmsHandler) throws IOException;
+    public abstract String getDelegationToken(String owner, String renewer)
+        throws IOException, InterruptedException;
+    public abstract String getDelegationTokenWithService(String owner, String renewer, String service)
+        throws IOException, InterruptedException;
+    public abstract String getRemoteUser();
+    public abstract long renewDelegationToken(String tokenStrForm) throws IOException;
+    public abstract void cancelDelegationToken(String tokenStrForm) throws IOException;
+    public abstract String getUserFromToken(String tokenStr) throws IOException;
+  }
+}
 

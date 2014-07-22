@@ -19,11 +19,13 @@ End to end tests
 ---------------
 End to end tests in templeton runs tests against an existing templeton server.
 It runs hcat, mapreduce, streaming, hive and pig tests.
+This requires Hadoop cluster and Hive metastore running.
 
 It's a good idea to look at current versions of
-http://hive.apache.org/docs/hcat_r0.5.0/rest_server_install.html and
-http://hive.apache.org/docs/hcat_r0.5.0/configuration.html before proceeding.
+https://cwiki.apache.org/confluence/display/Hive/WebHCat+InstallWebHCat and 
+https://cwiki.apache.org/confluence/display/Hive/WebHCat+Configure
 
+See deployers/README.txt for help automating some of the steps in this document.
 
 (Note that by default, webhcat-default.xml templeton.hive.properties sets
 hive.metastore.uris=thrift://localhost:9933, thus WebHCat will expect
@@ -38,6 +40,11 @@ to control which DB the metastore uses put something like
   <value>jdbc:derby:;databaseName=/Users/ekoifman/dev/data/tmp/metastore_db_e2e;create=true</value>
   <description>Controls which DB engine metastore will use for persistence. In particular,
   where Derby will create it's data files.</description>
+</property>
+<property>
+  <name>hive.metastore.uris</name>
+  <value>thrift://localhost:9933</value>
+  <description>For Hive CLI to connect to</description>
 </property>
 
 in hive-site.xml
@@ -91,13 +98,36 @@ Tips:
 be obtained from Pig and the other two are obtained from your Hadoop distribution.
 For Hadoop 1.x you would need to upload hadoop-examples.jar twice to HDFS one as hclient.jar and other as hexamples.jar.
 For Hadoop 2.x you would need to upload hadoop-mapreduce-client-jobclient.jar to HDFS as hclient.jar and hadoop-mapreduce-examples.jar to HDFS as hexamples.jar. 
-Also see http://hive.apache.org/docs/hcat_r0.5.0/rest_server_install.html#Hadoop+Distributed+Cache for notes on
-additional JAR files to copy to HDFS.
+Also see https://cwiki.apache.org/confluence/display/Hive/WebHCat+InstallWebHCat#WebHCatInstallWebHCat-HadoopDistributedCache
+ for notes on additional JAR files to copy to HDFS.
 
 5. Make sure TEMPLETON_HOME evnironment variable is set
 
 6. hadoop/conf/core-site.xml should have items described in
-http://hive.apache.org/docs/hcat_r0.5.0/rest_server_install.html#Permissions
+https://cwiki.apache.org/confluence/display/Hive/WebHCat+InstallWebHCat#WebHCatInstallWebHCat-Permissions
+
+7. Currently Pig tar file available on http://pig.apache.org/ contains jar files compiled to work with Hadoop 1.x.
+To run WebHCat tests on Hadoop 2.x you need to build your own Pig tar for Hadoop 2. To do that download the 
+Pig source distribution and build it with "ant -Dforrest.home=$FORREST_HOME -Dhadoopversion=23 clean tar"
+You may also need to adjust the following in Pig's build.xml as needed:
+<property name="pig.version" value="0.12.1" />
+<property name="pig.version.suffix" value="-SNAPSHOT" />
+
+8. Enable webhdfs by adding the following to your hadoop hdfs-site.xml :
+<property>
+  <name>dfs.webhdfs.enabled</name>
+  <value>true</value>
+</property>
+<property>
+  <name>dfs.http.address</name>
+  <value>127.0.0.1:8085</value>
+  <final>true</final>
+</property>
+
+****
+**** See deployers/ for scripts that automate a lot of the set up.
+****
+
 
 Running the tests
 -----------------
@@ -151,27 +181,29 @@ To do this 3 properties in hive-site.xml should be configured:
     org.apache.hadoop.hive.ql.security.authorization.AuthorizationPreEventListener
 4) hive.metastore.execute.setugi set to true
 
+Running Sqoop jobsubmission tests (This test is targeted on Sqoop1. The test will fail if using Sqoop2) 
+---------------------------------
+ant clean test -Dinpdir.hdfs=<location of inpdir on hdfs> -Ddb.connection.string=<jdbc connection string>
+    -Ddb.user.name=<DBUserName> -Ddb.password=<DBPassWord> -Dtest.user.name=<user the tests should run as>
+    -Dharness.webhdfs.url=<webhdfs url upto port num> -Dharness.templeton.url=<templeton url upto port num>
+    -Dtests.to.run=-t TestSqoop
+
+In order to run Sqoop jobsubmission tests, a RDBMS like MySQL or SQL server should be installed. Also since
+Sqoop export command require table already exists in the database, a table "PERSON" need to be created under
+the default database of the RDBMS installed.
+
+Here is the schema of the table writen in MySQL:
+    CREATE TABLE `world`.`person` (
+    `id` INT NOT NULL,
+    `name` VARCHAR(45) NULL,
+    `occupation` VARCHAR(45) NULL,
+    PRIMARY KEY (`id`));
+
+To prevent primary key violation and sqoop import directory conflict, make sure the "PERSON" table is empty
+and the folder hdfs://hostname:8020/sqoopoutputdir doesn't exist before running the test.
+
 Notes
 -----
-
-
-
-Enable webhdfs by adding the following to your hadoop hdfs-site.xml :
-
-<property>
-  <name>dfs.webhdfs.enabled</name>
-  <value>true</value>
-</property>
-<property>
-  <name>dfs.http.address</name>
-  <value>127.0.0.1:8085</value>
-  <final>true</final>
-</property>
-
-You can build a server that will measure test coverage by using templeton:
-ant clean; ant e2e
-This assumes you've got webhdfs at the address above, the inpdir info in /user/templeton, and templeton running on the default port.  You can change any of those properties in the build file.
-
 It's best to set HADOOP_HOME_WARN_SUPPRESS=true everywhere you can.
 Also useful to add to conf/hadoop-env.sh
 export HADOOP_OPTS="-Djava.security.krb5.realm=OX.AC.UK -Djava.security.krb5.kdc=kdc0.ox.ac.uk:kdc1.ox.ac.uk"

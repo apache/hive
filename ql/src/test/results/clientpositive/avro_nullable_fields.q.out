@@ -151,21 +151,6 @@ POSTHOOK: query: SELECT * FROM as_avro
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@as_avro
 #### A masked pattern was here ####
-POSTHOOK: Lineage: as_avro.bigint1 SIMPLE [(test_serializer)test_serializer.FieldSchema(name:bigint1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: as_avro.boolean1 SIMPLE [(test_serializer)test_serializer.FieldSchema(name:boolean1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: as_avro.bytes1 SIMPLE [(test_serializer)test_serializer.FieldSchema(name:bytes1, type:binary, comment:null), ]
-POSTHOOK: Lineage: as_avro.double1 SIMPLE [(test_serializer)test_serializer.FieldSchema(name:double1, type:double, comment:null), ]
-POSTHOOK: Lineage: as_avro.enum1 SIMPLE [(test_serializer)test_serializer.FieldSchema(name:enum1, type:string, comment:null), ]
-POSTHOOK: Lineage: as_avro.fixed1 SIMPLE [(test_serializer)test_serializer.FieldSchema(name:fixed1, type:binary, comment:null), ]
-POSTHOOK: Lineage: as_avro.float1 SIMPLE [(test_serializer)test_serializer.FieldSchema(name:float1, type:float, comment:null), ]
-POSTHOOK: Lineage: as_avro.int1 SIMPLE [(test_serializer)test_serializer.FieldSchema(name:int1, type:int, comment:null), ]
-POSTHOOK: Lineage: as_avro.list1 SIMPLE [(test_serializer)test_serializer.FieldSchema(name:list1, type:array<string>, comment:null), ]
-POSTHOOK: Lineage: as_avro.map1 SIMPLE [(test_serializer)test_serializer.FieldSchema(name:map1, type:map<string,int>, comment:null), ]
-POSTHOOK: Lineage: as_avro.nullableint SIMPLE [(test_serializer)test_serializer.FieldSchema(name:nullableint, type:int, comment:null), ]
-POSTHOOK: Lineage: as_avro.smallint1 EXPRESSION [(test_serializer)test_serializer.FieldSchema(name:smallint1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: as_avro.string1 SIMPLE [(test_serializer)test_serializer.FieldSchema(name:string1, type:string, comment:null), ]
-POSTHOOK: Lineage: as_avro.struct1 SIMPLE [(test_serializer)test_serializer.FieldSchema(name:struct1, type:struct<sint:int,sboolean:boolean,sstring:string>, comment:null), ]
-POSTHOOK: Lineage: as_avro.tinyint1 EXPRESSION [(test_serializer)test_serializer.FieldSchema(name:tinyint1, type:tinyint, comment:null), ]
 why hello there	42	3	100	1412341	true	42.43	85.23423424	["alpha","beta","gamma"]	{"Earth":42,"Bob":31,"Control":86}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	72		bc
 another record	98	4	101	9999999	false	99.89	9.0E-8	["beta"]	{"Earth":101}	{"sint":1134,"sboolean":false,"sstring":"wazzup"}	RED	NULL		ef
 third record	45	5	102	999999999	true	89.99	9.0E-14	["alpha","gamma"]	{"Earth":237,"Bob":723}	{"sint":102,"sboolean":false,"sstring":"BNL"}	GREEN	NULL		hi

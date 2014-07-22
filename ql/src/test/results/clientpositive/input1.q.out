@@ -13,7 +13,7 @@ DESCRIBE TEST1
 POSTHOOK: type: DESCTABLE
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
-  Stage-1 is a root stage
+  Stage-1 depends on stages: Stage-0
 
 STAGE PLANS:
   Stage: Stage-0
@@ -24,10 +24,14 @@ STAGE PLANS:
   Stage: Stage-1
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: DESCRIBE TEST1
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test1
 POSTHOOK: query: DESCRIBE TEST1
 POSTHOOK: type: DESCTABLE
-a                   	int                 	None                
-b                   	double              	None                
+POSTHOOK: Input: default@test1
+a                   	int                 	                    
+b                   	double              	                    

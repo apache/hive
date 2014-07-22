@@ -28,48 +28,43 @@ import java.net.URL;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.security.auth.Subject;
 import javax.security.auth.login.LoginException;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.BlockLocation;
 import org.apache.hadoop.fs.FSDataInputStream;
+import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.FsShell;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.fs.ProxyFileSystem;
 import org.apache.hadoop.fs.Trash;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.io.HiveIOExceptionHandlerUtil;
-import org.apache.hadoop.hive.shims.HadoopShims.DirectDecompressorShim;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.Text;
-import org.apache.hadoop.io.compress.CompressionCodec;
 import org.apache.hadoop.mapred.ClusterStatus;
 import org.apache.hadoop.mapred.FileInputFormat;
-import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.JobContext;
-import org.apache.hadoop.mapred.JobStatus;
 import org.apache.hadoop.mapred.MiniMRCluster;
 import org.apache.hadoop.mapred.OutputCommitter;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
-import org.apache.hadoop.mapred.RunningJob;
 import org.apache.hadoop.mapred.TaskAttemptContext;
-import org.apache.hadoop.mapred.TaskCompletionEvent;
-import org.apache.hadoop.mapred.TaskID;
 import org.apache.hadoop.mapred.TaskLogServlet;
 import org.apache.hadoop.mapred.lib.CombineFileInputFormat;
 import org.apache.hadoop.mapred.lib.CombineFileSplit;
@@ -85,17 +80,21 @@ import org.apache.hadoop.util.Progressable;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.hadoop.util.VersionInfo;
 
-/**
- * Implemention of shims against Hadoop 0.20.0.
- */
 public class Hadoop20Shims implements HadoopShims {
 
   /**
    * Returns a shim to wrap MiniMrCluster
    */
+  @Override
   public MiniMrShim getMiniMrCluster(Configuration conf, int numberOfTaskTrackers,
                                      String nameNode, int numDir) throws IOException {
     return new MiniMrShim(conf, numberOfTaskTrackers, nameNode, numDir);
+  }
+
+  @Override
+  public MiniMrShim getMiniTezCluster(Configuration conf, int numberOfTaskTrackers,
+                                     String nameNode, int numDir) throws IOException {
+    throw new IOException("Cannot run tez on current hadoop, Version: " + VersionInfo.getVersion());
   }
 
   /**
@@ -126,6 +125,7 @@ public class Hadoop20Shims implements HadoopShims {
     }
   }
 
+  @Override
   public HadoopShims.MiniDFSShim getMiniDfs(Configuration conf,
       int numDataNodes,
       boolean format,
@@ -144,15 +144,18 @@ public class Hadoop20Shims implements HadoopShims {
       this.cluster = cluster;
     }
 
+    @Override
     public FileSystem getFileSystem() throws IOException {
       return cluster.getFileSystem();
     }
 
+    @Override
     public void shutdown() {
       cluster.shutdown();
     }
   }
 
+  @Override
   public HadoopShims.CombineFileInputFormatShim getCombineFileInputFormat() {
     return new CombineFileInputFormatShim() {
       @Override
@@ -163,6 +166,7 @@ public class Hadoop20Shims implements HadoopShims {
     };
   }
 
+  @Override
   public void setTotalOrderPartitionFile(JobConf jobConf, Path partitionFile){
     TotalOrderPartitioner.setPartitionFile(jobConf, partitionFile);
   }
@@ -256,6 +260,7 @@ public class Hadoop20Shims implements HadoopShims {
     protected boolean isShrinked;
     protected long shrinkedLength;
 
+    @Override
     public boolean next(K key, V value) throws IOException {
 
       while ((curReader == null)
@@ -268,11 +273,13 @@ public class Hadoop20Shims implements HadoopShims {
       return true;
     }
 
+    @Override
     public K createKey() {
       K newKey = curReader.createKey();
       return (K)(new CombineHiveKey(newKey));
     }
 
+    @Override
     public V createValue() {
       return curReader.createValue();
     }
@@ -280,10 +287,12 @@ public class Hadoop20Shims implements HadoopShims {
     /**
      * Return the amount of data processed.
      */
+    @Override
     public long getPos() throws IOException {
       return progress;
     }
 
+    @Override
     public void close() throws IOException {
       if (curReader != null) {
         curReader.close();
@@ -294,6 +303,7 @@ public class Hadoop20Shims implements HadoopShims {
     /**
      * Return progress based on the amount of data processed so far.
      */
+    @Override
     public float getProgress() throws IOException {
       long subprogress = 0;    // bytes processed in current split
       if (null != curReader) {
@@ -397,6 +407,7 @@ public class Hadoop20Shims implements HadoopShims {
       CombineFileInputFormat<K, V>
       implements HadoopShims.CombineFileInputFormatShim<K, V> {
 
+    @Override
     public Path[] getInputPathsShim(JobConf conf) {
       try {
         return FileInputFormat.getInputPaths(conf);
@@ -437,10 +448,12 @@ public class Hadoop20Shims implements HadoopShims {
       return isplits;
     }
 
+    @Override
     public InputSplitShim getInputSplitShim() throws IOException {
       return new InputSplitShim();
     }
 
+    @Override
     public RecordReader getRecordReader(JobConf job, HadoopShims.InputSplitShim split,
         Reporter reporter,
         Class<RecordReader<K, V>> rrClass)
@@ -451,6 +464,7 @@ public class Hadoop20Shims implements HadoopShims {
 
   }
 
+  @Override
   public String getInputFormatClassName() {
     return "org.apache.hadoop.hive.ql.io.CombineHiveInputFormat";
   }
@@ -480,6 +494,7 @@ public class Hadoop20Shims implements HadoopShims {
    * compared against the one used by Hadoop 1.0 (within HadoopShimsSecure)
    * where a relative path is stored within the archive.
    */
+  @Override
   public URI getHarUri (URI original, URI base, URI originalBase)
     throws URISyntaxException {
     URI relative = null;
@@ -512,6 +527,7 @@ public class Hadoop20Shims implements HadoopShims {
     public void abortTask(TaskAttemptContext taskContext) { }
   }
 
+  @Override
   public void prepareJobOutput(JobConf conf) {
     conf.setOutputCommitter(Hadoop20Shims.NullOutputCommitter.class);
 
@@ -556,6 +572,12 @@ public class Hadoop20Shims implements HadoopShims {
   }
 
   @Override
+  public String addServiceToToken(String tokenStr, String tokenService) throws IOException {
+    throw new UnsupportedOperationException("Tokens are not supported in current hadoop version");
+  }
+
+
+  @Override
   public <T> T doAs(UserGroupInformation ugi, PrivilegedExceptionAction<T> pvea) throws
     IOException, InterruptedException {
     try {
@@ -585,6 +607,13 @@ public class Hadoop20Shims implements HadoopShims {
   }
 
   @Override
+  public UserGroupInformation loginUserFromKeytabAndReturnUGI(
+      String principal, String keytabFile) throws IOException {
+    throwKerberosUnsupportedError();
+    return null;
+  }
+
+  @Override
   public void reLoginUserFromKeytab() throws IOException{
     throwKerberosUnsupportedError();
   }
@@ -605,35 +634,73 @@ public class Hadoop20Shims implements HadoopShims {
   }
 
   @Override
-  public Iterator<FileStatus> listLocatedStatus(final FileSystem fs,
+  public List<FileStatus> listLocatedStatus(final FileSystem fs,
                                                 final Path path,
                                                 final PathFilter filter
                                                ) throws IOException {
-    return new Iterator<FileStatus>() {
-      private final FileStatus[] result = fs.listStatus(path, filter);
-      private int current = 0;
-
-      @Override
-      public boolean hasNext() {
-        return current < result.length;
-      }
-
-      @Override
-      public FileStatus next() {
-        return result[current++];
-      }
-
-      @Override
-      public void remove() {
-        throw new IllegalArgumentException("Not supported");
-      }
-    };
+    return Arrays.asList(fs.listStatus(path, filter));
   }
 
   @Override
   public BlockLocation[] getLocations(FileSystem fs,
                                       FileStatus status) throws IOException {
     return fs.getFileBlockLocations(status, 0, status.getLen());
+  }
+
+  @Override
+  public void hflush(FSDataOutputStream stream) throws IOException {
+    stream.sync();
+  }
+
+  @Override
+  public HdfsFileStatus getFullFileStatus(Configuration conf, FileSystem fs, Path file)
+      throws IOException {
+    return new Hadoop20FileStatus(fs.getFileStatus(file));
+  }
+
+  @Override
+  public void setFullFileStatus(Configuration conf, HdfsFileStatus sourceStatus,
+    FileSystem fs, Path target) throws IOException {
+    String group = sourceStatus.getFileStatus().getGroup();
+    String permission = Integer.toString(sourceStatus.getFileStatus().getPermission().toShort(), 8);
+    //use FsShell to change group and permissions recursively
+    try {
+      FsShell fshell = new FsShell();
+      fshell.setConf(conf);
+      run(fshell, new String[]{"-chgrp", "-R", group, target.toString()});
+      run(fshell, new String[]{"-chmod", "-R", permission, target.toString()});
+    } catch (Exception e) {
+      throw new IOException("Unable to set permissions of " + target, e);
+    }
+    try {
+      if (LOG.isDebugEnabled()) {  //some trace logging
+        getFullFileStatus(conf, fs, target).debugLog();
+      }
+    } catch (Exception e) {
+      //ignore.
+    }
+  }
+
+  public class Hadoop20FileStatus implements HdfsFileStatus {
+    private FileStatus fileStatus;
+    public Hadoop20FileStatus(FileStatus fileStatus) {
+      this.fileStatus = fileStatus;
+    }
+    @Override
+    public FileStatus getFileStatus() {
+      return fileStatus;
+    }
+    public void debugLog() {
+      if (fileStatus != null) {
+        LOG.debug(fileStatus.toString());
+      }
+    }
+  }
+
+  @Override
+  public void authorizeProxyAccess(String proxyUser, UserGroupInformation realUserUgi,
+      String ipAddress, Configuration conf) throws IOException {
+    // This hadoop version doesn't have proxy verification
   }
 
   @Override
@@ -654,7 +721,6 @@ public class Hadoop20Shims implements HadoopShims {
 
   @Override
   public JobTrackerState getJobTrackerState(ClusterStatus clusterStatus) throws Exception {
-    JobTrackerState state;
     switch (clusterStatus.getJobTrackerState()) {
     case INITIALIZING:
       return JobTrackerState.INITIALIZING;
@@ -767,8 +833,8 @@ public class Hadoop20Shims implements HadoopShims {
     ret.put("HADOOPMAPREDINPUTDIRRECURSIVE", "mapred.input.dir.recursive");
     ret.put("MAPREDMAXSPLITSIZE", "mapred.max.split.size");
     ret.put("MAPREDMINSPLITSIZE", "mapred.min.split.size");
-    ret.put("MAPREDMINSPLITSIZEPERNODE", "mapred.min.split.size.per.rack");
-    ret.put("MAPREDMINSPLITSIZEPERRACK", "mapred.min.split.size.per.node");
+    ret.put("MAPREDMINSPLITSIZEPERRACK", "mapred.min.split.size.per.rack");
+    ret.put("MAPREDMINSPLITSIZEPERNODE", "mapred.min.split.size.per.node");
     ret.put("HADOOPNUMREDUCERS", "mapred.reduce.tasks");
     ret.put("HADOOPJOBNAME", "mapred.job.name");
     ret.put("HADOOPSPECULATIVEEXECREDUCERS", "mapred.reduce.tasks.speculative.execution");
@@ -792,5 +858,26 @@ public class Hadoop20Shims implements HadoopShims {
   @Override
   public Configuration getConfiguration(org.apache.hadoop.mapreduce.JobContext context) {
     return context.getConfiguration();
+  }
+
+  @Override
+  public FileSystem getNonCachedFileSystem(URI uri, Configuration conf) throws IOException {
+    boolean origDisableHDFSCache =
+        conf.getBoolean("fs." + uri.getScheme() + ".impl.disable.cache", false);
+    // hadoop-20 compatible flag.
+    conf.setBoolean("fs." + uri.getScheme() + ".impl.disable.cache", true);
+    FileSystem fs = FileSystem.get(uri, conf);
+    conf.setBoolean("fs." + uri.getScheme() + ".impl.disable.cache", origDisableHDFSCache);
+    return fs;
+  }
+
+  @Override
+  public void getMergedCredentials(JobConf jobConf) throws IOException {
+    throw new IOException("Merging of credentials not supported in this version of hadoop");
+  }
+
+  protected void run(FsShell shell, String[] command) throws Exception {
+    LOG.debug(ArrayUtils.toString(command));
+    shell.run(command);
   }
 }

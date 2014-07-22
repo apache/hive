@@ -30,6 +30,7 @@ import org.apache.hive.service.cli.thrift.TCLIService.Iface;
 import org.apache.hive.service.cli.thrift.ThriftCLIService;
 import org.apache.thrift.TProcessor;
 import org.apache.thrift.TProcessorFactory;
+import org.apache.thrift.transport.TSaslClientTransport;
 import org.apache.thrift.transport.TTransport;
 
 public class KerberosSaslHelper {
@@ -57,7 +58,7 @@ public class KerberosSaslHelper {
   }
 
   public static TTransport getKerberosTransport(String principal, String host,
-      final TTransport underlyingTransport, Map<String, String> saslProps) throws SaslException {
+      final TTransport underlyingTransport, Map<String, String> saslProps, boolean assumeSubject) throws SaslException {
     try {
       final String names[] = principal.split("[/@]");
       if (names.length != 3) {
@@ -65,14 +66,41 @@ public class KerberosSaslHelper {
             + principal);
       }
 
-      HadoopThriftAuthBridge.Client authBridge =
-        ShimLoader.getHadoopThriftAuthBridge().createClientWithConf("kerberos");
-      return authBridge.createClientTransport(principal, host,
+      if (assumeSubject) {
+        return createSubjectAssumedTransport(principal, underlyingTransport, saslProps);
+      } else {
+        HadoopThriftAuthBridge.Client authBridge =
+          ShimLoader.getHadoopThriftAuthBridge().createClientWithConf("kerberos");
+        return authBridge.createClientTransport(principal, host,
           "KERBEROS", null, underlyingTransport, saslProps);
+      }
     } catch (IOException e) {
       throw new SaslException("Failed to open client transport", e);
     }
   }
 
+  public static TTransport createSubjectAssumedTransport(String principal, 
+		  TTransport underlyingTransport, Map<String, String> saslProps) throws IOException {
+    TTransport saslTransport = null;
+    final String names[] = principal.split("[/@]");
+    try {
+      saslTransport = new TSaslClientTransport("GSSAPI", null, names[0], names[1], saslProps, null, underlyingTransport);
+      return new TSubjectAssumingTransport(saslTransport);
+    } catch (SaslException se) {
+      throw new IOException("Could not instantiate SASL transport", se);
+    }
+  }
 
+  public static TTransport getTokenTransport(String tokenStr, String host,
+      final TTransport underlyingTransport, Map<String, String> saslProps) throws SaslException {
+    HadoopThriftAuthBridge.Client authBridge =
+      ShimLoader.getHadoopThriftAuthBridge().createClientWithConf("kerberos");
+
+    try {
+      return authBridge.createClientTransport(null, host,
+          "DIGEST", tokenStr, underlyingTransport, saslProps);
+    } catch (IOException e) {
+      throw new SaslException("Failed to open client transport", e);
+    }
+  }
 }

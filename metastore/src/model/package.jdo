@@ -771,7 +771,7 @@
     
     <class name="MMasterKey" table="MASTER_KEYS" identity-type="application" detachable="true">
 
-      <field name="keyId" primary-key="true" value-strategy="identity">
+      <field name="keyId" primary-key="true" value-strategy="native">
         <column name="KEY_ID" jdbc-type="integer" />
       </field>
         
@@ -824,6 +824,12 @@
       </field>
       <field name="doubleHighValue">
         <column name="DOUBLE_HIGH_VALUE" jdbc-type="DOUBLE" allows-null="true"/>
+      </field>
+      <field name="decimalLowValue">
+        <column name="BIG_DECIMAL_LOW_VALUE"  jdbc-type="VARCHAR" allows-null="true"/>
+      </field>
+      <field name="decimalHighValue">
+        <column name="BIG_DECIMAL_HIGH_VALUE" jdbc-type="VARCHAR" allows-null="true"/>
       </field>
       <field name="numNulls">
         <column name="NUM_NULLS" jdbc-type="BIGINT" allows-null="false"/>
@@ -882,6 +888,12 @@
       </field>
       <field name="doubleHighValue">
         <column name="DOUBLE_HIGH_VALUE" jdbc-type="DOUBLE" allows-null="true"/>
+      </field>
+      <field name="decimalLowValue">
+        <column name="BIG_DECIMAL_LOW_VALUE"  jdbc-type="VARCHAR" allows-null="true"/>
+      </field>
+      <field name="decimalHighValue">
+        <column name="BIG_DECIMAL_HIGH_VALUE" jdbc-type="VARCHAR" allows-null="true"/>
       </field>
       <field name="numNulls">
         <column name="NUM_NULLS" jdbc-type="BIGINT" allows-null="false"/>

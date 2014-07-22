@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.stats;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Task;
 
 /**
@@ -34,7 +35,7 @@ public class DummyStatsAggregator implements StatsAggregator {
   // This is a test. The parameter hive.test.dummystats.aggregator's value
   // denotes the method which needs to throw an error.
   public boolean connect(Configuration hconf, Task sourceTask) {
-    errorMethod = hconf.get("hive.test.dummystats.aggregator", "");
+    errorMethod = HiveConf.getVar(hconf, HiveConf.ConfVars.HIVETESTMODEDUMMYSTATAGGR);
     if (errorMethod.equalsIgnoreCase("connect")) {
       return false;
     }

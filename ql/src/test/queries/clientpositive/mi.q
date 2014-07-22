@@ -1,5 +1,8 @@
 set hive.exec.dynamic.partition=true;
 set hive.exec.dynamic.partition.mode=nonstrict;
+
+-- SORT_QUERY_RESULTS
+
 create table nzhang_t1 like srcpart;
 create table nzhang_t2 like srcpart;
 

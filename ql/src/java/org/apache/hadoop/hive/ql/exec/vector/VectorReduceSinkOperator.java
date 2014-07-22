@@ -19,12 +19,12 @@
 package org.apache.hadoop.hive.ql.exec.vector;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Random;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.ql.exec.PTFTopNHash;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.TopNHash;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
@@ -35,15 +35,14 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
-import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.Serializer;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardUnionObjectInspector.StandardUnion;
 import org.apache.hadoop.io.BytesWritable;
+import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.io.Writable;
 // import org.apache.hadoop.util.StringUtils;
 
 public class VectorReduceSinkOperator extends ReduceSinkOperator {
@@ -85,10 +84,19 @@ public class VectorReduceSinkOperator extends ReduceSinkOperator {
   private VectorExpression[] partitionEval;
 
   /**
+  * Evaluators for bucketing columns. This is used to compute bucket number.
+  */
+  private VectorExpression[] bucketEval;
+  private int buckColIdxInKey;
+
+  /**
    * The partition value writers. These know how to write the necessary writable type
    * based on partition column metadata, from the primitive vector type.
    */
   private transient VectorExpressionWriter[] partitionWriters;
+  private transient VectorExpressionWriter[] bucketWriters = null;
+
+  private static final boolean isDebugEnabled = LOG.isDebugEnabled();
 
   public VectorReduceSinkOperator(VectorizationContext vContext, OperatorDesc conf)
       throws HiveException {
@@ -98,6 +106,11 @@ public class VectorReduceSinkOperator extends ReduceSinkOperator {
     keyEval = vContext.getVectorExpressions(desc.getKeyCols());
     valueEval = vContext.getVectorExpressions(desc.getValueCols());
     partitionEval = vContext.getVectorExpressions(desc.getPartitionCols());
+    bucketEval = null;
+    if (desc.getBucketCols() != null && !desc.getBucketCols().isEmpty()) {
+      bucketEval = vContext.getVectorExpressions(desc.getBucketCols());
+      buckColIdxInKey = desc.getPartitionCols().size();
+    }
   }
 
   public VectorReduceSinkOperator() {
@@ -137,12 +150,17 @@ public class VectorReduceSinkOperator extends ReduceSinkOperator {
         colNames = String.format("%s %s", colNames, colName);
       }
 
-      LOG.debug(String.format("keyObjectInspector [%s]%s => %s",
+      if (isDebugEnabled) {
+        LOG.debug(String.format("keyObjectInspector [%s]%s => %s",
           keyObjectInspector.getClass(),
           keyObjectInspector,
           colNames));
+      }
 
       partitionWriters = VectorExpressionWriterFactory.getExpressionWriters(conf.getPartitionCols());
+      if (conf.getBucketCols() != null && !conf.getBucketCols().isEmpty()) {
+        bucketWriters = VectorExpressionWriterFactory.getExpressionWriters(conf.getBucketCols());
+      }
 
       TableDesc valueTableDesc = conf.getValueSerializeInfo();
       valueSerializer = (Serializer) valueTableDesc.getDeserializerClass()
@@ -164,15 +182,19 @@ public class VectorReduceSinkOperator extends ReduceSinkOperator {
               }
           });
 
-      colNames = "";
-      for(String colName : conf.getOutputValueColumnNames()) {
-        colNames = String.format("%s %s", colNames, colName);
+      if (isDebugEnabled) {
+        colNames = "";
+        for(String colName : conf.getOutputValueColumnNames()) {
+          colNames = String.format("%s %s", colNames, colName);
+        }
       }
 
-      LOG.debug(String.format("valueObjectInspector [%s]%s => %s",
-          valueObjectInspector.getClass(),
-          valueObjectInspector,
-          colNames));
+      if (isDebugEnabled) {
+        LOG.debug(String.format("valueObjectInspector [%s]%s => %s",
+            valueObjectInspector.getClass(),
+            valueObjectInspector,
+            colNames));
+      }
 
       int numKeys = numDistinctExprs > 0 ? numDistinctExprs : 1;
       int keyLen = numDistinctExprs > 0 ? numDistributionKeys + 1 :
@@ -187,8 +209,12 @@ public class VectorReduceSinkOperator extends ReduceSinkOperator {
       int limit = conf.getTopN();
       float memUsage = conf.getTopNMemoryUsage();
       if (limit >= 0 && memUsage > 0) {
+        reducerHash = conf.isPTFReduceSink() ? new PTFTopNHash() : reducerHash;
         reducerHash.initialize(limit, memUsage, conf.isMapGroupBy(), this);
       }
+
+      autoParallel = conf.isAutoParallel();
+
     } catch(Exception e) {
       throw new HiveException(e);
     }
@@ -198,11 +224,13 @@ public class VectorReduceSinkOperator extends ReduceSinkOperator {
   public void processOp(Object row, int tag) throws HiveException {
     VectorizedRowBatch vrg = (VectorizedRowBatch) row;
 
-    LOG.debug(String.format("sinking %d rows, %d values, %d keys, %d parts",
-        vrg.size,
-        valueEval.length,
-        keyEval.length,
-        partitionEval.length));
+    if (isDebugEnabled) {
+      LOG.debug(String.format("sinking %d rows, %d values, %d keys, %d parts",
+          vrg.size,
+          valueEval.length,
+          keyEval.length,
+          partitionEval.length));
+    }
 
     try {
       // Evaluate the keys
@@ -218,6 +246,11 @@ public class VectorReduceSinkOperator extends ReduceSinkOperator {
       // TODO: can we do this later/only for the keys that are needed? E.g. update vrg.selected.
       for (int i = 0; i < partitionEval.length; i++) {
         partitionEval[i].evaluate(vrg);
+      }
+      if (bucketEval != null) {
+        for (int i = 0; i < bucketEval.length; i++) {
+          bucketEval[i].evaluate(vrg);
+        }
       }
       // run the vector evaluations
       for (int i = 0; i < valueEval.length; i++) {
@@ -235,6 +268,13 @@ public class VectorReduceSinkOperator extends ReduceSinkOperator {
         }
         // First, make distrib key components for this row and determine distKeyLength.
         populatedCachedDistributionKeys(vrg, rowIndex, 0);
+
+        // replace bucketing columns with hashcode % numBuckets
+        int buckNum = -1;
+        if (bucketEval != null) {
+          buckNum = computeBucketNumber(vrg, rowIndex, conf.getNumBuckets());
+          cachedKeys[0][buckColIdxInKey] = new IntWritable(buckNum);
+        }
         HiveKey firstKey = toHiveKey(cachedKeys[0], tag, null);
         int distKeyLength = firstKey.getDistKeyLength();
         // Add first distinct expression, if any.
@@ -243,12 +283,26 @@ public class VectorReduceSinkOperator extends ReduceSinkOperator {
           firstKey = toHiveKey(cachedKeys[0], tag, distKeyLength);
         }
 
-        if (useTopN) {
-          reducerHash.tryStoreVectorizedKey(firstKey, batchIndex);
+        final int hashCode;
+
+        // distKeyLength doesn't include tag, but includes buckNum in cachedKeys[0]
+        if (autoParallel && partitionEval.length > 0) {
+          hashCode = computeMurmurHash(firstKey);
         } else {
-        // No TopN, just forward the first key and all others.
-          int hashCode = computeHashCode(vrg, rowIndex);
-          firstKey.setHashCode(hashCode);
+          hashCode = computeHashCode(vrg, rowIndex, buckNum);
+        }
+
+        firstKey.setHashCode(hashCode);
+
+        if (useTopN) {
+          /*
+           * in case of TopN for windowing, we need to distinguish between 
+           * rows with null partition keys and rows with value 0 for partition keys.
+           */
+          boolean partkeysNull = conf.isPTFReduceSink() && partitionKeysAreNull(vrg, rowIndex);
+          reducerHash.tryStoreVectorizedKey(firstKey, partkeysNull, batchIndex);
+        } else {
+          // No TopN, just forward the first key and all others.
           BytesWritable value = makeValueWritable(vrg, rowIndex);
           collect(firstKey, value);
           forwardExtraDistinctRows(vrg, rowIndex, hashCode, value, distKeyLength, tag, 0);
@@ -266,16 +320,17 @@ public class VectorReduceSinkOperator extends ReduceSinkOperator {
           rowIndex = vrg.selected[batchIndex];
         }
         // Compute value and hashcode - we'd either store or forward them.
-        int hashCode = computeHashCode(vrg, rowIndex);
         BytesWritable value = makeValueWritable(vrg, rowIndex);
         int distKeyLength = -1;
+        int hashCode;
         if (result == TopNHash.FORWARD) {
           HiveKey firstKey = reducerHash.getVectorizedKeyToForward(batchIndex);
-          firstKey.setHashCode(hashCode);
           distKeyLength = firstKey.getDistKeyLength();
+          hashCode = firstKey.hashCode();
           collect(firstKey, value);
         } else {
-          reducerHash.storeValue(result, value, hashCode, true);
+          hashCode = reducerHash.getVectorizedKeyHashCode(batchIndex);
+          reducerHash.storeValue(result, hashCode, value, true);
           distKeyLength = reducerHash.getVectorizedKeyDistLength(batchIndex);
         }
         // Now forward other the rows if there's multi-distinct (but see TODO in forward...).
@@ -371,7 +426,7 @@ public class VectorReduceSinkOperator extends ReduceSinkOperator {
     return (BytesWritable)valueSerializer.serialize(cachedValues, valueObjectInspector);
   }
 
-  private int computeHashCode(VectorizedRowBatch vrg, int rowIndex) throws HiveException {
+  private int computeHashCode(VectorizedRowBatch vrg, int rowIndex, int buckNum) throws HiveException {
     // Evaluate the HashCode
     int keyHashCode = 0;
     if (partitionEval.length == 0) {
@@ -394,7 +449,42 @@ public class VectorReduceSinkOperator extends ReduceSinkOperator {
                 partitionWriters[p].getObjectInspector());
       }
     }
-    return keyHashCode;
+    return buckNum < 0  ? keyHashCode : keyHashCode * 31 + buckNum;
+  }
+
+  private boolean partitionKeysAreNull(VectorizedRowBatch vrg, int rowIndex)
+      throws HiveException {
+    if (partitionEval.length != 0) {
+      for (int p = 0; p < partitionEval.length; p++) {
+        ColumnVector columnVector = vrg.cols[partitionEval[p].getOutputColumn()];
+        Object partitionValue = partitionWriters[p].writeValue(columnVector,
+            rowIndex);
+        if (partitionValue != null) {
+          return false;
+        }
+      }
+      return true;
+    }
+    return false;
+  }
+
+  private int computeBucketNumber(VectorizedRowBatch vrg, int rowIndex, int numBuckets) throws HiveException {
+    int bucketNum = 0;
+    for (int p = 0; p < bucketEval.length; p++) {
+      ColumnVector columnVector = vrg.cols[bucketEval[p].getOutputColumn()];
+      Object bucketValue = bucketWriters[p].writeValue(columnVector, rowIndex);
+      bucketNum = bucketNum
+          * 31
+          + ObjectInspectorUtils.hashCode(
+              bucketValue,
+              bucketWriters[p].getObjectInspector());
+    }
+
+    if (bucketNum < 0) {
+      bucketNum = -1 * bucketNum;
+    }
+
+    return bucketNum % numBuckets;
   }
 
   static public String getOperatorName() {

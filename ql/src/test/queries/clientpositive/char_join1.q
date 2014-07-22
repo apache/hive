@@ -1,3 +1,5 @@
+-- SORT_QUERY_RESULTS
+
 drop table char_join1_ch1;
 drop table char_join1_ch2;
 drop table char_join1_str;
@@ -22,13 +24,13 @@ load data local inpath '../../data/files/vc1.txt' into table char_join1_ch2;
 load data local inpath '../../data/files/vc1.txt' into table char_join1_str;
 
 -- Join char with same length char
-select * from char_join1_ch1 a join char_join1_ch1 b on (a.c2 = b.c2) order by a.c1;
+select * from char_join1_ch1 a join char_join1_ch1 b on (a.c2 = b.c2);
 
 -- Join char with different length char
-select * from char_join1_ch1 a join char_join1_ch2 b on (a.c2 = b.c2) order by a.c1;
+select * from char_join1_ch1 a join char_join1_ch2 b on (a.c2 = b.c2);
 
 -- Join char with string
-select * from char_join1_ch1 a join char_join1_str b on (a.c2 = b.c2) order by a.c1;
+select * from char_join1_ch1 a join char_join1_str b on (a.c2 = b.c2);
 
 drop table char_join1_ch1;
 drop table char_join1_ch2;

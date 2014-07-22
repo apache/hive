@@ -48,16 +48,18 @@ PREHOOK: query: show role grant user user_sauth
 PREHOOK: type: SHOW_ROLE_GRANT
 POSTHOOK: query: show role grant user user_sauth
 POSTHOOK: type: SHOW_ROLE_GRANT
-PUBLIC	-1			false	-1	
-src_role	-1	user_sauth	USER	false	-1	hive_admin_user
+public	false	-1	
+src_role	false	-1	hive_admin_user
 PREHOOK: query: --table grant to role
 
-grant select on table src_autho_test to role src_role
+-- also verify case insesitive behavior of role name
+grant select on table src_autho_test to role Src_ROle
 PREHOOK: type: GRANT_PRIVILEGE
 PREHOOK: Output: default@src_autho_test
 POSTHOOK: query: --table grant to role
 
-grant select on table src_autho_test to role src_role
+-- also verify case insesitive behavior of role name
+grant select on table src_autho_test to role Src_ROle
 POSTHOOK: type: GRANT_PRIVILEGE
 POSTHOOK: Output: default@src_autho_test
 PREHOOK: query: show grant role src_role on table src_autho_test
@@ -65,17 +67,17 @@ PREHOOK: type: SHOW_GRANT
 POSTHOOK: query: show grant role src_role on table src_autho_test
 POSTHOOK: type: SHOW_GRANT
 default	src_autho_test			src_role	ROLE	SELECT	false	-1	hive_admin_user
-PREHOOK: query: revoke select on table src_autho_test from role src_role
+PREHOOK: query: revoke select on table src_autho_test from role src_rolE
 PREHOOK: type: REVOKE_PRIVILEGE
 PREHOOK: Output: default@src_autho_test
-POSTHOOK: query: revoke select on table src_autho_test from role src_role
+POSTHOOK: query: revoke select on table src_autho_test from role src_rolE
 POSTHOOK: type: REVOKE_PRIVILEGE
 POSTHOOK: Output: default@src_autho_test
 PREHOOK: query: -- drop role
-drop role src_role
+drop role SRc_role
 PREHOOK: type: DROPROLE
 POSTHOOK: query: -- drop role
-drop role src_role
+drop role SRc_role
 POSTHOOK: type: DROPROLE
 PREHOOK: query: drop table src_autho_test
 PREHOOK: type: DROPTABLE

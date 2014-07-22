@@ -273,13 +273,4 @@ public class HiveDecimal implements Comparable<HiveDecimal> {
 
     return bd;
   }
-
-  /**
-   * Sets the {@link BigDecimal} value in this object.
-   * @param bigDecimal
-   */
-  public void setNormalize(BigDecimal bigDecimal) {
-    BigDecimal value = normalize(bigDecimal, true);
-    this.bd = value;
-  }
 }

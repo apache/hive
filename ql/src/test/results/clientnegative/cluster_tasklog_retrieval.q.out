@@ -2,10 +2,12 @@ PREHOOK: query: -- TaskLog retrieval upon Null Pointer Exception in Cluster
 
 CREATE TEMPORARY FUNCTION evaluate_npe AS 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFEvaluateNPE'
 PREHOOK: type: CREATEFUNCTION
+PREHOOK: Output: database:default
 POSTHOOK: query: -- TaskLog retrieval upon Null Pointer Exception in Cluster
 
 CREATE TEMPORARY FUNCTION evaluate_npe AS 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFEvaluateNPE'
 POSTHOOK: type: CREATEFUNCTION
+POSTHOOK: Output: database:default
 PREHOOK: query: FROM src
 SELECT evaluate_npe(src.key) LIMIT 1
 PREHOOK: type: QUERY

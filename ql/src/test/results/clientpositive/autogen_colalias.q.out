@@ -1,7 +1,9 @@
 PREHOOK: query: CREATE TEMPORARY FUNCTION test_max AS 'org.apache.hadoop.hive.ql.udf.UDAFTestMax'
 PREHOOK: type: CREATEFUNCTION
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TEMPORARY FUNCTION test_max AS 'org.apache.hadoop.hive.ql.udf.UDAFTestMax'
 POSTHOOK: type: CREATEFUNCTION
+POSTHOOK: Output: database:default
 PREHOOK: query: create table dest_grouped_old1 as select 1+1, 2+2 as zz, src.key, test_max(length(src.value)), count(src.value), sin(count(src.value)), count(sin(src.value)), unix_timestamp(), CAST(SUM(IF(value > 10, value, 1)) AS INT), if(src.key > 1,
 1,
 0)
@@ -17,18 +19,20 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dest_grouped_old1
 PREHOOK: query: describe dest_grouped_old1
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@dest_grouped_old1
 POSTHOOK: query: describe dest_grouped_old1
 POSTHOOK: type: DESCTABLE
-_c0                 	int                 	None                
-zz                  	int                 	None                
-key                 	string              	None                
-_c3                 	int                 	None                
-_c4                 	bigint              	None                
-_c5                 	double              	None                
-_c6                 	bigint              	None                
-_c7                 	bigint              	None                
-_c8                 	int                 	None                
-_c9                 	int                 	None                
+POSTHOOK: Input: default@dest_grouped_old1
+_c0                 	int                 	                    
+zz                  	int                 	                    
+key                 	string              	                    
+_c3                 	int                 	                    
+_c4                 	bigint              	                    
+_c5                 	double              	                    
+_c6                 	bigint              	                    
+_c7                 	bigint              	                    
+_c8                 	int                 	                    
+_c9                 	int                 	                    
 PREHOOK: query: create table dest_grouped_old2 as select distinct src.key from src
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
@@ -38,9 +42,11 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dest_grouped_old2
 PREHOOK: query: describe dest_grouped_old2
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@dest_grouped_old2
 POSTHOOK: query: describe dest_grouped_old2
 POSTHOOK: type: DESCTABLE
-key                 	string              	None                
+POSTHOOK: Input: default@dest_grouped_old2
+key                 	string              	                    
 PREHOOK: query: create table dest_grouped_new1 as select 1+1, 2+2 as zz, ((src.key % 2)+2)/2, test_max(length(src.value)), count(src.value), sin(count(src.value)), count(sin(src.value)), unix_timestamp(), CAST(SUM(IF(value > 10, value, 1)) AS INT), if(src.key > 10,
 	(src.key +5) % 2,
 0)
@@ -56,18 +62,20 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dest_grouped_new1
 PREHOOK: query: describe dest_grouped_new1
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@dest_grouped_new1
 POSTHOOK: query: describe dest_grouped_new1
 POSTHOOK: type: DESCTABLE
-column_0            	int                 	None                
-zz                  	int                 	None                
-column_2            	double              	None                
-test_max_length_src__3	int                 	None                
-count_src_value_4   	bigint              	None                
-sin_count_src_value_5	double              	None                
-count_sin_src_value_6	bigint              	None                
-unix_timestamp_7    	bigint              	None                
-sum_if_value_10_valu_8	int                 	None                
-if_src_key_10_src_ke_9	double              	None                
+POSTHOOK: Input: default@dest_grouped_new1
+column_0            	int                 	                    
+zz                  	int                 	                    
+column_2            	double              	                    
+test_max_length_src__3	int                 	                    
+count_src_value_4   	bigint              	                    
+sin_count_src_value_5	double              	                    
+count_sin_src_value_6	bigint              	                    
+unix_timestamp_7    	bigint              	                    
+sum_if_value_10_valu_8	int                 	                    
+if_src_key_10_src_ke_9	double              	                    
 PREHOOK: query: create table dest_grouped_new2 as select distinct src.key from src
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
@@ -77,12 +85,16 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dest_grouped_new2
 PREHOOK: query: describe dest_grouped_new2
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@dest_grouped_new2
 POSTHOOK: query: describe dest_grouped_new2
 POSTHOOK: type: DESCTABLE
-key                 	string              	None                
+POSTHOOK: Input: default@dest_grouped_new2
+key                 	string              	                    
 PREHOOK: query: -- Drop the temporary function at the end till HIVE-3160 gets fixed
 DROP TEMPORARY FUNCTION test_max
 PREHOOK: type: DROPFUNCTION
+PREHOOK: Output: database:default
 POSTHOOK: query: -- Drop the temporary function at the end till HIVE-3160 gets fixed
 DROP TEMPORARY FUNCTION test_max
 POSTHOOK: type: DROPFUNCTION
+POSTHOOK: Output: database:default

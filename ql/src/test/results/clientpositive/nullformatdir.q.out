@@ -21,12 +21,14 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@base_tab
 PREHOOK: query: DESCRIBE EXTENDED base_tab
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@base_tab
 POSTHOOK: query: DESCRIBE EXTENDED base_tab
 POSTHOOK: type: DESCTABLE
-a                   	string              	None                
-b                   	string              	None                
-c                   	string              	None                
-d                   	string              	None                
+POSTHOOK: Input: default@base_tab
+a                   	string              	                    
+b                   	string              	                    
+c                   	string              	                    
+d                   	string              	                    
 	 	 
 #### A masked pattern was here ####
    ROW FORMAT DELIMITED NULL DEFINED AS 'fooNull' SELECT a,b FROM base_tab

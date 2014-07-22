@@ -31,9 +31,11 @@ POSTHOOK: Input: default@tbl_protectmode__no_drop
 POSTHOOK: Output: default@tbl_protectmode__no_drop
 PREHOOK: query: desc extended tbl_protectmode__no_drop
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tbl_protectmode__no_drop
 POSTHOOK: query: desc extended tbl_protectmode__no_drop
 POSTHOOK: type: DESCTABLE
-col                 	string              	None                
+POSTHOOK: Input: default@tbl_protectmode__no_drop
+col                 	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: drop table tbl_protectmode__no_drop

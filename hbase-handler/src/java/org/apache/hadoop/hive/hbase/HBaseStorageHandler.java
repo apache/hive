@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.hbase;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -29,6 +28,7 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.HColumnDescriptor;
@@ -40,7 +40,8 @@ import org.apache.hadoop.hbase.mapreduce.TableInputFormatBase;
 import org.apache.hadoop.hbase.mapreduce.TableMapReduceUtil;
 import org.apache.hadoop.hbase.security.User;
 import org.apache.hadoop.hbase.util.Bytes;
-import org.apache.hadoop.hive.hbase.HBaseSerDe.ColumnMapping;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.hbase.ColumnMappings.ColumnMapping;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -150,12 +151,14 @@ public class HBaseStorageHandler extends DefaultStorageHandler
       throw new MetaException("LOCATION may not be specified for HBase.");
     }
 
+    HTable htable = null;
+
     try {
       String tableName = getHBaseTableName(tbl);
       Map<String, String> serdeParam = tbl.getSd().getSerdeInfo().getParameters();
       String hbaseColumnsMapping = serdeParam.get(HBaseSerDe.HBASE_COLUMNS_MAPPING);
 
-      List<ColumnMapping> columnsMapping = HBaseSerDe.parseColumnsMapping(hbaseColumnsMapping);
+      ColumnMappings columnMappings = HBaseSerDe.parseColumnsMapping(hbaseColumnsMapping);
 
       HTableDescriptor tableDesc;
 
@@ -166,7 +169,7 @@ public class HBaseStorageHandler extends DefaultStorageHandler
           tableDesc = new HTableDescriptor(tableName);
           Set<String> uniqueColumnFamilies = new HashSet<String>();
 
-          for (ColumnMapping colMap : columnsMapping) {
+          for (ColumnMapping colMap : columnMappings) {
             if (!colMap.hbaseRowKey) {
               uniqueColumnFamilies.add(colMap.familyName);
             }
@@ -192,8 +195,7 @@ public class HBaseStorageHandler extends DefaultStorageHandler
         // make sure the schema mapping is right
         tableDesc = getHBaseAdmin().getTableDescriptor(Bytes.toBytes(tableName));
 
-        for (int i = 0; i < columnsMapping.size(); i++) {
-          ColumnMapping colMap = columnsMapping.get(i);
+        for (ColumnMapping colMap : columnMappings) {
 
           if (colMap.hbaseRowKey) {
             continue;
@@ -207,9 +209,13 @@ public class HBaseStorageHandler extends DefaultStorageHandler
       }
 
       // ensure the table is online
-      new HTable(hbaseConf, tableDesc.getName());
+      htable = new HTable(hbaseConf, tableDesc.getName());
     } catch (Exception se) {
       throw new MetaException(StringUtils.stringifyException(se));
+    } finally {
+      if (htable != null) {
+        IOUtils.closeQuietly(htable);
+      }
     }
   }
 
@@ -257,7 +263,10 @@ public class HBaseStorageHandler extends DefaultStorageHandler
 
   @Override
   public Class<? extends OutputFormat> getOutputFormatClass() {
-    return org.apache.hadoop.hive.hbase.HiveHBaseTableOutputFormat.class;
+    if (isHBaseGenerateHFiles(jobConf)) {
+      return HiveHFileOutputFormat.class;
+    }
+    return HiveHBaseTableOutputFormat.class;
   }
 
   @Override
@@ -344,8 +353,28 @@ public class HBaseStorageHandler extends DefaultStorageHandler
       } //input job properties
     }
     else {
-      jobProperties.put(TableOutputFormat.OUTPUT_TABLE, tableName);
+      if (isHBaseGenerateHFiles(jobConf)) {
+        // only support bulkload when a hfile.family.path has been specified.
+        // TODO: support detecting cf's from column mapping
+        // TODO: support loading into multiple CF's at a time
+        String path = HiveHFileOutputFormat.getFamilyPath(jobConf, tableProperties);
+        if (path == null || path.isEmpty()) {
+          throw new RuntimeException("Please set " + HiveHFileOutputFormat.HFILE_FAMILY_PATH + " to target location for HFiles");
+        }
+        // TODO: should call HiveHFileOutputFormat#setOutputPath
+        jobProperties.put("mapred.output.dir", path);
+      } else {
+        jobProperties.put(TableOutputFormat.OUTPUT_TABLE, tableName);
+      }
     } // output job properties
+  }
+
+  /**
+   * Return true when HBaseStorageHandler should generate hfiles instead of operate against the
+   * online table. This mode is implicitly applied when "hive.hbase.generatehfiles" is true.
+   */
+  public static boolean isHBaseGenerateHFiles(Configuration conf) {
+    return HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_HBASE_GENERATE_HFILES);
   }
 
   /**
@@ -378,6 +407,7 @@ public class HBaseStorageHandler extends DefaultStorageHandler
   @Override
   public void configureJobConf(TableDesc tableDesc, JobConf jobConf) {
     try {
+      HBaseSerDe.configureJobConf(tableDesc, jobConf);
       /*
        * HIVE-6356
        * The following code change is only needed for hbase-0.96.0 due to HBASE-9165, and
@@ -392,7 +422,7 @@ public class HBaseStorageHandler extends DefaultStorageHandler
       TableMapReduceUtil.addDependencyJars(copy);
       merged.addAll(copy.getConfiguration().getStringCollection("tmpjars"));
       jobConf.set("tmpjars", StringUtils.arrayToString(merged.toArray(new String[0])));
-    } catch (IOException e) {
+    } catch (Exception e) {
       throw new RuntimeException(e);
     }
   }
@@ -403,22 +433,21 @@ public class HBaseStorageHandler extends DefaultStorageHandler
     Deserializer deserializer,
     ExprNodeDesc predicate)
   {
-    String columnNameProperty = jobConf.get(
-      org.apache.hadoop.hive.serde.serdeConstants.LIST_COLUMNS);
-    List<String> columnNames =
-      Arrays.asList(columnNameProperty.split(","));
+    HBaseKeyFactory keyFactory = ((HBaseSerDe) deserializer).getKeyFactory();
+    return keyFactory.decomposePredicate(jobConf, deserializer, predicate);
+  }
 
-    HBaseSerDe hbaseSerde = (HBaseSerDe) deserializer;
-    int keyColPos = hbaseSerde.getKeyColumnOffset();
-    String keyColType = jobConf.get(org.apache.hadoop.hive.serde.serdeConstants.LIST_COLUMN_TYPES).
-        split(",")[keyColPos];
-    IndexPredicateAnalyzer analyzer =
-      HiveHBaseTableInputFormat.newIndexPredicateAnalyzer(columnNames.get(keyColPos), keyColType,
-        hbaseSerde.getStorageFormatOfCol(keyColPos).get(0));
+  public static DecomposedPredicate decomposePredicate(
+      JobConf jobConf,
+      HBaseSerDe hBaseSerDe,
+      ExprNodeDesc predicate) {
+    ColumnMapping keyMapping = hBaseSerDe.getHBaseSerdeParam().getKeyColumnMapping();
+    IndexPredicateAnalyzer analyzer = HiveHBaseTableInputFormat.newIndexPredicateAnalyzer(
+        keyMapping.columnName, keyMapping.columnType, keyMapping.binaryStorage.get(0));
     List<IndexSearchCondition> searchConditions =
-      new ArrayList<IndexSearchCondition>();
+        new ArrayList<IndexSearchCondition>();
     ExprNodeGenericFuncDesc residualPredicate =
-      (ExprNodeGenericFuncDesc)analyzer.analyzePredicate(predicate, searchConditions);
+        (ExprNodeGenericFuncDesc)analyzer.analyzePredicate(predicate, searchConditions);
     int scSize = searchConditions.size();
     if (scSize < 1 || 2 < scSize) {
       // Either there was nothing which could be pushed down (size = 0),

@@ -17,38 +17,27 @@
  */
 package org.apache.hadoop.hive.ql.udf;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncDegreesDoubleToDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncDegreesLongToDouble;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 
-@Description(
-    name = "UDFDegrees",
-    value = "_FUNC_(x) - Converts radians to degrees",
-    extended = "Example:\n" +
-        "  > SELECT _FUNC_(30) FROM src LIMIT 1;\n" +
-        "  -1\n"
-    )
+@Description(name = "UDFDegrees",
+             value = "_FUNC_(x) - Converts radians to degrees",
+             extended = "Example:\n"
+                        + "  > SELECT _FUNC_(30) FROM src LIMIT 1;\n"
+                        + "  -1\n"
+)
 @VectorizedExpressions({FuncDegreesLongToDouble.class, FuncDegreesDoubleToDouble.class})
 public class UDFDegrees extends UDFMath {
 
-  @SuppressWarnings("unused")
-  private static Log LOG = LogFactory.getLog(UDFDegrees.class.getName());
-  DoubleWritable result = new DoubleWritable();
+  private final DoubleWritable result = new DoubleWritable();
 
-  public UDFDegrees() {
-  }
-
-  public DoubleWritable evaluate(DoubleWritable i)  {
-    if (i == null) {
-      return null;
-    } else {
-      result.set(Math.toDegrees(i.get()));
-      return result;
-    }
+  @Override
+  protected DoubleWritable doEvaluate(DoubleWritable a) {
+    result.set(Math.toDegrees(a.get()));
+    return result;
   }
 
 }

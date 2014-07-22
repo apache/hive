@@ -24,6 +24,7 @@ import java.io.RandomAccessFile;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
@@ -58,6 +59,7 @@ public class CloudExecutionContextProvider implements ExecutionContextProvider {
   public static final String API_KEY = "apiKey";
   public static final String ACCESS_KEY = "accessKey";
   public static final String NUM_HOSTS = "numHosts";
+  public static final String MAX_HOSTS_PER_CREATE_REQUEST = "maxHostsPerCreateRequest";
   public static final String GROUP_NAME = "groupName";
   public static final String IMAGE_ID = "imageId";
   public static final String KEY_PAIR = "keyPair";
@@ -74,9 +76,11 @@ public class CloudExecutionContextProvider implements ExecutionContextProvider {
   private final String[] mSlaveLocalDirs;
   private final int mNumThreads;
   private final int mNumHosts;
+  private final int mMaxHostsPerCreateRequest;
   private final long mRetrySleepInterval;
   private final CloudComputeService mCloudComputeService;
   private final Map<String, Long> mTerminatedHosts;
+  private final Map<String, Long> mLiveHosts;
   private final ExecutorService mTerminationExecutor;
   private final File mWorkingDir;
   private final SSHCommandExecutor mSSHCommandExecutor;
@@ -85,8 +89,9 @@ public class CloudExecutionContextProvider implements ExecutionContextProvider {
   CloudExecutionContextProvider(String dataDir,
       int numHosts, CloudComputeService cloudComputeService, SSHCommandExecutor sshCommandExecutor,
       String workingDirectory, String privateKey, String user, String[] slaveLocalDirs, int numThreads,
-      long retrySleepInterval) throws IOException {
+      long retrySleepInterval, int maxHostsPerCreateRequest) throws IOException {
     mNumHosts = numHosts;
+    mMaxHostsPerCreateRequest = maxHostsPerCreateRequest;
     mCloudComputeService = cloudComputeService;
     mPrivateKey = privateKey;
     mUser = user;
@@ -95,6 +100,7 @@ public class CloudExecutionContextProvider implements ExecutionContextProvider {
     mRetrySleepInterval = retrySleepInterval;
     mSSHCommandExecutor = sshCommandExecutor;
     mWorkingDir = Dirs.create(new File(workingDirectory, "working"));
+    mLiveHosts = Collections.synchronizedMap(new HashMap<String, Long>());
     mTerminatedHosts = Collections
         .synchronizedMap(new LinkedHashMap<String, Long>() {
           private static final long serialVersionUID = 1L;
@@ -110,6 +116,7 @@ public class CloudExecutionContextProvider implements ExecutionContextProvider {
   }
 
   private void initialize() throws IOException {
+    LOG.info("CloudExecutionContextProvider maxHostsPerCreateRequest = " + mMaxHostsPerCreateRequest);
     Set<String> hosts = Sets.newHashSet();
     String host = null;
     mHostLog.seek(0); // should already be true
@@ -164,7 +171,7 @@ public class CloudExecutionContextProvider implements ExecutionContextProvider {
       terminate(hostsToTerminate, true);
       Set<NodeMetadata> nodes = createNodes(hostsToTerminate.size());
       for (NodeMetadata node : nodes) {
-        executionContext.addHost(new Host(node.getHostname(), mUser, mSlaveLocalDirs,
+        executionContext.addHost(new Host(publicIp(node), mUser, mSlaveLocalDirs,
             mNumThreads));
       }
     }
@@ -179,8 +186,8 @@ public class CloudExecutionContextProvider implements ExecutionContextProvider {
       Set<NodeMetadata> nodes = createNodes(mNumHosts);
       Set<Host> hosts = Sets.newHashSet();
       for (NodeMetadata node : nodes) {
-        hosts.add(new Host(node.getHostname(), mUser, mSlaveLocalDirs,
-            mNumThreads));
+        hosts.add(new Host(publicIp(node), mUser, mSlaveLocalDirs,
+          mNumThreads));
       }
       return new ExecutionContext(this, hosts, mWorkingDir.getAbsolutePath(),
           mPrivateKey);
@@ -204,7 +211,7 @@ public class CloudExecutionContextProvider implements ExecutionContextProvider {
       boolean error = false;
       LOG.info("Attempting to create " + numRequired + " nodes");
       try {
-        result.addAll(mCloudComputeService.createNodes(Math.min(2, numRequired)));
+        result.addAll(mCloudComputeService.createNodes(Math.min(mMaxHostsPerCreateRequest, numRequired)));
       } catch (RunNodesException e) {
         error = true;
         LOG.warn("Error creating nodes", e);
@@ -212,6 +219,9 @@ public class CloudExecutionContextProvider implements ExecutionContextProvider {
         result.addAll(e.getSuccessfulNodes());
       }
       result = verifyHosts(result);
+      for (NodeMetadata node : result) {
+        mLiveHosts.put(publicIpOrHostname(node), System.currentTimeMillis());
+      }
       LOG.info("Successfully created " + result.size() + " nodes");
       numRequired = numHosts - result.size();
       if (numRequired > 0) {
@@ -247,6 +257,23 @@ public class CloudExecutionContextProvider implements ExecutionContextProvider {
     }
   }
 
+
+  private static String publicIpOrHostname(NodeMetadata node) {
+    Set<String> publicIps = node.getPublicAddresses();
+    if (publicIps.size() == 1) {
+      return Iterables.getOnlyElement(publicIps);
+    }
+    return node.getHostname();
+  }
+
+  private static String publicIp(NodeMetadata node) {
+    Set<String> publicIps = node.getPublicAddresses();
+    if (publicIps.size() == 1) {
+      return Iterables.getOnlyElement(publicIps);
+    }
+    throw new IllegalStateException("Node does not have exactly one public ip: " + node);
+  }
+
   private Set<NodeMetadata> verifyHosts(Set<? extends NodeMetadata> hosts)
       throws CreateHostsFailedException {
     final Set<NodeMetadata> result = Collections.synchronizedSet(new HashSet<NodeMetadata>());
@@ -258,7 +285,8 @@ public class CloudExecutionContextProvider implements ExecutionContextProvider {
           executorService.submit(new Runnable() {
             @Override
             public void run() {
-              SSHCommand command = new SSHCommand(mSSHCommandExecutor, mPrivateKey, mUser, node.getHostname(), 0, "pkill -f java");
+              String ip = publicIpOrHostname(node);
+              SSHCommand command = new SSHCommand(mSSHCommandExecutor, mPrivateKey, mUser, ip, 0, "pkill -f java");
               mSSHCommandExecutor.execute(command);
               if(command.getExitCode() == Constants.EXIT_CODE_UNKNOWN ||
                   command.getException() != null) {
@@ -293,10 +321,13 @@ public class CloudExecutionContextProvider implements ExecutionContextProvider {
       terminatedHosts.putAll(mTerminatedHosts);
     }
     for (NodeMetadata node : getRunningNodes()) {
-      if (terminatedHosts.containsKey(node.getHostname())) {
+      String ip = publicIpOrHostname(node);
+      if (terminatedHosts.containsKey(ip)) {
         terminateInternal(node);
         LOG.warn("Found zombie node: " + node + " previously terminated at "
-            + new Date(terminatedHosts.get(node.getHostname())));
+            + new Date(terminatedHosts.get(ip)));
+      } else if(!mLiveHosts.containsKey(ip)) {
+        LOG.warn("Found zombie node: " + node + " previously unknown to ptest");
       }
     }
   }
@@ -318,6 +349,7 @@ public class CloudExecutionContextProvider implements ExecutionContextProvider {
 
   private void terminateInternal(final NodeMetadata node) {
     LOG.info("Submitting termination for " + node);
+    mLiveHosts.remove(publicIpOrHostname(node));
     mTerminationExecutor.submit(new Runnable() {
       @Override
       public void run() {
@@ -328,9 +360,10 @@ public class CloudExecutionContextProvider implements ExecutionContextProvider {
          Thread.currentThread().interrupt();
         }
         try {
-          LOG.info("Terminating " + node.getHostname());
-          if (!mTerminatedHosts.containsKey(node.getHostname())) {
-            mTerminatedHosts.put(node.getHostname(), System.currentTimeMillis());
+          String ip = publicIpOrHostname(node);
+          LOG.info("Terminating " + ip);
+          if (!mTerminatedHosts.containsKey(ip)) {
+            mTerminatedHosts.put(ip, System.currentTimeMillis());
           }
           mCloudComputeService.destroyNode(node.getId());
         } catch (Exception e) {
@@ -343,8 +376,9 @@ public class CloudExecutionContextProvider implements ExecutionContextProvider {
   private void persistHostnamesToLog(Set<? extends NodeMetadata> nodes) {
     for (NodeMetadata node : nodes) {
       try {
-        if(!Strings.nullToEmpty(node.getHostname()).trim().isEmpty()) {
-          mHostLog.writeBytes(node.getHostname() + "\n");
+        String ip = publicIpOrHostname(node);
+        if(!Strings.nullToEmpty(ip).trim().isEmpty()) {
+          mHostLog.writeBytes(ip + "\n");
         }
       } catch (IOException e) {
         Throwables.propagate(e);
@@ -364,7 +398,8 @@ public class CloudExecutionContextProvider implements ExecutionContextProvider {
     LOG.info("Requesting termination of " + hosts);
     Set<NodeMetadata> nodesToTerminate = Sets.newHashSet();
     for (NodeMetadata node : getRunningNodes()) {
-      if (hosts.contains(node.getHostname())) {
+      String ip = publicIpOrHostname(node);
+      if (hosts.contains(ip)) {
         nodesToTerminate.add(node);
       }
     }
@@ -391,6 +426,7 @@ public class CloudExecutionContextProvider implements ExecutionContextProvider {
         API_KEY + " is required");
     String accessKey = Preconditions.checkNotNull(
         context.getString(ACCESS_KEY), ACCESS_KEY + " is required");
+    int maxHostsPerCreateRequest = context.getInteger(MAX_HOSTS_PER_CREATE_REQUEST, 2);
     Integer numHosts = context.getInteger(NUM_HOSTS, 8);
     Preconditions.checkArgument(numHosts > 0, NUM_HOSTS
         + " must be greater than zero");
@@ -401,10 +437,9 @@ public class CloudExecutionContextProvider implements ExecutionContextProvider {
         KEY_PAIR + " is required");
     String securityGroup = Preconditions.checkNotNull(
         context.getString(SECURITY_GROUP), SECURITY_GROUP + " is required");
-    Float maxBid = Preconditions.checkNotNull(context.getFloat(MAX_BID),
-        MAX_BID + " is required");
-    Preconditions.checkArgument(maxBid > 0, MAX_BID
-        + " must be greater than zero");
+    Float maxBid = context.getFloat(MAX_BID);
+    Preconditions.checkArgument(maxBid == null || maxBid > 0, MAX_BID
+        + " must be null or greater than zero");
     String privateKey = Preconditions.checkNotNull(
         context.getString(PRIVATE_KEY), PRIVATE_KEY + " is required");
     String user = context.getString(USERNAME, "hiveptest");
@@ -417,7 +452,7 @@ public class CloudExecutionContextProvider implements ExecutionContextProvider {
         instanceType, groupName, imageId, keyPair, securityGroup, maxBid);
     CloudExecutionContextProvider service = new CloudExecutionContextProvider(
         dataDir, numHosts, cloudComputeService, new SSHCommandExecutor(LOG), workingDirectory,
-        privateKey, user, localDirs, numThreads, 60);
+        privateKey, user, localDirs, numThreads, 60, maxHostsPerCreateRequest);
     return service;
   }
 }

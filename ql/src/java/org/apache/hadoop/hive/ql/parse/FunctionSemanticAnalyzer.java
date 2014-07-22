@@ -24,6 +24,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.ResourceType;
 import org.apache.hadoop.hive.metastore.api.ResourceUri;
@@ -31,6 +32,7 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.FunctionUtils;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
+import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.CreateFunctionDesc;
@@ -80,6 +82,8 @@ public class FunctionSemanticAnalyzer extends BaseSemanticAnalyzer {
     CreateFunctionDesc desc =
         new CreateFunctionDesc(functionName, isTemporaryFunction, className, resources);
     rootTasks.add(TaskFactory.get(new FunctionWork(desc), conf));
+
+    addEntities(functionName, isTemporaryFunction);
   }
 
   private void analyzeDropFunction(ASTNode ast) throws SemanticException {
@@ -103,6 +107,8 @@ public class FunctionSemanticAnalyzer extends BaseSemanticAnalyzer {
     boolean isTemporaryFunction = (ast.getFirstChildWithType(HiveParser.TOK_TEMPORARY) != null);
     DropFunctionDesc desc = new DropFunctionDesc(functionName, isTemporaryFunction);
     rootTasks.add(TaskFactory.get(new FunctionWork(desc), conf));
+
+    addEntities(functionName, isTemporaryFunction);
   }
 
   private ResourceType getResourceType(ASTNode token) throws SemanticException {
@@ -143,5 +149,29 @@ public class FunctionSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     return resources;
+  }
+
+  /**
+   * Add write entities to the semantic analyzer to restrict function creation to priviliged users.
+   */
+  private void addEntities(String functionName, boolean isTemporaryFunction)
+      throws SemanticException {
+    Database database = null;
+    if (isTemporaryFunction) {
+      // This means temp function creation is also restricted.
+      database = getDatabase(MetaStoreUtils.DEFAULT_DATABASE_NAME);
+    } else {
+      try {
+        String[] qualifiedNameParts = FunctionUtils.getQualifiedFunctionNameParts(functionName);
+        String dbName = qualifiedNameParts[0];
+        database = getDatabase(dbName);
+      } catch (HiveException e) {
+        LOG.error(e);
+        throw new SemanticException(e);
+      }
+    }
+    if (database != null) {
+      outputs.add(new WriteEntity(database, WriteEntity.WriteType.DDL_NO_LOCK));
+    }
   }
 }

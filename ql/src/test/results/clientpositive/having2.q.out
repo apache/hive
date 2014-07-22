@@ -1,0 +1,243 @@
+PREHOOK: query: CREATE TABLE TestV1_Staples (
+      Item_Count INT,
+      Ship_Priority STRING,
+      Order_Priority STRING,
+      Order_Status STRING,
+      Order_Quantity DOUBLE,
+      Sales_Total DOUBLE,
+      Discount DOUBLE,
+      Tax_Rate DOUBLE,
+      Ship_Mode STRING,
+      Fill_Time DOUBLE,
+      Gross_Profit DOUBLE,
+      Price DOUBLE,
+      Ship_Handle_Cost DOUBLE,
+      Employee_Name STRING,
+      Employee_Dept STRING,
+      Manager_Name STRING,
+      Employee_Yrs_Exp DOUBLE,
+      Employee_Salary DOUBLE,
+      Customer_Name STRING,
+      Customer_State STRING,
+      Call_Center_Region STRING,
+      Customer_Balance DOUBLE,
+      Customer_Segment STRING,
+      Prod_Type1 STRING,
+      Prod_Type2 STRING,
+      Prod_Type3 STRING,
+      Prod_Type4 STRING,
+      Product_Name STRING,
+      Product_Container STRING,
+      Ship_Promo STRING,
+      Supplier_Name STRING,
+      Supplier_Balance DOUBLE,
+      Supplier_Region STRING,
+      Supplier_State STRING,
+      Order_ID STRING,
+      Order_Year INT,
+      Order_Month INT,
+      Order_Day INT,
+      Order_Date_ STRING,
+      Order_Quarter STRING,
+      Product_Base_Margin DOUBLE,
+      Product_ID STRING,
+      Receive_Time DOUBLE,
+      Received_Date_ STRING,
+      Ship_Date_ STRING,
+      Ship_Charge DOUBLE,
+      Total_Cycle_Time DOUBLE,
+      Product_In_Stock STRING,
+      PID INT,
+      Market_Segment STRING
+      )
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: CREATE TABLE TestV1_Staples (
+      Item_Count INT,
+      Ship_Priority STRING,
+      Order_Priority STRING,
+      Order_Status STRING,
+      Order_Quantity DOUBLE,
+      Sales_Total DOUBLE,
+      Discount DOUBLE,
+      Tax_Rate DOUBLE,
+      Ship_Mode STRING,
+      Fill_Time DOUBLE,
+      Gross_Profit DOUBLE,
+      Price DOUBLE,
+      Ship_Handle_Cost DOUBLE,
+      Employee_Name STRING,
+      Employee_Dept STRING,
+      Manager_Name STRING,
+      Employee_Yrs_Exp DOUBLE,
+      Employee_Salary DOUBLE,
+      Customer_Name STRING,
+      Customer_State STRING,
+      Call_Center_Region STRING,
+      Customer_Balance DOUBLE,
+      Customer_Segment STRING,
+      Prod_Type1 STRING,
+      Prod_Type2 STRING,
+      Prod_Type3 STRING,
+      Prod_Type4 STRING,
+      Product_Name STRING,
+      Product_Container STRING,
+      Ship_Promo STRING,
+      Supplier_Name STRING,
+      Supplier_Balance DOUBLE,
+      Supplier_Region STRING,
+      Supplier_State STRING,
+      Order_ID STRING,
+      Order_Year INT,
+      Order_Month INT,
+      Order_Day INT,
+      Order_Date_ STRING,
+      Order_Quarter STRING,
+      Product_Base_Margin DOUBLE,
+      Product_ID STRING,
+      Receive_Time DOUBLE,
+      Received_Date_ STRING,
+      Ship_Date_ STRING,
+      Ship_Charge DOUBLE,
+      Total_Cycle_Time DOUBLE,
+      Product_In_Stock STRING,
+      PID INT,
+      Market_Segment STRING
+      )
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@TestV1_Staples
+PREHOOK: query: explain
+SELECT customer_name, SUM(customer_balance), SUM(order_quantity) FROM default.testv1_staples s1 GROUP BY customer_name HAVING (
+(COUNT(s1.discount) <= 822) AND
+(SUM(customer_balance) <= 4074689.000000041)
+)
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+SELECT customer_name, SUM(customer_balance), SUM(order_quantity) FROM default.testv1_staples s1 GROUP BY customer_name HAVING (
+(COUNT(s1.discount) <= 822) AND
+(SUM(customer_balance) <= 4074689.000000041)
+)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: s1
+            Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+            Select Operator
+              expressions: customer_name (type: string), customer_balance (type: double), order_quantity (type: double), discount (type: double)
+              outputColumnNames: customer_name, customer_balance, order_quantity, discount
+              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+              Group By Operator
+                aggregations: sum(customer_balance), sum(order_quantity), count(discount)
+                keys: customer_name (type: string)
+                mode: hash
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  value expressions: _col1 (type: double), _col2 (type: double), _col3 (type: bigint)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: sum(VALUE._col0), sum(VALUE._col1), count(VALUE._col2)
+          keys: KEY._col0 (type: string)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1, _col2, _col3
+          Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+          Filter Operator
+            predicate: ((_col3 <= 822) and (_col1 <= 4074689.000000041)) (type: boolean)
+            Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+            Select Operator
+              expressions: _col0 (type: string), _col1 (type: double), _col2 (type: double)
+              outputColumnNames: _col0, _col1, _col2
+              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+              File Output Operator
+                compressed: false
+                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain
+SELECT customer_name, SUM(customer_balance), SUM(order_quantity) FROM default.testv1_staples s1 GROUP BY customer_name HAVING (
+(SUM(customer_balance) <= 4074689.000000041)
+AND (COUNT(s1.discount) <= 822)
+)
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+SELECT customer_name, SUM(customer_balance), SUM(order_quantity) FROM default.testv1_staples s1 GROUP BY customer_name HAVING (
+(SUM(customer_balance) <= 4074689.000000041)
+AND (COUNT(s1.discount) <= 822)
+)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: s1
+            Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+            Select Operator
+              expressions: customer_name (type: string), customer_balance (type: double), order_quantity (type: double), discount (type: double)
+              outputColumnNames: customer_name, customer_balance, order_quantity, discount
+              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+              Group By Operator
+                aggregations: sum(customer_balance), sum(order_quantity), count(discount)
+                keys: customer_name (type: string)
+                mode: hash
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  value expressions: _col1 (type: double), _col2 (type: double), _col3 (type: bigint)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: sum(VALUE._col0), sum(VALUE._col1), count(VALUE._col2)
+          keys: KEY._col0 (type: string)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1, _col2, _col3
+          Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+          Filter Operator
+            predicate: ((_col1 <= 4074689.000000041) and (_col3 <= 822)) (type: boolean)
+            Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+            Select Operator
+              expressions: _col0 (type: string), _col1 (type: double), _col2 (type: double)
+              outputColumnNames: _col0, _col1, _col2
+              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+              File Output Operator
+                compressed: false
+                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+

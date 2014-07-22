@@ -20,12 +20,12 @@ package org.apache.hive.jdbc;
 
 import java.net.URI;
 import java.sql.SQLException;
-import java.sql.Types;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.thrift.TStatus;
 import org.apache.hive.service.cli.thrift.TStatusCode;
 
@@ -51,9 +51,9 @@ public class Utils {
     private String host = null;
     private int port;
     private String dbName = DEFAULT_DATABASE;
-    private Map<String,String> hiveConfs = new HashMap<String,String>();
-    private Map<String,String> hiveVars = new HashMap<String,String>();
-    private Map<String,String> sessionVars = new HashMap<String,String>();
+    private Map<String,String> hiveConfs = new LinkedHashMap<String,String>();
+    private Map<String,String> hiveVars = new LinkedHashMap<String,String>();
+    private Map<String,String> sessionVars = new LinkedHashMap<String,String>();
     private boolean isEmbeddedMode = false;
 
     public JdbcConnectionParams() {
@@ -118,9 +118,8 @@ public class Utils {
   public static void verifySuccess(TStatus status, boolean withInfo) throws SQLException {
     if ((status.getStatusCode() != TStatusCode.SUCCESS_STATUS) &&
         (withInfo && (status.getStatusCode() != TStatusCode.SUCCESS_WITH_INFO_STATUS))) {
-      throw new SQLException(status.getErrorMessage(),
-           status.getSqlState(), status.getErrorCode());
-      }
+        throw new HiveSQLException(status);
+    }
   }
 
   /**
@@ -145,7 +144,7 @@ public class Utils {
     JdbcConnectionParams connParams = new JdbcConnectionParams();
 
     if (!uri.startsWith(URL_PREFIX)) {
-      throw new IllegalArgumentException("Bad URL format");
+      throw new IllegalArgumentException("Bad URL format: Missing prefix " + URL_PREFIX);
     }
 
     // For URLs with no other configuration
@@ -197,7 +196,9 @@ public class Utils {
         if (sessVars != null) {
           Matcher sessMatcher = pattern.matcher(sessVars);
           while (sessMatcher.find()) {
-            connParams.getSessionVars().put(sessMatcher.group(1), sessMatcher.group(2));
+            if (connParams.getSessionVars().put(sessMatcher.group(1), sessMatcher.group(2)) != null) {
+              throw new IllegalArgumentException("Bad URL format: Multiple values for property " + sessMatcher.group(1));
+            }
           }
         }
       }
@@ -228,12 +229,12 @@ public class Utils {
   }
 
   /**
-   * Takes a version string delmited by '.' and '-' characters
+   * Takes a version string delimited by '.' and '-' characters
    * and returns a partial version.
    *
    * @param fullVersion
    *          version string.
-   * @param tokenPosition
+   * @param position
    *          position of version string to get starting at 0. eg, for a X.x.xxx
    *          string, 0 will return the major version, 1 will return minor
    *          version.

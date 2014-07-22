@@ -55,8 +55,6 @@ FROM
   ) master_table
 ) a GROUP BY key, value
 POSTHOOK: type: CREATETABLE_AS_SELECT
-POSTHOOK: Lineage: tmp_srcpart PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tmp_srcpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -72,8 +70,8 @@ STAGE PLANS:
             alias: a
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: key (type: string), value (type: string)
-              outputColumnNames: _col0, _col1
+              expressions: key (type: string)
+              outputColumnNames: _col0
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Union
                 Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
@@ -95,8 +93,8 @@ STAGE PLANS:
             alias: b
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: key (type: string), value (type: string)
-              outputColumnNames: _col0, _col1
+              expressions: key (type: string)
+              outputColumnNames: _col0
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Union
                 Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
@@ -210,6 +208,7 @@ STAGE PLANS:
           columns: counts bigint, key string, value string
           input format: org.apache.hadoop.mapred.TextInputFormat
           output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+          serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           name: tmp_unionall
 
   Stage: Stage-3

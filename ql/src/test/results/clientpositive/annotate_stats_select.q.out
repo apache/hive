@@ -93,21 +93,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: -- basicStatState: COMPLETE colStatState: NONE numRows: 2 rawDataSize: 1514
 explain extended select * from alltypes_orc
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: alltypes_orc.bi1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bi1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.bo1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bo1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.d1 SIMPLE [(alltypes)alltypes.FieldSchema(name:d1, type:double, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.da1 SIMPLE [(alltypes)alltypes.FieldSchema(name:da1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.de1 SIMPLE [(alltypes)alltypes.FieldSchema(name:de1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.f1 SIMPLE [(alltypes)alltypes.FieldSchema(name:f1, type:float, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.i1 SIMPLE [(alltypes)alltypes.FieldSchema(name:i1, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.l1 SIMPLE [(alltypes)alltypes.FieldSchema(name:l1, type:array<int>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.m1 SIMPLE [(alltypes)alltypes.FieldSchema(name:m1, type:map<string,string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.s1 SIMPLE [(alltypes)alltypes.FieldSchema(name:s1, type:string, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:si1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -152,42 +137,12 @@ analyze table alltypes_orc compute statistics for columns bo1, ti1, si1, i1, bi1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypes_orc
 #### A masked pattern was here ####
-POSTHOOK: Lineage: alltypes_orc.bi1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bi1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.bo1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bo1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.d1 SIMPLE [(alltypes)alltypes.FieldSchema(name:d1, type:double, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.da1 SIMPLE [(alltypes)alltypes.FieldSchema(name:da1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.de1 SIMPLE [(alltypes)alltypes.FieldSchema(name:de1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.f1 SIMPLE [(alltypes)alltypes.FieldSchema(name:f1, type:float, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.i1 SIMPLE [(alltypes)alltypes.FieldSchema(name:i1, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.l1 SIMPLE [(alltypes)alltypes.FieldSchema(name:l1, type:array<int>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.m1 SIMPLE [(alltypes)alltypes.FieldSchema(name:m1, type:map<string,string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.s1 SIMPLE [(alltypes)alltypes.FieldSchema(name:s1, type:string, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:si1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 PREHOOK: query: -- numRows: 2 rawDataSize: 1514
 explain extended select * from alltypes_orc
 PREHOOK: type: QUERY
 POSTHOOK: query: -- numRows: 2 rawDataSize: 1514
 explain extended select * from alltypes_orc
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: alltypes_orc.bi1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bi1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.bo1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bo1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.d1 SIMPLE [(alltypes)alltypes.FieldSchema(name:d1, type:double, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.da1 SIMPLE [(alltypes)alltypes.FieldSchema(name:da1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.de1 SIMPLE [(alltypes)alltypes.FieldSchema(name:de1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.f1 SIMPLE [(alltypes)alltypes.FieldSchema(name:f1, type:float, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.i1 SIMPLE [(alltypes)alltypes.FieldSchema(name:i1, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.l1 SIMPLE [(alltypes)alltypes.FieldSchema(name:l1, type:array<int>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.m1 SIMPLE [(alltypes)alltypes.FieldSchema(name:m1, type:map<string,string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.s1 SIMPLE [(alltypes)alltypes.FieldSchema(name:s1, type:string, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:si1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -228,21 +183,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: -- numRows: 2 rawDataSize: 8
 explain extended select bo1 from alltypes_orc
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: alltypes_orc.bi1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bi1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.bo1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bo1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.d1 SIMPLE [(alltypes)alltypes.FieldSchema(name:d1, type:double, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.da1 SIMPLE [(alltypes)alltypes.FieldSchema(name:da1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.de1 SIMPLE [(alltypes)alltypes.FieldSchema(name:de1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.f1 SIMPLE [(alltypes)alltypes.FieldSchema(name:f1, type:float, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.i1 SIMPLE [(alltypes)alltypes.FieldSchema(name:i1, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.l1 SIMPLE [(alltypes)alltypes.FieldSchema(name:l1, type:array<int>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.m1 SIMPLE [(alltypes)alltypes.FieldSchema(name:m1, type:map<string,string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.s1 SIMPLE [(alltypes)alltypes.FieldSchema(name:s1, type:string, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:si1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -262,7 +202,7 @@ TOK_QUERY
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -310,6 +250,7 @@ STAGE PLANS:
               bucket_count -1
               colelction.delim ,
               columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+              columns.comments               
               columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
               field.delim |
 #### A masked pattern was here ####
@@ -332,6 +273,7 @@ STAGE PLANS:
                 bucket_count -1
                 colelction.delim ,
                 columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+                columns.comments               
                 columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
                 field.delim |
 #### A masked pattern was here ####
@@ -354,6 +296,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: -- col alias renaming
 -- numRows: 2 rawDataSize: 8
@@ -363,21 +307,6 @@ POSTHOOK: query: -- col alias renaming
 -- numRows: 2 rawDataSize: 8
 explain extended select i1 as int1 from alltypes_orc
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: alltypes_orc.bi1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bi1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.bo1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bo1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.d1 SIMPLE [(alltypes)alltypes.FieldSchema(name:d1, type:double, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.da1 SIMPLE [(alltypes)alltypes.FieldSchema(name:da1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.de1 SIMPLE [(alltypes)alltypes.FieldSchema(name:de1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.f1 SIMPLE [(alltypes)alltypes.FieldSchema(name:f1, type:float, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.i1 SIMPLE [(alltypes)alltypes.FieldSchema(name:i1, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.l1 SIMPLE [(alltypes)alltypes.FieldSchema(name:l1, type:array<int>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.m1 SIMPLE [(alltypes)alltypes.FieldSchema(name:m1, type:map<string,string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.s1 SIMPLE [(alltypes)alltypes.FieldSchema(name:s1, type:string, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:si1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -398,7 +327,7 @@ TOK_QUERY
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -446,6 +375,7 @@ STAGE PLANS:
               bucket_count -1
               colelction.delim ,
               columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+              columns.comments               
               columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
               field.delim |
 #### A masked pattern was here ####
@@ -468,6 +398,7 @@ STAGE PLANS:
                 bucket_count -1
                 colelction.delim ,
                 columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+                columns.comments               
                 columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
                 field.delim |
 #### A masked pattern was here ####
@@ -490,6 +421,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: -- numRows: 2 rawDataSize: 174
 explain extended select s1 from alltypes_orc
@@ -497,21 +430,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: -- numRows: 2 rawDataSize: 174
 explain extended select s1 from alltypes_orc
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: alltypes_orc.bi1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bi1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.bo1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bo1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.d1 SIMPLE [(alltypes)alltypes.FieldSchema(name:d1, type:double, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.da1 SIMPLE [(alltypes)alltypes.FieldSchema(name:da1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.de1 SIMPLE [(alltypes)alltypes.FieldSchema(name:de1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.f1 SIMPLE [(alltypes)alltypes.FieldSchema(name:f1, type:float, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.i1 SIMPLE [(alltypes)alltypes.FieldSchema(name:i1, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.l1 SIMPLE [(alltypes)alltypes.FieldSchema(name:l1, type:array<int>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.m1 SIMPLE [(alltypes)alltypes.FieldSchema(name:m1, type:map<string,string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.s1 SIMPLE [(alltypes)alltypes.FieldSchema(name:s1, type:string, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:si1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -531,7 +449,7 @@ TOK_QUERY
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -579,6 +497,7 @@ STAGE PLANS:
               bucket_count -1
               colelction.delim ,
               columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+              columns.comments               
               columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
               field.delim |
 #### A masked pattern was here ####
@@ -601,6 +520,7 @@ STAGE PLANS:
                 bucket_count -1
                 colelction.delim ,
                 columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+                columns.comments               
                 columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
                 field.delim |
 #### A masked pattern was here ####
@@ -623,6 +543,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: -- column statistics for complex types unsupported and so statistics will not be updated
 -- numRows: 2 rawDataSize: 1514
@@ -632,21 +554,6 @@ POSTHOOK: query: -- column statistics for complex types unsupported and so stati
 -- numRows: 2 rawDataSize: 1514
 explain extended select m1 from alltypes_orc
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: alltypes_orc.bi1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bi1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.bo1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bo1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.d1 SIMPLE [(alltypes)alltypes.FieldSchema(name:d1, type:double, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.da1 SIMPLE [(alltypes)alltypes.FieldSchema(name:da1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.de1 SIMPLE [(alltypes)alltypes.FieldSchema(name:de1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.f1 SIMPLE [(alltypes)alltypes.FieldSchema(name:f1, type:float, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.i1 SIMPLE [(alltypes)alltypes.FieldSchema(name:i1, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.l1 SIMPLE [(alltypes)alltypes.FieldSchema(name:l1, type:array<int>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.m1 SIMPLE [(alltypes)alltypes.FieldSchema(name:m1, type:map<string,string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.s1 SIMPLE [(alltypes)alltypes.FieldSchema(name:s1, type:string, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:si1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -666,7 +573,7 @@ TOK_QUERY
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -714,6 +621,7 @@ STAGE PLANS:
               bucket_count -1
               colelction.delim ,
               columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+              columns.comments               
               columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
               field.delim |
 #### A masked pattern was here ####
@@ -736,6 +644,7 @@ STAGE PLANS:
                 bucket_count -1
                 colelction.delim ,
                 columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+                columns.comments               
                 columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
                 field.delim |
 #### A masked pattern was here ####
@@ -758,6 +667,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: -- numRows: 2 rawDataSize: 246
 explain extended select bo1, ti1, si1, i1, bi1, f1, d1,s1 from alltypes_orc
@@ -765,21 +676,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: -- numRows: 2 rawDataSize: 246
 explain extended select bo1, ti1, si1, i1, bi1, f1, d1,s1 from alltypes_orc
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: alltypes_orc.bi1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bi1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.bo1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bo1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.d1 SIMPLE [(alltypes)alltypes.FieldSchema(name:d1, type:double, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.da1 SIMPLE [(alltypes)alltypes.FieldSchema(name:da1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.de1 SIMPLE [(alltypes)alltypes.FieldSchema(name:de1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.f1 SIMPLE [(alltypes)alltypes.FieldSchema(name:f1, type:float, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.i1 SIMPLE [(alltypes)alltypes.FieldSchema(name:i1, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.l1 SIMPLE [(alltypes)alltypes.FieldSchema(name:l1, type:array<int>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.m1 SIMPLE [(alltypes)alltypes.FieldSchema(name:m1, type:map<string,string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.s1 SIMPLE [(alltypes)alltypes.FieldSchema(name:s1, type:string, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:si1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -820,7 +716,7 @@ TOK_QUERY
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -868,6 +764,7 @@ STAGE PLANS:
               bucket_count -1
               colelction.delim ,
               columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+              columns.comments               
               columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
               field.delim |
 #### A masked pattern was here ####
@@ -890,6 +787,7 @@ STAGE PLANS:
                 bucket_count -1
                 colelction.delim ,
                 columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+                columns.comments               
                 columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
                 field.delim |
 #### A masked pattern was here ####
@@ -912,6 +810,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: -- numRows: 2 rawDataSize: 0
 explain extended select null from alltypes_orc
@@ -919,21 +819,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: -- numRows: 2 rawDataSize: 0
 explain extended select null from alltypes_orc
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: alltypes_orc.bi1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bi1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.bo1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bo1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.d1 SIMPLE [(alltypes)alltypes.FieldSchema(name:d1, type:double, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.da1 SIMPLE [(alltypes)alltypes.FieldSchema(name:da1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.de1 SIMPLE [(alltypes)alltypes.FieldSchema(name:de1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.f1 SIMPLE [(alltypes)alltypes.FieldSchema(name:f1, type:float, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.i1 SIMPLE [(alltypes)alltypes.FieldSchema(name:i1, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.l1 SIMPLE [(alltypes)alltypes.FieldSchema(name:l1, type:array<int>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.m1 SIMPLE [(alltypes)alltypes.FieldSchema(name:m1, type:map<string,string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.s1 SIMPLE [(alltypes)alltypes.FieldSchema(name:s1, type:string, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:si1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -952,7 +837,7 @@ TOK_QUERY
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -1000,6 +885,7 @@ STAGE PLANS:
               bucket_count -1
               colelction.delim ,
               columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+              columns.comments               
               columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
               field.delim |
 #### A masked pattern was here ####
@@ -1022,6 +908,7 @@ STAGE PLANS:
                 bucket_count -1
                 colelction.delim ,
                 columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+                columns.comments               
                 columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
                 field.delim |
 #### A masked pattern was here ####
@@ -1044,6 +931,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: -- numRows: 2 rawDataSize: 8
 explain extended select 11 from alltypes_orc
@@ -1051,21 +940,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: -- numRows: 2 rawDataSize: 8
 explain extended select 11 from alltypes_orc
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: alltypes_orc.bi1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bi1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.bo1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bo1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.d1 SIMPLE [(alltypes)alltypes.FieldSchema(name:d1, type:double, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.da1 SIMPLE [(alltypes)alltypes.FieldSchema(name:da1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.de1 SIMPLE [(alltypes)alltypes.FieldSchema(name:de1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.f1 SIMPLE [(alltypes)alltypes.FieldSchema(name:f1, type:float, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.i1 SIMPLE [(alltypes)alltypes.FieldSchema(name:i1, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.l1 SIMPLE [(alltypes)alltypes.FieldSchema(name:l1, type:array<int>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.m1 SIMPLE [(alltypes)alltypes.FieldSchema(name:m1, type:map<string,string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.s1 SIMPLE [(alltypes)alltypes.FieldSchema(name:s1, type:string, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:si1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -1084,7 +958,7 @@ TOK_QUERY
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -1132,6 +1006,7 @@ STAGE PLANS:
               bucket_count -1
               colelction.delim ,
               columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+              columns.comments               
               columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
               field.delim |
 #### A masked pattern was here ####
@@ -1154,6 +1029,7 @@ STAGE PLANS:
                 bucket_count -1
                 colelction.delim ,
                 columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+                columns.comments               
                 columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
                 field.delim |
 #### A masked pattern was here ####
@@ -1176,6 +1052,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: -- numRows: 2 rawDataSize: 16
 explain extended select 11L from alltypes_orc
@@ -1183,21 +1061,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: -- numRows: 2 rawDataSize: 16
 explain extended select 11L from alltypes_orc
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: alltypes_orc.bi1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bi1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.bo1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bo1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.d1 SIMPLE [(alltypes)alltypes.FieldSchema(name:d1, type:double, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.da1 SIMPLE [(alltypes)alltypes.FieldSchema(name:da1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.de1 SIMPLE [(alltypes)alltypes.FieldSchema(name:de1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.f1 SIMPLE [(alltypes)alltypes.FieldSchema(name:f1, type:float, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.i1 SIMPLE [(alltypes)alltypes.FieldSchema(name:i1, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.l1 SIMPLE [(alltypes)alltypes.FieldSchema(name:l1, type:array<int>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.m1 SIMPLE [(alltypes)alltypes.FieldSchema(name:m1, type:map<string,string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.s1 SIMPLE [(alltypes)alltypes.FieldSchema(name:s1, type:string, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:si1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -1216,7 +1079,7 @@ TOK_QUERY
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -1264,6 +1127,7 @@ STAGE PLANS:
               bucket_count -1
               colelction.delim ,
               columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+              columns.comments               
               columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
               field.delim |
 #### A masked pattern was here ####
@@ -1286,6 +1150,7 @@ STAGE PLANS:
                 bucket_count -1
                 colelction.delim ,
                 columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+                columns.comments               
                 columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
                 field.delim |
 #### A masked pattern was here ####
@@ -1308,6 +1173,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: -- numRows: 2 rawDataSize: 16
 explain extended select 11.0 from alltypes_orc
@@ -1315,21 +1182,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: -- numRows: 2 rawDataSize: 16
 explain extended select 11.0 from alltypes_orc
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: alltypes_orc.bi1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bi1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.bo1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bo1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.d1 SIMPLE [(alltypes)alltypes.FieldSchema(name:d1, type:double, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.da1 SIMPLE [(alltypes)alltypes.FieldSchema(name:da1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.de1 SIMPLE [(alltypes)alltypes.FieldSchema(name:de1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.f1 SIMPLE [(alltypes)alltypes.FieldSchema(name:f1, type:float, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.i1 SIMPLE [(alltypes)alltypes.FieldSchema(name:i1, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.l1 SIMPLE [(alltypes)alltypes.FieldSchema(name:l1, type:array<int>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.m1 SIMPLE [(alltypes)alltypes.FieldSchema(name:m1, type:map<string,string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.s1 SIMPLE [(alltypes)alltypes.FieldSchema(name:s1, type:string, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:si1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -1348,7 +1200,7 @@ TOK_QUERY
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -1396,6 +1248,7 @@ STAGE PLANS:
               bucket_count -1
               colelction.delim ,
               columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+              columns.comments               
               columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
               field.delim |
 #### A masked pattern was here ####
@@ -1418,6 +1271,7 @@ STAGE PLANS:
                 bucket_count -1
                 colelction.delim ,
                 columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+                columns.comments               
                 columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
                 field.delim |
 #### A masked pattern was here ####
@@ -1440,6 +1294,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: -- numRows: 2 rawDataSize: 178
 explain extended select "hello" from alltypes_orc
@@ -1447,21 +1303,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: -- numRows: 2 rawDataSize: 178
 explain extended select "hello" from alltypes_orc
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: alltypes_orc.bi1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bi1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.bo1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bo1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.d1 SIMPLE [(alltypes)alltypes.FieldSchema(name:d1, type:double, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.da1 SIMPLE [(alltypes)alltypes.FieldSchema(name:da1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.de1 SIMPLE [(alltypes)alltypes.FieldSchema(name:de1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.f1 SIMPLE [(alltypes)alltypes.FieldSchema(name:f1, type:float, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.i1 SIMPLE [(alltypes)alltypes.FieldSchema(name:i1, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.l1 SIMPLE [(alltypes)alltypes.FieldSchema(name:l1, type:array<int>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.m1 SIMPLE [(alltypes)alltypes.FieldSchema(name:m1, type:map<string,string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.s1 SIMPLE [(alltypes)alltypes.FieldSchema(name:s1, type:string, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:si1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -1480,7 +1321,7 @@ TOK_QUERY
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -1528,6 +1369,7 @@ STAGE PLANS:
               bucket_count -1
               colelction.delim ,
               columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+              columns.comments               
               columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
               field.delim |
 #### A masked pattern was here ####
@@ -1550,6 +1392,7 @@ STAGE PLANS:
                 bucket_count -1
                 colelction.delim ,
                 columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+                columns.comments               
                 columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
                 field.delim |
 #### A masked pattern was here ####
@@ -1572,26 +1415,13 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: explain extended select cast("hello" as char(5)) from alltypes_orc
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select cast("hello" as char(5)) from alltypes_orc
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: alltypes_orc.bi1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bi1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.bo1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bo1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.d1 SIMPLE [(alltypes)alltypes.FieldSchema(name:d1, type:double, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.da1 SIMPLE [(alltypes)alltypes.FieldSchema(name:da1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.de1 SIMPLE [(alltypes)alltypes.FieldSchema(name:de1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.f1 SIMPLE [(alltypes)alltypes.FieldSchema(name:f1, type:float, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.i1 SIMPLE [(alltypes)alltypes.FieldSchema(name:i1, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.l1 SIMPLE [(alltypes)alltypes.FieldSchema(name:l1, type:array<int>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.m1 SIMPLE [(alltypes)alltypes.FieldSchema(name:m1, type:map<string,string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.s1 SIMPLE [(alltypes)alltypes.FieldSchema(name:s1, type:string, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:si1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -1613,7 +1443,7 @@ TOK_QUERY
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -1661,6 +1491,7 @@ STAGE PLANS:
               bucket_count -1
               colelction.delim ,
               columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+              columns.comments               
               columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
               field.delim |
 #### A masked pattern was here ####
@@ -1683,6 +1514,7 @@ STAGE PLANS:
                 bucket_count -1
                 colelction.delim ,
                 columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+                columns.comments               
                 columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
                 field.delim |
 #### A masked pattern was here ####
@@ -1705,26 +1537,13 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: explain extended select cast("hello" as varchar(5)) from alltypes_orc
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select cast("hello" as varchar(5)) from alltypes_orc
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: alltypes_orc.bi1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bi1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.bo1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bo1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.d1 SIMPLE [(alltypes)alltypes.FieldSchema(name:d1, type:double, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.da1 SIMPLE [(alltypes)alltypes.FieldSchema(name:da1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.de1 SIMPLE [(alltypes)alltypes.FieldSchema(name:de1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.f1 SIMPLE [(alltypes)alltypes.FieldSchema(name:f1, type:float, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.i1 SIMPLE [(alltypes)alltypes.FieldSchema(name:i1, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.l1 SIMPLE [(alltypes)alltypes.FieldSchema(name:l1, type:array<int>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.m1 SIMPLE [(alltypes)alltypes.FieldSchema(name:m1, type:map<string,string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.s1 SIMPLE [(alltypes)alltypes.FieldSchema(name:s1, type:string, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:si1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -1746,7 +1565,7 @@ TOK_QUERY
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -1794,6 +1613,7 @@ STAGE PLANS:
               bucket_count -1
               colelction.delim ,
               columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+              columns.comments               
               columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
               field.delim |
 #### A masked pattern was here ####
@@ -1816,6 +1636,7 @@ STAGE PLANS:
                 bucket_count -1
                 colelction.delim ,
                 columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+                columns.comments               
                 columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
                 field.delim |
 #### A masked pattern was here ####
@@ -1838,6 +1659,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: -- numRows: 2 rawDataSize: 96
 explain extended select unbase64("0xe23") from alltypes_orc
@@ -1845,21 +1668,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: -- numRows: 2 rawDataSize: 96
 explain extended select unbase64("0xe23") from alltypes_orc
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: alltypes_orc.bi1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bi1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.bo1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bo1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.d1 SIMPLE [(alltypes)alltypes.FieldSchema(name:d1, type:double, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.da1 SIMPLE [(alltypes)alltypes.FieldSchema(name:da1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.de1 SIMPLE [(alltypes)alltypes.FieldSchema(name:de1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.f1 SIMPLE [(alltypes)alltypes.FieldSchema(name:f1, type:float, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.i1 SIMPLE [(alltypes)alltypes.FieldSchema(name:i1, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.l1 SIMPLE [(alltypes)alltypes.FieldSchema(name:l1, type:array<int>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.m1 SIMPLE [(alltypes)alltypes.FieldSchema(name:m1, type:map<string,string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.s1 SIMPLE [(alltypes)alltypes.FieldSchema(name:s1, type:string, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:si1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -1880,7 +1688,7 @@ TOK_QUERY
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -1928,6 +1736,7 @@ STAGE PLANS:
               bucket_count -1
               colelction.delim ,
               columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+              columns.comments               
               columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
               field.delim |
 #### A masked pattern was here ####
@@ -1950,6 +1759,7 @@ STAGE PLANS:
                 bucket_count -1
                 colelction.delim ,
                 columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+                columns.comments               
                 columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
                 field.delim |
 #### A masked pattern was here ####
@@ -1972,6 +1782,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: -- numRows: 2 rawDataSize: 16
 explain extended select cast("1" as TINYINT), cast("20" as SMALLINT) from alltypes_orc
@@ -1979,21 +1791,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: -- numRows: 2 rawDataSize: 16
 explain extended select cast("1" as TINYINT), cast("20" as SMALLINT) from alltypes_orc
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: alltypes_orc.bi1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bi1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.bo1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bo1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.d1 SIMPLE [(alltypes)alltypes.FieldSchema(name:d1, type:double, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.da1 SIMPLE [(alltypes)alltypes.FieldSchema(name:da1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.de1 SIMPLE [(alltypes)alltypes.FieldSchema(name:de1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.f1 SIMPLE [(alltypes)alltypes.FieldSchema(name:f1, type:float, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.i1 SIMPLE [(alltypes)alltypes.FieldSchema(name:i1, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.l1 SIMPLE [(alltypes)alltypes.FieldSchema(name:l1, type:array<int>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.m1 SIMPLE [(alltypes)alltypes.FieldSchema(name:m1, type:map<string,string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.s1 SIMPLE [(alltypes)alltypes.FieldSchema(name:s1, type:string, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:si1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -2018,7 +1815,7 @@ TOK_QUERY
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -2066,6 +1863,7 @@ STAGE PLANS:
               bucket_count -1
               colelction.delim ,
               columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+              columns.comments               
               columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
               field.delim |
 #### A masked pattern was here ####
@@ -2088,6 +1886,7 @@ STAGE PLANS:
                 bucket_count -1
                 colelction.delim ,
                 columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+                columns.comments               
                 columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
                 field.delim |
 #### A masked pattern was here ####
@@ -2110,6 +1909,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: -- numRows: 2 rawDataSize: 80
 explain extended select cast("1970-12-31 15:59:58.174" as TIMESTAMP) from alltypes_orc
@@ -2117,21 +1918,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: -- numRows: 2 rawDataSize: 80
 explain extended select cast("1970-12-31 15:59:58.174" as TIMESTAMP) from alltypes_orc
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: alltypes_orc.bi1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bi1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.bo1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bo1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.d1 SIMPLE [(alltypes)alltypes.FieldSchema(name:d1, type:double, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.da1 SIMPLE [(alltypes)alltypes.FieldSchema(name:da1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.de1 SIMPLE [(alltypes)alltypes.FieldSchema(name:de1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.f1 SIMPLE [(alltypes)alltypes.FieldSchema(name:f1, type:float, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.i1 SIMPLE [(alltypes)alltypes.FieldSchema(name:i1, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.l1 SIMPLE [(alltypes)alltypes.FieldSchema(name:l1, type:array<int>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.m1 SIMPLE [(alltypes)alltypes.FieldSchema(name:m1, type:map<string,string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.s1 SIMPLE [(alltypes)alltypes.FieldSchema(name:s1, type:string, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:si1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -2152,7 +1938,7 @@ TOK_QUERY
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -2200,6 +1986,7 @@ STAGE PLANS:
               bucket_count -1
               colelction.delim ,
               columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+              columns.comments               
               columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
               field.delim |
 #### A masked pattern was here ####
@@ -2222,6 +2009,7 @@ STAGE PLANS:
                 bucket_count -1
                 colelction.delim ,
                 columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+                columns.comments               
                 columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
                 field.delim |
 #### A masked pattern was here ####
@@ -2244,6 +2032,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: -- numRows: 2 rawDataSize: 112
 explain extended select cast("1970-12-31 15:59:58.174" as DATE) from alltypes_orc
@@ -2251,21 +2041,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: -- numRows: 2 rawDataSize: 112
 explain extended select cast("1970-12-31 15:59:58.174" as DATE) from alltypes_orc
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: alltypes_orc.bi1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bi1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.bo1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bo1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.d1 SIMPLE [(alltypes)alltypes.FieldSchema(name:d1, type:double, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.da1 SIMPLE [(alltypes)alltypes.FieldSchema(name:da1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.de1 SIMPLE [(alltypes)alltypes.FieldSchema(name:de1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.f1 SIMPLE [(alltypes)alltypes.FieldSchema(name:f1, type:float, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.i1 SIMPLE [(alltypes)alltypes.FieldSchema(name:i1, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.l1 SIMPLE [(alltypes)alltypes.FieldSchema(name:l1, type:array<int>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.m1 SIMPLE [(alltypes)alltypes.FieldSchema(name:m1, type:map<string,string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.s1 SIMPLE [(alltypes)alltypes.FieldSchema(name:s1, type:string, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:si1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -2286,7 +2061,7 @@ TOK_QUERY
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -2334,6 +2109,7 @@ STAGE PLANS:
               bucket_count -1
               colelction.delim ,
               columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+              columns.comments               
               columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
               field.delim |
 #### A masked pattern was here ####
@@ -2356,6 +2132,7 @@ STAGE PLANS:
                 bucket_count -1
                 colelction.delim ,
                 columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+                columns.comments               
                 columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
                 field.delim |
 #### A masked pattern was here ####
@@ -2378,6 +2155,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: -- numRows: 2 rawDataSize: 224
 explain extended select cast("58.174" as DECIMAL) from alltypes_orc
@@ -2385,21 +2164,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: -- numRows: 2 rawDataSize: 224
 explain extended select cast("58.174" as DECIMAL) from alltypes_orc
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: alltypes_orc.bi1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bi1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.bo1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bo1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.d1 SIMPLE [(alltypes)alltypes.FieldSchema(name:d1, type:double, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.da1 SIMPLE [(alltypes)alltypes.FieldSchema(name:da1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.de1 SIMPLE [(alltypes)alltypes.FieldSchema(name:de1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.f1 SIMPLE [(alltypes)alltypes.FieldSchema(name:f1, type:float, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.i1 SIMPLE [(alltypes)alltypes.FieldSchema(name:i1, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.l1 SIMPLE [(alltypes)alltypes.FieldSchema(name:l1, type:array<int>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.m1 SIMPLE [(alltypes)alltypes.FieldSchema(name:m1, type:map<string,string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.s1 SIMPLE [(alltypes)alltypes.FieldSchema(name:s1, type:string, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:si1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -2420,7 +2184,7 @@ TOK_QUERY
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -2468,6 +2232,7 @@ STAGE PLANS:
               bucket_count -1
               colelction.delim ,
               columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+              columns.comments               
               columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
               field.delim |
 #### A masked pattern was here ####
@@ -2490,6 +2255,7 @@ STAGE PLANS:
                 bucket_count -1
                 colelction.delim ,
                 columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+                columns.comments               
                 columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
                 field.delim |
 #### A masked pattern was here ####
@@ -2512,6 +2278,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: -- numRows: 2 rawDataSize: 112
 explain extended select array(1,2,3) from alltypes_orc
@@ -2519,21 +2287,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: -- numRows: 2 rawDataSize: 112
 explain extended select array(1,2,3) from alltypes_orc
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: alltypes_orc.bi1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bi1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.bo1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bo1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.d1 SIMPLE [(alltypes)alltypes.FieldSchema(name:d1, type:double, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.da1 SIMPLE [(alltypes)alltypes.FieldSchema(name:da1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.de1 SIMPLE [(alltypes)alltypes.FieldSchema(name:de1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.f1 SIMPLE [(alltypes)alltypes.FieldSchema(name:f1, type:float, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.i1 SIMPLE [(alltypes)alltypes.FieldSchema(name:i1, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.l1 SIMPLE [(alltypes)alltypes.FieldSchema(name:l1, type:array<int>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.m1 SIMPLE [(alltypes)alltypes.FieldSchema(name:m1, type:map<string,string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.s1 SIMPLE [(alltypes)alltypes.FieldSchema(name:s1, type:string, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:si1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -2556,7 +2309,7 @@ TOK_QUERY
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -2604,6 +2357,7 @@ STAGE PLANS:
               bucket_count -1
               colelction.delim ,
               columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+              columns.comments               
               columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
               field.delim |
 #### A masked pattern was here ####
@@ -2626,6 +2380,7 @@ STAGE PLANS:
                 bucket_count -1
                 colelction.delim ,
                 columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+                columns.comments               
                 columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
                 field.delim |
 #### A masked pattern was here ####
@@ -2648,6 +2403,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: -- numRows: 2 rawDataSize: 1508
 explain extended select str_to_map("a=1 b=2 c=3", " ", "=") from alltypes_orc
@@ -2655,21 +2412,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: -- numRows: 2 rawDataSize: 1508
 explain extended select str_to_map("a=1 b=2 c=3", " ", "=") from alltypes_orc
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: alltypes_orc.bi1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bi1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.bo1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bo1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.d1 SIMPLE [(alltypes)alltypes.FieldSchema(name:d1, type:double, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.da1 SIMPLE [(alltypes)alltypes.FieldSchema(name:da1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.de1 SIMPLE [(alltypes)alltypes.FieldSchema(name:de1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.f1 SIMPLE [(alltypes)alltypes.FieldSchema(name:f1, type:float, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.i1 SIMPLE [(alltypes)alltypes.FieldSchema(name:i1, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.l1 SIMPLE [(alltypes)alltypes.FieldSchema(name:l1, type:array<int>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.m1 SIMPLE [(alltypes)alltypes.FieldSchema(name:m1, type:map<string,string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.s1 SIMPLE [(alltypes)alltypes.FieldSchema(name:s1, type:string, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:si1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -2692,7 +2434,7 @@ TOK_QUERY
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -2740,6 +2482,7 @@ STAGE PLANS:
               bucket_count -1
               colelction.delim ,
               columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+              columns.comments               
               columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
               field.delim |
 #### A masked pattern was here ####
@@ -2762,6 +2505,7 @@ STAGE PLANS:
                 bucket_count -1
                 colelction.delim ,
                 columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+                columns.comments               
                 columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
                 field.delim |
 #### A masked pattern was here ####
@@ -2784,6 +2528,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: -- numRows: 2 rawDataSize: 112
 explain extended select NAMED_STRUCT("a", 11, "b", 11) from alltypes_orc
@@ -2791,21 +2537,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: -- numRows: 2 rawDataSize: 112
 explain extended select NAMED_STRUCT("a", 11, "b", 11) from alltypes_orc
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: alltypes_orc.bi1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bi1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.bo1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bo1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.d1 SIMPLE [(alltypes)alltypes.FieldSchema(name:d1, type:double, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.da1 SIMPLE [(alltypes)alltypes.FieldSchema(name:da1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.de1 SIMPLE [(alltypes)alltypes.FieldSchema(name:de1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.f1 SIMPLE [(alltypes)alltypes.FieldSchema(name:f1, type:float, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.i1 SIMPLE [(alltypes)alltypes.FieldSchema(name:i1, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.l1 SIMPLE [(alltypes)alltypes.FieldSchema(name:l1, type:array<int>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.m1 SIMPLE [(alltypes)alltypes.FieldSchema(name:m1, type:map<string,string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.s1 SIMPLE [(alltypes)alltypes.FieldSchema(name:s1, type:string, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:si1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -2829,7 +2560,7 @@ TOK_QUERY
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -2877,6 +2608,7 @@ STAGE PLANS:
               bucket_count -1
               colelction.delim ,
               columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+              columns.comments               
               columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
               field.delim |
 #### A masked pattern was here ####
@@ -2899,6 +2631,7 @@ STAGE PLANS:
                 bucket_count -1
                 colelction.delim ,
                 columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+                columns.comments               
                 columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
                 field.delim |
 #### A masked pattern was here ####
@@ -2921,6 +2654,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: -- numRows: 2 rawDataSize: 250
 explain extended select CREATE_UNION(0, "hello") from alltypes_orc
@@ -2928,21 +2663,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: -- numRows: 2 rawDataSize: 250
 explain extended select CREATE_UNION(0, "hello") from alltypes_orc
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: alltypes_orc.bi1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bi1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.bo1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bo1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.d1 SIMPLE [(alltypes)alltypes.FieldSchema(name:d1, type:double, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.da1 SIMPLE [(alltypes)alltypes.FieldSchema(name:da1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.de1 SIMPLE [(alltypes)alltypes.FieldSchema(name:de1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.f1 SIMPLE [(alltypes)alltypes.FieldSchema(name:f1, type:float, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.i1 SIMPLE [(alltypes)alltypes.FieldSchema(name:i1, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.l1 SIMPLE [(alltypes)alltypes.FieldSchema(name:l1, type:array<int>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.m1 SIMPLE [(alltypes)alltypes.FieldSchema(name:m1, type:map<string,string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.s1 SIMPLE [(alltypes)alltypes.FieldSchema(name:s1, type:string, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:si1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -2964,7 +2684,7 @@ TOK_QUERY
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -3012,6 +2732,7 @@ STAGE PLANS:
               bucket_count -1
               colelction.delim ,
               columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+              columns.comments               
               columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
               field.delim |
 #### A masked pattern was here ####
@@ -3034,6 +2755,7 @@ STAGE PLANS:
                 bucket_count -1
                 colelction.delim ,
                 columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+                columns.comments               
                 columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
                 field.delim |
 #### A masked pattern was here ####
@@ -3056,6 +2778,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: -- COUNT(*) is projected as new column. It is not projected as GenericUDF and so datasize estimate will be based on number of rows
 -- numRows: 1 rawDataSize: 8
@@ -3065,21 +2789,6 @@ POSTHOOK: query: -- COUNT(*) is projected as new column. It is not projected as 
 -- numRows: 1 rawDataSize: 8
 explain extended select count(*) from alltypes_orc
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: alltypes_orc.bi1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bi1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.bo1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bo1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.d1 SIMPLE [(alltypes)alltypes.FieldSchema(name:d1, type:double, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.da1 SIMPLE [(alltypes)alltypes.FieldSchema(name:da1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.de1 SIMPLE [(alltypes)alltypes.FieldSchema(name:de1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.f1 SIMPLE [(alltypes)alltypes.FieldSchema(name:f1, type:float, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.i1 SIMPLE [(alltypes)alltypes.FieldSchema(name:i1, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.l1 SIMPLE [(alltypes)alltypes.FieldSchema(name:l1, type:array<int>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.m1 SIMPLE [(alltypes)alltypes.FieldSchema(name:m1, type:map<string,string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.s1 SIMPLE [(alltypes)alltypes.FieldSchema(name:s1, type:string, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:si1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -3099,7 +2808,7 @@ TOK_QUERY
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -3121,6 +2830,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   tag: -1
                   value expressions: _col0 (type: bigint)
+                  auto parallelism: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -3134,6 +2844,7 @@ STAGE PLANS:
               bucket_count -1
               colelction.delim ,
               columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+              columns.comments               
               columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
               field.delim |
 #### A masked pattern was here ####
@@ -3156,6 +2867,7 @@ STAGE PLANS:
                 bucket_count -1
                 colelction.delim ,
                 columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+                columns.comments               
                 columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
                 field.delim |
 #### A masked pattern was here ####
@@ -3210,6 +2922,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: -- COUNT(1) is projected as new column. It is not projected as GenericUDF and so datasize estimate will be based on number of rows
 -- numRows: 1 rawDataSize: 8
@@ -3219,21 +2933,6 @@ POSTHOOK: query: -- COUNT(1) is projected as new column. It is not projected as 
 -- numRows: 1 rawDataSize: 8
 explain extended select count(1) from alltypes_orc
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: alltypes_orc.bi1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bi1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.bo1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bo1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.d1 SIMPLE [(alltypes)alltypes.FieldSchema(name:d1, type:double, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.da1 SIMPLE [(alltypes)alltypes.FieldSchema(name:da1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.de1 SIMPLE [(alltypes)alltypes.FieldSchema(name:de1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.f1 SIMPLE [(alltypes)alltypes.FieldSchema(name:f1, type:float, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.i1 SIMPLE [(alltypes)alltypes.FieldSchema(name:i1, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.l1 SIMPLE [(alltypes)alltypes.FieldSchema(name:l1, type:array<int>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.m1 SIMPLE [(alltypes)alltypes.FieldSchema(name:m1, type:map<string,string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.s1 SIMPLE [(alltypes)alltypes.FieldSchema(name:s1, type:string, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:si1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -3254,7 +2953,7 @@ TOK_QUERY
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -3276,6 +2975,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   tag: -1
                   value expressions: _col0 (type: bigint)
+                  auto parallelism: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -3289,6 +2989,7 @@ STAGE PLANS:
               bucket_count -1
               colelction.delim ,
               columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+              columns.comments               
               columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
               field.delim |
 #### A masked pattern was here ####
@@ -3311,6 +3012,7 @@ STAGE PLANS:
                 bucket_count -1
                 colelction.delim ,
                 columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+                columns.comments               
                 columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
                 field.delim |
 #### A masked pattern was here ####
@@ -3365,6 +3067,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: -- column statistics for complex column types will be missing. data size will be calculated from available column statistics
 -- numRows: 2 rawDataSize: 254
@@ -3374,21 +3078,6 @@ POSTHOOK: query: -- column statistics for complex column types will be missing. 
 -- numRows: 2 rawDataSize: 254
 explain extended select *,11 from alltypes_orc
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: alltypes_orc.bi1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bi1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.bo1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bo1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.d1 SIMPLE [(alltypes)alltypes.FieldSchema(name:d1, type:double, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.da1 SIMPLE [(alltypes)alltypes.FieldSchema(name:da1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.de1 SIMPLE [(alltypes)alltypes.FieldSchema(name:de1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.f1 SIMPLE [(alltypes)alltypes.FieldSchema(name:f1, type:float, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.i1 SIMPLE [(alltypes)alltypes.FieldSchema(name:i1, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.l1 SIMPLE [(alltypes)alltypes.FieldSchema(name:l1, type:array<int>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.m1 SIMPLE [(alltypes)alltypes.FieldSchema(name:m1, type:map<string,string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.s1 SIMPLE [(alltypes)alltypes.FieldSchema(name:s1, type:string, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:si1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -3409,7 +3098,7 @@ TOK_QUERY
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -3457,6 +3146,7 @@ STAGE PLANS:
               bucket_count -1
               colelction.delim ,
               columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+              columns.comments               
               columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
               field.delim |
 #### A masked pattern was here ####
@@ -3479,6 +3169,7 @@ STAGE PLANS:
                 bucket_count -1
                 colelction.delim ,
                 columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+                columns.comments               
                 columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
                 field.delim |
 #### A masked pattern was here ####
@@ -3501,6 +3192,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: -- subquery selects
 -- inner select - numRows: 2 rawDataSize: 8
@@ -3512,21 +3205,6 @@ POSTHOOK: query: -- subquery selects
 -- outer select - numRows: 2 rawDataSize: 8
 explain extended select i1 from (select i1 from alltypes_orc limit 10) temp
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: alltypes_orc.bi1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bi1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.bo1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bo1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.d1 SIMPLE [(alltypes)alltypes.FieldSchema(name:d1, type:double, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.da1 SIMPLE [(alltypes)alltypes.FieldSchema(name:da1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.de1 SIMPLE [(alltypes)alltypes.FieldSchema(name:de1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.f1 SIMPLE [(alltypes)alltypes.FieldSchema(name:f1, type:float, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.i1 SIMPLE [(alltypes)alltypes.FieldSchema(name:i1, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.l1 SIMPLE [(alltypes)alltypes.FieldSchema(name:l1, type:array<int>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.m1 SIMPLE [(alltypes)alltypes.FieldSchema(name:m1, type:map<string,string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.s1 SIMPLE [(alltypes)alltypes.FieldSchema(name:s1, type:string, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:si1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -3560,7 +3238,7 @@ TOK_QUERY
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -3582,6 +3260,7 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   tag: -1
                   value expressions: _col0 (type: int)
+                  auto parallelism: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -3595,6 +3274,7 @@ STAGE PLANS:
               bucket_count -1
               colelction.delim ,
               columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+              columns.comments               
               columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
               field.delim |
 #### A masked pattern was here ####
@@ -3617,6 +3297,7 @@ STAGE PLANS:
                 bucket_count -1
                 colelction.delim ,
                 columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+                columns.comments               
                 columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
                 field.delim |
 #### A masked pattern was here ####
@@ -3637,7 +3318,9 @@ STAGE PLANS:
         /alltypes_orc [temp:alltypes_orc]
       Needs Tagging: false
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: VALUE._col0 (type: int)
+          outputColumnNames: _col0
           Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
           Limit
             Number of rows: 10
@@ -3671,6 +3354,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: -- inner select - numRows: 2 rawDataSize: 16
 -- outer select - numRows: 2 rawDataSize: 8
@@ -3680,21 +3365,6 @@ POSTHOOK: query: -- inner select - numRows: 2 rawDataSize: 16
 -- outer select - numRows: 2 rawDataSize: 8
 explain extended select i1 from (select i1,11 from alltypes_orc limit 10) temp
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: alltypes_orc.bi1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bi1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.bo1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bo1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.d1 SIMPLE [(alltypes)alltypes.FieldSchema(name:d1, type:double, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.da1 SIMPLE [(alltypes)alltypes.FieldSchema(name:da1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.de1 SIMPLE [(alltypes)alltypes.FieldSchema(name:de1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.f1 SIMPLE [(alltypes)alltypes.FieldSchema(name:f1, type:float, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.i1 SIMPLE [(alltypes)alltypes.FieldSchema(name:i1, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.l1 SIMPLE [(alltypes)alltypes.FieldSchema(name:l1, type:array<int>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.m1 SIMPLE [(alltypes)alltypes.FieldSchema(name:m1, type:map<string,string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.s1 SIMPLE [(alltypes)alltypes.FieldSchema(name:s1, type:string, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:si1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -3730,7 +3400,7 @@ TOK_QUERY
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -3741,17 +3411,18 @@ STAGE PLANS:
             Statistics: Num rows: 2 Data size: 1686 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Select Operator
-              expressions: i1 (type: int), 11 (type: int)
-              outputColumnNames: _col0, _col1
-              Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+              expressions: i1 (type: int)
+              outputColumnNames: _col0
+              Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
               Limit
                 Number of rows: 10
-                Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   sort order: 
-                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   tag: -1
-                  value expressions: _col0 (type: int), _col1 (type: int)
+                  value expressions: _col0 (type: int)
+                  auto parallelism: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -3765,6 +3436,7 @@ STAGE PLANS:
               bucket_count -1
               colelction.delim ,
               columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+              columns.comments               
               columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
               field.delim |
 #### A masked pattern was here ####
@@ -3787,6 +3459,7 @@ STAGE PLANS:
                 bucket_count -1
                 colelction.delim ,
                 columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+                columns.comments               
                 columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
                 field.delim |
 #### A masked pattern was here ####
@@ -3807,11 +3480,13 @@ STAGE PLANS:
         /alltypes_orc [temp:alltypes_orc]
       Needs Tagging: false
       Reduce Operator Tree:
-        Extract
-          Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+        Select Operator
+          expressions: VALUE._col0 (type: int)
+          outputColumnNames: _col0
+          Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
           Limit
             Number of rows: 10
-            Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: _col0 (type: int)
               outputColumnNames: _col0
@@ -3841,6 +3516,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: -- inner select - numRows: 2 rawDataSize: 16
 -- outer select - numRows: 2 rawDataSize: 186
@@ -3850,21 +3527,6 @@ POSTHOOK: query: -- inner select - numRows: 2 rawDataSize: 16
 -- outer select - numRows: 2 rawDataSize: 186
 explain extended select i1,"hello" from (select i1,11 from alltypes_orc limit 10) temp
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: alltypes_orc.bi1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bi1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.bo1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bo1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.d1 SIMPLE [(alltypes)alltypes.FieldSchema(name:d1, type:double, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.da1 SIMPLE [(alltypes)alltypes.FieldSchema(name:da1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.de1 SIMPLE [(alltypes)alltypes.FieldSchema(name:de1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.f1 SIMPLE [(alltypes)alltypes.FieldSchema(name:f1, type:float, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.i1 SIMPLE [(alltypes)alltypes.FieldSchema(name:i1, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.l1 SIMPLE [(alltypes)alltypes.FieldSchema(name:l1, type:array<int>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.m1 SIMPLE [(alltypes)alltypes.FieldSchema(name:m1, type:map<string,string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.s1 SIMPLE [(alltypes)alltypes.FieldSchema(name:s1, type:string, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:si1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -3902,7 +3564,7 @@ TOK_QUERY
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -3913,17 +3575,18 @@ STAGE PLANS:
             Statistics: Num rows: 2 Data size: 1686 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Select Operator
-              expressions: i1 (type: int), 11 (type: int)
-              outputColumnNames: _col0, _col1
-              Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+              expressions: i1 (type: int)
+              outputColumnNames: _col0
+              Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
               Limit
                 Number of rows: 10
-                Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   sort order: 
-                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   tag: -1
-                  value expressions: _col0 (type: int), _col1 (type: int)
+                  value expressions: _col0 (type: int)
+                  auto parallelism: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -3937,6 +3600,7 @@ STAGE PLANS:
               bucket_count -1
               colelction.delim ,
               columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+              columns.comments               
               columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
               field.delim |
 #### A masked pattern was here ####
@@ -3959,6 +3623,7 @@ STAGE PLANS:
                 bucket_count -1
                 colelction.delim ,
                 columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+                columns.comments               
                 columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
                 field.delim |
 #### A masked pattern was here ####
@@ -3979,11 +3644,13 @@ STAGE PLANS:
         /alltypes_orc [temp:alltypes_orc]
       Needs Tagging: false
       Reduce Operator Tree:
-        Extract
-          Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+        Select Operator
+          expressions: VALUE._col0 (type: int)
+          outputColumnNames: _col0
+          Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
           Limit
             Number of rows: 10
-            Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: _col0 (type: int), 'hello' (type: string)
               outputColumnNames: _col0, _col1
@@ -4013,6 +3680,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: -- inner select - numRows: 2 rawDataSize: 24
 -- outer select - numRows: 2 rawDataSize: 16
@@ -4022,21 +3691,6 @@ POSTHOOK: query: -- inner select - numRows: 2 rawDataSize: 24
 -- outer select - numRows: 2 rawDataSize: 16
 explain extended select x from (select i1,11.0 as x from alltypes_orc limit 10) temp
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: alltypes_orc.bi1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bi1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.bo1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bo1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.d1 SIMPLE [(alltypes)alltypes.FieldSchema(name:d1, type:double, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.da1 SIMPLE [(alltypes)alltypes.FieldSchema(name:da1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.de1 SIMPLE [(alltypes)alltypes.FieldSchema(name:de1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.f1 SIMPLE [(alltypes)alltypes.FieldSchema(name:f1, type:float, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.i1 SIMPLE [(alltypes)alltypes.FieldSchema(name:i1, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.l1 SIMPLE [(alltypes)alltypes.FieldSchema(name:l1, type:array<int>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.m1 SIMPLE [(alltypes)alltypes.FieldSchema(name:m1, type:map<string,string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.s1 SIMPLE [(alltypes)alltypes.FieldSchema(name:s1, type:string, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:si1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -4073,7 +3727,7 @@ TOK_QUERY
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -4084,17 +3738,18 @@ STAGE PLANS:
             Statistics: Num rows: 2 Data size: 1686 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Select Operator
-              expressions: i1 (type: int), 11.0 (type: double)
-              outputColumnNames: _col0, _col1
-              Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+              expressions: 11.0 (type: double)
+              outputColumnNames: _col1
+              Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
               Limit
                 Number of rows: 10
-                Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   sort order: 
-                  Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   tag: -1
-                  value expressions: _col0 (type: int), _col1 (type: double)
+                  value expressions: _col1 (type: double)
+                  auto parallelism: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -4108,6 +3763,7 @@ STAGE PLANS:
               bucket_count -1
               colelction.delim ,
               columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+              columns.comments               
               columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
               field.delim |
 #### A masked pattern was here ####
@@ -4130,6 +3786,7 @@ STAGE PLANS:
                 bucket_count -1
                 colelction.delim ,
                 columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+                columns.comments               
                 columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
                 field.delim |
 #### A masked pattern was here ####
@@ -4150,11 +3807,13 @@ STAGE PLANS:
         /alltypes_orc [temp:alltypes_orc]
       Needs Tagging: false
       Reduce Operator Tree:
-        Extract
-          Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+        Select Operator
+          expressions: VALUE._col1 (type: double)
+          outputColumnNames: _col1
+          Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
           Limit
             Number of rows: 10
-            Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: _col1 (type: double)
               outputColumnNames: _col0
@@ -4184,6 +3843,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: -- inner select - numRows: 2 rawDataSize: 104
 -- outer select - numRows: 2 rawDataSize: 186
@@ -4193,21 +3854,6 @@ POSTHOOK: query: -- inner select - numRows: 2 rawDataSize: 104
 -- outer select - numRows: 2 rawDataSize: 186
 explain extended select x,"hello" from (select i1 as x, unbase64("0xe23") as ub from alltypes_orc limit 10) temp
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: alltypes_orc.bi1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bi1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.bo1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bo1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.d1 SIMPLE [(alltypes)alltypes.FieldSchema(name:d1, type:double, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.da1 SIMPLE [(alltypes)alltypes.FieldSchema(name:da1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.de1 SIMPLE [(alltypes)alltypes.FieldSchema(name:de1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.f1 SIMPLE [(alltypes)alltypes.FieldSchema(name:f1, type:float, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.i1 SIMPLE [(alltypes)alltypes.FieldSchema(name:i1, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.l1 SIMPLE [(alltypes)alltypes.FieldSchema(name:l1, type:array<int>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.m1 SIMPLE [(alltypes)alltypes.FieldSchema(name:m1, type:map<string,string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.s1 SIMPLE [(alltypes)alltypes.FieldSchema(name:s1, type:string, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:si1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -4249,7 +3895,7 @@ TOK_QUERY
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -4260,17 +3906,18 @@ STAGE PLANS:
             Statistics: Num rows: 2 Data size: 1686 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Select Operator
-              expressions: i1 (type: int), unbase64('0xe23') (type: binary)
-              outputColumnNames: _col0, _col1
-              Statistics: Num rows: 2 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
+              expressions: i1 (type: int)
+              outputColumnNames: _col0
+              Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
               Limit
                 Number of rows: 10
-                Statistics: Num rows: 2 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   sort order: 
-                  Statistics: Num rows: 2 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   tag: -1
-                  value expressions: _col0 (type: int), _col1 (type: binary)
+                  value expressions: _col0 (type: int)
+                  auto parallelism: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -4284,6 +3931,7 @@ STAGE PLANS:
               bucket_count -1
               colelction.delim ,
               columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+              columns.comments               
               columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
               field.delim |
 #### A masked pattern was here ####
@@ -4306,6 +3954,7 @@ STAGE PLANS:
                 bucket_count -1
                 colelction.delim ,
                 columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+                columns.comments               
                 columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
                 field.delim |
 #### A masked pattern was here ####
@@ -4326,11 +3975,13 @@ STAGE PLANS:
         /alltypes_orc [temp:alltypes_orc]
       Needs Tagging: false
       Reduce Operator Tree:
-        Extract
-          Statistics: Num rows: 2 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
+        Select Operator
+          expressions: VALUE._col0 (type: int)
+          outputColumnNames: _col0
+          Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
           Limit
             Number of rows: 10
-            Statistics: Num rows: 2 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: _col0 (type: int), 'hello' (type: string)
               outputColumnNames: _col0, _col1
@@ -4360,6 +4011,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: -- inner select -  numRows: 2 rawDataSize: 186
 -- middle select - numRows: 2 rawDataSize: 178
@@ -4371,21 +4024,6 @@ POSTHOOK: query: -- inner select -  numRows: 2 rawDataSize: 186
 -- outer select -  numRows: 2 rawDataSize: 194
 explain extended select h, 11.0 from (select hell as h from (select i1, "hello" as hell from alltypes_orc limit 10) in1 limit 10) in2
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: alltypes_orc.bi1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bi1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.bo1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bo1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.d1 SIMPLE [(alltypes)alltypes.FieldSchema(name:d1, type:double, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.da1 SIMPLE [(alltypes)alltypes.FieldSchema(name:da1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.de1 SIMPLE [(alltypes)alltypes.FieldSchema(name:de1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.f1 SIMPLE [(alltypes)alltypes.FieldSchema(name:f1, type:float, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.i1 SIMPLE [(alltypes)alltypes.FieldSchema(name:i1, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.l1 SIMPLE [(alltypes)alltypes.FieldSchema(name:l1, type:array<int>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.m1 SIMPLE [(alltypes)alltypes.FieldSchema(name:m1, type:map<string,string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.s1 SIMPLE [(alltypes)alltypes.FieldSchema(name:s1, type:string, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:si1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -4440,7 +4078,7 @@ TOK_QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-1
@@ -4451,17 +4089,18 @@ STAGE PLANS:
             Statistics: Num rows: 2 Data size: 1686 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Select Operator
-              expressions: i1 (type: int), 'hello' (type: string)
-              outputColumnNames: _col0, _col1
-              Statistics: Num rows: 2 Data size: 186 Basic stats: COMPLETE Column stats: COMPLETE
+              expressions: 'hello' (type: string)
+              outputColumnNames: _col1
+              Statistics: Num rows: 2 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
               Limit
                 Number of rows: 10
-                Statistics: Num rows: 2 Data size: 186 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 2 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   sort order: 
-                  Statistics: Num rows: 2 Data size: 186 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
                   tag: -1
-                  value expressions: _col0 (type: int), _col1 (type: string)
+                  value expressions: _col1 (type: string)
+                  auto parallelism: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -4475,6 +4114,7 @@ STAGE PLANS:
               bucket_count -1
               colelction.delim ,
               columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+              columns.comments               
               columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
               field.delim |
 #### A masked pattern was here ####
@@ -4497,6 +4137,7 @@ STAGE PLANS:
                 bucket_count -1
                 colelction.delim ,
                 columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+                columns.comments               
                 columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
                 field.delim |
 #### A masked pattern was here ####
@@ -4517,11 +4158,13 @@ STAGE PLANS:
         /alltypes_orc [in2:in1:alltypes_orc]
       Needs Tagging: false
       Reduce Operator Tree:
-        Extract
-          Statistics: Num rows: 2 Data size: 186 Basic stats: COMPLETE Column stats: COMPLETE
+        Select Operator
+          expressions: VALUE._col1 (type: string)
+          outputColumnNames: _col1
+          Statistics: Num rows: 2 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
           Limit
             Number of rows: 10
-            Statistics: Num rows: 2 Data size: 186 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 2 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: _col1 (type: string)
               outputColumnNames: _col0
@@ -4557,6 +4200,7 @@ STAGE PLANS:
               Statistics: Num rows: 2 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
               tag: -1
               value expressions: _col0 (type: string)
+              auto parallelism: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -4584,7 +4228,9 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Needs Tagging: false
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: VALUE._col0 (type: string)
+          outputColumnNames: _col0
           Statistics: Num rows: 2 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
           Limit
             Number of rows: 10
@@ -4618,6 +4264,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: -- This test is for FILTER operator where filter expression is a boolean column
 -- numRows: 2 rawDataSize: 8
@@ -4627,21 +4275,6 @@ POSTHOOK: query: -- This test is for FILTER operator where filter expression is 
 -- numRows: 2 rawDataSize: 8
 explain extended select bo1 from alltypes_orc where bo1
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: alltypes_orc.bi1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bi1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.bo1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bo1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.d1 SIMPLE [(alltypes)alltypes.FieldSchema(name:d1, type:double, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.da1 SIMPLE [(alltypes)alltypes.FieldSchema(name:da1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.de1 SIMPLE [(alltypes)alltypes.FieldSchema(name:de1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.f1 SIMPLE [(alltypes)alltypes.FieldSchema(name:f1, type:float, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.i1 SIMPLE [(alltypes)alltypes.FieldSchema(name:i1, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.l1 SIMPLE [(alltypes)alltypes.FieldSchema(name:l1, type:array<int>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.m1 SIMPLE [(alltypes)alltypes.FieldSchema(name:m1, type:map<string,string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.s1 SIMPLE [(alltypes)alltypes.FieldSchema(name:s1, type:string, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:si1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -4664,7 +4297,7 @@ TOK_QUERY
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -4716,6 +4349,7 @@ STAGE PLANS:
               bucket_count -1
               colelction.delim ,
               columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+              columns.comments               
               columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
               field.delim |
 #### A masked pattern was here ####
@@ -4738,6 +4372,7 @@ STAGE PLANS:
                 bucket_count -1
                 colelction.delim ,
                 columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+                columns.comments               
                 columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
                 field.delim |
 #### A masked pattern was here ####
@@ -4760,6 +4395,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: -- numRows: 0 rawDataSize: 0
 explain extended select bo1 from alltypes_orc where !bo1
@@ -4767,21 +4404,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: -- numRows: 0 rawDataSize: 0
 explain extended select bo1 from alltypes_orc where !bo1
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: alltypes_orc.bi1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bi1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.bo1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bo1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.d1 SIMPLE [(alltypes)alltypes.FieldSchema(name:d1, type:double, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.da1 SIMPLE [(alltypes)alltypes.FieldSchema(name:da1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.de1 SIMPLE [(alltypes)alltypes.FieldSchema(name:de1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.f1 SIMPLE [(alltypes)alltypes.FieldSchema(name:f1, type:float, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.i1 SIMPLE [(alltypes)alltypes.FieldSchema(name:i1, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.l1 SIMPLE [(alltypes)alltypes.FieldSchema(name:l1, type:array<int>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.m1 SIMPLE [(alltypes)alltypes.FieldSchema(name:m1, type:map<string,string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.s1 SIMPLE [(alltypes)alltypes.FieldSchema(name:s1, type:string, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:si1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -4805,7 +4427,7 @@ TOK_QUERY
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -4857,6 +4479,7 @@ STAGE PLANS:
               bucket_count -1
               colelction.delim ,
               columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+              columns.comments               
               columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
               field.delim |
 #### A masked pattern was here ####
@@ -4879,6 +4502,7 @@ STAGE PLANS:
                 bucket_count -1
                 colelction.delim ,
                 columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+                columns.comments               
                 columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
                 field.delim |
 #### A masked pattern was here ####
@@ -4901,4 +4525,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 

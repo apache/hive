@@ -72,4 +72,8 @@ public class LazyBinaryStructObjectInspector extends
     LazyBinaryStruct struct = (LazyBinaryStruct) data;
     return struct.getFieldsAsList();
   }
+
+  public StructField getStructFieldRef(int index) {
+    return fields.get(index);
+  }
 }

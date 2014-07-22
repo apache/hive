@@ -359,26 +359,26 @@ public class PartitionsStatsResult implements org.apache.thrift.TBase<Partitions
           case 1: // PART_STATS
             if (schemeField.type == org.apache.thrift.protocol.TType.MAP) {
               {
-                org.apache.thrift.protocol.TMap _map272 = iprot.readMapBegin();
-                struct.partStats = new HashMap<String,List<ColumnStatisticsObj>>(2*_map272.size);
-                for (int _i273 = 0; _i273 < _map272.size; ++_i273)
+                org.apache.thrift.protocol.TMap _map288 = iprot.readMapBegin();
+                struct.partStats = new HashMap<String,List<ColumnStatisticsObj>>(2*_map288.size);
+                for (int _i289 = 0; _i289 < _map288.size; ++_i289)
                 {
-                  String _key274; // required
-                  List<ColumnStatisticsObj> _val275; // required
-                  _key274 = iprot.readString();
+                  String _key290; // required
+                  List<ColumnStatisticsObj> _val291; // required
+                  _key290 = iprot.readString();
                   {
-                    org.apache.thrift.protocol.TList _list276 = iprot.readListBegin();
-                    _val275 = new ArrayList<ColumnStatisticsObj>(_list276.size);
-                    for (int _i277 = 0; _i277 < _list276.size; ++_i277)
+                    org.apache.thrift.protocol.TList _list292 = iprot.readListBegin();
+                    _val291 = new ArrayList<ColumnStatisticsObj>(_list292.size);
+                    for (int _i293 = 0; _i293 < _list292.size; ++_i293)
                     {
-                      ColumnStatisticsObj _elem278; // optional
-                      _elem278 = new ColumnStatisticsObj();
-                      _elem278.read(iprot);
-                      _val275.add(_elem278);
+                      ColumnStatisticsObj _elem294; // optional
+                      _elem294 = new ColumnStatisticsObj();
+                      _elem294.read(iprot);
+                      _val291.add(_elem294);
                     }
                     iprot.readListEnd();
                   }
-                  struct.partStats.put(_key274, _val275);
+                  struct.partStats.put(_key290, _val291);
                 }
                 iprot.readMapEnd();
               }
@@ -404,14 +404,14 @@ public class PartitionsStatsResult implements org.apache.thrift.TBase<Partitions
         oprot.writeFieldBegin(PART_STATS_FIELD_DESC);
         {
           oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.LIST, struct.partStats.size()));
-          for (Map.Entry<String, List<ColumnStatisticsObj>> _iter279 : struct.partStats.entrySet())
+          for (Map.Entry<String, List<ColumnStatisticsObj>> _iter295 : struct.partStats.entrySet())
           {
-            oprot.writeString(_iter279.getKey());
+            oprot.writeString(_iter295.getKey());
             {
-              oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, _iter279.getValue().size()));
-              for (ColumnStatisticsObj _iter280 : _iter279.getValue())
+              oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, _iter295.getValue().size()));
+              for (ColumnStatisticsObj _iter296 : _iter295.getValue())
               {
-                _iter280.write(oprot);
+                _iter296.write(oprot);
               }
               oprot.writeListEnd();
             }
@@ -439,14 +439,14 @@ public class PartitionsStatsResult implements org.apache.thrift.TBase<Partitions
       TTupleProtocol oprot = (TTupleProtocol) prot;
       {
         oprot.writeI32(struct.partStats.size());
-        for (Map.Entry<String, List<ColumnStatisticsObj>> _iter281 : struct.partStats.entrySet())
+        for (Map.Entry<String, List<ColumnStatisticsObj>> _iter297 : struct.partStats.entrySet())
         {
-          oprot.writeString(_iter281.getKey());
+          oprot.writeString(_iter297.getKey());
           {
-            oprot.writeI32(_iter281.getValue().size());
-            for (ColumnStatisticsObj _iter282 : _iter281.getValue())
+            oprot.writeI32(_iter297.getValue().size());
+            for (ColumnStatisticsObj _iter298 : _iter297.getValue())
             {
-              _iter282.write(oprot);
+              _iter298.write(oprot);
             }
           }
         }
@@ -457,25 +457,25 @@ public class PartitionsStatsResult implements org.apache.thrift.TBase<Partitions
     public void read(org.apache.thrift.protocol.TProtocol prot, PartitionsStatsResult struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       {
-        org.apache.thrift.protocol.TMap _map283 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.LIST, iprot.readI32());
-        struct.partStats = new HashMap<String,List<ColumnStatisticsObj>>(2*_map283.size);
-        for (int _i284 = 0; _i284 < _map283.size; ++_i284)
+        org.apache.thrift.protocol.TMap _map299 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.LIST, iprot.readI32());
+        struct.partStats = new HashMap<String,List<ColumnStatisticsObj>>(2*_map299.size);
+        for (int _i300 = 0; _i300 < _map299.size; ++_i300)
         {
-          String _key285; // required
-          List<ColumnStatisticsObj> _val286; // required
-          _key285 = iprot.readString();
+          String _key301; // required
+          List<ColumnStatisticsObj> _val302; // required
+          _key301 = iprot.readString();
           {
-            org.apache.thrift.protocol.TList _list287 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-            _val286 = new ArrayList<ColumnStatisticsObj>(_list287.size);
-            for (int _i288 = 0; _i288 < _list287.size; ++_i288)
+            org.apache.thrift.protocol.TList _list303 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+            _val302 = new ArrayList<ColumnStatisticsObj>(_list303.size);
+            for (int _i304 = 0; _i304 < _list303.size; ++_i304)
             {
-              ColumnStatisticsObj _elem289; // optional
-              _elem289 = new ColumnStatisticsObj();
-              _elem289.read(iprot);
-              _val286.add(_elem289);
+              ColumnStatisticsObj _elem305; // optional
+              _elem305 = new ColumnStatisticsObj();
+              _elem305.read(iprot);
+              _val302.add(_elem305);
             }
           }
-          struct.partStats.put(_key285, _val286);
+          struct.partStats.put(_key301, _val302);
         }
       }
       struct.setPartStatsIsSet(true);

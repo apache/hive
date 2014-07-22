@@ -114,6 +114,7 @@ public class HashTableSinkDesc extends JoinDesc implements Serializable {
     this.retainList = clone.getRetainList();
     this.dumpFilePrefix = clone.getDumpFilePrefix();
     this.bucketMapjoinContext = new BucketMapJoinContext(clone);
+    this.hashtableMemoryUsage = clone.getHashTableMemoryUsage();
   }
 
 

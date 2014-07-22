@@ -8,6 +8,7 @@ PARTITIONED BY (part STRING)
 SKEWED BY (key) ON ("484")
 STORED AS DIRECTORIES
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- This tests that bucketing/sorting metadata is not inferred for tables with list bucketing
 
 -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
@@ -18,6 +19,7 @@ PARTITIONED BY (part STRING)
 SKEWED BY (key) ON ("484")
 STORED AS DIRECTORIES
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@list_bucketing_table
 PREHOOK: query: -- Tests group by, the output should neither be bucketed nor sorted
 
@@ -37,19 +39,19 @@ POSTHOOK: Lineage: list_bucketing_table PARTITION(part=1).key SIMPLE [(src)src.F
 POSTHOOK: Lineage: list_bucketing_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
 PREHOOK: query: DESC FORMATTED list_bucketing_table PARTITION (part = '1')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@list_bucketing_table
 POSTHOOK: query: DESC FORMATTED list_bucketing_table PARTITION (part = '1')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Lineage: list_bucketing_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: list_bucketing_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
+POSTHOOK: Input: default@list_bucketing_table
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	None                
-value               	string              	None                
+key                 	string              	                    
+value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-part                	string              	None                
+part                	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[1]                 	 
@@ -87,15 +89,15 @@ PARTITIONED BY (part STRING)
 SKEWED BY (key) ON ("abc")
 STORED AS DIRECTORIES
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- create a table skewed on a key which doesnt exist in the data
 CREATE TABLE list_bucketing_table2 (key STRING, value STRING) 
 PARTITIONED BY (part STRING) 
 SKEWED BY (key) ON ("abc")
 STORED AS DIRECTORIES
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@list_bucketing_table2
-POSTHOOK: Lineage: list_bucketing_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: list_bucketing_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
 PREHOOK: query: -- should not be bucketed or sorted
 INSERT OVERWRITE TABLE list_bucketing_table2 PARTITION (part = '1')
 SELECT key, count(*) FROM src GROUP BY key
@@ -108,27 +110,23 @@ SELECT key, count(*) FROM src GROUP BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@list_bucketing_table2@part=1
-POSTHOOK: Lineage: list_bucketing_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: list_bucketing_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
 POSTHOOK: Lineage: list_bucketing_table2 PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: list_bucketing_table2 PARTITION(part=1).value EXPRESSION [(src)src.null, ]
 PREHOOK: query: DESC FORMATTED list_bucketing_table2 PARTITION (part = '1')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@list_bucketing_table2
 POSTHOOK: query: DESC FORMATTED list_bucketing_table2 PARTITION (part = '1')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Lineage: list_bucketing_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: list_bucketing_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: list_bucketing_table2 PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: list_bucketing_table2 PARTITION(part=1).value EXPRESSION [(src)src.null, ]
+POSTHOOK: Input: default@list_bucketing_table2
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	None                
-value               	string              	None                
+key                 	string              	                    
+value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-part                	string              	None                
+part                	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[1]                 	 
@@ -142,7 +140,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	309                 
 	rawDataSize         	1482                
-	totalSize           	136                 
+	totalSize           	1791                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

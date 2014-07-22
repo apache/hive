@@ -7,22 +7,26 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@alter2
 PREHOOK: query: describe extended alter2
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter2
 POSTHOOK: query: describe extended alter2
 POSTHOOK: type: DESCTABLE
-a                   	int                 	None                
-b                   	int                 	None                
-insertdate          	string              	None                
+POSTHOOK: Input: default@alter2
+a                   	int                 	                    
+b                   	int                 	                    
+insertdate          	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-insertdate          	string              	None                
+insertdate          	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: show partitions alter2
 PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@alter2
 POSTHOOK: query: show partitions alter2
 POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@alter2
 PREHOOK: query: alter table alter2 add partition (insertdate='2008-01-01') location '2008/01/01'
 PREHOOK: type: ALTERTABLE_ADDPARTS
 PREHOOK: Input: 2008/01/01
@@ -34,22 +38,26 @@ POSTHOOK: Output: default@alter2
 POSTHOOK: Output: default@alter2@insertdate=2008-01-01
 PREHOOK: query: describe extended alter2
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter2
 POSTHOOK: query: describe extended alter2
 POSTHOOK: type: DESCTABLE
-a                   	int                 	None                
-b                   	int                 	None                
-insertdate          	string              	None                
+POSTHOOK: Input: default@alter2
+a                   	int                 	                    
+b                   	int                 	                    
+insertdate          	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-insertdate          	string              	None                
+insertdate          	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: show partitions alter2
 PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@alter2
 POSTHOOK: query: show partitions alter2
 POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@alter2
 insertdate=2008-01-01
 PREHOOK: query: alter table alter2 add partition (insertdate='2008-01-02') location '2008/01/02'
 PREHOOK: type: ALTERTABLE_ADDPARTS
@@ -62,22 +70,26 @@ POSTHOOK: Output: default@alter2
 POSTHOOK: Output: default@alter2@insertdate=2008-01-02
 PREHOOK: query: describe extended alter2
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter2
 POSTHOOK: query: describe extended alter2
 POSTHOOK: type: DESCTABLE
-a                   	int                 	None                
-b                   	int                 	None                
-insertdate          	string              	None                
+POSTHOOK: Input: default@alter2
+a                   	int                 	                    
+b                   	int                 	                    
+insertdate          	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-insertdate          	string              	None                
+insertdate          	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: show partitions alter2
 PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@alter2
 POSTHOOK: query: show partitions alter2
 POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@alter2
 insertdate=2008-01-01
 insertdate=2008-01-02
 PREHOOK: query: drop table alter2
@@ -97,22 +109,26 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@alter2
 PREHOOK: query: describe extended alter2
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter2
 POSTHOOK: query: describe extended alter2
 POSTHOOK: type: DESCTABLE
-a                   	int                 	None                
-b                   	int                 	None                
-insertdate          	string              	None                
+POSTHOOK: Input: default@alter2
+a                   	int                 	                    
+b                   	int                 	                    
+insertdate          	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-insertdate          	string              	None                
+insertdate          	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: show partitions alter2
 PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@alter2
 POSTHOOK: query: show partitions alter2
 POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@alter2
 PREHOOK: query: alter table alter2 add partition (insertdate='2008-01-01') location '2008/01/01'
 PREHOOK: type: ALTERTABLE_ADDPARTS
 PREHOOK: Input: 2008/01/01
@@ -124,22 +140,26 @@ POSTHOOK: Output: default@alter2
 POSTHOOK: Output: default@alter2@insertdate=2008-01-01
 PREHOOK: query: describe extended alter2
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter2
 POSTHOOK: query: describe extended alter2
 POSTHOOK: type: DESCTABLE
-a                   	int                 	None                
-b                   	int                 	None                
-insertdate          	string              	None                
+POSTHOOK: Input: default@alter2
+a                   	int                 	                    
+b                   	int                 	                    
+insertdate          	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-insertdate          	string              	None                
+insertdate          	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: show partitions alter2
 PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@alter2
 POSTHOOK: query: show partitions alter2
 POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@alter2
 insertdate=2008-01-01
 PREHOOK: query: alter table alter2 add partition (insertdate='2008-01-02') location '2008/01/02'
 PREHOOK: type: ALTERTABLE_ADDPARTS
@@ -152,22 +172,26 @@ POSTHOOK: Output: default@alter2
 POSTHOOK: Output: default@alter2@insertdate=2008-01-02
 PREHOOK: query: describe extended alter2
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter2
 POSTHOOK: query: describe extended alter2
 POSTHOOK: type: DESCTABLE
-a                   	int                 	None                
-b                   	int                 	None                
-insertdate          	string              	None                
+POSTHOOK: Input: default@alter2
+a                   	int                 	                    
+b                   	int                 	                    
+insertdate          	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-insertdate          	string              	None                
+insertdate          	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: show partitions alter2
 PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@alter2
 POSTHOOK: query: show partitions alter2
 POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@alter2
 insertdate=2008-01-01
 insertdate=2008-01-02
 PREHOOK: query: -- Cleanup
@@ -218,22 +242,26 @@ POSTHOOK: Output: alter2_db@alter2
 POSTHOOK: Output: database:alter2_db
 PREHOOK: query: DESCRIBE EXTENDED alter2
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: alter2_db@alter2
 POSTHOOK: query: DESCRIBE EXTENDED alter2
 POSTHOOK: type: DESCTABLE
-a                   	int                 	None                
-b                   	int                 	None                
-insertdate          	string              	None                
+POSTHOOK: Input: alter2_db@alter2
+a                   	int                 	                    
+b                   	int                 	                    
+insertdate          	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-insertdate          	string              	None                
+insertdate          	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: SHOW PARTITIONS alter2
 PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: alter2_db@alter2
 POSTHOOK: query: SHOW PARTITIONS alter2
 POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: alter2_db@alter2
 #### A masked pattern was here ####
 PREHOOK: type: ALTERTABLE_ADDPARTS
 PREHOOK: Input: 2008/01/01
@@ -245,22 +273,26 @@ POSTHOOK: Output: alter2_db@alter2
 POSTHOOK: Output: alter2_db@alter2@insertdate=2008-01-01
 PREHOOK: query: DESCRIBE EXTENDED alter2
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: alter2_db@alter2
 POSTHOOK: query: DESCRIBE EXTENDED alter2
 POSTHOOK: type: DESCTABLE
-a                   	int                 	None                
-b                   	int                 	None                
-insertdate          	string              	None                
+POSTHOOK: Input: alter2_db@alter2
+a                   	int                 	                    
+b                   	int                 	                    
+insertdate          	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-insertdate          	string              	None                
+insertdate          	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: SHOW PARTITIONS alter2
 PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: alter2_db@alter2
 POSTHOOK: query: SHOW PARTITIONS alter2
 POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: alter2_db@alter2
 insertdate=2008-01-01
 #### A masked pattern was here ####
 PREHOOK: type: ALTERTABLE_ADDPARTS
@@ -273,22 +305,26 @@ POSTHOOK: Output: alter2_db@alter2
 POSTHOOK: Output: alter2_db@alter2@insertdate=2008-01-02
 PREHOOK: query: DESCRIBE EXTENDED alter2
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: alter2_db@alter2
 POSTHOOK: query: DESCRIBE EXTENDED alter2
 POSTHOOK: type: DESCTABLE
-a                   	int                 	None                
-b                   	int                 	None                
-insertdate          	string              	None                
+POSTHOOK: Input: alter2_db@alter2
+a                   	int                 	                    
+b                   	int                 	                    
+insertdate          	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-insertdate          	string              	None                
+insertdate          	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: SHOW PARTITIONS alter2
 PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: alter2_db@alter2
 POSTHOOK: query: SHOW PARTITIONS alter2
 POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: alter2_db@alter2
 insertdate=2008-01-01
 insertdate=2008-01-02
 PREHOOK: query: DROP TABLE alter2
@@ -308,22 +344,26 @@ POSTHOOK: Output: alter2_db@alter2
 POSTHOOK: Output: database:alter2_db
 PREHOOK: query: DESCRIBE EXTENDED alter2
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: alter2_db@alter2
 POSTHOOK: query: DESCRIBE EXTENDED alter2
 POSTHOOK: type: DESCTABLE
-a                   	int                 	None                
-b                   	int                 	None                
-insertdate          	string              	None                
+POSTHOOK: Input: alter2_db@alter2
+a                   	int                 	                    
+b                   	int                 	                    
+insertdate          	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-insertdate          	string              	None                
+insertdate          	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: SHOW PARTITIONS alter2
 PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: alter2_db@alter2
 POSTHOOK: query: SHOW PARTITIONS alter2
 POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: alter2_db@alter2
 #### A masked pattern was here ####
 PREHOOK: type: ALTERTABLE_ADDPARTS
 PREHOOK: Input: 2008/01/01
@@ -335,22 +375,26 @@ POSTHOOK: Output: alter2_db@alter2
 POSTHOOK: Output: alter2_db@alter2@insertdate=2008-01-01
 PREHOOK: query: DESCRIBE EXTENDED alter2
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: alter2_db@alter2
 POSTHOOK: query: DESCRIBE EXTENDED alter2
 POSTHOOK: type: DESCTABLE
-a                   	int                 	None                
-b                   	int                 	None                
-insertdate          	string              	None                
+POSTHOOK: Input: alter2_db@alter2
+a                   	int                 	                    
+b                   	int                 	                    
+insertdate          	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-insertdate          	string              	None                
+insertdate          	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: SHOW PARTITIONS alter2
 PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: alter2_db@alter2
 POSTHOOK: query: SHOW PARTITIONS alter2
 POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: alter2_db@alter2
 insertdate=2008-01-01
 #### A masked pattern was here ####
 PREHOOK: type: ALTERTABLE_ADDPARTS
@@ -363,22 +407,26 @@ POSTHOOK: Output: alter2_db@alter2
 POSTHOOK: Output: alter2_db@alter2@insertdate=2008-01-02
 PREHOOK: query: DESCRIBE EXTENDED alter2
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: alter2_db@alter2
 POSTHOOK: query: DESCRIBE EXTENDED alter2
 POSTHOOK: type: DESCTABLE
-a                   	int                 	None                
-b                   	int                 	None                
-insertdate          	string              	None                
+POSTHOOK: Input: alter2_db@alter2
+a                   	int                 	                    
+b                   	int                 	                    
+insertdate          	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-insertdate          	string              	None                
+insertdate          	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: SHOW PARTITIONS alter2
 PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: alter2_db@alter2
 POSTHOOK: query: SHOW PARTITIONS alter2
 POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: alter2_db@alter2
 insertdate=2008-01-01
 insertdate=2008-01-02
 PREHOOK: query: DROP TABLE alter2

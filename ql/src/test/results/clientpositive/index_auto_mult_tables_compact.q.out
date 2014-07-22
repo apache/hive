@@ -1,17 +1,18 @@
-PREHOOK: query: -- try the query without indexing, with manual indexing, and with automatic indexing
+PREHOOK: query: -- SORT_QUERY_RESULTS
+-- try the query without indexing, with manual indexing, and with automatic indexing
 
 -- without indexing
-EXPLAIN SELECT a.key, a.value FROM src a JOIN srcpart b ON (a.key = b.key) WHERE a.key > 80 AND a.key < 100 AND b.key > 70 AND b.key < 90 ORDER BY a.key
+EXPLAIN SELECT a.key, a.value FROM src a JOIN srcpart b ON (a.key = b.key) WHERE a.key > 80 AND a.key < 100 AND b.key > 70 AND b.key < 90
 PREHOOK: type: QUERY
-POSTHOOK: query: -- try the query without indexing, with manual indexing, and with automatic indexing
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+-- try the query without indexing, with manual indexing, and with automatic indexing
 
 -- without indexing
-EXPLAIN SELECT a.key, a.value FROM src a JOIN srcpart b ON (a.key = b.key) WHERE a.key > 80 AND a.key < 100 AND b.key > 70 AND b.key < 90 ORDER BY a.key
+EXPLAIN SELECT a.key, a.value FROM src a JOIN srcpart b ON (a.key = b.key) WHERE a.key > 80 AND a.key < 100 AND b.key > 70 AND b.key < 90
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -21,70 +22,53 @@ STAGE PLANS:
             alias: b
             Statistics: Num rows: 232 Data size: 23248 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((((key > 70) and (key < 90)) and (key > 80)) and (key < 100)) (type: boolean)
-              Statistics: Num rows: 2 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+              predicate: ((((key is not null and (key > 70)) and (key < 90)) and (key > 80)) and (key < 100)) (type: boolean)
+              Statistics: Num rows: 1 Data size: 100 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: key (type: string)
                 sort order: +
                 Map-reduce partition columns: key (type: string)
-                Statistics: Num rows: 2 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 100 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: a
             Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((((key > 80) and (key < 100)) and (key > 70)) and (key < 90)) (type: boolean)
+              predicate: ((((key is not null and (key > 80)) and (key < 100)) and (key > 70)) and (key < 90)) (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Reduce Output Operator
                 key expressions: key (type: string)
                 sort order: +
                 Map-reduce partition columns: key (type: string)
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-                value expressions: key (type: string), value (type: string)
+                value expressions: value (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
           condition expressions:
-            0 {VALUE._col0} {VALUE._col1}
+            0 {KEY.reducesinkkey0} {VALUE._col0}
             1 
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 2 Data size: 220 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 110 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: _col0 (type: string), _col1 (type: string)
             outputColumnNames: _col0, _col1
-            Statistics: Num rows: 2 Data size: 220 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 110 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
+              Statistics: Num rows: 1 Data size: 110 Basic stats: COMPLETE Column stats: NONE
               table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-
-  Stage: Stage-2
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            Reduce Output Operator
-              key expressions: _col0 (type: string)
-              sort order: +
-              Statistics: Num rows: 2 Data size: 220 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: string), _col1 (type: string)
-      Reduce Operator Tree:
-        Extract
-          Statistics: Num rows: 2 Data size: 220 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 2 Data size: 220 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
-PREHOOK: query: SELECT a.key, a.value FROM src a JOIN srcpart b ON (a.key = b.key) WHERE a.key > 80 AND a.key < 100 AND b.key > 70 AND b.key < 90 ORDER BY a.key
+PREHOOK: query: SELECT a.key, a.value FROM src a JOIN srcpart b ON (a.key = b.key) WHERE a.key > 80 AND a.key < 100 AND b.key > 70 AND b.key < 90
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@srcpart
@@ -93,7 +77,7 @@ PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT a.key, a.value FROM src a JOIN srcpart b ON (a.key = b.key) WHERE a.key > 80 AND a.key < 100 AND b.key > 70 AND b.key < 90 ORDER BY a.key
+POSTHOOK: query: SELECT a.key, a.value FROM src a JOIN srcpart b ON (a.key = b.key) WHERE a.key > 80 AND a.key < 100 AND b.key > 70 AND b.key < 90
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@srcpart
@@ -171,9 +155,6 @@ PREHOOK: type: CREATEINDEX
 POSTHOOK: query: CREATE INDEX srcpart_index ON TABLE srcpart(key) as 'COMPACT' WITH DEFERRED REBUILD
 POSTHOOK: type: CREATEINDEX
 POSTHOOK: Output: default@default__srcpart_srcpart_index__
-POSTHOOK: Lineage: default__src_src_index__._bucketname SIMPLE [(src)src.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__src_src_index__._offsets EXPRESSION [(src)src.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__src_src_index__.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: ALTER INDEX srcpart_index ON srcpart REBUILD
 PREHOOK: type: ALTERINDEX_REBUILD
 PREHOOK: Input: default@srcpart
@@ -196,45 +177,35 @@ POSTHOOK: Output: default@default__srcpart_srcpart_index__@ds=2008-04-08/hr=11
 POSTHOOK: Output: default@default__srcpart_srcpart_index__@ds=2008-04-08/hr=12
 POSTHOOK: Output: default@default__srcpart_srcpart_index__@ds=2008-04-09/hr=11
 POSTHOOK: Output: default@default__srcpart_srcpart_index__@ds=2008-04-09/hr=12
-POSTHOOK: Lineage: default__src_src_index__._bucketname SIMPLE [(src)src.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__src_src_index__._offsets EXPRESSION [(src)src.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__src_src_index__.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: default__srcpart_srcpart_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart)srcpart.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__srcpart_srcpart_index__ PARTITION(ds=2008-04-09,hr=12)._offsets EXPRESSION [(srcpart)srcpart.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 POSTHOOK: Lineage: default__srcpart_srcpart_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: -- automatic indexing
-EXPLAIN SELECT a.key, a.value FROM src a JOIN srcpart b ON (a.key = b.key) WHERE a.key > 80 AND a.key < 100 AND b.key > 70 AND b.key < 90 ORDER BY a.key
+EXPLAIN SELECT a.key, a.value FROM src a JOIN srcpart b ON (a.key = b.key) WHERE a.key > 80 AND a.key < 100 AND b.key > 70 AND b.key < 90
 PREHOOK: type: QUERY
 POSTHOOK: query: -- automatic indexing
-EXPLAIN SELECT a.key, a.value FROM src a JOIN srcpart b ON (a.key = b.key) WHERE a.key > 80 AND a.key < 100 AND b.key > 70 AND b.key < 90 ORDER BY a.key
+EXPLAIN SELECT a.key, a.value FROM src a JOIN srcpart b ON (a.key = b.key) WHERE a.key > 80 AND a.key < 100 AND b.key > 70 AND b.key < 90
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: default__src_src_index__._bucketname SIMPLE [(src)src.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__src_src_index__._offsets EXPRESSION [(src)src.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__src_src_index__.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: default__srcpart_srcpart_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart)srcpart.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__srcpart_srcpart_index__ PARTITION(ds=2008-04-09,hr=12)._offsets EXPRESSION [(srcpart)srcpart.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__srcpart_srcpart_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 STAGE DEPENDENCIES:
-  Stage-5 is a root stage
-  Stage-10 depends on stages: Stage-5 , consists of Stage-7, Stage-6, Stage-8
-  Stage-7
-  Stage-4 depends on stages: Stage-7, Stage-6, Stage-9
-  Stage-1 depends on stages: Stage-4, Stage-11
-  Stage-2 depends on stages: Stage-1
+  Stage-4 is a root stage
+  Stage-9 depends on stages: Stage-4 , consists of Stage-6, Stage-5, Stage-7
   Stage-6
-  Stage-8
-  Stage-9 depends on stages: Stage-8
-  Stage-12 is a root stage
-  Stage-17 depends on stages: Stage-12 , consists of Stage-14, Stage-13, Stage-15
-  Stage-14
-  Stage-11 depends on stages: Stage-14, Stage-13, Stage-16
+  Stage-3 depends on stages: Stage-6, Stage-5, Stage-8
+  Stage-1 depends on stages: Stage-3, Stage-10
+  Stage-5
+  Stage-7
+  Stage-8 depends on stages: Stage-7
+  Stage-11 is a root stage
+  Stage-16 depends on stages: Stage-11 , consists of Stage-13, Stage-12, Stage-14
   Stage-13
-  Stage-15
-  Stage-16 depends on stages: Stage-15
-  Stage-0 is a root stage
+  Stage-10 depends on stages: Stage-13, Stage-12, Stage-15
+  Stage-12
+  Stage-14
+  Stage-15 depends on stages: Stage-14
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-5
+  Stage: Stage-4
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -252,16 +223,16 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
-  Stage: Stage-10
+  Stage: Stage-9
     Conditional Operator
 
-  Stage: Stage-7
+  Stage: Stage-6
     Move Operator
       files:
           hdfs directory: true
 #### A masked pattern was here ####
 
-  Stage: Stage-4
+  Stage: Stage-3
     Move Operator
       files:
           hdfs directory: true
@@ -272,70 +243,62 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: b
-            filterExpr: ((((key > 70) and (key < 90)) and (key > 80)) and (key < 100)) (type: boolean)
+            filterExpr: ((((key is not null and (key > 70)) and (key < 90)) and (key > 80)) and (key < 100)) (type: boolean)
             Statistics: Num rows: 232 Data size: 23248 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((((key > 70) and (key < 90)) and (key > 80)) and (key < 100)) (type: boolean)
-              Statistics: Num rows: 2 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+              predicate: ((((key is not null and (key > 70)) and (key < 90)) and (key > 80)) and (key < 100)) (type: boolean)
+              Statistics: Num rows: 1 Data size: 100 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: key (type: string)
                 sort order: +
                 Map-reduce partition columns: key (type: string)
-                Statistics: Num rows: 2 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 100 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: a
-            filterExpr: ((((key > 80) and (key < 100)) and (key > 70)) and (key < 90)) (type: boolean)
+            filterExpr: ((((key is not null and (key > 80)) and (key < 100)) and (key > 70)) and (key < 90)) (type: boolean)
             Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((((key > 80) and (key < 100)) and (key > 70)) and (key < 90)) (type: boolean)
+              predicate: ((((key is not null and (key > 80)) and (key < 100)) and (key > 70)) and (key < 90)) (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Reduce Output Operator
                 key expressions: key (type: string)
                 sort order: +
                 Map-reduce partition columns: key (type: string)
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-                value expressions: key (type: string), value (type: string)
+                value expressions: value (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
           condition expressions:
-            0 {VALUE._col0} {VALUE._col1}
+            0 {KEY.reducesinkkey0} {VALUE._col0}
             1 
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 2 Data size: 220 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 110 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: _col0 (type: string), _col1 (type: string)
             outputColumnNames: _col0, _col1
-            Statistics: Num rows: 2 Data size: 220 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 110 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
+              Statistics: Num rows: 1 Data size: 110 Basic stats: COMPLETE Column stats: NONE
               table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
-  Stage: Stage-2
+  Stage: Stage-5
     Map Reduce
       Map Operator Tree:
           TableScan
-            Reduce Output Operator
-              key expressions: _col0 (type: string)
-              sort order: +
-              Statistics: Num rows: 2 Data size: 220 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: string), _col1 (type: string)
-      Reduce Operator Tree:
-        Extract
-          Statistics: Num rows: 2 Data size: 220 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 2 Data size: 220 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
-  Stage: Stage-6
+  Stage: Stage-7
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -347,23 +310,12 @@ STAGE PLANS:
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-8
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            File Output Operator
-              compressed: false
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
-  Stage: Stage-9
     Move Operator
       files:
           hdfs directory: true
 #### A masked pattern was here ####
 
-  Stage: Stage-12
+  Stage: Stage-11
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -381,22 +333,33 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
-  Stage: Stage-17
+  Stage: Stage-16
     Conditional Operator
 
-  Stage: Stage-14
-    Move Operator
-      files:
-          hdfs directory: true
-#### A masked pattern was here ####
-
-  Stage: Stage-11
-    Move Operator
-      files:
-          hdfs directory: true
-#### A masked pattern was here ####
-
   Stage: Stage-13
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+  Stage: Stage-10
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+  Stage: Stage-12
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-14
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -408,17 +371,6 @@ STAGE PLANS:
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-15
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            File Output Operator
-              compressed: false
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
-  Stage: Stage-16
     Move Operator
       files:
           hdfs directory: true
@@ -427,8 +379,10 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
-PREHOOK: query: SELECT a.key, a.value FROM src a JOIN srcpart b ON (a.key = b.key) WHERE a.key > 80 AND a.key < 100 AND b.key > 70 AND b.key < 90 ORDER BY a.key
+PREHOOK: query: SELECT a.key, a.value FROM src a JOIN srcpart b ON (a.key = b.key) WHERE a.key > 80 AND a.key < 100 AND b.key > 70 AND b.key < 90
 PREHOOK: type: QUERY
 PREHOOK: Input: default@default__src_src_index__
 PREHOOK: Input: default@default__srcpart_srcpart_index__
@@ -443,7 +397,7 @@ PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT a.key, a.value FROM src a JOIN srcpart b ON (a.key = b.key) WHERE a.key > 80 AND a.key < 100 AND b.key > 70 AND b.key < 90 ORDER BY a.key
+POSTHOOK: query: SELECT a.key, a.value FROM src a JOIN srcpart b ON (a.key = b.key) WHERE a.key > 80 AND a.key < 100 AND b.key > 70 AND b.key < 90
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@default__src_src_index__
 POSTHOOK: Input: default@default__srcpart_srcpart_index__
@@ -458,12 +412,6 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
-POSTHOOK: Lineage: default__src_src_index__._bucketname SIMPLE [(src)src.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__src_src_index__._offsets EXPRESSION [(src)src.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__src_src_index__.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: default__srcpart_srcpart_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart)srcpart.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__srcpart_srcpart_index__ PARTITION(ds=2008-04-09,hr=12)._offsets EXPRESSION [(srcpart)srcpart.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__srcpart_srcpart_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 82	val_82
 82	val_82
 82	val_82
@@ -516,19 +464,7 @@ PREHOOK: query: DROP INDEX src_index on src
 PREHOOK: type: DROPINDEX
 POSTHOOK: query: DROP INDEX src_index on src
 POSTHOOK: type: DROPINDEX
-POSTHOOK: Lineage: default__src_src_index__._bucketname SIMPLE [(src)src.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__src_src_index__._offsets EXPRESSION [(src)src.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__src_src_index__.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: default__srcpart_srcpart_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart)srcpart.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__srcpart_srcpart_index__ PARTITION(ds=2008-04-09,hr=12)._offsets EXPRESSION [(srcpart)srcpart.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__srcpart_srcpart_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: DROP INDEX srcpart_index on src
 PREHOOK: type: DROPINDEX
 POSTHOOK: query: DROP INDEX srcpart_index on src
 POSTHOOK: type: DROPINDEX
-POSTHOOK: Lineage: default__src_src_index__._bucketname SIMPLE [(src)src.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__src_src_index__._offsets EXPRESSION [(src)src.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__src_src_index__.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: default__srcpart_srcpart_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart)srcpart.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__srcpart_srcpart_index__ PARTITION(ds=2008-04-09,hr=12)._offsets EXPRESSION [(srcpart)srcpart.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__srcpart_srcpart_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]

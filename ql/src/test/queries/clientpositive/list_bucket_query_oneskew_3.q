@@ -4,6 +4,7 @@ set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
 set hive.mapred.supports.subdirectories=true;
 
 -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)	
+-- SORT_QUERY_RESULTS
 
 -- List bucketing query logic test case. 
 -- Test condition: 
@@ -52,10 +53,10 @@ alter table fact_daily PARTITION (ds = '1') set skewed location (484='${hiveconf
 'HIVE_DEFAULT_LIST_BUCKETING_KEY'='${hiveconf:hive.metastore.warehouse.dir}/fact_tz/ds=1/HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME');
 describe formatted fact_daily PARTITION (ds = '1');
 	
-SELECT * FROM fact_daily WHERE ds='1' ORDER BY x, y, z;	
+SELECT * FROM fact_daily WHERE ds='1';
 
 -- pruner  pick up right directory
 -- explain plan shows which directory selected: Truncated Path -> Alias
-explain extended SELECT x FROM fact_daily WHERE ds='1' and not (x = 86) ORDER BY x;
+explain extended SELECT x FROM fact_daily WHERE ds='1' and not (x = 86);
 -- List Bucketing Query
-SELECT x FROM fact_daily WHERE ds='1' and not (x = 86) ORDER BY x;
+SELECT x FROM fact_daily WHERE ds='1' and not (x = 86);

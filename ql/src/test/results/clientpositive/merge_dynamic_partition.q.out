@@ -1,7 +1,11 @@
-PREHOOK: query: create table srcpart_merge_dp like srcpart
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+create table srcpart_merge_dp like srcpart
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-POSTHOOK: query: create table srcpart_merge_dp like srcpart
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+create table srcpart_merge_dp like srcpart
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcpart_merge_dp
@@ -104,18 +108,16 @@ POSTHOOK: Input: default@srcpart_merge_dp@ds=2008-04-08/hr=11
 POSTHOOK: Output: default@merge_dynamic_part@ds=2008-04-08/hr=11
 POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: select * from merge_dynamic_part order by key, value
+PREHOOK: query: select * from merge_dynamic_part
 PREHOOK: type: QUERY
 PREHOOK: Input: default@merge_dynamic_part
 PREHOOK: Input: default@merge_dynamic_part@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
-POSTHOOK: query: select * from merge_dynamic_part order by key, value
+POSTHOOK: query: select * from merge_dynamic_part
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@merge_dynamic_part
 POSTHOOK: Input: default@merge_dynamic_part@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
-POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:value, type:string, comment:default), ]
 0	val_0	2008-04-08	11
 0	val_0	2008-04-08	11
 0	val_0	2008-04-08	11
@@ -620,8 +622,6 @@ PREHOOK: query: show table extended like `merge_dynamic_part`
 PREHOOK: type: SHOW_TABLESTATUS
 POSTHOOK: query: show table extended like `merge_dynamic_part`
 POSTHOOK: type: SHOW_TABLESTATUS
-POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:value, type:string, comment:default), ]
 tableName:merge_dynamic_part
 #### A masked pattern was here ####
 inputformat:org.apache.hadoop.mapred.TextInputFormat
@@ -641,8 +641,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain
 insert overwrite table merge_dynamic_part partition (ds='2008-04-08', hr=11) select key, value from srcpart_merge_dp where ds='2008-04-08'
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:value, type:string, comment:default), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
@@ -740,22 +738,16 @@ POSTHOOK: Input: default@srcpart_merge_dp@ds=2008-04-08/hr=11
 POSTHOOK: Output: default@merge_dynamic_part@ds=2008-04-08/hr=11
 POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: select * from merge_dynamic_part order by key, value
+PREHOOK: query: select * from merge_dynamic_part
 PREHOOK: type: QUERY
 PREHOOK: Input: default@merge_dynamic_part
 PREHOOK: Input: default@merge_dynamic_part@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
-POSTHOOK: query: select * from merge_dynamic_part order by key, value
+POSTHOOK: query: select * from merge_dynamic_part
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@merge_dynamic_part
 POSTHOOK: Input: default@merge_dynamic_part@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
-POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:value, type:string, comment:default), ]
 0	val_0	2008-04-08	11
 0	val_0	2008-04-08	11
 0	val_0	2008-04-08	11
@@ -1260,10 +1252,6 @@ PREHOOK: query: show table extended like `merge_dynamic_part`
 PREHOOK: type: SHOW_TABLESTATUS
 POSTHOOK: query: show table extended like `merge_dynamic_part`
 POSTHOOK: type: SHOW_TABLESTATUS
-POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:value, type:string, comment:default), ]
 tableName:merge_dynamic_part
 #### A masked pattern was here ####
 inputformat:org.apache.hadoop.mapred.TextInputFormat
@@ -1283,10 +1271,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain
 insert overwrite table merge_dynamic_part partition (ds, hr) select key, value, ds, hr from srcpart_merge_dp where ds='2008-04-08' and hr=11
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:value, type:string, comment:default), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
@@ -1384,26 +1368,16 @@ POSTHOOK: Input: default@srcpart_merge_dp@ds=2008-04-08/hr=11
 POSTHOOK: Output: default@merge_dynamic_part@ds=2008-04-08/hr=11
 POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: select * from merge_dynamic_part order by key, value
+PREHOOK: query: select * from merge_dynamic_part
 PREHOOK: type: QUERY
 PREHOOK: Input: default@merge_dynamic_part
 PREHOOK: Input: default@merge_dynamic_part@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
-POSTHOOK: query: select * from merge_dynamic_part order by key, value
+POSTHOOK: query: select * from merge_dynamic_part
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@merge_dynamic_part
 POSTHOOK: Input: default@merge_dynamic_part@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
-POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:value, type:string, comment:default), ]
 0	val_0	2008-04-08	11
 0	val_0	2008-04-08	11
 0	val_0	2008-04-08	11
@@ -1908,12 +1882,6 @@ PREHOOK: query: show table extended like `merge_dynamic_part`
 PREHOOK: type: SHOW_TABLESTATUS
 POSTHOOK: query: show table extended like `merge_dynamic_part`
 POSTHOOK: type: SHOW_TABLESTATUS
-POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:value, type:string, comment:default), ]
 tableName:merge_dynamic_part
 #### A masked pattern was here ####
 inputformat:org.apache.hadoop.mapred.TextInputFormat

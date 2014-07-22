@@ -31,6 +31,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -38,6 +39,7 @@ import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.FunctionUtils;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
+import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.PreOrderWalker;
@@ -138,6 +140,8 @@ public class MacroSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     CreateMacroDesc desc = new CreateMacroDesc(functionName, macroColNames, macroColTypes, body);
     rootTasks.add(TaskFactory.get(new FunctionWork(desc), conf));
+
+    addEntities();
   }
 
   @SuppressWarnings("unchecked")
@@ -160,5 +164,13 @@ public class MacroSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     DropMacroDesc desc = new DropMacroDesc(functionName);
     rootTasks.add(TaskFactory.get(new FunctionWork(desc), conf));
+
+    addEntities();
+  }
+
+  private void addEntities() throws SemanticException {
+    Database database = getDatabase(MetaStoreUtils.DEFAULT_DATABASE_NAME);
+    // This restricts macro creation to privileged users.
+    outputs.add(new WriteEntity(database, WriteEntity.WriteType.DDL_NO_LOCK));
   }
 }

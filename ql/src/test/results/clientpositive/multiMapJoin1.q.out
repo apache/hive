@@ -5,6 +5,7 @@ POSTHOOK: query: create table smallTbl1(key string, value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@smallTbl1
+RUN: Stage-0:DDL
 PREHOOK: query: insert overwrite table smallTbl1 select * from src where key < 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -15,6 +16,11 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@smalltbl1
 POSTHOOK: Lineage: smalltbl1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: smalltbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+RUN: Stage-1:MAPRED
+RUN: Stage-7:CONDITIONAL
+RUN: Stage-4:MOVE
+RUN: Stage-0:MOVE
+RUN: Stage-2:STATS
 PREHOOK: query: create table smallTbl2(key string, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -22,8 +28,7 @@ POSTHOOK: query: create table smallTbl2(key string, value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@smallTbl2
-POSTHOOK: Lineage: smalltbl1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+RUN: Stage-0:DDL
 PREHOOK: query: insert overwrite table smallTbl2 select * from src where key < 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -32,10 +37,13 @@ POSTHOOK: query: insert overwrite table smallTbl2 select * from src where key < 
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@smalltbl2
-POSTHOOK: Lineage: smalltbl1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: smalltbl2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: smalltbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+RUN: Stage-1:MAPRED
+RUN: Stage-7:CONDITIONAL
+RUN: Stage-4:MOVE
+RUN: Stage-0:MOVE
+RUN: Stage-2:STATS
 PREHOOK: query: create table smallTbl3(key string, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -43,10 +51,7 @@ POSTHOOK: query: create table smallTbl3(key string, value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@smallTbl3
-POSTHOOK: Lineage: smalltbl1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+RUN: Stage-0:DDL
 PREHOOK: query: insert overwrite table smallTbl3 select * from src where key < 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -55,12 +60,13 @@ POSTHOOK: query: insert overwrite table smallTbl3 select * from src where key < 
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@smalltbl3
-POSTHOOK: Lineage: smalltbl1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: smalltbl3.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: smalltbl3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+RUN: Stage-1:MAPRED
+RUN: Stage-7:CONDITIONAL
+RUN: Stage-4:MOVE
+RUN: Stage-0:MOVE
+RUN: Stage-2:STATS
 PREHOOK: query: create table smallTbl4(key string, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -68,12 +74,7 @@ POSTHOOK: query: create table smallTbl4(key string, value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@smallTbl4
-POSTHOOK: Lineage: smalltbl1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl3.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+RUN: Stage-0:DDL
 PREHOOK: query: insert overwrite table smallTbl4 select * from src where key < 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -82,14 +83,13 @@ POSTHOOK: query: insert overwrite table smallTbl4 select * from src where key < 
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@smalltbl4
-POSTHOOK: Lineage: smalltbl1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl3.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: smalltbl4.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: smalltbl4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+RUN: Stage-1:MAPRED
+RUN: Stage-7:CONDITIONAL
+RUN: Stage-4:MOVE
+RUN: Stage-0:MOVE
+RUN: Stage-2:STATS
 PREHOOK: query: create table bigTbl(key string, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -97,14 +97,7 @@ POSTHOOK: query: create table bigTbl(key string, value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@bigTbl
-POSTHOOK: Lineage: smalltbl1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl3.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl4.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+RUN: Stage-0:DDL
 PREHOOK: query: insert overwrite table bigTbl
 select * from
 (
@@ -159,14 +152,11 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@bigtbl
 POSTHOOK: Lineage: bigtbl.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: bigtbl.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl3.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl4.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+RUN: Stage-1:MAPRED
+RUN: Stage-7:CONDITIONAL
+RUN: Stage-4:MOVE
+RUN: Stage-0:MOVE
+RUN: Stage-2:STATS
 PREHOOK: query: explain
 select count(*) FROM
 (select bigTbl.key as key, bigTbl.value as value1,
@@ -185,81 +175,98 @@ select count(*) FROM
 JOIN                                                                  
 smallTbl2 on (firstjoin.value1 = smallTbl2.value)
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: bigtbl.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: bigtbl.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl3.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl4.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 STAGE DEPENDENCIES:
-  Stage-2 is a root stage
-  Stage-0 is a root stage
+  Stage-7 is a root stage
+  Stage-2 depends on stages: Stage-7
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
+  Stage: Stage-7
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        firstjoin:smalltbl1 
+          Fetch Operator
+            limit: -1
+        smalltbl2 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        firstjoin:smalltbl1 
+          TableScan
+            alias: smalltbl1
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                condition expressions:
+                  0 {value}
+                  1 
+                keys:
+                  0 key (type: string)
+                  1 key (type: string)
+        smalltbl2 
+          TableScan
+            alias: smalltbl2
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: value is not null (type: boolean)
+              Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                condition expressions:
+                  0 
+                  1 
+                keys:
+                  0 _col1 (type: string)
+                  1 value (type: string)
+
   Stage: Stage-2
     Map Reduce
       Map Operator Tree:
           TableScan
             alias: bigtbl
             Statistics: Num rows: 5000 Data size: 53120 Basic stats: COMPLETE Column stats: NONE
-            Map Join Operator
-              condition map:
-                   Inner Join 0 to 1
-              condition expressions:
-                0 {value}
-                1 
-              keys:
-                0 key (type: string)
-                1 key (type: string)
-              outputColumnNames: _col1
-              Statistics: Num rows: 5500 Data size: 58432 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: _col1 (type: string)
+            Filter Operator
+              predicate: (key is not null and value is not null) (type: boolean)
+              Statistics: Num rows: 1250 Data size: 13280 Basic stats: COMPLETE Column stats: NONE
+              Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                condition expressions:
+                  0 {value}
+                  1 
+                keys:
+                  0 key (type: string)
+                  1 key (type: string)
                 outputColumnNames: _col1
-                Statistics: Num rows: 5500 Data size: 58432 Basic stats: COMPLETE Column stats: NONE
-                Map Join Operator
-                  condition map:
-                       Inner Join 0 to 1
-                  condition expressions:
-                    0 
-                    1 
-                  keys:
-                    0 _col1 (type: string)
-                    1 value (type: string)
-                  Statistics: Num rows: 6050 Data size: 64275 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    Statistics: Num rows: 6050 Data size: 64275 Basic stats: COMPLETE Column stats: NONE
-                    Group By Operator
-                      aggregations: count()
-                      mode: hash
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        sort order: 
+                Statistics: Num rows: 1375 Data size: 14608 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col1 (type: string)
+                  outputColumnNames: _col1
+                  Statistics: Num rows: 1375 Data size: 14608 Basic stats: COMPLETE Column stats: NONE
+                  Map Join Operator
+                    condition map:
+                         Inner Join 0 to 1
+                    condition expressions:
+                      0 
+                      1 
+                    keys:
+                      0 _col1 (type: string)
+                      1 value (type: string)
+                    Statistics: Num rows: 1512 Data size: 16068 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      Statistics: Num rows: 1512 Data size: 16068 Basic stats: COMPLETE Column stats: NONE
+                      Group By Operator
+                        aggregations: count()
+                        mode: hash
+                        outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col0 (type: bigint)
+                        Reduce Output Operator
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                          value expressions: _col0 (type: bigint)
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            firstjoin:smalltbl1 
-              Fetch Operator
-                limit: -1
-            smalltbl2 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            firstjoin:smalltbl1 
-              TableScan
-                alias: smalltbl1
-                Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-            smalltbl2 
-              TableScan
-                alias: smalltbl2
-                Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
@@ -281,6 +288,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select count(*) FROM
 (select bigTbl.key as key, bigTbl.value as value1,
@@ -306,16 +315,8 @@ POSTHOOK: Input: default@bigtbl
 POSTHOOK: Input: default@smalltbl1
 POSTHOOK: Input: default@smalltbl2
 #### A masked pattern was here ####
-POSTHOOK: Lineage: bigtbl.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: bigtbl.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl3.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl4.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+RUN: Stage-7:MAPREDLOCAL
+RUN: Stage-2:MAPRED
 580
 PREHOOK: query: -- Now run a query with two-way join, which should be converted into a
 -- map-join followed by groupby - two MR jobs overall 
@@ -339,81 +340,98 @@ select count(*) FROM
 JOIN                                                                  
 smallTbl2 on (firstjoin.value1 = smallTbl2.value)
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: bigtbl.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: bigtbl.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl3.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl4.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 STAGE DEPENDENCIES:
-  Stage-2 is a root stage
-  Stage-0 is a root stage
+  Stage-7 is a root stage
+  Stage-2 depends on stages: Stage-7
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
+  Stage: Stage-7
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        firstjoin:smalltbl1 
+          Fetch Operator
+            limit: -1
+        smalltbl2 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        firstjoin:smalltbl1 
+          TableScan
+            alias: smalltbl1
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                condition expressions:
+                  0 {value}
+                  1 
+                keys:
+                  0 key (type: string)
+                  1 key (type: string)
+        smalltbl2 
+          TableScan
+            alias: smalltbl2
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: value is not null (type: boolean)
+              Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                condition expressions:
+                  0 
+                  1 
+                keys:
+                  0 _col1 (type: string)
+                  1 value (type: string)
+
   Stage: Stage-2
     Map Reduce
       Map Operator Tree:
           TableScan
             alias: bigtbl
             Statistics: Num rows: 5000 Data size: 53120 Basic stats: COMPLETE Column stats: NONE
-            Map Join Operator
-              condition map:
-                   Inner Join 0 to 1
-              condition expressions:
-                0 {value}
-                1 
-              keys:
-                0 key (type: string)
-                1 key (type: string)
-              outputColumnNames: _col1
-              Statistics: Num rows: 5500 Data size: 58432 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: _col1 (type: string)
+            Filter Operator
+              predicate: (key is not null and value is not null) (type: boolean)
+              Statistics: Num rows: 1250 Data size: 13280 Basic stats: COMPLETE Column stats: NONE
+              Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                condition expressions:
+                  0 {value}
+                  1 
+                keys:
+                  0 key (type: string)
+                  1 key (type: string)
                 outputColumnNames: _col1
-                Statistics: Num rows: 5500 Data size: 58432 Basic stats: COMPLETE Column stats: NONE
-                Map Join Operator
-                  condition map:
-                       Inner Join 0 to 1
-                  condition expressions:
-                    0 
-                    1 
-                  keys:
-                    0 _col1 (type: string)
-                    1 value (type: string)
-                  Statistics: Num rows: 6050 Data size: 64275 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    Statistics: Num rows: 6050 Data size: 64275 Basic stats: COMPLETE Column stats: NONE
-                    Group By Operator
-                      aggregations: count()
-                      mode: hash
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        sort order: 
+                Statistics: Num rows: 1375 Data size: 14608 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col1 (type: string)
+                  outputColumnNames: _col1
+                  Statistics: Num rows: 1375 Data size: 14608 Basic stats: COMPLETE Column stats: NONE
+                  Map Join Operator
+                    condition map:
+                         Inner Join 0 to 1
+                    condition expressions:
+                      0 
+                      1 
+                    keys:
+                      0 _col1 (type: string)
+                      1 value (type: string)
+                    Statistics: Num rows: 1512 Data size: 16068 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      Statistics: Num rows: 1512 Data size: 16068 Basic stats: COMPLETE Column stats: NONE
+                      Group By Operator
+                        aggregations: count()
+                        mode: hash
+                        outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col0 (type: bigint)
+                        Reduce Output Operator
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                          value expressions: _col0 (type: bigint)
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            firstjoin:smalltbl1 
-              Fetch Operator
-                limit: -1
-            smalltbl2 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            firstjoin:smalltbl1 
-              TableScan
-                alias: smalltbl1
-                Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-            smalltbl2 
-              TableScan
-                alias: smalltbl2
-                Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
@@ -435,6 +453,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select count(*) FROM
 (select bigTbl.key as key, bigTbl.value as value1,
@@ -460,16 +480,8 @@ POSTHOOK: Input: default@bigtbl
 POSTHOOK: Input: default@smalltbl1
 POSTHOOK: Input: default@smalltbl2
 #### A masked pattern was here ####
-POSTHOOK: Lineage: bigtbl.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: bigtbl.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl3.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl4.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+RUN: Stage-7:MAPREDLOCAL
+RUN: Stage-2:MAPRED
 580
 PREHOOK: query: -- Now run a query with two-way join, which should first be converted into a
 -- map-join followed by groupby and then finally into a single MR job.
@@ -497,101 +509,118 @@ JOIN
 smallTbl2 on (firstjoin.value1 = smallTbl2.value)
 group by smallTbl2.key
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: bigtbl.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: bigtbl.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl3.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl4.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 STAGE DEPENDENCIES:
-  Stage-2 is a root stage
-  Stage-0 is a root stage
+  Stage-7 is a root stage
+  Stage-2 depends on stages: Stage-7
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
+  Stage: Stage-7
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        firstjoin:smalltbl1 
+          Fetch Operator
+            limit: -1
+        smalltbl2 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        firstjoin:smalltbl1 
+          TableScan
+            alias: smalltbl1
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                condition expressions:
+                  0 {value}
+                  1 
+                keys:
+                  0 key (type: string)
+                  1 key (type: string)
+        smalltbl2 
+          TableScan
+            alias: smalltbl2
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: value is not null (type: boolean)
+              Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                condition expressions:
+                  0 
+                  1 {key}
+                keys:
+                  0 _col1 (type: string)
+                  1 value (type: string)
+
   Stage: Stage-2
     Map Reduce
       Map Operator Tree:
           TableScan
             alias: bigtbl
             Statistics: Num rows: 5000 Data size: 53120 Basic stats: COMPLETE Column stats: NONE
-            Map Join Operator
-              condition map:
-                   Inner Join 0 to 1
-              condition expressions:
-                0 {value}
-                1 
-              keys:
-                0 key (type: string)
-                1 key (type: string)
-              outputColumnNames: _col1
-              Statistics: Num rows: 5500 Data size: 58432 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: _col1 (type: string)
+            Filter Operator
+              predicate: (key is not null and value is not null) (type: boolean)
+              Statistics: Num rows: 1250 Data size: 13280 Basic stats: COMPLETE Column stats: NONE
+              Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                condition expressions:
+                  0 {value}
+                  1 
+                keys:
+                  0 key (type: string)
+                  1 key (type: string)
                 outputColumnNames: _col1
-                Statistics: Num rows: 5500 Data size: 58432 Basic stats: COMPLETE Column stats: NONE
-                Map Join Operator
-                  condition map:
-                       Inner Join 0 to 1
-                  condition expressions:
-                    0 
-                    1 {key}
-                  keys:
-                    0 _col1 (type: string)
-                    1 value (type: string)
-                  outputColumnNames: _col3
-                  Statistics: Num rows: 6050 Data size: 64275 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: _col3 (type: string)
+                Statistics: Num rows: 1375 Data size: 14608 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col1 (type: string)
+                  outputColumnNames: _col1
+                  Statistics: Num rows: 1375 Data size: 14608 Basic stats: COMPLETE Column stats: NONE
+                  Map Join Operator
+                    condition map:
+                         Inner Join 0 to 1
+                    condition expressions:
+                      0 
+                      1 {key}
+                    keys:
+                      0 _col1 (type: string)
+                      1 value (type: string)
                     outputColumnNames: _col3
-                    Statistics: Num rows: 6050 Data size: 64275 Basic stats: COMPLETE Column stats: NONE
-                    Group By Operator
-                      aggregations: count()
-                      keys: _col3 (type: string)
-                      mode: hash
-                      outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 6050 Data size: 64275 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: string)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 6050 Data size: 64275 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col1 (type: bigint)
+                    Statistics: Num rows: 1512 Data size: 16068 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: _col3 (type: string)
+                      outputColumnNames: _col3
+                      Statistics: Num rows: 1512 Data size: 16068 Basic stats: COMPLETE Column stats: NONE
+                      Group By Operator
+                        aggregations: count()
+                        keys: _col3 (type: string)
+                        mode: hash
+                        outputColumnNames: _col0, _col1
+                        Statistics: Num rows: 1512 Data size: 16068 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: string)
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: string)
+                          Statistics: Num rows: 1512 Data size: 16068 Basic stats: COMPLETE Column stats: NONE
+                          value expressions: _col1 (type: bigint)
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            firstjoin:smalltbl1 
-              Fetch Operator
-                limit: -1
-            smalltbl2 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            firstjoin:smalltbl1 
-              TableScan
-                alias: smalltbl1
-                Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-            smalltbl2 
-              TableScan
-                alias: smalltbl2
-                Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
           keys: KEY._col0 (type: string)
           mode: mergepartial
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 3025 Data size: 32137 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 756 Data size: 8034 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: _col1 (type: bigint)
             outputColumnNames: _col0
-            Statistics: Num rows: 3025 Data size: 32137 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 756 Data size: 8034 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 3025 Data size: 32137 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 756 Data size: 8034 Basic stats: COMPLETE Column stats: NONE
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -600,6 +629,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select count(*) FROM
 (select bigTbl.key as key, bigTbl.value as value1,
@@ -627,16 +658,8 @@ POSTHOOK: Input: default@bigtbl
 POSTHOOK: Input: default@smalltbl1
 POSTHOOK: Input: default@smalltbl2
 #### A masked pattern was here ####
-POSTHOOK: Lineage: bigtbl.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: bigtbl.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl3.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl4.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+RUN: Stage-7:MAPREDLOCAL
+RUN: Stage-2:MAPRED
 270
 10
 10
@@ -651,16 +674,7 @@ POSTHOOK: query: drop table bigTbl
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@bigtbl
 POSTHOOK: Output: default@bigtbl
-POSTHOOK: Lineage: bigtbl.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: bigtbl.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl3.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl4.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+RUN: Stage-0:DDL
 PREHOOK: query: create table bigTbl(key1 string, key2 string, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -668,16 +682,7 @@ POSTHOOK: query: create table bigTbl(key1 string, key2 string, value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@bigTbl
-POSTHOOK: Lineage: bigtbl.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: bigtbl.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl3.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl4.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+RUN: Stage-0:DDL
 PREHOOK: query: insert overwrite table bigTbl
 select * from
 (
@@ -730,19 +735,14 @@ select * from
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@bigtbl
-POSTHOOK: Lineage: bigtbl.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: bigtbl.key1 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: bigtbl.key2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: bigtbl.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: bigtbl.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl3.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl4.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+RUN: Stage-1:MAPRED
+RUN: Stage-7:CONDITIONAL
+RUN: Stage-4:MOVE
+RUN: Stage-0:MOVE
+RUN: Stage-2:STATS
 PREHOOK: query: -- First disable noconditionaltask
 EXPLAIN
 SELECT SUM(HASH(join3.key1)),
@@ -811,80 +811,109 @@ FROM (SELECT join2.key1 as key1,
       JOIN smallTbl3 ON (join2.key2 = smallTbl3.key)) join3
 JOIN smallTbl4 ON (join3.key3 = smallTbl4.key)
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: bigtbl.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: bigtbl.key1 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: bigtbl.key2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: bigtbl.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: bigtbl.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl3.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl4.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 STAGE DEPENDENCIES:
-  Stage-20 is a root stage , consists of Stage-18, Stage-19, Stage-5
-  Stage-18 has a backup stage: Stage-5
-  Stage-17 depends on stages: Stage-5, Stage-18, Stage-19 , consists of Stage-15, Stage-16, Stage-1
-  Stage-15 has a backup stage: Stage-1
-  Stage-14 depends on stages: Stage-1, Stage-15, Stage-16 , consists of Stage-12, Stage-13, Stage-2
-  Stage-12 has a backup stage: Stage-2
-  Stage-11 depends on stages: Stage-2, Stage-12, Stage-13 , consists of Stage-9, Stage-10, Stage-3
-  Stage-9 has a backup stage: Stage-3
+  Stage-20 is a root stage , consists of Stage-27, Stage-28, Stage-5
+  Stage-27 has a backup stage: Stage-5
+  Stage-18 depends on stages: Stage-27
+  Stage-17 depends on stages: Stage-5, Stage-18, Stage-19 , consists of Stage-25, Stage-26, Stage-1
+  Stage-25 has a backup stage: Stage-1
+  Stage-15 depends on stages: Stage-25
+  Stage-14 depends on stages: Stage-1, Stage-15, Stage-16 , consists of Stage-23, Stage-24, Stage-2
+  Stage-23 has a backup stage: Stage-2
+  Stage-12 depends on stages: Stage-23
+  Stage-11 depends on stages: Stage-2, Stage-12, Stage-13 , consists of Stage-21, Stage-22, Stage-3
+  Stage-21 has a backup stage: Stage-3
+  Stage-9 depends on stages: Stage-21
   Stage-4 depends on stages: Stage-3, Stage-9, Stage-10
-  Stage-10 has a backup stage: Stage-3
+  Stage-22 has a backup stage: Stage-3
+  Stage-10 depends on stages: Stage-22
   Stage-3
-  Stage-13 has a backup stage: Stage-2
+  Stage-24 has a backup stage: Stage-2
+  Stage-13 depends on stages: Stage-24
   Stage-2
-  Stage-16 has a backup stage: Stage-1
+  Stage-26 has a backup stage: Stage-1
+  Stage-16 depends on stages: Stage-26
   Stage-1
-  Stage-19 has a backup stage: Stage-5
+  Stage-28 has a backup stage: Stage-5
+  Stage-19 depends on stages: Stage-28
   Stage-5
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-4
 
 STAGE PLANS:
   Stage: Stage-20
     Conditional Operator
+
+  Stage: Stage-27
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        join3:join2:join1:smalltbl1 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        join3:join2:join1:smalltbl1 
+          TableScan
+            alias: smalltbl1
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              HashTable Sink Operator
+                condition expressions:
+                  0 {key1} {key2} {value}
+                  1 
+                keys:
+                  0 key1 (type: string)
+                  1 key (type: string)
 
   Stage: Stage-18
     Map Reduce
       Map Operator Tree:
           TableScan
             alias: bigtbl
-            Map Join Operator
-              condition map:
-                   Inner Join 0 to 1
-              condition expressions:
-                0 {key1} {key2} {value}
-                1 {key}
-              keys:
-                0 key1 (type: string)
-                1 key (type: string)
-              outputColumnNames: _col0, _col1, _col2, _col5
-              Select Operator
-                expressions: _col0 (type: string), _col1 (type: string), _col5 (type: string), _col2 (type: string), _col2 (type: string)
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4
-                File Output Operator
-                  compressed: false
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+            Filter Operator
+              predicate: ((key1 is not null and value is not null) and key2 is not null) (type: boolean)
+              Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                condition expressions:
+                  0 {key1} {key2} {value}
+                  1 {key}
+                keys:
+                  0 key1 (type: string)
+                  1 key (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col5
+                Select Operator
+                  expressions: _col0 (type: string), _col1 (type: string), _col5 (type: string), _col2 (type: string), _col2 (type: string)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            join3:join2:join1:smalltbl1 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            join3:join2:join1:smalltbl1 
-              TableScan
-                alias: smalltbl1
 
   Stage: Stage-17
     Conditional Operator
+
+  Stage: Stage-25
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        join3:join2:smalltbl2 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        join3:join2:smalltbl2 
+          TableScan
+            alias: smalltbl2
+            Filter Operator
+              predicate: value is not null (type: boolean)
+              HashTable Sink Operator
+                condition expressions:
+                  0 {_col0} {_col1} {_col2} {_col3} {_col4}
+                  1 {key}
+                keys:
+                  0 _col3 (type: string)
+                  1 value (type: string)
 
   Stage: Stage-15
     Map Reduce
@@ -911,17 +940,29 @@ STAGE PLANS:
                       serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            join3:join2:smalltbl2 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            join3:join2:smalltbl2 
-              TableScan
-                alias: smalltbl2
 
   Stage: Stage-14
     Conditional Operator
+
+  Stage: Stage-23
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        join3:smalltbl3 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        join3:smalltbl3 
+          TableScan
+            alias: smalltbl3
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              HashTable Sink Operator
+                condition expressions:
+                  0 {_col0} {_col1} {_col2} {_col3} {_col4} {_col5}
+                  1 
+                keys:
+                  0 _col1 (type: string)
+                  1 key (type: string)
 
   Stage: Stage-12
     Map Reduce
@@ -948,17 +989,29 @@ STAGE PLANS:
                       serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            join3:smalltbl3 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            join3:smalltbl3 
-              TableScan
-                alias: smalltbl3
 
   Stage: Stage-11
     Conditional Operator
+
+  Stage: Stage-21
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        smalltbl4 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        smalltbl4 
+          TableScan
+            alias: smalltbl4
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              HashTable Sink Operator
+                condition expressions:
+                  0 {_col0} {_col1} {_col2} {_col3} {_col4} {_col5} {_col6}
+                  1 
+                keys:
+                  0 _col2 (type: string)
+                  1 key (type: string)
 
   Stage: Stage-9
     Map Reduce
@@ -989,14 +1042,6 @@ STAGE PLANS:
                         serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            smalltbl4 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            smalltbl4 
-              TableScan
-                alias: smalltbl4
 
   Stage: Stage-4
     Map Reduce
@@ -1024,43 +1069,55 @@ STAGE PLANS:
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
+  Stage: Stage-22
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        $INTNAME 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        $INTNAME 
+          TableScan
+            HashTable Sink Operator
+              condition expressions:
+                0 {_col0} {_col1} {_col3} {_col4} {_col5} {_col6}
+                1 {key}
+              keys:
+                0 _col2 (type: string)
+                1 key (type: string)
+
   Stage: Stage-10
     Map Reduce
       Map Operator Tree:
           TableScan
             alias: smalltbl4
-            Map Join Operator
-              condition map:
-                   Inner Join 0 to 1
-              condition expressions:
-                0 {_col0} {_col1} {_col2} {_col3} {_col4} {_col5} {_col6}
-                1 {key}
-              keys:
-                0 _col2 (type: string)
-                1 key (type: string)
-              outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
-              Select Operator
-                expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col7 (type: string), _col5 (type: string), _col6 (type: string)
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col7, _col5, _col6
-                Group By Operator
-                  aggregations: sum(hash(_col0)), sum(hash(_col1)), sum(hash(_col2)), sum(hash(_col3)), sum(hash(_col4)), sum(hash(_col7)), sum(hash(_col5)), sum(hash(_col6))
-                  mode: hash
-                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
-                  File Output Operator
-                    compressed: false
-                    table:
-                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                condition expressions:
+                  0 {_col0} {_col1} {_col2} {_col3} {_col4} {_col5} {_col6}
+                  1 {key}
+                keys:
+                  0 _col2 (type: string)
+                  1 key (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
+                Select Operator
+                  expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col7 (type: string), _col5 (type: string), _col6 (type: string)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col7, _col5, _col6
+                  Group By Operator
+                    aggregations: sum(hash(_col0)), sum(hash(_col1)), sum(hash(_col2)), sum(hash(_col3)), sum(hash(_col4)), sum(hash(_col7)), sum(hash(_col5)), sum(hash(_col6))
+                    mode: hash
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
+                    File Output Operator
+                      compressed: false
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            $INTNAME 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            $INTNAME 
-              TableScan
 
   Stage: Stage-3
     Map Reduce
@@ -1070,30 +1127,32 @@ STAGE PLANS:
               key expressions: _col2 (type: string)
               sort order: +
               Map-reduce partition columns: _col2 (type: string)
-              Statistics: Num rows: 6655 Data size: 96070 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: string), _col6 (type: string)
+              Statistics: Num rows: 830 Data size: 12007 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col0 (type: string), _col1 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: string), _col6 (type: string)
           TableScan
             alias: smalltbl4
             Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-            Reduce Output Operator
-              key expressions: key (type: string)
-              sort order: +
-              Map-reduce partition columns: key (type: string)
-              Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-              value expressions: key (type: string)
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: key (type: string)
+                sort order: +
+                Map-reduce partition columns: key (type: string)
+                Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
           condition expressions:
-            0 {VALUE._col0} {VALUE._col1} {VALUE._col2} {VALUE._col3} {VALUE._col4} {VALUE._col5} {VALUE._col6}
-            1 {VALUE._col0}
+            0 {VALUE._col0} {VALUE._col1} {KEY.reducesinkkey0} {VALUE._col2} {VALUE._col3} {VALUE._col4} {VALUE._col5}
+            1 {KEY.reducesinkkey0}
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
-          Statistics: Num rows: 7320 Data size: 105677 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 913 Data size: 13207 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col7 (type: string), _col5 (type: string), _col6 (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col7, _col5, _col6
-            Statistics: Num rows: 7320 Data size: 105677 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 913 Data size: 13207 Basic stats: COMPLETE Column stats: NONE
             Group By Operator
               aggregations: sum(hash(_col0)), sum(hash(_col1)), sum(hash(_col2)), sum(hash(_col3)), sum(hash(_col4)), sum(hash(_col7)), sum(hash(_col5)), sum(hash(_col6))
               mode: hash
@@ -1106,39 +1165,51 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
+  Stage: Stage-24
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        join3:$INTNAME 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        join3:$INTNAME 
+          TableScan
+            HashTable Sink Operator
+              condition expressions:
+                0 {_col0} {_col2} {_col3} {_col4} {_col5}
+                1 {key}
+              keys:
+                0 _col1 (type: string)
+                1 key (type: string)
+
   Stage: Stage-13
     Map Reduce
       Map Operator Tree:
           TableScan
             alias: smalltbl3
-            Map Join Operator
-              condition map:
-                   Inner Join 0 to 1
-              condition expressions:
-                0 {_col0} {_col1} {_col2} {_col3} {_col4} {_col5}
-                1 {key}
-              keys:
-                0 _col1 (type: string)
-                1 key (type: string)
-              outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
-              Select Operator
-                expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col6 (type: string), _col4 (type: string), _col5 (type: string)
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                condition expressions:
+                  0 {_col0} {_col1} {_col2} {_col3} {_col4} {_col5}
+                  1 {key}
+                keys:
+                  0 _col1 (type: string)
+                  1 key (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
-                File Output Operator
-                  compressed: false
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+                Select Operator
+                  expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col6 (type: string), _col4 (type: string), _col5 (type: string)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            join3:$INTNAME 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            join3:$INTNAME 
-              TableScan
 
   Stage: Stage-2
     Map Reduce
@@ -1148,30 +1219,32 @@ STAGE PLANS:
               key expressions: _col1 (type: string)
               sort order: +
               Map-reduce partition columns: _col1 (type: string)
-              Statistics: Num rows: 6050 Data size: 87337 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: string)
+              Statistics: Num rows: 755 Data size: 10916 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col0 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: string)
           TableScan
             alias: smalltbl3
             Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-            Reduce Output Operator
-              key expressions: key (type: string)
-              sort order: +
-              Map-reduce partition columns: key (type: string)
-              Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-              value expressions: key (type: string)
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: key (type: string)
+                sort order: +
+                Map-reduce partition columns: key (type: string)
+                Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
           condition expressions:
-            0 {VALUE._col0} {VALUE._col1} {VALUE._col2} {VALUE._col3} {VALUE._col4} {VALUE._col5}
-            1 {VALUE._col0}
+            0 {VALUE._col0} {KEY.reducesinkkey0} {VALUE._col1} {VALUE._col2} {VALUE._col3} {VALUE._col4}
+            1 {KEY.reducesinkkey0}
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
-          Statistics: Num rows: 6655 Data size: 96070 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 830 Data size: 12007 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col6 (type: string), _col4 (type: string), _col5 (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
-            Statistics: Num rows: 6655 Data size: 96070 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 830 Data size: 12007 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
               table:
@@ -1179,39 +1252,51 @@ STAGE PLANS:
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
+  Stage: Stage-26
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        join3:join2:$INTNAME 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        join3:join2:$INTNAME 
+          TableScan
+            HashTable Sink Operator
+              condition expressions:
+                0 {_col0} {_col1} {_col2} {_col4}
+                1 {key}
+              keys:
+                0 _col3 (type: string)
+                1 value (type: string)
+
   Stage: Stage-16
     Map Reduce
       Map Operator Tree:
           TableScan
             alias: smalltbl2
-            Map Join Operator
-              condition map:
-                   Inner Join 0 to 1
-              condition expressions:
-                0 {_col0} {_col1} {_col2} {_col3} {_col4}
-                1 {key}
-              keys:
-                0 _col3 (type: string)
-                1 value (type: string)
-              outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-              Select Operator
-                expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col5 (type: string), _col3 (type: string), _col4 (type: string)
+            Filter Operator
+              predicate: value is not null (type: boolean)
+              Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                condition expressions:
+                  0 {_col0} {_col1} {_col2} {_col3} {_col4}
+                  1 {key}
+                keys:
+                  0 _col3 (type: string)
+                  1 value (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                File Output Operator
-                  compressed: false
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+                Select Operator
+                  expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col5 (type: string), _col3 (type: string), _col4 (type: string)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            join3:join2:$INTNAME 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            join3:join2:$INTNAME 
-              TableScan
 
   Stage: Stage-1
     Map Reduce
@@ -1219,32 +1304,35 @@ STAGE PLANS:
           TableScan
             alias: smalltbl2
             Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-            Reduce Output Operator
-              key expressions: value (type: string)
-              sort order: +
-              Map-reduce partition columns: value (type: string)
-              Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-              value expressions: key (type: string)
+            Filter Operator
+              predicate: value is not null (type: boolean)
+              Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: value (type: string)
+                sort order: +
+                Map-reduce partition columns: value (type: string)
+                Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
+                value expressions: key (type: string)
           TableScan
             Reduce Output Operator
               key expressions: _col3 (type: string)
               sort order: +
               Map-reduce partition columns: _col3 (type: string)
-              Statistics: Num rows: 5500 Data size: 79398 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string)
+              Statistics: Num rows: 687 Data size: 9924 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col4 (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
           condition expressions:
-            0 {VALUE._col0} {VALUE._col1} {VALUE._col2} {VALUE._col3} {VALUE._col4}
+            0 {VALUE._col0} {VALUE._col1} {VALUE._col2} {KEY.reducesinkkey0} {VALUE._col3}
             1 {VALUE._col0}
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-          Statistics: Num rows: 6050 Data size: 87337 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 755 Data size: 10916 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col5 (type: string), _col3 (type: string), _col4 (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-            Statistics: Num rows: 6050 Data size: 87337 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 755 Data size: 10916 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
               table:
@@ -1252,40 +1340,54 @@ STAGE PLANS:
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
+  Stage: Stage-28
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        join3:join2:join1:bigtbl 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        join3:join2:join1:bigtbl 
+          TableScan
+            alias: bigtbl
+            Filter Operator
+              predicate: ((key1 is not null and value is not null) and key2 is not null) (type: boolean)
+              HashTable Sink Operator
+                condition expressions:
+                  0 {key2} {value}
+                  1 {key}
+                keys:
+                  0 key1 (type: string)
+                  1 key (type: string)
+
   Stage: Stage-19
     Map Reduce
       Map Operator Tree:
           TableScan
             alias: smalltbl1
-            Map Join Operator
-              condition map:
-                   Inner Join 0 to 1
-              condition expressions:
-                0 {key1} {key2} {value}
-                1 {key}
-              keys:
-                0 key1 (type: string)
-                1 key (type: string)
-              outputColumnNames: _col0, _col1, _col2, _col5
-              Select Operator
-                expressions: _col0 (type: string), _col1 (type: string), _col5 (type: string), _col2 (type: string), _col2 (type: string)
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4
-                File Output Operator
-                  compressed: false
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                condition expressions:
+                  0 {key1} {key2} {value}
+                  1 {key}
+                keys:
+                  0 key1 (type: string)
+                  1 key (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col5
+                Select Operator
+                  expressions: _col0 (type: string), _col1 (type: string), _col5 (type: string), _col2 (type: string), _col2 (type: string)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            join3:join2:join1:bigtbl 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            join3:join2:join1:bigtbl 
-              TableScan
-                alias: bigtbl
 
   Stage: Stage-5
     Map Reduce
@@ -1293,34 +1395,39 @@ STAGE PLANS:
           TableScan
             alias: bigtbl
             Statistics: Num rows: 5000 Data size: 72180 Basic stats: COMPLETE Column stats: NONE
-            Reduce Output Operator
-              key expressions: key1 (type: string)
-              sort order: +
-              Map-reduce partition columns: key1 (type: string)
-              Statistics: Num rows: 5000 Data size: 72180 Basic stats: COMPLETE Column stats: NONE
-              value expressions: key1 (type: string), key2 (type: string), value (type: string)
+            Filter Operator
+              predicate: ((key1 is not null and value is not null) and key2 is not null) (type: boolean)
+              Statistics: Num rows: 625 Data size: 9022 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: key1 (type: string)
+                sort order: +
+                Map-reduce partition columns: key1 (type: string)
+                Statistics: Num rows: 625 Data size: 9022 Basic stats: COMPLETE Column stats: NONE
+                value expressions: key2 (type: string), value (type: string)
           TableScan
             alias: smalltbl1
             Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-            Reduce Output Operator
-              key expressions: key (type: string)
-              sort order: +
-              Map-reduce partition columns: key (type: string)
-              Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-              value expressions: key (type: string)
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: key (type: string)
+                sort order: +
+                Map-reduce partition columns: key (type: string)
+                Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
           condition expressions:
-            0 {VALUE._col0} {VALUE._col1} {VALUE._col2}
-            1 {VALUE._col0}
+            0 {KEY.reducesinkkey0} {VALUE._col0} {VALUE._col1}
+            1 {KEY.reducesinkkey0}
           outputColumnNames: _col0, _col1, _col2, _col5
-          Statistics: Num rows: 5500 Data size: 79398 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 687 Data size: 9924 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: _col0 (type: string), _col1 (type: string), _col5 (type: string), _col2 (type: string), _col2 (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3, _col4
-            Statistics: Num rows: 5500 Data size: 79398 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 687 Data size: 9924 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
               table:
@@ -1331,6 +1438,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT SUM(HASH(join3.key1)),
        SUM(HASH(join3.key2)),
@@ -1408,19 +1517,19 @@ POSTHOOK: Input: default@smalltbl2
 POSTHOOK: Input: default@smalltbl3
 POSTHOOK: Input: default@smalltbl4
 #### A masked pattern was here ####
-POSTHOOK: Lineage: bigtbl.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: bigtbl.key1 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: bigtbl.key2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: bigtbl.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: bigtbl.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl3.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl4.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+RUN: Stage-20:CONDITIONAL
+RUN: Stage-27:MAPREDLOCAL
+RUN: Stage-18:MAPRED
+RUN: Stage-17:CONDITIONAL
+RUN: Stage-25:MAPREDLOCAL
+RUN: Stage-15:MAPRED
+RUN: Stage-14:CONDITIONAL
+RUN: Stage-23:MAPREDLOCAL
+RUN: Stage-12:MAPRED
+RUN: Stage-11:CONDITIONAL
+RUN: Stage-21:MAPREDLOCAL
+RUN: Stage-9:MAPRED
+RUN: Stage-4:MAPRED
 247580	247580	247580	247580	247580	247580	548662743780	548662743780
 PREHOOK: query: -- Enable noconditionaltask and set the size of hive.auto.convert.join.noconditionaltask.size
 -- to 10000, which is large enough to fit all four small tables (smallTbl1 to smallTbl4).
@@ -1494,131 +1603,165 @@ FROM (SELECT join2.key1 as key1,
       JOIN smallTbl3 ON (join2.key2 = smallTbl3.key)) join3
 JOIN smallTbl4 ON (join3.key3 = smallTbl4.key)
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: bigtbl.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: bigtbl.key1 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: bigtbl.key2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: bigtbl.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: bigtbl.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl3.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl4.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 STAGE DEPENDENCIES:
-  Stage-4 is a root stage
-  Stage-0 is a root stage
+  Stage-13 is a root stage
+  Stage-4 depends on stages: Stage-13
+  Stage-0 depends on stages: Stage-4
 
 STAGE PLANS:
+  Stage: Stage-13
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        join3:join2:join1:smalltbl1 
+          Fetch Operator
+            limit: -1
+        join3:join2:smalltbl2 
+          Fetch Operator
+            limit: -1
+        join3:smalltbl3 
+          Fetch Operator
+            limit: -1
+        smalltbl4 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        join3:join2:join1:smalltbl1 
+          TableScan
+            alias: smalltbl1
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                condition expressions:
+                  0 {key1} {key2} {value}
+                  1 
+                keys:
+                  0 key1 (type: string)
+                  1 key (type: string)
+        join3:join2:smalltbl2 
+          TableScan
+            alias: smalltbl2
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: value is not null (type: boolean)
+              Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                condition expressions:
+                  0 {_col0} {_col1} {_col2} {_col3} {_col4}
+                  1 {key}
+                keys:
+                  0 _col3 (type: string)
+                  1 value (type: string)
+        join3:smalltbl3 
+          TableScan
+            alias: smalltbl3
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                condition expressions:
+                  0 {_col0} {_col1} {_col2} {_col3} {_col4} {_col5}
+                  1 
+                keys:
+                  0 _col1 (type: string)
+                  1 key (type: string)
+        smalltbl4 
+          TableScan
+            alias: smalltbl4
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                condition expressions:
+                  0 {_col0} {_col1} {_col2} {_col3} {_col4} {_col5} {_col6}
+                  1 
+                keys:
+                  0 _col2 (type: string)
+                  1 key (type: string)
+
   Stage: Stage-4
     Map Reduce
       Map Operator Tree:
           TableScan
             alias: bigtbl
             Statistics: Num rows: 5000 Data size: 72180 Basic stats: COMPLETE Column stats: NONE
-            Map Join Operator
-              condition map:
-                   Inner Join 0 to 1
-              condition expressions:
-                0 {key1} {key2} {value}
-                1 {key}
-              keys:
-                0 key1 (type: string)
-                1 key (type: string)
-              outputColumnNames: _col0, _col1, _col2, _col5
-              Statistics: Num rows: 5500 Data size: 79398 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: _col0 (type: string), _col1 (type: string), _col5 (type: string), _col2 (type: string), _col2 (type: string)
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4
-                Statistics: Num rows: 5500 Data size: 79398 Basic stats: COMPLETE Column stats: NONE
-                Map Join Operator
-                  condition map:
-                       Inner Join 0 to 1
-                  condition expressions:
-                    0 {_col0} {_col1} {_col2} {_col3} {_col4}
-                    1 {key}
-                  keys:
-                    0 _col3 (type: string)
-                    1 value (type: string)
-                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                  Statistics: Num rows: 6050 Data size: 87337 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col5 (type: string), _col3 (type: string), _col4 (type: string)
+            Filter Operator
+              predicate: ((key1 is not null and value is not null) and key2 is not null) (type: boolean)
+              Statistics: Num rows: 625 Data size: 9022 Basic stats: COMPLETE Column stats: NONE
+              Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                condition expressions:
+                  0 {key1} {key2} {value}
+                  1 {key}
+                keys:
+                  0 key1 (type: string)
+                  1 key (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col5
+                Statistics: Num rows: 687 Data size: 9924 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: string), _col1 (type: string), _col5 (type: string), _col2 (type: string), _col2 (type: string)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                  Statistics: Num rows: 687 Data size: 9924 Basic stats: COMPLETE Column stats: NONE
+                  Map Join Operator
+                    condition map:
+                         Inner Join 0 to 1
+                    condition expressions:
+                      0 {_col0} {_col1} {_col2} {_col3} {_col4}
+                      1 {key}
+                    keys:
+                      0 _col3 (type: string)
+                      1 value (type: string)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                    Statistics: Num rows: 6050 Data size: 87337 Basic stats: COMPLETE Column stats: NONE
-                    Map Join Operator
-                      condition map:
-                           Inner Join 0 to 1
-                      condition expressions:
-                        0 {_col0} {_col1} {_col2} {_col3} {_col4} {_col5}
-                        1 {key}
-                      keys:
-                        0 _col1 (type: string)
-                        1 key (type: string)
-                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
-                      Statistics: Num rows: 6655 Data size: 96070 Basic stats: COMPLETE Column stats: NONE
-                      Select Operator
-                        expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col6 (type: string), _col4 (type: string), _col5 (type: string)
+                    Statistics: Num rows: 755 Data size: 10916 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col5 (type: string), _col3 (type: string), _col4 (type: string)
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                      Statistics: Num rows: 755 Data size: 10916 Basic stats: COMPLETE Column stats: NONE
+                      Map Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        condition expressions:
+                          0 {_col0} {_col1} {_col2} {_col3} {_col4} {_col5}
+                          1 {key}
+                        keys:
+                          0 _col1 (type: string)
+                          1 key (type: string)
                         outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
-                        Statistics: Num rows: 6655 Data size: 96070 Basic stats: COMPLETE Column stats: NONE
-                        Map Join Operator
-                          condition map:
-                               Inner Join 0 to 1
-                          condition expressions:
-                            0 {_col0} {_col1} {_col2} {_col3} {_col4} {_col5} {_col6}
-                            1 {key}
-                          keys:
-                            0 _col2 (type: string)
-                            1 key (type: string)
-                          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
-                          Statistics: Num rows: 7320 Data size: 105677 Basic stats: COMPLETE Column stats: NONE
-                          Select Operator
-                            expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col7 (type: string), _col5 (type: string), _col6 (type: string)
-                            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col7, _col5, _col6
-                            Statistics: Num rows: 7320 Data size: 105677 Basic stats: COMPLETE Column stats: NONE
-                            Group By Operator
-                              aggregations: sum(hash(_col0)), sum(hash(_col1)), sum(hash(_col2)), sum(hash(_col3)), sum(hash(_col4)), sum(hash(_col7)), sum(hash(_col5)), sum(hash(_col6))
-                              mode: hash
-                              outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
-                              Statistics: Num rows: 1 Data size: 64 Basic stats: COMPLETE Column stats: NONE
-                              Reduce Output Operator
-                                sort order: 
+                        Statistics: Num rows: 830 Data size: 12007 Basic stats: COMPLETE Column stats: NONE
+                        Select Operator
+                          expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col6 (type: string), _col4 (type: string), _col5 (type: string)
+                          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
+                          Statistics: Num rows: 830 Data size: 12007 Basic stats: COMPLETE Column stats: NONE
+                          Map Join Operator
+                            condition map:
+                                 Inner Join 0 to 1
+                            condition expressions:
+                              0 {_col0} {_col1} {_col2} {_col3} {_col4} {_col5} {_col6}
+                              1 {key}
+                            keys:
+                              0 _col2 (type: string)
+                              1 key (type: string)
+                            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
+                            Statistics: Num rows: 913 Data size: 13207 Basic stats: COMPLETE Column stats: NONE
+                            Select Operator
+                              expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col7 (type: string), _col5 (type: string), _col6 (type: string)
+                              outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col7, _col5, _col6
+                              Statistics: Num rows: 913 Data size: 13207 Basic stats: COMPLETE Column stats: NONE
+                              Group By Operator
+                                aggregations: sum(hash(_col0)), sum(hash(_col1)), sum(hash(_col2)), sum(hash(_col3)), sum(hash(_col4)), sum(hash(_col7)), sum(hash(_col5)), sum(hash(_col6))
+                                mode: hash
+                                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
                                 Statistics: Num rows: 1 Data size: 64 Basic stats: COMPLETE Column stats: NONE
-                                value expressions: _col0 (type: bigint), _col1 (type: bigint), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: bigint), _col5 (type: bigint), _col6 (type: bigint), _col7 (type: bigint)
+                                Reduce Output Operator
+                                  sort order: 
+                                  Statistics: Num rows: 1 Data size: 64 Basic stats: COMPLETE Column stats: NONE
+                                  value expressions: _col0 (type: bigint), _col1 (type: bigint), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: bigint), _col5 (type: bigint), _col6 (type: bigint), _col7 (type: bigint)
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            join3:join2:join1:smalltbl1 
-              Fetch Operator
-                limit: -1
-            join3:join2:smalltbl2 
-              Fetch Operator
-                limit: -1
-            join3:smalltbl3 
-              Fetch Operator
-                limit: -1
-            smalltbl4 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            join3:join2:join1:smalltbl1 
-              TableScan
-                alias: smalltbl1
-                Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-            join3:join2:smalltbl2 
-              TableScan
-                alias: smalltbl2
-                Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-            join3:smalltbl3 
-              TableScan
-                alias: smalltbl3
-                Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-            smalltbl4 
-              TableScan
-                alias: smalltbl4
-                Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Group By Operator
           aggregations: sum(VALUE._col0), sum(VALUE._col1), sum(VALUE._col2), sum(VALUE._col3), sum(VALUE._col4), sum(VALUE._col5), sum(VALUE._col6), sum(VALUE._col7)
@@ -1640,6 +1783,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT SUM(HASH(join3.key1)),
        SUM(HASH(join3.key2)),
@@ -1717,19 +1862,8 @@ POSTHOOK: Input: default@smalltbl2
 POSTHOOK: Input: default@smalltbl3
 POSTHOOK: Input: default@smalltbl4
 #### A masked pattern was here ####
-POSTHOOK: Lineage: bigtbl.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: bigtbl.key1 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: bigtbl.key2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: bigtbl.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: bigtbl.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl3.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl4.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+RUN: Stage-13:MAPREDLOCAL
+RUN: Stage-4:MAPRED
 247580	247580	247580	247580	247580	247580	548662743780	548662743780
 PREHOOK: query: -- Enable noconditionaltask and set the size of hive.auto.convert.join.noconditionaltask.size
 -- to 200, which is large enough to fit two small tables. We will have two jobs to evaluate this
@@ -1805,85 +1939,139 @@ FROM (SELECT join2.key1 as key1,
       JOIN smallTbl3 ON (join2.key2 = smallTbl3.key)) join3
 JOIN smallTbl4 ON (join3.key3 = smallTbl4.key)
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: bigtbl.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: bigtbl.key1 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: bigtbl.key2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: bigtbl.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: bigtbl.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl3.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl4.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 STAGE DEPENDENCIES:
-  Stage-11 is a root stage
-  Stage-4 depends on stages: Stage-11
-  Stage-0 is a root stage
+  Stage-14 is a root stage
+  Stage-11 depends on stages: Stage-14
+  Stage-13 depends on stages: Stage-11
+  Stage-4 depends on stages: Stage-13
+  Stage-0 depends on stages: Stage-4
 
 STAGE PLANS:
+  Stage: Stage-14
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        join3:join2:join1:smalltbl1 
+          Fetch Operator
+            limit: -1
+        join3:join2:smalltbl2 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        join3:join2:join1:smalltbl1 
+          TableScan
+            alias: smalltbl1
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                condition expressions:
+                  0 {key1} {key2} {value}
+                  1 
+                keys:
+                  0 key1 (type: string)
+                  1 key (type: string)
+        join3:join2:smalltbl2 
+          TableScan
+            alias: smalltbl2
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: value is not null (type: boolean)
+              Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                condition expressions:
+                  0 {_col0} {_col1} {_col2} {_col3} {_col4}
+                  1 {key}
+                keys:
+                  0 _col3 (type: string)
+                  1 value (type: string)
+
   Stage: Stage-11
     Map Reduce
       Map Operator Tree:
           TableScan
             alias: bigtbl
             Statistics: Num rows: 5000 Data size: 72180 Basic stats: COMPLETE Column stats: NONE
-            Map Join Operator
-              condition map:
-                   Inner Join 0 to 1
-              condition expressions:
-                0 {key1} {key2} {value}
-                1 {key}
-              keys:
-                0 key1 (type: string)
-                1 key (type: string)
-              outputColumnNames: _col0, _col1, _col2, _col5
-              Statistics: Num rows: 5500 Data size: 79398 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: _col0 (type: string), _col1 (type: string), _col5 (type: string), _col2 (type: string), _col2 (type: string)
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4
-                Statistics: Num rows: 5500 Data size: 79398 Basic stats: COMPLETE Column stats: NONE
-                Map Join Operator
-                  condition map:
-                       Inner Join 0 to 1
-                  condition expressions:
-                    0 {_col0} {_col1} {_col2} {_col3} {_col4}
-                    1 {key}
-                  keys:
-                    0 _col3 (type: string)
-                    1 value (type: string)
-                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                  Statistics: Num rows: 6050 Data size: 87337 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col5 (type: string), _col3 (type: string), _col4 (type: string)
+            Filter Operator
+              predicate: ((key1 is not null and value is not null) and key2 is not null) (type: boolean)
+              Statistics: Num rows: 625 Data size: 9022 Basic stats: COMPLETE Column stats: NONE
+              Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                condition expressions:
+                  0 {key1} {key2} {value}
+                  1 {key}
+                keys:
+                  0 key1 (type: string)
+                  1 key (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col5
+                Statistics: Num rows: 687 Data size: 9924 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: string), _col1 (type: string), _col5 (type: string), _col2 (type: string), _col2 (type: string)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                  Statistics: Num rows: 687 Data size: 9924 Basic stats: COMPLETE Column stats: NONE
+                  Map Join Operator
+                    condition map:
+                         Inner Join 0 to 1
+                    condition expressions:
+                      0 {_col0} {_col1} {_col2} {_col3} {_col4}
+                      1 {key}
+                    keys:
+                      0 _col3 (type: string)
+                      1 value (type: string)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                    Statistics: Num rows: 6050 Data size: 87337 Basic stats: COMPLETE Column stats: NONE
-                    File Output Operator
-                      compressed: false
-                      table:
-                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                          serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+                    Statistics: Num rows: 755 Data size: 10916 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col5 (type: string), _col3 (type: string), _col4 (type: string)
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                      Statistics: Num rows: 755 Data size: 10916 Basic stats: COMPLETE Column stats: NONE
+                      File Output Operator
+                        compressed: false
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            join3:join2:join1:smalltbl1 
-              Fetch Operator
-                limit: -1
-            join3:join2:smalltbl2 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            join3:join2:join1:smalltbl1 
-              TableScan
-                alias: smalltbl1
-                Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-            join3:join2:smalltbl2 
-              TableScan
-                alias: smalltbl2
-                Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+
+  Stage: Stage-13
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        join3:smalltbl3 
+          Fetch Operator
+            limit: -1
+        smalltbl4 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        join3:smalltbl3 
+          TableScan
+            alias: smalltbl3
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                condition expressions:
+                  0 {_col0} {_col1} {_col2} {_col3} {_col4} {_col5}
+                  1 
+                keys:
+                  0 _col1 (type: string)
+                  1 key (type: string)
+        smalltbl4 
+          TableScan
+            alias: smalltbl4
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                condition expressions:
+                  0 {_col0} {_col1} {_col2} {_col3} {_col4} {_col5} {_col6}
+                  1 
+                keys:
+                  0 _col2 (type: string)
+                  1 key (type: string)
 
   Stage: Stage-4
     Map Reduce
@@ -1899,11 +2087,11 @@ STAGE PLANS:
                 0 _col1 (type: string)
                 1 key (type: string)
               outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
-              Statistics: Num rows: 6655 Data size: 96070 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 830 Data size: 12007 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col6 (type: string), _col4 (type: string), _col5 (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
-                Statistics: Num rows: 6655 Data size: 96070 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 830 Data size: 12007 Basic stats: COMPLETE Column stats: NONE
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -1914,11 +2102,11 @@ STAGE PLANS:
                     0 _col2 (type: string)
                     1 key (type: string)
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
-                  Statistics: Num rows: 7320 Data size: 105677 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 913 Data size: 13207 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col7 (type: string), _col5 (type: string), _col6 (type: string)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col7, _col5, _col6
-                    Statistics: Num rows: 7320 Data size: 105677 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 913 Data size: 13207 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: sum(hash(_col0)), sum(hash(_col1)), sum(hash(_col2)), sum(hash(_col3)), sum(hash(_col4)), sum(hash(_col7)), sum(hash(_col5)), sum(hash(_col6))
                       mode: hash
@@ -1930,22 +2118,6 @@ STAGE PLANS:
                         value expressions: _col0 (type: bigint), _col1 (type: bigint), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: bigint), _col5 (type: bigint), _col6 (type: bigint), _col7 (type: bigint)
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            join3:smalltbl3 
-              Fetch Operator
-                limit: -1
-            smalltbl4 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            join3:smalltbl3 
-              TableScan
-                alias: smalltbl3
-                Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-            smalltbl4 
-              TableScan
-                alias: smalltbl4
-                Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Group By Operator
           aggregations: sum(VALUE._col0), sum(VALUE._col1), sum(VALUE._col2), sum(VALUE._col3), sum(VALUE._col4), sum(VALUE._col5), sum(VALUE._col6), sum(VALUE._col7)
@@ -1967,6 +2139,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT SUM(HASH(join3.key1)),
        SUM(HASH(join3.key2)),
@@ -2044,19 +2218,10 @@ POSTHOOK: Input: default@smalltbl2
 POSTHOOK: Input: default@smalltbl3
 POSTHOOK: Input: default@smalltbl4
 #### A masked pattern was here ####
-POSTHOOK: Lineage: bigtbl.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: bigtbl.key1 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: bigtbl.key2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: bigtbl.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: bigtbl.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl3.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl4.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+RUN: Stage-14:MAPREDLOCAL
+RUN: Stage-11:MAPRED
+RUN: Stage-13:MAPREDLOCAL
+RUN: Stage-4:MAPRED
 247580	247580	247580	247580	247580	247580	548662743780	548662743780
 PREHOOK: query: -- Enable noconditionaltask and but set the size of hive.auto.convert.join.noconditionaltask.size
 -- to 0. The plan will be the same as the one with a disabled nonconditionaltask.
@@ -2128,80 +2293,109 @@ FROM (SELECT join2.key1 as key1,
       JOIN smallTbl3 ON (join2.key2 = smallTbl3.key)) join3
 JOIN smallTbl4 ON (join3.key3 = smallTbl4.key)
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: bigtbl.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: bigtbl.key1 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: bigtbl.key2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: bigtbl.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: bigtbl.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl3.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl4.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 STAGE DEPENDENCIES:
-  Stage-20 is a root stage , consists of Stage-18, Stage-19, Stage-5
-  Stage-18 has a backup stage: Stage-5
-  Stage-17 depends on stages: Stage-5, Stage-18, Stage-19 , consists of Stage-15, Stage-16, Stage-1
-  Stage-15 has a backup stage: Stage-1
-  Stage-14 depends on stages: Stage-1, Stage-15, Stage-16 , consists of Stage-12, Stage-13, Stage-2
-  Stage-12 has a backup stage: Stage-2
-  Stage-11 depends on stages: Stage-2, Stage-12, Stage-13 , consists of Stage-9, Stage-10, Stage-3
-  Stage-9 has a backup stage: Stage-3
+  Stage-20 is a root stage , consists of Stage-27, Stage-28, Stage-5
+  Stage-27 has a backup stage: Stage-5
+  Stage-18 depends on stages: Stage-27
+  Stage-17 depends on stages: Stage-5, Stage-18, Stage-19 , consists of Stage-25, Stage-26, Stage-1
+  Stage-25 has a backup stage: Stage-1
+  Stage-15 depends on stages: Stage-25
+  Stage-14 depends on stages: Stage-1, Stage-15, Stage-16 , consists of Stage-23, Stage-24, Stage-2
+  Stage-23 has a backup stage: Stage-2
+  Stage-12 depends on stages: Stage-23
+  Stage-11 depends on stages: Stage-2, Stage-12, Stage-13 , consists of Stage-21, Stage-22, Stage-3
+  Stage-21 has a backup stage: Stage-3
+  Stage-9 depends on stages: Stage-21
   Stage-4 depends on stages: Stage-3, Stage-9, Stage-10
-  Stage-10 has a backup stage: Stage-3
+  Stage-22 has a backup stage: Stage-3
+  Stage-10 depends on stages: Stage-22
   Stage-3
-  Stage-13 has a backup stage: Stage-2
+  Stage-24 has a backup stage: Stage-2
+  Stage-13 depends on stages: Stage-24
   Stage-2
-  Stage-16 has a backup stage: Stage-1
+  Stage-26 has a backup stage: Stage-1
+  Stage-16 depends on stages: Stage-26
   Stage-1
-  Stage-19 has a backup stage: Stage-5
+  Stage-28 has a backup stage: Stage-5
+  Stage-19 depends on stages: Stage-28
   Stage-5
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-4
 
 STAGE PLANS:
   Stage: Stage-20
     Conditional Operator
+
+  Stage: Stage-27
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        join3:join2:join1:smalltbl1 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        join3:join2:join1:smalltbl1 
+          TableScan
+            alias: smalltbl1
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              HashTable Sink Operator
+                condition expressions:
+                  0 {key1} {key2} {value}
+                  1 
+                keys:
+                  0 key1 (type: string)
+                  1 key (type: string)
 
   Stage: Stage-18
     Map Reduce
       Map Operator Tree:
           TableScan
             alias: bigtbl
-            Map Join Operator
-              condition map:
-                   Inner Join 0 to 1
-              condition expressions:
-                0 {key1} {key2} {value}
-                1 {key}
-              keys:
-                0 key1 (type: string)
-                1 key (type: string)
-              outputColumnNames: _col0, _col1, _col2, _col5
-              Select Operator
-                expressions: _col0 (type: string), _col1 (type: string), _col5 (type: string), _col2 (type: string), _col2 (type: string)
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4
-                File Output Operator
-                  compressed: false
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+            Filter Operator
+              predicate: ((key1 is not null and value is not null) and key2 is not null) (type: boolean)
+              Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                condition expressions:
+                  0 {key1} {key2} {value}
+                  1 {key}
+                keys:
+                  0 key1 (type: string)
+                  1 key (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col5
+                Select Operator
+                  expressions: _col0 (type: string), _col1 (type: string), _col5 (type: string), _col2 (type: string), _col2 (type: string)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            join3:join2:join1:smalltbl1 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            join3:join2:join1:smalltbl1 
-              TableScan
-                alias: smalltbl1
 
   Stage: Stage-17
     Conditional Operator
+
+  Stage: Stage-25
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        join3:join2:smalltbl2 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        join3:join2:smalltbl2 
+          TableScan
+            alias: smalltbl2
+            Filter Operator
+              predicate: value is not null (type: boolean)
+              HashTable Sink Operator
+                condition expressions:
+                  0 {_col0} {_col1} {_col2} {_col3} {_col4}
+                  1 {key}
+                keys:
+                  0 _col3 (type: string)
+                  1 value (type: string)
 
   Stage: Stage-15
     Map Reduce
@@ -2228,17 +2422,29 @@ STAGE PLANS:
                       serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            join3:join2:smalltbl2 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            join3:join2:smalltbl2 
-              TableScan
-                alias: smalltbl2
 
   Stage: Stage-14
     Conditional Operator
+
+  Stage: Stage-23
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        join3:smalltbl3 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        join3:smalltbl3 
+          TableScan
+            alias: smalltbl3
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              HashTable Sink Operator
+                condition expressions:
+                  0 {_col0} {_col1} {_col2} {_col3} {_col4} {_col5}
+                  1 
+                keys:
+                  0 _col1 (type: string)
+                  1 key (type: string)
 
   Stage: Stage-12
     Map Reduce
@@ -2265,17 +2471,29 @@ STAGE PLANS:
                       serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            join3:smalltbl3 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            join3:smalltbl3 
-              TableScan
-                alias: smalltbl3
 
   Stage: Stage-11
     Conditional Operator
+
+  Stage: Stage-21
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        smalltbl4 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        smalltbl4 
+          TableScan
+            alias: smalltbl4
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              HashTable Sink Operator
+                condition expressions:
+                  0 {_col0} {_col1} {_col2} {_col3} {_col4} {_col5} {_col6}
+                  1 
+                keys:
+                  0 _col2 (type: string)
+                  1 key (type: string)
 
   Stage: Stage-9
     Map Reduce
@@ -2306,14 +2524,6 @@ STAGE PLANS:
                         serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            smalltbl4 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            smalltbl4 
-              TableScan
-                alias: smalltbl4
 
   Stage: Stage-4
     Map Reduce
@@ -2341,43 +2551,55 @@ STAGE PLANS:
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
+  Stage: Stage-22
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        $INTNAME 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        $INTNAME 
+          TableScan
+            HashTable Sink Operator
+              condition expressions:
+                0 {_col0} {_col1} {_col3} {_col4} {_col5} {_col6}
+                1 {key}
+              keys:
+                0 _col2 (type: string)
+                1 key (type: string)
+
   Stage: Stage-10
     Map Reduce
       Map Operator Tree:
           TableScan
             alias: smalltbl4
-            Map Join Operator
-              condition map:
-                   Inner Join 0 to 1
-              condition expressions:
-                0 {_col0} {_col1} {_col2} {_col3} {_col4} {_col5} {_col6}
-                1 {key}
-              keys:
-                0 _col2 (type: string)
-                1 key (type: string)
-              outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
-              Select Operator
-                expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col7 (type: string), _col5 (type: string), _col6 (type: string)
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col7, _col5, _col6
-                Group By Operator
-                  aggregations: sum(hash(_col0)), sum(hash(_col1)), sum(hash(_col2)), sum(hash(_col3)), sum(hash(_col4)), sum(hash(_col7)), sum(hash(_col5)), sum(hash(_col6))
-                  mode: hash
-                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
-                  File Output Operator
-                    compressed: false
-                    table:
-                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                condition expressions:
+                  0 {_col0} {_col1} {_col2} {_col3} {_col4} {_col5} {_col6}
+                  1 {key}
+                keys:
+                  0 _col2 (type: string)
+                  1 key (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
+                Select Operator
+                  expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col7 (type: string), _col5 (type: string), _col6 (type: string)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col7, _col5, _col6
+                  Group By Operator
+                    aggregations: sum(hash(_col0)), sum(hash(_col1)), sum(hash(_col2)), sum(hash(_col3)), sum(hash(_col4)), sum(hash(_col7)), sum(hash(_col5)), sum(hash(_col6))
+                    mode: hash
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
+                    File Output Operator
+                      compressed: false
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            $INTNAME 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            $INTNAME 
-              TableScan
 
   Stage: Stage-3
     Map Reduce
@@ -2387,30 +2609,32 @@ STAGE PLANS:
               key expressions: _col2 (type: string)
               sort order: +
               Map-reduce partition columns: _col2 (type: string)
-              Statistics: Num rows: 6655 Data size: 96070 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: string), _col6 (type: string)
+              Statistics: Num rows: 830 Data size: 12007 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col0 (type: string), _col1 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: string), _col6 (type: string)
           TableScan
             alias: smalltbl4
             Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-            Reduce Output Operator
-              key expressions: key (type: string)
-              sort order: +
-              Map-reduce partition columns: key (type: string)
-              Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-              value expressions: key (type: string)
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: key (type: string)
+                sort order: +
+                Map-reduce partition columns: key (type: string)
+                Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
           condition expressions:
-            0 {VALUE._col0} {VALUE._col1} {VALUE._col2} {VALUE._col3} {VALUE._col4} {VALUE._col5} {VALUE._col6}
-            1 {VALUE._col0}
+            0 {VALUE._col0} {VALUE._col1} {KEY.reducesinkkey0} {VALUE._col2} {VALUE._col3} {VALUE._col4} {VALUE._col5}
+            1 {KEY.reducesinkkey0}
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
-          Statistics: Num rows: 7320 Data size: 105677 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 913 Data size: 13207 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col7 (type: string), _col5 (type: string), _col6 (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col7, _col5, _col6
-            Statistics: Num rows: 7320 Data size: 105677 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 913 Data size: 13207 Basic stats: COMPLETE Column stats: NONE
             Group By Operator
               aggregations: sum(hash(_col0)), sum(hash(_col1)), sum(hash(_col2)), sum(hash(_col3)), sum(hash(_col4)), sum(hash(_col7)), sum(hash(_col5)), sum(hash(_col6))
               mode: hash
@@ -2423,39 +2647,51 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
+  Stage: Stage-24
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        join3:$INTNAME 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        join3:$INTNAME 
+          TableScan
+            HashTable Sink Operator
+              condition expressions:
+                0 {_col0} {_col2} {_col3} {_col4} {_col5}
+                1 {key}
+              keys:
+                0 _col1 (type: string)
+                1 key (type: string)
+
   Stage: Stage-13
     Map Reduce
       Map Operator Tree:
           TableScan
             alias: smalltbl3
-            Map Join Operator
-              condition map:
-                   Inner Join 0 to 1
-              condition expressions:
-                0 {_col0} {_col1} {_col2} {_col3} {_col4} {_col5}
-                1 {key}
-              keys:
-                0 _col1 (type: string)
-                1 key (type: string)
-              outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
-              Select Operator
-                expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col6 (type: string), _col4 (type: string), _col5 (type: string)
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                condition expressions:
+                  0 {_col0} {_col1} {_col2} {_col3} {_col4} {_col5}
+                  1 {key}
+                keys:
+                  0 _col1 (type: string)
+                  1 key (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
-                File Output Operator
-                  compressed: false
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+                Select Operator
+                  expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col6 (type: string), _col4 (type: string), _col5 (type: string)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            join3:$INTNAME 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            join3:$INTNAME 
-              TableScan
 
   Stage: Stage-2
     Map Reduce
@@ -2465,30 +2701,32 @@ STAGE PLANS:
               key expressions: _col1 (type: string)
               sort order: +
               Map-reduce partition columns: _col1 (type: string)
-              Statistics: Num rows: 6050 Data size: 87337 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: string)
+              Statistics: Num rows: 755 Data size: 10916 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col0 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: string)
           TableScan
             alias: smalltbl3
             Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-            Reduce Output Operator
-              key expressions: key (type: string)
-              sort order: +
-              Map-reduce partition columns: key (type: string)
-              Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-              value expressions: key (type: string)
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: key (type: string)
+                sort order: +
+                Map-reduce partition columns: key (type: string)
+                Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
           condition expressions:
-            0 {VALUE._col0} {VALUE._col1} {VALUE._col2} {VALUE._col3} {VALUE._col4} {VALUE._col5}
-            1 {VALUE._col0}
+            0 {VALUE._col0} {KEY.reducesinkkey0} {VALUE._col1} {VALUE._col2} {VALUE._col3} {VALUE._col4}
+            1 {KEY.reducesinkkey0}
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
-          Statistics: Num rows: 6655 Data size: 96070 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 830 Data size: 12007 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col6 (type: string), _col4 (type: string), _col5 (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
-            Statistics: Num rows: 6655 Data size: 96070 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 830 Data size: 12007 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
               table:
@@ -2496,39 +2734,51 @@ STAGE PLANS:
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
+  Stage: Stage-26
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        join3:join2:$INTNAME 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        join3:join2:$INTNAME 
+          TableScan
+            HashTable Sink Operator
+              condition expressions:
+                0 {_col0} {_col1} {_col2} {_col4}
+                1 {key}
+              keys:
+                0 _col3 (type: string)
+                1 value (type: string)
+
   Stage: Stage-16
     Map Reduce
       Map Operator Tree:
           TableScan
             alias: smalltbl2
-            Map Join Operator
-              condition map:
-                   Inner Join 0 to 1
-              condition expressions:
-                0 {_col0} {_col1} {_col2} {_col3} {_col4}
-                1 {key}
-              keys:
-                0 _col3 (type: string)
-                1 value (type: string)
-              outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-              Select Operator
-                expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col5 (type: string), _col3 (type: string), _col4 (type: string)
+            Filter Operator
+              predicate: value is not null (type: boolean)
+              Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                condition expressions:
+                  0 {_col0} {_col1} {_col2} {_col3} {_col4}
+                  1 {key}
+                keys:
+                  0 _col3 (type: string)
+                  1 value (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                File Output Operator
-                  compressed: false
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+                Select Operator
+                  expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col5 (type: string), _col3 (type: string), _col4 (type: string)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            join3:join2:$INTNAME 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            join3:join2:$INTNAME 
-              TableScan
 
   Stage: Stage-1
     Map Reduce
@@ -2536,32 +2786,35 @@ STAGE PLANS:
           TableScan
             alias: smalltbl2
             Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-            Reduce Output Operator
-              key expressions: value (type: string)
-              sort order: +
-              Map-reduce partition columns: value (type: string)
-              Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-              value expressions: key (type: string)
+            Filter Operator
+              predicate: value is not null (type: boolean)
+              Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: value (type: string)
+                sort order: +
+                Map-reduce partition columns: value (type: string)
+                Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
+                value expressions: key (type: string)
           TableScan
             Reduce Output Operator
               key expressions: _col3 (type: string)
               sort order: +
               Map-reduce partition columns: _col3 (type: string)
-              Statistics: Num rows: 5500 Data size: 79398 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string)
+              Statistics: Num rows: 687 Data size: 9924 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col4 (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
           condition expressions:
-            0 {VALUE._col0} {VALUE._col1} {VALUE._col2} {VALUE._col3} {VALUE._col4}
+            0 {VALUE._col0} {VALUE._col1} {VALUE._col2} {KEY.reducesinkkey0} {VALUE._col3}
             1 {VALUE._col0}
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-          Statistics: Num rows: 6050 Data size: 87337 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 755 Data size: 10916 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col5 (type: string), _col3 (type: string), _col4 (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-            Statistics: Num rows: 6050 Data size: 87337 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 755 Data size: 10916 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
               table:
@@ -2569,40 +2822,54 @@ STAGE PLANS:
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
+  Stage: Stage-28
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        join3:join2:join1:bigtbl 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        join3:join2:join1:bigtbl 
+          TableScan
+            alias: bigtbl
+            Filter Operator
+              predicate: ((key1 is not null and value is not null) and key2 is not null) (type: boolean)
+              HashTable Sink Operator
+                condition expressions:
+                  0 {key2} {value}
+                  1 {key}
+                keys:
+                  0 key1 (type: string)
+                  1 key (type: string)
+
   Stage: Stage-19
     Map Reduce
       Map Operator Tree:
           TableScan
             alias: smalltbl1
-            Map Join Operator
-              condition map:
-                   Inner Join 0 to 1
-              condition expressions:
-                0 {key1} {key2} {value}
-                1 {key}
-              keys:
-                0 key1 (type: string)
-                1 key (type: string)
-              outputColumnNames: _col0, _col1, _col2, _col5
-              Select Operator
-                expressions: _col0 (type: string), _col1 (type: string), _col5 (type: string), _col2 (type: string), _col2 (type: string)
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4
-                File Output Operator
-                  compressed: false
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                condition expressions:
+                  0 {key1} {key2} {value}
+                  1 {key}
+                keys:
+                  0 key1 (type: string)
+                  1 key (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col5
+                Select Operator
+                  expressions: _col0 (type: string), _col1 (type: string), _col5 (type: string), _col2 (type: string), _col2 (type: string)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            join3:join2:join1:bigtbl 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            join3:join2:join1:bigtbl 
-              TableScan
-                alias: bigtbl
 
   Stage: Stage-5
     Map Reduce
@@ -2610,34 +2877,39 @@ STAGE PLANS:
           TableScan
             alias: bigtbl
             Statistics: Num rows: 5000 Data size: 72180 Basic stats: COMPLETE Column stats: NONE
-            Reduce Output Operator
-              key expressions: key1 (type: string)
-              sort order: +
-              Map-reduce partition columns: key1 (type: string)
-              Statistics: Num rows: 5000 Data size: 72180 Basic stats: COMPLETE Column stats: NONE
-              value expressions: key1 (type: string), key2 (type: string), value (type: string)
+            Filter Operator
+              predicate: ((key1 is not null and value is not null) and key2 is not null) (type: boolean)
+              Statistics: Num rows: 625 Data size: 9022 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: key1 (type: string)
+                sort order: +
+                Map-reduce partition columns: key1 (type: string)
+                Statistics: Num rows: 625 Data size: 9022 Basic stats: COMPLETE Column stats: NONE
+                value expressions: key2 (type: string), value (type: string)
           TableScan
             alias: smalltbl1
             Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-            Reduce Output Operator
-              key expressions: key (type: string)
-              sort order: +
-              Map-reduce partition columns: key (type: string)
-              Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-              value expressions: key (type: string)
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: key (type: string)
+                sort order: +
+                Map-reduce partition columns: key (type: string)
+                Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
           condition expressions:
-            0 {VALUE._col0} {VALUE._col1} {VALUE._col2}
-            1 {VALUE._col0}
+            0 {KEY.reducesinkkey0} {VALUE._col0} {VALUE._col1}
+            1 {KEY.reducesinkkey0}
           outputColumnNames: _col0, _col1, _col2, _col5
-          Statistics: Num rows: 5500 Data size: 79398 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 687 Data size: 9924 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: _col0 (type: string), _col1 (type: string), _col5 (type: string), _col2 (type: string), _col2 (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3, _col4
-            Statistics: Num rows: 5500 Data size: 79398 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 687 Data size: 9924 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
               table:
@@ -2648,6 +2920,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT SUM(HASH(join3.key1)),
        SUM(HASH(join3.key2)),
@@ -2725,17 +2999,17 @@ POSTHOOK: Input: default@smalltbl2
 POSTHOOK: Input: default@smalltbl3
 POSTHOOK: Input: default@smalltbl4
 #### A masked pattern was here ####
-POSTHOOK: Lineage: bigtbl.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: bigtbl.key1 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: bigtbl.key2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: bigtbl.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: bigtbl.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl3.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl4.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smalltbl4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+RUN: Stage-20:CONDITIONAL
+RUN: Stage-27:MAPREDLOCAL
+RUN: Stage-18:MAPRED
+RUN: Stage-17:CONDITIONAL
+RUN: Stage-25:MAPREDLOCAL
+RUN: Stage-15:MAPRED
+RUN: Stage-14:CONDITIONAL
+RUN: Stage-23:MAPREDLOCAL
+RUN: Stage-12:MAPRED
+RUN: Stage-11:CONDITIONAL
+RUN: Stage-21:MAPREDLOCAL
+RUN: Stage-9:MAPRED
+RUN: Stage-4:MAPRED
 247580	247580	247580	247580	247580	247580	548662743780	548662743780

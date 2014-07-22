@@ -1,3 +1,7 @@
+set hive.stats.dbclass=fs;
+
+-- SORT_QUERY_RESULTS
+
 EXPLAIN
 CREATE INDEX src1_index ON TABLE src(key) as 'BITMAP' WITH DEFERRED REBUILD;
 EXPLAIN
@@ -7,8 +11,8 @@ CREATE INDEX src1_index ON TABLE src(key) as 'BITMAP' WITH DEFERRED REBUILD;
 CREATE INDEX src2_index ON TABLE src(value) as 'BITMAP' WITH DEFERRED REBUILD;
 ALTER INDEX src1_index ON src REBUILD;
 ALTER INDEX src2_index ON src REBUILD;
-SELECT * FROM default__src_src1_index__ ORDER BY key;
-SELECT * FROM default__src_src2_index__ ORDER BY value;
+SELECT * FROM default__src_src1_index__;
+SELECT * FROM default__src_src2_index__;
 
 SET hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
 
@@ -25,10 +29,10 @@ GROUP BY t.bucketname;
 SET hive.index.blockfilter.file=${system:test.tmp.dir}/index_result;
 SET hive.input.format=org.apache.hadoop.hive.ql.index.HiveIndexedInputFormat;
 
-SELECT key, value FROM src WHERE key=0 OR value = "val_2" ORDER BY key;
+SELECT key, value FROM src WHERE key=0 OR value = "val_2";
 
 SET hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
-SELECT key, value FROM src WHERE key=0 OR value = "val_2" ORDER BY key;
+SELECT key, value FROM src WHERE key=0 OR value = "val_2";
 
 DROP INDEX src1_index ON src;
 DROP INDEX src2_index ON src;

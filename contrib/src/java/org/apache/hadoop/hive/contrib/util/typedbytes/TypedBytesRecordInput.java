@@ -21,14 +21,10 @@ package org.apache.hadoop.hive.contrib.util.typedbytes;
 import java.io.DataInput;
 import java.io.IOException;
 
-import org.apache.hadoop.record.Buffer;
-import org.apache.hadoop.record.Index;
-import org.apache.hadoop.record.RecordInput;
-
 /**
  * Serializer for records that writes typed bytes.
  */
-public class TypedBytesRecordInput implements RecordInput {
+public class TypedBytesRecordInput {
 
   private TypedBytesInput in;
 
@@ -49,7 +45,7 @@ public class TypedBytesRecordInput implements RecordInput {
   /**
    * Get a thread-local typed bytes record input for the supplied
    * {@link TypedBytesInput}.
-   * 
+   *
    * @param in
    *          typed bytes input object
    * @return typed bytes record input corresponding to the supplied
@@ -64,7 +60,7 @@ public class TypedBytesRecordInput implements RecordInput {
   /**
    * Get a thread-local typed bytes record input for the supplied
    * {@link DataInput}.
-   * 
+   *
    * @param in
    *          data input object
    * @return typed bytes record input corresponding to the supplied
@@ -87,11 +83,6 @@ public class TypedBytesRecordInput implements RecordInput {
   public boolean readBool(String tag) throws IOException {
     in.skipType();
     return in.readBool();
-  }
-
-  public Buffer readBuffer(String tag) throws IOException {
-    in.skipType();
-    return new Buffer(in.readBytes());
   }
 
   public byte readByte(String tag) throws IOException {
@@ -128,16 +119,6 @@ public class TypedBytesRecordInput implements RecordInput {
     in.skipType();
   }
 
-  public Index startVector(String tag) throws IOException {
-    in.skipType();
-    return new TypedBytesIndex(in.readVectorHeader());
-  }
-
-  public Index startMap(String tag) throws IOException {
-    in.skipType();
-    return new TypedBytesIndex(in.readMapHeader());
-  }
-
   public void endRecord(String tag) throws IOException {
   }
 
@@ -146,21 +127,4 @@ public class TypedBytesRecordInput implements RecordInput {
 
   public void endMap(String tag) throws IOException {
   }
-
-  private static final class TypedBytesIndex implements Index {
-    private int nelems;
-
-    private TypedBytesIndex(int nelems) {
-      this.nelems = nelems;
-    }
-
-    public boolean done() {
-      return (nelems <= 0);
-    }
-
-    public void incr() {
-      nelems--;
-    }
-  }
-
 }

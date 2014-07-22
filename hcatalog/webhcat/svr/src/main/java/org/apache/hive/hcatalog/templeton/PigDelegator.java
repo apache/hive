@@ -126,6 +126,9 @@ public class PigDelegator extends LauncherDelegator {
       //the token file location should be first argument of pig
       args.add("-D" + TempletonControllerJob.TOKEN_FILE_ARG_PLACEHOLDER);
 
+      //add mapreduce job tag placeholder
+      args.add("-D" + TempletonControllerJob.MAPREDUCE_JOB_TAGS_ARG_PLACEHOLDER);
+
       for (String pigArg : pigArgs) {
         args.add(TempletonUtils.quoteForWindows(pigArg));
       }

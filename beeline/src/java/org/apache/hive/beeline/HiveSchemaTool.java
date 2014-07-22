@@ -454,6 +454,7 @@ public class HiveSchemaTool {
     if (line.hasOption("dbType")) {
       dbType = line.getOptionValue("dbType");
       if ((!dbType.equalsIgnoreCase(HiveSchemaHelper.DB_DERBY) &&
+          !dbType.equalsIgnoreCase(HiveSchemaHelper.DB_MSSQL) &&
           !dbType.equalsIgnoreCase(HiveSchemaHelper.DB_MYSQL) &&
           !dbType.equalsIgnoreCase(HiveSchemaHelper.DB_POSTGRACE) && !dbType
           .equalsIgnoreCase(HiveSchemaHelper.DB_ORACLE))) {
@@ -506,7 +507,7 @@ public class HiveSchemaTool {
       System.err.println("*** schemaTool failed ***");
       System.exit(1);
     }
-    System.out.println("schemaTool completeted");
+    System.out.println("schemaTool completed");
 
   }
 }

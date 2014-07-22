@@ -45,7 +45,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 #### A masked pattern was here ####
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: dest1.c1 SIMPLE []
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -71,15 +70,12 @@ POSTHOOK: query: SELECT get_json_object(src_json.json, '$') FROM src_json
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_json
 #### A masked pattern was here ####
-POSTHOOK: Lineage: dest1.c1 SIMPLE []
-#### A masked pattern was here ####
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_json
 #### A masked pattern was here ####
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_json
 #### A masked pattern was here ####
-POSTHOOK: Lineage: dest1.c1 SIMPLE []
 amy	{"fruit":[{"weight":8,"type":"apple"},{"weight":9,"type":"pear"}],"basket":[[1,2,{"b":"y","a":"x"}],[3,4],[5,6]],"book":[{"author":"Nigel Rees","title":"Sayings of the Century","category":"reference","price":8.95},{"author":"Herman Melville","title":"Moby Dick","category":"fiction","price":8.99,"isbn":"0-553-21311-3"},{"author":"J. R. R. Tolkien","title":"The Lord of the Rings","category":"fiction","reader":[{"age":25,"name":"bob"},{"age":26,"name":"jack"}],"price":22.99,"isbn":"0-395-19395-8"}],"bicycle":{"price":19.95,"color":"red"}}
 PREHOOK: query: SELECT get_json_object(src_json.json, '$.store.bicycle'), get_json_object(src_json.json, '$.store.book') FROM src_json
 PREHOOK: type: QUERY
@@ -89,7 +85,6 @@ POSTHOOK: query: SELECT get_json_object(src_json.json, '$.store.bicycle'), get_j
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_json
 #### A masked pattern was here ####
-POSTHOOK: Lineage: dest1.c1 SIMPLE []
 {"price":19.95,"color":"red"}	[{"author":"Nigel Rees","title":"Sayings of the Century","category":"reference","price":8.95},{"author":"Herman Melville","title":"Moby Dick","category":"fiction","price":8.99,"isbn":"0-553-21311-3"},{"author":"J. R. R. Tolkien","title":"The Lord of the Rings","category":"fiction","reader":[{"age":25,"name":"bob"},{"age":26,"name":"jack"}],"price":22.99,"isbn":"0-395-19395-8"}]
 PREHOOK: query: SELECT get_json_object(src_json.json, '$.store.book[0]'), get_json_object(src_json.json, '$.store.book[*]') FROM src_json
 PREHOOK: type: QUERY
@@ -99,7 +94,6 @@ POSTHOOK: query: SELECT get_json_object(src_json.json, '$.store.book[0]'), get_j
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_json
 #### A masked pattern was here ####
-POSTHOOK: Lineage: dest1.c1 SIMPLE []
 {"author":"Nigel Rees","title":"Sayings of the Century","category":"reference","price":8.95}	[{"author":"Nigel Rees","title":"Sayings of the Century","category":"reference","price":8.95},{"author":"Herman Melville","title":"Moby Dick","category":"fiction","price":8.99,"isbn":"0-553-21311-3"},{"author":"J. R. R. Tolkien","title":"The Lord of the Rings","category":"fiction","reader":[{"age":25,"name":"bob"},{"age":26,"name":"jack"}],"price":22.99,"isbn":"0-395-19395-8"}]
 PREHOOK: query: SELECT get_json_object(src_json.json, '$.store.book[0].category'), get_json_object(src_json.json, '$.store.book[*].category'), get_json_object(src_json.json, '$.store.book[*].isbn'), get_json_object(src_json.json, '$.store.book[*].reader') FROM src_json
 PREHOOK: type: QUERY
@@ -109,7 +103,6 @@ POSTHOOK: query: SELECT get_json_object(src_json.json, '$.store.book[0].category
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_json
 #### A masked pattern was here ####
-POSTHOOK: Lineage: dest1.c1 SIMPLE []
 reference	["reference","fiction","fiction"]	["0-553-21311-3","0-395-19395-8"]	[{"age":25,"name":"bob"},{"age":26,"name":"jack"}]
 PREHOOK: query: SELECT get_json_object(src_json.json, '$.store.book[*].reader[0].age'), get_json_object(src_json.json, '$.store.book[*].reader[*].age')  FROM src_json
 PREHOOK: type: QUERY
@@ -119,7 +112,6 @@ POSTHOOK: query: SELECT get_json_object(src_json.json, '$.store.book[*].reader[0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_json
 #### A masked pattern was here ####
-POSTHOOK: Lineage: dest1.c1 SIMPLE []
 25	[25,26]
 PREHOOK: query: SELECT get_json_object(src_json.json, '$.store.basket[0][1]'), get_json_object(src_json.json, '$.store.basket[*]'), get_json_object(src_json.json, '$.store.basket[*][0]'), get_json_object(src_json.json, '$.store.basket[0][*]'), get_json_object(src_json.json, '$.store.basket[*][*]'), get_json_object(src_json.json, '$.store.basket[0][2].b'), get_json_object(src_json.json, '$.store.basket[0][*].b') FROM src_json
 PREHOOK: type: QUERY
@@ -129,8 +121,7 @@ POSTHOOK: query: SELECT get_json_object(src_json.json, '$.store.basket[0][1]'), 
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_json
 #### A masked pattern was here ####
-POSTHOOK: Lineage: dest1.c1 SIMPLE []
-2	[[1,2,{"b":"y","a":"x"}],[3,4],[5,6]]	1	[1,2,{"b":"y","a":"x"}]	[1,2,{"b":"y","a":"x"},3,4,5,6]	y	["y"]
+2	[[1,2,{"b":"y","a":"x"}],[3,4],[5,6]]	[1,3,5]	[1,2,{"b":"y","a":"x"}]	[1,2,{"b":"y","a":"x"},3,4,5,6]	y	["y"]
 PREHOOK: query: SELECT get_json_object(src_json.json, '$.non_exist_key'),  get_json_object(src_json.json, '$..no_recursive'), get_json_object(src_json.json, '$.store.book[10]'), get_json_object(src_json.json, '$.store.book[0].non_exist_key'), get_json_object(src_json.json, '$.store.basket[*].non_exist_key'), get_json_object(src_json.json, '$.store.basket[0][*].non_exist_key') FROM src_json
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_json
@@ -139,7 +130,6 @@ POSTHOOK: query: SELECT get_json_object(src_json.json, '$.non_exist_key'),  get_
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_json
 #### A masked pattern was here ####
-POSTHOOK: Lineage: dest1.c1 SIMPLE []
 NULL	NULL	NULL	NULL	NULL	NULL
 PREHOOK: query: SELECT get_json_object(src_json.json, '$.zip code') FROM src_json
 PREHOOK: type: QUERY
@@ -149,7 +139,6 @@ POSTHOOK: query: SELECT get_json_object(src_json.json, '$.zip code') FROM src_js
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_json
 #### A masked pattern was here ####
-POSTHOOK: Lineage: dest1.c1 SIMPLE []
 94025
 PREHOOK: query: SELECT get_json_object(src_json.json, '$.fb:testid') FROM src_json
 PREHOOK: type: QUERY
@@ -159,7 +148,6 @@ POSTHOOK: query: SELECT get_json_object(src_json.json, '$.fb:testid') FROM src_j
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_json
 #### A masked pattern was here ####
-POSTHOOK: Lineage: dest1.c1 SIMPLE []
 1234
 PREHOOK: query: -- Verify that get_json_object can handle new lines in JSON values
 
@@ -172,7 +160,6 @@ CREATE TABLE dest2(c1 STRING) STORED AS RCFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest2
-POSTHOOK: Lineage: dest1.c1 SIMPLE []
 PREHOOK: query: INSERT OVERWRITE TABLE dest2 SELECT '{"a":"b\nc"}' FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -181,7 +168,6 @@ POSTHOOK: query: INSERT OVERWRITE TABLE dest2 SELECT '{"a":"b\nc"}' FROM src tab
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dest2
-POSTHOOK: Lineage: dest1.c1 SIMPLE []
 POSTHOOK: Lineage: dest2.c1 SIMPLE []
 PREHOOK: query: SELECT * FROM dest2
 PREHOOK: type: QUERY
@@ -191,8 +177,6 @@ POSTHOOK: query: SELECT * FROM dest2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest2
 #### A masked pattern was here ####
-POSTHOOK: Lineage: dest1.c1 SIMPLE []
-POSTHOOK: Lineage: dest2.c1 SIMPLE []
 {"a":"b
 c"}
 PREHOOK: query: SELECT get_json_object(c1, '$.a') FROM dest2
@@ -203,7 +187,5 @@ POSTHOOK: query: SELECT get_json_object(c1, '$.a') FROM dest2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest2
 #### A masked pattern was here ####
-POSTHOOK: Lineage: dest1.c1 SIMPLE []
-POSTHOOK: Lineage: dest2.c1 SIMPLE []
 b
 c

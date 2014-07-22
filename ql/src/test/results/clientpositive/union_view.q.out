@@ -38,7 +38,7 @@ STAGE DEPENDENCIES:
   Stage-3 is a root stage
   Stage-2 depends on stages: Stage-3
   Stage-1 depends on stages: Stage-2
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-3
@@ -90,12 +90,14 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
   Stage-2 depends on stages: Stage-3
   Stage-1 depends on stages: Stage-2
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-3
@@ -147,12 +149,14 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
   Stage-2 depends on stages: Stage-3
   Stage-1 depends on stages: Stage-2
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-3
@@ -204,6 +208,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 86	val_86	1
 86	val_86	2
@@ -214,7 +220,7 @@ STAGE DEPENDENCIES:
   Stage-3 is a root stage
   Stage-2 depends on stages: Stage-3
   Stage-1 depends on stages: Stage-2
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-3
@@ -278,12 +284,14 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
   Stage-2 depends on stages: Stage-3
   Stage-1 depends on stages: Stage-2
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-3
@@ -347,12 +355,14 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
   Stage-2 depends on stages: Stage-3
   Stage-1 depends on stages: Stage-2
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-3
@@ -416,6 +426,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 500
 1000
@@ -424,7 +436,7 @@ STAGE DEPENDENCIES:
   Stage-5 is a root stage
   Stage-4 depends on stages: Stage-5
   Stage-1 depends on stages: Stage-4
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-5
@@ -482,12 +494,14 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 STAGE DEPENDENCIES:
   Stage-5 is a root stage
   Stage-4 depends on stages: Stage-5
   Stage-1 depends on stages: Stage-4
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-5
@@ -545,12 +559,14 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 STAGE DEPENDENCIES:
   Stage-5 is a root stage
   Stage-4 depends on stages: Stage-5
   Stage-1 depends on stages: Stage-4
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-5
@@ -608,6 +624,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 STAGE DEPENDENCIES:
   Stage-5 is a root stage
@@ -617,7 +635,7 @@ STAGE DEPENDENCIES:
   Stage-6 depends on stages: Stage-7
   Stage-9 is a root stage
   Stage-8 depends on stages: Stage-9
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-5
@@ -668,7 +686,7 @@ STAGE PLANS:
                       key expressions: _col2 (type: string)
                       sort order: +
                       Statistics: Num rows: 1250 Data size: 13280 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string)
+                      value expressions: _col0 (type: int), _col1 (type: string)
           TableScan
             alias: src_union_1
             filterExpr: ((key = 86) and ds is not null) (type: boolean)
@@ -690,7 +708,7 @@ STAGE PLANS:
                       key expressions: _col2 (type: string)
                       sort order: +
                       Statistics: Num rows: 1250 Data size: 13280 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string)
+                      value expressions: _col0 (type: int), _col1 (type: string)
           TableScan
             alias: src_union_3
             filterExpr: ((key = 86) and ds is not null) (type: boolean)
@@ -712,9 +730,11 @@ STAGE PLANS:
                       key expressions: _col2 (type: string)
                       sort order: +
                       Statistics: Num rows: 1250 Data size: 13280 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string)
+                      value expressions: _col0 (type: int), _col1 (type: string)
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: VALUE._col0 (type: int), VALUE._col1 (type: string), KEY.reducesinkkey0 (type: string)
+          outputColumnNames: _col0, _col1, _col2
           Statistics: Num rows: 1250 Data size: 13280 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
@@ -775,6 +795,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 86	val_86	1
 86	val_86	2
@@ -790,7 +812,7 @@ STAGE DEPENDENCIES:
   Stage-5 is a root stage
   Stage-4 depends on stages: Stage-5
   Stage-1 depends on stages: Stage-4
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-5
@@ -821,37 +843,35 @@ STAGE PLANS:
           TableScan
             alias: src_union_1
             filterExpr: (ds = '1') (type: boolean)
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              expressions: key (type: int), value (type: string), ds (type: string)
-              outputColumnNames: _col0, _col1, _col2
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
               Union
-                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                 Select Operator
-                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                   Group By Operator
                     aggregations: count(1)
                     mode: hash
                     outputColumnNames: _col0
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       sort order: 
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: _col0 (type: bigint)
             outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -860,12 +880,14 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 STAGE DEPENDENCIES:
   Stage-5 is a root stage
   Stage-4 depends on stages: Stage-5
   Stage-1 depends on stages: Stage-4
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-5
@@ -896,37 +918,35 @@ STAGE PLANS:
           TableScan
             alias: src_union_2
             filterExpr: (ds = '2') (type: boolean)
-            Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              expressions: key (type: int), value (type: string), ds (type: string)
-              outputColumnNames: _col0, _col1, _col2
-              Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1000 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
               Union
-                Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1000 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                 Select Operator
-                  Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1000 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                   Group By Operator
                     aggregations: count(1)
                     mode: hash
                     outputColumnNames: _col0
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       sort order: 
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: _col0 (type: bigint)
             outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -935,12 +955,14 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 STAGE DEPENDENCIES:
   Stage-5 is a root stage
   Stage-4 depends on stages: Stage-5
   Stage-1 depends on stages: Stage-4
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-5
@@ -971,37 +993,35 @@ STAGE PLANS:
           TableScan
             alias: src_union_3
             filterExpr: (ds = '3') (type: boolean)
-            Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              expressions: key (type: int), value (type: string), ds (type: string)
-              outputColumnNames: _col0, _col1, _col2
-              Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1000 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
               Union
-                Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1000 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                 Select Operator
-                  Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1000 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                   Group By Operator
                     aggregations: count(1)
                     mode: hash
                     outputColumnNames: _col0
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       sort order: 
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: _col0 (type: bigint)
             outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1010,6 +1030,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 500
 1000
@@ -1018,7 +1040,7 @@ STAGE DEPENDENCIES:
   Stage-5 is a root stage
   Stage-4 depends on stages: Stage-5
   Stage-1 depends on stages: Stage-4
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-5
@@ -1076,13 +1098,15 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 86	val_86	4
 STAGE DEPENDENCIES:
   Stage-5 is a root stage
   Stage-4 depends on stages: Stage-5
   Stage-1 depends on stages: Stage-4
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-5
@@ -1113,37 +1137,35 @@ STAGE PLANS:
           TableScan
             alias: src_union_3
             filterExpr: (ds = '4') (type: boolean)
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              expressions: key (type: int), value (type: string), ds (type: string)
-              outputColumnNames: _col0, _col1, _col2
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
               Union
-                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                 Select Operator
-                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                   Group By Operator
                     aggregations: count(1)
                     mode: hash
                     outputColumnNames: _col0
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       sort order: 
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: _col0 (type: bigint)
             outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1152,5 +1174,7 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 500

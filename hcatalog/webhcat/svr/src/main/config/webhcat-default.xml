@@ -38,12 +38,6 @@
   </property>
 
   <property>
-    <name>templeton.jar</name>
-    <value>${env.TEMPLETON_HOME}/share/webhcat/svr/webhcat-0.6.0-SNAPSHOT.jar</value>
-    <description>The path to the Templeton jar file.</description>
-  </property>
-
-  <property>
     <name>templeton.libjars</name>
     <value>${env.TEMPLETON_HOME}/share/webhcat/svr/lib/zookeeper-3.4.3.jar</value>
     <description>Jars to add to the classpath.</description>
@@ -117,7 +111,7 @@
 
   <property>
     <name>templeton.hive.home</name>
-    <value>hive-0.13.0-SNAPSHOT-bin.tar.gz/hive-0.13.0-SNAPSHOT-bin</value>
+    <value>hive-0.14.0-SNAPSHOT-bin.tar.gz/hive-0.14.0-SNAPSHOT-bin</value>
     <description>
       The path to the Hive home within the tar.  This is needed if Hive is not installed on all
       nodes in the cluster and needs to be shipped to the target node in the cluster to execute Pig
@@ -126,7 +120,7 @@
   </property>
   <property>
     <name>templeton.hcat.home</name>
-    <value>hive-0.13.0-SNAPSHOT-bin.tar.gz/hive-0.13.0-SNAPSHOT-bin/hcatalog</value>
+    <value>hive-0.14.0-SNAPSHOT-bin.tar.gz/hive-0.14.0-SNAPSHOT-bin/hcatalog</value>
     <description>
       The path to the HCat home within the tar.  This is needed if Hive is not installed on all
       nodes in the cluster and needs to be shipped to the target node in the cluster to execute Pig
@@ -136,8 +130,16 @@
 
   <property>
     <name>templeton.hive.properties</name>
-    <value>hive.metastore.local=false,hive.metastore.uris=thrift://localhost:9933,hive.metastore.sasl.enabled=false</value>
-    <description>Properties to set when running hive.</description>
+    <value>hive.metastore.uris=thrift://localhost:9933,hive.metastore.sasl.enabled=false</value>
+    <description>Properties to set when running hive (during job sumission).  This is expected to
+        be a comma-separated prop=value list.  If some value is itself a comma-separated list the
+        escape character is '\'</description>
+  </property>
+
+  <property>
+    <name>templeton.sqoop.path</name>
+    <value>${env.SQOOP_HOME}/bin/sqoop.cmd</value>
+    <description>The path to the Sqoop executable.</description>
   </property>
 
   <property>
@@ -181,6 +183,17 @@
         memory used by pig/hive client it starts can end up exceeding
         the max memory configured to be allowed for a map task
         Use this option to set -Xmx to lower value
+    </description>
+  </property>
+
+  <property>
+    <name>templeton.mapper.memory.mb</name>
+    <value></value>
+    <description>Templeton controller job's Launch mapper's memory limit in
+        megabytes. When submitting controller job, Templeton will overwrite
+        mapreduce.map.memory.mb with this value. If empty, Templeton will
+        not set mapreduce.map.memory.mb when submitting the controller job,
+        therefore the configuration in mapred-site.xml will be used.
     </description>
   </property>
 

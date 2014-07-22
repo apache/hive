@@ -1,7 +1,11 @@
-PREHOOK: query: CREATE TABLE DEST1(key INT, value STRING) STORED AS TEXTFILE
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+CREATE TABLE DEST1(key INT, value STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-POSTHOOK: query: CREATE TABLE DEST1(key INT, value STRING) STORED AS TEXTFILE
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+CREATE TABLE DEST1(key INT, value STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@DEST1
@@ -138,10 +142,6 @@ POSTHOOK: query: SELECT DEST1.* FROM DEST1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 0	0.0
 10	10.0
 100	200.0
@@ -459,10 +459,6 @@ POSTHOOK: query: SELECT DEST2.* FROM DEST2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest2
 #### A masked pattern was here ####
-POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 0	0.0
 10	10.0
 100	200.0

@@ -28,8 +28,8 @@ import java.util.Properties;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.io.FSRecordWriter;
 import org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.PTFDeserializer;
@@ -91,7 +91,7 @@ public class PTFRowContainer<Row extends List<Object>> extends RowContainer<Row>
   }
 
   @Override
-  public void add(Row t) throws HiveException {
+  public void addRow(Row t) throws HiveException {
     if ( willSpill() ) {
       setupWriter();
       PTFRecordWriter rw = (PTFRecordWriter) getRecordWriter();
@@ -105,7 +105,7 @@ public class PTFRowContainer<Row extends List<Object>> extends RowContainer<Row>
         throw new HiveException(e);
       }
     }
-    super.add(t);
+    super.addRow(t);
   }
 
   @Override
@@ -240,7 +240,7 @@ public class PTFRowContainer<Row extends List<Object>> extends RowContainer<Row>
   }
 
 
-  private static class PTFRecordWriter implements FSRecordWriter {
+  private static class PTFRecordWriter implements RecordWriter {
     BytesWritable EMPTY_KEY = new BytesWritable();
 
     SequenceFile.Writer outStream;
@@ -249,10 +249,12 @@ public class PTFRowContainer<Row extends List<Object>> extends RowContainer<Row>
       this.outStream = outStream;
     }
 
+    @Override
     public void write(Writable r) throws IOException {
       outStream.append(EMPTY_KEY, r);
     }
 
+    @Override
     public void close(boolean abort) throws IOException {
       outStream.close();
     }
@@ -262,13 +264,13 @@ public class PTFRowContainer<Row extends List<Object>> extends RowContainer<Row>
     extends HiveSequenceFileOutputFormat<K,V> {
 
     @Override
-    public FSRecordWriter getHiveRecordWriter(JobConf jc, Path finalOutPath,
+    public RecordWriter getHiveRecordWriter(JobConf jc, Path finalOutPath,
         Class<? extends Writable> valueClass, boolean isCompressed,
         Properties tableProperties, Progressable progress) throws IOException {
 
       FileSystem fs = finalOutPath.getFileSystem(jc);
-      final SequenceFile.Writer outStream = Utilities.createSequenceWriter(jc,
-          fs, finalOutPath, BytesWritable.class, valueClass, isCompressed);
+      final SequenceFile.Writer outStream = Utilities.createSequenceWriter(jc, fs, finalOutPath,
+	  BytesWritable.class, valueClass, isCompressed, progress);
 
       return new PTFRecordWriter(outStream);
     }

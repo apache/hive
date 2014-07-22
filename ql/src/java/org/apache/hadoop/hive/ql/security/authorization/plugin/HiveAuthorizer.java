@@ -21,6 +21,7 @@ import java.util.List;
 
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
 import org.apache.hadoop.hive.common.classification.InterfaceStability.Evolving;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
 
 /**
@@ -93,13 +94,24 @@ public interface HiveAuthorizer {
       throws HiveAuthzPluginException, HiveAccessControlException;
 
   /**
-   * Get roles that this user/role belongs to
-   * @param hivePrincipal - user or role
-   * @return list of roles
+   * Get the grant information for principals granted the given role
+   * @param roleName
+   * @return
    * @throws HiveAuthzPluginException
    * @throws HiveAccessControlException
    */
-  List<HiveRole> getRoles(HivePrincipal hivePrincipal)
+  List<HiveRoleGrant> getPrincipalGrantInfoForRole(String roleName)
+      throws HiveAuthzPluginException, HiveAccessControlException;
+
+
+  /**
+   * Get the grant information of roles the given principal belongs to
+   * @param principal
+   * @return
+   * @throws HiveAuthzPluginException
+   * @throws HiveAccessControlException
+   */
+  List<HiveRoleGrant> getRoleGrantInfoForPrincipal(HivePrincipal principal)
       throws HiveAuthzPluginException, HiveAccessControlException;
 
   /**
@@ -134,11 +146,12 @@ public interface HiveAuthorizer {
    * @param hiveOpType
    * @param inputsHObjs
    * @param outputHObjs
+   * @param context
    * @throws HiveAuthzPluginException
    * @throws HiveAccessControlException
    */
   void checkPrivileges(HiveOperationType hiveOpType, List<HivePrivilegeObject> inputsHObjs,
-      List<HivePrivilegeObject> outputHObjs)
+      List<HivePrivilegeObject> outputHObjs, HiveAuthzContext context)
       throws HiveAuthzPluginException, HiveAccessControlException;
 
   /**
@@ -160,11 +173,26 @@ public interface HiveAuthorizer {
   List<HivePrivilegeInfo> showPrivileges(HivePrincipal principal, HivePrivilegeObject privObj)
       throws HiveAuthzPluginException, HiveAccessControlException;
 
+  /**
+   * Set the current role to roleName argument
+   * @param roleName
+   * @throws HiveAccessControlException
+   * @throws HiveAuthzPluginException
+   */
   void setCurrentRole(String roleName) throws HiveAccessControlException, HiveAuthzPluginException;
 
-  List<HiveRole> getCurrentRoles() throws HiveAuthzPluginException;
+  /**
+   * @return List having names of current roles
+   * @throws HiveAuthzPluginException
+   */
+  List<String> getCurrentRoleNames() throws HiveAuthzPluginException;
 
-  //other functions to be added -
-  //showUsersInRole(rolename)
+  /**
+   * Modify the given HiveConf object to configure authorization related parameters
+   * or other parameters related to hive security
+   * @param hiveConf
+   */
+  public void applyAuthorizationConfigPolicy(HiveConf hiveConf);
+
 }
 

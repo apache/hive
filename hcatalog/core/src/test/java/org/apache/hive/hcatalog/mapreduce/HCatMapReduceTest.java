@@ -401,7 +401,7 @@ public abstract class HCatMapReduceTest extends HCatBaseTest {
 
     HCatInputFormat.setInput(job, dbName, tableName);
 
-    return HCatInputFormat.getTableSchema(job);
+    return HCatInputFormat.getTableSchema(job.getConfiguration());
   }
 
 }

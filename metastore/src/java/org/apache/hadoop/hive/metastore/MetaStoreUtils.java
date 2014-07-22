@@ -60,6 +60,7 @@ import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
@@ -188,13 +189,8 @@ public class MetaStoreUtils {
         // Let's try to populate those stats that don't require full scan.
         LOG.info("Updating table stats fast for " + tbl.getTableName());
         FileStatus[] fileStatus = wh.getFileStatusesForUnpartitionedTable(db, tbl);
-        params.put(StatsSetupConst.NUM_FILES, Integer.toString(fileStatus.length));
-        long tableSize = 0L;
-        for (FileStatus status : fileStatus) {
-          tableSize += status.getLen();
-        }
-        params.put(StatsSetupConst.TOTAL_SIZE, Long.toString(tableSize));
-        LOG.info("Updated size of table " + tbl.getTableName() +" to "+ Long.toString(tableSize));
+        populateQuickStats(fileStatus, params);
+        LOG.info("Updated size of table " + tbl.getTableName() +" to "+ params.get(StatsSetupConst.TOTAL_SIZE));
         if(!params.containsKey(StatsSetupConst.STATS_GENERATED_VIA_STATS_TASK)) {
           // invalidate stats requiring scan since this is a regular ddl alter case
           for (String stat : StatsSetupConst.statsRequireCompute) {
@@ -202,7 +198,7 @@ public class MetaStoreUtils {
           }
           params.put(StatsSetupConst.COLUMN_STATS_ACCURATE, StatsSetupConst.FALSE);
         } else {
-          params.remove(StatsSetupConst.STATS_GENERATED_VIA_STATS_TASK);	
+          params.remove(StatsSetupConst.STATS_GENERATED_VIA_STATS_TASK);
           params.put(StatsSetupConst.COLUMN_STATS_ACCURATE, StatsSetupConst.TRUE);
         }
       }
@@ -210,6 +206,20 @@ public class MetaStoreUtils {
       updated = true;
     }
     return updated;
+  }
+
+  public static void populateQuickStats(FileStatus[] fileStatus, Map<String, String> params) {
+    int numFiles = 0;
+    long tableSize = 0L;
+    for (FileStatus status : fileStatus) {
+      // don't take directories into account for quick stats
+      if (!status.isDir()) {
+        tableSize += status.getLen();
+        numFiles += 1;
+      }
+    }
+    params.put(StatsSetupConst.NUM_FILES, Integer.toString(numFiles));
+    params.put(StatsSetupConst.TOTAL_SIZE, Long.toString(tableSize));
   }
 
   // check if stats need to be (re)calculated
@@ -233,7 +243,7 @@ public class MetaStoreUtils {
     if(newPart.getParameters().containsKey(StatsSetupConst.STATS_GENERATED_VIA_STATS_TASK)) {
       return true;
     }
-    
+
     // requires to calculate stats if new and old have different fast stats
     if ((oldPart != null) && (oldPart.getParameters() != null)) {
       for (String stat : StatsSetupConst.fastStats) {
@@ -284,13 +294,8 @@ public class MetaStoreUtils {
         // populate those statistics that don't require a full scan of the data.
         LOG.warn("Updating partition stats fast for: " + part.getTableName());
         FileStatus[] fileStatus = wh.getFileStatusesForSD(part.getSd());
-        params.put(StatsSetupConst.NUM_FILES, Integer.toString(fileStatus.length));
-        long partSize = 0L;
-        for (int i = 0; i < fileStatus.length; i++) {
-          partSize += fileStatus[i].getLen();
-        }
-        params.put(StatsSetupConst.TOTAL_SIZE, Long.toString(partSize));
-        LOG.warn("Updated size to " + Long.toString(partSize));
+        populateQuickStats(fileStatus, params);
+        LOG.warn("Updated size to " + params.get(StatsSetupConst.TOTAL_SIZE));
         if(!params.containsKey(StatsSetupConst.STATS_GENERATED_VIA_STATS_TASK)) {
           // invalidate stats requiring scan since this is a regular ddl alter case
           for (String stat : StatsSetupConst.statsRequireCompute) {
@@ -336,7 +341,7 @@ public class MetaStoreUtils {
     try {
       Deserializer deserializer = ReflectionUtils.newInstance(conf.getClassByName(lib).
         asSubclass(Deserializer.class), conf);
-      deserializer.initialize(conf, MetaStoreUtils.getTableMetadata(table));
+      SerDeUtils.initializeSerDe(deserializer, conf, MetaStoreUtils.getTableMetadata(table), null);
       return deserializer;
     } catch (RuntimeException e) {
       throw e;
@@ -372,7 +377,8 @@ public class MetaStoreUtils {
     try {
       Deserializer deserializer = ReflectionUtils.newInstance(conf.getClassByName(lib).
         asSubclass(Deserializer.class), conf);
-      deserializer.initialize(conf, MetaStoreUtils.getPartitionMetadata(part, table));
+      SerDeUtils.initializeSerDe(deserializer, conf, MetaStoreUtils.getTableMetadata(table),
+                                 MetaStoreUtils.getPartitionMetadata(part, table));
       return deserializer;
     } catch (RuntimeException e) {
       throw e;
@@ -472,14 +478,14 @@ public class MetaStoreUtils {
     }
     return false;
   }
-  
+
   /*
    * At the Metadata level there are no restrictions on Column Names.
    */
   public static final boolean validateColumnName(String name) {
     return true;
   }
-  
+
   static public String validateTblColumns(List<FieldSchema> cols) {
     for (FieldSchema fieldSchema : cols) {
       if (!validateColumnName(fieldSchema.getName())) {
@@ -927,14 +933,17 @@ public class MetaStoreUtils {
     }
     StringBuilder colNameBuf = new StringBuilder();
     StringBuilder colTypeBuf = new StringBuilder();
+    StringBuilder colComment = new StringBuilder();
     boolean first = true;
     for (FieldSchema col : tblsd.getCols()) {
       if (!first) {
         colNameBuf.append(",");
         colTypeBuf.append(":");
+        colComment.append('\0');
       }
       colNameBuf.append(col.getName());
       colTypeBuf.append(col.getType());
+      colComment.append((null != col.getComment()) ? col.getComment() : "");
       first = false;
     }
     String colNames = colNameBuf.toString();
@@ -945,6 +954,7 @@ public class MetaStoreUtils {
     schema.setProperty(
         org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_COLUMN_TYPES,
         colTypes);
+    schema.setProperty("columns.comments", colComment.toString());
     if (sd.getCols() != null) {
       schema.setProperty(
           org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_DDL,
@@ -953,11 +963,16 @@ public class MetaStoreUtils {
 
     String partString = "";
     String partStringSep = "";
+    String partTypesString = "";
+    String partTypesStringSep = "";
     for (FieldSchema partKey : partitionKeys) {
       partString = partString.concat(partStringSep);
       partString = partString.concat(partKey.getName());
+      partTypesString = partTypesString.concat(partTypesStringSep);
+      partTypesString = partTypesString.concat(partKey.getType());      
       if (partStringSep.length() == 0) {
         partStringSep = "/";
+        partTypesStringSep = ":";
       }
     }
     if (partString.length() > 0) {
@@ -965,6 +980,10 @@ public class MetaStoreUtils {
           .setProperty(
               org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_PARTITION_COLUMNS,
               partString);
+      schema
+      .setProperty(
+          org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_PARTITION_COLUMN_TYPES,
+          partTypesString);      
     }
 
     if (parameters != null) {
@@ -1150,7 +1169,7 @@ public class MetaStoreUtils {
 
   private static final String FROM_SERIALIZER = "from deserializer";
   private static String determineFieldComment(String comment) {
-    return (comment == null || comment.isEmpty()) ? FROM_SERIALIZER : comment;
+    return (comment == null) ? FROM_SERIALIZER : comment;
   }
 
   /**
@@ -1235,6 +1254,7 @@ public class MetaStoreUtils {
    * Filter that filters out hidden files
    */
   private static final PathFilter hiddenFileFilter = new PathFilter() {
+    @Override
     public boolean accept(Path p) {
       String name = p.getName();
       return !name.startsWith("_") && !name.startsWith(".");
@@ -1453,6 +1473,8 @@ public class MetaStoreUtils {
   /**
    * Read and return the meta store Sasl configuration. Currently it uses the default
    * Hadoop SASL configuration and can be configured using "hadoop.rpc.protection"
+   * HADOOP-10211, made a backward incompatible change due to which this call doesn't
+   * work with Hadoop 2.4.0 and later.
    * @param conf
    * @return The SASL configuration
    */

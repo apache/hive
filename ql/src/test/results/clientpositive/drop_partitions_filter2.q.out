@@ -7,18 +7,20 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ptestfilter
 PREHOOK: query: describe ptestfilter
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ptestfilter
 POSTHOOK: query: describe ptestfilter
 POSTHOOK: type: DESCTABLE
-a                   	string              	None                
-b                   	int                 	None                
-c                   	int                 	None                
-d                   	int                 	None                
+POSTHOOK: Input: default@ptestfilter
+a                   	string              	                    
+b                   	int                 	                    
+c                   	int                 	                    
+d                   	int                 	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-c                   	int                 	None                
-d                   	int                 	None                
+c                   	int                 	                    
+d                   	int                 	                    
 PREHOOK: query: alter table ptestfilter add partition (c=1, d=1)
 PREHOOK: type: ALTERTABLE_ADDPARTS
 PREHOOK: Output: default@ptestfilter
@@ -54,23 +56,25 @@ POSTHOOK: query: alter table ptestfilter add partition (c=3, d=1)
 POSTHOOK: type: ALTERTABLE_ADDPARTS
 POSTHOOK: Output: default@ptestfilter
 POSTHOOK: Output: default@ptestfilter@c=3/d=1
-PREHOOK: query: alter table ptestfilter add partition (c=3, d=2)
+PREHOOK: query: alter table ptestfilter add partition (c=30, d=2)
 PREHOOK: type: ALTERTABLE_ADDPARTS
 PREHOOK: Output: default@ptestfilter
-POSTHOOK: query: alter table ptestfilter add partition (c=3, d=2)
+POSTHOOK: query: alter table ptestfilter add partition (c=30, d=2)
 POSTHOOK: type: ALTERTABLE_ADDPARTS
 POSTHOOK: Output: default@ptestfilter
-POSTHOOK: Output: default@ptestfilter@c=3/d=2
+POSTHOOK: Output: default@ptestfilter@c=30/d=2
 PREHOOK: query: show partitions ptestfilter
 PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@ptestfilter
 POSTHOOK: query: show partitions ptestfilter
 POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@ptestfilter
 c=1/d=1
 c=1/d=2
 c=2/d=1
 c=2/d=2
 c=3/d=1
-c=3/d=2
+c=30/d=2
 PREHOOK: query: alter table ptestfilter drop partition (c=1, d=1)
 PREHOOK: type: ALTERTABLE_DROPPARTS
 PREHOOK: Input: default@ptestfilter
@@ -81,13 +85,15 @@ POSTHOOK: Input: default@ptestfilter
 POSTHOOK: Output: default@ptestfilter@c=1/d=1
 PREHOOK: query: show partitions ptestfilter
 PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@ptestfilter
 POSTHOOK: query: show partitions ptestfilter
 POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@ptestfilter
 c=1/d=2
 c=2/d=1
 c=2/d=2
 c=3/d=1
-c=3/d=2
+c=30/d=2
 PREHOOK: query: alter table ptestfilter drop partition (c=2)
 PREHOOK: type: ALTERTABLE_DROPPARTS
 PREHOOK: Input: default@ptestfilter
@@ -100,11 +106,30 @@ POSTHOOK: Output: default@ptestfilter@c=2/d=1
 POSTHOOK: Output: default@ptestfilter@c=2/d=2
 PREHOOK: query: show partitions ptestfilter
 PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@ptestfilter
 POSTHOOK: query: show partitions ptestfilter
 POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@ptestfilter
 c=1/d=2
 c=3/d=1
-c=3/d=2
+c=30/d=2
+PREHOOK: query: alter table ptestfilter drop partition (c<4)
+PREHOOK: type: ALTERTABLE_DROPPARTS
+PREHOOK: Input: default@ptestfilter
+PREHOOK: Output: default@ptestfilter@c=1/d=2
+PREHOOK: Output: default@ptestfilter@c=3/d=1
+POSTHOOK: query: alter table ptestfilter drop partition (c<4)
+POSTHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: Input: default@ptestfilter
+POSTHOOK: Output: default@ptestfilter@c=1/d=2
+POSTHOOK: Output: default@ptestfilter@c=3/d=1
+PREHOOK: query: show partitions ptestfilter
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@ptestfilter
+POSTHOOK: query: show partitions ptestfilter
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@ptestfilter
+c=30/d=2
 PREHOOK: query: drop table ptestfilter
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@ptestfilter

@@ -18,11 +18,41 @@
 
 package org.apache.hadoop.hive.common;
 
+import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.net.URLClassLoader;
+import java.util.Arrays;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 /**
  * Collection of Java class loading/reflection related utilities common across
  * Hive.
  */
 public final class JavaUtils {
+
+  private static final Log LOG = LogFactory.getLog(JavaUtils.class);
+  private static final Method SUN_MISC_UTIL_RELEASE;
+
+  static {
+    if (Closeable.class.isAssignableFrom(URLClassLoader.class)) {
+      SUN_MISC_UTIL_RELEASE = null;
+    } else {
+      Method release = null;
+      try {
+        Class<?> clazz = Class.forName("sun.misc.ClassLoaderUtil");
+        release = clazz.getMethod("releaseLoader", URLClassLoader.class);
+      } catch (Exception e) {
+        // ignore
+      }
+      SUN_MISC_UTIL_RELEASE = release;
+    }
+  }
 
   /**
    * Standard way of getting classloader in Hive code (outside of Hadoop).
@@ -38,6 +68,62 @@ public final class JavaUtils {
       classLoader = JavaUtils.class.getClassLoader();
     }
     return classLoader;
+  }
+
+  public static void closeClassLoadersTo(ClassLoader current, ClassLoader stop) {
+    if (!isValidHierarchy(current, stop)) {
+      return;
+    }
+    for (; current != null && current != stop; current = current.getParent()) {
+      try {
+        closeClassLoader(current);
+      } catch (IOException e) {
+        LOG.info("Failed to close class loader " + current +
+            Arrays.toString(((URLClassLoader) current).getURLs()), e);
+      }
+    }
+  }
+
+  // check before closing loaders, not to close app-classloader, etc. by mistake
+  private static boolean isValidHierarchy(ClassLoader current, ClassLoader stop) {
+    if (current == null || stop == null || current == stop) {
+      return false;
+    }
+    for (; current != null && current != stop; current = current.getParent()) {
+    }
+    return current == stop;
+  }
+
+  // best effort to close
+  // see https://issues.apache.org/jira/browse/HIVE-3969 for detail
+  public static void closeClassLoader(ClassLoader loader) throws IOException {
+    if (loader instanceof Closeable) {
+      ((Closeable)loader).close();
+    } else if (SUN_MISC_UTIL_RELEASE != null && loader instanceof URLClassLoader) {
+      PrintStream outputStream = System.out;
+      ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+      PrintStream newOutputStream = new PrintStream(byteArrayOutputStream);
+      try {
+        // SUN_MISC_UTIL_RELEASE.invoke prints to System.out
+        // So we're changing the outputstream for that call,
+        // and setting it back to original System.out when we're done
+        System.setOut(newOutputStream);
+        SUN_MISC_UTIL_RELEASE.invoke(null, loader);
+        String output = byteArrayOutputStream.toString("UTF8");
+        LOG.debug(output);
+      } catch (InvocationTargetException e) {
+        if (e.getTargetException() instanceof IOException) {
+          throw (IOException)e.getTargetException();
+        }
+        throw new IOException(e.getTargetException());
+      } catch (Exception e) {
+        throw new IOException(e);
+      }
+      finally {
+        System.setOut(outputStream);
+        newOutputStream.close();
+      }
+    }
   }
 
   private JavaUtils() {

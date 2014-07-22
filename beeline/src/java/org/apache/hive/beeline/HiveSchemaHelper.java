@@ -21,6 +21,7 @@ import java.util.IllegalFormatException;
 
 public class HiveSchemaHelper {
   public static final String DB_DERBY = "derby";
+  public static final String DB_MSSQL = "mssql";
   public static final String DB_MYSQL = "mysql";
   public static final String DB_POSTGRACE = "postgres";
   public static final String DB_ORACLE = "oracle";
@@ -251,9 +252,29 @@ public class HiveSchemaHelper {
     }
   }
 
+  //MSSQL specific parser
+  public static class MSSQLCommandParser extends AbstractCommandParser {
+    private static String MSSQL_NESTING_TOKEN = ":r";
+    @Override
+    public String getScriptName(String dbCommand) throws IllegalArgumentException {
+      String[] tokens = dbCommand.split(" ");
+      if (tokens.length != 2) {
+        throw new IllegalArgumentException("Couldn't parse line " + dbCommand);
+      }
+      return tokens[1];
+    }
+
+    @Override
+    public boolean isNestedScript(String dbCommand) {
+      return dbCommand.startsWith(MSSQL_NESTING_TOKEN);
+    }
+  }
+
   public static NestedScriptParser getDbCommandParser(String dbName) {
     if (dbName.equalsIgnoreCase(DB_DERBY)) {
       return new DerbyCommandParser();
+    } else if (dbName.equalsIgnoreCase(DB_MSSQL)) {
+      return new MSSQLCommandParser();
     } else if (dbName.equalsIgnoreCase(DB_MYSQL)) {
       return new MySqlCommandParser();
     } else if (dbName.equalsIgnoreCase(DB_POSTGRACE)) {

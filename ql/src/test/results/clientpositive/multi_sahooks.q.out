@@ -13,9 +13,11 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_sahook
 PREHOOK: query: desc extended tbl_sahook
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tbl_sahook
 POSTHOOK: query: desc extended tbl_sahook
 POSTHOOK: type: DESCTABLE
-c                   	string              	None                
+POSTHOOK: Input: default@tbl_sahook
+c                   	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: drop table tbl_sahook
@@ -41,9 +43,11 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_sahooks
 PREHOOK: query: desc extended tbl_sahooks
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tbl_sahooks
 POSTHOOK: query: desc extended tbl_sahooks
 POSTHOOK: type: DESCTABLE
-c                   	string              	None                
+POSTHOOK: Input: default@tbl_sahooks
+c                   	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: drop table tbl_sahooks
@@ -69,9 +73,11 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_sahooks
 PREHOOK: query: desc extended tbl_sahooks
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tbl_sahooks
 POSTHOOK: query: desc extended tbl_sahooks
 POSTHOOK: type: DESCTABLE
-c                   	string              	None                
+POSTHOOK: Input: default@tbl_sahooks
+c                   	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: drop table tbl_sahooks
@@ -99,9 +105,11 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_sahooks
 PREHOOK: query: desc extended tbl_sahooks
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tbl_sahooks
 POSTHOOK: query: desc extended tbl_sahooks
 POSTHOOK: type: DESCTABLE
-c                   	string              	None                
+POSTHOOK: Input: default@tbl_sahooks
+c                   	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: drop table tbl_sahooks

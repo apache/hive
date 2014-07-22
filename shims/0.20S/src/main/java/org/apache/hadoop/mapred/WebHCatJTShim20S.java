@@ -102,5 +102,12 @@ public class WebHCatJTShim20S implements WebHCatJTShim {
   public void addCacheFile(URI uri, Job job) {
     DistributedCache.addCacheFile(uri, job.getConfiguration());
   }
+  /**
+   * Kill jobs is only supported on hadoop 2.0+.
+   */
+  @Override
+  public void killJobs(String tag, long timestamp) {
+    return;
+  }
 }
 

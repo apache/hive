@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import org.apache.hadoop.hive.serde2.io.DateWritable;
+
 /**
  * Return Unix Timestamp.
  * Extends {@link VectorUDFTimestampFieldLong}
@@ -27,14 +29,20 @@ public final class VectorUDFUnixTimeStampLong extends VectorUDFTimestampFieldLon
   private static final long serialVersionUID = 1L;
 
   @Override
-  protected long getField(long time) {
+  protected long getTimestampField(long time) {
     long ms = (time / (1000*1000*1000)) * 1000;
     long remainder = time % (1000*1000*1000);
     /* negative timestamps need to be adjusted */
     if(remainder < 0) {
       ms -= 1000;
     }
-    return ms/1000;
+    return ms / 1000;
+  }
+
+  @Override
+  protected long getDateField(long days) {
+    long ms = DateWritable.daysToMillis((int) days);
+    return ms / 1000;
   }
 
   public VectorUDFUnixTimeStampLong(int colNum, int outputColumn) {

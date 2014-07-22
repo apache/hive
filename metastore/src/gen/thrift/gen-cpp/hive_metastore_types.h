@@ -47,6 +47,65 @@ struct PartitionEventType {
 
 extern const std::map<int, const char*> _PartitionEventType_VALUES_TO_NAMES;
 
+struct TxnState {
+  enum type {
+    COMMITTED = 1,
+    ABORTED = 2,
+    OPEN = 3
+  };
+};
+
+extern const std::map<int, const char*> _TxnState_VALUES_TO_NAMES;
+
+struct LockLevel {
+  enum type {
+    DB = 1,
+    TABLE = 2,
+    PARTITION = 3
+  };
+};
+
+extern const std::map<int, const char*> _LockLevel_VALUES_TO_NAMES;
+
+struct LockState {
+  enum type {
+    ACQUIRED = 1,
+    WAITING = 2,
+    ABORT = 3,
+    NOT_ACQUIRED = 4
+  };
+};
+
+extern const std::map<int, const char*> _LockState_VALUES_TO_NAMES;
+
+struct LockType {
+  enum type {
+    SHARED_READ = 1,
+    SHARED_WRITE = 2,
+    EXCLUSIVE = 3
+  };
+};
+
+extern const std::map<int, const char*> _LockType_VALUES_TO_NAMES;
+
+struct CompactionType {
+  enum type {
+    MINOR = 1,
+    MAJOR = 2
+  };
+};
+
+extern const std::map<int, const char*> _CompactionType_VALUES_TO_NAMES;
+
+struct GrantRevokeType {
+  enum type {
+    GRANT = 1,
+    REVOKE = 2
+  };
+};
+
+extern const std::map<int, const char*> _GrantRevokeType_VALUES_TO_NAMES;
+
 struct FunctionType {
   enum type {
     JAVA = 1
@@ -570,25 +629,128 @@ class PrincipalPrivilegeSet {
 
 void swap(PrincipalPrivilegeSet &a, PrincipalPrivilegeSet &b);
 
+typedef struct _GrantRevokePrivilegeRequest__isset {
+  _GrantRevokePrivilegeRequest__isset() : requestType(false), privileges(false), revokeGrantOption(false) {}
+  bool requestType;
+  bool privileges;
+  bool revokeGrantOption;
+} _GrantRevokePrivilegeRequest__isset;
+
+class GrantRevokePrivilegeRequest {
+ public:
+
+  static const char* ascii_fingerprint; // = "DF474A3CB526AD40DC0F2C3702F7AA2C";
+  static const uint8_t binary_fingerprint[16]; // = {0xDF,0x47,0x4A,0x3C,0xB5,0x26,0xAD,0x40,0xDC,0x0F,0x2C,0x37,0x02,0xF7,0xAA,0x2C};
+
+  GrantRevokePrivilegeRequest() : requestType((GrantRevokeType::type)0), revokeGrantOption(0) {
+  }
+
+  virtual ~GrantRevokePrivilegeRequest() throw() {}
+
+  GrantRevokeType::type requestType;
+  PrivilegeBag privileges;
+  bool revokeGrantOption;
+
+  _GrantRevokePrivilegeRequest__isset __isset;
+
+  void __set_requestType(const GrantRevokeType::type val) {
+    requestType = val;
+  }
+
+  void __set_privileges(const PrivilegeBag& val) {
+    privileges = val;
+  }
+
+  void __set_revokeGrantOption(const bool val) {
+    revokeGrantOption = val;
+    __isset.revokeGrantOption = true;
+  }
+
+  bool operator == (const GrantRevokePrivilegeRequest & rhs) const
+  {
+    if (!(requestType == rhs.requestType))
+      return false;
+    if (!(privileges == rhs.privileges))
+      return false;
+    if (__isset.revokeGrantOption != rhs.__isset.revokeGrantOption)
+      return false;
+    else if (__isset.revokeGrantOption && !(revokeGrantOption == rhs.revokeGrantOption))
+      return false;
+    return true;
+  }
+  bool operator != (const GrantRevokePrivilegeRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GrantRevokePrivilegeRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(GrantRevokePrivilegeRequest &a, GrantRevokePrivilegeRequest &b);
+
+typedef struct _GrantRevokePrivilegeResponse__isset {
+  _GrantRevokePrivilegeResponse__isset() : success(false) {}
+  bool success;
+} _GrantRevokePrivilegeResponse__isset;
+
+class GrantRevokePrivilegeResponse {
+ public:
+
+  static const char* ascii_fingerprint; // = "BF054652DEF86253C2BEE7D947F167DD";
+  static const uint8_t binary_fingerprint[16]; // = {0xBF,0x05,0x46,0x52,0xDE,0xF8,0x62,0x53,0xC2,0xBE,0xE7,0xD9,0x47,0xF1,0x67,0xDD};
+
+  GrantRevokePrivilegeResponse() : success(0) {
+  }
+
+  virtual ~GrantRevokePrivilegeResponse() throw() {}
+
+  bool success;
+
+  _GrantRevokePrivilegeResponse__isset __isset;
+
+  void __set_success(const bool val) {
+    success = val;
+    __isset.success = true;
+  }
+
+  bool operator == (const GrantRevokePrivilegeResponse & rhs) const
+  {
+    if (__isset.success != rhs.__isset.success)
+      return false;
+    else if (__isset.success && !(success == rhs.success))
+      return false;
+    return true;
+  }
+  bool operator != (const GrantRevokePrivilegeResponse &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GrantRevokePrivilegeResponse & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(GrantRevokePrivilegeResponse &a, GrantRevokePrivilegeResponse &b);
+
 typedef struct _Role__isset {
-  _Role__isset() : roleName(false), createTime(false), ownerName(false), principalName(false), principalType(false), grantOption(false), grantTime(false), grantor(false) {}
+  _Role__isset() : roleName(false), createTime(false), ownerName(false) {}
   bool roleName;
   bool createTime;
   bool ownerName;
-  bool principalName;
-  bool principalType;
-  bool grantOption;
-  bool grantTime;
-  bool grantor;
 } _Role__isset;
 
 class Role {
  public:
 
-  static const char* ascii_fingerprint; // = "8DEBC3096AEF414FFF38C357ECEEA8BC";
-  static const uint8_t binary_fingerprint[16]; // = {0x8D,0xEB,0xC3,0x09,0x6A,0xEF,0x41,0x4F,0xFF,0x38,0xC3,0x57,0xEC,0xEE,0xA8,0xBC};
+  static const char* ascii_fingerprint; // = "70563A0628F75DF9555F4D24690B1E26";
+  static const uint8_t binary_fingerprint[16]; // = {0x70,0x56,0x3A,0x06,0x28,0xF7,0x5D,0xF9,0x55,0x5F,0x4D,0x24,0x69,0x0B,0x1E,0x26};
 
-  Role() : roleName(), createTime(0), ownerName(), principalName(), principalType(), grantOption(0), grantTime(0), grantor() {
+  Role() : roleName(), createTime(0), ownerName() {
   }
 
   virtual ~Role() throw() {}
@@ -596,11 +758,6 @@ class Role {
   std::string roleName;
   int32_t createTime;
   std::string ownerName;
-  std::string principalName;
-  std::string principalType;
-  bool grantOption;
-  int32_t grantTime;
-  std::string grantor;
 
   _Role__isset __isset;
 
@@ -616,31 +773,6 @@ class Role {
     ownerName = val;
   }
 
-  void __set_principalName(const std::string& val) {
-    principalName = val;
-    __isset.principalName = true;
-  }
-
-  void __set_principalType(const std::string& val) {
-    principalType = val;
-    __isset.principalType = true;
-  }
-
-  void __set_grantOption(const bool val) {
-    grantOption = val;
-    __isset.grantOption = true;
-  }
-
-  void __set_grantTime(const int32_t val) {
-    grantTime = val;
-    __isset.grantTime = true;
-  }
-
-  void __set_grantor(const std::string& val) {
-    grantor = val;
-    __isset.grantor = true;
-  }
-
   bool operator == (const Role & rhs) const
   {
     if (!(roleName == rhs.roleName))
@@ -648,26 +780,6 @@ class Role {
     if (!(createTime == rhs.createTime))
       return false;
     if (!(ownerName == rhs.ownerName))
-      return false;
-    if (__isset.principalName != rhs.__isset.principalName)
-      return false;
-    else if (__isset.principalName && !(principalName == rhs.principalName))
-      return false;
-    if (__isset.principalType != rhs.__isset.principalType)
-      return false;
-    else if (__isset.principalType && !(principalType == rhs.principalType))
-      return false;
-    if (__isset.grantOption != rhs.__isset.grantOption)
-      return false;
-    else if (__isset.grantOption && !(grantOption == rhs.grantOption))
-      return false;
-    if (__isset.grantTime != rhs.__isset.grantTime)
-      return false;
-    else if (__isset.grantTime && !(grantTime == rhs.grantTime))
-      return false;
-    if (__isset.grantor != rhs.__isset.grantor)
-      return false;
-    else if (__isset.grantor && !(grantor == rhs.grantor))
       return false;
     return true;
   }
@@ -683,6 +795,398 @@ class Role {
 };
 
 void swap(Role &a, Role &b);
+
+typedef struct _RolePrincipalGrant__isset {
+  _RolePrincipalGrant__isset() : roleName(false), principalName(false), principalType(false), grantOption(false), grantTime(false), grantorName(false), grantorPrincipalType(false) {}
+  bool roleName;
+  bool principalName;
+  bool principalType;
+  bool grantOption;
+  bool grantTime;
+  bool grantorName;
+  bool grantorPrincipalType;
+} _RolePrincipalGrant__isset;
+
+class RolePrincipalGrant {
+ public:
+
+  static const char* ascii_fingerprint; // = "899BA3F6214DD1B79D27206BA857C772";
+  static const uint8_t binary_fingerprint[16]; // = {0x89,0x9B,0xA3,0xF6,0x21,0x4D,0xD1,0xB7,0x9D,0x27,0x20,0x6B,0xA8,0x57,0xC7,0x72};
+
+  RolePrincipalGrant() : roleName(), principalName(), principalType((PrincipalType::type)0), grantOption(0), grantTime(0), grantorName(), grantorPrincipalType((PrincipalType::type)0) {
+  }
+
+  virtual ~RolePrincipalGrant() throw() {}
+
+  std::string roleName;
+  std::string principalName;
+  PrincipalType::type principalType;
+  bool grantOption;
+  int32_t grantTime;
+  std::string grantorName;
+  PrincipalType::type grantorPrincipalType;
+
+  _RolePrincipalGrant__isset __isset;
+
+  void __set_roleName(const std::string& val) {
+    roleName = val;
+  }
+
+  void __set_principalName(const std::string& val) {
+    principalName = val;
+  }
+
+  void __set_principalType(const PrincipalType::type val) {
+    principalType = val;
+  }
+
+  void __set_grantOption(const bool val) {
+    grantOption = val;
+  }
+
+  void __set_grantTime(const int32_t val) {
+    grantTime = val;
+  }
+
+  void __set_grantorName(const std::string& val) {
+    grantorName = val;
+  }
+
+  void __set_grantorPrincipalType(const PrincipalType::type val) {
+    grantorPrincipalType = val;
+  }
+
+  bool operator == (const RolePrincipalGrant & rhs) const
+  {
+    if (!(roleName == rhs.roleName))
+      return false;
+    if (!(principalName == rhs.principalName))
+      return false;
+    if (!(principalType == rhs.principalType))
+      return false;
+    if (!(grantOption == rhs.grantOption))
+      return false;
+    if (!(grantTime == rhs.grantTime))
+      return false;
+    if (!(grantorName == rhs.grantorName))
+      return false;
+    if (!(grantorPrincipalType == rhs.grantorPrincipalType))
+      return false;
+    return true;
+  }
+  bool operator != (const RolePrincipalGrant &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const RolePrincipalGrant & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(RolePrincipalGrant &a, RolePrincipalGrant &b);
+
+
+class GetRoleGrantsForPrincipalRequest {
+ public:
+
+  static const char* ascii_fingerprint; // = "D6FD826D949221396F4FFC3ECCD3D192";
+  static const uint8_t binary_fingerprint[16]; // = {0xD6,0xFD,0x82,0x6D,0x94,0x92,0x21,0x39,0x6F,0x4F,0xFC,0x3E,0xCC,0xD3,0xD1,0x92};
+
+  GetRoleGrantsForPrincipalRequest() : principal_name(), principal_type((PrincipalType::type)0) {
+  }
+
+  virtual ~GetRoleGrantsForPrincipalRequest() throw() {}
+
+  std::string principal_name;
+  PrincipalType::type principal_type;
+
+  void __set_principal_name(const std::string& val) {
+    principal_name = val;
+  }
+
+  void __set_principal_type(const PrincipalType::type val) {
+    principal_type = val;
+  }
+
+  bool operator == (const GetRoleGrantsForPrincipalRequest & rhs) const
+  {
+    if (!(principal_name == rhs.principal_name))
+      return false;
+    if (!(principal_type == rhs.principal_type))
+      return false;
+    return true;
+  }
+  bool operator != (const GetRoleGrantsForPrincipalRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GetRoleGrantsForPrincipalRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(GetRoleGrantsForPrincipalRequest &a, GetRoleGrantsForPrincipalRequest &b);
+
+
+class GetRoleGrantsForPrincipalResponse {
+ public:
+
+  static const char* ascii_fingerprint; // = "5926B4B3541A62E17663820C7E3BE690";
+  static const uint8_t binary_fingerprint[16]; // = {0x59,0x26,0xB4,0xB3,0x54,0x1A,0x62,0xE1,0x76,0x63,0x82,0x0C,0x7E,0x3B,0xE6,0x90};
+
+  GetRoleGrantsForPrincipalResponse() {
+  }
+
+  virtual ~GetRoleGrantsForPrincipalResponse() throw() {}
+
+  std::vector<RolePrincipalGrant>  principalGrants;
+
+  void __set_principalGrants(const std::vector<RolePrincipalGrant> & val) {
+    principalGrants = val;
+  }
+
+  bool operator == (const GetRoleGrantsForPrincipalResponse & rhs) const
+  {
+    if (!(principalGrants == rhs.principalGrants))
+      return false;
+    return true;
+  }
+  bool operator != (const GetRoleGrantsForPrincipalResponse &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GetRoleGrantsForPrincipalResponse & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(GetRoleGrantsForPrincipalResponse &a, GetRoleGrantsForPrincipalResponse &b);
+
+
+class GetPrincipalsInRoleRequest {
+ public:
+
+  static const char* ascii_fingerprint; // = "EFB929595D312AC8F305D5A794CFEDA1";
+  static const uint8_t binary_fingerprint[16]; // = {0xEF,0xB9,0x29,0x59,0x5D,0x31,0x2A,0xC8,0xF3,0x05,0xD5,0xA7,0x94,0xCF,0xED,0xA1};
+
+  GetPrincipalsInRoleRequest() : roleName() {
+  }
+
+  virtual ~GetPrincipalsInRoleRequest() throw() {}
+
+  std::string roleName;
+
+  void __set_roleName(const std::string& val) {
+    roleName = val;
+  }
+
+  bool operator == (const GetPrincipalsInRoleRequest & rhs) const
+  {
+    if (!(roleName == rhs.roleName))
+      return false;
+    return true;
+  }
+  bool operator != (const GetPrincipalsInRoleRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GetPrincipalsInRoleRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(GetPrincipalsInRoleRequest &a, GetPrincipalsInRoleRequest &b);
+
+
+class GetPrincipalsInRoleResponse {
+ public:
+
+  static const char* ascii_fingerprint; // = "5926B4B3541A62E17663820C7E3BE690";
+  static const uint8_t binary_fingerprint[16]; // = {0x59,0x26,0xB4,0xB3,0x54,0x1A,0x62,0xE1,0x76,0x63,0x82,0x0C,0x7E,0x3B,0xE6,0x90};
+
+  GetPrincipalsInRoleResponse() {
+  }
+
+  virtual ~GetPrincipalsInRoleResponse() throw() {}
+
+  std::vector<RolePrincipalGrant>  principalGrants;
+
+  void __set_principalGrants(const std::vector<RolePrincipalGrant> & val) {
+    principalGrants = val;
+  }
+
+  bool operator == (const GetPrincipalsInRoleResponse & rhs) const
+  {
+    if (!(principalGrants == rhs.principalGrants))
+      return false;
+    return true;
+  }
+  bool operator != (const GetPrincipalsInRoleResponse &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GetPrincipalsInRoleResponse & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(GetPrincipalsInRoleResponse &a, GetPrincipalsInRoleResponse &b);
+
+typedef struct _GrantRevokeRoleRequest__isset {
+  _GrantRevokeRoleRequest__isset() : requestType(false), roleName(false), principalName(false), principalType(false), grantor(false), grantorType(false), grantOption(false) {}
+  bool requestType;
+  bool roleName;
+  bool principalName;
+  bool principalType;
+  bool grantor;
+  bool grantorType;
+  bool grantOption;
+} _GrantRevokeRoleRequest__isset;
+
+class GrantRevokeRoleRequest {
+ public:
+
+  static const char* ascii_fingerprint; // = "907DEA796F2BA7AF76DC2566E75FAEE7";
+  static const uint8_t binary_fingerprint[16]; // = {0x90,0x7D,0xEA,0x79,0x6F,0x2B,0xA7,0xAF,0x76,0xDC,0x25,0x66,0xE7,0x5F,0xAE,0xE7};
+
+  GrantRevokeRoleRequest() : requestType((GrantRevokeType::type)0), roleName(), principalName(), principalType((PrincipalType::type)0), grantor(), grantorType((PrincipalType::type)0), grantOption(0) {
+  }
+
+  virtual ~GrantRevokeRoleRequest() throw() {}
+
+  GrantRevokeType::type requestType;
+  std::string roleName;
+  std::string principalName;
+  PrincipalType::type principalType;
+  std::string grantor;
+  PrincipalType::type grantorType;
+  bool grantOption;
+
+  _GrantRevokeRoleRequest__isset __isset;
+
+  void __set_requestType(const GrantRevokeType::type val) {
+    requestType = val;
+  }
+
+  void __set_roleName(const std::string& val) {
+    roleName = val;
+  }
+
+  void __set_principalName(const std::string& val) {
+    principalName = val;
+  }
+
+  void __set_principalType(const PrincipalType::type val) {
+    principalType = val;
+  }
+
+  void __set_grantor(const std::string& val) {
+    grantor = val;
+    __isset.grantor = true;
+  }
+
+  void __set_grantorType(const PrincipalType::type val) {
+    grantorType = val;
+    __isset.grantorType = true;
+  }
+
+  void __set_grantOption(const bool val) {
+    grantOption = val;
+    __isset.grantOption = true;
+  }
+
+  bool operator == (const GrantRevokeRoleRequest & rhs) const
+  {
+    if (!(requestType == rhs.requestType))
+      return false;
+    if (!(roleName == rhs.roleName))
+      return false;
+    if (!(principalName == rhs.principalName))
+      return false;
+    if (!(principalType == rhs.principalType))
+      return false;
+    if (__isset.grantor != rhs.__isset.grantor)
+      return false;
+    else if (__isset.grantor && !(grantor == rhs.grantor))
+      return false;
+    if (__isset.grantorType != rhs.__isset.grantorType)
+      return false;
+    else if (__isset.grantorType && !(grantorType == rhs.grantorType))
+      return false;
+    if (__isset.grantOption != rhs.__isset.grantOption)
+      return false;
+    else if (__isset.grantOption && !(grantOption == rhs.grantOption))
+      return false;
+    return true;
+  }
+  bool operator != (const GrantRevokeRoleRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GrantRevokeRoleRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(GrantRevokeRoleRequest &a, GrantRevokeRoleRequest &b);
+
+typedef struct _GrantRevokeRoleResponse__isset {
+  _GrantRevokeRoleResponse__isset() : success(false) {}
+  bool success;
+} _GrantRevokeRoleResponse__isset;
+
+class GrantRevokeRoleResponse {
+ public:
+
+  static const char* ascii_fingerprint; // = "BF054652DEF86253C2BEE7D947F167DD";
+  static const uint8_t binary_fingerprint[16]; // = {0xBF,0x05,0x46,0x52,0xDE,0xF8,0x62,0x53,0xC2,0xBE,0xE7,0xD9,0x47,0xF1,0x67,0xDD};
+
+  GrantRevokeRoleResponse() : success(0) {
+  }
+
+  virtual ~GrantRevokeRoleResponse() throw() {}
+
+  bool success;
+
+  _GrantRevokeRoleResponse__isset __isset;
+
+  void __set_success(const bool val) {
+    success = val;
+    __isset.success = true;
+  }
+
+  bool operator == (const GrantRevokeRoleResponse & rhs) const
+  {
+    if (__isset.success != rhs.__isset.success)
+      return false;
+    else if (__isset.success && !(success == rhs.success))
+      return false;
+    return true;
+  }
+  bool operator != (const GrantRevokeRoleResponse &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GrantRevokeRoleResponse & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(GrantRevokeRoleResponse &a, GrantRevokeRoleResponse &b);
 
 typedef struct _Database__isset {
   _Database__isset() : name(false), description(false), locationUri(false), parameters(false), privileges(false), ownerName(false), ownerType(false) {}
@@ -1091,7 +1595,7 @@ class StorageDescriptor {
 void swap(StorageDescriptor &a, StorageDescriptor &b);
 
 typedef struct _Table__isset {
-  _Table__isset() : tableName(false), dbName(false), owner(false), createTime(false), lastAccessTime(false), retention(false), sd(false), partitionKeys(false), parameters(false), viewOriginalText(false), viewExpandedText(false), tableType(false), privileges(false) {}
+  _Table__isset() : tableName(false), dbName(false), owner(false), createTime(false), lastAccessTime(false), retention(false), sd(false), partitionKeys(false), parameters(false), viewOriginalText(false), viewExpandedText(false), tableType(false), privileges(false), temporary(true) {}
   bool tableName;
   bool dbName;
   bool owner;
@@ -1105,15 +1609,16 @@ typedef struct _Table__isset {
   bool viewExpandedText;
   bool tableType;
   bool privileges;
+  bool temporary;
 } _Table__isset;
 
 class Table {
  public:
 
-  static const char* ascii_fingerprint; // = "68640B4B66B355CF317429AF70D2C260";
-  static const uint8_t binary_fingerprint[16]; // = {0x68,0x64,0x0B,0x4B,0x66,0xB3,0x55,0xCF,0x31,0x74,0x29,0xAF,0x70,0xD2,0xC2,0x60};
+  static const char* ascii_fingerprint; // = "29EFB2A5970EF572039E5D94CC78AA85";
+  static const uint8_t binary_fingerprint[16]; // = {0x29,0xEF,0xB2,0xA5,0x97,0x0E,0xF5,0x72,0x03,0x9E,0x5D,0x94,0xCC,0x78,0xAA,0x85};
 
-  Table() : tableName(), dbName(), owner(), createTime(0), lastAccessTime(0), retention(0), viewOriginalText(), viewExpandedText(), tableType() {
+  Table() : tableName(), dbName(), owner(), createTime(0), lastAccessTime(0), retention(0), viewOriginalText(), viewExpandedText(), tableType(), temporary(false) {
   }
 
   virtual ~Table() throw() {}
@@ -1131,6 +1636,7 @@ class Table {
   std::string viewExpandedText;
   std::string tableType;
   PrincipalPrivilegeSet privileges;
+  bool temporary;
 
   _Table__isset __isset;
 
@@ -1187,6 +1693,11 @@ class Table {
     __isset.privileges = true;
   }
 
+  void __set_temporary(const bool val) {
+    temporary = val;
+    __isset.temporary = true;
+  }
+
   bool operator == (const Table & rhs) const
   {
     if (!(tableName == rhs.tableName))
@@ -1216,6 +1727,10 @@ class Table {
     if (__isset.privileges != rhs.__isset.privileges)
       return false;
     else if (__isset.privileges && !(privileges == rhs.privileges))
+      return false;
+    if (__isset.temporary != rhs.__isset.temporary)
+      return false;
+    else if (__isset.temporary && !(temporary == rhs.temporary))
       return false;
     return true;
   }
@@ -1500,12 +2015,17 @@ class BooleanColumnStatsData {
 
 void swap(BooleanColumnStatsData &a, BooleanColumnStatsData &b);
 
+typedef struct _DoubleColumnStatsData__isset {
+  _DoubleColumnStatsData__isset() : lowValue(false), highValue(false) {}
+  bool lowValue;
+  bool highValue;
+} _DoubleColumnStatsData__isset;
 
 class DoubleColumnStatsData {
  public:
 
-  static const char* ascii_fingerprint; // = "97F958CB0709C3B109A57EEE01946C13";
-  static const uint8_t binary_fingerprint[16]; // = {0x97,0xF9,0x58,0xCB,0x07,0x09,0xC3,0xB1,0x09,0xA5,0x7E,0xEE,0x01,0x94,0x6C,0x13};
+  static const char* ascii_fingerprint; // = "DA7C011321D74C48396AA002E61A0CBB";
+  static const uint8_t binary_fingerprint[16]; // = {0xDA,0x7C,0x01,0x13,0x21,0xD7,0x4C,0x48,0x39,0x6A,0xA0,0x02,0xE6,0x1A,0x0C,0xBB};
 
   DoubleColumnStatsData() : lowValue(0), highValue(0), numNulls(0), numDVs(0) {
   }
@@ -1517,12 +2037,16 @@ class DoubleColumnStatsData {
   int64_t numNulls;
   int64_t numDVs;
 
+  _DoubleColumnStatsData__isset __isset;
+
   void __set_lowValue(const double val) {
     lowValue = val;
+    __isset.lowValue = true;
   }
 
   void __set_highValue(const double val) {
     highValue = val;
+    __isset.highValue = true;
   }
 
   void __set_numNulls(const int64_t val) {
@@ -1535,9 +2059,13 @@ class DoubleColumnStatsData {
 
   bool operator == (const DoubleColumnStatsData & rhs) const
   {
-    if (!(lowValue == rhs.lowValue))
+    if (__isset.lowValue != rhs.__isset.lowValue)
       return false;
-    if (!(highValue == rhs.highValue))
+    else if (__isset.lowValue && !(lowValue == rhs.lowValue))
+      return false;
+    if (__isset.highValue != rhs.__isset.highValue)
+      return false;
+    else if (__isset.highValue && !(highValue == rhs.highValue))
       return false;
     if (!(numNulls == rhs.numNulls))
       return false;
@@ -1558,12 +2086,17 @@ class DoubleColumnStatsData {
 
 void swap(DoubleColumnStatsData &a, DoubleColumnStatsData &b);
 
+typedef struct _LongColumnStatsData__isset {
+  _LongColumnStatsData__isset() : lowValue(false), highValue(false) {}
+  bool lowValue;
+  bool highValue;
+} _LongColumnStatsData__isset;
 
 class LongColumnStatsData {
  public:
 
-  static const char* ascii_fingerprint; // = "66C8E6F97F0275919D86FEB536251B17";
-  static const uint8_t binary_fingerprint[16]; // = {0x66,0xC8,0xE6,0xF9,0x7F,0x02,0x75,0x91,0x9D,0x86,0xFE,0xB5,0x36,0x25,0x1B,0x17};
+  static const char* ascii_fingerprint; // = "E685FC220B24E3B8B93604790DCB9AEA";
+  static const uint8_t binary_fingerprint[16]; // = {0xE6,0x85,0xFC,0x22,0x0B,0x24,0xE3,0xB8,0xB9,0x36,0x04,0x79,0x0D,0xCB,0x9A,0xEA};
 
   LongColumnStatsData() : lowValue(0), highValue(0), numNulls(0), numDVs(0) {
   }
@@ -1575,12 +2108,16 @@ class LongColumnStatsData {
   int64_t numNulls;
   int64_t numDVs;
 
+  _LongColumnStatsData__isset __isset;
+
   void __set_lowValue(const int64_t val) {
     lowValue = val;
+    __isset.lowValue = true;
   }
 
   void __set_highValue(const int64_t val) {
     highValue = val;
+    __isset.highValue = true;
   }
 
   void __set_numNulls(const int64_t val) {
@@ -1593,9 +2130,13 @@ class LongColumnStatsData {
 
   bool operator == (const LongColumnStatsData & rhs) const
   {
-    if (!(lowValue == rhs.lowValue))
+    if (__isset.lowValue != rhs.__isset.lowValue)
       return false;
-    if (!(highValue == rhs.highValue))
+    else if (__isset.lowValue && !(lowValue == rhs.lowValue))
+      return false;
+    if (__isset.highValue != rhs.__isset.highValue)
+      return false;
+    else if (__isset.highValue && !(highValue == rhs.highValue))
       return false;
     if (!(numNulls == rhs.numNulls))
       return false;
@@ -1725,20 +2266,136 @@ class BinaryColumnStatsData {
 
 void swap(BinaryColumnStatsData &a, BinaryColumnStatsData &b);
 
+
+class Decimal {
+ public:
+
+  static const char* ascii_fingerprint; // = "C4DDF6759F9B17C5C380806CE743DE8E";
+  static const uint8_t binary_fingerprint[16]; // = {0xC4,0xDD,0xF6,0x75,0x9F,0x9B,0x17,0xC5,0xC3,0x80,0x80,0x6C,0xE7,0x43,0xDE,0x8E};
+
+  Decimal() : unscaled(), scale(0) {
+  }
+
+  virtual ~Decimal() throw() {}
+
+  std::string unscaled;
+  int16_t scale;
+
+  void __set_unscaled(const std::string& val) {
+    unscaled = val;
+  }
+
+  void __set_scale(const int16_t val) {
+    scale = val;
+  }
+
+  bool operator == (const Decimal & rhs) const
+  {
+    if (!(unscaled == rhs.unscaled))
+      return false;
+    if (!(scale == rhs.scale))
+      return false;
+    return true;
+  }
+  bool operator != (const Decimal &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Decimal & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(Decimal &a, Decimal &b);
+
+typedef struct _DecimalColumnStatsData__isset {
+  _DecimalColumnStatsData__isset() : lowValue(false), highValue(false) {}
+  bool lowValue;
+  bool highValue;
+} _DecimalColumnStatsData__isset;
+
+class DecimalColumnStatsData {
+ public:
+
+  static const char* ascii_fingerprint; // = "B6D47E7A28922BFA93FE05E9F1B04748";
+  static const uint8_t binary_fingerprint[16]; // = {0xB6,0xD4,0x7E,0x7A,0x28,0x92,0x2B,0xFA,0x93,0xFE,0x05,0xE9,0xF1,0xB0,0x47,0x48};
+
+  DecimalColumnStatsData() : numNulls(0), numDVs(0) {
+  }
+
+  virtual ~DecimalColumnStatsData() throw() {}
+
+  Decimal lowValue;
+  Decimal highValue;
+  int64_t numNulls;
+  int64_t numDVs;
+
+  _DecimalColumnStatsData__isset __isset;
+
+  void __set_lowValue(const Decimal& val) {
+    lowValue = val;
+    __isset.lowValue = true;
+  }
+
+  void __set_highValue(const Decimal& val) {
+    highValue = val;
+    __isset.highValue = true;
+  }
+
+  void __set_numNulls(const int64_t val) {
+    numNulls = val;
+  }
+
+  void __set_numDVs(const int64_t val) {
+    numDVs = val;
+  }
+
+  bool operator == (const DecimalColumnStatsData & rhs) const
+  {
+    if (__isset.lowValue != rhs.__isset.lowValue)
+      return false;
+    else if (__isset.lowValue && !(lowValue == rhs.lowValue))
+      return false;
+    if (__isset.highValue != rhs.__isset.highValue)
+      return false;
+    else if (__isset.highValue && !(highValue == rhs.highValue))
+      return false;
+    if (!(numNulls == rhs.numNulls))
+      return false;
+    if (!(numDVs == rhs.numDVs))
+      return false;
+    return true;
+  }
+  bool operator != (const DecimalColumnStatsData &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const DecimalColumnStatsData & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(DecimalColumnStatsData &a, DecimalColumnStatsData &b);
+
 typedef struct _ColumnStatisticsData__isset {
-  _ColumnStatisticsData__isset() : booleanStats(false), longStats(false), doubleStats(false), stringStats(false), binaryStats(false) {}
+  _ColumnStatisticsData__isset() : booleanStats(false), longStats(false), doubleStats(false), stringStats(false), binaryStats(false), decimalStats(false) {}
   bool booleanStats;
   bool longStats;
   bool doubleStats;
   bool stringStats;
   bool binaryStats;
+  bool decimalStats;
 } _ColumnStatisticsData__isset;
 
 class ColumnStatisticsData {
  public:
 
-  static const char* ascii_fingerprint; // = "3D106F26C0761EF37E58CAFAA3F1651C";
-  static const uint8_t binary_fingerprint[16]; // = {0x3D,0x10,0x6F,0x26,0xC0,0x76,0x1E,0xF3,0x7E,0x58,0xCA,0xFA,0xA3,0xF1,0x65,0x1C};
+  static const char* ascii_fingerprint; // = "D079ACEA6EE0998D0A45CB65FF1EAADD";
+  static const uint8_t binary_fingerprint[16]; // = {0xD0,0x79,0xAC,0xEA,0x6E,0xE0,0x99,0x8D,0x0A,0x45,0xCB,0x65,0xFF,0x1E,0xAA,0xDD};
 
   ColumnStatisticsData() {
   }
@@ -1750,6 +2407,7 @@ class ColumnStatisticsData {
   DoubleColumnStatsData doubleStats;
   StringColumnStatsData stringStats;
   BinaryColumnStatsData binaryStats;
+  DecimalColumnStatsData decimalStats;
 
   _ColumnStatisticsData__isset __isset;
 
@@ -1773,6 +2431,10 @@ class ColumnStatisticsData {
     binaryStats = val;
   }
 
+  void __set_decimalStats(const DecimalColumnStatsData& val) {
+    decimalStats = val;
+  }
+
   bool operator == (const ColumnStatisticsData & rhs) const
   {
     if (!(booleanStats == rhs.booleanStats))
@@ -1784,6 +2446,8 @@ class ColumnStatisticsData {
     if (!(stringStats == rhs.stringStats))
       return false;
     if (!(binaryStats == rhs.binaryStats))
+      return false;
+    if (!(decimalStats == rhs.decimalStats))
       return false;
     return true;
   }
@@ -1804,8 +2468,8 @@ void swap(ColumnStatisticsData &a, ColumnStatisticsData &b);
 class ColumnStatisticsObj {
  public:
 
-  static const char* ascii_fingerprint; // = "DEE09584C51BCAF60824FE4509B59567";
-  static const uint8_t binary_fingerprint[16]; // = {0xDE,0xE0,0x95,0x84,0xC5,0x1B,0xCA,0xF6,0x08,0x24,0xFE,0x45,0x09,0xB5,0x95,0x67};
+  static const char* ascii_fingerprint; // = "E49E62CFC71682004614EFEDAC3CD3F4";
+  static const uint8_t binary_fingerprint[16]; // = {0xE4,0x9E,0x62,0xCF,0xC7,0x16,0x82,0x00,0x46,0x14,0xEF,0xED,0xAC,0x3C,0xD3,0xF4};
 
   ColumnStatisticsObj() : colName(), colType() {
   }
@@ -1933,8 +2597,8 @@ void swap(ColumnStatisticsDesc &a, ColumnStatisticsDesc &b);
 class ColumnStatistics {
  public:
 
-  static const char* ascii_fingerprint; // = "681BDBD0CBB53373AC1C9C0C2E26BEAB";
-  static const uint8_t binary_fingerprint[16]; // = {0x68,0x1B,0xDB,0xD0,0xCB,0xB5,0x33,0x73,0xAC,0x1C,0x9C,0x0C,0x2E,0x26,0xBE,0xAB};
+  static const char* ascii_fingerprint; // = "6682E234199B2CD3807B1ED420C6A7F8";
+  static const uint8_t binary_fingerprint[16]; // = {0x66,0x82,0xE2,0x34,0x19,0x9B,0x2C,0xD3,0x80,0x7B,0x1E,0xD4,0x20,0xC6,0xA7,0xF8};
 
   ColumnStatistics() {
   }
@@ -2193,8 +2857,8 @@ void swap(PartitionsByExprRequest &a, PartitionsByExprRequest &b);
 class TableStatsResult {
  public:
 
-  static const char* ascii_fingerprint; // = "3A0CB62070A0D93EE2CE174AF08C0E92";
-  static const uint8_t binary_fingerprint[16]; // = {0x3A,0x0C,0xB6,0x20,0x70,0xA0,0xD9,0x3E,0xE2,0xCE,0x17,0x4A,0xF0,0x8C,0x0E,0x92};
+  static const char* ascii_fingerprint; // = "CE3E8F0D9B310B8D33CB7A89A75F3E05";
+  static const uint8_t binary_fingerprint[16]; // = {0xCE,0x3E,0x8F,0x0D,0x9B,0x31,0x0B,0x8D,0x33,0xCB,0x7A,0x89,0xA7,0x5F,0x3E,0x05};
 
   TableStatsResult() {
   }
@@ -2230,8 +2894,8 @@ void swap(TableStatsResult &a, TableStatsResult &b);
 class PartitionsStatsResult {
  public:
 
-  static const char* ascii_fingerprint; // = "9790481369E1B27F6E70DED62CFCA4E3";
-  static const uint8_t binary_fingerprint[16]; // = {0x97,0x90,0x48,0x13,0x69,0xE1,0xB2,0x7F,0x6E,0x70,0xDE,0xD6,0x2C,0xFC,0xA4,0xE3};
+  static const char* ascii_fingerprint; // = "FF175B50C5EF6F442D3AF25B06435A39";
+  static const uint8_t binary_fingerprint[16]; // = {0xFF,0x17,0x5B,0x50,0xC5,0xEF,0x6F,0x44,0x2D,0x3A,0xF2,0x5B,0x06,0x43,0x5A,0x39};
 
   PartitionsStatsResult() {
   }
@@ -2903,6 +3567,1154 @@ class Function {
 
 void swap(Function &a, Function &b);
 
+
+class TxnInfo {
+ public:
+
+  static const char* ascii_fingerprint; // = "6C5C0773A901CCA3BE9D085B3B47A767";
+  static const uint8_t binary_fingerprint[16]; // = {0x6C,0x5C,0x07,0x73,0xA9,0x01,0xCC,0xA3,0xBE,0x9D,0x08,0x5B,0x3B,0x47,0xA7,0x67};
+
+  TxnInfo() : id(0), state((TxnState::type)0), user(), hostname() {
+  }
+
+  virtual ~TxnInfo() throw() {}
+
+  int64_t id;
+  TxnState::type state;
+  std::string user;
+  std::string hostname;
+
+  void __set_id(const int64_t val) {
+    id = val;
+  }
+
+  void __set_state(const TxnState::type val) {
+    state = val;
+  }
+
+  void __set_user(const std::string& val) {
+    user = val;
+  }
+
+  void __set_hostname(const std::string& val) {
+    hostname = val;
+  }
+
+  bool operator == (const TxnInfo & rhs) const
+  {
+    if (!(id == rhs.id))
+      return false;
+    if (!(state == rhs.state))
+      return false;
+    if (!(user == rhs.user))
+      return false;
+    if (!(hostname == rhs.hostname))
+      return false;
+    return true;
+  }
+  bool operator != (const TxnInfo &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const TxnInfo & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(TxnInfo &a, TxnInfo &b);
+
+
+class GetOpenTxnsInfoResponse {
+ public:
+
+  static const char* ascii_fingerprint; // = "CCF769BBD33005B61F2079A6665E3B9C";
+  static const uint8_t binary_fingerprint[16]; // = {0xCC,0xF7,0x69,0xBB,0xD3,0x30,0x05,0xB6,0x1F,0x20,0x79,0xA6,0x66,0x5E,0x3B,0x9C};
+
+  GetOpenTxnsInfoResponse() : txn_high_water_mark(0) {
+  }
+
+  virtual ~GetOpenTxnsInfoResponse() throw() {}
+
+  int64_t txn_high_water_mark;
+  std::vector<TxnInfo>  open_txns;
+
+  void __set_txn_high_water_mark(const int64_t val) {
+    txn_high_water_mark = val;
+  }
+
+  void __set_open_txns(const std::vector<TxnInfo> & val) {
+    open_txns = val;
+  }
+
+  bool operator == (const GetOpenTxnsInfoResponse & rhs) const
+  {
+    if (!(txn_high_water_mark == rhs.txn_high_water_mark))
+      return false;
+    if (!(open_txns == rhs.open_txns))
+      return false;
+    return true;
+  }
+  bool operator != (const GetOpenTxnsInfoResponse &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GetOpenTxnsInfoResponse & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(GetOpenTxnsInfoResponse &a, GetOpenTxnsInfoResponse &b);
+
+
+class GetOpenTxnsResponse {
+ public:
+
+  static const char* ascii_fingerprint; // = "590531FF1BE8611678B255374F6109EE";
+  static const uint8_t binary_fingerprint[16]; // = {0x59,0x05,0x31,0xFF,0x1B,0xE8,0x61,0x16,0x78,0xB2,0x55,0x37,0x4F,0x61,0x09,0xEE};
+
+  GetOpenTxnsResponse() : txn_high_water_mark(0) {
+  }
+
+  virtual ~GetOpenTxnsResponse() throw() {}
+
+  int64_t txn_high_water_mark;
+  std::set<int64_t>  open_txns;
+
+  void __set_txn_high_water_mark(const int64_t val) {
+    txn_high_water_mark = val;
+  }
+
+  void __set_open_txns(const std::set<int64_t> & val) {
+    open_txns = val;
+  }
+
+  bool operator == (const GetOpenTxnsResponse & rhs) const
+  {
+    if (!(txn_high_water_mark == rhs.txn_high_water_mark))
+      return false;
+    if (!(open_txns == rhs.open_txns))
+      return false;
+    return true;
+  }
+  bool operator != (const GetOpenTxnsResponse &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GetOpenTxnsResponse & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(GetOpenTxnsResponse &a, GetOpenTxnsResponse &b);
+
+
+class OpenTxnRequest {
+ public:
+
+  static const char* ascii_fingerprint; // = "3368C2F81F2FEF71F11EDACDB2A3ECEF";
+  static const uint8_t binary_fingerprint[16]; // = {0x33,0x68,0xC2,0xF8,0x1F,0x2F,0xEF,0x71,0xF1,0x1E,0xDA,0xCD,0xB2,0xA3,0xEC,0xEF};
+
+  OpenTxnRequest() : num_txns(0), user(), hostname() {
+  }
+
+  virtual ~OpenTxnRequest() throw() {}
+
+  int32_t num_txns;
+  std::string user;
+  std::string hostname;
+
+  void __set_num_txns(const int32_t val) {
+    num_txns = val;
+  }
+
+  void __set_user(const std::string& val) {
+    user = val;
+  }
+
+  void __set_hostname(const std::string& val) {
+    hostname = val;
+  }
+
+  bool operator == (const OpenTxnRequest & rhs) const
+  {
+    if (!(num_txns == rhs.num_txns))
+      return false;
+    if (!(user == rhs.user))
+      return false;
+    if (!(hostname == rhs.hostname))
+      return false;
+    return true;
+  }
+  bool operator != (const OpenTxnRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const OpenTxnRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(OpenTxnRequest &a, OpenTxnRequest &b);
+
+
+class OpenTxnsResponse {
+ public:
+
+  static const char* ascii_fingerprint; // = "E49D7D1A9013CC81CD0F69D631EF82E4";
+  static const uint8_t binary_fingerprint[16]; // = {0xE4,0x9D,0x7D,0x1A,0x90,0x13,0xCC,0x81,0xCD,0x0F,0x69,0xD6,0x31,0xEF,0x82,0xE4};
+
+  OpenTxnsResponse() {
+  }
+
+  virtual ~OpenTxnsResponse() throw() {}
+
+  std::vector<int64_t>  txn_ids;
+
+  void __set_txn_ids(const std::vector<int64_t> & val) {
+    txn_ids = val;
+  }
+
+  bool operator == (const OpenTxnsResponse & rhs) const
+  {
+    if (!(txn_ids == rhs.txn_ids))
+      return false;
+    return true;
+  }
+  bool operator != (const OpenTxnsResponse &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const OpenTxnsResponse & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(OpenTxnsResponse &a, OpenTxnsResponse &b);
+
+
+class AbortTxnRequest {
+ public:
+
+  static const char* ascii_fingerprint; // = "56A59CE7FFAF82BCA8A19FAACDE4FB75";
+  static const uint8_t binary_fingerprint[16]; // = {0x56,0xA5,0x9C,0xE7,0xFF,0xAF,0x82,0xBC,0xA8,0xA1,0x9F,0xAA,0xCD,0xE4,0xFB,0x75};
+
+  AbortTxnRequest() : txnid(0) {
+  }
+
+  virtual ~AbortTxnRequest() throw() {}
+
+  int64_t txnid;
+
+  void __set_txnid(const int64_t val) {
+    txnid = val;
+  }
+
+  bool operator == (const AbortTxnRequest & rhs) const
+  {
+    if (!(txnid == rhs.txnid))
+      return false;
+    return true;
+  }
+  bool operator != (const AbortTxnRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const AbortTxnRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(AbortTxnRequest &a, AbortTxnRequest &b);
+
+
+class CommitTxnRequest {
+ public:
+
+  static const char* ascii_fingerprint; // = "56A59CE7FFAF82BCA8A19FAACDE4FB75";
+  static const uint8_t binary_fingerprint[16]; // = {0x56,0xA5,0x9C,0xE7,0xFF,0xAF,0x82,0xBC,0xA8,0xA1,0x9F,0xAA,0xCD,0xE4,0xFB,0x75};
+
+  CommitTxnRequest() : txnid(0) {
+  }
+
+  virtual ~CommitTxnRequest() throw() {}
+
+  int64_t txnid;
+
+  void __set_txnid(const int64_t val) {
+    txnid = val;
+  }
+
+  bool operator == (const CommitTxnRequest & rhs) const
+  {
+    if (!(txnid == rhs.txnid))
+      return false;
+    return true;
+  }
+  bool operator != (const CommitTxnRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const CommitTxnRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(CommitTxnRequest &a, CommitTxnRequest &b);
+
+typedef struct _LockComponent__isset {
+  _LockComponent__isset() : tablename(false), partitionname(false) {}
+  bool tablename;
+  bool partitionname;
+} _LockComponent__isset;
+
+class LockComponent {
+ public:
+
+  static const char* ascii_fingerprint; // = "38B02531B0840AC9C72904A4649FD15F";
+  static const uint8_t binary_fingerprint[16]; // = {0x38,0xB0,0x25,0x31,0xB0,0x84,0x0A,0xC9,0xC7,0x29,0x04,0xA4,0x64,0x9F,0xD1,0x5F};
+
+  LockComponent() : type((LockType::type)0), level((LockLevel::type)0), dbname(), tablename(), partitionname() {
+  }
+
+  virtual ~LockComponent() throw() {}
+
+  LockType::type type;
+  LockLevel::type level;
+  std::string dbname;
+  std::string tablename;
+  std::string partitionname;
+
+  _LockComponent__isset __isset;
+
+  void __set_type(const LockType::type val) {
+    type = val;
+  }
+
+  void __set_level(const LockLevel::type val) {
+    level = val;
+  }
+
+  void __set_dbname(const std::string& val) {
+    dbname = val;
+  }
+
+  void __set_tablename(const std::string& val) {
+    tablename = val;
+    __isset.tablename = true;
+  }
+
+  void __set_partitionname(const std::string& val) {
+    partitionname = val;
+    __isset.partitionname = true;
+  }
+
+  bool operator == (const LockComponent & rhs) const
+  {
+    if (!(type == rhs.type))
+      return false;
+    if (!(level == rhs.level))
+      return false;
+    if (!(dbname == rhs.dbname))
+      return false;
+    if (__isset.tablename != rhs.__isset.tablename)
+      return false;
+    else if (__isset.tablename && !(tablename == rhs.tablename))
+      return false;
+    if (__isset.partitionname != rhs.__isset.partitionname)
+      return false;
+    else if (__isset.partitionname && !(partitionname == rhs.partitionname))
+      return false;
+    return true;
+  }
+  bool operator != (const LockComponent &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const LockComponent & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(LockComponent &a, LockComponent &b);
+
+typedef struct _LockRequest__isset {
+  _LockRequest__isset() : txnid(false) {}
+  bool txnid;
+} _LockRequest__isset;
+
+class LockRequest {
+ public:
+
+  static const char* ascii_fingerprint; // = "46BC5ED7196BC16CB216AD5CC67C6930";
+  static const uint8_t binary_fingerprint[16]; // = {0x46,0xBC,0x5E,0xD7,0x19,0x6B,0xC1,0x6C,0xB2,0x16,0xAD,0x5C,0xC6,0x7C,0x69,0x30};
+
+  LockRequest() : txnid(0), user(), hostname() {
+  }
+
+  virtual ~LockRequest() throw() {}
+
+  std::vector<LockComponent>  component;
+  int64_t txnid;
+  std::string user;
+  std::string hostname;
+
+  _LockRequest__isset __isset;
+
+  void __set_component(const std::vector<LockComponent> & val) {
+    component = val;
+  }
+
+  void __set_txnid(const int64_t val) {
+    txnid = val;
+    __isset.txnid = true;
+  }
+
+  void __set_user(const std::string& val) {
+    user = val;
+  }
+
+  void __set_hostname(const std::string& val) {
+    hostname = val;
+  }
+
+  bool operator == (const LockRequest & rhs) const
+  {
+    if (!(component == rhs.component))
+      return false;
+    if (__isset.txnid != rhs.__isset.txnid)
+      return false;
+    else if (__isset.txnid && !(txnid == rhs.txnid))
+      return false;
+    if (!(user == rhs.user))
+      return false;
+    if (!(hostname == rhs.hostname))
+      return false;
+    return true;
+  }
+  bool operator != (const LockRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const LockRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(LockRequest &a, LockRequest &b);
+
+
+class LockResponse {
+ public:
+
+  static const char* ascii_fingerprint; // = "DFA40D9D2884599F3D1E7A57578F1384";
+  static const uint8_t binary_fingerprint[16]; // = {0xDF,0xA4,0x0D,0x9D,0x28,0x84,0x59,0x9F,0x3D,0x1E,0x7A,0x57,0x57,0x8F,0x13,0x84};
+
+  LockResponse() : lockid(0), state((LockState::type)0) {
+  }
+
+  virtual ~LockResponse() throw() {}
+
+  int64_t lockid;
+  LockState::type state;
+
+  void __set_lockid(const int64_t val) {
+    lockid = val;
+  }
+
+  void __set_state(const LockState::type val) {
+    state = val;
+  }
+
+  bool operator == (const LockResponse & rhs) const
+  {
+    if (!(lockid == rhs.lockid))
+      return false;
+    if (!(state == rhs.state))
+      return false;
+    return true;
+  }
+  bool operator != (const LockResponse &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const LockResponse & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(LockResponse &a, LockResponse &b);
+
+
+class CheckLockRequest {
+ public:
+
+  static const char* ascii_fingerprint; // = "56A59CE7FFAF82BCA8A19FAACDE4FB75";
+  static const uint8_t binary_fingerprint[16]; // = {0x56,0xA5,0x9C,0xE7,0xFF,0xAF,0x82,0xBC,0xA8,0xA1,0x9F,0xAA,0xCD,0xE4,0xFB,0x75};
+
+  CheckLockRequest() : lockid(0) {
+  }
+
+  virtual ~CheckLockRequest() throw() {}
+
+  int64_t lockid;
+
+  void __set_lockid(const int64_t val) {
+    lockid = val;
+  }
+
+  bool operator == (const CheckLockRequest & rhs) const
+  {
+    if (!(lockid == rhs.lockid))
+      return false;
+    return true;
+  }
+  bool operator != (const CheckLockRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const CheckLockRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(CheckLockRequest &a, CheckLockRequest &b);
+
+
+class UnlockRequest {
+ public:
+
+  static const char* ascii_fingerprint; // = "56A59CE7FFAF82BCA8A19FAACDE4FB75";
+  static const uint8_t binary_fingerprint[16]; // = {0x56,0xA5,0x9C,0xE7,0xFF,0xAF,0x82,0xBC,0xA8,0xA1,0x9F,0xAA,0xCD,0xE4,0xFB,0x75};
+
+  UnlockRequest() : lockid(0) {
+  }
+
+  virtual ~UnlockRequest() throw() {}
+
+  int64_t lockid;
+
+  void __set_lockid(const int64_t val) {
+    lockid = val;
+  }
+
+  bool operator == (const UnlockRequest & rhs) const
+  {
+    if (!(lockid == rhs.lockid))
+      return false;
+    return true;
+  }
+  bool operator != (const UnlockRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const UnlockRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(UnlockRequest &a, UnlockRequest &b);
+
+
+class ShowLocksRequest {
+ public:
+
+  static const char* ascii_fingerprint; // = "99914B932BD37A50B983C5E7C90AE93B";
+  static const uint8_t binary_fingerprint[16]; // = {0x99,0x91,0x4B,0x93,0x2B,0xD3,0x7A,0x50,0xB9,0x83,0xC5,0xE7,0xC9,0x0A,0xE9,0x3B};
+
+  ShowLocksRequest() {
+  }
+
+  virtual ~ShowLocksRequest() throw() {}
+
+
+  bool operator == (const ShowLocksRequest & /* rhs */) const
+  {
+    return true;
+  }
+  bool operator != (const ShowLocksRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ShowLocksRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(ShowLocksRequest &a, ShowLocksRequest &b);
+
+typedef struct _ShowLocksResponseElement__isset {
+  _ShowLocksResponseElement__isset() : tablename(false), partname(false), txnid(false), acquiredat(false) {}
+  bool tablename;
+  bool partname;
+  bool txnid;
+  bool acquiredat;
+} _ShowLocksResponseElement__isset;
+
+class ShowLocksResponseElement {
+ public:
+
+  static const char* ascii_fingerprint; // = "5AD11F0E0EF1EE0A7C08B00FEFCFF24F";
+  static const uint8_t binary_fingerprint[16]; // = {0x5A,0xD1,0x1F,0x0E,0x0E,0xF1,0xEE,0x0A,0x7C,0x08,0xB0,0x0F,0xEF,0xCF,0xF2,0x4F};
+
+  ShowLocksResponseElement() : lockid(0), dbname(), tablename(), partname(), state((LockState::type)0), type((LockType::type)0), txnid(0), lastheartbeat(0), acquiredat(0), user(), hostname() {
+  }
+
+  virtual ~ShowLocksResponseElement() throw() {}
+
+  int64_t lockid;
+  std::string dbname;
+  std::string tablename;
+  std::string partname;
+  LockState::type state;
+  LockType::type type;
+  int64_t txnid;
+  int64_t lastheartbeat;
+  int64_t acquiredat;
+  std::string user;
+  std::string hostname;
+
+  _ShowLocksResponseElement__isset __isset;
+
+  void __set_lockid(const int64_t val) {
+    lockid = val;
+  }
+
+  void __set_dbname(const std::string& val) {
+    dbname = val;
+  }
+
+  void __set_tablename(const std::string& val) {
+    tablename = val;
+    __isset.tablename = true;
+  }
+
+  void __set_partname(const std::string& val) {
+    partname = val;
+    __isset.partname = true;
+  }
+
+  void __set_state(const LockState::type val) {
+    state = val;
+  }
+
+  void __set_type(const LockType::type val) {
+    type = val;
+  }
+
+  void __set_txnid(const int64_t val) {
+    txnid = val;
+    __isset.txnid = true;
+  }
+
+  void __set_lastheartbeat(const int64_t val) {
+    lastheartbeat = val;
+  }
+
+  void __set_acquiredat(const int64_t val) {
+    acquiredat = val;
+    __isset.acquiredat = true;
+  }
+
+  void __set_user(const std::string& val) {
+    user = val;
+  }
+
+  void __set_hostname(const std::string& val) {
+    hostname = val;
+  }
+
+  bool operator == (const ShowLocksResponseElement & rhs) const
+  {
+    if (!(lockid == rhs.lockid))
+      return false;
+    if (!(dbname == rhs.dbname))
+      return false;
+    if (__isset.tablename != rhs.__isset.tablename)
+      return false;
+    else if (__isset.tablename && !(tablename == rhs.tablename))
+      return false;
+    if (__isset.partname != rhs.__isset.partname)
+      return false;
+    else if (__isset.partname && !(partname == rhs.partname))
+      return false;
+    if (!(state == rhs.state))
+      return false;
+    if (!(type == rhs.type))
+      return false;
+    if (__isset.txnid != rhs.__isset.txnid)
+      return false;
+    else if (__isset.txnid && !(txnid == rhs.txnid))
+      return false;
+    if (!(lastheartbeat == rhs.lastheartbeat))
+      return false;
+    if (__isset.acquiredat != rhs.__isset.acquiredat)
+      return false;
+    else if (__isset.acquiredat && !(acquiredat == rhs.acquiredat))
+      return false;
+    if (!(user == rhs.user))
+      return false;
+    if (!(hostname == rhs.hostname))
+      return false;
+    return true;
+  }
+  bool operator != (const ShowLocksResponseElement &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ShowLocksResponseElement & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(ShowLocksResponseElement &a, ShowLocksResponseElement &b);
+
+typedef struct _ShowLocksResponse__isset {
+  _ShowLocksResponse__isset() : locks(false) {}
+  bool locks;
+} _ShowLocksResponse__isset;
+
+class ShowLocksResponse {
+ public:
+
+  static const char* ascii_fingerprint; // = "BD598AA60FE941361FB54C43973C011F";
+  static const uint8_t binary_fingerprint[16]; // = {0xBD,0x59,0x8A,0xA6,0x0F,0xE9,0x41,0x36,0x1F,0xB5,0x4C,0x43,0x97,0x3C,0x01,0x1F};
+
+  ShowLocksResponse() {
+  }
+
+  virtual ~ShowLocksResponse() throw() {}
+
+  std::vector<ShowLocksResponseElement>  locks;
+
+  _ShowLocksResponse__isset __isset;
+
+  void __set_locks(const std::vector<ShowLocksResponseElement> & val) {
+    locks = val;
+  }
+
+  bool operator == (const ShowLocksResponse & rhs) const
+  {
+    if (!(locks == rhs.locks))
+      return false;
+    return true;
+  }
+  bool operator != (const ShowLocksResponse &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ShowLocksResponse & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(ShowLocksResponse &a, ShowLocksResponse &b);
+
+typedef struct _HeartbeatRequest__isset {
+  _HeartbeatRequest__isset() : lockid(false), txnid(false) {}
+  bool lockid;
+  bool txnid;
+} _HeartbeatRequest__isset;
+
+class HeartbeatRequest {
+ public:
+
+  static const char* ascii_fingerprint; // = "0354D07C94CB8542872CA1277008860A";
+  static const uint8_t binary_fingerprint[16]; // = {0x03,0x54,0xD0,0x7C,0x94,0xCB,0x85,0x42,0x87,0x2C,0xA1,0x27,0x70,0x08,0x86,0x0A};
+
+  HeartbeatRequest() : lockid(0), txnid(0) {
+  }
+
+  virtual ~HeartbeatRequest() throw() {}
+
+  int64_t lockid;
+  int64_t txnid;
+
+  _HeartbeatRequest__isset __isset;
+
+  void __set_lockid(const int64_t val) {
+    lockid = val;
+    __isset.lockid = true;
+  }
+
+  void __set_txnid(const int64_t val) {
+    txnid = val;
+    __isset.txnid = true;
+  }
+
+  bool operator == (const HeartbeatRequest & rhs) const
+  {
+    if (__isset.lockid != rhs.__isset.lockid)
+      return false;
+    else if (__isset.lockid && !(lockid == rhs.lockid))
+      return false;
+    if (__isset.txnid != rhs.__isset.txnid)
+      return false;
+    else if (__isset.txnid && !(txnid == rhs.txnid))
+      return false;
+    return true;
+  }
+  bool operator != (const HeartbeatRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const HeartbeatRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(HeartbeatRequest &a, HeartbeatRequest &b);
+
+
+class HeartbeatTxnRangeRequest {
+ public:
+
+  static const char* ascii_fingerprint; // = "F33135321253DAEB67B0E79E416CA831";
+  static const uint8_t binary_fingerprint[16]; // = {0xF3,0x31,0x35,0x32,0x12,0x53,0xDA,0xEB,0x67,0xB0,0xE7,0x9E,0x41,0x6C,0xA8,0x31};
+
+  HeartbeatTxnRangeRequest() : min(0), max(0) {
+  }
+
+  virtual ~HeartbeatTxnRangeRequest() throw() {}
+
+  int64_t min;
+  int64_t max;
+
+  void __set_min(const int64_t val) {
+    min = val;
+  }
+
+  void __set_max(const int64_t val) {
+    max = val;
+  }
+
+  bool operator == (const HeartbeatTxnRangeRequest & rhs) const
+  {
+    if (!(min == rhs.min))
+      return false;
+    if (!(max == rhs.max))
+      return false;
+    return true;
+  }
+  bool operator != (const HeartbeatTxnRangeRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const HeartbeatTxnRangeRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(HeartbeatTxnRangeRequest &a, HeartbeatTxnRangeRequest &b);
+
+
+class HeartbeatTxnRangeResponse {
+ public:
+
+  static const char* ascii_fingerprint; // = "33E49A70BD5C04262A0F407E3656E3CF";
+  static const uint8_t binary_fingerprint[16]; // = {0x33,0xE4,0x9A,0x70,0xBD,0x5C,0x04,0x26,0x2A,0x0F,0x40,0x7E,0x36,0x56,0xE3,0xCF};
+
+  HeartbeatTxnRangeResponse() {
+  }
+
+  virtual ~HeartbeatTxnRangeResponse() throw() {}
+
+  std::set<int64_t>  aborted;
+  std::set<int64_t>  nosuch;
+
+  void __set_aborted(const std::set<int64_t> & val) {
+    aborted = val;
+  }
+
+  void __set_nosuch(const std::set<int64_t> & val) {
+    nosuch = val;
+  }
+
+  bool operator == (const HeartbeatTxnRangeResponse & rhs) const
+  {
+    if (!(aborted == rhs.aborted))
+      return false;
+    if (!(nosuch == rhs.nosuch))
+      return false;
+    return true;
+  }
+  bool operator != (const HeartbeatTxnRangeResponse &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const HeartbeatTxnRangeResponse & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(HeartbeatTxnRangeResponse &a, HeartbeatTxnRangeResponse &b);
+
+typedef struct _CompactionRequest__isset {
+  _CompactionRequest__isset() : partitionname(false), runas(false) {}
+  bool partitionname;
+  bool runas;
+} _CompactionRequest__isset;
+
+class CompactionRequest {
+ public:
+
+  static const char* ascii_fingerprint; // = "899FD1F339D8318D628687CC2CE2864B";
+  static const uint8_t binary_fingerprint[16]; // = {0x89,0x9F,0xD1,0xF3,0x39,0xD8,0x31,0x8D,0x62,0x86,0x87,0xCC,0x2C,0xE2,0x86,0x4B};
+
+  CompactionRequest() : dbname(), tablename(), partitionname(), type((CompactionType::type)0), runas() {
+  }
+
+  virtual ~CompactionRequest() throw() {}
+
+  std::string dbname;
+  std::string tablename;
+  std::string partitionname;
+  CompactionType::type type;
+  std::string runas;
+
+  _CompactionRequest__isset __isset;
+
+  void __set_dbname(const std::string& val) {
+    dbname = val;
+  }
+
+  void __set_tablename(const std::string& val) {
+    tablename = val;
+  }
+
+  void __set_partitionname(const std::string& val) {
+    partitionname = val;
+    __isset.partitionname = true;
+  }
+
+  void __set_type(const CompactionType::type val) {
+    type = val;
+  }
+
+  void __set_runas(const std::string& val) {
+    runas = val;
+    __isset.runas = true;
+  }
+
+  bool operator == (const CompactionRequest & rhs) const
+  {
+    if (!(dbname == rhs.dbname))
+      return false;
+    if (!(tablename == rhs.tablename))
+      return false;
+    if (__isset.partitionname != rhs.__isset.partitionname)
+      return false;
+    else if (__isset.partitionname && !(partitionname == rhs.partitionname))
+      return false;
+    if (!(type == rhs.type))
+      return false;
+    if (__isset.runas != rhs.__isset.runas)
+      return false;
+    else if (__isset.runas && !(runas == rhs.runas))
+      return false;
+    return true;
+  }
+  bool operator != (const CompactionRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const CompactionRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(CompactionRequest &a, CompactionRequest &b);
+
+
+class ShowCompactRequest {
+ public:
+
+  static const char* ascii_fingerprint; // = "99914B932BD37A50B983C5E7C90AE93B";
+  static const uint8_t binary_fingerprint[16]; // = {0x99,0x91,0x4B,0x93,0x2B,0xD3,0x7A,0x50,0xB9,0x83,0xC5,0xE7,0xC9,0x0A,0xE9,0x3B};
+
+  ShowCompactRequest() {
+  }
+
+  virtual ~ShowCompactRequest() throw() {}
+
+
+  bool operator == (const ShowCompactRequest & /* rhs */) const
+  {
+    return true;
+  }
+  bool operator != (const ShowCompactRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ShowCompactRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(ShowCompactRequest &a, ShowCompactRequest &b);
+
+
+class ShowCompactResponseElement {
+ public:
+
+  static const char* ascii_fingerprint; // = "42464F3A97707F984FDE462104223A69";
+  static const uint8_t binary_fingerprint[16]; // = {0x42,0x46,0x4F,0x3A,0x97,0x70,0x7F,0x98,0x4F,0xDE,0x46,0x21,0x04,0x22,0x3A,0x69};
+
+  ShowCompactResponseElement() : dbname(), tablename(), partitionname(), type((CompactionType::type)0), state(), workerid(), start(0), runAs() {
+  }
+
+  virtual ~ShowCompactResponseElement() throw() {}
+
+  std::string dbname;
+  std::string tablename;
+  std::string partitionname;
+  CompactionType::type type;
+  std::string state;
+  std::string workerid;
+  int64_t start;
+  std::string runAs;
+
+  void __set_dbname(const std::string& val) {
+    dbname = val;
+  }
+
+  void __set_tablename(const std::string& val) {
+    tablename = val;
+  }
+
+  void __set_partitionname(const std::string& val) {
+    partitionname = val;
+  }
+
+  void __set_type(const CompactionType::type val) {
+    type = val;
+  }
+
+  void __set_state(const std::string& val) {
+    state = val;
+  }
+
+  void __set_workerid(const std::string& val) {
+    workerid = val;
+  }
+
+  void __set_start(const int64_t val) {
+    start = val;
+  }
+
+  void __set_runAs(const std::string& val) {
+    runAs = val;
+  }
+
+  bool operator == (const ShowCompactResponseElement & rhs) const
+  {
+    if (!(dbname == rhs.dbname))
+      return false;
+    if (!(tablename == rhs.tablename))
+      return false;
+    if (!(partitionname == rhs.partitionname))
+      return false;
+    if (!(type == rhs.type))
+      return false;
+    if (!(state == rhs.state))
+      return false;
+    if (!(workerid == rhs.workerid))
+      return false;
+    if (!(start == rhs.start))
+      return false;
+    if (!(runAs == rhs.runAs))
+      return false;
+    return true;
+  }
+  bool operator != (const ShowCompactResponseElement &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ShowCompactResponseElement & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(ShowCompactResponseElement &a, ShowCompactResponseElement &b);
+
+
+class ShowCompactResponse {
+ public:
+
+  static const char* ascii_fingerprint; // = "3CCBC4D398CA25527272FE78625DE88A";
+  static const uint8_t binary_fingerprint[16]; // = {0x3C,0xCB,0xC4,0xD3,0x98,0xCA,0x25,0x52,0x72,0x72,0xFE,0x78,0x62,0x5D,0xE8,0x8A};
+
+  ShowCompactResponse() {
+  }
+
+  virtual ~ShowCompactResponse() throw() {}
+
+  std::vector<ShowCompactResponseElement>  compacts;
+
+  void __set_compacts(const std::vector<ShowCompactResponseElement> & val) {
+    compacts = val;
+  }
+
+  bool operator == (const ShowCompactResponse & rhs) const
+  {
+    if (!(compacts == rhs.compacts))
+      return false;
+    return true;
+  }
+  bool operator != (const ShowCompactResponse &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ShowCompactResponse & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(ShowCompactResponse &a, ShowCompactResponse &b);
+
 typedef struct _MetaException__isset {
   _MetaException__isset() : message(false) {}
   bool message;
@@ -3418,6 +5230,178 @@ class InvalidInputException : public ::apache::thrift::TException {
 };
 
 void swap(InvalidInputException &a, InvalidInputException &b);
+
+typedef struct _NoSuchTxnException__isset {
+  _NoSuchTxnException__isset() : message(false) {}
+  bool message;
+} _NoSuchTxnException__isset;
+
+class NoSuchTxnException : public ::apache::thrift::TException {
+ public:
+
+  static const char* ascii_fingerprint; // = "EFB929595D312AC8F305D5A794CFEDA1";
+  static const uint8_t binary_fingerprint[16]; // = {0xEF,0xB9,0x29,0x59,0x5D,0x31,0x2A,0xC8,0xF3,0x05,0xD5,0xA7,0x94,0xCF,0xED,0xA1};
+
+  NoSuchTxnException() : message() {
+  }
+
+  virtual ~NoSuchTxnException() throw() {}
+
+  std::string message;
+
+  _NoSuchTxnException__isset __isset;
+
+  void __set_message(const std::string& val) {
+    message = val;
+  }
+
+  bool operator == (const NoSuchTxnException & rhs) const
+  {
+    if (!(message == rhs.message))
+      return false;
+    return true;
+  }
+  bool operator != (const NoSuchTxnException &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const NoSuchTxnException & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(NoSuchTxnException &a, NoSuchTxnException &b);
+
+typedef struct _TxnAbortedException__isset {
+  _TxnAbortedException__isset() : message(false) {}
+  bool message;
+} _TxnAbortedException__isset;
+
+class TxnAbortedException : public ::apache::thrift::TException {
+ public:
+
+  static const char* ascii_fingerprint; // = "EFB929595D312AC8F305D5A794CFEDA1";
+  static const uint8_t binary_fingerprint[16]; // = {0xEF,0xB9,0x29,0x59,0x5D,0x31,0x2A,0xC8,0xF3,0x05,0xD5,0xA7,0x94,0xCF,0xED,0xA1};
+
+  TxnAbortedException() : message() {
+  }
+
+  virtual ~TxnAbortedException() throw() {}
+
+  std::string message;
+
+  _TxnAbortedException__isset __isset;
+
+  void __set_message(const std::string& val) {
+    message = val;
+  }
+
+  bool operator == (const TxnAbortedException & rhs) const
+  {
+    if (!(message == rhs.message))
+      return false;
+    return true;
+  }
+  bool operator != (const TxnAbortedException &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const TxnAbortedException & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(TxnAbortedException &a, TxnAbortedException &b);
+
+typedef struct _TxnOpenException__isset {
+  _TxnOpenException__isset() : message(false) {}
+  bool message;
+} _TxnOpenException__isset;
+
+class TxnOpenException : public ::apache::thrift::TException {
+ public:
+
+  static const char* ascii_fingerprint; // = "EFB929595D312AC8F305D5A794CFEDA1";
+  static const uint8_t binary_fingerprint[16]; // = {0xEF,0xB9,0x29,0x59,0x5D,0x31,0x2A,0xC8,0xF3,0x05,0xD5,0xA7,0x94,0xCF,0xED,0xA1};
+
+  TxnOpenException() : message() {
+  }
+
+  virtual ~TxnOpenException() throw() {}
+
+  std::string message;
+
+  _TxnOpenException__isset __isset;
+
+  void __set_message(const std::string& val) {
+    message = val;
+  }
+
+  bool operator == (const TxnOpenException & rhs) const
+  {
+    if (!(message == rhs.message))
+      return false;
+    return true;
+  }
+  bool operator != (const TxnOpenException &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const TxnOpenException & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(TxnOpenException &a, TxnOpenException &b);
+
+typedef struct _NoSuchLockException__isset {
+  _NoSuchLockException__isset() : message(false) {}
+  bool message;
+} _NoSuchLockException__isset;
+
+class NoSuchLockException : public ::apache::thrift::TException {
+ public:
+
+  static const char* ascii_fingerprint; // = "EFB929595D312AC8F305D5A794CFEDA1";
+  static const uint8_t binary_fingerprint[16]; // = {0xEF,0xB9,0x29,0x59,0x5D,0x31,0x2A,0xC8,0xF3,0x05,0xD5,0xA7,0x94,0xCF,0xED,0xA1};
+
+  NoSuchLockException() : message() {
+  }
+
+  virtual ~NoSuchLockException() throw() {}
+
+  std::string message;
+
+  _NoSuchLockException__isset __isset;
+
+  void __set_message(const std::string& val) {
+    message = val;
+  }
+
+  bool operator == (const NoSuchLockException & rhs) const
+  {
+    if (!(message == rhs.message))
+      return false;
+    return true;
+  }
+  bool operator != (const NoSuchLockException &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const NoSuchLockException & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(NoSuchLockException &a, NoSuchLockException &b);
 
 }}} // namespace
 

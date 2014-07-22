@@ -194,7 +194,6 @@ public class TestHCatMultiOutputFormat {
   private static void initializeSetup() throws Exception {
 
     hiveConf = new HiveConf(mrConf, TestHCatMultiOutputFormat.class);
-    hiveConf.set("hive.metastore.local", "false");
     hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + msPort);
     hiveConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES, 3);
     hiveConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTFAILURERETRIES, 3);

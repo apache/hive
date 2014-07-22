@@ -26,7 +26,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.exec.MapredContext;
 import org.apache.hadoop.mapred.Reporter;
 
-public class CounterStatsPublisher implements StatsPublisher {
+public class CounterStatsPublisher implements StatsPublisher, StatsCollectionTaskIndependent {
 
   private static final Log LOG = LogFactory.getLog(CounterStatsPublisher.class.getName());
 
@@ -37,6 +37,7 @@ public class CounterStatsPublisher implements StatsPublisher {
     return true;
   }
 
+  @Override
   public boolean connect(Configuration hconf) {
     MapredContext context = MapredContext.get();
     if (context == null || context.getReporter() == null) {

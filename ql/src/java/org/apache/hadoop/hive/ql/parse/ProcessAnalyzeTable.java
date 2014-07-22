@@ -28,10 +28,10 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.DriverContext;
-import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
+import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.rcfile.stats.PartialScanWork;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
@@ -39,15 +39,11 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.GenMapRedUtils;
-import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.tableSpec;
-import org.apache.hadoop.hive.ql.parse.GenTezWork;
-import org.apache.hadoop.hive.ql.parse.ParseContext;
-import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
-import org.apache.hadoop.hive.ql.parse.QBParseInfo;
-import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.MapWork;
+import org.apache.hadoop.hive.ql.plan.StatsNoJobWork;
 import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.apache.hadoop.hive.ql.plan.StatsWork;
+import org.apache.hadoop.mapred.InputFormat;
 
 /**
  * ProcessAnalyzeTable sets up work for the several variants of analyze table
@@ -79,6 +75,8 @@ public class ProcessAnalyzeTable implements NodeProcessor {
     TableScanOperator tableScan = (TableScanOperator) nd;
 
     ParseContext parseContext = context.parseContext;
+    Class<? extends InputFormat> inputFormat = parseContext.getTopToTable().get(tableScan)
+        .getInputFormatClass();
     QB queryBlock = parseContext.getQB();
     QBParseInfo parseInfo = parseContext.getQB().getParseInfo();
     
@@ -97,6 +95,22 @@ public class ProcessAnalyzeTable implements NodeProcessor {
       assert alias != null;
 
       TezWork tezWork = context.currentTask.getWork();
+      boolean partialScan = parseInfo.isPartialScanAnalyzeCommand();
+      boolean noScan = parseInfo.isNoScanAnalyzeCommand();
+      if (inputFormat.equals(OrcInputFormat.class) && (noScan || partialScan)) {
+
+        // ANALYZE TABLE T [PARTITION (...)] COMPUTE STATISTICS partialscan;
+        // ANALYZE TABLE T [PARTITION (...)] COMPUTE STATISTICS noscan;
+        // There will not be any Tez job above this task
+        StatsNoJobWork snjWork = new StatsNoJobWork(parseContext.getQB().getParseInfo().getTableSpec());
+        snjWork.setStatsReliable(parseContext.getConf().getBoolVar(
+            HiveConf.ConfVars.HIVE_STATS_RELIABLE));
+        Task<StatsNoJobWork> snjTask = TaskFactory.get(snjWork, parseContext.getConf());
+        snjTask.setParentTasks(null);
+        context.rootTasks.remove(context.currentTask);
+        context.rootTasks.add(snjTask);
+        return true;
+      } else {
 
       // ANALYZE TABLE T [PARTITION (...)] COMPUTE STATISTICS;
       // The plan consists of a simple TezTask followed by a StatsTask.
@@ -129,13 +143,15 @@ public class ProcessAnalyzeTable implements NodeProcessor {
       PrunedPartitionList partitions = null;
       if (confirmedPartns.size() > 0) {
         Table source = queryBlock.getMetaData().getTableForAlias(alias);
-        partitions = new PrunedPartitionList(source, confirmedPartns, false);
+        List<String> partCols = GenMapRedUtils.getPartitionColumns(parseInfo);
+        partitions = new PrunedPartitionList(source, confirmedPartns, partCols, false);
       }
 
       MapWork w = utils.createMapWork(context, tableScan, tezWork, partitions);
       w.setGatheringStats(true);
 
       return true;
+      }
     }
 
     return null;

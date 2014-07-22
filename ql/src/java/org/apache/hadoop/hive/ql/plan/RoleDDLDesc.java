@@ -45,23 +45,35 @@ public class RoleDDLDesc extends DDLDesc implements Serializable {
   private static final String roleNameSchema = "role#string";
 
   /**
-   * thrift ddl for the result of show role.
+   * thrift ddl for the result of show role grant principalName
    */
-  private static final String roleDescSchema =
-      "role,create_time,principal_name,principal_type,grant_option,grant_time,grantor#" +
-      "string:bigint:string:string:boolean:bigint:string";
+  private static final String roleShowGrantSchema =
+      "role,grant_option,grant_time,grantor#" +
+      "string:boolean:bigint:string";
+
+  /**
+   * thrift ddl for the result of describe role roleName
+   */
+  private static final String roleShowRolePrincipals =
+      "principal_name,principal_type,grant_option,grantor,grantor_type,grant_time#" +
+      "string:string:boolean:string:string:bigint";
 
   public static String getRoleNameSchema() {
     return roleNameSchema;
   }
 
-  public static String getRoleDescSchema() {
-    return roleDescSchema;
+  public static String getRoleShowGrantSchema() {
+    return roleShowGrantSchema;
+  }
+
+  public static String getShowRolePrincipalsSchema() {
+    return roleShowRolePrincipals;
   }
 
   public static enum RoleOperation {
     DROP_ROLE("drop_role"), CREATE_ROLE("create_role"), SHOW_ROLE_GRANT("show_role_grant"),
-    SHOW_ROLES("show_roles"), SET_ROLE("set_role"), SHOW_CURRENT_ROLE("show_current_role");
+    SHOW_ROLES("show_roles"), SET_ROLE("set_role"), SHOW_CURRENT_ROLE("show_current_role"),
+    SHOW_ROLE_PRINCIPALS("show_role_principals");
     private String operationName;
 
     private RoleOperation() {
@@ -90,7 +102,8 @@ public class RoleDDLDesc extends DDLDesc implements Serializable {
 
   public RoleDDLDesc(String principalName, PrincipalType principalType,
       RoleOperation operation, String roleOwnerName) {
-    this.name = principalName;
+    this.name = (principalName != null  && principalType == PrincipalType.ROLE) ?
+      principalName.toLowerCase() : principalName;
     this.principalType = principalType;
     this.operation = operation;
     this.roleOwnerName = roleOwnerName;
@@ -99,10 +112,6 @@ public class RoleDDLDesc extends DDLDesc implements Serializable {
   @Explain(displayName = "name")
   public String getName() {
     return name;
-  }
-
-  public void setName(String roleName) {
-    this.name = roleName;
   }
 
   @Explain(displayName = "role operation")

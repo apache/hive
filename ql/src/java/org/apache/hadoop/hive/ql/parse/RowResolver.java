@@ -97,24 +97,23 @@ public class RowResolver implements Serializable{
   }
 
   public void put(String tab_alias, String col_alias, ColumnInfo colInfo) {
+    if (!addMappingOnly(tab_alias, col_alias, colInfo)) {
+    	rowSchema.getSignature().add(colInfo);
+    }
+  }
+
+  public boolean addMappingOnly(String tab_alias, String col_alias, ColumnInfo colInfo) {
     if (tab_alias != null) {
       tab_alias = tab_alias.toLowerCase();
     }
     col_alias = col_alias.toLowerCase();
-    if (rowSchema.getSignature() == null) {
-      rowSchema.setSignature(new ArrayList<ColumnInfo>());
-    }
-    
+
     /*
      * allow multiple mappings to the same ColumnInfo.
-     * When a ColumnInfo is mapped multiple times, only the 
+     * When a ColumnInfo is mapped multiple times, only the
      * first inverse mapping is captured.
      */
     boolean colPresent = invRslvMap.containsKey(colInfo.getInternalName());
-    
-    if ( !colPresent ) {
-    	rowSchema.getSignature().add(colInfo);
-    }
 
     LinkedHashMap<String, ColumnInfo> f_map = rslvMap.get(tab_alias);
     if (f_map == null) {
@@ -127,10 +126,12 @@ public class RowResolver implements Serializable{
     qualifiedAlias[0] = tab_alias;
     qualifiedAlias[1] = col_alias;
     if ( !colPresent ) {
-	    invRslvMap.put(colInfo.getInternalName(), qualifiedAlias);
+      invRslvMap.put(colInfo.getInternalName(), qualifiedAlias);
     } else {
       altInvRslvMap.put(colInfo.getInternalName(), qualifiedAlias);
     }
+
+    return colPresent;
   }
 
   public boolean hasTableAlias(String tab_alias) {
@@ -350,18 +351,4 @@ public class RowResolver implements Serializable{
     this.expressionMap = expressionMap;
   }
 
-  public String[] toColumnDesc() {
-    StringBuilder cols = new StringBuilder();
-    StringBuilder colTypes = new StringBuilder();
-
-    for (ColumnInfo colInfo : getColumnInfos()) {
-      if (cols.length() > 0) {
-        cols.append(',');
-        colTypes.append(':');
-      }
-      cols.append(colInfo.getInternalName());
-      colTypes.append(colInfo.getType().getTypeName());
-    }
-    return new String[] {cols.toString(), colTypes.toString()};
-  }
 }

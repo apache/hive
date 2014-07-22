@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -106,7 +107,7 @@ class InternalUtil {
     case PRIMITIVE:
       PrimitiveTypeInfo primitiveType = (PrimitiveTypeInfo) type;
       return PrimitiveObjectInspectorFactory.
-        getPrimitiveJavaObjectInspector(primitiveType.getPrimitiveCategory());
+        getPrimitiveJavaObjectInspector(primitiveType);
 
     case MAP:
       MapTypeInfo mapType = (MapTypeInfo) type;
@@ -142,14 +143,17 @@ class InternalUtil {
   // if the default was decided by the serde
   static void initializeOutputSerDe(SerDe serDe, Configuration conf, OutputJobInfo jobInfo)
     throws SerDeException {
-    serDe.initialize(conf, getSerdeProperties(jobInfo.getTableInfo(), jobInfo.getOutputSchema()));
+    SerDeUtils.initializeSerDe(serDe, conf,
+                               getSerdeProperties(jobInfo.getTableInfo(),
+                                                  jobInfo.getOutputSchema()),
+                               null);
   }
 
   static void initializeDeserializer(Deserializer deserializer, Configuration conf,
                      HCatTableInfo info, HCatSchema schema) throws SerDeException {
     Properties props = getSerdeProperties(info, schema);
     LOG.info("Initializing " + deserializer.getClass().getName() + " with properties " + props);
-    deserializer.initialize(conf, props);
+    SerDeUtils.initializeSerDe(deserializer, conf, props, null);
   }
 
   private static Properties getSerdeProperties(HCatTableInfo info, HCatSchema s)

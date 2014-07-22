@@ -19,13 +19,15 @@
 package org.apache.hive.service.cli.thrift;
 
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertTrue;
 
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hive.jdbc.HttpBasicAuthInterceptor;
+import org.apache.hive.service.auth.HiveAuthFactory;
 import org.apache.hive.service.auth.HiveAuthFactory.AuthTypes;
-import org.apache.hive.service.server.HiveServer2;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.thrift.protocol.TBinaryProtocol;
+import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.transport.THttpClient;
 import org.apache.thrift.transport.TTransport;
 import org.junit.After;
@@ -45,7 +47,6 @@ public class TestThriftHttpCLIService extends ThriftCLIServiceTest {
 
   private static String transportMode = "http";
   private static String thriftHttpPath = "cliservice";
-  private static TTransport transport;
 
   /**
    * @throws java.lang.Exception
@@ -68,15 +69,7 @@ public class TestThriftHttpCLIService extends ThriftCLIServiceTest {
 
     startHiveServer2WithConf(hiveConf);
 
-    // Open an http transport
-    // Fail if the transport doesn't open
-    transport = createHttpTransport();
-    try {
-      transport.open();
-    }
-    catch (Exception e) {
-      fail("Exception: " + e);
-    }
+    client = getServiceClientInternal();
   }
 
   /**
@@ -93,9 +86,7 @@ public class TestThriftHttpCLIService extends ThriftCLIServiceTest {
   @Override
   @Before
   public void setUp() throws Exception {
-    // Create and set the client before every test from the transport
-    initClient(transport);
-    assertNotNull(client);
+
   }
 
   /**
@@ -108,108 +99,68 @@ public class TestThriftHttpCLIService extends ThriftCLIServiceTest {
   }
 
   @Test
-  public void testIncompatibeClientServer() throws Exception {
-    // A binary client communicating with an http server should throw an exception
-    // Close the older http client transport
-    // The server is already running in Http mode
-    if (transport != null) {
-      transport.close();
-    }
-    // Create a binary transport and init the client
-    transport = createBinaryTransport();
-    // Create and set the client
-    initClient(transport);
-    assertNotNull(client);
+  /**
+   * Tests calls from a raw (NOSASL) binary client,
+   * to a HiveServer2 running in http mode.
+   * This should throw an expected exception due to incompatibility.
+   * @throws Exception
+   */
+  public void testBinaryClientHttpServer() throws Exception {
+    TTransport transport = getRawBinaryTransport();
+    TCLIService.Client rawBinaryClient = getClient(transport);
 
     // This will throw an expected exception since client-server modes are incompatible
-    testOpenSessionExpectedException();
-
-    // Close binary client transport
-    if (transport != null) {
-      transport.close();
-    }
-    // Create http transport (client is inited in setUp before every test from the transport)
-    transport = createHttpTransport();
-    try {
-      transport.open();
-    }
-    catch (Exception e) {
-      fail("Exception: " + e);
-    }
+    testOpenSessionExpectedException(rawBinaryClient);
   }
 
+  /**
+   * Configure a wrong service endpoint for the client transport,
+   * and test for error.
+   * @throws Exception
+   */
   @Test
   public void testIncorrectHttpPath() throws Exception {
-    // Close the older http client transport
-    if (transport != null) {
-      transport.close();
-    }
-    // Create an http transport with incorrect http path endpoint
-    thriftHttpPath = "wrong_path";
-    transport = createHttpTransport();
-    // Create and set the client
-    initClient(transport);
-    assertNotNull(client);
+    thriftHttpPath = "wrongPath";
+    TTransport transport = getHttpTransport();
+    TCLIService.Client httpClient = getClient(transport);
 
     // This will throw an expected exception since
     // client is communicating with the wrong http service endpoint
-    testOpenSessionExpectedException();
+    testOpenSessionExpectedException(httpClient);
 
-    // Close incorrect client transport
-    // Reinit http client transport
+    // Reset to correct http path
     thriftHttpPath = "cliservice";
-    if (transport != null) {
-      transport.close();
-    }
-    transport = createHttpTransport();
+  }
+
+  private void testOpenSessionExpectedException(TCLIService.Client client) {
+    boolean caughtEx = false;
+    // Create a new open session request object
+    TOpenSessionReq openReq = new TOpenSessionReq();
     try {
-      transport.open();
+      client.OpenSession(openReq).getSessionHandle();
+    } catch (Exception e) {
+      caughtEx = true;
+      System.out.println("Exception expected: " + e.toString());
     }
-    catch (Exception e) {
-      fail("Exception: " + e);
-    }
+    assertTrue("Exception expected", caughtEx);
   }
 
-
-  private void testWithAuthMode(AuthTypes authType) throws Exception {
-    // Stop and restart HiveServer2 in given incorrect auth mode
-    stopHiveServer2();
-    hiveConf.setVar(ConfVars.HIVE_SERVER2_AUTHENTICATION, authType.toString());
-    hiveServer2 = new HiveServer2();
-    // HiveServer2 in Http mode will not start using KERBEROS/LDAP/CUSTOM auth types
-    startHiveServer2WithConf(hiveConf);
-
-    // This will throw an expected exception since Http server is not running
-    testOpenSessionExpectedException();
-
-    // Stop and restart back with the original config
-    stopHiveServer2();
-    hiveConf.setVar(ConfVars.HIVE_SERVER2_AUTHENTICATION, AuthTypes.NOSASL.toString());
-    hiveServer2 = new HiveServer2();
-    startHiveServer2WithConf(hiveConf);
+  private TCLIService.Client getClient(TTransport transport) throws Exception {
+    // Create the corresponding client
+    TProtocol protocol = new TBinaryProtocol(transport);
+    return new TCLIService.Client(protocol);
   }
 
-  @Test
-  public void testKerberosMode()  throws Exception {
-    testWithAuthMode(AuthTypes.KERBEROS);
+  private TTransport getRawBinaryTransport() throws Exception {
+    return HiveAuthFactory.getSocketTransport(host, port, 0);
   }
 
-  @Test
-  public void testLDAPMode()  throws Exception {
-    testWithAuthMode(AuthTypes.LDAP);
-  }
-
-  @Test
-  public void testCustomMode()  throws Exception {
-    testWithAuthMode(AuthTypes.CUSTOM);
-  }
-
-  private static TTransport createHttpTransport() throws Exception {
+  private static TTransport getHttpTransport() throws Exception {
     DefaultHttpClient httpClient = new DefaultHttpClient();
     String httpUrl = transportMode + "://" + host + ":" + port +
         "/" + thriftHttpPath + "/";
     httpClient.addRequestInterceptor(
-        new HttpBasicAuthInterceptor(anonymousUser, anonymousPasswd));
+        new HttpBasicAuthInterceptor(USERNAME, PASSWORD));
     return new THttpClient(httpUrl, httpClient);
   }
 

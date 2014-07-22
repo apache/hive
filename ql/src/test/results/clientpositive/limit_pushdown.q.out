@@ -10,7 +10,7 @@ select key,value from src order by key limit 20
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -28,9 +28,11 @@ STAGE PLANS:
                 sort order: +
                 Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
                 TopN Hash Memory Usage: 0.3
-                value expressions: _col0 (type: string), _col1 (type: string)
+                value expressions: _col1 (type: string)
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string)
+          outputColumnNames: _col0, _col1
           Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
           Limit
             Number of rows: 20
@@ -46,6 +48,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 20
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select key,value from src order by key limit 20
 PREHOOK: type: QUERY
@@ -83,7 +87,7 @@ select key,value from src order by key desc limit 20
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -101,9 +105,11 @@ STAGE PLANS:
                 sort order: -
                 Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
                 TopN Hash Memory Usage: 0.3
-                value expressions: _col0 (type: string), _col1 (type: string)
+                value expressions: _col1 (type: string)
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string)
+          outputColumnNames: _col0, _col1
           Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
           Limit
             Number of rows: 20
@@ -119,6 +125,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 20
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select key,value from src order by key desc limit 20
 PREHOOK: type: QUERY
@@ -156,7 +164,7 @@ select value, sum(key + 1) as sum from src group by value limit 20
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -207,6 +215,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 20
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select value, sum(key + 1) as sum from src group by value limit 20
 PREHOOK: type: QUERY
@@ -246,7 +256,7 @@ select value,avg(key + 1) from src group by value order by value limit 20
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -271,7 +281,7 @@ STAGE PLANS:
                   Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
                   TopN Hash Memory Usage: 0.3
-                  value expressions: _col1 (type: struct<count:bigint,sum:double>)
+                  value expressions: _col1 (type: struct<count:bigint,sum:double,input:double>)
       Reduce Operator Tree:
         Group By Operator
           aggregations: avg(VALUE._col0)
@@ -297,6 +307,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 20
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select value,avg(key + 1) from src group by value order by value limit 20
 PREHOOK: type: QUERY
@@ -336,7 +348,7 @@ select distinct(cdouble) from alltypesorc limit 20
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -384,6 +396,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 20
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select distinct(cdouble) from alltypesorc limit 20
 PREHOOK: type: QUERY
@@ -421,7 +435,7 @@ select ctinyint, count(distinct(cdouble)) from alltypesorc group by ctinyint lim
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -446,7 +460,6 @@ STAGE PLANS:
                   Map-reduce partition columns: _col0 (type: tinyint)
                   Statistics: Num rows: 31436 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
                   TopN Hash Memory Usage: 0.3
-                  value expressions: _col2 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(DISTINCT KEY._col1:0._col0)
@@ -472,6 +485,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 20
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select ctinyint, count(distinct(cdouble)) from alltypesorc group by ctinyint limit 20
 PREHOOK: type: QUERY
@@ -511,7 +526,7 @@ select ctinyint, count(distinct(cstring1)), count(distinct(cstring2)) from allty
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -536,7 +551,6 @@ STAGE PLANS:
                   Map-reduce partition columns: _col0 (type: tinyint)
                   Statistics: Num rows: 1849 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
                   TopN Hash Memory Usage: 0.3
-                  value expressions: _col3 (type: bigint), _col4 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(DISTINCT KEY._col1:0._col0), count(DISTINCT KEY._col1:1._col0)
@@ -562,6 +576,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 20
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select ctinyint, count(distinct(cstring1)), count(distinct(cstring2)) from alltypesorc group by ctinyint limit 20
 PREHOOK: type: QUERY
@@ -600,50 +616,20 @@ explain
 select key,value from src order by key limit 0
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
   Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-1
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            alias: src
-            Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
-            Select Operator
-              expressions: key (type: string), value (type: string)
-              outputColumnNames: _col0, _col1
-              Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: _col0 (type: string)
-                sort order: +
-                Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col0 (type: string), _col1 (type: string)
-      Reduce Operator Tree:
-        Extract
-          Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
-          Limit
-            Number of rows: 0
-            Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
   Stage: Stage-0
     Fetch Operator
       limit: 0
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select key,value from src order by key limit 0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: select key,value from src order by key limit 0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 PREHOOK: query: -- 2MR (applied to last RS)
 explain
@@ -656,7 +642,7 @@ POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-1
@@ -708,9 +694,11 @@ STAGE PLANS:
               sort order: +
               Statistics: Num rows: 14 Data size: 2805 Basic stats: COMPLETE Column stats: NONE
               TopN Hash Memory Usage: 0.3
-              value expressions: _col0 (type: string), _col1 (type: double)
+              value expressions: _col0 (type: string)
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: VALUE._col0 (type: string), KEY.reducesinkkey0 (type: double)
+          outputColumnNames: _col0, _col1
           Statistics: Num rows: 14 Data size: 2805 Basic stats: COMPLETE Column stats: NONE
           Limit
             Number of rows: 20
@@ -726,6 +714,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 20
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select value, sum(key) as sum from src group by value order by sum limit 20
 PREHOOK: type: QUERY
@@ -776,7 +766,7 @@ STAGE DEPENDENCIES:
   Stage-2 depends on stages: Stage-1, Stage-4
   Stage-3 is a root stage
   Stage-4 depends on stages: Stage-3
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-1
@@ -816,12 +806,15 @@ STAGE PLANS:
             Limit
               Number of rows: 2
               Statistics: Num rows: 2 Data size: 200 Basic stats: COMPLETE Column stats: NONE
-              File Output Operator
-                compressed: false
-                table:
-                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+              Filter Operator
+                predicate: _col0 is not null (type: boolean)
+                Statistics: Num rows: 1 Data size: 100 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
   Stage: Stage-2
     Map Reduce
@@ -831,34 +824,34 @@ STAGE PLANS:
               key expressions: _col0 (type: string)
               sort order: +
               Map-reduce partition columns: _col0 (type: string)
-              Statistics: Num rows: 2 Data size: 200 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: string), _col1 (type: bigint)
+              Statistics: Num rows: 1 Data size: 100 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col1 (type: bigint)
           TableScan
             Reduce Output Operator
               key expressions: _col0 (type: string)
               sort order: +
               Map-reduce partition columns: _col0 (type: string)
-              Statistics: Num rows: 3 Data size: 300 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: string), _col1 (type: bigint)
+              Statistics: Num rows: 2 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col1 (type: bigint)
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
           condition expressions:
-            0 {VALUE._col0} {VALUE._col1}
-            1 {VALUE._col0} {VALUE._col1}
+            0 {KEY.reducesinkkey0} {VALUE._col0}
+            1 {KEY.reducesinkkey0} {VALUE._col0}
           outputColumnNames: _col0, _col1, _col2, _col3
-          Statistics: Num rows: 3 Data size: 330 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 2 Data size: 220 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: _col0 (type: string), _col1 (type: bigint), _col2 (type: string), _col3 (type: bigint)
             outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics: Num rows: 3 Data size: 330 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2 Data size: 220 Basic stats: COMPLETE Column stats: NONE
             Limit
               Number of rows: 4
-              Statistics: Num rows: 3 Data size: 330 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 220 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 3 Data size: 330 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 220 Basic stats: COMPLETE Column stats: NONE
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -918,21 +911,28 @@ STAGE PLANS:
               TopN Hash Memory Usage: 0.3
               value expressions: _col0 (type: string), _col1 (type: bigint)
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: VALUE._col0 (type: string), VALUE._col1 (type: bigint)
+          outputColumnNames: _col0, _col1
           Statistics: Num rows: 3 Data size: 300 Basic stats: COMPLETE Column stats: NONE
           Limit
             Number of rows: 3
             Statistics: Num rows: 3 Data size: 300 Basic stats: COMPLETE Column stats: NONE
-            File Output Operator
-              compressed: false
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+            Filter Operator
+              predicate: _col0 is not null (type: boolean)
+              Statistics: Num rows: 2 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+              File Output Operator
+                compressed: false
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
   Stage: Stage-0
     Fetch Operator
       limit: 4
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: -- map aggregation disabled
 explain
@@ -944,7 +944,7 @@ select value, sum(key) as sum from src group by value limit 20
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -954,8 +954,8 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: value (type: string), key (type: string)
-              outputColumnNames: value, key
+              expressions: key (type: string), value (type: string)
+              outputColumnNames: key, value
               Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: value (type: string)
@@ -989,6 +989,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 20
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select value, sum(key) as sum from src group by value limit 20
 PREHOOK: type: QUERY
@@ -1028,7 +1030,7 @@ select key,value,value,value,value,value,value,value,value from src order by key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -1038,17 +1040,19 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: key (type: string), value (type: string), value (type: string), value (type: string), value (type: string), value (type: string), value (type: string), value (type: string), value (type: string)
-              outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+              expressions: key (type: string), value (type: string)
+              outputColumnNames: _col0, _col1
               Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: string)
                 sort order: +
                 Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
                 TopN Hash Memory Usage: 2.0E-5
-                value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: string), _col6 (type: string), _col7 (type: string), _col8 (type: string)
+                value expressions: _col1 (type: string)
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string), VALUE._col0 (type: string), VALUE._col0 (type: string), VALUE._col0 (type: string), VALUE._col0 (type: string), VALUE._col0 (type: string), VALUE._col0 (type: string), VALUE._col0 (type: string)
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
           Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
           Limit
             Number of rows: 100
@@ -1064,6 +1068,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 100
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select key,value,value,value,value,value,value,value,value from src order by key limit 100
 PREHOOK: type: QUERY
@@ -1183,7 +1189,7 @@ select sum(key) as sum from src group by concat(key,value,value,value,value,valu
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -1228,6 +1234,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 100
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select sum(key) as sum from src group by concat(key,value,value,value,value,value,value,value,value,value) limit 100
 PREHOOK: type: QUERY

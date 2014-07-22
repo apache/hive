@@ -25,13 +25,15 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BinaryObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveCharObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveVarcharObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter.BinaryConverter;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.VoidObjectInspector;
 
 @Description(name = "binary", value = "_FUNC_(a) - cast a to binary",
-             extended = "Currently only string or binary can be cast into binary")
+             extended = "Currently only string, char, varchar or binary can be cast into binary")
 public class GenericUDFToBinary extends GenericUDF {
 
   private transient PrimitiveObjectInspector argumentOI;
@@ -52,9 +54,11 @@ public class GenericUDFToBinary extends GenericUDF {
     }
 
     if (!((argumentOI instanceof BinaryObjectInspector)
+        || (argumentOI instanceof HiveCharObjectInspector)
+        || (argumentOI instanceof HiveVarcharObjectInspector)
         || (argumentOI instanceof StringObjectInspector)
         || (argumentOI instanceof VoidObjectInspector))){
-      throw new UDFArgumentException("Only string or binary data can be cast into binary " +
+      throw new UDFArgumentException("Only string, char, varchar or binary data can be cast into binary " +
       		"data types.");
     }
     baConverter = new BinaryConverter(argumentOI,

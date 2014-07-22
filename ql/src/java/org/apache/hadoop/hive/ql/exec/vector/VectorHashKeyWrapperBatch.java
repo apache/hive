@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
+import org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe;
 
 /**
  * Class for handling vectorized hash map key wrappers. It evaluates the key columns in a
@@ -616,9 +617,8 @@ public class VectorHashKeyWrapperBatch {
     compiledKeyWrapperBatch.vectorHashKeyWrappers =
         new VectorHashKeyWrapper[VectorizedRowBatch.DEFAULT_SIZE];
     for(int i=0;i<VectorizedRowBatch.DEFAULT_SIZE; ++i) {
-      compiledKeyWrapperBatch.vectorHashKeyWrappers[i] =
-          new VectorHashKeyWrapper(longIndicesIndex, doubleIndicesIndex,
-                  stringIndicesIndex, decimalIndicesIndex);
+      compiledKeyWrapperBatch.vectorHashKeyWrappers[i] = 
+          compiledKeyWrapperBatch.allocateKeyWrapper();
     }
 
     JavaDataModel model = JavaDataModel.get();
@@ -641,6 +641,11 @@ public class VectorHashKeyWrapperBatch {
         model.lengthForBooleanArrayOfSize(keyExpressions.length);
 
     return compiledKeyWrapperBatch;
+  }
+  
+  public VectorHashKeyWrapper allocateKeyWrapper() {
+    return new VectorHashKeyWrapper(longIndices.length, doubleIndices.length,
+        stringIndices.length, decimalIndices.length);
   }
 
   /**
@@ -671,8 +676,8 @@ public class VectorHashKeyWrapperBatch {
     }
     else {
       throw new HiveException(String.format(
-          "Internal inconsistent KeyLookupHelper at index [%d]:%d %d %d",
-          i, klh.longIndex, klh.doubleIndex, klh.stringIndex));
+          "Internal inconsistent KeyLookupHelper at index [%d]:%d %d %d %d",
+          i, klh.longIndex, klh.doubleIndex, klh.stringIndex, klh.decimalIndex));
     }
   }
 

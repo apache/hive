@@ -60,6 +60,7 @@ public class TestGenericAvroRecordWritable {
     assertEquals("Doctor", gr.get("last"));
 
     AvroGenericRecordWritable garw = new AvroGenericRecordWritable(gr);
+    garw.setFileSchema(gr.getSchema());
     garw.setRecordReaderID(new UID());
 
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -67,6 +68,7 @@ public class TestGenericAvroRecordWritable {
     garw.write(daos);
 
     AvroGenericRecordWritable garw2 = new AvroGenericRecordWritable(gr);
+    garw.setFileSchema(gr.getSchema());
     garw2.setRecordReaderID(new UID());
 
     ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());

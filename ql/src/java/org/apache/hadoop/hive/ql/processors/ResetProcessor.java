@@ -18,17 +18,30 @@
 
 package org.apache.hadoop.hive.ql.processors;
 
+import java.util.Arrays;
+
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
 public class ResetProcessor implements CommandProcessor {
 
+  @Override
   public void init() {
   }
 
+  @Override
   public CommandProcessorResponse run(String command) throws CommandNeedRetryException {
     SessionState ss = SessionState.get();
+
+    CommandProcessorResponse authErrResp =
+        CommandUtil.authorizeCommand(ss, HiveOperationType.RESET, Arrays.asList(command));
+    if(authErrResp != null){
+      // there was an authorization issue
+      return authErrResp;
+    }
+
     if (ss.getOverriddenConfigurations().isEmpty()) {
       return new CommandProcessorResponse(0);
     }

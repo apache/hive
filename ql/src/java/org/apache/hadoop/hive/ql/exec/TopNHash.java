@@ -57,11 +57,11 @@ public class TopNHash {
   public static final int EXCLUDE = -2; // Discard the row.
   private static final int MAY_FORWARD = -3; // Vectorized - may forward the row, not sure yet.
 
-  private BinaryCollector collector;
-  private int topN;
+  protected BinaryCollector collector;
+  protected int topN;
 
-  private long threshold;   // max heap size
-  private long usage;
+  protected long threshold;   // max heap size
+  protected long usage;
 
   // binary keys, values and hashCodes of rows, lined up by index
   private byte[][] keys;
@@ -76,10 +76,10 @@ public class TopNHash {
   // temporary single-batch context used for vectorization
   private int batchNumForwards = 0; // whether current batch has any forwarded keys
   private int[] indexToBatchIndex; // mapping of index (lined up w/keys) to index in the batch
-  private int[] batchIndexToResult; // mapping of index in the batch (linear) to hash result
-  private int batchSize; // Size of the current batch.
+  protected int[] batchIndexToResult; // mapping of index in the batch (linear) to hash result
+  protected int batchSize; // Size of the current batch.
 
-  private boolean isEnabled = false;
+  protected boolean isEnabled = false;
 
   private final Comparator<Integer> C = new Comparator<Integer>() {
     public int compare(Integer o1, Integer o2) {
@@ -124,7 +124,7 @@ public class TopNHash {
    *         TopNHash.EXCLUDED if the row should be discarded;
    *         any other number if the row is to be stored; the index should be passed to storeValue.
    */
-  public int tryStoreKey(HiveKey key) throws HiveException, IOException {
+  public int tryStoreKey(HiveKey key, boolean partColsIsNull) throws HiveException, IOException {
     if (!isEnabled) {
       return FORWARD; // short-circuit quickly - forward all rows
     }
@@ -191,15 +191,23 @@ public class TopNHash {
    * @param key the key.
    * @param batchIndex The index of the key in the vectorized batch (sequential, not .selected).
    */
-  public void tryStoreVectorizedKey(HiveKey key, int batchIndex)
+  public void tryStoreVectorizedKey(HiveKey key, boolean partColsIsNull, int batchIndex)
       throws HiveException, IOException {
     // Assumption - batchIndex is increasing; startVectorizedBatch was called
     int size = indexes.size();
     int index = size < topN ? size : evicted;
     keys[index] = Arrays.copyOf(key.getBytes(), key.getLength());
     distKeyLengths[index] = key.getDistKeyLength();
+    hashes[index] = key.hashCode();
     Integer collisionIndex = indexes.store(index);
     if (null != collisionIndex) {
+      /*
+       * since there is a collision index will be used for the next value 
+       * so have the map point back to original index.
+       */
+      if ( indexes instanceof HashForGroup ) {
+        indexes.store(collisionIndex);
+      }
       // forward conditional on the survival of the corresponding key currently in indexes.
       ++batchNumForwards;
       batchIndexToResult[batchIndex] = MAY_FORWARD - collisionIndex;
@@ -256,6 +264,7 @@ public class TopNHash {
     int index = MAY_FORWARD - batchIndexToResult[batchIndex];
     HiveKey hk = new HiveKey();
     hk.set(keys[index], 0, keys[index].length);
+    hk.setHashCode(hashes[index]);
     hk.setDistKeyLength(distKeyLengths[index]);
     return hk;
   }
@@ -270,15 +279,24 @@ public class TopNHash {
   }
 
   /**
+   * After vectorized batch is processed, can return hashCode of a key.
+   * @param batchIndex index of the key in the batch.
+   * @return The hashCode corresponding to the key.
+   */
+  public int getVectorizedKeyHashCode(int batchIndex) {
+    return hashes[batchIndexToResult[batchIndex]];
+  }
+  
+  /**
    * Stores the value for the key in the heap.
    * @param index The index, either from tryStoreKey or from tryStoreVectorizedKey result.
+   * @param hasCode hashCode of key, used by ptfTopNHash.
    * @param value The value to store.
    * @param keyHash The key hash to store.
    * @param vectorized Whether the result is coming from a vectorized batch.
    */
-  public void storeValue(int index, BytesWritable value, int keyHash, boolean vectorized) {
+  public void storeValue(int index, int hashCode, BytesWritable value, boolean vectorized) {
     values[index] = Arrays.copyOf(value.getBytes(), value.getLength());
-    hashes[index] = keyHash;
     // Vectorized doesn't adjust usage for the keys while processing the batch
     usage += values[index].length + (vectorized ? keys[index].length : 0);
   }
@@ -317,6 +335,7 @@ public class TopNHash {
     int index = size < topN ? size : evicted;
     keys[index] = Arrays.copyOf(key.getBytes(), key.getLength());
     distKeyLengths[index] = key.getDistKeyLength();
+    hashes[index] = key.hashCode();
     if (null != indexes.store(index)) {
       // it's only for GBY which should forward all values associated with the key in the range
       // of limit. new value should be attatched with the key but in current implementation,
@@ -358,7 +377,7 @@ public class TopNHash {
     }
     excluded = 0;
   }
-
+  
   private interface IndexStore {
     int size();
     /**

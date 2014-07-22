@@ -16,13 +16,15 @@ select sum(hash(Y.key,Y.value))
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-7 depends on stages: Stage-1, Stage-4 , consists of Stage-5, Stage-6, Stage-2
-  Stage-5 has a backup stage: Stage-2
+  Stage-7 depends on stages: Stage-1, Stage-4 , consists of Stage-8, Stage-9, Stage-2
+  Stage-8 has a backup stage: Stage-2
+  Stage-5 depends on stages: Stage-8
   Stage-3 depends on stages: Stage-2, Stage-5, Stage-6
-  Stage-6 has a backup stage: Stage-2
+  Stage-9 has a backup stage: Stage-2
+  Stage-6 depends on stages: Stage-9
   Stage-2
   Stage-4 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-3
 
 STAGE PLANS:
   Stage: Stage-1
@@ -30,19 +32,23 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-            Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
-            Select Operator
-              expressions: key (type: string), value (type: string)
-              outputColumnNames: _col0, _col1
-              Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: _col0 (type: string)
-                sort order: +
-                Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col0 (type: string), _col1 (type: string)
+            Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 29 Data size: 2906 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: key (type: string)
+                outputColumnNames: _col0
+                Statistics: Num rows: 29 Data size: 2906 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  sort order: +
+                  Statistics: Num rows: 29 Data size: 2906 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
-        Extract
-          Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: string)
+          outputColumnNames: _col0
+          Statistics: Num rows: 29 Data size: 2906 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
             table:
@@ -52,6 +58,23 @@ STAGE PLANS:
 
   Stage: Stage-7
     Conditional Operator
+
+  Stage: Stage-8
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        $INTNAME1 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        $INTNAME1 
+          TableScan
+            HashTable Sink Operator
+              condition expressions:
+                0 
+                1 {_col1}
+              keys:
+                0 _col0 (type: string)
+                1 _col0 (type: string)
 
   Stage: Stage-5
     Map Reduce
@@ -82,13 +105,6 @@ STAGE PLANS:
                         serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            $INTNAME1 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            $INTNAME1 
-              TableScan
 
   Stage: Stage-3
     Map Reduce
@@ -115,6 +131,23 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-9
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        $INTNAME 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        $INTNAME 
+          TableScan
+            HashTable Sink Operator
+              condition expressions:
+                0 
+                1 {_col0} {_col1}
+              keys:
+                0 _col0 (type: string)
+                1 _col0 (type: string)
 
   Stage: Stage-6
     Map Reduce
@@ -145,13 +178,6 @@ STAGE PLANS:
                         serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            $INTNAME 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            $INTNAME 
-              TableScan
 
   Stage: Stage-2
     Map Reduce
@@ -161,27 +187,27 @@ STAGE PLANS:
               key expressions: _col0 (type: string)
               sort order: +
               Map-reduce partition columns: _col0 (type: string)
-              Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 29 Data size: 2906 Basic stats: COMPLETE Column stats: NONE
           TableScan
             Reduce Output Operator
               key expressions: _col0 (type: string)
               sort order: +
               Map-reduce partition columns: _col0 (type: string)
-              Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: string), _col1 (type: string)
+              Statistics: Num rows: 15 Data size: 3006 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col1 (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
           condition expressions:
             0 
-            1 {VALUE._col0} {VALUE._col1}
+            1 {KEY.reducesinkkey0} {VALUE._col0}
           outputColumnNames: _col2, _col3
-          Statistics: Num rows: 31 Data size: 6393 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 31 Data size: 3196 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: _col2 (type: string), _col3 (type: string)
             outputColumnNames: _col2, _col3
-            Statistics: Num rows: 31 Data size: 6393 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 31 Data size: 3196 Basic stats: COMPLETE Column stats: NONE
             Group By Operator
               aggregations: sum(hash(_col2,_col3))
               mode: hash
@@ -200,18 +226,23 @@ STAGE PLANS:
           TableScan
             alias: src
             Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
-            Select Operator
-              expressions: key (type: string), value (type: string)
-              outputColumnNames: _col0, _col1
-              Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: _col1 (type: string)
-                sort order: +
-                Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col0 (type: string), _col1 (type: string)
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 15 Data size: 3006 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: key (type: string), value (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 15 Data size: 3006 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col1 (type: string)
+                  sort order: +
+                  Statistics: Num rows: 15 Data size: 3006 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: string)
       Reduce Operator Tree:
-        Extract
-          Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+        Select Operator
+          expressions: VALUE._col0 (type: string), KEY.reducesinkkey0 (type: string)
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 15 Data size: 3006 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
             table:
@@ -222,6 +253,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: FROM 
 (SELECT src.* FROM src sort by key) x
@@ -260,12 +293,13 @@ select sum(hash(Y.key,Y.value))
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-6 depends on stages: Stage-1, Stage-4 , consists of Stage-5, Stage-2
-  Stage-5 has a backup stage: Stage-2
+  Stage-6 depends on stages: Stage-1, Stage-4 , consists of Stage-7, Stage-2
+  Stage-7 has a backup stage: Stage-2
+  Stage-5 depends on stages: Stage-7
   Stage-3 depends on stages: Stage-2, Stage-5
   Stage-2
   Stage-4 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-3
 
 STAGE PLANS:
   Stage: Stage-1
@@ -273,19 +307,20 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-            Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: key (type: string), value (type: string)
-              outputColumnNames: _col0, _col1
-              Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+              expressions: key (type: string)
+              outputColumnNames: _col0
+              Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: string)
                 sort order: +
-                Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col0 (type: string), _col1 (type: string)
+                Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
-        Extract
-          Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: string)
+          outputColumnNames: _col0
+          Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
             table:
@@ -295,6 +330,23 @@ STAGE PLANS:
 
   Stage: Stage-6
     Conditional Operator
+
+  Stage: Stage-7
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        $INTNAME1 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        $INTNAME1 
+          TableScan
+            HashTable Sink Operator
+              condition expressions:
+                0 
+                1 {_col1}
+              keys:
+                0 _col0 (type: string)
+                1 _col0 (type: string)
 
   Stage: Stage-5
     Map Reduce
@@ -325,13 +377,6 @@ STAGE PLANS:
                         serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            $INTNAME1 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            $INTNAME1 
-              TableScan
 
   Stage: Stage-3
     Map Reduce
@@ -367,27 +412,27 @@ STAGE PLANS:
               key expressions: _col0 (type: string)
               sort order: +
               Map-reduce partition columns: _col0 (type: string)
-              Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
           TableScan
             Reduce Output Operator
               key expressions: _col0 (type: string)
               sort order: +
               Map-reduce partition columns: _col0 (type: string)
               Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: string), _col1 (type: string)
+              value expressions: _col1 (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
                Left Outer Join0 to 1
           condition expressions:
             0 
-            1 {VALUE._col0} {VALUE._col1}
+            1 {KEY.reducesinkkey0} {VALUE._col0}
           outputColumnNames: _col2, _col3
-          Statistics: Num rows: 31 Data size: 6393 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 63 Data size: 6393 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: _col2 (type: string), _col3 (type: string)
             outputColumnNames: _col2, _col3
-            Statistics: Num rows: 31 Data size: 6393 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 63 Data size: 6393 Basic stats: COMPLETE Column stats: NONE
             Group By Operator
               aggregations: sum(hash(_col2,_col3))
               mode: hash
@@ -414,9 +459,11 @@ STAGE PLANS:
                 key expressions: _col1 (type: string)
                 sort order: +
                 Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col0 (type: string), _col1 (type: string)
+                value expressions: _col0 (type: string)
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: VALUE._col0 (type: string), KEY.reducesinkkey0 (type: string)
+          outputColumnNames: _col0, _col1
           Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
@@ -428,6 +475,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: FROM 
 (SELECT src.* FROM src sort by key) x
@@ -466,12 +515,13 @@ select sum(hash(Y.key,Y.value))
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-6 depends on stages: Stage-1, Stage-4 , consists of Stage-5, Stage-2
-  Stage-5 has a backup stage: Stage-2
+  Stage-6 depends on stages: Stage-1, Stage-4 , consists of Stage-7, Stage-2
+  Stage-7 has a backup stage: Stage-2
+  Stage-5 depends on stages: Stage-7
   Stage-3 depends on stages: Stage-2, Stage-5
   Stage-2
   Stage-4 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-3
 
 STAGE PLANS:
   Stage: Stage-1
@@ -479,19 +529,20 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-            Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: key (type: string), value (type: string)
-              outputColumnNames: _col0, _col1
-              Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+              expressions: key (type: string)
+              outputColumnNames: _col0
+              Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: string)
                 sort order: +
-                Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col0 (type: string), _col1 (type: string)
+                Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
-        Extract
-          Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: string)
+          outputColumnNames: _col0
+          Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
             table:
@@ -501,6 +552,23 @@ STAGE PLANS:
 
   Stage: Stage-6
     Conditional Operator
+
+  Stage: Stage-7
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        $INTNAME 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        $INTNAME 
+          TableScan
+            HashTable Sink Operator
+              condition expressions:
+                0 
+                1 {_col0} {_col1}
+              keys:
+                0 _col0 (type: string)
+                1 _col0 (type: string)
 
   Stage: Stage-5
     Map Reduce
@@ -531,13 +599,6 @@ STAGE PLANS:
                         serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            $INTNAME 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            $INTNAME 
-              TableScan
 
   Stage: Stage-3
     Map Reduce
@@ -573,27 +634,27 @@ STAGE PLANS:
               key expressions: _col0 (type: string)
               sort order: +
               Map-reduce partition columns: _col0 (type: string)
-              Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
           TableScan
             Reduce Output Operator
               key expressions: _col0 (type: string)
               sort order: +
               Map-reduce partition columns: _col0 (type: string)
               Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: string), _col1 (type: string)
+              value expressions: _col1 (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
                Right Outer Join0 to 1
           condition expressions:
             0 
-            1 {VALUE._col0} {VALUE._col1}
+            1 {KEY.reducesinkkey0} {VALUE._col0}
           outputColumnNames: _col2, _col3
-          Statistics: Num rows: 31 Data size: 6393 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 63 Data size: 6393 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: _col2 (type: string), _col3 (type: string)
             outputColumnNames: _col2, _col3
-            Statistics: Num rows: 31 Data size: 6393 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 63 Data size: 6393 Basic stats: COMPLETE Column stats: NONE
             Group By Operator
               aggregations: sum(hash(_col2,_col3))
               mode: hash
@@ -620,9 +681,11 @@ STAGE PLANS:
                 key expressions: _col1 (type: string)
                 sort order: +
                 Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col0 (type: string), _col1 (type: string)
+                value expressions: _col0 (type: string)
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: VALUE._col0 (type: string), KEY.reducesinkkey0 (type: string)
+          outputColumnNames: _col0, _col1
           Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
@@ -634,6 +697,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: FROM 
 (SELECT src.* FROM src sort by key) x
@@ -678,15 +743,18 @@ select sum(hash(Y.key,Y.value))
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-9 depends on stages: Stage-1, Stage-4, Stage-5 , consists of Stage-6, Stage-7, Stage-8, Stage-2
-  Stage-6 has a backup stage: Stage-2
+  Stage-9 depends on stages: Stage-1, Stage-4, Stage-5 , consists of Stage-10, Stage-11, Stage-12, Stage-2
+  Stage-10 has a backup stage: Stage-2
+  Stage-6 depends on stages: Stage-10
   Stage-3 depends on stages: Stage-2, Stage-6, Stage-7, Stage-8
-  Stage-7 has a backup stage: Stage-2
-  Stage-8 has a backup stage: Stage-2
+  Stage-11 has a backup stage: Stage-2
+  Stage-7 depends on stages: Stage-11
+  Stage-12 has a backup stage: Stage-2
+  Stage-8 depends on stages: Stage-12
   Stage-2
   Stage-4 is a root stage
   Stage-5 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-3
 
 STAGE PLANS:
   Stage: Stage-1
@@ -695,18 +763,23 @@ STAGE PLANS:
           TableScan
             alias: src
             Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
-            Select Operator
-              expressions: key (type: string), value (type: string)
-              outputColumnNames: _col0, _col1
-              Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: _col1 (type: string)
-                sort order: +
-                Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col0 (type: string), _col1 (type: string)
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 15 Data size: 3006 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: key (type: string), value (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 15 Data size: 3006 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col1 (type: string)
+                  sort order: +
+                  Statistics: Num rows: 15 Data size: 3006 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: string)
       Reduce Operator Tree:
-        Extract
-          Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+        Select Operator
+          expressions: VALUE._col0 (type: string)
+          outputColumnNames: _col0
+          Statistics: Num rows: 15 Data size: 3006 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
             table:
@@ -717,6 +790,39 @@ STAGE PLANS:
   Stage: Stage-9
     Conditional Operator
 
+  Stage: Stage-10
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        $INTNAME 
+          Fetch Operator
+            limit: -1
+        $INTNAME2 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        $INTNAME 
+          TableScan
+            HashTable Sink Operator
+              condition expressions:
+                0 
+                1 {_col1}
+                2 
+              keys:
+                0 _col0 (type: string)
+                1 _col0 (type: string)
+                2 _col0 (type: string)
+        $INTNAME2 
+          TableScan
+            HashTable Sink Operator
+              condition expressions:
+                0 
+                1 {_col1}
+                2 
+              keys:
+                0 _col0 (type: string)
+                1 _col0 (type: string)
+                2 _col0 (type: string)
+
   Stage: Stage-6
     Map Reduce
       Map Operator Tree:
@@ -749,18 +855,6 @@ STAGE PLANS:
                         serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            $INTNAME 
-              Fetch Operator
-                limit: -1
-            $INTNAME2 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            $INTNAME 
-              TableScan
-            $INTNAME2 
-              TableScan
 
   Stage: Stage-3
     Map Reduce
@@ -787,6 +881,39 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-11
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        $INTNAME 
+          Fetch Operator
+            limit: -1
+        $INTNAME1 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        $INTNAME 
+          TableScan
+            HashTable Sink Operator
+              condition expressions:
+                0 
+                1 {_col0} {_col1}
+                2 
+              keys:
+                0 _col0 (type: string)
+                1 _col0 (type: string)
+                2 _col0 (type: string)
+        $INTNAME1 
+          TableScan
+            HashTable Sink Operator
+              condition expressions:
+                0 
+                1 {_col0} {_col1}
+                2 
+              keys:
+                0 _col0 (type: string)
+                1 _col0 (type: string)
+                2 _col0 (type: string)
 
   Stage: Stage-7
     Map Reduce
@@ -820,18 +947,39 @@ STAGE PLANS:
                         serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            $INTNAME 
-              Fetch Operator
-                limit: -1
-            $INTNAME1 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            $INTNAME 
-              TableScan
-            $INTNAME1 
-              TableScan
+
+  Stage: Stage-12
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        $INTNAME1 
+          Fetch Operator
+            limit: -1
+        $INTNAME2 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        $INTNAME1 
+          TableScan
+            HashTable Sink Operator
+              condition expressions:
+                0 
+                1 {_col1}
+                2 
+              keys:
+                0 _col0 (type: string)
+                1 _col0 (type: string)
+                2 _col0 (type: string)
+        $INTNAME2 
+          TableScan
+            HashTable Sink Operator
+              condition expressions:
+                0 
+                1 {_col1}
+                2 
+              keys:
+                0 _col0 (type: string)
+                1 _col0 (type: string)
+                2 _col0 (type: string)
 
   Stage: Stage-8
     Map Reduce
@@ -865,18 +1013,6 @@ STAGE PLANS:
                         serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            $INTNAME1 
-              Fetch Operator
-                limit: -1
-            $INTNAME2 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            $INTNAME1 
-              TableScan
-            $INTNAME2 
-              TableScan
 
   Stage: Stage-2
     Map Reduce
@@ -886,20 +1022,20 @@ STAGE PLANS:
               key expressions: _col0 (type: string)
               sort order: +
               Map-reduce partition columns: _col0 (type: string)
-              Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 15 Data size: 3006 Basic stats: COMPLETE Column stats: NONE
           TableScan
             Reduce Output Operator
               key expressions: _col0 (type: string)
               sort order: +
               Map-reduce partition columns: _col0 (type: string)
-              Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 29 Data size: 2906 Basic stats: COMPLETE Column stats: NONE
           TableScan
             Reduce Output Operator
               key expressions: _col0 (type: string)
               sort order: +
               Map-reduce partition columns: _col0 (type: string)
-              Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: string), _col1 (type: string)
+              Statistics: Num rows: 15 Data size: 3006 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col1 (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -907,14 +1043,14 @@ STAGE PLANS:
                Inner Join 0 to 2
           condition expressions:
             0 
-            1 {VALUE._col0} {VALUE._col1}
+            1 {KEY.reducesinkkey0} {VALUE._col0}
             2 
           outputColumnNames: _col2, _col3
-          Statistics: Num rows: 63 Data size: 12786 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 63 Data size: 6393 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: _col2 (type: string), _col3 (type: string)
             outputColumnNames: _col2, _col3
-            Statistics: Num rows: 63 Data size: 12786 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 63 Data size: 6393 Basic stats: COMPLETE Column stats: NONE
             Group By Operator
               aggregations: sum(hash(_col2,_col3))
               mode: hash
@@ -932,19 +1068,23 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-            Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
-            Select Operator
-              expressions: key (type: string), value (type: string)
-              outputColumnNames: _col0, _col1
-              Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: _col0 (type: string)
-                sort order: +
-                Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col0 (type: string), _col1 (type: string)
+            Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 29 Data size: 2906 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: key (type: string)
+                outputColumnNames: _col0
+                Statistics: Num rows: 29 Data size: 2906 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  sort order: +
+                  Statistics: Num rows: 29 Data size: 2906 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
-        Extract
-          Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: string)
+          outputColumnNames: _col0
+          Statistics: Num rows: 29 Data size: 2906 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
             table:
@@ -958,18 +1098,23 @@ STAGE PLANS:
           TableScan
             alias: src
             Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
-            Select Operator
-              expressions: key (type: string), value (type: string)
-              outputColumnNames: _col0, _col1
-              Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: _col1 (type: string)
-                sort order: +
-                Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col0 (type: string), _col1 (type: string)
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 15 Data size: 3006 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: key (type: string), value (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 15 Data size: 3006 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col1 (type: string)
+                  sort order: +
+                  Statistics: Num rows: 15 Data size: 3006 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: string)
       Reduce Operator Tree:
-        Extract
-          Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+        Select Operator
+          expressions: VALUE._col0 (type: string), KEY.reducesinkkey0 (type: string)
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 15 Data size: 3006 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
             table:
@@ -980,6 +1125,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: FROM
 (SELECT src.* FROM src sort by key) x
@@ -1030,14 +1177,16 @@ select sum(hash(Y.key,Y.value))
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-8 depends on stages: Stage-1, Stage-4, Stage-5 , consists of Stage-6, Stage-7, Stage-2
-  Stage-6 has a backup stage: Stage-2
+  Stage-8 depends on stages: Stage-1, Stage-4, Stage-5 , consists of Stage-9, Stage-10, Stage-2
+  Stage-9 has a backup stage: Stage-2
+  Stage-6 depends on stages: Stage-9
   Stage-3 depends on stages: Stage-2, Stage-6, Stage-7
-  Stage-7 has a backup stage: Stage-2
+  Stage-10 has a backup stage: Stage-2
+  Stage-7 depends on stages: Stage-10
   Stage-2
   Stage-4 is a root stage
   Stage-5 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-3
 
 STAGE PLANS:
   Stage: Stage-1
@@ -1054,9 +1203,11 @@ STAGE PLANS:
                 key expressions: _col1 (type: string)
                 sort order: +
                 Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col0 (type: string), _col1 (type: string)
+                value expressions: _col0 (type: string)
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: VALUE._col0 (type: string)
+          outputColumnNames: _col0
           Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
@@ -1067,6 +1218,39 @@ STAGE PLANS:
 
   Stage: Stage-8
     Conditional Operator
+
+  Stage: Stage-9
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        $INTNAME 
+          Fetch Operator
+            limit: -1
+        $INTNAME2 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        $INTNAME 
+          TableScan
+            HashTable Sink Operator
+              condition expressions:
+                0 
+                1 {_col1}
+                2 
+              keys:
+                0 _col0 (type: string)
+                1 _col0 (type: string)
+                2 _col0 (type: string)
+        $INTNAME2 
+          TableScan
+            HashTable Sink Operator
+              condition expressions:
+                0 
+                1 {_col1}
+                2 
+              keys:
+                0 _col0 (type: string)
+                1 _col0 (type: string)
+                2 _col0 (type: string)
 
   Stage: Stage-6
     Map Reduce
@@ -1100,18 +1284,6 @@ STAGE PLANS:
                         serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            $INTNAME 
-              Fetch Operator
-                limit: -1
-            $INTNAME2 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            $INTNAME 
-              TableScan
-            $INTNAME2 
-              TableScan
 
   Stage: Stage-3
     Map Reduce
@@ -1138,6 +1310,39 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-10
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        $INTNAME 
+          Fetch Operator
+            limit: -1
+        $INTNAME1 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        $INTNAME 
+          TableScan
+            HashTable Sink Operator
+              condition expressions:
+                0 
+                1 {_col0} {_col1}
+                2 
+              keys:
+                0 _col0 (type: string)
+                1 _col0 (type: string)
+                2 _col0 (type: string)
+        $INTNAME1 
+          TableScan
+            HashTable Sink Operator
+              condition expressions:
+                0 
+                1 {_col0} {_col1}
+                2 
+              keys:
+                0 _col0 (type: string)
+                1 _col0 (type: string)
+                2 _col0 (type: string)
 
   Stage: Stage-7
     Map Reduce
@@ -1171,18 +1376,6 @@ STAGE PLANS:
                         serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            $INTNAME 
-              Fetch Operator
-                limit: -1
-            $INTNAME1 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            $INTNAME 
-              TableScan
-            $INTNAME1 
-              TableScan
 
   Stage: Stage-2
     Map Reduce
@@ -1198,14 +1391,14 @@ STAGE PLANS:
               key expressions: _col0 (type: string)
               sort order: +
               Map-reduce partition columns: _col0 (type: string)
-              Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
           TableScan
             Reduce Output Operator
               key expressions: _col0 (type: string)
               sort order: +
               Map-reduce partition columns: _col0 (type: string)
               Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: string), _col1 (type: string)
+              value expressions: _col1 (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -1213,14 +1406,14 @@ STAGE PLANS:
                Left Outer Join0 to 2
           condition expressions:
             0 
-            1 {VALUE._col0} {VALUE._col1}
+            1 {KEY.reducesinkkey0} {VALUE._col0}
             2 
           outputColumnNames: _col2, _col3
-          Statistics: Num rows: 63 Data size: 12786 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 127 Data size: 12786 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: _col2 (type: string), _col3 (type: string)
             outputColumnNames: _col2, _col3
-            Statistics: Num rows: 63 Data size: 12786 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 127 Data size: 12786 Basic stats: COMPLETE Column stats: NONE
             Group By Operator
               aggregations: sum(hash(_col2,_col3))
               mode: hash
@@ -1238,19 +1431,20 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-            Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: key (type: string), value (type: string)
-              outputColumnNames: _col0, _col1
-              Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+              expressions: key (type: string)
+              outputColumnNames: _col0
+              Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: string)
                 sort order: +
-                Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col0 (type: string), _col1 (type: string)
+                Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
-        Extract
-          Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: string)
+          outputColumnNames: _col0
+          Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
             table:
@@ -1272,9 +1466,11 @@ STAGE PLANS:
                 key expressions: _col1 (type: string)
                 sort order: +
                 Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col0 (type: string), _col1 (type: string)
+                value expressions: _col0 (type: string)
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: VALUE._col0 (type: string), KEY.reducesinkkey0 (type: string)
+          outputColumnNames: _col0, _col1
           Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
@@ -1286,6 +1482,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: FROM
 (SELECT src.* FROM src sort by key) x
@@ -1336,13 +1534,14 @@ select sum(hash(Y.key,Y.value))
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-7 depends on stages: Stage-1, Stage-4, Stage-5 , consists of Stage-6, Stage-2
-  Stage-6 has a backup stage: Stage-2
+  Stage-7 depends on stages: Stage-1, Stage-4, Stage-5 , consists of Stage-8, Stage-2
+  Stage-8 has a backup stage: Stage-2
+  Stage-6 depends on stages: Stage-8
   Stage-3 depends on stages: Stage-2, Stage-6
   Stage-2
   Stage-4 is a root stage
   Stage-5 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-3
 
 STAGE PLANS:
   Stage: Stage-1
@@ -1359,9 +1558,11 @@ STAGE PLANS:
                 key expressions: _col1 (type: string)
                 sort order: +
                 Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col0 (type: string), _col1 (type: string)
+                value expressions: _col0 (type: string)
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: VALUE._col0 (type: string)
+          outputColumnNames: _col0
           Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
@@ -1372,6 +1573,39 @@ STAGE PLANS:
 
   Stage: Stage-7
     Conditional Operator
+
+  Stage: Stage-8
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        $INTNAME 
+          Fetch Operator
+            limit: -1
+        $INTNAME2 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        $INTNAME 
+          TableScan
+            HashTable Sink Operator
+              condition expressions:
+                0 
+                1 {_col1}
+                2 
+              keys:
+                0 _col0 (type: string)
+                1 _col0 (type: string)
+                2 _col0 (type: string)
+        $INTNAME2 
+          TableScan
+            HashTable Sink Operator
+              condition expressions:
+                0 
+                1 {_col1}
+                2 
+              keys:
+                0 _col0 (type: string)
+                1 _col0 (type: string)
+                2 _col0 (type: string)
 
   Stage: Stage-6
     Map Reduce
@@ -1405,18 +1639,6 @@ STAGE PLANS:
                         serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            $INTNAME 
-              Fetch Operator
-                limit: -1
-            $INTNAME2 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            $INTNAME 
-              TableScan
-            $INTNAME2 
-              TableScan
 
   Stage: Stage-3
     Map Reduce
@@ -1458,14 +1680,14 @@ STAGE PLANS:
               key expressions: _col0 (type: string)
               sort order: +
               Map-reduce partition columns: _col0 (type: string)
-              Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
           TableScan
             Reduce Output Operator
               key expressions: _col0 (type: string)
               sort order: +
               Map-reduce partition columns: _col0 (type: string)
               Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: string), _col1 (type: string)
+              value expressions: _col1 (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -1473,14 +1695,14 @@ STAGE PLANS:
                Left Outer Join0 to 2
           condition expressions:
             0 
-            1 {VALUE._col0} {VALUE._col1}
+            1 {KEY.reducesinkkey0} {VALUE._col0}
             2 
           outputColumnNames: _col2, _col3
-          Statistics: Num rows: 63 Data size: 12786 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 127 Data size: 12786 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: _col2 (type: string), _col3 (type: string)
             outputColumnNames: _col2, _col3
-            Statistics: Num rows: 63 Data size: 12786 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 127 Data size: 12786 Basic stats: COMPLETE Column stats: NONE
             Group By Operator
               aggregations: sum(hash(_col2,_col3))
               mode: hash
@@ -1498,19 +1720,20 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-            Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: key (type: string), value (type: string)
-              outputColumnNames: _col0, _col1
-              Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+              expressions: key (type: string)
+              outputColumnNames: _col0
+              Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: string)
                 sort order: +
-                Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col0 (type: string), _col1 (type: string)
+                Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
-        Extract
-          Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: string)
+          outputColumnNames: _col0
+          Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
             table:
@@ -1532,9 +1755,11 @@ STAGE PLANS:
                 key expressions: _col1 (type: string)
                 sort order: +
                 Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col0 (type: string), _col1 (type: string)
+                value expressions: _col0 (type: string)
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: VALUE._col0 (type: string), KEY.reducesinkkey0 (type: string)
+          outputColumnNames: _col0, _col1
           Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
@@ -1546,6 +1771,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: FROM
 (SELECT src.* FROM src sort by key) x
@@ -1596,13 +1823,14 @@ select sum(hash(Y.key,Y.value))
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-7 depends on stages: Stage-1, Stage-4, Stage-5 , consists of Stage-6, Stage-2
-  Stage-6 has a backup stage: Stage-2
+  Stage-7 depends on stages: Stage-1, Stage-4, Stage-5 , consists of Stage-8, Stage-2
+  Stage-8 has a backup stage: Stage-2
+  Stage-6 depends on stages: Stage-8
   Stage-3 depends on stages: Stage-2, Stage-6
   Stage-2
   Stage-4 is a root stage
   Stage-5 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-3
 
 STAGE PLANS:
   Stage: Stage-1
@@ -1619,9 +1847,11 @@ STAGE PLANS:
                 key expressions: _col1 (type: string)
                 sort order: +
                 Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col0 (type: string), _col1 (type: string)
+                value expressions: _col0 (type: string)
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: VALUE._col0 (type: string)
+          outputColumnNames: _col0
           Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
@@ -1632,6 +1862,39 @@ STAGE PLANS:
 
   Stage: Stage-7
     Conditional Operator
+
+  Stage: Stage-8
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        $INTNAME1 
+          Fetch Operator
+            limit: -1
+        $INTNAME2 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        $INTNAME1 
+          TableScan
+            HashTable Sink Operator
+              condition expressions:
+                0 
+                1 {_col1}
+                2 
+              keys:
+                0 _col0 (type: string)
+                1 _col0 (type: string)
+                2 _col0 (type: string)
+        $INTNAME2 
+          TableScan
+            HashTable Sink Operator
+              condition expressions:
+                0 
+                1 {_col1}
+                2 
+              keys:
+                0 _col0 (type: string)
+                1 _col0 (type: string)
+                2 _col0 (type: string)
 
   Stage: Stage-6
     Map Reduce
@@ -1665,18 +1928,6 @@ STAGE PLANS:
                         serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            $INTNAME1 
-              Fetch Operator
-                limit: -1
-            $INTNAME2 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            $INTNAME1 
-              TableScan
-            $INTNAME2 
-              TableScan
 
   Stage: Stage-3
     Map Reduce
@@ -1718,14 +1969,14 @@ STAGE PLANS:
               key expressions: _col0 (type: string)
               sort order: +
               Map-reduce partition columns: _col0 (type: string)
-              Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
           TableScan
             Reduce Output Operator
               key expressions: _col0 (type: string)
               sort order: +
               Map-reduce partition columns: _col0 (type: string)
               Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: string), _col1 (type: string)
+              value expressions: _col1 (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -1733,14 +1984,14 @@ STAGE PLANS:
                Right Outer Join0 to 2
           condition expressions:
             0 
-            1 {VALUE._col0} {VALUE._col1}
+            1 {KEY.reducesinkkey0} {VALUE._col0}
             2 
           outputColumnNames: _col2, _col3
-          Statistics: Num rows: 63 Data size: 12786 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 127 Data size: 12786 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: _col2 (type: string), _col3 (type: string)
             outputColumnNames: _col2, _col3
-            Statistics: Num rows: 63 Data size: 12786 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 127 Data size: 12786 Basic stats: COMPLETE Column stats: NONE
             Group By Operator
               aggregations: sum(hash(_col2,_col3))
               mode: hash
@@ -1758,19 +2009,20 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-            Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: key (type: string), value (type: string)
-              outputColumnNames: _col0, _col1
-              Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+              expressions: key (type: string)
+              outputColumnNames: _col0
+              Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: string)
                 sort order: +
-                Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col0 (type: string), _col1 (type: string)
+                Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
-        Extract
-          Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: string)
+          outputColumnNames: _col0
+          Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
             table:
@@ -1792,9 +2044,11 @@ STAGE PLANS:
                 key expressions: _col1 (type: string)
                 sort order: +
                 Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col0 (type: string), _col1 (type: string)
+                value expressions: _col0 (type: string)
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: VALUE._col0 (type: string), KEY.reducesinkkey0 (type: string)
+          outputColumnNames: _col0, _col1
           Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
@@ -1806,6 +2060,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: FROM
 (SELECT src.* FROM src sort by key) x
@@ -1856,13 +2112,14 @@ select sum(hash(Y.key,Y.value))
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-7 depends on stages: Stage-1, Stage-4, Stage-5 , consists of Stage-6, Stage-2
-  Stage-6 has a backup stage: Stage-2
+  Stage-7 depends on stages: Stage-1, Stage-4, Stage-5 , consists of Stage-8, Stage-2
+  Stage-8 has a backup stage: Stage-2
+  Stage-6 depends on stages: Stage-8
   Stage-3 depends on stages: Stage-2, Stage-6
   Stage-2
   Stage-4 is a root stage
   Stage-5 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-3
 
 STAGE PLANS:
   Stage: Stage-1
@@ -1879,9 +2136,11 @@ STAGE PLANS:
                 key expressions: _col1 (type: string)
                 sort order: +
                 Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col0 (type: string), _col1 (type: string)
+                value expressions: _col0 (type: string)
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: VALUE._col0 (type: string)
+          outputColumnNames: _col0
           Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
@@ -1892,6 +2151,39 @@ STAGE PLANS:
 
   Stage: Stage-7
     Conditional Operator
+
+  Stage: Stage-8
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        $INTNAME1 
+          Fetch Operator
+            limit: -1
+        $INTNAME2 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        $INTNAME1 
+          TableScan
+            HashTable Sink Operator
+              condition expressions:
+                0 
+                1 {_col1}
+                2 
+              keys:
+                0 _col0 (type: string)
+                1 _col0 (type: string)
+                2 _col0 (type: string)
+        $INTNAME2 
+          TableScan
+            HashTable Sink Operator
+              condition expressions:
+                0 
+                1 {_col1}
+                2 
+              keys:
+                0 _col0 (type: string)
+                1 _col0 (type: string)
+                2 _col0 (type: string)
 
   Stage: Stage-6
     Map Reduce
@@ -1925,18 +2217,6 @@ STAGE PLANS:
                         serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            $INTNAME1 
-              Fetch Operator
-                limit: -1
-            $INTNAME2 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            $INTNAME1 
-              TableScan
-            $INTNAME2 
-              TableScan
 
   Stage: Stage-3
     Map Reduce
@@ -1978,14 +2258,14 @@ STAGE PLANS:
               key expressions: _col0 (type: string)
               sort order: +
               Map-reduce partition columns: _col0 (type: string)
-              Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
           TableScan
             Reduce Output Operator
               key expressions: _col0 (type: string)
               sort order: +
               Map-reduce partition columns: _col0 (type: string)
               Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: string), _col1 (type: string)
+              value expressions: _col1 (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -1993,14 +2273,14 @@ STAGE PLANS:
                Right Outer Join0 to 2
           condition expressions:
             0 
-            1 {VALUE._col0} {VALUE._col1}
+            1 {KEY.reducesinkkey0} {VALUE._col0}
             2 
           outputColumnNames: _col2, _col3
-          Statistics: Num rows: 63 Data size: 12786 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 127 Data size: 12786 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: _col2 (type: string), _col3 (type: string)
             outputColumnNames: _col2, _col3
-            Statistics: Num rows: 63 Data size: 12786 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 127 Data size: 12786 Basic stats: COMPLETE Column stats: NONE
             Group By Operator
               aggregations: sum(hash(_col2,_col3))
               mode: hash
@@ -2018,19 +2298,20 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-            Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: key (type: string), value (type: string)
-              outputColumnNames: _col0, _col1
-              Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+              expressions: key (type: string)
+              outputColumnNames: _col0
+              Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: string)
                 sort order: +
-                Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col0 (type: string), _col1 (type: string)
+                Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
-        Extract
-          Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: string)
+          outputColumnNames: _col0
+          Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
             table:
@@ -2052,9 +2333,11 @@ STAGE PLANS:
                 key expressions: _col1 (type: string)
                 sort order: +
                 Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col0 (type: string), _col1 (type: string)
+                value expressions: _col0 (type: string)
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: VALUE._col0 (type: string), KEY.reducesinkkey0 (type: string)
+          outputColumnNames: _col0, _col1
           Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
@@ -2066,6 +2349,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: FROM
 (SELECT src.* FROM src sort by key) x

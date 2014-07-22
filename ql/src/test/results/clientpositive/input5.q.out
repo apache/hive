@@ -53,20 +53,18 @@ STAGE PLANS:
                   Statistics: Num rows: 0 Data size: 1606 Basic stats: PARTIAL Column stats: NONE
                   value expressions: _col0 (type: string), _col1 (type: string)
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: VALUE._col0 (type: string), VALUE._col1 (type: string)
+          outputColumnNames: _col0, _col1
           Statistics: Num rows: 0 Data size: 1606 Basic stats: PARTIAL Column stats: NONE
-          Select Operator
-            expressions: _col0 (type: string), _col1 (type: string)
-            outputColumnNames: _col0, _col1
+          File Output Operator
+            compressed: false
             Statistics: Num rows: 0 Data size: 1606 Basic stats: PARTIAL Column stats: NONE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 0 Data size: 1606 Basic stats: PARTIAL Column stats: NONE
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.dest1
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                name: default.dest1
 
   Stage: Stage-0
     Move Operator
@@ -111,8 +109,6 @@ POSTHOOK: query: SELECT dest1.* FROM dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: dest1.key SCRIPT [(src_thrift)src_thrift.FieldSchema(name:lint, type:array<int>, comment:from deserializer), (src_thrift)src_thrift.FieldSchema(name:lintstring, type:array<struct<myint:int,mystring:string,underscore_int:int>>, comment:from deserializer), ]
-POSTHOOK: Lineage: dest1.value SCRIPT [(src_thrift)src_thrift.FieldSchema(name:lint, type:array<int>, comment:from deserializer), (src_thrift)src_thrift.FieldSchema(name:lintstring, type:array<struct<myint:int,mystring:string,underscore_int:int>>, comment:from deserializer), ]
 NULL	NULL
 [0,0,0]	[{"myint":0,"mystring":"0","underscore_int":0}]
 [1,2,3]	[{"myint":1,"mystring":"1","underscore_int":1}]

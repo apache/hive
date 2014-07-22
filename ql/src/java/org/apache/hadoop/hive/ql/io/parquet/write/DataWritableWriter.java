@@ -13,19 +13,25 @@
  */
 package org.apache.hadoop.hive.ql.io.parquet.write;
 
-import org.apache.hadoop.hive.ql.io.parquet.writable.BigDecimalWritable;
-import org.apache.hadoop.hive.ql.io.parquet.writable.BinaryWritable;
+import java.sql.Timestamp;
+
+import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTime;
+import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTimeUtils;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.io.ArrayWritable;
 import org.apache.hadoop.io.BooleanWritable;
+import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Writable;
 
 import parquet.io.ParquetEncodingException;
+import parquet.io.api.Binary;
 import parquet.io.api.RecordConsumer;
 import parquet.schema.GroupType;
 import parquet.schema.Type;
@@ -69,6 +75,7 @@ public class DataWritableWriter {
       if (value == null) {
         continue;
       }
+
       recordConsumer.startField(fieldName, field);
 
       if (fieldType.isPrimitive()) {
@@ -143,10 +150,14 @@ public class DataWritableWriter {
       recordConsumer.addInteger(((ShortWritable) value).get());
     } else if (value instanceof ByteWritable) {
       recordConsumer.addInteger(((ByteWritable) value).get());
-    } else if (value instanceof BigDecimalWritable) {
-      throw new UnsupportedOperationException("BigDecimal writing not implemented");
-    } else if (value instanceof BinaryWritable) {
-      recordConsumer.addBinary(((BinaryWritable) value).getBinary());
+    } else if (value instanceof HiveDecimalWritable) {
+      throw new UnsupportedOperationException("HiveDecimalWritable writing not implemented");
+    } else if (value instanceof BytesWritable) {
+      recordConsumer.addBinary((Binary.fromByteArray(((BytesWritable) value).getBytes())));
+    } else if (value instanceof TimestampWritable) {
+      Timestamp ts = ((TimestampWritable) value).getTimestamp();
+      NanoTime nt = NanoTimeUtils.getNanoTime(ts);
+      nt.writeValue(recordConsumer);
     } else {
       throw new IllegalArgumentException("Unknown value type: " + value + " " + value.getClass());
     }

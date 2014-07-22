@@ -274,7 +274,7 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
     boolean nextKeyGroup = processKey(alias, key);
     if (nextKeyGroup) {
       //assert this.nextGroupStorage[alias].size() == 0;
-      this.nextGroupStorage[alias].add(value);
+      this.nextGroupStorage[alias].addRow(value);
       foundNextKeyGroup[tag] = true;
       if (tag != posBigTable) {
         return;
@@ -299,7 +299,7 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
     }
 
     assert !nextKeyGroup;
-    candidateStorage[tag].add(value);
+    candidateStorage[tag].addRow(value);
   }
 
   /*
