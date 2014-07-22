@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.optiq.translator;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -26,6 +27,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.eigenbase.reltype.RelDataType;
 import org.eigenbase.reltype.RelDataTypeField;
@@ -68,6 +70,8 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
 
   @Override
   public ExprNodeDesc visitCall(RexCall call) {
+    ExprNodeGenericFuncDesc gfDesc = null;
+    
     if (!deep) {
       return null;
     }
@@ -78,8 +82,26 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
       args.add(operand.accept(this));
     }
 
-    return new ExprNodeGenericFuncDesc(TypeConverter.convert(call.getType()),
-        SqlFunctionConverter.getHiveUDF(call.getOperator(), call.getType()), args);
+    // If Expr is flat (and[p,q,r,s] or[p,q,r,s]) then recursively build the
+    // exprnode
+    if (ASTConverter.isFlat(call)) {
+      ArrayList<ExprNodeDesc> tmpExprArgs = new ArrayList<ExprNodeDesc>();
+      tmpExprArgs.addAll(args.subList(0, 2));
+      gfDesc = new ExprNodeGenericFuncDesc(TypeConverter.convert(call.getType()),
+          SqlFunctionConverter.getHiveUDF(call.getOperator(), call.getType()), tmpExprArgs);
+      for (int i = 2; i < call.operands.size(); i++) {
+        tmpExprArgs = new ArrayList<ExprNodeDesc>();
+        tmpExprArgs.add(gfDesc);
+        tmpExprArgs.add(args.get(i));
+        gfDesc = new ExprNodeGenericFuncDesc(TypeConverter.convert(call.getType()),
+            SqlFunctionConverter.getHiveUDF(call.getOperator(), call.getType()), tmpExprArgs);
+      }
+    } else {
+      gfDesc = new ExprNodeGenericFuncDesc(TypeConverter.convert(call.getType()),
+          SqlFunctionConverter.getHiveUDF(call.getOperator(), call.getType()), args);
+    }
+
+    return gfDesc;
   }
 
   @Override

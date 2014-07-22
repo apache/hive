@@ -423,7 +423,7 @@ public class ASTConverter {
     }
   }
 
-  private static boolean isFlat(RexCall call) {
+  public static boolean isFlat(RexCall call) {
     boolean flat = false;
     if (call.operands != null && call.operands.size() > 2) {
       SqlOperator op = call.getOperator();
