@@ -35,7 +35,14 @@ public class SparkCollector implements OutputCollector<BytesWritable, BytesWrita
   
   @Override
   public void collect(BytesWritable key, BytesWritable value) throws IOException {
-    result.add(new Tuple2<BytesWritable, BytesWritable>(new BytesWritable(key.copyBytes()), new BytesWritable(value.copyBytes())));
+    result.add(new Tuple2<BytesWritable, BytesWritable>(copyBytesWritable(key), copyBytesWritable(value)));
+  }
+  
+  // TODO: Move this to a utility class.
+  public static BytesWritable copyBytesWritable(BytesWritable bw) {
+    BytesWritable copy = new BytesWritable();
+    copy.set(bw);
+    return copy;
   }
   
   public void clear() {
