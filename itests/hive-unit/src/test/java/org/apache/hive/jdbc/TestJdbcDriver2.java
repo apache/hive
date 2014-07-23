@@ -275,21 +275,21 @@ public class TestJdbcDriver2 {
     Statement s = this.con.createStatement();
     ResultSet rs = s.executeQuery("SELECT * FROM " + dataTypeTableName);
 
-    rs.close();
-    s.close();
-
     assertTrue(s.getConnection() == this.con);
     assertTrue(rs.getStatement() == s);
+
+    rs.close();
+    s.close();
 
     /* Test parent references from PreparedStatement */
     PreparedStatement ps = this.con.prepareStatement("SELECT * FROM " + dataTypeTableName);
     rs = ps.executeQuery();
 
-    rs.close();
-    ps.close();
-
     assertTrue(ps.getConnection() == this.con);
     assertTrue(rs.getStatement() == ps);
+
+    rs.close();
+    ps.close();
 
     /* Test DatabaseMetaData queries which do not have a parent Statement */
     DatabaseMetaData md = this.con.getMetaData();
