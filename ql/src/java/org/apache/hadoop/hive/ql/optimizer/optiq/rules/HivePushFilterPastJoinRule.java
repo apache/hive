@@ -2,20 +2,24 @@ package org.apache.hadoop.hive.ql.optimizer.optiq.rules;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ListIterator;
 
 import org.apache.hadoop.hive.ql.optimizer.optiq.reloperators.HiveFilterRel;
 import org.apache.hadoop.hive.ql.optimizer.optiq.reloperators.HiveJoinRel;
 import org.apache.hadoop.hive.ql.optimizer.optiq.reloperators.HiveRel;
 import org.eigenbase.rel.FilterRelBase;
 import org.eigenbase.rel.JoinRelBase;
+import org.eigenbase.rel.JoinRelType;
 import org.eigenbase.rel.RelNode;
 import org.eigenbase.relopt.RelOptRule;
 import org.eigenbase.relopt.RelOptRuleCall;
 import org.eigenbase.relopt.RelOptRuleOperand;
 import org.eigenbase.relopt.RelOptUtil;
 import org.eigenbase.rex.RexBuilder;
+import org.eigenbase.rex.RexCall;
 import org.eigenbase.rex.RexNode;
 import org.eigenbase.rex.RexUtil;
+import org.eigenbase.sql.SqlKind;
 
 import com.google.common.collect.ImmutableList;
 
@@ -89,6 +93,7 @@ public abstract class HivePushFilterPastJoinRule extends RelOptRule {
 
     List<RexNode> leftFilters = new ArrayList<RexNode>();
     List<RexNode> rightFilters = new ArrayList<RexNode>();
+    int origJoinFiltersSz = joinFilters.size();
 
     // TODO - add logic to derive additional filters. E.g., from
     // (t1.a = 1 AND t2.a = 2) OR (t1.b = 3 AND t2.b = 4), you can
@@ -101,12 +106,37 @@ public abstract class HivePushFilterPastJoinRule extends RelOptRule {
     // generating side.
     boolean filterPushed = false;
     if (RelOptUtil.classifyFilters(join, aboveFilters,
-    /* join.getJoinType() == JoinRelType.INNER */
-    /* we don't allow non-equality conds on JoinOp */
-    false, !join.getJoinType().generatesNullsOnLeft(), !join.getJoinType()
+        join.getJoinType() == JoinRelType.INNER, !join.getJoinType().generatesNullsOnLeft(), !join.getJoinType()
         .generatesNullsOnRight(), joinFilters, leftFilters, rightFilters)) {
       filterPushed = true;
     }
+
+    /*
+     * Any predicates pushed down to joinFilters that aren't equality
+     * conditions: put them back as aboveFilters because Hive doesn't support
+     * not equi join conditions.
+     */
+    ListIterator<RexNode> filterIter = joinFilters.listIterator();
+    while (filterIter.hasNext()) {
+      RexNode exp = filterIter.next();
+      if (exp instanceof RexCall) {
+        RexCall c = (RexCall) exp;
+        if (c.getOperator().getKind() == SqlKind.EQUALS) {
+          continue;
+        }
+      }
+      aboveFilters.add(exp);
+      filterIter.remove();
+    }
+
+    /*
+     * if all pushed filters where put back then set filterPushed to false
+     */
+    if (leftFilters.size() == 0 && rightFilters.size() == 0
+        && joinFilters.size() == origJoinFiltersSz) {
+      filterPushed = false;
+    }
+
     // Try to push down filters in ON clause. A ON clause filter can only be
     // pushed down if it does not affect the non-matching set, i.e. it is
     // not on the side which is preserved.
@@ -119,6 +149,13 @@ public abstract class HivePushFilterPastJoinRule extends RelOptRule {
     if (!filterPushed) {
       return;
     }
+
+    /*
+     * Remove always true conditions that got pushed down.
+     */
+    removeAlwaysTruePredicates(leftFilters);
+    removeAlwaysTruePredicates(rightFilters);
+    removeAlwaysTruePredicates(joinFilters);
 
     // create FilterRels on top of the children if any filters were
     // pushed to them
@@ -170,6 +207,30 @@ public abstract class HivePushFilterPastJoinRule extends RelOptRule {
     }
     return new HiveFilterRel(rel.getCluster(), rel.getCluster().traitSetOf(
         HiveRel.CONVENTION), rel, andFilters);
+  }
+
+  private void removeAlwaysTruePredicates(List<RexNode> predicates) {
+    if (predicates.size() < 2) {
+      return;
+    }
+    ListIterator<RexNode> iter = predicates.listIterator();
+    while (iter.hasNext()) {
+      RexNode exp = iter.next();
+      if (isAlwaysTrue(exp)) {
+        iter.remove();
+      }
+    }
+  }
+
+  private boolean isAlwaysTrue(RexNode predicate) {
+    if (predicate instanceof RexCall) {
+      RexCall c = (RexCall) predicate;
+      if (c.getOperator().getKind() == SqlKind.EQUALS) {
+        return isAlwaysTrue(c.getOperands().get(0))
+            && isAlwaysTrue(c.getOperands().get(1));
+      }
+    }
+    return predicate.isAlwaysTrue();
   }
 }
 
