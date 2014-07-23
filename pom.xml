@@ -145,7 +145,7 @@
     <slf4j.version>1.7.5</slf4j.version>
     <ST4.version>4.0.4</ST4.version>
     <tez.version>0.4.0-incubating</tez.version>
-    <spark.version>1.0.1-SNAPSHOT</spark.version>
+    <spark.version>1.0.1</spark.version>
     <scala.binary.version>2.10</scala.binary.version>
     <scala.version>2.10.4</scala.version>
     <tempus-fugit.version>1.1</tempus-fugit.version>
