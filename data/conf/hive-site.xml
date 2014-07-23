@@ -235,5 +235,9 @@
 </property>
 
 
+<property>
+  <name>hive.fetch.task.conversion</name>
+  <value>minimal</value>
+</property>
 
 </configuration>

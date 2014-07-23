@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
-
-<!--
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?><!--
    Licensed to the Apache Software Foundation (ASF) under one or more
    contributor license agreements.  See the NOTICE file distributed with
    this work for additional information regarding copyright ownership.
@@ -16,8 +14,7 @@
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
--->
-<configuration>
+--><configuration>
   <!-- WARNING!!! This file is auto generated for documentation purposes ONLY! -->
   <!-- WARNING!!! Any changes you make to this file will be ignored by Hive.   -->
   <!-- WARNING!!! You must make your changes in hive-site.xml instead.         -->
@@ -2224,7 +2221,7 @@
   </property>
   <property>
     <key>hive.fetch.task.conversion</key>
-    <value>minimal</value>
+    <value>more</value>
     <description>
       Some select queries can be converted to single FETCH task minimizing latency.
       Currently the query should be single sourced not having any subquery and should not have
@@ -2235,7 +2232,7 @@
   </property>
   <property>
     <key>hive.fetch.task.conversion.threshold</key>
-    <value>-1</value>
+    <value>1073741824</value>
     <description>
       Input threshold for applying hive.fetch.task.conversion. If target table is native, input length
       is calculated by summation of file lengths. If it's not native, storage handler for the table
