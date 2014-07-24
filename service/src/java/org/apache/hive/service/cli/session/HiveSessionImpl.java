@@ -18,7 +18,11 @@
 
 package org.apache.hive.service.cli.session;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +30,8 @@ import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.common.cli.HiveFileProcessor;
+import org.apache.hadoop.hive.common.cli.IHiveFileProcessor;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
@@ -82,7 +88,7 @@ public class HiveSessionImpl implements HiveSession {
   private final Set<OperationHandle> opHandleSet = new HashSet<OperationHandle>();
 
   public HiveSessionImpl(TProtocolVersion protocol, String username, String password,
-      HiveConf serverhiveConf, Map<String, String> sessionConfMap, String ipAddress) {
+      HiveConf serverhiveConf, String ipAddress) {
     this.username = username;
     this.password = password;
     this.sessionHandle = new SessionHandle(protocol);
@@ -101,10 +107,64 @@ public class HiveSessionImpl implements HiveSession {
     sessionState.setUserIpAddress(ipAddress);
     sessionState.setIsHiveServerQuery(true);
     SessionState.start(sessionState);
+  }
+
+  @Override
+  public void initialize(Map<String, String> sessionConfMap) {
+    //process global init file: .hiverc
+    processGlobalInitFile();
+    SessionState.setCurrentSessionState(sessionState);
 
     //set conf properties specified by user from client side
     if (sessionConfMap != null) {
       configureSession(sessionConfMap);
+    }
+  }
+
+  /**
+   * It is used for processing hiverc file from HiveServer2 side.
+   */
+  private class GlobalHivercFileProcessor extends HiveFileProcessor {
+    @Override
+    protected BufferedReader loadFile(String fileName) throws IOException {
+      FileInputStream initStream = null;
+      BufferedReader bufferedReader = null;
+      initStream = new FileInputStream(fileName);
+      bufferedReader = new BufferedReader(new InputStreamReader(initStream));
+      return bufferedReader;
+    }
+
+    @Override
+    protected int processCmd(String cmd) {
+      int rc = 0;
+      String cmd_trimed = cmd.trim();
+      try {
+        executeStatementInternal(cmd_trimed, null, false);
+      } catch (HiveSQLException e) {
+        rc = -1;
+        LOG.warn("Failed to execute HQL command in global .hiverc file.", e);
+      }
+      return rc;
+    }
+  }
+
+  private void processGlobalInitFile() {
+    IHiveFileProcessor processor = new GlobalHivercFileProcessor();
+
+    try {
+      if (hiveConf.getVar(ConfVars.HIVE_GLOBAL_INIT_FILE_LOCATION) != null) {
+        String hiverc = hiveConf.getVar(ConfVars.HIVE_GLOBAL_INIT_FILE_LOCATION)
+            + File.separator + SessionManager.HIVERCFILE;
+        if (new File(hiverc).exists()) {
+          LOG.info("Running global init file: " + hiverc);
+          int rc = processor.processFile(hiverc);
+          if (rc != 0) {
+            LOG.warn("Failed on initializing global .hiverc file");
+          }
+        }
+      }
+    } catch (IOException e) {
+      LOG.warn("Failed on initializing global .hiverc file", e);
     }
   }
 
