@@ -17,13 +17,12 @@
  */
 package org.apache.hadoop.hive.ql.security.authorization.plugin;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
 import org.apache.hadoop.hive.common.classification.InterfaceStability.Unstable;
-
-import java.util.ArrayList;
-import java.util.Arrays;
 
 /**
  * Represents the object on which privilege is being granted/revoked
@@ -33,42 +32,15 @@ import java.util.Arrays;
 public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
 
   @Override
-  public String toString() {
-    String name = null;
-    switch (type) {
-    case DATABASE:
-      name = dbname;
-      break;
-    case TABLE_OR_VIEW:
-    case PARTITION:
-      name = (dbname == null ? "" : dbname + ".") + tableviewname;
-      if (partKeys != null) {
-        name += partKeys.toString();
-      }
-      break;
-    case COLUMN:
-    case LOCAL_URI:
-    case DFS_URI:
-      name = tableviewname;
-      break;
-    case COMMAND_PARAMS:
-      name = commandParams.toString();
-      break;
-    }
-    return "Object [type=" + type + ", name=" + name + "]";
-
-  }
-
-  @Override
   public int compareTo(HivePrivilegeObject o) {
     int compare = type.compareTo(o.type);
     if (compare == 0) {
       compare = dbname.compareTo(o.dbname);
     }
     if (compare == 0) {
-      compare = tableviewname != null ?
-          (o.tableviewname != null ? tableviewname.compareTo(o.tableviewname) : 1) :
-          (o.tableviewname != null ? -1 : 0);
+      compare = objectName != null ?
+          (o.objectName != null ? objectName.compareTo(o.objectName) : 1) :
+          (o.objectName != null ? -1 : 0);
     }
     if (compare == 0) {
       compare = partKeys != null ?
@@ -94,7 +66,7 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
   }
 
   public enum HivePrivilegeObjectType {
-    GLOBAL, DATABASE, TABLE_OR_VIEW, PARTITION, COLUMN, LOCAL_URI, DFS_URI, COMMAND_PARAMS
+    GLOBAL, DATABASE, TABLE_OR_VIEW, PARTITION, COLUMN, LOCAL_URI, DFS_URI, COMMAND_PARAMS, FUNCTION
   } ;
   public enum HivePrivObjectActionType {
     OTHER, INSERT, INSERT_OVERWRITE
@@ -102,26 +74,27 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
 
   private final HivePrivilegeObjectType type;
   private final String dbname;
-  private final String tableviewname;
+  private final String objectName;
   private final List<String> commandParams;
   private final List<String> partKeys;
   private final List<String> columns;
   private final HivePrivObjectActionType actionType;
 
-  public HivePrivilegeObject(HivePrivilegeObjectType type, String dbname, String tableViewURI) {
-    this(type, dbname, tableViewURI, HivePrivObjectActionType.OTHER);
+  public HivePrivilegeObject(HivePrivilegeObjectType type, String dbname, String objectName) {
+    this(type, dbname, objectName, HivePrivObjectActionType.OTHER);
   }
 
-  public HivePrivilegeObject(HivePrivilegeObjectType type, String dbname, String tableViewURI
+  public HivePrivilegeObject(HivePrivilegeObjectType type, String dbname, String objectName
       , HivePrivObjectActionType actionType) {
-    this(type, dbname, tableViewURI, null, null, actionType, null);
+    this(type, dbname, objectName, null, null, actionType, null);
   }
 
-  public HivePrivilegeObject(HivePrivilegeObjectType type, String dbname, String tableViewURI,
+  public HivePrivilegeObject(HivePrivilegeObjectType type, String dbname, String objectName,
       List<String> partKeys, String column) {
-    this(type, dbname, tableViewURI, partKeys,
+    this(type, dbname, objectName, partKeys,
         column == null ? null : new ArrayList<String>(Arrays.asList(column)),
         HivePrivObjectActionType.OTHER, null);
+
   }
 
   /**
@@ -134,17 +107,17 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
         cmdParams);
   }
 
-  public HivePrivilegeObject(HivePrivilegeObjectType type, String dbname, String tableViewURI,
+  public HivePrivilegeObject(HivePrivilegeObjectType type, String dbname, String objectName,
     List<String> partKeys, List<String> columns, List<String> commandParams) {
-    this(type, dbname, tableViewURI, partKeys, columns, HivePrivObjectActionType.OTHER, commandParams);
+    this(type, dbname, objectName, partKeys, columns, HivePrivObjectActionType.OTHER, commandParams);
   }
 
-  public HivePrivilegeObject(HivePrivilegeObjectType type, String dbname, String tableViewURI,
+  public HivePrivilegeObject(HivePrivilegeObjectType type, String dbname, String objectName,
       List<String> partKeys, List<String> columns, HivePrivObjectActionType actionType,
       List<String> commandParams) {
     this.type = type;
     this.dbname = dbname;
-    this.tableviewname = tableViewURI;
+    this.objectName = objectName;
     this.partKeys = partKeys;
     this.columns = columns;
     this.actionType = actionType;
@@ -159,8 +132,11 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
     return dbname;
   }
 
-  public String getTableViewURI() {
-    return tableviewname;
+  /**
+   * @return name of table/view/uri/function name
+   */
+  public String getObjectName() {
+    return objectName;
   }
 
   public HivePrivObjectActionType getActionType() {
@@ -178,4 +154,50 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
   public List<String> getColumns() {
     return columns;
   }
+
+  @Override
+  public String toString() {
+    String name = null;
+    switch (type) {
+    case DATABASE:
+      name = dbname;
+      break;
+    case TABLE_OR_VIEW:
+    case PARTITION:
+      name = getDbObjectName(dbname, objectName);
+      if (partKeys != null) {
+        name += partKeys.toString();
+      }
+      break;
+    case FUNCTION:
+      name = getDbObjectName(dbname, objectName);
+      break;
+    case COLUMN:
+    case LOCAL_URI:
+    case DFS_URI:
+      name = objectName;
+      break;
+    case COMMAND_PARAMS:
+      name = commandParams.toString();
+      break;
+    }
+
+    // get the string representing action type if its non default action type
+    String actionTypeStr ="";
+    if (actionType != null) {
+      switch (actionType) {
+      case INSERT:
+      case INSERT_OVERWRITE:
+        actionTypeStr = ", action=" + actionType;
+      default:
+      }
+    }
+
+    return "Object [type=" + type + ", name=" + name + actionTypeStr + "]";
+  }
+
+  private String getDbObjectName(String dbname2, String objectName2) {
+    return (dbname == null ? "" : dbname + ".") + objectName;
+  }
+
 }

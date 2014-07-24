@@ -1,9 +1,9 @@
 PREHOOK: query: CREATE TEMPORARY FUNCTION test_error AS 'org.apache.hadoop.hive.ql.udf.UDFTestErrorOnFalse'
 PREHOOK: type: CREATEFUNCTION
-PREHOOK: Output: database:default
+PREHOOK: Output: test_error
 POSTHOOK: query: CREATE TEMPORARY FUNCTION test_error AS 'org.apache.hadoop.hive.ql.udf.UDFTestErrorOnFalse'
 POSTHOOK: type: CREATEFUNCTION
-POSTHOOK: Output: database:default
+POSTHOOK: Output: test_error
 PREHOOK: query: SELECT test_error(key < 125 OR key > 130)
 FROM (
   SELECT *

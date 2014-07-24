@@ -173,7 +173,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
     return tables;
   }
 
-  
+
   @Override
   public boolean tableExists(String databaseName, String tableName) throws MetaException,
   TException, UnknownDBException {
@@ -331,7 +331,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
               " is not writable by " + conf.getUser());
         }
       } catch (IOException err) {
-        MetaException metaException = 
+        MetaException metaException =
             new MetaException("Error checking temp table path for " + table.getTableName());
         metaException.initCause(err);
         throw metaException;

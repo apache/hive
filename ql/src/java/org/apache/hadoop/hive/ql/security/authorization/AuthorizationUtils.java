@@ -99,6 +99,8 @@ public class AuthorizationUtils {
     case PARTITION:
     case DUMMYPARTITION: //need to determine if a different type is needed for dummy partitions
       return HivePrivilegeObjectType.PARTITION;
+    case FUNCTION:
+      return HivePrivilegeObjectType.FUNCTION;
     default:
       return null;
     }
@@ -253,12 +255,8 @@ public class AuthorizationUtils {
       return HiveObjectType.PARTITION;
     case COLUMN:
       return HiveObjectType.COLUMN;
-    case LOCAL_URI:
-    case DFS_URI:
-      throw new HiveException("Unsupported type " + type);
     default:
-      //should not happen as we have accounted for all types
-      throw new AssertionError("Unsupported type " + type);
+      throw new HiveException("Unsupported type " + type);
     }
   }
 
@@ -301,7 +299,7 @@ public class AuthorizationUtils {
       return null;
     }
     HiveObjectType objType = getThriftHiveObjType(privObj.getType());
-    return new HiveObjectRef(objType, privObj.getDbname(), privObj.getTableViewURI(), null, null);
+    return new HiveObjectRef(objType, privObj.getDbname(), privObj.getObjectName(), null, null);
   }
 
   public static HivePrivObjectActionType getActionType(Entity privObject) {

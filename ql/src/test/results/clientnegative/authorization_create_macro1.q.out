@@ -1,1 +1,1 @@
-FAILED: HiveAccessControlException Permission denied. Principal [name=hive_test_user, type=USER] does not have following privileges on Object [type=DATABASE, name=default] for operation CREATEMACRO : [ADMIN PRIVILEGE]
+FAILED: HiveAccessControlException Permission denied: Principal [name=hive_test_user, type=USER] does not have following privileges for operation CREATEMACRO [[ADMIN PRIVILEGE] on Object [type=DATABASE, name=default]]
