@@ -72,7 +72,9 @@ SELECT * FROM episodes_partitioned ORDER BY air_date LIMIT 5;
 SELECT * FROM episodes_partitioned WHERE doctor_pt = 6;
 -- Fetch w/non-existent partition
 SELECT * FROM episodes_partitioned WHERE doctor_pt = 7 LIMIT 5;
-
+-- Alter table add an empty partition
+ALTER TABLE episodes_partitioned ADD PARTITION (doctor_pt=7);
+SELECT COUNT(*) FROM episodes_partitioned;
 
 -- Verify that reading from an Avro partition works
 -- even if it has an old schema relative to the current table level schema
