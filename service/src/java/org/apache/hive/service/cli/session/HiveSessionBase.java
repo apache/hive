@@ -24,6 +24,8 @@ import org.apache.hive.service.cli.SessionHandle;
 import org.apache.hive.service.cli.operation.OperationManager;
 import org.apache.hive.service.cli.thrift.TProtocolVersion;
 
+import java.util.Map;
+
 /**
  * Methods that don't need to be executed under a doAs
  * context are here. Rest of them in HiveSession interface
@@ -48,6 +50,12 @@ public interface HiveSessionBase {
    * @param operationManager
    */
   public void setOperationManager(OperationManager operationManager);
+
+  /**
+   * Initialize the session
+   * @param sessionConfMap
+   */
+  public void initialize(Map<String, String> sessionConfMap);
 
   public SessionHandle getSessionHandle();
 

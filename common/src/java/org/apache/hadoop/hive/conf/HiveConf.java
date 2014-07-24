@@ -1385,6 +1385,12 @@ public class HiveConf extends Configuration {
         "If the property is set, the value must be a valid URI (java.net.URI, e.g. \"file:///tmp/my-logging.properties\"), \n" +
         "which you can then extract a URL from and pass to PropertyConfigurator.configure(URL)."),
 
+    // Hive global init file location
+    HIVE_GLOBAL_INIT_FILE_LOCATION("hive.global.init.file.location", System.getenv("HIVE_CONF_DIR"),
+        "The location of HS2 global init file (.hiverc).\n" +
+        "If the property is not set, then HS2 will search for the file in $HIVE_CONF_DIR/.\n" +
+        "If the property is set, the value must be a valid path where the init file is located."),
+
     // prefix used to auto generated column aliases (this should be started with '_')
     HIVE_AUTOGEN_COLUMNALIAS_PREFIX_LABEL("hive.autogen.columnalias.prefix.label", "_c",
         "String used as a prefix when auto generating column alias.\n" +
