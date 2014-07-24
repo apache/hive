@@ -802,7 +802,7 @@ public class HiveConf extends Configuration {
     HIVE_ORC_WRITE_FORMAT("hive.exec.orc.write.format", null,
         "Define the version of the file to write"),
     HIVE_ORC_DEFAULT_STRIPE_SIZE("hive.exec.orc.default.stripe.size",
-        256L * 1024 * 1024,
+        64L * 1024 * 1024,
         "Define the default ORC stripe size"),
     HIVE_ORC_DEFAULT_BLOCK_SIZE("hive.exec.orc.default.block.size", 256L * 1024 * 1024,
         "Define the default file system block size for ORC files."),

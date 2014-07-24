@@ -1316,7 +1316,7 @@
   </property>
   <property>
     <key>hive.exec.orc.default.stripe.size</key>
-    <value>268435456</value>
+    <value>67108864</value>
     <description>Define the default ORC stripe size</description>
   </property>
   <property>
