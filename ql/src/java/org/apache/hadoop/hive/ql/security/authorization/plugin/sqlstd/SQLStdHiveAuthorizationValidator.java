@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -71,13 +72,16 @@ public class SQLStdHiveAuthorizationValidator implements HiveAuthorizationValida
     IMetaStoreClient metastoreClient = metastoreClientFactory.getHiveMetastoreClient();
 
     // check privileges on input and output objects
-    checkPrivileges(hiveOpType, inputHObjs, metastoreClient, userName, IOType.INPUT);
-    checkPrivileges(hiveOpType, outputHObjs, metastoreClient, userName, IOType.OUTPUT);
+    List<String> deniedMessages = new ArrayList<String>();
+    checkPrivileges(hiveOpType, inputHObjs, metastoreClient, userName, IOType.INPUT, deniedMessages);
+    checkPrivileges(hiveOpType, outputHObjs, metastoreClient, userName, IOType.OUTPUT, deniedMessages);
 
+    SQLAuthorizationUtils.assertNoDeniedPermissions(new HivePrincipal(userName,
+        HivePrincipalType.USER), hiveOpType, deniedMessages);
   }
 
   private void checkPrivileges(HiveOperationType hiveOpType, List<HivePrivilegeObject> hiveObjects,
-      IMetaStoreClient metastoreClient, String userName, IOType ioType)
+      IMetaStoreClient metastoreClient, String userName, IOType ioType, List<String> deniedMessages)
       throws HiveAuthzPluginException, HiveAccessControlException {
 
     if (hiveObjects == null) {
@@ -95,7 +99,7 @@ public class SQLStdHiveAuthorizationValidator implements HiveAuthorizationValida
       switch (hiveObj.getType()) {
       case LOCAL_URI:
       case DFS_URI:
-        availPrivs = SQLAuthorizationUtils.getPrivilegesFromFS(new Path(hiveObj.getTableViewURI()),
+        availPrivs = SQLAuthorizationUtils.getPrivilegesFromFS(new Path(hiveObj.getObjectName()),
             conf, userName);
         break;
       case PARTITION:
@@ -104,9 +108,9 @@ public class SQLStdHiveAuthorizationValidator implements HiveAuthorizationValida
         // ignore partitions
         continue;
       case COMMAND_PARAMS:
-        // operations that have objects of type COMMAND_PARAMS are authorized
+      case FUNCTION:
+        // operations that have objects of type COMMAND_PARAMS, FUNCTION are authorized
         // solely on the type
-        // Assume no available privileges, unless in admin role
         if (privController.isUserAdmin()) {
           availPrivs.addPrivilege(SQLPrivTypeGrant.ADMIN_PRIV);
         }
@@ -118,8 +122,7 @@ public class SQLStdHiveAuthorizationValidator implements HiveAuthorizationValida
 
       // Verify that there are no missing privileges
       Collection<SQLPrivTypeGrant> missingPriv = requiredPrivs.findMissingPrivs(availPrivs);
-      SQLAuthorizationUtils.assertNoMissingPrivilege(missingPriv, new HivePrincipal(userName,
-          HivePrincipalType.USER), hiveObj, hiveOpType);
+      SQLAuthorizationUtils.addMissingPrivMsg(missingPriv, hiveObj, deniedMessages);
 
     }
   }

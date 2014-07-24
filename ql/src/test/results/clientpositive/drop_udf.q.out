@@ -1,9 +1,9 @@
 PREHOOK: query: CREATE TEMPORARY FUNCTION test_translate AS 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFTestTranslate'
 PREHOOK: type: CREATEFUNCTION
-PREHOOK: Output: database:default
+PREHOOK: Output: test_translate
 POSTHOOK: query: CREATE TEMPORARY FUNCTION test_translate AS 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFTestTranslate'
 POSTHOOK: type: CREATEFUNCTION
-POSTHOOK: Output: database:default
+POSTHOOK: Output: test_translate
 PREHOOK: query: EXPLAIN
 DROP TEMPORARY FUNCTION test_translate
 PREHOOK: type: DROPFUNCTION
@@ -18,7 +18,7 @@ STAGE PLANS:
 
 PREHOOK: query: DROP TEMPORARY FUNCTION test_translate
 PREHOOK: type: DROPFUNCTION
-PREHOOK: Output: database:default
+PREHOOK: Output: test_translate
 POSTHOOK: query: DROP TEMPORARY FUNCTION test_translate
 POSTHOOK: type: DROPFUNCTION
-POSTHOOK: Output: database:default
+POSTHOOK: Output: test_translate

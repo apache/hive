@@ -18,6 +18,10 @@
 
 package org.apache.hadoop.hive.ql.security.authorization.plugin;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Database;
@@ -37,10 +41,6 @@ import org.apache.hadoop.hive.ql.security.authorization.AuthorizationUtils;
 import org.apache.hadoop.hive.ql.security.authorization.PrivilegeScope;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAccessController;
 import org.apache.hadoop.hive.ql.session.SessionState;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 public class HiveV1Authorizer implements HiveAuthorizer {
 
@@ -141,8 +141,8 @@ public class HiveV1Authorizer implements HiveAuthorizer {
       throw new HiveException("Database " + privObject.getDbname() + " does not exists");
     }
     Table tableObj = null;
-    if (privObject.getTableViewURI() != null) {
-      tableObj = hive.getTable(dbObj.getName(), privObject.getTableViewURI());
+    if (privObject.getObjectName() != null) {
+      tableObj = hive.getTable(dbObj.getName(), privObject.getObjectName());
     }
 
     List<String> partValues = null;
@@ -308,8 +308,8 @@ public class HiveV1Authorizer implements HiveAuthorizer {
           throw new HiveException("Database " + privObj.getDbname() + " does not exists");
         }
         Table tableObj = null;
-        if (privObj.getTableViewURI() != null) {
-          tableObj = hive.getTable(dbObj.getName(), privObj.getTableViewURI());
+        if (privObj.getObjectName() != null) {
+          tableObj = hive.getTable(dbObj.getName(), privObj.getObjectName());
         }
         List<String> partValues = privObj.getPartKeys();
 

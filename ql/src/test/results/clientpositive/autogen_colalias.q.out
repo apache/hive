@@ -1,9 +1,9 @@
 PREHOOK: query: CREATE TEMPORARY FUNCTION test_max AS 'org.apache.hadoop.hive.ql.udf.UDAFTestMax'
 PREHOOK: type: CREATEFUNCTION
-PREHOOK: Output: database:default
+PREHOOK: Output: test_max
 POSTHOOK: query: CREATE TEMPORARY FUNCTION test_max AS 'org.apache.hadoop.hive.ql.udf.UDAFTestMax'
 POSTHOOK: type: CREATEFUNCTION
-POSTHOOK: Output: database:default
+POSTHOOK: Output: test_max
 PREHOOK: query: create table dest_grouped_old1 as select 1+1, 2+2 as zz, src.key, test_max(length(src.value)), count(src.value), sin(count(src.value)), count(sin(src.value)), unix_timestamp(), CAST(SUM(IF(value > 10, value, 1)) AS INT), if(src.key > 1,
 1,
 0)
@@ -93,8 +93,8 @@ key                 	string
 PREHOOK: query: -- Drop the temporary function at the end till HIVE-3160 gets fixed
 DROP TEMPORARY FUNCTION test_max
 PREHOOK: type: DROPFUNCTION
-PREHOOK: Output: database:default
+PREHOOK: Output: test_max
 POSTHOOK: query: -- Drop the temporary function at the end till HIVE-3160 gets fixed
 DROP TEMPORARY FUNCTION test_max
 POSTHOOK: type: DROPFUNCTION
-POSTHOOK: Output: database:default
+POSTHOOK: Output: test_max

@@ -3170,7 +3170,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       HivePrincipal grantor = privilege.getGrantorPrincipal();
 
       appendNonNull(builder, resource.getDbname(), true);
-      appendNonNull(builder, resource.getTableViewURI());
+      appendNonNull(builder, resource.getObjectName());
       appendNonNull(builder, resource.getPartKeys());
       appendNonNull(builder, resource.getColumns());
       appendNonNull(builder, principal.getName());

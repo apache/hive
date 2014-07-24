@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -64,9 +65,11 @@ public class GrantPrivAuthUtils {
         metastoreClient, userName, hivePrivObject, curRoles, isAdmin);
 
     // check if required privileges is subset of available privileges
+    List<String> deniedMessages = new ArrayList<String>();
     Collection<SQLPrivTypeGrant> missingPrivs = reqPrivileges.findMissingPrivs(availPrivs);
-    SQLAuthorizationUtils.assertNoMissingPrivilege(missingPrivs, new HivePrincipal(userName,
-        HivePrincipalType.USER), hivePrivObject, opType);
+    SQLAuthorizationUtils.addMissingPrivMsg(missingPrivs, hivePrivObject, deniedMessages);
+    SQLAuthorizationUtils.assertNoDeniedPermissions(new HivePrincipal(userName,
+        HivePrincipalType.USER), opType, deniedMessages);
   }
 
   private static RequiredPrivileges getGrantRequiredPrivileges(List<HivePrivilege> hivePrivileges)

@@ -724,18 +724,21 @@ public class Driver implements CommandProcessor {
 
       //support for authorization on partitions needs to be added
       String dbname = null;
-      String tableURI = null;
+      String objName = null;
       switch(privObject.getType()){
       case DATABASE:
         dbname = privObject.getDatabase() == null ? null : privObject.getDatabase().getName();
         break;
       case TABLE:
         dbname = privObject.getTable() == null ? null : privObject.getTable().getDbName();
-        tableURI = privObject.getTable() == null ? null : privObject.getTable().getTableName();
+        objName = privObject.getTable() == null ? null : privObject.getTable().getTableName();
         break;
       case DFS_DIR:
       case LOCAL_DIR:
-        tableURI = privObject.getD();
+        objName = privObject.getD();
+        break;
+      case FUNCTION:
+        objName = privObject.getFunctionName();
         break;
       case DUMMYPARTITION:
       case PARTITION:
@@ -745,7 +748,7 @@ public class Driver implements CommandProcessor {
           throw new AssertionError("Unexpected object type");
       }
       HivePrivObjectActionType actionType = AuthorizationUtils.getActionType(privObject);
-      HivePrivilegeObject hPrivObject = new HivePrivilegeObject(privObjType, dbname, tableURI,
+      HivePrivilegeObject hPrivObject = new HivePrivilegeObject(privObjType, dbname, objName,
           actionType);
       hivePrivobjs.add(hPrivObject);
     }
