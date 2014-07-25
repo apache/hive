@@ -33,6 +33,8 @@ public final class IOConstants {
   public static final String ORCFILE = "ORCFILE";
   public static final String PARQUET = "PARQUET";
   public static final String PARQUETFILE = "PARQUETFILE";
+  public static final String AVRO = "AVRO";
+  public static final String AVROFILE = "AVROFILE";
 
   @VisibleForTesting
   public static final String CUSTOM_TEXT_SERDE = "CustomTextSerde";
