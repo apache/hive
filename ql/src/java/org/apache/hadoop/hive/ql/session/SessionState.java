@@ -19,8 +19,6 @@
 package org.apache.hadoop.hive.ql.session;
 import static org.apache.hadoop.hive.metastore.MetaStoreUtils.DEFAULT_DATABASE_NAME;
 
-import com.google.common.base.Preconditions;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -69,6 +67,8 @@ import org.apache.hadoop.hive.ql.util.DosToUnix;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.util.ReflectionUtils;
 
+import com.google.common.base.Preconditions;
+
 /**
  * SessionState encapsulates common data associated with a session.
  *
@@ -83,7 +83,7 @@ public class SessionState {
   private static final String LOCAL_SESSION_PATH_KEY = "_hive.local.session.path";
   private static final String HDFS_SESSION_PATH_KEY = "_hive.hdfs.session.path";
   private static final String TMP_TABLE_SPACE_KEY = "_hive.tmp_table_space";
-  private Map<String, Map<String, Table>> tempTables = new HashMap<String, Map<String, Table>>();
+  private final Map<String, Map<String, Table>> tempTables = new HashMap<String, Map<String, Table>>();
 
   protected ClassLoader parentLoader;
 
@@ -172,6 +172,8 @@ public class SessionState {
 
   private final String CONFIG_AUTHZ_SETTINGS_APPLIED_MARKER =
       "hive.internal.ss.authz.settings.applied.marker";
+
+  private String userIpAddress;
 
   /**
    * Lineage state.
@@ -466,7 +468,7 @@ public class SessionState {
     FileSystem fs = p.getFileSystem(conf);
     p = new Path(fs.makeQualified(p).toString());
     FsPermission fsPermission = new FsPermission(Short.parseShort(perm.trim(), 8));
-    
+
     if (!Utilities.createDirsWithPermission(conf, p, fsPermission)) {
       throw new IOException("Cannot create directory: "
                             + p.toString());
@@ -475,7 +477,7 @@ public class SessionState {
     // best effort to clean up if we don't shut down properly
     fs.deleteOnExit(p);
   }
-    
+
 
   /**
    * Setup authentication and authorization plugins for this session.
@@ -1135,4 +1137,20 @@ public class SessionState {
   public Map<String, Map<String, Table>> getTempTables() {
     return tempTables;
   }
+
+  /**
+   * @return ip address for user running the query
+   */
+  public String getUserIpAddress() {
+    return userIpAddress;
+  }
+
+  /**
+   * set the ip address for user running the query
+   * @param userIpAddress
+   */
+  public void setUserIpAddress(String userIpAddress) {
+    this.userIpAddress = userIpAddress;
+  }
+
 }

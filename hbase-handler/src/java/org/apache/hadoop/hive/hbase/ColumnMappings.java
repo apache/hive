@@ -285,8 +285,11 @@ public class ColumnMappings implements Iterable<ColumnMappings.ColumnMapping> {
     return columnsMapping;
   }
 
+  /**
+   * Represents a mapping from a single Hive column to an HBase column qualifier, column family or row key.
+   */
   // todo use final fields
-  static class ColumnMapping {
+  public static class ColumnMapping {
 
     ColumnMapping() {
       binaryStorage = new ArrayList<Boolean>(2);
@@ -304,6 +307,50 @@ public class ColumnMappings implements Iterable<ColumnMappings.ColumnMapping> {
     String mappingSpec;
     String qualifierPrefix;
     byte[] qualifierPrefixBytes;
+
+    public String getColumnName() {
+      return columnName;
+    }
+
+    public TypeInfo getColumnType() {
+      return columnType;
+    }
+
+    public String getFamilyName() {
+      return familyName;
+    }
+
+    public String getQualifierName() {
+      return qualifierName;
+    }
+
+    public byte[] getFamilyNameBytes() {
+      return familyNameBytes;
+    }
+
+    public byte[] getQualifierNameBytes() {
+      return qualifierNameBytes;
+    }
+
+    public List<Boolean> getBinaryStorage() {
+      return binaryStorage;
+    }
+
+    public boolean isHbaseRowKey() {
+      return hbaseRowKey;
+    }
+
+    public String getMappingSpec() {
+      return mappingSpec;
+    }
+
+    public String getQualifierPrefix() {
+      return qualifierPrefix;
+    }
+
+    public byte[] getQualifierPrefixBytes() {
+      return qualifierPrefixBytes;
+    }
 
     public boolean isCategory(ObjectInspector.Category category) {
       return columnType.getCategory() == category;

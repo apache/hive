@@ -31,16 +31,24 @@ public class RevokeDesc extends DDLDesc implements Serializable, Cloneable {
   private List<PrincipalDesc> principals;
 
   private PrivilegeObjectDesc privilegeSubjectDesc;
-  
+
+  private boolean grantOption;
+
   public RevokeDesc(){
   }
 
   public RevokeDesc(List<PrivilegeDesc> privileges,
       List<PrincipalDesc> principals, PrivilegeObjectDesc privilegeSubjectDesc) {
+    this(privileges, principals, privilegeSubjectDesc, false);
+  }
+
+  public RevokeDesc(List<PrivilegeDesc> privileges,
+        List<PrincipalDesc> principals, PrivilegeObjectDesc privilegeSubjectDesc, boolean grantOption) {
     super();
     this.privileges = privileges;
     this.principals = principals;
     this.privilegeSubjectDesc = privilegeSubjectDesc;
+    this.grantOption = grantOption;
   }
 
   public List<PrivilegeDesc> getPrivileges() {
@@ -65,6 +73,14 @@ public class RevokeDesc extends DDLDesc implements Serializable, Cloneable {
 
   public void setPrivilegeSubjectDesc(PrivilegeObjectDesc privilegeSubjectDesc) {
     this.privilegeSubjectDesc = privilegeSubjectDesc;
+  }
+
+  public boolean isGrantOption() {
+    return grantOption;
+  }
+
+  public void setGrantOption(boolean grantOption) {
+    this.grantOption = grantOption;
   }
   
 }

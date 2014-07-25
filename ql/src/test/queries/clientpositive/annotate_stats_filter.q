@@ -50,6 +50,20 @@ explain extended select * from loc_orc where !false;
 -- numRows: 0 rawDataSize: 0
 explain extended select * from loc_orc where !true;
 
+-- Constant evaluation. true will pass all rows, false will not pass any rows
+-- numRows: 8 rawDataSize: 804
+explain extended select * from loc_orc where true;
+-- numRows: 8 rawDataSize: 804
+explain extended select * from loc_orc where 'foo';
+-- numRows: 8 rawDataSize: 804
+explain extended select * from loc_orc where true = true;
+-- numRows: 0 rawDataSize: 0
+explain extended select * from loc_orc where false = true;
+-- numRows: 0 rawDataSize: 0
+explain extended select * from loc_orc where 'foo' = 'bar';
+-- numRows: 0 rawDataSize: 0
+explain extended select * from loc_orc where false;
+
 -- OR evaluation. 1 row for OH and 1 row for CA
 -- numRows: 2 rawDataSize: 204
 explain extended select * from loc_orc where state='OH' or state='CA';

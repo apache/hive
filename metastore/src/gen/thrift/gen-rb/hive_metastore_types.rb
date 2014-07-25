@@ -268,6 +268,45 @@ class PrincipalPrivilegeSet
   ::Thrift::Struct.generate_accessors self
 end
 
+class GrantRevokePrivilegeRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  REQUESTTYPE = 1
+  PRIVILEGES = 2
+  REVOKEGRANTOPTION = 3
+
+  FIELDS = {
+    REQUESTTYPE => {:type => ::Thrift::Types::I32, :name => 'requestType', :enum_class => ::GrantRevokeType},
+    PRIVILEGES => {:type => ::Thrift::Types::STRUCT, :name => 'privileges', :class => ::PrivilegeBag},
+    REVOKEGRANTOPTION => {:type => ::Thrift::Types::BOOL, :name => 'revokeGrantOption', :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    unless @requestType.nil? || ::GrantRevokeType::VALID_VALUES.include?(@requestType)
+      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field requestType!')
+    end
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class GrantRevokePrivilegeResponse
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  SUCCESS = 1
+
+  FIELDS = {
+    SUCCESS => {:type => ::Thrift::Types::BOOL, :name => 'success', :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
 class Role
   include ::Thrift::Struct, ::Thrift::Struct_Union
   ROLENAME = 1

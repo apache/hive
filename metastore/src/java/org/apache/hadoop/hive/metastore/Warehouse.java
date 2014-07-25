@@ -89,8 +89,7 @@ public class Warehouse {
     try {
       Class<? extends MetaStoreFS> handlerClass = (Class<? extends MetaStoreFS>) Class
           .forName(handlerClassStr, true, JavaUtils.getClassLoader());
-      MetaStoreFS handler = (MetaStoreFS) ReflectionUtils.newInstance(
-          handlerClass, conf);
+      MetaStoreFS handler = ReflectionUtils.newInstance(handlerClass, conf);
       return handler;
     } catch (ClassNotFoundException e) {
       throw new MetaException("Error in loading MetaStoreFS handler."
@@ -563,4 +562,12 @@ public class Warehouse {
     return values;
   }
 
+  public static Map<String, String> makeSpecFromValues(List<FieldSchema> partCols,
+      List<String> values) {
+    Map<String, String> spec = new LinkedHashMap<String, String>();
+    for (int i = 0; i < values.size(); i++) {
+      spec.put(partCols.get(i).getName(), values.get(i));
+    }
+    return spec;
+  }
 }

@@ -727,7 +727,7 @@ public class TxnHandler {
   }
 
   public ShowCompactResponse showCompact(ShowCompactRequest rqst) throws MetaException {
-    ShowCompactResponse response = new ShowCompactResponse();
+    ShowCompactResponse response = new ShowCompactResponse(new ArrayList<ShowCompactResponseElement>());
     Connection dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
     Statement stmt = null;
     try {

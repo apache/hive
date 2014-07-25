@@ -139,6 +139,16 @@ struct PrincipalPrivilegeSet {
   3: map<string, list<PrivilegeGrantInfo>> rolePrivileges, //role name -> privilege grant info
 }
 
+struct GrantRevokePrivilegeRequest {
+  1: GrantRevokeType requestType;
+  2: PrivilegeBag privileges;
+  3: optional bool revokeGrantOption;  // Only for revoke request
+}
+
+struct GrantRevokePrivilegeResponse {
+  1: optional bool success;
+}
+
 struct Role {
   1: string roleName,
   2: i32 createTime,
@@ -1001,8 +1011,11 @@ service ThriftHiveMetastore extends fb303.FacebookService
   list<HiveObjectPrivilege> list_privileges(1:string principal_name, 2:PrincipalType principal_type,
     3: HiveObjectRef hiveObject) throws(1:MetaException o1)
 
+  // Deprecated, use grant_revoke_privileges()
   bool grant_privileges(1:PrivilegeBag privileges) throws(1:MetaException o1)
+  // Deprecated, use grant_revoke_privileges()
   bool revoke_privileges(1:PrivilegeBag privileges) throws(1:MetaException o1)
+  GrantRevokePrivilegeResponse grant_revoke_privileges(1:GrantRevokePrivilegeRequest request) throws(1:MetaException o1);
 
   // this is used by metastore client to send UGI information to metastore server immediately
   // after setting up a connection.

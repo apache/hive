@@ -184,11 +184,11 @@ STAGE PLANS:
           Statistics: Num rows: 34 Data size: 7032 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
             predicate: ((1 = 1) and _col4 is null) (type: boolean)
-            Statistics: Num rows: 8 Data size: 1654 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 17 Data size: 3516 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: _col0 (type: string), _col1 (type: string)
               outputColumnNames: _col0, _col1
-              Statistics: Num rows: 8 Data size: 1654 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 17 Data size: 3516 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
                 table:
@@ -203,16 +203,16 @@ STAGE PLANS:
             Reduce Output Operator
               key expressions: _col0 (type: string)
               sort order: +
-              Statistics: Num rows: 8 Data size: 1654 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 17 Data size: 3516 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col1 (type: string)
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string)
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 8 Data size: 1654 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 17 Data size: 3516 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 8 Data size: 1654 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 17 Data size: 3516 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -272,14 +272,14 @@ STAGE PLANS:
           Statistics: Num rows: 31 Data size: 6393 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
             predicate: (1 = 1) (type: boolean)
-            Statistics: Num rows: 15 Data size: 3093 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 31 Data size: 6393 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: _col0 (type: string), _col1 (type: string)
               outputColumnNames: _col0, _col1
-              Statistics: Num rows: 15 Data size: 3093 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 31 Data size: 6393 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 15 Data size: 3093 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 31 Data size: 6393 Basic stats: COMPLETE Column stats: NONE
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -680,14 +680,14 @@ STAGE PLANS:
               Statistics: Num rows: 31 Data size: 6393 Basic stats: COMPLETE Column stats: NONE
               Filter Operator
                 predicate: (1 = 1) (type: boolean)
-                Statistics: Num rows: 15 Data size: 3093 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 31 Data size: 6393 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: _col0 (type: string), _col1 (type: string)
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 15 Data size: 3093 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 31 Data size: 6393 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 15 Data size: 3093 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 31 Data size: 6393 Basic stats: COMPLETE Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -752,15 +752,15 @@ STAGE PLANS:
               Statistics: Num rows: 34 Data size: 7032 Basic stats: COMPLETE Column stats: NONE
               Filter Operator
                 predicate: ((1 = 1) and _col4 is null) (type: boolean)
-                Statistics: Num rows: 8 Data size: 1654 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 17 Data size: 3516 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: _col0 (type: string), _col1 (type: string)
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 8 Data size: 1654 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 17 Data size: 3516 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: string)
                     sort order: +
-                    Statistics: Num rows: 8 Data size: 1654 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 17 Data size: 3516 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col1 (type: string)
       Local Work:
         Map Reduce Local Work
@@ -768,10 +768,10 @@ STAGE PLANS:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string)
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 8 Data size: 1654 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 17 Data size: 3516 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 8 Data size: 1654 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 17 Data size: 3516 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat

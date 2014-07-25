@@ -100,6 +100,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.HiveDecimalUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
 /**
  * Context class for vectorization execution.
@@ -393,13 +394,30 @@ public class VectorizationContext {
 
     List<ExprNodeDesc> childrenWithCasts = new ArrayList<ExprNodeDesc>();
     boolean atleastOneCastNeeded = false;
-    for (ExprNodeDesc child : children) {
-      ExprNodeDesc castExpression = getImplicitCastExpression(genericUDF, child, commonType);
-      if (castExpression != null) {
-        atleastOneCastNeeded = true;
-        childrenWithCasts.add(castExpression);
-      } else {
-        childrenWithCasts.add(child);
+    if (genericUDF instanceof GenericUDFElt) {
+      int i = 0;
+      for (ExprNodeDesc child : children) {
+        TypeInfo castType = commonType;
+        if (i++ == 0) {
+          castType = isIntFamily(child.getTypeString()) ? child.getTypeInfo() : TypeInfoFactory.intTypeInfo;
+        }
+        ExprNodeDesc castExpression = getImplicitCastExpression(genericUDF, child, castType);
+        if (castExpression != null) {
+          atleastOneCastNeeded = true;
+          childrenWithCasts.add(castExpression);
+        } else {
+          childrenWithCasts.add(child);
+        }
+      }
+    } else {
+      for (ExprNodeDesc child : children) {
+        ExprNodeDesc castExpression = getImplicitCastExpression(genericUDF, child, commonType);
+        if (castExpression != null) {
+          atleastOneCastNeeded = true;
+          childrenWithCasts.add(castExpression);
+        } else {
+          childrenWithCasts.add(child);
+        }
       }
     }
     if (atleastOneCastNeeded) {
@@ -484,7 +502,7 @@ public class VectorizationContext {
     } else {
 
       // Casts to exact types including long to double etc. are needed in some special cases.
-      if (udf instanceof GenericUDFCoalesce) {
+      if (udf instanceof GenericUDFCoalesce || udf instanceof GenericUDFElt) {
         GenericUDF genericUdf = getGenericUDFForCast(castType);
         List<ExprNodeDesc> children = new ArrayList<ExprNodeDesc>();
         children.add(child);
@@ -896,6 +914,10 @@ public class VectorizationContext {
 
       // Coalesce is a special case because it can take variable number of arguments.
       return getCoalesceExpression(childExpr, returnType);
+    } else if (udf instanceof GenericUDFElt) {
+
+      // Coalesce is a special case because it can take variable number of arguments.
+      return getEltExpression(childExpr, returnType);
     } else if (udf instanceof GenericUDFBridge) {
       VectorExpression v = getGenericUDFBridgeVectorExpression((GenericUDFBridge) udf, childExpr, mode,
           returnType);
@@ -938,6 +960,33 @@ public class VectorizationContext {
       vectorCoalesce.setOutputType(returnType.getTypeName());
       vectorCoalesce.setChildExpressions(vectorChildren);
       return vectorCoalesce;
+    } finally {
+      // Free the output columns of the child expressions.
+      if (vectorChildren != null) {
+        for (VectorExpression v : vectorChildren) {
+          ocm.freeOutputColumn(v.getOutputColumn());
+        }
+      }
+    }
+  }
+
+  private VectorExpression getEltExpression(List<ExprNodeDesc> childExpr, TypeInfo returnType)
+      throws HiveException {
+    int[] inputColumns = new int[childExpr.size()];
+    VectorExpression[] vectorChildren = null;
+    try {
+      vectorChildren = getVectorExpressions(childExpr, Mode.PROJECTION);
+
+      int i = 0;
+      for (VectorExpression ve : vectorChildren) {
+        inputColumns[i++] = ve.getOutputColumn();
+      }
+
+      int outColumn = ocm.allocateOutputColumn(getNormalizedTypeName(returnType.getTypeName()));
+      VectorElt vectorElt = new VectorElt(inputColumns, outColumn);
+      vectorElt.setOutputType(returnType.getTypeName());
+      vectorElt.setChildExpressions(vectorChildren);
+      return vectorElt;
     } finally {
       // Free the output columns of the child expressions.
       if (vectorChildren != null) {
@@ -1063,10 +1112,9 @@ public class VectorizationContext {
     ExprNodeDesc child = childExpr.get(0);
     String inputType = childExpr.get(0).getTypeString();
     if (child instanceof ExprNodeConstantDesc) {
-      // Return a constant vector expression
-      Object constantValue = ((ExprNodeConstantDesc) child).getValue();
-      Decimal128 decimalValue = castConstantToDecimal(constantValue, child.getTypeInfo());
-      return getConstantVectorExpression(decimalValue, returnType, Mode.PROJECTION);
+      // Don't do constant folding here.  Wait until the optimizer is changed to do it.
+      // Family of related JIRAs: HIVE-7421, HIVE-7422, and HIVE-7424.
+      return null;
     }
     if (isIntFamily(inputType)) {
       return createVectorExpression(CastLongToDecimal.class, childExpr, Mode.PROJECTION, returnType);
@@ -1083,49 +1131,15 @@ public class VectorizationContext {
     throw new HiveException("Unhandled cast input type: " + inputType);
   }
 
-  private Decimal128 castConstantToDecimal(Object scalar, TypeInfo type) throws HiveException {
-    PrimitiveTypeInfo ptinfo = (PrimitiveTypeInfo) type;
-    String typename = type.getTypeName();
-    Decimal128 d = new Decimal128();
-    int scale = HiveDecimalUtils.getScaleForType(ptinfo);
-    switch (ptinfo.getPrimitiveCategory()) {
-      case FLOAT:
-        float floatVal = ((Float) scalar).floatValue();
-        d.update(floatVal, (short) scale);
-        break;
-      case DOUBLE:
-        double doubleVal = ((Double) scalar).doubleValue();
-        d.update(doubleVal, (short) scale);
-        break;
-      case BYTE:
-        byte byteVal = ((Byte) scalar).byteValue();
-        d.update(byteVal, (short) scale);
-        break;
-      case SHORT:
-        short shortVal = ((Short) scalar).shortValue();
-        d.update(shortVal, (short) scale);
-        break;
-      case INT:
-        int intVal = ((Integer) scalar).intValue();
-        d.update(intVal, (short) scale);
-        break;
-      case LONG:
-        long longVal = ((Long) scalar).longValue();
-        d.update(longVal, (short) scale);
-        break;
-      case DECIMAL:
-        HiveDecimal decimalVal = (HiveDecimal) scalar;
-        d.update(decimalVal.unscaledValue(), (short) scale);
-        break;
-      default:
-        throw new HiveException("Unsupported type "+typename+" for cast to Decimal128");
-    }
-    return d;
-  }
-
   private VectorExpression getCastToString(List<ExprNodeDesc> childExpr, TypeInfo returnType)
       throws HiveException {
+    ExprNodeDesc child = childExpr.get(0);
     String inputType = childExpr.get(0).getTypeString();
+    if (child instanceof ExprNodeConstantDesc) {
+      // Don't do constant folding here.  Wait until the optimizer is changed to do it.
+      // Family of related JIRAs: HIVE-7421, HIVE-7422, and HIVE-7424.
+      return null;
+    }
     if (inputType.equals("boolean")) {
       // Boolean must come before the integer family. It's a special case.
       return createVectorExpression(CastBooleanToStringViaLongToString.class, childExpr, Mode.PROJECTION, null);
@@ -1145,7 +1159,13 @@ public class VectorizationContext {
 
   private VectorExpression getCastToDoubleExpression(Class<?> udf, List<ExprNodeDesc> childExpr,
       TypeInfo returnType) throws HiveException {
+    ExprNodeDesc child = childExpr.get(0);
     String inputType = childExpr.get(0).getTypeString();
+    if (child instanceof ExprNodeConstantDesc) {
+      // Don't do constant folding here.  Wait until the optimizer is changed to do it.
+      // Family of related JIRAs: HIVE-7421, HIVE-7422, and HIVE-7424.
+      return null;
+    }
     if (isIntFamily(inputType)) {
       return createVectorExpression(CastLongToDouble.class, childExpr, Mode.PROJECTION, returnType);
     } else if (inputType.equals("timestamp")) {
@@ -1163,7 +1183,13 @@ public class VectorizationContext {
 
   private VectorExpression getCastToBoolean(List<ExprNodeDesc> childExpr)
       throws HiveException {
+    ExprNodeDesc child = childExpr.get(0);
     String inputType = childExpr.get(0).getTypeString();
+    if (child instanceof ExprNodeConstantDesc) {
+      // Don't do constant folding here.  Wait until the optimizer is changed to do it.
+      // Family of related JIRAs: HIVE-7421, HIVE-7422, and HIVE-7424.
+      return null;
+    }
     // Long and double are handled using descriptors, string needs to be specially handled.
     if (inputType.equals("string")) {
       // string casts to false if it is 0 characters long, otherwise true
@@ -1184,7 +1210,13 @@ public class VectorizationContext {
 
   private VectorExpression getCastToLongExpression(List<ExprNodeDesc> childExpr)
       throws HiveException {
+    ExprNodeDesc child = childExpr.get(0);
     String inputType = childExpr.get(0).getTypeString();
+    if (child instanceof ExprNodeConstantDesc) {
+      // Don't do constant folding here.  Wait until the optimizer is changed to do it.
+      // Family of related JIRAs: HIVE-7421, HIVE-7422, and HIVE-7424.
+      return null;
+    }
     // Float family, timestamp are handled via descriptor based lookup, int family needs
     // special handling.
     if (isIntFamily(inputType)) {

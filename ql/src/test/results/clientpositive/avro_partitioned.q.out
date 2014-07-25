@@ -236,6 +236,40 @@ SELECT * FROM episodes_partitioned WHERE doctor_pt = 7 LIMIT 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@episodes_partitioned
 #### A masked pattern was here ####
+PREHOOK: query: -- Alter table add an empty partition
+ALTER TABLE episodes_partitioned ADD PARTITION (doctor_pt=7)
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@episodes_partitioned
+POSTHOOK: query: -- Alter table add an empty partition
+ALTER TABLE episodes_partitioned ADD PARTITION (doctor_pt=7)
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@episodes_partitioned
+POSTHOOK: Output: default@episodes_partitioned@doctor_pt=7
+PREHOOK: query: SELECT COUNT(*) FROM episodes_partitioned
+PREHOOK: type: QUERY
+PREHOOK: Input: default@episodes_partitioned
+PREHOOK: Input: default@episodes_partitioned@doctor_pt=1
+PREHOOK: Input: default@episodes_partitioned@doctor_pt=11
+PREHOOK: Input: default@episodes_partitioned@doctor_pt=2
+PREHOOK: Input: default@episodes_partitioned@doctor_pt=4
+PREHOOK: Input: default@episodes_partitioned@doctor_pt=5
+PREHOOK: Input: default@episodes_partitioned@doctor_pt=6
+PREHOOK: Input: default@episodes_partitioned@doctor_pt=7
+PREHOOK: Input: default@episodes_partitioned@doctor_pt=9
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COUNT(*) FROM episodes_partitioned
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@episodes_partitioned
+POSTHOOK: Input: default@episodes_partitioned@doctor_pt=1
+POSTHOOK: Input: default@episodes_partitioned@doctor_pt=11
+POSTHOOK: Input: default@episodes_partitioned@doctor_pt=2
+POSTHOOK: Input: default@episodes_partitioned@doctor_pt=4
+POSTHOOK: Input: default@episodes_partitioned@doctor_pt=5
+POSTHOOK: Input: default@episodes_partitioned@doctor_pt=6
+POSTHOOK: Input: default@episodes_partitioned@doctor_pt=7
+POSTHOOK: Input: default@episodes_partitioned@doctor_pt=9
+#### A masked pattern was here ####
+8
 PREHOOK: query: -- Verify that reading from an Avro partition works
 -- even if it has an old schema relative to the current table level schema
 

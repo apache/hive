@@ -19,11 +19,9 @@ package org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd;
 
 import org.apache.hadoop.classification.InterfaceAudience.Private;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzPluginException;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveMetastoreClientFactory;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAccessController;
 
 /**
  * Extends SQLStdHiveAccessController to relax the restriction of not being able to run dfs
@@ -42,9 +40,6 @@ public class SQLStdHiveAccessControllerForTest extends SQLStdHiveAccessControlle
   @Override
   public void applyAuthorizationConfigPolicy(HiveConf hiveConf) {
     super.applyAuthorizationConfigPolicy(hiveConf);
-
-    // allow set and dfs commands
-    hiveConf.setVar(ConfVars.HIVE_SECURITY_COMMAND_WHITELIST, "set,dfs");
 
     // remove restrictions on the variables that can be set using set command
     hiveConf.setIsModWhiteListEnabled(false);

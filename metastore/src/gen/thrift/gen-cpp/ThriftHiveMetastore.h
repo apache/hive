@@ -107,6 +107,7 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void list_privileges(std::vector<HiveObjectPrivilege> & _return, const std::string& principal_name, const PrincipalType::type principal_type, const HiveObjectRef& hiveObject) = 0;
   virtual bool grant_privileges(const PrivilegeBag& privileges) = 0;
   virtual bool revoke_privileges(const PrivilegeBag& privileges) = 0;
+  virtual void grant_revoke_privileges(GrantRevokePrivilegeResponse& _return, const GrantRevokePrivilegeRequest& request) = 0;
   virtual void set_ugi(std::vector<std::string> & _return, const std::string& user_name, const std::vector<std::string> & group_names) = 0;
   virtual void get_delegation_token(std::string& _return, const std::string& token_owner, const std::string& renewer_kerberos_principal_name) = 0;
   virtual int64_t renew_delegation_token(const std::string& token_str_form) = 0;
@@ -445,6 +446,9 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
   bool revoke_privileges(const PrivilegeBag& /* privileges */) {
     bool _return = false;
     return _return;
+  }
+  void grant_revoke_privileges(GrantRevokePrivilegeResponse& /* _return */, const GrantRevokePrivilegeRequest& /* request */) {
+    return;
   }
   void set_ugi(std::vector<std::string> & /* _return */, const std::string& /* user_name */, const std::vector<std::string> & /* group_names */) {
     return;
@@ -13390,6 +13394,124 @@ class ThriftHiveMetastore_revoke_privileges_presult {
 
 };
 
+typedef struct _ThriftHiveMetastore_grant_revoke_privileges_args__isset {
+  _ThriftHiveMetastore_grant_revoke_privileges_args__isset() : request(false) {}
+  bool request;
+} _ThriftHiveMetastore_grant_revoke_privileges_args__isset;
+
+class ThriftHiveMetastore_grant_revoke_privileges_args {
+ public:
+
+  ThriftHiveMetastore_grant_revoke_privileges_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_grant_revoke_privileges_args() throw() {}
+
+  GrantRevokePrivilegeRequest request;
+
+  _ThriftHiveMetastore_grant_revoke_privileges_args__isset __isset;
+
+  void __set_request(const GrantRevokePrivilegeRequest& val) {
+    request = val;
+  }
+
+  bool operator == (const ThriftHiveMetastore_grant_revoke_privileges_args & rhs) const
+  {
+    if (!(request == rhs.request))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_grant_revoke_privileges_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_grant_revoke_privileges_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_grant_revoke_privileges_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_grant_revoke_privileges_pargs() throw() {}
+
+  const GrantRevokePrivilegeRequest* request;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_grant_revoke_privileges_result__isset {
+  _ThriftHiveMetastore_grant_revoke_privileges_result__isset() : success(false), o1(false) {}
+  bool success;
+  bool o1;
+} _ThriftHiveMetastore_grant_revoke_privileges_result__isset;
+
+class ThriftHiveMetastore_grant_revoke_privileges_result {
+ public:
+
+  ThriftHiveMetastore_grant_revoke_privileges_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_grant_revoke_privileges_result() throw() {}
+
+  GrantRevokePrivilegeResponse success;
+  MetaException o1;
+
+  _ThriftHiveMetastore_grant_revoke_privileges_result__isset __isset;
+
+  void __set_success(const GrantRevokePrivilegeResponse& val) {
+    success = val;
+  }
+
+  void __set_o1(const MetaException& val) {
+    o1 = val;
+  }
+
+  bool operator == (const ThriftHiveMetastore_grant_revoke_privileges_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_grant_revoke_privileges_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_grant_revoke_privileges_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_grant_revoke_privileges_presult__isset {
+  _ThriftHiveMetastore_grant_revoke_privileges_presult__isset() : success(false), o1(false) {}
+  bool success;
+  bool o1;
+} _ThriftHiveMetastore_grant_revoke_privileges_presult__isset;
+
+class ThriftHiveMetastore_grant_revoke_privileges_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_grant_revoke_privileges_presult() throw() {}
+
+  GrantRevokePrivilegeResponse* success;
+  MetaException o1;
+
+  _ThriftHiveMetastore_grant_revoke_privileges_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 typedef struct _ThriftHiveMetastore_set_ugi_args__isset {
   _ThriftHiveMetastore_set_ugi_args__isset() : user_name(false), group_names(false) {}
   bool user_name;
@@ -15601,6 +15723,9 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   bool revoke_privileges(const PrivilegeBag& privileges);
   void send_revoke_privileges(const PrivilegeBag& privileges);
   bool recv_revoke_privileges();
+  void grant_revoke_privileges(GrantRevokePrivilegeResponse& _return, const GrantRevokePrivilegeRequest& request);
+  void send_grant_revoke_privileges(const GrantRevokePrivilegeRequest& request);
+  void recv_grant_revoke_privileges(GrantRevokePrivilegeResponse& _return);
   void set_ugi(std::vector<std::string> & _return, const std::string& user_name, const std::vector<std::string> & group_names);
   void send_set_ugi(const std::string& user_name, const std::vector<std::string> & group_names);
   void recv_set_ugi(std::vector<std::string> & _return);
@@ -15753,6 +15878,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   void process_list_privileges(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_grant_privileges(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_revoke_privileges(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_grant_revoke_privileges(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_set_ugi(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_delegation_token(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_renew_delegation_token(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -15865,6 +15991,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
     processMap_["list_privileges"] = &ThriftHiveMetastoreProcessor::process_list_privileges;
     processMap_["grant_privileges"] = &ThriftHiveMetastoreProcessor::process_grant_privileges;
     processMap_["revoke_privileges"] = &ThriftHiveMetastoreProcessor::process_revoke_privileges;
+    processMap_["grant_revoke_privileges"] = &ThriftHiveMetastoreProcessor::process_grant_revoke_privileges;
     processMap_["set_ugi"] = &ThriftHiveMetastoreProcessor::process_set_ugi;
     processMap_["get_delegation_token"] = &ThriftHiveMetastoreProcessor::process_get_delegation_token;
     processMap_["renew_delegation_token"] = &ThriftHiveMetastoreProcessor::process_renew_delegation_token;
@@ -16785,6 +16912,16 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
       ifaces_[i]->revoke_privileges(privileges);
     }
     return ifaces_[i]->revoke_privileges(privileges);
+  }
+
+  void grant_revoke_privileges(GrantRevokePrivilegeResponse& _return, const GrantRevokePrivilegeRequest& request) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->grant_revoke_privileges(_return, request);
+    }
+    ifaces_[i]->grant_revoke_privileges(_return, request);
+    return;
   }
 
   void set_ugi(std::vector<std::string> & _return, const std::string& user_name, const std::vector<std::string> & group_names) {

@@ -3094,7 +3094,8 @@ public final class Utilities {
     PartitionDesc partDesc = work.getPathToPartitionInfo().get(strPath);
     boolean nonNative = partDesc.getTableDesc().isNonNative();
     boolean oneRow = partDesc.getInputFileFormatClass() == OneNullRowInputFormat.class;
-    Properties props = partDesc.getProperties();
+    Properties props = SerDeUtils.createOverlayedProperties(
+        partDesc.getTableDesc().getProperties(), partDesc.getProperties());
     Class<? extends HiveOutputFormat> outFileFormat = partDesc.getOutputFileFormatClass();
 
     if (nonNative) {

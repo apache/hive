@@ -1,0 +1,1 @@
+Query returned non-zero code: 1, cause: Permission denied: Principal [name=hive_test_user, type=USER] does not have following privileges for operation DELETE [[ADMIN PRIVILEGE] on Object [type=COMMAND_PARAMS, name=[jar, dummy.jar]]]

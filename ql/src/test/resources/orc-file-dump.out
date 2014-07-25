@@ -51,7 +51,7 @@ Stripes:
     Encoding column 0: DIRECT
     Encoding column 1: DIRECT_V2
     Encoding column 2: DIRECT_V2
-    Encoding column 3: DICTIONARY_V2
+    Encoding column 3: DICTIONARY_V2[35]
   Stripe: offset: 63966 data: 63755 rows: 5000 tail: 74 index: 122
     Stream: column 0 section ROW_INDEX start: 63966 length 10
     Stream: column 1 section ROW_INDEX start: 63976 length 34
@@ -65,7 +65,7 @@ Stripes:
     Encoding column 0: DIRECT
     Encoding column 1: DIRECT_V2
     Encoding column 2: DIRECT_V2
-    Encoding column 3: DICTIONARY_V2
+    Encoding column 3: DICTIONARY_V2[35]
   Stripe: offset: 127917 data: 63766 rows: 5000 tail: 74 index: 124
     Stream: column 0 section ROW_INDEX start: 127917 length 10
     Stream: column 1 section ROW_INDEX start: 127927 length 36
@@ -79,7 +79,7 @@ Stripes:
     Encoding column 0: DIRECT
     Encoding column 1: DIRECT_V2
     Encoding column 2: DIRECT_V2
-    Encoding column 3: DICTIONARY_V2
+    Encoding column 3: DICTIONARY_V2[35]
   Stripe: offset: 191881 data: 63796 rows: 5000 tail: 74 index: 123
     Stream: column 0 section ROW_INDEX start: 191881 length 10
     Stream: column 1 section ROW_INDEX start: 191891 length 35
@@ -93,7 +93,7 @@ Stripes:
     Encoding column 0: DIRECT
     Encoding column 1: DIRECT_V2
     Encoding column 2: DIRECT_V2
-    Encoding column 3: DICTIONARY_V2
+    Encoding column 3: DICTIONARY_V2[35]
   Stripe: offset: 255874 data: 12940 rows: 1000 tail: 71 index: 123
     Stream: column 0 section ROW_INDEX start: 255874 length 10
     Stream: column 1 section ROW_INDEX start: 255884 length 36
@@ -107,7 +107,7 @@ Stripes:
     Encoding column 0: DIRECT
     Encoding column 1: DIRECT_V2
     Encoding column 2: DIRECT_V2
-    Encoding column 3: DICTIONARY_V2
+    Encoding column 3: DICTIONARY_V2[35]
 
 File length: 269529 bytes
 Padding length: 0 bytes

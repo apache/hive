@@ -222,16 +222,16 @@ STAGE PLANS:
           Statistics: Num rows: 5 Data size: 57 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
             predicate: (1 = 1) (type: boolean)
-            Statistics: Num rows: 2 Data size: 22 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 5 Data size: 57 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: _col0 (type: string)
               outputColumnNames: _col0
-              Statistics: Num rows: 2 Data size: 22 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 5 Data size: 57 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 keys: _col0 (type: string)
                 mode: hash
                 outputColumnNames: _col0
-                Statistics: Num rows: 2 Data size: 22 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 5 Data size: 57 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   table:
@@ -247,17 +247,17 @@ STAGE PLANS:
               key expressions: _col0 (type: string)
               sort order: +
               Map-reduce partition columns: _col0 (type: string)
-              Statistics: Num rows: 2 Data size: 22 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 5 Data size: 57 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Group By Operator
           keys: KEY._col0 (type: string)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 11 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 2 Data size: 22 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: _col0 (type: string)
             outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 11 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2 Data size: 22 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
               table:
@@ -271,7 +271,7 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               sort order: 
-              Statistics: Num rows: 1 Data size: 11 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 22 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col0 (type: string)
           TableScan
             alias: a
@@ -347,16 +347,16 @@ STAGE PLANS:
           Statistics: Num rows: 11 Data size: 114 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
             predicate: (1 = 1) (type: boolean)
-            Statistics: Num rows: 5 Data size: 51 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 11 Data size: 114 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: _col0 (type: string)
               outputColumnNames: _col0
-              Statistics: Num rows: 5 Data size: 51 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 11 Data size: 114 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 keys: _col0 (type: string)
                 mode: hash
                 outputColumnNames: _col0
-                Statistics: Num rows: 5 Data size: 51 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 11 Data size: 114 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   table:
@@ -372,17 +372,17 @@ STAGE PLANS:
               key expressions: _col0 (type: string)
               sort order: +
               Map-reduce partition columns: _col0 (type: string)
-              Statistics: Num rows: 5 Data size: 51 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 11 Data size: 114 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Group By Operator
           keys: KEY._col0 (type: string)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 2 Data size: 20 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 5 Data size: 51 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: _col0 (type: string)
             outputColumnNames: _col0
-            Statistics: Num rows: 2 Data size: 20 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 5 Data size: 51 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
               table:
@@ -396,7 +396,7 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               sort order: 
-              Statistics: Num rows: 2 Data size: 20 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 5 Data size: 51 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col0 (type: string)
           TableScan
             alias: a
@@ -485,16 +485,16 @@ STAGE PLANS:
           Statistics: Num rows: 5 Data size: 57 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
             predicate: (1 = 1) (type: boolean)
-            Statistics: Num rows: 2 Data size: 22 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 5 Data size: 57 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: _col0 (type: string)
               outputColumnNames: _col0
-              Statistics: Num rows: 2 Data size: 22 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 5 Data size: 57 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 keys: _col0 (type: string)
                 mode: hash
                 outputColumnNames: _col0
-                Statistics: Num rows: 2 Data size: 22 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 5 Data size: 57 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   table:
@@ -510,17 +510,17 @@ STAGE PLANS:
               key expressions: _col0 (type: string)
               sort order: +
               Map-reduce partition columns: _col0 (type: string)
-              Statistics: Num rows: 2 Data size: 22 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 5 Data size: 57 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Group By Operator
           keys: KEY._col0 (type: string)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 11 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 2 Data size: 22 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: _col0 (type: string)
             outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 11 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2 Data size: 22 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
               table:
@@ -534,7 +534,7 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               sort order: 
-              Statistics: Num rows: 1 Data size: 11 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 22 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col0 (type: string)
           TableScan
             Reduce Output Operator
