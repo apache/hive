@@ -619,6 +619,7 @@ public class HiveConf extends Configuration {
     HIVE_CBO_ENABLED("hive.cbo.enable", false, "Flag to control enabling Cost Based Optimizations using Optiq framework."),
     HIVE_CBO_MAX_JOINS_SUPPORTED("hive.cbo.max.joins.supported", 10, " Control queries that will be considered for join reordering, based on number of joins in them. Beyond a certain number of joins, the cost of considering possible permutations is prohibitive."),
     HIVE_CBO_PULLPROJECTABOVEJOIN_RULE("hive.cbo.project.pullabovejoin.rule", false, ""),
+    HIVE_CBO_GREEDY_JOIN_ORDER("hive.cbo.greedy.join.order", false, ""),
 
     // hive.mapjoin.bucket.cache.size has been replaced by hive.smbjoin.cache.row,
     // need to remove by hive .13. Also, do not change default (see SMB operator)

@@ -17,7 +17,7 @@ public class HiveVolcanoPlanner extends VolcanoPlanner {
 
   /** Creates a HiveVolcanoPlanner. */
   public HiveVolcanoPlanner() {
-    super(HiveCost.FACTORY);
+    super(HiveCost.FACTORY, null);
   }
 
   public static RelOptPlanner createPlanner() {

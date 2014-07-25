@@ -547,7 +547,7 @@ public class HiveRelFieldTrimmer implements ReflectiveVisitor {
     RexNode newConditionExpr = conditionExpr.accept(shuttle);
 
     final HiveJoinRel newJoin = join.copy(join.getTraitSet(), newConditionExpr,
-        newInputs.get(0), newInputs.get(1), join.getJoinType());
+        newInputs.get(0), newInputs.get(1), join.getJoinType(), false);
 
     return new TrimResult(newJoin, mapping);
   }

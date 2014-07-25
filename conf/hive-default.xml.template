@@ -953,6 +953,11 @@
     <description/>
   </property>
   <property>
+    <key>hive.cbo.greedy.join.order</key>
+    <value>false</value>
+    <description/>
+  </property>
+  <property>
     <key>hive.mapjoin.bucket.cache.size</key>
     <value>100</value>
     <description/>
