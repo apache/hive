@@ -123,7 +123,7 @@ public abstract class TestAuthorizationApiAuthorizer {
     FunctionInvoker invoker = new FunctionInvoker() {
       @Override
       public void invoke() throws Exception {
-        msc.revoke_privileges(new PrivilegeBag(new ArrayList<HiveObjectPrivilege>()));
+        msc.revoke_privileges(new PrivilegeBag(new ArrayList<HiveObjectPrivilege>()), false);
       }
     };
     testFunction(invoker);

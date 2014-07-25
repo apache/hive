@@ -1136,10 +1136,10 @@ public class Hive {
    * @return true on success
    * @throws HiveException
    */
-  public boolean revokePrivileges(PrivilegeBag privileges)
+  public boolean revokePrivileges(PrivilegeBag privileges, boolean grantOption)
       throws HiveException {
     try {
-      return getMSC().revoke_privileges(privileges);
+      return getMSC().revoke_privileges(privileges, grantOption);
     } catch (Exception e) {
       throw new HiveException(e);
     }

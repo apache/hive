@@ -18,8 +18,8 @@
 
 package org.apache.hive.jdbc;
 
-import static org.apache.hadoop.hive.ql.exec.ExplainTask.EXPL_COLUMN_NAME;
 import static org.apache.hadoop.hive.conf.SystemVariables.SET_COLUMN_NAME;
+import static org.apache.hadoop.hive.ql.exec.ExplainTask.EXPL_COLUMN_NAME;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -53,7 +53,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.processors.DfsProcessor;
-import org.apache.hadoop.hive.ql.processors.SetProcessor;
 import org.apache.hive.common.util.HiveVersionInfo;
 import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
 import org.apache.hive.service.cli.operation.ClassicTableTypeMapping;
@@ -276,21 +275,21 @@ public class TestJdbcDriver2 {
     Statement s = this.con.createStatement();
     ResultSet rs = s.executeQuery("SELECT * FROM " + dataTypeTableName);
 
-    rs.close();
-    s.close();
-
     assertTrue(s.getConnection() == this.con);
     assertTrue(rs.getStatement() == s);
+
+    rs.close();
+    s.close();
 
     /* Test parent references from PreparedStatement */
     PreparedStatement ps = this.con.prepareStatement("SELECT * FROM " + dataTypeTableName);
     rs = ps.executeQuery();
 
-    rs.close();
-    ps.close();
-
     assertTrue(ps.getConnection() == this.con);
     assertTrue(rs.getStatement() == ps);
+
+    rs.close();
+    ps.close();
 
     /* Test DatabaseMetaData queries which do not have a parent Statement */
     DatabaseMetaData md = this.con.getMetaData();
@@ -1997,7 +1996,7 @@ public class TestJdbcDriver2 {
     assertEquals("", res.getString(4));     // column
     assertEquals("hive_test_user", res.getString(5));
     assertEquals("USER", res.getString(6));
-    assertEquals("Select", res.getString(7));
+    assertEquals("SELECT", res.getString(7));
     assertEquals(false, res.getBoolean(8)); // grant option
     assertEquals(-1, res.getLong(9));
     assertNotNull(res.getString(10));       // grantor

@@ -33,7 +33,7 @@ PREHOOK: query: show grant role hive_test_role_fail on table authorization_fail
 PREHOOK: type: SHOW_GRANT
 POSTHOOK: query: show grant role hive_test_role_fail on table authorization_fail
 POSTHOOK: type: SHOW_GRANT
-default	authorization_fail			hive_test_role_fail	ROLE	Select	false	-1	hive_test_user
+default	authorization_fail			hive_test_role_fail	ROLE	SELECT	false	-1	hive_test_user
 PREHOOK: query: drop role hive_test_role_fail
 PREHOOK: type: DROPROLE
 POSTHOOK: query: drop role hive_test_role_fail

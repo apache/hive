@@ -16,9 +16,11 @@ POSTHOOK: type: CREATEDATABASE
 PREHOOK: query: create function mydb.func1 as 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFUpper'
 PREHOOK: type: CREATEFUNCTION
 PREHOOK: Output: database:mydb
+PREHOOK: Output: mydb.func1
 POSTHOOK: query: create function mydb.func1 as 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFUpper'
 POSTHOOK: type: CREATEFUNCTION
 POSTHOOK: Output: database:mydb
+POSTHOOK: Output: mydb.func1
 PREHOOK: query: show functions mydb.func1
 PREHOOK: type: SHOWFUNCTIONS
 POSTHOOK: query: show functions mydb.func1
@@ -36,9 +38,11 @@ ABC
 PREHOOK: query: drop function mydb.func1
 PREHOOK: type: DROPFUNCTION
 PREHOOK: Output: database:mydb
+PREHOOK: Output: mydb.func1
 POSTHOOK: query: drop function mydb.func1
 POSTHOOK: type: DROPFUNCTION
 POSTHOOK: Output: database:mydb
+POSTHOOK: Output: mydb.func1
 PREHOOK: query: -- function should now be gone
 show functions mydb.func1
 PREHOOK: type: SHOWFUNCTIONS
@@ -49,10 +53,12 @@ PREHOOK: query: -- To test function name resolution
 create function mydb.qtest_get_java_boolean as 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFUpper'
 PREHOOK: type: CREATEFUNCTION
 PREHOOK: Output: database:mydb
+PREHOOK: Output: mydb.qtest_get_java_boolean
 POSTHOOK: query: -- To test function name resolution
 create function mydb.qtest_get_java_boolean as 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFUpper'
 POSTHOOK: type: CREATEFUNCTION
 POSTHOOK: Output: database:mydb
+POSTHOOK: Output: mydb.qtest_get_java_boolean
 PREHOOK: query: use default
 PREHOOK: type: SWITCHDATABASE
 POSTHOOK: query: use default
@@ -86,9 +92,11 @@ ABC	NULL	ABC
 PREHOOK: query: drop function mydb.qtest_get_java_boolean
 PREHOOK: type: DROPFUNCTION
 PREHOOK: Output: database:mydb
+PREHOOK: Output: mydb.qtest_get_java_boolean
 POSTHOOK: query: drop function mydb.qtest_get_java_boolean
 POSTHOOK: type: DROPFUNCTION
 POSTHOOK: Output: database:mydb
+POSTHOOK: Output: mydb.qtest_get_java_boolean
 PREHOOK: query: drop database mydb cascade
 PREHOOK: type: DROPDATABASE
 PREHOOK: Input: database:mydb

@@ -108,7 +108,8 @@ public final class FileDump {
           buf.append(i);
           buf.append(": ");
           buf.append(encoding.getKind());
-          if (encoding.getKind() == OrcProto.ColumnEncoding.Kind.DICTIONARY) {
+          if (encoding.getKind() == OrcProto.ColumnEncoding.Kind.DICTIONARY ||
+              encoding.getKind() == OrcProto.ColumnEncoding.Kind.DICTIONARY_V2) {
             buf.append("[");
             buf.append(encoding.getDictionarySize());
             buf.append("]");

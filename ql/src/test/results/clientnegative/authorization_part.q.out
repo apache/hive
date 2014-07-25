@@ -68,7 +68,7 @@ PREHOOK: query: show grant group hive_test_group1 on table authorization_part_fa
 PREHOOK: type: SHOW_GRANT
 POSTHOOK: query: show grant group hive_test_group1 on table authorization_part_fail
 POSTHOOK: type: SHOW_GRANT
-default	authorization_part_fail			hive_test_group1	GROUP	Select	false	-1	hive_test_user
+default	authorization_part_fail			hive_test_group1	GROUP	SELECT	false	-1	hive_test_user
 PREHOOK: query: insert overwrite table authorization_part_fail partition (ds='2010') select key, value from src_auth
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_auth
@@ -83,12 +83,12 @@ PREHOOK: query: show grant group hive_test_group1 on table authorization_part_fa
 PREHOOK: type: SHOW_GRANT
 POSTHOOK: query: show grant group hive_test_group1 on table authorization_part_fail(key) partition (ds='2010')
 POSTHOOK: type: SHOW_GRANT
-default	authorization_part_fail	[2010]	key	hive_test_group1	GROUP	Select	false	-1	hive_test_user
+default	authorization_part_fail	[2010]	[key]	hive_test_group1	GROUP	SELECT	false	-1	hive_test_user
 PREHOOK: query: show grant group hive_test_group1 on table authorization_part_fail partition (ds='2010')
 PREHOOK: type: SHOW_GRANT
 POSTHOOK: query: show grant group hive_test_group1 on table authorization_part_fail partition (ds='2010')
 POSTHOOK: type: SHOW_GRANT
-default	authorization_part_fail	[2010]		hive_test_group1	GROUP	Select	false	-1	hive_test_user
+default	authorization_part_fail	[2010]		hive_test_group1	GROUP	SELECT	false	-1	hive_test_user
 PREHOOK: query: select key, value from authorization_part_fail where ds='2010' order by key limit 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@authorization_part_fail
@@ -133,12 +133,12 @@ PREHOOK: query: show grant group hive_test_group1 on table authorization_part_fa
 PREHOOK: type: SHOW_GRANT
 POSTHOOK: query: show grant group hive_test_group1 on table authorization_part_fail(key) partition (ds='2011')
 POSTHOOK: type: SHOW_GRANT
-default	authorization_part_fail	[2011]	key	hive_test_group1	GROUP	Select	false	-1	hive_test_user
+default	authorization_part_fail	[2011]	[key]	hive_test_group1	GROUP	SELECT	false	-1	hive_test_user
 PREHOOK: query: show grant group hive_test_group1 on table authorization_part_fail partition (ds='2011')
 PREHOOK: type: SHOW_GRANT
 POSTHOOK: query: show grant group hive_test_group1 on table authorization_part_fail partition (ds='2011')
 POSTHOOK: type: SHOW_GRANT
-default	authorization_part_fail	[2011]		hive_test_group1	GROUP	Select	false	-1	hive_test_user
+default	authorization_part_fail	[2011]		hive_test_group1	GROUP	SELECT	false	-1	hive_test_user
 PREHOOK: query: select key, value from authorization_part_fail where ds='2011' order by key limit 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@authorization_part_fail

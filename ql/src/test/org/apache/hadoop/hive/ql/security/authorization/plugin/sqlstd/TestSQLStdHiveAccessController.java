@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -42,16 +41,12 @@ public class TestSQLStdHiveAccessController {
    * @throws HiveAuthzPluginException
    */
   @Test
-  public void checkConfigProcessing() throws HiveAuthzPluginException {
+  public void testConfigProcessing() throws HiveAuthzPluginException {
     HiveConf processedConf = new HiveConf();
 
     SQLStdHiveAccessController accessController = new SQLStdHiveAccessController(null,
         processedConf, new HadoopDefaultAuthenticator());
     accessController.applyAuthorizationConfigPolicy(processedConf);
-
-    // check that unsafe commands have been disabled
-    assertEquals("only set command should be allowed",
-        processedConf.getVar(ConfVars.HIVE_SECURITY_COMMAND_WHITELIST), "set");
 
     // check that hook to disable transforms has been added
     assertTrue("Check for transform query disabling hook",
@@ -90,7 +85,7 @@ public class TestSQLStdHiveAccessController {
    * @throws HiveAuthzPluginException
    */
   @Test
-  public void checkConfigProcessingCustomSetWhitelist() throws HiveAuthzPluginException {
+  public void testConfigProcessingCustomSetWhitelist() throws HiveAuthzPluginException {
 
     HiveConf processedConf = new HiveConf();
     // add custom value, including one from the default, one new one

@@ -477,6 +477,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("revoke_privileges\n");
   }
 
+  void grant_revoke_privileges(GrantRevokePrivilegeResponse& _return, const GrantRevokePrivilegeRequest& request) {
+    // Your implementation goes here
+    printf("grant_revoke_privileges\n");
+  }
+
   void set_ugi(std::vector<std::string> & _return, const std::string& user_name, const std::vector<std::string> & group_names) {
     // Your implementation goes here
     printf("set_ugi\n");

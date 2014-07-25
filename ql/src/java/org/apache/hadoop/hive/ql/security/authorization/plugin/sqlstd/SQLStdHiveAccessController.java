@@ -236,7 +236,7 @@ public class SQLStdHiveAccessController implements HiveAccessController {
       // So this will revoke privileges that are granted by other users.This is
       // not SQL compliant behavior. Need to change/add a metastore api
       // that has desired behavior.
-      metastoreClient.revoke_privileges(new PrivilegeBag(revokePrivs));
+      metastoreClient.revoke_privileges(new PrivilegeBag(revokePrivs), grantOption);
     } catch (Exception e) {
       throw new HiveAuthzPluginException("Error revoking privileges", e);
     }
@@ -350,17 +350,22 @@ public class SQLStdHiveAccessController implements HiveAccessController {
         + " allowed get principals in a role. " + ADMIN_ONLY_MSG);
     }
     try {
-      GetPrincipalsInRoleResponse princGrantInfo =
-          metastoreClientFactory.getHiveMetastoreClient().get_principals_in_role(new GetPrincipalsInRoleRequest(roleName));
-
-      List<HiveRoleGrant> hiveRoleGrants = new ArrayList<HiveRoleGrant>();
-      for(RolePrincipalGrant thriftRoleGrant :  princGrantInfo.getPrincipalGrants()){
-        hiveRoleGrants.add(new HiveRoleGrant(thriftRoleGrant));
-      }
-      return hiveRoleGrants;
+      return getHiveRoleGrants(metastoreClientFactory.getHiveMetastoreClient(), roleName);
     } catch (Exception e) {
       throw new HiveAuthzPluginException("Error getting principals for all roles", e);
     }
+  }
+
+  public static List<HiveRoleGrant> getHiveRoleGrants(IMetaStoreClient client, String roleName)
+      throws Exception {
+    GetPrincipalsInRoleRequest request = new GetPrincipalsInRoleRequest(roleName);
+    GetPrincipalsInRoleResponse princGrantInfo = client.get_principals_in_role(request);
+
+    List<HiveRoleGrant> hiveRoleGrants = new ArrayList<HiveRoleGrant>();
+    for(RolePrincipalGrant thriftRoleGrant :  princGrantInfo.getPrincipalGrants()){
+      hiveRoleGrants.add(new HiveRoleGrant(thriftRoleGrant));
+    }
+    return hiveRoleGrants;
   }
 
   @Override
@@ -415,8 +420,8 @@ public class SQLStdHiveAccessController implements HiveAccessController {
         }
 
         HivePrivilegeObject resPrivObj = new HivePrivilegeObject(
-            getPluginObjType(msObjRef.getObjectType()), msObjRef.getDbName(),
-            msObjRef.getObjectName());
+            getPluginPrivilegeObjType(msObjRef.getObjectType()), msObjRef.getDbName(),
+            msObjRef.getObjectName(), msObjRef.getPartValues(), msObjRef.getColumnName());
 
         // result grantor principal
         HivePrincipal grantorPrincipal = new HivePrincipal(msGrantInfo.getGrantor(),
@@ -474,8 +479,14 @@ public class SQLStdHiveAccessController implements HiveAccessController {
     return false;
   }
 
-  private HivePrivilegeObjectType getPluginObjType(HiveObjectType objectType)
-      throws HiveAuthzPluginException {
+  /**
+   * Convert metastore object type to HivePrivilegeObjectType.
+   * Also verifies that metastore object type is of a type on which metastore privileges are
+   * supported by sql std auth.
+   * @param objectType
+   * @return corresponding HivePrivilegeObjectType
+   */
+  private HivePrivilegeObjectType getPluginPrivilegeObjType(HiveObjectType objectType) {
     switch (objectType) {
     case DATABASE:
       return HivePrivilegeObjectType.DATABASE;
@@ -676,9 +687,6 @@ public class SQLStdHiveAccessController implements HiveAccessController {
     }
     LOG.debug("Configuring hooks : " + hooks);
     hiveConf.setVar(ConfVars.PREEXECHOOKS, hooks);
-
-    // set security command list to only allow set command
-    hiveConf.setVar(ConfVars.HIVE_SECURITY_COMMAND_WHITELIST, "set");
 
     // restrict the variables that can be set using set command to a list in whitelist
     hiveConf.setIsModWhiteListEnabled(true);
