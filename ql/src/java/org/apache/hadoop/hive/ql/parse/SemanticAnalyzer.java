@@ -11831,6 +11831,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       optiqPreCboPlan = applyPreCBOTransforms(optiqGenPlan, HiveDefaultRelMetadataProvider.INSTANCE);
       List<RelMetadataProvider> list = Lists.newArrayList();
       list.add(HiveDefaultRelMetadataProvider.INSTANCE);
+      RelTraitSet desiredTraits = cluster.traitSetOf(HiveRel.CONVENTION, RelCollationImpl.EMPTY);
 
       if (!HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_CBO_GREEDY_JOIN_ORDER)) {
         planner.registerMetadataProviders(list);
@@ -11846,18 +11847,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           planner.addRule(HivePullUpProjectsAboveJoinRule.LEFT_PROJECT);
           planner.addRule(HivePullUpProjectsAboveJoinRule.RIGHT_PROJECT);
           planner.addRule(HiveMergeProjectRule.INSTANCE);
-
-          RelTraitSet desiredTraits = cluster
-              .traitSetOf(HiveRel.CONVENTION, RelCollationImpl.EMPTY);
-
-          RelNode rootRel = optiqPreCboPlan;
-          if (!optiqPreCboPlan.getTraitSet().equals(desiredTraits)) {
-            rootRel = planner.changeTraits(optiqPreCboPlan, desiredTraits);
-          }
-          planner.setRoot(rootRel);
-
-          optiqOptimizedPlan = planner.findBestExp();
         }
+
+        RelNode rootRel = optiqPreCboPlan;
+        if (!optiqPreCboPlan.getTraitSet().equals(desiredTraits)) {
+          rootRel = planner.changeTraits(optiqPreCboPlan, desiredTraits);
+        }
+        planner.setRoot(rootRel);
+
+        optiqOptimizedPlan = planner.findBestExp();
       } else {
         final HepProgram hepPgm = new HepProgramBuilder().addMatchOrder(HepMatchOrder.BOTTOM_UP)
             .addRuleInstance(new ConvertMultiJoinRule(HiveJoinRel.class))
@@ -11869,7 +11867,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         RelMetadataProvider chainedProvider = ChainedRelMetadataProvider.of(list);
         cluster.setMetadataProvider(new CachingRelMetadataProvider(chainedProvider, hepPlanner));
 
-        hepPlanner.setRoot(optiqPreCboPlan);
+        RelNode rootRel = optiqPreCboPlan;
+        if (!optiqPreCboPlan.getTraitSet().equals(desiredTraits)) {
+          rootRel = hepPlanner.changeTraits(optiqPreCboPlan, desiredTraits);
+        }
+        hepPlanner.setRoot(rootRel);
+
         optiqOptimizedPlan = hepPlanner.findBestExp();
       }
 
