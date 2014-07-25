@@ -28,7 +28,7 @@
   <name>Hive Query Language</name>
 
   <properties>
-    <optiq.version>0.7</optiq.version>
+    <optiq.version>0.9.0-incubating-SNAPSHOT</optiq.version>
     <hive.path.to.root>..</hive.path.to.root>
   </properties>
 
@@ -183,7 +183,7 @@
       <version>${datanucleus-core.version}</version>
     </dependency>
     <dependency>
-      <groupId>net.hydromatic</groupId>
+      <groupId>org.apache.optiq</groupId>
       <artifactId>optiq-core</artifactId>
       <version>${optiq.version}</version>
       <exclusions>

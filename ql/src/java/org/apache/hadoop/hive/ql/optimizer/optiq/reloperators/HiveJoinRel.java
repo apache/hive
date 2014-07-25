@@ -81,15 +81,15 @@ public class HiveJoinRel extends JoinRelBase implements HiveRel {
 
   @Override
   public final HiveJoinRel copy(RelTraitSet traitSet, RexNode conditionExpr, RelNode left,
-      RelNode right, JoinRelType joinType) {
-    return copy(traitSet, conditionExpr, left, right, m_joinAlgorithm, m_mapJoinStreamingSide);
+      RelNode right, JoinRelType joinType, boolean semiJoinDone) {
+    return copy(traitSet, conditionExpr, left, right, m_joinAlgorithm, m_mapJoinStreamingSide, m_leftSemiJoin);
   }
 
   public HiveJoinRel copy(RelTraitSet traitSet, RexNode conditionExpr, RelNode left, RelNode right,
-      JoinAlgorithm joinalgo, MapJoinStreamingRelation streamingSide) {
+      JoinAlgorithm joinalgo, MapJoinStreamingRelation streamingSide, boolean semiJoinDone) {
     try {
       return new HiveJoinRel(getCluster(), traitSet, left, right, conditionExpr, joinType,
-          variablesStopped, joinalgo, streamingSide, this.m_leftSemiJoin);
+          variablesStopped, joinalgo, streamingSide, semiJoinDone);
     } catch (InvalidRelException e) {
       // Semantic error not possible. Must be a bug. Convert to
       // internal error.

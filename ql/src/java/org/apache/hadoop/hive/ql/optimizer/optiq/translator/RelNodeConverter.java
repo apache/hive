@@ -73,6 +73,7 @@ import org.eigenbase.reltype.RelDataTypeField;
 import org.eigenbase.rex.RexCall;
 import org.eigenbase.rex.RexInputRef;
 import org.eigenbase.rex.RexNode;
+import org.eigenbase.rex.RexUtil;
 import org.eigenbase.sql.fun.SqlStdOperatorTable;
 import org.eigenbase.util.CompositeList;
 import org.eigenbase.util.Pair;
@@ -83,11 +84,15 @@ import com.google.common.collect.Lists;
 
 public class RelNodeConverter {
   private static final Map<String, Aggregation> AGG_MAP = ImmutableMap
-      .<String, Aggregation> builder()
-      .put("count", (Aggregation) SqlStdOperatorTable.COUNT)
-      .put("sum", SqlStdOperatorTable.SUM).put("min", SqlStdOperatorTable.MIN)
-      .put("max", SqlStdOperatorTable.MAX).put("avg", SqlStdOperatorTable.AVG)
-      .build();
+                                                            .<String, Aggregation> builder()
+                                                            .put(
+                                                                "count",
+                                                                (Aggregation) SqlStdOperatorTable.COUNT)
+                                                            .put("sum", SqlStdOperatorTable.SUM)
+                                                            .put("min", SqlStdOperatorTable.MIN)
+                                                            .put("max", SqlStdOperatorTable.MAX)
+                                                            .put("avg", SqlStdOperatorTable.AVG)
+                                                            .build();
 
   public static RelNode convert(Operator<? extends OperatorDesc> sinkOp, RelOptCluster cluster,
       RelOptSchema schema, SemanticAnalyzer sA, ParseContext pCtx) {
@@ -228,13 +233,16 @@ public class RelNodeConverter {
       opPositionMap.put(node, opPositionMap.get(parent));
     }
 
-    RexNode convertToOptiqExpr(final ExprNodeDesc expr, final RelNode optiqOP, final boolean flatten) throws SemanticException {
+    RexNode convertToOptiqExpr(final ExprNodeDesc expr, final RelNode optiqOP, final boolean flatten)
+        throws SemanticException {
       return convertToOptiqExpr(expr, optiqOP, 0, flatten);
     }
 
-    RexNode convertToOptiqExpr(final ExprNodeDesc expr, final RelNode optiqOP, int offset, final boolean flatten) throws SemanticException {
+    RexNode convertToOptiqExpr(final ExprNodeDesc expr, final RelNode optiqOP, int offset,
+        final boolean flatten) throws SemanticException {
       ImmutableMap<String, Integer> posMap = opPositionMap.get(optiqOP);
-      RexNodeConverter c = new RexNodeConverter(cluster, optiqOP.getRowType(), posMap, offset, flatten);
+      RexNodeConverter c = new RexNodeConverter(cluster, optiqOP.getRowType(), posMap, offset,
+          flatten);
       return c.convert(expr);
     }
 
@@ -347,7 +355,8 @@ public class RelNodeConverter {
           }
         }
 
-        joinRel = HiveJoinRel.getJoin(ctx.cluster, leftRel, rightRel, joinPredicate, joinType, false);
+        joinRel = HiveJoinRel.getJoin(ctx.cluster, leftRel, rightRel, joinPredicate, joinType,
+            false);
       } else {
         throw new RuntimeException("Right & Left of Join Condition columns are not equal");
       }
@@ -405,15 +414,15 @@ public class RelNodeConverter {
       Context ctx = (Context) procCtx;
       HiveRel input = (HiveRel) ctx.getParentNode((Operator<? extends OperatorDesc>) nd, 0);
       FilterOperator filterOp = (FilterOperator) nd;
-      RexNode convertedFilterExpr = ctx
-          .convertToOptiqExpr(filterOp.getConf().getPredicate(), input, true);
+      RexNode convertedFilterExpr = ctx.convertToOptiqExpr(filterOp.getConf().getPredicate(),
+          input, true);
 
       // Flatten the condition otherwise Optiq chokes on assertion
       // (FilterRelBase)
       if (convertedFilterExpr instanceof RexCall) {
         RexCall call = (RexCall) convertedFilterExpr;
-        convertedFilterExpr = ctx.cluster.getRexBuilder().makeFlatCall(call.getOperator(),
-            call.getOperands());
+        convertedFilterExpr = ctx.cluster.getRexBuilder().makeCall(call.getType(),
+            call.getOperator(), RexUtil.flatten(call.getOperands(), call.getOperator()));
       }
 
       HiveRel filtRel = new HiveFilterRel(ctx.cluster, ctx.cluster.traitSetOf(HiveRel.CONVENTION),
@@ -553,7 +562,7 @@ public class RelNodeConverter {
       /*
        * numReducers == 1 and order.length = 1 => a RS for CrossJoin.
        */
-      if ( order.length() == 0 ) {
+      if (order.length() == 0) {
         Operator<? extends OperatorDesc> op = (Operator<? extends OperatorDesc>) nd;
         ctx.hiveOpToRelNode.put(op, input);
         return input;
@@ -609,13 +618,12 @@ public class RelNodeConverter {
       TableScanOperator tableScanOp = (TableScanOperator) nd;
       RowResolver rr = ctx.sA.getRowResolver(tableScanOp);
 
-      List<String> neededCols = new ArrayList<String>(
-          tableScanOp.getNeededColumns());
+      List<String> neededCols = new ArrayList<String>(tableScanOp.getNeededColumns());
       Statistics stats = tableScanOp.getStatistics();
 
       try {
-        stats = addPartitionColumns(ctx, tableScanOp, tableScanOp.getConf()
-            .getAlias(), ctx.sA.getTable(tableScanOp), stats, neededCols);
+        stats = addPartitionColumns(ctx, tableScanOp, tableScanOp.getConf().getAlias(),
+            ctx.sA.getTable(tableScanOp), stats, neededCols);
       } catch (CloneNotSupportedException ce) {
         throw new SemanticException(ce);
       }
@@ -637,9 +645,8 @@ public class RelNodeConverter {
     /*
      * Add partition columns to needed columns and fake the COlStats for it.
      */
-    private Statistics addPartitionColumns(Context ctx,
-        TableScanOperator tableScanOp, String tblAlias, Table tbl,
-        Statistics stats, List<String> neededCols)
+    private Statistics addPartitionColumns(Context ctx, TableScanOperator tableScanOp,
+        String tblAlias, Table tbl, Statistics stats, List<String> neededCols)
         throws CloneNotSupportedException {
       if (!tbl.isPartitioned()) {
         return stats;
@@ -648,11 +655,9 @@ public class RelNodeConverter {
       List<FieldSchema> pCols = tbl.getPartCols();
       for (FieldSchema pC : pCols) {
         neededCols.add(pC.getName());
-        ColStatistics cStats = stats.getColumnStatisticsForColumn(tblAlias,
-            pC.getName());
+        ColStatistics cStats = stats.getColumnStatisticsForColumn(tblAlias, pC.getName());
         if (cStats == null) {
-          PrunedPartitionList partList = ctx.parseCtx.getOpToPartList().get(
-              tableScanOp);
+          PrunedPartitionList partList = ctx.parseCtx.getOpToPartList().get(tableScanOp);
           cStats = new ColStatistics(tblAlias, pC.getName(), pC.getType());
           cStats.setCountDistint(partList.getPartitions().size());
           pStats.add(cStats);

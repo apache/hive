@@ -223,7 +223,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.mapred.InputFormat;
-
 import org.eigenbase.rel.AggregateCall;
 import org.eigenbase.rel.Aggregation;
 import org.eigenbase.rel.InvalidRelException;
@@ -235,13 +234,17 @@ import org.eigenbase.rel.RelNode;
 import org.eigenbase.rel.metadata.CachingRelMetadataProvider;
 import org.eigenbase.rel.metadata.ChainedRelMetadataProvider;
 import org.eigenbase.rel.metadata.RelMetadataProvider;
+import org.eigenbase.rel.rules.ConvertMultiJoinRule;
+import org.eigenbase.rel.rules.LoptOptimizeJoinRule;
 import org.eigenbase.relopt.RelOptCluster;
 import org.eigenbase.relopt.RelOptPlanner;
 import org.eigenbase.relopt.RelOptQuery;
 import org.eigenbase.relopt.RelOptRule;
 import org.eigenbase.relopt.RelOptSchema;
 import org.eigenbase.relopt.RelTraitSet;
+import org.eigenbase.relopt.hep.HepMatchOrder;
 import org.eigenbase.relopt.hep.HepPlanner;
+import org.eigenbase.relopt.hep.HepProgram;
 import org.eigenbase.relopt.hep.HepProgramBuilder;
 import org.eigenbase.reltype.RelDataType;
 import org.eigenbase.reltype.RelDataTypeFactory;
@@ -254,6 +257,7 @@ import org.eigenbase.util.CompositeList;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
 /**
@@ -11801,13 +11805,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     @Override
-    public RelNode apply(RelOptCluster cluster, RelOptSchema relOptSchema,
-        SchemaPlus rootSchema) {
-      RelOptPlanner planner = HiveVolcanoPlanner.createPlanner();
-
+    public RelNode apply(RelOptCluster cluster, RelOptSchema relOptSchema, SchemaPlus rootSchema) {
+      RelNode optiqGenPlan = null;
+      RelNode optiqPreCboPlan = null;
+      RelNode optiqOptimizedPlan = null;
       /*
        * recreate cluster, so that it picks up the additional traitDef
        */
+      RelOptPlanner planner = HiveVolcanoPlanner.createPlanner();
       final RelOptQuery query = new RelOptQuery(planner);
       final RexBuilder rexBuilder = cluster.getRexBuilder();
       cluster = query.createCluster(rexBuilder.getTypeFactory(), rexBuilder);
@@ -11816,46 +11821,59 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       m_relOptSchema = relOptSchema;
       m_rootSchema = rootSchema;
 
-      RelNode optiqPlan = null;
       try {
-        optiqPlan = genLogicalPlan(qb);
+        optiqGenPlan = genLogicalPlan(qb);
       } catch (SemanticException e) {
         m_semanticException = e;
         throw new RuntimeException(e);
       }
 
-      optiqPlan = applyPreCBOTransforms(optiqPlan,
-          HiveDefaultRelMetadataProvider.INSTANCE);
-
+      optiqPreCboPlan = applyPreCBOTransforms(optiqGenPlan, HiveDefaultRelMetadataProvider.INSTANCE);
       List<RelMetadataProvider> list = Lists.newArrayList();
       list.add(HiveDefaultRelMetadataProvider.INSTANCE);
-      planner.registerMetadataProviders(list);
 
-      RelMetadataProvider chainedProvider = ChainedRelMetadataProvider.of(list);
-      cluster.setMetadataProvider(new CachingRelMetadataProvider(
-          chainedProvider, planner));
+      if (!HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_CBO_GREEDY_JOIN_ORDER)) {
+        planner.registerMetadataProviders(list);
 
-      planner.addRule(HiveSwapJoinRule.INSTANCE);
-      planner.addRule(HivePushJoinThroughJoinRule.LEFT);
-      planner.addRule(HivePushJoinThroughJoinRule.RIGHT);
-      if (HiveConf.getBoolVar(conf,
-          HiveConf.ConfVars.HIVE_CBO_PULLPROJECTABOVEJOIN_RULE)) {
-        planner.addRule(HivePullUpProjectsAboveJoinRule.BOTH_PROJECT);
-        planner.addRule(HivePullUpProjectsAboveJoinRule.LEFT_PROJECT);
-        planner.addRule(HivePullUpProjectsAboveJoinRule.RIGHT_PROJECT);
-        planner.addRule(HiveMergeProjectRule.INSTANCE);
+        RelMetadataProvider chainedProvider = ChainedRelMetadataProvider.of(list);
+        cluster.setMetadataProvider(new CachingRelMetadataProvider(chainedProvider, planner));
+
+        planner.addRule(HiveSwapJoinRule.INSTANCE);
+        planner.addRule(HivePushJoinThroughJoinRule.LEFT);
+        planner.addRule(HivePushJoinThroughJoinRule.RIGHT);
+        if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_CBO_PULLPROJECTABOVEJOIN_RULE)) {
+          planner.addRule(HivePullUpProjectsAboveJoinRule.BOTH_PROJECT);
+          planner.addRule(HivePullUpProjectsAboveJoinRule.LEFT_PROJECT);
+          planner.addRule(HivePullUpProjectsAboveJoinRule.RIGHT_PROJECT);
+          planner.addRule(HiveMergeProjectRule.INSTANCE);
+
+          RelTraitSet desiredTraits = cluster
+              .traitSetOf(HiveRel.CONVENTION, RelCollationImpl.EMPTY);
+
+          RelNode rootRel = optiqPreCboPlan;
+          if (!optiqPreCboPlan.getTraitSet().equals(desiredTraits)) {
+            rootRel = planner.changeTraits(optiqPreCboPlan, desiredTraits);
+          }
+          planner.setRoot(rootRel);
+
+          optiqOptimizedPlan = planner.findBestExp();
+        }
+      } else {
+        final HepProgram hepPgm = new HepProgramBuilder().addMatchOrder(HepMatchOrder.BOTTOM_UP)
+            .addRuleInstance(new ConvertMultiJoinRule(HiveJoinRel.class))
+            .addRuleInstance(LoptOptimizeJoinRule.INSTANCE).build();
+
+        HepPlanner hepPlanner = new HepPlanner(hepPgm);
+
+        hepPlanner.registerMetadataProviders(list);
+        RelMetadataProvider chainedProvider = ChainedRelMetadataProvider.of(list);
+        cluster.setMetadataProvider(new CachingRelMetadataProvider(chainedProvider, hepPlanner));
+
+        hepPlanner.setRoot(optiqPreCboPlan);
+        optiqOptimizedPlan = hepPlanner.findBestExp();
       }
 
-      RelTraitSet desiredTraits = cluster.traitSetOf(HiveRel.CONVENTION,
-          RelCollationImpl.EMPTY);
-
-      RelNode rootRel = optiqPlan;
-      if (!optiqPlan.getTraitSet().equals(desiredTraits)) {
-        rootRel = planner.changeTraits(optiqPlan, desiredTraits);
-      }
-      planner.setRoot(rootRel);
-
-      return planner.findBestExp();
+      return optiqOptimizedPlan;
     }
 
     public RelNode applyPreCBOTransforms(RelNode basePlan,

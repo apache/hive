@@ -37,6 +37,7 @@ import org.eigenbase.reltype.RelDataTypeFactory;
 import org.eigenbase.rex.RexBuilder;
 import org.eigenbase.rex.RexCall;
 import org.eigenbase.rex.RexNode;
+import org.eigenbase.rex.RexUtil;
 import org.eigenbase.sql.SqlOperator;
 import org.eigenbase.sql.fun.SqlCastFunction;
 import org.eigenbase.sql.type.SqlTypeName;
@@ -126,14 +127,17 @@ public class RexNodeConverter {
 
     // This is an explicit cast
     RexNode expr = null;
+    RelDataType retType = null;
     expr = handleExplicitCast(func, childRexNodeLst);
 
     if (expr == null) {
-      RelDataType retType = (expr != null) ? expr.getType() : TypeConverter.convert(
-          func.getTypeInfo(), m_cluster.getTypeFactory());
+      retType = (expr != null) ? expr.getType() : TypeConverter.convert(func.getTypeInfo(),
+          m_cluster.getTypeFactory());
       SqlOperator optiqOp = SqlFunctionConverter.getOptiqOperator(func.getGenericUDF(),
           argTypeBldr.build(), retType);
       expr = m_cluster.getRexBuilder().makeCall(optiqOp, childRexNodeLst);
+    } else {
+      retType = expr.getType();
     }
 
     // TODO: Cast Function in Optiq have a bug where it infertype on cast throws
@@ -141,7 +145,8 @@ public class RexNodeConverter {
     if (m_flattenExpr && (expr instanceof RexCall)
         && !(((RexCall) expr).getOperator() instanceof SqlCastFunction)) {
       RexCall call = (RexCall) expr;
-      expr = m_cluster.getRexBuilder().makeFlatCall(call.getOperator(), call.getOperands());
+      expr = m_cluster.getRexBuilder().makeCall(retType, call.getOperator(),
+          RexUtil.flatten(call.getOperands(), call.getOperator()));
     }
 
     return expr;
