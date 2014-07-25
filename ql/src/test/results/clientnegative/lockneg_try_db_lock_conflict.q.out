@@ -8,5 +8,5 @@ POSTHOOK: query: lock database lockneg4 exclusive
 POSTHOOK: type: LOCKDATABASE
 PREHOOK: query: lock database lockneg4 shared
 PREHOOK: type: LOCKDATABASE
-conflicting lock present for lockneg4 mode SHARED
+Unable to acquire EXPLICIT, SHARED lock lockneg4 after 1 attempts.
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask
