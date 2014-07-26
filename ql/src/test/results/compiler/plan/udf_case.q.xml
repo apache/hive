@@ -346,7 +346,7 @@
             <object class="java.util.HashMap"> 
              <void method="put"> 
               <string>_col1</string> 
-              <object id="ExprNodeGenericFuncDesc0" class="org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc"> 
+              <object class="org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc"> 
                <void property="children"> 
                 <object class="java.util.ArrayList"> 
                  <void method="add"> 
@@ -411,7 +411,7 @@
              </void> 
              <void method="put"> 
               <string>_col0</string> 
-              <object id="ExprNodeGenericFuncDesc1" class="org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc"> 
+              <object class="org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc"> 
                <void property="children"> 
                 <object class="java.util.ArrayList"> 
                  <void method="add"> 
@@ -491,10 +491,17 @@
              <void property="colList"> 
               <object class="java.util.ArrayList"> 
                <void method="add"> 
-                <object idref="ExprNodeGenericFuncDesc1"/> 
+                <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                 <void property="typeInfo"> 
+                  <object idref="PrimitiveTypeInfo0"/> 
+                 </void> 
+                 <void property="value"> 
+                  <int>2</int> 
+                 </void> 
+                </object> 
                </void> 
                <void method="add"> 
-                <object idref="ExprNodeGenericFuncDesc0"/> 
+                <object class="org.apache.hadoop.hive.ql.plan.ExprNodeNullDesc"/> 
                </void> 
               </object> 
              </void> 

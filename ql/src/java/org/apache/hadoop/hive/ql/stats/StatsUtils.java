@@ -255,6 +255,10 @@ public class StatsUtils {
     int avgRowSize = 0;
     for (String neededCol : neededColumns) {
       ColumnInfo ci = getColumnInfoForColumn(neededCol, schema);
+      if (ci == null) {
+        // No need to collect statistics of index columns
+        continue;
+      }
       ObjectInspector oi = ci.getObjectInspector();
       String colType = ci.getTypeName();
       if (colType.equalsIgnoreCase(serdeConstants.STRING_TYPE_NAME)

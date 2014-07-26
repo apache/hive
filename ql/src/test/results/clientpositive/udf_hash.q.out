@@ -37,7 +37,7 @@ STAGE PLANS:
           Row Limit Per Split: 1
           Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
           Select Operator
-            expressions: hash(UDFToByte(1)) (type: int), hash(UDFToShort(2)) (type: int), hash(3) (type: int), hash(UDFToLong('123456789012')) (type: int), hash(UDFToFloat(1.25)) (type: int), hash(16.0) (type: int), hash('400') (type: int), hash('abc') (type: int), hash(true) (type: int), hash(false) (type: int), hash(1,2,3) (type: int)
+            expressions: 1 (type: int), 2 (type: int), 3 (type: int), -1097262584 (type: int), 1067450368 (type: int), 1076887552 (type: int), 51508 (type: int), 96354 (type: int), 1 (type: int), 0 (type: int), 1026 (type: int)
             outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10
             Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
             ListSink

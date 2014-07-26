@@ -983,6 +983,8 @@ public class HiveConf extends Configuration {
         "Whether to transitively replicate predicate filters over equijoin conditions."),
     HIVEPPDREMOVEDUPLICATEFILTERS("hive.ppd.remove.duplicatefilters", true,
         "Whether to push predicates down into storage handlers.  Ignored when hive.optimize.ppd is false."),
+    // Constant propagation optimizer
+    HIVEOPTCONSTANTPROPAGATION("hive.optimize.constant.propagation", true, "Whether to enable constant propagation optimizer"),
     HIVEMETADATAONLYQUERIES("hive.optimize.metadataonly", true, ""),
     HIVENULLSCANOPTIMIZE("hive.optimize.null.scan", true, "Dont scan relations which are guaranteed to not generate any rows"),
     HIVEOPTPPD_STORAGE("hive.optimize.ppd.storage", true,
@@ -2249,7 +2251,6 @@ public class HiveConf extends Configuration {
   public static URL getHiveServer2SiteLocation() {
     return hiveServer2SiteUrl;
   }
-
 
   /**
    * @return the user name set in hadoop.job.ugi param or the current user from System
