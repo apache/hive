@@ -717,13 +717,15 @@ public class VectorizationContext {
 
   private VectorExpression getConstantVectorExpression(Object constantValue, TypeInfo typeInfo,
       Mode mode) throws HiveException {
-    String type = typeInfo.getTypeName();
+    String type =  typeInfo.getTypeName();
     String colVectorType = getNormalizedTypeName(type);
     int outCol = -1;
     if (mode == Mode.PROJECTION) {
       outCol = ocm.allocateOutputColumn(colVectorType);
     }
-    if (decimalTypePattern.matcher(type).matches()) {
+    if (constantValue == null) {
+    	return new ConstantVectorExpression(outCol, type, true);
+    } else if (decimalTypePattern.matcher(type).matches()) {
       VectorExpression ve = new ConstantVectorExpression(outCol, (Decimal128) constantValue);
       ve.setOutputType(typeInfo.getTypeName());
       return ve;
