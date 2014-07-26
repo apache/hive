@@ -95,6 +95,7 @@ STAGE PLANS:
           columns: a string, b string
           input format: org.apache.hadoop.mapred.TextInputFormat
           output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+          serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           name: null_tab3
 
   Stage: Stage-2
@@ -155,7 +156,7 @@ PREHOOK: Input: default@null_tab3
 POSTHOOK: query: SHOW CREATE TABLE null_tab3
 POSTHOOK: type: SHOW_CREATETABLE
 POSTHOOK: Input: default@null_tab3
-CREATE  TABLE `null_tab3`(
+CREATE TABLE `null_tab3`(
   `a` string, 
   `b` string)
 ROW FORMAT DELIMITED 

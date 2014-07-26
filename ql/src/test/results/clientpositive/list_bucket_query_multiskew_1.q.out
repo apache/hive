@@ -171,7 +171,7 @@ STAGE PLANS:
               predicate: ((key = '484') and (value = 'val_484')) (type: boolean)
               Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: key (type: string)
+                expressions: '484' (type: string)
                 outputColumnNames: _col0
                 Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
@@ -331,7 +331,7 @@ STAGE PLANS:
               predicate: ((key = '238') and (value = 'val_238')) (type: boolean)
               Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: key (type: string), value (type: string)
+                expressions: '238' (type: string), 'val_238' (type: string)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
@@ -638,7 +638,7 @@ STAGE PLANS:
               predicate: (key = '495') (type: boolean)
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: key (type: string), value (type: string)
+                expressions: '495' (type: string), value (type: string)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator

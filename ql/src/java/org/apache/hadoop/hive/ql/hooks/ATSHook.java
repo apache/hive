@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.hooks;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -28,6 +29,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.exec.ExplainTask;
+import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.yarn.api.records.timeline.TimelineEntity;
@@ -110,7 +112,8 @@ public class ATSHook implements ExecuteWithHookContext {
               ExplainTask explain = new ExplainTask();
               explain.initialize(hookContext.getConf(), plan, null);
               String query = plan.getQueryStr();
-              JSONObject explainPlan = explain.getJSONPlan(null, null, plan.getRootTasks(),
+              List<Task<?>> rootTasks = plan.getRootTasks();
+              JSONObject explainPlan = explain.getJSONPlan(null, null, rootTasks,
                    plan.getFetchTask(), true, false, false);
               fireAndForget(hookContext.getConf(), createPreHookEvent(queryId, query,
                    explainPlan, queryStartTime, user, numMrJobs, numTezJobs));

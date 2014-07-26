@@ -59,7 +59,7 @@ STAGE PLANS:
               predicate: (key = 86) (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Select Operator
-                expressions: key (type: string), val (type: string)
+                expressions: '86' (type: string), val (type: string)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 File Output Operator

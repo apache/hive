@@ -34,12 +34,10 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.Set;
 
 import javax.security.auth.login.LoginException;
 
@@ -47,9 +45,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.common.ValidTxnList;
-import org.apache.hadoop.hive.common.ValidTxnListImpl;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.conf.HiveConfUtil;
 import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
 import org.apache.hadoop.hive.metastore.api.AddPartitionsRequest;
 import org.apache.hadoop.hive.metastore.api.AddPartitionsResult;
@@ -68,11 +66,15 @@ import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
-import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.GetPrincipalsInRoleRequest;
 import org.apache.hadoop.hive.metastore.api.GetPrincipalsInRoleResponse;
 import org.apache.hadoop.hive.metastore.api.GetRoleGrantsForPrincipalRequest;
 import org.apache.hadoop.hive.metastore.api.GetRoleGrantsForPrincipalResponse;
+import org.apache.hadoop.hive.metastore.api.GrantRevokePrivilegeRequest;
+import org.apache.hadoop.hive.metastore.api.GrantRevokePrivilegeResponse;
+import org.apache.hadoop.hive.metastore.api.GrantRevokeRoleRequest;
+import org.apache.hadoop.hive.metastore.api.GrantRevokeRoleResponse;
+import org.apache.hadoop.hive.metastore.api.GrantRevokeType;
 import org.apache.hadoop.hive.metastore.api.HeartbeatRequest;
 import org.apache.hadoop.hive.metastore.api.HeartbeatTxnRangeRequest;
 import org.apache.hadoop.hive.metastore.api.HeartbeatTxnRangeResponse;
@@ -109,7 +111,6 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TableStatsRequest;
 import org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore;
 import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
-import org.apache.hadoop.hive.metastore.api.TxnInfo;
 import org.apache.hadoop.hive.metastore.api.TxnOpenException;
 import org.apache.hadoop.hive.metastore.api.Type;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
@@ -139,7 +140,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   private boolean isConnected = false;
   private URI metastoreUris[];
   private final HiveMetaHookLoader hookLoader;
-  private final HiveConf conf;
+  protected final HiveConf conf;
   private String tokenStrForm;
   private final boolean localMetaStore;
 
@@ -147,7 +148,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   private int retries = 5;
   private int retryDelaySeconds = 0;
 
-  static final private Log LOG = LogFactory.getLog("hive.metastore");
+  static final protected Log LOG = LogFactory.getLog("hive.metastore");
 
   public HiveMetaStoreClient(HiveConf conf)
     throws MetaException {
@@ -164,7 +165,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     this.conf = conf;
 
     String msUri = conf.getVar(HiveConf.ConfVars.METASTOREURIS);
-    localMetaStore = (msUri == null) ? true : msUri.trim().isEmpty();
+    localMetaStore = HiveConfUtil.isEmbeddedMetaStore(msUri);
     if (localMetaStore) {
       // instantiate the metastore server handler directly instead of connecting
       // through the network
@@ -555,7 +556,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     }
     boolean success = false;
     try {
-      client.create_table_with_environment_context(tbl, envContext);
+      // Subclasses can override this step (for example, for temporary tables)
+      create_table_with_environment_context(tbl, envContext);
       if (hook != null) {
         hook.commitCreateTable(tbl);
       }
@@ -617,7 +619,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
        List<String> tableList = getAllTables(name);
        for (String table : tableList) {
          try {
-            dropTable(name, table, deleteData, false);
+           // Subclasses can override this step (for example, for temporary tables)
+           dropTable(name, table, deleteData, false);
          } catch (UnsupportedOperationException e) {
            // Ignore Index tables, those will be dropped with parent tables
          }
@@ -771,7 +774,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     }
     boolean success = false;
     try {
-      client.drop_table_with_environment_context(dbname, name, deleteData, envContext);
+      drop_table_with_environment_context(dbname, name, deleteData, envContext);
       if (hook != null) {
         hook.commitDropTable(tbl, deleteData);
       }
@@ -1342,7 +1345,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     return copy;
   }
 
-  private Table deepCopy(Table table) {
+  protected Table deepCopy(Table table) {
     Table copy = null;
     if (table != null) {
       copy = new Table(table);
@@ -1378,6 +1381,14 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     Function copy = null;
     if (func != null) {
       copy = new Function(func);
+    }
+    return copy;
+  }
+
+  protected PrincipalPrivilegeSet deepCopy(PrincipalPrivilegeSet pps) {
+    PrincipalPrivilegeSet copy = null;
+    if (pps != null) {
+      copy = new PrincipalPrivilegeSet(pps);
     }
     return copy;
   }
@@ -1433,8 +1444,19 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   public boolean grant_role(String roleName, String userName,
       PrincipalType principalType, String grantor, PrincipalType grantorType,
       boolean grantOption) throws MetaException, TException {
-    return client.grant_role(roleName, userName, principalType, grantor,
-        grantorType, grantOption);
+    GrantRevokeRoleRequest req = new GrantRevokeRoleRequest();
+    req.setRequestType(GrantRevokeType.GRANT);
+    req.setRoleName(roleName);
+    req.setPrincipalName(userName);
+    req.setPrincipalType(principalType);
+    req.setGrantor(grantor);
+    req.setGrantorType(grantorType);
+    req.setGrantOption(grantOption);
+    GrantRevokeRoleResponse res = client.grant_revoke_role(req);
+    if (!res.isSetSuccess()) {
+      throw new MetaException("GrantRevokeResponse missing success field");
+    }
+    return res.isSuccess();
   }
 
   @Override
@@ -1474,19 +1496,44 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   @Override
   public boolean grant_privileges(PrivilegeBag privileges)
       throws MetaException, TException {
-    return client.grant_privileges(privileges);
+    GrantRevokePrivilegeRequest req = new GrantRevokePrivilegeRequest();
+    req.setRequestType(GrantRevokeType.GRANT);
+    req.setPrivileges(privileges);
+    GrantRevokePrivilegeResponse res = client.grant_revoke_privileges(req);
+    if (!res.isSetSuccess()) {
+      throw new MetaException("GrantRevokePrivilegeResponse missing success field");
+    }
+    return res.isSuccess();
   }
 
   @Override
   public boolean revoke_role(String roleName, String userName,
-      PrincipalType principalType) throws MetaException, TException {
-    return client.revoke_role(roleName, userName, principalType);
+      PrincipalType principalType, boolean grantOption) throws MetaException, TException {
+    GrantRevokeRoleRequest req = new GrantRevokeRoleRequest();
+    req.setRequestType(GrantRevokeType.REVOKE);
+    req.setRoleName(roleName);
+    req.setPrincipalName(userName);
+    req.setPrincipalType(principalType);
+    req.setGrantOption(grantOption);
+    GrantRevokeRoleResponse res = client.grant_revoke_role(req);
+    if (!res.isSetSuccess()) {
+      throw new MetaException("GrantRevokeResponse missing success field");
+    }
+    return res.isSuccess();
   }
 
   @Override
-  public boolean revoke_privileges(PrivilegeBag privileges) throws MetaException,
+  public boolean revoke_privileges(PrivilegeBag privileges, boolean grantOption) throws MetaException,
       TException {
-    return client.revoke_privileges(privileges);
+    GrantRevokePrivilegeRequest req = new GrantRevokePrivilegeRequest();
+    req.setRequestType(GrantRevokeType.REVOKE);
+    req.setPrivileges(privileges);
+    req.setRevokeGrantOption(grantOption);
+    GrantRevokePrivilegeResponse res = client.grant_revoke_privileges(req);
+    if (!res.isSetSuccess()) {
+      throw new MetaException("GrantRevokePrivilegeResponse missing success field");
+    }
+    return res.isSuccess();
   }
 
   @Override
@@ -1727,4 +1774,15 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     return client.get_functions(dbName, pattern);
   }
 
+  protected void create_table_with_environment_context(Table tbl, EnvironmentContext envContext)
+      throws AlreadyExistsException, InvalidObjectException,
+      MetaException, NoSuchObjectException, TException {
+    client.create_table_with_environment_context(tbl, envContext);
+  }
+
+  protected void drop_table_with_environment_context(String dbname, String name,
+      boolean deleteData, EnvironmentContext envContext) throws MetaException, TException,
+      NoSuchObjectException, UnsupportedOperationException {
+    client.drop_table_with_environment_context(dbname, name, deleteData, envContext);
+  }
 }

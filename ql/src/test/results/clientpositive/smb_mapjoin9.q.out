@@ -349,6 +349,7 @@ STAGE PLANS:
           columns: k1 int, value string, ds string, k2 int
           input format: org.apache.hadoop.mapred.TextInputFormat
           output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+          serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           name: smb_mapjoin9_results
 
   Stage: Stage-3

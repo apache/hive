@@ -83,6 +83,12 @@ set AUX_PARAM=
 		goto :ProcessCmdLine
 	)
 
+	if %1==--orcfiledump (
+		set SERVICE=orcfiledump
+		shift
+		goto :ProcessCmdLine
+	)
+
 	if %1==--help (
 		set HELP=_help
 		shift
@@ -337,6 +343,9 @@ goto :EOF
 
 	set /a SERVICE_COUNT = %SERVICE_COUNT% + 1
 	set VAR%SERVICE_COUNT%=rcfilecat
+
+	set /a SERVICE_COUNT = %SERVICE_COUNT% + 1
+	set VAR%SERVICE_COUNT%=orcfiledump
 
 	set /a SERVICE_COUNT = %SERVICE_COUNT% + 1
 	set VAR%SERVICE_COUNT%=schematool

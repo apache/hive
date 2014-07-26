@@ -52,7 +52,7 @@ PREHOOK: query: show grant user hive_test on table test_user
 PREHOOK: type: SHOW_GRANT
 POSTHOOK: query: show grant user hive_test on table test_user
 POSTHOOK: type: SHOW_GRANT
-default	test_user			hive_test	USER	Select	false	-1	hive_test_user
+default	test_user			hive_test	USER	SELECT	false	-1	hive_test_user
 PREHOOK: query: drop table test_user
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_user
@@ -111,7 +111,7 @@ PREHOOK: query: show grant user hive_test on table test_user
 PREHOOK: type: SHOW_GRANT
 POSTHOOK: query: show grant user hive_test on table test_user
 POSTHOOK: type: SHOW_GRANT
-default	test_user			hive_test	USER	Select	false	-1	hive_test_user
+default	test_user			hive_test	USER	SELECT	false	-1	hive_test_user
 PREHOOK: query: drop table test_user
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_user

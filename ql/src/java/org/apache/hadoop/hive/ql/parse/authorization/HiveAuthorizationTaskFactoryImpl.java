@@ -138,11 +138,16 @@ public class HiveAuthorizationTaskFactoryImpl implements HiveAuthorizationTaskFa
     List<PrivilegeDesc> privilegeDesc = analyzePrivilegeListDef((ASTNode) ast.getChild(0));
     List<PrincipalDesc> principalDesc = AuthorizationParseUtils.analyzePrincipalListDef((ASTNode) ast.getChild(1));
     PrivilegeObjectDesc hiveObj = null;
+    boolean grantOption = false;
     if (ast.getChildCount() > 2) {
       ASTNode astChild = (ASTNode) ast.getChild(2);
       hiveObj = analyzePrivilegeObject(astChild, outputs);
+
+      if (null != ast.getFirstChildWithType(HiveParser.TOK_GRANT_OPTION_FOR)) {
+        grantOption = true;
+      }
     }
-    RevokeDesc revokeDesc = new RevokeDesc(privilegeDesc, principalDesc, hiveObj);
+    RevokeDesc revokeDesc = new RevokeDesc(privilegeDesc, principalDesc, hiveObj, grantOption);
     return TaskFactory.get(new DDLWork(inputs, outputs, revokeDesc), conf);
   }
   @Override
@@ -212,7 +217,8 @@ public class HiveAuthorizationTaskFactoryImpl implements HiveAuthorizationTaskFa
     int rolesStartPos = 1;
     ASTNode wAdminOption = (ASTNode) ast.getChild(1);
     boolean isAdmin = false;
-    if(wAdminOption.getToken().getType() == HiveParser.TOK_GRANT_WITH_ADMIN_OPTION){
+    if((isGrant && wAdminOption.getToken().getType() == HiveParser.TOK_GRANT_WITH_ADMIN_OPTION) ||
+       (!isGrant && wAdminOption.getToken().getType() == HiveParser.TOK_ADMIN_OPTION_FOR)){
       rolesStartPos = 2; //start reading role names from next postion
       isAdmin = true;
     }

@@ -33,8 +33,8 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 
 /**
  * IN_FILE(str, filename) returns true if 'str' appears in the file specified
@@ -59,27 +59,33 @@ public class GenericUDFInFile extends GenericUDF {
           "IN_FILE() accepts exactly 2 arguments.");
     }
 
-    for (int i = 0; i < arguments.length; i++) {
-      if (!String.class.equals(
-            PrimitiveObjectInspectorUtils.
-                getJavaPrimitiveClassFromObjectInspector(arguments[i]))) {
-        throw new UDFArgumentTypeException(i, "The "
-            + GenericUDFUtils.getOrdinal(i + 1)
-            + " argument of function IN_FILE must be a string but "
-            + arguments[i].toString() + " was given.");
-      }
-    }
-
     strObjectInspector = arguments[0];
     fileObjectInspector = arguments[1];
 
-    if (!ObjectInspectorUtils.isConstantObjectInspector(fileObjectInspector)) {
-      throw new UDFArgumentTypeException(1,
-          "The second argument of IN_FILE() must be a constant string but " +
-          fileObjectInspector.toString() + " was given.");
+    if (!isTypeCompatible(strObjectInspector)) {
+      throw new UDFArgumentTypeException(0, "The first " +
+        "argument of function IN_FILE must be a string, " +
+        "char or varchar but " +
+        strObjectInspector.toString() + " was given.");
+    }
+
+    if (((PrimitiveObjectInspector) fileObjectInspector).getPrimitiveCategory() !=
+          PrimitiveObjectInspector.PrimitiveCategory.STRING ||
+      !ObjectInspectorUtils.isConstantObjectInspector(fileObjectInspector)) {
+      throw new UDFArgumentTypeException(1, "The second " +
+        "argument of IN_FILE() must be a constant string but " +
+        fileObjectInspector.toString() + " was given.");
     }
 
     return PrimitiveObjectInspectorFactory.javaBooleanObjectInspector;
+  }
+
+  private boolean isTypeCompatible(ObjectInspector argument) {
+    PrimitiveObjectInspector poi = ((PrimitiveObjectInspector) argument);
+    return
+      poi.getPrimitiveCategory() == PrimitiveObjectInspector.PrimitiveCategory.STRING ||
+      poi.getPrimitiveCategory() == PrimitiveObjectInspector.PrimitiveCategory.CHAR ||
+      poi.getPrimitiveCategory() == PrimitiveObjectInspector.PrimitiveCategory.VARCHAR;
   }
 
   @Override
@@ -96,12 +102,12 @@ public class GenericUDFInFile extends GenericUDF {
       return null;
     }
 
-    String str = (String)ObjectInspectorUtils.copyToStandardJavaObject(
-        arguments[0].get(), strObjectInspector);
+    String str = ObjectInspectorUtils.copyToStandardJavaObject(
+        arguments[0].get(), strObjectInspector).toString();
 
     if (set == null) {
       String fileName = (String)ObjectInspectorUtils.copyToStandardJavaObject(
-          arguments[1].get(), fileObjectInspector);
+        arguments[1].get(), fileObjectInspector);
       try {
         load(new FileInputStream((new File(fileName)).getName()));
       } catch (FileNotFoundException e) {

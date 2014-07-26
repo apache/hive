@@ -254,6 +254,7 @@ STAGE PLANS:
                 Statistics: Num rows: 4 Data size: 384 Basic stats: COMPLETE Column stats: COMPLETE
                 tag: 1
                 value expressions: deptname (type: string)
+                auto parallelism: false
           TableScan
             alias: e
             Statistics: Num rows: 6 Data size: 560 Basic stats: COMPLETE Column stats: COMPLETE
@@ -269,6 +270,7 @@ STAGE PLANS:
                 Statistics: Num rows: 4 Data size: 376 Basic stats: COMPLETE Column stats: COMPLETE
                 tag: 0
                 value expressions: lastname (type: string)
+                auto parallelism: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -487,6 +489,7 @@ STAGE PLANS:
                 Statistics: Num rows: 4 Data size: 384 Basic stats: COMPLETE Column stats: COMPLETE
                 tag: 1
                 value expressions: deptname (type: string)
+                auto parallelism: false
           TableScan
             alias: e1
             Statistics: Num rows: 6 Data size: 560 Basic stats: COMPLETE Column stats: COMPLETE
@@ -502,6 +505,7 @@ STAGE PLANS:
                 Statistics: Num rows: 4 Data size: 376 Basic stats: COMPLETE Column stats: COMPLETE
                 tag: 2
                 value expressions: lastname (type: string)
+                auto parallelism: false
           TableScan
             alias: e
             Statistics: Num rows: 6 Data size: 560 Basic stats: COMPLETE Column stats: COMPLETE
@@ -517,6 +521,7 @@ STAGE PLANS:
                 Statistics: Num rows: 4 Data size: 376 Basic stats: COMPLETE Column stats: COMPLETE
                 tag: 0
                 value expressions: lastname (type: string)
+                auto parallelism: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -735,6 +740,7 @@ STAGE PLANS:
                 Statistics: Num rows: 4 Data size: 384 Basic stats: COMPLETE Column stats: COMPLETE
                 tag: 1
                 value expressions: deptname (type: string)
+                auto parallelism: false
           TableScan
             alias: e
             Statistics: Num rows: 6 Data size: 560 Basic stats: COMPLETE Column stats: COMPLETE
@@ -750,6 +756,7 @@ STAGE PLANS:
                 Statistics: Num rows: 4 Data size: 376 Basic stats: COMPLETE Column stats: COMPLETE
                 tag: 0
                 value expressions: lastname (type: string)
+                auto parallelism: false
           TableScan
             alias: l
             Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: COMPLETE
@@ -765,6 +772,7 @@ STAGE PLANS:
                 Statistics: Num rows: 7 Data size: 702 Basic stats: COMPLETE Column stats: COMPLETE
                 tag: 2
                 value expressions: state (type: string), zip (type: bigint), year (type: int)
+                auto parallelism: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -1032,6 +1040,7 @@ STAGE PLANS:
                 Statistics: Num rows: 2 Data size: 192 Basic stats: COMPLETE Column stats: COMPLETE
                 tag: 1
                 value expressions: deptid (type: int), deptname (type: string)
+                auto parallelism: false
           TableScan
             alias: e
             Statistics: Num rows: 6 Data size: 560 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1047,6 +1056,7 @@ STAGE PLANS:
                 Statistics: Num rows: 3 Data size: 281 Basic stats: COMPLETE Column stats: COMPLETE
                 tag: 0
                 value expressions: lastname (type: string), deptid (type: int)
+                auto parallelism: false
           TableScan
             alias: l
             Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1062,6 +1072,7 @@ STAGE PLANS:
                 Statistics: Num rows: 4 Data size: 396 Basic stats: COMPLETE Column stats: COMPLETE
                 tag: 2
                 value expressions: state (type: string), locid (type: int), zip (type: bigint), year (type: int)
+                auto parallelism: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -1324,6 +1335,7 @@ STAGE PLANS:
                 Map-reduce partition columns: deptid (type: int), deptname (type: string)
                 Statistics: Num rows: 4 Data size: 384 Basic stats: COMPLETE Column stats: COMPLETE
                 tag: 1
+                auto parallelism: false
           TableScan
             alias: e
             Statistics: Num rows: 6 Data size: 560 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1338,6 +1350,7 @@ STAGE PLANS:
                 Map-reduce partition columns: deptid (type: int), lastname (type: string)
                 Statistics: Num rows: 4 Data size: 376 Basic stats: COMPLETE Column stats: COMPLETE
                 tag: 0
+                auto parallelism: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -1575,6 +1588,7 @@ STAGE PLANS:
                 Map-reduce partition columns: deptid (type: int), deptname (type: string)
                 Statistics: Num rows: 4 Data size: 384 Basic stats: COMPLETE Column stats: COMPLETE
                 tag: 1
+                auto parallelism: false
           TableScan
             alias: e
             Statistics: Num rows: 6 Data size: 560 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1589,6 +1603,7 @@ STAGE PLANS:
                 Map-reduce partition columns: deptid (type: int), lastname (type: string)
                 Statistics: Num rows: 4 Data size: 376 Basic stats: COMPLETE Column stats: COMPLETE
                 tag: 0
+                auto parallelism: false
           TableScan
             alias: l
             Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1604,6 +1619,7 @@ STAGE PLANS:
                 Statistics: Num rows: 6 Data size: 600 Basic stats: COMPLETE Column stats: COMPLETE
                 tag: 2
                 value expressions: zip (type: bigint), year (type: int)
+                auto parallelism: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:

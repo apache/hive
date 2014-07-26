@@ -393,7 +393,7 @@ public class VectorColumnAssignFactory {
             else {
               BytesWritable bw = (BytesWritable) val;
               byte[] bytes = bw.getBytes();
-              assignBytes(bytes, 0, bytes.length, destIndex);
+              assignBytes(bytes, 0, bw.getLength(), destIndex);
             }
           }
         }.init(outputBatch, (BytesColumnVector) destCol);
@@ -408,7 +408,7 @@ public class VectorColumnAssignFactory {
             else {
               Text bw = (Text) val;
               byte[] bytes = bw.getBytes();
-              assignBytes(bytes, 0, bytes.length, destIndex);
+              assignBytes(bytes, 0, bw.getLength(), destIndex);
             }
           }
         }.init(outputBatch, (BytesColumnVector) destCol);

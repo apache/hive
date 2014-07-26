@@ -29,20 +29,20 @@ PREHOOK: query: show grant user hive_test_user on database default
 PREHOOK: type: SHOW_GRANT
 POSTHOOK: query: show grant user hive_test_user on database default
 POSTHOOK: type: SHOW_GRANT
-default				hive_test_user	USER	Select	false	-1	hive_test_user
+default				hive_test_user	USER	SELECT	false	-1	hive_test_user
 PREHOOK: query: show grant user hive_test_user on table dummy
 PREHOOK: type: SHOW_GRANT
 POSTHOOK: query: show grant user hive_test_user on table dummy
 POSTHOOK: type: SHOW_GRANT
-default	dummy			hive_test_user	USER	Select	false	-1	hive_test_user
+default	dummy			hive_test_user	USER	SELECT	false	-1	hive_test_user
 PREHOOK: query: show grant user hive_test_user on all
 PREHOOK: type: SHOW_GRANT
 POSTHOOK: query: show grant user hive_test_user on all
 POSTHOOK: type: SHOW_GRANT
-default				hive_test_user	USER	Select	false	-1	hive_test_user
-default	dummy			hive_test_user	USER	Select	false	-1	hive_test_user
-default	dummy		key	hive_test_user	USER	Select	false	-1	hive_test_user
-default	dummy		value	hive_test_user	USER	Select	false	-1	hive_test_user
+default				hive_test_user	USER	SELECT	false	-1	hive_test_user
+default	dummy			hive_test_user	USER	SELECT	false	-1	hive_test_user
+default	dummy		[key]	hive_test_user	USER	SELECT	false	-1	hive_test_user
+default	dummy		[value]	hive_test_user	USER	SELECT	false	-1	hive_test_user
 PREHOOK: query: grant select on database default to user hive_test_user2
 PREHOOK: type: GRANT_PRIVILEGE
 POSTHOOK: query: grant select on database default to user hive_test_user2
@@ -63,12 +63,44 @@ PREHOOK: query: show grant on all
 PREHOOK: type: SHOW_GRANT
 POSTHOOK: query: show grant on all
 POSTHOOK: type: SHOW_GRANT
-				admin	ROLE	All	true	-1	admin
-default				hive_test_user	USER	Select	false	-1	hive_test_user
-default				hive_test_user2	USER	Select	false	-1	hive_test_user
-default	dummy			hive_test_user	USER	Select	false	-1	hive_test_user
-default	dummy			hive_test_user2	USER	Select	false	-1	hive_test_user
-default	dummy		key	hive_test_user	USER	Select	false	-1	hive_test_user
-default	dummy		key	hive_test_user2	USER	Select	false	-1	hive_test_user
-default	dummy		value	hive_test_user	USER	Select	false	-1	hive_test_user
-default	dummy		value	hive_test_user2	USER	Select	false	-1	hive_test_user
+				admin	ROLE	ALL	true	-1	admin
+default				hive_test_user	USER	SELECT	false	-1	hive_test_user
+default				hive_test_user2	USER	SELECT	false	-1	hive_test_user
+default	dummy			hive_test_user	USER	SELECT	false	-1	hive_test_user
+default	dummy			hive_test_user2	USER	SELECT	false	-1	hive_test_user
+default	dummy		[key]	hive_test_user	USER	SELECT	false	-1	hive_test_user
+default	dummy		[key]	hive_test_user2	USER	SELECT	false	-1	hive_test_user
+default	dummy		[value]	hive_test_user	USER	SELECT	false	-1	hive_test_user
+default	dummy		[value]	hive_test_user2	USER	SELECT	false	-1	hive_test_user
+PREHOOK: query: revoke select on database default from user hive_test_user
+PREHOOK: type: REVOKE_PRIVILEGE
+POSTHOOK: query: revoke select on database default from user hive_test_user
+POSTHOOK: type: REVOKE_PRIVILEGE
+PREHOOK: query: revoke select on table dummy from user hive_test_user
+PREHOOK: type: REVOKE_PRIVILEGE
+PREHOOK: Output: default@dummy
+POSTHOOK: query: revoke select on table dummy from user hive_test_user
+POSTHOOK: type: REVOKE_PRIVILEGE
+POSTHOOK: Output: default@dummy
+PREHOOK: query: revoke select (key, value) on table dummy from user hive_test_user
+PREHOOK: type: REVOKE_PRIVILEGE
+PREHOOK: Output: default@dummy
+POSTHOOK: query: revoke select (key, value) on table dummy from user hive_test_user
+POSTHOOK: type: REVOKE_PRIVILEGE
+POSTHOOK: Output: default@dummy
+PREHOOK: query: revoke select on database default from user hive_test_user2
+PREHOOK: type: REVOKE_PRIVILEGE
+POSTHOOK: query: revoke select on database default from user hive_test_user2
+POSTHOOK: type: REVOKE_PRIVILEGE
+PREHOOK: query: revoke select on table dummy from user hive_test_user2
+PREHOOK: type: REVOKE_PRIVILEGE
+PREHOOK: Output: default@dummy
+POSTHOOK: query: revoke select on table dummy from user hive_test_user2
+POSTHOOK: type: REVOKE_PRIVILEGE
+POSTHOOK: Output: default@dummy
+PREHOOK: query: revoke select (key, value) on table dummy from user hive_test_user2
+PREHOOK: type: REVOKE_PRIVILEGE
+PREHOOK: Output: default@dummy
+POSTHOOK: query: revoke select (key, value) on table dummy from user hive_test_user2
+POSTHOOK: type: REVOKE_PRIVILEGE
+POSTHOOK: Output: default@dummy

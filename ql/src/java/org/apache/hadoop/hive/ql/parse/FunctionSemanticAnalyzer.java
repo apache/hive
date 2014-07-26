@@ -24,7 +24,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.ResourceType;
 import org.apache.hadoop.hive.metastore.api.ResourceUri;
@@ -32,14 +31,13 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.FunctionUtils;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
+import org.apache.hadoop.hive.ql.hooks.Entity.Type;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
-import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.CreateFunctionDesc;
 import org.apache.hadoop.hive.ql.plan.DropFunctionDesc;
 import org.apache.hadoop.hive.ql.plan.FunctionWork;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
-import org.apache.hadoop.hive.ql.session.SessionState;
 
 /**
  * FunctionSemanticAnalyzer.
@@ -78,7 +76,7 @@ public class FunctionSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // find any referenced resources
     List<ResourceUri> resources = getResourceList(ast);
-    
+
     CreateFunctionDesc desc =
         new CreateFunctionDesc(functionName, isTemporaryFunction, className, resources);
     rootTasks.add(TaskFactory.get(new FunctionWork(desc), conf));
@@ -152,15 +150,22 @@ public class FunctionSemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   /**
-   * Add write entities to the semantic analyzer to restrict function creation to priviliged users.
+   * Add write entities to the semantic analyzer to restrict function creation to privileged users.
    */
   private void addEntities(String functionName, boolean isTemporaryFunction)
       throws SemanticException {
+    // If the function is being added under a database 'namespace', then add an entity representing
+    // the database (only applicable to permanent/metastore functions).
+    // We also add a second entity representing the function name.
+    // The authorization api implementation can decide which entities it wants to use to
+    // authorize the create/drop function call.
+
+    // Add the relevant database 'namespace' as a WriteEntity
     Database database = null;
-    if (isTemporaryFunction) {
-      // This means temp function creation is also restricted.
-      database = getDatabase(MetaStoreUtils.DEFAULT_DATABASE_NAME);
-    } else {
+
+    // temporary functions don't have any database 'namespace' associated with it,
+    // it matters only for permanent functions
+    if (!isTemporaryFunction) {
       try {
         String[] qualifiedNameParts = FunctionUtils.getQualifiedFunctionNameParts(functionName);
         String dbName = qualifiedNameParts[0];
@@ -173,5 +178,9 @@ public class FunctionSemanticAnalyzer extends BaseSemanticAnalyzer {
     if (database != null) {
       outputs.add(new WriteEntity(database, WriteEntity.WriteType.DDL_NO_LOCK));
     }
+
+    // Add the function name as a WriteEntity
+    outputs.add(new WriteEntity(database, functionName, Type.FUNCTION,
+        WriteEntity.WriteType.DDL_NO_LOCK));
   }
 }

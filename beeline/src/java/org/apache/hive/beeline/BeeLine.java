@@ -1165,8 +1165,9 @@ public class BeeLine implements Closeable {
     if (getDatabaseConnection() == null || getDatabaseConnection().getUrl() == null) {
       return "beeline> ";
     } else {
+      String printClosed = getDatabaseConnection().isClosed() ? " (closed)" : "";
       return getPrompt(getDatabaseConnections().getIndex()
-          + ": " + getDatabaseConnection().getUrl()) + "> ";
+          + ": " + getDatabaseConnection().getUrl()) + printClosed + "> ";
     }
   }
 

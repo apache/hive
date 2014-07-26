@@ -354,7 +354,7 @@ public class GetRoleGrantsForPrincipalResponse implements org.apache.thrift.TBas
                 struct.principalGrants = new ArrayList<RolePrincipalGrant>(_list78.size);
                 for (int _i79 = 0; _i79 < _list78.size; ++_i79)
                 {
-                  RolePrincipalGrant _elem80; // required
+                  RolePrincipalGrant _elem80; // optional
                   _elem80 = new RolePrincipalGrant();
                   _elem80.read(iprot);
                   struct.principalGrants.add(_elem80);
@@ -425,7 +425,7 @@ public class GetRoleGrantsForPrincipalResponse implements org.apache.thrift.TBas
         struct.principalGrants = new ArrayList<RolePrincipalGrant>(_list83.size);
         for (int _i84 = 0; _i84 < _list83.size; ++_i84)
         {
-          RolePrincipalGrant _elem85; // required
+          RolePrincipalGrant _elem85; // optional
           _elem85 = new RolePrincipalGrant();
           _elem85.read(iprot);
           struct.principalGrants.add(_elem85);

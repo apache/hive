@@ -987,7 +987,7 @@ public final class TypeCheckProcFactory {
         // descendant nodes, DFS traversal ensures that the error only needs to
         // be cleared once. Also, for a case like
         // SELECT concat(value, concat(value))... the logic still works as the
-        // error is only set with the first 'value'; all node pocessors quit
+        // error is only set with the first 'value'; all node processors quit
         // early if the global error is set.
 
         if (isDescendant(nd, ctx.getErrorSrcNode())) {

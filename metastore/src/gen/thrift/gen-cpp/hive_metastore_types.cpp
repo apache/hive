@@ -106,6 +106,16 @@ const char* _kCompactionTypeNames[] = {
 };
 const std::map<int, const char*> _CompactionType_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(2, _kCompactionTypeValues, _kCompactionTypeNames), ::apache::thrift::TEnumIterator(-1, NULL, NULL));
 
+int _kGrantRevokeTypeValues[] = {
+  GrantRevokeType::GRANT,
+  GrantRevokeType::REVOKE
+};
+const char* _kGrantRevokeTypeNames[] = {
+  "GRANT",
+  "REVOKE"
+};
+const std::map<int, const char*> _GrantRevokeType_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(2, _kGrantRevokeTypeValues, _kGrantRevokeTypeNames), ::apache::thrift::TEnumIterator(-1, NULL, NULL));
+
 int _kFunctionTypeValues[] = {
   FunctionType::JAVA
 };
@@ -1070,6 +1080,160 @@ void swap(PrincipalPrivilegeSet &a, PrincipalPrivilegeSet &b) {
   swap(a.__isset, b.__isset);
 }
 
+const char* GrantRevokePrivilegeRequest::ascii_fingerprint = "DF474A3CB526AD40DC0F2C3702F7AA2C";
+const uint8_t GrantRevokePrivilegeRequest::binary_fingerprint[16] = {0xDF,0x47,0x4A,0x3C,0xB5,0x26,0xAD,0x40,0xDC,0x0F,0x2C,0x37,0x02,0xF7,0xAA,0x2C};
+
+uint32_t GrantRevokePrivilegeRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          int32_t ecast63;
+          xfer += iprot->readI32(ecast63);
+          this->requestType = (GrantRevokeType::type)ecast63;
+          this->__isset.requestType = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += this->privileges.read(iprot);
+          this->__isset.privileges = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_BOOL) {
+          xfer += iprot->readBool(this->revokeGrantOption);
+          this->__isset.revokeGrantOption = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t GrantRevokePrivilegeRequest::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  xfer += oprot->writeStructBegin("GrantRevokePrivilegeRequest");
+
+  xfer += oprot->writeFieldBegin("requestType", ::apache::thrift::protocol::T_I32, 1);
+  xfer += oprot->writeI32((int32_t)this->requestType);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("privileges", ::apache::thrift::protocol::T_STRUCT, 2);
+  xfer += this->privileges.write(oprot);
+  xfer += oprot->writeFieldEnd();
+
+  if (this->__isset.revokeGrantOption) {
+    xfer += oprot->writeFieldBegin("revokeGrantOption", ::apache::thrift::protocol::T_BOOL, 3);
+    xfer += oprot->writeBool(this->revokeGrantOption);
+    xfer += oprot->writeFieldEnd();
+  }
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(GrantRevokePrivilegeRequest &a, GrantRevokePrivilegeRequest &b) {
+  using ::std::swap;
+  swap(a.requestType, b.requestType);
+  swap(a.privileges, b.privileges);
+  swap(a.revokeGrantOption, b.revokeGrantOption);
+  swap(a.__isset, b.__isset);
+}
+
+const char* GrantRevokePrivilegeResponse::ascii_fingerprint = "BF054652DEF86253C2BEE7D947F167DD";
+const uint8_t GrantRevokePrivilegeResponse::binary_fingerprint[16] = {0xBF,0x05,0x46,0x52,0xDE,0xF8,0x62,0x53,0xC2,0xBE,0xE7,0xD9,0x47,0xF1,0x67,0xDD};
+
+uint32_t GrantRevokePrivilegeResponse::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_BOOL) {
+          xfer += iprot->readBool(this->success);
+          this->__isset.success = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t GrantRevokePrivilegeResponse::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  xfer += oprot->writeStructBegin("GrantRevokePrivilegeResponse");
+
+  if (this->__isset.success) {
+    xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_BOOL, 1);
+    xfer += oprot->writeBool(this->success);
+    xfer += oprot->writeFieldEnd();
+  }
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(GrantRevokePrivilegeResponse &a, GrantRevokePrivilegeResponse &b) {
+  using ::std::swap;
+  swap(a.success, b.success);
+  swap(a.__isset, b.__isset);
+}
+
 const char* Role::ascii_fingerprint = "70563A0628F75DF9555F4D24690B1E26";
 const uint8_t Role::binary_fingerprint[16] = {0x70,0x56,0x3A,0x06,0x28,0xF7,0x5D,0xF9,0x55,0x5F,0x4D,0x24,0x69,0x0B,0x1E,0x26};
 
@@ -1199,9 +1363,9 @@ uint32_t RolePrincipalGrant::read(::apache::thrift::protocol::TProtocol* iprot) 
         break;
       case 3:
         if (ftype == ::apache::thrift::protocol::T_I32) {
-          int32_t ecast63;
-          xfer += iprot->readI32(ecast63);
-          this->principalType = (PrincipalType::type)ecast63;
+          int32_t ecast64;
+          xfer += iprot->readI32(ecast64);
+          this->principalType = (PrincipalType::type)ecast64;
           this->__isset.principalType = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -1233,9 +1397,9 @@ uint32_t RolePrincipalGrant::read(::apache::thrift::protocol::TProtocol* iprot) 
         break;
       case 7:
         if (ftype == ::apache::thrift::protocol::T_I32) {
-          int32_t ecast64;
-          xfer += iprot->readI32(ecast64);
-          this->grantorPrincipalType = (PrincipalType::type)ecast64;
+          int32_t ecast65;
+          xfer += iprot->readI32(ecast65);
+          this->grantorPrincipalType = (PrincipalType::type)ecast65;
           this->__isset.grantorPrincipalType = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -1337,9 +1501,9 @@ uint32_t GetRoleGrantsForPrincipalRequest::read(::apache::thrift::protocol::TPro
         break;
       case 2:
         if (ftype == ::apache::thrift::protocol::T_I32) {
-          int32_t ecast65;
-          xfer += iprot->readI32(ecast65);
-          this->principal_type = (PrincipalType::type)ecast65;
+          int32_t ecast66;
+          xfer += iprot->readI32(ecast66);
+          this->principal_type = (PrincipalType::type)ecast66;
           isset_principal_type = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -1412,14 +1576,14 @@ uint32_t GetRoleGrantsForPrincipalResponse::read(::apache::thrift::protocol::TPr
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->principalGrants.clear();
-            uint32_t _size66;
-            ::apache::thrift::protocol::TType _etype69;
-            xfer += iprot->readListBegin(_etype69, _size66);
-            this->principalGrants.resize(_size66);
-            uint32_t _i70;
-            for (_i70 = 0; _i70 < _size66; ++_i70)
+            uint32_t _size67;
+            ::apache::thrift::protocol::TType _etype70;
+            xfer += iprot->readListBegin(_etype70, _size67);
+            this->principalGrants.resize(_size67);
+            uint32_t _i71;
+            for (_i71 = 0; _i71 < _size67; ++_i71)
             {
-              xfer += this->principalGrants[_i70].read(iprot);
+              xfer += this->principalGrants[_i71].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -1449,10 +1613,10 @@ uint32_t GetRoleGrantsForPrincipalResponse::write(::apache::thrift::protocol::TP
   xfer += oprot->writeFieldBegin("principalGrants", ::apache::thrift::protocol::T_LIST, 1);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->principalGrants.size()));
-    std::vector<RolePrincipalGrant> ::const_iterator _iter71;
-    for (_iter71 = this->principalGrants.begin(); _iter71 != this->principalGrants.end(); ++_iter71)
+    std::vector<RolePrincipalGrant> ::const_iterator _iter72;
+    for (_iter72 = this->principalGrants.begin(); _iter72 != this->principalGrants.end(); ++_iter72)
     {
-      xfer += (*_iter71).write(oprot);
+      xfer += (*_iter72).write(oprot);
     }
     xfer += oprot->writeListEnd();
   }
@@ -1560,14 +1724,14 @@ uint32_t GetPrincipalsInRoleResponse::read(::apache::thrift::protocol::TProtocol
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->principalGrants.clear();
-            uint32_t _size72;
-            ::apache::thrift::protocol::TType _etype75;
-            xfer += iprot->readListBegin(_etype75, _size72);
-            this->principalGrants.resize(_size72);
-            uint32_t _i76;
-            for (_i76 = 0; _i76 < _size72; ++_i76)
+            uint32_t _size73;
+            ::apache::thrift::protocol::TType _etype76;
+            xfer += iprot->readListBegin(_etype76, _size73);
+            this->principalGrants.resize(_size73);
+            uint32_t _i77;
+            for (_i77 = 0; _i77 < _size73; ++_i77)
             {
-              xfer += this->principalGrants[_i76].read(iprot);
+              xfer += this->principalGrants[_i77].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -1597,10 +1761,10 @@ uint32_t GetPrincipalsInRoleResponse::write(::apache::thrift::protocol::TProtoco
   xfer += oprot->writeFieldBegin("principalGrants", ::apache::thrift::protocol::T_LIST, 1);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->principalGrants.size()));
-    std::vector<RolePrincipalGrant> ::const_iterator _iter77;
-    for (_iter77 = this->principalGrants.begin(); _iter77 != this->principalGrants.end(); ++_iter77)
+    std::vector<RolePrincipalGrant> ::const_iterator _iter78;
+    for (_iter78 = this->principalGrants.begin(); _iter78 != this->principalGrants.end(); ++_iter78)
     {
-      xfer += (*_iter77).write(oprot);
+      xfer += (*_iter78).write(oprot);
     }
     xfer += oprot->writeListEnd();
   }
@@ -1614,6 +1778,218 @@ uint32_t GetPrincipalsInRoleResponse::write(::apache::thrift::protocol::TProtoco
 void swap(GetPrincipalsInRoleResponse &a, GetPrincipalsInRoleResponse &b) {
   using ::std::swap;
   swap(a.principalGrants, b.principalGrants);
+}
+
+const char* GrantRevokeRoleRequest::ascii_fingerprint = "907DEA796F2BA7AF76DC2566E75FAEE7";
+const uint8_t GrantRevokeRoleRequest::binary_fingerprint[16] = {0x90,0x7D,0xEA,0x79,0x6F,0x2B,0xA7,0xAF,0x76,0xDC,0x25,0x66,0xE7,0x5F,0xAE,0xE7};
+
+uint32_t GrantRevokeRoleRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          int32_t ecast79;
+          xfer += iprot->readI32(ecast79);
+          this->requestType = (GrantRevokeType::type)ecast79;
+          this->__isset.requestType = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->roleName);
+          this->__isset.roleName = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->principalName);
+          this->__isset.principalName = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 4:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          int32_t ecast80;
+          xfer += iprot->readI32(ecast80);
+          this->principalType = (PrincipalType::type)ecast80;
+          this->__isset.principalType = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 5:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->grantor);
+          this->__isset.grantor = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 6:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          int32_t ecast81;
+          xfer += iprot->readI32(ecast81);
+          this->grantorType = (PrincipalType::type)ecast81;
+          this->__isset.grantorType = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 7:
+        if (ftype == ::apache::thrift::protocol::T_BOOL) {
+          xfer += iprot->readBool(this->grantOption);
+          this->__isset.grantOption = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t GrantRevokeRoleRequest::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  xfer += oprot->writeStructBegin("GrantRevokeRoleRequest");
+
+  xfer += oprot->writeFieldBegin("requestType", ::apache::thrift::protocol::T_I32, 1);
+  xfer += oprot->writeI32((int32_t)this->requestType);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("roleName", ::apache::thrift::protocol::T_STRING, 2);
+  xfer += oprot->writeString(this->roleName);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("principalName", ::apache::thrift::protocol::T_STRING, 3);
+  xfer += oprot->writeString(this->principalName);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("principalType", ::apache::thrift::protocol::T_I32, 4);
+  xfer += oprot->writeI32((int32_t)this->principalType);
+  xfer += oprot->writeFieldEnd();
+
+  if (this->__isset.grantor) {
+    xfer += oprot->writeFieldBegin("grantor", ::apache::thrift::protocol::T_STRING, 5);
+    xfer += oprot->writeString(this->grantor);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.grantorType) {
+    xfer += oprot->writeFieldBegin("grantorType", ::apache::thrift::protocol::T_I32, 6);
+    xfer += oprot->writeI32((int32_t)this->grantorType);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.grantOption) {
+    xfer += oprot->writeFieldBegin("grantOption", ::apache::thrift::protocol::T_BOOL, 7);
+    xfer += oprot->writeBool(this->grantOption);
+    xfer += oprot->writeFieldEnd();
+  }
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(GrantRevokeRoleRequest &a, GrantRevokeRoleRequest &b) {
+  using ::std::swap;
+  swap(a.requestType, b.requestType);
+  swap(a.roleName, b.roleName);
+  swap(a.principalName, b.principalName);
+  swap(a.principalType, b.principalType);
+  swap(a.grantor, b.grantor);
+  swap(a.grantorType, b.grantorType);
+  swap(a.grantOption, b.grantOption);
+  swap(a.__isset, b.__isset);
+}
+
+const char* GrantRevokeRoleResponse::ascii_fingerprint = "BF054652DEF86253C2BEE7D947F167DD";
+const uint8_t GrantRevokeRoleResponse::binary_fingerprint[16] = {0xBF,0x05,0x46,0x52,0xDE,0xF8,0x62,0x53,0xC2,0xBE,0xE7,0xD9,0x47,0xF1,0x67,0xDD};
+
+uint32_t GrantRevokeRoleResponse::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_BOOL) {
+          xfer += iprot->readBool(this->success);
+          this->__isset.success = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t GrantRevokeRoleResponse::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  xfer += oprot->writeStructBegin("GrantRevokeRoleResponse");
+
+  if (this->__isset.success) {
+    xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_BOOL, 1);
+    xfer += oprot->writeBool(this->success);
+    xfer += oprot->writeFieldEnd();
+  }
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(GrantRevokeRoleResponse &a, GrantRevokeRoleResponse &b) {
+  using ::std::swap;
+  swap(a.success, b.success);
+  swap(a.__isset, b.__isset);
 }
 
 const char* Database::ascii_fingerprint = "553495CAE243A1C583D5C3DD990AED53";
@@ -1667,17 +2043,17 @@ uint32_t Database::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_MAP) {
           {
             this->parameters.clear();
-            uint32_t _size78;
-            ::apache::thrift::protocol::TType _ktype79;
-            ::apache::thrift::protocol::TType _vtype80;
-            xfer += iprot->readMapBegin(_ktype79, _vtype80, _size78);
-            uint32_t _i82;
-            for (_i82 = 0; _i82 < _size78; ++_i82)
+            uint32_t _size82;
+            ::apache::thrift::protocol::TType _ktype83;
+            ::apache::thrift::protocol::TType _vtype84;
+            xfer += iprot->readMapBegin(_ktype83, _vtype84, _size82);
+            uint32_t _i86;
+            for (_i86 = 0; _i86 < _size82; ++_i86)
             {
-              std::string _key83;
-              xfer += iprot->readString(_key83);
-              std::string& _val84 = this->parameters[_key83];
-              xfer += iprot->readString(_val84);
+              std::string _key87;
+              xfer += iprot->readString(_key87);
+              std::string& _val88 = this->parameters[_key87];
+              xfer += iprot->readString(_val88);
             }
             xfer += iprot->readMapEnd();
           }
@@ -1704,9 +2080,9 @@ uint32_t Database::read(::apache::thrift::protocol::TProtocol* iprot) {
         break;
       case 7:
         if (ftype == ::apache::thrift::protocol::T_I32) {
-          int32_t ecast85;
-          xfer += iprot->readI32(ecast85);
-          this->ownerType = (PrincipalType::type)ecast85;
+          int32_t ecast89;
+          xfer += iprot->readI32(ecast89);
+          this->ownerType = (PrincipalType::type)ecast89;
           this->__isset.ownerType = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -1743,11 +2119,11 @@ uint32_t Database::write(::apache::thrift::protocol::TProtocol* oprot) const {
   xfer += oprot->writeFieldBegin("parameters", ::apache::thrift::protocol::T_MAP, 4);
   {
     xfer += oprot->writeMapBegin(::apache::thrift::protocol::T_STRING, ::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->parameters.size()));
-    std::map<std::string, std::string> ::const_iterator _iter86;
-    for (_iter86 = this->parameters.begin(); _iter86 != this->parameters.end(); ++_iter86)
+    std::map<std::string, std::string> ::const_iterator _iter90;
+    for (_iter90 = this->parameters.begin(); _iter90 != this->parameters.end(); ++_iter90)
     {
-      xfer += oprot->writeString(_iter86->first);
-      xfer += oprot->writeString(_iter86->second);
+      xfer += oprot->writeString(_iter90->first);
+      xfer += oprot->writeString(_iter90->second);
     }
     xfer += oprot->writeMapEnd();
   }
@@ -1828,17 +2204,17 @@ uint32_t SerDeInfo::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_MAP) {
           {
             this->parameters.clear();
-            uint32_t _size87;
-            ::apache::thrift::protocol::TType _ktype88;
-            ::apache::thrift::protocol::TType _vtype89;
-            xfer += iprot->readMapBegin(_ktype88, _vtype89, _size87);
-            uint32_t _i91;
-            for (_i91 = 0; _i91 < _size87; ++_i91)
+            uint32_t _size91;
+            ::apache::thrift::protocol::TType _ktype92;
+            ::apache::thrift::protocol::TType _vtype93;
+            xfer += iprot->readMapBegin(_ktype92, _vtype93, _size91);
+            uint32_t _i95;
+            for (_i95 = 0; _i95 < _size91; ++_i95)
             {
-              std::string _key92;
-              xfer += iprot->readString(_key92);
-              std::string& _val93 = this->parameters[_key92];
-              xfer += iprot->readString(_val93);
+              std::string _key96;
+              xfer += iprot->readString(_key96);
+              std::string& _val97 = this->parameters[_key96];
+              xfer += iprot->readString(_val97);
             }
             xfer += iprot->readMapEnd();
           }
@@ -1874,11 +2250,11 @@ uint32_t SerDeInfo::write(::apache::thrift::protocol::TProtocol* oprot) const {
   xfer += oprot->writeFieldBegin("parameters", ::apache::thrift::protocol::T_MAP, 3);
   {
     xfer += oprot->writeMapBegin(::apache::thrift::protocol::T_STRING, ::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->parameters.size()));
-    std::map<std::string, std::string> ::const_iterator _iter94;
-    for (_iter94 = this->parameters.begin(); _iter94 != this->parameters.end(); ++_iter94)
+    std::map<std::string, std::string> ::const_iterator _iter98;
+    for (_iter98 = this->parameters.begin(); _iter98 != this->parameters.end(); ++_iter98)
     {
-      xfer += oprot->writeString(_iter94->first);
-      xfer += oprot->writeString(_iter94->second);
+      xfer += oprot->writeString(_iter98->first);
+      xfer += oprot->writeString(_iter98->second);
     }
     xfer += oprot->writeMapEnd();
   }
@@ -1999,14 +2375,14 @@ uint32_t SkewedInfo::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->skewedColNames.clear();
-            uint32_t _size95;
-            ::apache::thrift::protocol::TType _etype98;
-            xfer += iprot->readListBegin(_etype98, _size95);
-            this->skewedColNames.resize(_size95);
-            uint32_t _i99;
-            for (_i99 = 0; _i99 < _size95; ++_i99)
+            uint32_t _size99;
+            ::apache::thrift::protocol::TType _etype102;
+            xfer += iprot->readListBegin(_etype102, _size99);
+            this->skewedColNames.resize(_size99);
+            uint32_t _i103;
+            for (_i103 = 0; _i103 < _size99; ++_i103)
             {
-              xfer += iprot->readString(this->skewedColNames[_i99]);
+              xfer += iprot->readString(this->skewedColNames[_i103]);
             }
             xfer += iprot->readListEnd();
           }
@@ -2019,23 +2395,23 @@ uint32_t SkewedInfo::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->skewedColValues.clear();
-            uint32_t _size100;
-            ::apache::thrift::protocol::TType _etype103;
-            xfer += iprot->readListBegin(_etype103, _size100);
-            this->skewedColValues.resize(_size100);
-            uint32_t _i104;
-            for (_i104 = 0; _i104 < _size100; ++_i104)
+            uint32_t _size104;
+            ::apache::thrift::protocol::TType _etype107;
+            xfer += iprot->readListBegin(_etype107, _size104);
+            this->skewedColValues.resize(_size104);
+            uint32_t _i108;
+            for (_i108 = 0; _i108 < _size104; ++_i108)
             {
               {
-                this->skewedColValues[_i104].clear();
-                uint32_t _size105;
-                ::apache::thrift::protocol::TType _etype108;
-                xfer += iprot->readListBegin(_etype108, _size105);
-                this->skewedColValues[_i104].resize(_size105);
-                uint32_t _i109;
-                for (_i109 = 0; _i109 < _size105; ++_i109)
+                this->skewedColValues[_i108].clear();
+                uint32_t _size109;
+                ::apache::thrift::protocol::TType _etype112;
+                xfer += iprot->readListBegin(_etype112, _size109);
+                this->skewedColValues[_i108].resize(_size109);
+                uint32_t _i113;
+                for (_i113 = 0; _i113 < _size109; ++_i113)
                 {
-                  xfer += iprot->readString(this->skewedColValues[_i104][_i109]);
+                  xfer += iprot->readString(this->skewedColValues[_i108][_i113]);
                 }
                 xfer += iprot->readListEnd();
               }
@@ -2051,29 +2427,29 @@ uint32_t SkewedInfo::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_MAP) {
           {
             this->skewedColValueLocationMaps.clear();
-            uint32_t _size110;
-            ::apache::thrift::protocol::TType _ktype111;
-            ::apache::thrift::protocol::TType _vtype112;
-            xfer += iprot->readMapBegin(_ktype111, _vtype112, _size110);
-            uint32_t _i114;
-            for (_i114 = 0; _i114 < _size110; ++_i114)
+            uint32_t _size114;
+            ::apache::thrift::protocol::TType _ktype115;
+            ::apache::thrift::protocol::TType _vtype116;
+            xfer += iprot->readMapBegin(_ktype115, _vtype116, _size114);
+            uint32_t _i118;
+            for (_i118 = 0; _i118 < _size114; ++_i118)
             {
-              std::vector<std::string>  _key115;
+              std::vector<std::string>  _key119;
               {
-                _key115.clear();
-                uint32_t _size117;
-                ::apache::thrift::protocol::TType _etype120;
-                xfer += iprot->readListBegin(_etype120, _size117);
-                _key115.resize(_size117);
-                uint32_t _i121;
-                for (_i121 = 0; _i121 < _size117; ++_i121)
+                _key119.clear();
+                uint32_t _size121;
+                ::apache::thrift::protocol::TType _etype124;
+                xfer += iprot->readListBegin(_etype124, _size121);
+                _key119.resize(_size121);
+                uint32_t _i125;
+                for (_i125 = 0; _i125 < _size121; ++_i125)
                 {
-                  xfer += iprot->readString(_key115[_i121]);
+                  xfer += iprot->readString(_key119[_i125]);
                 }
                 xfer += iprot->readListEnd();
               }
-              std::string& _val116 = this->skewedColValueLocationMaps[_key115];
-              xfer += iprot->readString(_val116);
+              std::string& _val120 = this->skewedColValueLocationMaps[_key119];
+              xfer += iprot->readString(_val120);
             }
             xfer += iprot->readMapEnd();
           }
@@ -2101,10 +2477,10 @@ uint32_t SkewedInfo::write(::apache::thrift::protocol::TProtocol* oprot) const {
   xfer += oprot->writeFieldBegin("skewedColNames", ::apache::thrift::protocol::T_LIST, 1);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->skewedColNames.size()));
-    std::vector<std::string> ::const_iterator _iter122;
-    for (_iter122 = this->skewedColNames.begin(); _iter122 != this->skewedColNames.end(); ++_iter122)
+    std::vector<std::string> ::const_iterator _iter126;
+    for (_iter126 = this->skewedColNames.begin(); _iter126 != this->skewedColNames.end(); ++_iter126)
     {
-      xfer += oprot->writeString((*_iter122));
+      xfer += oprot->writeString((*_iter126));
     }
     xfer += oprot->writeListEnd();
   }
@@ -2113,15 +2489,15 @@ uint32_t SkewedInfo::write(::apache::thrift::protocol::TProtocol* oprot) const {
   xfer += oprot->writeFieldBegin("skewedColValues", ::apache::thrift::protocol::T_LIST, 2);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_LIST, static_cast<uint32_t>(this->skewedColValues.size()));
-    std::vector<std::vector<std::string> > ::const_iterator _iter123;
-    for (_iter123 = this->skewedColValues.begin(); _iter123 != this->skewedColValues.end(); ++_iter123)
+    std::vector<std::vector<std::string> > ::const_iterator _iter127;
+    for (_iter127 = this->skewedColValues.begin(); _iter127 != this->skewedColValues.end(); ++_iter127)
     {
       {
-        xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>((*_iter123).size()));
-        std::vector<std::string> ::const_iterator _iter124;
-        for (_iter124 = (*_iter123).begin(); _iter124 != (*_iter123).end(); ++_iter124)
+        xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>((*_iter127).size()));
+        std::vector<std::string> ::const_iterator _iter128;
+        for (_iter128 = (*_iter127).begin(); _iter128 != (*_iter127).end(); ++_iter128)
         {
-          xfer += oprot->writeString((*_iter124));
+          xfer += oprot->writeString((*_iter128));
         }
         xfer += oprot->writeListEnd();
       }
@@ -2133,19 +2509,19 @@ uint32_t SkewedInfo::write(::apache::thrift::protocol::TProtocol* oprot) const {
   xfer += oprot->writeFieldBegin("skewedColValueLocationMaps", ::apache::thrift::protocol::T_MAP, 3);
   {
     xfer += oprot->writeMapBegin(::apache::thrift::protocol::T_LIST, ::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->skewedColValueLocationMaps.size()));
-    std::map<std::vector<std::string> , std::string> ::const_iterator _iter125;
-    for (_iter125 = this->skewedColValueLocationMaps.begin(); _iter125 != this->skewedColValueLocationMaps.end(); ++_iter125)
+    std::map<std::vector<std::string> , std::string> ::const_iterator _iter129;
+    for (_iter129 = this->skewedColValueLocationMaps.begin(); _iter129 != this->skewedColValueLocationMaps.end(); ++_iter129)
     {
       {
-        xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(_iter125->first.size()));
-        std::vector<std::string> ::const_iterator _iter126;
-        for (_iter126 = _iter125->first.begin(); _iter126 != _iter125->first.end(); ++_iter126)
+        xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(_iter129->first.size()));
+        std::vector<std::string> ::const_iterator _iter130;
+        for (_iter130 = _iter129->first.begin(); _iter130 != _iter129->first.end(); ++_iter130)
         {
-          xfer += oprot->writeString((*_iter126));
+          xfer += oprot->writeString((*_iter130));
         }
         xfer += oprot->writeListEnd();
       }
-      xfer += oprot->writeString(_iter125->second);
+      xfer += oprot->writeString(_iter129->second);
     }
     xfer += oprot->writeMapEnd();
   }
@@ -2191,14 +2567,14 @@ uint32_t StorageDescriptor::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->cols.clear();
-            uint32_t _size127;
-            ::apache::thrift::protocol::TType _etype130;
-            xfer += iprot->readListBegin(_etype130, _size127);
-            this->cols.resize(_size127);
-            uint32_t _i131;
-            for (_i131 = 0; _i131 < _size127; ++_i131)
+            uint32_t _size131;
+            ::apache::thrift::protocol::TType _etype134;
+            xfer += iprot->readListBegin(_etype134, _size131);
+            this->cols.resize(_size131);
+            uint32_t _i135;
+            for (_i135 = 0; _i135 < _size131; ++_i135)
             {
-              xfer += this->cols[_i131].read(iprot);
+              xfer += this->cols[_i135].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -2259,14 +2635,14 @@ uint32_t StorageDescriptor::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->bucketCols.clear();
-            uint32_t _size132;
-            ::apache::thrift::protocol::TType _etype135;
-            xfer += iprot->readListBegin(_etype135, _size132);
-            this->bucketCols.resize(_size132);
-            uint32_t _i136;
-            for (_i136 = 0; _i136 < _size132; ++_i136)
+            uint32_t _size136;
+            ::apache::thrift::protocol::TType _etype139;
+            xfer += iprot->readListBegin(_etype139, _size136);
+            this->bucketCols.resize(_size136);
+            uint32_t _i140;
+            for (_i140 = 0; _i140 < _size136; ++_i140)
             {
-              xfer += iprot->readString(this->bucketCols[_i136]);
+              xfer += iprot->readString(this->bucketCols[_i140]);
             }
             xfer += iprot->readListEnd();
           }
@@ -2279,14 +2655,14 @@ uint32_t StorageDescriptor::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->sortCols.clear();
-            uint32_t _size137;
-            ::apache::thrift::protocol::TType _etype140;
-            xfer += iprot->readListBegin(_etype140, _size137);
-            this->sortCols.resize(_size137);
-            uint32_t _i141;
-            for (_i141 = 0; _i141 < _size137; ++_i141)
+            uint32_t _size141;
+            ::apache::thrift::protocol::TType _etype144;
+            xfer += iprot->readListBegin(_etype144, _size141);
+            this->sortCols.resize(_size141);
+            uint32_t _i145;
+            for (_i145 = 0; _i145 < _size141; ++_i145)
             {
-              xfer += this->sortCols[_i141].read(iprot);
+              xfer += this->sortCols[_i145].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -2299,17 +2675,17 @@ uint32_t StorageDescriptor::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_MAP) {
           {
             this->parameters.clear();
-            uint32_t _size142;
-            ::apache::thrift::protocol::TType _ktype143;
-            ::apache::thrift::protocol::TType _vtype144;
-            xfer += iprot->readMapBegin(_ktype143, _vtype144, _size142);
-            uint32_t _i146;
-            for (_i146 = 0; _i146 < _size142; ++_i146)
+            uint32_t _size146;
+            ::apache::thrift::protocol::TType _ktype147;
+            ::apache::thrift::protocol::TType _vtype148;
+            xfer += iprot->readMapBegin(_ktype147, _vtype148, _size146);
+            uint32_t _i150;
+            for (_i150 = 0; _i150 < _size146; ++_i150)
             {
-              std::string _key147;
-              xfer += iprot->readString(_key147);
-              std::string& _val148 = this->parameters[_key147];
-              xfer += iprot->readString(_val148);
+              std::string _key151;
+              xfer += iprot->readString(_key151);
+              std::string& _val152 = this->parameters[_key151];
+              xfer += iprot->readString(_val152);
             }
             xfer += iprot->readMapEnd();
           }
@@ -2353,10 +2729,10 @@ uint32_t StorageDescriptor::write(::apache::thrift::protocol::TProtocol* oprot) 
   xfer += oprot->writeFieldBegin("cols", ::apache::thrift::protocol::T_LIST, 1);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->cols.size()));
-    std::vector<FieldSchema> ::const_iterator _iter149;
-    for (_iter149 = this->cols.begin(); _iter149 != this->cols.end(); ++_iter149)
+    std::vector<FieldSchema> ::const_iterator _iter153;
+    for (_iter153 = this->cols.begin(); _iter153 != this->cols.end(); ++_iter153)
     {
-      xfer += (*_iter149).write(oprot);
+      xfer += (*_iter153).write(oprot);
     }
     xfer += oprot->writeListEnd();
   }
@@ -2389,10 +2765,10 @@ uint32_t StorageDescriptor::write(::apache::thrift::protocol::TProtocol* oprot) 
   xfer += oprot->writeFieldBegin("bucketCols", ::apache::thrift::protocol::T_LIST, 8);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->bucketCols.size()));
-    std::vector<std::string> ::const_iterator _iter150;
-    for (_iter150 = this->bucketCols.begin(); _iter150 != this->bucketCols.end(); ++_iter150)
+    std::vector<std::string> ::const_iterator _iter154;
+    for (_iter154 = this->bucketCols.begin(); _iter154 != this->bucketCols.end(); ++_iter154)
     {
-      xfer += oprot->writeString((*_iter150));
+      xfer += oprot->writeString((*_iter154));
     }
     xfer += oprot->writeListEnd();
   }
@@ -2401,10 +2777,10 @@ uint32_t StorageDescriptor::write(::apache::thrift::protocol::TProtocol* oprot) 
   xfer += oprot->writeFieldBegin("sortCols", ::apache::thrift::protocol::T_LIST, 9);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->sortCols.size()));
-    std::vector<Order> ::const_iterator _iter151;
-    for (_iter151 = this->sortCols.begin(); _iter151 != this->sortCols.end(); ++_iter151)
+    std::vector<Order> ::const_iterator _iter155;
+    for (_iter155 = this->sortCols.begin(); _iter155 != this->sortCols.end(); ++_iter155)
     {
-      xfer += (*_iter151).write(oprot);
+      xfer += (*_iter155).write(oprot);
     }
     xfer += oprot->writeListEnd();
   }
@@ -2413,11 +2789,11 @@ uint32_t StorageDescriptor::write(::apache::thrift::protocol::TProtocol* oprot) 
   xfer += oprot->writeFieldBegin("parameters", ::apache::thrift::protocol::T_MAP, 10);
   {
     xfer += oprot->writeMapBegin(::apache::thrift::protocol::T_STRING, ::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->parameters.size()));
-    std::map<std::string, std::string> ::const_iterator _iter152;
-    for (_iter152 = this->parameters.begin(); _iter152 != this->parameters.end(); ++_iter152)
+    std::map<std::string, std::string> ::const_iterator _iter156;
+    for (_iter156 = this->parameters.begin(); _iter156 != this->parameters.end(); ++_iter156)
     {
-      xfer += oprot->writeString(_iter152->first);
-      xfer += oprot->writeString(_iter152->second);
+      xfer += oprot->writeString(_iter156->first);
+      xfer += oprot->writeString(_iter156->second);
     }
     xfer += oprot->writeMapEnd();
   }
@@ -2455,8 +2831,8 @@ void swap(StorageDescriptor &a, StorageDescriptor &b) {
   swap(a.__isset, b.__isset);
 }
 
-const char* Table::ascii_fingerprint = "68640B4B66B355CF317429AF70D2C260";
-const uint8_t Table::binary_fingerprint[16] = {0x68,0x64,0x0B,0x4B,0x66,0xB3,0x55,0xCF,0x31,0x74,0x29,0xAF,0x70,0xD2,0xC2,0x60};
+const char* Table::ascii_fingerprint = "29EFB2A5970EF572039E5D94CC78AA85";
+const uint8_t Table::binary_fingerprint[16] = {0x29,0xEF,0xB2,0xA5,0x97,0x0E,0xF5,0x72,0x03,0x9E,0x5D,0x94,0xCC,0x78,0xAA,0x85};
 
 uint32_t Table::read(::apache::thrift::protocol::TProtocol* iprot) {
 
@@ -2538,14 +2914,14 @@ uint32_t Table::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->partitionKeys.clear();
-            uint32_t _size153;
-            ::apache::thrift::protocol::TType _etype156;
-            xfer += iprot->readListBegin(_etype156, _size153);
-            this->partitionKeys.resize(_size153);
-            uint32_t _i157;
-            for (_i157 = 0; _i157 < _size153; ++_i157)
+            uint32_t _size157;
+            ::apache::thrift::protocol::TType _etype160;
+            xfer += iprot->readListBegin(_etype160, _size157);
+            this->partitionKeys.resize(_size157);
+            uint32_t _i161;
+            for (_i161 = 0; _i161 < _size157; ++_i161)
             {
-              xfer += this->partitionKeys[_i157].read(iprot);
+              xfer += this->partitionKeys[_i161].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -2558,17 +2934,17 @@ uint32_t Table::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_MAP) {
           {
             this->parameters.clear();
-            uint32_t _size158;
-            ::apache::thrift::protocol::TType _ktype159;
-            ::apache::thrift::protocol::TType _vtype160;
-            xfer += iprot->readMapBegin(_ktype159, _vtype160, _size158);
-            uint32_t _i162;
-            for (_i162 = 0; _i162 < _size158; ++_i162)
+            uint32_t _size162;
+            ::apache::thrift::protocol::TType _ktype163;
+            ::apache::thrift::protocol::TType _vtype164;
+            xfer += iprot->readMapBegin(_ktype163, _vtype164, _size162);
+            uint32_t _i166;
+            for (_i166 = 0; _i166 < _size162; ++_i166)
             {
-              std::string _key163;
-              xfer += iprot->readString(_key163);
-              std::string& _val164 = this->parameters[_key163];
-              xfer += iprot->readString(_val164);
+              std::string _key167;
+              xfer += iprot->readString(_key167);
+              std::string& _val168 = this->parameters[_key167];
+              xfer += iprot->readString(_val168);
             }
             xfer += iprot->readMapEnd();
           }
@@ -2605,6 +2981,14 @@ uint32_t Table::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_STRUCT) {
           xfer += this->privileges.read(iprot);
           this->__isset.privileges = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 14:
+        if (ftype == ::apache::thrift::protocol::T_BOOL) {
+          xfer += iprot->readBool(this->temporary);
+          this->__isset.temporary = true;
         } else {
           xfer += iprot->skip(ftype);
         }
@@ -2656,10 +3040,10 @@ uint32_t Table::write(::apache::thrift::protocol::TProtocol* oprot) const {
   xfer += oprot->writeFieldBegin("partitionKeys", ::apache::thrift::protocol::T_LIST, 8);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->partitionKeys.size()));
-    std::vector<FieldSchema> ::const_iterator _iter165;
-    for (_iter165 = this->partitionKeys.begin(); _iter165 != this->partitionKeys.end(); ++_iter165)
+    std::vector<FieldSchema> ::const_iterator _iter169;
+    for (_iter169 = this->partitionKeys.begin(); _iter169 != this->partitionKeys.end(); ++_iter169)
     {
-      xfer += (*_iter165).write(oprot);
+      xfer += (*_iter169).write(oprot);
     }
     xfer += oprot->writeListEnd();
   }
@@ -2668,11 +3052,11 @@ uint32_t Table::write(::apache::thrift::protocol::TProtocol* oprot) const {
   xfer += oprot->writeFieldBegin("parameters", ::apache::thrift::protocol::T_MAP, 9);
   {
     xfer += oprot->writeMapBegin(::apache::thrift::protocol::T_STRING, ::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->parameters.size()));
-    std::map<std::string, std::string> ::const_iterator _iter166;
-    for (_iter166 = this->parameters.begin(); _iter166 != this->parameters.end(); ++_iter166)
+    std::map<std::string, std::string> ::const_iterator _iter170;
+    for (_iter170 = this->parameters.begin(); _iter170 != this->parameters.end(); ++_iter170)
     {
-      xfer += oprot->writeString(_iter166->first);
-      xfer += oprot->writeString(_iter166->second);
+      xfer += oprot->writeString(_iter170->first);
+      xfer += oprot->writeString(_iter170->second);
     }
     xfer += oprot->writeMapEnd();
   }
@@ -2695,6 +3079,11 @@ uint32_t Table::write(::apache::thrift::protocol::TProtocol* oprot) const {
     xfer += this->privileges.write(oprot);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.temporary) {
+    xfer += oprot->writeFieldBegin("temporary", ::apache::thrift::protocol::T_BOOL, 14);
+    xfer += oprot->writeBool(this->temporary);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -2715,6 +3104,7 @@ void swap(Table &a, Table &b) {
   swap(a.viewExpandedText, b.viewExpandedText);
   swap(a.tableType, b.tableType);
   swap(a.privileges, b.privileges);
+  swap(a.temporary, b.temporary);
   swap(a.__isset, b.__isset);
 }
 
@@ -2745,14 +3135,14 @@ uint32_t Partition::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->values.clear();
-            uint32_t _size167;
-            ::apache::thrift::protocol::TType _etype170;
-            xfer += iprot->readListBegin(_etype170, _size167);
-            this->values.resize(_size167);
-            uint32_t _i171;
-            for (_i171 = 0; _i171 < _size167; ++_i171)
+            uint32_t _size171;
+            ::apache::thrift::protocol::TType _etype174;
+            xfer += iprot->readListBegin(_etype174, _size171);
+            this->values.resize(_size171);
+            uint32_t _i175;
+            for (_i175 = 0; _i175 < _size171; ++_i175)
             {
-              xfer += iprot->readString(this->values[_i171]);
+              xfer += iprot->readString(this->values[_i175]);
             }
             xfer += iprot->readListEnd();
           }
@@ -2805,17 +3195,17 @@ uint32_t Partition::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_MAP) {
           {
             this->parameters.clear();
-            uint32_t _size172;
-            ::apache::thrift::protocol::TType _ktype173;
-            ::apache::thrift::protocol::TType _vtype174;
-            xfer += iprot->readMapBegin(_ktype173, _vtype174, _size172);
-            uint32_t _i176;
-            for (_i176 = 0; _i176 < _size172; ++_i176)
+            uint32_t _size176;
+            ::apache::thrift::protocol::TType _ktype177;
+            ::apache::thrift::protocol::TType _vtype178;
+            xfer += iprot->readMapBegin(_ktype177, _vtype178, _size176);
+            uint32_t _i180;
+            for (_i180 = 0; _i180 < _size176; ++_i180)
             {
-              std::string _key177;
-              xfer += iprot->readString(_key177);
-              std::string& _val178 = this->parameters[_key177];
-              xfer += iprot->readString(_val178);
+              std::string _key181;
+              xfer += iprot->readString(_key181);
+              std::string& _val182 = this->parameters[_key181];
+              xfer += iprot->readString(_val182);
             }
             xfer += iprot->readMapEnd();
           }
@@ -2851,10 +3241,10 @@ uint32_t Partition::write(::apache::thrift::protocol::TProtocol* oprot) const {
   xfer += oprot->writeFieldBegin("values", ::apache::thrift::protocol::T_LIST, 1);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->values.size()));
-    std::vector<std::string> ::const_iterator _iter179;
-    for (_iter179 = this->values.begin(); _iter179 != this->values.end(); ++_iter179)
+    std::vector<std::string> ::const_iterator _iter183;
+    for (_iter183 = this->values.begin(); _iter183 != this->values.end(); ++_iter183)
     {
-      xfer += oprot->writeString((*_iter179));
+      xfer += oprot->writeString((*_iter183));
     }
     xfer += oprot->writeListEnd();
   }
@@ -2883,11 +3273,11 @@ uint32_t Partition::write(::apache::thrift::protocol::TProtocol* oprot) const {
   xfer += oprot->writeFieldBegin("parameters", ::apache::thrift::protocol::T_MAP, 7);
   {
     xfer += oprot->writeMapBegin(::apache::thrift::protocol::T_STRING, ::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->parameters.size()));
-    std::map<std::string, std::string> ::const_iterator _iter180;
-    for (_iter180 = this->parameters.begin(); _iter180 != this->parameters.end(); ++_iter180)
+    std::map<std::string, std::string> ::const_iterator _iter184;
+    for (_iter184 = this->parameters.begin(); _iter184 != this->parameters.end(); ++_iter184)
     {
-      xfer += oprot->writeString(_iter180->first);
-      xfer += oprot->writeString(_iter180->second);
+      xfer += oprot->writeString(_iter184->first);
+      xfer += oprot->writeString(_iter184->second);
     }
     xfer += oprot->writeMapEnd();
   }
@@ -3007,17 +3397,17 @@ uint32_t Index::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_MAP) {
           {
             this->parameters.clear();
-            uint32_t _size181;
-            ::apache::thrift::protocol::TType _ktype182;
-            ::apache::thrift::protocol::TType _vtype183;
-            xfer += iprot->readMapBegin(_ktype182, _vtype183, _size181);
-            uint32_t _i185;
-            for (_i185 = 0; _i185 < _size181; ++_i185)
+            uint32_t _size185;
+            ::apache::thrift::protocol::TType _ktype186;
+            ::apache::thrift::protocol::TType _vtype187;
+            xfer += iprot->readMapBegin(_ktype186, _vtype187, _size185);
+            uint32_t _i189;
+            for (_i189 = 0; _i189 < _size185; ++_i189)
             {
-              std::string _key186;
-              xfer += iprot->readString(_key186);
-              std::string& _val187 = this->parameters[_key186];
-              xfer += iprot->readString(_val187);
+              std::string _key190;
+              xfer += iprot->readString(_key190);
+              std::string& _val191 = this->parameters[_key190];
+              xfer += iprot->readString(_val191);
             }
             xfer += iprot->readMapEnd();
           }
@@ -3085,11 +3475,11 @@ uint32_t Index::write(::apache::thrift::protocol::TProtocol* oprot) const {
   xfer += oprot->writeFieldBegin("parameters", ::apache::thrift::protocol::T_MAP, 9);
   {
     xfer += oprot->writeMapBegin(::apache::thrift::protocol::T_STRING, ::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->parameters.size()));
-    std::map<std::string, std::string> ::const_iterator _iter188;
-    for (_iter188 = this->parameters.begin(); _iter188 != this->parameters.end(); ++_iter188)
+    std::map<std::string, std::string> ::const_iterator _iter192;
+    for (_iter192 = this->parameters.begin(); _iter192 != this->parameters.end(); ++_iter192)
     {
-      xfer += oprot->writeString(_iter188->first);
-      xfer += oprot->writeString(_iter188->second);
+      xfer += oprot->writeString(_iter192->first);
+      xfer += oprot->writeString(_iter192->second);
     }
     xfer += oprot->writeMapEnd();
   }
@@ -4215,14 +4605,14 @@ uint32_t ColumnStatistics::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->statsObj.clear();
-            uint32_t _size189;
-            ::apache::thrift::protocol::TType _etype192;
-            xfer += iprot->readListBegin(_etype192, _size189);
-            this->statsObj.resize(_size189);
-            uint32_t _i193;
-            for (_i193 = 0; _i193 < _size189; ++_i193)
+            uint32_t _size193;
+            ::apache::thrift::protocol::TType _etype196;
+            xfer += iprot->readListBegin(_etype196, _size193);
+            this->statsObj.resize(_size193);
+            uint32_t _i197;
+            for (_i197 = 0; _i197 < _size193; ++_i197)
             {
-              xfer += this->statsObj[_i193].read(iprot);
+              xfer += this->statsObj[_i197].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -4258,10 +4648,10 @@ uint32_t ColumnStatistics::write(::apache::thrift::protocol::TProtocol* oprot) c
   xfer += oprot->writeFieldBegin("statsObj", ::apache::thrift::protocol::T_LIST, 2);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->statsObj.size()));
-    std::vector<ColumnStatisticsObj> ::const_iterator _iter194;
-    for (_iter194 = this->statsObj.begin(); _iter194 != this->statsObj.end(); ++_iter194)
+    std::vector<ColumnStatisticsObj> ::const_iterator _iter198;
+    for (_iter198 = this->statsObj.begin(); _iter198 != this->statsObj.end(); ++_iter198)
     {
-      xfer += (*_iter194).write(oprot);
+      xfer += (*_iter198).write(oprot);
     }
     xfer += oprot->writeListEnd();
   }
@@ -4305,14 +4695,14 @@ uint32_t Schema::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->fieldSchemas.clear();
-            uint32_t _size195;
-            ::apache::thrift::protocol::TType _etype198;
-            xfer += iprot->readListBegin(_etype198, _size195);
-            this->fieldSchemas.resize(_size195);
-            uint32_t _i199;
-            for (_i199 = 0; _i199 < _size195; ++_i199)
+            uint32_t _size199;
+            ::apache::thrift::protocol::TType _etype202;
+            xfer += iprot->readListBegin(_etype202, _size199);
+            this->fieldSchemas.resize(_size199);
+            uint32_t _i203;
+            for (_i203 = 0; _i203 < _size199; ++_i203)
             {
-              xfer += this->fieldSchemas[_i199].read(iprot);
+              xfer += this->fieldSchemas[_i203].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -4325,17 +4715,17 @@ uint32_t Schema::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_MAP) {
           {
             this->properties.clear();
-            uint32_t _size200;
-            ::apache::thrift::protocol::TType _ktype201;
-            ::apache::thrift::protocol::TType _vtype202;
-            xfer += iprot->readMapBegin(_ktype201, _vtype202, _size200);
-            uint32_t _i204;
-            for (_i204 = 0; _i204 < _size200; ++_i204)
+            uint32_t _size204;
+            ::apache::thrift::protocol::TType _ktype205;
+            ::apache::thrift::protocol::TType _vtype206;
+            xfer += iprot->readMapBegin(_ktype205, _vtype206, _size204);
+            uint32_t _i208;
+            for (_i208 = 0; _i208 < _size204; ++_i208)
             {
-              std::string _key205;
-              xfer += iprot->readString(_key205);
-              std::string& _val206 = this->properties[_key205];
-              xfer += iprot->readString(_val206);
+              std::string _key209;
+              xfer += iprot->readString(_key209);
+              std::string& _val210 = this->properties[_key209];
+              xfer += iprot->readString(_val210);
             }
             xfer += iprot->readMapEnd();
           }
@@ -4363,10 +4753,10 @@ uint32_t Schema::write(::apache::thrift::protocol::TProtocol* oprot) const {
   xfer += oprot->writeFieldBegin("fieldSchemas", ::apache::thrift::protocol::T_LIST, 1);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->fieldSchemas.size()));
-    std::vector<FieldSchema> ::const_iterator _iter207;
-    for (_iter207 = this->fieldSchemas.begin(); _iter207 != this->fieldSchemas.end(); ++_iter207)
+    std::vector<FieldSchema> ::const_iterator _iter211;
+    for (_iter211 = this->fieldSchemas.begin(); _iter211 != this->fieldSchemas.end(); ++_iter211)
     {
-      xfer += (*_iter207).write(oprot);
+      xfer += (*_iter211).write(oprot);
     }
     xfer += oprot->writeListEnd();
   }
@@ -4375,11 +4765,11 @@ uint32_t Schema::write(::apache::thrift::protocol::TProtocol* oprot) const {
   xfer += oprot->writeFieldBegin("properties", ::apache::thrift::protocol::T_MAP, 2);
   {
     xfer += oprot->writeMapBegin(::apache::thrift::protocol::T_STRING, ::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->properties.size()));
-    std::map<std::string, std::string> ::const_iterator _iter208;
-    for (_iter208 = this->properties.begin(); _iter208 != this->properties.end(); ++_iter208)
+    std::map<std::string, std::string> ::const_iterator _iter212;
+    for (_iter212 = this->properties.begin(); _iter212 != this->properties.end(); ++_iter212)
     {
-      xfer += oprot->writeString(_iter208->first);
-      xfer += oprot->writeString(_iter208->second);
+      xfer += oprot->writeString(_iter212->first);
+      xfer += oprot->writeString(_iter212->second);
     }
     xfer += oprot->writeMapEnd();
   }
@@ -4424,17 +4814,17 @@ uint32_t EnvironmentContext::read(::apache::thrift::protocol::TProtocol* iprot) 
         if (ftype == ::apache::thrift::protocol::T_MAP) {
           {
             this->properties.clear();
-            uint32_t _size209;
-            ::apache::thrift::protocol::TType _ktype210;
-            ::apache::thrift::protocol::TType _vtype211;
-            xfer += iprot->readMapBegin(_ktype210, _vtype211, _size209);
-            uint32_t _i213;
-            for (_i213 = 0; _i213 < _size209; ++_i213)
+            uint32_t _size213;
+            ::apache::thrift::protocol::TType _ktype214;
+            ::apache::thrift::protocol::TType _vtype215;
+            xfer += iprot->readMapBegin(_ktype214, _vtype215, _size213);
+            uint32_t _i217;
+            for (_i217 = 0; _i217 < _size213; ++_i217)
             {
-              std::string _key214;
-              xfer += iprot->readString(_key214);
-              std::string& _val215 = this->properties[_key214];
-              xfer += iprot->readString(_val215);
+              std::string _key218;
+              xfer += iprot->readString(_key218);
+              std::string& _val219 = this->properties[_key218];
+              xfer += iprot->readString(_val219);
             }
             xfer += iprot->readMapEnd();
           }
@@ -4462,11 +4852,11 @@ uint32_t EnvironmentContext::write(::apache::thrift::protocol::TProtocol* oprot)
   xfer += oprot->writeFieldBegin("properties", ::apache::thrift::protocol::T_MAP, 1);
   {
     xfer += oprot->writeMapBegin(::apache::thrift::protocol::T_STRING, ::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->properties.size()));
-    std::map<std::string, std::string> ::const_iterator _iter216;
-    for (_iter216 = this->properties.begin(); _iter216 != this->properties.end(); ++_iter216)
+    std::map<std::string, std::string> ::const_iterator _iter220;
+    for (_iter220 = this->properties.begin(); _iter220 != this->properties.end(); ++_iter220)
     {
-      xfer += oprot->writeString(_iter216->first);
-      xfer += oprot->writeString(_iter216->second);
+      xfer += oprot->writeString(_iter220->first);
+      xfer += oprot->writeString(_iter220->second);
     }
     xfer += oprot->writeMapEnd();
   }
@@ -4512,14 +4902,14 @@ uint32_t PartitionsByExprResult::read(::apache::thrift::protocol::TProtocol* ipr
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->partitions.clear();
-            uint32_t _size217;
-            ::apache::thrift::protocol::TType _etype220;
-            xfer += iprot->readListBegin(_etype220, _size217);
-            this->partitions.resize(_size217);
-            uint32_t _i221;
-            for (_i221 = 0; _i221 < _size217; ++_i221)
+            uint32_t _size221;
+            ::apache::thrift::protocol::TType _etype224;
+            xfer += iprot->readListBegin(_etype224, _size221);
+            this->partitions.resize(_size221);
+            uint32_t _i225;
+            for (_i225 = 0; _i225 < _size221; ++_i225)
             {
-              xfer += this->partitions[_i221].read(iprot);
+              xfer += this->partitions[_i225].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -4559,10 +4949,10 @@ uint32_t PartitionsByExprResult::write(::apache::thrift::protocol::TProtocol* op
   xfer += oprot->writeFieldBegin("partitions", ::apache::thrift::protocol::T_LIST, 1);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->partitions.size()));
-    std::vector<Partition> ::const_iterator _iter222;
-    for (_iter222 = this->partitions.begin(); _iter222 != this->partitions.end(); ++_iter222)
+    std::vector<Partition> ::const_iterator _iter226;
+    for (_iter226 = this->partitions.begin(); _iter226 != this->partitions.end(); ++_iter226)
     {
-      xfer += (*_iter222).write(oprot);
+      xfer += (*_iter226).write(oprot);
     }
     xfer += oprot->writeListEnd();
   }
@@ -4736,14 +5126,14 @@ uint32_t TableStatsResult::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->tableStats.clear();
-            uint32_t _size223;
-            ::apache::thrift::protocol::TType _etype226;
-            xfer += iprot->readListBegin(_etype226, _size223);
-            this->tableStats.resize(_size223);
-            uint32_t _i227;
-            for (_i227 = 0; _i227 < _size223; ++_i227)
+            uint32_t _size227;
+            ::apache::thrift::protocol::TType _etype230;
+            xfer += iprot->readListBegin(_etype230, _size227);
+            this->tableStats.resize(_size227);
+            uint32_t _i231;
+            for (_i231 = 0; _i231 < _size227; ++_i231)
             {
-              xfer += this->tableStats[_i227].read(iprot);
+              xfer += this->tableStats[_i231].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -4773,10 +5163,10 @@ uint32_t TableStatsResult::write(::apache::thrift::protocol::TProtocol* oprot) c
   xfer += oprot->writeFieldBegin("tableStats", ::apache::thrift::protocol::T_LIST, 1);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->tableStats.size()));
-    std::vector<ColumnStatisticsObj> ::const_iterator _iter228;
-    for (_iter228 = this->tableStats.begin(); _iter228 != this->tableStats.end(); ++_iter228)
+    std::vector<ColumnStatisticsObj> ::const_iterator _iter232;
+    for (_iter232 = this->tableStats.begin(); _iter232 != this->tableStats.end(); ++_iter232)
     {
-      xfer += (*_iter228).write(oprot);
+      xfer += (*_iter232).write(oprot);
     }
     xfer += oprot->writeListEnd();
   }
@@ -4820,26 +5210,26 @@ uint32_t PartitionsStatsResult::read(::apache::thrift::protocol::TProtocol* ipro
         if (ftype == ::apache::thrift::protocol::T_MAP) {
           {
             this->partStats.clear();
-            uint32_t _size229;
-            ::apache::thrift::protocol::TType _ktype230;
-            ::apache::thrift::protocol::TType _vtype231;
-            xfer += iprot->readMapBegin(_ktype230, _vtype231, _size229);
-            uint32_t _i233;
-            for (_i233 = 0; _i233 < _size229; ++_i233)
+            uint32_t _size233;
+            ::apache::thrift::protocol::TType _ktype234;
+            ::apache::thrift::protocol::TType _vtype235;
+            xfer += iprot->readMapBegin(_ktype234, _vtype235, _size233);
+            uint32_t _i237;
+            for (_i237 = 0; _i237 < _size233; ++_i237)
             {
-              std::string _key234;
-              xfer += iprot->readString(_key234);
-              std::vector<ColumnStatisticsObj> & _val235 = this->partStats[_key234];
+              std::string _key238;
+              xfer += iprot->readString(_key238);
+              std::vector<ColumnStatisticsObj> & _val239 = this->partStats[_key238];
               {
-                _val235.clear();
-                uint32_t _size236;
-                ::apache::thrift::protocol::TType _etype239;
-                xfer += iprot->readListBegin(_etype239, _size236);
-                _val235.resize(_size236);
-                uint32_t _i240;
-                for (_i240 = 0; _i240 < _size236; ++_i240)
+                _val239.clear();
+                uint32_t _size240;
+                ::apache::thrift::protocol::TType _etype243;
+                xfer += iprot->readListBegin(_etype243, _size240);
+                _val239.resize(_size240);
+                uint32_t _i244;
+                for (_i244 = 0; _i244 < _size240; ++_i244)
                 {
-                  xfer += _val235[_i240].read(iprot);
+                  xfer += _val239[_i244].read(iprot);
                 }
                 xfer += iprot->readListEnd();
               }
@@ -4872,16 +5262,16 @@ uint32_t PartitionsStatsResult::write(::apache::thrift::protocol::TProtocol* opr
   xfer += oprot->writeFieldBegin("partStats", ::apache::thrift::protocol::T_MAP, 1);
   {
     xfer += oprot->writeMapBegin(::apache::thrift::protocol::T_STRING, ::apache::thrift::protocol::T_LIST, static_cast<uint32_t>(this->partStats.size()));
-    std::map<std::string, std::vector<ColumnStatisticsObj> > ::const_iterator _iter241;
-    for (_iter241 = this->partStats.begin(); _iter241 != this->partStats.end(); ++_iter241)
+    std::map<std::string, std::vector<ColumnStatisticsObj> > ::const_iterator _iter245;
+    for (_iter245 = this->partStats.begin(); _iter245 != this->partStats.end(); ++_iter245)
     {
-      xfer += oprot->writeString(_iter241->first);
+      xfer += oprot->writeString(_iter245->first);
       {
-        xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(_iter241->second.size()));
-        std::vector<ColumnStatisticsObj> ::const_iterator _iter242;
-        for (_iter242 = _iter241->second.begin(); _iter242 != _iter241->second.end(); ++_iter242)
+        xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(_iter245->second.size()));
+        std::vector<ColumnStatisticsObj> ::const_iterator _iter246;
+        for (_iter246 = _iter245->second.begin(); _iter246 != _iter245->second.end(); ++_iter246)
         {
-          xfer += (*_iter242).write(oprot);
+          xfer += (*_iter246).write(oprot);
         }
         xfer += oprot->writeListEnd();
       }
@@ -4946,14 +5336,14 @@ uint32_t TableStatsRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->colNames.clear();
-            uint32_t _size243;
-            ::apache::thrift::protocol::TType _etype246;
-            xfer += iprot->readListBegin(_etype246, _size243);
-            this->colNames.resize(_size243);
-            uint32_t _i247;
-            for (_i247 = 0; _i247 < _size243; ++_i247)
+            uint32_t _size247;
+            ::apache::thrift::protocol::TType _etype250;
+            xfer += iprot->readListBegin(_etype250, _size247);
+            this->colNames.resize(_size247);
+            uint32_t _i251;
+            for (_i251 = 0; _i251 < _size247; ++_i251)
             {
-              xfer += iprot->readString(this->colNames[_i247]);
+              xfer += iprot->readString(this->colNames[_i251]);
             }
             xfer += iprot->readListEnd();
           }
@@ -4995,10 +5385,10 @@ uint32_t TableStatsRequest::write(::apache::thrift::protocol::TProtocol* oprot) 
   xfer += oprot->writeFieldBegin("colNames", ::apache::thrift::protocol::T_LIST, 3);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->colNames.size()));
-    std::vector<std::string> ::const_iterator _iter248;
-    for (_iter248 = this->colNames.begin(); _iter248 != this->colNames.end(); ++_iter248)
+    std::vector<std::string> ::const_iterator _iter252;
+    for (_iter252 = this->colNames.begin(); _iter252 != this->colNames.end(); ++_iter252)
     {
-      xfer += oprot->writeString((*_iter248));
+      xfer += oprot->writeString((*_iter252));
     }
     xfer += oprot->writeListEnd();
   }
@@ -5063,14 +5453,14 @@ uint32_t PartitionsStatsRequest::read(::apache::thrift::protocol::TProtocol* ipr
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->colNames.clear();
-            uint32_t _size249;
-            ::apache::thrift::protocol::TType _etype252;
-            xfer += iprot->readListBegin(_etype252, _size249);
-            this->colNames.resize(_size249);
-            uint32_t _i253;
-            for (_i253 = 0; _i253 < _size249; ++_i253)
+            uint32_t _size253;
+            ::apache::thrift::protocol::TType _etype256;
+            xfer += iprot->readListBegin(_etype256, _size253);
+            this->colNames.resize(_size253);
+            uint32_t _i257;
+            for (_i257 = 0; _i257 < _size253; ++_i257)
             {
-              xfer += iprot->readString(this->colNames[_i253]);
+              xfer += iprot->readString(this->colNames[_i257]);
             }
             xfer += iprot->readListEnd();
           }
@@ -5083,14 +5473,14 @@ uint32_t PartitionsStatsRequest::read(::apache::thrift::protocol::TProtocol* ipr
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->partNames.clear();
-            uint32_t _size254;
-            ::apache::thrift::protocol::TType _etype257;
-            xfer += iprot->readListBegin(_etype257, _size254);
-            this->partNames.resize(_size254);
-            uint32_t _i258;
-            for (_i258 = 0; _i258 < _size254; ++_i258)
+            uint32_t _size258;
+            ::apache::thrift::protocol::TType _etype261;
+            xfer += iprot->readListBegin(_etype261, _size258);
+            this->partNames.resize(_size258);
+            uint32_t _i262;
+            for (_i262 = 0; _i262 < _size258; ++_i262)
             {
-              xfer += iprot->readString(this->partNames[_i258]);
+              xfer += iprot->readString(this->partNames[_i262]);
             }
             xfer += iprot->readListEnd();
           }
@@ -5134,10 +5524,10 @@ uint32_t PartitionsStatsRequest::write(::apache::thrift::protocol::TProtocol* op
   xfer += oprot->writeFieldBegin("colNames", ::apache::thrift::protocol::T_LIST, 3);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->colNames.size()));
-    std::vector<std::string> ::const_iterator _iter259;
-    for (_iter259 = this->colNames.begin(); _iter259 != this->colNames.end(); ++_iter259)
+    std::vector<std::string> ::const_iterator _iter263;
+    for (_iter263 = this->colNames.begin(); _iter263 != this->colNames.end(); ++_iter263)
     {
-      xfer += oprot->writeString((*_iter259));
+      xfer += oprot->writeString((*_iter263));
     }
     xfer += oprot->writeListEnd();
   }
@@ -5146,10 +5536,10 @@ uint32_t PartitionsStatsRequest::write(::apache::thrift::protocol::TProtocol* op
   xfer += oprot->writeFieldBegin("partNames", ::apache::thrift::protocol::T_LIST, 4);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->partNames.size()));
-    std::vector<std::string> ::const_iterator _iter260;
-    for (_iter260 = this->partNames.begin(); _iter260 != this->partNames.end(); ++_iter260)
+    std::vector<std::string> ::const_iterator _iter264;
+    for (_iter264 = this->partNames.begin(); _iter264 != this->partNames.end(); ++_iter264)
     {
-      xfer += oprot->writeString((*_iter260));
+      xfer += oprot->writeString((*_iter264));
     }
     xfer += oprot->writeListEnd();
   }
@@ -5195,14 +5585,14 @@ uint32_t AddPartitionsResult::read(::apache::thrift::protocol::TProtocol* iprot)
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->partitions.clear();
-            uint32_t _size261;
-            ::apache::thrift::protocol::TType _etype264;
-            xfer += iprot->readListBegin(_etype264, _size261);
-            this->partitions.resize(_size261);
-            uint32_t _i265;
-            for (_i265 = 0; _i265 < _size261; ++_i265)
+            uint32_t _size265;
+            ::apache::thrift::protocol::TType _etype268;
+            xfer += iprot->readListBegin(_etype268, _size265);
+            this->partitions.resize(_size265);
+            uint32_t _i269;
+            for (_i269 = 0; _i269 < _size265; ++_i269)
             {
-              xfer += this->partitions[_i265].read(iprot);
+              xfer += this->partitions[_i269].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -5231,10 +5621,10 @@ uint32_t AddPartitionsResult::write(::apache::thrift::protocol::TProtocol* oprot
     xfer += oprot->writeFieldBegin("partitions", ::apache::thrift::protocol::T_LIST, 1);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->partitions.size()));
-      std::vector<Partition> ::const_iterator _iter266;
-      for (_iter266 = this->partitions.begin(); _iter266 != this->partitions.end(); ++_iter266)
+      std::vector<Partition> ::const_iterator _iter270;
+      for (_iter270 = this->partitions.begin(); _iter270 != this->partitions.end(); ++_iter270)
       {
-        xfer += (*_iter266).write(oprot);
+        xfer += (*_iter270).write(oprot);
       }
       xfer += oprot->writeListEnd();
     }
@@ -5298,14 +5688,14 @@ uint32_t AddPartitionsRequest::read(::apache::thrift::protocol::TProtocol* iprot
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->parts.clear();
-            uint32_t _size267;
-            ::apache::thrift::protocol::TType _etype270;
-            xfer += iprot->readListBegin(_etype270, _size267);
-            this->parts.resize(_size267);
-            uint32_t _i271;
-            for (_i271 = 0; _i271 < _size267; ++_i271)
+            uint32_t _size271;
+            ::apache::thrift::protocol::TType _etype274;
+            xfer += iprot->readListBegin(_etype274, _size271);
+            this->parts.resize(_size271);
+            uint32_t _i275;
+            for (_i275 = 0; _i275 < _size271; ++_i275)
             {
-              xfer += this->parts[_i271].read(iprot);
+              xfer += this->parts[_i275].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -5365,10 +5755,10 @@ uint32_t AddPartitionsRequest::write(::apache::thrift::protocol::TProtocol* opro
   xfer += oprot->writeFieldBegin("parts", ::apache::thrift::protocol::T_LIST, 3);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->parts.size()));
-    std::vector<Partition> ::const_iterator _iter272;
-    for (_iter272 = this->parts.begin(); _iter272 != this->parts.end(); ++_iter272)
+    std::vector<Partition> ::const_iterator _iter276;
+    for (_iter276 = this->parts.begin(); _iter276 != this->parts.end(); ++_iter276)
     {
-      xfer += (*_iter272).write(oprot);
+      xfer += (*_iter276).write(oprot);
     }
     xfer += oprot->writeListEnd();
   }
@@ -5425,14 +5815,14 @@ uint32_t DropPartitionsResult::read(::apache::thrift::protocol::TProtocol* iprot
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->partitions.clear();
-            uint32_t _size273;
-            ::apache::thrift::protocol::TType _etype276;
-            xfer += iprot->readListBegin(_etype276, _size273);
-            this->partitions.resize(_size273);
-            uint32_t _i277;
-            for (_i277 = 0; _i277 < _size273; ++_i277)
+            uint32_t _size277;
+            ::apache::thrift::protocol::TType _etype280;
+            xfer += iprot->readListBegin(_etype280, _size277);
+            this->partitions.resize(_size277);
+            uint32_t _i281;
+            for (_i281 = 0; _i281 < _size277; ++_i281)
             {
-              xfer += this->partitions[_i277].read(iprot);
+              xfer += this->partitions[_i281].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -5461,10 +5851,10 @@ uint32_t DropPartitionsResult::write(::apache::thrift::protocol::TProtocol* opro
     xfer += oprot->writeFieldBegin("partitions", ::apache::thrift::protocol::T_LIST, 1);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->partitions.size()));
-      std::vector<Partition> ::const_iterator _iter278;
-      for (_iter278 = this->partitions.begin(); _iter278 != this->partitions.end(); ++_iter278)
+      std::vector<Partition> ::const_iterator _iter282;
+      for (_iter282 = this->partitions.begin(); _iter282 != this->partitions.end(); ++_iter282)
       {
-        xfer += (*_iter278).write(oprot);
+        xfer += (*_iter282).write(oprot);
       }
       xfer += oprot->writeListEnd();
     }
@@ -5587,14 +5977,14 @@ uint32_t RequestPartsSpec::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->names.clear();
-            uint32_t _size279;
-            ::apache::thrift::protocol::TType _etype282;
-            xfer += iprot->readListBegin(_etype282, _size279);
-            this->names.resize(_size279);
-            uint32_t _i283;
-            for (_i283 = 0; _i283 < _size279; ++_i283)
+            uint32_t _size283;
+            ::apache::thrift::protocol::TType _etype286;
+            xfer += iprot->readListBegin(_etype286, _size283);
+            this->names.resize(_size283);
+            uint32_t _i287;
+            for (_i287 = 0; _i287 < _size283; ++_i287)
             {
-              xfer += iprot->readString(this->names[_i283]);
+              xfer += iprot->readString(this->names[_i287]);
             }
             xfer += iprot->readListEnd();
           }
@@ -5607,14 +5997,14 @@ uint32_t RequestPartsSpec::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->exprs.clear();
-            uint32_t _size284;
-            ::apache::thrift::protocol::TType _etype287;
-            xfer += iprot->readListBegin(_etype287, _size284);
-            this->exprs.resize(_size284);
-            uint32_t _i288;
-            for (_i288 = 0; _i288 < _size284; ++_i288)
+            uint32_t _size288;
+            ::apache::thrift::protocol::TType _etype291;
+            xfer += iprot->readListBegin(_etype291, _size288);
+            this->exprs.resize(_size288);
+            uint32_t _i292;
+            for (_i292 = 0; _i292 < _size288; ++_i292)
             {
-              xfer += this->exprs[_i288].read(iprot);
+              xfer += this->exprs[_i292].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -5642,10 +6032,10 @@ uint32_t RequestPartsSpec::write(::apache::thrift::protocol::TProtocol* oprot) c
   xfer += oprot->writeFieldBegin("names", ::apache::thrift::protocol::T_LIST, 1);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->names.size()));
-    std::vector<std::string> ::const_iterator _iter289;
-    for (_iter289 = this->names.begin(); _iter289 != this->names.end(); ++_iter289)
+    std::vector<std::string> ::const_iterator _iter293;
+    for (_iter293 = this->names.begin(); _iter293 != this->names.end(); ++_iter293)
     {
-      xfer += oprot->writeString((*_iter289));
+      xfer += oprot->writeString((*_iter293));
     }
     xfer += oprot->writeListEnd();
   }
@@ -5654,10 +6044,10 @@ uint32_t RequestPartsSpec::write(::apache::thrift::protocol::TProtocol* oprot) c
   xfer += oprot->writeFieldBegin("exprs", ::apache::thrift::protocol::T_LIST, 2);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->exprs.size()));
-    std::vector<DropPartitionsExpr> ::const_iterator _iter290;
-    for (_iter290 = this->exprs.begin(); _iter290 != this->exprs.end(); ++_iter290)
+    std::vector<DropPartitionsExpr> ::const_iterator _iter294;
+    for (_iter294 = this->exprs.begin(); _iter294 != this->exprs.end(); ++_iter294)
     {
-      xfer += (*_iter290).write(oprot);
+      xfer += (*_iter294).write(oprot);
     }
     xfer += oprot->writeListEnd();
   }
@@ -5867,9 +6257,9 @@ uint32_t ResourceUri::read(::apache::thrift::protocol::TProtocol* iprot) {
     {
       case 1:
         if (ftype == ::apache::thrift::protocol::T_I32) {
-          int32_t ecast291;
-          xfer += iprot->readI32(ecast291);
-          this->resourceType = (ResourceType::type)ecast291;
+          int32_t ecast295;
+          xfer += iprot->readI32(ecast295);
+          this->resourceType = (ResourceType::type)ecast295;
           this->__isset.resourceType = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -5976,9 +6366,9 @@ uint32_t Function::read(::apache::thrift::protocol::TProtocol* iprot) {
         break;
       case 5:
         if (ftype == ::apache::thrift::protocol::T_I32) {
-          int32_t ecast292;
-          xfer += iprot->readI32(ecast292);
-          this->ownerType = (PrincipalType::type)ecast292;
+          int32_t ecast296;
+          xfer += iprot->readI32(ecast296);
+          this->ownerType = (PrincipalType::type)ecast296;
           this->__isset.ownerType = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -5994,9 +6384,9 @@ uint32_t Function::read(::apache::thrift::protocol::TProtocol* iprot) {
         break;
       case 7:
         if (ftype == ::apache::thrift::protocol::T_I32) {
-          int32_t ecast293;
-          xfer += iprot->readI32(ecast293);
-          this->functionType = (FunctionType::type)ecast293;
+          int32_t ecast297;
+          xfer += iprot->readI32(ecast297);
+          this->functionType = (FunctionType::type)ecast297;
           this->__isset.functionType = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -6006,14 +6396,14 @@ uint32_t Function::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->resourceUris.clear();
-            uint32_t _size294;
-            ::apache::thrift::protocol::TType _etype297;
-            xfer += iprot->readListBegin(_etype297, _size294);
-            this->resourceUris.resize(_size294);
-            uint32_t _i298;
-            for (_i298 = 0; _i298 < _size294; ++_i298)
+            uint32_t _size298;
+            ::apache::thrift::protocol::TType _etype301;
+            xfer += iprot->readListBegin(_etype301, _size298);
+            this->resourceUris.resize(_size298);
+            uint32_t _i302;
+            for (_i302 = 0; _i302 < _size298; ++_i302)
             {
-              xfer += this->resourceUris[_i298].read(iprot);
+              xfer += this->resourceUris[_i302].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -6069,10 +6459,10 @@ uint32_t Function::write(::apache::thrift::protocol::TProtocol* oprot) const {
   xfer += oprot->writeFieldBegin("resourceUris", ::apache::thrift::protocol::T_LIST, 8);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->resourceUris.size()));
-    std::vector<ResourceUri> ::const_iterator _iter299;
-    for (_iter299 = this->resourceUris.begin(); _iter299 != this->resourceUris.end(); ++_iter299)
+    std::vector<ResourceUri> ::const_iterator _iter303;
+    for (_iter303 = this->resourceUris.begin(); _iter303 != this->resourceUris.end(); ++_iter303)
     {
-      xfer += (*_iter299).write(oprot);
+      xfer += (*_iter303).write(oprot);
     }
     xfer += oprot->writeListEnd();
   }
@@ -6133,9 +6523,9 @@ uint32_t TxnInfo::read(::apache::thrift::protocol::TProtocol* iprot) {
         break;
       case 2:
         if (ftype == ::apache::thrift::protocol::T_I32) {
-          int32_t ecast300;
-          xfer += iprot->readI32(ecast300);
-          this->state = (TxnState::type)ecast300;
+          int32_t ecast304;
+          xfer += iprot->readI32(ecast304);
+          this->state = (TxnState::type)ecast304;
           isset_state = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -6247,14 +6637,14 @@ uint32_t GetOpenTxnsInfoResponse::read(::apache::thrift::protocol::TProtocol* ip
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->open_txns.clear();
-            uint32_t _size301;
-            ::apache::thrift::protocol::TType _etype304;
-            xfer += iprot->readListBegin(_etype304, _size301);
-            this->open_txns.resize(_size301);
-            uint32_t _i305;
-            for (_i305 = 0; _i305 < _size301; ++_i305)
+            uint32_t _size305;
+            ::apache::thrift::protocol::TType _etype308;
+            xfer += iprot->readListBegin(_etype308, _size305);
+            this->open_txns.resize(_size305);
+            uint32_t _i309;
+            for (_i309 = 0; _i309 < _size305; ++_i309)
             {
-              xfer += this->open_txns[_i305].read(iprot);
+              xfer += this->open_txns[_i309].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -6290,10 +6680,10 @@ uint32_t GetOpenTxnsInfoResponse::write(::apache::thrift::protocol::TProtocol* o
   xfer += oprot->writeFieldBegin("open_txns", ::apache::thrift::protocol::T_LIST, 2);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->open_txns.size()));
-    std::vector<TxnInfo> ::const_iterator _iter306;
-    for (_iter306 = this->open_txns.begin(); _iter306 != this->open_txns.end(); ++_iter306)
+    std::vector<TxnInfo> ::const_iterator _iter310;
+    for (_iter310 = this->open_txns.begin(); _iter310 != this->open_txns.end(); ++_iter310)
     {
-      xfer += (*_iter306).write(oprot);
+      xfer += (*_iter310).write(oprot);
     }
     xfer += oprot->writeListEnd();
   }
@@ -6347,15 +6737,15 @@ uint32_t GetOpenTxnsResponse::read(::apache::thrift::protocol::TProtocol* iprot)
         if (ftype == ::apache::thrift::protocol::T_SET) {
           {
             this->open_txns.clear();
-            uint32_t _size307;
-            ::apache::thrift::protocol::TType _etype310;
-            xfer += iprot->readSetBegin(_etype310, _size307);
-            uint32_t _i311;
-            for (_i311 = 0; _i311 < _size307; ++_i311)
+            uint32_t _size311;
+            ::apache::thrift::protocol::TType _etype314;
+            xfer += iprot->readSetBegin(_etype314, _size311);
+            uint32_t _i315;
+            for (_i315 = 0; _i315 < _size311; ++_i315)
             {
-              int64_t _elem312;
-              xfer += iprot->readI64(_elem312);
-              this->open_txns.insert(_elem312);
+              int64_t _elem316;
+              xfer += iprot->readI64(_elem316);
+              this->open_txns.insert(_elem316);
             }
             xfer += iprot->readSetEnd();
           }
@@ -6391,10 +6781,10 @@ uint32_t GetOpenTxnsResponse::write(::apache::thrift::protocol::TProtocol* oprot
   xfer += oprot->writeFieldBegin("open_txns", ::apache::thrift::protocol::T_SET, 2);
   {
     xfer += oprot->writeSetBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>(this->open_txns.size()));
-    std::set<int64_t> ::const_iterator _iter313;
-    for (_iter313 = this->open_txns.begin(); _iter313 != this->open_txns.end(); ++_iter313)
+    std::set<int64_t> ::const_iterator _iter317;
+    for (_iter317 = this->open_txns.begin(); _iter317 != this->open_txns.end(); ++_iter317)
     {
-      xfer += oprot->writeI64((*_iter313));
+      xfer += oprot->writeI64((*_iter317));
     }
     xfer += oprot->writeSetEnd();
   }
@@ -6535,14 +6925,14 @@ uint32_t OpenTxnsResponse::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->txn_ids.clear();
-            uint32_t _size314;
-            ::apache::thrift::protocol::TType _etype317;
-            xfer += iprot->readListBegin(_etype317, _size314);
-            this->txn_ids.resize(_size314);
-            uint32_t _i318;
-            for (_i318 = 0; _i318 < _size314; ++_i318)
+            uint32_t _size318;
+            ::apache::thrift::protocol::TType _etype321;
+            xfer += iprot->readListBegin(_etype321, _size318);
+            this->txn_ids.resize(_size318);
+            uint32_t _i322;
+            for (_i322 = 0; _i322 < _size318; ++_i322)
             {
-              xfer += iprot->readI64(this->txn_ids[_i318]);
+              xfer += iprot->readI64(this->txn_ids[_i322]);
             }
             xfer += iprot->readListEnd();
           }
@@ -6572,10 +6962,10 @@ uint32_t OpenTxnsResponse::write(::apache::thrift::protocol::TProtocol* oprot) c
   xfer += oprot->writeFieldBegin("txn_ids", ::apache::thrift::protocol::T_LIST, 1);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>(this->txn_ids.size()));
-    std::vector<int64_t> ::const_iterator _iter319;
-    for (_iter319 = this->txn_ids.begin(); _iter319 != this->txn_ids.end(); ++_iter319)
+    std::vector<int64_t> ::const_iterator _iter323;
+    for (_iter323 = this->txn_ids.begin(); _iter323 != this->txn_ids.end(); ++_iter323)
     {
-      xfer += oprot->writeI64((*_iter319));
+      xfer += oprot->writeI64((*_iter323));
     }
     xfer += oprot->writeListEnd();
   }
@@ -6747,9 +7137,9 @@ uint32_t LockComponent::read(::apache::thrift::protocol::TProtocol* iprot) {
     {
       case 1:
         if (ftype == ::apache::thrift::protocol::T_I32) {
-          int32_t ecast320;
-          xfer += iprot->readI32(ecast320);
-          this->type = (LockType::type)ecast320;
+          int32_t ecast324;
+          xfer += iprot->readI32(ecast324);
+          this->type = (LockType::type)ecast324;
           isset_type = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -6757,9 +7147,9 @@ uint32_t LockComponent::read(::apache::thrift::protocol::TProtocol* iprot) {
         break;
       case 2:
         if (ftype == ::apache::thrift::protocol::T_I32) {
-          int32_t ecast321;
-          xfer += iprot->readI32(ecast321);
-          this->level = (LockLevel::type)ecast321;
+          int32_t ecast325;
+          xfer += iprot->readI32(ecast325);
+          this->level = (LockLevel::type)ecast325;
           isset_level = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -6878,14 +7268,14 @@ uint32_t LockRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->component.clear();
-            uint32_t _size322;
-            ::apache::thrift::protocol::TType _etype325;
-            xfer += iprot->readListBegin(_etype325, _size322);
-            this->component.resize(_size322);
-            uint32_t _i326;
-            for (_i326 = 0; _i326 < _size322; ++_i326)
+            uint32_t _size326;
+            ::apache::thrift::protocol::TType _etype329;
+            xfer += iprot->readListBegin(_etype329, _size326);
+            this->component.resize(_size326);
+            uint32_t _i330;
+            for (_i330 = 0; _i330 < _size326; ++_i330)
             {
-              xfer += this->component[_i326].read(iprot);
+              xfer += this->component[_i330].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -6943,10 +7333,10 @@ uint32_t LockRequest::write(::apache::thrift::protocol::TProtocol* oprot) const 
   xfer += oprot->writeFieldBegin("component", ::apache::thrift::protocol::T_LIST, 1);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->component.size()));
-    std::vector<LockComponent> ::const_iterator _iter327;
-    for (_iter327 = this->component.begin(); _iter327 != this->component.end(); ++_iter327)
+    std::vector<LockComponent> ::const_iterator _iter331;
+    for (_iter331 = this->component.begin(); _iter331 != this->component.end(); ++_iter331)
     {
-      xfer += (*_iter327).write(oprot);
+      xfer += (*_iter331).write(oprot);
     }
     xfer += oprot->writeListEnd();
   }
@@ -7014,9 +7404,9 @@ uint32_t LockResponse::read(::apache::thrift::protocol::TProtocol* iprot) {
         break;
       case 2:
         if (ftype == ::apache::thrift::protocol::T_I32) {
-          int32_t ecast328;
-          xfer += iprot->readI32(ecast328);
-          this->state = (LockState::type)ecast328;
+          int32_t ecast332;
+          xfer += iprot->readI32(ecast332);
+          this->state = (LockState::type)ecast332;
           isset_state = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -7298,9 +7688,9 @@ uint32_t ShowLocksResponseElement::read(::apache::thrift::protocol::TProtocol* i
         break;
       case 5:
         if (ftype == ::apache::thrift::protocol::T_I32) {
-          int32_t ecast329;
-          xfer += iprot->readI32(ecast329);
-          this->state = (LockState::type)ecast329;
+          int32_t ecast333;
+          xfer += iprot->readI32(ecast333);
+          this->state = (LockState::type)ecast333;
           isset_state = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -7308,9 +7698,9 @@ uint32_t ShowLocksResponseElement::read(::apache::thrift::protocol::TProtocol* i
         break;
       case 6:
         if (ftype == ::apache::thrift::protocol::T_I32) {
-          int32_t ecast330;
-          xfer += iprot->readI32(ecast330);
-          this->type = (LockType::type)ecast330;
+          int32_t ecast334;
+          xfer += iprot->readI32(ecast334);
+          this->type = (LockType::type)ecast334;
           isset_type = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -7482,14 +7872,14 @@ uint32_t ShowLocksResponse::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->locks.clear();
-            uint32_t _size331;
-            ::apache::thrift::protocol::TType _etype334;
-            xfer += iprot->readListBegin(_etype334, _size331);
-            this->locks.resize(_size331);
-            uint32_t _i335;
-            for (_i335 = 0; _i335 < _size331; ++_i335)
+            uint32_t _size335;
+            ::apache::thrift::protocol::TType _etype338;
+            xfer += iprot->readListBegin(_etype338, _size335);
+            this->locks.resize(_size335);
+            uint32_t _i339;
+            for (_i339 = 0; _i339 < _size335; ++_i339)
             {
-              xfer += this->locks[_i335].read(iprot);
+              xfer += this->locks[_i339].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -7517,10 +7907,10 @@ uint32_t ShowLocksResponse::write(::apache::thrift::protocol::TProtocol* oprot) 
   xfer += oprot->writeFieldBegin("locks", ::apache::thrift::protocol::T_LIST, 1);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->locks.size()));
-    std::vector<ShowLocksResponseElement> ::const_iterator _iter336;
-    for (_iter336 = this->locks.begin(); _iter336 != this->locks.end(); ++_iter336)
+    std::vector<ShowLocksResponseElement> ::const_iterator _iter340;
+    for (_iter340 = this->locks.begin(); _iter340 != this->locks.end(); ++_iter340)
     {
-      xfer += (*_iter336).write(oprot);
+      xfer += (*_iter340).write(oprot);
     }
     xfer += oprot->writeListEnd();
   }
@@ -7723,15 +8113,15 @@ uint32_t HeartbeatTxnRangeResponse::read(::apache::thrift::protocol::TProtocol* 
         if (ftype == ::apache::thrift::protocol::T_SET) {
           {
             this->aborted.clear();
-            uint32_t _size337;
-            ::apache::thrift::protocol::TType _etype340;
-            xfer += iprot->readSetBegin(_etype340, _size337);
-            uint32_t _i341;
-            for (_i341 = 0; _i341 < _size337; ++_i341)
+            uint32_t _size341;
+            ::apache::thrift::protocol::TType _etype344;
+            xfer += iprot->readSetBegin(_etype344, _size341);
+            uint32_t _i345;
+            for (_i345 = 0; _i345 < _size341; ++_i345)
             {
-              int64_t _elem342;
-              xfer += iprot->readI64(_elem342);
-              this->aborted.insert(_elem342);
+              int64_t _elem346;
+              xfer += iprot->readI64(_elem346);
+              this->aborted.insert(_elem346);
             }
             xfer += iprot->readSetEnd();
           }
@@ -7744,15 +8134,15 @@ uint32_t HeartbeatTxnRangeResponse::read(::apache::thrift::protocol::TProtocol* 
         if (ftype == ::apache::thrift::protocol::T_SET) {
           {
             this->nosuch.clear();
-            uint32_t _size343;
-            ::apache::thrift::protocol::TType _etype346;
-            xfer += iprot->readSetBegin(_etype346, _size343);
-            uint32_t _i347;
-            for (_i347 = 0; _i347 < _size343; ++_i347)
+            uint32_t _size347;
+            ::apache::thrift::protocol::TType _etype350;
+            xfer += iprot->readSetBegin(_etype350, _size347);
+            uint32_t _i351;
+            for (_i351 = 0; _i351 < _size347; ++_i351)
             {
-              int64_t _elem348;
-              xfer += iprot->readI64(_elem348);
-              this->nosuch.insert(_elem348);
+              int64_t _elem352;
+              xfer += iprot->readI64(_elem352);
+              this->nosuch.insert(_elem352);
             }
             xfer += iprot->readSetEnd();
           }
@@ -7784,10 +8174,10 @@ uint32_t HeartbeatTxnRangeResponse::write(::apache::thrift::protocol::TProtocol*
   xfer += oprot->writeFieldBegin("aborted", ::apache::thrift::protocol::T_SET, 1);
   {
     xfer += oprot->writeSetBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>(this->aborted.size()));
-    std::set<int64_t> ::const_iterator _iter349;
-    for (_iter349 = this->aborted.begin(); _iter349 != this->aborted.end(); ++_iter349)
+    std::set<int64_t> ::const_iterator _iter353;
+    for (_iter353 = this->aborted.begin(); _iter353 != this->aborted.end(); ++_iter353)
     {
-      xfer += oprot->writeI64((*_iter349));
+      xfer += oprot->writeI64((*_iter353));
     }
     xfer += oprot->writeSetEnd();
   }
@@ -7796,10 +8186,10 @@ uint32_t HeartbeatTxnRangeResponse::write(::apache::thrift::protocol::TProtocol*
   xfer += oprot->writeFieldBegin("nosuch", ::apache::thrift::protocol::T_SET, 2);
   {
     xfer += oprot->writeSetBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>(this->nosuch.size()));
-    std::set<int64_t> ::const_iterator _iter350;
-    for (_iter350 = this->nosuch.begin(); _iter350 != this->nosuch.end(); ++_iter350)
+    std::set<int64_t> ::const_iterator _iter354;
+    for (_iter354 = this->nosuch.begin(); _iter354 != this->nosuch.end(); ++_iter354)
     {
-      xfer += oprot->writeI64((*_iter350));
+      xfer += oprot->writeI64((*_iter354));
     }
     xfer += oprot->writeSetEnd();
   }
@@ -7868,9 +8258,9 @@ uint32_t CompactionRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
         break;
       case 4:
         if (ftype == ::apache::thrift::protocol::T_I32) {
-          int32_t ecast351;
-          xfer += iprot->readI32(ecast351);
-          this->type = (CompactionType::type)ecast351;
+          int32_t ecast355;
+          xfer += iprot->readI32(ecast355);
+          this->type = (CompactionType::type)ecast355;
           isset_type = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -8045,9 +8435,9 @@ uint32_t ShowCompactResponseElement::read(::apache::thrift::protocol::TProtocol*
         break;
       case 4:
         if (ftype == ::apache::thrift::protocol::T_I32) {
-          int32_t ecast352;
-          xfer += iprot->readI32(ecast352);
-          this->type = (CompactionType::type)ecast352;
+          int32_t ecast356;
+          xfer += iprot->readI32(ecast356);
+          this->type = (CompactionType::type)ecast356;
           isset_type = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -8194,14 +8584,14 @@ uint32_t ShowCompactResponse::read(::apache::thrift::protocol::TProtocol* iprot)
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->compacts.clear();
-            uint32_t _size353;
-            ::apache::thrift::protocol::TType _etype356;
-            xfer += iprot->readListBegin(_etype356, _size353);
-            this->compacts.resize(_size353);
-            uint32_t _i357;
-            for (_i357 = 0; _i357 < _size353; ++_i357)
+            uint32_t _size357;
+            ::apache::thrift::protocol::TType _etype360;
+            xfer += iprot->readListBegin(_etype360, _size357);
+            this->compacts.resize(_size357);
+            uint32_t _i361;
+            for (_i361 = 0; _i361 < _size357; ++_i361)
             {
-              xfer += this->compacts[_i357].read(iprot);
+              xfer += this->compacts[_i361].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -8231,10 +8621,10 @@ uint32_t ShowCompactResponse::write(::apache::thrift::protocol::TProtocol* oprot
   xfer += oprot->writeFieldBegin("compacts", ::apache::thrift::protocol::T_LIST, 1);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->compacts.size()));
-    std::vector<ShowCompactResponseElement> ::const_iterator _iter358;
-    for (_iter358 = this->compacts.begin(); _iter358 != this->compacts.end(); ++_iter358)
+    std::vector<ShowCompactResponseElement> ::const_iterator _iter362;
+    for (_iter362 = this->compacts.begin(); _iter362 != this->compacts.end(); ++_iter362)
     {
-      xfer += (*_iter358).write(oprot);
+      xfer += (*_iter362).write(oprot);
     }
     xfer += oprot->writeListEnd();
   }

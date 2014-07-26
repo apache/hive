@@ -287,7 +287,8 @@ public class ColumnStatsTask extends Task<ColumnStatsWork> implements Serializab
       Table tbl = db.getTable(dbName,tableName);
       List<FieldSchema> partColSchema = tbl.getPartCols();
       // Partition columns are appended at end, we only care about stats column
-      for (int i = 0; i < fields.size() - partColSchema.size(); i++) {
+      int numOfStatCols = isTblLevel ? fields.size() : fields.size() - partColSchema.size();
+      for (int i = 0; i < numOfStatCols; i++) {
         // Get the field objectInspector, fieldName and the field object.
         ObjectInspector foi = fields.get(i).getFieldObjectInspector();
         Object f = (list == null ? null : list.get(i));

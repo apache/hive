@@ -1,0 +1,18 @@
+PREHOOK: query: create temporary table tmp1 (c1 string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: create temporary table tmp1 (c1 string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tmp1
+PREHOOK: query: -- table-level stats should work
+analyze table tmp1 compute statistics
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tmp1
+PREHOOK: Output: default@tmp1
+POSTHOOK: query: -- table-level stats should work
+analyze table tmp1 compute statistics
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tmp1
+POSTHOOK: Output: default@tmp1
+FAILED: SemanticException tmp1 is a temporary table.  Column statistics are not supported on temporary tables.

@@ -50,6 +50,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument.TruthValue;
+import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
@@ -2404,6 +2405,10 @@ class RecordReaderImpl implements RecordReader {
           return Double.valueOf(predObj.toString());
         }
       } else if (statsObj instanceof String) {
+        // Ex: where d = date '1970-02-01' will be ExprNodeConstantDesc
+        if (predObj instanceof ExprNodeConstantDesc) {
+          return ((ExprNodeConstantDesc) predObj).getValue().toString();
+        }
         return predObj.toString();
       } else if (statsObj instanceof HiveDecimal) {
         if (predObj instanceof Long) {

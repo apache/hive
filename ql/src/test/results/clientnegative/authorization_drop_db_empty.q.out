@@ -46,4 +46,4 @@ POSTHOOK: query: show current roles
 POSTHOOK: type: SHOW_ROLES
 public
 
-FAILED: HiveAccessControlException Permission denied. Principal [name=user2, type=USER] does not have following privileges on Object [type=DATABASE, name=dba2] : [OBJECT OWNERSHIP]
+FAILED: HiveAccessControlException Permission denied: Principal [name=user2, type=USER] does not have following privileges for operation DROPDATABASE [[OBJECT OWNERSHIP] on Object [type=DATABASE, name=dba2]]

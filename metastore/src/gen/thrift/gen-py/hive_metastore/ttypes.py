@@ -154,6 +154,20 @@ class CompactionType:
     "MAJOR": 2,
   }
 
+class GrantRevokeType:
+  GRANT = 1
+  REVOKE = 2
+
+  _VALUES_TO_NAMES = {
+    1: "GRANT",
+    2: "REVOKE",
+  }
+
+  _NAMES_TO_VALUES = {
+    "GRANT": 1,
+    "REVOKE": 2,
+  }
+
 class FunctionType:
   JAVA = 1
 
@@ -976,6 +990,151 @@ class PrincipalPrivilegeSet:
   def __ne__(self, other):
     return not (self == other)
 
+class GrantRevokePrivilegeRequest:
+  """
+  Attributes:
+   - requestType
+   - privileges
+   - revokeGrantOption
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.I32, 'requestType', None, None, ), # 1
+    (2, TType.STRUCT, 'privileges', (PrivilegeBag, PrivilegeBag.thrift_spec), None, ), # 2
+    (3, TType.BOOL, 'revokeGrantOption', None, None, ), # 3
+  )
+
+  def __init__(self, requestType=None, privileges=None, revokeGrantOption=None,):
+    self.requestType = requestType
+    self.privileges = privileges
+    self.revokeGrantOption = revokeGrantOption
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.I32:
+          self.requestType = iprot.readI32();
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRUCT:
+          self.privileges = PrivilegeBag()
+          self.privileges.read(iprot)
+        else:
+          iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.BOOL:
+          self.revokeGrantOption = iprot.readBool();
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('GrantRevokePrivilegeRequest')
+    if self.requestType is not None:
+      oprot.writeFieldBegin('requestType', TType.I32, 1)
+      oprot.writeI32(self.requestType)
+      oprot.writeFieldEnd()
+    if self.privileges is not None:
+      oprot.writeFieldBegin('privileges', TType.STRUCT, 2)
+      self.privileges.write(oprot)
+      oprot.writeFieldEnd()
+    if self.revokeGrantOption is not None:
+      oprot.writeFieldBegin('revokeGrantOption', TType.BOOL, 3)
+      oprot.writeBool(self.revokeGrantOption)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class GrantRevokePrivilegeResponse:
+  """
+  Attributes:
+   - success
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.BOOL, 'success', None, None, ), # 1
+  )
+
+  def __init__(self, success=None,):
+    self.success = success
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.BOOL:
+          self.success = iprot.readBool();
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('GrantRevokePrivilegeResponse')
+    if self.success is not None:
+      oprot.writeFieldBegin('success', TType.BOOL, 1)
+      oprot.writeBool(self.success)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
 class Role:
   """
   Attributes:
@@ -1458,6 +1617,198 @@ class GetPrincipalsInRoleResponse:
   def validate(self):
     if self.principalGrants is None:
       raise TProtocol.TProtocolException(message='Required field principalGrants is unset!')
+    return
+
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class GrantRevokeRoleRequest:
+  """
+  Attributes:
+   - requestType
+   - roleName
+   - principalName
+   - principalType
+   - grantor
+   - grantorType
+   - grantOption
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.I32, 'requestType', None, None, ), # 1
+    (2, TType.STRING, 'roleName', None, None, ), # 2
+    (3, TType.STRING, 'principalName', None, None, ), # 3
+    (4, TType.I32, 'principalType', None, None, ), # 4
+    (5, TType.STRING, 'grantor', None, None, ), # 5
+    (6, TType.I32, 'grantorType', None, None, ), # 6
+    (7, TType.BOOL, 'grantOption', None, None, ), # 7
+  )
+
+  def __init__(self, requestType=None, roleName=None, principalName=None, principalType=None, grantor=None, grantorType=None, grantOption=None,):
+    self.requestType = requestType
+    self.roleName = roleName
+    self.principalName = principalName
+    self.principalType = principalType
+    self.grantor = grantor
+    self.grantorType = grantorType
+    self.grantOption = grantOption
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.I32:
+          self.requestType = iprot.readI32();
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRING:
+          self.roleName = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.STRING:
+          self.principalName = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 4:
+        if ftype == TType.I32:
+          self.principalType = iprot.readI32();
+        else:
+          iprot.skip(ftype)
+      elif fid == 5:
+        if ftype == TType.STRING:
+          self.grantor = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 6:
+        if ftype == TType.I32:
+          self.grantorType = iprot.readI32();
+        else:
+          iprot.skip(ftype)
+      elif fid == 7:
+        if ftype == TType.BOOL:
+          self.grantOption = iprot.readBool();
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('GrantRevokeRoleRequest')
+    if self.requestType is not None:
+      oprot.writeFieldBegin('requestType', TType.I32, 1)
+      oprot.writeI32(self.requestType)
+      oprot.writeFieldEnd()
+    if self.roleName is not None:
+      oprot.writeFieldBegin('roleName', TType.STRING, 2)
+      oprot.writeString(self.roleName)
+      oprot.writeFieldEnd()
+    if self.principalName is not None:
+      oprot.writeFieldBegin('principalName', TType.STRING, 3)
+      oprot.writeString(self.principalName)
+      oprot.writeFieldEnd()
+    if self.principalType is not None:
+      oprot.writeFieldBegin('principalType', TType.I32, 4)
+      oprot.writeI32(self.principalType)
+      oprot.writeFieldEnd()
+    if self.grantor is not None:
+      oprot.writeFieldBegin('grantor', TType.STRING, 5)
+      oprot.writeString(self.grantor)
+      oprot.writeFieldEnd()
+    if self.grantorType is not None:
+      oprot.writeFieldBegin('grantorType', TType.I32, 6)
+      oprot.writeI32(self.grantorType)
+      oprot.writeFieldEnd()
+    if self.grantOption is not None:
+      oprot.writeFieldBegin('grantOption', TType.BOOL, 7)
+      oprot.writeBool(self.grantOption)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class GrantRevokeRoleResponse:
+  """
+  Attributes:
+   - success
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.BOOL, 'success', None, None, ), # 1
+  )
+
+  def __init__(self, success=None,):
+    self.success = success
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.BOOL:
+          self.success = iprot.readBool();
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('GrantRevokeRoleResponse')
+    if self.success is not None:
+      oprot.writeFieldBegin('success', TType.BOOL, 1)
+      oprot.writeBool(self.success)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
     return
 
 
@@ -2153,6 +2504,7 @@ class Table:
    - viewExpandedText
    - tableType
    - privileges
+   - temporary
   """
 
   thrift_spec = (
@@ -2170,9 +2522,10 @@ class Table:
     (11, TType.STRING, 'viewExpandedText', None, None, ), # 11
     (12, TType.STRING, 'tableType', None, None, ), # 12
     (13, TType.STRUCT, 'privileges', (PrincipalPrivilegeSet, PrincipalPrivilegeSet.thrift_spec), None, ), # 13
+    (14, TType.BOOL, 'temporary', None, False, ), # 14
   )
 
-  def __init__(self, tableName=None, dbName=None, owner=None, createTime=None, lastAccessTime=None, retention=None, sd=None, partitionKeys=None, parameters=None, viewOriginalText=None, viewExpandedText=None, tableType=None, privileges=None,):
+  def __init__(self, tableName=None, dbName=None, owner=None, createTime=None, lastAccessTime=None, retention=None, sd=None, partitionKeys=None, parameters=None, viewOriginalText=None, viewExpandedText=None, tableType=None, privileges=None, temporary=thrift_spec[14][4],):
     self.tableName = tableName
     self.dbName = dbName
     self.owner = owner
@@ -2186,6 +2539,7 @@ class Table:
     self.viewExpandedText = viewExpandedText
     self.tableType = tableType
     self.privileges = privileges
+    self.temporary = temporary
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -2275,6 +2629,11 @@ class Table:
           self.privileges.read(iprot)
         else:
           iprot.skip(ftype)
+      elif fid == 14:
+        if ftype == TType.BOOL:
+          self.temporary = iprot.readBool();
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -2343,6 +2702,10 @@ class Table:
     if self.privileges is not None:
       oprot.writeFieldBegin('privileges', TType.STRUCT, 13)
       self.privileges.write(oprot)
+      oprot.writeFieldEnd()
+    if self.temporary is not None:
+      oprot.writeFieldBegin('temporary', TType.BOOL, 14)
+      oprot.writeBool(self.temporary)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()

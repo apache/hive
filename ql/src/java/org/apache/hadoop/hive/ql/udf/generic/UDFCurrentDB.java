@@ -54,7 +54,7 @@ public class UDFCurrentDB extends GenericUDF {
 
   @Override
   public Object evaluate(DeferredObject[] arguments) throws HiveException {
-    throw new IllegalStateException("never");
+    return SessionState.get().getCurrentDatabase();
   }
 
   @Override

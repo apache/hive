@@ -82,6 +82,19 @@ public class WriteEntity extends Entity implements Serializable {
   }
 
   /**
+   * Constructor for objects represented as String.
+   * Currently applicable only for function names.
+   * @param db
+   * @param objName
+   * @param type
+   * @param writeType
+   */
+  public WriteEntity(Database db, String objName, Type type, WriteType writeType) {
+    super(db, objName, type);
+    this.writeType = writeType;
+  }
+
+  /**
    * Constructor for a partition.
    *
    * @param p

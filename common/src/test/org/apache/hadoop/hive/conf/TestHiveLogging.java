@@ -18,7 +18,6 @@
 package org.apache.hadoop.hive.conf;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 
 import junit.framework.TestCase;
@@ -26,7 +25,6 @@ import junit.framework.TestCase;
 import org.apache.hadoop.hive.common.LogUtils;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hive.common.util.HiveTestUtils;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 
 /**
  * TestHiveLogging

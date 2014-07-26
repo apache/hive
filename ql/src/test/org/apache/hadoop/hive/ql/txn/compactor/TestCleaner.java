@@ -23,7 +23,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -68,7 +67,7 @@ public class TestCleaner extends CompactorTest {
 
     // Check there are no compactions requests left.
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
-    Assert.assertNull(rsp.getCompacts());
+    Assert.assertEquals(0, rsp.getCompactsSize());
 
     // Check that the files are removed
     List<Path> paths = getDirectories(conf, t, null);
@@ -101,7 +100,7 @@ public class TestCleaner extends CompactorTest {
 
     // Check there are no compactions requests left.
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
-    Assert.assertNull(rsp.getCompacts());
+    Assert.assertEquals(0, rsp.getCompactsSize());
 
     // Check that the files are removed
     List<Path> paths = getDirectories(conf, t, p);
@@ -132,7 +131,7 @@ public class TestCleaner extends CompactorTest {
 
     // Check there are no compactions requests left.
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
-    Assert.assertNull(rsp.getCompacts());
+    Assert.assertEquals(0, rsp.getCompactsSize());
 
     // Check that the files are removed
     List<Path> paths = getDirectories(conf, t, null);
@@ -172,7 +171,7 @@ public class TestCleaner extends CompactorTest {
 
     // Check there are no compactions requests left.
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
-    Assert.assertNull(rsp.getCompacts());
+    Assert.assertEquals(0, rsp.getCompactsSize());
 
     // Check that the files are removed
     List<Path> paths = getDirectories(conf, t, p);
@@ -289,7 +288,7 @@ public class TestCleaner extends CompactorTest {
 
     // Check there are no compactions requests left.
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
-    Assert.assertNull(rsp.getCompacts());
+    Assert.assertEquals(0, rsp.getCompactsSize());
 
     // Check that the files are removed
     List<Path> paths = getDirectories(conf, t, p);

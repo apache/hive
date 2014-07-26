@@ -594,14 +594,14 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
 
       @Override
       protected void updateMin(Object minValue, LongObjectInspector minFieldOI) {
-        if (min == null || (minValue != null && min > minFieldOI.get(minValue))) {
+        if ((minValue != null) && (min == null || (min > minFieldOI.get(minValue)))) {
           min = minFieldOI.get(minValue);
         }
       }
 
       @Override
       protected void updateMax(Object maxValue, LongObjectInspector maxFieldOI) {
-        if (max == null || (maxValue != null && max < maxFieldOI.get(maxValue))) {
+        if ((maxValue != null ) && (max == null || (max < maxFieldOI.get(maxValue)))) {
           max = maxFieldOI.get(maxValue);
         }
       }
@@ -657,14 +657,14 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
 
       @Override
       protected void updateMin(Object minValue, DoubleObjectInspector minFieldOI) {
-        if (min == null || (minValue != null && min > minFieldOI.get(minValue))) {
+        if ((minValue != null) && (min == null || (min > minFieldOI.get(minValue)))) {
           min = minFieldOI.get(minValue);
         }
       }
 
       @Override
       protected void updateMax(Object maxValue, DoubleObjectInspector maxFieldOI) {
-        if (max == null || (maxValue != null && max < maxFieldOI.get(maxValue))) {
+        if ((maxValue != null ) && (max == null || (max < maxFieldOI.get(maxValue)))) {
           max = maxFieldOI.get(maxValue);
         }
       }
@@ -995,7 +995,7 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
       }
 
       if (total != 0) {
-         avgLength = (double)(myagg.sumLength / (1.0 * total));
+         avgLength = myagg.sumLength / (1.0 * total);
       }
 
       // Serialize the result struct
@@ -1241,7 +1241,7 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
       long count = myagg.count + myagg.countNulls;
 
       if (count != 0) {
-        avgLength = (double)(myagg.sumLength / (1.0 * (myagg.count + myagg.countNulls)));
+        avgLength = myagg.sumLength / (1.0 * (myagg.count + myagg.countNulls));
       }
 
       // Serialize the result struct
@@ -1287,7 +1287,7 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
 
       @Override
       protected void updateMin(Object minValue, HiveDecimalObjectInspector minFieldOI) {
-        if (min == null || (minValue != null &&
+        if ((minValue != null) && (min == null ||
             min.compareTo(minFieldOI.getPrimitiveJavaObject(minValue)) > 0)) {
           min = minFieldOI.getPrimitiveJavaObject(minValue);
         }
@@ -1295,7 +1295,7 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
 
       @Override
       protected void updateMax(Object maxValue, HiveDecimalObjectInspector maxFieldOI) {
-        if (max == null || (maxValue != null &&
+        if ((maxValue != null) && (max == null ||
             max.compareTo(maxFieldOI.getPrimitiveJavaObject(maxValue)) < 0)) {
           max = maxFieldOI.getPrimitiveJavaObject(maxValue);
         }

@@ -72,6 +72,13 @@ module CompactionType
   VALID_VALUES = Set.new([MINOR, MAJOR]).freeze
 end
 
+module GrantRevokeType
+  GRANT = 1
+  REVOKE = 2
+  VALUE_MAP = {1 => "GRANT", 2 => "REVOKE"}
+  VALID_VALUES = Set.new([GRANT, REVOKE]).freeze
+end
+
 module FunctionType
   JAVA = 1
   VALUE_MAP = {1 => "JAVA"}
@@ -261,6 +268,45 @@ class PrincipalPrivilegeSet
   ::Thrift::Struct.generate_accessors self
 end
 
+class GrantRevokePrivilegeRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  REQUESTTYPE = 1
+  PRIVILEGES = 2
+  REVOKEGRANTOPTION = 3
+
+  FIELDS = {
+    REQUESTTYPE => {:type => ::Thrift::Types::I32, :name => 'requestType', :enum_class => ::GrantRevokeType},
+    PRIVILEGES => {:type => ::Thrift::Types::STRUCT, :name => 'privileges', :class => ::PrivilegeBag},
+    REVOKEGRANTOPTION => {:type => ::Thrift::Types::BOOL, :name => 'revokeGrantOption', :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    unless @requestType.nil? || ::GrantRevokeType::VALID_VALUES.include?(@requestType)
+      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field requestType!')
+    end
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class GrantRevokePrivilegeResponse
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  SUCCESS = 1
+
+  FIELDS = {
+    SUCCESS => {:type => ::Thrift::Types::BOOL, :name => 'success', :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
 class Role
   include ::Thrift::Struct, ::Thrift::Struct_Union
   ROLENAME = 1
@@ -384,6 +430,59 @@ class GetPrincipalsInRoleResponse
 
   def validate
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field principalGrants is unset!') unless @principalGrants
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class GrantRevokeRoleRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  REQUESTTYPE = 1
+  ROLENAME = 2
+  PRINCIPALNAME = 3
+  PRINCIPALTYPE = 4
+  GRANTOR = 5
+  GRANTORTYPE = 6
+  GRANTOPTION = 7
+
+  FIELDS = {
+    REQUESTTYPE => {:type => ::Thrift::Types::I32, :name => 'requestType', :enum_class => ::GrantRevokeType},
+    ROLENAME => {:type => ::Thrift::Types::STRING, :name => 'roleName'},
+    PRINCIPALNAME => {:type => ::Thrift::Types::STRING, :name => 'principalName'},
+    PRINCIPALTYPE => {:type => ::Thrift::Types::I32, :name => 'principalType', :enum_class => ::PrincipalType},
+    GRANTOR => {:type => ::Thrift::Types::STRING, :name => 'grantor', :optional => true},
+    GRANTORTYPE => {:type => ::Thrift::Types::I32, :name => 'grantorType', :optional => true, :enum_class => ::PrincipalType},
+    GRANTOPTION => {:type => ::Thrift::Types::BOOL, :name => 'grantOption', :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    unless @requestType.nil? || ::GrantRevokeType::VALID_VALUES.include?(@requestType)
+      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field requestType!')
+    end
+    unless @principalType.nil? || ::PrincipalType::VALID_VALUES.include?(@principalType)
+      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field principalType!')
+    end
+    unless @grantorType.nil? || ::PrincipalType::VALID_VALUES.include?(@grantorType)
+      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field grantorType!')
+    end
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class GrantRevokeRoleResponse
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  SUCCESS = 1
+
+  FIELDS = {
+    SUCCESS => {:type => ::Thrift::Types::BOOL, :name => 'success', :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
   end
 
   ::Thrift::Struct.generate_accessors self
@@ -531,6 +630,7 @@ class Table
   VIEWEXPANDEDTEXT = 11
   TABLETYPE = 12
   PRIVILEGES = 13
+  TEMPORARY = 14
 
   FIELDS = {
     TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'},
@@ -545,7 +645,8 @@ class Table
     VIEWORIGINALTEXT => {:type => ::Thrift::Types::STRING, :name => 'viewOriginalText'},
     VIEWEXPANDEDTEXT => {:type => ::Thrift::Types::STRING, :name => 'viewExpandedText'},
     TABLETYPE => {:type => ::Thrift::Types::STRING, :name => 'tableType'},
-    PRIVILEGES => {:type => ::Thrift::Types::STRUCT, :name => 'privileges', :class => ::PrincipalPrivilegeSet, :optional => true}
+    PRIVILEGES => {:type => ::Thrift::Types::STRUCT, :name => 'privileges', :class => ::PrincipalPrivilegeSet, :optional => true},
+    TEMPORARY => {:type => ::Thrift::Types::BOOL, :name => 'temporary', :default => false, :optional => true}
   }
 
   def struct_fields; FIELDS; end

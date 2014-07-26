@@ -442,6 +442,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("list_roles\n");
   }
 
+  void grant_revoke_role(GrantRevokeRoleResponse& _return, const GrantRevokeRoleRequest& request) {
+    // Your implementation goes here
+    printf("grant_revoke_role\n");
+  }
+
   void get_principals_in_role(GetPrincipalsInRoleResponse& _return, const GetPrincipalsInRoleRequest& request) {
     // Your implementation goes here
     printf("get_principals_in_role\n");
@@ -470,6 +475,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
   bool revoke_privileges(const PrivilegeBag& privileges) {
     // Your implementation goes here
     printf("revoke_privileges\n");
+  }
+
+  void grant_revoke_privileges(GrantRevokePrivilegeResponse& _return, const GrantRevokePrivilegeRequest& request) {
+    // Your implementation goes here
+    printf("grant_revoke_privileges\n");
   }
 
   void set_ugi(std::vector<std::string> & _return, const std::string& user_name, const std::vector<std::string> & group_names) {

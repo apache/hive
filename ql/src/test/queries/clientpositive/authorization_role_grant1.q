@@ -26,6 +26,10 @@ create role src_role_wadmin;
 grant src_role_wadmin to user user2 with admin option;
 show role grant user user2;
 
+-- revoke admin option
+revoke admin option for src_role_wadmin from user user2;
+show role grant user user2;
+
 -- revoke role without role keyword
 revoke src_role_wadmin from user user2;
 show role grant user user2;

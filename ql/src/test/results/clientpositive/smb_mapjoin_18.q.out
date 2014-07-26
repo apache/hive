@@ -208,12 +208,14 @@ POSTHOOK: Input: default@test_table2@ds=1
 253
 PREHOOK: query: -- Insert data into the bucketed table by selecting from another bucketed table
 -- This should be a map-only operation, one of the buckets should be empty
+
 EXPLAIN
 INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '2')
 SELECT a.key, a.value FROM test_table1 a WHERE a.ds = '1' and a.key = 238
 PREHOOK: type: QUERY
 POSTHOOK: query: -- Insert data into the bucketed table by selecting from another bucketed table
 -- This should be a map-only operation, one of the buckets should be empty
+
 EXPLAIN
 INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '2')
 SELECT a.key, a.value FROM test_table1 a WHERE a.ds = '1' and a.key = 238

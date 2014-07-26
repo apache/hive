@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
  */
 public class ExprNodeConstantDesc extends ExprNodeDesc implements Serializable {
   private static final long serialVersionUID = 1L;
+  final protected transient static char[] hexArray = "0123456789ABCDEF".toCharArray();
   private Object value;
 
   public ExprNodeConstantDesc() {
@@ -83,6 +84,15 @@ public class ExprNodeConstantDesc extends ExprNodeDesc implements Serializable {
 
     if (typeInfo.getTypeName().equals(serdeConstants.STRING_TYPE_NAME)) {
       return "'" + value.toString() + "'";
+    } else if (typeInfo.getTypeName().equals(serdeConstants.BINARY_TYPE_NAME)) {
+      byte[] bytes = (byte[]) value;
+      char[] hexChars = new char[bytes.length * 2];
+      for (int j = 0; j < bytes.length; j++) {
+        int v = bytes[j] & 0xFF;
+        hexChars[j * 2] = hexArray[v >>> 4];
+        hexChars[j * 2 + 1] = hexArray[v & 0x0F];
+      }
+      return new String(hexChars);
     } else {
       return value.toString();
     }

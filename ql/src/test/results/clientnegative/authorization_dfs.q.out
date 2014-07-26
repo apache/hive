@@ -1,16 +1,1 @@
-PREHOOK: query: -- running a sql query to initialize the authorization - not needed in real HS2 mode
-show tables
-PREHOOK: type: SHOWTABLES
-POSTHOOK: query: -- running a sql query to initialize the authorization - not needed in real HS2 mode
-show tables
-POSTHOOK: type: SHOWTABLES
-alltypesorc
-src
-src1
-src_json
-src_sequencefile
-src_thrift
-srcbucket
-srcbucket2
-srcpart
-Failed processing command dfs Insufficient privileges to execute dfs
+Query returned non-zero code: 1, cause: Permission denied: Principal [name=hive_test_user, type=USER] does not have following privileges for operation DFS [[ADMIN PRIVILEGE] on Object [type=COMMAND_PARAMS, name=[-ls, dummy_file]]]

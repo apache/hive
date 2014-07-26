@@ -12,10 +12,10 @@ STAGE PLANS:
 
 PREHOOK: query: CREATE TEMPORARY FUNCTION testlength AS 'org.apache.hadoop.hive.ql.udf.UDFTestLength'
 PREHOOK: type: CREATEFUNCTION
-PREHOOK: Output: database:default
+PREHOOK: Output: testlength
 POSTHOOK: query: CREATE TEMPORARY FUNCTION testlength AS 'org.apache.hadoop.hive.ql.udf.UDFTestLength'
 POSTHOOK: type: CREATEFUNCTION
-POSTHOOK: Output: database:default
+POSTHOOK: Output: testlength
 PREHOOK: query: SELECT testlength(src.value) FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -526,7 +526,7 @@ POSTHOOK: Input: default@src
 6
 PREHOOK: query: DROP TEMPORARY FUNCTION testlength
 PREHOOK: type: DROPFUNCTION
-PREHOOK: Output: database:default
+PREHOOK: Output: testlength
 POSTHOOK: query: DROP TEMPORARY FUNCTION testlength
 POSTHOOK: type: DROPFUNCTION
-POSTHOOK: Output: database:default
+POSTHOOK: Output: testlength

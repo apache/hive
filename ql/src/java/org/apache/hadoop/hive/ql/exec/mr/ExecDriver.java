@@ -355,8 +355,8 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
           //upload archive file to hdfs
           Path hdfsFilePath =Utilities.generateTarPath(hdfsPath, stageId);
           short replication = (short) job.getInt("mapred.submit.replication", 10);
-          hdfs.setReplication(hdfsFilePath, replication);
           hdfs.copyFromLocalFile(archivePath, hdfsFilePath);
+          hdfs.setReplication(hdfsFilePath, replication);
           LOG.info("Upload 1 archive file  from" + archivePath + " to: " + hdfsFilePath);
 
           //add the archive file to distributed cache
@@ -366,7 +366,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
         }
       }
       work.configureJobConf(job);
-      List<Path> inputPaths = Utilities.getInputPaths(job, mWork, emptyScratchDir, ctx);
+      List<Path> inputPaths = Utilities.getInputPaths(job, mWork, emptyScratchDir, ctx, false);
       Utilities.setInputPaths(job, inputPaths);
 
       Utilities.setMapRedWork(job, work, ctx.getMRTmpPath());
@@ -786,6 +786,11 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
       }
     }
     return " -jobconffile " + hConfFilePath.toString();
+  }
+
+  @Override
+  public Collection<MapWork> getMapWork() {
+    return Collections.<MapWork>singleton(getWork().getMapWork());
   }
 
   @Override

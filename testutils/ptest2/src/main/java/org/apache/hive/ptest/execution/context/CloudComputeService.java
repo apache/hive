@@ -34,6 +34,8 @@ import org.jclouds.compute.domain.NodeMetadata;
 import org.jclouds.compute.domain.NodeMetadata.Status;
 import org.jclouds.compute.domain.Template;
 import org.jclouds.logging.log4j.config.Log4JLoggingModule;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
@@ -41,6 +43,8 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 
 public class CloudComputeService {
+  private static final Logger LOG = LoggerFactory
+      .getLogger(CloudComputeService.class);
   private final ComputeServiceContext mComputeServiceContext;
   private final ComputeService mComputeService;
   private final String mInstanceType;
@@ -49,9 +53,12 @@ public class CloudComputeService {
   private final String mImageId;
   private final String mkeyPair;
   private final String mSecurityGroup;
-  private final float mMaxBid;
+  /**
+   * JClouds requests on-demand instances when null
+   */
+  private final Float mMaxBid;
   public CloudComputeService(String apiKey, String accessKey, String instanceType, String groupName,
-      String imageId, String keyPair, String securityGroup, float maxBid) {
+      String imageId, String keyPair, String securityGroup, Float maxBid) {
     mInstanceType = instanceType;
     mGroupName = groupName;
     mImageId = imageId;
@@ -90,15 +97,20 @@ public class CloudComputeService {
         return nodeMetadata.getStatus() == Status.RUNNING && isPTestHost(nodeMetadata);
       }
       private boolean isPTestHost(NodeMetadata node) {
+        String result = "false non-ptest host";
         if(groupName.equalsIgnoreCase(node.getGroup())) {
+          result = "true due to group " + groupName;
           return true;
         }
         if(Strings.nullToEmpty(node.getName()).startsWith(groupName)) {
+          result = "true due to name " + groupName;
           return true;
         }
         if(node.getTags().contains(groupTag)) {
+          result = "true due to tag " + groupName;
           return true;
         }
+        LOG.debug("Found node: " + node + ", Result: " + result);
         return false;
       }
     };
