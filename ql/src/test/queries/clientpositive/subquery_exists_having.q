@@ -1,4 +1,4 @@
-
+set hive.optimize.correlation=false;
 
 -- no agg, corr
 explain
@@ -18,6 +18,30 @@ group by b.key
 having exists 
   (select a.key 
   from src a 
+  where a.key = b.key and a.value > 'val_9'
+  )
+;
+
+set hive.optimize.correlation=true;
+
+-- no agg, corr
+explain
+select b.key, count(*)
+from src b
+group by b.key
+having exists
+  (select a.key
+  from src a
+  where a.key = b.key and a.value > 'val_9'
+  )
+;
+
+select b.key, count(*)
+from src b
+group by b.key
+having exists
+  (select a.key
+  from src a
   where a.key = b.key and a.value > 'val_9'
   )
 ;

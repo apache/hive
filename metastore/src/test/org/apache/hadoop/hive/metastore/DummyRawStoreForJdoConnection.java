@@ -368,7 +368,7 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   }
 
   @Override
-  public boolean revokeRole(Role role, String userName, PrincipalType principalType)
+  public boolean revokeRole(Role role, String userName, PrincipalType principalType, boolean grantOption)
       throws MetaException, NoSuchObjectException {
 
     return false;
@@ -462,8 +462,8 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   }
 
   @Override
-  public boolean revokePrivileges(PrivilegeBag privileges) throws InvalidObjectException,
-      MetaException, NoSuchObjectException {
+  public boolean revokePrivileges(PrivilegeBag privileges, boolean grantOption)
+      throws InvalidObjectException, MetaException, NoSuchObjectException {
 
     return false;
   }

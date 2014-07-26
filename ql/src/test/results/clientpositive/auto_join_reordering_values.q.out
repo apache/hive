@@ -189,6 +189,7 @@ STAGE PLANS:
                 Map-reduce partition columns: date (type: string)
                 Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
                 tag: 1
+                auto parallelism: false
           TableScan
             alias: orderpayment
             Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
@@ -204,6 +205,7 @@ STAGE PLANS:
                 Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
                 tag: 0
                 value expressions: dealid (type: int), cityid (type: int), userid (type: int)
+                auto parallelism: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -293,6 +295,7 @@ STAGE PLANS:
               Statistics: Num rows: 1 Data size: 39 Basic stats: COMPLETE Column stats: NONE
               tag: 0
               value expressions: _col3 (type: int), _col4 (type: int), _col8 (type: string)
+              auto parallelism: false
           TableScan
             alias: deal
             Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
@@ -307,6 +310,7 @@ STAGE PLANS:
                 Map-reduce partition columns: dealid (type: int)
                 Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
                 tag: 1
+                auto parallelism: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -417,6 +421,7 @@ STAGE PLANS:
               Statistics: Num rows: 1 Data size: 42 Basic stats: COMPLETE Column stats: NONE
               tag: 0
               value expressions: _col4 (type: int), _col8 (type: string), _col14 (type: int)
+              auto parallelism: false
           TableScan
             alias: order_city
             Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
@@ -431,6 +436,7 @@ STAGE PLANS:
                 Map-reduce partition columns: cityid (type: int)
                 Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
                 tag: 1
+                auto parallelism: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -541,6 +547,7 @@ STAGE PLANS:
               Statistics: Num rows: 1 Data size: 46 Basic stats: COMPLETE Column stats: NONE
               tag: 0
               value expressions: _col8 (type: string), _col14 (type: int)
+              auto parallelism: false
           TableScan
             alias: user
             Statistics: Num rows: 100 Data size: 288 Basic stats: COMPLETE Column stats: NONE
@@ -555,6 +562,7 @@ STAGE PLANS:
                 Map-reduce partition columns: userid (type: int)
                 Statistics: Num rows: 50 Data size: 144 Basic stats: COMPLETE Column stats: NONE
                 tag: 1
+                auto parallelism: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:

@@ -37,7 +37,6 @@ import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.HadoopShims.MiniDFSShim;
 import org.apache.hadoop.hive.shims.ShimLoader;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -97,7 +96,6 @@ public abstract class FolderPermissionBase {
 
     SessionState.start(new CliSessionState(conf));
     driver = new Driver(conf);
-
     setupDataTable();
   }
 
@@ -117,8 +115,52 @@ public abstract class FolderPermissionBase {
   }
 
   @Test
-  public void testCreateTable() throws Exception {
+  public void testCreateDb() throws Exception {
+    //see if db inherits permission from warehouse directory.
     String testDb = "mydb";
+    String tableName = "createtable";
+
+    setPermission(warehouseDir.toString());
+    verifyPermission(warehouseDir.toString());
+
+    CommandProcessorResponse ret = driver.run("CREATE DATABASE " + testDb);
+    Assert.assertEquals(0,ret.getResponseCode());
+
+    assertExistence(warehouseDir + "/" + testDb + ".db");
+    verifyPermission(warehouseDir + "/" + testDb + ".db");
+
+    ret = driver.run("USE " + testDb);
+    Assert.assertEquals(0,ret.getResponseCode());
+
+    ret = driver.run("CREATE TABLE " + tableName + " (key string, value string)");
+    Assert.assertEquals(0,ret.getResponseCode());
+
+    verifyPermission(warehouseDir + "/" + testDb + ".db/" + tableName);
+
+    ret = driver.run("insert into table " + tableName + " select key,value from default.mysrc");
+    Assert.assertEquals(0,ret.getResponseCode());
+
+    assertExistence(warehouseDir + "/" + testDb + ".db/" + tableName);
+    verifyPermission(warehouseDir + "/" + testDb + ".db/" + tableName);
+
+    Assert.assertTrue(listStatus(warehouseDir + "/" + testDb + ".db/" + tableName).size() > 0);
+    for (String child : listStatus(warehouseDir + "/" + testDb + ".db/" + tableName)) {
+      verifyPermission(child);
+    }
+
+    ret = driver.run("USE default");
+    Assert.assertEquals(0,ret.getResponseCode());
+
+    //cleanup after the test.
+    fs.delete(warehouseDir, true);
+    fs.mkdirs(warehouseDir);
+    Assert.assertEquals(listStatus(warehouseDir.toString()).size(), 0);
+    setupDataTable();
+  }
+
+  @Test
+  public void testCreateTable() throws Exception {
+    String testDb = "mydb2";
     String tableName = "createtable";
     CommandProcessorResponse ret = driver.run("CREATE DATABASE " + testDb);
     Assert.assertEquals(0,ret.getResponseCode());

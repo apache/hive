@@ -997,7 +997,7 @@ public class Function implements org.apache.thrift.TBase<Function, Function._Fie
                 struct.resourceUris = new ArrayList<ResourceUri>(_list370.size);
                 for (int _i371 = 0; _i371 < _list370.size; ++_i371)
                 {
-                  ResourceUri _elem372; // required
+                  ResourceUri _elem372; // optional
                   _elem372 = new ResourceUri();
                   _elem372.read(iprot);
                   struct.resourceUris.add(_elem372);
@@ -1180,7 +1180,7 @@ public class Function implements org.apache.thrift.TBase<Function, Function._Fie
           struct.resourceUris = new ArrayList<ResourceUri>(_list375.size);
           for (int _i376 = 0; _i376 < _list375.size; ++_i376)
           {
-            ResourceUri _elem377; // required
+            ResourceUri _elem377; // optional
             _elem377 = new ResourceUri();
             _elem377.read(iprot);
             struct.resourceUris.add(_elem377);

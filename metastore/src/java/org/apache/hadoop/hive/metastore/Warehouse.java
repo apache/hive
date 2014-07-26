@@ -89,8 +89,7 @@ public class Warehouse {
     try {
       Class<? extends MetaStoreFS> handlerClass = (Class<? extends MetaStoreFS>) Class
           .forName(handlerClassStr, true, JavaUtils.getClassLoader());
-      MetaStoreFS handler = (MetaStoreFS) ReflectionUtils.newInstance(
-          handlerClass, conf);
+      MetaStoreFS handler = ReflectionUtils.newInstance(handlerClass, conf);
       return handler;
     } catch (ClassNotFoundException e) {
       throw new MetaException("Error in loading MetaStoreFS handler."
@@ -102,13 +101,17 @@ public class Warehouse {
   /**
    * Helper functions to convert IOException to MetaException
    */
-  public FileSystem getFs(Path f) throws MetaException {
+  public static FileSystem getFs(Path f, Configuration conf) throws MetaException {
     try {
       return f.getFileSystem(conf);
     } catch (IOException e) {
       MetaStoreUtils.logAndThrowMetaException(e);
     }
     return null;
+  }
+
+  public FileSystem getFs(Path f) throws MetaException {
+    return getFs(f, conf);
   }
 
   public static void closeFs(FileSystem fs) throws MetaException {
@@ -135,10 +138,14 @@ public class Warehouse {
    *          Path to be canonicalized
    * @return Path with canonical scheme and authority
    */
-  public Path getDnsPath(Path path) throws MetaException {
-    FileSystem fs = getFs(path);
+  public static Path getDnsPath(Path path, Configuration conf) throws MetaException {
+    FileSystem fs = getFs(path, conf);
     return (new Path(fs.getUri().getScheme(), fs.getUri().getAuthority(), path
         .toUri().getPath()));
+  }
+
+  public Path getDnsPath(Path path) throws MetaException {
+    return getDnsPath(path, conf);
   }
 
   /**
@@ -173,7 +180,6 @@ public class Warehouse {
     }
     return new Path(getWhRoot(), dbName.toLowerCase() + DATABASE_WAREHOUSE_SUFFIX);
   }
-
 
   public Path getTablePath(Database db, String tableName)
       throws MetaException {
@@ -556,4 +562,12 @@ public class Warehouse {
     return values;
   }
 
+  public static Map<String, String> makeSpecFromValues(List<FieldSchema> partCols,
+      List<String> values) {
+    Map<String, String> spec = new LinkedHashMap<String, String>();
+    for (int i = 0; i < values.size(); i++) {
+      spec.put(partCols.get(i).getName(), values.get(i));
+    }
+    return spec;
+  }
 }

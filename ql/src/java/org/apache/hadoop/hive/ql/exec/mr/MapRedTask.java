@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
+import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -462,8 +463,11 @@ public class MapRedTask extends ExecDriver implements Serializable {
   }
 
   @Override
-  public Operator<? extends OperatorDesc> getReducer() {
-    return getWork().getReduceWork() == null ? null : getWork().getReduceWork().getReducer();
+  public Operator<? extends OperatorDesc> getReducer(MapWork mapWork) {
+    if (getWork().getMapWork() == mapWork) {
+      return getWork().getReduceWork() == null ? null : getWork().getReduceWork().getReducer();
+    }
+    return null;
   }
 
   @Override

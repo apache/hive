@@ -17,10 +17,33 @@
  */
 package org.apache.hadoop.hive.ql.io;
 
+import org.apache.hadoop.mapred.TextInputFormat;
+
+import com.google.common.annotations.VisibleForTesting;
+
 public final class IOConstants {
   public static final String COLUMNS = "columns";
   public static final String COLUMNS_TYPES = "columns.types";
   public static final String MAPRED_TASK_ID = "mapred.task.id";
+
+  public static final String TEXTFILE = "TEXTFILE";
+  public static final String SEQUENCEFILE = "SEQUENCEFILE";
+  public static final String RCFILE = "RCFILE";
+  public static final String ORC = "ORC";
+  public static final String ORCFILE = "ORCFILE";
+  public static final String PARQUET = "PARQUET";
+  public static final String PARQUETFILE = "PARQUETFILE";
+  public static final String AVRO = "AVRO";
+  public static final String AVROFILE = "AVROFILE";
+
+  @VisibleForTesting
+  public static final String CUSTOM_TEXT_SERDE = "CustomTextSerde";
+
+  public static final String TEXTFILE_INPUT = TextInputFormat.class
+      .getName();
+  @SuppressWarnings("deprecation")
+  public static final String TEXTFILE_OUTPUT = IgnoreKeyTextOutputFormat.class
+      .getName();
 
   private IOConstants() {
     // prevent instantiation

@@ -69,10 +69,10 @@ public class TestHiveAuthorizationTaskFactory {
     db = Mockito.mock(Hive.class);
     table = new Table(DB, TABLE);
     partition = new Partition(table);
+    SessionState.start(conf);
     context = new Context(conf);
     parseDriver = new ParseDriver();
     analyzer = new DDLSemanticAnalyzer(conf, db);
-    SessionState.start(conf);
     Mockito.when(db.getTable(DB, TABLE, false)).thenReturn(table);
     Mockito.when(db.getPartition(table, new HashMap<String, String>(), false))
       .thenReturn(partition);

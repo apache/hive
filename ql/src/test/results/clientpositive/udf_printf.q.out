@@ -38,7 +38,7 @@ STAGE PLANS:
           Row Limit Per Split: 1
           Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
           Select Operator
-            expressions: printf('Hello World %d %s', 100, 'days') (type: string)
+            expressions: 'Hello World 100 days' (type: string)
             outputColumnNames: _col0
             Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
             ListSink

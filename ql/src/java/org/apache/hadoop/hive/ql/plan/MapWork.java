@@ -114,6 +114,8 @@ public class MapWork extends BaseWork {
 
   private boolean useBucketizedHiveInputFormat;
 
+  private boolean useOneNullRowInputFormat;
+
   private Map<String, Map<Integer, String>> scratchColumnVectorTypes = null;
   private Map<String, Map<String, Integer>> scratchColumnMap = null;
   private boolean vectorMode = false;
@@ -390,12 +392,21 @@ public class MapWork extends BaseWork {
   public void setInputformat(String inputformat) {
     this.inputformat = inputformat;
   }
+
   public boolean isUseBucketizedHiveInputFormat() {
     return useBucketizedHiveInputFormat;
   }
 
   public void setUseBucketizedHiveInputFormat(boolean useBucketizedHiveInputFormat) {
     this.useBucketizedHiveInputFormat = useBucketizedHiveInputFormat;
+  }
+
+  public void setUseOneNullRowInputFormat(boolean useOneNullRowInputFormat) {
+    this.useOneNullRowInputFormat = useOneNullRowInputFormat;
+  }
+
+  public boolean isUseOneNullRowInputFormat() {
+    return useOneNullRowInputFormat;
   }
 
   public QBJoinTree getJoinTree() {
@@ -534,4 +545,14 @@ public class MapWork extends BaseWork {
     this.vectorMode = vectorMode;
   }
 
+  public void logPathToAliases() {
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("LOGGING PATH TO ALIASES");
+      for (Map.Entry<String, ArrayList<String>> entry: pathToAliases.entrySet()) {
+        for (String a: entry.getValue()) {
+          LOG.debug("Path: " + entry.getKey() + ", Alias: " + a);
+        }
+      }
+    }
+  }
 }

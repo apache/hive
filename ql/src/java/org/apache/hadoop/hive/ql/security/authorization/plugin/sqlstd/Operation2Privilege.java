@@ -46,7 +46,7 @@ public class Operation2Privilege {
 
 
     private PrivRequirement(SQLPrivTypeGrant[] privs, IOType ioType) {
-      this(privs, ioType, (HivePrivObjectActionType) null);
+      this(privs, ioType, null);
     }
 
     private PrivRequirement(SQLPrivTypeGrant[] privs, IOType ioType,
@@ -291,6 +291,8 @@ public class Operation2Privilege {
 (null, null));
     op2Priv.put(HiveOperationType.SHOW_TRANSACTIONS, PrivRequirement.newIOPrivRequirement
 (null, null));
+    op2Priv.put(HiveOperationType.SHOWCONF, PrivRequirement.newIOPrivRequirement
+(null, null));
 
     op2Priv.put(HiveOperationType.LOCKTABLE, PrivRequirement.newIOPrivRequirement
 (null, null));
@@ -307,6 +309,19 @@ public class Operation2Privilege {
     op2Priv.put(HiveOperationType.ALTERDATABASE_OWNER, PrivRequirement.newIOPrivRequirement
 (null, ADMIN_PRIV_AR));
     op2Priv.put(HiveOperationType.DESCDATABASE, PrivRequirement.newIOPrivRequirement
+(null, null));
+    op2Priv.put(HiveOperationType.DFS, PrivRequirement.newIOPrivRequirement
+(ADMIN_PRIV_AR, ADMIN_PRIV_AR));
+    op2Priv.put(HiveOperationType.RESET, PrivRequirement.newIOPrivRequirement
+(null, null));
+    op2Priv.put(HiveOperationType.COMPILE, PrivRequirement.newIOPrivRequirement
+(ADMIN_PRIV_AR, ADMIN_PRIV_AR));
+    op2Priv.put(HiveOperationType.ADD, PrivRequirement.newIOPrivRequirement
+(ADMIN_PRIV_AR, ADMIN_PRIV_AR));
+    op2Priv.put(HiveOperationType.DELETE, PrivRequirement.newIOPrivRequirement
+(ADMIN_PRIV_AR, ADMIN_PRIV_AR));
+    // set command is currently not authorized through the API
+    op2Priv.put(HiveOperationType.SET, PrivRequirement.newIOPrivRequirement
 (null, null));
 
     // The following actions are authorized through SQLStdHiveAccessController,
@@ -330,11 +345,10 @@ public class Operation2Privilege {
     op2Priv.put(HiveOperationType.SHOW_ROLES, PrivRequirement.newIOPrivRequirement
 (null, null));
     op2Priv.put(HiveOperationType.SHOW_ROLE_GRANT, PrivRequirement.newIOPrivRequirement
-(null,
-        null));
+(null, null));
     op2Priv.put(HiveOperationType.SHOW_ROLE_PRINCIPALS, PrivRequirement.newIOPrivRequirement
-(null,
-        null));
+(null, null));
+
 
 
   }

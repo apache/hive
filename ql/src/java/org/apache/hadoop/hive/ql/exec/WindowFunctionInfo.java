@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFResolver;
+import org.apache.hive.common.util.AnnotationUtils;
 
 @SuppressWarnings("deprecation")
 public class WindowFunctionInfo implements CommonFunctionInfo
@@ -33,7 +34,8 @@ public class WindowFunctionInfo implements CommonFunctionInfo
 		assert fInfo.isGenericUDAF();
 		this.fInfo = fInfo;
 		Class<? extends GenericUDAFResolver> wfnCls = fInfo.getGenericUDAFResolver().getClass();
-		WindowFunctionDescription def = wfnCls.getAnnotation(WindowFunctionDescription.class);
+		WindowFunctionDescription def =
+          AnnotationUtils.getAnnotation(wfnCls, WindowFunctionDescription.class);
 		if ( def != null)
 		{
 			supportsWindow = def.supportsWindow();

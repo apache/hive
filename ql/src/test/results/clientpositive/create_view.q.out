@@ -181,17 +181,17 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-            Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 56 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key = 18) (type: boolean)
-              Statistics: Num rows: 14 Data size: 2805 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 28 Data size: 2906 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: key (type: string), value (type: string)
+                expressions: '18' (type: string), value (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 14 Data size: 2805 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 28 Data size: 2906 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 14 Data size: 2805 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 28 Data size: 2906 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -693,12 +693,12 @@ PREHOOK: query: -- test usage of a function within a view
 CREATE TEMPORARY FUNCTION test_translate AS
 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFTestTranslate'
 PREHOOK: type: CREATEFUNCTION
-PREHOOK: Output: database:default
+PREHOOK: Output: test_translate
 POSTHOOK: query: -- test usage of a function within a view
 CREATE TEMPORARY FUNCTION test_translate AS
 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFTestTranslate'
 POSTHOOK: type: CREATEFUNCTION
-POSTHOOK: Output: database:default
+POSTHOOK: Output: test_translate
 PREHOOK: query: CREATE VIEW view8(c) AS
 SELECT test_translate('abc', 'a', 'b')
 FROM table1
@@ -769,12 +769,12 @@ PREHOOK: query: -- test usage of a UDAF within a view
 CREATE TEMPORARY FUNCTION test_max AS
 'org.apache.hadoop.hive.ql.udf.UDAFTestMax'
 PREHOOK: type: CREATEFUNCTION
-PREHOOK: Output: database:default
+PREHOOK: Output: test_max
 POSTHOOK: query: -- test usage of a UDAF within a view
 CREATE TEMPORARY FUNCTION test_max AS
 'org.apache.hadoop.hive.ql.udf.UDAFTestMax'
 POSTHOOK: type: CREATEFUNCTION
-POSTHOOK: Output: database:default
+POSTHOOK: Output: test_max
 PREHOOK: query: -- disable map-side aggregation
 CREATE VIEW view9(m) AS
 SELECT test_max(length(value))
@@ -987,12 +987,12 @@ PREHOOK: query: -- test usage of a UDTF within a view
 CREATE TEMPORARY FUNCTION test_explode AS
 'org.apache.hadoop.hive.ql.udf.generic.GenericUDTFExplode'
 PREHOOK: type: CREATEFUNCTION
-PREHOOK: Output: database:default
+PREHOOK: Output: test_explode
 POSTHOOK: query: -- test usage of a UDTF within a view
 CREATE TEMPORARY FUNCTION test_explode AS
 'org.apache.hadoop.hive.ql.udf.generic.GenericUDTFExplode'
 POSTHOOK: type: CREATEFUNCTION
-POSTHOOK: Output: database:default
+POSTHOOK: Output: test_explode
 PREHOOK: query: CREATE VIEW view11 AS
 SELECT test_explode(array(1,2,3)) AS (boom)
 FROM table1
@@ -1714,19 +1714,19 @@ POSTHOOK: Input: default@view16
 POSTHOOK: Output: default@view16
 PREHOOK: query: DROP TEMPORARY FUNCTION test_translate
 PREHOOK: type: DROPFUNCTION
-PREHOOK: Output: database:default
+PREHOOK: Output: test_translate
 POSTHOOK: query: DROP TEMPORARY FUNCTION test_translate
 POSTHOOK: type: DROPFUNCTION
-POSTHOOK: Output: database:default
+POSTHOOK: Output: test_translate
 PREHOOK: query: DROP TEMPORARY FUNCTION test_max
 PREHOOK: type: DROPFUNCTION
-PREHOOK: Output: database:default
+PREHOOK: Output: test_max
 POSTHOOK: query: DROP TEMPORARY FUNCTION test_max
 POSTHOOK: type: DROPFUNCTION
-POSTHOOK: Output: database:default
+POSTHOOK: Output: test_max
 PREHOOK: query: DROP TEMPORARY FUNCTION test_explode
 PREHOOK: type: DROPFUNCTION
-PREHOOK: Output: database:default
+PREHOOK: Output: test_explode
 POSTHOOK: query: DROP TEMPORARY FUNCTION test_explode
 POSTHOOK: type: DROPFUNCTION
-POSTHOOK: Output: database:default
+POSTHOOK: Output: test_explode

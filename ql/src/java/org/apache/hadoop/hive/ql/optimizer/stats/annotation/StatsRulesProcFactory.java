@@ -288,6 +288,7 @@ public class StatsRulesProcFactory {
         AnnotateStatsProcCtx aspCtx, List<String> neededCols) throws CloneNotSupportedException {
       long newNumRows = 0;
       Statistics andStats = null;
+
       if (pred instanceof ExprNodeGenericFuncDesc) {
         ExprNodeGenericFuncDesc genFunc = (ExprNodeGenericFuncDesc) pred;
         GenericUDF udf = genFunc.getGenericUDF();
@@ -334,6 +335,15 @@ public class StatsRulesProcFactory {
 
         // if not boolean column return half the number of rows
         return stats.getNumRows() / 2;
+      } else if (pred instanceof ExprNodeConstantDesc) {
+
+        // special case for handling false constants
+        ExprNodeConstantDesc encd = (ExprNodeConstantDesc) pred;
+        if (encd.getValue().equals(false)) {
+          return 0;
+        } else {
+          return stats.getNumRows();
+        }
       }
 
       return newNumRows;
@@ -429,13 +439,27 @@ public class StatsRulesProcFactory {
           String colName = null;
           String tabAlias = null;
           boolean isConst = false;
+          Object prevConst = null;
 
           for (ExprNodeDesc leaf : genFunc.getChildren()) {
             if (leaf instanceof ExprNodeConstantDesc) {
 
+              // constant = constant expressions. We shouldn't be getting this
+              // after constant folding
+              if (isConst) {
+
+                // special case: if both constants are not equal then return 0
+                if (prevConst != null &&
+                    !prevConst.equals(((ExprNodeConstantDesc)leaf).getValue())) {
+                  return 0;
+                }
+                return numRows;
+              }
+
               // if the first argument is const then just set the flag and continue
               if (colName == null) {
                 isConst = true;
+                prevConst = ((ExprNodeConstantDesc) leaf).getValue();
                 continue;
               }
 

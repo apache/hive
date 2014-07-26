@@ -459,7 +459,7 @@ public class HeartbeatTxnRangeResponse implements org.apache.thrift.TBase<Heartb
                 struct.aborted = new HashSet<Long>(2*_set418.size);
                 for (int _i419 = 0; _i419 < _set418.size; ++_i419)
                 {
-                  long _elem420; // required
+                  long _elem420; // optional
                   _elem420 = iprot.readI64();
                   struct.aborted.add(_elem420);
                 }
@@ -477,7 +477,7 @@ public class HeartbeatTxnRangeResponse implements org.apache.thrift.TBase<Heartb
                 struct.nosuch = new HashSet<Long>(2*_set421.size);
                 for (int _i422 = 0; _i422 < _set421.size; ++_i422)
                 {
-                  long _elem423; // required
+                  long _elem423; // optional
                   _elem423 = iprot.readI64();
                   struct.nosuch.add(_elem423);
                 }
@@ -566,7 +566,7 @@ public class HeartbeatTxnRangeResponse implements org.apache.thrift.TBase<Heartb
         struct.aborted = new HashSet<Long>(2*_set428.size);
         for (int _i429 = 0; _i429 < _set428.size; ++_i429)
         {
-          long _elem430; // required
+          long _elem430; // optional
           _elem430 = iprot.readI64();
           struct.aborted.add(_elem430);
         }
@@ -577,7 +577,7 @@ public class HeartbeatTxnRangeResponse implements org.apache.thrift.TBase<Heartb
         struct.nosuch = new HashSet<Long>(2*_set431.size);
         for (int _i432 = 0; _i432 < _set431.size; ++_i432)
         {
-          long _elem433; // required
+          long _elem433; // optional
           _elem433 = iprot.readI64();
           struct.nosuch.add(_elem433);
         }

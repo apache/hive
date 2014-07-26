@@ -163,6 +163,7 @@ TOK_SHOW_CREATETABLE;
 TOK_SHOW_TABLESTATUS;
 TOK_SHOW_TBLPROPERTIES;
 TOK_SHOWLOCKS;
+TOK_SHOWCONF;
 TOK_LOCKTABLE;
 TOK_UNLOCKTABLE;
 TOK_LOCKDB;
@@ -182,11 +183,6 @@ TOK_TABLEROWFORMATCOLLITEMS;
 TOK_TABLEROWFORMATMAPKEYS;
 TOK_TABLEROWFORMATLINES;
 TOK_TABLEROWFORMATNULL;
-TOK_TBLORCFILE;
-TOK_TBLPARQUETFILE;
-TOK_TBLSEQUENCEFILE;
-TOK_TBLTEXTFILE;
-TOK_TBLRCFILE;
 TOK_TABLEFILEFORMAT;
 TOK_FILEFORMAT_GENERIC;
 TOK_OFFLINE;
@@ -267,6 +263,8 @@ TOK_ROLE;
 TOK_RESOURCE_ALL;
 TOK_GRANT_WITH_OPTION;
 TOK_GRANT_WITH_ADMIN_OPTION;
+TOK_ADMIN_OPTION_FOR;
+TOK_GRANT_OPTION_FOR;
 TOK_PRIV_ALL;
 TOK_PRIV_ALTER_METADATA;
 TOK_PRIV_ALTER_DATA;
@@ -804,7 +802,7 @@ databaseComment
 createTableStatement
 @init { pushMsg("create table statement", state); }
 @after { popMsg(state); }
-    : KW_CREATE (ext=KW_EXTERNAL)? KW_TABLE ifNotExists? name=tableName
+    : KW_CREATE (temp=KW_TEMPORARY)? (ext=KW_EXTERNAL)? KW_TABLE ifNotExists? name=tableName
       (  like=KW_LIKE likeName=tableName
          tableLocation?
          tablePropertiesPrefixed?
@@ -819,7 +817,7 @@ createTableStatement
          tablePropertiesPrefixed?
          (KW_AS selectStatementWithCTE)?
       )
-    -> ^(TOK_CREATETABLE $name $ext? ifNotExists?
+    -> ^(TOK_CREATETABLE $name $temp? $ext? ifNotExists?
          ^(TOK_LIKETABLE $likeName?)
          columnNameTypeList?
          tableComment?
@@ -1265,12 +1263,7 @@ alterStatementSuffixCompact
 fileFormat
 @init { pushMsg("file format specification", state); }
 @after { popMsg(state); }
-    : KW_SEQUENCEFILE  -> ^(TOK_TBLSEQUENCEFILE)
-    | KW_TEXTFILE  -> ^(TOK_TBLTEXTFILE)
-    | KW_RCFILE  -> ^(TOK_TBLRCFILE)
-    | KW_ORCFILE -> ^(TOK_TBLORCFILE)
-    | KW_PARQUETFILE -> ^(TOK_TBLPARQUETFILE)
-    | KW_INPUTFORMAT inFmt=StringLiteral KW_OUTPUTFORMAT outFmt=StringLiteral KW_SERDE serdeCls=StringLiteral (KW_INPUTDRIVER inDriver=StringLiteral KW_OUTPUTDRIVER outDriver=StringLiteral)?
+    : KW_INPUTFORMAT inFmt=StringLiteral KW_OUTPUTFORMAT outFmt=StringLiteral KW_SERDE serdeCls=StringLiteral (KW_INPUTDRIVER inDriver=StringLiteral KW_OUTPUTDRIVER outDriver=StringLiteral)?
       -> ^(TOK_TABLEFILEFORMAT $inFmt $outFmt $serdeCls $inDriver? $outDriver?)
     | genericSpec=identifier -> ^(TOK_FILEFORMAT_GENERIC $genericSpec)
     ;
@@ -1336,6 +1329,7 @@ showStatement
     -> ^(TOK_SHOWINDEXES showStmtIdentifier $showOptions? $db_name?)
     | KW_SHOW KW_COMPACTIONS -> ^(TOK_SHOW_COMPACTIONS)
     | KW_SHOW KW_TRANSACTIONS -> ^(TOK_SHOW_TRANSACTIONS)
+    | KW_SHOW KW_CONF StringLiteral -> ^(TOK_SHOWCONF StringLiteral)
     ;
 
 lockStatement
@@ -1395,8 +1389,8 @@ grantPrivileges
 revokePrivileges
 @init {pushMsg("revoke privileges", state);}
 @afer {popMsg(state);}
-    : KW_REVOKE privilegeList privilegeObject? KW_FROM principalSpecification
-    -> ^(TOK_REVOKE privilegeList principalSpecification privilegeObject?)
+    : KW_REVOKE grantOptionFor? privilegeList privilegeObject? KW_FROM principalSpecification
+    -> ^(TOK_REVOKE privilegeList principalSpecification privilegeObject? grantOptionFor?)
     ;
 
 grantRole
@@ -1409,8 +1403,8 @@ grantRole
 revokeRole
 @init {pushMsg("revoke role", state);}
 @after {popMsg(state);}
-    : KW_REVOKE KW_ROLE? identifier (COMMA identifier)* KW_FROM principalSpecification withAdminOption?
-    -> ^(TOK_REVOKE_ROLE principalSpecification withAdminOption? identifier+)
+    : KW_REVOKE adminOptionFor? KW_ROLE? identifier (COMMA identifier)* KW_FROM principalSpecification
+    -> ^(TOK_REVOKE_ROLE principalSpecification adminOptionFor? identifier+)
     ;
 
 showRoleGrants
@@ -1532,6 +1526,20 @@ withGrantOption
     : KW_WITH KW_GRANT KW_OPTION
     -> ^(TOK_GRANT_WITH_OPTION)
     ;
+
+grantOptionFor
+@init {pushMsg("grant option for", state);}
+@after {popMsg(state);}
+    : KW_GRANT KW_OPTION KW_FOR
+    -> ^(TOK_GRANT_OPTION_FOR)
+;
+
+adminOptionFor
+@init {pushMsg("admin option for", state);}
+@after {popMsg(state);}
+    : KW_ADMIN KW_OPTION KW_FOR
+    -> ^(TOK_ADMIN_OPTION_FOR)
+;
 
 withAdminOption
 @init {pushMsg("with admin option", state);}
@@ -1808,12 +1816,7 @@ tableFileFormat
 @init { pushMsg("table file format specification", state); }
 @after { popMsg(state); }
     :
-      KW_STORED KW_AS KW_SEQUENCEFILE  -> TOK_TBLSEQUENCEFILE
-      | KW_STORED KW_AS KW_TEXTFILE  -> TOK_TBLTEXTFILE
-      | KW_STORED KW_AS KW_RCFILE  -> TOK_TBLRCFILE
-      | KW_STORED KW_AS KW_ORCFILE -> TOK_TBLORCFILE
-      | KW_STORED KW_AS KW_PARQUETFILE -> TOK_TBLPARQUETFILE
-      | KW_STORED KW_AS KW_INPUTFORMAT inFmt=StringLiteral KW_OUTPUTFORMAT outFmt=StringLiteral (KW_INPUTDRIVER inDriver=StringLiteral KW_OUTPUTDRIVER outDriver=StringLiteral)?
+      KW_STORED KW_AS KW_INPUTFORMAT inFmt=StringLiteral KW_OUTPUTFORMAT outFmt=StringLiteral (KW_INPUTDRIVER inDriver=StringLiteral KW_OUTPUTDRIVER outDriver=StringLiteral)?
       -> ^(TOK_TABLEFILEFORMAT $inFmt $outFmt $inDriver? $outDriver?)
       | KW_STORED KW_BY storageHandler=StringLiteral
          (KW_WITH KW_SERDEPROPERTIES serdeprops=tableProperties)?

@@ -42,7 +42,7 @@ STAGE PLANS:
           Row Limit Per Split: 1
           Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
           Select Operator
-            expressions: format_number(12332.123456, 4) (type: string), format_number(12332.1, 4) (type: string), format_number(12332.2, 0) (type: string)
+            expressions: '12,332.1235' (type: string), '12,332.1000' (type: string), '12,332' (type: string)
             outputColumnNames: _col0, _col1, _col2
             Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
             ListSink
@@ -188,3 +188,24 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 12,332.1230	12,332.0996	-12,332
+PREHOOK: query: -- decimals
+SELECT format_number(12332.123456BD, 4),
+    format_number(12332.123456BD, 2),
+    format_number(12332.1BD, 4),
+    format_number(-12332.2BD, 0),
+    format_number(CAST(12332.567 AS DECIMAL(8, 1)), 4)
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: -- decimals
+SELECT format_number(12332.123456BD, 4),
+    format_number(12332.123456BD, 2),
+    format_number(12332.1BD, 4),
+    format_number(-12332.2BD, 0),
+    format_number(CAST(12332.567 AS DECIMAL(8, 1)), 4)
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+12,332.1235	12,332.12	12,332.1000	-12,332	12,332.6000

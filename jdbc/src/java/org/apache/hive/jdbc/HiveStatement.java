@@ -111,26 +111,20 @@ public class HiveStatement implements java.sql.Statement {
 
   @Override
   public void cancel() throws SQLException {
-    if (isClosed) {
-      throw new SQLException("Can't cancel after statement has been closed");
-    }
+    checkConnection("cancel");
 
-    if (stmtHandle == null) {
-      return;
-    }
-
-    TCancelOperationReq cancelReq = new TCancelOperationReq();
-    cancelReq.setOperationHandle(stmtHandle);
+    transportLock.lock();
     try {
-      transportLock.lock();
-      TCancelOperationResp cancelResp = client.CancelOperation(cancelReq);
-      Utils.verifySuccessWithInfo(cancelResp.getStatus());
+      if (stmtHandle != null) {
+        TCancelOperationReq cancelReq = new TCancelOperationReq(stmtHandle);
+        TCancelOperationResp cancelResp = client.CancelOperation(cancelReq);
+        Utils.verifySuccessWithInfo(cancelResp.getStatus());
+      }
     } catch (SQLException e) {
       throw e;
     } catch (Exception e) {
       throw new SQLException(e.toString(), "08S01", e);
-    }
-    finally {
+    } finally {
       transportLock.unlock();
     }
   }
@@ -158,11 +152,10 @@ public class HiveStatement implements java.sql.Statement {
   }
 
   void closeClientOperation() throws SQLException {
+    transportLock.lock();
     try {
       if (stmtHandle != null) {
-        TCloseOperationReq closeReq = new TCloseOperationReq();
-        closeReq.setOperationHandle(stmtHandle);
-        transportLock.lock();
+        TCloseOperationReq closeReq = new TCloseOperationReq(stmtHandle);
         TCloseOperationResp closeResp = client.CloseOperation(closeReq);
         Utils.verifySuccessWithInfo(closeResp.getStatus());
       }
@@ -170,8 +163,7 @@ public class HiveStatement implements java.sql.Statement {
       throw e;
     } catch (Exception e) {
       throw new SQLException(e.toString(), "08S01", e);
-    }
-    finally {
+    } finally {
       transportLock.unlock();
     }
     stmtHandle = null;
@@ -187,16 +179,14 @@ public class HiveStatement implements java.sql.Statement {
     if (isClosed) {
       return;
     }
-    if (stmtHandle != null) {
-      closeClientOperation();
-    }
+    closeClientOperation();
     client = null;
     resultSet = null;
     isClosed = true;
   }
 
+  // JDK 1.7
   public void closeOnCompletion() throws SQLException {
-    // JDK 1.7
     throw new SQLException("Method not supported");
   }
 
@@ -208,25 +198,22 @@ public class HiveStatement implements java.sql.Statement {
 
   @Override
   public boolean execute(String sql) throws SQLException {
-    if (isClosed) {
-      throw new SQLException("Can't execute after statement has been closed");
-    }
+    checkConnection("execute");
 
+    closeClientOperation();
+
+    TExecuteStatementReq execReq = new TExecuteStatementReq(sessHandle, sql);
+    /**
+     * Run asynchronously whenever possible
+     * Currently only a SQLOperation can be run asynchronously,
+     * in a background operation thread
+     * Compilation is synchronous and execution is asynchronous
+     */
+    execReq.setRunAsync(true);
+    execReq.setConfOverlay(sessConf);
+
+    transportLock.lock();
     try {
-      if (stmtHandle != null) {
-        closeClientOperation();
-      }
-
-      TExecuteStatementReq execReq = new TExecuteStatementReq(sessHandle, sql);
-      /**
-       * Run asynchronously whenever possible
-       * Currently only a SQLOperation can be run asynchronously,
-       * in a background operation thread
-       * Compilation is synchronous and execution is asynchronous
-       */
-      execReq.setRunAsync(true);
-      execReq.setConfOverlay(sessConf);
-      transportLock.lock();
       TExecuteStatementResp execResp = client.ExecuteStatement(execReq);
       Utils.verifySuccessWithInfo(execResp.getStatus());
       stmtHandle = execResp.getOperationHandle();
@@ -234,8 +221,7 @@ public class HiveStatement implements java.sql.Statement {
       throw eS;
     } catch (Exception ex) {
       throw new SQLException(ex.toString(), "08S01", ex);
-    }
-    finally {
+    } finally {
       transportLock.unlock();
     }
 
@@ -253,11 +239,7 @@ public class HiveStatement implements java.sql.Statement {
         transportLock.lock();
         try {
           statusResp = client.GetOperationStatus(statusReq);
-        }
-        catch (Exception e) {
-          throw e;
-        }
-        finally {
+        } finally {
           transportLock.unlock();
         }
         Utils.verifySuccessWithInfo(statusResp.getStatus());
@@ -298,6 +280,12 @@ public class HiveStatement implements java.sql.Statement {
         .setScrollable(isScrollableResultset)
         .build();
     return true;
+  }
+
+  private void checkConnection(String action) throws SQLException {
+    if (isClosed) {
+      throw new SQLException("Can't " + action + " after statement has been closed");
+    }
   }
 
   /*
@@ -411,6 +399,7 @@ public class HiveStatement implements java.sql.Statement {
 
   @Override
   public Connection getConnection() throws SQLException {
+    checkConnection("getConnection");
     return this.connection;
   }
 
@@ -422,7 +411,8 @@ public class HiveStatement implements java.sql.Statement {
 
   @Override
   public int getFetchDirection() throws SQLException {
-    throw new SQLException("Method not supported");
+    checkConnection("getFetchDirection");
+    return ResultSet.FETCH_FORWARD;
   }
 
   /*
@@ -433,6 +423,7 @@ public class HiveStatement implements java.sql.Statement {
 
   @Override
   public int getFetchSize() throws SQLException {
+    checkConnection("getFetchSize");
     return fetchSize;
   }
 
@@ -466,6 +457,7 @@ public class HiveStatement implements java.sql.Statement {
 
   @Override
   public int getMaxRows() throws SQLException {
+    checkConnection("getMaxRows");
     return maxRows;
   }
 
@@ -499,7 +491,8 @@ public class HiveStatement implements java.sql.Statement {
 
   @Override
   public int getQueryTimeout() throws SQLException {
-    throw new SQLException("Method not supported");
+    checkConnection("getQueryTimeout");
+    return 0;
   }
 
   /*
@@ -510,6 +503,7 @@ public class HiveStatement implements java.sql.Statement {
 
   @Override
   public ResultSet getResultSet() throws SQLException {
+    checkConnection("getResultSet");
     return resultSet;
   }
 
@@ -543,7 +537,8 @@ public class HiveStatement implements java.sql.Statement {
 
   @Override
   public int getResultSetType() throws SQLException {
-    throw new SQLException("Method not supported");
+    checkConnection("getResultSetType");
+    return ResultSet.TYPE_FORWARD_ONLY;
   }
 
   /*
@@ -554,6 +549,7 @@ public class HiveStatement implements java.sql.Statement {
 
   @Override
   public int getUpdateCount() throws SQLException {
+    checkConnection("getUpdateCount");
     return 0;
   }
 
@@ -565,6 +561,7 @@ public class HiveStatement implements java.sql.Statement {
 
   @Override
   public SQLWarning getWarnings() throws SQLException {
+    checkConnection("getWarnings");
     return warningChain;
   }
 
@@ -579,9 +576,9 @@ public class HiveStatement implements java.sql.Statement {
     return isClosed;
   }
 
+  // JDK 1.7
   public boolean isCloseOnCompletion() throws SQLException {
-    // JDK 1.7
-    throw new SQLException("Method not supported");
+    return false;
   }
 
   /*
@@ -592,7 +589,7 @@ public class HiveStatement implements java.sql.Statement {
 
   @Override
   public boolean isPoolable() throws SQLException {
-    throw new SQLException("Method not supported");
+    return false;
   }
 
   /*
@@ -625,7 +622,10 @@ public class HiveStatement implements java.sql.Statement {
 
   @Override
   public void setFetchDirection(int direction) throws SQLException {
-    throw new SQLException("Method not supported");
+    checkConnection("setFetchDirection");
+    if (direction != ResultSet.FETCH_FORWARD) {
+      throw new SQLException("Not supported direction " + direction);
+    }
   }
 
   /*
@@ -636,6 +636,7 @@ public class HiveStatement implements java.sql.Statement {
 
   @Override
   public void setFetchSize(int rows) throws SQLException {
+    checkConnection("setFetchSize");
     fetchSize = rows;
   }
 
@@ -658,6 +659,7 @@ public class HiveStatement implements java.sql.Statement {
 
   @Override
   public void setMaxRows(int max) throws SQLException {
+    checkConnection("setMaxRows");
     if (max < 0) {
       throw new SQLException("max must be >= 0");
     }
@@ -694,7 +696,7 @@ public class HiveStatement implements java.sql.Statement {
 
   @Override
   public boolean isWrapperFor(Class<?> iface) throws SQLException {
-    throw new SQLException("Method not supported");
+    return false;
   }
 
   /*
@@ -705,7 +707,7 @@ public class HiveStatement implements java.sql.Statement {
 
   @Override
   public <T> T unwrap(Class<T> iface) throws SQLException {
-    throw new SQLException("Method not supported");
+    throw new SQLException("Cannot unwrap to " + iface);
   }
 
 }

@@ -710,7 +710,7 @@ public class HiveObjectRef implements org.apache.thrift.TBase<HiveObjectRef, Hiv
                 struct.partValues = new ArrayList<String>(_list8.size);
                 for (int _i9 = 0; _i9 < _list8.size; ++_i9)
                 {
-                  String _elem10; // required
+                  String _elem10; // optional
                   _elem10 = iprot.readString();
                   struct.partValues.add(_elem10);
                 }
@@ -853,7 +853,7 @@ public class HiveObjectRef implements org.apache.thrift.TBase<HiveObjectRef, Hiv
           struct.partValues = new ArrayList<String>(_list13.size);
           for (int _i14 = 0; _i14 < _list13.size; ++_i14)
           {
-            String _elem15; // required
+            String _elem15; // optional
             _elem15 = iprot.readString();
             struct.partValues.add(_elem15);
           }

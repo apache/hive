@@ -69,6 +69,7 @@ public final class SemanticAnalyzerFactory {
     commandType.put(HiveParser.TOK_SHOWPARTITIONS, HiveOperation.SHOWPARTITIONS);
     commandType.put(HiveParser.TOK_SHOWLOCKS, HiveOperation.SHOWLOCKS);
     commandType.put(HiveParser.TOK_SHOWDBLOCKS, HiveOperation.SHOWLOCKS);
+    commandType.put(HiveParser.TOK_SHOWCONF, HiveOperation.SHOWCONF);
     commandType.put(HiveParser.TOK_CREATEFUNCTION, HiveOperation.CREATEFUNCTION);
     commandType.put(HiveParser.TOK_DROPFUNCTION, HiveOperation.DROPFUNCTION);
     commandType.put(HiveParser.TOK_CREATEMACRO, HiveOperation.CREATEMACRO);
@@ -203,6 +204,7 @@ public final class SemanticAnalyzerFactory {
       case HiveParser.TOK_SHOWDBLOCKS:
       case HiveParser.TOK_SHOW_COMPACTIONS:
       case HiveParser.TOK_SHOW_TRANSACTIONS:
+      case HiveParser.TOK_SHOWCONF:
       case HiveParser.TOK_CREATEINDEX:
       case HiveParser.TOK_DROPINDEX:
       case HiveParser.TOK_ALTERTABLE_CLUSTER_SORT:

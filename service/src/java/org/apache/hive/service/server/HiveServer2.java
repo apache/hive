@@ -25,7 +25,6 @@ import org.apache.hadoop.hive.common.LogUtils.LogInitializationException;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.exec.tez.TezSessionPoolManager;
-import org.apache.hadoop.hive.ql.exec.tez.TezSessionState;
 import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.hive.service.CompositeService;
 import org.apache.hive.service.cli.CLIService;
@@ -45,6 +44,7 @@ public class HiveServer2 extends CompositeService {
 
   public HiveServer2() {
     super("HiveServer2");
+    HiveConf.setLoadHiveServer2Config(true);
   }
 
 
@@ -142,7 +142,7 @@ public class HiveServer2 extends CompositeService {
       // before any of the other core hive classes are loaded
       String initLog4jMessage = LogUtils.initHiveLog4j();
       LOG.debug(initLog4jMessage);
-      
+
       HiveStringUtils.startupShutdownMessage(HiveServer2.class, args, LOG);
       //log debug message from "oproc" after log4j initialize properly
       LOG.debug(oproc.getDebugMessage().toString());

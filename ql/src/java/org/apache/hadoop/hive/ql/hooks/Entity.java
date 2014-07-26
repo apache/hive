@@ -40,7 +40,7 @@ public class Entity implements Serializable {
    * The type of the entity.
    */
   public static enum Type {
-    DATABASE, TABLE, PARTITION, DUMMYPARTITION, DFS_DIR, LOCAL_DIR
+    DATABASE, TABLE, PARTITION, DUMMYPARTITION, DFS_DIR, LOCAL_DIR, FUNCTION
   }
 
   /**
@@ -64,9 +64,15 @@ public class Entity implements Serializable {
   private Partition p;
 
   /**
-   * The directory if this is a directory.
+   * The directory if this is a directory
    */
   private String d;
+
+  /**
+   * An object that is represented as a String
+   * Currently used for functions
+   */
+  private String stringObject;
 
   /**
    * This is derived from t and p, but we need to serialize this field to make
@@ -134,6 +140,21 @@ public class Entity implements Serializable {
 
   public void setD(String d) {
     this.d = d;
+  }
+
+  public String getFunctionName() {
+    if (typ == Type.FUNCTION) {
+      return stringObject;
+    }
+    return null;
+  }
+
+  public void setFunctionName(String funcName) {
+    if (typ != Type.FUNCTION) {
+      throw new IllegalArgumentException(
+          "Set function can't be called on entity if the entity type is not " + Type.FUNCTION);
+    }
+    this.stringObject = funcName;
   }
 
   /**
@@ -207,6 +228,24 @@ public class Entity implements Serializable {
     }
     name = computeName();
     this.complete = complete;
+  }
+
+  /**
+   * Create an entity representing a object with given name, database namespace and type
+   * @param database - database namespace
+   * @param strObj - object name as string
+   * @param type - the entity type. this constructor only supports FUNCTION type currently
+   */
+  public Entity(Database database, String strObj, Type type) {
+    if (type != Type.FUNCTION) {
+      throw new IllegalArgumentException("This constructor is supported only for type:"
+          + Type.FUNCTION);
+    }
+    this.database = database;
+    this.stringObject = strObj;
+    this.typ = type;
+    this.complete = true;
+    name = computeName();
   }
 
   /**
@@ -293,6 +332,8 @@ public class Entity implements Serializable {
       return t.getDbName() + "@" + t.getTableName() + "@" + p.getName();
     case DUMMYPARTITION:
       return p.getName();
+    case FUNCTION:
+      return stringObject;
     default:
       return d;
     }

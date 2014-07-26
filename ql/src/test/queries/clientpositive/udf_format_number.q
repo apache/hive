@@ -63,3 +63,11 @@ SELECT format_number(CAST(12332.123456 AS FLOAT), 4),
     format_number(CAST(12332.1 AS FLOAT), 4),
     format_number(CAST(-12332.2 AS FLOAT), 0)
 FROM src tablesample (1 rows);
+
+-- decimals
+SELECT format_number(12332.123456BD, 4),
+    format_number(12332.123456BD, 2),
+    format_number(12332.1BD, 4),
+    format_number(-12332.2BD, 0),
+    format_number(CAST(12332.567 AS DECIMAL(8, 1)), 4)
+FROM src tablesample (1 rows);

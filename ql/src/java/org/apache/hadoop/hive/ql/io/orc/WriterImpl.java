@@ -1032,20 +1032,20 @@ class WriterImpl implements Writer, MemoryManager.Callback {
     }
 
     /**
-     * Method to retrieve string values from the value object, which can be overridden
+     * Method to retrieve text values from the value object, which can be overridden
      * by subclasses.
      * @param obj  value
-     * @return String value from obj
+     * @return Text text value from obj
      */
-    String getStringValue(Object obj) {
-      return ((StringObjectInspector) inspector).getPrimitiveJavaObject(obj);
+    Text getTextValue(Object obj) {
+      return ((StringObjectInspector) inspector).getPrimitiveWritableObject(obj);
     }
 
     @Override
     void write(Object obj) throws IOException {
       super.write(obj);
       if (obj != null) {
-        String val = getStringValue(obj);
+        Text val = getTextValue(obj);
         rows.add(dictionary.add(val));
         indexStatistics.updateString(val);
       }
@@ -1194,9 +1194,9 @@ class WriterImpl implements Writer, MemoryManager.Callback {
      * Override base class implementation to support char values.
      */
     @Override
-    String getStringValue(Object obj) {
+    Text getTextValue(Object obj) {
       return (((HiveCharObjectInspector) inspector)
-          .getPrimitiveJavaObject(obj)).getValue();
+          .getPrimitiveWritableObject(obj)).getTextValue();
     }
   }
 
@@ -1216,9 +1216,9 @@ class WriterImpl implements Writer, MemoryManager.Callback {
      * Override base class implementation to support varchar values.
      */
     @Override
-    String getStringValue(Object obj) {
+    Text getTextValue(Object obj) {
       return (((HiveVarcharObjectInspector) inspector)
-          .getPrimitiveJavaObject(obj)).getValue();
+          .getPrimitiveWritableObject(obj)).getTextValue();
     }
   }
 
@@ -1938,7 +1938,7 @@ class WriterImpl implements Writer, MemoryManager.Callback {
       if (availRatio < paddingTolerance && addBlockPadding) {
         long padding = blockSize - (start % blockSize);
         byte[] pad = new byte[(int) Math.min(HDFS_BUFFER_SIZE, padding)];
-        LOG.info(String.format("Padding ORC by %d bytes (<=  %0.2f * %d)", 
+        LOG.info(String.format("Padding ORC by %d bytes (<=  %.2f * %d)", 
             padding, availRatio, defaultStripeSize));
         start += padding;
         while (padding > 0) {

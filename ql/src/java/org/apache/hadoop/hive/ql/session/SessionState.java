@@ -41,6 +41,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -55,6 +56,7 @@ import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
@@ -65,6 +67,8 @@ import org.apache.hadoop.hive.ql.util.DosToUnix;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.util.ReflectionUtils;
 
+import com.google.common.base.Preconditions;
+
 /**
  * SessionState encapsulates common data associated with a session.
  *
@@ -74,6 +78,12 @@ import org.apache.hadoop.util.ReflectionUtils;
  */
 public class SessionState {
   private static final Log LOG = LogFactory.getLog(SessionState.class);
+
+  private static final String TMP_PREFIX = "_tmp_space.db";
+  private static final String LOCAL_SESSION_PATH_KEY = "_hive.local.session.path";
+  private static final String HDFS_SESSION_PATH_KEY = "_hive.hdfs.session.path";
+  private static final String TMP_TABLE_SPACE_KEY = "_hive.tmp_table_space";
+  private final Map<String, Map<String, Table>> tempTables = new HashMap<String, Map<String, Table>>();
 
   protected ClassLoader parentLoader;
 
@@ -163,6 +173,8 @@ public class SessionState {
   private final String CONFIG_AUTHZ_SETTINGS_APPLIED_MARKER =
       "hive.internal.ss.authz.settings.applied.marker";
 
+  private String userIpAddress;
+
   /**
    * Lineage state.
    */
@@ -171,6 +183,24 @@ public class SessionState {
   private PerfLogger perfLogger;
 
   private final String userName;
+
+  /**
+   *  scratch path to use for all non-local (ie. hdfs) file system tmp folders
+   *  @return Path for Scratch path for the current session
+   */
+  private Path hdfsSessionPath;
+
+  /**
+   * sub dir of hdfs session path. used to keep tmp tables
+   * @return Path for temporary tables created by the current session
+   */
+  private Path hdfsTmpTableSpace;
+
+  /**
+   *  scratch directory to use for local file system tmp folders
+   *  @return Path for local scratch directory for current session
+   */
+  private Path localSessionPath;
 
   /**
    * Get the lineage state stored in this session.
@@ -335,6 +365,7 @@ public class SessionState {
       Hive.get(new HiveConf(startSs.conf)).getMSC();
       ShimLoader.getHadoopShims().getUGIForConf(startSs.conf);
       FileSystem.get(startSs.conf);
+      startSs.createSessionPaths(startSs.conf);
     } catch (Exception e) {
       // catch-all due to some exec time dependencies on session state
       // that would cause ClassNoFoundException otherwise
@@ -358,6 +389,95 @@ public class SessionState {
     }
     return startSs;
   }
+
+  public static Path getLocalSessionPath(Configuration conf) {
+    SessionState ss = SessionState.get();
+    if (ss == null) {
+      String localPathString = conf.get(LOCAL_SESSION_PATH_KEY);
+      Preconditions.checkNotNull(localPathString,
+          "Conf local session path expected to be non-null");
+      return new Path(localPathString);
+    }
+    Preconditions.checkNotNull(ss.localSessionPath,
+        "Local session path expected to be non-null");
+    return ss.localSessionPath;
+  }
+
+  public static Path getHDFSSessionPath(Configuration conf) {
+    SessionState ss = SessionState.get();
+    if (ss == null) {
+      String sessionPathString = conf.get(HDFS_SESSION_PATH_KEY);
+      Preconditions.checkNotNull(sessionPathString,
+          "Conf non-local session path expected to be non-null");
+      return new Path(sessionPathString);
+    }
+    Preconditions.checkNotNull(ss.hdfsSessionPath,
+        "Non-local session path expected to be non-null");
+    return ss.hdfsSessionPath;
+  }
+
+  public static Path getTempTableSpace(Configuration conf) {
+    SessionState ss = SessionState.get();
+    if (ss == null) {
+      String tempTablePathString = conf.get(TMP_TABLE_SPACE_KEY);
+      Preconditions.checkNotNull(tempTablePathString,
+          "Conf temp table path expected to be non-null");
+      return new Path(tempTablePathString);
+    }
+    return ss.getTempTableSpace();
+  }
+
+  public Path getTempTableSpace() {
+    Preconditions.checkNotNull(this.hdfsTmpTableSpace,
+        "Temp table path expected to be non-null");
+    return this.hdfsTmpTableSpace;
+  }
+
+  private void dropSessionPaths(Configuration conf) throws IOException {
+    if (hdfsSessionPath != null) {
+      hdfsSessionPath.getFileSystem(conf).delete(hdfsSessionPath, true);
+    }
+    if (localSessionPath != null) {
+      localSessionPath.getFileSystem(conf).delete(localSessionPath, true);
+    }
+  }
+
+  private void createSessionPaths(Configuration conf) throws IOException {
+
+    String scratchDirPermission = HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCHDIRPERMISSION);
+    String sessionId = getSessionId();
+
+    // local & non-local tmp location is configurable. however it is the same across
+    // all external file systems
+    hdfsSessionPath =
+      new Path(HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCHDIR),
+               sessionId);
+    createPath(conf, hdfsSessionPath, scratchDirPermission);
+    conf.set(HDFS_SESSION_PATH_KEY, hdfsSessionPath.toUri().toString());
+
+    localSessionPath = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.LOCALSCRATCHDIR),
+                                sessionId);
+    createPath(conf, localSessionPath, scratchDirPermission);
+    conf.set(LOCAL_SESSION_PATH_KEY, localSessionPath.toUri().toString());
+    hdfsTmpTableSpace = new Path(hdfsSessionPath, TMP_PREFIX);
+    createPath(conf, hdfsTmpTableSpace, scratchDirPermission);
+    conf.set(TMP_TABLE_SPACE_KEY, hdfsTmpTableSpace.toUri().toString());
+  }
+
+  private void createPath(Configuration conf, Path p, String perm) throws IOException {
+    FileSystem fs = p.getFileSystem(conf);
+    p = new Path(fs.makeQualified(p).toString());
+    FsPermission fsPermission = new FsPermission(Short.parseShort(perm.trim(), 8));
+
+    if (!Utilities.createDirsWithPermission(conf, p, fsPermission)) {
+      throw new IOException("Cannot create directory: "
+                            + p.toString());
+    }
+
+    // best effort to clean up if we don't shut down properly
+    fs.deleteOnExit(p);
+  }
+
 
   /**
    * Setup authentication and authorization plugins for this session.
@@ -397,11 +517,30 @@ public class SessionState {
     }
 
     if(LOG.isDebugEnabled()){
-      Object authorizationClass = getAuthorizationMode() == AuthorizationMode.V1 ?
-          getAuthorizer() : getAuthorizerV2();
-          LOG.debug("Session is using authorization class " + authorizationClass.getClass());
+      Object authorizationClass = getActiveAuthorizer();
+      LOG.debug("Session is using authorization class " + authorizationClass.getClass());
     }
     return;
+  }
+
+  public Object getActiveAuthorizer() {
+    return getAuthorizationMode() == AuthorizationMode.V1 ?
+        getAuthorizer() : getAuthorizerV2();
+  }
+
+  public Class getAuthorizerInterface() {
+    return getAuthorizationMode() == AuthorizationMode.V1 ?
+        HiveAuthorizationProvider.class : HiveAuthorizer.class;
+  }
+
+  public void setActiveAuthorizer(Object authorizer) {
+    if (authorizer instanceof HiveAuthorizationProvider) {
+      this.authorizer = (HiveAuthorizationProvider)authorizer;
+    } else if (authorizer instanceof HiveAuthorizer) {
+      this.authorizerV2 = (HiveAuthorizer) authorizer;
+    } else if (authorizer != null) {
+      throw new IllegalArgumentException("Invalid authorizer " + authorizer);
+    }
   }
 
   /**
@@ -923,6 +1062,8 @@ public class SessionState {
     } finally {
       tezSessionState = null;
     }
+
+    dropSessionPaths(conf);
   }
 
   public AuthorizationMode getAuthorizationMode(){
@@ -992,4 +1133,24 @@ public class SessionState {
     conf.set(CONFIG_AUTHZ_SETTINGS_APPLIED_MARKER, Boolean.TRUE.toString());
 
   }
+
+  public Map<String, Map<String, Table>> getTempTables() {
+    return tempTables;
+  }
+
+  /**
+   * @return ip address for user running the query
+   */
+  public String getUserIpAddress() {
+    return userIpAddress;
+  }
+
+  /**
+   * set the ip address for user running the query
+   * @param userIpAddress
+   */
+  public void setUserIpAddress(String userIpAddress) {
+    this.userIpAddress = userIpAddress;
+  }
+
 }

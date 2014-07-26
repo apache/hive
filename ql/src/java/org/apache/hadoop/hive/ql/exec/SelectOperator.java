@@ -32,8 +32,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 /**
  * Select operator implementation.
  */
-public class SelectOperator extends Operator<SelectDesc> implements
-    Serializable {
+public class SelectOperator extends Operator<SelectDesc> implements Serializable {
 
   private static final long serialVersionUID = 1L;
   protected transient ExprNodeEvaluator[] eval;
@@ -60,10 +59,9 @@ public class SelectOperator extends Operator<SelectDesc> implements
       }
     }
     output = new Object[eval.length];
-    LOG.info("SELECT "
-        + ((StructObjectInspector) inputObjInspectors[0]).getTypeName());
-    outputObjInspector = initEvaluatorsAndReturnStruct(eval, conf
-        .getOutputColumnNames(), inputObjInspectors[0]);
+    LOG.info("SELECT " + ((StructObjectInspector) inputObjInspectors[0]).getTypeName());
+    outputObjInspector = initEvaluatorsAndReturnStruct(eval, conf.getOutputColumnNames(),
+        inputObjInspectors[0]);
     initializeChildren(hconf);
   }
 
@@ -81,8 +79,7 @@ public class SelectOperator extends Operator<SelectDesc> implements
     } catch (HiveException e) {
       throw e;
     } catch (RuntimeException e) {
-      throw new HiveException("Error evaluating "
-          + conf.getColList().get(i).getExprString(), e);
+      throw new HiveException("Error evaluating " + conf.getColList().get(i).getExprString(), e);
     }
     forward(output, outputObjInspector);
   }

@@ -107,12 +107,14 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print '  bool grant_role(string role_name, string principal_name, PrincipalType principal_type, string grantor, PrincipalType grantorType, bool grant_option)'
   print '  bool revoke_role(string role_name, string principal_name, PrincipalType principal_type)'
   print '   list_roles(string principal_name, PrincipalType principal_type)'
+  print '  GrantRevokeRoleResponse grant_revoke_role(GrantRevokeRoleRequest request)'
   print '  GetPrincipalsInRoleResponse get_principals_in_role(GetPrincipalsInRoleRequest request)'
   print '  GetRoleGrantsForPrincipalResponse get_role_grants_for_principal(GetRoleGrantsForPrincipalRequest request)'
   print '  PrincipalPrivilegeSet get_privilege_set(HiveObjectRef hiveObject, string user_name,  group_names)'
   print '   list_privileges(string principal_name, PrincipalType principal_type, HiveObjectRef hiveObject)'
   print '  bool grant_privileges(PrivilegeBag privileges)'
   print '  bool revoke_privileges(PrivilegeBag privileges)'
+  print '  GrantRevokePrivilegeResponse grant_revoke_privileges(GrantRevokePrivilegeRequest request)'
   print '   set_ugi(string user_name,  group_names)'
   print '  string get_delegation_token(string token_owner, string renewer_kerberos_principal_name)'
   print '  i64 renew_delegation_token(string token_str_form)'
@@ -685,6 +687,12 @@ elif cmd == 'list_roles':
     sys.exit(1)
   pp.pprint(client.list_roles(args[0],eval(args[1]),))
 
+elif cmd == 'grant_revoke_role':
+  if len(args) != 1:
+    print 'grant_revoke_role requires 1 args'
+    sys.exit(1)
+  pp.pprint(client.grant_revoke_role(eval(args[0]),))
+
 elif cmd == 'get_principals_in_role':
   if len(args) != 1:
     print 'get_principals_in_role requires 1 args'
@@ -720,6 +728,12 @@ elif cmd == 'revoke_privileges':
     print 'revoke_privileges requires 1 args'
     sys.exit(1)
   pp.pprint(client.revoke_privileges(eval(args[0]),))
+
+elif cmd == 'grant_revoke_privileges':
+  if len(args) != 1:
+    print 'grant_revoke_privileges requires 1 args'
+    sys.exit(1)
+  pp.pprint(client.grant_revoke_privileges(eval(args[0]),))
 
 elif cmd == 'set_ugi':
   if len(args) != 2:

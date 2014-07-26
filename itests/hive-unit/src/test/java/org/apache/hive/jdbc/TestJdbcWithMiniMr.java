@@ -213,6 +213,37 @@ public class TestJdbcWithMiniMr {
     stmt.execute("DROP TABLE " + tableName);
   }
 
+  @Test
+  public void testTempTable() throws Exception {
+    // Create temp table with current connection
+    String tempTableName = "tmp1";
+    stmt.execute("CREATE TEMPORARY TABLE " + tempTableName + " (key string, value string)");
+    stmt.execute("load data local inpath '"
+        + dataFilePath.toString() + "' into table " + tempTableName);
+
+    String resultVal = "val_238";
+    String queryStr = "SELECT * FROM " + tempTableName +
+        " where value = '" + resultVal + "'";
+    verifyResult(queryStr, resultVal, 2);
+    
+    // A second connection should not be able to see the table
+    Connection conn2 = DriverManager.getConnection(miniHS2.getJdbcURL(dbName),
+        System.getProperty("user.name"), "bar");
+    Statement stmt2 = conn2.createStatement();
+    stmt2.execute("USE " + dbName);
+    boolean gotException = false;
+    try {
+      ResultSet res;
+      res = stmt2.executeQuery(queryStr);
+    } catch (SQLException err) {
+      // This is expected to fail.
+      assertTrue("Expecting table not found error, instead got: " + err,
+          err.getMessage().contains("Table not found"));
+      gotException = true;
+    }
+    assertTrue("Exception while querying non-existing temp table", gotException);
+  }
+
   private void checkForNotExist(ResultSet res) throws Exception {
     int numRows = 0;
     while (res.next()) {

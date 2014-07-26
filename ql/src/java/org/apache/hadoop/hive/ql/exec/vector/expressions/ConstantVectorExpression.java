@@ -41,6 +41,7 @@ public class ConstantVectorExpression extends VectorExpression {
   private double doubleValue = 0;
   private byte[] bytesValue = null;
   private Decimal128 decimalValue = null;
+  private boolean isNullValue = false;
 
   private Type type;
   private int bytesValueLength = 0;
@@ -74,34 +75,58 @@ public class ConstantVectorExpression extends VectorExpression {
     this(outputColumn, "decimal");
     setDecimalValue(value);
   }
-
+  
+  /*
+   * Support for null constant object
+   */
+  public ConstantVectorExpression(int outputColumn, String typeString, boolean isNull) {
+	this(outputColumn, typeString);
+	isNullValue = isNull;
+  }
+  
   private void evaluateLong(VectorizedRowBatch vrg) {
     LongColumnVector cv = (LongColumnVector) vrg.cols[outputColumn];
     cv.isRepeating = true;
-    cv.noNulls = true;
-    cv.vector[0] = longValue;
+    cv.noNulls = !isNullValue;
+    if (!isNullValue) {
+    	cv.vector[0] = longValue;
+    } else {
+    	cv.isNull[0] = true;
+    }
   }
 
   private void evaluateDouble(VectorizedRowBatch vrg) {
     DoubleColumnVector cv = (DoubleColumnVector) vrg.cols[outputColumn];
     cv.isRepeating = true;
-    cv.noNulls = true;
-    cv.vector[0] = doubleValue;
+    cv.noNulls = !isNullValue;
+    if (!isNullValue) {
+    	cv.vector[0] = doubleValue;
+    } else {
+    	cv.isNull[0] = true;
+    }    
   }
 
   private void evaluateBytes(VectorizedRowBatch vrg) {
     BytesColumnVector cv = (BytesColumnVector) vrg.cols[outputColumn];
     cv.isRepeating = true;
-    cv.noNulls = true;
+    cv.noNulls = !isNullValue;
     cv.initBuffer();
-    cv.setVal(0, bytesValue, 0, bytesValueLength);
+    if (!isNullValue) {
+    	cv.setVal(0, bytesValue, 0, bytesValueLength);
+    } else {
+    	cv.isNull[0] = true;
+    }
   }
 
   private void evaluateDecimal(VectorizedRowBatch vrg) {
     DecimalColumnVector dcv = (DecimalColumnVector) vrg.cols[outputColumn];
     dcv.isRepeating = true;
-    dcv.noNulls = true;
-    dcv.vector[0].update(decimalValue);
+    dcv.noNulls = !isNullValue;
+    if (!isNullValue) {
+    	dcv.vector[0].update(decimalValue);
+    } else {
+    	dcv.isNull[0] = true;
+    }
   }
 
   @Override

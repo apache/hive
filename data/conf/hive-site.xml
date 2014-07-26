@@ -221,4 +221,23 @@
   <value>false</value>
 </property>
 
+
+<property>
+  <name>hive.dummyparam.test.server.specific.config.override</name>
+  <value>from.hive-site.xml</value>
+  <description>Using dummy param to test server specific configuration</description>
+</property>
+
+<property>
+  <name>hive.dummyparam.test.server.specific.config.hivesite</name>
+  <value>from.hive-site.xml</value>
+  <description>Using dummy param to test server specific configuration</description>
+</property>
+
+
+<property>
+  <name>hive.fetch.task.conversion</name>
+  <value>minimal</value>
+</property>
+
 </configuration>

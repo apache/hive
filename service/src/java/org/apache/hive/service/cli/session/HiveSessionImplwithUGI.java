@@ -44,9 +44,8 @@ public class HiveSessionImplwithUGI extends HiveSessionImpl {
   private HiveSession proxySession = null;
 
   public HiveSessionImplwithUGI(TProtocolVersion protocol, String username, String password,
-      HiveConf hiveConf, Map<String, String> sessionConf, String ipAddress,
-       String delegationToken) throws HiveSQLException {
-    super(protocol, username, password, hiveConf, sessionConf, ipAddress);
+      HiveConf hiveConf, String ipAddress, String delegationToken) throws HiveSQLException {
+    super(protocol, username, password, hiveConf, ipAddress);
     setSessionUGI(username);
     setDelegationToken(delegationToken);
   }

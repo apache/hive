@@ -349,9 +349,9 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
-  public boolean revokeRole(Role role, String userName, PrincipalType principalType)
+  public boolean revokeRole(Role role, String userName, PrincipalType principalType, boolean grantOption)
       throws MetaException, NoSuchObjectException {
-    return objectStore.revokeRole(role, userName, principalType);
+    return objectStore.revokeRole(role, userName, principalType, grantOption);
   }
 
   @Override
@@ -437,9 +437,9 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
-  public boolean revokePrivileges(PrivilegeBag privileges) throws InvalidObjectException,
-      MetaException, NoSuchObjectException {
-    return objectStore.revokePrivileges(privileges);
+  public boolean revokePrivileges(PrivilegeBag privileges, boolean grantOption)
+      throws InvalidObjectException, MetaException, NoSuchObjectException {
+    return objectStore.revokePrivileges(privileges, grantOption);
   }
 
   @Override

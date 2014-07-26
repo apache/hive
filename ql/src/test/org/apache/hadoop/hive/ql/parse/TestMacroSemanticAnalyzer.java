@@ -42,10 +42,10 @@ public class TestMacroSemanticAnalyzer {
   @Before
   public void setup() throws Exception {
     conf = new HiveConf();
+    SessionState.start(conf);
     context = new Context(conf);
     parseDriver = new ParseDriver();
     analyzer = new MacroSemanticAnalyzer(conf);
-    SessionState.start(conf);
   }
 
   private ASTNode parse(String command) throws Exception {

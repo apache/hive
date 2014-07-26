@@ -22,6 +22,8 @@ import static org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_NULL_FOR
 import static org.apache.hadoop.hive.serde.serdeConstants.STRING_TYPE_NAME;
 import static org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe.defaultNullString;
 
+import static org.apache.hadoop.hive.conf.SystemVariables.*;
+
 import java.util.Map;
 import java.util.Properties;
 import java.util.SortedMap;
@@ -39,12 +41,7 @@ import org.apache.hadoop.hive.ql.session.SessionState;
  */
 public class SetProcessor implements CommandProcessor {
 
-  private static String prefix = "set: ";
-  public static final String ENV_PREFIX = "env:";
-  public static final String SYSTEM_PREFIX = "system:";
-  public static final String HIVECONF_PREFIX = "hiveconf:";
-  public static final String HIVEVAR_PREFIX = "hivevar:";
-  public static final String SET_COLUMN_NAME = "set";
+  private static final String prefix = "set: ";
 
   public static boolean getBoolean(String value) {
     if (value.equals("on") || value.equals("true")) {
@@ -69,7 +66,7 @@ public class SetProcessor implements CommandProcessor {
 
     // Inserting hive variables
     for (String s : ss.getHiveVariables().keySet()) {
-      sortedMap.put(SetProcessor.HIVEVAR_PREFIX + s, ss.getHiveVariables().get(s));
+      sortedMap.put(HIVEVAR_PREFIX + s, ss.getHiveVariables().get(s));
     }
 
     for (Map.Entry<String, String> entries : sortedMap.entrySet()) {
@@ -117,17 +114,17 @@ public class SetProcessor implements CommandProcessor {
       ss.err.println("Warning: Value had a \\n character in it.");
     }
     varname = varname.trim();
-    if (varname.startsWith(SetProcessor.ENV_PREFIX)){
+    if (varname.startsWith(ENV_PREFIX)){
       ss.err.println("env:* variables can not be set.");
       return 1;
-    } else if (varname.startsWith(SetProcessor.SYSTEM_PREFIX)){
-      String propName = varname.substring(SetProcessor.SYSTEM_PREFIX.length());
+    } else if (varname.startsWith(SYSTEM_PREFIX)){
+      String propName = varname.substring(SYSTEM_PREFIX.length());
       System.getProperties().setProperty(propName, new VariableSubstitution().substitute(ss.getConf(),varvalue));
-    } else if (varname.startsWith(SetProcessor.HIVECONF_PREFIX)){
-      String propName = varname.substring(SetProcessor.HIVECONF_PREFIX.length());
+    } else if (varname.startsWith(HIVECONF_PREFIX)){
+      String propName = varname.substring(HIVECONF_PREFIX.length());
       setConf(varname, propName, varvalue, false);
-    } else if (varname.startsWith(SetProcessor.HIVEVAR_PREFIX)) {
-      String propName = varname.substring(SetProcessor.HIVEVAR_PREFIX.length());
+    } else if (varname.startsWith(HIVEVAR_PREFIX)) {
+      String propName = varname.substring(HIVEVAR_PREFIX.length());
       ss.getHiveVariables().put(propName, new VariableSubstitution().substitute(ss.getConf(),varvalue));
     } else {
       setConf(varname, varname, varvalue, true);
@@ -169,7 +166,7 @@ public class SetProcessor implements CommandProcessor {
 
   private SortedMap<String,String> propertiesToSortedMap(Properties p){
     SortedMap<String,String> sortedPropMap = new TreeMap<String,String>();
-    for (Map.Entry<Object, Object> entry :System.getProperties().entrySet() ){
+    for (Map.Entry<Object, Object> entry : p.entrySet() ){
       sortedPropMap.put( (String) entry.getKey(), (String) entry.getValue());
     }
     return sortedPropMap;
@@ -188,38 +185,38 @@ public class SetProcessor implements CommandProcessor {
       ss.out.println("silent" + "=" + ss.getIsSilent());
       return createProcessorSuccessResponse();
     }
-    if (varname.startsWith(SetProcessor.SYSTEM_PREFIX)){
-      String propName = varname.substring(SetProcessor.SYSTEM_PREFIX.length());
+    if (varname.startsWith(SYSTEM_PREFIX)) {
+      String propName = varname.substring(SYSTEM_PREFIX.length());
       String result = System.getProperty(propName);
-      if (result != null){
-        ss.out.println(SetProcessor.SYSTEM_PREFIX+propName + "=" + result);
+      if (result != null) {
+        ss.out.println(SYSTEM_PREFIX + propName + "=" + result);
         return createProcessorSuccessResponse();
       } else {
-        ss.out.println( propName + " is undefined as a system property");
+        ss.out.println(propName + " is undefined as a system property");
         return new CommandProcessorResponse(1);
       }
-    } else if (varname.indexOf(SetProcessor.ENV_PREFIX)==0){
+    } else if (varname.indexOf(ENV_PREFIX) == 0) {
       String var = varname.substring(ENV_PREFIX.length());
-      if (System.getenv(var)!=null){
-        ss.out.println(SetProcessor.ENV_PREFIX+var + "=" + System.getenv(var));
+      if (System.getenv(var) != null) {
+        ss.out.println(ENV_PREFIX + var + "=" + System.getenv(var));
         return createProcessorSuccessResponse();
       } else {
         ss.out.println(varname + " is undefined as an environmental variable");
         return new CommandProcessorResponse(1);
       }
-    } else if (varname.indexOf(SetProcessor.HIVECONF_PREFIX)==0) {
-      String var = varname.substring(SetProcessor.HIVECONF_PREFIX.length());
-      if (ss.getConf().get(var)!=null){
-        ss.out.println(SetProcessor.HIVECONF_PREFIX+var + "=" + ss.getConf().get(var));
+    } else if (varname.indexOf(HIVECONF_PREFIX) == 0) {
+      String var = varname.substring(HIVECONF_PREFIX.length());
+      if (ss.getConf().get(var) != null) {
+        ss.out.println(HIVECONF_PREFIX + var + "=" + ss.getConf().get(var));
         return createProcessorSuccessResponse();
       } else {
         ss.out.println(varname + " is undefined as a hive configuration variable");
         return new CommandProcessorResponse(1);
       }
-    } else if (varname.indexOf(SetProcessor.HIVEVAR_PREFIX)==0) {
-      String var = varname.substring(SetProcessor.HIVEVAR_PREFIX.length());
-      if (ss.getHiveVariables().get(var)!=null){
-        ss.out.println(SetProcessor.HIVEVAR_PREFIX+var + "=" + ss.getHiveVariables().get(var));
+    } else if (varname.indexOf(HIVEVAR_PREFIX) == 0) {
+      String var = varname.substring(HIVEVAR_PREFIX.length());
+      if (ss.getHiveVariables().get(var) != null) {
+        ss.out.println(HIVEVAR_PREFIX + var + "=" + ss.getHiveVariables().get(var));
         return createProcessorSuccessResponse();
       } else {
         ss.out.println(varname + " is undefined as a hive variable");
