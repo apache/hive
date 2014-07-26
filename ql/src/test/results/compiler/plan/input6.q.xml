@@ -797,17 +797,7 @@
                 </void> 
                 <void method="put"> 
                  <string>_col0</string> 
-                 <object id="ExprNodeColumnDesc1" class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
-                  <void property="column"> 
-                   <string>key</string> 
-                  </void> 
-                  <void property="tabAlias"> 
-                   <string>src1</string> 
-                  </void> 
-                  <void property="typeInfo"> 
-                   <object idref="PrimitiveTypeInfo0"/> 
-                  </void> 
-                 </object> 
+                 <object id="ExprNodeNullDesc0" class="org.apache.hadoop.hive.ql.plan.ExprNodeNullDesc"/> 
                 </void> 
                </object> 
               </void> 
@@ -816,7 +806,7 @@
                 <void property="colList"> 
                  <object class="java.util.ArrayList"> 
                   <void method="add"> 
-                   <object idref="ExprNodeColumnDesc1"/> 
+                   <object idref="ExprNodeNullDesc0"/> 
                   </void> 
                   <void method="add"> 
                    <object idref="ExprNodeColumnDesc0"/> 
@@ -848,6 +838,9 @@
                 <void property="signature"> 
                  <void method="add"> 
                   <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
+                   <void property="alias"> 
+                    <string>key</string> 
+                   </void> 
                    <void property="internalName"> 
                     <string>_col0</string> 
                    </void> 
@@ -932,6 +925,9 @@
              <void property="signature"> 
               <void method="add"> 
                <object id="ColumnInfo0" class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
+                <void property="alias"> 
+                 <string>key</string> 
+                </void> 
                 <void property="internalName"> 
                  <string>key</string> 
                 </void> 

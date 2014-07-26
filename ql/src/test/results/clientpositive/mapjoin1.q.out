@@ -343,16 +343,13 @@ STAGE PLANS:
           TableScan
             alias: a
             Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
-            Filter Operator
-              predicate: true (type: boolean)
-              Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
-              HashTable Sink Operator
-                condition expressions:
-                  0 {value}
-                  1 {key} {value}
-                keys:
-                  0 key (type: string)
-                  1 key (type: string)
+            HashTable Sink Operator
+              condition expressions:
+                0 {value}
+                1 {key} {value}
+              keys:
+                0 key (type: string)
+                1 key (type: string)
 
   Stage: Stage-1
     Map Reduce
@@ -360,34 +357,31 @@ STAGE PLANS:
           TableScan
             alias: b
             Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
-            Filter Operator
-              predicate: true (type: boolean)
-              Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
-              Map Join Operator
-                condition map:
-                     Right Outer Join0 to 1
-                condition expressions:
-                  0 {key} {value}
-                  1 {key} {value}
-                keys:
-                  0 key (type: string)
-                  1 key (type: string)
-                outputColumnNames: _col0, _col1, _col4, _col5
+            Map Join Operator
+              condition map:
+                   Right Outer Join0 to 1
+              condition expressions:
+                0 {key} {value}
+                1 {key} {value}
+              keys:
+                0 key (type: string)
+                1 key (type: string)
+              outputColumnNames: _col0, _col1, _col4, _col5
+              Statistics: Num rows: 31 Data size: 6393 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: _col0 (type: string), _col1 (type: string), _col4 (type: string), _col5 (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col3
                 Statistics: Num rows: 31 Data size: 6393 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  expressions: _col0 (type: string), _col1 (type: string), _col4 (type: string), _col5 (type: string)
-                  outputColumnNames: _col0, _col1, _col2, _col3
-                  Statistics: Num rows: 31 Data size: 6393 Basic stats: COMPLETE Column stats: NONE
-                  Limit
-                    Number of rows: 10
+                Limit
+                  Number of rows: 10
+                  Statistics: Num rows: 10 Data size: 2060 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
                     Statistics: Num rows: 10 Data size: 2060 Basic stats: COMPLETE Column stats: NONE
-                    File Output Operator
-                      compressed: false
-                      Statistics: Num rows: 10 Data size: 2060 Basic stats: COMPLETE Column stats: NONE
-                      table:
-                          input format: org.apache.hadoop.mapred.TextInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
       Local Work:
         Map Reduce Local Work
 

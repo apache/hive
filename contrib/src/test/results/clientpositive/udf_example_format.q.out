@@ -30,7 +30,7 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
             Select Operator
-              expressions: example_format('abc') (type: string), example_format('%1$s', 1.1) (type: string), example_format('%1$s %2$e', 1.1, 1.2) (type: string), example_format('%1$x %2$o %3$d', 10, 10, 10) (type: string)
+              expressions: 'abc' (type: string), '1.1' (type: string), '1.1 1.200000e+00' (type: string), 'a 12 10' (type: string)
               outputColumnNames: _col0, _col1, _col2, _col3
               Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
               Limit

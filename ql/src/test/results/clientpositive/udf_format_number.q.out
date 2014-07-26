@@ -42,7 +42,7 @@ STAGE PLANS:
           Row Limit Per Split: 1
           Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
           Select Operator
-            expressions: format_number(12332.123456, 4) (type: string), format_number(12332.1, 4) (type: string), format_number(12332.2, 0) (type: string)
+            expressions: '12,332.1235' (type: string), '12,332.1000' (type: string), '12,332' (type: string)
             outputColumnNames: _col0, _col1, _col2
             Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
             ListSink
