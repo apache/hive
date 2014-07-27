@@ -162,7 +162,7 @@ public class SparkClient implements Serializable {
 
     List<Path> inputPaths;
     try {
-      inputPaths = Utilities.getInputPaths(jobConf, mapWork, emptyScratchDir, ctx);
+      inputPaths = Utilities.getInputPaths(jobConf, mapWork, emptyScratchDir, ctx, false);
     } catch (Exception e2) {
       e2.printStackTrace();
       return -1;
