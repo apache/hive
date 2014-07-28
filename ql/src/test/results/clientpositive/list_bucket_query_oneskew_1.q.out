@@ -223,7 +223,7 @@ STAGE PLANS:
               predicate: (x = 484) (type: boolean)
               Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: x (type: int)
+                expressions: 484 (type: int)
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
@@ -370,7 +370,7 @@ STAGE PLANS:
               predicate: (x = 495) (type: boolean)
               Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: x (type: int)
+                expressions: 495 (type: int)
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
@@ -513,7 +513,7 @@ STAGE PLANS:
               predicate: (x = 1) (type: boolean)
               Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: x (type: int)
+                expressions: 1 (type: int)
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator

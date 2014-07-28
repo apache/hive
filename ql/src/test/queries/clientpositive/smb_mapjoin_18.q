@@ -36,8 +36,10 @@ select count(*) from test_table2 where ds = '1' and hash(key) % 2 = 1;
 select count(*) from test_table2 tablesample (bucket 1 out of 2) s where ds = '1';
 select count(*) from test_table2 tablesample (bucket 2 out of 2) s where ds = '1';
 
+set hive.optimize.constant.propagation=false;
 -- Insert data into the bucketed table by selecting from another bucketed table
 -- This should be a map-only operation, one of the buckets should be empty
+
 EXPLAIN
 INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '2')
 SELECT a.key, a.value FROM test_table1 a WHERE a.ds = '1' and a.key = 238;
@@ -45,6 +47,7 @@ SELECT a.key, a.value FROM test_table1 a WHERE a.ds = '1' and a.key = 238;
 INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '2')
 SELECT a.key, a.value FROM test_table1 a WHERE a.ds = '1' and a.key = 238;
 
+set hive.optimize.constant.propagation=true;
 select count(*) from test_table2 where ds = '2';
 select count(*) from test_table2 where ds = '2' and hash(key) % 2 = 0;
 select count(*) from test_table2 where ds = '2' and hash(key) % 2 = 1;

@@ -49,6 +49,9 @@ public class AvroSerdeUtils {
   public static final String SCHEMA_LITERAL = "avro.schema.literal";
   public static final String SCHEMA_URL = "avro.schema.url";
   public static final String SCHEMA_NONE = "none";
+  public static final String SCHEMA_NAMESPACE = "avro.schema.namespace";
+  public static final String SCHEMA_NAME = "avro.schema.name";
+  public static final String SCHEMA_DOC = "avro.schema.doc";
   public static final String EXCEPTION_MESSAGE = "Neither " + SCHEMA_LITERAL + " nor "
           + SCHEMA_URL + " specified, can't determine table schema";
   public static final String AVRO_SERDE_SCHEMA = "avro.serde.schema";

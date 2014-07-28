@@ -38,7 +38,7 @@ STAGE PLANS:
           Row Limit Per Split: 1
           Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
           Select Operator
-            expressions: repeat('Facebook', 3) (type: string), repeat('', 4) (type: string), repeat('asd', 0) (type: string), repeat('asdf', (- 1)) (type: string)
+            expressions: 'FacebookFacebookFacebook' (type: string), '' (type: string), '' (type: string), '' (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3
             Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
             ListSink

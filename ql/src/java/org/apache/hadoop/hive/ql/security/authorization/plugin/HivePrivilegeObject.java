@@ -35,7 +35,9 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
   public int compareTo(HivePrivilegeObject o) {
     int compare = type.compareTo(o.type);
     if (compare == 0) {
-      compare = dbname.compareTo(o.dbname);
+      compare = dbname != null ?
+          (o.dbname != null ? dbname.compareTo(o.dbname) : 1) :
+          (o.dbname != null ? -1 : 0);
     }
     if (compare == 0) {
       compare = objectName != null ?

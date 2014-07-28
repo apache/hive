@@ -32,17 +32,17 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-            Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2906 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key = 86) (type: boolean)
-              Statistics: Num rows: 29 Data size: 2906 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1453 Data size: 2906 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: minute('2009-08-07 13:14:15') (type: int), minute('13:14:15') (type: int), minute('2009-08-07') (type: int)
+                expressions: 14 (type: int), 14 (type: int), null (type: void)
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 29 Data size: 2906 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1453 Data size: 2906 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 29 Data size: 2906 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1453 Data size: 2906 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat

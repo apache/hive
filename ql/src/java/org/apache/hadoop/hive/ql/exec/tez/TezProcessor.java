@@ -16,9 +16,9 @@
  * limitations under the License.
  */
 package org.apache.hadoop.hive.ql.exec.tez;
+
 import java.io.IOException;
 import java.text.NumberFormat;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -101,7 +101,7 @@ public class TezProcessor implements LogicalIOProcessor {
   private void setupMRLegacyConfigs(TezProcessorContext processorContext) {
     // Hive "insert overwrite local directory" uses task id as dir name
     // Setting the id in jobconf helps to have the similar dir name as MR
-    StringBuilder taskAttemptIdBuilder = new StringBuilder("task");
+    StringBuilder taskAttemptIdBuilder = new StringBuilder("attempt_");
     taskAttemptIdBuilder.append(processorContext.getApplicationId().getClusterTimestamp())
         .append("_")
         .append(jobIdFormat.format(processorContext.getApplicationId().getId()))

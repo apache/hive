@@ -29,5 +29,5 @@ POSTHOOK: query: LOCK TABLE tstsrc SHARED
 POSTHOOK: type: LOCKTABLE
 PREHOOK: query: LOCK TABLE tstsrc EXCLUSIVE
 PREHOOK: type: LOCKTABLE
-conflicting lock present for default@tstsrc mode EXCLUSIVE
+Unable to acquire EXPLICIT, EXCLUSIVE lock default@tstsrc after 1 attempts.
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask

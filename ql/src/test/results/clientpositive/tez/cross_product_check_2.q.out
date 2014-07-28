@@ -208,23 +208,20 @@ STAGE PLANS:
                         1 key (type: string)
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 125 Basic stats: COMPLETE Column stats: NONE
-                      Filter Operator
-                        predicate: (1 = 1) (type: boolean)
+                      Select Operator
+                        expressions: _col0 (type: string)
+                        outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 125 Basic stats: COMPLETE Column stats: NONE
-                        Select Operator
-                          expressions: _col0 (type: string)
+                        Group By Operator
+                          keys: _col0 (type: string)
+                          mode: hash
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 125 Basic stats: COMPLETE Column stats: NONE
-                          Group By Operator
-                            keys: _col0 (type: string)
-                            mode: hash
-                            outputColumnNames: _col0
+                          Reduce Output Operator
+                            key expressions: _col0 (type: string)
+                            sort order: +
+                            Map-reduce partition columns: _col0 (type: string)
                             Statistics: Num rows: 1 Data size: 125 Basic stats: COMPLETE Column stats: NONE
-                            Reduce Output Operator
-                              key expressions: _col0 (type: string)
-                              sort order: +
-                              Map-reduce partition columns: _col0 (type: string)
-                              Statistics: Num rows: 1 Data size: 125 Basic stats: COMPLETE Column stats: NONE
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -322,23 +319,20 @@ STAGE PLANS:
                       1 
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 125 Basic stats: COMPLETE Column stats: NONE
-                    Filter Operator
-                      predicate: (1 = 1) (type: boolean)
+                    Select Operator
+                      expressions: _col0 (type: string)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 125 Basic stats: COMPLETE Column stats: NONE
-                      Select Operator
-                        expressions: _col0 (type: string)
+                      Group By Operator
+                        keys: _col0 (type: string)
+                        mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 125 Basic stats: COMPLETE Column stats: NONE
-                        Group By Operator
-                          keys: _col0 (type: string)
-                          mode: hash
-                          outputColumnNames: _col0
+                        Reduce Output Operator
+                          key expressions: _col0 (type: string)
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: string)
                           Statistics: Num rows: 1 Data size: 125 Basic stats: COMPLETE Column stats: NONE
-                          Reduce Output Operator
-                            key expressions: _col0 (type: string)
-                            sort order: +
-                            Map-reduce partition columns: _col0 (type: string)
-                            Statistics: Num rows: 1 Data size: 125 Basic stats: COMPLETE Column stats: NONE
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -437,23 +431,20 @@ STAGE PLANS:
                         1 key (type: string)
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 125 Basic stats: COMPLETE Column stats: NONE
-                      Filter Operator
-                        predicate: (1 = 1) (type: boolean)
+                      Select Operator
+                        expressions: _col0 (type: string)
+                        outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 125 Basic stats: COMPLETE Column stats: NONE
-                        Select Operator
-                          expressions: _col0 (type: string)
+                        Group By Operator
+                          keys: _col0 (type: string)
+                          mode: hash
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 125 Basic stats: COMPLETE Column stats: NONE
-                          Group By Operator
-                            keys: _col0 (type: string)
-                            mode: hash
-                            outputColumnNames: _col0
+                          Reduce Output Operator
+                            key expressions: _col0 (type: string)
+                            sort order: +
+                            Map-reduce partition columns: _col0 (type: string)
                             Statistics: Num rows: 1 Data size: 125 Basic stats: COMPLETE Column stats: NONE
-                            Reduce Output Operator
-                              key expressions: _col0 (type: string)
-                              sort order: +
-                              Map-reduce partition columns: _col0 (type: string)
-                              Statistics: Num rows: 1 Data size: 125 Basic stats: COMPLETE Column stats: NONE
         Map 3 
             Map Operator Tree:
                 TableScan
