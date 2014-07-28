@@ -1870,8 +1870,14 @@
               </void> 
               <void method="add"> 
                <object id="ColumnInfo6" class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
+                <void property="alias"> 
+                 <string>c3</string> 
+                </void> 
                 <void property="internalName"> 
                  <string>_col2</string> 
+                </void> 
+                <void property="tabAlias"> 
+                 <string>b</string> 
                 </void> 
                 <void property="type"> 
                  <object idref="PrimitiveTypeInfo0"/> 

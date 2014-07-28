@@ -21,11 +21,14 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.CommonJoinOperator;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.LateralViewForwardOperator;
 import org.apache.hadoop.hive.ql.exec.LateralViewJoinOperator;
 import org.apache.hadoop.hive.ql.exec.LimitOperator;
+import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.PTFOperator;
 import org.apache.hadoop.hive.ql.exec.ScriptOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
@@ -77,6 +80,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
  */
 public class PredicatePushDown implements Transform {
 
+  private static final Log LOG = LogFactory.getLog(PredicatePushDown.class);
   private ParseContext pGraphContext;
 
   @Override
@@ -126,6 +130,7 @@ public class PredicatePushDown implements Transform {
     topNodes.addAll(pGraphContext.getTopOps().values());
     ogw.startWalking(topNodes, null);
 
+    LOG.debug("After PPD:\n" + Operator.toString(pctx.getTopOps().values()));
     return pGraphContext;
   }
 

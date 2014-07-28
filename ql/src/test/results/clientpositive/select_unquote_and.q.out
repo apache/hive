@@ -58,7 +58,7 @@ STAGE PLANS:
             alias: npe_test
             Statistics: Num rows: 498 Data size: 5290 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((ds > ((2012 - 11) - 31)) and (ds < ((2012 - 12) - 15))) (type: boolean)
+              predicate: ((ds > 1970) and (ds < 1985)) (type: boolean)
               Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string), ds (type: string)

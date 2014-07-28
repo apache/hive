@@ -67,6 +67,9 @@ public class Optimizer {
         HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_MAP_GROUPBY_SORT)) {
       transformations.add(new GroupByOptimizer());
     }
+    if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTCONSTANTPROPAGATION)) {
+      transformations.add(new ConstantPropagate());
+    }
     transformations.add(new ColumnPruner());
     if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_OPTIMIZE_SKEWJOIN_COMPILETIME)) {
       transformations.add(new SkewJoinOptimizer());

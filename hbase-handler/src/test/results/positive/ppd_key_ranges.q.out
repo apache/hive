@@ -191,7 +191,7 @@ STAGE PLANS:
               predicate: (((key >= 9) and (key < 17)) and (key = 11)) (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Select Operator
-                expressions: key (type: int), value (type: string)
+                expressions: 11 (type: int), value (type: string)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 File Output Operator

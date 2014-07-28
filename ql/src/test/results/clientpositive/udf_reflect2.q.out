@@ -320,7 +320,7 @@ STAGE PLANS:
             Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Select Operator
-              expressions: UDFToInteger(key) (type: int), value (type: string), CAST( '2013-02-15 19:41:20' AS TIMESTAMP) (type: timestamp)
+              expressions: UDFToInteger(key) (type: int), value (type: string), 2013-02-15 19:41:20.0 (type: timestamp)
               outputColumnNames: _col0, _col1, _col2
               Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
               Select Operator

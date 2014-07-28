@@ -37,20 +37,17 @@ STAGE PLANS:
           TableScan
             alias: s3
             Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
-            Filter Operator
-              predicate: 'tst1' is not null (type: boolean)
-              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: COMPLETE
-              Select Operator
-                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: COMPLETE
-                Group By Operator
-                  aggregations: count(1)
-                  mode: hash
-                  outputColumnNames: _col0
+            Select Operator
+              Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+              Group By Operator
+                aggregations: count(1)
+                mode: hash
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  sort order: 
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                  Reduce Output Operator
-                    sort order: 
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                    value expressions: _col0 (type: bigint)
+                  value expressions: _col0 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
@@ -152,20 +149,17 @@ STAGE PLANS:
           TableScan
             alias: s1
             Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
-            Filter Operator
-              predicate: 'tst1' is not null (type: boolean)
-              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: COMPLETE
-              Select Operator
-                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: COMPLETE
-                Group By Operator
-                  aggregations: count(1)
-                  mode: hash
-                  outputColumnNames: _col0
+            Select Operator
+              Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+              Group By Operator
+                aggregations: count(1)
+                mode: hash
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  sort order: 
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                  Reduce Output Operator
-                    sort order: 
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                    value expressions: _col0 (type: bigint)
+                  value expressions: _col0 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)

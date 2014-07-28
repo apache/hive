@@ -220,4 +220,8 @@ public class ColumnInfo implements Serializable {
 
     return true;
   }
+
+  public void setObjectinspector(ObjectInspector writableObjectInspector) {
+    this.objectInspector = writableObjectInspector;
+  }
 }

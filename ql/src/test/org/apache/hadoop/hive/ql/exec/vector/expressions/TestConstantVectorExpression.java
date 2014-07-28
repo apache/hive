@@ -45,27 +45,35 @@ public class TestConstantVectorExpression {
     ConstantVectorExpression bytesCve = new ConstantVectorExpression(2, str.getBytes());
     Decimal128 decVal = new Decimal128(25.8, (short) 1);
     ConstantVectorExpression decimalCve = new ConstantVectorExpression(3, decVal);
-
+    ConstantVectorExpression nullCve = new ConstantVectorExpression(4, "string", true);
+    
     int size = 20;
-    VectorizedRowBatch vrg = VectorizedRowGroupGenUtil.getVectorizedRowBatch(size, 4, 0);
+    VectorizedRowBatch vrg = VectorizedRowGroupGenUtil.getVectorizedRowBatch(size, 5, 0);
 
     LongColumnVector lcv = (LongColumnVector) vrg.cols[0];
     DoubleColumnVector dcv = new DoubleColumnVector(size);
     BytesColumnVector bcv = new BytesColumnVector(size);
     DecimalColumnVector dv = new DecimalColumnVector(5, 1);
+    BytesColumnVector bcvn = new BytesColumnVector(size);
     vrg.cols[1] = dcv;
     vrg.cols[2] = bcv;
     vrg.cols[3] = dv;
+    vrg.cols[4] = bcvn;
 
     longCve.evaluate(vrg);
     doubleCve.evaluate(vrg);
     bytesCve.evaluate(vrg);  
     decimalCve.evaluate(vrg);
+    nullCve.evaluate(vrg);
     assertTrue(lcv.isRepeating);
     assertTrue(dcv.isRepeating);
     assertTrue(bcv.isRepeating);
     assertEquals(17, lcv.vector[0]);
     assertTrue(17.34 == dcv.vector[0]);
+    
+    assertTrue(bcvn.isRepeating);
+    assertTrue(bcvn.isNull[0]);
+    assertTrue(!bcvn.noNulls);
     
     byte[] alphaBytes = "alpha".getBytes();
     assertTrue(bcv.length[0] == alphaBytes.length);
