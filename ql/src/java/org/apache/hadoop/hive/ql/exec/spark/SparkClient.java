@@ -27,27 +27,17 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
-import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.exec.mr.ExecMapper;
-import org.apache.hadoop.hive.ql.io.HiveInputFormat;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.MapWork;
-import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.io.Writable;
-import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapred.JobConf;
-import org.apache.spark.HashPartitioner;
 import org.apache.spark.SparkConf;
-import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.*;
 
@@ -84,7 +74,8 @@ public class SparkClient implements Serializable {
     // set default spark configurations.
     sparkConf.set("spark.master", SPARK_DEFAULT_MASTER);
     sparkConf.set("spark.app.name", SAPRK_DEFAULT_APP_NAME);
-
+    sparkConf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer");
+    sparkConf.set("spark.default.parallelism",  "1");
     // load properties from spark-defaults.conf.
     InputStream inputStream = null;
     try {
@@ -131,9 +122,6 @@ public class SparkClient implements Serializable {
   }
 
   public int execute(DriverContext driverContext, SparkWork sparkWork) {
-    int rc = 1;
-//    System.out.println("classpath=\n"+System.getProperty("java.class.path") + "\n");
-
     HiveConf hiveConf = (HiveConf)driverContext.getCtx().getConf();
     refreshLocalResources(sparkWork, hiveConf);
 
@@ -178,7 +166,7 @@ public class SparkClient implements Serializable {
     } catch (IOException e1) {
       e1.printStackTrace();
     }
-
+/*
     try {
       Path planPath = new Path(jobConf.getWorkingDirectory(), "plan.xml");
       System.out.println("Serializing plan to path: " + planPath);
@@ -189,8 +177,8 @@ public class SparkClient implements Serializable {
       e1.printStackTrace();
       return 1;
     }
-    
-    JavaPairRDD rdd = createRDD(sc, jobConf, mapWork);
+*/  
+/*    JavaPairRDD rdd = createRDD(sc, jobConf, mapWork);
     byte[] confBytes = KryoSerializer.serializeJobConf(jobConf);
     HiveMapFunction mf = new HiveMapFunction(confBytes);
     JavaPairRDD rdd2 = rdd.mapPartitionsToPair(mf);
@@ -207,7 +195,7 @@ public class SparkClient implements Serializable {
         }
       }
     } else {
-      JavaPairRDD rdd3 = rdd2.partitionBy(new HashPartitioner(1/*redWork.getNumReduceTasks()*/)); // Two partitions.
+      JavaPairRDD rdd3 = rdd2.partitionBy(new HashPartitioner(1)); // Two partitions.
       HiveReduceFunction rf = new HiveReduceFunction(confBytes);
       JavaPairRDD rdd4 = rdd3.mapPartitionsToPair(rf);
       rdd4.foreach(HiveVoidFunction.getInstance());
@@ -218,18 +206,20 @@ public class SparkClient implements Serializable {
         e.printStackTrace();
       }
     }
-    
+*/ 
+    SparkPlanGenerator gen = new SparkPlanGenerator(sc, ctx, jobConf, emptyScratchDir);
+    SparkPlan plan;
+    try {
+      plan = gen.generate(sparkWork);
+    } catch (Exception e) {
+      e.printStackTrace();
+      return 2;
+    }
+
+    plan.execute();
     return 0;
   }
   
-  private JavaPairRDD createRDD(JavaSparkContext sc, JobConf jobConf, MapWork mapWork) {
-    Class ifClass = HiveInputFormat.class;
-
-    // The mapper class is expected by the HiveInputFormat.
-    jobConf.set("mapred.mapper.class", ExecMapper.class.getName());
-    return sc.hadoopRDD(jobConf, ifClass, WritableComparable.class, Writable.class);
-  }
-
   private void refreshLocalResources(SparkWork sparkWork, HiveConf conf) {
     // add hive-exec jar
     String hiveJar = conf.getJar();

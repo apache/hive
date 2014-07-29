@@ -18,13 +18,16 @@
 
 package org.apache.hadoop.hive.ql.exec.spark;
 
+import org.apache.hadoop.io.BytesWritable;
 import org.apache.spark.api.java.function.VoidFunction;
+
+import scala.Tuple2;
 
 /**
  * Implementation of a voidFunction that does nothing.
  *
  */
-public class HiveVoidFunction implements VoidFunction<Object> {
+public class HiveVoidFunction implements VoidFunction<Tuple2<BytesWritable, BytesWritable>> {
   private static final long serialVersionUID = 1L;
   
   private static HiveVoidFunction instance = new HiveVoidFunction();
@@ -37,7 +40,7 @@ public class HiveVoidFunction implements VoidFunction<Object> {
   }
 
   @Override
-  public void call(Object arg0) throws Exception {
+  public void call(Tuple2<BytesWritable, BytesWritable> t) throws Exception {
   }
 
 }

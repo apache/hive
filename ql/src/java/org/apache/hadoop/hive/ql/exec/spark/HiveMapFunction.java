@@ -20,11 +20,7 @@ package org.apache.hadoop.hive.ql.exec.spark;
 
 import java.util.Iterator;
 
-import org.apache.hadoop.fs.FSDataInputStream;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapper;
-import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.Reporter;
@@ -59,6 +55,7 @@ BytesWritable, BytesWritable> {
     collector.clear();
     while(it.hasNext() && !ExecMapper.getDone()) {
       Tuple2<BytesWritable, BytesWritable> input = it.next();
+      System.out.println("mapper input: " + input._1() + ", " + input._2());
       mapper.map(input._1(), input._2(), collector, Reporter.NULL);
     }
     
