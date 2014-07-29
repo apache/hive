@@ -429,6 +429,8 @@ public class StatsUtils {
       cs.setAvgColLen(JavaDataModel.get().lengthOfTimestamp());
     } else if (colType.startsWith(serdeConstants.DECIMAL_TYPE_NAME)) {
       cs.setAvgColLen(JavaDataModel.get().lengthOfDecimal());
+      cs.setCountDistint(csd.getDecimalStats().getNumDVs());
+      cs.setNumNulls(csd.getDecimalStats().getNumNulls());
     } else if (colType.equalsIgnoreCase(serdeConstants.DATE_TYPE_NAME)) {
       cs.setAvgColLen(JavaDataModel.get().lengthOfDate());
     } else {
