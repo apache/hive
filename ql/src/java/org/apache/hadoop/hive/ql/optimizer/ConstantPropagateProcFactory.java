@@ -552,6 +552,7 @@ public final class ConstantPropagateProcFactory {
    * conditional expressions and extract assignment expressions and propagate them.
    */
   public static class ConstantPropagateFilterProc implements NodeProcessor {
+    @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx, Object... nodeOutputs)
         throws SemanticException {
       FilterOperator op = (FilterOperator) nd;
@@ -594,6 +595,7 @@ public final class ConstantPropagateProcFactory {
    * Node Processor for Constant Propagate for Group By Operators.
    */
   public static class ConstantPropagateGroupByProc implements NodeProcessor {
+    @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx, Object... nodeOutputs)
         throws SemanticException {
       GroupByOperator op = (GroupByOperator) nd;
@@ -630,6 +632,7 @@ public final class ConstantPropagateProcFactory {
    * The Default Node Processor for Constant Propagation.
    */
   public static class ConstantPropagateDefaultProc implements NodeProcessor {
+    @Override
     @SuppressWarnings("unchecked")
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx, Object... nodeOutputs)
         throws SemanticException {
@@ -658,6 +661,7 @@ public final class ConstantPropagateProcFactory {
    * The Node Processor for Constant Propagation for Select Operators.
    */
   public static class ConstantPropagateSelectProc implements NodeProcessor {
+    @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx, Object... nodeOutputs)
         throws SemanticException {
       SelectOperator op = (SelectOperator) nd;
@@ -691,6 +695,7 @@ public final class ConstantPropagateProcFactory {
    * propagation, this processor also prunes dynamic partitions to static partitions if possible.
    */
   public static class ConstantPropagateFileSinkProc implements NodeProcessor {
+    @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx, Object... nodeOutputs)
         throws SemanticException {
       FileSinkOperator op = (FileSinkOperator) nd;
@@ -743,6 +748,7 @@ public final class ConstantPropagateProcFactory {
    * Currently these kinds of Operators include UnionOperator and ScriptOperator.
    */
   public static class ConstantPropagateStopProc implements NodeProcessor {
+    @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx, Object... nodeOutputs)
         throws SemanticException {
       Operator<?> op = (Operator<?>) nd;
@@ -763,6 +769,7 @@ public final class ConstantPropagateProcFactory {
    * join (left table for left outer join and vice versa) can be propagated.
    */
   public static class ConstantPropagateReduceSinkProc implements NodeProcessor {
+    @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx, Object... nodeOutputs)
         throws SemanticException {
       ReduceSinkOperator op = (ReduceSinkOperator) nd;
@@ -795,7 +802,11 @@ public final class ConstantPropagateProcFactory {
       // key columns
       ArrayList<ExprNodeDesc> newKeyEpxrs = new ArrayList<ExprNodeDesc>();
       for (ExprNodeDesc desc : rsDesc.getKeyCols()) {
-        newKeyEpxrs.add(foldExpr(desc, constants, cppCtx, op, 0, false));
+        ExprNodeDesc newDesc = foldExpr(desc, constants, cppCtx, op, 0, false);
+        if (newDesc != desc && desc instanceof ExprNodeColumnDesc && newDesc instanceof ExprNodeConstantDesc) {
+          ((ExprNodeConstantDesc)newDesc).setFoldedFromCol(((ExprNodeColumnDesc)desc).getColumn());
+        }
+        newKeyEpxrs.add(newDesc);
       }
       rsDesc.setKeyCols(newKeyEpxrs);
 
@@ -854,6 +865,7 @@ public final class ConstantPropagateProcFactory {
    * The Node Processor for Constant Propagation for Join Operators.
    */
   public static class ConstantPropagateJoinProc implements NodeProcessor {
+    @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx, Object... nodeOutputs)
         throws SemanticException {
       JoinOperator op = (JoinOperator) nd;
@@ -916,6 +928,7 @@ public final class ConstantPropagateProcFactory {
    * The Node Processor for Constant Propagation for Table Scan Operators.
    */
   public static class ConstantPropagateTableScanProc implements NodeProcessor {
+    @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx, Object... nodeOutputs)
         throws SemanticException {
       TableScanOperator op = (TableScanOperator) nd;

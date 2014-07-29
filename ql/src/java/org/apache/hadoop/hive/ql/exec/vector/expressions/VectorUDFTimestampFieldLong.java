@@ -88,6 +88,11 @@ public abstract class VectorUDFTimestampFieldLong extends VectorExpression {
 
   @Override
   public void evaluate(VectorizedRowBatch batch) {
+
+    if (childExpressions != null) {
+        super.evaluateChildren(batch);
+      }
+
     LongColumnVector outV = (LongColumnVector) batch.cols[outputColumn];
     LongColumnVector inputCol = (LongColumnVector)batch.cols[this.colNum];
     /* every line below this is identical for evaluateLong & evaluateString */

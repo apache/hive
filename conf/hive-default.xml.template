@@ -1191,7 +1191,7 @@
   </property>
   <property>
     <key>hive.hwi.war.file</key>
-    <value>${system:HWI_WAR_FILE}</value>
+    <value>${env:HWI_WAR_FILE}</value>
     <description>This sets the path to the HWI war file, relative to ${HIVE_HOME}. </description>
   </property>
   <property>
@@ -2480,12 +2480,11 @@
     </description>
   </property>
   <property>
-    <key>hive.global.init.file.location</key>
-    <value/>
+    <key>hive.server2.global.init.file.location</key>
+    <value>${env:HIVE_CONF_DIR}</value>
     <description>
       The location of HS2 global init file (.hiverc).
-      If the property is not set, then HS2 will search for the file in $HIVE_CONF_DIR/.
-      If the property is set, the value must be a valid path where the init file is located.
+      If the property is reset, the value must be a valid path where the init file is located.
     </description>
   </property>
   <property>
