@@ -36,6 +36,17 @@ public class ExprNodeConstantDesc extends ExprNodeDesc implements Serializable {
   private static final long serialVersionUID = 1L;
   final protected transient static char[] hexArray = "0123456789ABCDEF".toCharArray();
   private Object value;
+  // If this constant was created while doing constant folding, foldedFromCol holds the name of
+  // original column from which it was folded.
+  private transient String foldedFromCol;
+
+  public String getFoldedFromCol() {
+    return foldedFromCol;
+  }
+
+  public void setFoldedFromCol(String foldedFromCol) {
+    this.foldedFromCol = foldedFromCol;
+  }
 
   public ExprNodeConstantDesc() {
   }

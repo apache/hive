@@ -45,6 +45,11 @@ public class StringConcatColScalar extends VectorExpression {
 
   @Override
   public void evaluate(VectorizedRowBatch batch) {
+
+    if (childExpressions != null) {
+      super.evaluateChildren(batch);
+    }
+
     BytesColumnVector inputColVector = (BytesColumnVector) batch.cols[colNum];
     BytesColumnVector outV = (BytesColumnVector) batch.cols[outputColumn];
     int[] sel = batch.selected;

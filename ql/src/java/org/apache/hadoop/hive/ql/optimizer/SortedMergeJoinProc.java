@@ -18,17 +18,13 @@
 
 package org.apache.hadoop.hive.ql.optimizer;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Stack;
 
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
-import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
-import org.apache.hadoop.hive.ql.parse.QBJoinTree;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 
 public class SortedMergeJoinProc extends AbstractSMBJoinProc implements NodeProcessor {
@@ -46,12 +42,6 @@ public class SortedMergeJoinProc extends AbstractSMBJoinProc implements NodeProc
 
     JoinOperator joinOp = (JoinOperator) nd;
     SortBucketJoinProcCtx smbJoinContext = (SortBucketJoinProcCtx) procCtx;
-    Map<MapJoinOperator, QBJoinTree> mapJoinMap = pGraphContext.getMapJoinContext();
-    if (mapJoinMap == null) {
-      mapJoinMap = new HashMap<MapJoinOperator, QBJoinTree>();
-      pGraphContext.setMapJoinContext(mapJoinMap);
-    }
-
     boolean convert =
         canConvertJoinToSMBJoin(
             joinOp, smbJoinContext, pGraphContext);

@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Stack;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileStatus;
@@ -50,6 +51,7 @@ import org.apache.hadoop.hive.ql.parse.QBJoinTree;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.TableAccessAnalyzer;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
@@ -456,10 +458,19 @@ abstract public class AbstractBucketJoinProc implements NodeProcessor {
   public static List<String> toColumns(List<ExprNodeDesc> keys) {
     List<String> columns = new ArrayList<String>();
     for (ExprNodeDesc key : keys) {
-      if (!(key instanceof ExprNodeColumnDesc)) {
+      if (key instanceof ExprNodeColumnDesc) {
+        columns.add(((ExprNodeColumnDesc) key).getColumn());
+      } else if ((key instanceof ExprNodeConstantDesc)) {
+        ExprNodeConstantDesc constant = (ExprNodeConstantDesc) key;
+        String colName = constant.getFoldedFromCol();
+        if (colName == null){
+          return null;
+        } else {
+          columns.add(colName);
+        }
+      } else {
         return null;
       }
-      columns.add(((ExprNodeColumnDesc) key).getColumn());
     }
     return columns;
   }

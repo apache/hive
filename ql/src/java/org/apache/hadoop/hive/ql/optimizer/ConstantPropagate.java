@@ -82,9 +82,7 @@ public class ConstantPropagate implements Transform {
       //    if the later is enabled.
       return pactx;
     }
-    if (pactx.getConf().getBoolVar(ConfVars.HIVEOPTSORTMERGEBUCKETMAPJOIN)) {
-      return pactx;
-    }
+
     pGraphContext = pactx;
     opToParseCtxMap = pGraphContext.getOpParseCtx();
 
