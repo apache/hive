@@ -969,7 +969,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         TableDesc tblDesc = Utilities.getTableDesc(table);
         // Write the output to temporary directory and move it to the final location at the end
         // so the operation is atomic.
-        Path queryTmpdir = ctx.getExternalTmpPath(newTblPartLoc.toUri());
+        Path queryTmpdir = ctx.getExternalTmpPath(newTblPartLoc);
         truncateTblDesc.setOutputDir(queryTmpdir);
         LoadTableDesc ltd = new LoadTableDesc(queryTmpdir, tblDesc,
             partSpec == null ? new HashMap<String, String>() : partSpec);
@@ -1549,7 +1549,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       ddlWork.setNeedLock(true);
       Task<? extends Serializable> mergeTask = TaskFactory.get(ddlWork, conf);
       TableDesc tblDesc = Utilities.getTableDesc(tblObj);
-      Path queryTmpdir = ctx.getExternalTmpPath(newTblPartLoc.toUri());
+      Path queryTmpdir = ctx.getExternalTmpPath(newTblPartLoc);
       mergeDesc.setOutputDir(queryTmpdir);
       LoadTableDesc ltd = new LoadTableDesc(queryTmpdir, tblDesc,
           partSpec == null ? new HashMap<String, String>() : partSpec);
