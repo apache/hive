@@ -24,16 +24,18 @@ import org.junit.Test;
 
 public class TestHCatExternalDynamicPartitioned extends TestHCatDynamicPartitioned {
 
+  public TestHCatExternalDynamicPartitioned(String formatName, String serdeClass,
+      String inputFormatClass, String outputFormatClass)
+      throws Exception {
+    super(formatName, serdeClass, inputFormatClass, outputFormatClass);
+    tableName = "testHCatExternalDynamicPartitionedTable_" + formatName;
+    generateWriteRecords(NUM_RECORDS, NUM_PARTITIONS, 0);
+    generateDataColumns();
+  }
+
   @Override
   protected Boolean isTableExternal() {
     return true;
-  }
-
-  @BeforeClass
-  public static void generateInputData() throws Exception {
-    tableName = "testHCatExternalDynamicPartitionedTable";
-    generateWriteRecords(NUM_RECORDS, NUM_PARTITIONS, 0);
-    generateDataColumns();
   }
 
   /**
