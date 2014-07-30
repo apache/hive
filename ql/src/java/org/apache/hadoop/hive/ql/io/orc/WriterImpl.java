@@ -28,8 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import com.google.common.annotations.VisibleForTesting;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -43,8 +41,8 @@ import org.apache.hadoop.hive.ql.io.orc.OrcFile.EncodingStrategy;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndexEntry;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeStatistics;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.Type;
+import org.apache.hadoop.hive.ql.io.orc.OrcProto.UserMetadataItem;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
-import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
@@ -73,6 +71,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.CodedOutputStream;
@@ -2217,5 +2216,79 @@ class WriterImpl implements Writer, MemoryManager.Callback {
       OrcInputFormat.SHIMS.hflush(rawWriter);
     }
     return rawWriter.getPos();
+  }
+
+  void appendStripe(byte[] stripe, StripeInformation stripeInfo,
+      OrcProto.StripeStatistics stripeStatistics) throws IOException {
+    appendStripe(stripe, 0, stripe.length, stripeInfo, stripeStatistics);
+  }
+
+  void appendStripe(byte[] stripe, int offset, int length,
+      StripeInformation stripeInfo,
+      OrcProto.StripeStatistics stripeStatistics) throws IOException {
+    getStream();
+    long start = rawWriter.getPos();
+
+    long stripeLen = length;
+    long availBlockSpace = blockSize - (start % blockSize);
+
+    // see if stripe can fit in the current hdfs block, else pad the remaining
+    // space in the block
+    if (stripeLen < blockSize && stripeLen > availBlockSpace &&
+        addBlockPadding) {
+      byte[] pad = new byte[(int) Math.min(HDFS_BUFFER_SIZE, availBlockSpace)];
+      LOG.info(String.format("Padding ORC by %d bytes while merging..",
+          availBlockSpace));
+      start += availBlockSpace;
+      while (availBlockSpace > 0) {
+        int writeLen = (int) Math.min(availBlockSpace, pad.length);
+        rawWriter.write(pad, 0, writeLen);
+        availBlockSpace -= writeLen;
+      }
+    }
+
+    rawWriter.write(stripe);
+    rowsInStripe = stripeStatistics.getColStats(0).getNumberOfValues();
+    rowCount += rowsInStripe;
+
+    // since we have already written the stripe, just update stripe statistics
+    treeWriter.stripeStatsBuilders.add(stripeStatistics.toBuilder());
+
+    // update file level statistics
+    updateFileStatistics(stripeStatistics);
+
+    // update stripe information
+    OrcProto.StripeInformation dirEntry = OrcProto.StripeInformation
+        .newBuilder()
+        .setOffset(start)
+        .setNumberOfRows(rowsInStripe)
+        .setIndexLength(stripeInfo.getIndexLength())
+        .setDataLength(stripeInfo.getDataLength())
+        .setFooterLength(stripeInfo.getFooterLength())
+        .build();
+    stripes.add(dirEntry);
+
+    // reset it after writing the stripe
+    rowsInStripe = 0;
+  }
+
+  private void updateFileStatistics(OrcProto.StripeStatistics stripeStatistics) {
+    List<OrcProto.ColumnStatistics> cs = stripeStatistics.getColStatsList();
+
+    // root element
+    treeWriter.fileStatistics.merge(ColumnStatisticsImpl.deserialize(cs.get(0)));
+    TreeWriter[] childWriters = treeWriter.getChildrenWriters();
+    for (int i = 0; i < childWriters.length; i++) {
+      childWriters[i].fileStatistics.merge(
+          ColumnStatisticsImpl.deserialize(cs.get(i + 1)));
+    }
+  }
+
+  void appendUserMetadata(List<UserMetadataItem> userMetadata) {
+    if (userMetadata != null) {
+      for (UserMetadataItem item : userMetadata) {
+        this.userMetadata.put(item.getName(), item.getValue());
+      }
+    }
   }
 }

@@ -31,15 +31,16 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
-import java.lang.StringBuffer;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
 import org.apache.hadoop.hive.ql.exec.DemuxOperator;
@@ -64,11 +65,10 @@ import org.apache.hadoop.hive.ql.exec.mr.ExecDriver;
 import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
-import org.apache.hadoop.hive.ql.io.rcfile.merge.MergeWork;
+import org.apache.hadoop.hive.ql.io.merge.MergeWork;
+import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
-import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMRUnionCtx;
 import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMapRedCtx;
 import org.apache.hadoop.hive.ql.optimizer.listbucketingpruner.ListBucketingPruner;
@@ -1245,23 +1245,33 @@ public final class GenMapRedUtils {
     MapWork cplan;
     Serializable work;
 
-    if (conf.getBoolVar(ConfVars.HIVEMERGERCFILEBLOCKLEVEL) &&
-        fsInputDesc.getTableInfo().getInputFileFormatClass().equals(RCFileInputFormat.class)) {
+    if ((conf.getBoolVar(ConfVars.HIVEMERGERCFILEBLOCKLEVEL) &&
+        fsInputDesc.getTableInfo().getInputFileFormatClass().equals(RCFileInputFormat.class)) ||
+        (conf.getBoolVar(ConfVars.HIVEMERGEORCFILESTRIPELEVEL) &&
+            fsInputDesc.getTableInfo().getInputFileFormatClass().equals(OrcInputFormat.class))) {
 
       // Check if InputFormatClass is valid
-      String inputFormatClass = conf.getVar(ConfVars.HIVEMERGEINPUTFORMATBLOCKLEVEL);
+      final String inputFormatClass;
+      if (fsInputDesc.getTableInfo().getInputFileFormatClass().equals(RCFileInputFormat.class)) {
+        inputFormatClass = conf.getVar(ConfVars.HIVEMERGEINPUTFORMATBLOCKLEVEL);
+      } else {
+        inputFormatClass = conf.getVar(ConfVars.HIVEMERGEINPUTFORMATSTRIPELEVEL);
+      }
       try {
         Class c = Class.forName(inputFormatClass);
 
-        LOG.info("RCFile format- Using block level merge");
-        cplan = GenMapRedUtils.createRCFileMergeTask(fsInputDesc, finalName,
+        if(fsInputDesc.getTableInfo().getInputFileFormatClass().equals(OrcInputFormat.class)) {
+          LOG.info("OrcFile format - Using stripe level merge");
+        } else {
+          LOG.info("RCFile format- Using block level merge");
+        }
+        cplan = GenMapRedUtils.createMergeTask(fsInputDesc, finalName,
             dpCtx != null && dpCtx.getNumDPCols() > 0);
         work = cplan;
       } catch (ClassNotFoundException e) {
         String msg = "Illegal input format class: " + inputFormatClass;
         throw new SemanticException(msg);
       }
-
     } else {
       cplan = createMRWorkForMergingFiles(conf, tsMerge, fsInputDesc);
       if (conf.getVar(ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) {
@@ -1474,20 +1484,22 @@ public final class GenMapRedUtils {
   }
 
   /**
-   * Create a block level merge task for RCFiles.
+   * Create a block level merge task for RCFiles or stripe level merge task for
+   * ORCFiles
    *
    * @param fsInputDesc
    * @param finalName
-   * @return MergeWork if table is stored as RCFile,
+   * @return MergeWork if table is stored as RCFile or ORCFile,
    *         null otherwise
    */
-  public static MapWork createRCFileMergeTask(FileSinkDesc fsInputDesc,
+  public static MapWork createMergeTask(FileSinkDesc fsInputDesc,
       Path finalName, boolean hasDynamicPartitions) throws SemanticException {
 
     Path inputDir = fsInputDesc.getFinalDirName();
     TableDesc tblDesc = fsInputDesc.getTableInfo();
 
-    if (tblDesc.getInputFileFormatClass().equals(RCFileInputFormat.class)) {
+    if (tblDesc.getInputFileFormatClass().equals(RCFileInputFormat.class) ||
+        tblDesc.getInputFileFormatClass().equals(OrcInputFormat.class)) {
       ArrayList<Path> inputDirs = new ArrayList<Path>(1);
       ArrayList<String> inputDirstr = new ArrayList<String>(1);
       if (!hasDynamicPartitions
@@ -1497,7 +1509,8 @@ public final class GenMapRedUtils {
       }
 
       MergeWork work = new MergeWork(inputDirs, finalName,
-          hasDynamicPartitions, fsInputDesc.getDynPartCtx());
+          hasDynamicPartitions, fsInputDesc.getDynPartCtx(),
+          tblDesc.getInputFileFormatClass());
       LinkedHashMap<String, ArrayList<String>> pathToAliases =
           new LinkedHashMap<String, ArrayList<String>>();
       pathToAliases.put(inputDir.toString(), (ArrayList<String>) inputDirstr.clone());
@@ -1515,7 +1528,8 @@ public final class GenMapRedUtils {
       return work;
     }
 
-    throw new SemanticException("createRCFileMergeTask called on non-RCFile table");
+    throw new SemanticException("createMergeTask called on a table with file"
+        + " format other than RCFile or ORCFile");
   }
 
   /**

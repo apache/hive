@@ -69,6 +69,7 @@ import org.apache.hadoop.hive.ql.index.HiveIndex.IndexType;
 import org.apache.hadoop.hive.ql.index.HiveIndexHandler;
 import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
+import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.LockException;
@@ -1520,11 +1521,13 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
             tblObj.getSkewedColValueLocationMaps(), tblObj.isStoredAsSubDirectories(), conf);
       }
 
-      // throw a HiveException for non-rcfile.
-      if (!inputFormatClass.equals(RCFileInputFormat.class)) {
+      // throw a HiveException for other than rcfile and orcfile.
+      if (!((inputFormatClass.equals(RCFileInputFormat.class) ||
+          (inputFormatClass.equals(OrcInputFormat.class))))) {
         throw new SemanticException(
-            "Only RCFileFormat is supportted right now.");
+            "Only RCFile and ORCFile Formats are supportted right now.");
       }
+      mergeDesc.setInputFormatClass(inputFormatClass);
 
       // throw a HiveException if the table/partition is bucketized
       if (bucketCols != null && bucketCols.size() > 0) {
