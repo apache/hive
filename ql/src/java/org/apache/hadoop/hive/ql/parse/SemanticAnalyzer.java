@@ -252,10 +252,21 @@ import org.eigenbase.reltype.RelDataTypeField;
 import org.eigenbase.rex.RexBuilder;
 import org.eigenbase.rex.RexInputRef;
 import org.eigenbase.rex.RexNode;
+import org.eigenbase.rex.RexWindowBound;
+import org.eigenbase.rex.RexFieldCollation;
+import org.eigenbase.sql.SqlAggFunction;
+import org.eigenbase.sql.SqlWindow;
+import org.eigenbase.sql.parser.SqlParserPos;
+import org.eigenbase.sql.type.SqlTypeName;
+import org.eigenbase.sql.SqlCall;
+import org.eigenbase.sql.SqlKind;
+import org.eigenbase.sql.SqlNode;
+import org.eigenbase.sql.SqlLiteral;
 import org.eigenbase.util.CompositeList;
 
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -11762,7 +11773,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         && !queryProperties.hasClusterBy()
         && !queryProperties.hasDistributeBy()
         && !queryProperties.hasSortBy()
-        && !queryProperties.hasWindowing()
         && !queryProperties.hasPTF()
         && !queryProperties.usesScript()
         && !queryProperties.hasMultiDestQuery()
@@ -12628,6 +12638,162 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       return sortRel;
     }
 
+    List<RexNode> getPartitionKeys(PartitionSpec ps, RexNodeConverter converter, RowResolver inputRR)
+        throws SemanticException {
+      List<RexNode> pKeys = new ArrayList<RexNode>();
+      if (ps != null) {
+        List<PartitionExpression> pExprs = ps.getExpressions();
+        for (PartitionExpression pExpr : pExprs) {
+          TypeCheckCtx tcCtx = new TypeCheckCtx(inputRR);
+          tcCtx.setAllowStatefulFunctions(true);
+          ExprNodeDesc exp = genExprNodeDesc(pExpr.getExpression(), inputRR, tcCtx);
+          pKeys.add(converter.convert(exp));
+        }
+      }
+
+      return pKeys;
+    }
+
+    List<RexFieldCollation> getOrderKeys(OrderSpec os, RexNodeConverter converter, RowResolver inputRR) throws SemanticException {
+      List<RexFieldCollation> oKeys = new ArrayList<RexFieldCollation>();
+      if (os != null) {
+        List<OrderExpression> oExprs = os.getExpressions();
+        for (OrderExpression oExpr : oExprs) {
+          TypeCheckCtx tcCtx = new TypeCheckCtx(inputRR);
+          tcCtx.setAllowStatefulFunctions(true);
+          ExprNodeDesc exp = genExprNodeDesc(oExpr.getExpression(), inputRR, tcCtx);
+          RexNode ordExp = converter.convert(exp);
+          Set<SqlKind> flags = new HashSet<SqlKind>();
+          if (oExpr.getOrder() == org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.Order.DESC)
+            flags.add(SqlKind.DESCENDING);
+          oKeys.add(new RexFieldCollation(ordExp, flags));
+        }
+      }
+
+      return oKeys;
+    }
+
+    RexWindowBound getBound(BoundarySpec bs, RexNodeConverter converter) {
+      RexWindowBound rwb = null;
+
+      if (bs != null) {
+        SqlNode sn = null;
+        SqlParserPos pos = new SqlParserPos(1, 1);
+        SqlNode amt = bs.getAmt() == 0 ? null : SqlLiteral.createExactNumeric(
+            String.valueOf(bs.getAmt()), new SqlParserPos(2, 2));
+        RexNode amtLiteral = null;
+        SqlCall sc = null;
+        RexNode rn = null;
+
+        if (amt != null)
+          amtLiteral = m_cluster.getRexBuilder().makeLiteral(new Integer(bs.getAmt()),
+              m_cluster.getTypeFactory().createSqlType(SqlTypeName.INTEGER), true);
+
+        switch (bs.getDirection()) {
+        case PRECEDING:
+          if (amt == null) {
+            rwb = RexWindowBound.create(SqlWindow.createUnboundedPreceding(pos), null);
+          } else {
+            sc = (SqlCall) SqlWindow.createPreceding(amt, pos);
+            rwb = RexWindowBound.create(sc, m_cluster.getRexBuilder().makeCall(sc.getOperator(), amtLiteral));
+          }
+          break;
+
+        case CURRENT:
+          rwb = RexWindowBound.create(SqlWindow.createCurrentRow(new SqlParserPos(1, 1)), null);
+          break;
+
+        case FOLLOWING:
+          if (amt == null) {
+            rwb = RexWindowBound.create(SqlWindow.createUnboundedFollowing(new SqlParserPos(1, 1)), null);
+          } else {
+            sc = (SqlCall) SqlWindow.createFollowing(amt, pos);
+            rwb = RexWindowBound.create(sc, m_cluster.getRexBuilder().makeCall(sc.getOperator(), amtLiteral));
+          }
+          break;
+        }
+      }
+
+      return rwb;
+    }
+    
+    
+    Pair<RexNode, TypeInfo> genWindowingProj(QB qb, ASTNode windowProjAst, int wndSpecASTIndx, int wndProjPos,
+        RelNode srcRel) throws SemanticException {
+      RexNode w = null;
+      TypeInfo wHiveRetType = null;
+      QBParseInfo qbp = getQBParseInfo(qb);
+      WindowingSpec wSpec = qb.getAllWindowingSpecs().values().iterator().next();
+
+      if (wSpec != null) {
+        // 1. Get valid Window Function Spec
+        // NOTE: WindowSpec uses alias "_wcol0","_wcol1"... for
+        // WindowFunctionSpec
+        wSpec.validateAndMakeEffective();
+        WindowExpressionSpec wExpSpec = wSpec.aliasToWdwExpr.get("_wcol" + wndProjPos);
+        //TODO: Throw exception if  wExpSpec is not of type WindowFunctionSpec
+        if (wExpSpec instanceof WindowFunctionSpec) {
+
+          // 2. Get Hive Aggregate Info
+          AggInfo hiveAggInfo = getHiveAggInfo(windowProjAst, wndSpecASTIndx - 1,
+              this.m_relToHiveRR.get(srcRel));
+
+          // 3. Get Optiq Return type for Agg Fn
+          wHiveRetType = hiveAggInfo.m_returnType;
+          RelDataType optiqAggFnRetType = TypeConverter.convert(hiveAggInfo.m_returnType,
+              this.m_cluster.getTypeFactory());
+
+          // 4. Convert Agg Fn args to Optiq
+          ImmutableMap<String, Integer> posMap = this.m_relToHiveColNameOptiqPosMap.get(srcRel);
+          RexNodeConverter converter = new RexNodeConverter(this.m_cluster, srcRel.getRowType(),
+              posMap, 0, false);
+          Builder<RexNode> optiqAggFnArgsBldr = ImmutableList.<RexNode> builder();
+          Builder<RelDataType> optiqAggFnArgsTypeBldr = ImmutableList.<RelDataType> builder();
+          RexNode rexNd = null;
+          for (int i = 0; i < hiveAggInfo.m_aggParams.size(); i++) {
+            optiqAggFnArgsBldr.add(converter.convert(hiveAggInfo.m_aggParams.get(i)));
+            optiqAggFnArgsTypeBldr.add(TypeConverter.convert(hiveAggInfo.m_aggParams.get(i)
+                .getTypeInfo(), this.m_cluster.getTypeFactory()));
+          }
+          ImmutableList<RexNode> optiqAggFnArgs = optiqAggFnArgsBldr.build();
+          ImmutableList<RelDataType> optiqAggFnArgsType = optiqAggFnArgsTypeBldr.build();
+
+          // 5. Get Optiq Agg Fn
+          final SqlAggFunction optiqAggFn = SqlFunctionConverter.getOptiqAggFn(hiveAggInfo.m_udfName,
+              optiqAggFnArgsType, optiqAggFnRetType);
+
+          // 6. Translate Window spec
+          RowResolver inputRR = m_relToHiveRR.get(srcRel);
+          WindowSpec wndSpec = ((WindowFunctionSpec) wExpSpec).getWindowSpec();
+          List<RexNode> partitionKeys = getPartitionKeys(wndSpec.getPartition(), converter, inputRR);
+          List<RexFieldCollation> orderKeys = getOrderKeys(wndSpec.getOrder(), converter, inputRR);
+          RexWindowBound upperBound = getBound(wndSpec.windowFrame.start, converter);
+          RexWindowBound lowerBound = getBound(wndSpec.windowFrame.end, converter);
+          boolean isRows = ((wndSpec.windowFrame.start instanceof RangeBoundarySpec) || (wndSpec.windowFrame.end instanceof RangeBoundarySpec)) ? true
+              : false;
+
+          w = m_cluster.getRexBuilder().makeOver(optiqAggFnRetType, optiqAggFn, optiqAggFnArgs,
+              partitionKeys, ImmutableList.<RexFieldCollation> copyOf(orderKeys), lowerBound,
+              upperBound, isRows, true, false);
+        } else {
+          //TODO: Convert to Semantic Exception
+          throw new RuntimeException("Unsupported window Spec");
+        }
+      }
+
+      return new Pair(w, wHiveRetType);
+    }
+
+    int getWindowSpecIndx(ASTNode wndAST) {
+      int wndASTIndx = -1;
+      int wi = wndAST.getChildCount() - 1;
+      if (wi <= 0 || (wndAST.getChild(wi).getType() != HiveParser.TOK_WINDOWSPEC)) {
+        wi = -1;
+      }
+
+      return wi;
+    }
+
     /**
      * NOTE: there can only be one select caluse since we don't handle multi
      * destination insert.
@@ -12638,6 +12804,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         throws SemanticException {
       boolean subQuery;
       ArrayList<ExprNodeDesc> col_list = new ArrayList<ExprNodeDesc>();
+      ArrayList<Pair<Integer, RexNode>> windowingRexNodes = new ArrayList<Pair<Integer, RexNode>>();
 
       // 1. Get Select Expression List
       QBParseInfo qbp = getQBParseInfo(qb);
@@ -12688,6 +12855,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // 6. Iterate over all expression (after SELECT)
       ASTNode exprList = selExprList;
       int startPosn = posn;
+      int wndProjPos = 0;
       List<String> tabAliasesForAllProjs = getTabAliases(inputRR);
       for (int i = startPosn; i < exprList.getChildCount(); ++i) {
 
@@ -12695,11 +12863,38 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         ASTNode child = (ASTNode) exprList.getChild(i);
         boolean hasAsClause = (!isInTransform) && (child.getChildCount() == 2);
 
-        // 6.2 bail out if it is windowing spec
-        boolean isWindowSpec = child.getChildCount() == 3 ? (child.getChild(2)
-            .getType() == HiveParser.TOK_WINDOWSPEC) : false;
-        if (isWindowSpec)
-          throw new RuntimeException("Windowing is not supported yet");
+
+        // 6.2 Handle windowing spec
+        int wndSpecASTIndx = -1;
+        //TODO: is the check ((child.getChildCount() == 1) || hasAsClause) needed?
+        boolean isWindowSpec = (((child.getChildCount() == 1) || hasAsClause) && child.getChild(0)
+            .getType() == HiveParser.TOK_FUNCTION) ? ((wndSpecASTIndx = getWindowSpecIndx((ASTNode) child
+            .getChild(0))) > 0) : false;
+        if (isWindowSpec) {
+          Pair<RexNode, TypeInfo> wtp = genWindowingProj(qb, (ASTNode) child.getChild(0), wndSpecASTIndx,
+              wndProjPos, srcRel);
+          windowingRexNodes.add(new Pair(pos, wtp.getFirst()));
+
+          // 6.2.1 Check if window expr has alias
+          String colAlias = null;
+          ASTNode tabOrColAst = (ASTNode) child.getChild(1);
+          if (tabOrColAst != null)
+            colAlias = BaseSemanticAnalyzer.getUnescapedName(tabOrColAst);
+
+          // 6.2.2 Update Output Row Schema
+          ColumnInfo oColInfo = new ColumnInfo(getColumnInternalName(pos), wtp.getSecond(), null,
+              false);
+          if (colAlias != null) {
+            out_rwsch.checkColumn(null, colAlias);
+            out_rwsch.put(null, colAlias, oColInfo);
+          } else {
+            out_rwsch.putExpression(child, oColInfo);
+          }
+
+          pos = Integer.valueOf(pos.intValue() + 1);
+          wndProjPos++;
+          continue;
+        }
 
         // 6.3 EXPR AS (ALIAS,...) parses, but is only allowed for UDTF's
         // This check is not needed and invalid when there is a transform b/c
@@ -12805,9 +13000,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       for (ExprNodeDesc colExpr : col_list) {
         optiqColLst.add(rexNodeConv.convert(colExpr));
       }
+      
+      // 9. Add windowing Proj Names
+      for (Pair<Integer, RexNode> wndPair : windowingRexNodes) {
+        optiqColLst.add(wndPair.getFirst(), wndPair.getSecond());
+        columnNames.add(getColumnInternalName(wndPair.getFirst()));
+      }
 
-      // 9. Construct Hive Project Rel
-      // 9.1. Prepend column names with '_o_'
+      // 10. Construct Hive Project Rel
+      // 10.1. Prepend column names with '_o_'
       /*
        * Hive treats names that start with '_c' as internalNames; so change the
        * names so we don't run into this issue when converting back to Hive AST.
@@ -12818,11 +13019,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
               return "_o_" + hName;
             }
           });
-      // 9.2 Build Optiq Rel Node for project using converted projections & col
+      // 10.2 Build Optiq Rel Node for project using converted projections & col
       // names
       HiveRel selRel = HiveProjectRel.create(srcRel, optiqColLst, oFieldNames);
 
-      // 10. Keep track of colname-to-posmap && RR for new select
+      // 11. Keep track of colname-to-posmap && RR for new select
       this.m_relToHiveColNameOptiqPosMap.put(selRel,
           buildHiveToOptiqColumnMap(out_rwsch, selRel));
       this.m_relToHiveRR.put(selRel, out_rwsch);
