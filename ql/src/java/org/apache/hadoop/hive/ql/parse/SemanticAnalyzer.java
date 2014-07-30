@@ -1426,7 +1426,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
               }
               try {
                 fname = ctx.getExternalTmpPath(
-                    FileUtils.makeQualified(location, conf).toUri()).toString();
+                    FileUtils.makeQualified(location, conf)).toString();
               } catch (Exception e) {
                 throw new SemanticException(generateErrorMessage(ast,
                     "Error creating temporary folder on: " + location.toString()), e);
@@ -5662,12 +5662,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if (isNonNativeTable) {
         queryTmpdir = dest_path;
       } else {
-    	// if we are on viewfs we don't want to use /tmp as tmp dir since rename from /tmp/..
-        // to final /user/hive/warehouse/ will fail later, so instead pick tmp dir
-        // on same namespace as tbl dir.
-        queryTmpdir = dest_path.toUri().getScheme().equals("viewfs") ?
-          ctx.getExtTmpPathRelTo(dest_path.getParent().toUri()) :
-          ctx.getExternalTmpPath(dest_path.toUri());
+        queryTmpdir = ctx.getExternalTmpPath(dest_path);
       }
       if (dpCtx != null) {
         // set the root of the temporary path where dynamic partition columns will populate
@@ -5780,12 +5775,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       dest_path = new Path(tabPath.toUri().getScheme(), tabPath.toUri()
           .getAuthority(), partPath.toUri().getPath());
 
-      // if we are on viewfs we don't want to use /tmp as tmp dir since rename from /tmp/..
-      // to final /user/hive/warehouse/ will fail later, so instead pick tmp dir
-      // on same namespace as tbl dir.
-      queryTmpdir = dest_path.toUri().getScheme().equals("viewfs") ?
-        ctx.getExtTmpPathRelTo(dest_path.getParent().toUri()) :
-        ctx.getExternalTmpPath(dest_path.toUri());
+      queryTmpdir = ctx.getExternalTmpPath(dest_path);
       table_desc = Utilities.getTableDesc(dest_tab);
 
       // Add sorting/bucketing if needed
@@ -5842,7 +5832,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
         try {
           Path qPath = FileUtils.makeQualified(dest_path, conf);
-          queryTmpdir = ctx.getExternalTmpPath(qPath.toUri());
+          queryTmpdir = ctx.getExternalTmpPath(qPath);
         } catch (Exception e) {
           throw new SemanticException("Error creating temporary folder on: "
               + dest_path, e);
@@ -6003,7 +5993,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // it should be the same as the MoveWork's sourceDir.
     fileSinkDesc.setStatsAggPrefix(fileSinkDesc.getDirName().toString());
     if (HiveConf.getVar(conf, HIVESTATSDBCLASS).equalsIgnoreCase(StatDB.fs.name())) {
-      String statsTmpLoc = ctx.getExternalTmpPath(queryTmpdir.toUri()).toString();
+      String statsTmpLoc = ctx.getExternalTmpPath(queryTmpdir).toString();
       LOG.info("Set stats collection dir : " + statsTmpLoc);
       conf.set(StatsSetupConst.STATS_TMP_LOC, statsTmpLoc);
     }
@@ -9014,7 +9004,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       tsDesc.setGatherStats(false);
     } else {
       if (HiveConf.getVar(conf, HIVESTATSDBCLASS).equalsIgnoreCase(StatDB.fs.name())) {
-        String statsTmpLoc = ctx.getExternalTmpPath(tab.getPath().toUri()).toString();
+        String statsTmpLoc = ctx.getExternalTmpPath(tab.getPath()).toString();
         LOG.info("Set stats collection dir : " + statsTmpLoc);
         conf.set(StatsSetupConst.STATS_TMP_LOC, statsTmpLoc);
       }
