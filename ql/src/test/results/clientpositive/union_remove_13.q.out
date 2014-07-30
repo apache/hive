@@ -140,10 +140,14 @@ STAGE PLANS:
               name: default.outputtbl1
 
   Stage: Stage-2
-    Block level merge
+    Merge Work
+      merge level: block
+      input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
 
   Stage: Stage-4
-    Block level merge
+    Merge Work
+      merge level: block
+      input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
 
   Stage: Stage-5
     Move Operator

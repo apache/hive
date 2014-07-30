@@ -783,6 +783,14 @@ public class HiveConf extends Configuration {
     HIVEMERGERCFILEBLOCKLEVEL("hive.merge.rcfile.block.level", true, ""),
     HIVEMERGEINPUTFORMATBLOCKLEVEL("hive.merge.input.format.block.level",
         "org.apache.hadoop.hive.ql.io.rcfile.merge.RCFileBlockMergeInputFormat", ""),
+    HIVEMERGEORCFILESTRIPELEVEL("hive.merge.orcfile.stripe.level", true,
+        "When hive.merge.mapfiles or hive.merge.mapredfiles is enabled while writing a\n" +
+        " table with ORC file format, enabling this config will do stripe level fast merge\n" +
+        " for small ORC files. Note that enabling this config will not honor padding tolerance\n" +
+        " config (hive.exec.orc.block.padding.tolerance)."),
+    HIVEMERGEINPUTFORMATSTRIPELEVEL("hive.merge.input.format.stripe.level",
+        "org.apache.hadoop.hive.ql.io.orc.OrcFileStripeMergeInputFormat", 
+	"Input file format to use for ORC stripe level merging (for internal use only)"),
     HIVEMERGECURRENTJOBHASDYNAMICPARTITIONS(
         "hive.merge.current.job.has.dynamic.partitions", false, ""),
 

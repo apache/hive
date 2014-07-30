@@ -110,10 +110,14 @@ STAGE PLANS:
     Stats-Aggr Operator
 
   Stage: Stage-3
-    Block level merge
+    Merge Work
+      merge level: block
+      input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
 
   Stage: Stage-5
-    Block level merge
+    Merge Work
+      merge level: block
+      input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
 
   Stage: Stage-6
     Move Operator
