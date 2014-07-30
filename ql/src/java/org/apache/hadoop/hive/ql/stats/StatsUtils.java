@@ -107,19 +107,27 @@ public class StatsUtils {
     // column level statistics are required only for the columns that are needed
     List<ColumnInfo> schema = tableScanOperator.getSchema().getSignature();
     List<String> neededColumns = tableScanOperator.getNeededColumns();
-    
+
     return collectStatistics(conf, partList, table, schema, neededColumns);
   }
 
-  public static Statistics collectStatistics(HiveConf conf, PrunedPartitionList partList,
+  private static Statistics collectStatistics(HiveConf conf, PrunedPartitionList partList,
       Table table, List<ColumnInfo> schema, List<String> neededColumns) {
-
-    Statistics stats = new Statistics();
 
     boolean fetchColStats =
         HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_STATS_FETCH_COLUMN_STATS);
     boolean fetchPartStats =
         HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_STATS_FETCH_PARTITION_STATS);
+
+    return collectStatistics(conf, partList, table, schema, neededColumns, fetchColStats, fetchPartStats);
+  }
+
+  public static Statistics collectStatistics(HiveConf conf, PrunedPartitionList partList,
+      Table table, List<ColumnInfo> schema, List<String> neededColumns,
+      boolean fetchColStats, boolean fetchPartStats) {
+
+    Statistics stats = new Statistics();
+
     float deserFactor =
         HiveConf.getFloatVar(conf, HiveConf.ConfVars.HIVE_STATS_DESERIALIZATION_FACTOR);
 

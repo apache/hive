@@ -180,7 +180,7 @@ public class RelOptHiveTable extends RelOptAbstractTable {
       } else {
         // 2.2 Obtain col stats for full table scan
         Statistics stats = StatsUtils.collectStatistics(m_hiveConf, partitionList,
-            m_hiveTblMetadata, m_hiveNonPartitionCols, nonPartColNamesThatRqrStats);
+            m_hiveTblMetadata, m_hiveNonPartitionCols, nonPartColNamesThatRqrStats, true, true);
         m_rowCount = stats.getNumRows();
         hiveColStats = new ArrayList<ColStatistics>();
         for (String c : nonPartColNamesThatRqrStats) {
