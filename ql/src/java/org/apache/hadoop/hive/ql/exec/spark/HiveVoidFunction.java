@@ -29,13 +29,13 @@ import scala.Tuple2;
  */
 public class HiveVoidFunction implements VoidFunction<Tuple2<BytesWritable, BytesWritable>> {
   private static final long serialVersionUID = 1L;
-  
+
   private static HiveVoidFunction instance = new HiveVoidFunction();
 
   public static HiveVoidFunction getInstance() {
     return instance;
   }
-  
+
   private HiveVoidFunction() {
   }
 

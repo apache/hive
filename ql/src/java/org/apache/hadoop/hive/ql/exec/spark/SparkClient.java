@@ -50,14 +50,14 @@ public class SparkClient implements Serializable {
   private static final String SAPRK_DEFAULT_APP_NAME = "Hive on Spark";
 
   private static SparkClient client;
-  
+
   public static synchronized SparkClient getInstance(Configuration hiveConf) {
     if (client == null) {
       client = new SparkClient(hiveConf);
     }
     return client;
   }
-  
+
   private JavaSparkContext sc;
 
   private List<String> localJars = new ArrayList<String>();
@@ -89,7 +89,7 @@ public class SparkClient implements Serializable {
             String value = properties.getProperty(propertyName);
             sparkConf.set(propertyName, properties.getProperty(propertyName));
             LOG.info(String.format("load spark configuration from %s (%s -> %s).",
-              SPARK_DEFAULT_CONF_FILE, propertyName, value));
+                SPARK_DEFAULT_CONF_FILE, propertyName, value));
           }
         }
       }
@@ -114,7 +114,7 @@ public class SparkClient implements Serializable {
         String value = entry.getValue();
         sparkConf.set(propertyName, value);
         LOG.info(String.format("load spark configuration from hive configuration (%s -> %s).",
-          propertyName, value));
+            propertyName, value));
       }
     }
 
@@ -144,7 +144,7 @@ public class SparkClient implements Serializable {
     } catch (IOException e) {
       e.printStackTrace();
       System.err.println("Error launching map-reduce job" + "\n"
-        + org.apache.hadoop.util.StringUtils.stringifyException(e));
+          + org.apache.hadoop.util.StringUtils.stringifyException(e));
       return 5;
     }
 
@@ -166,7 +166,7 @@ public class SparkClient implements Serializable {
     } catch (IOException e1) {
       e1.printStackTrace();
     }
-/*
+    /*
     try {
       Path planPath = new Path(jobConf.getWorkingDirectory(), "plan.xml");
       System.out.println("Serializing plan to path: " + planPath);
@@ -177,8 +177,8 @@ public class SparkClient implements Serializable {
       e1.printStackTrace();
       return 1;
     }
-*/  
-/*    JavaPairRDD rdd = createRDD(sc, jobConf, mapWork);
+     */  
+    /*    JavaPairRDD rdd = createRDD(sc, jobConf, mapWork);
     byte[] confBytes = KryoSerializer.serializeJobConf(jobConf);
     HiveMapFunction mf = new HiveMapFunction(confBytes);
     JavaPairRDD rdd2 = rdd.mapPartitionsToPair(mf);
@@ -206,7 +206,7 @@ public class SparkClient implements Serializable {
         e.printStackTrace();
       }
     }
-*/ 
+     */ 
     SparkPlanGenerator gen = new SparkPlanGenerator(sc, ctx, jobConf, emptyScratchDir);
     SparkPlan plan;
     try {
@@ -219,7 +219,7 @@ public class SparkClient implements Serializable {
     plan.execute();
     return 0;
   }
-  
+
   private void refreshLocalResources(SparkWork sparkWork, HiveConf conf) {
     // add hive-exec jar
     String hiveJar = conf.getJar();
@@ -257,7 +257,7 @@ public class SparkClient implements Serializable {
     if (newTmpJars != null && newTmpJars.length > 0) {
       for (String tmpJar : newTmpJars) {
         if (StringUtils.isNotEmpty(tmpJar) && StringUtils.isNotBlank(tmpJar)
-          && !localJars.contains(tmpJar)) {
+            && !localJars.contains(tmpJar)) {
           localJars.add(tmpJar);
           sc.addJar(tmpJar);
         }
@@ -282,7 +282,7 @@ public class SparkClient implements Serializable {
   private void addResources(String addedFiles, List<String> localCache) {
     for (String addedFile : addedFiles.split(",")) {
       if (StringUtils.isNotEmpty(addedFile) && StringUtils.isNotBlank(addedFile)
-        && !localCache.contains(addedFile)) {
+          && !localCache.contains(addedFile)) {
         localCache.add(addedFile);
         sc.addFile(addedFile);
       }

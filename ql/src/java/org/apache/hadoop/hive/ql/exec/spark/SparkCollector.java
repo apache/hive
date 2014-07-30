@@ -32,19 +32,19 @@ public class SparkCollector implements OutputCollector<BytesWritable, BytesWrita
   private static final long serialVersionUID = 1L;
 
   private List<Tuple2<BytesWritable, BytesWritable>> result = new ArrayList<Tuple2<BytesWritable, BytesWritable>>();
-  
+
   @Override
   public void collect(BytesWritable key, BytesWritable value) throws IOException {
     result.add(new Tuple2<BytesWritable, BytesWritable>(copyBytesWritable(key), copyBytesWritable(value)));
   }
-  
+
   // TODO: Move this to a utility class.
   public static BytesWritable copyBytesWritable(BytesWritable bw) {
     BytesWritable copy = new BytesWritable();
     copy.set(bw);
     return copy;
   }
-  
+
   public void clear() {
     result.clear();
   }

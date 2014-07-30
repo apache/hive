@@ -23,15 +23,15 @@ import org.apache.spark.api.java.JavaPairRDD;
 
 public class ReduceTran implements SparkTran {
   private HiveReduceFunction reduceFunc;
-  
-	@Override
-	public JavaPairRDD<BytesWritable, BytesWritable> transform(
-			JavaPairRDD<BytesWritable, BytesWritable> input) {
-		return input.mapPartitionsToPair(reduceFunc);
-	}
 
-	public void setReduceFunction(HiveReduceFunction redFunc) {
-		this.reduceFunc = redFunc;
-	}
+  @Override
+  public JavaPairRDD<BytesWritable, BytesWritable> transform(
+      JavaPairRDD<BytesWritable, BytesWritable> input) {
+    return input.mapPartitionsToPair(reduceFunc);
+  }
+
+  public void setReduceFunction(HiveReduceFunction redFunc) {
+    this.reduceFunc = redFunc;
+  }
 
 }

@@ -73,7 +73,7 @@ public class KryoSerializer {
     return out.toByteArray();
 
   }
-  
+
   public static JobConf deserializeJobConf(byte[] buffer) {
     JobConf conf = new JobConf();
     try {

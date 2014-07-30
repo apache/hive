@@ -35,7 +35,7 @@ import scala.Tuple2;
 public class HiveReduceFunction implements PairFlatMapFunction<Iterator<Tuple2<BytesWritable,BytesWritable>>,
 BytesWritable, BytesWritable> {
   private static final long serialVersionUID = 1L;
-  
+
   private transient ExecReducer reducer;
   private transient SparkCollector collector;
   private transient JobConf jobConf;
@@ -52,7 +52,7 @@ BytesWritable, BytesWritable> {
     if (jobConf == null) {
       jobConf = KryoSerializer.deserializeJobConf(this.buffer);
       jobConf.set("mapred.reducer.class", ExecReducer.class.getName());      
- 
+
       reducer = new ExecReducer();
       reducer.configure(jobConf);
       collector = new SparkCollector();
@@ -74,14 +74,14 @@ BytesWritable, BytesWritable> {
       }
       valueList.add(value);
     }
-    
+
     for (Map.Entry<BytesWritable, List<BytesWritable>> entry : clusteredRows.entrySet()) {
       // pass on the clustered result to the reducer operator tree.
       reducer.reduce(entry.getKey(), entry.getValue().iterator(), collector, Reporter.NULL);
     }
-    
+
     reducer.close();
     return collector.getResult();
   }
-  
+
 }
