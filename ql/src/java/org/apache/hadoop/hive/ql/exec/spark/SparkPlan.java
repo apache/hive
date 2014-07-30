@@ -22,27 +22,27 @@ import org.apache.hadoop.io.BytesWritable;
 import org.apache.spark.api.java.JavaPairRDD;
 
 public class SparkPlan {
-	private JavaPairRDD<BytesWritable, BytesWritable> input;
-	private SparkTran tran;
-	
-	public void execute() {
-		JavaPairRDD<BytesWritable, BytesWritable> rdd = tran.transform(input);
-		rdd.foreach(HiveVoidFunction.getInstance());
-	}
+  private JavaPairRDD<BytesWritable, BytesWritable> input;
+  private SparkTran tran;
 
-	public SparkTran getTran() {
-		return tran;
-	}
+  public void execute() {
+    JavaPairRDD<BytesWritable, BytesWritable> rdd = tran.transform(input);
+    rdd.foreach(HiveVoidFunction.getInstance());
+  }
 
-	public void setTran(SparkTran tran) {
-		this.tran = tran;
-	}
+  public SparkTran getTran() {
+    return tran;
+  }
 
-	public JavaPairRDD<BytesWritable, BytesWritable> getInput() {
-		return input;
-	}
+  public void setTran(SparkTran tran) {
+    this.tran = tran;
+  }
 
-	public void setInput(JavaPairRDD<BytesWritable, BytesWritable> input) {
-		this.input = input;
-	}
+  public JavaPairRDD<BytesWritable, BytesWritable> getInput() {
+    return input;
+  }
+
+  public void setInput(JavaPairRDD<BytesWritable, BytesWritable> input) {
+    this.input = input;
+  }
 }

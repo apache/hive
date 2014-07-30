@@ -31,7 +31,7 @@ import scala.Tuple2;
 public class HiveMapFunction implements PairFlatMapFunction<Iterator<Tuple2<BytesWritable, BytesWritable>>,
 BytesWritable, BytesWritable> {
   private static final long serialVersionUID = 1L;
-  
+
   private transient ExecMapper mapper;
   private transient SparkCollector collector;
   private transient JobConf jobConf;
@@ -58,9 +58,9 @@ BytesWritable, BytesWritable> {
       System.out.println("mapper input: " + input._1() + ", " + input._2());
       mapper.map(input._1(), input._2(), collector, Reporter.NULL);
     }
-    
+
     mapper.close();
     return collector.getResult();
   }
-  
+
 }

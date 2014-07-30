@@ -22,16 +22,16 @@ import org.apache.hadoop.io.BytesWritable;
 import org.apache.spark.api.java.JavaPairRDD;
 
 public class MapTran implements SparkTran {
-	private HiveMapFunction mapFunc;
+  private HiveMapFunction mapFunc;
 
-	@Override
-	public JavaPairRDD<BytesWritable, BytesWritable> transform(
-			JavaPairRDD<BytesWritable, BytesWritable> input) {
-		return input.mapPartitionsToPair(mapFunc);
-	}
+  @Override
+  public JavaPairRDD<BytesWritable, BytesWritable> transform(
+      JavaPairRDD<BytesWritable, BytesWritable> input) {
+    return input.mapPartitionsToPair(mapFunc);
+  }
 
-	public void setMapFunction(HiveMapFunction mapFunc) {
-		this.mapFunc = mapFunc;
-	}
+  public void setMapFunction(HiveMapFunction mapFunc) {
+    this.mapFunc = mapFunc;
+  }
 
 }

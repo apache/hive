@@ -46,7 +46,7 @@ public class SparkTask extends Task<SparkWork> {
     }
     return rc;
   }
-  
+
   /**
    * close will move the temp files into the right place for the fetch
    * task. If the job has failed it will clean up the files.
@@ -64,7 +64,7 @@ public class SparkTask extends Task<SparkWork> {
       if (rc == 0) {
         rc = 3;
         String mesg = "Job Commit failed with exception '"
-          + Utilities.getNameMessage(e) + "'";
+            + Utilities.getNameMessage(e) + "'";
         console.printError(mesg, "\n" + StringUtils.stringifyException(e));
       }
     }

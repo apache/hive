@@ -24,10 +24,10 @@ import org.apache.spark.api.java.JavaPairRDD;
 
 public class ShuffleTran implements SparkTran {
 
-	@Override
-	public JavaPairRDD<BytesWritable, BytesWritable> transform(
-			JavaPairRDD<BytesWritable, BytesWritable> input) {
-		return input.partitionBy(new HashPartitioner(1));
-	}
+  @Override
+  public JavaPairRDD<BytesWritable, BytesWritable> transform(
+      JavaPairRDD<BytesWritable, BytesWritable> input) {
+    return input.partitionBy(new HashPartitioner(1));
+  }
 
 }
