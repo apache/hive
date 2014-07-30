@@ -112,6 +112,14 @@
     <profile>
       <id>dist</id>
       <build>
+        <resources>
+          <resource>
+            <directory>../conf/</directory>
+            <includes>
+              <include>hive-default.xml.template</include>
+            </includes>
+          </resource>
+        </resources>
         <plugins>
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
@@ -140,14 +148,6 @@
   </profiles>
 
   <build>
-    <resources>
-      <resource>
-        <directory>../conf/</directory>
-        <includes>
-          <include>hive-default.xml.template</include>
-        </includes>
-      </resource>
-    </resources>
     <sourceDirectory>${basedir}/src/java</sourceDirectory>
     <testSourceDirectory>${basedir}/src/test</testSourceDirectory>
     <scriptSourceDirectory>${basedir}/src/scripts</scriptSourceDirectory>
