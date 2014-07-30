@@ -26,10 +26,14 @@ import org.eigenbase.rel.SortRel;
 import org.eigenbase.rel.TableAccessRelBase;
 import org.eigenbase.reltype.RelDataTypeField;
 import org.eigenbase.rex.RexCall;
+import org.eigenbase.rex.RexFieldCollation;
 import org.eigenbase.rex.RexInputRef;
 import org.eigenbase.rex.RexLiteral;
 import org.eigenbase.rex.RexNode;
+import org.eigenbase.rex.RexOver;
 import org.eigenbase.rex.RexVisitorImpl;
+import org.eigenbase.rex.RexWindow;
+import org.eigenbase.rex.RexWindowBound;
 import org.eigenbase.sql.SqlKind;
 import org.eigenbase.sql.SqlOperator;
 import org.eigenbase.sql.type.BasicSqlType;
@@ -49,7 +53,7 @@ public class ASTConverter {
   SortRel          order;
 
   Schema           schema;
-  
+
   ASTConverter(RelNode root) {
     this.root = root;
     hiveAST = new HiveAST();
@@ -128,10 +132,10 @@ public class ASTConverter {
     hiveAST.select = b.node();
 
     /*
-     * 7. Order
-     * Use in Order By from the block above. RelNode has no pointer to parent
-     * hence we need to go top down; but OB at each block really belong to its
-     * src/from. Hence the need to pass in sortRel for each block from its parent.
+     * 7. Order Use in Order By from the block above. RelNode has no pointer to
+     * parent hence we need to go top down; but OB at each block really belong
+     * to its src/from. Hence the need to pass in sortRel for each block from
+     * its parent.
      */
     if (sortrel != null) {
       HiveSortRel hiveSort = (HiveSortRel) sortrel;
@@ -145,9 +149,9 @@ public class ASTConverter {
            * ASTNode on unqualified name.
            */
           ASTNode astCol = ASTBuilder.unqualifiedName(cI.column);
-          ASTNode astNode = c.getDirection() == RelFieldCollation.Direction.ASCENDING
-              ? ASTBuilder.createAST(HiveParser.TOK_TABSORTCOLNAMEASC, "TOK_TABSORTCOLNAMEASC")
-              : ASTBuilder.createAST(HiveParser.TOK_TABSORTCOLNAMEDESC, "TOK_TABSORTCOLNAMEDESC");
+          ASTNode astNode = c.getDirection() == RelFieldCollation.Direction.ASCENDING ? ASTBuilder
+              .createAST(HiveParser.TOK_TABSORTCOLNAMEASC, "TOK_TABSORTCOLNAMEASC") : ASTBuilder
+              .createAST(HiveParser.TOK_TABSORTCOLNAMEDESC, "TOK_TABSORTCOLNAMEDESC");
           astNode.addChild(astCol);
           orderAst.addChild(astNode);
         }
@@ -182,7 +186,8 @@ public class ASTConverter {
       QueryBlockInfo right = convertSource(join.getRight());
       s = new Schema(left.schema, right.schema);
       ASTNode cond = join.getCondition().accept(new RexVisitor(s));
-      boolean semiJoin = ((join instanceof HiveJoinRel) && ((HiveJoinRel)join).isLeftSemiJoin()) ? true : false;
+      boolean semiJoin = ((join instanceof HiveJoinRel) && ((HiveJoinRel) join).isLeftSemiJoin()) ? true
+          : false;
       ast = ASTBuilder.join(left.ast, right.ast, join.getJoinType(), cond, semiJoin);
       if (semiJoin)
         s = left.schema;
@@ -262,6 +267,119 @@ public class ASTConverter {
     @Override
     public ASTNode visitLiteral(RexLiteral literal) {
       return ASTBuilder.literal(literal);
+    }
+
+    private ASTNode getPSpecAST(RexWindow window) {
+      ASTNode pSpecAst = null;
+      
+      ASTNode dByAst = null;
+      if (window.partitionKeys != null && !window.partitionKeys.isEmpty()) {
+        dByAst = ASTBuilder.createAST(HiveParser.TOK_DISTRIBUTEBY, "TOK_DISTRIBUTEBY");
+        for (RexNode pk : window.partitionKeys) {
+          ASTNode astCol = pk.accept(this);
+          dByAst.addChild(astCol);
+        }        
+      }
+      
+      ASTNode oByAst = null;
+      if (window.orderKeys != null && !window.orderKeys.isEmpty()) {
+        oByAst = ASTBuilder.createAST(HiveParser.TOK_ORDERBY, "TOK_ORDERBY");
+        for (RexFieldCollation ok : window.orderKeys) {
+          ASTNode astNode = ok.getDirection() == RelFieldCollation.Direction.ASCENDING ? ASTBuilder
+              .createAST(HiveParser.TOK_TABSORTCOLNAMEASC, "TOK_TABSORTCOLNAMEASC") : ASTBuilder
+              .createAST(HiveParser.TOK_TABSORTCOLNAMEDESC, "TOK_TABSORTCOLNAMEDESC");
+              ASTNode astCol = ok.left.accept(this);
+          astNode.addChild(astCol);
+          oByAst.addChild(astNode);
+        }
+      }
+
+      if (dByAst != null || oByAst != null) {
+        pSpecAst = ASTBuilder.createAST(HiveParser.TOK_PARTITIONINGSPEC, "TOK_PARTITIONINGSPEC");
+        if (dByAst != null)
+          pSpecAst.addChild(dByAst);
+        if (oByAst != null)
+          pSpecAst.addChild(oByAst);
+      }
+
+      return pSpecAst;
+    }
+    
+    private ASTNode getWindowBound(RexWindowBound wb) {
+      ASTNode wbAST = null;
+      
+      if (wb.isCurrentRow()) {
+        wbAST = ASTBuilder.createAST(HiveParser.KW_CURRENT, "CURRENT");     
+      } else { 
+        if (wb.isPreceding())
+        wbAST = ASTBuilder.createAST(HiveParser.KW_PRECEDING, "PRECEDING");
+        else
+          wbAST = ASTBuilder.createAST(HiveParser.KW_FOLLOWING, "FOLLOWING");
+        if (wb.isUnbounded()) {
+          wbAST.addChild(ASTBuilder.createAST(HiveParser.KW_UNBOUNDED, "UNBOUNDED"));
+        } else {
+          ASTNode offset = wb.getOffset().accept(this);
+          wbAST.addChild(offset);
+        }
+      }
+      
+      return wbAST;
+    }
+
+    private ASTNode getWindowRangeAST(RexWindow window) {
+      ASTNode wRangeAst = null;
+
+      ASTNode startAST = null;
+      RexWindowBound ub = (RexWindowBound)window.getUpperBound();
+      if (ub != null) {
+        startAST = getWindowBound(ub);
+      }
+      
+      ASTNode endAST = null;
+      RexWindowBound lb = (RexWindowBound)window.getLowerBound();
+      if (lb != null) {
+        endAST = getWindowBound(lb);
+      }
+
+      if (startAST != null || endAST != null) {
+        //NOTE: in Hive AST Rows->Range(Physical) & Range -> Values (logical)
+        if (window.isRows())
+        wRangeAst = ASTBuilder.createAST(HiveParser.TOK_WINDOWRANGE, "TOK_WINDOWRANGE");
+        else
+          wRangeAst = ASTBuilder.createAST(HiveParser.TOK_WINDOWVALUES, "TOK_WINDOWVALUES");
+        if (startAST != null)
+        wRangeAst.addChild(startAST);
+        if (endAST != null)
+          wRangeAst.addChild(endAST);
+      }
+      
+      return wRangeAst;
+    }
+
+    @Override
+    public ASTNode visitOver(RexOver over) {
+      if (!deep) {
+        return null;
+      }
+      
+      // 1. Translate the UDAF
+      final ASTNode wUDAFAst = visitCall(over);
+      
+      // 2. Add TOK_WINDOW as child of UDAF
+      ASTNode wSpec = ASTBuilder.createAST(HiveParser.TOK_WINDOWSPEC, "TOK_WINDOWSPEC");
+      wUDAFAst.addChild(wSpec);
+      
+      // 3. Add Part Spec & Range Spec as child of TOK_WINDOW
+      final RexWindow window = over.getWindow();
+      final ASTNode wPSpecAst = getPSpecAST(window);
+      final ASTNode wRangeAst = getWindowRangeAST(window);
+      if (wPSpecAst != null)
+        wSpec.addChild(wPSpecAst);
+      if (wRangeAst != null)
+        wSpec.addChild(wRangeAst);
+
+
+      return wUDAFAst;
     }
 
     @Override
