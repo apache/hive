@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.optimizer.optiq.reloperators.HiveAggregateRel;
-import org.apache.hadoop.hive.ql.optimizer.optiq.reloperators.HiveJoinRel;
 import org.apache.hadoop.hive.ql.optimizer.optiq.reloperators.HiveProjectRel;
 import org.apache.hadoop.hive.ql.optimizer.optiq.reloperators.HiveSortRel;
 import org.eigenbase.rel.AggregateRelBase;
@@ -48,7 +47,7 @@ public class DerivedTableInjector {
       // TODO: replace with null scan
     } else if (rel instanceof HepRelVertex) {
       // TODO: is this relevant?
-    } else if (rel instanceof HiveJoinRel) {
+    } else if (rel instanceof JoinRelBase) {
       if (!validJoinParent(rel, parent)) {
         introduceDerivedTable(rel, parent);
       }
