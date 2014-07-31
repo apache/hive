@@ -19,15 +19,11 @@
 package org.apache.hadoop.hive.ql.exec.spark;
 
 import org.apache.hadoop.io.BytesWritable;
-import org.apache.spark.HashPartitioner;
 import org.apache.spark.api.java.JavaPairRDD;
 
-public class ShuffleTran implements SparkTran {
+public interface SparkShuffler {
 
-  @Override
-  public JavaPairRDD<BytesWritable, BytesWritable> transform(
-      JavaPairRDD<BytesWritable, BytesWritable> input) {
-    return input.partitionBy(new HashPartitioner(1));
-  }
+  JavaPairRDD<BytesWritable, Iterable<BytesWritable>> shuffle(
+      JavaPairRDD<BytesWritable, BytesWritable> input);
 
 }
