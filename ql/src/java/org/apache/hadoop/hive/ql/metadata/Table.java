@@ -933,7 +933,11 @@ public class Table implements Serializable {
    * @return include the db name
    */
   public String getCompleteName() {
-    return getDbName() + "@" + getTableName();
+    return getCompleteName(getDbName(), getTableName());
+  }
+
+  public static String getCompleteName(String dbName, String tabName) {
+    return dbName + "@" + tabName;
   }
 
   /**

@@ -17,9 +17,12 @@
  */
 package org.apache.hadoop.hive.ql.security.authorization.plugin;
 
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
 import org.apache.hadoop.hive.common.classification.InterfaceStability.Unstable;
@@ -57,9 +60,18 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
     return compare;
   }
 
-  private int compare(List<String> o1, List<String> o2) {
-    for (int i = 0; i < Math.min(o1.size(), o2.size()); i++) {
-      int compare = o1.get(i).compareTo(o2.get(i));
+  private int compare(Collection<String> o1, Collection<String> o2) {
+    Iterator<String> it1 = o1.iterator();
+    Iterator<String> it2 = o2.iterator();
+    while (it1.hasNext()) {
+      if (!it2.hasNext()) {
+        break;
+      }
+      String s1 = it1.next();
+      String s2 = it2.next();
+      int compare = s1 != null ?
+          (s2 != null ? s1.compareTo(s2) : 1) :
+            (s2 != null ? -1 : 0);
       if (compare != 0) {
         return compare;
       }
@@ -79,7 +91,7 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
   private final String objectName;
   private final List<String> commandParams;
   private final List<String> partKeys;
-  private final List<String> columns;
+  private Set<String> columns;
   private final HivePrivObjectActionType actionType;
 
   public HivePrivilegeObject(HivePrivilegeObjectType type, String dbname, String objectName) {
@@ -94,9 +106,8 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
   public HivePrivilegeObject(HivePrivilegeObjectType type, String dbname, String objectName,
       List<String> partKeys, String column) {
     this(type, dbname, objectName, partKeys,
-        column == null ? null : new ArrayList<String>(Arrays.asList(column)),
+        column == null ? null : new HashSet<String>(Arrays.asList(column)),
         HivePrivObjectActionType.OTHER, null);
-
   }
 
   /**
@@ -110,12 +121,12 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
   }
 
   public HivePrivilegeObject(HivePrivilegeObjectType type, String dbname, String objectName,
-    List<String> partKeys, List<String> columns, List<String> commandParams) {
+    List<String> partKeys, Set<String> columns, List<String> commandParams) {
     this(type, dbname, objectName, partKeys, columns, HivePrivObjectActionType.OTHER, commandParams);
   }
 
   public HivePrivilegeObject(HivePrivilegeObjectType type, String dbname, String objectName,
-      List<String> partKeys, List<String> columns, HivePrivObjectActionType actionType,
+      List<String> partKeys, Set<String> columns, HivePrivObjectActionType actionType,
       List<String> commandParams) {
     this.type = type;
     this.dbname = dbname;
@@ -153,7 +164,13 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
     return partKeys;
   }
 
-  public List<String> getColumns() {
+  /**
+   * Applicable columns in this object
+   * In case of DML read operations, this is the set of columns being used.
+   * Column information is not set for DDL operations and for tables being written into
+   * @return list of applicable columns
+   */
+  public Set<String> getColumns() {
     return columns;
   }
 
@@ -200,6 +217,10 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
 
   private String getDbObjectName(String dbname2, String objectName2) {
     return (dbname == null ? "" : dbname + ".") + objectName;
+  }
+
+  public void setColumns(Set<String> columnms) {
+    this.columns = columnms;
   }
 
 }
