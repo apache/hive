@@ -89,7 +89,6 @@ import org.apache.hadoop.hive.metastore.api.GrantRevokePrivilegeRequest;
 import org.apache.hadoop.hive.metastore.api.GrantRevokePrivilegeResponse;
 import org.apache.hadoop.hive.metastore.api.GrantRevokeRoleRequest;
 import org.apache.hadoop.hive.metastore.api.GrantRevokeRoleResponse;
-import org.apache.hadoop.hive.metastore.api.GrantRevokeType;
 import org.apache.hadoop.hive.metastore.api.HeartbeatRequest;
 import org.apache.hadoop.hive.metastore.api.HeartbeatTxnRangeRequest;
 import org.apache.hadoop.hive.metastore.api.HeartbeatTxnRangeResponse;
@@ -241,12 +240,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
   public static class HMSHandler extends FacebookBase implements
       IHMSHandler {
     public static final Log LOG = HiveMetaStore.LOG;
-    private static boolean createDefaultDB = false;
-    private static boolean defaultRolesCreated = false;
-    private static boolean adminUsersAdded = false;
     private String rawStoreClassName;
     private final HiveConf hiveConf; // stores datastore (jpox) properties,
                                      // right now they come from jpox.properties
+
+    private static String currentUrl;
 
     private Warehouse wh; // hdfs warehouse
     private final ThreadLocal<RawStore> threadLocalMS =
@@ -316,8 +314,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           address, cmd).toString());
     }
 
-    // The next serial number to be assigned
-    private boolean checkForDefaultDb;
     private static int nextSerialNum = 0;
     private static ThreadLocal<Integer> threadLocalId = new ThreadLocal<Integer>() {
       @Override
@@ -348,10 +344,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     public static Integer get() {
       return threadLocalId.get();
-    }
-
-    public static void resetDefaultDBFlag() {
-      createDefaultDB = false;
     }
 
     public HMSHandler(String name) throws MetaException {
@@ -387,8 +379,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     private boolean init() throws MetaException {
       rawStoreClassName = hiveConf.getVar(HiveConf.ConfVars.METASTORE_RAW_STORE_IMPL);
-      checkForDefaultDb = hiveConf.getBoolean(
-          "hive.metastore.checkForDefaultDb", true);
       initListeners = MetaStoreUtils.getMetaStoreListeners(
           MetaStoreInitListener.class, hiveConf,
           hiveConf.getVar(HiveConf.ConfVars.METASTORE_INIT_HOOKS));
@@ -404,9 +394,12 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       wh = new Warehouse(hiveConf);
 
       synchronized (HMSHandler.class) {
-        createDefaultDB();
-        createDefaultRoles();
-        addAdminUsers();
+        if (currentUrl == null || !currentUrl.equals(MetaStoreInit.getConnectionURL(hiveConf))) {
+          createDefaultDB();
+          createDefaultRoles();
+          addAdminUsers();
+          currentUrl = MetaStoreInit.getConnectionURL(hiveConf);
+        }
       }
 
       if (hiveConf.getBoolean("hive.metastore.metrics.enabled", false)) {
@@ -517,7 +510,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         db.setOwnerType(PrincipalType.ROLE);
         ms.createDatabase(db);
       }
-      HMSHandler.createDefaultDB = true;
     }
 
     /**
@@ -526,9 +518,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
      * @throws MetaException
      */
     private void createDefaultDB() throws MetaException {
-      if (HMSHandler.createDefaultDB || !checkForDefaultDb) {
-        return;
-      }
       try {
         createDefaultDB_core(getMS());
       } catch (InvalidObjectException e) {
@@ -540,11 +529,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
 
     private void createDefaultRoles() throws MetaException {
-
-      if(defaultRolesCreated) {
-        LOG.debug("Admin role already created previously.");
-        return;
-      }
 
       RawStore ms = getMS();
       try {
@@ -579,16 +563,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         // Unlikely to be thrown.
         LOG.warn("Failed while granting global privs to admin", e);
       }
-
-      defaultRolesCreated = true;
     }
 
     private void addAdminUsers() throws MetaException {
 
-      if(adminUsersAdded) {
-        LOG.debug("Admin users already added.");
-        return;
-      }
       // now add pre-configured users to admin role
       String userStr = HiveConf.getVar(hiveConf,ConfVars.USERS_IN_ADMIN_ROLE,"").trim();
       if (userStr.isEmpty()) {
@@ -623,7 +601,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           LOG.debug(userName + " already in admin role", e);
         }
       }
-      adminUsersAdded = true;
     }
 
     private void logInfo(String m) {

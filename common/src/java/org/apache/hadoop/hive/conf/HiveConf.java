@@ -108,7 +108,6 @@ public class HiveConf extends Configuration {
       HiveConf.ConfVars.METASTOREPWD,
       HiveConf.ConfVars.METASTORECONNECTURLHOOK,
       HiveConf.ConfVars.METASTORECONNECTURLKEY,
-      HiveConf.ConfVars.METASTOREFORCERELOADCONF,
       HiveConf.ConfVars.METASTORESERVERMINTHREADS,
       HiveConf.ConfVars.METASTORESERVERMAXTHREADS,
       HiveConf.ConfVars.METASTORE_TCP_KEEP_ALIVE,
@@ -352,11 +351,6 @@ public class HiveConf extends Configuration {
         "jdbc:derby:;databaseName=metastore_db;create=true",
         "JDBC connect string for a JDBC metastore"),
 
-    METASTOREFORCERELOADCONF("hive.metastore.force.reload.conf", false, 
-        "Whether to force reloading of the metastore configuration (including\n" +
-        "the connection URL, before the next metastore query that accesses the\n" +
-        "datastore. Once reloaded, this value is reset to false. Used for\n" +
-        "testing only."),
     HMSHANDLERATTEMPTS("hive.hmshandler.retry.attempts", 1,
         "The number of times to retry a HMSHandler call if there were a connection error"),
     HMSHANDLERINTERVAL("hive.hmshandler.retry.interval", 1000,
@@ -1556,7 +1550,7 @@ public class HiveConf extends Configuration {
         "Comma separated list of non-SQL Hive commands users are authorized to execute"),
 
     HIVE_CONF_RESTRICTED_LIST("hive.conf.restricted.list",
-        "hive.security.authenticator.manager,hive.security.authorization.manager",
+        "hive.security.authenticator.manager,hive.security.authorization.manager,hive.users.in.admin.role",
         "Comma separated list of configuration options which are immutable at runtime"),
 
     // If this is set all move tasks at the end of a multi-insert query will only begin once all
@@ -1677,7 +1671,9 @@ public class HiveConf extends Configuration {
         "  none: default(past) behavior. Implies only alphaNumeric and underscore are valid characters in identifiers.\n" +
         "  column: implies column names can contain any character."
     ),
-    USERS_IN_ADMIN_ROLE("hive.users.in.admin.role", "",
+
+    // role names are case-insensitive
+    USERS_IN_ADMIN_ROLE("hive.users.in.admin.role", "", false,
         "Comma separated list of users who are in admin role for bootstrapping.\n" +
         "More users can be added in ADMIN role later."),
 
@@ -1723,25 +1719,31 @@ public class HiveConf extends Configuration {
     private final String description;
 
     private final boolean excluded;
+    private final boolean caseSensitive;
 
     ConfVars(String varname, Object defaultVal, String description) {
-      this(varname, defaultVal, null, description, false);
+      this(varname, defaultVal, null, description, true, false);
     }
 
     ConfVars(String varname, Object defaultVal, String description, boolean excluded) {
-      this(varname, defaultVal, null, description, excluded);
+      this(varname, defaultVal, null, description, true, excluded);
+    }
+
+    ConfVars(String varname, String defaultVal, boolean caseSensitive, String description) {
+      this(varname, defaultVal, null, description, caseSensitive, false);
     }
 
     ConfVars(String varname, Object defaultVal, Validator validator, String description) {
-      this(varname, defaultVal, validator, description, false);
+      this(varname, defaultVal, validator, description, true, false);
     }
 
-    ConfVars(String varname, Object defaultVal, Validator validator, String description, boolean excluded) {
+    ConfVars(String varname, Object defaultVal, Validator validator, String description, boolean caseSensitive, boolean excluded) {
       this.varname = varname;
       this.validator = validator;
       this.description = description;
       this.defaultExpr = defaultVal == null ? null : String.valueOf(defaultVal);
       this.excluded = excluded;
+      this.caseSensitive = caseSensitive;
       if (defaultVal == null || defaultVal instanceof String) {
         this.valClass = String.class;
         this.valType = VarType.STRING;
@@ -1806,6 +1808,10 @@ public class HiveConf extends Configuration {
 
     public boolean isExcluded() {
       return excluded;
+    }
+
+    public boolean isCaseSensitive() {
+      return caseSensitive;
     }
 
     @Override
