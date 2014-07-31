@@ -95,14 +95,12 @@ import org.apache.tez.dag.api.Vertex;
 import org.apache.tez.dag.api.VertexGroup;
 import org.apache.tez.dag.api.VertexManagerPluginDescriptor;
 import org.apache.tez.dag.library.vertexmanager.ShuffleVertexManager;
-import org.apache.tez.mapreduce.common.MRInputAMSplitGenerator;
 import org.apache.tez.mapreduce.hadoop.InputSplitInfo;
 import org.apache.tez.mapreduce.hadoop.MRHelpers;
 import org.apache.tez.mapreduce.hadoop.MRJobConfig;
 import org.apache.tez.mapreduce.input.MRInputLegacy;
 import org.apache.tez.mapreduce.output.MROutput;
 import org.apache.tez.mapreduce.partition.MRPartitioner;
-import org.apache.tez.runtime.api.TezRootInputInitializer;
 import org.apache.tez.runtime.library.conf.OrderedPartitionedKVEdgeConfigurer;
 import org.apache.tez.runtime.library.conf.UnorderedPartitionedKVEdgeConfigurer;
 import org.apache.tez.runtime.library.conf.UnorderedUnpartitionedKVEdgeConfigurer;
@@ -417,7 +415,7 @@ public class DagUtils {
     boolean useTezGroupedSplits = false;
 
     int numTasks = -1;
-    Class<? extends TezRootInputInitializer> amSplitGeneratorClass = null;
+    Class<HiveSplitGenerator> amSplitGeneratorClass = null;
     InputSplitInfo inputSplitInfo = null;
     Class inputFormatClass = conf.getClass("mapred.input.format.class",
         InputFormat.class);
@@ -453,11 +451,7 @@ public class DagUtils {
         && !mapWork.isUseOneNullRowInputFormat()) {
       // if we're generating the splits in the AM, we just need to set
       // the correct plugin.
-      if (useTezGroupedSplits) {
-        amSplitGeneratorClass = HiveSplitGenerator.class;
-      } else {
-        amSplitGeneratorClass = MRInputAMSplitGenerator.class;
-      }
+      amSplitGeneratorClass = HiveSplitGenerator.class;
     } else {
       // client side split generation means we have to compute them now
       inputSplitInfo = MRHelpers.generateInputSplits(conf,
@@ -488,7 +482,6 @@ public class DagUtils {
     } else {
       mrInput = MRHelpers.createMRInputPayload(serializedConf, null);
     }
-
     map.addInput(alias,
         new InputDescriptor(MRInputLegacy.class.getName()).
         setUserPayload(mrInput), amSplitGeneratorClass);
