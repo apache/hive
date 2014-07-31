@@ -62,10 +62,12 @@ public class SparkPlanGenerator {
     MapWork mapWork = (MapWork) w;
     trans.add(generate(w));
     while (sparkWork.getChildren(w).size() > 0) {
-      BaseWork child = sparkWork.getChildren(w).get(0);
+      ReduceWork child = (ReduceWork) sparkWork.getChildren(w).get(0);
       SparkEdgeProperty edge = sparkWork.getEdgeProperty(w, child);
-      trans.add(generate(edge));
-      trans.add(generate(child));
+      SparkShuffler st = generate(edge);
+      ReduceTran rt = generate(child);
+      rt.setShuffler(st);
+      trans.add(rt);
       w = child;
     }
     ChainedTran chainedTran = new ChainedTran(trans);
@@ -107,9 +109,9 @@ public class SparkPlanGenerator {
     return result;
   }
 
-  private ShuffleTran generate(SparkEdgeProperty edge) {
-    // TODO: based on edge type, create groupBy or sortBy transformations.
-    return new ShuffleTran();
+  private SparkShuffler generate(SparkEdgeProperty edge) {
+    // TODO: create different shuffler based on edge prop.
+    return new GroupByShuffler();
   }
 
   private ReduceTran generate(ReduceWork rw) throws IOException {
