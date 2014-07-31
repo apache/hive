@@ -17,6 +17,10 @@
  */
 package org.apache.hadoop.hive.ql.security.authorization;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
 import org.apache.hadoop.classification.InterfaceAudience.LimitedPrivate;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
 import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
@@ -24,8 +28,8 @@ import org.apache.hadoop.hive.metastore.api.HiveObjectType;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeGrantInfo;
 import org.apache.hadoop.hive.ql.ErrorMsg;
-import org.apache.hadoop.hive.ql.hooks.Entity;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.hooks.Entity;
 import org.apache.hadoop.hive.ql.hooks.Entity.Type;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity.WriteType;
@@ -41,9 +45,6 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObje
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivObjectActionType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
 import org.apache.hadoop.hive.ql.session.SessionState;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Utility code shared by hive internal code and sql standard authorization plugin implementation
@@ -173,7 +174,7 @@ public class AuthorizationUtils {
   }
 
   public static HivePrivilegeObject getHivePrivilegeObject(
-      PrivilegeObjectDesc privSubjectDesc, List<String> columns) throws HiveException {
+      PrivilegeObjectDesc privSubjectDesc, Set<String> columns) throws HiveException {
 
     // null means ALL for show grants, GLOBAL for grant/revoke
     HivePrivilegeObjectType objectType = null;

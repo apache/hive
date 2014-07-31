@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVESTATSDBCLASS;
-import static org.apache.hadoop.hive.metastore.MetaStoreUtils.DATABASE_WAREHOUSE_SUFFIX;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -31,10 +30,10 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.UUID;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -2328,13 +2327,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * for inner joins push a 'is not null predicate' to the join sources for
    * every non nullSafe predicate.
    */
-  private Operator genNotNullFilterForJoinSourcePlan(QB qb, Operator input, 
+  private Operator genNotNullFilterForJoinSourcePlan(QB qb, Operator input,
       QBJoinTree joinTree, ExprNodeDesc[] joinKeys) throws SemanticException {
 
     if (qb == null || joinTree == null) {
       return input;
     }
-    
+
     if (!joinTree.getNoOuterJoin()) {
       return input;
     }
@@ -9491,7 +9490,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // Generate column access stats if required - wait until column pruning takes place
     // during optimization
-    if (HiveConf.getBoolVar(this.conf, HiveConf.ConfVars.HIVE_STATS_COLLECT_SCANCOLS) == true) {
+    boolean isColumnInfoNeedForAuth = SessionState.get().isAuthorizationModeV2()
+        && HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_AUTHORIZATION_ENABLED);
+
+    if (isColumnInfoNeedForAuth
+        || HiveConf.getBoolVar(this.conf, HiveConf.ConfVars.HIVE_STATS_COLLECT_SCANCOLS) == true) {
       ColumnAccessAnalyzer columnAccessAnalyzer = new ColumnAccessAnalyzer(pCtx);
       setColumnAccessInfo(columnAccessAnalyzer.analyzeColumnAccess());
     }
@@ -9538,7 +9541,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             if (((TableScanDesc)topOp.getConf()).getIsMetadataOnly()) {
               continue;
             }
-            PrunedPartitionList parts = pCtx.getOpToPartList().get((TableScanOperator) topOp);
+            PrunedPartitionList parts = pCtx.getOpToPartList().get(topOp);
             if (parts.getPartitions().size() > scanLimit) {
               throw new SemanticException(ErrorMsg.PARTITION_SCAN_LIMIT_EXCEEDED, ""
                   + parts.getPartitions().size(), "" + parts.getSourceTable().getTableName(), ""
@@ -10159,7 +10162,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     String dbName = qualified.length == 1 ? SessionState.get().getCurrentDatabase() : qualified[0];
     Database database  = getDatabase(dbName);
     outputs.add(new WriteEntity(database, WriteEntity.WriteType.DDL_SHARED));
- 
+
     if (isTemporary) {
       if (partCols.size() > 0) {
         throw new SemanticException("Partition columns are not supported on temporary tables");
