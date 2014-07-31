@@ -130,7 +130,7 @@ public class MapRedTask extends ExecDriver implements Serializable {
 
       runningViaChild = conf.getBoolVar(HiveConf.ConfVars.SUBMITVIACHILD);
 
-      if (!runningViaChild) {
+      if(!runningViaChild) {
         // we are not running this mapred task via child jvm
         // so directly invoke ExecDriver
         return super.execute(driverContext);
