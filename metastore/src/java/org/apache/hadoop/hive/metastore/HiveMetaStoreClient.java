@@ -34,6 +34,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -144,6 +145,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   private String tokenStrForm;
   private final boolean localMetaStore;
 
+  private Map<String, String> currentMetaVars;
+
   // for thrift connects
   private int retries = 5;
   private int retryDelaySeconds = 0;
@@ -171,6 +174,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
       // through the network
       client = HiveMetaStore.newHMSHandler("hive client", conf);
       isConnected = true;
+      snapshotActiveConf();
       return;
     }
 
@@ -228,6 +232,26 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     URI tmp = metastoreUris[0];
     metastoreUris[0] = metastoreUris[index];
     metastoreUris[index] = tmp;
+  }
+
+  @Override
+  public boolean isCompatibleWith(HiveConf conf) {
+    if (currentMetaVars == null) {
+      return false; // recreate
+    }
+    boolean compatible = true;
+    for (ConfVars oneVar : HiveConf.metaVars) {
+      // Since metaVars are all of different types, use string for comparison
+      String oldVar = currentMetaVars.get(oneVar.varname);
+      String newVar = conf.get(oneVar.varname, "");
+      if (oldVar == null ||
+          (oneVar.isCaseSensitive() ? !oldVar.equals(newVar) : !oldVar.equalsIgnoreCase(newVar))) {
+        LOG.info("Mestastore configuration " + oneVar.varname +
+            " changed from " + oldVar + " to " + newVar);
+        compatible = false;
+      }
+    }
+    return compatible;
   }
 
   @Override
@@ -383,7 +407,17 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
       throw new MetaException("Could not connect to meta store using any of the URIs provided." +
         " Most recent failure: " + StringUtils.stringifyException(tte));
     }
+
+    snapshotActiveConf();
+
     LOG.info("Connected to metastore.");
+  }
+
+  private void snapshotActiveConf() {
+    currentMetaVars = new HashMap<String, String>(HiveConf.metaVars.length);
+    for (ConfVars oneVar : HiveConf.metaVars) {
+      currentMetaVars.put(oneVar.varname, conf.get(oneVar.varname, ""));
+    }
   }
 
   public String getTokenStrForm() throws IOException {
@@ -393,6 +427,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   @Override
   public void close() {
     isConnected = false;
+    currentMetaVars = null;
     try {
       if (null != client) {
         client.shutdown();

@@ -509,6 +509,7 @@ public class TestHive extends TestCase {
 
   public void testHiveRefreshOnConfChange() throws Throwable{
     Hive prevHiveObj = Hive.get();
+    prevHiveObj.getDatabaseCurrent();
     Hive newHiveObj;
 
     //if HiveConf has not changed, same object should be returned
@@ -522,6 +523,7 @@ public class TestHive extends TestCase {
 
     //if HiveConf has changed, new object should be returned
     prevHiveObj = Hive.get();
+    prevHiveObj.getDatabaseCurrent();
     //change value of a metavar config param in new hive conf
     newHconf = new HiveConf(hiveConf);
     newHconf.setIntVar(ConfVars.METASTORETHRIFTCONNECTIONRETRIES,
