@@ -18,11 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.spark;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 
 import org.apache.hadoop.hive.ql.exec.mr.ExecReducer;
 import org.apache.hadoop.io.BytesWritable;
@@ -32,7 +28,7 @@ import org.apache.spark.api.java.function.PairFlatMapFunction;
 
 import scala.Tuple2;
 
-public class HiveReduceFunction implements PairFlatMapFunction<Iterator<Tuple2<BytesWritable,BytesWritable>>,
+public class HiveReduceFunction implements PairFlatMapFunction<Iterator<Tuple2<BytesWritable,Iterable<BytesWritable>>>,
 BytesWritable, BytesWritable> {
   private static final long serialVersionUID = 1L;
 
@@ -47,8 +43,8 @@ BytesWritable, BytesWritable> {
   }
 
   @Override
-  public Iterable<Tuple2<BytesWritable, BytesWritable>> call(Iterator<Tuple2<BytesWritable,BytesWritable>> it)
-      throws Exception {
+  public Iterable<Tuple2<BytesWritable, BytesWritable>>
+  call(Iterator<Tuple2<BytesWritable,Iterable<BytesWritable>>> it) throws Exception {
     if (jobConf == null) {
       jobConf = KryoSerializer.deserializeJobConf(this.buffer);
       jobConf.set("mapred.reducer.class", ExecReducer.class.getName());      
@@ -59,25 +55,9 @@ BytesWritable, BytesWritable> {
     }
 
     collector.clear();
-    Map<BytesWritable, List<BytesWritable>> clusteredRows = 
-        new HashMap<BytesWritable, List<BytesWritable>>();
     while (it.hasNext()) {
-      Tuple2<BytesWritable, BytesWritable> input = it.next();
-      BytesWritable key = input._1();
-      BytesWritable value = input._2();
-      System.out.println("reducer row: " + key + "/" + value);
-      // cluster the input according to key.
-      List<BytesWritable> valueList = clusteredRows.get(key);
-      if (valueList == null) {
-        valueList = new ArrayList<BytesWritable>();
-        clusteredRows.put(key, valueList);
-      }
-      valueList.add(value);
-    }
-
-    for (Map.Entry<BytesWritable, List<BytesWritable>> entry : clusteredRows.entrySet()) {
-      // pass on the clustered result to the reducer operator tree.
-      reducer.reduce(entry.getKey(), entry.getValue().iterator(), collector, Reporter.NULL);
+      Tuple2<BytesWritable, Iterable<BytesWritable>> tup = it.next();
+      reducer.reduce(tup._1(), tup._2().iterator(), collector, Reporter.NULL);
     }
 
     reducer.close();

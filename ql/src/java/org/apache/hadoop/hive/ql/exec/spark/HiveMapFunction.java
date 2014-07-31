@@ -55,7 +55,6 @@ BytesWritable, BytesWritable> {
     collector.clear();
     while(it.hasNext() && !ExecMapper.getDone()) {
       Tuple2<BytesWritable, BytesWritable> input = it.next();
-      System.out.println("mapper input: " + input._1() + ", " + input._2());
       mapper.map(input._1(), input._2(), collector, Reporter.NULL);
     }
 
