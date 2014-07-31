@@ -11,6 +11,7 @@ import org.apache.hadoop.hive.ql.optimizer.optiq.cost.HiveCostUtil;
 import org.eigenbase.rel.InvalidRelException;
 import org.eigenbase.rel.JoinRelBase;
 import org.eigenbase.rel.JoinRelType;
+import org.eigenbase.rel.RelFactories.JoinFactory;
 import org.eigenbase.rel.RelNode;
 import org.eigenbase.relopt.RelOptCluster;
 import org.eigenbase.relopt.RelOptCost;
@@ -35,6 +36,8 @@ public class HiveJoinRel extends JoinRelBase implements HiveRel {
   public enum MapJoinStreamingRelation {
     NONE, LEFT_RELATION, RIGHT_RELATION
   }
+  
+  public static final JoinFactory HIVE_JOIN_FACTORY = new HiveJoinFactoryImpl();
 
   private final boolean m_leftSemiJoin;
   private final JoinAlgorithm      m_joinAlgorithm;
@@ -120,5 +123,31 @@ public class HiveJoinRel extends JoinRelBase implements HiveRel {
           Collections.<RelDataTypeField> emptyList());
     }
     return super.deriveRowType();
+  }
+
+  private static class HiveJoinFactoryImpl implements JoinFactory {
+    /**
+     * Creates a join.
+     * 
+     * @param left
+     *          Left input
+     * @param right
+     *          Right input
+     * @param condition
+     *          Join condition
+     * @param joinType
+     *          Join type
+     * @param variablesStopped
+     *          Set of names of variables which are set by the LHS and used by
+     *          the RHS and are not available to nodes above this JoinRel in the
+     *          tree
+     * @param semiJoinDone
+     *          Whether this join has been translated to a semi-join
+     */
+    @Override
+    public RelNode createJoin(RelNode left, RelNode right, RexNode condition, JoinRelType joinType,
+        Set<String> variablesStopped, boolean semiJoinDone) {
+      return getJoin(left.getCluster(), left, right, condition, joinType, false);
+    }
   }
 }

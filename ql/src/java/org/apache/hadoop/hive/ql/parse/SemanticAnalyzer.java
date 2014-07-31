@@ -229,6 +229,7 @@ import org.eigenbase.rel.InvalidRelException;
 import org.eigenbase.rel.JoinRelType;
 import org.eigenbase.rel.RelCollation;
 import org.eigenbase.rel.RelCollationImpl;
+import org.eigenbase.rel.RelFactories;
 import org.eigenbase.rel.RelFieldCollation;
 import org.eigenbase.rel.RelNode;
 import org.eigenbase.rel.metadata.CachingRelMetadataProvider;
@@ -11869,7 +11870,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       } else {
         final HepProgram hepPgm = new HepProgramBuilder().addMatchOrder(HepMatchOrder.BOTTOM_UP)
             .addRuleInstance(new ConvertMultiJoinRule(HiveJoinRel.class))
-            .addRuleInstance(LoptOptimizeJoinRule.INSTANCE).build();
+            .addRuleInstance(new LoptOptimizeJoinRule(HiveJoinRel.HIVE_JOIN_FACTORY)).build();
 
         HepPlanner hepPlanner = new HepPlanner(hepPgm);
 
