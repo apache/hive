@@ -19,8 +19,8 @@
 package org.apache.hadoop.hive.ql.exec.tez;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
-import java.util.ArrayList;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
@@ -31,8 +31,6 @@ import org.apache.tez.dag.api.EdgeManagerContext;
 import org.apache.tez.runtime.api.events.DataMovementEvent;
 import org.apache.tez.runtime.api.events.InputReadErrorEvent;
 
-import com.google.common.collect.Multimap;
-
 public class CustomPartitionEdge extends EdgeManager {
 
   private static final Log LOG = LogFactory.getLog(CustomPartitionEdge.class.getName());
@@ -41,22 +39,22 @@ public class CustomPartitionEdge extends EdgeManager {
   EdgeManagerContext context = null;
 
   // used by the framework at runtime. initialize is the real initializer at runtime
-  public CustomPartitionEdge() {  
+  public CustomPartitionEdge() {
   }
 
   @Override
-  public int getNumDestinationTaskPhysicalInputs(int numSourceTasks) {
-    return numSourceTasks;
+  public int getNumDestinationTaskPhysicalInputs(int destinationTaskIndex) {
+    return context.getSourceVertexNumTasks();
   }
 
   @Override
-  public int getNumSourceTaskPhysicalOutputs(int numDestinationTasks) {
+  public int getNumSourceTaskPhysicalOutputs(int sourceTaskIndex) {
     return conf.getNumBuckets();
   }
 
   @Override
   public int getNumDestinationConsumerTasks(int sourceTaskIndex) {
-    return sourceTaskIndex;
+    return context.getDestinationVertexNumTasks();
   }
 
   // called at runtime to initialize the custom edge.
@@ -83,30 +81,25 @@ public class CustomPartitionEdge extends EdgeManager {
 
   @Override
   public void routeDataMovementEventToDestination(DataMovementEvent event,
-      int sourceTaskIndex, int numDestinationTasks, Map<Integer, List<Integer>> mapDestTaskIndices) {
-    int srcIndex = event.getSourceIndex();
-    List<Integer> destTaskIndices = new ArrayList<Integer>();
-    destTaskIndices.addAll(conf.getRoutingTable().get(srcIndex));
-    mapDestTaskIndices.put(new Integer(sourceTaskIndex), destTaskIndices);
+      int sourceTaskIndex, int sourceOutputIndex, Map<Integer, List<Integer>> mapDestTaskIndices) {
+    List<Integer> outputIndices = Collections.singletonList(sourceTaskIndex);
+    for (Integer destIndex : conf.getRoutingTable().get(sourceOutputIndex)) {
+      mapDestTaskIndices.put(destIndex, outputIndices);
+    }
   }
 
   @Override
-  public void routeInputSourceTaskFailedEventToDestination(int
-      sourceTaskIndex, Map<Integer, List<Integer>> mapDestTaskIndices) {
-    List<Integer> destTaskIndices = new ArrayList<Integer>();
-    addAllDestinationTaskIndices(context.getDestinationVertexNumTasks(), destTaskIndices);
-    mapDestTaskIndices.put(new Integer(sourceTaskIndex), destTaskIndices);
+  public void routeInputSourceTaskFailedEventToDestination(int sourceTaskIndex,
+      Map<Integer, List<Integer>> mapDestTaskIndices) {
+    List<Integer> outputIndices = Collections.singletonList(sourceTaskIndex);
+    for (int i = 0; i < context.getDestinationVertexNumTasks(); i++) {
+      mapDestTaskIndices.put(i, outputIndices);
+    }
   }
 
   @Override
-  public int routeInputErrorEventToSource(InputReadErrorEvent event, 
+  public int routeInputErrorEventToSource(InputReadErrorEvent event,
       int destinationTaskIndex, int destinationFailedInputIndex) {
     return event.getIndex();
-  }
-
-  void addAllDestinationTaskIndices(int numDestinationTasks, List<Integer> taskIndices) {
-    for(int i=0; i<numDestinationTasks; ++i) {
-      taskIndices.add(new Integer(i));
-    }
   }
 }

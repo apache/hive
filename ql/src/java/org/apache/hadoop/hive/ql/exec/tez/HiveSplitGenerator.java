@@ -45,11 +45,12 @@ import org.apache.tez.mapreduce.protos.MRRuntimeProtos.MRSplitProto;
 import org.apache.tez.mapreduce.protos.MRRuntimeProtos.MRSplitsProto;
 import org.apache.tez.runtime.api.Event;
 import org.apache.tez.runtime.api.RootInputSpecUpdate;
-import org.apache.tez.runtime.api.TezRootInputInitializer;
-import org.apache.tez.runtime.api.TezRootInputInitializerContext;
 import org.apache.tez.runtime.api.events.RootInputConfigureVertexTasksEvent;
 import org.apache.tez.runtime.api.events.RootInputDataInformationEvent;
 import org.apache.tez.runtime.api.events.RootInputInitializerEvent;
+import org.apache.tez.runtime.api.RootInputSpecUpdate;
+import org.apache.tez.runtime.api.TezRootInputInitializer;
+import org.apache.tez.runtime.api.TezRootInputInitializerContext;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
@@ -65,7 +66,7 @@ public class HiveSplitGenerator implements TezRootInputInitializer {
 
   private static final Log LOG = LogFactory.getLog(HiveSplitGenerator.class);
 
-  private final SplitGrouper grouper = new SplitGrouper();
+  private static final SplitGrouper grouper = new SplitGrouper();
 
   @Override
   public List<Event> initialize(TezRootInputInitializerContext rootInputContext) throws Exception {
@@ -86,7 +87,36 @@ public class HiveSplitGenerator implements TezRootInputInitializer {
     InputSplitInfoMem inputSplitInfo = null;
     String realInputFormatName = userPayloadProto.getInputFormatName();
     if (realInputFormatName != null && !realInputFormatName.isEmpty()) {
-      inputSplitInfo = generateGroupedSplits(rootInputContext, jobConf, conf, realInputFormatName);
+      // Need to instantiate the realInputFormat
+      InputFormat<?, ?> inputFormat =
+          (InputFormat<?, ?>) ReflectionUtils.newInstance(Class.forName(realInputFormatName),
+              jobConf);
+
+      int totalResource = rootInputContext.getTotalAvailableResource().getMemory();
+      int taskResource = rootInputContext.getVertexTaskResource().getMemory();
+      int availableSlots = totalResource / taskResource;
+
+      // Create the un-grouped splits
+      float waves =
+          conf.getFloat(TezConfiguration.TEZ_AM_GROUPING_SPLIT_WAVES,
+              TezConfiguration.TEZ_AM_GROUPING_SPLIT_WAVES_DEFAULT);
+
+      InputSplit[] splits = inputFormat.getSplits(jobConf, (int) (availableSlots * waves));
+      LOG.info("Number of input splits: " + splits.length + ". " + availableSlots
+          + " available slots, " + waves + " waves. Input format is: " + realInputFormatName);
+
+      Multimap<Integer, InputSplit> groupedSplits =
+          generateGroupedSplits(jobConf, conf, splits, waves, availableSlots);
+      // And finally return them in a flat array
+      InputSplit[] flatSplits = groupedSplits.values().toArray(new InputSplit[0]);
+      LOG.info("Number of grouped splits: " + flatSplits.length);
+
+      List<TaskLocationHint> locationHints = grouper.createTaskLocationHints(flatSplits);
+
+      Utilities.clearWork(jobConf);
+
+      inputSplitInfo =
+          new InputSplitInfoMem(flatSplits, locationHints, flatSplits.length, null, jobConf);
     } else {
       inputSplitInfo = MRHelpers.generateInputSplitsToMem(jobConf);
     }
@@ -94,30 +124,11 @@ public class HiveSplitGenerator implements TezRootInputInitializer {
     return createEventList(sendSerializedEvents, inputSplitInfo);
   }
 
-  private InputSplitInfoMem generateGroupedSplits(TezRootInputInitializerContext context,
-      JobConf jobConf, Configuration conf, String realInputFormatName) throws Exception {
-
-    int totalResource = context.getTotalAvailableResource().getMemory();
-    int taskResource = context.getVertexTaskResource().getMemory();
-    int availableSlots = totalResource / taskResource;
-
-    float waves =
-        conf.getFloat(TezConfiguration.TEZ_AM_GROUPING_SPLIT_WAVES,
-            TezConfiguration.TEZ_AM_GROUPING_SPLIT_WAVES_DEFAULT);
+  public static Multimap<Integer, InputSplit> generateGroupedSplits(JobConf jobConf,
+      Configuration conf, InputSplit[] splits, float waves, int availableSlots)
+      throws Exception {
 
     MapWork work = Utilities.getMapWork(jobConf);
-
-    LOG.info("Grouping splits for " + work.getName() + ". " + availableSlots + " available slots, "
-        + waves + " waves. Input format is: " + realInputFormatName);
-
-    // Need to instantiate the realInputFormat
-    InputFormat<?, ?> inputFormat =
-        (InputFormat<?, ?>) ReflectionUtils
-            .newInstance(Class.forName(realInputFormatName), jobConf);
-
-    // Create the un-grouped splits
-    InputSplit[] splits = inputFormat.getSplits(jobConf, (int) (availableSlots * waves));
-    LOG.info("Number of input splits: " + splits.length);
 
     Multimap<Integer, InputSplit> bucketSplitMultiMap =
         ArrayListMultimap.<Integer, InputSplit> create();
@@ -161,15 +172,7 @@ public class HiveSplitGenerator implements TezRootInputInitializer {
     Multimap<Integer, InputSplit> groupedSplits =
         grouper.group(jobConf, bucketSplitMultiMap, availableSlots, waves);
 
-    // And finally return them in a flat array
-    InputSplit[] flatSplits = groupedSplits.values().toArray(new InputSplit[0]);
-    LOG.info("Number of grouped splits: " + flatSplits.length);
-
-    List<TaskLocationHint> locationHints = grouper.createTaskLocationHints(flatSplits);
-
-    Utilities.clearWork(jobConf);
-
-    return new InputSplitInfoMem(flatSplits, locationHints, flatSplits.length, null, jobConf);
+    return groupedSplits;
   }
 
   private List<Event> createEventList(boolean sendSerializedEvents, InputSplitInfoMem inputSplitInfo) {
@@ -178,7 +181,8 @@ public class HiveSplitGenerator implements TezRootInputInitializer {
 
     RootInputConfigureVertexTasksEvent configureVertexEvent = new
         RootInputConfigureVertexTasksEvent(inputSplitInfo.getNumTasks(),
-        inputSplitInfo.getTaskLocationHints(), RootInputSpecUpdate.getDefaultSinglePhysicalInputSpecUpdate());
+        inputSplitInfo.getTaskLocationHints(),
+        RootInputSpecUpdate.getDefaultSinglePhysicalInputSpecUpdate());
     events.add(configureVertexEvent);
 
     if (sendSerializedEvents) {
