@@ -18,14 +18,13 @@
 
 package org.apache.hadoop.hive.ql.io;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.mapred.lib.HashPartitioner;
 
 /** Partition keys by their {@link Object#hashCode()}. */
 public class DefaultHivePartitioner<K2, V2> extends HashPartitioner<K2, V2> implements HivePartitioner<K2, V2> {
 
   /** Use {@link Object#hashCode()} to partition. */
+  @Override
   public int getBucket(K2 key, V2 value, int numBuckets) {
     return (key.hashCode() & Integer.MAX_VALUE) % numBuckets;
   }
