@@ -237,11 +237,13 @@ import org.eigenbase.rel.metadata.ChainedRelMetadataProvider;
 import org.eigenbase.rel.metadata.RelMetadataProvider;
 import org.eigenbase.rel.rules.ConvertMultiJoinRule;
 import org.eigenbase.rel.rules.LoptOptimizeJoinRule;
+import org.eigenbase.rel.rules.OptimizeBushyJoinRule;
 import org.eigenbase.relopt.RelOptCluster;
 import org.eigenbase.relopt.RelOptPlanner;
 import org.eigenbase.relopt.RelOptQuery;
 import org.eigenbase.relopt.RelOptRule;
 import org.eigenbase.relopt.RelOptSchema;
+import org.eigenbase.relopt.RelOptUtil;
 import org.eigenbase.relopt.RelTraitSet;
 import org.eigenbase.relopt.hep.HepMatchOrder;
 import org.eigenbase.relopt.hep.HepPlanner;
@@ -11843,8 +11845,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       List<RelMetadataProvider> list = Lists.newArrayList();
       list.add(HiveDefaultRelMetadataProvider.INSTANCE);
       RelTraitSet desiredTraits = cluster.traitSetOf(HiveRel.CONVENTION, RelCollationImpl.EMPTY);
+      final boolean bushy = RelOptUtil.countJoins(optiqPreCboPlan) > 3 ? true : false;
 
-      if (!HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_CBO_GREEDY_JOIN_ORDER)) {
+      if (!bushy) {
         planner.registerMetadataProviders(list);
 
         RelMetadataProvider chainedProvider = ChainedRelMetadataProvider.of(list);
@@ -11868,10 +11871,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
         optiqOptimizedPlan = planner.findBestExp();
       } else {
-        final HepProgram hepPgm = new HepProgramBuilder().addMatchOrder(HepMatchOrder.BOTTOM_UP)
-            .addRuleInstance(new ConvertMultiJoinRule(HiveJoinRel.class))
-            .addRuleInstance(new LoptOptimizeJoinRule(HiveJoinRel.HIVE_JOIN_FACTORY)).build();
-
+        HepProgram hepPgm = null;
+        HepProgramBuilder hepPgmBldr = new HepProgramBuilder().addMatchOrder(
+            HepMatchOrder.BOTTOM_UP).addRuleInstance(new ConvertMultiJoinRule(HiveJoinRel.class));
+        if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_CBO_GREEDY_JOIN_ORDER)) {
+          hepPgmBldr.addRuleInstance(new LoptOptimizeJoinRule(HiveJoinRel.HIVE_JOIN_FACTORY));
+        } else {
+          hepPgmBldr.addRuleInstance(new OptimizeBushyJoinRule(HiveJoinRel.HIVE_JOIN_FACTORY,
+              HiveProjectRel.DEFAULT_PROJECT_FACTORY));
+        }
+        hepPgm = hepPgmBldr.build();
         HepPlanner hepPlanner = new HepPlanner(hepPgm);
 
         hepPlanner.registerMetadataProviders(list);
