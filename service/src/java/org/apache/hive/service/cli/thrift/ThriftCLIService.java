@@ -29,6 +29,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.service.AbstractService;
 import org.apache.hive.service.auth.HiveAuthFactory;
 import org.apache.hive.service.auth.TSetIpAddressProcessor;
@@ -256,6 +257,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
   SessionHandle getSessionHandle(TOpenSessionReq req, TOpenSessionResp res)
       throws HiveSQLException, LoginException, IOException {
     String userName = getUserName(req);
+    String ipAddress = getIpAddress();
     TProtocolVersion protocol = getMinVersion(CLIService.SERVER_VERSION,
         req.getClient_protocol());
     SessionHandle sessionHandle;
@@ -263,10 +265,10 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
         (userName != null)) {
       String delegationTokenStr = getDelegationToken(userName);
       sessionHandle = cliService.openSessionWithImpersonation(protocol, userName,
-          req.getPassword(), req.getConfiguration(), delegationTokenStr);
+          req.getPassword(), ipAddress, req.getConfiguration(), delegationTokenStr);
     } else {
       sessionHandle = cliService.openSession(protocol, userName, req.getPassword(),
-          req.getConfiguration());
+          ipAddress, req.getConfiguration());
     }
     res.setServerProtocolVersion(protocol);
     return sessionHandle;
