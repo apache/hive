@@ -105,6 +105,7 @@ public class SQLStdHiveAccessController implements HiveAccessController {
     }
     this.currentUserName = newUserName;
     this.currentRoles = getRolesFromMS();
+    LOG.info("Current user : " + currentUserName + ", Current Roles : " + currentRoles);
   }
 
   private List<HiveRoleGrant> getRolesFromMS() throws HiveAuthzPluginException {
@@ -532,6 +533,7 @@ public class SQLStdHiveAccessController implements HiveAccessController {
       currentRoles.add(adminRole);
       return;
     }
+    LOG.info("Current user : " + currentUserName + ", Current Roles : " + currentRoles);
     // If we are here it means, user is requesting a role he doesn't belong to.
     throw new HiveAccessControlException(currentUserName +" doesn't belong to role "
       +roleName);

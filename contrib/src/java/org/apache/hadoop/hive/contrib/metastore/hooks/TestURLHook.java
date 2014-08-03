@@ -28,7 +28,8 @@ import org.apache.hadoop.hive.metastore.hooks.JDOConnectionURLHook;
  */
 public class TestURLHook implements JDOConnectionURLHook {
 
-  static String originalUrl = null;
+  private String originalUrl;
+
   @Override
   public String getJdoConnectionUrl(Configuration conf) throws Exception {
     if (originalUrl == null) {

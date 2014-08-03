@@ -401,7 +401,6 @@ public class StatsRulesProcFactory {
 
       long numRows = stats.getNumRows();
 
-      // evaluate similar to "col = constant" expr
       if (pred instanceof ExprNodeGenericFuncDesc) {
 
         ExprNodeGenericFuncDesc genFunc = (ExprNodeGenericFuncDesc) pred;
@@ -413,9 +412,7 @@ public class StatsRulesProcFactory {
             String tabAlias = colDesc.getTabAlias();
             ColStatistics cs = stats.getColumnStatisticsForColumn(tabAlias, colName);
             if (cs != null) {
-              long dvs = cs.getCountDistint();
-              numRows = dvs == 0 ? numRows / 2 : numRows / dvs;
-              return numRows;
+              return cs.getNumNulls();
             }
           }
         }

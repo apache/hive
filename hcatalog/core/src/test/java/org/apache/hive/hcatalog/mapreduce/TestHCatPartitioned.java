@@ -49,10 +49,10 @@ public class TestHCatPartitioned extends HCatMapReduceTest {
   private static List<HCatRecord> writeRecords;
   private static List<HCatFieldSchema> partitionColumns;
 
-  @BeforeClass
-  public static void oneTimeSetUp() throws Exception {
-
-    tableName = "testHCatPartitionedTable";
+  public TestHCatPartitioned(String formatName, String serdeClass, String inputFormatClass,
+      String outputFormatClass) throws Exception {
+    super(formatName, serdeClass, inputFormatClass, outputFormatClass);
+    tableName = "testHCatPartitionedTable_" + formatName;
     writeRecords = new ArrayList<HCatRecord>();
 
     for (int i = 0; i < 20; i++) {
@@ -67,7 +67,6 @@ public class TestHCatPartitioned extends HCatMapReduceTest {
     partitionColumns.add(HCatSchemaUtils.getHCatFieldSchema(new FieldSchema("c1", serdeConstants.INT_TYPE_NAME, "")));
     partitionColumns.add(HCatSchemaUtils.getHCatFieldSchema(new FieldSchema("c2", serdeConstants.STRING_TYPE_NAME, "")));
   }
-
 
   @Override
   protected List<FieldSchema> getPartitionKeys() {

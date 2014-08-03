@@ -43,6 +43,7 @@ import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -141,6 +142,10 @@ public class Hive {
     }
   };
 
+  public static Hive get(Configuration c, Class<?> clazz) throws HiveException {
+    return get(c instanceof HiveConf ? (HiveConf)c : new HiveConf(c, clazz));
+  }
+
   /**
    * Gets hive object for the current thread. If one is not initialized then a
    * new one is created If the new configuration is different in metadata conf
@@ -153,20 +158,13 @@ public class Hive {
    *
    */
   public static Hive get(HiveConf c) throws HiveException {
-    boolean needsRefresh = false;
     Hive db = hiveDB.get();
-    if (db != null) {
-      for (HiveConf.ConfVars oneVar : HiveConf.metaVars) {
-        // Since metaVars are all of different types, use string for comparison
-        String oldVar = db.getConf().get(oneVar.varname, "");
-        String newVar = c.get(oneVar.varname, "");
-        if (oldVar.compareToIgnoreCase(newVar) != 0) {
-          needsRefresh = true;
-          break;
-        }
-      }
+    if (db == null ||
+        (db.metaStoreClient != null && !db.metaStoreClient.isCompatibleWith(c))) {
+      return get(c, true);
     }
-    return get(c, needsRefresh);
+    db.conf = c;
+    return db;
   }
 
   /**
@@ -195,7 +193,8 @@ public class Hive {
   public static Hive get() throws HiveException {
     Hive db = hiveDB.get();
     if (db == null) {
-      db = new Hive(new HiveConf(Hive.class));
+      SessionState session = SessionState.get();
+      db = new Hive(session == null ? new HiveConf(Hive.class) : session.getConf());
       hiveDB.set(db);
     }
     return db;

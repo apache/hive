@@ -69,6 +69,7 @@ import org.apache.hadoop.hive.ql.index.HiveIndex.IndexType;
 import org.apache.hadoop.hive.ql.index.HiveIndexHandler;
 import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
+import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.LockException;
@@ -969,7 +970,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         TableDesc tblDesc = Utilities.getTableDesc(table);
         // Write the output to temporary directory and move it to the final location at the end
         // so the operation is atomic.
-        Path queryTmpdir = ctx.getExternalTmpPath(newTblPartLoc.toUri());
+        Path queryTmpdir = ctx.getExternalTmpPath(newTblPartLoc);
         truncateTblDesc.setOutputDir(queryTmpdir);
         LoadTableDesc ltd = new LoadTableDesc(queryTmpdir, tblDesc,
             partSpec == null ? new HashMap<String, String>() : partSpec);
@@ -1520,11 +1521,13 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
             tblObj.getSkewedColValueLocationMaps(), tblObj.isStoredAsSubDirectories(), conf);
       }
 
-      // throw a HiveException for non-rcfile.
-      if (!inputFormatClass.equals(RCFileInputFormat.class)) {
+      // throw a HiveException for other than rcfile and orcfile.
+      if (!((inputFormatClass.equals(RCFileInputFormat.class) ||
+          (inputFormatClass.equals(OrcInputFormat.class))))) {
         throw new SemanticException(
-            "Only RCFileFormat is supportted right now.");
+            "Only RCFile and ORCFile Formats are supportted right now.");
       }
+      mergeDesc.setInputFormatClass(inputFormatClass);
 
       // throw a HiveException if the table/partition is bucketized
       if (bucketCols != null && bucketCols.size() > 0) {
@@ -1549,7 +1552,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       ddlWork.setNeedLock(true);
       Task<? extends Serializable> mergeTask = TaskFactory.get(ddlWork, conf);
       TableDesc tblDesc = Utilities.getTableDesc(tblObj);
-      Path queryTmpdir = ctx.getExternalTmpPath(newTblPartLoc.toUri());
+      Path queryTmpdir = ctx.getExternalTmpPath(newTblPartLoc);
       mergeDesc.setOutputDir(queryTmpdir);
       LoadTableDesc ltd = new LoadTableDesc(queryTmpdir, tblDesc,
           partSpec == null ? new HashMap<String, String>() : partSpec);

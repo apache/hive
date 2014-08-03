@@ -19,13 +19,15 @@
 
 package org.apache.hive.hcatalog.mapreduce;
 
+import com.google.common.collect.ImmutableSet;
+
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import junit.framework.Assert;
+import java.util.Set;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataOutputStream;
@@ -40,10 +42,10 @@ import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
-import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
-import org.apache.hadoop.hive.ql.io.RCFileOutputFormat;
-import org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe;
+import org.apache.hadoop.hive.ql.io.StorageFormats;
+import org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe;
 import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.avro.AvroSerDe;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
@@ -53,15 +55,23 @@ import org.apache.hadoop.mapreduce.JobStatus;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
+
 import org.apache.hive.hcatalog.common.HCatConstants;
 import org.apache.hive.hcatalog.common.HCatUtil;
 import org.apache.hive.hcatalog.data.DefaultHCatRecord;
 import org.apache.hive.hcatalog.data.HCatRecord;
 import org.apache.hive.hcatalog.data.schema.HCatFieldSchema;
 import org.apache.hive.hcatalog.data.schema.HCatSchema;
+
+import junit.framework.Assert;
+
 import org.junit.After;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,23 +79,55 @@ import static org.junit.Assert.assertTrue;
 
 /**
  * Test for HCatOutputFormat. Writes a partition using HCatOutputFormat and reads
- * it back using HCatInputFormat, checks the column values and counts.
+ * it back using HCatInputFormat, checks the column values and counts. This class
+ * can be tested to test different partitioning schemes.
+ *
+ * This is a parameterized test that tests HCatOutputFormat and HCatInputFormat against Hive's
+ * native storage formats enumerated using {@link org.apache.hive.hcatalog.mapreduce.StorageFormats}.
  */
+@RunWith(Parameterized.class)
 public abstract class HCatMapReduceTest extends HCatBaseTest {
-
   private static final Logger LOG = LoggerFactory.getLogger(HCatMapReduceTest.class);
+
   protected static String dbName = MetaStoreUtils.DEFAULT_DATABASE_NAME;
-  protected static String tableName = "testHCatMapReduceTable";
+  protected static final String TABLE_NAME = "testHCatMapReduceTable";
 
   private static List<HCatRecord> writeRecords = new ArrayList<HCatRecord>();
   private static List<HCatRecord> readRecords = new ArrayList<HCatRecord>();
 
+  private static FileSystem fs;
+  private String externalTableLocation = null;
+  protected String tableName;
+  protected String serdeClass;
+  protected String inputFormatClass;
+  protected String outputFormatClass;
+
+  /**
+   * List of SerDe classes that the HCatalog core tests will not be run against.
+   */
+  public static final Set<String> DISABLED_SERDES = ImmutableSet.of(
+      AvroSerDe.class.getName(),
+      ParquetHiveSerDe.class.getName());
+
+  @Parameterized.Parameters
+  public static Collection<Object[]> generateParameters() {
+    return StorageFormats.asParameters();
+  }
+
+  /**
+   * Test constructor that sets the storage format class names provided by the test parameter.
+   */
+  public HCatMapReduceTest(String name, String serdeClass, String inputFormatClass,
+      String outputFormatClass) throws Exception {
+    this.serdeClass = serdeClass;
+    this.inputFormatClass = inputFormatClass;
+    this.outputFormatClass = outputFormatClass;
+    this.tableName = TABLE_NAME + "_" + name;
+  }
+
   protected abstract List<FieldSchema> getPartitionKeys();
 
   protected abstract List<FieldSchema> getTableColumns();
-
-  private static FileSystem fs;
-  private String externalTableLocation = null;
 
   protected Boolean isTableExternal() {
     return false;
@@ -93,18 +135,6 @@ public abstract class HCatMapReduceTest extends HCatBaseTest {
 
   protected boolean isTableImmutable() {
     return true;
-  }
-
-  protected String inputFormat() {
-    return RCFileInputFormat.class.getName();
-  }
-
-  protected String outputFormat() { 
-    return RCFileOutputFormat.class.getName(); 
-  }
-
-  protected String serdeClass() { 
-    return ColumnarSerDe.class.getName(); 
   }
 
   @BeforeClass
@@ -143,13 +173,16 @@ public abstract class HCatMapReduceTest extends HCatBaseTest {
 
   @Before
   public void createTable() throws Exception {
-    String databaseName = (dbName == null) ? MetaStoreUtils.DEFAULT_DATABASE_NAME : dbName;
+    // Use Junit's Assume to skip running this fixture against any storage formats whose
+    // SerDe is in the disabled serdes list.
+    Assume.assumeTrue(!DISABLED_SERDES.contains(serdeClass));
 
+    String databaseName = (dbName == null) ? MetaStoreUtils.DEFAULT_DATABASE_NAME : dbName;
     try {
       client.dropTable(databaseName, tableName);
     } catch (Exception e) {
-    } //can fail with NoSuchObjectException
-
+      // Can fail with NoSuchObjectException.
+    }
 
     Table tbl = new Table();
     tbl.setDbName(databaseName);
@@ -160,10 +193,9 @@ public abstract class HCatMapReduceTest extends HCatBaseTest {
       tbl.setTableType(TableType.MANAGED_TABLE.toString());
     }
     StorageDescriptor sd = new StorageDescriptor();
-
     sd.setCols(getTableColumns());
-    tbl.setPartitionKeys(getPartitionKeys());
 
+    tbl.setPartitionKeys(getPartitionKeys());
     tbl.setSd(sd);
 
     sd.setBucketCols(new ArrayList<String>(2));
@@ -171,12 +203,12 @@ public abstract class HCatMapReduceTest extends HCatBaseTest {
     sd.getSerdeInfo().setName(tbl.getTableName());
     sd.getSerdeInfo().setParameters(new HashMap<String, String>());
     sd.getSerdeInfo().getParameters().put(serdeConstants.SERIALIZATION_FORMAT, "1");
-    if (isTableExternal()){
+    if (isTableExternal()) {
       sd.getSerdeInfo().getParameters().put("EXTERNAL", "TRUE");
     }
-    sd.getSerdeInfo().setSerializationLib(serdeClass());
-    sd.setInputFormat(inputFormat());
-    sd.setOutputFormat(outputFormat());
+    sd.getSerdeInfo().setSerializationLib(serdeClass);
+    sd.setInputFormat(inputFormatClass);
+    sd.setOutputFormat(outputFormatClass);
 
     Map<String, String> tableParams = new HashMap<String, String>();
     if (isTableExternal()) {
@@ -190,68 +222,59 @@ public abstract class HCatMapReduceTest extends HCatBaseTest {
     client.createTable(tbl);
   }
 
-  //Create test input file with specified number of rows
+  /*
+   * Create test input file with specified number of rows
+   */
   private void createInputFile(Path path, int rowCount) throws IOException {
-
     if (fs.exists(path)) {
       fs.delete(path, true);
     }
 
     FSDataOutputStream os = fs.create(path);
-
     for (int i = 0; i < rowCount; i++) {
       os.writeChars(i + "\n");
     }
-
     os.close();
   }
 
-  public static class MapCreate extends
-      Mapper<LongWritable, Text, BytesWritable, HCatRecord> {
-
-    static int writeCount = 0; //test will be in local mode
+  public static class MapCreate extends Mapper<LongWritable, Text, BytesWritable, HCatRecord> {
+    // Test will be in local mode.
+    static int writeCount = 0;
 
     @Override
-    public void map(LongWritable key, Text value, Context context
-    ) throws IOException, InterruptedException {
-      {
-        try {
-          HCatRecord rec = writeRecords.get(writeCount);
-          context.write(null, rec);
-          writeCount++;
-
-        } catch (Exception e) {
-
-          e.printStackTrace(System.err); //print since otherwise exception is lost
-          throw new IOException(e);
-        }
+    public void map(LongWritable key, Text value, Context context)
+        throws IOException, InterruptedException {
+      try {
+        HCatRecord rec = writeRecords.get(writeCount);
+        context.write(null, rec);
+        writeCount++;
+      } catch (Exception e) {
+        // Print since otherwise exception is lost.
+        e.printStackTrace(System.err);
+        throw new IOException(e);
       }
     }
   }
 
-  public static class MapRead extends
-      Mapper<WritableComparable, HCatRecord, BytesWritable, Text> {
-
+  public static class MapRead extends Mapper<WritableComparable, HCatRecord, BytesWritable, Text> {
     static int readCount = 0; //test will be in local mode
 
     @Override
-    public void map(WritableComparable key, HCatRecord value, Context context
-    ) throws IOException, InterruptedException {
-      {
-        try {
-          readRecords.add(value);
-          readCount++;
-        } catch (Exception e) {
-          e.printStackTrace(); //print since otherwise exception is lost
-          throw new IOException(e);
-        }
+    public void map(WritableComparable key, HCatRecord value, Context context)
+        throws IOException, InterruptedException {
+      try {
+        readRecords.add(value);
+        readCount++;
+      } catch (Exception e) {
+        // Print since otherwise exception is lost.
+        e.printStackTrace();
+        throw new IOException(e);
       }
     }
   }
 
-  Job runMRCreate(Map<String, String> partitionValues,
-          List<HCatFieldSchema> partitionColumns, List<HCatRecord> records,
-          int writeCount, boolean assertWrite) throws Exception {
+  Job runMRCreate(Map<String, String> partitionValues, List<HCatFieldSchema> partitionColumns,
+      List<HCatRecord> records, int writeCount, boolean assertWrite) throws Exception {
     return runMRCreate(partitionValues, partitionColumns, records, writeCount, assertWrite,
         true, null);
   }
@@ -267,10 +290,9 @@ public abstract class HCatMapReduceTest extends HCatBaseTest {
    * @return
    * @throws Exception
    */
-  Job runMRCreate(Map<String, String> partitionValues,
-          List<HCatFieldSchema> partitionColumns, List<HCatRecord> records,
-          int writeCount, boolean assertWrite, boolean asSingleMapTask,
-          String customDynamicPathPattern) throws Exception {
+  Job runMRCreate(Map<String, String> partitionValues, List<HCatFieldSchema> partitionColumns,
+      List<HCatRecord> records, int writeCount, boolean assertWrite, boolean asSingleMapTask,
+      String customDynamicPathPattern) throws Exception {
 
     writeRecords = records;
     MapCreate.writeCount = 0;
@@ -355,7 +377,6 @@ public abstract class HCatMapReduceTest extends HCatBaseTest {
    * @throws Exception
    */
   List<HCatRecord> runMRRead(int readCount, String filter) throws Exception {
-
     MapRead.readCount = 0;
     readRecords.clear();
 
@@ -388,9 +409,7 @@ public abstract class HCatMapReduceTest extends HCatBaseTest {
     return readRecords;
   }
 
-
   protected HCatSchema getTableSchema() throws Exception {
-
     Configuration conf = new Configuration();
     Job job = new Job(conf, "hcat mapreduce read schema test");
     job.setJarByClass(this.getClass());

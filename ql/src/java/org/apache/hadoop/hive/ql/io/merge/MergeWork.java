@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.io.rcfile.merge;
+package org.apache.hadoop.hive.ql.io.merge;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -30,6 +30,12 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.HiveStatsUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
+import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
+import org.apache.hadoop.hive.ql.io.orc.OrcFileMergeMapper;
+import org.apache.hadoop.hive.ql.io.orc.OrcFileStripeMergeInputFormat;
+import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
+import org.apache.hadoop.hive.ql.io.rcfile.merge.RCFileBlockMergeInputFormat;
+import org.apache.hadoop.hive.ql.io.rcfile.merge.RCFileMergeMapper;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.ListBucketingCtx;
@@ -39,7 +45,7 @@ import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.Mapper;
 
-@Explain(displayName = "Block level merge")
+@Explain(displayName = "Merge Work")
 public class MergeWork extends MapWork implements Serializable {
 
   private static final long serialVersionUID = 1L;
@@ -50,23 +56,31 @@ public class MergeWork extends MapWork implements Serializable {
   private DynamicPartitionCtx dynPartCtx;
   private boolean isListBucketingAlterTableConcatenate;
   private ListBucketingCtx listBucketingCtx;
+  private Class<? extends InputFormat> srcTblInputFormat;
 
   public MergeWork() {
   }
 
-  public MergeWork(List<Path> inputPaths, Path outputDir) {
-    this(inputPaths, outputDir, false, null);
+  public MergeWork(List<Path> inputPaths, Path outputDir,
+      Class<? extends InputFormat> srcTblInputFormat) {
+    this(inputPaths, outputDir, false, null, srcTblInputFormat);
   }
 
   public MergeWork(List<Path> inputPaths, Path outputDir,
-      boolean hasDynamicPartitions, DynamicPartitionCtx dynPartCtx) {
+      boolean hasDynamicPartitions, DynamicPartitionCtx dynPartCtx,
+      Class<? extends InputFormat> srcTblInputFormat) {
     super();
     this.inputPaths = inputPaths;
     this.outputDir = outputDir;
     this.hasDynamicPartitions = hasDynamicPartitions;
     this.dynPartCtx = dynPartCtx;
+    this.srcTblInputFormat = srcTblInputFormat;
     PartitionDesc partDesc = new PartitionDesc();
-    partDesc.setInputFileFormatClass(RCFileBlockMergeInputFormat.class);
+    if(srcTblInputFormat.equals(OrcInputFormat.class)) {
+      partDesc.setInputFileFormatClass(OrcFileStripeMergeInputFormat.class);
+    } else if(srcTblInputFormat.equals(RCFileInputFormat.class)) {
+      partDesc.setInputFileFormatClass(RCFileBlockMergeInputFormat.class);
+    }
     if(this.getPathToPartitionInfo() == null) {
       this.setPathToPartitionInfo(new LinkedHashMap<String, PartitionDesc>());
     }
@@ -91,8 +105,13 @@ public class MergeWork extends MapWork implements Serializable {
     this.outputDir = outputDir;
   }
 
-  public Class<? extends Mapper> getMapperClass() {
-    return RCFileMergeMapper.class;
+  public Class<? extends Mapper> getMapperClass(Class<? extends InputFormat> klass) {
+    if (klass.equals(RCFileInputFormat.class)) {
+      return RCFileMergeMapper.class;
+    } else if (klass.equals(OrcInputFormat.class)) {
+      return OrcFileMergeMapper.class;
+    }
+    return null;
   }
 
   @Override
@@ -122,7 +141,13 @@ public class MergeWork extends MapWork implements Serializable {
   public void resolveDynamicPartitionStoredAsSubDirsMerge(HiveConf conf, Path path,
       TableDesc tblDesc, ArrayList<String> aliases, PartitionDesc partDesc) {
 
-    String inputFormatClass = conf.getVar(HiveConf.ConfVars.HIVEMERGEINPUTFORMATBLOCKLEVEL);
+    String inputFormatClass = null;
+    if (tblDesc.getInputFileFormatClass().equals(RCFileInputFormat.class)) {
+      inputFormatClass = conf.getVar(HiveConf.ConfVars.HIVEMERGEINPUTFORMATBLOCKLEVEL);
+    } else if (tblDesc.getInputFileFormatClass().equals(OrcInputFormat.class)){
+      inputFormatClass = conf.getVar(HiveConf.ConfVars.HIVEMERGEINPUTFORMATSTRIPELEVEL);
+    }
+
     try {
       partDesc.setInputFileFormatClass((Class <? extends InputFormat>)
           Class.forName(inputFormatClass));
@@ -206,6 +231,31 @@ public class MergeWork extends MapWork implements Serializable {
    */
   public boolean isListBucketingAlterTableConcatenate() {
     return isListBucketingAlterTableConcatenate;
+  }
+
+  public Class<? extends InputFormat> getSourceTableInputFormat() {
+    return srcTblInputFormat;
+  }
+
+  @Explain(displayName = "input format")
+  public String getStringifiedInputFormat() {
+    return srcTblInputFormat.getCanonicalName();
+  }
+
+  @Explain(displayName = "merge level")
+  public String getMergeLevel() {
+    if (srcTblInputFormat != null) {
+      if (srcTblInputFormat.equals(OrcInputFormat.class)) {
+        return "stripe";
+      } else if (srcTblInputFormat.equals(RCFileInputFormat.class)) {
+        return "block";
+      }
+    }
+    return null;
+  }
+
+  public void setSourceTableInputFormat(Class<? extends InputFormat> srcTblInputFormat) {
+    this.srcTblInputFormat = srcTblInputFormat;
   }
 
 }

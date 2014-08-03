@@ -203,6 +203,7 @@ public class DbTxnManager extends HiveTxnManagerImpl {
           "transaction");
     }
     try {
+      lockMgr.clearLocalLockRecords();
       LOG.debug("Committing txn " + txnId);
       client.commitTxn(txnId);
     } catch (NoSuchTxnException e) {
@@ -226,6 +227,7 @@ public class DbTxnManager extends HiveTxnManagerImpl {
           "transaction");
     }
     try {
+      lockMgr.clearLocalLockRecords();
       LOG.debug("Rolling back txn " + txnId);
       client.rollbackTxn(txnId);
     } catch (NoSuchTxnException e) {

@@ -36,7 +36,7 @@ import org.apache.hadoop.hive.ql.exec.mr.MapredLocalTask;
 import org.apache.hadoop.hive.ql.hooks.LineageInfo.DataContainer;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
-import org.apache.hadoop.hive.ql.io.rcfile.merge.BlockMergeTask;
+import org.apache.hadoop.hive.ql.io.merge.MergeTask;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLock;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockManager;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockObj;
@@ -294,7 +294,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
           while (task.getParentTasks() != null && task.getParentTasks().size() == 1) {
             task = (Task)task.getParentTasks().get(0);
             // If it was a merge task or a local map reduce task, nothing can be inferred
-            if (task instanceof BlockMergeTask || task instanceof MapredLocalTask) {
+            if (task instanceof MergeTask || task instanceof MapredLocalTask) {
               break;
             }
 
