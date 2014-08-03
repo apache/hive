@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.io.rcfile.merge;
+package org.apache.hadoop.hive.ql.io.merge;
 
 import java.io.IOException;
 
@@ -27,22 +27,19 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordWriter;
 import org.apache.hadoop.util.Progressable;
 
-public class RCFileBlockMergeOutputFormat extends
-    FileOutputFormat<RCFileKeyBufferWrapper, RCFileValueBufferWrapper> {
+public abstract class MergeOutputFormat extends
+    FileOutputFormat<Object, Object> {
 
   public static void setMergeOutputPath(JobConf job, Path path) {
-    job.set("hive.rcfile.merge.output.dir", path.toString());
+    job.set("hive.merge.output.dir", path.toString());
   }
-  
+
   public static Path getMergeOutputPath(JobConf conf) {
-    String name = conf.get("hive.rcfile.merge.output.dir");
+    String name = conf.get("hive.merge.output.dir");
     return name == null ? null: new Path(name);
   }
 
-  @Override
-  public RecordWriter<RCFileKeyBufferWrapper, RCFileValueBufferWrapper> getRecordWriter(
+  public abstract RecordWriter<Object, Object> getRecordWriter(
       FileSystem ignored, JobConf job, String name, Progressable progress)
-      throws IOException {
-    throw new RuntimeException("Not implemented.");
-  }
+      throws IOException;
 }

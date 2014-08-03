@@ -112,23 +112,22 @@ public class SessionManager extends CompositeService {
     }
   }
 
-  public SessionHandle openSession(TProtocolVersion protocol, String username, String password,
+  public SessionHandle openSession(TProtocolVersion protocol, String username, String password, String ipAddress,
       Map<String, String> sessionConf) throws HiveSQLException {
-    return openSession(protocol, username, password, sessionConf, false, null);
+    return openSession(protocol, username, password, ipAddress, sessionConf, false, null);
   }
 
-  public SessionHandle openSession(TProtocolVersion protocol, String username, String password,
+  public SessionHandle openSession(TProtocolVersion protocol, String username, String password, String ipAddress,
       Map<String, String> sessionConf, boolean withImpersonation, String delegationToken)
           throws HiveSQLException {
     HiveSession session;
     if (withImpersonation) {
       HiveSessionImplwithUGI hiveSessionUgi = new HiveSessionImplwithUGI(protocol, username, password,
-        hiveConf, TSetIpAddressProcessor.getUserIpAddress(), delegationToken);
+        hiveConf, ipAddress, delegationToken);
       session = HiveSessionProxy.getProxy(hiveSessionUgi, hiveSessionUgi.getSessionUgi());
       hiveSessionUgi.setProxySession(session);
     } else {
-      session = new HiveSessionImpl(protocol, username, password, hiveConf,
-          TSetIpAddressProcessor.getUserIpAddress());
+      session = new HiveSessionImpl(protocol, username, password, hiveConf, ipAddress);
     }
     session.setSessionManager(this);
     session.setOperationManager(operationManager);

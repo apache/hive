@@ -33,7 +33,7 @@ for jar in ${HIVE_HOME}/hcatalog/share/hcatalog/*.jar
   CLASSPATH=${CLASSPATH}:$jar
 done
 
-CLASSPATH=${CLASSPATH}:${HADOOP_HOME}/conf
+CLASSPATH=${CLASSPATH}:${HADOOP_HOME}/etc/hadoop
 CLASSPATH=${CLASSPATH}:${HIVE_HOME}/conf
 
 $JAVA_HOME/bin/java -cp ${CLASSPATH} org.apache.hive.hcatalog.streaming.StreamingIntegrationTester $@

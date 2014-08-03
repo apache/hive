@@ -313,7 +313,8 @@ public class GenTezUtils {
 
     if (chDir) {
       // Merge the files in the destination table/partitions by creating Map-only merge job
-      // If underlying data is RCFile a RCFileBlockMerge task would be created.
+      // If underlying data is RCFile or OrcFile, RCFileBlockMerge task or
+      // OrcFileStripeMerge task would be created.
       LOG.info("using CombineHiveInputformat for the merge job");
       GenMapRedUtils.createMRWorkForMergingFiles(fileSink, finalName,
           context.dependencyTask, context.moveTask,

@@ -42,9 +42,9 @@ public class TestMetastoreVersion extends TestCase {
   @Override
   protected void setUp() throws Exception {
     super.setUp();
-    Field defDb = HiveMetaStore.HMSHandler.class.getDeclaredField("createDefaultDB");
+    Field defDb = HiveMetaStore.HMSHandler.class.getDeclaredField("currentUrl");
     defDb.setAccessible(true);
-    defDb.setBoolean(null, false);
+    defDb.set(null, null);
     hiveConf = new HiveConf(this.getClass());
     System.setProperty("hive.metastore.event.listeners",
         DummyListener.class.getName());

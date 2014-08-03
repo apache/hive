@@ -110,28 +110,14 @@ STAGE PLANS:
     Stats-Aggr Operator
 
   Stage: Stage-3
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            File Output Operator
-              compressed: false
-              table:
-                  input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
-                  serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                  name: default.orc_createas1b
+    Merge Work
+      merge level: stripe
+      input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
 
   Stage: Stage-5
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            File Output Operator
-              compressed: false
-              table:
-                  input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
-                  serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                  name: default.orc_createas1b
+    Merge Work
+      merge level: stripe
+      input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
 
   Stage: Stage-6
     Move Operator
@@ -280,28 +266,14 @@ STAGE PLANS:
     Stats-Aggr Operator
 
   Stage: Stage-3
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            File Output Operator
-              compressed: false
-              table:
-                  input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
-                  serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                  name: default.orc_createas1c
+    Merge Work
+      merge level: stripe
+      input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
 
   Stage: Stage-5
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            File Output Operator
-              compressed: false
-              table:
-                  input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
-                  serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                  name: default.orc_createas1c
+    Merge Work
+      merge level: stripe
+      input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
 
   Stage: Stage-6
     Move Operator

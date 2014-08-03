@@ -119,7 +119,6 @@ public class HCatLoader extends HCatBaseLoader {
       if (!HCatUtil.checkJobContextIfRunningFromBackend(job)) {
         //Combine credentials and credentials from job takes precedence for freshness
         Credentials crd = jobCredentials.get(INNER_SIGNATURE_PREFIX + "_" + signature);
-        crd.addAll(job.getCredentials());
         job.getCredentials().addAll(crd);
       }
     } else {

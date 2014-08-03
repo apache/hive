@@ -18,12 +18,18 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.ql.exec.vector.VectorGroupByOperator;
 import org.apache.hadoop.io.Text;
 
 import java.sql.Date;
 
 public class VectorUDFDateString extends StringUnaryUDF {
   private static final long serialVersionUID = 1L;
+
+  private static final Log LOG = LogFactory.getLog(
+      VectorUDFDateString.class.getName());
 
   public VectorUDFDateString(int colNum, int outputColumn) {
     super(colNum, outputColumn, new StringUnaryUDF.IUDFUnaryString() {
@@ -39,7 +45,9 @@ public class VectorUDFDateString extends StringUnaryUDF {
           t.set(date.toString());
           return t;
         } catch (IllegalArgumentException e) {
-          e.printStackTrace();
+          if (LOG.isDebugEnabled()) {
+            LOG.info("VectorUDFDateString passed bad string for Date.valueOf '" + s.toString() + "'");
+          }
           return null;
         }
       }

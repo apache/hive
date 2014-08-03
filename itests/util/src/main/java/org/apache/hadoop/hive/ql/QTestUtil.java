@@ -1738,10 +1738,10 @@ public class QTestUtil {
         (command != null ? " running " + command : "") + (debugHint != null ? debugHint : ""));
   }
 
+  // for negative tests, which is succeeded.. no need to print the query string
   public void failed(String fname, String debugHint) {
-    String command = SessionState.get() != null ? SessionState.get().getLastCommand() : null;
     Assert.fail("Client Execution was expected to fail, but succeeded with error code 0 " +
-        (command != null ? " running " + command : "") + (debugHint != null ? debugHint : ""));
+        (debugHint != null ? debugHint : ""));
   }
 
   public void failedDiff(int ecode, String fname, String debugHint) {
@@ -1755,7 +1755,9 @@ public class QTestUtil {
     e.printStackTrace();
     System.err.println("Failed query: " + fname);
     System.err.flush();
-    Assert.fail("Unexpected exception" + (command != null ? " running " + command : "") +
+    Assert.fail("Unexpected exception " +
+        org.apache.hadoop.util.StringUtils.stringifyException(e) + "\n" +
+        (command != null ? " running " + command : "") +
         (debugHint != null ? debugHint : ""));
   }
 }
