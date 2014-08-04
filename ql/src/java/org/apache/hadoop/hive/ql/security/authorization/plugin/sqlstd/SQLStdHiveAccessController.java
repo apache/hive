@@ -123,8 +123,8 @@ public class SQLStdHiveAccessController implements HiveAccessController {
       }
       return currentRoles;
     } catch (Exception e) {
-      throw new HiveAuthzPluginException("Failed to retrieve roles for " + currentUserName + ": "
-          + e.getMessage(), e);
+      throw SQLAuthorizationUtils.getPluginException("Failed to retrieve roles for "
+          + currentUserName, e);
     }
   }
 
@@ -179,7 +179,7 @@ public class SQLStdHiveAccessController implements HiveAccessController {
     try {
       metastoreClient.grant_privileges(privBag);
     } catch (Exception e) {
-      throw new HiveAuthzPluginException("Error granting privileges: " + e.getMessage(), e);
+      throw SQLAuthorizationUtils.getPluginException("Error granting privileges", e);
     }
   }
 
@@ -239,7 +239,7 @@ public class SQLStdHiveAccessController implements HiveAccessController {
       // that has desired behavior.
       metastoreClient.revoke_privileges(new PrivilegeBag(revokePrivs), grantOption);
     } catch (Exception e) {
-      throw new HiveAuthzPluginException("Error revoking privileges", e);
+      throw SQLAuthorizationUtils.getPluginException("Error revoking privileges", e);
     }
   }
 
@@ -260,7 +260,7 @@ public class SQLStdHiveAccessController implements HiveAccessController {
       metastoreClientFactory.getHiveMetastoreClient().create_role(
         new Role(roleName, 0, grantorName));
     } catch (TException e) {
-      throw new HiveAuthzPluginException("Error create role : " + e.getMessage(), e);
+      throw SQLAuthorizationUtils.getPluginException("Error create role", e);
     }
   }
 
@@ -274,7 +274,7 @@ public class SQLStdHiveAccessController implements HiveAccessController {
     try {
       metastoreClientFactory.getHiveMetastoreClient().drop_role(roleName);
     } catch (Exception e) {
-      throw new HiveAuthzPluginException("Error dropping role", e);
+      throw SQLAuthorizationUtils.getPluginException("Error dropping role", e);
     }
   }
 
@@ -295,11 +295,11 @@ public class SQLStdHiveAccessController implements HiveAccessController {
               grantorPrinc.getName(),
               AuthorizationUtils.getThriftPrincipalType(grantorPrinc.getType()), grantOption);
         } catch (MetaException e) {
-          throw new HiveAuthzPluginException(e.getMessage(), e);
+          throw SQLAuthorizationUtils.getPluginException("Error granting role", e);
         } catch (Exception e) {
           String msg = "Error granting roles for " + hivePrincipal.getName() + " to role "
-              + roleName + ": " + e.getMessage();
-          throw new HiveAuthzPluginException(msg, e);
+              + roleName;
+          throw SQLAuthorizationUtils.getPluginException(msg, e);
         }
       }
     }
@@ -321,8 +321,8 @@ public class SQLStdHiveAccessController implements HiveAccessController {
               AuthorizationUtils.getThriftPrincipalType(hivePrincipal.getType()), grantOption);
         } catch (Exception e) {
           String msg = "Error revoking roles for " + hivePrincipal.getName() + " to role "
-              + roleName + ": " + e.getMessage();
-          throw new HiveAuthzPluginException(msg, e);
+              + roleName;
+          throw SQLAuthorizationUtils.getPluginException(msg, e);
         }
       }
     }
@@ -338,7 +338,7 @@ public class SQLStdHiveAccessController implements HiveAccessController {
     try {
       return metastoreClientFactory.getHiveMetastoreClient().listRoleNames();
     } catch (Exception e) {
-      throw new HiveAuthzPluginException("Error listing all roles", e);
+      throw SQLAuthorizationUtils.getPluginException("Error listing all roles", e);
     }
   }
 
@@ -353,9 +353,11 @@ public class SQLStdHiveAccessController implements HiveAccessController {
     try {
       return getHiveRoleGrants(metastoreClientFactory.getHiveMetastoreClient(), roleName);
     } catch (Exception e) {
-      throw new HiveAuthzPluginException("Error getting principals for all roles", e);
+      throw SQLAuthorizationUtils.getPluginException("Error getting principals for all roles", e);
     }
   }
+
+
 
   public static List<HiveRoleGrant> getHiveRoleGrants(IMetaStoreClient client, String roleName)
       throws Exception {
@@ -435,7 +437,7 @@ public class SQLStdHiveAccessController implements HiveAccessController {
       return resPrivInfos;
 
     } catch (Exception e) {
-      throw new HiveAuthzPluginException("Error showing privileges: "+ e.getMessage(), e);
+      throw SQLAuthorizationUtils.getPluginException("Error showing privileges", e);
     }
 
   }
@@ -550,11 +552,7 @@ public class SQLStdHiveAccessController implements HiveAccessController {
    */
   boolean isUserAdmin() throws HiveAuthzPluginException {
     List<HiveRoleGrant> roles;
-    try {
-      roles = getCurrentRoles();
-    } catch (Exception e) {
-      throw new HiveAuthzPluginException(e);
-    }
+    roles = getCurrentRoles();
     for (HiveRoleGrant role : roles) {
       if (role.getRoleName().equalsIgnoreCase(HiveMetaStore.ADMIN)) {
         return true;
@@ -565,11 +563,7 @@ public class SQLStdHiveAccessController implements HiveAccessController {
 
   private boolean doesUserHasAdminOption(List<String> roleNames) throws HiveAuthzPluginException {
     List<HiveRoleGrant> currentRoles;
-    try {
-      currentRoles = getCurrentRoles();
-    } catch (Exception e) {
-        throw new HiveAuthzPluginException(e);
-    }
+    currentRoles = getCurrentRoles();
     for (String roleName : roleNames) {
       boolean roleFound = false;
       for (HiveRoleGrant currentRole : currentRoles) {
@@ -606,8 +600,8 @@ public class SQLStdHiveAccessController implements HiveAccessController {
       }
       return hiveRoleGrants;
     } catch (Exception e) {
-      throw new HiveAuthzPluginException("Error getting role grant information for user "
-          + principal.getName() + ": " + e.getMessage(), e);
+      throw SQLAuthorizationUtils.getPluginException("Error getting role grant information for user "
+          + principal.getName(), e);
     }
   }
 
