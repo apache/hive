@@ -130,7 +130,7 @@ public class QTestUtil {
   public static final HashSet<String> srcTables = new HashSet<String>();
   private static MiniClusterType clusterType = MiniClusterType.none;
   private ParseDriver pd;
-  private Hive db;
+  protected Hive db;
   protected HiveConf conf;
   private Driver drv;
   private BaseSemanticAnalyzer sem;
@@ -630,7 +630,7 @@ public class QTestUtil {
     return;
   }
 
-  private void runCreateTableCmd(String createTableCmd) throws Exception {
+  protected void runCreateTableCmd(String createTableCmd) throws Exception {
     int ecode = 0;
     ecode = drv.run(createTableCmd).getResponseCode();
     if (ecode != 0) {
@@ -641,7 +641,7 @@ public class QTestUtil {
     return;
   }
 
-  private void runCmd(String cmd) throws Exception {
+  protected void runCmd(String cmd) throws Exception {
     int ecode = 0;
     ecode = drv.run(cmd).getResponseCode();
     drv.close();
