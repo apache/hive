@@ -1256,6 +1256,9 @@ public class HiveConf extends Configuration {
         "Disabling this improves HBase write performance at the risk of lost writes in case of a crash."),
     HIVE_HBASE_GENERATE_HFILES("hive.hbase.generatehfiles", false,
         "True when HBaseStorageHandler should generate hfiles instead of operate against the online table."),
+    HIVE_HBASE_SNAPSHOT_NAME("hive.hbase.snapshot.name", null, "The HBase table snapshot name to use."),
+    HIVE_HBASE_SNAPSHOT_RESTORE_DIR("hive.hbase.snapshot.restoredir", "/tmp", "The directory in which to " +
+        "restore the HBase table snapshot."),
 
     // For har files
     HIVEARCHIVEENABLED("hive.archive.enabled", false, "Whether archiving operations are permitted"),
