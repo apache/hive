@@ -4008,7 +4008,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       incrementCounter("drop_role");
       firePreEvent(new PreAuthorizationCallEvent(this));
       if (ADMIN.equals(roleName) || PUBLIC.equals(roleName)) {
-        throw new MetaException(PUBLIC + "/" + ADMIN +" role can't be dropped.");
+        throw new MetaException(PUBLIC + "," + ADMIN + " roles can't be dropped.");
       }
       Boolean ret = null;
       try {
@@ -4078,6 +4078,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return ret;
     }
 
+    @Override
     public GrantRevokeRoleResponse grant_revoke_role(GrantRevokeRoleRequest request)
         throws MetaException, org.apache.thrift.TException {
       GrantRevokeRoleResponse response = new GrantRevokeRoleResponse();
