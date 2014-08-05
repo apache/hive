@@ -25,6 +25,7 @@ import java.util.Map;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
@@ -36,6 +37,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PartitionEventType;
+import org.apache.hadoop.hive.metastore.api.PartitionsStatsRequest;
 import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
@@ -707,6 +709,13 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   public List<String> getFunctions(String dbName, String pattern)
       throws MetaException {
     return objectStore.getFunctions(dbName, pattern);
+  }
+
+  @Override
+  public List<ColumnStatisticsObj> get_aggr_stats_for(String dbName,
+      String tblName, List<String> partNames, List<String> colNames)
+      throws MetaException {
+    return null;
   }
 
 

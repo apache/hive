@@ -374,16 +374,6 @@
     <description>JDBC connect string for a JDBC metastore</description>
   </property>
   <property>
-    <key>hive.metastore.force.reload.conf</key>
-    <value>false</value>
-    <description>
-      Whether to force reloading of the metastore configuration (including
-      the connection URL, before the next metastore query that accesses the
-      datastore. Once reloaded, this value is reset to false. Used for
-      testing only.
-    </description>
-  </property>
-  <property>
     <key>hive.hmshandler.retry.attempts</key>
     <value>1</value>
     <description>The number of times to retry a HMSHandler call if there were a connection error</description>
@@ -1287,6 +1277,21 @@
     <key>hive.merge.input.format.block.level</key>
     <value>org.apache.hadoop.hive.ql.io.rcfile.merge.RCFileBlockMergeInputFormat</value>
     <description/>
+  </property>
+  <property>
+    <key>hive.merge.orcfile.stripe.level</key>
+    <value>true</value>
+    <description>
+      When hive.merge.mapfiles or hive.merge.mapredfiles is enabled while writing a
+       table with ORC file format, enabling this config will do stripe level fast merge
+       for small ORC files. Note that enabling this config will not honor padding tolerance
+       config (hive.exec.orc.block.padding.tolerance).
+    </description>
+  </property>
+  <property>
+    <key>hive.merge.input.format.stripe.level</key>
+    <value>org.apache.hadoop.hive.ql.io.orc.OrcFileStripeMergeInputFormat</value>
+    <description>Input file format to use for ORC stripe level merging (for internal use only)</description>
   </property>
   <property>
     <key>hive.merge.current.job.has.dynamic.partitions</key>
@@ -2233,6 +2238,16 @@
     <description>True when HBaseStorageHandler should generate hfiles instead of operate against the online table.</description>
   </property>
   <property>
+    <key>hive.hbase.snapshot.name</key>
+    <value/>
+    <description>The HBase table snapshot name to use.</description>
+  </property>
+  <property>
+    <key>hive.hbase.snapshot.restoredir</key>
+    <value>/tmp</value>
+    <description>The directory in which to restore the HBase table snapshot.</description>
+  </property>
+  <property>
     <key>hive.archive.enabled</key>
     <value>false</value>
     <description>Whether archiving operations are permitted</description>
@@ -2804,7 +2819,7 @@
   </property>
   <property>
     <key>hive.conf.restricted.list</key>
-    <value>hive.security.authenticator.manager,hive.security.authorization.manager</value>
+    <value>hive.security.authenticator.manager,hive.security.authorization.manager,hive.users.in.admin.role</value>
     <description>Comma separated list of configuration options which are immutable at runtime</description>
   </property>
   <property>

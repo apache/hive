@@ -63,8 +63,8 @@ Table Parameters:
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.hbase.HBaseSerDe	 
-InputFormat:        	org.apache.hadoop.hive.hbase.HiveHBaseTableInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.HivePassThroughOutputFormat	 
+InputFormat:        	null                	 
+OutputFormat:       	null                	 
 Compressed:         	No                  	 
 Num Buckets:        	-1                  	 
 Bucket Columns:     	[]                  	 
@@ -238,8 +238,8 @@ Table Parameters:
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.hbase.HBaseSerDe	 
-InputFormat:        	org.apache.hadoop.hive.hbase.HiveHBaseTableInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.HivePassThroughOutputFormat	 
+InputFormat:        	null                	 
+OutputFormat:       	null                	 
 Compressed:         	No                  	 
 Num Buckets:        	-1                  	 
 Bucket Columns:     	[]                  	 

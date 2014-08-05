@@ -179,17 +179,23 @@ public class RelOptHiveTable extends RelOptAbstractTable {
         }
       } else {
         // 2.2 Obtain col stats for full table scan
-        Statistics stats = StatsUtils.collectStatistics(m_hiveConf, partitionList,
-            m_hiveTblMetadata, m_hiveNonPartitionCols, nonPartColNamesThatRqrStats, true, true);
-        m_rowCount = stats.getNumRows();
-        hiveColStats = new ArrayList<ColStatistics>();
-        for (String c : nonPartColNamesThatRqrStats) {
-          ColStatistics cs = stats.getColumnStatisticsFromColName(c);
-          if (cs != null) {
-            hiveColStats.add(cs);
-          } else {
-            colNamesFailedStats.add(c);
+        try {
+          Statistics stats = StatsUtils.collectStatistics(m_hiveConf, partitionList,
+              m_hiveTblMetadata, m_hiveNonPartitionCols, nonPartColNamesThatRqrStats, true, true);
+          m_rowCount = stats.getNumRows();
+          hiveColStats = new ArrayList<ColStatistics>();
+          for (String c : nonPartColNamesThatRqrStats) {
+            ColStatistics cs = stats.getColumnStatisticsFromColName(c);
+            if (cs != null) {
+              hiveColStats.add(cs);
+            } else {
+              colNamesFailedStats.add(c);
+            }
           }
+        } catch (HiveException e) {
+          String logMsg = "Collecting stats failed.";
+          LOG.error(logMsg);
+          throw new RuntimeException(logMsg);
         }
       }
 

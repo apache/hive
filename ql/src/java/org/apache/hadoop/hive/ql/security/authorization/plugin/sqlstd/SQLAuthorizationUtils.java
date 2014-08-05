@@ -412,5 +412,8 @@ public class SQLAuthorizationUtils {
     }
   }
 
+  static HiveAuthzPluginException getPluginException(String prefix, Exception e) {
+    return new HiveAuthzPluginException(prefix + ": " + e.getMessage(), e);
+  }
 
 }

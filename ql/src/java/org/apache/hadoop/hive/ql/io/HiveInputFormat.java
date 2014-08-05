@@ -71,8 +71,20 @@ import org.apache.hadoop.util.ReflectionUtils;
 public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     implements InputFormat<K, V>, JobConfigurable {
 
-  public static final String CLASS_NAME = HiveInputFormat.class.getName();
-  public static final Log LOG = LogFactory.getLog(CLASS_NAME);
+  private static final String CLASS_NAME = HiveInputFormat.class.getName();
+  private static final Log LOG = LogFactory.getLog(CLASS_NAME);
+
+  /**
+   * A cache of InputFormat instances.
+   */
+  private static Map<Class, InputFormat<WritableComparable, Writable>> inputFormats 
+    = new ConcurrentHashMap<Class, InputFormat<WritableComparable, Writable>>();
+
+  private JobConf job;
+
+  // both classes access by subclasses
+  protected Map<String, PartitionDesc> pathToPartitionInfo;
+  protected MapWork mrwork;
 
   /**
    * HiveInputSplit encapsulates an InputSplit with its corresponding
@@ -178,17 +190,9 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     }
   }
 
-  JobConf job;
-
   public void configure(JobConf job) {
     this.job = job;
   }
-
-  /**
-   * A cache of InputFormat instances.
-   */
-  protected static Map<Class, InputFormat<WritableComparable, Writable>> inputFormats 
-    = new ConcurrentHashMap<Class, InputFormat<WritableComparable, Writable>>();
 
   public static InputFormat<WritableComparable, Writable> getInputFormatFromCache(
     Class inputFormatClass, JobConf job) throws IOException {
@@ -248,9 +252,6 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     return rr;
   }
 
-  protected Map<String, PartitionDesc> pathToPartitionInfo;
-  MapWork mrwork = null;
-
   protected void init(JobConf job) {
     mrwork = Utilities.getMapWork(job);
     pathToPartitionInfo = mrwork.getPathToPartitionInfo();
@@ -281,7 +282,6 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       headerCount = Utilities.getHeaderCount(table);
       footerCount = Utilities.getFooterCount(table, conf);
       if (headerCount != 0 || footerCount != 0) {
-        
         // Input file has header or footer, cannot be splitted.
         conf.setLong(
             ShimLoader.getHadoopShims().getHadoopConfNames().get("MAPREDMINSPLITSIZE"),

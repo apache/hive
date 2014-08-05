@@ -130,7 +130,7 @@ public class QTestUtil {
   public static final HashSet<String> srcTables = new HashSet<String>();
   private static MiniClusterType clusterType = MiniClusterType.none;
   private ParseDriver pd;
-  private Hive db;
+  protected Hive db;
   protected HiveConf conf;
   private Driver drv;
   private BaseSemanticAnalyzer sem;
@@ -630,7 +630,7 @@ public class QTestUtil {
     return;
   }
 
-  private void runCreateTableCmd(String createTableCmd) throws Exception {
+  protected void runCreateTableCmd(String createTableCmd) throws Exception {
     int ecode = 0;
     ecode = drv.run(createTableCmd).getResponseCode();
     if (ecode != 0) {
@@ -641,7 +641,7 @@ public class QTestUtil {
     return;
   }
 
-  private void runCmd(String cmd) throws Exception {
+  protected void runCmd(String cmd) throws Exception {
     int ecode = 0;
     ecode = drv.run(cmd).getResponseCode();
     drv.close();
@@ -1738,10 +1738,10 @@ public class QTestUtil {
         (command != null ? " running " + command : "") + (debugHint != null ? debugHint : ""));
   }
 
+  // for negative tests, which is succeeded.. no need to print the query string
   public void failed(String fname, String debugHint) {
-    String command = SessionState.get() != null ? SessionState.get().getLastCommand() : null;
     Assert.fail("Client Execution was expected to fail, but succeeded with error code 0 " +
-        (command != null ? " running " + command : "") + (debugHint != null ? debugHint : ""));
+        (debugHint != null ? debugHint : ""));
   }
 
   public void failedDiff(int ecode, String fname, String debugHint) {
@@ -1755,7 +1755,9 @@ public class QTestUtil {
     e.printStackTrace();
     System.err.println("Failed query: " + fname);
     System.err.flush();
-    Assert.fail("Unexpected exception" + (command != null ? " running " + command : "") +
+    Assert.fail("Unexpected exception " +
+        org.apache.hadoop.util.StringUtils.stringifyException(e) + "\n" +
+        (command != null ? " running " + command : "") +
         (debugHint != null ? debugHint : ""));
   }
 }

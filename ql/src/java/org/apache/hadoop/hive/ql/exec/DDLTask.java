@@ -35,6 +35,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -88,9 +89,9 @@ import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.exec.ArchiveUtils.PartSpecInfo;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.io.merge.MergeTask;
+import org.apache.hadoop.hive.ql.io.merge.MergeWork;
 import org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe;
-import org.apache.hadoop.hive.ql.io.rcfile.merge.BlockMergeTask;
-import org.apache.hadoop.hive.ql.io.rcfile.merge.MergeWork;
 import org.apache.hadoop.hive.ql.io.rcfile.truncate.ColumnTruncateTask;
 import org.apache.hadoop.hive.ql.io.rcfile.truncate.ColumnTruncateWork;
 import org.apache.hadoop.hive.ql.lockmgr.DbLockManager;
@@ -550,12 +551,13 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       throws HiveException {
     // merge work only needs input and output.
     MergeWork mergeWork = new MergeWork(mergeFilesDesc.getInputDir(),
-        mergeFilesDesc.getOutputDir());
+        mergeFilesDesc.getOutputDir(), mergeFilesDesc.getInputFormatClass());
     mergeWork.setListBucketingCtx(mergeFilesDesc.getLbCtx());
     mergeWork.resolveConcatenateMerge(db.getConf());
     mergeWork.setMapperCannotSpanPartns(true);
+    mergeWork.setSourceTableInputFormat(mergeFilesDesc.getInputFormatClass());
     DriverContext driverCxt = new DriverContext();
-    BlockMergeTask taskExec = new BlockMergeTask();
+    MergeTask taskExec = new MergeTask();
     taskExec.initialize(db.getConf(), null, driverCxt);
     taskExec.setWork(mergeWork);
     taskExec.setQueryPlan(this.getQueryPlan());
@@ -598,10 +600,13 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
     HiveAuthorizer authorizer = getSessionAuthorizer();
     try {
+      Set<String> colSet = showGrantDesc.getColumns() != null ? new HashSet<String>(
+          showGrantDesc.getColumns()) : null;
       List<HivePrivilegeInfo> privInfos = authorizer.showPrivileges(
           AuthorizationUtils.getHivePrincipal(showGrantDesc.getPrincipalDesc()),
           AuthorizationUtils.getHivePrivilegeObject(showGrantDesc.getHiveObj(),
-              showGrantDesc.getColumns()));
+              colSet
+              ));
       boolean testMode = conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST);
       writeToFile(writeGrantInfo(privInfos, testMode), showGrantDesc.getResFile());
     } catch (IOException e) {
@@ -1283,7 +1288,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       // First create the archive in a tmp dir so that if the job fails, the
       // bad files don't pollute the filesystem
       Path tmpPath = new Path(driverContext.getCtx()
-          .getExternalTmpPath(originalDir.toUri()), "partlevel");
+          .getExternalTmpPath(originalDir), "partlevel");
 
       console.printInfo("Creating " + archiveName +
           " for " + originalDir.toString());
@@ -1478,7 +1483,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       throw new HiveException("Haven't found any archive where it should be");
     }
 
-    Path tmpPath = driverContext.getCtx().getExternalTmpPath(originalDir.toUri());
+    Path tmpPath = driverContext.getCtx().getExternalTmpPath(originalDir);
 
     try {
       fs = tmpPath.getFileSystem(conf);
@@ -3919,12 +3924,16 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     tbl.setInputFormatClass(crtTbl.getInputFormat());
     tbl.setOutputFormatClass(crtTbl.getOutputFormat());
 
-    tbl.getTTable().getSd().setInputFormat(
-        tbl.getInputFormatClass().getName());
-    tbl.getTTable().getSd().setOutputFormat(
-        tbl.getOutputFormatClass().getName());
+    // only persist input/ouput format to metadata when it is explicitly specified.
+    // Otherwise, load lazily via StorageHandler at query time.
+    if (crtTbl.getInputFormat() != null && !crtTbl.getInputFormat().isEmpty()) {
+      tbl.getTTable().getSd().setInputFormat(tbl.getInputFormatClass().getName());
+    }
+    if (crtTbl.getOutputFormat() != null && !crtTbl.getOutputFormat().isEmpty()) {
+      tbl.getTTable().getSd().setOutputFormat(tbl.getOutputFormatClass().getName());
+    }
 
-    if (!Utilities.isDefaultNameNode(conf)) {
+    if (!Utilities.isDefaultNameNode(conf) && tbl.getTTable().getSd().isSetLocation()) {
       // If location is specified - ensure that it is a full qualified name
       makeLocationQualified(tbl.getDbName(), tbl.getTTable().getSd(), tbl.getTableName());
     }
