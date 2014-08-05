@@ -17,17 +17,24 @@
  */
 package org.apache.hadoop.hive.metastore.txn;
 
-import com.jolbox.bonecp.BoneCP;
 import com.jolbox.bonecp.BoneCPConfig;
+import com.jolbox.bonecp.BoneCPDataSource;
+import org.apache.commons.dbcp.ConnectionFactory;
+import org.apache.commons.dbcp.DriverManagerConnectionFactory;
+import org.apache.commons.dbcp.PoolableConnectionFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.commons.dbcp.PoolingDataSource;
 
+import org.apache.commons.pool.ObjectPool;
+import org.apache.commons.pool.impl.GenericObjectPool;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidTxnListImpl;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.util.StringUtils;
 
+import javax.sql.DataSource;
 import java.sql.*;
 import java.util.*;
 
@@ -65,9 +72,9 @@ public class TxnHandler {
   static final private int ALLOWED_REPEATED_DEADLOCKS = 5;
   static final private Log LOG = LogFactory.getLog(TxnHandler.class.getName());
 
-  static private BoneCP connPool;
-  private static final Boolean lockLock = new Boolean("true"); // Random object to lock on for the
-  // lock method
+  static private DataSource connPool;
+  private static Boolean lockLock = new Boolean("true"); // Random object to lock on for the lock
+  // method
 
   /**
    * Number of consecutive deadlocks we have seen
@@ -1596,14 +1603,28 @@ public class TxnHandler {
     String driverUrl = HiveConf.getVar(conf, HiveConf.ConfVars.METASTORECONNECTURLKEY);
     String user = HiveConf.getVar(conf, HiveConf.ConfVars.METASTORE_CONNECTION_USER_NAME);
     String passwd = HiveConf.getVar(conf, HiveConf.ConfVars.METASTOREPWD);
+    String connectionPooler = HiveConf.getVar(conf,
+        HiveConf.ConfVars.METASTORE_CONNECTION_POOLING_TYPE).toLowerCase();
 
-    BoneCPConfig config = new BoneCPConfig();
-    config.setJdbcUrl(driverUrl);
-    config.setMaxConnectionsPerPartition(10);
-    config.setPartitionCount(1);
-    config.setUser(user);
-    config.setPassword(passwd);
-    connPool = new BoneCP(config);
+    if ("bonecp".equals(connectionPooler)) {
+      BoneCPConfig config = new BoneCPConfig();
+      config.setJdbcUrl(driverUrl);
+      config.setMaxConnectionsPerPartition(10);
+      config.setPartitionCount(1);
+      config.setUser(user);
+      config.setPassword(passwd);
+      connPool = new BoneCPDataSource(config);
+    } else if ("dbcp".equals(connectionPooler)) {
+      ObjectPool objectPool = new GenericObjectPool();
+      ConnectionFactory connFactory = new DriverManagerConnectionFactory(driverUrl, user, passwd);
+      // This doesn't get used, but it's still necessary, see
+      // http://svn.apache.org/viewvc/commons/proper/dbcp/branches/DBCP_1_4_x_BRANCH/doc/ManualPoolingDataSourceExample.java?view=markup
+      PoolableConnectionFactory poolConnFactory =
+          new PoolableConnectionFactory(connFactory, objectPool, null, null, false, true);
+      connPool = new PoolingDataSource(objectPool);
+    } else {
+      throw new RuntimeException("Unknown JDBC connection pooling " + connectionPooler);
+    }
   }
 
  private static synchronized void buildJumpTable() {

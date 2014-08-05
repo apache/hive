@@ -27,7 +27,6 @@ import java.util.*;
 import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
 import org.apache.hadoop.hive.hbase.HBaseQTestUtil;
 import org.apache.hadoop.hive.hbase.HBaseTestSetup;
-import org.apache.hadoop.hive.ql.session.SessionState;
 
 public class $className extends TestCase {
 

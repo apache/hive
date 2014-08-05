@@ -34,6 +34,7 @@ import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.Type;
+import org.apache.hadoop.hive.ql.io.orc.OrcProto.UserMetadataItem;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -60,6 +61,7 @@ final class ReaderImpl implements Reader {
   private final ObjectInspector inspector;
   private long deserializedSize = -1;
   private final Configuration conf;
+  private final List<Integer> versionList;
 
   //serialized footer - Keeping this around for use by getFileMetaInfo()
   // will help avoid cpu cycles spend in deserializing at cost of increased
@@ -306,6 +308,7 @@ final class ReaderImpl implements Reader {
     this.metadata = rInfo.metadata;
     this.footer = rInfo.footer;
     this.inspector = rInfo.inspector;
+    this.versionList = footerMetaData.versionList;
   }
 
 
@@ -387,7 +390,8 @@ final class ReaderImpl implements Reader {
         ps.getCompression().toString(),
         (int) ps.getCompressionBlockSize(),
         (int) ps.getMetadataLength(),
-        buffer
+        buffer,
+        ps.getVersionList()
         );
   }
 
@@ -446,18 +450,26 @@ final class ReaderImpl implements Reader {
     final int bufferSize;
     final int metadataSize;
     final ByteBuffer footerBuffer;
+    final List<Integer> versionList;
+
     FileMetaInfo(String compressionType, int bufferSize, int metadataSize,
-                 ByteBuffer footerBuffer){
+        ByteBuffer footerBuffer) {
+      this(compressionType, bufferSize, metadataSize, footerBuffer, null);
+    }
+
+    FileMetaInfo(String compressionType, int bufferSize, int metadataSize,
+                 ByteBuffer footerBuffer, List<Integer> versionList){
       this.compressionType = compressionType;
       this.bufferSize = bufferSize;
       this.metadataSize = metadataSize;
       this.footerBuffer = footerBuffer;
+      this.versionList = versionList;
     }
   }
 
   public FileMetaInfo getFileMetaInfo(){
     return new FileMetaInfo(compressionKind.toString(), bufferSize,
-        metadataSize, footerByteBuffer);
+        metadataSize, footerByteBuffer, versionList);
   }
 
 
@@ -629,4 +641,11 @@ final class ReaderImpl implements Reader {
     return new Metadata(metadata);
   }
 
+  List<OrcProto.StripeStatistics> getOrcProtoStripeStatistics() {
+    return metadata.getStripeStatsList();
+  }
+
+  public List<UserMetadataItem> getOrcProtoUserMetadata() {
+    return footer.getMetadataList();
+  }
 }

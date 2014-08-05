@@ -1,0 +1,11 @@
+PREHOOK: query: SHOW TABLES 'src'
+PREHOOK: type: SHOWTABLES
+POSTHOOK: query: SHOW TABLES 'src'
+POSTHOOK: type: SHOWTABLES
+src
+PREHOOK: query: -- changes to dummy derby store.. should return empty result
+SHOW TABLES 'src'
+PREHOOK: type: SHOWTABLES
+POSTHOOK: query: -- changes to dummy derby store.. should return empty result
+SHOW TABLES 'src'
+POSTHOOK: type: SHOWTABLES

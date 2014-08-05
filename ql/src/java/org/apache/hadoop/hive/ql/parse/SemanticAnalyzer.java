@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVESTATSDBCLASS;
-import static org.apache.hadoop.hive.metastore.MetaStoreUtils.DATABASE_WAREHOUSE_SUFFIX;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -33,10 +32,10 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.UUID;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -1540,7 +1539,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
               }
               try {
                 fname = ctx.getExternalTmpPath(
-                    FileUtils.makeQualified(location, conf).toUri()).toString();
+                    FileUtils.makeQualified(location, conf)).toString();
               } catch (Exception e) {
                 throw new SemanticException(generateErrorMessage(ast,
                     "Error creating temporary folder on: " + location.toString()), e);
@@ -2442,13 +2441,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * for inner joins push a 'is not null predicate' to the join sources for
    * every non nullSafe predicate.
    */
-  private Operator genNotNullFilterForJoinSourcePlan(QB qb, Operator input, 
+  private Operator genNotNullFilterForJoinSourcePlan(QB qb, Operator input,
       QBJoinTree joinTree, ExprNodeDesc[] joinKeys) throws SemanticException {
 
     if (qb == null || joinTree == null) {
       return input;
     }
-    
+
     if (!joinTree.getNoOuterJoin()) {
       return input;
     }
@@ -5776,12 +5775,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if (isNonNativeTable) {
         queryTmpdir = dest_path;
       } else {
-    	// if we are on viewfs we don't want to use /tmp as tmp dir since rename from /tmp/..
-        // to final /user/hive/warehouse/ will fail later, so instead pick tmp dir
-        // on same namespace as tbl dir.
-        queryTmpdir = dest_path.toUri().getScheme().equals("viewfs") ?
-          ctx.getExtTmpPathRelTo(dest_path.getParent().toUri()) :
-          ctx.getExternalTmpPath(dest_path.toUri());
+        queryTmpdir = ctx.getExternalTmpPath(dest_path);
       }
       if (dpCtx != null) {
         // set the root of the temporary path where dynamic partition columns will populate
@@ -5894,12 +5888,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       dest_path = new Path(tabPath.toUri().getScheme(), tabPath.toUri()
           .getAuthority(), partPath.toUri().getPath());
 
-      // if we are on viewfs we don't want to use /tmp as tmp dir since rename from /tmp/..
-      // to final /user/hive/warehouse/ will fail later, so instead pick tmp dir
-      // on same namespace as tbl dir.
-      queryTmpdir = dest_path.toUri().getScheme().equals("viewfs") ?
-        ctx.getExtTmpPathRelTo(dest_path.getParent().toUri()) :
-        ctx.getExternalTmpPath(dest_path.toUri());
+      queryTmpdir = ctx.getExternalTmpPath(dest_path);
       table_desc = Utilities.getTableDesc(dest_tab);
 
       // Add sorting/bucketing if needed
@@ -5956,7 +5945,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
         try {
           Path qPath = FileUtils.makeQualified(dest_path, conf);
-          queryTmpdir = ctx.getExternalTmpPath(qPath.toUri());
+          queryTmpdir = ctx.getExternalTmpPath(qPath);
         } catch (Exception e) {
           throw new SemanticException("Error creating temporary folder on: "
               + dest_path, e);
@@ -6117,7 +6106,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // it should be the same as the MoveWork's sourceDir.
     fileSinkDesc.setStatsAggPrefix(fileSinkDesc.getDirName().toString());
     if (HiveConf.getVar(conf, HIVESTATSDBCLASS).equalsIgnoreCase(StatDB.fs.name())) {
-      String statsTmpLoc = ctx.getExternalTmpPath(queryTmpdir.toUri()).toString();
+      String statsTmpLoc = ctx.getExternalTmpPath(queryTmpdir).toString();
       LOG.info("Set stats collection dir : " + statsTmpLoc);
       conf.set(StatsSetupConst.STATS_TMP_LOC, statsTmpLoc);
     }
@@ -9129,7 +9118,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       tsDesc.setGatherStats(false);
     } else {
       if (HiveConf.getVar(conf, HIVESTATSDBCLASS).equalsIgnoreCase(StatDB.fs.name())) {
-        String statsTmpLoc = ctx.getExternalTmpPath(tab.getPath().toUri()).toString();
+        String statsTmpLoc = ctx.getExternalTmpPath(tab.getPath()).toString();
         LOG.info("Set stats collection dir : " + statsTmpLoc);
         conf.set(StatsSetupConst.STATS_TMP_LOC, statsTmpLoc);
       }
@@ -9678,7 +9667,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // Generate column access stats if required - wait until column pruning takes place
     // during optimization
-    if (HiveConf.getBoolVar(this.conf, HiveConf.ConfVars.HIVE_STATS_COLLECT_SCANCOLS) == true) {
+    boolean isColumnInfoNeedForAuth = SessionState.get().isAuthorizationModeV2()
+        && HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_AUTHORIZATION_ENABLED);
+
+    if (isColumnInfoNeedForAuth
+        || HiveConf.getBoolVar(this.conf, HiveConf.ConfVars.HIVE_STATS_COLLECT_SCANCOLS) == true) {
       ColumnAccessAnalyzer columnAccessAnalyzer = new ColumnAccessAnalyzer(pCtx);
       setColumnAccessInfo(columnAccessAnalyzer.analyzeColumnAccess());
     }
@@ -9725,7 +9718,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             if (((TableScanDesc)topOp.getConf()).getIsMetadataOnly()) {
               continue;
             }
-            PrunedPartitionList parts = pCtx.getOpToPartList().get((TableScanOperator) topOp);
+            PrunedPartitionList parts = pCtx.getOpToPartList().get(topOp);
             if (parts.getPartitions().size() > scanLimit) {
               throw new SemanticException(ErrorMsg.PARTITION_SCAN_LIMIT_EXCEEDED, ""
                   + parts.getPartitions().size(), "" + parts.getSourceTable().getTableName(), ""
@@ -10346,7 +10339,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     String dbName = qualified.length == 1 ? SessionState.get().getCurrentDatabase() : qualified[0];
     Database database  = getDatabase(dbName);
     outputs.add(new WriteEntity(database, WriteEntity.WriteType.DDL_SHARED));
- 
+
     if (isTemporary) {
       if (partCols.size() > 0) {
         throw new SemanticException("Partition columns are not supported on temporary tables");

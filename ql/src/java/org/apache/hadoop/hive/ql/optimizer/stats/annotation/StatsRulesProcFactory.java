@@ -100,9 +100,9 @@ public class StatsRulesProcFactory {
       }
       Table table = aspCtx.getParseContext().getTopToTable().get(tsop);
 
-      // gather statistics for the first time and the attach it to table scan operator
-      Statistics stats = StatsUtils.collectStatistics(aspCtx.getConf(), partList, table, tsop);
       try {
+        // gather statistics for the first time and the attach it to table scan operator
+        Statistics stats = StatsUtils.collectStatistics(aspCtx.getConf(), partList, table, tsop);
         tsop.setStatistics(stats.clone());
 
         if (LOG.isDebugEnabled()) {
@@ -110,6 +110,9 @@ public class StatsRulesProcFactory {
         }
       } catch (CloneNotSupportedException e) {
         throw new SemanticException(ErrorMsg.STATISTICS_CLONING_FAILED.getMsg());
+      } catch (HiveException e) {
+        LOG.debug(e);
+        throw new SemanticException(e);
       }
       return null;
     }

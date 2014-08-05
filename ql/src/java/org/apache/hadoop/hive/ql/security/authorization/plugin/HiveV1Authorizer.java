@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.security.authorization.plugin;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -318,7 +319,7 @@ public class HiveV1Authorizer implements HiveAuthorizer {
           privs.addAll(hive.showPrivilegeGrant(HiveObjectType.DATABASE,
               name, type, dbObj.getName(), null, null, null));
         } else {
-          List<String> columns = privObj.getColumns();
+          Set<String> columns = privObj.getColumns();
           if (columns != null && !columns.isEmpty()) {
             // show column level privileges
             for (String columnName : columns) {

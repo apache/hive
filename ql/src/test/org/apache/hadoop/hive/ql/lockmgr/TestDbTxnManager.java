@@ -126,12 +126,13 @@ public class TestDbTxnManager {
   public void testSingleWriteTable() throws Exception {
     WriteEntity we = addTableOutput(WriteEntity.WriteType.INSERT);
     QueryPlan qp = new MockQueryPlan(this);
+    txnMgr.openTxn("fred");
     txnMgr.acquireLocks(qp, ctx, "fred");
     List<HiveLock> locks = ctx.getHiveLocks();
     Assert.assertEquals(1, locks.size());
     Assert.assertEquals(1,
         TxnDbUtil.countLockComponents(((DbLockManager.DbHiveLock) locks.get(0)).lockId));
-    txnMgr.getLockManager().unlock(locks.get(0));
+    txnMgr.commitTxn();
     locks = txnMgr.getLockManager().getLocks(false, false);
     Assert.assertEquals(0, locks.size());
   }
@@ -144,12 +145,13 @@ public class TestDbTxnManager {
     addPartitionInput(t);
     WriteEntity we = addTableOutput(WriteEntity.WriteType.INSERT);
     QueryPlan qp = new MockQueryPlan(this);
+    txnMgr.openTxn("fred");
     txnMgr.acquireLocks(qp, ctx, "fred");
     List<HiveLock> locks = ctx.getHiveLocks();
     Assert.assertEquals(1, locks.size());
     Assert.assertEquals(4,
         TxnDbUtil.countLockComponents(((DbLockManager.DbHiveLock) locks.get(0)).lockId));
-    txnMgr.getLockManager().unlock(locks.get(0));
+    txnMgr.commitTxn();
     locks = txnMgr.getLockManager().getLocks(false, false);
     Assert.assertEquals(0, locks.size());
   }
@@ -158,12 +160,13 @@ public class TestDbTxnManager {
   public void testUpdate() throws Exception {
     WriteEntity we = addTableOutput(WriteEntity.WriteType.UPDATE);
     QueryPlan qp = new MockQueryPlan(this);
+    txnMgr.openTxn("fred");
     txnMgr.acquireLocks(qp, ctx, "fred");
     List<HiveLock> locks = ctx.getHiveLocks();
     Assert.assertEquals(1, locks.size());
     Assert.assertEquals(1,
         TxnDbUtil.countLockComponents(((DbLockManager.DbHiveLock) locks.get(0)).lockId));
-    txnMgr.getLockManager().unlock(locks.get(0));
+    txnMgr.commitTxn();
     locks = txnMgr.getLockManager().getLocks(false, false);
     Assert.assertEquals(0, locks.size());
   }
@@ -172,12 +175,28 @@ public class TestDbTxnManager {
   public void testDelete() throws Exception {
     WriteEntity we = addTableOutput(WriteEntity.WriteType.DELETE);
     QueryPlan qp = new MockQueryPlan(this);
+    txnMgr.openTxn("fred");
     txnMgr.acquireLocks(qp, ctx, "fred");
     List<HiveLock> locks = ctx.getHiveLocks();
     Assert.assertEquals(1, locks.size());
     Assert.assertEquals(1,
         TxnDbUtil.countLockComponents(((DbLockManager.DbHiveLock) locks.get(0)).lockId));
-    txnMgr.getLockManager().unlock(locks.get(0));
+    txnMgr.commitTxn();
+    locks = txnMgr.getLockManager().getLocks(false, false);
+    Assert.assertEquals(0, locks.size());
+  }
+
+  @Test
+  public void testRollback() throws Exception {
+    WriteEntity we = addTableOutput(WriteEntity.WriteType.DELETE);
+    QueryPlan qp = new MockQueryPlan(this);
+    txnMgr.openTxn("fred");
+    txnMgr.acquireLocks(qp, ctx, "fred");
+    List<HiveLock> locks = ctx.getHiveLocks();
+    Assert.assertEquals(1, locks.size());
+    Assert.assertEquals(1,
+        TxnDbUtil.countLockComponents(((DbLockManager.DbHiveLock) locks.get(0)).lockId));
+    txnMgr.rollbackTxn();
     locks = txnMgr.getLockManager().getLocks(false, false);
     Assert.assertEquals(0, locks.size());
   }

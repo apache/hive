@@ -123,5 +123,7 @@ public class HiveRoleGrant implements Comparable<HiveRoleGrant> {
 
   }
 
-
+  public String toString() {
+    return roleName + "[" + principalName + ":" + principalType + (grantOption ? ":WITH GRANT]" : "]");
+  }
 }

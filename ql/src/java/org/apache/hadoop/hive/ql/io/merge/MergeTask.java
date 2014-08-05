@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.io.rcfile.merge;
+package org.apache.hadoop.hive.ql.io.merge;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -42,6 +42,10 @@ import org.apache.hadoop.hive.ql.exec.mr.HadoopJobExecHook;
 import org.apache.hadoop.hive.ql.exec.mr.Throttle;
 import org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormatImpl;
+import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
+import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
@@ -52,16 +56,19 @@ import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.Mapper;
+import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.RunningJob;
 import org.apache.log4j.Appender;
 import org.apache.log4j.FileAppender;
 import org.apache.log4j.LogManager;
 
-@SuppressWarnings( { "deprecation", "unchecked" })
-public class BlockMergeTask extends Task<MergeWork> implements Serializable,
+public class MergeTask extends Task<MergeWork> implements Serializable,
     HadoopJobExecHook {
 
   private static final long serialVersionUID = 1L;
+
+  public static String BACKUP_PREFIX = "_backup.";
 
   protected transient JobConf job;
   protected HadoopJobExecHelper jobExecHelper;
@@ -70,7 +77,7 @@ public class BlockMergeTask extends Task<MergeWork> implements Serializable,
   public void initialize(HiveConf conf, QueryPlan queryPlan,
       DriverContext driverContext) {
     super.initialize(conf, queryPlan, driverContext);
-    job = new JobConf(conf, BlockMergeTask.class);
+    job = new JobConf(conf, MergeTask.class);
     jobExecHelper = new HadoopJobExecHelper(job, this.console, this, this);
   }
 
@@ -91,7 +98,9 @@ public class BlockMergeTask extends Task<MergeWork> implements Serializable,
     success = true;
     ShimLoader.getHadoopShims().prepareJobOutput(job);
     job.setOutputFormat(HiveOutputFormatImpl.class);
-    job.setMapperClass(work.getMapperClass());
+    Class<? extends Mapper> mapperClass = work.getMapperClass(work.getSourceTableInputFormat());
+    LOG.info("Using " + mapperClass.getCanonicalName() + " mapper class.");
+    job.setMapperClass(mapperClass);
 
     Context ctx = driverContext.getCtx();
     boolean ctxCreated = false;
@@ -152,7 +161,7 @@ public class BlockMergeTask extends Task<MergeWork> implements Serializable,
       return 6;
     }
 
-    RCFileBlockMergeOutputFormat.setMergeOutputPath(job, outputPath);
+    MergeOutputFormat.setMergeOutputPath(job, outputPath);
 
     job.setOutputKeyClass(NullWritable.class);
     job.setOutputValueClass(NullWritable.class);
@@ -244,13 +253,34 @@ public class BlockMergeTask extends Task<MergeWork> implements Serializable,
           HadoopJobExecHelper.runningJobs.remove(rj);
           jobID = rj.getID().toString();
         }
-        RCFileMergeMapper.jobClose(outputPath, success, job, console,
-          work.getDynPartCtx(), null);
+        closeJob(outputPath, success, job, console, work.getDynPartCtx(), null);
       } catch (Exception e) {
       }
     }
 
     return (returnVal);
+  }
+
+  private Path backupOutputPath(FileSystem fs, Path outpath, JobConf job)
+      throws IOException, HiveException {
+    if (fs.exists(outpath)) {
+      Path backupPath = new Path(outpath.getParent(), BACKUP_PREFIX
+          + outpath.getName());
+      Utilities.rename(fs, outpath, backupPath);
+      return backupPath;
+    } else {
+      return null;
+    }
+  }
+
+  private void closeJob(Path outputPath, boolean success, JobConf job,
+      LogHelper console, DynamicPartitionCtx dynPartCtx, Reporter reporter
+      ) throws HiveException, IOException {
+    FileSystem fs = outputPath.getFileSystem(job);
+    Path backupPath = backupOutputPath(fs, outputPath, job);
+    Utilities.mvFileToFinalPath(outputPath, job, success, LOG, dynPartCtx, null,
+      reporter);
+    fs.delete(backupPath, true);
   }
 
   private void addInputPaths(JobConf job, MergeWork work) {
@@ -261,7 +291,7 @@ public class BlockMergeTask extends Task<MergeWork> implements Serializable,
 
   @Override
   public String getName() {
-    return "RCFile Merge";
+    return "MergeTask";
   }
 
   public static String INPUT_SEPERATOR = ":";
@@ -270,6 +300,7 @@ public class BlockMergeTask extends Task<MergeWork> implements Serializable,
     String inputPathStr = null;
     String outputDir = null;
     String jobConfFileName = null;
+    String format = null;
 
     try {
       for (int i = 0; i < args.length; i++) {
@@ -279,6 +310,8 @@ public class BlockMergeTask extends Task<MergeWork> implements Serializable,
           jobConfFileName = args[++i];
         } else if (args[i].equals("-outputDir")) {
           outputDir = args[++i];
+        } else if (args[i].equals("-format")) {
+          format = args[++i];
         }
       }
     } catch (IndexOutOfBoundsException e) {
@@ -298,7 +331,7 @@ public class BlockMergeTask extends Task<MergeWork> implements Serializable,
     }
 
     FileSystem fs = null;
-    JobConf conf = new JobConf(BlockMergeTask.class);
+    JobConf conf = new JobConf(MergeTask.class);
     for (String path : paths) {
       try {
         Path pathObj = new Path(path);
@@ -322,9 +355,9 @@ public class BlockMergeTask extends Task<MergeWork> implements Serializable,
     if (jobConfFileName != null) {
       conf.addResource(new Path(jobConfFileName));
     }
-    HiveConf hiveConf = new HiveConf(conf, BlockMergeTask.class);
+    HiveConf hiveConf = new HiveConf(conf, MergeTask.class);
 
-    Log LOG = LogFactory.getLog(BlockMergeTask.class.getName());
+    Log LOG = LogFactory.getLog(MergeTask.class.getName());
     boolean isSilent = HiveConf.getBoolVar(conf,
         HiveConf.ConfVars.HIVESESSIONSILENT);
     LogHelper console = new LogHelper(LOG, isSilent);
@@ -340,9 +373,15 @@ public class BlockMergeTask extends Task<MergeWork> implements Serializable,
       }
     }
 
-    MergeWork mergeWork = new MergeWork(inputPaths, new Path(outputDir));
+    MergeWork mergeWork = null;
+    if (format.equals("rcfile")) {
+      mergeWork = new MergeWork(inputPaths, new Path(outputDir), RCFileInputFormat.class);
+    } else if (format.equals("orcfile")) {
+      mergeWork = new MergeWork(inputPaths, new Path(outputDir), OrcInputFormat.class);
+    }
+
     DriverContext driverCxt = new DriverContext();
-    BlockMergeTask taskExec = new BlockMergeTask();
+    MergeTask taskExec = new MergeTask();
     taskExec.initialize(hiveConf, null, driverCxt);
     taskExec.setWork(mergeWork);
     int ret = taskExec.execute(driverCxt);
@@ -354,7 +393,7 @@ public class BlockMergeTask extends Task<MergeWork> implements Serializable,
   }
 
   private static void printUsage() {
-    System.err.println("BlockMergeTask -input <colon seperated input paths>  "
+    System.err.println("MergeTask -format <rcfile or orcfile> -input <colon seperated input paths>  "
         + "-outputDir outputDir [-jobconffile <job conf file>] ");
     System.exit(1);
   }

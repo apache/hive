@@ -104,6 +104,8 @@
     <commons-lang.version>2.4</commons-lang.version>
     <commons-lang3.version>3.1</commons-lang3.version>
     <commons-logging.version>1.1.3</commons-logging.version>
+    <commons-pool.version>1.5.4</commons-pool.version>
+    <commons-dbcp.version>1.4</commons-dbcp.version>
     <derby.version>10.10.1.1</derby.version>
     <guava.version>11.0.2</guava.version>
     <groovy.version>2.1.6</groovy.version>
@@ -111,8 +113,8 @@
     <hadoop-20S.version>1.2.1</hadoop-20S.version>
     <hadoop-23.version>2.4.0</hadoop-23.version>
     <hadoop.bin.path>${basedir}/${hive.path.to.root}/testutils/hadoop</hadoop.bin.path>
-    <hbase.hadoop1.version>0.96.0-hadoop1</hbase.hadoop1.version>
-    <hbase.hadoop2.version>0.96.0-hadoop2</hbase.hadoop2.version>
+    <hbase.hadoop1.version>0.98.3-hadoop1</hbase.hadoop1.version>
+    <hbase.hadoop2.version>0.98.3-hadoop2</hbase.hadoop2.version>
     <!-- httpcomponents are not always in version sync -->
     <httpcomponents.client.version>4.2.5</httpcomponents.client.version>
     <httpcomponents.core.version>4.2.5</httpcomponents.core.version>
@@ -772,7 +774,7 @@
             <test.warehouse.dir>${test.warehouse.scheme}${test.warehouse.dir}</test.warehouse.dir>
             <java.net.preferIPv4Stack>true</java.net.preferIPv4Stack>
             <!-- EnforceReadOnlyTables hook and QTestUtil -->
-            <test.src.tables>src,src1,srcbucket,srcbucket2,src_json,src_thrift,src_sequencefile,srcpart,alltypesorc</test.src.tables>
+            <test.src.tables>src,src1,srcbucket,srcbucket2,src_json,src_thrift,src_sequencefile,srcpart,alltypesorc,src_hbase</test.src.tables>
             <java.security.krb5.conf>${test.tmp.dir}/conf/krb5.conf</java.security.krb5.conf>
           </systemPropertyVariables>
         </configuration>

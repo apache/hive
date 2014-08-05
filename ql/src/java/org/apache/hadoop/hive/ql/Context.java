@@ -39,7 +39,6 @@ import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.ShimLoader;
-import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
 
 import java.io.DataInput;
@@ -53,8 +52,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
-
-import javax.security.auth.login.LoginException;
 
 /**
  * Context for Semantic Analyzers. Usage: not reusable - construct a new one for
@@ -337,7 +334,14 @@ public class Context {
    *          external URI to which the tmp data has to be eventually moved
    * @return next available tmp path on the file system corresponding extURI
    */
-  public Path getExternalTmpPath(URI extURI) {
+  public Path getExternalTmpPath(Path path) {
+    URI extURI = path.toUri();
+    if (extURI.getScheme().equals("viewfs")) {
+      // if we are on viewfs we don't want to use /tmp as tmp dir since rename from /tmp/..
+      // to final /user/hive/warehouse/ will fail later, so instead pick tmp dir
+      // on same namespace as tbl dir.
+      return getExtTmpPathRelTo(path.getParent());
+    }
     return new Path(getExternalScratchDir(extURI), EXT_PREFIX +
       nextPathId());
   }
@@ -347,7 +351,8 @@ public class Context {
    * within passed in uri, whereas getExternalTmpPath() ignores passed in path and returns temp
    * path within /tmp
    */
-  public Path getExtTmpPathRelTo(URI uri) {
+  public Path getExtTmpPathRelTo(Path path) {
+    URI uri = path.toUri();
     return new Path (getScratchDir(uri.getScheme(), uri.getAuthority(), !explain, 
     uri.getPath() + Path.SEPARATOR + "_" + this.executionId), EXT_PREFIX + nextPathId());
   }

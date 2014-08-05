@@ -276,7 +276,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   private Task<?> loadTable(URI fromURI, Table table) {
     Path dataPath = new Path(fromURI.toString(), "data");
-    Path tmpPath = ctx.getExternalTmpPath(fromURI);
+    Path tmpPath = ctx.getExternalTmpPath(new Path(fromURI));
     Task<?> copyTask = TaskFactory.get(new CopyWork(dataPath,
        tmpPath, false), conf);
     LoadTableDesc loadTableWork = new LoadTableDesc(tmpPath,
@@ -321,7 +321,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       LOG.debug("adding dependent CopyWork/AddPart/MoveWork for partition "
           + partSpecToString(partSpec.getPartSpec())
           + " with source location: " + srcLocation);
-      Path tmpPath = ctx.getExternalTmpPath(fromURI);
+      Path tmpPath = ctx.getExternalTmpPath(new Path(fromURI));
       Task<?> copyTask = TaskFactory.get(new CopyWork(new Path(srcLocation),
           tmpPath, false), conf);
       Task<?> addPartTask = TaskFactory.get(new DDLWork(getInputs(),

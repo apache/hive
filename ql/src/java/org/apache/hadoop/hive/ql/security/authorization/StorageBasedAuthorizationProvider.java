@@ -35,7 +35,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hdfs.DFSConfigKeys;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Database;
@@ -83,7 +82,7 @@ public class StorageBasedAuthorizationProvider extends HiveAuthorizationProvider
         // till we explicitly initialize it as being from the client side. So, we have a
         // chicken-and-egg problem. So, we now track whether or not we're running from client-side
         // in the SBAP itself.
-        hive_db = new HiveProxy(Hive.get(new HiveConf(getConf(), StorageBasedAuthorizationProvider.class)));
+        hive_db = new HiveProxy(Hive.get(getConf(), StorageBasedAuthorizationProvider.class));
         this.wh = new Warehouse(getConf());
         if (this.wh == null){
           // If wh is still null after just having initialized it, bail out - something's very wrong.
@@ -117,7 +116,7 @@ public class StorageBasedAuthorizationProvider extends HiveAuthorizationProvider
 
     // Update to previous comment: there does seem to be one place that uses this
     // and that is to authorize "show databases" in hcat commandline, which is used
-    // by webhcat. And user-level auth seems to be a resonable default in this case.
+    // by webhcat. And user-level auth seems to be a reasonable default in this case.
     // The now deprecated HdfsAuthorizationProvider in hcatalog approached this in
     // another way, and that was to see if the user had said above appropriate requested
     // privileges for the hive root warehouse directory. That seems to be the best

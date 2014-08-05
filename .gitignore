@@ -13,6 +13,7 @@ common/src/gen
 *.iml
 *.ipr
 *.iws
+*.swp
 derby.log
 datanucleus.log
 .arc
