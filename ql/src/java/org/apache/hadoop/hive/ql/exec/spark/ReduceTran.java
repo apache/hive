@@ -24,11 +24,12 @@ import org.apache.spark.api.java.JavaPairRDD;
 public class ReduceTran implements SparkTran {
   private SparkShuffler shuffler;
   private HiveReduceFunction reduceFunc;
+  private int numPartitions;
 
   @Override
   public JavaPairRDD<BytesWritable, BytesWritable> transform(
       JavaPairRDD<BytesWritable, BytesWritable> input) {
-    return shuffler.shuffle(input).mapPartitionsToPair(reduceFunc);
+    return shuffler.shuffle(input, numPartitions).mapPartitionsToPair(reduceFunc);
   }
 
   public void setReduceFunction(HiveReduceFunction redFunc) {
@@ -37,6 +38,10 @@ public class ReduceTran implements SparkTran {
 
   public void setShuffler(SparkShuffler shuffler) {
     this.shuffler = shuffler;
+  }
+
+  public void setNumPartitions(int numPartitions) {
+    this.numPartitions = numPartitions;
   }
 
 }

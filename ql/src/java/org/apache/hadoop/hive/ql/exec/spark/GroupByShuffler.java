@@ -7,8 +7,11 @@ public class GroupByShuffler implements SparkShuffler {
 
   @Override
   public JavaPairRDD<BytesWritable, Iterable<BytesWritable>> shuffle(
-      JavaPairRDD<BytesWritable, BytesWritable> input) {
-    return input.groupByKey(/* default to hash partition */);
+      JavaPairRDD<BytesWritable, BytesWritable> input, int numPartitions) {
+    if (numPartitions > 0) {
+      return input.groupByKey(numPartitions);
+    }
+    return input.groupByKey();
   }
 
 }

@@ -24,6 +24,6 @@ import org.apache.spark.api.java.JavaPairRDD;
 public interface SparkShuffler {
 
   JavaPairRDD<BytesWritable, Iterable<BytesWritable>> shuffle(
-      JavaPairRDD<BytesWritable, BytesWritable> input);
+      JavaPairRDD<BytesWritable, BytesWritable> input, int numPartitions);
 
 }

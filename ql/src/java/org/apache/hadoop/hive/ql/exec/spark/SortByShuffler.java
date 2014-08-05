@@ -18,8 +18,9 @@
 
 package org.apache.hadoop.hive.ql.exec.spark;
 
-import java.util.Iterator;
+import java.util.*;
 
+import com.google.common.collect.Ordering;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.function.PairFlatMapFunction;
@@ -30,10 +31,12 @@ public class SortByShuffler implements SparkShuffler {
 
   @Override
   public JavaPairRDD<BytesWritable, Iterable<BytesWritable>> shuffle(
-      JavaPairRDD<BytesWritable, BytesWritable> input) {
-    JavaPairRDD<BytesWritable, BytesWritable> rdd = input.sortByKey();
+      JavaPairRDD<BytesWritable, BytesWritable> input, int numPartitions) {
+    Comparator comp = Ordering.<BytesWritable>natural();
+    // Due to HIVE-7540, numPartitions must be to 1
+    JavaPairRDD<BytesWritable, BytesWritable> rdd = input.sortByKey(comp, true, 1);
     return rdd.mapPartitionsToPair(new ShuffleFunction());
-  };
+  }
 
   private static class ShuffleFunction implements
   PairFlatMapFunction<Iterator<Tuple2<BytesWritable, BytesWritable>>,
@@ -45,10 +48,10 @@ public class SortByShuffler implements SparkShuffler {
     public Iterable<Tuple2<BytesWritable, Iterable<BytesWritable>>> call(
         final Iterator<Tuple2<BytesWritable, BytesWritable>> it) throws Exception {
       // Use input iterator to back returned iterable object.
-      final Iterator<Tuple2<BytesWritable, Iterable<BytesWritable>>> resultIt = 
+      final Iterator<Tuple2<BytesWritable, Iterable<BytesWritable>>> resultIt =
           new Iterator<Tuple2<BytesWritable, Iterable<BytesWritable>>>() {
         BytesWritable curKey = null;
-        BytesWritable curValue = null;
+        List<BytesWritable> curValues = new ArrayList<BytesWritable>();
 
         @Override
         public boolean hasNext() {
@@ -60,13 +63,33 @@ public class SortByShuffler implements SparkShuffler {
           // TODO: implement this by accumulating rows with the same key into a list.
           // Note that this list needs to improved to prevent excessive memory usage, but this
           // can be done in later phase.
-          return null;
+          while (it.hasNext()) {
+            Tuple2<BytesWritable, BytesWritable> pair = it.next();
+            if (curKey != null && !curKey.equals(pair._1())) {
+              BytesWritable key = curKey;
+              List<BytesWritable> values = curValues;
+              curKey = pair._1();
+              curValues = new ArrayList<BytesWritable>();
+              curValues.add(pair._2());
+              return new Tuple2<BytesWritable, Iterable<BytesWritable>>(key, values);
+            }
+            curKey = pair._1();
+            curValues.add(pair._2());
+          }
+          if (curKey == null) {
+            throw new NoSuchElementException();
+          }
+          // if we get here, this should be the last element we have
+          BytesWritable key = curKey;
+          curKey = null;
+          return new Tuple2<BytesWritable, Iterable<BytesWritable>>(key, curValues);
         }
 
         @Override
         public void remove() {
           // Not implemented.
           // throw Unsupported Method Invocation Exception.
+          throw new UnsupportedOperationException();
         }
 
       };
