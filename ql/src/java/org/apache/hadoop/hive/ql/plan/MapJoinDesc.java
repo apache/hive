@@ -119,6 +119,7 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
     }
   }
 
+  @Explain(displayName = "input vertices")
   public Map<Integer, String> getParentToInput() {
     return parentToInput;
   }

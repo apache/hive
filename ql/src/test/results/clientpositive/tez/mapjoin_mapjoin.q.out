@@ -35,6 +35,8 @@ STAGE PLANS:
                         0 value (type: string)
                         1 value (type: string)
                       outputColumnNames: _col0
+                      input vertices:
+                        1 Map 3
                       Statistics: Num rows: 31 Data size: 6393 Basic stats: COMPLETE Column stats: NONE
                       Map Join Operator
                         condition map:
@@ -46,6 +48,8 @@ STAGE PLANS:
                           0 _col0 (type: string)
                           1 key (type: string)
                         outputColumnNames: _col0
+                        input vertices:
+                          1 Map 2
                         Statistics: Num rows: 34 Data size: 7032 Basic stats: COMPLETE Column stats: NONE
                         Select Operator
                           expressions: _col0 (type: string)
@@ -126,6 +130,8 @@ STAGE PLANS:
                         0 value (type: string)
                         1 value (type: string)
                       outputColumnNames: _col0
+                      input vertices:
+                        1 Map 3
                       Statistics: Num rows: 9 Data size: 1983 Basic stats: COMPLETE Column stats: NONE
                       Map Join Operator
                         condition map:
@@ -137,6 +143,8 @@ STAGE PLANS:
                           0 _col0 (type: string)
                           1 key (type: string)
                         outputColumnNames: _col0
+                        input vertices:
+                          1 Map 2
                         Statistics: Num rows: 9 Data size: 2181 Basic stats: COMPLETE Column stats: NONE
                         Select Operator
                           expressions: _col0 (type: string)
@@ -218,6 +226,8 @@ STAGE PLANS:
                         0 value (type: string)
                         1 value (type: string)
                       outputColumnNames: _col0, _col2
+                      input vertices:
+                        1 Map 4
                       Statistics: Num rows: 31 Data size: 6393 Basic stats: COMPLETE Column stats: NONE
                       Map Join Operator
                         condition map:
@@ -229,6 +239,8 @@ STAGE PLANS:
                           0 _col0 (type: string)
                           1 key (type: string)
                         outputColumnNames: _col2
+                        input vertices:
+                          1 Map 3
                         Statistics: Num rows: 34 Data size: 7032 Basic stats: COMPLETE Column stats: NONE
                         Select Operator
                           expressions: _col2 (type: string)
