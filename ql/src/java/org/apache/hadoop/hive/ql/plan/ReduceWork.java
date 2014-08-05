@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.plan;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -30,7 +31,18 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorUtils;
+import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.Rule;
+import org.apache.hadoop.hive.serde2.Deserializer;
+import org.apache.hadoop.hive.serde2.SerDe;
+import org.apache.hadoop.hive.serde2.SerDeUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.StructField;
+import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.util.ReflectionUtils;
 
 /**
  * ReduceWork represents all the information used to run a reduce task on the cluster.
@@ -84,6 +96,11 @@ public class ReduceWork extends BaseWork {
   // for auto reduce parallelism - max reducers requested
   private int maxReduceTasks;
 
+  private ObjectInspector keyObjectInspector = null;
+  private ObjectInspector valueObjectInspector = null;
+
+  private Map<String, Integer> reduceColumnNameMap = new LinkedHashMap<String, Integer>();
+
   /**
    * If the plan has a reducer and correspondingly a reduce-sink, then store the TableDesc pointing
    * to keySerializeInfo of the ReduceSink
@@ -95,7 +112,90 @@ public class ReduceWork extends BaseWork {
   }
 
   public TableDesc getKeyDesc() {
-    return keyDesc;
+     return keyDesc;
+  }
+
+  private ObjectInspector getObjectInspector(TableDesc desc) {
+    ObjectInspector objectInspector;
+    try {
+      Deserializer deserializer = (SerDe) ReflectionUtils.newInstance(desc
+                .getDeserializerClass(), null);
+      SerDeUtils.initializeSerDe(deserializer, null, desc.getProperties(), null);
+      objectInspector = deserializer.getObjectInspector();
+    } catch (Exception e) {
+      return null;
+    }
+    return objectInspector;
+  }
+
+  public ObjectInspector getKeyObjectInspector() {
+    if (keyObjectInspector == null) {
+      keyObjectInspector = getObjectInspector(keyDesc);
+    }
+    return keyObjectInspector;
+  }
+
+  // Only works when not tagging.
+  public ObjectInspector getValueObjectInspector() {
+    if (needsTagging) {
+      return null;
+    }
+    if (valueObjectInspector == null) {
+      valueObjectInspector = getObjectInspector(tagToValueDesc.get(0));
+    }
+    return valueObjectInspector;
+  }
+
+  private int addToReduceColumnNameMap(StructObjectInspector structObjectInspector, int startIndex, String prefix) {
+    List<? extends StructField> fields = structObjectInspector.getAllStructFieldRefs();
+    int index = startIndex;
+    for (StructField field: fields) {
+      reduceColumnNameMap.put(prefix + "." + field.getFieldName(), index);
+      index++;
+    }
+    return index;
+  }
+
+  public Boolean fillInReduceColumnNameMap() {
+    ObjectInspector keyObjectInspector = getKeyObjectInspector();
+    if (keyObjectInspector == null || !(keyObjectInspector instanceof StructObjectInspector)) {
+        return false;
+    }
+    StructObjectInspector keyStructObjectInspector = (StructObjectInspector) keyObjectInspector;
+
+    ObjectInspector valueObjectInspector = getValueObjectInspector();
+    if (valueObjectInspector == null || !(valueObjectInspector instanceof StructObjectInspector)) {
+        return false;
+    }
+    StructObjectInspector valueStructObjectInspector = (StructObjectInspector) valueObjectInspector;
+
+    int keyCount = addToReduceColumnNameMap(keyStructObjectInspector, 0, Utilities.ReduceField.KEY.toString());
+    addToReduceColumnNameMap(valueStructObjectInspector, keyCount, Utilities.ReduceField.VALUE.toString());
+    return true;
+  }
+
+  public Map<String, Integer> getReduceColumnNameMap() {
+    if (needsTagging) {
+      return null;
+    }
+    if (reduceColumnNameMap.size() == 0) {
+      if (!fillInReduceColumnNameMap()) {
+        return null;
+      }
+    }
+    return reduceColumnNameMap;
+  }
+
+  public List<String> getReduceColumnNames() {
+    if (needsTagging) {
+        return null;
+    }
+    if (reduceColumnNameMap.size() == 0) {
+        if (!fillInReduceColumnNameMap()) {
+            return null;
+        }
+    }
+    return new ArrayList<String>(reduceColumnNameMap.keySet());
   }
 
   public List<TableDesc> getTagToValueDesc() {

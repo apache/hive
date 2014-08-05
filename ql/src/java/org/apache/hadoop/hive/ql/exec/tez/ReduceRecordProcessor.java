@@ -136,7 +136,7 @@ public class ReduceRecordProcessor  extends RecordProcessor{
     reducer.setParentOperators(null); // clear out any parents as reducer is the
     // root
     isTagged = redWork.getNeedsTagging();
-    vectorized = redWork.getVectorModeOn() != null;
+    vectorized = redWork.getVectorMode();
 
     try {
       keyTableDesc = redWork.getKeyDesc();
