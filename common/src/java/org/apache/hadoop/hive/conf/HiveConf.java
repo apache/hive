@@ -1098,7 +1098,9 @@ public class HiveConf extends Configuration {
         "Whether queries will fail because stats cannot be collected completely accurately. \n" +
         "If this is set to true, reading/writing from/into a partition may fail because the stats\n" +
         "could not be computed accurately."),
-
+    HIVE_STATS_COLLECT_PART_LEVEL_STATS("hive.analyze.stmt.collect.partlevel.stats", true,
+        "analyze table T compute statistics for columns. Queries like these should compute partition"
+        + "level stats for partitioned table even when no part spec is specified."),
     HIVE_STATS_GATHER_NUM_THREADS("hive.stats.gather.num.threads", 10,
         "Number of threads used by partialscan/noscan analyze command for partitioned tables.\n" +
         "This is applicable only for file formats that implement StatsProvidingRecordReader (like ORC)."),
