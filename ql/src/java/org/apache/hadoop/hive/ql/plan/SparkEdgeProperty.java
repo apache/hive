@@ -33,8 +33,8 @@ public class SparkEdgeProperty {
     this.edgeType = edgeType;
     this.numPartitions = numPartitions;
   }
-  
-  public SparkEdgeProperty(int edgeType) {
+
+  public SparkEdgeProperty(long edgeType) {
     this.edgeType = edgeType;
   }
 

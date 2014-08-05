@@ -25,14 +25,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Stack;
 
+import com.google.common.base.Strings;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.exec.HashTableDummyOperator;
-import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
-import org.apache.hadoop.hive.ql.exec.Operator;
-import org.apache.hadoop.hive.ql.exec.OperatorFactory;
-import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
+import org.apache.hadoop.hive.ql.exec.*;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
@@ -274,13 +271,14 @@ public class GenSparkWork implements NodeProcessor {
 
       if (!context.connectedReduceSinks.contains(rs)) {
         // add dependency between the two work items
-        SparkEdgeProperty edgeProp;
-        if (rWork.isAutoReduceParallelism()) {
-          edgeProp =
-              new SparkEdgeProperty(0/*context.conf, EdgeType.SIMPLE_EDGE, true,
-                  rWork.getMinReduceTasks(), rWork.getMaxReduceTasks(), bytesPerReducer*/);
-        } else {
-          edgeProp = new SparkEdgeProperty(0/*EdgeType.SIMPLE_EDGE*/);
+        SparkEdgeProperty edgeProp = new SparkEdgeProperty(SparkEdgeProperty.SHUFFLE_NONE,
+            rs.getConf().getNumReducers());
+        if(rWork.getReducer() instanceof GroupByOperator){
+          edgeProp.setShuffleGroup();
+        }
+        String sortOrder = Strings.nullToEmpty(rs.getConf().getOrder()).trim();
+        if (!sortOrder.isEmpty()) {
+          edgeProp.setShuffleSort();
         }
         sparkWork.connect(work, rWork, edgeProp);
         context.connectedReduceSinks.add(rs);

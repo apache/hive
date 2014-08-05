@@ -28,31 +28,18 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 
+import com.google.common.base.Strings;
 import org.apache.hadoop.fs.Path;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.exec.FetchTask;
-import org.apache.hadoop.hive.ql.exec.Operator;
-import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
-import org.apache.hadoop.hive.ql.exec.HashTableDummyOperator;
-import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
-import org.apache.hadoop.hive.ql.exec.TableScanOperator;
-import org.apache.hadoop.hive.ql.exec.UnionOperator;
-import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.*;
 import org.apache.hadoop.hive.ql.optimizer.GenMapRedUtils;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.BaseWork;
-import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
-import org.apache.hadoop.hive.ql.plan.MapWork;
-import org.apache.hadoop.hive.ql.plan.OperatorDesc;
-import org.apache.hadoop.hive.ql.plan.ReduceWork;
-import org.apache.hadoop.hive.ql.plan.SparkEdgeProperty;
-import org.apache.hadoop.hive.ql.plan.SparkWork;
-import org.apache.hadoop.hive.ql.plan.UnionWork;
+import org.apache.hadoop.hive.ql.plan.*;
 
 import com.google.common.base.Preconditions;
 
@@ -142,12 +129,15 @@ public class GenSparkUtils {
 
     sparkWork.add(reduceWork);
 
-    SparkEdgeProperty edgeProp;
-    if (reduceWork.isAutoReduceParallelism()) {
-      edgeProp =
-          new SparkEdgeProperty(0);
-    } else {
-      edgeProp = new SparkEdgeProperty(0);
+    SparkEdgeProperty edgeProp = new SparkEdgeProperty(SparkEdgeProperty.SHUFFLE_NONE,
+        reduceSink.getConf().getNumReducers());
+
+    if (root instanceof GroupByOperator) {
+      edgeProp.setShuffleGroup();
+    }
+    String sortOrder = Strings.nullToEmpty(reduceSink.getConf().getOrder()).trim();
+    if (!sortOrder.isEmpty()) {
+      edgeProp.setShuffleSort();
     }
 
     sparkWork.connect(

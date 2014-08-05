@@ -67,6 +67,7 @@ public class SparkPlanGenerator {
       SparkShuffler st = generate(edge);
       ReduceTran rt = generate(child);
       rt.setShuffler(st);
+      rt.setNumPartitions(edge.getNumPartitions());
       trans.add(rt);
       w = child;
     }
@@ -110,7 +111,9 @@ public class SparkPlanGenerator {
   }
 
   private SparkShuffler generate(SparkEdgeProperty edge) {
-    // TODO: create different shuffler based on edge prop.
+    if (edge.isShuffleSort()){
+      return new SortByShuffler();
+    }
     return new GroupByShuffler();
   }
 
