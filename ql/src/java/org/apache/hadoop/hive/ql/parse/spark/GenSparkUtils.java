@@ -54,6 +54,8 @@ import org.apache.hadoop.hive.ql.plan.SparkEdgeProperty;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
 import org.apache.hadoop.hive.ql.plan.UnionWork;
 
+import com.google.common.base.Preconditions;
+
 /**
  * GenSparkUtils is a collection of shared helper methods to produce SparkWork
  * Cloned from GenTezUtils.
@@ -90,7 +92,8 @@ public class GenSparkUtils {
   }
 
   public ReduceWork createReduceWork(GenSparkProcContext context, Operator<?> root, SparkWork sparkWork) {
-    assert !root.getParentOperators().isEmpty();
+    Preconditions.checkArgument(!root.getParentOperators().isEmpty(),
+        "AssertionError: expected root.getParentOperators() to be non-empty");
 
     boolean isAutoReduceParallelism =
         context.conf.getBoolVar(HiveConf.ConfVars.TEZ_AUTO_REDUCER_PARALLELISM);
@@ -109,7 +112,9 @@ public class GenSparkUtils {
     // to choose the number of reducers. In the join/union case they will
     // all be -1. In sort/order case where it matters there will be only
     // one parent.
-    assert context.parentOfRoot instanceof ReduceSinkOperator;
+    Preconditions.checkArgument(context.parentOfRoot instanceof ReduceSinkOperator,
+        "AssertionError: expected context.parentOfRoot to be an instance of ReduceSinkOperator, but was " +
+            context.parentOfRoot.getClass().getName());
     ReduceSinkOperator reduceSink = (ReduceSinkOperator) context.parentOfRoot;
 
     reduceWork.setNumReduceTasks(reduceSink.getConf().getNumReducers());
@@ -172,12 +177,15 @@ public class GenSparkUtils {
 
   public MapWork createMapWork(GenSparkProcContext context, Operator<?> root,
       SparkWork sparkWork, PrunedPartitionList partitions) throws SemanticException {
-    assert root.getParentOperators().isEmpty();
+    Preconditions.checkArgument(root.getParentOperators().isEmpty(),
+        "AssertionError: expected root.getParentOperators() to be empty");
     MapWork mapWork = new MapWork("Map "+ (++sequenceNumber));
     logger.debug("Adding map work (" + mapWork.getName() + ") for " + root);
 
     // map work starts with table scan operators
-    assert root instanceof TableScanOperator;
+    Preconditions.checkArgument(root instanceof TableScanOperator,
+        "AssertionError: expected root to be an instance of TableScanOperator, but was " +
+            root.getClass().getName());
     String alias = ((TableScanOperator)root).getConf().getAlias();
 
     setupMapWork(mapWork, context, partitions, root, alias);
@@ -276,7 +284,8 @@ public class GenSparkUtils {
         }
 
         // we should have been able to reach the union from only one side.
-        assert count <= 1;
+        Preconditions.checkArgument(count <= 1,
+            "AssertionError: expected count to be <= 1, but was " + count);
 
         if (parent == null) {
           // root operator is union (can happen in reducers)

@@ -33,6 +33,8 @@ import java.util.Set;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
+import com.google.common.base.Preconditions;
+
 /**
  * This class encapsulates all the work objects that can be executed
  * in a single Spark job. Currently it's basically a tree with MapWork at the
@@ -175,8 +177,10 @@ public class SparkWork extends AbstractOperatorDesc {
    * getParents returns all the nodes with edges leading into work
    */
   public List<BaseWork> getParents(BaseWork work) {
-    assert invertedWorkGraph.containsKey(work)
-      && invertedWorkGraph.get(work) != null;
+    Preconditions.checkArgument(invertedWorkGraph.containsKey(work),
+        "AssertionError: expected invertedWorkGraph.containsKey(work) to be true");
+    Preconditions.checkArgument(invertedWorkGraph.get(work) != null,
+        "AssertionError: expected invertedWorkGraph.get(work) to be not null");
     return new LinkedList<BaseWork>(invertedWorkGraph.get(work));
   }
 
@@ -184,8 +188,10 @@ public class SparkWork extends AbstractOperatorDesc {
    * getChildren returns all the nodes with edges leading out of work
    */
   public List<BaseWork> getChildren(BaseWork work) {
-    assert workGraph.containsKey(work)
-      && workGraph.get(work) != null;
+    Preconditions.checkArgument(workGraph.containsKey(work),
+        "AssertionError: expected workGraph.containsKey(work) to be true");
+    Preconditions.checkArgument(workGraph.get(work) != null,
+        "AssertionError: expected workGraph.get(work) to be not null");
     return new LinkedList<BaseWork>(workGraph.get(work));
   }
 

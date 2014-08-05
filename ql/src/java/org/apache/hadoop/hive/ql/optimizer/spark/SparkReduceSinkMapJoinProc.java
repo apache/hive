@@ -47,6 +47,8 @@ import org.apache.hadoop.hive.ql.plan.SparkEdgeProperty;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 
+import com.google.common.base.Preconditions;
+
 public class SparkReduceSinkMapJoinProc implements NodeProcessor {
 
   protected transient Log LOG = LogFactory.getLog(this.getClass().getName());
@@ -100,7 +102,10 @@ public class SparkReduceSinkMapJoinProc implements NodeProcessor {
     if (context.unionWorkMap.containsKey(parentRS)) {
       parentWork = context.unionWorkMap.get(parentRS);
     } else {
-      assert context.childToWorkMap.get(parentRS).size() == 1;
+      int workMapSize = context.childToWorkMap.get(parentRS).size();
+      Preconditions.checkArgument(workMapSize == 1,
+          "AssertionError: expected context.childToWorkMap.get(parentRS).size() to be 1, but was " +
+              workMapSize);
       parentWork = context.childToWorkMap.get(parentRS).get(0);
     }
 

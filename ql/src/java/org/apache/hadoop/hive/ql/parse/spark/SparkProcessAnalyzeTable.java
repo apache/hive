@@ -50,11 +50,13 @@ import org.apache.hadoop.hive.ql.plan.StatsNoJobWork;
 import org.apache.hadoop.hive.ql.plan.StatsWork;
 import org.apache.hadoop.mapred.InputFormat;
 
+import com.google.common.base.Preconditions;
+
 /**
  * ProcessAnalyzeTable sets up work for the several variants of analyze table
  * (normal, no scan, partial scan.) The plan at this point will be a single
  * table scan operator.
- * 
+ *
  * TODO: cloned from tez ProcessAnalyzeTable. Need to make sure it fits to Spark.
  */
 public class SparkProcessAnalyzeTable implements NodeProcessor {
@@ -83,9 +85,13 @@ public class SparkProcessAnalyzeTable implements NodeProcessor {
         .getInputFormatClass();
     QB queryBlock = parseContext.getQB();
     QBParseInfo parseInfo = parseContext.getQB().getParseInfo();
-    
+
     if (parseInfo.isAnalyzeCommand()) {
-      assert tableScan.getChildOperators() == null || tableScan.getChildOperators().size() == 0;
+      Preconditions.checkArgument(tableScan.getChildOperators() == null,
+          "AssertionError: expected tableScan.getChildOperators() to be null");
+      int childOpSize = tableScan.getChildOperators().size();
+      Preconditions.checkArgument(childOpSize == 0,
+          "AssertionError: expected tableScan.getChildOperators().size() to be 0, but was " + childOpSize);
 
       String alias = null;
       for (String a: parseContext.getTopOps().keySet()) {
@@ -93,7 +99,7 @@ public class SparkProcessAnalyzeTable implements NodeProcessor {
           alias = a;
         }
       }
-      assert alias != null;
+      Preconditions.checkArgument(alias != null, "AssertionError: expected alias to be not null");
 
       SparkWork sparkWork = context.currentTask.getWork();
       boolean partialScan = parseInfo.isPartialScanAnalyzeCommand();
