@@ -9592,6 +9592,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         disableJoinMerge = true;
         sinkOp = genPlan(qb);
         LOG.info("CBO Succeeded; optimized logical plan.");
+        LOG.debug(newAST.dump());
 
         /*
          * Use non CBO Result Set Schema so as to preserve user specified names.
