@@ -35,7 +35,7 @@ import org.apache.hadoop.hive.ql.exec.ObjectCacheFactory;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.exec.mr.ExecMapper.reportStats;
+import org.apache.hadoop.hive.ql.exec.mr.ExecMapper.ReportStats;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
 import org.apache.hadoop.hive.ql.exec.tez.TezProcessor.TezKVOutputCollector;
 import org.apache.hadoop.hive.ql.exec.tez.tools.InputMerger;
@@ -519,7 +519,7 @@ public class ReduceRecordProcessor  extends RecordProcessor{
           dummyOp.close(abort);
         }
       }
-      reportStats rps = new reportStats(reporter);
+      ReportStats rps = new ReportStats(reporter);
       reducer.preorderMap(rps);
 
     } catch (Exception e) {
