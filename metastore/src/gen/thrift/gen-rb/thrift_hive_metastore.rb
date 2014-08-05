@@ -1231,6 +1231,23 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_partitions_statistics_req failed: unknown result')
     end
 
+    def get_aggr_stats_for(request)
+      send_get_aggr_stats_for(request)
+      return recv_get_aggr_stats_for()
+    end
+
+    def send_get_aggr_stats_for(request)
+      send_message('get_aggr_stats_for', Get_aggr_stats_for_args, :request => request)
+    end
+
+    def recv_get_aggr_stats_for()
+      result = receive_message(Get_aggr_stats_for_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_aggr_stats_for failed: unknown result')
+    end
+
     def delete_partition_column_statistics(db_name, tbl_name, part_name, col_name)
       send_delete_partition_column_statistics(db_name, tbl_name, part_name, col_name)
       return recv_delete_partition_column_statistics()
@@ -2822,6 +2839,19 @@ module ThriftHiveMetastore
         result.o2 = o2
       end
       write_result(result, oprot, 'get_partitions_statistics_req', seqid)
+    end
+
+    def process_get_aggr_stats_for(seqid, iprot, oprot)
+      args = read_args(iprot, Get_aggr_stats_for_args)
+      result = Get_aggr_stats_for_result.new()
+      begin
+        result.success = @handler.get_aggr_stats_for(args.request)
+      rescue ::NoSuchObjectException => o1
+        result.o1 = o1
+      rescue ::MetaException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'get_aggr_stats_for', seqid)
     end
 
     def process_delete_partition_column_statistics(seqid, iprot, oprot)
@@ -6065,6 +6095,42 @@ module ThriftHiveMetastore
 
     FIELDS = {
       SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::PartitionsStatsResult},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_aggr_stats_for_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQUEST = 1
+
+    FIELDS = {
+      REQUEST => {:type => ::Thrift::Types::STRUCT, :name => 'request', :class => ::PartitionsStatsRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_aggr_stats_for_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::AggrStats},
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
       O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
     }

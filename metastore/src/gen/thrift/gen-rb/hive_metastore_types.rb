@@ -1008,6 +1008,26 @@ class ColumnStatistics
   ::Thrift::Struct.generate_accessors self
 end
 
+class AggrStats
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  COLSTATS = 1
+  PARTSFOUND = 2
+
+  FIELDS = {
+    COLSTATS => {:type => ::Thrift::Types::LIST, :name => 'colStats', :element => {:type => ::Thrift::Types::STRUCT, :class => ::ColumnStatisticsObj}},
+    PARTSFOUND => {:type => ::Thrift::Types::I64, :name => 'partsFound'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field colStats is unset!') unless @colStats
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field partsFound is unset!') unless @partsFound
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
 class Schema
   include ::Thrift::Struct, ::Thrift::Struct_Union
   FIELDSCHEMAS = 1

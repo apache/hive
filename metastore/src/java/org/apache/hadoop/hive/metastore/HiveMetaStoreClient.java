@@ -52,6 +52,7 @@ import org.apache.hadoop.hive.conf.HiveConfUtil;
 import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
 import org.apache.hadoop.hive.metastore.api.AddPartitionsRequest;
 import org.apache.hadoop.hive.metastore.api.AddPartitionsResult;
+import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.CheckLockRequest;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
@@ -1819,5 +1820,12 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
       boolean deleteData, EnvironmentContext envContext) throws MetaException, TException,
       NoSuchObjectException, UnsupportedOperationException {
     client.drop_table_with_environment_context(dbname, name, deleteData, envContext);
+  }
+
+  @Override
+  public AggrStats getAggrColStatsFor(String dbName, String tblName,
+    List<String> colNames, List<String> partNames) throws NoSuchObjectException, MetaException, TException {
+    PartitionsStatsRequest req = new PartitionsStatsRequest(dbName, tblName, colNames, partNames);
+    return client.get_aggr_stats_for(req);
   }
 }

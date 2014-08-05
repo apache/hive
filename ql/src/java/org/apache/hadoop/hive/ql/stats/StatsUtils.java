@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.stats;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -30,7 +29,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
+import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
@@ -101,7 +100,7 @@ public class StatsUtils {
    * @throws HiveException
    */
   public static Statistics collectStatistics(HiveConf conf, PrunedPartitionList partList,
-      Table table, TableScanOperator tableScanOperator) {
+      Table table, TableScanOperator tableScanOperator) throws HiveException {
 
     Statistics stats = new Statistics();
 
@@ -206,17 +205,26 @@ public class StatsUtils {
         for (Partition part : partList.getNotDeniedPartns()) {
           partNames.add(part.getName());
         }
-        Map<String, List<ColStatistics>> partStats =
-            getPartColumnStats(table, schema, partNames, neededColumns);
-        if (partStats != null) {
-          for (String partName : partNames) {
-            List<ColStatistics> partStat = partStats.get(partName);
-            haveFullStats &= (partStat != null);
-            if (partStat != null) {
-              stats.updateColumnStatsState(deriveStatType(partStat, neededColumns));
-              stats.addToColumnStats(partStat);
-            }
+        Map<String, String> colToTabAlias = new HashMap<String, String>();
+        neededColumns = processNeededColumns(schema, neededColumns, colToTabAlias);
+        AggrStats aggrStats = Hive.get().getAggrColStatsFor(table.getDbName(), table.getTableName(), neededColumns, partNames);
+        if (null == aggrStats) {
+          haveFullStats = false;
+        } else {
+          List<ColumnStatisticsObj> colStats = aggrStats.getColStats();
+          if (colStats.size() != neededColumns.size()) {
+            LOG.debug("Column stats requested for : " + neededColumns.size() + " columns. Able to retrieve"
+                + " for " + colStats.size() + " columns");
           }
+          List<ColStatistics> columnStats = convertColStats(colStats, table.getTableName(), colToTabAlias);
+          stats.addToColumnStats(columnStats);
+          State colState = deriveStatType(columnStats, neededColumns);
+          if (aggrStats.getPartsFound() != partNames.size() && colState != State.NONE) {
+            LOG.debug("Column stats requested for : " + partNames.size() +" partitions. "
+              + "Able to retrieve for " + aggrStats.getPartsFound() + " partitions");
+            stats.updateColumnStatsState(State.PARTIAL);
+          }
+          stats.setColumnStatsState(colState);
         }
       }
       // There are some partitions with no state (or we didn't fetch any state).
@@ -460,12 +468,7 @@ public class StatsUtils {
     try {
       List<ColumnStatisticsObj> colStat = Hive.get().getTableColumnStatistics(
           dbName, tabName, neededColsInTable);
-      stats = new ArrayList<ColStatistics>(colStat.size());
-      for (ColumnStatisticsObj statObj : colStat) {
-        ColStatistics cs = getColStatistics(statObj, tabName, statObj.getColName());
-        cs.setTableAlias(colToTabAlias.get(cs.getColumnName()));
-        stats.add(cs);
-      }
+      stats = convertColStats(colStat, tabName, colToTabAlias);
     } catch (HiveException e) {
       LOG.error("Failed to retrieve table statistics: ", e);
       stats = null;
@@ -473,43 +476,16 @@ public class StatsUtils {
     return stats;
   }
 
-  /**
-   * Get table level column statistics from metastore for needed columns
-   * @param table
-   *          - table
-   * @param schema
-   *          - output schema
-   * @param neededColumns
-   *          - list of needed columns
-   * @return column statistics
-   */
-  public static Map<String, List<ColStatistics>> getPartColumnStats(Table table,
-      List<ColumnInfo> schema, List<String> partNames, List<String> neededColumns) {
-    String dbName = table.getDbName();
-    String tabName = table.getTableName();
-    Map<String, String> colToTabAlias = new HashMap<String, String>(schema.size());
-    List<String> neededColsInTable = processNeededColumns(schema, neededColumns, colToTabAlias);
-    Map<String, List<ColStatistics>> stats = null;
-    try {
-      Map<String, List<ColumnStatisticsObj>> colStat = Hive.get().getPartitionColumnStatistics(
-          dbName, tabName, partNames, neededColsInTable);
-      stats = new HashMap<String, List<ColStatistics>>(colStat.size());
-      for (Map.Entry<String, List<ColumnStatisticsObj>> entry : colStat.entrySet()) {
-        List<ColStatistics> partStat = new ArrayList<ColStatistics>(entry.getValue().size());
-        for (ColumnStatisticsObj statObj : entry.getValue()) {
-          ColStatistics cs = getColStatistics(statObj, tabName, statObj.getColName());
-          cs.setTableAlias(colToTabAlias.get(cs.getColumnName()));
-          partStat.add(cs);
-        }
-        stats.put(entry.getKey(), partStat);
-      }
-    } catch (HiveException e) {
-      LOG.error("Failed to retrieve partitions statistics: ", e);
-      stats = null;
+  private static List<ColStatistics> convertColStats(List<ColumnStatisticsObj> colStats, String tabName,
+    Map<String,String> colToTabAlias) {
+    List<ColStatistics> stats = new ArrayList<ColStatistics>(colStats.size());
+    for (ColumnStatisticsObj statObj : colStats) {
+      ColStatistics cs = getColStatistics(statObj, tabName, statObj.getColName());
+      cs.setTableAlias(colToTabAlias.get(cs.getColumnName()));
+      stats.add(cs);
     }
     return stats;
   }
-
   private static List<String> processNeededColumns(List<ColumnInfo> schema,
       List<String> neededColumns, Map<String, String> colToTabAlias) {
     for (ColumnInfo col : schema) {
