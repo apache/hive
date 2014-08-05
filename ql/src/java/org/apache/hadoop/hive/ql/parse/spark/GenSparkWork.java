@@ -45,11 +45,13 @@ import org.apache.hadoop.hive.ql.plan.SparkEdgeProperty;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
 import org.apache.hadoop.hive.ql.plan.UnionWork;
 
+import com.google.common.base.Preconditions;
+
 /**
  * GenSparkWork separates the operator tree into spark tasks.
  * It is called once per leaf operator (operator that forces a new execution unit.)
  * and break the operators into work and tasks along the way.
- * 
+ *
  * Cloned from GenTezWork.
  * 
  * TODO: need to go thru this to make it fit completely to Spark.
@@ -72,8 +74,12 @@ public class GenSparkWork implements NodeProcessor {
       NodeProcessorCtx procContext, Object... nodeOutputs) throws SemanticException {
     GenSparkProcContext context = (GenSparkProcContext) procContext;
 
-    assert context != null && context.currentTask != null
-        && context.currentRootOperator != null;
+    Preconditions.checkArgument(context != null,
+        "AssertionError: expected context to be not null");
+    Preconditions.checkArgument(context.currentTask != null,
+        "AssertionError: expected context.currentTask to be not null");
+    Preconditions.checkArgument(context.currentRootOperator != null,
+        "AssertionError: expected context.currentRootOperator to be not null");
 
     // Operator is a file sink or reduce sink. Something that forces
     // a new vertex.
@@ -209,7 +215,8 @@ public class GenSparkWork implements NodeProcessor {
         // we've seen this terminal before and have created a union work object.
         // just need to add this work to it. There will be no children of this one
         // since we've passed this operator before.
-        assert operator.getChildOperators().isEmpty();
+        Preconditions.checkArgument(operator.getChildOperators().isEmpty(),
+            "AssertionError: expected operator.getChildOperators() to be empty");
         unionWork = (UnionWork) context.unionWorkMap.get(operator);
 
       } else {
@@ -249,8 +256,12 @@ public class GenSparkWork implements NodeProcessor {
         +" has common downstream work:"+followingWork);
 
       // need to add this branch to the key + value info
-      assert operator instanceof ReduceSinkOperator
-        && followingWork instanceof ReduceWork;
+      Preconditions.checkArgument(operator instanceof ReduceSinkOperator,
+          "AssertionError: expected operator to be an instance of ReduceSinkOperator, but was " +
+              operator.getClass().getName());
+      Preconditions.checkArgument(followingWork instanceof ReduceWork,
+          "AssertionError: expected followingWork to be an instance of ReduceWork, but was " +
+              followingWork.getClass().getName());
       ReduceSinkOperator rs = (ReduceSinkOperator) operator;
       ReduceWork rWork = (ReduceWork) followingWork;
       GenMapRedUtils.setKeyAndValueDesc(rWork, rs);
@@ -281,7 +292,9 @@ public class GenSparkWork implements NodeProcessor {
     // No children means we're at the bottom. If there are more operators to scan
     // the next item will be a new root.
     if (!operator.getChildOperators().isEmpty()) {
-      assert operator.getChildOperators().size() == 1;
+      Preconditions.checkArgument(operator.getChildOperators().size() == 1,
+          "AssertionError: expected operator.getChildOperators().size() to be 1, but was " +
+              operator.getChildOperators().size());
       context.parentOfRoot = operator;
       context.currentRootOperator = operator.getChildOperators().get(0);
       context.preceedingWork = work;
