@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.*;
 import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
+import org.apache.hadoop.hive.ql.exec.vector.VectorExtractOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContextRegion;
@@ -62,9 +63,12 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
+import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
+import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.SMBJoinDesc;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
@@ -107,6 +111,12 @@ import org.apache.hadoop.hive.ql.udf.UDFToString;
 import org.apache.hadoop.hive.ql.udf.UDFWeekOfYear;
 import org.apache.hadoop.hive.ql.udf.UDFYear;
 import org.apache.hadoop.hive.ql.udf.generic.*;
+import org.apache.hadoop.hive.serde2.Deserializer;
+import org.apache.hadoop.hive.serde2.SerDe;
+import org.apache.hadoop.hive.serde2.SerDeUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.util.ReflectionUtils;
 
 public class Vectorizer implements PhysicalPlanResolver {
 
@@ -256,7 +266,15 @@ public class Vectorizer implements PhysicalPlanResolver {
 
   class VectorizationDispatcher implements Dispatcher {
 
+    private PhysicalContext pctx;
+
+    private int keyColCount;
+    private int valueColCount;
+
     public VectorizationDispatcher(PhysicalContext pctx) {
+      this.pctx = pctx;
+      keyColCount = 0;
+      valueColCount = 0;
     }
 
     @Override
@@ -270,6 +288,9 @@ public class Vectorizer implements PhysicalPlanResolver {
         for (BaseWork w: work.getAllWork()) {
           if (w instanceof MapWork) {
             convertMapWork((MapWork)w);
+          } else if (w instanceof ReduceWork) {
+            // We are only vectorizing Reduce under Tez.
+            convertReduceWork((ReduceWork)w);
           }
         }
       }
@@ -281,6 +302,13 @@ public class Vectorizer implements PhysicalPlanResolver {
       if (ret) {
         vectorizeMapWork(mapWork);
       }
+    }
+
+    private void addMapWorkRules(Map<Rule, NodeProcessor> opRules, NodeProcessor np) {
+      opRules.put(new RuleRegExp("R1", TableScanOperator.getOperatorName() + ".*"
+          + FileSinkOperator.getOperatorName()), np);
+      opRules.put(new RuleRegExp("R2", TableScanOperator.getOperatorName() + ".*"
+          + ReduceSinkOperator.getOperatorName()), np);
     }
 
     private boolean validateMapWork(MapWork mapWork) throws SemanticException {
@@ -297,11 +325,8 @@ public class Vectorizer implements PhysicalPlanResolver {
         }
       }
       Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
-      ValidationNodeProcessor vnp = new ValidationNodeProcessor();
-      opRules.put(new RuleRegExp("R1", TableScanOperator.getOperatorName() + ".*"
-          + FileSinkOperator.getOperatorName()), vnp);
-      opRules.put(new RuleRegExp("R2", TableScanOperator.getOperatorName() + ".*"
-          + ReduceSinkOperator.getOperatorName()), vnp);
+      MapWorkValidationNodeProcessor vnp = new MapWorkValidationNodeProcessor();
+      addMapWorkRules(opRules, vnp);
       Dispatcher disp = new DefaultRuleDispatcher(vnp, opRules, null);
       GraphWalker ogw = new DefaultGraphWalker(disp);
       // iterator the mapper operator tree
@@ -320,14 +345,11 @@ public class Vectorizer implements PhysicalPlanResolver {
     }
 
     private void vectorizeMapWork(MapWork mapWork) throws SemanticException {
-      LOG.info("Vectorizing task...");
+      LOG.info("Vectorizing MapWork...");
       mapWork.setVectorMode(true);
       Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
-      VectorizationNodeProcessor vnp = new VectorizationNodeProcessor(mapWork);
-      opRules.put(new RuleRegExp("R1", TableScanOperator.getOperatorName() + ".*" +
-          ReduceSinkOperator.getOperatorName()), vnp);
-      opRules.put(new RuleRegExp("R2", TableScanOperator.getOperatorName() + ".*"
-          + FileSinkOperator.getOperatorName()), vnp);
+      MapWorkVectorizationNodeProcessor vnp = new MapWorkVectorizationNodeProcessor(mapWork);
+      addMapWorkRules(opRules, vnp);
       Dispatcher disp = new DefaultRuleDispatcher(vnp, opRules, null);
       GraphWalker ogw = new PreOrderWalker(disp);
       // iterator the mapper operator tree
@@ -348,9 +370,114 @@ public class Vectorizer implements PhysicalPlanResolver {
 
       return;
     }
+
+    private void convertReduceWork(ReduceWork reduceWork) throws SemanticException {
+      boolean ret = validateReduceWork(reduceWork);
+      if (ret) {
+        vectorizeReduceWork(reduceWork);
+      }
+    }
+
+    private boolean getOnlyStructObjectInspectors(ReduceWork reduceWork) throws SemanticException {
+      try {
+        // Check key ObjectInspector.
+        ObjectInspector keyObjectInspector = reduceWork.getKeyObjectInspector();
+        if (keyObjectInspector == null || !(keyObjectInspector instanceof StructObjectInspector)) {
+          return false;
+        }
+        StructObjectInspector keyStructObjectInspector = (StructObjectInspector)keyObjectInspector;
+        keyColCount = keyStructObjectInspector.getAllStructFieldRefs().size();
+
+        // Tez doesn't use tagging...
+        if (reduceWork.getNeedsTagging()) {
+          return false;
+        }
+
+        // Check value ObjectInspector.
+        ObjectInspector valueObjectInspector = reduceWork.getValueObjectInspector();
+        if (valueObjectInspector == null || !(valueObjectInspector instanceof StructObjectInspector)) {
+          return false;
+        }
+        StructObjectInspector valueStructObjectInspector = (StructObjectInspector)valueObjectInspector;
+        valueColCount = valueStructObjectInspector.getAllStructFieldRefs().size();
+      } catch (Exception e) {
+        throw new SemanticException(e);
+      }
+      return true;
+    }
+
+    private void addReduceWorkRules(Map<Rule, NodeProcessor> opRules, NodeProcessor np) {
+      opRules.put(new RuleRegExp("R1", ExtractOperator.getOperatorName() + ".*"), np);
+      opRules.put(new RuleRegExp("R2", GroupByOperator.getOperatorName() + ".*"), np);
+    }
+
+    private boolean validateReduceWork(ReduceWork reduceWork) throws SemanticException {
+      // Validate input to ReduceWork.
+      if (!getOnlyStructObjectInspectors(reduceWork)) {
+        return false;
+      }
+      // Now check the reduce operator tree.
+      Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+      ReduceWorkValidationNodeProcessor vnp = new ReduceWorkValidationNodeProcessor();
+      addReduceWorkRules(opRules, vnp);
+      Dispatcher disp = new DefaultRuleDispatcher(vnp, opRules, null);
+      GraphWalker ogw = new DefaultGraphWalker(disp);
+      // iterator the reduce operator tree
+      ArrayList<Node> topNodes = new ArrayList<Node>();
+      topNodes.add(reduceWork.getReducer());
+      HashMap<Node, Object> nodeOutput = new HashMap<Node, Object>();
+      ogw.startWalking(topNodes, nodeOutput);
+      for (Node n : nodeOutput.keySet()) {
+        if (nodeOutput.get(n) != null) {
+          if (!((Boolean)nodeOutput.get(n)).booleanValue()) {
+            return false;
+          }
+        }
+      }
+      return true;
+    }
+
+    private void vectorizeReduceWork(ReduceWork reduceWork) throws SemanticException {
+      LOG.info("Vectorizing ReduceWork...");
+      reduceWork.setVectorMode(true);
+ 
+      // For some reason, the DefaultGraphWalker does not descend down from the reducer Operator as expected.
+      // We need to descend down, otherwise it breaks our algorithm that determines VectorizationContext...
+      // Do we use PreOrderWalker instead of DefaultGraphWalker.
+      Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+      ReduceWorkVectorizationNodeProcessor vnp = new ReduceWorkVectorizationNodeProcessor(reduceWork, keyColCount, valueColCount);
+      addReduceWorkRules(opRules, vnp);
+      Dispatcher disp = new DefaultRuleDispatcher(vnp, opRules, null);
+      GraphWalker ogw = new PreOrderWalker(disp);
+      // iterator the reduce operator tree
+      ArrayList<Node> topNodes = new ArrayList<Node>();
+      topNodes.add(reduceWork.getReducer());
+      LOG.info("vectorizeReduceWork reducer Operator: " + reduceWork.getReducer().getName() + "...");
+      HashMap<Node, Object> nodeOutput = new HashMap<Node, Object>();
+      ogw.startWalking(topNodes, nodeOutput);
+
+      // Necessary since we are vectorizing the root operator in reduce.
+      reduceWork.setReducer(vnp.getRootVectorOp());
+
+      Operator<? extends OperatorDesc> reducer = reduceWork.getReducer();
+      if (reducer.getType().equals(OperatorType.EXTRACT)) {
+        ((VectorExtractOperator)reducer).setKeyAndValueColCounts(keyColCount, valueColCount);
+      }
+
+      Map<String, Map<Integer, String>> columnVectorTypes = vnp.getScratchColumnVectorTypes();
+      reduceWork.setScratchColumnVectorTypes(columnVectorTypes);
+      Map<String, Map<String, Integer>> columnMap = vnp.getScratchColumnMap();
+      reduceWork.setScratchColumnMap(columnMap);
+
+
+      if (LOG.isDebugEnabled()) {
+        LOG.debug(String.format("vectorTypes: %s", columnVectorTypes.toString()));
+        LOG.debug(String.format("columnMap: %s", columnMap.toString()));
+      }
+    }
   }
 
-  class ValidationNodeProcessor implements NodeProcessor {
+  class MapWorkValidationNodeProcessor implements NodeProcessor {
 
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
@@ -361,9 +488,9 @@ public class Vectorizer implements PhysicalPlanResolver {
             op.getParentOperators().get(0).getType().equals(OperatorType.GROUPBY)) {
           return new Boolean(true);
         }
-        boolean ret = validateOperator(op);
+        boolean ret = validateMapWorkOperator(op);
         if (!ret) {
-          LOG.info("Operator: " + op.getName() + " could not be vectorized.");
+          LOG.info("MapWork Operator: " + op.getName() + " could not be vectorized.");
           return new Boolean(false);
         }
       }
@@ -371,23 +498,36 @@ public class Vectorizer implements PhysicalPlanResolver {
     }
   }
 
+  class ReduceWorkValidationNodeProcessor implements NodeProcessor {
+
+    @Override
+    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+        Object... nodeOutputs) throws SemanticException {
+      for (Node n : stack) {
+        Operator<? extends OperatorDesc> op = (Operator<? extends OperatorDesc>) n;
+        boolean ret = validateReduceWorkOperator(op);
+        if (!ret) {
+          LOG.info("ReduceWork Operator: " + op.getName() + " could not be vectorized.");
+          return new Boolean(false);
+        }
+      }
+      return new Boolean(true);
+    }
+  }
+
+  // This class has common code used by both MapWorkVectorizationNodeProcessor and
+  // ReduceWorkVectorizationNodeProcessor.
   class VectorizationNodeProcessor implements NodeProcessor {
 
-    private final MapWork mWork;
-
     // This is used to extract scratch column types for each file key
-    private final Map<String, VectorizationContext> scratchColumnContext =
+    protected final Map<String, VectorizationContext> scratchColumnContext =
         new HashMap<String, VectorizationContext>();
 
-    private final Map<Operator<? extends OperatorDesc>, VectorizationContext> vContextsByTSOp =
+    protected final Map<Operator<? extends OperatorDesc>, VectorizationContext> vContextsByTSOp =
         new HashMap<Operator<? extends OperatorDesc>, VectorizationContext>();
 
-    private final Set<Operator<? extends OperatorDesc>> opsDone =
+    protected final Set<Operator<? extends OperatorDesc>> opsDone =
         new HashSet<Operator<? extends OperatorDesc>>();
-
-    public VectorizationNodeProcessor(MapWork mWork) {
-      this.mWork = mWork;
-    }
 
     public Map<String, Map<Integer, String>> getScratchColumnVectorTypes() {
       Map<String, Map<Integer, String>> scratchColumnVectorTypes =
@@ -411,16 +551,90 @@ public class Vectorizer implements PhysicalPlanResolver {
       return scratchColumnMap;
     }
 
+    public VectorizationContext walkStackToFindVectorizationContext(Stack<Node> stack, Operator<? extends OperatorDesc> op)
+            throws SemanticException {
+      VectorizationContext vContext = null;
+      if (stack.size() <= 1) {
+        throw new SemanticException(String.format("Expected operator stack for operator %s to have at least 2 operators", op.getName()));
+      }
+      // Walk down the stack of operators until we found one willing to give us a context.
+      // At the bottom will be the root operator, guaranteed to have a context
+      int i= stack.size()-2;
+      while (vContext == null) {
+        if (i < 0) {
+          throw new SemanticException(String.format("Did not find vectorization context for operator %s in operator stack", op.getName()));
+        }
+        Operator<? extends OperatorDesc> opParent = (Operator<? extends OperatorDesc>) stack.get(i);
+        vContext = vContextsByTSOp.get(opParent);
+        --i;
+      }
+      return vContext;
+    }
+
+    public Boolean nonVectorizableChildOfGroupBy(Operator<? extends OperatorDesc> op) {
+      Operator<? extends OperatorDesc> currentOp = op;
+      while (currentOp.getParentOperators().size() > 0) {
+        currentOp = currentOp.getParentOperators().get(0);
+        if (currentOp.getType().equals(OperatorType.GROUPBY)) {
+          // No need to vectorize
+          if (!opsDone.contains(op)) {
+            opsDone.add(op);
+          }
+          return true;
+        }
+      }
+      return false;
+    }
+
+    public Operator<? extends OperatorDesc> doVectorize(Operator<? extends OperatorDesc> op, VectorizationContext vContext)
+            throws SemanticException {
+      Operator<? extends OperatorDesc> vectorOp = op;
+      try {
+        if (!opsDone.contains(op)) {
+          vectorOp = vectorizeOperator(op, vContext);
+          opsDone.add(op);
+          if (vectorOp != op) {
+            opsDone.add(vectorOp);
+          }
+          if (vectorOp instanceof VectorizationContextRegion) {
+            VectorizationContextRegion vcRegion = (VectorizationContextRegion) vectorOp;
+            VectorizationContext vOutContext = vcRegion.getOuputVectorizationContext();
+            vContextsByTSOp.put(op, vOutContext);
+            scratchColumnContext.put(vOutContext.getFileKey(), vOutContext);
+          }
+        }
+      } catch (HiveException e) {
+        throw new SemanticException(e);
+      }
+      return vectorOp;
+    }
+
+    @Override
+    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+        Object... nodeOutputs) throws SemanticException {
+      throw new SemanticException("Must be overridden");
+    }
+  }
+  
+  class MapWorkVectorizationNodeProcessor extends VectorizationNodeProcessor {
+
+    private final MapWork mWork;
+
+    public MapWorkVectorizationNodeProcessor(MapWork mWork) {
+      this.mWork = mWork;
+    }
+
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
 
       Operator<? extends OperatorDesc> op = (Operator<? extends OperatorDesc>) nd;
+      LOG.info("MapWorkVectorizationNodeProcessor processing Operator: " + op.getName() + "...");
 
       VectorizationContext vContext = null;
 
       if (op instanceof TableScanOperator) {
-        vContext = getVectorizationContext((TableScanOperator) op, physicalContext);
+        vContext = getVectorizationContext(op, physicalContext);
         for (String onefile : mWork.getPathToAliases().keySet()) {
           List<String> aliases = mWork.getPathToAliases().get(onefile);
           for (String alias : aliases) {
@@ -438,45 +652,76 @@ public class Vectorizer implements PhysicalPlanResolver {
         }
         vContextsByTSOp.put(op, vContext);
       } else {
-        assert stack.size() > 1;
-        // Walk down the stack of operators until we found one willing to give us a context.
-        // At the bottom will be the TS operator, guaranteed to have a context
-        int i= stack.size()-2;
-        while (vContext == null) {
-          Operator<? extends OperatorDesc> opParent = (Operator<? extends OperatorDesc>) stack.get(i);
-          vContext = vContextsByTSOp.get(opParent);
-          --i;
-        }
+        vContext = walkStackToFindVectorizationContext(stack, op);
       }
 
       assert vContext != null;
 
-      if ((op.getType().equals(OperatorType.REDUCESINK) || op.getType().equals(OperatorType.FILESINK)) &&
-          op.getParentOperators().get(0).getType().equals(OperatorType.GROUPBY)) {
-        // No need to vectorize
-        if (!opsDone.contains(op)) {
-          opsDone.add(op);
-        }
-      } else {
-        try {
-          if (!opsDone.contains(op)) {
-            Operator<? extends OperatorDesc> vectorOp =
-                vectorizeOperator(op, vContext);
-            opsDone.add(op);
-            if (vectorOp != op) {
-              opsDone.add(vectorOp);
-            }
-            if (vectorOp instanceof VectorizationContextRegion) {
-              VectorizationContextRegion vcRegion = (VectorizationContextRegion) vectorOp;
-              VectorizationContext vOutContext = vcRegion.getOuputVectorizationContext();
-              vContextsByTSOp.put(op, vOutContext);
-              scratchColumnContext.put(vOutContext.getFileKey(), vOutContext);
-            }
-          }
-        } catch (HiveException e) {
-          throw new SemanticException(e);
-        }
+      // Currently, Vectorized GROUPBY outputs rows, not vectorized row batchs.  So, don't vectorize
+      // any operators below GROUPBY.
+      if (nonVectorizableChildOfGroupBy(op)) {
+        return null;
       }
+
+      doVectorize(op, vContext);
+
+      return null;
+    }
+  }
+
+  class ReduceWorkVectorizationNodeProcessor extends VectorizationNodeProcessor {
+
+    private final ReduceWork rWork;
+    private int keyColCount;
+    private int valueColCount;
+    private Map<String, Integer> reduceColumnNameMap;
+
+    private Operator<? extends OperatorDesc> rootVectorOp;
+
+    public Operator<? extends OperatorDesc> getRootVectorOp() {
+      return rootVectorOp;
+    }
+
+    public ReduceWorkVectorizationNodeProcessor(ReduceWork rWork, int keyColCount, int valueColCount) {
+      this.rWork = rWork;
+      reduceColumnNameMap = rWork.getReduceColumnNameMap();
+      this.keyColCount = keyColCount;
+      this.valueColCount = valueColCount;
+      rootVectorOp = null;
+    }
+
+    @Override
+    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+        Object... nodeOutputs) throws SemanticException {
+
+      Operator<? extends OperatorDesc> op = (Operator<? extends OperatorDesc>) nd;
+      LOG.info("ReduceWorkVectorizationNodeProcessor processing Operator: " + op.getName() + "...");
+
+      VectorizationContext vContext = null;
+
+      boolean saveRootVectorOp = false;
+
+      if (op.getParentOperators().size() == 0) {
+        vContext = getReduceVectorizationContext(reduceColumnNameMap);
+        vContextsByTSOp.put(op, vContext);
+        saveRootVectorOp = true;
+      } else {
+        vContext = walkStackToFindVectorizationContext(stack, op);
+      }
+
+      assert vContext != null;
+
+      // Currently, Vectorized GROUPBY outputs rows, not vectorized row batchs.  So, don't vectorize
+      // any operators below GROUPBY.
+      if (nonVectorizableChildOfGroupBy(op)) {
+        return null;
+      }
+
+      Operator<? extends OperatorDesc> vectorOp = doVectorize(op, vContext);
+      if (saveRootVectorOp && op != vectorOp) {
+        rootVectorOp = vectorOp;
+      }
+
       return null;
     }
   }
@@ -519,7 +764,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     return pctx;
   }
 
-  boolean validateOperator(Operator<? extends OperatorDesc> op) {
+  boolean validateMapWorkOperator(Operator<? extends OperatorDesc> op) {
     boolean ret = false;
     switch (op.getType()) {
       case MAPJOIN:
@@ -544,6 +789,32 @@ public class Vectorizer implements PhysicalPlanResolver {
       case TABLESCAN:
         ret = validateTableScanOperator((TableScanOperator) op);
         break;
+      case FILESINK:
+      case LIMIT:
+        ret = true;
+        break;
+      default:
+        ret = false;
+        break;
+    }
+    return ret;
+  }
+
+  boolean validateReduceWorkOperator(Operator<? extends OperatorDesc> op) {
+    boolean ret = false;
+    switch (op.getType()) {
+      case EXTRACT:
+        ret = validateExtractOperator((ExtractOperator) op);
+        break;
+      case FILTER:
+        ret = validateFilterOperator((FilterOperator) op);
+        break;
+      case SELECT:
+        ret = validateSelectOperator((SelectOperator) op);
+        break;
+      case REDUCESINK:
+          ret = validateReduceSinkOperator((ReduceSinkOperator) op);
+          break;
       case FILESINK:
       case LIMIT:
         ret = true;
@@ -615,6 +886,15 @@ public class Vectorizer implements PhysicalPlanResolver {
       return false;
     }
     return validateAggregationDesc(op.getConf().getAggregators());
+  }
+
+  private boolean validateExtractOperator(ExtractOperator op) {
+    ExprNodeDesc expr = op.getConf().getCol();
+    boolean ret = validateExprNodeDesc(expr);
+    if (!ret) {
+      return false;
+    }
+    return true;
   }
 
   private boolean validateExprNodeDesc(List<ExprNodeDesc> descs) {
@@ -728,7 +1008,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     return supportedDataTypesPattern.matcher(type.toLowerCase()).matches();
   }
 
-  private VectorizationContext getVectorizationContext(TableScanOperator op,
+  private VectorizationContext getVectorizationContext(Operator op,
       PhysicalContext pctx) {
     RowSchema rs = op.getSchema();
 
@@ -741,8 +1021,26 @@ public class Vectorizer implements PhysicalPlanResolver {
       }
     }
 
-    VectorizationContext vc =  new VectorizationContext(cmap, columnCount);
-    return vc;
+    return new VectorizationContext(cmap, columnCount);
+  }
+
+  private VectorizationContext getReduceVectorizationContext(Map<String, Integer> reduceColumnNameMap) {
+    return new VectorizationContext(reduceColumnNameMap, reduceColumnNameMap.size());
+  }
+
+  private void fixupParentChildOperators(Operator<? extends OperatorDesc> op, Operator<? extends OperatorDesc> vectorOp) {
+    if (op.getParentOperators() != null) {
+      vectorOp.setParentOperators(op.getParentOperators());
+      for (Operator<? extends OperatorDesc> p : op.getParentOperators()) {
+        p.replaceChild(op, vectorOp);
+      }
+    }
+    if (op.getChildOperators() != null) {
+      vectorOp.setChildOperators(op.getChildOperators());
+      for (Operator<? extends OperatorDesc> c : op.getChildOperators()) {
+        c.replaceParent(op, vectorOp);
+      }
+    }
   }
 
   Operator<? extends OperatorDesc> vectorizeOperator(Operator<? extends OperatorDesc> op,
@@ -757,6 +1055,7 @@ public class Vectorizer implements PhysicalPlanResolver {
       case FILESINK:
       case REDUCESINK:
       case LIMIT:
+      case EXTRACT:
         vectorOp = OperatorFactory.getVectorOperator(op.getConf(), vContext);
         break;
       default:
@@ -765,18 +1064,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     }
 
     if (vectorOp != op) {
-      if (op.getParentOperators() != null) {
-        vectorOp.setParentOperators(op.getParentOperators());
-        for (Operator<? extends OperatorDesc> p : op.getParentOperators()) {
-          p.replaceChild(op, vectorOp);
-        }
-      }
-      if (op.getChildOperators() != null) {
-        vectorOp.setChildOperators(op.getChildOperators());
-        for (Operator<? extends OperatorDesc> c : op.getChildOperators()) {
-          c.replaceParent(op, vectorOp);
-        }
-      }
+      fixupParentChildOperators(op, vectorOp);
       ((AbstractOperatorDesc) vectorOp.getConf()).setVectorMode(true);
     }
     return vectorOp;
