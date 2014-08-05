@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.hive.common.ObjectPair;
+import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
@@ -1290,4 +1291,7 @@ public interface IMetaStoreClient {
    */
   GetRoleGrantsForPrincipalResponse get_role_grants_for_principal(
       GetRoleGrantsForPrincipalRequest getRolePrincReq) throws MetaException, TException;
+
+  public AggrStats getAggrColStatsFor(String dbName, String tblName,
+      List<String> colNames, List<String> partName)  throws NoSuchObjectException, MetaException, TException;
 }

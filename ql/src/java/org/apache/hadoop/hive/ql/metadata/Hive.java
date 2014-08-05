@@ -64,6 +64,7 @@ import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.RetryingMetaStoreClient;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
@@ -2573,6 +2574,16 @@ private void constructOneLBLocationMap(FileStatus fSta,
     } catch (Exception e) {
       LOG.debug(StringUtils.stringifyException(e));
       throw new HiveException(e);
+    }
+  }
+
+  public AggrStats getAggrColStatsFor(String dbName, String tblName,
+    List<String> colNames, List<String> partName) {
+    try {
+      return getMSC().getAggrColStatsFor(dbName, tblName, colNames, partName);
+    } catch (Exception e) {
+      LOG.debug(StringUtils.stringifyException(e));
+      return null;
     }
   }
 
