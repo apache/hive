@@ -261,6 +261,7 @@ import org.eigenbase.sql.SqlWindow;
 import org.eigenbase.sql.parser.SqlParserPos;
 import org.eigenbase.sql.type.SqlTypeName;
 import org.eigenbase.sql.SqlCall;
+import org.eigenbase.sql.SqlExplainLevel;
 import org.eigenbase.sql.SqlKind;
 import org.eigenbase.sql.SqlNode;
 import org.eigenbase.sql.SqlLiteral;
@@ -11888,6 +11889,19 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         hepPlanner.setRoot(rootRel);
 
         optiqOptimizedPlan = hepPlanner.findBestExp();
+      }
+
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("CBO Planning details:\n");
+        LOG.debug("Original Plan:\n");
+        LOG.debug(RelOptUtil.toString(optiqGenPlan,
+            SqlExplainLevel.ALL_ATTRIBUTES));
+        LOG.debug("Plan After PPD, PartPruning, ColumnPruning:\n");
+        LOG.debug(RelOptUtil.toString(optiqPreCboPlan,
+            SqlExplainLevel.ALL_ATTRIBUTES));
+        LOG.debug("Plan After Join Reordering:\n");
+        LOG.debug(RelOptUtil.toString(optiqOptimizedPlan,
+            SqlExplainLevel.ALL_ATTRIBUTES));
       }
 
       return optiqOptimizedPlan;
