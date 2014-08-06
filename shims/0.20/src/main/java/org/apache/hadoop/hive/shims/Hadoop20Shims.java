@@ -25,6 +25,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.security.AccessControlException;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
@@ -43,6 +44,7 @@ import javax.security.auth.login.LoginException;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.BlockLocation;
+import org.apache.hadoop.fs.DefaultFileAccess;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
@@ -52,6 +54,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.fs.ProxyFileSystem;
 import org.apache.hadoop.fs.Trash;
+import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.io.HiveIOExceptionHandlerUtil;
 import org.apache.hadoop.io.LongWritable;
@@ -879,5 +882,11 @@ public class Hadoop20Shims implements HadoopShims {
   protected void run(FsShell shell, String[] command) throws Exception {
     LOG.debug(ArrayUtils.toString(command));
     shell.run(command);
+  }
+
+  @Override
+  public void checkFileAccess(FileSystem fs, FileStatus stat, FsAction action)
+      throws IOException, AccessControlException, Exception {
+    DefaultFileAccess.checkFileAccess(fs, stat, action);
   }
 }
