@@ -180,5 +180,16 @@ select x from (select count(c_int) over() as x, sum(c_float) over() from t1) t1;
 select * from (select max(c_int) over (partition by key order by value Rows UNBOUNDED PRECEDING), min(c_int) over (partition by key order by value rows current row), count(c_int) over(partition by key order by value ROWS 1 PRECEDING), avg(value) over (partition by key order by value Rows between unbounded preceding and unbounded following), sum(value) over (partition by key order by value rows between unbounded preceding and current row), avg(c_float) over (partition by key order by value Rows between 1 preceding and unbounded following), sum(c_float) over (partition by key order by value rows between 1 preceding and current row), max(c_float) over (partition by key order by value rows between 1 preceding and unbounded following), min(c_float) over (partition by key order by value rows between 1 preceding and 1 following) from t1) t1;
 select i, a, h, b, c, d, e, f, g, a as x, a +1 as y from (select max(c_int) over (partition by key order by value range UNBOUNDED PRECEDING) a, min(c_int) over (partition by key order by value range current row) b, count(c_int) over(partition by key order by value range 1 PRECEDING) c, avg(value) over (partition by key order by value range between unbounded preceding and unbounded following) d, sum(value) over (partition by key order by value range between unbounded preceding and current row) e, avg(c_float) over (partition by key order by value range between 1 preceding and unbounded following) f, sum(c_float) over (partition by key order by value range between 1 preceding and current row) g, max(c_float) over (partition by key order by value range between 1 preceding and unbounded following) h, min(c_float) over (partition by key order by value range between 1 preceding and 1 following) i from t1) t1;
 
+create view v1 as select c_int, value, c_boolean from t1;
+create view v2 as select c_int, value from t2;
+
+select value from v1 where c_boolean=false;
+select max(c_int) from v1 group by (c_boolean);
+
+select count(v1.c_int)  from v1 join t2 on v1.c_int = t2.c_int;
+select count(v1.c_int)  from v1 join v2 on v1.c_int = v2.c_int;
+
+create view v3 as select v1.value  from v1 join t1 on v1.c_boolean = t1.c_boolean;
+select * from v3 limit 3;
 
 
