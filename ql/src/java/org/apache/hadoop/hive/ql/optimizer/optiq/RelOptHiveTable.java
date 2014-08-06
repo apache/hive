@@ -10,10 +10,12 @@ import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.optiq.translator.ExprNodeConverter;
 import org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner;
@@ -92,8 +94,29 @@ public class RelOptHiveTable extends RelOptAbstractTable {
 
   @Override
   public double getRowCount() {
-    if (m_rowCount == -1)
-      m_rowCount = StatsUtils.getNumRows(m_hiveTblMetadata);
+    if (m_rowCount == -1) {
+
+      if (m_hiveTblMetadata.isPartitioned()) {
+        if (partitionList == null) {
+          try {
+            List<Partition> parts = Hive.get().getPartitions(m_hiveTblMetadata);
+            List<Long> rowCounts = StatsUtils.getBasicStatForPartitions(
+                m_hiveTblMetadata, parts, StatsSetupConst.ROW_COUNT);
+            m_rowCount = StatsUtils.getSumIgnoreNegatives(rowCounts);
+
+          } catch (HiveException he) {
+            throw new RuntimeException(he);
+          }
+        } else {
+          List<Long> rowCounts = StatsUtils.getBasicStatForPartitions(
+              m_hiveTblMetadata, partitionList.getNotDeniedPartns(),
+              StatsSetupConst.ROW_COUNT);
+          m_rowCount = StatsUtils.getSumIgnoreNegatives(rowCounts);
+        }
+      } else {
+        m_rowCount = StatsUtils.getNumRows(m_hiveTblMetadata);
+      }
+    }
 
     return m_rowCount;
   }
