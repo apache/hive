@@ -25,6 +25,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
+import java.security.AccessControlException;
 import java.security.PrivilegedExceptionAction;
 import java.util.Comparator;
 import java.util.List;
@@ -42,6 +43,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
+import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapred.ClusterStatus;
 import org.apache.hadoop.mapred.InputSplit;
@@ -669,4 +671,18 @@ public interface HadoopShims {
 
   public void getMergedCredentials(JobConf jobConf) throws IOException;
 
+  /**
+   * Check if the configured UGI has access to the path for the given file system action.
+   * Method will return successfully if action is permitted. AccessControlExceptoin will
+   * be thrown if user does not have access to perform the action. Other exceptions may
+   * be thrown for non-access related errors.
+   * @param fs
+   * @param status
+   * @param action
+   * @throws IOException
+   * @throws AccessControlException
+   * @throws Exception
+   */
+  public void checkFileAccess(FileSystem fs, FileStatus status, FsAction action)
+      throws IOException, AccessControlException, Exception;
 }
