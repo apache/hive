@@ -856,13 +856,10 @@ public final class GenMapRedUtils {
         }
       }
     } else if (task instanceof SparkTask) {
-      SparkWork sw = ((SparkTask)task).getWork();
-      sw.getMapWork().deriveExplainAttributes();
-      HashMap<String, Operator<? extends OperatorDesc>> opMap = sw
-          .getMapWork().getAliasToWork();
-      if (opMap != null && !opMap.isEmpty()) {
-        for (Operator<? extends OperatorDesc> op : opMap.values()) {
-          setKeyAndValueDesc(sw.getReduceWork(), op);
+      SparkWork work = (SparkWork)task.getWork();
+      for (BaseWork w : work.getAllWorkUnsorted()) {
+        if (w instanceof MapWork) {
+          ((MapWork)w).deriveExplainAttributes();
         }
       }
     }

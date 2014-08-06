@@ -87,11 +87,10 @@ public class SparkProcessAnalyzeTable implements NodeProcessor {
     QBParseInfo parseInfo = parseContext.getQB().getParseInfo();
 
     if (parseInfo.isAnalyzeCommand()) {
-      Preconditions.checkArgument(tableScan.getChildOperators() == null,
-          "AssertionError: expected tableScan.getChildOperators() to be null");
-      int childOpSize = tableScan.getChildOperators().size();
-      Preconditions.checkArgument(childOpSize == 0,
-          "AssertionError: expected tableScan.getChildOperators().size() to be 0, but was " + childOpSize);
+      Preconditions.checkArgument(tableScan.getChildOperators() == null ||
+        tableScan.getChildOperators().size() == 0,
+          "AssertionError: expected tableScan.getChildOperators() to be null, " +
+            "or tableScan.getChildOperators().size() to be 0");
 
       String alias = null;
       for (String a: parseContext.getTopOps().keySet()) {

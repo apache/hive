@@ -24,15 +24,20 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapper;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.SparkEdgeProperty;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
+import org.apache.hadoop.hive.ql.stats.StatsFactory;
+import org.apache.hadoop.hive.ql.stats.StatsPublisher;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
@@ -89,7 +94,20 @@ public class SparkPlanGenerator {
     return sc.hadoopRDD(jobConf, ifClass, WritableComparable.class, Writable.class);
   }
 
-  private SparkTran generate(BaseWork bw) throws IOException {
+  private SparkTran generate(BaseWork bw) throws IOException, HiveException {
+    // initialize stats publisher if necessary
+    if (bw.isGatheringStats()) {
+      StatsPublisher statsPublisher;
+      StatsFactory factory = StatsFactory.newFactory(jobConf);
+      if (factory != null) {
+        statsPublisher = factory.getStatsPublisher();
+        if (!statsPublisher.init(jobConf)) { // creating stats table if not exists
+          if (HiveConf.getBoolVar(jobConf, HiveConf.ConfVars.HIVE_STATS_RELIABLE)) {
+            throw new HiveException(ErrorMsg.STATSPUBLISHER_INITIALIZATION_ERROR.getErrorCodedMsg());
+          }
+        }
+      }
+    }
     if (bw instanceof MapWork) {
       return generate((MapWork)bw);
     } else if (bw instanceof ReduceWork) {
