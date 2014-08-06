@@ -82,14 +82,6 @@ public class GenSparkUtils {
     Preconditions.checkArgument(!root.getParentOperators().isEmpty(),
         "AssertionError: expected root.getParentOperators() to be non-empty");
 
-    boolean isAutoReduceParallelism =
-        context.conf.getBoolVar(HiveConf.ConfVars.TEZ_AUTO_REDUCER_PARALLELISM);
-
-    float maxPartitionFactor =
-        context.conf.getFloatVar(HiveConf.ConfVars.TEZ_MAX_PARTITION_FACTOR);
-    float minPartitionFactor = context.conf.getFloatVar(HiveConf.ConfVars.TEZ_MIN_PARTITION_FACTOR);
-    long bytesPerReducer = context.conf.getLongVar(HiveConf.ConfVars.BYTESPERREDUCER);
-
     ReduceWork reduceWork = new ReduceWork("Reducer "+ (++sequenceNumber));
     logger.debug("Adding reduce work (" + reduceWork.getName() + ") for " + root);
     reduceWork.setReducer(root);
@@ -106,31 +98,12 @@ public class GenSparkUtils {
 
     reduceWork.setNumReduceTasks(reduceSink.getConf().getNumReducers());
 
-    if (isAutoReduceParallelism && reduceSink.getConf().isAutoParallel()) {
-      reduceWork.setAutoReduceParallelism(true);
-
-      // configured limit for reducers
-      int maxReducers = context.conf.getIntVar(HiveConf.ConfVars.MAXREDUCERS);
-
-      // min we allow spark to pick
-      int minPartition = Math.max(1, (int) (reduceSink.getConf().getNumReducers() 
-        * minPartitionFactor));
-      minPartition = (minPartition > maxReducers) ? maxReducers : minPartition;
-
-      // max we allow spark to pick
-      int maxPartition = (int) (reduceSink.getConf().getNumReducers() * maxPartitionFactor); 
-      maxPartition = (maxPartition > maxReducers) ? maxReducers : maxPartition;
-
-      reduceWork.setMinReduceTasks(minPartition);
-      reduceWork.setMaxReduceTasks(maxPartition);
-    }
-
     setupReduceSink(context, reduceWork, reduceSink);
 
     sparkWork.add(reduceWork);
 
     SparkEdgeProperty edgeProp = new SparkEdgeProperty(SparkEdgeProperty.SHUFFLE_NONE,
-        reduceSink.getConf().getNumReducers());
+        reduceWork.getNumReduceTasks());
 
     if (root instanceof GroupByOperator) {
       edgeProp.setShuffleGroup();
