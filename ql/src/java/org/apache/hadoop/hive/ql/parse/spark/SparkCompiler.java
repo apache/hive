@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.ql.exec.ConditionalTask;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
+import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.spark.SparkTask;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
@@ -147,9 +148,9 @@ public class SparkCompiler extends TaskCompiler {
         FileSinkOperator.getOperatorName() + "%"),
         new CompositeProcessor(new SparkFileSinkProcessor(), genSparkWork));
 
-//    opRules.put(new RuleRegExp("Handle Potential Analyze Command",
-//        TableScanOperator.getOperatorName() + "%"),
-//        new ProcessAnalyzeTable(GenSparkUtils.getUtils()));
+    opRules.put(new RuleRegExp("Handle Analyze Command",
+        TableScanOperator.getOperatorName() + "%"),
+        new SparkProcessAnalyzeTable(GenSparkUtils.getUtils()));
 
 //    opRules.put(new RuleRegExp("Remember union", UnionOperator.getOperatorName() + "%"),
 //        new NodeProcessor() {
