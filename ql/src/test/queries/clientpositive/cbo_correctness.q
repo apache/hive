@@ -192,4 +192,22 @@ select count(v1.c_int)  from v1 join v2 on v1.c_int = v2.c_int;
 create view v3 as select v1.value  from v1 join t1 on v1.c_boolean = t1.c_boolean;
 select * from v3 limit 3;
 
+with q1 as ( select key from t1 where key = '1')
+select *
+from q1
+;
+
+with q1 as ( select value from v1 where c_boolean = false)
+select *
+from q1 ;
+
+create view v4 as
+with q1 as ( select key from t1  where key = '1')
+select * from q1
+;
+
+with q1 as ( select c_int from q2 where c_boolean = false),
+q2 as ( select c_int,c_boolean from v1  where value = '1')
+select * from (select c_int from q1) a;
+
 

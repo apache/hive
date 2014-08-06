@@ -16037,3 +16037,70 @@ POSTHOOK: Input: default@v3
 1
 1
 1
+PREHOOK: query: with q1 as ( select key from t1 where key = '1')
+select *
+from q1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: with q1 as ( select key from t1 where key = '1')
+select *
+from q1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+PREHOOK: query: with q1 as ( select value from v1 where c_boolean = false)
+select *
+from q1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@v1
+#### A masked pattern was here ####
+POSTHOOK: query: with q1 as ( select value from v1 where c_boolean = false)
+select *
+from q1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@v1
+#### A masked pattern was here ####
+1
+1
+PREHOOK: query: create view v4 as
+with q1 as ( select key from t1  where key = '1')
+select * from q1
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@t1
+POSTHOOK: query: create view v4 as
+with q1 as ( select key from t1  where key = '1')
+select * from q1
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: default@v4
+PREHOOK: query: with q1 as ( select c_int from q2 where c_boolean = false),
+q2 as ( select c_int,c_boolean from v1  where value = '1')
+select * from (select c_int from q1) a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@v1
+#### A masked pattern was here ####
+POSTHOOK: query: with q1 as ( select c_int from q2 where c_boolean = false),
+q2 as ( select c_int,c_boolean from v1  where value = '1')
+select * from (select c_int from q1) a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@v1
+#### A masked pattern was here ####
+1
+1
