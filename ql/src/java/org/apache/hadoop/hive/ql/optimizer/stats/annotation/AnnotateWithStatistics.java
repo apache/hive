@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.LimitOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
+import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
@@ -62,6 +63,8 @@ public class AnnotateWithStatistics implements Transform {
         + MapJoinOperator.getOperatorName() + "%"), StatsRulesProcFactory.getJoinRule());
     opRules.put(new RuleRegExp("LIM", LimitOperator.getOperatorName() + "%"),
         StatsRulesProcFactory.getLimitRule());
+    opRules.put(new RuleRegExp("RS", ReduceSinkOperator.getOperatorName() + "%"),
+        StatsRulesProcFactory.getReduceSinkRule());
 
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along
