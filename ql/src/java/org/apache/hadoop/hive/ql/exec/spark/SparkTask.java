@@ -18,28 +18,48 @@
 
 package org.apache.hadoop.hive.ql.exec.spark;
 
+import java.io.IOException;
 import java.util.List;
 
+import org.apache.hadoop.fs.ContentSummary;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.DriverContext;
+import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
+import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
+import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.util.StringUtils;
 
 public class SparkTask extends Task<SparkWork> {
   private static final long serialVersionUID = 1L;
+  private transient JobConf job;
+  private transient ContentSummary inputSummary;
+
+  @Override
+  public void initialize(HiveConf conf, QueryPlan queryPlan, DriverContext driverContext) {
+    super.initialize(conf, queryPlan, driverContext);
+    job = new JobConf(conf, SparkTask.class);
+  }
 
   @Override
   public int execute(DriverContext driverContext) {
+
     int rc = 1;
     SparkClient client = null;
     try {
+      configureNumberOfReducers();
       client = SparkClient.getInstance(driverContext.getCtx().getConf());
       rc = client.execute(driverContext, getWork());
-    } finally {
+    } catch (Exception e) {
+      LOG.error("Failed to execute spark task.", e);
+      return 1;
+    }
+    finally {
       if (client != null) {
         rc = close(rc);
       }
@@ -86,4 +106,49 @@ public class SparkTask extends Task<SparkWork> {
     return "SPARK";
   }
 
+  /**
+   * Set the number of reducers for the spark work.
+   */
+  private void configureNumberOfReducers() throws IOException {
+    for (BaseWork baseWork : work.getAllWork()) {
+      if (baseWork instanceof ReduceWork) {
+        configureNumberOfReducers((ReduceWork) baseWork);
+      }
+    }
+
+    console.printInfo("In order to change the average load for a reducer (in bytes):");
+    console.printInfo("  set " + HiveConf.ConfVars.BYTESPERREDUCER.varname + "=<number>");
+    console.printInfo("In order to limit the maximum number of reducers:");
+    console.printInfo("  set " + HiveConf.ConfVars.MAXREDUCERS.varname + "=<number>");
+    console.printInfo("In order to set a constant number of reducers:");
+    console.printInfo("  set " + HiveConf.ConfVars.HADOOPNUMREDUCERS + "=<number>");
+  }
+
+  private void configureNumberOfReducers(ReduceWork rWork) throws IOException {
+    // this is a temporary hack to fix things that are not fixed in the compiler
+    Integer numReducersFromWork = rWork == null ? 0 : rWork.getNumReduceTasks();
+
+    if (rWork == null) {
+      console.printInfo("Number of reduce tasks is set to 0 since there's no reduce operator");
+    } else {
+      if (numReducersFromWork >= 0) {
+        console.printInfo("Number of reduce tasks determined at compile time: "
+          + rWork.getNumReduceTasks());
+      } else if (job.getNumReduceTasks() > 0) {
+        int reducers = job.getNumReduceTasks();
+        rWork.setNumReduceTasks(reducers);
+        console.printInfo("Number of reduce tasks not specified. Defaulting to jobconf value of: "
+            + reducers);
+      } else {
+        if (inputSummary == null) {
+          inputSummary = Utilities.getInputSummary(driverContext.getCtx(), work.getMapWork(), null);
+        }
+        int reducers = Utilities.estimateNumberOfReducers(conf, inputSummary, work.getMapWork(),
+          false);
+        rWork.setNumReduceTasks(reducers);
+        console.printInfo("Number of reduce tasks not specified. Estimated from input data size: "
+            + reducers);
+      }
+    }
+  }
 }
