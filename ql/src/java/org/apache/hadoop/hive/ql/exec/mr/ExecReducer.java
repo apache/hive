@@ -34,7 +34,7 @@ import org.apache.hadoop.hive.ql.exec.ObjectCache;
 import org.apache.hadoop.hive.ql.exec.ObjectCacheFactory;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.exec.mr.ExecMapper.reportStats;
+import org.apache.hadoop.hive.ql.exec.mr.ExecMapper.ReportStats;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
@@ -306,7 +306,7 @@ public class ExecReducer extends MapReduceBase implements Reducer {
       }
 
       reducer.close(abort);
-      reportStats rps = new reportStats(rp);
+      ReportStats rps = new ReportStats(rp);
       reducer.preorderMap(rps);
 
     } catch (Exception e) {

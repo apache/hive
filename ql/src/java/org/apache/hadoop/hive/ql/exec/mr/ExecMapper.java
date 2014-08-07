@@ -250,7 +250,7 @@ public class ExecMapper extends MapReduceBase implements Mapper {
             + used_memory);
       }
 
-      reportStats rps = new reportStats(rp);
+      ReportStats rps = new ReportStats(rp);
       mo.preorderMap(rps);
       return;
     } catch (Exception e) {
@@ -285,10 +285,10 @@ public class ExecMapper extends MapReduceBase implements Mapper {
    * reportStats.
    *
    */
-  public static class reportStats implements Operator.OperatorFunc {
-    Reporter rp;
+  public static class ReportStats implements Operator.OperatorFunc {
+    private final Reporter rp;
 
-    public reportStats(Reporter rp) {
+    public ReportStats(Reporter rp) {
       this.rp = rp;
     }
 

@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.io.ArrayWritable;
 import org.apache.hadoop.util.StringUtils;
 
+import parquet.column.ColumnDescriptor;
 import parquet.hadoop.api.ReadSupport;
 import parquet.io.api.RecordMaterializer;
 import parquet.schema.MessageType;
@@ -46,8 +47,8 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
 
   private static final String TABLE_SCHEMA = "table_schema";
   public static final String HIVE_SCHEMA_KEY = "HIVE_TABLE_SCHEMA";
-  public static final String PARQUET_COLUMN_INDEX_ACCESS = "parquet.column.index.access";  
-  
+  public static final String PARQUET_COLUMN_INDEX_ACCESS = "parquet.column.index.access";
+
   /**
    * From a string which columns names (including hive column), return a list
    * of string columns
@@ -75,12 +76,16 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
     final Map<String, String> contextMetadata = new HashMap<String, String>();
     if (columns != null) {
       final List<String> listColumns = getColumns(columns);
-
+      final Map<String, String> lowerCaseFileSchemaColumns = new HashMap<String,String>();
+      for (ColumnDescriptor c : fileSchema.getColumns()) {
+        lowerCaseFileSchemaColumns.put(c.getPath()[0].toLowerCase(), c.getPath()[0]);
+      }
       final List<Type> typeListTable = new ArrayList<Type>();
-      for (final String col : listColumns) {
+      for (String col : listColumns) {
+        col = col.toLowerCase();
         // listColumns contains partition columns which are metadata only
-        if (fileSchema.containsField(col)) {
-          typeListTable.add(fileSchema.getType(col));
+        if (lowerCaseFileSchemaColumns.containsKey(col)) {
+          typeListTable.add(fileSchema.getType(lowerCaseFileSchemaColumns.get(col)));
         } else {
           // below allows schema evolution
           typeListTable.add(new PrimitiveType(Repetition.OPTIONAL, PrimitiveTypeName.BINARY, col));
@@ -93,10 +98,24 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
       final List<Integer> indexColumnsWanted = ColumnProjectionUtils.getReadColumnIDs(configuration);
 
       final List<Type> typeListWanted = new ArrayList<Type>();
+      final boolean indexAccess = configuration.getBoolean(PARQUET_COLUMN_INDEX_ACCESS, false);
       for (final Integer idx : indexColumnsWanted) {
-        typeListWanted.add(tableSchema.getType(listColumns.get(idx)));
+        String col = listColumns.get(idx);
+        if (indexAccess) {
+          typeListWanted.add(tableSchema.getType(col));
+        } else {
+          col = col.toLowerCase();
+          if (lowerCaseFileSchemaColumns.containsKey(col)) {
+            typeListWanted.add(tableSchema.getType(lowerCaseFileSchemaColumns.get(col)));
+          } else {
+            // should never occur?
+            String msg = "Column " + col + " at index " + idx + " does not exist in " +
+              lowerCaseFileSchemaColumns;
+            throw new IllegalStateException(msg);
+          }
+        }
       }
-      requestedSchemaByUser = resolveSchemaAccess(new MessageType(fileSchema.getName(), 
+      requestedSchemaByUser = resolveSchemaAccess(new MessageType(fileSchema.getName(),
               typeListWanted), fileSchema, configuration);
 
       return new ReadContext(requestedSchemaByUser, contextMetadata);
@@ -127,29 +146,24 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
     }
     final MessageType tableSchema = resolveSchemaAccess(MessageTypeParser.
         parseMessageType(metadata.get(HIVE_SCHEMA_KEY)), fileSchema, configuration);
-    
     return new DataWritableRecordConverter(readContext.getRequestedSchema(), tableSchema);
   }
-  
+
   /**
-  * Determine the file column names based on the position within the requested columns and 
+  * Determine the file column names based on the position within the requested columns and
   * use that as the requested schema.
   */
-  private MessageType resolveSchemaAccess(MessageType requestedSchema, MessageType fileSchema, 
+  private MessageType resolveSchemaAccess(MessageType requestedSchema, MessageType fileSchema,
           Configuration configuration) {
-    if(configuration.getBoolean(PARQUET_COLUMN_INDEX_ACCESS, false)) {
+    if (configuration.getBoolean(PARQUET_COLUMN_INDEX_ACCESS, false)) {
       final List<String> listColumns = getColumns(configuration.get(IOConstants.COLUMNS));
-        
       List<Type> requestedTypes = new ArrayList<Type>();
-        
       for(Type t : requestedSchema.getFields()) {
         int index = listColumns.indexOf(t.getName());
         requestedTypes.add(fileSchema.getType(index));
       }
-          
       requestedSchema = new MessageType(requestedSchema.getName(), requestedTypes);
     }
-      
     return requestedSchema;
   }
 }

@@ -25,6 +25,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.HiveKey;
@@ -61,9 +63,20 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
     PTFUtils.makeTransient(ReduceSinkOperator.class, "inputAliases", "valueIndex");
   }
 
+  private static final Log LOG = LogFactory.getLog(ReduceSinkOperator.class.getName());
   private static final long serialVersionUID = 1L;
-  protected transient OutputCollector out;
+  private static final MurmurHash hash = (MurmurHash) MurmurHash.getInstance();
 
+  private transient ObjectInspector[] partitionObjectInspectors;
+  private transient ObjectInspector[] bucketObjectInspectors;
+  private transient int buckColIdxInKey;
+  private boolean firstRow;
+  private transient int tag;
+  private boolean skipTag = false;
+  private transient InspectableObject tempInspectableObject = new InspectableObject();
+  private transient int[] valueIndex; // index for value(+ from keys, - from values)
+
+  protected transient OutputCollector out;
   /**
    * The evaluators for the key columns. Key columns decide the sort order on
    * the reducer side. Key columns are passed to the reducer in the "key".
@@ -84,38 +97,40 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
    * Evaluators for bucketing columns. This is used to compute bucket number.
    */
   protected transient ExprNodeEvaluator[] bucketEval = null;
-
-  // TODO: we use MetadataTypedColumnsetSerDe for now, till DynamicSerDe is
-  // ready
+  // TODO: we use MetadataTypedColumnsetSerDe for now, till DynamicSerDe is ready
   protected transient Serializer keySerializer;
   protected transient boolean keyIsText;
   protected transient Serializer valueSerializer;
-  transient int tag;
   protected transient byte[] tagByte = new byte[1];
-  transient protected int numDistributionKeys;
-  transient protected int numDistinctExprs;
-  transient String[] inputAliases;  // input aliases of this RS for join (used for PPD)
-  private boolean skipTag = false;
+  protected transient int numDistributionKeys;
+  protected transient int numDistinctExprs;
+  protected transient String[] inputAliases;  // input aliases of this RS for join (used for PPD)
   protected transient boolean autoParallel = false;
-  
-  protected static final MurmurHash hash = (MurmurHash)MurmurHash.getInstance();
-
-  private transient int[] valueIndex; // index for value(+ from keys, - from values)
-
-  public void setInputAliases(String[] inputAliases) {
-    this.inputAliases = inputAliases;
-  }
-
-  public String[] getInputAliases() {
-    return inputAliases;
-  }
-
-  public void setOutputCollector(OutputCollector _out) {
-    this.out = _out;
-  }
-
   // picks topN K:V pairs from input.
   protected transient TopNHash reducerHash = new TopNHash();
+  protected transient HiveKey keyWritable = new HiveKey();
+  protected transient ObjectInspector keyObjectInspector;
+  protected transient ObjectInspector valueObjectInspector;
+  protected transient Object[] cachedValues;
+  protected transient List<List<Integer>> distinctColIndices;
+  protected transient Random random;
+  /**
+   * This two dimensional array holds key data and a corresponding Union object
+   * which contains the tag identifying the aggregate expression for distinct columns.
+   *
+   * If there is no distict expression, cachedKeys is simply like this.
+   * cachedKeys[0] = [col0][col1]
+   *
+   * with two distict expression, union(tag:key) is attatched for each distinct expression
+   * cachedKeys[0] = [col0][col1][0:dist1]
+   * cachedKeys[1] = [col0][col1][1:dist2]
+   *
+   * in this case, child GBY evaluates distict values with expression like KEY.col2:0.dist1
+   * see {@link ExprNodeColumnEvaluator}
+   */
+  // TODO: we only ever use one row of these at a time. Why do we need to cache multiple?
+  protected transient Object[][] cachedKeys;
+
   @Override
   protected void initializeOp(Configuration hconf) throws HiveException {
     try {
@@ -184,40 +199,12 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
       firstRow = true;
       initializeChildren(hconf);
     } catch (Exception e) {
-      e.printStackTrace();
+      String msg = "Error initializing ReduceSinkOperator: " + e.getMessage();
+      LOG.error(msg, e);
       throw new RuntimeException(e);
     }
   }
 
-  transient InspectableObject tempInspectableObject = new InspectableObject();
-  protected transient HiveKey keyWritable = new HiveKey();
-
-  protected transient ObjectInspector keyObjectInspector;
-  protected transient ObjectInspector valueObjectInspector;
-  transient ObjectInspector[] partitionObjectInspectors;
-  transient ObjectInspector[] bucketObjectInspectors = null;
-  transient int buckColIdxInKey;
-
-  protected transient Object[] cachedValues;
-  protected transient List<List<Integer>> distinctColIndices;
-  /**
-   * This two dimensional array holds key data and a corresponding Union object
-   * which contains the tag identifying the aggregate expression for distinct columns.
-   *
-   * If there is no distict expression, cachedKeys is simply like this.
-   * cachedKeys[0] = [col0][col1]
-   *
-   * with two distict expression, union(tag:key) is attatched for each distinct expression
-   * cachedKeys[0] = [col0][col1][0:dist1]
-   * cachedKeys[1] = [col0][col1][1:dist2]
-   *
-   * in this case, child GBY evaluates distict values with expression like KEY.col2:0.dist1
-   * see {@link ExprNodeColumnEvaluator}
-   */
-  // TODO: we only ever use one row of these at a time. Why do we need to cache multiple?
-  protected transient Object[][] cachedKeys;
-  boolean firstRow;
-  protected transient Random random;
 
   /**
    * Initializes array of ExprNodeEvaluator. Adds Union field for distinct
@@ -508,5 +495,17 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
 
   public int[] getValueIndex() {
     return valueIndex;
+  }
+
+  public void setInputAliases(String[] inputAliases) {
+    this.inputAliases = inputAliases;
+  }
+
+  public String[] getInputAliases() {
+    return inputAliases;
+  }
+
+  public void setOutputCollector(OutputCollector _out) {
+    this.out = _out;
   }
 }

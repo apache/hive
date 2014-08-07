@@ -19,10 +19,15 @@ package org.apache.hadoop.hive.shims;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.security.AccessControlException;
+import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -32,6 +37,7 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.BlockLocation;
+import org.apache.hadoop.fs.DefaultFileAccess;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
@@ -651,6 +657,24 @@ public class Hadoop23Shims extends HadoopShimsSecure {
         }
       };
     }
+
+    /**
+     * Proxy file system also needs to override the access() method behavior.
+     * Cannot add Override annotation since FileSystem.access() may not exist in
+     * the version of hadoop used to build Hive.
+     */
+    public void access(Path path, FsAction action) throws AccessControlException,
+        FileNotFoundException, IOException, Exception {
+      Path underlyingFsPath = swizzleParamPath(path);
+      FileStatus underlyingFsStatus = fs.getFileStatus(underlyingFsPath);
+      if (accessMethod != null) {
+          accessMethod.invoke(fs, underlyingFsPath, action);
+      } else {
+        // If the FS has no access() method, we can try DefaultFileAccess ..
+        UserGroupInformation ugi = getUGIForConf(getConf());
+        DefaultFileAccess.checkFileAccess(fs, underlyingFsStatus, action);
+      }
+    }
   }
 
   @Override
@@ -708,5 +732,51 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   @Override
   public void getMergedCredentials(JobConf jobConf) throws IOException {
     jobConf.getCredentials().mergeAll(UserGroupInformation.getCurrentUser().getCredentials());
+  }
+
+  protected static final Method accessMethod;
+
+  static {
+    Method m = null;
+    try {
+      m = FileSystem.class.getMethod("access", Path.class, FsAction.class);
+    } catch (NoSuchMethodException err) {
+      // This version of Hadoop does not support FileSystem.access().
+    }
+    accessMethod = m;
+  }
+
+  @Override
+  public void checkFileAccess(FileSystem fs, FileStatus stat, FsAction action)
+      throws IOException, AccessControlException, Exception {
+    try {
+      if (accessMethod == null) {
+        // Have to rely on Hive implementation of filesystem permission checks.
+        DefaultFileAccess.checkFileAccess(fs, stat, action);
+      } else {
+        accessMethod.invoke(fs, stat.getPath(), action);
+      }
+    } catch (Exception err) {
+      throw wrapAccessException(err);
+    }
+  }
+
+  /**
+   * If there is an AccessException buried somewhere in the chain of failures, wrap the original
+   * exception in an AccessException. Othewise just return the original exception.
+   */
+  private static Exception wrapAccessException(Exception err) {
+    final int maxDepth = 20;
+    Throwable curErr = err;
+    for (int idx = 0; curErr != null && idx < maxDepth; ++idx) {
+      if (curErr instanceof org.apache.hadoop.security.AccessControlException
+          || curErr instanceof org.apache.hadoop.fs.permission.AccessControlException) {
+        Exception newErr = new AccessControlException(curErr.getMessage());
+        newErr.initCause(err);
+        return newErr;
+      }
+      curErr = curErr.getCause();
+    }
+    return err;
   }
 }
