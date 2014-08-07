@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.hive.ql.exec.vector.VectorExtractOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorFileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorFilterOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorGroupByOperator;
@@ -64,23 +65,9 @@ import org.apache.hadoop.hive.ql.plan.UnionDesc;
  *
  */
 public final class OperatorFactory {
+  private static final List<OpTuple> opvec;
+  private static final List<OpTuple> vectorOpvec;
 
-  /**
-   * OpTuple.
-   *
-   * @param <T>
-   */
-  public static final class OpTuple<T extends OperatorDesc> {
-    public Class<T> descClass;
-    public Class<? extends Operator<T>> opClass;
-
-    public OpTuple(Class<T> descClass, Class<? extends Operator<T>> opClass) {
-      this.descClass = descClass;
-      this.opClass = opClass;
-    }
-  }
-
-  public static ArrayList<OpTuple> opvec;
   static {
     opvec = new ArrayList<OpTuple>();
     opvec.add(new OpTuple<FilterDesc>(FilterDesc.class, FilterOperator.class));
@@ -116,7 +103,6 @@ public final class OperatorFactory {
         MuxOperator.class));
   }
 
-  public static ArrayList<OpTuple> vectorOpvec;
   static {
     vectorOpvec = new ArrayList<OpTuple>();
     vectorOpvec.add(new OpTuple<SelectDesc>(SelectDesc.class, VectorSelectOperator.class));
@@ -128,7 +114,19 @@ public final class OperatorFactory {
     vectorOpvec.add(new OpTuple<FileSinkDesc>(FileSinkDesc.class, VectorFileSinkOperator.class));
     vectorOpvec.add(new OpTuple<FilterDesc>(FilterDesc.class, VectorFilterOperator.class));
     vectorOpvec.add(new OpTuple<LimitDesc>(LimitDesc.class, VectorLimitOperator.class));
+    vectorOpvec.add(new OpTuple<ExtractDesc>(ExtractDesc.class, VectorExtractOperator.class));
   }
+
+  private static final class OpTuple<T extends OperatorDesc> {
+    private final Class<T> descClass;
+    private final Class<? extends Operator<T>> opClass;
+
+    public OpTuple(Class<T> descClass, Class<? extends Operator<T>> opClass) {
+      this.descClass = descClass;
+      this.opClass = opClass;
+    }
+  }
+
 
   public static <T extends OperatorDesc> Operator<T> getVectorOperator(T conf,
       VectorizationContext vContext) throws HiveException {

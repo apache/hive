@@ -33,7 +33,7 @@ import org.apache.hadoop.hive.ql.exec.ObjectCacheFactory;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.exec.mr.ExecMapper.reportStats;
+import org.apache.hadoop.hive.ql.exec.mr.ExecMapper.ReportStats;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
 import org.apache.hadoop.hive.ql.exec.tez.TezProcessor.TezKVOutputCollector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorMapOperator;
@@ -225,7 +225,7 @@ public class MapRecordProcessor extends RecordProcessor {
       if (isLogInfoEnabled) {
         logCloseInfo();
       }
-      reportStats rps = new reportStats(reporter);
+      ReportStats rps = new ReportStats(reporter);
       mapOp.preorderMap(rps);
       return;
     } catch (Exception e) {

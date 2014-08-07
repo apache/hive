@@ -30,9 +30,12 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.api.PartitionEventType;
-import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
+import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
 import org.apache.hadoop.hive.ql.io.RCFileOutputFormat;
+import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
+import org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat;
+import org.apache.hadoop.hive.ql.io.orc.OrcSerde;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe;
@@ -119,6 +122,7 @@ public class TestHCatClient {
     String db = "testdb";
     String tableOne = "testTable1";
     String tableTwo = "testTable2";
+    String tableThree = "testTable3";
     HCatClient client = HCatClient.create(new Configuration(hcatConf));
     client.dropDatabase(db, true, HCatClient.DropDBMode.CASCADE);
 
@@ -170,7 +174,7 @@ public class TestHCatClient {
     assertTrue(table2.getInputFileFormat().equalsIgnoreCase(
       TextInputFormat.class.getName()));
     assertTrue(table2.getOutputFileFormat().equalsIgnoreCase(
-      IgnoreKeyTextOutputFormat.class.getName()));
+      HiveIgnoreKeyTextOutputFormat.class.getName()));
     assertTrue("SerdeParams not found", table2.getSerdeParams() != null);
     assertEquals("checking " + serdeConstants.FIELD_DELIM, Character.toString('\001'),
       table2.getSerdeParams().get(serdeConstants.FIELD_DELIM));
@@ -186,6 +190,19 @@ public class TestHCatClient {
       table2.getSerdeParams().get(serdeConstants.SERIALIZATION_NULL_FORMAT));
     
     assertEquals((expectedDir + "/" + db + ".db/" + tableTwo).toLowerCase(), table2.getLocation().toLowerCase());
+
+    HCatCreateTableDesc tableDesc3 = HCatCreateTableDesc.create(db,
+      tableThree, cols).fileFormat("orcfile").build();
+    client.createTable(tableDesc3);
+    HCatTable table3 = client.getTable(db, tableThree);
+    assertTrue(table3.getInputFileFormat().equalsIgnoreCase(
+      OrcInputFormat.class.getName()));
+    assertTrue(table3.getOutputFileFormat().equalsIgnoreCase(
+      OrcOutputFormat.class.getName()));
+    assertTrue(table3.getSerdeLib().equalsIgnoreCase(
+      OrcSerde.class.getName()));
+    assertTrue(table1.getCols().equals(cols));
+
     client.close();
   }
 

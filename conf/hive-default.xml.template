@@ -1957,6 +1957,11 @@
     </description>
   </property>
   <property>
+    <key>hive.analyze.stmt.collect.partlevel.stats</key>
+    <value>true</value>
+    <description>analyze table T compute statistics for columns. Queries like these should compute partitionlevel stats for partitioned table even when no part spec is specified.</description>
+  </property>
+  <property>
     <key>hive.stats.gather.num.threads</key>
     <value>10</value>
     <description>

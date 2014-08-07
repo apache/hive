@@ -212,7 +212,8 @@ public class StatsUtils {
       stats.addToDataSize(ds);
 
       // if at least a partition does not contain row count then mark basic stats state as PARTIAL
-      if (containsNonPositives(rowCounts)) {
+      if (containsNonPositives(rowCounts) &&
+          stats.getBasicStatsState().equals(State.COMPLETE)) {
         stats.setBasicStatsState(State.PARTIAL);
       }
       boolean haveFullStats = fetchColStats;
@@ -876,12 +877,9 @@ public class StatsUtils {
     if (colExprMap != null) {
       for (ColumnInfo ci : rowSchema.getSignature()) {
         String outColName = ci.getInternalName();
+        outColName = StatsUtils.stripPrefixFromColumnName(outColName);
         String outTabAlias = ci.getTabAlias();
         ExprNodeDesc end = colExprMap.get(outColName);
-        if (end == null) {
-          outColName = StatsUtils.stripPrefixFromColumnName(outColName);
-          end = colExprMap.get(outColName);
-        }
         ColStatistics colStat = getColStatisticsFromExpression(conf, parentStats, end);
         if (colStat != null) {
           outColName = StatsUtils.stripPrefixFromColumnName(outColName);
@@ -1142,7 +1140,7 @@ public class StatsUtils {
    */
   public static String stripPrefixFromColumnName(String colName) {
     String stripedName = colName;
-    if (colName.startsWith("KEY._") || colName.startsWith("VALUE._")) {
+    if (colName.startsWith("KEY") || colName.startsWith("VALUE")) {
       // strip off KEY./VALUE. from column name
       stripedName = colName.split("\\.")[1];
     }
@@ -1210,15 +1208,16 @@ public class StatsUtils {
         for (Map.Entry<String, ExprNodeDesc> entry : map.entrySet()) {
           if (entry.getValue().isSame(end)) {
             outColName = entry.getKey();
+            outColName = stripPrefixFromColumnName(outColName);
           }
         }
         if (end instanceof ExprNodeColumnDesc) {
           ExprNodeColumnDesc encd = (ExprNodeColumnDesc) end;
           if (outColName == null) {
             outColName = encd.getColumn();
+            outColName = stripPrefixFromColumnName(outColName);
           }
           String tabAlias = encd.getTabAlias();
-          outColName = stripPrefixFromColumnName(outColName);
           result.add(getFullyQualifiedColumnName(tabAlias, outColName));
         } else if (end instanceof ExprNodeGenericFuncDesc) {
           ExprNodeGenericFuncDesc enf = (ExprNodeGenericFuncDesc) end;

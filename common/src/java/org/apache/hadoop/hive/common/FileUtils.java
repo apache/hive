@@ -22,6 +22,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.security.AccessControlException;
+import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
@@ -352,35 +354,47 @@ public final class FileUtils {
   }
 
   /**
-   * Check if the given FileStatus indicates that the action is allowed for
-   * userName. It checks the group and other permissions also to determine this.
-   *
-   * @param userName
-   * @param fsStatus
-   * @param action
-   * @return true if it is writable for userName
+   * Perform a check to determine if the user is able to access the file passed in.
+   * If the user name passed in is different from the current user, this method will
+   * attempt to do impersonate the user to do the check; the current user should be
+   * able to create proxy users in this case.
+   * @param fs   FileSystem of the path to check
+   * @param stat FileStatus representing the file
+   * @param action FsAction that will be checked
+   * @param user User name of the user that will be checked for access.  If the user name
+   *             is null or the same as the current user, no user impersonation will be done
+   *             and the check will be done as the current user. Otherwise the file access
+   *             check will be performed within a doAs() block to use the access privileges
+   *             of this user. In this case the user must be configured to impersonate other
+   *             users, otherwise this check will fail with error.
+   * @param groups  List of groups for the user
+   * @throws IOException
+   * @throws AccessControlException
+   * @throws InterruptedException
+   * @throws Exception
    */
-  public static boolean isActionPermittedForUser(String userName, FileStatus fsStatus, FsAction action) {
-    FsPermission permissions = fsStatus.getPermission();
-    // check user perm
-    if (fsStatus.getOwner().equals(userName)
-        && permissions.getUserAction().implies(action)) {
-      return true;
+  public static void checkFileAccessWithImpersonation(final FileSystem fs,
+      final FileStatus stat, final FsAction action, final String user)
+          throws IOException, AccessControlException, InterruptedException, Exception {
+    UserGroupInformation ugi = ShimLoader.getHadoopShims().getUGIForConf(fs.getConf());
+    String currentUser = ShimLoader.getHadoopShims().getShortUserName(ugi);
+
+    if (user == null || currentUser.equals(user)) {
+      // No need to impersonate user, do the checks as the currently configured user.
+      ShimLoader.getHadoopShims().checkFileAccess(fs, stat, action);
+      return;
     }
-    // check other perm
-    if (permissions.getOtherAction().implies(action)) {
-      return true;
-    }
-    // check group perm after ensuring user belongs to the file owner group
-    String fileGroup = fsStatus.getGroup();
-    String[] userGroups = UserGroupInformation.createRemoteUser(userName).getGroupNames();
-    for (String group : userGroups) {
-      if (group.equals(fileGroup)) {
-        // user belongs to the file group
-        return permissions.getGroupAction().implies(action);
+
+    // Otherwise, try user impersonation. Current user must be configured to do user impersonation.
+    UserGroupInformation proxyUser = ShimLoader.getHadoopShims().createProxyUser(user);
+    ShimLoader.getHadoopShims().doAs(proxyUser, new PrivilegedExceptionAction<Object>() {
+      @Override
+      public Object run() throws Exception {
+        FileSystem fsAsUser = FileSystem.get(fs.getUri(), fs.getConf());
+        ShimLoader.getHadoopShims().checkFileAccess(fsAsUser, stat, action);
+        return null;
       }
-    }
-    return false;
+    });
   }
 
   /**
@@ -395,7 +409,7 @@ public final class FileUtils {
    * @throws IOException
    */
   public static boolean isActionPermittedForFileHierarchy(FileSystem fs, FileStatus fileStatus,
-      String userName, FsAction action) throws IOException {
+      String userName, FsAction action) throws Exception {
     boolean isDir = fileStatus.isDir();
 
     FsAction dirActionNeeded = action;
@@ -403,7 +417,11 @@ public final class FileUtils {
       // for dirs user needs execute privileges as well
       dirActionNeeded.and(FsAction.EXECUTE);
     }
-    if (!isActionPermittedForUser(userName, fileStatus, dirActionNeeded)) {
+
+    try {
+      checkFileAccessWithImpersonation(fs, fileStatus, action, userName);
+    } catch (AccessControlException err) {
+      // Action not permitted for user
       return false;
     }
 
