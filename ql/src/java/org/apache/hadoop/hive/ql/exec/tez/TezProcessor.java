@@ -33,6 +33,7 @@ import org.apache.hadoop.util.StringUtils;
 import org.apache.tez.common.TezUtils;
 import org.apache.tez.mapreduce.input.MRInputLegacy;
 import org.apache.tez.mapreduce.processor.MRTaskReporter;
+import org.apache.tez.runtime.api.AbstractLogicalIOProcessor;
 import org.apache.tez.runtime.api.Event;
 import org.apache.tez.runtime.api.LogicalIOProcessor;
 import org.apache.tez.runtime.api.LogicalInput;
@@ -44,12 +45,12 @@ import org.apache.tez.runtime.library.api.KeyValueWriter;
  * Hive processor for Tez that forms the vertices in Tez and processes the data.
  * Does what ExecMapper and ExecReducer does for hive in MR framework.
  */
-public class TezProcessor implements LogicalIOProcessor {
+public class TezProcessor extends AbstractLogicalIOProcessor {
 
 
 
   private static final Log LOG = LogFactory.getLog(TezProcessor.class);
-  private boolean isMap = false;
+  protected boolean isMap = false;
 
   RecordProcessor rproc = null;
 
@@ -69,8 +70,8 @@ public class TezProcessor implements LogicalIOProcessor {
     jobIdFormat.setMinimumIntegerDigits(4);
   }
 
-  public TezProcessor(boolean isMap) {
-    this.isMap = isMap;
+  public TezProcessor(TezProcessorContext context) {
+    super(context);
   }
 
   @Override
@@ -86,8 +87,8 @@ public class TezProcessor implements LogicalIOProcessor {
   }
 
   @Override
-  public void initialize(TezProcessorContext processorContext)
-      throws IOException {
+  public void initialize() throws IOException {
+    TezProcessorContext processorContext = getContext();
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_INITIALIZE_PROCESSOR);
     this.processorContext = processorContext;
     //get the jobconf

@@ -80,19 +80,20 @@ import org.apache.hadoop.yarn.api.records.URL;
 import org.apache.hadoop.yarn.util.ConverterUtils;
 import org.apache.hadoop.yarn.util.Records;
 import org.apache.tez.client.PreWarmContext;
-import org.apache.tez.common.TezJobConfig;
 import org.apache.tez.dag.api.DAG;
 import org.apache.tez.dag.api.Edge;
 import org.apache.tez.dag.api.EdgeManagerDescriptor;
 import org.apache.tez.dag.api.EdgeProperty;
 import org.apache.tez.dag.api.GroupInputEdge;
 import org.apache.tez.dag.api.InputDescriptor;
+import org.apache.tez.dag.api.InputInitializerDescriptor;
 import org.apache.tez.dag.api.OutputDescriptor;
 import org.apache.tez.dag.api.ProcessorDescriptor;
 import org.apache.tez.dag.api.TezConfiguration;
 import org.apache.tez.dag.api.TezException;
 import org.apache.tez.dag.api.Vertex;
 import org.apache.tez.dag.api.VertexGroup;
+import org.apache.tez.dag.api.VertexLocationHint;
 import org.apache.tez.dag.api.VertexManagerPluginDescriptor;
 import org.apache.tez.dag.library.vertexmanager.ShuffleVertexManager;
 import org.apache.tez.mapreduce.common.MRInputAMSplitGenerator;
@@ -103,6 +104,7 @@ import org.apache.tez.mapreduce.input.MRInputLegacy;
 import org.apache.tez.mapreduce.output.MROutput;
 import org.apache.tez.mapreduce.partition.MRPartitioner;
 import org.apache.tez.runtime.api.TezRootInputInitializer;
+import org.apache.tez.runtime.library.api.TezRuntimeConfiguration;
 import org.apache.tez.runtime.library.conf.OrderedPartitionedKVEdgeConfigurer;
 import org.apache.tez.runtime.library.conf.UnorderedPartitionedKVEdgeConfigurer;
 import org.apache.tez.runtime.library.conf.UnorderedUnpartitionedKVEdgeConfigurer;
@@ -297,8 +299,8 @@ public class DagUtils {
   private EdgeProperty createEdgeProperty(TezEdgeProperty edgeProp, Configuration conf)
       throws IOException {
     MRHelpers.translateVertexConfToTez(conf);
-    String keyClass = conf.get(TezJobConfig.TEZ_RUNTIME_KEY_CLASS);
-    String valClass = conf.get(TezJobConfig.TEZ_RUNTIME_VALUE_CLASS);
+    String keyClass = conf.get(TezRuntimeConfiguration.TEZ_RUNTIME_KEY_CLASS);
+    String valClass = conf.get(TezRuntimeConfiguration.TEZ_RUNTIME_VALUE_CLASS);
     String partitionerClassName = conf.get("mapred.partitioner.class");
     Configuration partitionerConf;
 
@@ -488,10 +490,9 @@ public class DagUtils {
     } else {
       mrInput = MRHelpers.createMRInputPayload(serializedConf, null);
     }
-
-    map.addInput(alias,
+    map.addDataSource(alias,
         new InputDescriptor(MRInputLegacy.class.getName()).
-        setUserPayload(mrInput), amSplitGeneratorClass);
+        setUserPayload(mrInput), new InputInitializerDescriptor(amSplitGeneratorClass.getName()).setUserPayload(mrInput));
 
     Map<String, LocalResource> localResources = new HashMap<String, LocalResource>();
     localResources.put(getBaseName(appJarLr), appJarLr);
@@ -501,7 +502,7 @@ public class DagUtils {
 
     if (inputSplitInfo != null) {
       // only relevant for client-side split generation
-      map.setTaskLocationsHint(inputSplitInfo.getTaskLocationHints());
+      map.setLocationHint(new VertexLocationHint(inputSplitInfo.getTaskLocationHints()));
       MRHelpers.updateLocalResourcesForInputSplits(FileSystem.get(conf), inputSplitInfo,
           localResources);
     }
@@ -945,9 +946,9 @@ public class DagUtils {
 
     // final vertices need to have at least one output
     if (!hasChildren) {
-      v.addOutput("out_"+work.getName(),
+      v.addDataSink("out_"+work.getName(),
           new OutputDescriptor(MROutput.class.getName())
-          .setUserPayload(MRHelpers.createUserPayloadFromConf(conf)));
+          .setUserPayload(MRHelpers.createUserPayloadFromConf(conf)), null);
     }
 
     return v;

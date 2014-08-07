@@ -31,6 +31,8 @@ import org.apache.tez.dag.api.EdgeManagerContext;
 import org.apache.tez.runtime.api.events.DataMovementEvent;
 import org.apache.tez.runtime.api.events.InputReadErrorEvent;
 
+import com.google.common.collect.Multimap;
+
 public class CustomPartitionEdge extends EdgeManager {
 
   private static final Log LOG = LogFactory.getLog(CustomPartitionEdge.class.getName());
@@ -39,8 +41,10 @@ public class CustomPartitionEdge extends EdgeManager {
   EdgeManagerContext context = null;
 
   // used by the framework at runtime. initialize is the real initializer at runtime
-  public CustomPartitionEdge() {
+  public CustomPartitionEdge(EdgeManagerContext context) {
+    super(context);
   }
+
 
   @Override
   public int getNumDestinationTaskPhysicalInputs(int destinationTaskIndex) {
@@ -59,8 +63,7 @@ public class CustomPartitionEdge extends EdgeManager {
 
   // called at runtime to initialize the custom edge.
   @Override
-  public void initialize(EdgeManagerContext context) {
-    this.context = context;
+  public void initialize() {
     byte[] payload = context.getUserPayload();
     LOG.info("Initializing the edge, payload: " + payload);
     if (payload == null) {
