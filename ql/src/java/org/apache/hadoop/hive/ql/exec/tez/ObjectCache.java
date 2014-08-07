@@ -22,8 +22,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.tez.runtime.common.objectregistry.ObjectLifeCycle;
 import org.apache.tez.runtime.common.objectregistry.ObjectRegistry;
-import org.apache.tez.runtime.common.objectregistry.ObjectRegistryFactory;
-
+import org.apache.tez.runtime.common.objectregistry.ObjectRegistryImpl;
 
 /**
  * ObjectCache. Tez implementation based on the tez object registry.
@@ -32,7 +31,7 @@ import org.apache.tez.runtime.common.objectregistry.ObjectRegistryFactory;
 public class ObjectCache implements org.apache.hadoop.hive.ql.exec.ObjectCache {
 
   private static final Log LOG = LogFactory.getLog(ObjectCache.class.getName());
-  private final ObjectRegistry registry = ObjectRegistryFactory.getObjectRegistry();
+  private final ObjectRegistry registry = new ObjectRegistryImpl();
 
   @Override
   public void cache(String key, Object value) {

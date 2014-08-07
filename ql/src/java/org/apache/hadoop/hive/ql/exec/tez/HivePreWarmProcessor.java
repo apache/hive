@@ -25,6 +25,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.io.ReadaheadPool;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.tez.common.TezUtils;
+import org.apache.tez.runtime.api.AbstractLogicalIOProcessor;
 import org.apache.tez.runtime.api.Event;
 import org.apache.tez.runtime.api.LogicalIOProcessor;
 import org.apache.tez.runtime.api.LogicalInput;
@@ -48,7 +49,7 @@ import javax.crypto.Mac;
  *
  * @see Config for configuring the HivePreWarmProcessor
  */
-public class HivePreWarmProcessor implements LogicalIOProcessor {
+public class HivePreWarmProcessor extends AbstractLogicalIOProcessor {
 
   private static boolean prewarmed = false;
 
@@ -56,9 +57,13 @@ public class HivePreWarmProcessor implements LogicalIOProcessor {
 
   private Configuration conf;
 
+  public HivePreWarmProcessor(TezProcessorContext context) {
+    super(context);
+  }
+
   @Override
-  public void initialize(TezProcessorContext processorContext)
-    throws Exception {
+  public void initialize() throws Exception {
+    TezProcessorContext processorContext = getContext();
     byte[] userPayload = processorContext.getUserPayload();
     this.conf = TezUtils.createConfFromUserPayload(userPayload);
   }

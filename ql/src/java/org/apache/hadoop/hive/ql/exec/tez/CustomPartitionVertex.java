@@ -82,12 +82,13 @@ public class CustomPartitionVertex extends VertexManagerPlugin {
   private final SplitGrouper grouper = new SplitGrouper();
   private int taskCount = 0;
 
-  public CustomPartitionVertex() {
+  public CustomPartitionVertex(VertexManagerPluginContext context) {
+    super(context);
   }
 
   @Override
-  public void initialize(VertexManagerPluginContext context) {
-    this.context = context;
+  public void initialize() {
+    this.context = getContext();
     ByteBuffer byteBuf = ByteBuffer.wrap(context.getUserPayload());
     this.numBuckets = byteBuf.getInt();
   }

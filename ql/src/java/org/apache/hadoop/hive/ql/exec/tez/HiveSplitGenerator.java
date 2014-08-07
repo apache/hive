@@ -62,14 +62,19 @@ import com.google.common.collect.Multimap;
  * making sure that splits from different partitions are only grouped if they
  * are of the same schema, format and serde
  */
-public class HiveSplitGenerator implements TezRootInputInitializer {
+public class HiveSplitGenerator extends TezRootInputInitializer {
 
   private static final Log LOG = LogFactory.getLog(HiveSplitGenerator.class);
 
   private static final SplitGrouper grouper = new SplitGrouper();
 
+  public HiveSplitGenerator(TezRootInputInitializerContext initializerContext) {
+    super(initializerContext);
+  }
+
   @Override
-  public List<Event> initialize(TezRootInputInitializerContext rootInputContext) throws Exception {
+  public List<Event> initialize() throws Exception {
+    TezRootInputInitializerContext rootInputContext = getContext();
 
     MRInputUserPayloadProto userPayloadProto =
         MRHelpers.parseMRInputPayload(rootInputContext.getUserPayload());
@@ -175,6 +180,9 @@ public class HiveSplitGenerator implements TezRootInputInitializer {
     return groupedSplits;
   }
 
+  public void handleInputInitializerEvent(List<RootInputInitializerEvent> events) throws Exception {
+  }
+
   private List<Event> createEventList(boolean sendSerializedEvents, InputSplitInfoMem inputSplitInfo) {
 
     List<Event> events = Lists.newArrayListWithCapacity(inputSplitInfo.getNumTasks() + 1);
@@ -201,8 +209,5 @@ public class HiveSplitGenerator implements TezRootInputInitializer {
       }
     }
     return events;
-  }
-
-  public void handleInputInitializerEvent(List<RootInputInitializerEvent> events) throws Exception {
   }
 }
