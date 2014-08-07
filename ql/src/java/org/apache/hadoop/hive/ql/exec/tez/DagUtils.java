@@ -81,6 +81,8 @@ import org.apache.hadoop.yarn.util.ConverterUtils;
 import org.apache.hadoop.yarn.util.Records;
 import org.apache.tez.client.PreWarmContext;
 import org.apache.tez.dag.api.DAG;
+import org.apache.tez.dag.api.DataSinkDescriptor;
+import org.apache.tez.dag.api.DataSourceDescriptor;
 import org.apache.tez.dag.api.Edge;
 import org.apache.tez.dag.api.EdgeManagerDescriptor;
 import org.apache.tez.dag.api.EdgeProperty;
@@ -302,7 +304,7 @@ public class DagUtils {
     String keyClass = conf.get(TezRuntimeConfiguration.TEZ_RUNTIME_KEY_CLASS);
     String valClass = conf.get(TezRuntimeConfiguration.TEZ_RUNTIME_VALUE_CLASS);
     String partitionerClassName = conf.get("mapred.partitioner.class");
-    Configuration partitionerConf;
+    Map<String, String> partitionerConf;
 
     EdgeType edgeType = edgeProp.getEdgeType();
     switch (edgeType) {
@@ -352,12 +354,12 @@ public class DagUtils {
    *          a base configuration to extract relevant properties
    * @return
    */
-  private Configuration createPartitionerConf(String partitionerClassName,
+  private Map<String, String> createPartitionerConf(String partitionerClassName,
       Configuration baseConf) {
-    Configuration partitionerConf = new Configuration(false);
-    partitionerConf.set("mapred.partitioner.class", partitionerClassName);
+    Map<String, String> partitionerConf = new HashMap<String, String>();
+    partitionerConf.put("mapred.partitioner.class", partitionerClassName);
     if (baseConf.get("mapreduce.totalorderpartitioner.path") != null) {
-      partitionerConf.set("mapreduce.totalorderpartitioner.path",
+      partitionerConf.put("mapreduce.totalorderpartitioner.path",
       baseConf.get("mapreduce.totalorderpartitioner.path"));
     }
     return partitionerConf;
@@ -491,8 +493,8 @@ public class DagUtils {
       mrInput = MRHelpers.createMRInputPayload(serializedConf, null);
     }
     map.addDataSource(alias,
-        new InputDescriptor(MRInputLegacy.class.getName()).
-        setUserPayload(mrInput), new InputInitializerDescriptor(amSplitGeneratorClass.getName()).setUserPayload(mrInput));
+        new DataSourceDescriptor(new InputDescriptor(MRInputLegacy.class.getName()).
+        setUserPayload(mrInput), new InputInitializerDescriptor(amSplitGeneratorClass.getName()).setUserPayload(mrInput),null));
 
     Map<String, LocalResource> localResources = new HashMap<String, LocalResource>();
     localResources.put(getBaseName(appJarLr), appJarLr);
@@ -946,9 +948,9 @@ public class DagUtils {
 
     // final vertices need to have at least one output
     if (!hasChildren) {
-      v.addDataSink("out_"+work.getName(),
+      v.addDataSink("out_"+work.getName(), new DataSinkDescriptor(
           new OutputDescriptor(MROutput.class.getName())
-          .setUserPayload(MRHelpers.createUserPayloadFromConf(conf)), null);
+          .setUserPayload(MRHelpers.createUserPayloadFromConf(conf)), null, null));
     }
 
     return v;
