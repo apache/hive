@@ -143,6 +143,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     patternBuilder.append("|short");
     patternBuilder.append("|timestamp");
     patternBuilder.append("|boolean");
+    patternBuilder.append("|binary");
     patternBuilder.append("|string");
     patternBuilder.append("|byte");
     patternBuilder.append("|float");
