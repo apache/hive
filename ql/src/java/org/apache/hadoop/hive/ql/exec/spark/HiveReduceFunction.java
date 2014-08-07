@@ -32,8 +32,6 @@ public class HiveReduceFunction implements PairFlatMapFunction<Iterator<Tuple2<B
 BytesWritable, BytesWritable> {
   private static final long serialVersionUID = 1L;
 
-  private transient ExecReducer reducer;
-  private transient SparkCollector collector;
   private transient JobConf jobConf;
 
   private byte[] buffer;
@@ -47,21 +45,11 @@ BytesWritable, BytesWritable> {
   call(Iterator<Tuple2<BytesWritable,Iterable<BytesWritable>>> it) throws Exception {
     if (jobConf == null) {
       jobConf = KryoSerializer.deserializeJobConf(this.buffer);
-      jobConf.set("mapred.reducer.class", ExecReducer.class.getName());      
-
-      reducer = new ExecReducer();
-      reducer.configure(jobConf);
-      collector = new SparkCollector();
+      jobConf.set("mapred.reducer.class", ExecReducer.class.getName());
     }
 
-    collector.clear();
-    while (it.hasNext()) {
-      Tuple2<BytesWritable, Iterable<BytesWritable>> tup = it.next();
-      reducer.reduce(tup._1(), tup._2().iterator(), collector, Reporter.NULL);
-    }
-
-    reducer.close();
-    return collector.getResult();
+    ExecReducer reducer = new ExecReducer();
+    reducer.configure(jobConf);
+    return new HiveReduceFunctionResultList(jobConf, it, reducer);
   }
-
 }
