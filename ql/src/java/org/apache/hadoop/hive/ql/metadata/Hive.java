@@ -1242,7 +1242,7 @@ public class Hive {
            */
           FileSystem oldPartPathFS = oldPartPath.getFileSystem(getConf());
           FileSystem loadPathFS = loadPath.getFileSystem(getConf());
-          if (oldPartPathFS.equals(loadPathFS)) {
+          if (FileUtils.equalsFileSystem(oldPartPathFS,loadPathFS)) {
             newPartPath = oldPartPath;
           }
         }
