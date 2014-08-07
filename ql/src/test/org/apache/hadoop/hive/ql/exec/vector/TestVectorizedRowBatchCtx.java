@@ -49,6 +49,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.BooleanWritable;
+import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.DataOutputBuffer;
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
@@ -283,6 +284,15 @@ public class TestVectorizedRowBatchCtx {
           case DOUBLE: {
             DoubleColumnVector dcv = (DoubleColumnVector) batch.cols[j];
             Assert.assertEquals(true, dcv.vector[i] == ((DoubleWritable) writableCol).get());
+          }
+            break;
+          case BINARY: {
+            BytesColumnVector bcv = (BytesColumnVector) batch.cols[j];
+              BytesWritable colBinary = (BytesWritable) writableCol;
+              BytesWritable batchBinary = (BytesWritable) bcv.getWritableObject(i);
+              byte[] a = colBinary.getBytes();
+              byte[] b = batchBinary.getBytes();
+              Assert.assertEquals(true, a.equals(b));
           }
             break;
           case STRING: {
