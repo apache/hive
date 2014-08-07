@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.exec.tez;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.tez.runtime.common.objectregistry.ObjectLifeCycle;
 import org.apache.tez.runtime.common.objectregistry.ObjectRegistry;
 import org.apache.tez.runtime.common.objectregistry.ObjectRegistryImpl;
 
@@ -36,7 +35,7 @@ public class ObjectCache implements org.apache.hadoop.hive.ql.exec.ObjectCache {
   @Override
   public void cache(String key, Object value) {
     LOG.info("Adding " + key + " to cache with value " + value);
-    registry.add(ObjectLifeCycle.VERTEX, key, value);
+    registry.cacheForVertex(key, value);
   }
 
   @Override
