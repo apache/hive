@@ -189,9 +189,12 @@ select max(c_int) from v1 group by (c_boolean);
 select count(v1.c_int)  from v1 join t2 on v1.c_int = t2.c_int;
 select count(v1.c_int)  from v1 join v2 on v1.c_int = v2.c_int;
 
-create view v3 as select v1.value  from v1 join t1 on v1.c_boolean = t1.c_boolean;
-select * from v3 limit 3;
+select count(*) from v1 a join v1 b on a.value = b.value;
 
+create view v3 as select v1.value val from v1 join t1 on v1.c_boolean = t1.c_boolean;
+
+-- view chaining
+select count(val) from v3 where val != '1';
 with q1 as ( select key from t1 where key = '1')
 select *
 from q1
@@ -210,4 +213,7 @@ with q1 as ( select c_int from q2 where c_boolean = false),
 q2 as ( select c_int,c_boolean from v1  where value = '1')
 select * from (select c_int from q1) a;
 
-
+drop view v1;
+drop view v2;
+drop view v3;
+drop view v4;

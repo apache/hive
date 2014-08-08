@@ -16013,30 +16013,41 @@ POSTHOOK: Input: default@v1
 POSTHOOK: Input: default@v2
 #### A masked pattern was here ####
 234
-PREHOOK: query: create view v3 as select v1.value  from v1 join t1 on v1.c_boolean = t1.c_boolean
+PREHOOK: query: select count(*) from v1 a join v1 b on a.value = b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@v1
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from v1 a join v1 b on a.value = b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@v1
+#### A masked pattern was here ####
+160
+PREHOOK: query: create view v3 as select v1.value val from v1 join t1 on v1.c_boolean = t1.c_boolean
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@v1
-POSTHOOK: query: create view v3 as select v1.value  from v1 join t1 on v1.c_boolean = t1.c_boolean
+POSTHOOK: query: create view v3 as select v1.value val from v1 join t1 on v1.c_boolean = t1.c_boolean
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@v1
 POSTHOOK: Output: default@v3
-PREHOOK: query: select * from v3 limit 3
+PREHOOK: query: -- view chaining
+select count(val) from v3 where val != '1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@v1
 PREHOOK: Input: default@v3
 #### A masked pattern was here ####
-POSTHOOK: query: select * from v3 limit 3
+POSTHOOK: query: -- view chaining
+select count(val) from v3 where val != '1'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@v1
 POSTHOOK: Input: default@v3
 #### A masked pattern was here ####
-1
-1
-1
+96
 PREHOOK: query: with q1 as ( select key from t1 where key = '1')
 select *
 from q1
@@ -16104,3 +16115,35 @@ POSTHOOK: Input: default@v1
 #### A masked pattern was here ####
 1
 1
+PREHOOK: query: drop view v1
+PREHOOK: type: DROPVIEW
+PREHOOK: Input: default@v1
+PREHOOK: Output: default@v1
+POSTHOOK: query: drop view v1
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: default@v1
+POSTHOOK: Output: default@v1
+PREHOOK: query: drop view v2
+PREHOOK: type: DROPVIEW
+PREHOOK: Input: default@v2
+PREHOOK: Output: default@v2
+POSTHOOK: query: drop view v2
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: default@v2
+POSTHOOK: Output: default@v2
+PREHOOK: query: drop view v3
+PREHOOK: type: DROPVIEW
+PREHOOK: Input: default@v3
+PREHOOK: Output: default@v3
+POSTHOOK: query: drop view v3
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: default@v3
+POSTHOOK: Output: default@v3
+PREHOOK: query: drop view v4
+PREHOOK: type: DROPVIEW
+PREHOOK: Input: default@v4
+PREHOOK: Output: default@v4
+POSTHOOK: query: drop view v4
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: default@v4
+POSTHOOK: Output: default@v4
