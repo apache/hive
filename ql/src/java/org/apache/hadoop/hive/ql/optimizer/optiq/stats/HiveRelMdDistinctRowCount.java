@@ -6,24 +6,36 @@ import java.util.List;
 import net.hydromatic.optiq.BuiltinMethod;
 
 import org.apache.hadoop.hive.ql.optimizer.optiq.HiveOptiqUtil;
+import org.apache.hadoop.hive.ql.optimizer.optiq.cost.HiveCost;
 import org.apache.hadoop.hive.ql.optimizer.optiq.reloperators.HiveJoinRel;
 import org.apache.hadoop.hive.ql.optimizer.optiq.reloperators.HiveTableScanRel;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.eigenbase.rel.JoinRelBase;
 import org.eigenbase.rel.RelNode;
+import org.eigenbase.rel.metadata.ChainedRelMetadataProvider;
 import org.eigenbase.rel.metadata.ReflectiveRelMetadataProvider;
 import org.eigenbase.rel.metadata.RelMdDistinctRowCount;
 import org.eigenbase.rel.metadata.RelMdUtil;
 import org.eigenbase.rel.metadata.RelMetadataProvider;
 import org.eigenbase.rel.metadata.RelMetadataQuery;
+import org.eigenbase.relopt.RelOptCost;
 import org.eigenbase.rex.RexNode;
-import org.eigenbase.util14.NumberUtil;
+
+import com.google.common.collect.ImmutableList;
 
 public class HiveRelMdDistinctRowCount extends RelMdDistinctRowCount {
-  public static final RelMetadataProvider SOURCE = ReflectiveRelMetadataProvider
-                                                     .reflectiveSource(
-                                                         BuiltinMethod.DISTINCT_ROW_COUNT.method,
-                                                         new HiveRelMdDistinctRowCount());
+
+  private static final HiveRelMdDistinctRowCount INSTANCE =
+      new HiveRelMdDistinctRowCount();
+
+  public static final RelMetadataProvider SOURCE = ChainedRelMetadataProvider
+      .of(ImmutableList.of(
+
+      ReflectiveRelMetadataProvider.reflectiveSource(
+          BuiltinMethod.DISTINCT_ROW_COUNT.method, INSTANCE),
+
+      ReflectiveRelMetadataProvider.reflectiveSource(
+          BuiltinMethod.CUMULATIVE_COST.method, INSTANCE)));
 
   private HiveRelMdDistinctRowCount() {
   }
@@ -35,9 +47,11 @@ public class HiveRelMdDistinctRowCount extends RelMdDistinctRowCount {
     if (rel instanceof HiveTableScanRel) {
       return getDistinctRowCount((HiveTableScanRel) rel, groupKey, predicate);
     }
-
-    return NumberUtil.multiply(RelMetadataQuery.getRowCount(rel),
-        RelMetadataQuery.getSelectivity(rel, predicate));
+    /*
+     * For now use Optiq' default formulas for propagating NDVs up the Query
+     * Tree.
+     */
+    return super.getDistinctRowCount(rel, groupKey, predicate);
   }
 
   private Double getDistinctRowCount(HiveTableScanRel htRel, BitSet groupKey,
@@ -76,5 +90,21 @@ public class HiveRelMdDistinctRowCount extends RelMdDistinctRowCount {
     }
 
     return RelMetadataQuery.getDistinctRowCount(rel, groupKey, predicate);
+  }
+
+  /*
+   * Favor Broad Plans over Deep Plans. 
+   */
+  public RelOptCost getCumulativeCost(HiveJoinRel rel) {
+    RelOptCost cost = RelMetadataQuery.getNonCumulativeCost(rel);
+    List<RelNode> inputs = rel.getInputs();
+    RelOptCost maxICost = HiveCost.ZERO;
+    for (RelNode input : inputs) {
+      RelOptCost iCost = RelMetadataQuery.getCumulativeCost(input);
+      if (maxICost.isLt(iCost)) {
+        maxICost = iCost;
+      }
+    }
+    return cost.plus(maxICost);
   }
 }

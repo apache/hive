@@ -8,7 +8,7 @@ import org.eigenbase.relopt.RelOptUtil;
 public class HiveCost implements RelOptCost {
   // ~ Static fields/initializers ---------------------------------------------
 
-  static final HiveCost                 INFINITY = new HiveCost(Double.POSITIVE_INFINITY,
+  public static final HiveCost                 INFINITY = new HiveCost(Double.POSITIVE_INFINITY,
                                                      Double.POSITIVE_INFINITY,
                                                      Double.POSITIVE_INFINITY) {
                                                    @Override
@@ -17,7 +17,7 @@ public class HiveCost implements RelOptCost {
                                                    }
                                                  };
 
-  static final HiveCost                 HUGE     = new HiveCost(Double.MAX_VALUE, Double.MAX_VALUE,
+  public static final HiveCost                 HUGE     = new HiveCost(Double.MAX_VALUE, Double.MAX_VALUE,
                                                      Double.MAX_VALUE) {
                                                    @Override
                                                    public String toString() {
@@ -25,14 +25,14 @@ public class HiveCost implements RelOptCost {
                                                    }
                                                  };
 
-  static final HiveCost                 ZERO     = new HiveCost(0.0, 0.0, 0.0) {
+  public static final HiveCost                 ZERO     = new HiveCost(0.0, 0.0, 0.0) {
                                                    @Override
                                                    public String toString() {
                                                      return "{0}";
                                                    }
                                                  };
 
-  static final HiveCost                 TINY     = new HiveCost(1.0, 1.0, 0.0) {
+  public static final HiveCost                 TINY     = new HiveCost(1.0, 1.0, 0.0) {
                                                    @Override
                                                    public String toString() {
                                                      return "{tiny}";
