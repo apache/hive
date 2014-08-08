@@ -50,11 +50,12 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.yarn.api.records.LocalResource;
-import org.apache.tez.client.PreWarmContext;
 import org.apache.tez.client.TezClient;
+import org.apache.tez.client.PreWarmVertex;
 import org.apache.tez.dag.api.SessionNotRunning;
 import org.apache.tez.dag.api.TezConfiguration;
 import org.apache.tez.dag.api.TezException;
+import org.apache.tez.dag.api.Vertex;
 import org.apache.tez.mapreduce.hadoop.MRHelpers;
 
 /**
@@ -170,6 +171,15 @@ public class TezSessionState {
     // generate basic tez config
     TezConfiguration tezConfig = new TezConfiguration(conf);
     tezConfig.set(TezConfiguration.TEZ_AM_STAGING_DIR, tezScratchDir.toUri().toString());
+
+    if (HiveConf.getBoolVar(conf, ConfVars.HIVE_PREWARM_ENABLED)) {
+      int n = HiveConf.getIntVar(conf, ConfVars.HIVE_PREWARM_NUM_CONTAINERS);
+      n = Math.max(tezConfig.getInt(
+          TezConfiguration.TEZ_AM_SESSION_MIN_HELD_CONTAINERS,
+          TezConfiguration.TEZ_AM_SESSION_MIN_HELD_CONTAINERS_DEFAULT), n);
+      tezConfig.setInt(TezConfiguration.TEZ_AM_SESSION_MIN_HELD_CONTAINERS, n);
+    }
+
     session = new TezClient("HIVE-" + sessionId, tezConfig, true,
         commonLocalResources, null);
 
@@ -182,10 +192,10 @@ public class TezSessionState {
       int n = HiveConf.getIntVar(conf, ConfVars.HIVE_PREWARM_NUM_CONTAINERS);
       LOG.info("Prewarming " + n + " containers  (id: " + sessionId
           + ", scratch dir: " + tezScratchDir + ")");
-      PreWarmContext context = utils.createPreWarmContext(tezConfig, n,
+      PreWarmVertex prewarmVertex = utils.createPreWarmVertex(tezConfig, n,
           commonLocalResources);
       try {
-        session.preWarm(context);
+        session.preWarm(prewarmVertex);
       } catch (InterruptedException ie) {
         if (LOG.isDebugEnabled()) {
           LOG.debug("Hive Prewarm threw an exception ", ie);
