@@ -26,6 +26,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -37,6 +38,7 @@ import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
+import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.exec.spark.SparkTask;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
@@ -47,6 +49,7 @@ import org.apache.hadoop.hive.ql.lib.ForwardWalker;
 import org.apache.hadoop.hive.ql.lib.GraphWalker;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -152,19 +155,19 @@ public class SparkCompiler extends TaskCompiler {
         TableScanOperator.getOperatorName() + "%"),
         new SparkProcessAnalyzeTable(GenSparkUtils.getUtils()));
 
-//    opRules.put(new RuleRegExp("Remember union", UnionOperator.getOperatorName() + "%"),
-//        new NodeProcessor() {
-//      @Override
-//      public Object process(Node n, Stack<Node> s,
-//          NodeProcessorCtx procCtx, Object... os) throws SemanticException {
-//        GenSparkProcContext context = (GenSparkProcContext) procCtx;
-//        UnionOperator union = (UnionOperator) n;
-//
-//        // simply need to remember that we've seen a union.
-//        context.currentUnionOperators.add(union);
-//        return null;
-//      }
-//    });
+      opRules.put(new RuleRegExp("Remember union", UnionOperator.getOperatorName() + "%"),
+          new NodeProcessor() {
+        @Override
+        public Object process(Node n, Stack<Node> s,
+          NodeProcessorCtx procCtx, Object... os) throws SemanticException {
+          GenSparkProcContext context = (GenSparkProcContext) procCtx;
+          UnionOperator union = (UnionOperator) n;
+
+          // simply need to remember that we've seen a union.
+          context.currentUnionOperators.add(union);
+          return null;
+        }
+      });
 
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along
