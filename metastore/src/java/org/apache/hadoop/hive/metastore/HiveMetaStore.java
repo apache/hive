@@ -424,7 +424,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
       String partitionValidationRegex =
           hiveConf.getVar(HiveConf.ConfVars.METASTORE_PARTITION_NAME_WHITELIST_PATTERN);
-      if (partitionValidationRegex != null && partitionValidationRegex != "") {
+      if (partitionValidationRegex != null && !partitionValidationRegex.isEmpty()) {
         partitionValidationPattern = Pattern.compile(partitionValidationRegex);
       } else {
         partitionValidationPattern = null;
