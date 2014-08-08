@@ -99,7 +99,8 @@ public class RelOptHiveTable extends RelOptAbstractTable {
       if (m_hiveTblMetadata.isPartitioned()) {
         if (partitionList == null) {
           try {
-            List<Partition> parts = Hive.get().getPartitions(m_hiveTblMetadata);
+            List<Partition> parts = new ArrayList<Partition>(
+                Hive.get().getAllPartitionsOf(m_hiveTblMetadata));
             List<Long> rowCounts = StatsUtils.getBasicStatForPartitions(
                 m_hiveTblMetadata, parts, StatsSetupConst.ROW_COUNT);
             m_rowCount = StatsUtils.getSumIgnoreNegatives(rowCounts);
