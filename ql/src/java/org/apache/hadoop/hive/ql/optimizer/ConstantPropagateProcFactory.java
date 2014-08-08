@@ -348,9 +348,9 @@ public final class ConstantPropagateProcFactory {
         ExprNodeDesc childExpr = newExprs.get(i);
         if (childExpr instanceof ExprNodeConstantDesc) {
           ExprNodeConstantDesc c = (ExprNodeConstantDesc) childExpr;
-          if (c.getValue() == Boolean.TRUE) {
+          if (Boolean.TRUE.equals(c.getValue())) {
 
-            // if true, prune it
+        	  // if true, prune it
             return newExprs.get(Math.abs(i - 1));
           } else {
 
@@ -366,7 +366,7 @@ public final class ConstantPropagateProcFactory {
         ExprNodeDesc childExpr = newExprs.get(i);
         if (childExpr instanceof ExprNodeConstantDesc) {
           ExprNodeConstantDesc c = (ExprNodeConstantDesc) childExpr;
-          if (c.getValue() == Boolean.FALSE) {
+          if (Boolean.FALSE.equals(c.getValue())) {
 
             // if false, prune it
             return newExprs.get(Math.abs(i - 1));
@@ -565,10 +565,10 @@ public final class ConstantPropagateProcFactory {
       ExprNodeDesc newCondn = foldExpr(condn, constants, cppCtx, op, 0, true);
       if (newCondn instanceof ExprNodeConstantDesc) {
         ExprNodeConstantDesc c = (ExprNodeConstantDesc) newCondn;
-        if (c.getValue() == Boolean.TRUE) {
+        if (Boolean.TRUE.equals(c.getValue())) {
           cppCtx.addOpToDelete(op);
           LOG.debug("Filter expression " + condn + " holds true. Will delete it.");
-        } else if (c.getValue() == Boolean.FALSE) {
+        } else if (Boolean.FALSE.equals(c.getValue())) {
           LOG.warn("Filter expression " + condn + " holds false!");
         }
       }
