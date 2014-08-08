@@ -133,9 +133,7 @@ public class SparkClient implements Serializable {
       FileSystem fs = emptyScratchDir.getFileSystem(jobConf);
       fs.mkdirs(emptyScratchDir);
     } catch (IOException e) {
-      e.printStackTrace();
-      System.err.println("Error launching map-reduce job" + "\n"
-          + org.apache.hadoop.util.StringUtils.stringifyException(e));
+      LOG.error("Error launching map-reduce job", e);
       return 5;
     }
 
@@ -145,7 +143,7 @@ public class SparkClient implements Serializable {
     try {
       plan = gen.generate(sparkWork);
     } catch (Exception e) {
-      e.printStackTrace();
+      LOG.error("Error generating Spark Plan", e);
       return 2;
     }
 
