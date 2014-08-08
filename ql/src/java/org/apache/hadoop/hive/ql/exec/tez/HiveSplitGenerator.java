@@ -90,7 +90,7 @@ public class HiveSplitGenerator extends TezRootInputInitializer {
     ShimLoader.getHadoopShims().getMergedCredentials(jobConf);
 
     InputSplitInfoMem inputSplitInfo = null;
-    String realInputFormatName = conf.get("mapred.input.format.class");
+    String realInputFormatName = userPayloadProto.getInputFormatName();
     if (realInputFormatName != null && !realInputFormatName.isEmpty()) {
       // Need to instantiate the realInputFormat
       InputFormat<?, ?> inputFormat =
@@ -123,8 +123,7 @@ public class HiveSplitGenerator extends TezRootInputInitializer {
       inputSplitInfo =
           new InputSplitInfoMem(flatSplits, locationHints, flatSplits.length, null, jobConf);
     } else {
-      // no need for grouping and the target #of tasks.
-      inputSplitInfo = MRHelpers.generateInputSplitsToMem(jobConf, false, 0);
+      inputSplitInfo = MRHelpers.generateInputSplitsToMem(jobConf);
     }
 
     return createEventList(sendSerializedEvents, inputSplitInfo);
