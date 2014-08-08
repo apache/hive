@@ -24,6 +24,8 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapper;
 import org.apache.hadoop.mapred.JobConf;
@@ -33,6 +35,7 @@ import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 
 public class KryoSerializer {
+  private static final Log LOG = LogFactory.getLog("KryoSerializer");
   private static final Kryo kryo = Utilities.runtimeSerializationKryo.get();
 
   static {
@@ -58,15 +61,13 @@ public class KryoSerializer {
     try {
       jobConf.write(new DataOutputStream(out));
     } catch (IOException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
+      LOG.error("Error serializing job configuration", e);
       return null;
     } finally {
       try {
         out.close();
       } catch (IOException e) {
-        // TODO Auto-generated catch block
-        e.printStackTrace();
+        LOG.error("Error closing output stream", e);
       }
     }
 
@@ -79,8 +80,7 @@ public class KryoSerializer {
     try {
       conf.readFields(new DataInputStream(new ByteArrayInputStream(buffer)));
     } catch (IOException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
+      LOG.error("Error de-serializing job configuration");
       return null;
     }
     return conf;
