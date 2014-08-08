@@ -226,7 +226,7 @@ public class GenSparkWork implements NodeProcessor {
       // finally hook everything up
       LOG.debug("Connecting union work ("+unionWork+") with work ("+work+")");
       SparkEdgeProperty edgeProp = new SparkEdgeProperty(0/*EdgeType.CONTAINS*/);
-      sparkWork.connect(unionWork, work, edgeProp);
+      sparkWork.connect(work, unionWork, edgeProp);
       unionWork.addUnionOperators(context.currentUnionOperators);
       context.currentUnionOperators.clear();
       context.workWithUnionOperators.add(work);
