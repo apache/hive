@@ -107,6 +107,13 @@ public abstract class HiveBaseFunctionResultList<T> implements
 
       // At this point we are done processing the input. Close the record processor
       closeRecordProcessor();
+
+      // It is possible that some operators add records after closing the processor, so make sure
+      // to check the lastRecordOutput
+      if (lastRecordOutput.hasNext()) {
+        return true;
+      }
+
       lastRecordOutput.clear();
       return false;
     }
