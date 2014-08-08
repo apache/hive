@@ -608,7 +608,7 @@ public class Driver implements CommandProcessor {
           Partition partition = read.getPartition();
           tbl = partition.getTable();
           // use partition level authorization
-          if (tableUsePartLevelAuth.get(tbl.getTableName()) == Boolean.TRUE) {
+          if (Boolean.TRUE.equals(tableUsePartLevelAuth.get(tbl.getTableName()))) {
             List<String> cols = part2Cols.get(partition);
             if (cols != null && cols.size() > 0) {
               authorizer.authorize(partition.getTable(),
@@ -626,7 +626,7 @@ public class Driver implements CommandProcessor {
         // check, and the table authorization may already happened because of other
         // partitions
         if (tbl != null && !tableAuthChecked.contains(tbl.getTableName()) &&
-            !(tableUsePartLevelAuth.get(tbl.getTableName()) == Boolean.TRUE)) {
+            !(Boolean.TRUE.equals(tableUsePartLevelAuth.get(tbl.getTableName())))) {
           List<String> cols = tab2Cols.get(tbl);
           if (cols != null && cols.size() > 0) {
             authorizer.authorize(tbl, null, cols,
@@ -671,7 +671,7 @@ public class Driver implements CommandProcessor {
           //or non-existent tho such sources may still be referenced by the TableScanOperator
           //if it's null then the partition probably doesn't exist so let's use table permission
           if (tbl.isPartitioned() &&
-              tableUsePartLevelAuth.get(tbl.getTableName()) == Boolean.TRUE) {
+              Boolean.TRUE.equals(tableUsePartLevelAuth.get(tbl.getTableName()))) {
             String alias_id = topOpMap.getKey();
 
             PrunedPartitionList partsList = PartitionPruner.prune(tableScanOp,
