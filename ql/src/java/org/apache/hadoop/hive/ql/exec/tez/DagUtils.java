@@ -79,7 +79,7 @@ import org.apache.hadoop.yarn.api.records.Resource;
 import org.apache.hadoop.yarn.api.records.URL;
 import org.apache.hadoop.yarn.util.ConverterUtils;
 import org.apache.hadoop.yarn.util.Records;
-import org.apache.tez.client.PreWarmVertex;
+import org.apache.tez.client.PreWarmContext;
 import org.apache.tez.dag.api.DAG;
 import org.apache.tez.dag.api.DataSinkDescriptor;
 import org.apache.tez.dag.api.DataSourceDescriptor;
@@ -380,15 +380,6 @@ public class DagUtils {
   }
 
   /*
-   * Helper to setup default environment for a task in YARN.
-   */
-  private Map<String, String> getContainerEnvironment(Configuration conf, boolean isMap) {
-    Map<String, String> environment = new HashMap<String, String>();
-    MRHelpers.updateEnvironmentForMRTasks(conf, environment, isMap);
-    return environment;
-  }
-
-  /*
    * Helper to determine what java options to use for the containers
    * Falls back to Map-reduces map java opts if no tez specific options
    * are set
@@ -458,7 +449,7 @@ public class DagUtils {
       // is HiveInputFormat
       if (inputFormatClass == HiveInputFormat.class) {
         useTezGroupedSplits = true;
-        conf.setClass("mapred.input.format.class", HiveInputFormat.class, InputFormat.class);
+        conf.setClass("mapred.input.format.class", TezGroupedSplitsInputFormat.class, InputFormat.class);
       }
     }
 
@@ -485,7 +476,9 @@ public class DagUtils {
     map = new Vertex(mapWork.getName(),
         new ProcessorDescriptor(MapTezProcessor.class.getName()).
         setUserPayload(serializedConf), numTasks, getContainerResource(conf));
-    map.setTaskEnvironment(getContainerEnvironment(conf, true));
+    Map<String, String> environment = new HashMap<String, String>();
+    MRHelpers.updateEnvironmentForMRTasks(conf, environment, true);
+    map.setTaskEnvironment(environment);
     map.setTaskLaunchCmdOpts(getContainerJavaOpts(conf));
 
     assert mapWork.getAliasToWork().keySet().size() == 1;
@@ -494,9 +487,10 @@ public class DagUtils {
 
     byte[] mrInput = null;
     if (useTezGroupedSplits) {
-      mrInput = MRHelpers.createMRInputPayloadWithGrouping(serializedConf);
+      mrInput = MRHelpers.createMRInputPayloadWithGrouping(serializedConf,
+          HiveInputFormat.class.getName());
     } else {
-      mrInput = MRHelpers.createMRInputPayload(serializedConf);
+      mrInput = MRHelpers.createMRInputPayload(serializedConf, null);
     }
     map.addDataSource(alias,
         new DataSourceDescriptor(new InputDescriptor(MRInputLegacy.class.getName()).
@@ -556,7 +550,11 @@ public class DagUtils {
             reduceWork.isAutoReduceParallelism() ? reduceWork.getMaxReduceTasks() : reduceWork
                 .getNumReduceTasks(), getContainerResource(conf));
 
-    reducer.setTaskEnvironment(getContainerEnvironment(conf, false));
+    Map<String, String> environment = new HashMap<String, String>();
+
+    MRHelpers.updateEnvironmentForMRTasks(conf, environment, false);
+    reducer.setTaskEnvironment(environment);
+
     reducer.setTaskLaunchCmdOpts(getContainerJavaOpts(conf));
 
     Map<String, LocalResource> localResources = new HashMap<String, LocalResource>();
@@ -600,16 +598,17 @@ public class DagUtils {
   /**
    * @param numContainers number of containers to pre-warm
    * @param localResources additional resources to pre-warm with
-   * @return prewarm vertex to run
+   * @return prewarm context object
    */
-  public PreWarmVertex createPreWarmVertex(TezConfiguration conf,
+  public PreWarmContext createPreWarmContext(TezConfiguration conf,
       int numContainers, Map<String, LocalResource> localResources) throws
       IOException, TezException {
 
     ProcessorDescriptor prewarmProcDescriptor = new ProcessorDescriptor(HivePreWarmProcessor.class.getName());
     prewarmProcDescriptor.setUserPayload(MRHelpers.createUserPayloadFromConf(conf));
 
-    PreWarmVertex prewarmVertex = new PreWarmVertex("prewarm", prewarmProcDescriptor, numContainers,getContainerResource(conf));
+    PreWarmContext context = new PreWarmContext(prewarmProcDescriptor, getContainerResource(conf),
+        numContainers, null);
 
     Map<String, LocalResource> combinedResources = new HashMap<String, LocalResource>();
 
@@ -617,10 +616,14 @@ public class DagUtils {
       combinedResources.putAll(localResources);
     }
 
-    prewarmVertex.setTaskLocalFiles(localResources);
-    prewarmVertex.setTaskLaunchCmdOpts(getContainerJavaOpts(conf));
-    prewarmVertex.setTaskEnvironment(getContainerEnvironment(conf, false));
-    return prewarmVertex;
+    context.setLocalResources(combinedResources);
+
+    /* boiler plate task env */
+    Map<String, String> environment = new HashMap<String, String>();
+    MRHelpers.updateEnvironmentForMRTasks(conf, environment, true);
+    context.setEnvironment(environment);
+    context.setJavaOpts(getContainerJavaOpts(conf));
+    return context;
   }
 
   /**

@@ -43,7 +43,6 @@ public class CustomPartitionEdge extends EdgeManager {
   // used by the framework at runtime. initialize is the real initializer at runtime
   public CustomPartitionEdge(EdgeManagerContext context) {
     super(context);
-    this.context = context;
   }
 
 
