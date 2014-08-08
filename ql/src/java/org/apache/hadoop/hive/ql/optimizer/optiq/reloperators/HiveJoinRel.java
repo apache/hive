@@ -7,12 +7,13 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.hadoop.hive.ql.optimizer.optiq.TraitsUtil;
-import org.apache.hadoop.hive.ql.optimizer.optiq.cost.HiveCostUtil;
+import org.apache.hadoop.hive.ql.optimizer.optiq.cost.HiveCost;
 import org.eigenbase.rel.InvalidRelException;
 import org.eigenbase.rel.JoinRelBase;
 import org.eigenbase.rel.JoinRelType;
 import org.eigenbase.rel.RelFactories.JoinFactory;
 import org.eigenbase.rel.RelNode;
+import org.eigenbase.rel.metadata.RelMetadataQuery;
 import org.eigenbase.relopt.RelOptCluster;
 import org.eigenbase.relopt.RelOptCost;
 import org.eigenbase.relopt.RelOptPlanner;
@@ -108,10 +109,15 @@ public class HiveJoinRel extends JoinRelBase implements HiveRel {
     return m_leftSemiJoin;
   }
 
+  /**
+   * Model cost of join as size of Inputs.
+   */
   @Override
   public RelOptCost computeSelfCost(RelOptPlanner planner) {
-    return HiveCostUtil.computCardinalityBasedCost(this);
-  }
+    double leftRCount = RelMetadataQuery.getRowCount(getLeft());
+    double rightRCount = RelMetadataQuery.getRowCount(getRight());
+    return HiveCost.FACTORY.makeCost(leftRCount + rightRCount, 0.0, 0.0);
+  }  
 
   /**
    * @return returns rowtype representing only the left join input
