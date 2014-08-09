@@ -48,6 +48,7 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.HiveMetaException;
 import org.apache.hadoop.hive.metastore.MetaStoreSchemaInfo;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hive.beeline.HiveSchemaHelper.NestedScriptParser;
 
 public class HiveSchemaTool {
@@ -72,7 +73,12 @@ public class HiveSchemaTool {
     this.dbType = dbType;
     this.metaStoreSchemaInfo = new MetaStoreSchemaInfo(hiveHome, hiveConf, dbType);
     userName = hiveConf.get(ConfVars.METASTORE_CONNECTION_USER_NAME.varname);
-    passWord = hiveConf.get(HiveConf.ConfVars.METASTOREPWD.varname);
+    try {
+      passWord = ShimLoader.getHadoopShims().getPassword(hiveConf,
+          HiveConf.ConfVars.METASTOREPWD.varname);
+    } catch (IOException err) {
+      throw new HiveMetaException("Error getting metastore password", err);
+    }
   }
 
   public HiveConf getHiveConf() {
