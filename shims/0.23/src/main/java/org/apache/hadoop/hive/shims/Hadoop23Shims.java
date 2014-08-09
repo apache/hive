@@ -664,15 +664,25 @@ public class Hadoop23Shims extends HadoopShimsSecure {
      * the version of hadoop used to build Hive.
      */
     public void access(Path path, FsAction action) throws AccessControlException,
-        FileNotFoundException, IOException, Exception {
+        FileNotFoundException, IOException {
       Path underlyingFsPath = swizzleParamPath(path);
       FileStatus underlyingFsStatus = fs.getFileStatus(underlyingFsPath);
-      if (accessMethod != null) {
-          accessMethod.invoke(fs, underlyingFsPath, action);
-      } else {
-        // If the FS has no access() method, we can try DefaultFileAccess ..
-        UserGroupInformation ugi = getUGIForConf(getConf());
-        DefaultFileAccess.checkFileAccess(fs, underlyingFsStatus, action);
+      try {
+        if (accessMethod != null) {
+            accessMethod.invoke(fs, underlyingFsPath, action);
+        } else {
+          // If the FS has no access() method, we can try DefaultFileAccess ..
+          UserGroupInformation ugi = getUGIForConf(getConf());
+          DefaultFileAccess.checkFileAccess(fs, underlyingFsStatus, action);
+        }
+      } catch (AccessControlException err) {
+        throw err;
+      } catch (FileNotFoundException err) {
+        throw err;
+      } catch (IOException err) {
+        throw err;
+      } catch (Exception err) {
+        throw new RuntimeException(err.getMessage(), err);
       }
     }
   }
