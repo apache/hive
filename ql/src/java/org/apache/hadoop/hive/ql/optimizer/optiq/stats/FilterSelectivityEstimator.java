@@ -1,11 +1,20 @@
 package org.apache.hadoop.hive.ql.optimizer.optiq.stats;
 
+import java.util.BitSet;
+
+import org.apache.hadoop.hive.ql.optimizer.optiq.RelOptHiveTable;
+import org.apache.hadoop.hive.ql.optimizer.optiq.reloperators.HiveTableScanRel;
+import org.eigenbase.rel.FilterRelBase;
+import org.eigenbase.rel.ProjectRel;
+import org.eigenbase.rel.ProjectRelBase;
 import org.eigenbase.rel.RelNode;
 import org.eigenbase.rel.metadata.RelMetadataQuery;
+import org.eigenbase.relopt.RelOptUtil;
 import org.eigenbase.relopt.RelOptUtil.InputReferencedVisitor;
 import org.eigenbase.rex.RexCall;
 import org.eigenbase.rex.RexInputRef;
 import org.eigenbase.rex.RexNode;
+import org.eigenbase.rex.RexUtil;
 import org.eigenbase.rex.RexVisitorImpl;
 import org.eigenbase.sql.SqlKind;
 
@@ -25,6 +34,15 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
 
   public Double visitCall(RexCall call) {
     if (!deep) {
+      return 1.0;
+    }
+
+    /*
+     * Ignore any predicates on partition columns
+     * because we have already accounted for these in
+     * the Table row count.
+     */
+    if (isPartitionPredicate(call, m_childRel)) {
       return 1.0;
     }
 
@@ -177,5 +195,20 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
     }
 
     return maxNDV;
+  }
+
+  private boolean isPartitionPredicate(RexNode expr, RelNode r) {
+    if ( r instanceof ProjectRelBase ) {
+      expr = RelOptUtil.pushFilterPastProject(expr, (ProjectRelBase) r);
+      return isPartitionPredicate(expr, ((ProjectRelBase) r).getChild());
+    } else if ( r instanceof FilterRelBase ) {
+      isPartitionPredicate(expr, ((ProjectRelBase) r).getChild());
+    } else if ( r instanceof HiveTableScanRel ) {
+      RelOptHiveTable table = (RelOptHiveTable)
+          ((HiveTableScanRel)r).getTable();
+      BitSet cols = RelOptUtil.InputFinder.bits(expr);
+      return table.containsPartitionColumnsOnly(cols);
+    }
+    return false;
   }
 }
