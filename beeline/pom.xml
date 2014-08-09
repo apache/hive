@@ -48,7 +48,6 @@
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-shims</artifactId>
       <version>${project.version}</version>
-      <scope>runtime</scope>
     </dependency>
     <!-- inter-project -->
     <dependency>

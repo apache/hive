@@ -745,6 +745,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   }
 
   protected static final Method accessMethod;
+  protected static final Method getPasswordMethod;
 
   static {
     Method m = null;
@@ -754,6 +755,14 @@ public class Hadoop23Shims extends HadoopShimsSecure {
       // This version of Hadoop does not support FileSystem.access().
     }
     accessMethod = m;
+
+    try {
+      m = Configuration.class.getMethod("getPassword", String.class);
+    } catch (NoSuchMethodException err) {
+      // This version of Hadoop does not support getPassword(), just retrieve password from conf.
+      m = null;
+    }
+    getPasswordMethod = m;
   }
 
   @Override
@@ -788,5 +797,23 @@ public class Hadoop23Shims extends HadoopShimsSecure {
       curErr = curErr.getCause();
     }
     return err;
+  }
+
+  @Override
+  public String getPassword(Configuration conf, String name) throws IOException {
+    if (getPasswordMethod == null) {
+      // Just retrieve value from conf
+      return conf.get(name);
+    } else {
+      try {
+        char[] pw = (char[]) getPasswordMethod.invoke(conf, name);
+        if (pw == null) {
+          return null;
+        }
+        return new String(pw);
+      } catch (Exception err) {
+        throw new IOException(err.getMessage(), err);
+      }
+    }
   }
 }
