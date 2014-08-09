@@ -309,7 +309,7 @@ class MetaStoreDirectSql {
     StringBuilder partSb = new StringBuilder(sbCapacity);
     // Assume db and table names are the same for all partition, that's what we're selecting for.
     for (Object partitionId : sqlResult) {
-      partSb.append(extractSqlLong(partitionId)).append(",");
+      partSb.append(StatObjectConverter.extractSqlLong(partitionId)).append(",");
     }
     String partIds = trimCommaList(partSb);
     timingTrace(doTrace, queryText, start, queryTime);
@@ -346,10 +346,10 @@ class MetaStoreDirectSql {
     dbName = dbName.toLowerCase();
     for (Object[] fields : sqlResult2) {
       // Here comes the ugly part...
-      long partitionId = extractSqlLong(fields[0]);
-      Long sdId = extractSqlLong(fields[1]);
-      Long colId = extractSqlLong(fields[2]);
-      Long serdeId = extractSqlLong(fields[3]);
+      long partitionId = StatObjectConverter.extractSqlLong(fields[0]);
+      Long sdId = StatObjectConverter.extractSqlLong(fields[1]);
+      Long colId = StatObjectConverter.extractSqlLong(fields[2]);
+      Long serdeId = StatObjectConverter.extractSqlLong(fields[3]);
       // A partition must have either everything set, or nothing set if it's a view.
       if (sdId == null || colId == null || serdeId == null) {
         if (isView == null) {
@@ -518,7 +518,7 @@ class MetaStoreDirectSql {
             currentListId = null;
             t.getSkewedInfo().addToSkewedColValues(new ArrayList<String>());
           } else {
-            long fieldsListId = extractSqlLong(fields[1]);
+            long fieldsListId = StatObjectConverter.extractSqlLong(fields[1]);
             if (currentListId == null || fieldsListId != currentListId) {
               currentList = new ArrayList<String>();
               currentListId = fieldsListId;
@@ -560,7 +560,7 @@ class MetaStoreDirectSql {
             currentList = new ArrayList<String>(); // left outer join produced a list with no values
             currentListId = null;
           } else {
-            long fieldsListId = extractSqlLong(fields[1]);
+            long fieldsListId = StatObjectConverter.extractSqlLong(fields[1]);
             if (currentListId == null || fieldsListId != currentListId) {
               currentList = new ArrayList<String>();
               currentListId = fieldsListId;
@@ -597,14 +597,6 @@ class MetaStoreDirectSql {
       }});
 
     return orderedResult;
-  }
-
-  private Long extractSqlLong(Object obj) throws MetaException {
-    if (obj == null) return null;
-    if (!(obj instanceof Number)) {
-      throw new MetaException("Expected numeric type but got " + obj.getClass().getName());
-    }
-    return ((Number)obj).longValue();
   }
 
   private void timingTrace(boolean doTrace, String queryText, long start, long queryTime) {
@@ -674,7 +666,7 @@ class MetaStoreDirectSql {
         if (fields == null) {
           fields = iter.next();
         }
-        long nestedId = extractSqlLong(fields[keyIndex]);
+        long nestedId = StatObjectConverter.extractSqlLong(fields[keyIndex]);
         if (nestedId < id) throw new MetaException("Found entries for unknown ID " + nestedId);
         if (nestedId > id) break; // fields belong to one of the next entries
         func.apply(entry.getValue(), fields);
@@ -930,7 +922,7 @@ class MetaStoreDirectSql {
     return colStats;
   }
 
-  private ColumnStatisticsObj prepareCSObj (Object[] row, int i) {
+  private ColumnStatisticsObj prepareCSObj (Object[] row, int i) throws MetaException {
     ColumnStatisticsData data = new ColumnStatisticsData();
     ColumnStatisticsObj cso = new ColumnStatisticsObj((String)row[i++], (String)row[i++], data);
     Object llow = row[i++], lhigh = row[i++], dlow = row[i++], dhigh = row[i++],
@@ -1017,8 +1009,8 @@ class MetaStoreDirectSql {
       // LastAnalyzed is stored per column but thrift has it per several;
       // get the lowest for now as nobody actually uses this field.
       Object laObj = row[offset + 14];
-      if (laObj != null && (!csd.isSetLastAnalyzed() || csd.getLastAnalyzed() > extractSqlLong(laObj))) {
-        csd.setLastAnalyzed(extractSqlLong(laObj));
+      if (laObj != null && (!csd.isSetLastAnalyzed() || csd.getLastAnalyzed() > StatObjectConverter.extractSqlLong(laObj))) {
+        csd.setLastAnalyzed(StatObjectConverter.extractSqlLong(laObj));
       }
       csos.add(prepareCSObj(row, offset));
     }
