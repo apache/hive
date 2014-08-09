@@ -293,4 +293,23 @@ public class RelOptHiveTable extends RelOptAbstractTable {
 
     return colStatsBldr.build();
   }
+
+  /*
+   * use to check if a set of columns are all partition columns. 
+   * true only if:
+   * - there is a prunedPartList in place
+   * - all columns in BitSet are partition
+   * columns.
+   */
+  public boolean containsPartitionColumnsOnly(BitSet cols) {
+    if (partitionList == null) {
+      return false;
+    }
+    for (int i = cols.nextSetBit(0); i >= 0; i++, i = cols.nextSetBit(i + 1)) {
+      if (!m_hivePartitionColsMap.containsKey(i)) {
+        return false;
+      }
+    }
+    return true;
+  }
 }
