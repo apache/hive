@@ -40,10 +40,11 @@ public class HBaseQTestUtil extends QTestUtil {
   private final HConnection conn;
 
   public HBaseQTestUtil(
-    String outDir, String logDir, MiniClusterType miniMr, HBaseTestSetup setup)
+    String outDir, String logDir, MiniClusterType miniMr, HBaseTestSetup setup,
+    String initScript, String cleanupScript)
     throws Exception {
 
-    super(outDir, logDir, miniMr, null);
+    super(outDir, logDir, miniMr, null, initScript, cleanupScript);
     setup.preTest(conf);
     this.conn = setup.getConnection();
     super.init();

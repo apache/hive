@@ -141,6 +141,10 @@ public class QTestGenTask extends Task {
   
   private String hadoopVersion;
 
+  private String initScript;
+
+  private String cleanupScript;
+
   public void setHadoopVersion(String ver) {
     this.hadoopVersion = ver;
   }
@@ -195,6 +199,22 @@ public class QTestGenTask extends Task {
 
   public String getTemplate() {
     return template;
+  }
+
+  public String getInitScript() {
+    return initScript;
+  }
+
+  public void setInitScript(String initScript) {
+    this.initScript = initScript;
+  }
+
+  public String getCleanupScript() {
+    return cleanupScript;
+  }
+
+  public void setCleanupScript(String cleanupScript) {
+    this.cleanupScript = cleanupScript;
   }
 
   public void setHiveRootDirectory(File hiveRootDirectory) {
@@ -444,6 +464,8 @@ public class QTestGenTask extends Task {
       ctx.put("clusterMode", clusterMode);
       ctx.put("hiveConfDir", escapePath(hiveConfDir));
       ctx.put("hadoopVersion", hadoopVersion);
+      ctx.put("initScript", initScript);
+      ctx.put("cleanupScript", cleanupScript);
 
       File outFile = new File(outDir, className + ".java");
       FileWriter writer = new FileWriter(outFile);
