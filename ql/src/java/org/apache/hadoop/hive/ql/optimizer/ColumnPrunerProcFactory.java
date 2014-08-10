@@ -372,52 +372,57 @@ public final class ColumnPrunerProcFactory {
       
       cppCtx.getPrunedColLists().put((Operator<? extends OperatorDesc>) nd,
           cols);
-      List<Integer> neededColumnIds = new ArrayList<Integer>();
-      List<String> neededColumnNames = new ArrayList<String>();
-      List<String> referencedColumnNames = new ArrayList<String>();
       RowResolver inputRR = cppCtx.getOpToParseCtxMap().get(scanOp).getRowResolver();
-      TableScanDesc desc = scanOp.getConf();
-      List<VirtualColumn> virtualCols = desc.getVirtualCols();
-      List<VirtualColumn> newVirtualCols = new ArrayList<VirtualColumn>();
-
-      // add virtual columns for ANALYZE TABLE
-      if(scanOp.getConf().isGatherStats()) {
-        cols.add(VirtualColumn.RAWDATASIZE.getName());
-      }
-
-      for (String column : cols) {
-        String[] tabCol = inputRR.reverseLookup(column);
-        if (tabCol == null) {
-          continue;
-        }
-        referencedColumnNames.add(column);
-        ColumnInfo colInfo = inputRR.get(tabCol[0], tabCol[1]);
-        if (colInfo.getIsVirtualCol()) {
-          // part is also a virtual column, but part col should not in this
-          // list.
-          for (int j = 0; j < virtualCols.size(); j++) {
-            VirtualColumn vc = virtualCols.get(j);
-            if (vc.getName().equals(colInfo.getInternalName())) {
-              newVirtualCols.add(vc);
-            }
-          }
-          //no need to pass virtual columns to reader.
-          continue;
-        }
-        int position = inputRR.getPosition(column);
-        if (position >= 0) {
-          // get the needed columns by id and name
-          neededColumnIds.add(position);
-          neededColumnNames.add(column);
-        }
-      }
-
-      desc.setVirtualCols(newVirtualCols);
-      scanOp.setNeededColumnIDs(neededColumnIds);
-      scanOp.setNeededColumns(neededColumnNames);
-      scanOp.setReferencedColumns(referencedColumnNames);
+      setupNeededColumns(scanOp, inputRR, cols);
       return null;
     }
+  }
+
+  public static void setupNeededColumns(TableScanOperator scanOp, RowResolver inputRR,
+      List<String> cols) throws SemanticException {
+    List<Integer> neededColumnIds = new ArrayList<Integer>();
+    List<String> neededColumnNames = new ArrayList<String>();
+    List<String> referencedColumnNames = new ArrayList<String>();
+    TableScanDesc desc = scanOp.getConf();
+    List<VirtualColumn> virtualCols = desc.getVirtualCols();
+    List<VirtualColumn> newVirtualCols = new ArrayList<VirtualColumn>();
+
+    // add virtual columns for ANALYZE TABLE
+    if(scanOp.getConf().isGatherStats()) {
+      cols.add(VirtualColumn.RAWDATASIZE.getName());
+    }
+
+    for (String column : cols) {
+      String[] tabCol = inputRR.reverseLookup(column);
+      if (tabCol == null) {
+        continue;
+      }
+      referencedColumnNames.add(column);
+      ColumnInfo colInfo = inputRR.get(tabCol[0], tabCol[1]);
+      if (colInfo.getIsVirtualCol()) {
+        // part is also a virtual column, but part col should not in this
+        // list.
+        for (int j = 0; j < virtualCols.size(); j++) {
+          VirtualColumn vc = virtualCols.get(j);
+          if (vc.getName().equals(colInfo.getInternalName())) {
+            newVirtualCols.add(vc);
+          }
+        }
+        //no need to pass virtual columns to reader.
+        continue;
+      }
+      int position = inputRR.getPosition(column);
+      if (position >= 0) {
+        // get the needed columns by id and name
+        neededColumnIds.add(position);
+        neededColumnNames.add(column);
+      }
+    }
+
+    desc.setVirtualCols(newVirtualCols);
+    scanOp.setNeededColumnIDs(neededColumnIds);
+    scanOp.setNeededColumns(neededColumnNames);
+    scanOp.setReferencedColumns(referencedColumnNames);
   }
 
   /**
