@@ -46,7 +46,6 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
@@ -61,7 +60,6 @@ import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.Mode;
-import org.apache.hadoop.util.StringUtils;
 
 /**
  * This transformation does group by optimization. If the grouping key is a superset
@@ -388,13 +386,8 @@ public class GroupByOptimizer implements Transform {
         List<String> bucketCols = table.getBucketCols();
         return matchBucketSortCols(groupByCols, bucketCols, sortCols);
       } else {
-        PrunedPartitionList partsList;
-        try {
-          partsList = pGraphContext.getPrunedPartitions(table.getTableName(), tableScanOp);
-        } catch (HiveException e) {
-          LOG.error(StringUtils.stringifyException(e));
-          throw new SemanticException(e.getMessage(), e);
-        }
+        PrunedPartitionList partsList =
+            pGraphContext.getPrunedPartitions(table.getTableName(), tableScanOp);
 
         List<Partition> notDeniedPartns = partsList.getNotDeniedPartns();
 

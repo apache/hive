@@ -41,7 +41,6 @@ import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
@@ -267,15 +266,7 @@ abstract public class AbstractBucketJoinProc implements NodeProcessor {
 
       Table tbl = topToTable.get(tso);
       if (tbl.isPartitioned()) {
-        PrunedPartitionList prunedParts;
-        try {
-          prunedParts = pGraphContext.getPrunedPartitions(alias, tso);
-        } catch (HiveException e) {
-          // Has to use full name to make sure it does not conflict with
-          // org.apache.commons.lang.StringUtils
-          LOG.error(org.apache.hadoop.util.StringUtils.stringifyException(e));
-          throw new SemanticException(e.getMessage(), e);
-        }
+        PrunedPartitionList prunedParts = pGraphContext.getPrunedPartitions(alias, tso);
         List<Partition> partitions = prunedParts.getNotDeniedPartns();
         // construct a mapping of (Partition->bucket file names) and (Partition -> bucket number)
         if (partitions.isEmpty()) {
