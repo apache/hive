@@ -483,7 +483,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           if(containsLeadLagUDF(expressionTree)) {
             throw new SemanticException(ErrorMsg.MISSING_OVER_CLAUSE.getMsg(functionName));
           }
-          aggregations.put(expressionTree.toStringTree(), expressionTree);
+          aggregations.put(expressionTree.toStringTree().toLowerCase(), expressionTree);
           FunctionInfo fi = FunctionRegistry.getFunctionInfo(functionName);
           if (!fi.isNative()) {
             unparseTranslator.addIdentifierTranslation((ASTNode) expressionTree
