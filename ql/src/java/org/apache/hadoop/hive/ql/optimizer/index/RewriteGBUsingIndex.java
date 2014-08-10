@@ -48,6 +48,7 @@ import org.apache.hadoop.hive.ql.parse.OpParseContext;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hadoop.util.StringUtils;
 
 
 /**
@@ -106,11 +107,6 @@ public class RewriteGBUsingIndex implements Transform {
   private final Map<String, RewriteCanApplyCtx> tsOpToProcess =
     new LinkedHashMap<String, RewriteCanApplyCtx>();
 
-  //Name of the current table on which rewrite is being performed
-  private String baseTableName = null;
-  //Name of the current index which is used for rewrite
-  private String indexTableName = null;
-
   //Index Validation Variables
   private static final String IDX_BUCKET_COL = "_bucketname";
   private static final String IDX_OFFSETS_ARRAY_COL = "_offsets";
@@ -133,7 +129,7 @@ public class RewriteGBUsingIndex implements Transform {
     /* Check if the input query passes all the tests to be eligible for a rewrite
      * If yes, rewrite original query; else, return the current parseContext
      */
-    if(shouldApplyOptimization()){
+    if (shouldApplyOptimization()) {
       LOG.info("Rewriting Original Query using " + getName() + " optimization.");
       rewriteOriginalQuery();
     }
@@ -155,59 +151,52 @@ public class RewriteGBUsingIndex implements Transform {
    * @return
    * @throws SemanticException
    */
-  boolean shouldApplyOptimization() throws SemanticException{
-    boolean canApply = false;
-    if(ifQueryHasMultipleTables()){
+  boolean shouldApplyOptimization() throws SemanticException {
+    if (ifQueryHasMultipleTables()) {
       //We do not apply this optimization for this case as of now.
       return false;
-    }else{
+    }
+    Map<Table, List<Index>> tableToIndex = getIndexesForRewrite();
+    if (tableToIndex.isEmpty()) {
+      LOG.debug("No Valid Index Found to apply Rewrite, " +
+          "skipping " + getName() + " optimization");
+      return false;
+    }
     /*
      * This code iterates over each TableScanOperator from the topOps map from ParseContext.
      * For each operator tree originating from this top TableScanOperator, we determine
      * if the optimization can be applied. If yes, we add the name of the top table to
      * the tsOpToProcess to apply rewrite later on.
      * */
-      Map<TableScanOperator, Table> topToTable = parseContext.getTopToTable();
-      Iterator<TableScanOperator> topOpItr = topToTable.keySet().iterator();
-      while(topOpItr.hasNext()){
+    Map<TableScanOperator, Table> topToTable = parseContext.getTopToTable();
+    Map<String, Operator<?>> topOps = parseContext.getTopOps();
 
-        TableScanOperator topOp = topOpItr.next();
-        Table table = topToTable.get(topOp);
-        baseTableName = table.getTableName();
-        Map<Table, List<Index>> indexes = getIndexesForRewrite();
-        if(indexes == null){
-          LOG.debug("Error getting valid indexes for rewrite, " +
-              "skipping " + getName() + " optimization");
-          return false;
-        }
+    for (Map.Entry<String, Operator<?>> entry : parseContext.getTopOps().entrySet()) {
 
-        if(indexes.size() == 0){
-          LOG.debug("No Valid Index Found to apply Rewrite, " +
+      String alias = entry.getKey();
+      TableScanOperator topOp = (TableScanOperator) entry.getValue();
+
+      Table table = topToTable.get(topOp);
+      List<Index> indexes = tableToIndex.get(table);
+      if (indexes.isEmpty()) {
+        continue;
+      }
+
+      if (table.isPartitioned()) {
+        //if base table has partitions, we need to check if index is built for
+        //all partitions. If not, then we do not apply the optimization
+        if (!checkIfIndexBuiltOnAllTablePartitions(topOp, indexes)) {
+          LOG.debug("Index is not built for all table partitions, " +
               "skipping " + getName() + " optimization");
-          return false;
-        }else{
-          //we need to check if the base table has confirmed or unknown partitions
-          if(parseContext.getOpToPartList() != null && parseContext.getOpToPartList().size() > 0){
-            //if base table has partitions, we need to check if index is built for
-            //all partitions. If not, then we do not apply the optimization
-            if(checkIfIndexBuiltOnAllTablePartitions(topOp, indexes)){
-              //check if rewrite can be applied for operator tree
-              //if partitions condition returns true
-              canApply = checkIfRewriteCanBeApplied(topOp, table, indexes);
-            }else{
-              LOG.debug("Index is not built for all table partitions, " +
-                  "skipping " + getName() + " optimization");
-              return false;
-            }
-          }else{
-            //check if rewrite can be applied for operator tree
-            //if there are no partitions on base table
-            canApply = checkIfRewriteCanBeApplied(topOp, table, indexes);
-          }
+          continue;
         }
       }
+      //check if rewrite can be applied for operator tree
+      //if there are no partitions on base table
+      checkIfRewriteCanBeApplied(alias, topOp, table, indexes);
     }
-    return canApply;
+
+    return !tsOpToProcess.isEmpty();
   }
 
   /**
@@ -219,61 +208,36 @@ public class RewriteGBUsingIndex implements Transform {
    * @return - true if rewrite can be applied on the current branch; false otherwise
    * @throws SemanticException
    */
-  private boolean checkIfRewriteCanBeApplied(TableScanOperator topOp, Table baseTable,
-      Map<Table, List<Index>> indexes) throws SemanticException{
-    boolean canApply = false;
+  private boolean checkIfRewriteCanBeApplied(String alias, TableScanOperator topOp,
+      Table baseTable, List<Index> indexes) throws SemanticException{
     //Context for checking if this optimization can be applied to the input query
     RewriteCanApplyCtx canApplyCtx = RewriteCanApplyCtx.getInstance(parseContext);
-    Map<String, Operator<? extends OperatorDesc>> topOps = parseContext.getTopOps();
 
-    canApplyCtx.setBaseTableName(baseTableName);
+    canApplyCtx.setAlias(alias);
+    canApplyCtx.setBaseTableName(baseTable.getTableName());
     canApplyCtx.populateRewriteVars(topOp);
 
-    Map<Index, Set<String>> indexTableMap = getIndexToKeysMap(indexes.get(baseTable));
-    Iterator<Index> indexMapItr = indexTableMap.keySet().iterator();
-    Index index = null;
-    while(indexMapItr.hasNext()){
+    Map<Index, Set<String>> indexTableMap = getIndexToKeysMap(indexes);
+    for (Map.Entry<Index, Set<String>> entry : indexTableMap.entrySet()) {
       //we rewrite the original query using the first valid index encountered
       //this can be changed if we have a better mechanism to
       //decide which index will produce a better rewrite
-      index = indexMapItr.next();
-      canApply = canApplyCtx.isIndexUsableForQueryBranchRewrite(index,
-          indexTableMap.get(index));
-      if(canApply){
-        canApply = checkIfAllRewriteCriteriaIsMet(canApplyCtx);
-        //break here if any valid index is found to apply rewrite
-        if(canApply){
-          //check if aggregation function is set.
-          //If not, set it using the only indexed column
-          if(canApplyCtx.getAggFunction() == null){
-            //strip of the start and end braces [...]
-            String aggregationFunction = indexTableMap.get(index).toString();
-            aggregationFunction = aggregationFunction.substring(1,
-                aggregationFunction.length() - 1);
-            canApplyCtx.setAggFunction("_count_of_" + aggregationFunction + "");
-          }
+      Index index = entry.getKey();
+      Set<String> indexKeyNames = entry.getValue();
+      //break here if any valid index is found to apply rewrite
+      if (canApplyCtx.isIndexUsableForQueryBranchRewrite(index, indexKeyNames) &&
+          checkIfAllRewriteCriteriaIsMet(canApplyCtx)) {
+        //check if aggregation function is set.
+        //If not, set it using the only indexed column
+        if (canApplyCtx.getAggFunction() == null) {
+          canApplyCtx.setAggFunction("_count_of_" + StringUtils.join(",", indexKeyNames) + "");
         }
-        break;
+        canApplyCtx.setIndexTableName(index.getIndexTableName());
+        tsOpToProcess.put(alias, canApplyCtx);
+        return true;
       }
     }
-    indexTableName = index.getIndexTableName();
-
-    if(canApply && topOps.containsValue(topOp)) {
-      Iterator<String> topOpNamesItr = topOps.keySet().iterator();
-      while(topOpNamesItr.hasNext()){
-        String topOpName = topOpNamesItr.next();
-        if(topOps.get(topOpName).equals(topOp)){
-          tsOpToProcess.put(topOpName, canApplyCtx);
-        }
-      }
-    }
-
-    if(tsOpToProcess.size() == 0){
-      canApply = false;
-    }else{
-      canApply = true;
-    }
-    return canApply;
+    return false;
   }
 
   /**
@@ -329,7 +293,7 @@ public class RewriteGBUsingIndex implements Transform {
    * @throws SemanticException
    */
   private boolean checkIfIndexBuiltOnAllTablePartitions(TableScanOperator tableScan,
-      Map<Table, List<Index>> indexes) throws SemanticException{
+      List<Index> indexes) throws SemanticException {
     // check if we have indexes on all partitions in this table scan
     Set<Partition> queryPartitions;
     try {
@@ -341,7 +305,7 @@ public class RewriteGBUsingIndex implements Transform {
       LOG.error("Fatal Error: problem accessing metastore", e);
       throw new SemanticException(e);
     }
-    if(queryPartitions.size() != 0){
+    if (queryPartitions.size() != 0) {
       return true;
     }
     return false;
@@ -355,12 +319,11 @@ public class RewriteGBUsingIndex implements Transform {
    * @throws SemanticException
    */
   Map<Index, Set<String>> getIndexToKeysMap(List<Index> indexTables) throws SemanticException{
-    Index index = null;
     Hive hiveInstance = hiveDb;
     Map<Index, Set<String>> indexToKeysMap = new LinkedHashMap<Index, Set<String>>();
      for (int idxCtr = 0; idxCtr < indexTables.size(); idxCtr++)  {
       final Set<String> indexKeyNames = new LinkedHashSet<String>();
-      index = indexTables.get(idxCtr);
+      Index index = indexTables.get(idxCtr);
        //Getting index key columns
       StorageDescriptor sd = index.getSd();
       List<FieldSchema> idxColList = sd.getCols();
@@ -403,17 +366,17 @@ public class RewriteGBUsingIndex implements Transform {
    */
   @SuppressWarnings("unchecked")
   private void rewriteOriginalQuery() throws SemanticException {
-    Map<String, Operator<? extends OperatorDesc>> topOpMap =
-      (HashMap<String, Operator<? extends OperatorDesc>>) parseContext.getTopOps().clone();
+    Map<String, Operator<?>> topOpMap = parseContext.getTopOps();
     Iterator<String> tsOpItr = tsOpToProcess.keySet().iterator();
 
-    while(tsOpItr.hasNext()){
-      baseTableName = tsOpItr.next();
-      RewriteCanApplyCtx canApplyCtx = tsOpToProcess.get(baseTableName);
-      TableScanOperator topOp = (TableScanOperator) topOpMap.get(baseTableName);
+    for (Map.Entry<String, RewriteCanApplyCtx> entry : tsOpToProcess.entrySet()) {
+      String alias = entry.getKey();
+      RewriteCanApplyCtx canApplyCtx = entry.getValue();
+      TableScanOperator topOp = (TableScanOperator) topOpMap.get(alias);
       RewriteQueryUsingAggregateIndexCtx rewriteQueryCtx =
         RewriteQueryUsingAggregateIndexCtx.getInstance(parseContext, hiveDb,
-            indexTableName, baseTableName, canApplyCtx.getAggFunction());
+            canApplyCtx.getIndexTableName(), canApplyCtx.getAlias(),
+            canApplyCtx.getAllColumns(), canApplyCtx.getAggFunction());
       rewriteQueryCtx.invokeRewriteQueryProc(topOp);
       parseContext = rewriteQueryCtx.getParseContext();
       parseContext.setOpParseCtx((LinkedHashMap<Operator<? extends OperatorDesc>,

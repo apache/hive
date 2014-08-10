@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Stack;
 
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -54,19 +55,21 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 public final class RewriteQueryUsingAggregateIndexCtx  implements NodeProcessorCtx {
 
   private RewriteQueryUsingAggregateIndexCtx(ParseContext parseContext, Hive hiveDb,
-      String indexTableName, String baseTableName, String aggregateFunction){
+      String indexTableName, String alias, Set<String> columns, String aggregateFunction) {
     this.parseContext = parseContext;
     this.hiveDb = hiveDb;
     this.indexTableName = indexTableName;
-    this.baseTableName = baseTableName;
+    this.alias = alias;
     this.aggregateFunction = aggregateFunction;
+    this.columns = columns;
     this.opc = parseContext.getOpParseCtx();
   }
 
   public static RewriteQueryUsingAggregateIndexCtx getInstance(ParseContext parseContext,
-      Hive hiveDb, String indexTableName, String baseTableName, String aggregateFunction){
+      Hive hiveDb, String indexTableName, String alias,
+      Set<String> columns, String aggregateFunction) {
     return new RewriteQueryUsingAggregateIndexCtx(
-        parseContext, hiveDb, indexTableName, baseTableName, aggregateFunction);
+        parseContext, hiveDb, indexTableName, alias, columns, aggregateFunction);
   }
 
 
@@ -77,8 +80,9 @@ public final class RewriteQueryUsingAggregateIndexCtx  implements NodeProcessorC
   //We need the GenericUDAFEvaluator for GenericUDAF function "sum"
   private GenericUDAFEvaluator eval = null;
   private final String indexTableName;
-  private final String baseTableName;
+  private final String alias;
   private final String aggregateFunction;
+  private final Set<String> columns;
   private ExprNodeColumnDesc aggrExprNode = null;
 
   public Map<Operator<? extends OperatorDesc>, OpParseContext> getOpc() {
@@ -161,11 +165,15 @@ public final class RewriteQueryUsingAggregateIndexCtx  implements NodeProcessorC
     };
   }
 
-  public String getBaseTableName() {
-    return baseTableName;
+  public String getAlias() {
+    return alias;
   }
 
   public String getAggregateFunction() {
     return aggregateFunction;
+  }
+
+  public Set<String> getColumns() {
+    return columns;
   }
 }
