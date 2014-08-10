@@ -705,13 +705,9 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
       }
 
       if (allOne) {
-        LOG.info("calling genAllOneUniqueJoinObject");
         genAllOneUniqueJoinObject();
-        LOG.info("called genAllOneUniqueJoinObject");
       } else {
-        LOG.trace("calling genUniqueJoinObject");
         genUniqueJoinObject(0, 0);
-        LOG.trace("called genUniqueJoinObject");
       }
     } else {
       // does any result need to be emitted
@@ -753,17 +749,11 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
       }
 
       if (!hasEmpty && !mayHasMoreThanOne) {
-        LOG.trace("calling genAllOneUniqueJoinObject");
         genAllOneUniqueJoinObject();
-        LOG.trace("called genAllOneUniqueJoinObject");
       } else if (!hasEmpty && !hasLeftSemiJoin) {
-        LOG.trace("calling genUniqueJoinObject");
         genUniqueJoinObject(0, 0);
-        LOG.trace("called genUniqueJoinObject");
       } else {
-        LOG.trace("calling genObject");
         genJoinObject();
-        LOG.trace("called genObject");
       }
     }
     Arrays.fill(aliasFilterTags, (byte)0xff);

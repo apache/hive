@@ -1,81 +1,70 @@
 set hive.stats.fetch.column.stats=true;
+set hive.stats.ndv.error=0.0;
 
-create table if not exists emp_staging (
+create table if not exists emp (
   lastname string,
-  deptid int
+  deptid int,
+  locid int
 ) row format delimited fields terminated by '|' stored as textfile;
 
-create table if not exists dept_staging (
+create table if not exists dept (
   deptid int,
   deptname string
 ) row format delimited fields terminated by '|' stored as textfile;
 
-create table if not exists loc_staging (
+create table if not exists loc (
   state string,
   locid int,
   zip bigint,
   year int
 ) row format delimited fields terminated by '|' stored as textfile;
 
-create table if not exists emp_orc like emp_staging;
-alter table emp_orc set fileformat orc;
+LOAD DATA LOCAL INPATH '../../data/files/emp.txt' OVERWRITE INTO TABLE emp;
+LOAD DATA LOCAL INPATH '../../data/files/dept.txt' OVERWRITE INTO TABLE dept;
+LOAD DATA LOCAL INPATH '../../data/files/loc.txt' OVERWRITE INTO TABLE loc;
 
-create table if not exists dept_orc like dept_staging;
-alter table dept_orc set fileformat orc;
-
-create table loc_orc like loc_staging;
-alter table loc_orc set fileformat orc;
-
-LOAD DATA LOCAL INPATH '../../data/files/emp.txt' OVERWRITE INTO TABLE emp_staging;
-LOAD DATA LOCAL INPATH '../../data/files/dept.txt' OVERWRITE INTO TABLE dept_staging;
-LOAD DATA LOCAL INPATH '../../data/files/loc.txt' OVERWRITE INTO TABLE loc_staging;
-
-insert overwrite table emp_orc select * from emp_staging;
-insert overwrite table dept_orc select * from dept_staging;
-insert overwrite table loc_orc select * from loc_staging;
-
-analyze table emp_orc compute statistics for columns lastname,deptid;
-analyze table dept_orc compute statistics for columns deptname,deptid;
-analyze table loc_orc compute statistics for columns state,locid,zip,year;
+analyze table emp compute statistics;
+analyze table dept compute statistics;
+analyze table loc compute statistics;
+analyze table emp compute statistics for columns lastname,deptid,locid;
+analyze table dept compute statistics for columns deptname,deptid;
+analyze table loc compute statistics for columns state,locid,zip,year;
 
 -- number of rows
--- emp_orc  - 6
--- dept_orc - 4
--- loc_orc  - 8
+-- emp  - 48
+-- dept - 6
+-- loc  - 8
 
 -- count distincts for relevant columns (since count distinct values are approximate in some cases count distint values will be greater than number of rows)
--- emp_orc.deptid - 3
--- emp_orc.lastname - 7
--- dept_orc.deptid - 6
--- dept_orc.deptname - 5
--- loc_orc.locid - 6
--- loc_orc.state - 7
+-- emp.deptid - 3
+-- emp.lastname - 6
+-- emp.locid - 7
+-- dept.deptid - 7
+-- dept.deptname - 6
+-- loc.locid - 7
+-- loc.state - 6
 
--- Expected output rows: 4
--- Reason: #rows = (6*4)/max(3,6)
-explain extended select * from emp_orc e join dept_orc d on (e.deptid = d.deptid);
+-- 2 relations, 1 attribute
+-- Expected output rows: (48*6)/max(3,7) = 41
+explain select * from emp e join dept d on (e.deptid = d.deptid);
 
--- 3 way join
--- Expected output rows: 4
--- Reason: #rows = (6*4*6)/max(3,6)*max(6,3)
-explain extended select * from emp_orc e join dept_orc d on (e.deptid = d.deptid) join emp_orc e1 on (e.deptid = e1.deptid);
+-- 2 relations, 2 attributes
+-- Expected output rows: (48*6)/(max(3,7) * max(6,6)) = 6
+explain select * from emp,dept where emp.deptid = dept.deptid and emp.lastname = dept.deptname;
+explain select * from emp e join dept d on (e.deptid = d.deptid and e.lastname = d.deptname);
 
--- Expected output rows: 5
--- Reason: #rows = (6*4*8)/max(3,6)*max(6,6)
-explain extended select * from emp_orc e join dept_orc d  on (e.deptid = d.deptid) join loc_orc l on (e.deptid = l.locid);
+-- 2 relations, 3 attributes
+-- Expected output rows: (48*6)/(max(3,7) * max(6,6) * max(6,6)) = 1
+explain select * from emp,dept where emp.deptid = dept.deptid and emp.lastname = dept.deptname and dept.deptname = emp.lastname;
 
--- join keys of different types
--- Expected output rows: 4
--- Reason: #rows = (6*4*8)/max(3,6)*max(6,7)
-explain extended select * from emp_orc e join dept_orc d  on (e.deptid = d.deptid) join loc_orc l on (e.deptid = l.state);
+-- 3 relations, 1 attribute
+-- Expected output rows: (48*6*48)/top2largest(3,7,3) = 658
+explain select * from emp e join dept d on (e.deptid = d.deptid) join emp e1 on (e.deptid = e1.deptid);
 
--- multi-attribute join
--- Expected output rows: 0
--- Reason: #rows = (6*4)/max(3,6)*max(7,5)
-explain extended select * from emp_orc e join dept_orc d on (e.deptid = d.deptid and e.lastname = d.deptname);
+-- Expected output rows: (48*6*8)/top2largest(3,7,7) = 47
+explain select * from emp e join dept d  on (e.deptid = d.deptid) join loc l on (e.deptid = l.locid);
 
--- 3 way and multi-attribute join
--- Expected output rows: 0
--- Reason: #rows = (6*4*8)/max(3,6)*max(7,5)*max(3,6)*max(7,7)
-explain extended select * from emp_orc e join dept_orc d on (e.deptid = d.deptid and e.lastname = d.deptname) join loc_orc l on (e.deptid = l.locid and e.lastname = l.state);
+-- 3 relations and 2 attribute
+-- Expected output rows: (48*6*8)/top2largest(3,7,7)*top2largest(6,6,6) = 1
+explain select * from emp e join dept d on (e.deptid = d.deptid and e.lastname = d.deptname) join loc l on (e.deptid = l.locid and e.lastname = l.state);
 

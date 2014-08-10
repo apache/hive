@@ -43,6 +43,7 @@ import org.apache.hive.hcatalog.data.Pair;
 import org.apache.hive.hcatalog.data.schema.HCatSchema;
 import org.apache.hive.hcatalog.mapreduce.HCatInputFormat;
 import org.apache.hive.hcatalog.mapreduce.InputJobInfo;
+import org.apache.hive.hcatalog.mapreduce.SpecialCases;
 import org.apache.pig.Expression;
 import org.apache.pig.Expression.BinaryExpression;
 import org.apache.pig.PigException;
@@ -124,6 +125,12 @@ public class HCatLoader extends HCatBaseLoader {
     } else {
       Job clone = new Job(job.getConfiguration());
       HCatInputFormat.setInput(job, dbName, tableName, getPartitionFilterString());
+
+      InputJobInfo inputJobInfo = (InputJobInfo) HCatUtil.deserialize(
+          job.getConfiguration().get(HCatConstants.HCAT_KEY_JOB_INFO));
+
+      SpecialCases.addSpecialCasesParametersForHCatLoader(job.getConfiguration(),
+          inputJobInfo.getTableInfo());
 
       // We will store all the new /changed properties in the job in the
       // udf context, so the the HCatInputFormat.setInput method need not

@@ -507,4 +507,10 @@ public class Hadoop20SShims extends HadoopShimsSecure {
   public void getMergedCredentials(JobConf jobConf) throws IOException {
     throw new IOException("Merging of credentials not supported in this version of hadoop");
   }
+
+  @Override
+  public String getPassword(Configuration conf, String name) {
+    // No password API, just retrieve value from conf
+    return conf.get(name);
+  }
 }

@@ -46,7 +46,6 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.ByteStream;
-import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
@@ -88,90 +87,11 @@ public class HiveHBaseTableInputFormat extends TableInputFormatBase
     final Reporter reporter) throws IOException {
 
     HBaseSplit hbaseSplit = (HBaseSplit) split;
-    TableSplit tableSplit = hbaseSplit.getSplit();
-    String hbaseTableName = jobConf.get(HBaseSerDe.HBASE_TABLE_NAME);
-    setHTable(new HTable(HBaseConfiguration.create(jobConf), Bytes.toBytes(hbaseTableName)));
-    String hbaseColumnsMapping = jobConf.get(HBaseSerDe.HBASE_COLUMNS_MAPPING);
-    boolean doColumnRegexMatching = jobConf.getBoolean(HBaseSerDe.HBASE_COLUMNS_REGEX_MATCHING, true);
-    List<Integer> readColIDs = ColumnProjectionUtils.getReadColumnIDs(jobConf);
-    ColumnMappings columnMappings;
+    TableSplit tableSplit = hbaseSplit.getTableSplit();
 
-    try {
-      columnMappings = HBaseSerDe.parseColumnsMapping(hbaseColumnsMapping, doColumnRegexMatching);
-    } catch (SerDeException e) {
-      throw new IOException(e);
-    }
+    setHTable(HiveHBaseInputFormatUtil.getTable(jobConf));
+    setScan(HiveHBaseInputFormatUtil.getScan(jobConf));
 
-    if (columnMappings.size() < readColIDs.size()) {
-      throw new IOException("Cannot read more columns than the given table contains.");
-    }
-
-    boolean readAllColumns = ColumnProjectionUtils.isReadAllColumns(jobConf);
-    Scan scan = new Scan();
-    boolean empty = true;
-
-    // The list of families that have been added to the scan
-    List<String> addedFamilies = new ArrayList<String>();
-
-    if (!readAllColumns) {
-      ColumnMapping[] columnsMapping = columnMappings.getColumnsMapping();
-      for (int i : readColIDs) {
-        ColumnMapping colMap = columnsMapping[i];
-        if (colMap.hbaseRowKey) {
-          continue;
-        }
-
-        if (colMap.qualifierName == null) {
-          scan.addFamily(colMap.familyNameBytes);
-          addedFamilies.add(colMap.familyName);
-        } else {
-          if(!addedFamilies.contains(colMap.familyName)){
-            // add only if the corresponding family has not already been added
-            scan.addColumn(colMap.familyNameBytes, colMap.qualifierNameBytes);
-          }
-        }
-
-        empty = false;
-      }
-    }
-
-    // The HBase table's row key maps to a Hive table column. In the corner case when only the
-    // row key column is selected in Hive, the HBase Scan will be empty i.e. no column family/
-    // column qualifier will have been added to the scan. We arbitrarily add at least one column
-    // to the HBase scan so that we can retrieve all of the row keys and return them as the Hive
-    // tables column projection.
-    if (empty) {
-      for (ColumnMapping colMap: columnMappings) {
-        if (colMap.hbaseRowKey) {
-          continue;
-        }
-
-        if (colMap.qualifierName == null) {
-          scan.addFamily(colMap.familyNameBytes);
-        } else {
-          scan.addColumn(colMap.familyNameBytes, colMap.qualifierNameBytes);
-        }
-
-        if (!readAllColumns) {
-          break;
-        }
-      }
-    }
-
-    String scanCache = jobConf.get(HBaseSerDe.HBASE_SCAN_CACHE);
-    if (scanCache != null) {
-      scan.setCaching(Integer.valueOf(scanCache));
-    }
-    String scanCacheBlocks = jobConf.get(HBaseSerDe.HBASE_SCAN_CACHEBLOCKS);
-    if (scanCacheBlocks != null) {
-      scan.setCacheBlocks(Boolean.valueOf(scanCacheBlocks));
-    }
-    String scanBatch = jobConf.get(HBaseSerDe.HBASE_SCAN_BATCH);
-    if (scanBatch != null) {
-      scan.setBatch(Integer.valueOf(scanBatch));
-    }
-
-    setScan(scan);
     Job job = new Job(jobConf);
     TaskAttemptContext tac = ShimLoader.getHadoopShims().newTaskAttemptContext(
         job.getConfiguration(), reporter);
@@ -443,12 +363,12 @@ public class HiveHBaseTableInputFormat extends TableInputFormatBase
     boolean doColumnRegexMatching = jobConf.getBoolean(HBaseSerDe.HBASE_COLUMNS_REGEX_MATCHING, true);
 
     if (hbaseColumnsMapping == null) {
-      throw new IOException("hbase.columns.mapping required for HBase Table.");
+      throw new IOException(HBaseSerDe.HBASE_COLUMNS_MAPPING + " required for HBase Table.");
     }
 
     ColumnMappings columnMappings = null;
     try {
-      columnMappings = HBaseSerDe.parseColumnsMapping(hbaseColumnsMapping,doColumnRegexMatching);
+      columnMappings = HBaseSerDe.parseColumnsMapping(hbaseColumnsMapping, doColumnRegexMatching);
     } catch (SerDeException e) {
       throw new IOException(e);
     }
@@ -463,9 +383,8 @@ public class HiveHBaseTableInputFormat extends TableInputFormatBase
     // definition into account and excludes regions which don't satisfy
     // the start/stop row conditions (HBASE-1829).
     Scan scan = createFilterScan(jobConf, iKey,
-        getStorageFormatOfKey(keyMapping.mappingSpec,
+        HiveHBaseInputFormatUtil.getStorageFormatOfKey(keyMapping.mappingSpec,
             jobConf.get(HBaseSerDe.HBASE_TABLE_DEFAULT_STORAGE_TYPE, "string")));
-
 
     // The list of families that have been added to the scan
     List<String> addedFamilies = new ArrayList<String>();
@@ -502,29 +421,5 @@ public class HiveHBaseTableInputFormat extends TableInputFormatBase
     }
 
     return results;
-  }
-
-  private boolean getStorageFormatOfKey(String spec, String defaultFormat) throws IOException{
-
-    String[] mapInfo = spec.split("#");
-    boolean tblLevelDefault = "binary".equalsIgnoreCase(defaultFormat) ? true : false;
-
-    switch (mapInfo.length) {
-    case 1:
-      return tblLevelDefault;
-
-    case 2:
-      String storageType = mapInfo[1];
-      if(storageType.equals("-")) {
-        return tblLevelDefault;
-      } else if ("string".startsWith(storageType)){
-        return false;
-      } else if ("binary".startsWith(storageType)){
-        return true;
-      }
-
-    default:
-      throw new IOException("Malformed string: " + spec);
-    }
   }
 }

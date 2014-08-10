@@ -377,6 +377,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("get_partitions_statistics_req\n");
   }
 
+  void get_aggr_stats_for(AggrStats& _return, const PartitionsStatsRequest& request) {
+    // Your implementation goes here
+    printf("get_aggr_stats_for\n");
+  }
+
   bool delete_partition_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& part_name, const std::string& col_name) {
     // Your implementation goes here
     printf("delete_partition_column_statistics\n");
