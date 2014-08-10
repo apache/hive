@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.io.BooleanWritable;
+import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.DataOutputBuffer;
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
@@ -123,6 +124,7 @@ public class VectorizedBatchUtil {
         case DOUBLE:
           cvList.add(new DoubleColumnVector(VectorizedRowBatch.DEFAULT_SIZE));
           break;
+        case BINARY:
         case STRING:
           cvList.add(new BytesColumnVector(VectorizedRowBatch.DEFAULT_SIZE));
           break;
@@ -237,7 +239,7 @@ public class VectorizedBatchUtil {
       // float/double. String types have no default value for null.
       switch (poi.getPrimitiveCategory()) {
       case BOOLEAN: {
-        LongColumnVector lcv = (LongColumnVector) batch.cols[off+i];
+        LongColumnVector lcv = (LongColumnVector) batch.cols[off + i];
         if (writableCol != null) {
           lcv.vector[rowIndex] = ((BooleanWritable) writableCol).get() ? 1 : 0;
           lcv.isNull[rowIndex] = false;
@@ -248,7 +250,7 @@ public class VectorizedBatchUtil {
       }
         break;
       case BYTE: {
-        LongColumnVector lcv = (LongColumnVector) batch.cols[off+i];
+        LongColumnVector lcv = (LongColumnVector) batch.cols[off + i];
         if (writableCol != null) {
           lcv.vector[rowIndex] = ((ByteWritable) writableCol).get();
           lcv.isNull[rowIndex] = false;
@@ -259,7 +261,7 @@ public class VectorizedBatchUtil {
       }
         break;
       case SHORT: {
-        LongColumnVector lcv = (LongColumnVector) batch.cols[off+i];
+        LongColumnVector lcv = (LongColumnVector) batch.cols[off + i];
         if (writableCol != null) {
           lcv.vector[rowIndex] = ((ShortWritable) writableCol).get();
           lcv.isNull[rowIndex] = false;
@@ -270,7 +272,7 @@ public class VectorizedBatchUtil {
       }
         break;
       case INT: {
-        LongColumnVector lcv = (LongColumnVector) batch.cols[off+i];
+        LongColumnVector lcv = (LongColumnVector) batch.cols[off + i];
         if (writableCol != null) {
           lcv.vector[rowIndex] = ((IntWritable) writableCol).get();
           lcv.isNull[rowIndex] = false;
@@ -281,7 +283,7 @@ public class VectorizedBatchUtil {
       }
         break;
       case LONG: {
-        LongColumnVector lcv = (LongColumnVector) batch.cols[off+i];
+        LongColumnVector lcv = (LongColumnVector) batch.cols[off + i];
         if (writableCol != null) {
           lcv.vector[rowIndex] = ((LongWritable) writableCol).get();
           lcv.isNull[rowIndex] = false;
@@ -292,7 +294,7 @@ public class VectorizedBatchUtil {
       }
         break;
       case DATE: {
-        LongColumnVector lcv = (LongColumnVector) batch.cols[off+i];
+        LongColumnVector lcv = (LongColumnVector) batch.cols[off + i];
         if (writableCol != null) {
           lcv.vector[rowIndex] = ((DateWritable) writableCol).getDays();
           lcv.isNull[rowIndex] = false;
@@ -303,7 +305,7 @@ public class VectorizedBatchUtil {
       }
         break;
       case FLOAT: {
-        DoubleColumnVector dcv = (DoubleColumnVector) batch.cols[off+i];
+        DoubleColumnVector dcv = (DoubleColumnVector) batch.cols[off + i];
         if (writableCol != null) {
           dcv.vector[rowIndex] = ((FloatWritable) writableCol).get();
           dcv.isNull[rowIndex] = false;
@@ -314,7 +316,7 @@ public class VectorizedBatchUtil {
       }
         break;
       case DOUBLE: {
-        DoubleColumnVector dcv = (DoubleColumnVector) batch.cols[off+i];
+        DoubleColumnVector dcv = (DoubleColumnVector) batch.cols[off + i];
         if (writableCol != null) {
           dcv.vector[rowIndex] = ((DoubleWritable) writableCol).get();
           dcv.isNull[rowIndex] = false;
@@ -325,7 +327,7 @@ public class VectorizedBatchUtil {
       }
         break;
       case TIMESTAMP: {
-        LongColumnVector lcv = (LongColumnVector) batch.cols[off+i];
+        LongColumnVector lcv = (LongColumnVector) batch.cols[off + i];
         if (writableCol != null) {
           Timestamp t = ((TimestampWritable) writableCol).getTimestamp();
           lcv.vector[rowIndex] = TimestampUtils.getTimeNanoSec(t);
@@ -336,8 +338,27 @@ public class VectorizedBatchUtil {
         }
       }
         break;
+      case BINARY: {
+        BytesColumnVector bcv = (BytesColumnVector) batch.cols[off + i];
+        if (writableCol != null) {
+            bcv.isNull[rowIndex] = false;
+            BytesWritable bw = (BytesWritable) writableCol;
+            byte[] bytes = bw.getBytes();
+            int start = buffer.getLength();
+            int length = bytes.length;
+            try {
+              buffer.write(bytes, 0, length);
+            } catch (IOException ioe) {
+              throw new IllegalStateException("bad write", ioe);
+            }
+            bcv.setRef(rowIndex, buffer.getData(), start, length);
+        } else {
+          setNullColIsNullValue(bcv, rowIndex);
+        }
+      }
+        break;
       case STRING: {
-        BytesColumnVector bcv = (BytesColumnVector) batch.cols[off+i];
+        BytesColumnVector bcv = (BytesColumnVector) batch.cols[off + i];
         if (writableCol != null) {
           bcv.isNull[rowIndex] = false;
           Text colText = (Text) writableCol;
@@ -355,7 +376,7 @@ public class VectorizedBatchUtil {
       }
         break;
       case DECIMAL:
-        DecimalColumnVector dcv = (DecimalColumnVector) batch.cols[off+i];
+        DecimalColumnVector dcv = (DecimalColumnVector) batch.cols[off + i];
         if (writableCol != null) {
           dcv.isNull[rowIndex] = false;
           HiveDecimalWritable wobj = (HiveDecimalWritable) writableCol;

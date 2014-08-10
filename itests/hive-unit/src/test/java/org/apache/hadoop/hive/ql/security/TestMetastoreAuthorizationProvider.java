@@ -72,6 +72,9 @@ public class TestMetastoreAuthorizationProvider extends TestCase {
     return DefaultHiveMetastoreAuthorizationProvider.class.getName();
   }
 
+  protected HiveConf createHiveConf() throws Exception {
+    return new HiveConf(this.getClass());
+  }
 
   @Override
   protected void setUp() throws Exception {
@@ -92,7 +95,7 @@ public class TestMetastoreAuthorizationProvider extends TestCase {
 
     MetaStoreUtils.startMetaStore(port, ShimLoader.getHadoopThriftAuthBridge());
 
-    clientHiveConf = new HiveConf(this.getClass());
+    clientHiveConf = createHiveConf();
 
     // Turn off client-side authorization
     clientHiveConf.setBoolVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_ENABLED,false);
@@ -134,10 +137,23 @@ public class TestMetastoreAuthorizationProvider extends TestCase {
     return "smp_ms_tbl";
   }
 
+  protected boolean isTestEnabled() {
+    return true;
+  }
+
+  protected String setupUser() {
+    return ugi.getUserName();
+  }
+
   public void testSimplePrivileges() throws Exception {
+    if (!isTestEnabled()) {
+      System.out.println("Skipping test " + this.getClass().getName());
+      return;
+    }
+
     String dbName = getTestDbName();
     String tblName = getTestTableName();
-    String userName = ugi.getUserName();
+    String userName = setupUser();
 
     allowCreateDatabase(userName);
 

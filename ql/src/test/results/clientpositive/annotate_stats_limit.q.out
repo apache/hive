@@ -59,27 +59,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@loc_orc
 #### A masked pattern was here ####
 PREHOOK: query: -- numRows: 8 rawDataSize: 796
-explain extended select * from loc_orc
+explain select * from loc_orc
 PREHOOK: type: QUERY
 POSTHOOK: query: -- numRows: 8 rawDataSize: 796
-explain extended select * from loc_orc
+explain select * from loc_orc
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            loc_orc
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_ALLCOLREF
-
-
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -91,7 +75,6 @@ STAGE PLANS:
         TableScan
           alias: loc_orc
           Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: COMPLETE
-          GatherStats: false
           Select Operator
             expressions: state (type: string), locid (type: int), zip (type: bigint), year (type: int)
             outputColumnNames: _col0, _col1, _col2, _col3
@@ -99,29 +82,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: -- numRows: 4 rawDataSize: 396
-explain extended select * from loc_orc limit 4
+explain select * from loc_orc limit 4
 PREHOOK: type: QUERY
 POSTHOOK: query: -- numRows: 4 rawDataSize: 396
-explain extended select * from loc_orc limit 4
+explain select * from loc_orc limit 4
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            loc_orc
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_ALLCOLREF
-      TOK_LIMIT
-         4
-
-
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -133,7 +98,6 @@ STAGE PLANS:
         TableScan
           alias: loc_orc
           Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: COMPLETE
-          GatherStats: false
           Select Operator
             expressions: state (type: string), locid (type: int), zip (type: bigint), year (type: int)
             outputColumnNames: _col0, _col1, _col2, _col3
@@ -145,30 +109,12 @@ STAGE PLANS:
 
 PREHOOK: query: -- greater than the available number of rows
 -- numRows: 8 rawDataSize: 796
-explain extended select * from loc_orc limit 16
+explain select * from loc_orc limit 16
 PREHOOK: type: QUERY
 POSTHOOK: query: -- greater than the available number of rows
 -- numRows: 8 rawDataSize: 796
-explain extended select * from loc_orc limit 16
+explain select * from loc_orc limit 16
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            loc_orc
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_ALLCOLREF
-      TOK_LIMIT
-         16
-
-
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -180,7 +126,6 @@ STAGE PLANS:
         TableScan
           alias: loc_orc
           Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: COMPLETE
-          GatherStats: false
           Select Operator
             expressions: state (type: string), locid (type: int), zip (type: bigint), year (type: int)
             outputColumnNames: _col0, _col1, _col2, _col3
@@ -191,29 +136,11 @@ STAGE PLANS:
               ListSink
 
 PREHOOK: query: -- numRows: 0 rawDataSize: 0
-explain extended select * from loc_orc limit 0
+explain select * from loc_orc limit 0
 PREHOOK: type: QUERY
 POSTHOOK: query: -- numRows: 0 rawDataSize: 0
-explain extended select * from loc_orc limit 0
+explain select * from loc_orc limit 0
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            loc_orc
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_ALLCOLREF
-      TOK_LIMIT
-         0
-
-
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -225,7 +152,6 @@ STAGE PLANS:
         TableScan
           alias: loc_orc
           Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: COMPLETE
-          GatherStats: false
           Select Operator
             expressions: state (type: string), locid (type: int), zip (type: bigint), year (type: int)
             outputColumnNames: _col0, _col1, _col2, _col3

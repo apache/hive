@@ -352,61 +352,61 @@ public class StatObjectConverter {
   // SQL
   public static void fillColumnStatisticsData(String colType, ColumnStatisticsData data,
       Object llow, Object lhigh, Object dlow, Object dhigh, Object declow, Object dechigh,
-      Object nulls, Object dist, Object avglen, Object maxlen, Object trues, Object falses) {
+      Object nulls, Object dist, Object avglen, Object maxlen, Object trues, Object falses) throws MetaException {
     if (colType.equals("boolean")) {
       BooleanColumnStatsData boolStats = new BooleanColumnStatsData();
-      boolStats.setNumFalses((Long)falses);
-      boolStats.setNumTrues((Long)trues);
-      boolStats.setNumNulls((Long)nulls);
+      boolStats.setNumFalses(extractSqlLong(falses));
+      boolStats.setNumTrues(extractSqlLong(trues));
+      boolStats.setNumNulls(extractSqlLong(nulls));
       data.setBooleanStats(boolStats);
     } else if (colType.equals("string") ||
         colType.startsWith("varchar") || colType.startsWith("char")) {
       StringColumnStatsData stringStats = new StringColumnStatsData();
-      stringStats.setNumNulls((Long)nulls);
+      stringStats.setNumNulls(extractSqlLong(nulls));
       stringStats.setAvgColLen((Double)avglen);
-      stringStats.setMaxColLen((Long)maxlen);
-      stringStats.setNumDVs((Long)dist);
+      stringStats.setMaxColLen(extractSqlLong(maxlen));
+      stringStats.setNumDVs(extractSqlLong(dist));
       data.setStringStats(stringStats);
     } else if (colType.equals("binary")) {
       BinaryColumnStatsData binaryStats = new BinaryColumnStatsData();
-      binaryStats.setNumNulls((Long)nulls);
+      binaryStats.setNumNulls(extractSqlLong(nulls));
       binaryStats.setAvgColLen((Double)avglen);
-      binaryStats.setMaxColLen((Long)maxlen);
+      binaryStats.setMaxColLen(extractSqlLong(maxlen));
       data.setBinaryStats(binaryStats);
     } else if (colType.equals("bigint") || colType.equals("int") ||
         colType.equals("smallint") || colType.equals("tinyint") ||
         colType.equals("timestamp")) {
       LongColumnStatsData longStats = new LongColumnStatsData();
-      longStats.setNumNulls((Long)nulls);
+      longStats.setNumNulls(extractSqlLong(nulls));
       if (lhigh != null) {
-        longStats.setHighValue((Long)lhigh);
+        longStats.setHighValue(extractSqlLong(lhigh));
       }
       if (llow != null) {
-        longStats.setLowValue((Long)llow);
+        longStats.setLowValue(extractSqlLong(llow));
       }
-      longStats.setNumDVs((Long)dist);
+      longStats.setNumDVs(extractSqlLong(dist));
       data.setLongStats(longStats);
     } else if (colType.equals("double") || colType.equals("float")) {
       DoubleColumnStatsData doubleStats = new DoubleColumnStatsData();
-      doubleStats.setNumNulls((Long)nulls);
+      doubleStats.setNumNulls(extractSqlLong(nulls));
       if (dhigh != null) {
         doubleStats.setHighValue((Double)dhigh);
       }
       if (dlow != null) {
         doubleStats.setLowValue((Double)dlow);
       }
-      doubleStats.setNumDVs((Long)dist);
+      doubleStats.setNumDVs(extractSqlLong(dist));
       data.setDoubleStats(doubleStats);
     } else if (colType.startsWith("decimal")) {
       DecimalColumnStatsData decimalStats = new DecimalColumnStatsData();
-      decimalStats.setNumNulls((Long)nulls);
+      decimalStats.setNumNulls(extractSqlLong(nulls));
       if (dechigh != null) {
         decimalStats.setHighValue(createThriftDecimal((String)dechigh));
       }
       if (declow != null) {
         decimalStats.setLowValue(createThriftDecimal((String)declow));
       }
-      decimalStats.setNumDVs((Long)dist);
+      decimalStats.setNumDVs(extractSqlLong(dist));
       data.setDecimalStats(decimalStats);
     }
   }
@@ -418,5 +418,13 @@ public class StatObjectConverter {
 
   private static String createJdoDecimalString(Decimal d) {
     return new BigDecimal(new BigInteger(d.getUnscaled()), d.getScale()).toString();
+  }
+
+  static Long extractSqlLong(Object obj) throws MetaException {
+    if (obj == null) return null;
+    if (!(obj instanceof Number)) {
+      throw new MetaException("Expected numeric type but got " + obj.getClass().getName());
+    }
+    return ((Number)obj).longValue();
   }
 }

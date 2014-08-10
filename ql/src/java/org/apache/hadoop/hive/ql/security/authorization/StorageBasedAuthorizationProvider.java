@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.security.authorization;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.security.AccessControlException;
+import java.security.PrivilegedExceptionAction;
 import java.util.EnumSet;
 import java.util.List;
 
@@ -35,6 +36,9 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hdfs.DFSConfigKeys;
+import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Database;
@@ -44,6 +48,7 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.shims.ShimLoader;
 
 /**
  * StorageBasedAuthorizationProvider is an implementation of
@@ -288,7 +293,7 @@ public class StorageBasedAuthorizationProvider extends HiveAuthorizationProvider
    * If the given path does not exists, it checks for its parent folder.
    */
   protected void checkPermissions(final Configuration conf, final Path path,
-      final EnumSet<FsAction> actions) throws IOException, LoginException {
+      final EnumSet<FsAction> actions) throws IOException, LoginException, HiveException {
 
     if (path == null) {
       throw new IllegalArgumentException("path is null");
@@ -297,8 +302,7 @@ public class StorageBasedAuthorizationProvider extends HiveAuthorizationProvider
     final FileSystem fs = path.getFileSystem(conf);
 
     if (fs.exists(path)) {
-      checkPermissions(fs, path, actions,
-          authenticator.getUserName(), authenticator.getGroupNames());
+      checkPermissions(fs, path, actions, authenticator.getUserName());
     } else if (path.getParent() != null) {
       // find the ancestor which exists to check its permissions
       Path par = path.getParent();
@@ -309,8 +313,7 @@ public class StorageBasedAuthorizationProvider extends HiveAuthorizationProvider
         par = par.getParent();
       }
 
-      checkPermissions(fs, par, actions,
-          authenticator.getUserName(), authenticator.getGroupNames());
+      checkPermissions(fs, par, actions, authenticator.getUserName());
     }
   }
 
@@ -320,56 +323,23 @@ public class StorageBasedAuthorizationProvider extends HiveAuthorizationProvider
    */
   @SuppressWarnings("deprecation")
   protected static void checkPermissions(final FileSystem fs, final Path path,
-      final EnumSet<FsAction> actions, String user, List<String> groups) throws IOException,
-      AccessControlException {
-
-    String superGroupName = getSuperGroupName(fs.getConf());
-    if (userBelongsToSuperGroup(superGroupName, groups)) {
-      LOG.info("User \"" + user + "\" belongs to super-group \"" + superGroupName + "\". " +
-          "Permission granted for actions: (" + actions + ").");
-      return;
-    }
-
-    final FileStatus stat;
+      final EnumSet<FsAction> actions, String user) throws IOException,
+      AccessControlException, HiveException {
 
     try {
-      stat = fs.getFileStatus(path);
+      FileStatus stat = fs.getFileStatus(path);
+      for (FsAction action : actions) {
+        FileUtils.checkFileAccessWithImpersonation(fs, stat, action, user);
+      }
     } catch (FileNotFoundException fnfe) {
       // File named by path doesn't exist; nothing to validate.
       return;
     } catch (org.apache.hadoop.fs.permission.AccessControlException ace) {
       // Older hadoop version will throw this @deprecated Exception.
       throw accessControlException(ace);
+    } catch (Exception err) {
+      throw new HiveException(err);
     }
-
-    final FsPermission dirPerms = stat.getPermission();
-    final String grp = stat.getGroup();
-
-    for (FsAction action : actions) {
-      if (user.equals(stat.getOwner())) {
-        if (dirPerms.getUserAction().implies(action)) {
-          continue;
-        }
-      }
-      if (groups.contains(grp)) {
-        if (dirPerms.getGroupAction().implies(action)) {
-          continue;
-        }
-      }
-      if (dirPerms.getOtherAction().implies(action)) {
-        continue;
-      }
-      throw new AccessControlException("action " + action + " not permitted on path "
-          + path + " for user " + user);
-    }
-  }
-
-  private static String getSuperGroupName(Configuration configuration) {
-    return configuration.get(DFSConfigKeys.DFS_PERMISSIONS_SUPERUSERGROUP_KEY, "");
-  }
-
-  private static boolean userBelongsToSuperGroup(String superGroupName, List<String> groups) {
-    return groups.contains(superGroupName);
   }
 
   protected Path getDbLocation(Database db) throws HiveException {

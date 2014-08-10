@@ -394,7 +394,7 @@ public class SQLAuthorizationUtils {
       if (FileUtils.isActionPermittedForFileHierarchy(fs, fileStatus, userName, FsAction.READ)) {
         availPrivs.addPrivilege(SQLPrivTypeGrant.SELECT_NOGRANT);
       }
-    } catch (IOException e) {
+    } catch (Exception e) {
       String msg = "Error getting permissions for " + filePath + ": " + e.getMessage();
       throw new HiveAuthzPluginException(msg, e);
     }
@@ -412,5 +412,8 @@ public class SQLAuthorizationUtils {
     }
   }
 
+  static HiveAuthzPluginException getPluginException(String prefix, Exception e) {
+    return new HiveAuthzPluginException(prefix + ": " + e.getMessage(), e);
+  }
 
 }

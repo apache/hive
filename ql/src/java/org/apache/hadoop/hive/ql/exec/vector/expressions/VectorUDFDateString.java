@@ -23,10 +23,14 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.vector.VectorGroupByOperator;
 import org.apache.hadoop.io.Text;
 
-import java.sql.Date;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.text.ParseException;
 
 public class VectorUDFDateString extends StringUnaryUDF {
   private static final long serialVersionUID = 1L;
+
+  private transient static SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
 
   private static final Log LOG = LogFactory.getLog(
       VectorUDFDateString.class.getName());
@@ -41,13 +45,10 @@ public class VectorUDFDateString extends StringUnaryUDF {
           return null;
         }
         try {
-          Date date = Date.valueOf(s.toString());
-          t.set(date.toString());
+          Date date = formatter.parse(s.toString());
+          t.set(formatter.format(date));
           return t;
-        } catch (IllegalArgumentException e) {
-          if (LOG.isDebugEnabled()) {
-            LOG.info("VectorUDFDateString passed bad string for Date.valueOf '" + s.toString() + "'");
-          }
+        } catch (ParseException e) {
           return null;
         }
       }

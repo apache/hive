@@ -910,8 +910,11 @@ class RecordReaderImpl implements RecordReader {
     private InStream stream;
     private IntegerReader lengths = null;
 
+    private final LongColumnVector scratchlcv;
+
     BinaryTreeReader(Path path, int columnId, Configuration conf) {
       super(path, columnId, conf);
+      scratchlcv = new LongColumnVector();
     }
 
     @Override
@@ -969,8 +972,18 @@ class RecordReaderImpl implements RecordReader {
 
     @Override
     Object nextVector(Object previousVector, long batchSize) throws IOException {
-      throw new UnsupportedOperationException(
-          "NextBatch is not supported operation for Binary type");
+      BytesColumnVector result = null;
+      if (previousVector == null) {
+        result = new BytesColumnVector();
+      } else {
+        result = (BytesColumnVector) previousVector;
+      }
+
+      // Read present/isNull stream
+      super.nextVector(result, batchSize);
+
+      BytesColumnVectorUtil.setRefToOrcByteArrays(stream, lengths, scratchlcv, result, batchSize);
+      return result;
     }
 
     @Override
@@ -1361,6 +1374,66 @@ class RecordReaderImpl implements RecordReader {
     }
   }
 
+  private static class BytesColumnVectorUtil {
+    // This method has the common code for reading in bytes into a BytesColumnVector.
+    // It is used by the BINARY, STRING, CHAR, VARCHAR types.
+    public static void setRefToOrcByteArrays(InStream stream, IntegerReader lengths, LongColumnVector scratchlcv,
+            BytesColumnVector result, long batchSize) throws IOException {
+
+      // Read lengths
+      scratchlcv.isNull = result.isNull;  // Notice we are replacing the isNull vector here...
+      lengths.nextVector(scratchlcv, batchSize);
+      int totalLength = 0;
+      if (!scratchlcv.isRepeating) {
+        for (int i = 0; i < batchSize; i++) {
+          if (!scratchlcv.isNull[i]) {
+            totalLength += (int) scratchlcv.vector[i];
+          }
+        }
+      } else {
+        if (!scratchlcv.isNull[0]) {
+          totalLength = (int) (batchSize * scratchlcv.vector[0]);
+        }
+      }
+
+      // Read all the strings for this batch
+      byte[] allBytes = new byte[totalLength];
+      int offset = 0;
+      int len = totalLength;
+      while (len > 0) {
+        int bytesRead = stream.read(allBytes, offset, len);
+        if (bytesRead < 0) {
+          throw new EOFException("Can't finish byte read from " + stream);
+        }
+        len -= bytesRead;
+        offset += bytesRead;
+      }
+
+      // Too expensive to figure out 'repeating' by comparisons.
+      result.isRepeating = false;
+      offset = 0;
+      if (!scratchlcv.isRepeating) {
+        for (int i = 0; i < batchSize; i++) {
+          if (!scratchlcv.isNull[i]) {
+            result.setRef(i, allBytes, offset, (int) scratchlcv.vector[i]);
+            offset += scratchlcv.vector[i];
+          } else {
+            result.setRef(i, allBytes, 0, 0);
+          }
+        }
+      } else {
+        for (int i = 0; i < batchSize; i++) {
+          if (!scratchlcv.isNull[i]) {
+            result.setRef(i, allBytes, offset, (int) scratchlcv.vector[0]);
+            offset += scratchlcv.vector[0];
+          } else {
+            result.setRef(i, allBytes, 0, 0);
+          }
+        }
+      }
+    }
+  }
+
   /**
    * A reader for string columns that are direct encoded in the current
    * stripe.
@@ -1443,57 +1516,7 @@ class RecordReaderImpl implements RecordReader {
       // Read present/isNull stream
       super.nextVector(result, batchSize);
 
-      // Read lengths
-      scratchlcv.isNull = result.isNull;
-      lengths.nextVector(scratchlcv, batchSize);
-      int totalLength = 0;
-      if (!scratchlcv.isRepeating) {
-        for (int i = 0; i < batchSize; i++) {
-          if (!scratchlcv.isNull[i]) {
-            totalLength += (int) scratchlcv.vector[i];
-          }
-        }
-      } else {
-        if (!scratchlcv.isNull[0]) {
-          totalLength = (int) (batchSize * scratchlcv.vector[0]);
-        }
-      }
-
-      //Read all the strings for this batch
-      byte[] allBytes = new byte[totalLength];
-      int offset = 0;
-      int len = totalLength;
-      while (len > 0) {
-        int bytesRead = stream.read(allBytes, offset, len);
-        if (bytesRead < 0) {
-          throw new EOFException("Can't finish byte read from " + stream);
-        }
-        len -= bytesRead;
-        offset += bytesRead;
-      }
-
-      // Too expensive to figure out 'repeating' by comparisons.
-      result.isRepeating = false;
-      offset = 0;
-      if (!scratchlcv.isRepeating) {
-        for (int i = 0; i < batchSize; i++) {
-          if (!scratchlcv.isNull[i]) {
-            result.setRef(i, allBytes, offset, (int) scratchlcv.vector[i]);
-            offset += scratchlcv.vector[i];
-          } else {
-            result.setRef(i, allBytes, 0, 0);
-          }
-        }
-      } else {
-        for (int i = 0; i < batchSize; i++) {
-          if (!scratchlcv.isNull[i]) {
-            result.setRef(i, allBytes, offset, (int) scratchlcv.vector[0]);
-            offset += scratchlcv.vector[0];
-          } else {
-            result.setRef(i, allBytes, 0, 0);
-          }
-        }
-      }
+      BytesColumnVectorUtil.setRefToOrcByteArrays(stream, lengths, scratchlcv, result, batchSize);
       return result;
     }
 

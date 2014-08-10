@@ -5901,6 +5901,29 @@ public class ObjectStore implements RawStore, Configurable {
     }.run(true);
   }
 
+
+  @Override
+  public List<ColumnStatisticsObj> get_aggr_stats_for(String dbName, String tblName,
+      final List<String> partNames, final List<String> colNames) throws MetaException, NoSuchObjectException {
+
+    return new GetListHelper<ColumnStatisticsObj>(dbName, tblName, true, false) {
+      @Override
+      protected List<ColumnStatisticsObj> getSqlResult(
+          GetHelper<List<ColumnStatisticsObj>> ctx) throws MetaException {
+        return directSql.aggrColStatsForPartitions(dbName, tblName, partNames, colNames);
+      }
+
+      @Override
+      protected List<ColumnStatisticsObj> getJdoResult(
+          GetHelper<List<ColumnStatisticsObj>> ctx) throws MetaException,
+          NoSuchObjectException {
+        // This is fast path for query optimizations, if we can find this info quickly using
+        // directSql, do it. No point in failing back to slow path here.
+        throw new MetaException("Jdo path is not implemented for stats aggr.");
+      }
+      }.run(true);
+  }
+
   private List<MPartitionColumnStatistics> getMPartitionColumnStatistics(
       Table table, List<String> partNames, List<String> colNames)
           throws NoSuchObjectException, MetaException {
@@ -6747,5 +6770,4 @@ public class ObjectStore implements RawStore, Configurable {
     }
     return funcs;
   }
-
 }

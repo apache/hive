@@ -1,0 +1,13 @@
+PREHOOK: query: SELECT * FROM src_hbase LIMIT 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_hbase
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM src_hbase LIMIT 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_hbase
+#### A masked pattern was here ####
+0	val_0
+10	val_10
+100	val_100
+103	val_103
+104	val_104

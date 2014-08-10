@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.security;
 
 import java.net.URI;
+import java.security.AccessControlException;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -81,7 +82,7 @@ public class TestStorageBasedMetastoreAuthorizationProvider extends
     setPermissions(location,"-rwxr--r--");
   }
 
-  private void setPermissions(String locn, String permissions) throws Exception {
+  protected void setPermissions(String locn, String permissions) throws Exception {
     FileSystem fs = FileSystem.get(new URI(locn), clientHiveConf);
     fs.setPermission(new Path(locn), FsPermission.valueOf(permissions));
   }
@@ -89,7 +90,7 @@ public class TestStorageBasedMetastoreAuthorizationProvider extends
   @Override
   protected void assertNoPrivileges(MetaException me){
     assertNotNull(me);
-    assertTrue(me.getMessage().indexOf("not permitted") != -1);
+    assertTrue(me.getMessage().indexOf("AccessControlException") != -1);
   }
 
   @Override
