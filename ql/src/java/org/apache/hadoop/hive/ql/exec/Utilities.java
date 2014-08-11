@@ -1382,9 +1382,8 @@ public final class Utilities {
   public static RCFile.Writer createRCFileWriter(JobConf jc, FileSystem fs, Path file,
       boolean isCompressed, Progressable progressable) throws IOException {
     CompressionCodec codec = null;
-    Class<?> codecClass = null;
     if (isCompressed) {
-      codecClass = FileOutputFormat.getOutputCompressorClass(jc, DefaultCodec.class);
+      Class<?> codecClass = FileOutputFormat.getOutputCompressorClass(jc, DefaultCodec.class);
       codec = (CompressionCodec) ReflectionUtils.newInstance(codecClass, jc);
     }
     return new RCFile.Writer(fs, jc, file, progressable, codec);
@@ -2048,19 +2047,53 @@ public final class Utilities {
    * @return String array with two elements, first is db name, second is table name
    * @throws HiveException
    */
-  public static String[] getDbTableName(String dbtable) throws HiveException{
-    if(dbtable == null){
+  public static String[] getDbTableName(String dbtable) throws SemanticException {
+    return getDbTableName(SessionState.get().getCurrentDatabase(), dbtable);
+  }
+
+  public static String[] getDbTableName(String defaultDb, String dbtable) throws SemanticException {
+    if (dbtable == null) {
       return new String[2];
     }
     String[] names =  dbtable.split("\\.");
     switch (names.length) {
-    case 2:
-      return names;
-    case 1:
-      return new String [] {SessionState.get().getCurrentDatabase(), dbtable};
-    default:
-      throw new HiveException(ErrorMsg.INVALID_TABLE_NAME, dbtable);
+      case 2:
+        return names;
+      case 1:
+        return new String [] {defaultDb, dbtable};
+      default:
+        throw new SemanticException(ErrorMsg.INVALID_TABLE_NAME, dbtable);
     }
+  }
+
+  /**
+   * Accepts qualified name which is in the form of dbname.tablename and returns dbname from it
+   *
+   * @param dbTableName
+   * @return dbname
+   * @throws SemanticException input string is not qualified name
+   */
+  public static String getDatabaseName(String dbTableName) throws SemanticException {
+    String[] split = dbTableName.split("\\.");
+    if (split.length != 2) {
+      throw new SemanticException(ErrorMsg.INVALID_TABLE_NAME, dbTableName);
+    }
+    return split[0];
+  }
+
+  /**
+   * Accepts qualified name which is in the form of dbname.tablename and returns tablename from it
+   *
+   * @param dbTableName
+   * @return tablename
+   * @throws SemanticException input string is not qualified name
+   */
+  public static String getTableName(String dbTableName) throws SemanticException {
+    String[] split = dbTableName.split("\\.");
+    if (split.length != 2) {
+      throw new SemanticException(ErrorMsg.INVALID_TABLE_NAME, dbTableName);
+    }
+    return split[1];
   }
 
   public static void validateColumnNames(List<String> colNames, List<String> checkCols)

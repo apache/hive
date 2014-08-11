@@ -20,27 +20,20 @@ package org.apache.hadoop.hive.ql.plan;
 
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 
-import java.util.List;
-
 public class AlterTableAlterPartDesc extends DDLDesc {
   private String tableName;
-  private String dbName;
   private FieldSchema partKeySpec;
 
   public AlterTableAlterPartDesc() {
   }
 
   /**
-   * @param dbName
-   *          database that contains the table / partition
    * @param tableName
    *          table containing the partition
    * @param partKeySpec
-   *          key column specification.
    */
-  public AlterTableAlterPartDesc(String dbName, String tableName, FieldSchema partKeySpec) {
+  public AlterTableAlterPartDesc(String tableName, FieldSchema partKeySpec) {
     super();
-    this.dbName = dbName;
     this.tableName = tableName;
     this.partKeySpec = partKeySpec;
   }
@@ -51,14 +44,6 @@ public class AlterTableAlterPartDesc extends DDLDesc {
 
   public void setTableName(String tableName) {
     this.tableName = tableName;
-  }
-
-  public String getDbName() {
-    return dbName;
-  }
-
-  public void setDbName(String dbName) {
-    this.dbName = dbName;
   }
 
   public FieldSchema getPartKeySpec() {
