@@ -2580,6 +2580,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             throw new SemanticException(generateErrorMessage(rowChild,
                 ErrorMsg.LINES_TERMINATED_BY_NON_NEWLINE.getMsg()));
           }
+          break;
         case HiveParser.TOK_TABLEROWFORMATNULL:
           String nullFormat = unescapeSQLString(rowChild.getChild(0).getText());
           tblDesc.getProperties().setProperty(serdeConstants.SERIALIZATION_NULL_FORMAT,
