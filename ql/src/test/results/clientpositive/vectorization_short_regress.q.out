@@ -143,7 +143,7 @@ STAGE PLANS:
             alias: alltypesorc
             Statistics: Num rows: 1347 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((((762 = cbigint) or ((csmallint < cfloat) and ((ctimestamp2 > (- 10669)) and (cdouble <> cint)))) or (cstring1 = 'a')) or ((cbigint <= (- 1.389)) and ((cstring2 <> 'a') and ((79.553 <> cint) and (cboolean2 <> cboolean1))))) (type: boolean)
+              predicate: ((((762 = cbigint) or ((csmallint < cfloat) and ((ctimestamp2 > -10669) and (cdouble <> cint)))) or (cstring1 = 'a')) or ((cbigint <= -1.389) and ((cstring2 <> 'a') and ((79.553 <> cint) and (cboolean2 <> cboolean1))))) (type: boolean)
               Statistics: Num rows: 1347 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: cint (type: int), cdouble (type: double), csmallint (type: smallint), cfloat (type: float), ctinyint (type: tinyint)
@@ -166,7 +166,7 @@ STAGE PLANS:
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
           Statistics: Num rows: 1 Data size: 68 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: _col0 (type: double), (_col0 + (- 3728)) (type: double), (- (_col0 + (- 3728))) (type: double), (- (- (_col0 + (- 3728)))) (type: double), ((- (- (_col0 + (- 3728)))) * (_col0 + (- 3728))) (type: double), _col1 (type: double), (- _col0) (type: double), _col2 (type: double), (((- (- (_col0 + (- 3728)))) * (_col0 + (- 3728))) * (- (- (_col0 + (- 3728))))) (type: double), _col3 (type: double), (- _col2) (type: double), (_col2 - (- (- (_col0 + (- 3728))))) (type: double), ((_col2 - (- (- (_col0 + (- 3728))))) * _col2) (type: double), _col4 (type: double), _col5 (type: double), (10.175 - _col4) (type: double), (- (10.175 - _col4)) (type: double), ((- _col2) / (- 563)) (type: double), _col6 (type: double), (- ((- _col2) / (- 563))) (type: double), (_col0 / _col1) (type: double), _col7 (type: tinyint), _col8 (type: bigint), (_col7 / ((- _col2) / (- 563))) (type: double), (- (_col0 / _col1)) (type: double)
+            expressions: _col0 (type: double), (_col0 + -3728) (type: double), (- (_col0 + -3728)) (type: double), (- (- (_col0 + -3728))) (type: double), ((- (- (_col0 + -3728))) * (_col0 + -3728)) (type: double), _col1 (type: double), (- _col0) (type: double), _col2 (type: double), (((- (- (_col0 + -3728))) * (_col0 + -3728)) * (- (- (_col0 + -3728)))) (type: double), _col3 (type: double), (- _col2) (type: double), (_col2 - (- (- (_col0 + -3728)))) (type: double), ((_col2 - (- (- (_col0 + -3728)))) * _col2) (type: double), _col4 (type: double), _col5 (type: double), (10.175 - _col4) (type: double), (- (10.175 - _col4)) (type: double), ((- _col2) / -563) (type: double), _col6 (type: double), (- ((- _col2) / -563)) (type: double), (_col0 / _col1) (type: double), _col7 (type: tinyint), _col8 (type: bigint), (_col7 / ((- _col2) / -563)) (type: double), (- (_col0 / _col1)) (type: double)
             outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24
             Statistics: Num rows: 1 Data size: 68 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
@@ -349,7 +349,7 @@ STAGE PLANS:
             alias: alltypesorc
             Statistics: Num rows: 1626 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((((cbigint <= 197) and (cint < cbigint)) or ((cdouble >= (- 26.28)) and (csmallint > cdouble))) or ((ctinyint > cfloat) and (cstring1 rlike '.*ss.*'))) or ((cfloat > 79.553) and (cstring2 like '10%'))) (type: boolean)
+              predicate: (((((cbigint <= 197) and (cint < cbigint)) or ((cdouble >= -26.28) and (csmallint > cdouble))) or ((ctinyint > cfloat) and (cstring1 rlike '.*ss.*'))) or ((cfloat > 79.553) and (cstring2 like '10%'))) (type: boolean)
               Statistics: Num rows: 902 Data size: 209266 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: cint (type: int), cbigint (type: bigint), csmallint (type: smallint), cdouble (type: double), ctinyint (type: tinyint)
@@ -372,7 +372,7 @@ STAGE PLANS:
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
           Statistics: Num rows: 1 Data size: 64 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: _col0 (type: int), (_col0 / (- 3728)) (type: double), (_col0 * (- 3728)) (type: int), _col1 (type: double), (- (_col0 * (- 3728))) (type: int), _col2 (type: double), ((- 563) % (_col0 * (- 3728))) (type: int), (_col1 / _col2) (type: double), (- _col2) (type: double), _col3 (type: double), _col4 (type: double), (_col2 - 10.175) (type: double), _col5 (type: int), ((_col0 * (- 3728)) % (_col2 - 10.175)) (type: double), (- _col3) (type: double), _col6 (type: double), (_col3 % (- 26.28)) (type: double), _col7 (type: double), (- (_col0 / (- 3728))) (type: double), ((- (_col0 * (- 3728))) % ((- 563) % (_col0 * (- 3728)))) (type: int), ((_col0 / (- 3728)) - _col4) (type: double), (- (_col0 * (- 3728))) (type: int), _col8 (type: double)
+            expressions: _col0 (type: int), (_col0 / -3728) (type: double), (_col0 * -3728) (type: int), _col1 (type: double), (- (_col0 * -3728)) (type: int), _col2 (type: double), (-563 % (_col0 * -3728)) (type: int), (_col1 / _col2) (type: double), (- _col2) (type: double), _col3 (type: double), _col4 (type: double), (_col2 - 10.175) (type: double), _col5 (type: int), ((_col0 * -3728) % (_col2 - 10.175)) (type: double), (- _col3) (type: double), _col6 (type: double), (_col3 % -26.28) (type: double), _col7 (type: double), (- (_col0 / -3728)) (type: double), ((- (_col0 * -3728)) % (-563 % (_col0 * -3728))) (type: int), ((_col0 / -3728) - _col4) (type: double), (- (_col0 * -3728)) (type: int), _col8 (type: double)
             outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22
             Statistics: Num rows: 1 Data size: 64 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
@@ -569,7 +569,7 @@ STAGE PLANS:
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
           Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: _col0 (type: double), (- _col0) (type: double), (_col0 - (- _col0)) (type: double), _col1 (type: bigint), (_col1 % 79.553) (type: double), _col2 (type: tinyint), (_col1 - (- _col0)) (type: double), (- (- _col0)) (type: double), ((- 1) % (- _col0)) (type: double), _col1 (type: bigint), (- _col1) (type: bigint), _col3 (type: double), (- (- (- _col0))) (type: double), (762 * (- _col1)) (type: bigint), _col4 (type: int), (_col2 + (762 * (- _col1))) (type: bigint), ((- _col0) + _col4) (type: double), _col5 (type: double), ((- _col1) % _col1) (type: bigint), _col6 (type: bigint), _col7 (type: double), ((- 3728) % (_col2 + (762 * (- _col1)))) (type: bigint)
+            expressions: _col0 (type: double), (- _col0) (type: double), (_col0 - (- _col0)) (type: double), _col1 (type: bigint), (_col1 % 79.553) (type: double), _col2 (type: tinyint), (_col1 - (- _col0)) (type: double), (- (- _col0)) (type: double), (-1 % (- _col0)) (type: double), _col1 (type: bigint), (- _col1) (type: bigint), _col3 (type: double), (- (- (- _col0))) (type: double), (762 * (- _col1)) (type: bigint), _col4 (type: int), (_col2 + (762 * (- _col1))) (type: bigint), ((- _col0) + _col4) (type: double), _col5 (type: double), ((- _col1) % _col1) (type: bigint), _col6 (type: bigint), _col7 (type: double), (-3728 % (_col2 + (762 * (- _col1)))) (type: bigint)
             outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21
             Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
@@ -745,7 +745,7 @@ STAGE PLANS:
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
           Statistics: Num rows: 1 Data size: 44 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: _col0 (type: double), (_col0 + 6981) (type: double), ((_col0 + 6981) + _col0) (type: double), _col1 (type: bigint), (((_col0 + 6981) + _col0) / _col0) (type: double), (- (_col0 + 6981)) (type: double), _col2 (type: double), (_col0 % (- (_col0 + 6981))) (type: double), _col3 (type: double), _col4 (type: double), (- _col1) (type: bigint), ((- _col1) / _col2) (type: double), _col5 (type: float), (_col4 * (- 26.28)) (type: double)
+            expressions: _col0 (type: double), (_col0 + 6981) (type: double), ((_col0 + 6981) + _col0) (type: double), _col1 (type: bigint), (((_col0 + 6981) + _col0) / _col0) (type: double), (- (_col0 + 6981)) (type: double), _col2 (type: double), (_col0 % (- (_col0 + 6981))) (type: double), _col3 (type: double), _col4 (type: double), (- _col1) (type: bigint), ((- _col1) / _col2) (type: double), _col5 (type: float), (_col4 * -26.28) (type: double)
             outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13
             Statistics: Num rows: 1 Data size: 44 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
@@ -902,10 +902,10 @@ STAGE PLANS:
             alias: alltypesorc
             Statistics: Num rows: 1193 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((((cstring1 rlike 'a.*') and (cstring2 like '%ss%')) or ((1 <> cboolean2) and ((csmallint < 79.553) and ((- 257) <> ctinyint)))) or ((cdouble > ctinyint) and (cfloat >= cint))) or ((cint < cbigint) and (ctinyint > cbigint))) (type: boolean)
+              predicate: (((((cstring1 rlike 'a.*') and (cstring2 like '%ss%')) or ((1 <> cboolean2) and ((csmallint < 79.553) and (-257 <> ctinyint)))) or ((cdouble > ctinyint) and (cfloat >= cint))) or ((cint < cbigint) and (ctinyint > cbigint))) (type: boolean)
               Statistics: Num rows: 959 Data size: 303244 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: cint (type: int), cdouble (type: double), ctimestamp2 (type: timestamp), cstring1 (type: string), cboolean2 (type: boolean), ctinyint (type: tinyint), cfloat (type: float), ctimestamp1 (type: timestamp), csmallint (type: smallint), cbigint (type: bigint), ((- 3728) * cbigint) (type: bigint), (- cint) (type: int), ((- 863.257) - cint) (type: double), (- csmallint) (type: smallint), (csmallint - (- csmallint)) (type: smallint), ((csmallint - (- csmallint)) + (- csmallint)) (type: smallint), (cint / cint) (type: double), (((- 863.257) - cint) - (- 26.28)) (type: double), (- cfloat) (type: float), (cdouble * (- 89010)) (type: double), (ctinyint / 988888) (type: double), (- ctinyint) (type: tinyint), (79.553 / ctinyint) (type: double)
+                expressions: cint (type: int), cdouble (type: double), ctimestamp2 (type: timestamp), cstring1 (type: string), cboolean2 (type: boolean), ctinyint (type: tinyint), cfloat (type: float), ctimestamp1 (type: timestamp), csmallint (type: smallint), cbigint (type: bigint), (-3728 * cbigint) (type: bigint), (- cint) (type: int), (-863.257 - cint) (type: double), (- csmallint) (type: smallint), (csmallint - (- csmallint)) (type: smallint), ((csmallint - (- csmallint)) + (- csmallint)) (type: smallint), (cint / cint) (type: double), ((-863.257 - cint) - -26.28) (type: double), (- cfloat) (type: float), (cdouble * -89010) (type: double), (ctinyint / 988888) (type: double), (- ctinyint) (type: tinyint), (79.553 / ctinyint) (type: double)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22
                 Statistics: Num rows: 959 Data size: 303244 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
@@ -2311,7 +2311,7 @@ STAGE PLANS:
               predicate: (((((197.0 > ctinyint) and (cint = cbigint)) or (cbigint = 359)) or (cboolean1 < 0)) or ((cstring1 like '%ss') and (cfloat <= ctinyint))) (type: boolean)
               Statistics: Num rows: 1347 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: cint (type: int), cbigint (type: bigint), cstring1 (type: string), cboolean1 (type: boolean), cfloat (type: float), cdouble (type: double), ctimestamp2 (type: timestamp), csmallint (type: smallint), cstring2 (type: string), cboolean2 (type: boolean), (cint / cbigint) (type: double), (cbigint % 79.553) (type: double), (- (cint / cbigint)) (type: double), (10.175 % cfloat) (type: double), (- cfloat) (type: float), (cfloat - (- cfloat)) (type: float), ((cfloat - (- cfloat)) % (- 6432)) (type: float), (cdouble * csmallint) (type: double), (- cdouble) (type: double), (- cbigint) (type: bigint), (cfloat - (cint / cbigint)) (type: double), (- csmallint) (type: smallint), (3569 % cbigint) (type: bigint), (359 - cdouble) (type: double), (- csmallint) (type: smallint)
+                expressions: cint (type: int), cbigint (type: bigint), cstring1 (type: string), cboolean1 (type: boolean), cfloat (type: float), cdouble (type: double), ctimestamp2 (type: timestamp), csmallint (type: smallint), cstring2 (type: string), cboolean2 (type: boolean), (cint / cbigint) (type: double), (cbigint % 79.553) (type: double), (- (cint / cbigint)) (type: double), (10.175 % cfloat) (type: double), (- cfloat) (type: float), (cfloat - (- cfloat)) (type: float), ((cfloat - (- cfloat)) % -6432) (type: float), (cdouble * csmallint) (type: double), (- cdouble) (type: double), (- cbigint) (type: bigint), (cfloat - (cint / cbigint)) (type: double), (- csmallint) (type: smallint), (3569 % cbigint) (type: bigint), (359 - cdouble) (type: double), (- csmallint) (type: smallint)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24
                 Statistics: Num rows: 1347 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
@@ -2490,10 +2490,10 @@ STAGE PLANS:
             alias: alltypesorc
             Statistics: Num rows: 1347 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((((csmallint > (- 26.28)) and (cstring2 like 'ss')) or ((cdouble <= cbigint) and ((cstring1 >= 'ss') and (cint <> cdouble)))) or (ctinyint = (- 89010))) or ((cbigint <= cfloat) and ((- 26.28) <= csmallint))) (type: boolean)
+              predicate: (((((csmallint > -26.28) and (cstring2 like 'ss')) or ((cdouble <= cbigint) and ((cstring1 >= 'ss') and (cint <> cdouble)))) or (ctinyint = -89010)) or ((cbigint <= cfloat) and (-26.28 <= csmallint))) (type: boolean)
               Statistics: Num rows: 1195 Data size: 334668 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: cint (type: int), cstring1 (type: string), cboolean2 (type: boolean), ctimestamp2 (type: timestamp), cdouble (type: double), cfloat (type: float), cbigint (type: bigint), csmallint (type: smallint), cboolean1 (type: boolean), (cint + csmallint) (type: int), (cbigint - ctinyint) (type: bigint), (- cbigint) (type: bigint), (- cfloat) (type: float), ((cbigint - ctinyint) + cbigint) (type: bigint), (cdouble / cdouble) (type: double), (- cdouble) (type: double), ((cint + csmallint) * (- cbigint)) (type: bigint), ((- cdouble) + cbigint) (type: double), ((- 1.389) / ctinyint) (type: double), (cbigint % cdouble) (type: double), (- csmallint) (type: smallint), (csmallint + (cint + csmallint)) (type: int)
+                expressions: cint (type: int), cstring1 (type: string), cboolean2 (type: boolean), ctimestamp2 (type: timestamp), cdouble (type: double), cfloat (type: float), cbigint (type: bigint), csmallint (type: smallint), cboolean1 (type: boolean), (cint + csmallint) (type: int), (cbigint - ctinyint) (type: bigint), (- cbigint) (type: bigint), (- cfloat) (type: float), ((cbigint - ctinyint) + cbigint) (type: bigint), (cdouble / cdouble) (type: double), (- cdouble) (type: double), ((cint + csmallint) * (- cbigint)) (type: bigint), ((- cdouble) + cbigint) (type: double), (-1.389 / ctinyint) (type: double), (cbigint % cdouble) (type: double), (- csmallint) (type: smallint), (csmallint + (cint + csmallint)) (type: int)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21
                 Statistics: Num rows: 1195 Data size: 334668 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
@@ -3252,10 +3252,10 @@ STAGE PLANS:
             alias: alltypesorc
             Statistics: Num rows: 1386 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((((- 1.389) >= cint) and ((csmallint < ctinyint) and ((- 6432) > csmallint))) or ((cdouble >= cfloat) and (cstring2 <= 'a'))) or ((cstring1 like 'ss%') and (10.175 > cbigint))) (type: boolean)
+              predicate: ((((-1.389 >= cint) and ((csmallint < ctinyint) and (-6432 > csmallint))) or ((cdouble >= cfloat) and (cstring2 <= 'a'))) or ((cstring1 like 'ss%') and (10.175 > cbigint))) (type: boolean)
               Statistics: Num rows: 436 Data size: 118669 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: ctimestamp1 (type: timestamp), cstring2 (type: string), (cdouble * 10.175) (type: double), (((- 6432) * cfloat) / cfloat) (type: double), (- cfloat) (type: float), (cint % csmallint) (type: int), (cdouble * (- cdouble)) (type: double), cdouble (type: double), cfloat (type: float), cbigint (type: bigint), csmallint (type: smallint), (cbigint / 3569) (type: double), ((- 257) - csmallint) (type: int), ((- 6432) * cfloat) (type: float), (- cdouble) (type: double)
+                expressions: ctimestamp1 (type: timestamp), cstring2 (type: string), (cdouble * 10.175) (type: double), ((-6432 * cfloat) / cfloat) (type: double), (- cfloat) (type: float), (cint % csmallint) (type: int), (cdouble * (- cdouble)) (type: double), cdouble (type: double), cfloat (type: float), cbigint (type: bigint), csmallint (type: smallint), (cbigint / 3569) (type: double), (-257 - csmallint) (type: int), (-6432 * cfloat) (type: float), (- cdouble) (type: double)
                 outputColumnNames: _col0, _col1, _col10, _col11, _col12, _col13, _col15, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
                 Statistics: Num rows: 436 Data size: 118669 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
@@ -4070,7 +4070,7 @@ STAGE PLANS:
             alias: alltypesorc
             Statistics: Num rows: 13472 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((csmallint >= (- 257)) and (((- 6432) = csmallint) or ((cint >= cdouble) and (ctinyint <= cint)))) (type: boolean)
+              predicate: ((csmallint >= -257) and ((-6432 = csmallint) or ((cint >= cdouble) and (ctinyint <= cint)))) (type: boolean)
               Statistics: Num rows: 2743 Data size: 76808 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: csmallint (type: smallint), cbigint (type: bigint), ctinyint (type: tinyint)
@@ -4097,7 +4097,7 @@ STAGE PLANS:
           outputColumnNames: _col0, _col1, _col2, _col3, _col4
           Statistics: Num rows: 1371 Data size: 38389 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: _col0 (type: smallint), (_col0 % (- 75)) (type: int), _col1 (type: double), ((- 1.389) / _col0) (type: double), _col2 (type: bigint), ((_col0 % (- 75)) / _col2) (type: double), (- (_col0 % (- 75))) (type: int), _col3 (type: double), (- (- (_col0 % (- 75)))) (type: int), _col4 (type: bigint), (_col4 - (- 89010)) (type: bigint)
+            expressions: _col0 (type: smallint), (_col0 % -75) (type: int), _col1 (type: double), (-1.389 / _col0) (type: double), _col2 (type: bigint), ((_col0 % -75) / _col2) (type: double), (- (_col0 % -75)) (type: int), _col3 (type: double), (- (- (_col0 % -75))) (type: int), _col4 (type: bigint), (_col4 - -89010) (type: bigint)
             outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10
             Statistics: Num rows: 1371 Data size: 38389 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
@@ -5707,23 +5707,23 @@ STAGE PLANS:
             alias: alltypesorc
             Statistics: Num rows: 13472 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((cdouble > 2563.58) and ((((cbigint >= cint) and ((csmallint < cint) and (cfloat < (- 5638.15)))) or false) or ((cdouble <= cbigint) and ((- 5638.15) > cbigint)))) (type: boolean)
-              Statistics: Num rows: 2909 Data size: 81456 Basic stats: COMPLETE Column stats: NONE
+              predicate: ((cdouble > 2563.58) and (((cbigint >= cint) and ((csmallint < cint) and (cfloat < -5638.15))) or ((cdouble <= cbigint) and (-5638.15 > cbigint)))) (type: boolean)
+              Statistics: Num rows: 664 Data size: 18593 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: cdouble (type: double), cfloat (type: float)
                 outputColumnNames: cdouble, cfloat
-                Statistics: Num rows: 2909 Data size: 81456 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 664 Data size: 18593 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: var_samp(cdouble), count(cfloat), sum(cfloat), var_pop(cdouble), stddev_pop(cdouble), sum(cdouble)
                   keys: cdouble (type: double)
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
-                  Statistics: Num rows: 2909 Data size: 81456 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 664 Data size: 18593 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: double)
                     sort order: +
                     Map-reduce partition columns: _col0 (type: double)
-                    Statistics: Num rows: 2909 Data size: 81456 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 664 Data size: 18593 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col1 (type: struct<count:bigint,sum:double,variance:double>), _col2 (type: bigint), _col3 (type: double), _col4 (type: struct<count:bigint,sum:double,variance:double>), _col5 (type: struct<count:bigint,sum:double,variance:double>), _col6 (type: double)
       Execution mode: vectorized
       Reduce Operator Tree:
@@ -5732,11 +5732,11 @@ STAGE PLANS:
           keys: KEY._col0 (type: double)
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
-          Statistics: Num rows: 1454 Data size: 40713 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 332 Data size: 9296 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: _col0 (type: double), _col1 (type: double), _col5 (type: double), (_col0 + _col1) (type: double), (_col0 * 762) (type: double), _col6 (type: double), ((- 863.257) % (_col0 * 762)) (type: double), (2563.58 * _col1) (type: double), (- _col1) (type: double), _col2 (type: bigint), ((2563.58 * _col1) + (- 5638.15)) (type: double), ((- _col1) * ((2563.58 * _col1) + (- 5638.15))) (type: double), _col3 (type: double), _col4 (type: double), (_col0 - (- _col1)) (type: double)
+            expressions: _col0 (type: double), _col1 (type: double), _col5 (type: double), (_col0 + _col1) (type: double), (_col0 * 762) (type: double), _col6 (type: double), (-863.257 % (_col0 * 762)) (type: double), (2563.58 * _col1) (type: double), (- _col1) (type: double), _col2 (type: bigint), ((2563.58 * _col1) + -5638.15) (type: double), ((- _col1) * ((2563.58 * _col1) + -5638.15)) (type: double), _col3 (type: double), _col4 (type: double), (_col0 - (- _col1)) (type: double)
             outputColumnNames: _col0, _col1, _col10, _col11, _col12, _col13, _col14, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
-            Statistics: Num rows: 1454 Data size: 40713 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 332 Data size: 9296 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
               table:
@@ -5751,16 +5751,16 @@ STAGE PLANS:
             Reduce Output Operator
               key expressions: _col0 (type: double)
               sort order: +
-              Statistics: Num rows: 1454 Data size: 40713 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 332 Data size: 9296 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col1 (type: double), _col2 (type: double), _col3 (type: double), _col4 (type: bigint), _col5 (type: double), _col6 (type: double), _col7 (type: double), _col8 (type: double), _col9 (type: double), _col10 (type: double), _col11 (type: double), _col12 (type: double), _col13 (type: double), _col14 (type: double)
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: double), VALUE._col0 (type: double), VALUE._col1 (type: double), VALUE._col2 (type: double), VALUE._col3 (type: bigint), VALUE._col4 (type: double), VALUE._col5 (type: double), VALUE._col6 (type: double), VALUE._col7 (type: double), VALUE._col8 (type: double), VALUE._col9 (type: double), VALUE._col10 (type: double), VALUE._col11 (type: double), VALUE._col12 (type: double), VALUE._col13 (type: double), VALUE._col12 (type: double)
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15
-          Statistics: Num rows: 1454 Data size: 40713 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 332 Data size: 9296 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1454 Data size: 40713 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 332 Data size: 9296 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -5960,7 +5960,7 @@ STAGE PLANS:
             alias: alltypesorc
             Statistics: Num rows: 1209 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((ctimestamp1 <> 0) and ((((((((- 257) <> ctinyint) and cboolean2 is not null) and ((cstring1 rlike '.*ss') and ((- 10669) < ctimestamp1))) or (ctimestamp2 = (- 10669))) or ((ctimestamp1 < 0) and (cstring2 like '%b%'))) or (cdouble = cint)) or (cboolean1 is null and (cfloat < cint)))) (type: boolean)
+              predicate: ((ctimestamp1 <> 0) and (((((((-257 <> ctinyint) and cboolean2 is not null) and ((cstring1 rlike '.*ss') and (-10669 < ctimestamp1))) or (ctimestamp2 = -10669)) or ((ctimestamp1 < 0) and (cstring2 like '%b%'))) or (cdouble = cint)) or (cboolean1 is null and (cfloat < cint)))) (type: boolean)
               Statistics: Num rows: 1209 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: ctimestamp1 (type: timestamp), cstring1 (type: string), cint (type: int), csmallint (type: smallint), ctinyint (type: tinyint), cfloat (type: float), cdouble (type: double)
@@ -5987,7 +5987,7 @@ STAGE PLANS:
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14
           Statistics: Num rows: 604 Data size: 188462 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: _col0 (type: timestamp), _col1 (type: string), _col2 (type: double), (_col2 * 10.175) (type: double), (- _col2) (type: double), _col3 (type: double), (- _col2) (type: double), ((- 26.28) - _col2) (type: double), _col4 (type: bigint), (- _col4) (type: bigint), (((- 26.28) - _col2) * (- _col2)) (type: double), _col5 (type: tinyint), ((((- 26.28) - _col2) * (- _col2)) * (- _col4)) (type: double), (- (_col2 * 10.175)) (type: double), _col6 (type: double), (_col6 + ((((- 26.28) - _col2) * (- _col2)) * (- _col4))) (type: double), (- (- _col2)) (type: double), ((- _col4) / _col2) (type: double), _col7 (type: double), (10.175 / _col3) (type: double), _col8 (type: double), _col9 (type: double), ((_col6 + ((((- 26.28) - _col2) * (- _col2)) * (- _col4))) - ((((- 26.28) - _col2) * (- _col2)) * (- _col4))) (type: double), (- (- (_col2 * 10.175))) (type: double), _col10 (type: double), (((_col6 + ((((- 26.28) - _col2) * (- _col2)) * (- _col4))) - ((((- 26.28) - _col2) * (- _col2)) * (- _col4))) * 10.175) (type: double), (10.175 % (10.175 / _col3)) (type: double), (- _col5) (type: tinyint), _col11 (type: double), _col12 (type: double), (- (((- 26.28) - _col2) * (- _col2))) (type: double), ((- _col2) % _col10) (type: double), ((- 26.28) / (- _col5)) (type: double), _col13 (type: double), _col14 (type: bigint), ((_col6 + ((((- 26.28) - _col2) * (- _col2)) * (- _col4))) / _col7) (type: double), (- (- _col4)) (type: bigint), _col4 (type: bigint), ((_col6 + ((((- 26.28) - _col2) * (- _col2)) * (- _col4))) % (- 26.28)) (type: double)
+            expressions: _col0 (type: timestamp), _col1 (type: string), _col2 (type: double), (_col2 * 10.175) (type: double), (- _col2) (type: double), _col3 (type: double), (- _col2) (type: double), (-26.28 - _col2) (type: double), _col4 (type: bigint), (- _col4) (type: bigint), ((-26.28 - _col2) * (- _col2)) (type: double), _col5 (type: tinyint), (((-26.28 - _col2) * (- _col2)) * (- _col4)) (type: double), (- (_col2 * 10.175)) (type: double), _col6 (type: double), (_col6 + (((-26.28 - _col2) * (- _col2)) * (- _col4))) (type: double), (- (- _col2)) (type: double), ((- _col4) / _col2) (type: double), _col7 (type: double), (10.175 / _col3) (type: double), _col8 (type: double), _col9 (type: double), ((_col6 + (((-26.28 - _col2) * (- _col2)) * (- _col4))) - (((-26.28 - _col2) * (- _col2)) * (- _col4))) (type: double), (- (- (_col2 * 10.175))) (type: double), _col10 (type: double), (((_col6 + (((-26.28 - _col2) * (- _col2)) * (- _col4))) - (((-26.28 - _col2) * (- _col2)) * (- _col4))) * 10.175) (type: double), (10.175 % (10.175 / _col3)) (type: double), (- _col5) (type: tinyint), _col11 (type: double), _col12 (type: double), (- ((-26.28 - _col2) * (- _col2))) (type: double), ((- _col2) % _col10) (type: double), (-26.28 / (- _col5)) (type: double), _col13 (type: double), _col14 (type: bigint), ((_col6 + (((-26.28 - _col2) * (- _col2)) * (- _col4))) / _col7) (type: double), (- (- _col4)) (type: bigint), _col4 (type: bigint), ((_col6 + (((-26.28 - _col2) * (- _col2)) * (- _col4))) % -26.28) (type: double)
             outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24, _col25, _col26, _col27, _col28, _col29, _col30, _col31, _col32, _col33, _col34, _col35, _col36, _col37, _col38
             Statistics: Num rows: 604 Data size: 188462 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
@@ -6463,7 +6463,7 @@ STAGE PLANS:
             alias: alltypesorc
             Statistics: Num rows: 1347 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (cboolean1 is not null and (((((cdouble < csmallint) and ((cboolean2 = cboolean1) and (cbigint <= (- 863.257)))) or ((cint >= (- 257)) and (cstring1 is not null and (cboolean1 >= 1)))) or (cstring2 rlike 'b')) or ((csmallint >= ctinyint) and ctimestamp2 is null))) (type: boolean)
+              predicate: (cboolean1 is not null and (((((cdouble < csmallint) and ((cboolean2 = cboolean1) and (cbigint <= -863.257))) or ((cint >= -257) and (cstring1 is not null and (cboolean1 >= 1)))) or (cstring2 rlike 'b')) or ((csmallint >= ctinyint) and ctimestamp2 is null))) (type: boolean)
               Statistics: Num rows: 523 Data size: 146469 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: cboolean1 (type: boolean), cfloat (type: float), cbigint (type: bigint), cint (type: int), cdouble (type: double), ctinyint (type: tinyint), csmallint (type: smallint)
@@ -6490,7 +6490,7 @@ STAGE PLANS:
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10
           Statistics: Num rows: 261 Data size: 73094 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: _col0 (type: boolean), _col1 (type: float), ((_col2 - 10.175) + _col3) (type: double), _col5 (type: bigint), _col6 (type: double), (- (10.175 + (- _col1))) (type: double), (79.553 / _col6) (type: double), (_col3 % (79.553 / _col6)) (type: double), _col7 (type: bigint), _col8 (type: double), ((- 1.389) * _col5) (type: double), (- _col1) (type: float), (_col7 - ((- 1.389) * _col5)) (type: double), _col9 (type: double), (- (_col7 - ((- 1.389) * _col5))) (type: double), _col10 (type: double), (- _col10) (type: double), (_col10 * _col7) (type: double), ((- 26.28) / _col1) (type: double), _col2 (type: bigint), (_col2 - 10.175) (type: double), _col3 (type: double), (_col3 % _col1) (type: double), (10.175 + (- _col1)) (type: double), _col4 (type: double)
+            expressions: _col0 (type: boolean), _col1 (type: float), ((_col2 - 10.175) + _col3) (type: double), _col5 (type: bigint), _col6 (type: double), (- (10.175 + (- _col1))) (type: double), (79.553 / _col6) (type: double), (_col3 % (79.553 / _col6)) (type: double), _col7 (type: bigint), _col8 (type: double), (-1.389 * _col5) (type: double), (- _col1) (type: float), (_col7 - (-1.389 * _col5)) (type: double), _col9 (type: double), (- (_col7 - (-1.389 * _col5))) (type: double), _col10 (type: double), (- _col10) (type: double), (_col10 * _col7) (type: double), (-26.28 / _col1) (type: double), _col2 (type: bigint), (_col2 - 10.175) (type: double), _col3 (type: double), (_col3 % _col1) (type: double), (10.175 + (- _col1)) (type: double), _col4 (type: double)
             outputColumnNames: _col0, _col1, _col10, _col11, _col12, _col13, _col14, _col15, _col17, _col18, _col19, _col2, _col20, _col21, _col22, _col23, _col24, _col25, _col3, _col4, _col5, _col6, _col7, _col8, _col9
             Statistics: Num rows: 261 Data size: 73094 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
