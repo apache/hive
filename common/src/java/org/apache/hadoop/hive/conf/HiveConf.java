@@ -1551,7 +1551,7 @@ public class HiveConf extends Configuration {
     HIVE_SERVER2_SSL_KEYSTORE_PATH("hive.server2.keystore.path", "", ""),
     HIVE_SERVER2_SSL_KEYSTORE_PASSWORD("hive.server2.keystore.password", "", ""),
 
-    HIVE_SECURITY_COMMAND_WHITELIST("hive.security.command.whitelist", "set,reset,dfs,add,delete,compile",
+    HIVE_SECURITY_COMMAND_WHITELIST("hive.security.command.whitelist", "set,reset,dfs,add,list,delete,compile",
         "Comma separated list of non-SQL Hive commands users are authorized to execute"),
 
     HIVE_CONF_RESTRICTED_LIST("hive.conf.restricted.list",
