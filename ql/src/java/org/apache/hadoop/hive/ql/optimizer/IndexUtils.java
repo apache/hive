@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.index.IndexMetadataChangeTask;
@@ -99,7 +100,10 @@ public final class IndexUtils {
     }
 
     for (Index index : indexes) {
-      Table indexTable = hive.getTable(index.getIndexTableName());
+      // index.getDbName() is used as a default database, which is database of target table,
+      // if index.getIndexTableName() does not contain database name
+      String[] qualified = Utilities.getDbTableName(index.getDbName(), index.getIndexTableName());
+      Table indexTable = hive.getTable(qualified[0], qualified[1]);
       // get partitions that match the spec
       Partition matchingPartition = hive.getPartition(indexTable, partSpec, false);
       if (matchingPartition == null) {
@@ -180,8 +184,8 @@ public final class IndexUtils {
   public static List<Index> getIndexes(Table baseTableMetaData, List<String> matchIndexTypes)
     throws SemanticException {
     List<Index> matchingIndexes = new ArrayList<Index>();
-    List<Index> indexesOnTable = null;
 
+    List<Index> indexesOnTable;
     try {
       indexesOnTable = baseTableMetaData.getAllIndexes((short) -1); // get all indexes
     } catch (HiveException e) {

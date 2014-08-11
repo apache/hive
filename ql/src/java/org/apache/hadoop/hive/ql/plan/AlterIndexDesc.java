@@ -19,13 +19,7 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Map;
-import java.util.List;
-
-import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.Order;
-import org.apache.hadoop.hive.ql.exec.Utilities;
 
 /**
  * AlterIndexDesc.
@@ -36,7 +30,6 @@ public class AlterIndexDesc extends DDLDesc implements Serializable {
   private static final long serialVersionUID = 1L;
   private String indexName;
   private String baseTable;
-  private String dbName;
   private Map<String, String> partSpec; // partition specification of partitions touched
   private Map<String, String> props;
 
@@ -102,21 +95,6 @@ public class AlterIndexDesc extends DDLDesc implements Serializable {
    */
   public void setSpec(Map<String, String> partSpec) {
     this.partSpec = partSpec;
-  }
-
-  /**
-   * @return the name of the database that the base table is in
-   */
-  public String getDbName() {
-    return dbName;
-  }
-
-  /**
-   * @param dbName
-   *          the dbName to set
-   */
-  public void setDbName(String dbName) {
-    this.dbName = dbName;
   }
 
   /**

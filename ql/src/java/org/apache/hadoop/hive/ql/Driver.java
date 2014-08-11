@@ -507,7 +507,7 @@ public class Driver implements CommandProcessor {
       // get mapping of tables to columns used
       ColumnAccessInfo colAccessInfo = sem.getColumnAccessInfo();
       // colAccessInfo is set only in case of SemanticAnalyzer
-      Map<String, Set<String>> tab2Cols = colAccessInfo != null ? colAccessInfo
+      Map<String, List<String>> tab2Cols = colAccessInfo != null ? colAccessInfo
           .getTableToColumnAccessMap() : null;
       doAuthorizationV2(ss, op, inputs, outputs, command, tab2Cols);
      return;
@@ -700,7 +700,7 @@ public class Driver implements CommandProcessor {
   }
 
   private static void doAuthorizationV2(SessionState ss, HiveOperation op, HashSet<ReadEntity> inputs,
-      HashSet<WriteEntity> outputs, String command, Map<String, Set<String>> tab2cols) throws HiveException {
+      HashSet<WriteEntity> outputs, String command, Map<String, List<String>> tab2cols) throws HiveException {
 
     HiveAuthzContext.Builder authzContextBuilder = new HiveAuthzContext.Builder();
 
@@ -711,36 +711,14 @@ public class Driver implements CommandProcessor {
     authzContextBuilder.setCommandString(command);
 
     HiveOperationType hiveOpType = getHiveOperationType(op);
-    List<HivePrivilegeObject> inputsHObjs = getHivePrivObjects(inputs);
-    updateInputColumnInfo(inputsHObjs, tab2cols);
+    List<HivePrivilegeObject> inputsHObjs = getHivePrivObjects(inputs, tab2cols);
+    List<HivePrivilegeObject> outputHObjs = getHivePrivObjects(outputs, null);
 
-    List<HivePrivilegeObject> outputHObjs = getHivePrivObjects(outputs);
     ss.getAuthorizerV2().checkPrivileges(hiveOpType, inputsHObjs, outputHObjs, authzContextBuilder.build());
-    return;
   }
 
-  /**
-   * Add column information for input table objects
-   * @param inputsHObjs input HivePrivilegeObject
-   * @param map table to used input columns mapping
-   */
-  private static void updateInputColumnInfo(List<HivePrivilegeObject> inputsHObjs,
-      Map<String, Set<String>> tableName2Cols) {
-    if(tableName2Cols == null) {
-      return;
-    }
-    for(HivePrivilegeObject inputObj : inputsHObjs){
-      if(inputObj.getType() != HivePrivilegeObjectType.TABLE_OR_VIEW){
-        // input columns are relevant only for tables or views
-        continue;
-      }
-      Set<String> cols = tableName2Cols.get(Table.getCompleteName(inputObj.getDbname(),
-          inputObj.getObjectName()));
-      inputObj.setColumns(cols);
-    }
-  }
-
-  private static List<HivePrivilegeObject> getHivePrivObjects(HashSet<? extends Entity> privObjects) {
+  private static List<HivePrivilegeObject> getHivePrivObjects(
+      HashSet<? extends Entity> privObjects, Map<String, List<String>> tableName2Cols) {
     List<HivePrivilegeObject> hivePrivobjs = new ArrayList<HivePrivilegeObject>();
     if(privObjects == null){
       return hivePrivobjs;
@@ -764,13 +742,17 @@ public class Driver implements CommandProcessor {
       //support for authorization on partitions needs to be added
       String dbname = null;
       String objName = null;
+      List<String> partKeys = null;
+      List<String> columns = null;
       switch(privObject.getType()){
       case DATABASE:
-        dbname = privObject.getDatabase() == null ? null : privObject.getDatabase().getName();
+        dbname = privObject.getDatabase().getName();
         break;
       case TABLE:
-        dbname = privObject.getTable() == null ? null : privObject.getTable().getDbName();
-        objName = privObject.getTable() == null ? null : privObject.getTable().getTableName();
+        dbname = privObject.getTable().getDbName();
+        objName = privObject.getTable().getTableName();
+        columns = tableName2Cols == null ? null :
+            tableName2Cols.get(Table.getCompleteName(dbname, objName));
         break;
       case DFS_DIR:
       case LOCAL_DIR:
@@ -788,7 +770,7 @@ public class Driver implements CommandProcessor {
       }
       HivePrivObjectActionType actionType = AuthorizationUtils.getActionType(privObject);
       HivePrivilegeObject hPrivObject = new HivePrivilegeObject(privObjType, dbname, objName,
-          actionType);
+          partKeys, columns, actionType, null);
       hivePrivobjs.add(hPrivObject);
     }
     return hivePrivobjs;

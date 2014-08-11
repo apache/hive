@@ -10149,7 +10149,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // check for existence of table
     if (ifNotExists) {
       try {
-        Table table = getTableWithQN(tableName, false);
+        Table table = getTable(tableName, false);
         if (table != null) { // table exists
           return null;
         }
@@ -10214,7 +10214,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       tblProps = addDefaultProperties(tblProps);
 
       if (isTemporary) {
-        Table likeTable = getTableWithQN(likeTableName, false);
+        Table likeTable = getTable(likeTableName, false);
         if (likeTable != null && likeTable.getPartCols().size() > 0) {
           throw new SemanticException("Partition columns are not supported on temporary tables "
               + "and source table in CREATE TABLE LIKE is partitioned.");
@@ -10334,7 +10334,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private void validateCreateView(CreateViewDesc createVwDesc)
     throws SemanticException {
     try {
-      Table oldView = getTableWithQN(createVwDesc.getViewName(), false);
+      Table oldView = getTable(createVwDesc.getViewName(), false);
 
       // ALTER VIEW AS SELECT requires the view must exist
       if (createVwDesc.getIsAlterViewAs() && oldView == null) {

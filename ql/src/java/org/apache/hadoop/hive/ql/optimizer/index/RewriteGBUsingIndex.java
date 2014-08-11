@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.index.AggregateIndexHandler;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -336,8 +337,9 @@ public class RewriteGBUsingIndex implements Transform {
       // index is changed.
       List<String> idxTblColNames = new ArrayList<String>();
       try {
-        Table idxTbl = hiveInstance.getTable(index.getDbName(),
+        String[] qualified = Utilities.getDbTableName(index.getDbName(),
             index.getIndexTableName());
+        Table idxTbl = hiveInstance.getTable(qualified[0], qualified[1]);
         for (FieldSchema idxTblCol : idxTbl.getCols()) {
           idxTblColNames.add(idxTblCol.getName());
         }

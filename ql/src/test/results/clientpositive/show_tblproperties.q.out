@@ -9,7 +9,7 @@ PREHOOK: query: show tblproperties tmpfoo("bar")
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: show tblproperties tmpfoo("bar")
 POSTHOOK: type: SHOW_TBLPROPERTIES
-Table tmpfoo does not have property: bar	 
+Table default.tmpfoo does not have property: bar	 
 PREHOOK: query: alter table tmpfoo set tblproperties ("bar" = "bar value")
 PREHOOK: type: ALTERTABLE_PROPERTIES
 PREHOOK: Input: default@tmpfoo

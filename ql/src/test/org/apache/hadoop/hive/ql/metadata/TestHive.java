@@ -397,6 +397,7 @@ public class TestHive extends TestCase {
     try{
       // create a simple table
       String tableName = "table_for_testindex";
+      String qTableName = MetaStoreUtils.DEFAULT_DATABASE_NAME + "." + tableName;
       try {
         hm.dropTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, tableName);
       } catch (HiveException e) {
@@ -431,6 +432,7 @@ public class TestHive extends TestCase {
       List<String> indexedCols = new ArrayList<String>();
       indexedCols.add("col1");
       String indexTableName = "index_on_table_for_testindex_table";
+      String qIndexTableName = MetaStoreUtils.DEFAULT_DATABASE_NAME + "." + indexTableName;
       boolean deferredRebuild = true;
       String inputFormat = SequenceFileInputFormat.class.getName();
       String outputFormat = SequenceFileOutputFormat.class.getName();
@@ -446,7 +448,7 @@ public class TestHive extends TestCase {
       Map<String, String> indexProps = null;
       Map<String, String> tableProps = null;
       Map<String, String> serdeProps = new HashMap<String, String>();
-      hm.createIndex(tableName, indexName, indexHandlerClass, indexedCols, indexTableName,
+      hm.createIndex(qTableName, indexName, indexHandlerClass, indexedCols, qIndexTableName,
           deferredRebuild, inputFormat, outputFormat, serde, storageHandler, location,
           indexProps, tableProps, serdeProps, collItemDelim, fieldDelim, fieldEscape, lineDelim,
           mapKeyDelim, indexComment);
