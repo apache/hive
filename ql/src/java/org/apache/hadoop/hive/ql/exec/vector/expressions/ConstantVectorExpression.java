@@ -187,13 +187,14 @@ public class ConstantVectorExpression extends VectorExpression {
 
   public void setTypeString(String typeString) {
     this.outputType = typeString;
-    if ("string".equalsIgnoreCase(typeString)) {
+    if (VectorizationContext.isStringFamily(typeString)) {
       this.type = Type.BYTES;
-    } else if ("double".equalsIgnoreCase(typeString)) {
+    } else if (VectorizationContext.isFloatFamily(typeString)) {
       this.type = Type.DOUBLE;
-    } else if (VectorizationContext.decimalTypePattern.matcher(typeString).matches()){
+    } else if (VectorizationContext.isDecimalFamily(typeString)){
       this.type = Type.DECIMAL;
     } else {
+      // everything else that does not belong to string, double, decimal is treated as long.	
       this.type = Type.LONG;
     }
   }

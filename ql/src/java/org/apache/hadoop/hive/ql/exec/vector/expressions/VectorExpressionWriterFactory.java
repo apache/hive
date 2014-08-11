@@ -50,25 +50,12 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableHiveDecim
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableHiveVarcharObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableIntObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableLongObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableHiveVarcharObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableTimestampObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableShortObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableStringObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableTimestampObjectInspector;
-import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.VoidObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
-import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
-import org.apache.hadoop.io.BooleanWritable;
-import org.apache.hadoop.io.FloatWritable;
-import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.io.Writable;
 
 /**
  * VectorExpressionWritableFactory helper class for generating VectorExpressionWritable objects.
@@ -364,7 +351,6 @@ public final class VectorExpressionWriterFactory {
      */
     public static VectorExpressionWriter genVectorExpressionWritable(ExprNodeDesc nodeDesc)
       throws HiveException {
-      String nodeType = nodeDesc.getTypeString();
       ObjectInspector objectInspector = nodeDesc.getWritableObjectInspector();
       if (null == objectInspector) {
         objectInspector = TypeInfoUtils
@@ -408,6 +394,9 @@ public final class VectorExpressionWriterFactory {
           case LONG:
             return genVectorExpressionWritableLong(
                 (SettableLongObjectInspector) fieldObjInspector);
+          case VOID:
+              return genVectorExpressionWritableVoid(
+                  (VoidObjectInspector) fieldObjInspector);        	  
           case BINARY:
             return genVectorExpressionWritableBinary(
                 (SettableBinaryObjectInspector) fieldObjInspector);
@@ -722,6 +711,39 @@ public final class VectorExpressionWriterFactory {
     }.init(fieldObjInspector);
   }
 
+  private static VectorExpressionWriter genVectorExpressionWritableVoid(
+	      VoidObjectInspector fieldObjInspector) throws HiveException {
+	    return new VectorExpressionWriterLong() {
+	      private Object obj;
+	      
+	      public VectorExpressionWriter init(VoidObjectInspector objInspector) 
+	          throws HiveException {
+	        super.init(objInspector);
+	        this.obj = initValue(null);
+	        return this;
+	      }
+	      
+	      @Override
+	      public Object writeValue(long value) throws HiveException {
+	        return this.obj;
+	      }
+	      
+	      @Override
+	      public Object setValue(Object field, long value) throws HiveException {
+	        if (null == field) {
+	          field = initValue(null);
+	        }
+	        return field;
+	      }
+
+	      @Override
+	      public Object initValue(Object ignored) {
+	        return ((VoidObjectInspector) this.objectInspector).copyObject(null);
+	      }
+	    }.init(fieldObjInspector);
+	  }
+  
+  
   private static VectorExpressionWriter genVectorExpressionWritableInt(
       SettableIntObjectInspector fieldObjInspector) throws HiveException {
     return new VectorExpressionWriterLong() {

@@ -136,6 +136,7 @@ STAGE PLANS:
                   Map-reduce partition columns: _col0 (type: int)
                   Statistics: Num rows: 1049 Data size: 311170 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: struct<count:bigint,sum:double,input:int>), _col2 (type: struct<count:bigint,sum:double,input:double>), _col3 (type: struct<count:bigint,sum:decimal(12,0),input:decimal(10,0)>)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: avg(VALUE._col0), avg(VALUE._col1), avg(VALUE._col2)

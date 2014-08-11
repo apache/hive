@@ -80,6 +80,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeNullDesc;
 import org.apache.hadoop.hive.ql.udf.SettableUDF;
 import org.apache.hadoop.hive.ql.udf.UDFConv;
 import org.apache.hadoop.hive.ql.udf.UDFHex;
@@ -323,10 +324,12 @@ public class VectorizationContext {
         ve = getGenericUdfVectorExpression(expr.getGenericUDF(),
             childExpressions, mode, exprDesc.getTypeInfo());
       }
+    } else if (exprDesc instanceof ExprNodeNullDesc) {
+    	ve = getConstantVectorExpression(null, exprDesc.getTypeInfo(), mode);
     } else if (exprDesc instanceof ExprNodeConstantDesc) {
       ve = getConstantVectorExpression(((ExprNodeConstantDesc) exprDesc).getValue(), exprDesc.getTypeInfo(),
           mode);
-    }
+    } 
     if (ve == null) {
       throw new HiveException("Could not vectorize expression: "+exprDesc.getName());
     }
@@ -410,8 +413,8 @@ public class VectorizationContext {
         }
       }
     } else {
-      for (ExprNodeDesc child : children) {
-        ExprNodeDesc castExpression = getImplicitCastExpression(genericUDF, child, commonType);
+      for (ExprNodeDesc child : children) {    	
+    	ExprNodeDesc castExpression = getImplicitCastExpression(genericUDF, child, commonType);
         if (castExpression != null) {
           atleastOneCastNeeded = true;
           childrenWithCasts.add(castExpression);
@@ -652,69 +655,70 @@ public class VectorizationContext {
   }
 
   /**
-   * Handles only the special case of unary operators on a constant.
+   * Handles only the special cases of cast/+ve/-ve operator on a constant.
    * @param exprDesc
-   * @return The same expression if no folding done, else return the constant
+   * @return The same expression if no evaluation done, else return the constant
    *         expression.
    * @throws HiveException
    */
-  ExprNodeDesc foldConstantsForUnaryExpression(ExprNodeDesc exprDesc) throws HiveException {
-    if (!(exprDesc instanceof ExprNodeGenericFuncDesc)) {
-      return exprDesc;
-    }
-    
-    if (exprDesc.getChildren() == null || (exprDesc.getChildren().size() != 1) ) {
-      return exprDesc;
-    }
-
-    ExprNodeConstantDesc foldedChild = null;
-    if (!( exprDesc.getChildren().get(0) instanceof ExprNodeConstantDesc)) {
-
-      // try recursive folding
-      ExprNodeDesc expr = foldConstantsForUnaryExpression(exprDesc.getChildren().get(0));
-      if (expr instanceof ExprNodeConstantDesc) {
-        foldedChild = (ExprNodeConstantDesc) expr;
-      }
-    } else {
-      foldedChild = (ExprNodeConstantDesc) exprDesc.getChildren().get(0);
-    }
-
-    if (foldedChild == null) {
-      return exprDesc;
-    }
-
-    ObjectInspector childoi = foldedChild.getWritableObjectInspector();
-    GenericUDF gudf = ((ExprNodeGenericFuncDesc) exprDesc).getGenericUDF();
-
-    if (gudf instanceof GenericUDFOPNegative || gudf instanceof GenericUDFOPPositive
-        || castExpressionUdfs.contains(gudf.getClass())
-        || ((gudf instanceof GenericUDFBridge)
-            && castExpressionUdfs.contains(((GenericUDFBridge) gudf).getUdfClass()))) {
-      ExprNodeEvaluator<?> evaluator = ExprNodeEvaluatorFactory.get(exprDesc);
-      ObjectInspector output = evaluator.initialize(childoi);
-      Object constant = evaluator.evaluate(null);
-      Object java = ObjectInspectorUtils.copyToStandardJavaObject(constant, output);  
-      return new ExprNodeConstantDesc(exprDesc.getTypeInfo(), java);
-     }
-
-    return exprDesc;
+  ExprNodeDesc evaluateCastOnConstants(ExprNodeDesc exprDesc) throws HiveException {
+	  if (!(exprDesc instanceof ExprNodeGenericFuncDesc)) {
+		  return exprDesc;
+	  }
+      
+	  if (exprDesc.getChildren() == null || (exprDesc.getChildren().size() != 1) ) {
+		  return exprDesc;
+	  }
+  
+	  ExprNodeConstantDesc foldedChild = null;
+	  if (!( exprDesc.getChildren().get(0) instanceof ExprNodeConstantDesc)) {
+		  
+		  // try recursive folding
+		  ExprNodeDesc expr = evaluateCastOnConstants(exprDesc.getChildren().get(0));
+		  if (expr instanceof ExprNodeConstantDesc) {
+			  foldedChild = (ExprNodeConstantDesc) expr;
+		  }
+	  } else {
+		  foldedChild = (ExprNodeConstantDesc) exprDesc.getChildren().get(0);
+	  }
+  
+	  if (foldedChild == null) {
+		  return exprDesc;
+	  }
+  
+	  ObjectInspector childoi = foldedChild.getWritableObjectInspector();
+	  GenericUDF gudf = ((ExprNodeGenericFuncDesc) exprDesc).getGenericUDF();
+      
+	  // Only evaluate +ve/-ve or cast on constant or recursive casting.
+	  if (gudf instanceof GenericUDFOPNegative || gudf instanceof GenericUDFOPPositive ||
+			  castExpressionUdfs.contains(gudf.getClass())
+			  || ((gudf instanceof GenericUDFBridge)
+					  && castExpressionUdfs.contains(((GenericUDFBridge) gudf).getUdfClass()))) {
+		  ExprNodeEvaluator<?> evaluator = ExprNodeEvaluatorFactory.get(exprDesc);
+		  ObjectInspector output = evaluator.initialize(childoi);
+		  Object constant = evaluator.evaluate(null);
+		  Object java = ObjectInspectorUtils.copyToStandardJavaObject(constant, output);  
+		  return new ExprNodeConstantDesc(exprDesc.getTypeInfo(), java);
+	  }
+  
+	  return exprDesc;
   }
-
-  /* Fold simple unary expressions in all members of the input list and return new list
+  
+  /* For cast on constant operator in all members of the input list and return new list
    * containing results.
    */
-  private List<ExprNodeDesc> foldConstantsForUnaryExprs(List<ExprNodeDesc> childExpr)
-      throws HiveException {
-    List<ExprNodeDesc> constantFoldedChildren = new ArrayList<ExprNodeDesc>();
-    if (childExpr != null) {
-      for (ExprNodeDesc expr : childExpr) {
-        expr = this.foldConstantsForUnaryExpression(expr);
-        constantFoldedChildren.add(expr);
-      }
-    }
-    return constantFoldedChildren;
+  private List<ExprNodeDesc> evaluateCastOnConstants(List<ExprNodeDesc> childExpr)
+		  throws HiveException {
+	  List<ExprNodeDesc> evaluatedChildren = new ArrayList<ExprNodeDesc>();
+	  if (childExpr != null) {
+        for (ExprNodeDesc expr : childExpr) {
+        	expr = this.evaluateCastOnConstants(expr);
+        	evaluatedChildren.add(expr);
+        }
+	  }
+	  return evaluatedChildren;
   }
-
+      
   private VectorExpression getConstantVectorExpression(Object constantValue, TypeInfo typeInfo,
       Mode mode) throws HiveException {
     String type =  typeInfo.getTypeName();
@@ -903,8 +907,9 @@ public class VectorizationContext {
   private VectorExpression getGenericUdfVectorExpression(GenericUDF udf,
       List<ExprNodeDesc> childExpr, Mode mode, TypeInfo returnType) throws HiveException {
 
-    List<ExprNodeDesc> constantFoldedChildren = foldConstantsForUnaryExprs(childExpr);
-    childExpr = constantFoldedChildren;
+	List<ExprNodeDesc> castedChildren = evaluateCastOnConstants(childExpr);
+	childExpr = castedChildren;	  
+	  
     //First handle special cases
     if (udf instanceof GenericUDFBetween) {
       return getBetweenFilterExpression(childExpr, mode, returnType);
@@ -928,15 +933,15 @@ public class VectorizationContext {
       }
     } else if (udf instanceof GenericUDFToDecimal) {
       return getCastToDecimal(childExpr, returnType);
-    }
-
+    } 
+    
     // Now do a general lookup
     Class<?> udfClass = udf.getClass();
     if (udf instanceof GenericUDFBridge) {
       udfClass = ((GenericUDFBridge) udf).getUdfClass();
     }
 
-    VectorExpression ve = getVectorExpressionForUdf(udfClass, constantFoldedChildren, mode, returnType);
+    VectorExpression ve = getVectorExpressionForUdf(udfClass, castedChildren, mode, returnType);
 
     if (ve == null) {
       throw new HiveException("Udf: "+udf.getClass().getSimpleName()+", is not supported");
@@ -998,7 +1003,7 @@ public class VectorizationContext {
       }
     }
   }
-
+      
   /**
    * Create a filter or boolean-valued expression for column IN ( <list-of-constants> )
    */
@@ -1006,13 +1011,11 @@ public class VectorizationContext {
       throws HiveException {
     ExprNodeDesc colExpr = childExpr.get(0);
 
-    TypeInfo colTypeInfo = colExpr.getTypeInfo();
     String colType = colExpr.getTypeString();
 
     // prepare arguments for createVectorExpression
-    List<ExprNodeDesc> childrenForInList =
-        foldConstantsForUnaryExprs(childExpr.subList(1, childExpr.size()));
-
+    List<ExprNodeDesc> childrenForInList =  evaluateCastOnConstants(childExpr.subList(1, childExpr.size()));	
+    
     /* This method assumes that the IN list has no NULL entries. That is enforced elsewhere,
      * in the Vectorizer class. If NULL is passed in as a list entry, behavior is not defined.
      * If in the future, NULL values are allowed in the IN list, be sure to handle 3-valued
@@ -1107,16 +1110,116 @@ public class VectorizationContext {
       return getCastToString(childExpr, returnType);
     }
     return null;
+  } 
+  
+  private Decimal128 castConstantToDecimal(Object scalar, TypeInfo type) throws HiveException {
+	  PrimitiveTypeInfo ptinfo = (PrimitiveTypeInfo) type;
+	  String typename = type.getTypeName();
+	  Decimal128 d = new Decimal128();
+	  int scale = HiveDecimalUtils.getScaleForType(ptinfo);
+	  switch (ptinfo.getPrimitiveCategory()) {
+	  case FLOAT:
+		  float floatVal = ((Float) scalar).floatValue();
+		  d.update(floatVal, (short) scale);
+		  break;
+	  case DOUBLE:
+		  double doubleVal = ((Double) scalar).doubleValue();
+		  d.update(doubleVal, (short) scale);
+		  break;
+	  case BYTE:
+		  byte byteVal = ((Byte) scalar).byteValue();
+		  d.update(byteVal, (short) scale);
+		  break;
+	  case SHORT:
+		  short shortVal = ((Short) scalar).shortValue();
+		  d.update(shortVal, (short) scale);
+		  break;
+	  case INT:
+		  int intVal = ((Integer) scalar).intValue();
+		  d.update(intVal, (short) scale);
+		  break;
+	  case LONG:
+		  long longVal = ((Long) scalar).longValue();
+		  d.update(longVal, (short) scale);
+		  break;
+	  case DECIMAL:
+		  HiveDecimal decimalVal = (HiveDecimal) scalar;
+		  d.update(decimalVal.unscaledValue(), (short) scale);
+		  break;
+	  default:
+		  throw new HiveException("Unsupported type "+typename+" for cast to Decimal128");
+	  }
+	  return d;
   }
 
+  private String castConstantToString(Object scalar, TypeInfo type) throws HiveException {
+	  PrimitiveTypeInfo ptinfo = (PrimitiveTypeInfo) type;
+	  String typename = type.getTypeName();
+	  switch (ptinfo.getPrimitiveCategory()) {
+	  case FLOAT:
+	  case DOUBLE:
+	  case BYTE:
+	  case SHORT:
+	  case INT:
+	  case LONG:
+		  return ((Number) scalar).toString();
+	  case DECIMAL:
+		  HiveDecimal decimalVal = (HiveDecimal) scalar;
+		  return decimalVal.toString();
+	  default:
+		  throw new HiveException("Unsupported type "+typename+" for cast to String");
+	  }
+  }
+
+  private Double castConstantToDouble(Object scalar, TypeInfo type) throws HiveException {
+	  PrimitiveTypeInfo ptinfo = (PrimitiveTypeInfo) type;
+	  String typename = type.getTypeName();
+	  switch (ptinfo.getPrimitiveCategory()) {
+	  case FLOAT:
+	  case DOUBLE:
+	  case BYTE:
+	  case SHORT:
+	  case INT:
+	  case LONG:
+		  return ((Number) scalar).doubleValue();
+	  case DECIMAL:
+		  HiveDecimal decimalVal = (HiveDecimal) scalar;
+		  return decimalVal.doubleValue();
+	  default:
+		  throw new HiveException("Unsupported type "+typename+" for cast to Double");
+	  }
+  }  
+
+  private Long castConstantToLong(Object scalar, TypeInfo type) throws HiveException {
+	  PrimitiveTypeInfo ptinfo = (PrimitiveTypeInfo) type;
+	  String typename = type.getTypeName();
+	  switch (ptinfo.getPrimitiveCategory()) {
+	  case FLOAT:
+	  case DOUBLE:
+	  case BYTE:
+	  case SHORT:
+	  case INT:
+	  case LONG:
+		  return ((Number) scalar).longValue();
+	  case DECIMAL:
+		  HiveDecimal decimalVal = (HiveDecimal) scalar;
+		  return decimalVal.longValue();
+	  default:
+		  throw new HiveException("Unsupported type "+typename+" for cast to Long");
+	  }
+  }    
+  
   private VectorExpression getCastToDecimal(List<ExprNodeDesc> childExpr, TypeInfo returnType)
       throws HiveException {
     ExprNodeDesc child = childExpr.get(0);
     String inputType = childExpr.get(0).getTypeString();
     if (child instanceof ExprNodeConstantDesc) {
-      // Don't do constant folding here.  Wait until the optimizer is changed to do it.
-      // Family of related JIRAs: HIVE-7421, HIVE-7422, and HIVE-7424.
-      return null;
+     // Return a constant vector expression
+      Object constantValue = ((ExprNodeConstantDesc) child).getValue();
+      Decimal128 decimalValue = castConstantToDecimal(constantValue, child.getTypeInfo());
+      return getConstantVectorExpression(decimalValue, returnType, Mode.PROJECTION);    	
+    } else if (child instanceof ExprNodeNullDesc) {
+    	return getConstantVectorExpression(null, returnType, Mode.PROJECTION); 
     }
     if (isIntFamily(inputType)) {
       return createVectorExpression(CastLongToDecimal.class, childExpr, Mode.PROJECTION, returnType);
@@ -1131,16 +1234,19 @@ public class VectorizationContext {
       return createVectorExpression(CastTimestampToDecimal.class, childExpr, Mode.PROJECTION, returnType);
     }
     throw new HiveException("Unhandled cast input type: " + inputType);
-  }
-
+  }  
+  
   private VectorExpression getCastToString(List<ExprNodeDesc> childExpr, TypeInfo returnType)
       throws HiveException {
     ExprNodeDesc child = childExpr.get(0);
     String inputType = childExpr.get(0).getTypeString();
     if (child instanceof ExprNodeConstantDesc) {
-      // Don't do constant folding here.  Wait until the optimizer is changed to do it.
-      // Family of related JIRAs: HIVE-7421, HIVE-7422, and HIVE-7424.
-      return null;
+        // Return a constant vector expression
+        Object constantValue = ((ExprNodeConstantDesc) child).getValue();
+        String strValue = castConstantToString(constantValue, child.getTypeInfo());
+        return getConstantVectorExpression(strValue, returnType, Mode.PROJECTION); 
+    } else if (child instanceof ExprNodeNullDesc) {
+    	return getConstantVectorExpression(null, returnType, Mode.PROJECTION); 
     }
     if (inputType.equals("boolean")) {
       // Boolean must come before the integer family. It's a special case.
@@ -1164,9 +1270,12 @@ public class VectorizationContext {
     ExprNodeDesc child = childExpr.get(0);
     String inputType = childExpr.get(0).getTypeString();
     if (child instanceof ExprNodeConstantDesc) {
-      // Don't do constant folding here.  Wait until the optimizer is changed to do it.
-      // Family of related JIRAs: HIVE-7421, HIVE-7422, and HIVE-7424.
-      return null;
+        // Return a constant vector expression
+        Object constantValue = ((ExprNodeConstantDesc) child).getValue();
+        Double doubleValue = castConstantToDouble(constantValue, child.getTypeInfo());
+        return getConstantVectorExpression(doubleValue, returnType, Mode.PROJECTION);     	
+    } else if (child instanceof ExprNodeNullDesc) {
+    	return getConstantVectorExpression(null, returnType, Mode.PROJECTION); 
     }
     if (isIntFamily(inputType)) {
       return createVectorExpression(CastLongToDouble.class, childExpr, Mode.PROJECTION, returnType);
@@ -1191,6 +1300,8 @@ public class VectorizationContext {
       // Don't do constant folding here.  Wait until the optimizer is changed to do it.
       // Family of related JIRAs: HIVE-7421, HIVE-7422, and HIVE-7424.
       return null;
+    } else if (child instanceof ExprNodeNullDesc) {
+    	return getConstantVectorExpression(null, TypeInfoFactory.booleanTypeInfo, Mode.PROJECTION); 
     }
     // Long and double are handled using descriptors, string needs to be specially handled.
     if (inputType.equals("string")) {
@@ -1215,9 +1326,12 @@ public class VectorizationContext {
     ExprNodeDesc child = childExpr.get(0);
     String inputType = childExpr.get(0).getTypeString();
     if (child instanceof ExprNodeConstantDesc) {
-      // Don't do constant folding here.  Wait until the optimizer is changed to do it.
-      // Family of related JIRAs: HIVE-7421, HIVE-7422, and HIVE-7424.
-      return null;
+        // Return a constant vector expression
+        Object constantValue = ((ExprNodeConstantDesc) child).getValue();
+        Long longValue = castConstantToLong(constantValue, child.getTypeInfo());
+        return getConstantVectorExpression(longValue, TypeInfoFactory.longTypeInfo, Mode.PROJECTION);    	
+    } else if (child instanceof ExprNodeNullDesc) {
+    	return getConstantVectorExpression(null, TypeInfoFactory.longTypeInfo, Mode.PROJECTION); 
     }
     // Float family, timestamp are handled via descriptor based lookup, int family needs
     // special handling.
@@ -1281,7 +1395,7 @@ public class VectorizationContext {
     String colType = commonType.getTypeName();
 
     // prepare arguments for createVectorExpression
-    List<ExprNodeDesc> childrenAfterNot = foldConstantsForUnaryExprs(castChildren);
+    List<ExprNodeDesc> childrenAfterNot = evaluateCastOnConstants(castChildren);
 
     // determine class
     Class<?> cl = null;
