@@ -28,7 +28,7 @@ public class SparkEdgeProperty {
   private long edgeType;
   
   private int numPartitions;
-  
+
   public SparkEdgeProperty(long edgeType, int numPartitions) {
     this.edgeType = edgeType;
     this.numPartitions = numPartitions;
