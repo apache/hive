@@ -18,23 +18,24 @@
 
 package org.apache.hadoop.hive.ql.exec.spark;
 
-import java.util.*;
-
-import com.google.common.collect.Ordering;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.function.PairFlatMapFunction;
-
 import scala.Tuple2;
+
+import java.util.*;
 
 public class SortByShuffler implements SparkShuffler {
 
   @Override
   public JavaPairRDD<BytesWritable, Iterable<BytesWritable>> shuffle(
       JavaPairRDD<BytesWritable, BytesWritable> input, int numPartitions) {
-    Comparator comp = Ordering.<BytesWritable>natural();
-    // Due to HIVE-7540, numPartitions must be to 1
-    JavaPairRDD<BytesWritable, BytesWritable> rdd = input.sortByKey(comp, true, 1);
+    JavaPairRDD<BytesWritable, BytesWritable> rdd;
+    if (numPartitions > 0) {
+      rdd = input.sortByKey(true, numPartitions);
+    } else {
+      rdd = input.sortByKey(true);
+    }
     return rdd.mapPartitionsToPair(new ShuffleFunction());
   }
 
