@@ -44,6 +44,7 @@
     <profile>
       <id>hadoop-2</id>
       <modules>
+        <module>qtest-spark</module>
         <module>hive-unit-hadoop2</module>
         <module>hive-minikdc</module>
       </modules>
