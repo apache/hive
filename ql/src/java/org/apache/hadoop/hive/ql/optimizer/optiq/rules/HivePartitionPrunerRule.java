@@ -18,14 +18,12 @@
 package org.apache.hadoop.hive.ql.optimizer.optiq.rules;
 
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.optiq.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.optiq.reloperators.HiveFilterRel;
 import org.apache.hadoop.hive.ql.optimizer.optiq.reloperators.HiveTableScanRel;
 import org.eigenbase.rel.FilterRelBase;
 import org.eigenbase.relopt.RelOptRule;
 import org.eigenbase.relopt.RelOptRuleCall;
-import org.eigenbase.relopt.RelOptUtil.InputFinder;
 import org.eigenbase.rex.RexNode;
 import org.eigenbase.util.Pair;
 
@@ -57,15 +55,6 @@ public class HivePartitionPrunerRule extends RelOptRule {
     RexNode remainingExpr = predicates.right;
     remainingExpr = remainingExpr == null ? filter.getCluster().getRexBuilder()
         .makeLiteral(true) : remainingExpr;
-
-    if (partColExpr == null || InputFinder.bits(partColExpr).length() == 0 ) {
-      return;
-    }
-
-    try {
-      hiveTable.computePartitionList(conf, partColExpr);
-    } catch (HiveException he) {
-      throw new RuntimeException(he);
-    }
+    hiveTable.computePartitionList(conf, partColExpr);
   }
 }

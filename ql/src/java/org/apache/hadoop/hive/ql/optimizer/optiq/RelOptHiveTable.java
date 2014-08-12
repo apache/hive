@@ -28,6 +28,7 @@ import org.eigenbase.rel.RelNode;
 import org.eigenbase.rel.TableAccessRel;
 import org.eigenbase.relopt.RelOptAbstractTable;
 import org.eigenbase.relopt.RelOptSchema;
+import org.eigenbase.relopt.RelOptUtil.InputFinder;
 import org.eigenbase.reltype.RelDataType;
 import org.eigenbase.rex.RexNode;
 
@@ -140,16 +141,30 @@ public class RelOptHiveTable extends RelOptAbstractTable {
     return sb.toString();
   }
 
-  public void computePartitionList(HiveConf conf, RexNode pruneNode) throws HiveException {
+  public void computePartitionList(HiveConf conf, RexNode pruneNode) {
     partitionList = null;
-    if (pruneNode == null) {
+
+    if (!m_hiveTblMetadata.isPartitioned()) {
+      // no partitions for unpartitioned tables.
       return;
     }
 
-    ExprNodeDesc pruneExpr = pruneNode.accept(new ExprNodeConverter(getName(), getRowType(), true));
+    try {
+      if (pruneNode == null || InputFinder.bits(pruneNode).length() == 0 ) {
+        // there is no predicate on partitioning column, we need all partitions in this case.
+        partitionList = PartitionPruner.prune(m_hiveTblMetadata, null, conf, getName(),
+            new HashMap<String, PrunedPartitionList>());
+        return;
+      }
 
-    partitionList = PartitionPruner.prune(m_hiveTblMetadata, pruneExpr, conf, getName(),
-        new HashMap<String, PrunedPartitionList>());
+      // We have valid pruning expressions, only retrieve qualifying partitions
+      ExprNodeDesc pruneExpr = pruneNode.accept(new ExprNodeConverter(getName(), getRowType(), true));
+
+      partitionList = PartitionPruner.prune(m_hiveTblMetadata, pruneExpr, conf, getName(),
+          new HashMap<String, PrunedPartitionList>());
+    } catch (HiveException he) {
+      throw new RuntimeException(he);
+    }
   }
 
   private void updateColStats(Set<Integer> projIndxLst) {
@@ -182,8 +197,15 @@ public class RelOptHiveTable extends RelOptAbstractTable {
     if (nonPartColNamesThatRqrStats.size() > 0) {
       List<ColStatistics> hiveColStats;
 
-      // 2.1 Handle the case where we are scanning only a set of partitions
+      if (null == partitionList) {
+        // We could be here either because its an unpartitioned table or because
+        // there are no pruning predicates on a partitioned table. If its latter,
+        // we need to fetch all partitions, so do that now.
+        computePartitionList(m_hiveConf, null);
+      }
+
       if (partitionList == null) {
+        // 2.1 Handle the case for unpartitioned table.
         hiveColStats = StatsUtils.getTableColumnStats(m_hiveTblMetadata, m_hiveNonPartitionCols,
             nonPartColNamesThatRqrStats);
 
@@ -202,7 +224,7 @@ public class RelOptHiveTable extends RelOptAbstractTable {
           colNamesFailedStats.addAll(setOfFiledCols);
         }
       } else {
-        // 2.2 Obtain col stats for full table scan
+        // 2.2 Obtain col stats for partitioned table.
         try {
           Statistics stats = StatsUtils.collectStatistics(m_hiveConf, partitionList,
               m_hiveTblMetadata, m_hiveNonPartitionCols, nonPartColNamesThatRqrStats, true, true);
@@ -234,24 +256,7 @@ public class RelOptHiveTable extends RelOptAbstractTable {
     // TODO: Just using no of partitions for NDV is a gross approximation for
     // multi col partitions; Hack till HIVE-7392 gets fixed.
     if (colNamesFailedStats.isEmpty() && !partColNamesThatRqrStats.isEmpty()) {
-      if (m_numPartitions == null) {
-        try {
-          if (partitionList != null) {
-            m_numPartitions = partitionList.getPartitions().size();
-          } else {
-            m_numPartitions = Hive
-                .get()
-                .getPartitionNames(m_hiveTblMetadata.getDbName(), m_hiveTblMetadata.getTableName(),
-                    (short) -1).size();
-          }
-        } catch (HiveException e) {
-          String logMsg = "Could not get stats, number of Partitions for "
-              + m_hiveTblMetadata.getCompleteName();
-          LOG.error(logMsg);
-          throw new RuntimeException(logMsg);
-        }
-      }
-
+       m_numPartitions = partitionList.getPartitions().size();
       ColStatistics cStats = null;
       for (int i = 0; i < partColNamesThatRqrStats.size(); i++) {
         cStats = new ColStatistics(m_hiveTblMetadata.getTableName(),
@@ -295,7 +300,7 @@ public class RelOptHiveTable extends RelOptAbstractTable {
   }
 
   /*
-   * use to check if a set of columns are all partition columns. 
+   * use to check if a set of columns are all partition columns.
    * true only if:
    * - there is a prunedPartList in place
    * - all columns in BitSet are partition

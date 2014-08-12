@@ -93,7 +93,7 @@ public class HiveRelMdDistinctRowCount extends RelMdDistinctRowCount {
   }
 
   /*
-   * Favor Broad Plans over Deep Plans. 
+   * Favor Broad Plans over Deep Plans.
    */
   public RelOptCost getCumulativeCost(HiveJoinRel rel) {
     RelOptCost cost = RelMetadataQuery.getNonCumulativeCost(rel);
