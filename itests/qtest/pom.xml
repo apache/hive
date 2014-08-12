@@ -373,7 +373,7 @@
             </goals>
             <configuration>
               <files>
-                <file>${basedir}/testconfiguration.properties</file>
+                <file>${basedir}/../src/test/resources/testconfiguration.properties</file>
               </files>
             </configuration>
           </execution>
