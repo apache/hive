@@ -60,6 +60,7 @@ public class HiveTableScanRel extends TableAccessRelBase implements HiveRel {
 
   }
 
+  @Override
   public void implement(Implementor implementor) {
 
   }
@@ -68,8 +69,8 @@ public class HiveTableScanRel extends TableAccessRelBase implements HiveRel {
   public double getRows() {
     return ((RelOptHiveTable) table).getRowCount();
   }
-  
+
   public List<ColStatistics> getColStat(List<Integer> projIndxLst) {
-    return ((RelOptHiveTable) table).getColStat(projIndxLst);    
+    return ((RelOptHiveTable) table).getColStat(projIndxLst);
   }
 }
