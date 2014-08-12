@@ -26,7 +26,7 @@ public class SparkEdgeProperty {
   public static long SHUFFLE_SORT = 2;  // Shuffle, keys are sorted
 
   private long edgeType;
-  
+
   private int numPartitions;
 
   public SparkEdgeProperty(long edgeType, int numPartitions) {
