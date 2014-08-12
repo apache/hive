@@ -18,11 +18,8 @@
 
 package org.apache.hadoop.hive.ql.optimizer.stats.annotation;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Stack;
-
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -69,8 +66,10 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNull;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
 import org.apache.hadoop.hive.serde.serdeConstants;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Stack;
 
 public class StatsRulesProcFactory {
 
@@ -921,8 +920,7 @@ public class StatsRulesProcFactory {
                 + " #Rows of parents: " + rowCountParents.toString() + ". Denominator: " + denom);
           }
 
-          stats.setNumRows(newRowCount);
-          stats.setDataSize(StatsUtils.getDataSizeFromColumnStats(newRowCount, outColStats));
+          updateStatsForJoinType(stats, newRowCount, true, jop.getConf());
           jop.setStatistics(stats);
 
           if (LOG.isDebugEnabled()) {
@@ -966,6 +964,39 @@ public class StatsRulesProcFactory {
         }
       }
       return null;
+    }
+
+    private void updateStatsForJoinType(Statistics stats, long newNumRows,
+        boolean useColStats, JoinDesc conf) {
+      long oldRowCount = stats.getNumRows();
+      double ratio = (double) newNumRows / (double) oldRowCount;
+      stats.setNumRows(newNumRows);
+
+      if (useColStats) {
+        List<ColStatistics> colStats = stats.getColumnStats();
+        for (ColStatistics cs : colStats) {
+          long oldDV = cs.getCountDistint();
+          long newDV = oldDV;
+
+          // if ratio is greater than 1, then number of rows increases. This can happen
+          // when some operators like GROUPBY duplicates the input rows in which case
+          // number of distincts should not change. Update the distinct count only when
+          // the output number of rows is less than input number of rows.
+          if (ratio <= 1.0) {
+            newDV = (long) Math.ceil(ratio * oldDV);
+          }
+          // Assumes inner join
+          // TODO: HIVE-5579 will handle different join types
+          cs.setNumNulls(0);
+          cs.setCountDistint(newDV);
+        }
+        stats.setColumnStats(colStats);
+        long newDataSize = StatsUtils.getDataSizeFromColumnStats(newNumRows, colStats);
+        stats.setDataSize(newDataSize);
+      } else {
+        long newDataSize = (long) (ratio * stats.getDataSize());
+        stats.setDataSize(newDataSize);
+      }
     }
 
     private long computeNewRowCount(List<Long> rowCountParents, long denom) {
