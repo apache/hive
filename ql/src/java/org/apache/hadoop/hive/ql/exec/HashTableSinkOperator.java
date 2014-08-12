@@ -181,7 +181,7 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
         if (pos == posBigTableAlias) {
           continue;
         }
-        mapJoinTables[pos] = new HashMapWrapper(hconf);
+        mapJoinTables[pos] = new HashMapWrapper(hconf, -1);
         TableDesc valueTableDesc = conf.getValueTblFilteredDescs().get(pos);
         SerDe valueSerDe = (SerDe) ReflectionUtils.newInstance(valueTableDesc.getDeserializerClass(), null);
         SerDeUtils.initializeSerDe(valueSerDe, null, valueTableDesc.getProperties(), null);
