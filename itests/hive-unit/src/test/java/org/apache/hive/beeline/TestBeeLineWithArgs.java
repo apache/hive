@@ -362,7 +362,7 @@ public class TestBeeLineWithArgs {
     final String TEST_NAME = "testNullNonDefault";
     final String SCRIPT_TEXT = "set hive.support.concurrency = false;\n" +
                 "!set nullemptystring true\n select 'abc',null,'def' from " + tableName + " limit 1 ;\n";
-    final String EXPECTED_PATTERN = "'abc','','def'";
+    final String EXPECTED_PATTERN = "abc,,def";
 
     List<String> argList = getBaseArgs(JDBC_URL);
     argList.add("--outputformat=csv");
@@ -382,7 +382,7 @@ public class TestBeeLineWithArgs {
     final String SCRIPT_TEXT = "set hive.support.concurrency = false;\n" +
                 "select 'abc',null,'def' from " + tableName + " limit 1 ;\n";
     //final String EXPECTED_PATTERN = "| abc  |      | def  |";
-    final String EXPECTED_PATTERN = "'abc','','def'";
+    final String EXPECTED_PATTERN = "abc,,def";
 
     List<String> argList = getBaseArgs(JDBC_URL);
     argList.add("--nullemptystring=true");
