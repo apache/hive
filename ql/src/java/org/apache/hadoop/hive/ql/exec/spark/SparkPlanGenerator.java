@@ -47,7 +47,7 @@ import org.apache.spark.api.java.JavaSparkContext;
 
 public class SparkPlanGenerator {
   private JavaSparkContext sc;
-  private JobConf jobConf;
+  private final JobConf jobConf;
   private Context context;
   private Path scratchDir;
 
@@ -86,7 +86,6 @@ public class SparkPlanGenerator {
   private JavaPairRDD<BytesWritable, BytesWritable> generateRDD(MapWork mapWork) throws Exception {
     List<Path> inputPaths = Utilities.getInputPaths(jobConf, mapWork, scratchDir, context, false);
     Utilities.setInputPaths(jobConf, inputPaths);
-    Utilities.setMapWork(jobConf, mapWork, scratchDir, true);
     Class ifClass = HiveInputFormat.class;
 
     // The mapper class is expected by the HiveInputFormat.
@@ -119,7 +118,7 @@ public class SparkPlanGenerator {
 
   private MapTran generate(MapWork mw) throws IOException {
     MapTran result = new MapTran();
-    Utilities.setMapWork(jobConf, mw, scratchDir, true);
+    Utilities.setMapWork(jobConf, mw, scratchDir, false);
     Utilities.createTmpDirs(jobConf, mw);
     jobConf.set("mapred.mapper.class", ExecMapper.class.getName());
     byte[] confBytes = KryoSerializer.serializeJobConf(jobConf);
@@ -137,11 +136,15 @@ public class SparkPlanGenerator {
 
   private ReduceTran generate(ReduceWork rw) throws IOException {
     ReduceTran result = new ReduceTran();
-    Utilities.setReduceWork(jobConf, rw, scratchDir, true);
-    Utilities.createTmpDirs(jobConf, rw);
-    byte[] confBytes = KryoSerializer.serializeJobConf(jobConf);
-    HiveReduceFunction mapFunc = new HiveReduceFunction(confBytes);
-    result.setReduceFunction(mapFunc);
+    // Clone jobConf for each ReduceWork so we can have multiple of them
+    JobConf newJobConf = new JobConf(jobConf);
+    // Make sure we'll use a different plan path from the original one
+    HiveConf.setVar(newJobConf, HiveConf.ConfVars.PLAN, "");
+    Utilities.setReduceWork(newJobConf, rw, scratchDir, false);
+    Utilities.createTmpDirs(newJobConf, rw);
+    byte[] confBytes = KryoSerializer.serializeJobConf(newJobConf);
+    HiveReduceFunction redFunc = new HiveReduceFunction(confBytes);
+    result.setReduceFunction(redFunc);
     return result;
   }
 

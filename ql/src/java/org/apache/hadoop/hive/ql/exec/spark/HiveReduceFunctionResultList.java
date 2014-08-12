@@ -18,12 +18,16 @@
 package org.apache.hadoop.hive.ql.exec.spark;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.OperatorUtils;
 import org.apache.hadoop.hive.ql.exec.mr.ExecReducer;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.mapred.Reporter;
 import scala.Tuple2;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Iterator;
 
 public class HiveReduceFunctionResultList extends
@@ -41,6 +45,7 @@ public class HiveReduceFunctionResultList extends
       ExecReducer reducer) {
     super(conf, inputIterator);
     this.reducer = reducer;
+    setOutputCollector();
   }
 
   @Override
@@ -57,5 +62,12 @@ public class HiveReduceFunctionResultList extends
   @Override
   protected void closeRecordProcessor() {
     reducer.close();
+  }
+
+  private void setOutputCollector() {
+    if (reducer != null && reducer.getReducer() != null) {
+      OperatorUtils.setChildrenCollector(
+          Arrays.<Operator<? extends OperatorDesc>>asList(reducer.getReducer()), this);
+    }
   }
 }
