@@ -11766,8 +11766,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private boolean canHandleQuery() {
     boolean runOptiqPlanner = false;
 
-    if ((queryProperties.getJoinCount() < HiveConf.getIntVar(conf,
-        HiveConf.ConfVars.HIVE_CBO_MAX_JOINS_SUPPORTED))
+    if ((queryProperties.getJoinCount() > 1)
         && !queryProperties.hasClusterBy()
         && !queryProperties.hasDistributeBy()
         && !queryProperties.hasSortBy()
@@ -11840,56 +11839,27 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       List<RelMetadataProvider> list = Lists.newArrayList();
       list.add(HiveDefaultRelMetadataProvider.INSTANCE);
       RelTraitSet desiredTraits = cluster.traitSetOf(HiveRel.CONVENTION, RelCollationImpl.EMPTY);
-      final boolean bushy = RelOptUtil.countJoins(optiqPreCboPlan) > 3 ? true : false;
 
-      if (!bushy) {
-        planner.registerMetadataProviders(list);
+      HepProgram hepPgm = null;
+      HepProgramBuilder hepPgmBldr = new HepProgramBuilder().addMatchOrder(
+        HepMatchOrder.BOTTOM_UP).addRuleInstance(new ConvertMultiJoinRule(HiveJoinRel.class));
+        hepPgmBldr.addRuleInstance(new LoptOptimizeJoinRule(HiveJoinRel.HIVE_JOIN_FACTORY));
 
-        RelMetadataProvider chainedProvider = ChainedRelMetadataProvider.of(list);
-        cluster.setMetadataProvider(new CachingRelMetadataProvider(chainedProvider, planner));
+      hepPgm = hepPgmBldr.build();
+      HepPlanner hepPlanner = new HepPlanner(hepPgm);
 
-        planner.addRule(HiveSwapJoinRule.INSTANCE);
-        planner.addRule(HivePushJoinThroughJoinRule.LEFT);
-        planner.addRule(HivePushJoinThroughJoinRule.RIGHT);
-        if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_CBO_PULLPROJECTABOVEJOIN_RULE)) {
-          planner.addRule(HivePullUpProjectsAboveJoinRule.BOTH_PROJECT);
-          planner.addRule(HivePullUpProjectsAboveJoinRule.LEFT_PROJECT);
-          planner.addRule(HivePullUpProjectsAboveJoinRule.RIGHT_PROJECT);
-          planner.addRule(HiveMergeProjectRule.INSTANCE);
-        }
+      hepPlanner.registerMetadataProviders(list);
+      RelMetadataProvider chainedProvider = ChainedRelMetadataProvider.of(list);
+      cluster.setMetadataProvider(new CachingRelMetadataProvider(chainedProvider, hepPlanner));
 
-        RelNode rootRel = optiqPreCboPlan;
-        if (!optiqPreCboPlan.getTraitSet().equals(desiredTraits)) {
-          rootRel = planner.changeTraits(optiqPreCboPlan, desiredTraits);
-        }
-        planner.setRoot(rootRel);
-
-        optiqOptimizedPlan = planner.findBestExp();
-      } else {
-        HepProgram hepPgm = null;
-        HepProgramBuilder hepPgmBldr = new HepProgramBuilder().addMatchOrder(
-            HepMatchOrder.BOTTOM_UP).addRuleInstance(new ConvertMultiJoinRule(HiveJoinRel.class));
-        if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_CBO_GREEDY_JOIN_ORDER)) {
-          hepPgmBldr.addRuleInstance(new LoptOptimizeJoinRule(HiveJoinRel.HIVE_JOIN_FACTORY));
-        } else {
-          hepPgmBldr.addRuleInstance(new OptimizeBushyJoinRule(HiveJoinRel.HIVE_JOIN_FACTORY,
-              HiveProjectRel.DEFAULT_PROJECT_FACTORY));
-        }
-        hepPgm = hepPgmBldr.build();
-        HepPlanner hepPlanner = new HepPlanner(hepPgm);
-
-        hepPlanner.registerMetadataProviders(list);
-        RelMetadataProvider chainedProvider = ChainedRelMetadataProvider.of(list);
-        cluster.setMetadataProvider(new CachingRelMetadataProvider(chainedProvider, hepPlanner));
-
-        RelNode rootRel = optiqPreCboPlan;
-        if (!optiqPreCboPlan.getTraitSet().equals(desiredTraits)) {
-          rootRel = hepPlanner.changeTraits(optiqPreCboPlan, desiredTraits);
-        }
-        hepPlanner.setRoot(rootRel);
-
-        optiqOptimizedPlan = hepPlanner.findBestExp();
+      RelNode rootRel = optiqPreCboPlan;
+      if (!optiqPreCboPlan.getTraitSet().equals(desiredTraits)) {
+        rootRel = hepPlanner.changeTraits(optiqPreCboPlan, desiredTraits);
       }
+      hepPlanner.setRoot(rootRel);
+
+      optiqOptimizedPlan = hepPlanner.findBestExp();
+
 
       if (LOG.isDebugEnabled()) {
         LOG.debug("CBO Planning details:\n");
