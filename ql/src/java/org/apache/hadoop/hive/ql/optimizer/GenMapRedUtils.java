@@ -1422,7 +1422,12 @@ public final class GenMapRedUtils {
       if (mrWork.getReduceWork() != null) {
         mrWork.getReduceWork().setGatheringStats(true);
       }
-    } else {
+    } else if (currTask.getWork() instanceof SparkWork) {
+      SparkWork work = (SparkWork) currTask.getWork();
+      for (BaseWork w: work.getAllWork()) {
+        w.setGatheringStats(true);
+      }
+    } else { // must be TezWork
       TezWork work = (TezWork) currTask.getWork();
       for (BaseWork w: work.getAllWork()) {
         w.setGatheringStats(true);
