@@ -161,7 +161,6 @@ public class HiveAuthorizationTaskFactoryImpl implements HiveAuthorizationTaskFa
 
     PrincipalDesc principalDesc = null;
     PrivilegeObjectDesc privHiveObj = null;
-    List<String> cols = null;
 
     ASTNode param = null;
     if (ast.getChildCount() > 0) {
@@ -176,30 +175,12 @@ public class HiveAuthorizationTaskFactoryImpl implements HiveAuthorizationTaskFa
       if (param.getType() == HiveParser.TOK_RESOURCE_ALL) {
         privHiveObj = new PrivilegeObjectDesc();
       } else if (param.getType() == HiveParser.TOK_PRIV_OBJECT_COL) {
-        privHiveObj = new PrivilegeObjectDesc();
-        //set object name
-        String text = param.getChild(0).getText();
-        privHiveObj.setObject(BaseSemanticAnalyzer.unescapeIdentifier(text));
-        //set object type
-        ASTNode objTypeNode = (ASTNode) param.getChild(1);
-        privHiveObj.setTable(objTypeNode.getToken().getType() == HiveParser.TOK_TABLE_TYPE);
-
-        //set col and partition spec if specified
-        for (int i = 2; i < param.getChildCount(); i++) {
-          ASTNode partOrCol = (ASTNode) param.getChild(i);
-          if (partOrCol.getType() == HiveParser.TOK_PARTSPEC) {
-            privHiveObj.setPartSpec(DDLSemanticAnalyzer.getPartSpec(partOrCol));
-          } else if (partOrCol.getType() == HiveParser.TOK_TABCOLNAME) {
-            cols = BaseSemanticAnalyzer.getColumnNames(partOrCol);
-          } else {
-            throw new SemanticException("Invalid token type " + partOrCol.getType());
-          }
-        }
+        privHiveObj = parsePrivObject(param);
       }
     }
 
     ShowGrantDesc showGrant = new ShowGrantDesc(resultFile.toString(),
-        principalDesc, privHiveObj, cols);
+        principalDesc, privHiveObj);
     return TaskFactory.get(new DDLWork(inputs, outputs, showGrant), conf);
   }
 
@@ -219,7 +200,7 @@ public class HiveAuthorizationTaskFactoryImpl implements HiveAuthorizationTaskFa
     boolean isAdmin = false;
     if((isGrant && wAdminOption.getToken().getType() == HiveParser.TOK_GRANT_WITH_ADMIN_OPTION) ||
        (!isGrant && wAdminOption.getToken().getType() == HiveParser.TOK_ADMIN_OPTION_FOR)){
-      rolesStartPos = 2; //start reading role names from next postion
+      rolesStartPos = 2; //start reading role names from next position
       isAdmin = true;
     }
 
@@ -242,20 +223,10 @@ public class HiveAuthorizationTaskFactoryImpl implements HiveAuthorizationTaskFa
       HashSet<WriteEntity> outputs)
       throws SemanticException {
 
-    PrivilegeObjectDesc subject = new PrivilegeObjectDesc();
-    //set object identifier
-    subject.setObject(BaseSemanticAnalyzer.unescapeIdentifier(ast.getChild(0).getText()));
-    //set object type
-    ASTNode objTypeNode =  (ASTNode) ast.getChild(1);
-    subject.setTable(objTypeNode.getToken().getType() == HiveParser.TOK_TABLE_TYPE);
-    if (ast.getChildCount() == 3) {
-      //if partition spec node is present, set partition spec
-      ASTNode partSpecNode = (ASTNode) ast.getChild(2);
-      subject.setPartSpec(DDLSemanticAnalyzer.getPartSpec(partSpecNode));
-    }
+    PrivilegeObjectDesc subject = parsePrivObject(ast);
 
     if (subject.getTable()) {
-      Table tbl = getTable(SessionState.get().getCurrentDatabase(), subject.getObject());
+      Table tbl = getTable(subject.getObject());
       if (subject.getPartSpec() != null) {
         Partition part = getPartition(tbl, subject.getPartSpec());
         outputs.add(new WriteEntity(part, WriteEntity.WriteType.DDL_NO_LOCK));
@@ -264,6 +235,30 @@ public class HiveAuthorizationTaskFactoryImpl implements HiveAuthorizationTaskFa
       }
     }
 
+    return subject;
+  }
+
+  private PrivilegeObjectDesc parsePrivObject(ASTNode ast) throws SemanticException {
+    PrivilegeObjectDesc subject = new PrivilegeObjectDesc();
+    ASTNode child = (ASTNode) ast.getChild(0);
+    ASTNode gchild = (ASTNode)child.getChild(0);
+    if (child.getType() == HiveParser.TOK_TABLE_TYPE) {
+      subject.setTable(true);
+      String[] qualified = BaseSemanticAnalyzer.getQualifiedTableName(gchild);
+      subject.setObject(BaseSemanticAnalyzer.getDotName(qualified));
+    } else {
+      subject.setTable(false);
+      subject.setObject(BaseSemanticAnalyzer.unescapeIdentifier(gchild.getText()));
+    }
+    //if partition spec node is present, set partition spec
+    for (int i = 1; i < child.getChildCount(); i++) {
+      gchild = (ASTNode) child.getChild(i);
+      if (gchild.getType() == HiveParser.TOK_PARTSPEC) {
+        subject.setPartSpec(DDLSemanticAnalyzer.getPartSpec(gchild));
+      } else if (gchild.getType() == HiveParser.TOK_TABCOLNAME) {
+        subject.setColumns(BaseSemanticAnalyzer.getColumnNames(gchild));
+      }
+    }
     return subject;
   }
 
@@ -287,6 +282,10 @@ public class HiveAuthorizationTaskFactoryImpl implements HiveAuthorizationTaskFa
       ret.add(privilegeDesc);
     }
     return ret;
+  }
+
+  private Table getTable(String tblName) throws SemanticException {
+    return getTable(null, tblName);
   }
 
   private Table getTable(String database, String tblName)

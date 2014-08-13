@@ -17,4 +17,4 @@ PREHOOK: query: use default
 PREHOOK: type: SWITCHDATABASE
 POSTHOOK: query: use default
 POSTHOOK: type: SWITCHDATABASE
-FAILED: SemanticException [Error 10001]: Table not found test_db.foo
+FAILED: SemanticException Duplicates declaration for database name

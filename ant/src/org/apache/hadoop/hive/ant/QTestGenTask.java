@@ -32,10 +32,11 @@ import java.util.ArrayList;
 import java.util.regex.Pattern;
 import java.util.HashMap;
 
+import com.google.common.base.Splitter;
+import com.google.common.collect.Sets;
 import org.apache.commons.lang.StringUtils;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
-
 import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
@@ -45,6 +46,9 @@ import org.apache.velocity.exception.ResourceNotFoundException;
 import org.apache.velocity.runtime.RuntimeConstants;
 
 public class QTestGenTask extends Task {
+   private static final Splitter CSV_SPLITTER = Splitter.on(',')
+       .trimResults()
+       .omitEmptyStrings();
 
   public class IncludeFilter implements FileFilter {
 
@@ -74,9 +78,8 @@ public class QTestGenTask extends Task {
       }
       return true;
     }
-    
   }
-  
+
   public class DisabledQFileFilter extends IncludeFilter {
     public DisabledQFileFilter(Set<String> includeOnly) {
       super(includeOnly);
@@ -87,17 +90,16 @@ public class QTestGenTask extends Task {
         return false;
       }
       return !fpath.isDirectory() && fpath.getName().endsWith(".q.disabled");
-    }  
+    }
   }
-  
+
   public class QFileRegexFilter extends QFileFilter {
     Pattern filterPattern;
-    
     public QFileRegexFilter(String filter, Set<String> includeOnly) {
       super(includeOnly);
       filterPattern = Pattern.compile(filter);
     }
-    
+
     public boolean accept(File filePath) {
       if (!super.accept(filePath)) {
         return false;
@@ -110,17 +112,17 @@ public class QTestGenTask extends Task {
   private List<String> templatePaths = new ArrayList<String>();
 
   private String hiveRootDirectory;
-  
+
   private String outputDirectory;
- 
+
   private String queryDirectory;
- 
+
   private String queryFile;
 
   private String includeQueryFile;
 
   private String excludeQueryFile;
-  
+
   private String queryFileRegex;
 
   private String resultsDirectory;
@@ -138,8 +140,12 @@ public class QTestGenTask extends Task {
   private String hiveConfDir;
 
   private String runDisabled;
-  
+
   private String hadoopVersion;
+
+  private String initScript;
+
+  private String cleanupScript;
 
   public void setHadoopVersion(String ver) {
     this.hadoopVersion = ver;
@@ -156,7 +162,7 @@ public class QTestGenTask extends Task {
   public String getHiveConfDir() {
     return hiveConfDir;
   }
-  
+
   public void setClusterMode(String clusterMode) {
     this.clusterMode = clusterMode;
   }
@@ -197,6 +203,22 @@ public class QTestGenTask extends Task {
     return template;
   }
 
+  public String getInitScript() {
+    return initScript;
+  }
+
+  public void setInitScript(String initScript) {
+    this.initScript = initScript;
+  }
+
+  public String getCleanupScript() {
+    return cleanupScript;
+  }
+
+  public void setCleanupScript(String cleanupScript) {
+    this.cleanupScript = cleanupScript;
+  }
+
   public void setHiveRootDirectory(File hiveRootDirectory) {
     try {
       this.hiveRootDirectory = hiveRootDirectory.getCanonicalPath();
@@ -208,10 +230,10 @@ public class QTestGenTask extends Task {
   public String getHiveRootDirectory() {
     return hiveRootDirectory;
   }
-  
+
   public void setTemplatePath(String templatePath) throws Exception {
     templatePaths.clear();
-    for (String relativePath : templatePath.split(",")) {
+    for (String relativePath : CSV_SPLITTER.split(templatePath)) {
       templatePaths.add(project.resolveFile(relativePath).getCanonicalPath());
     }
     System.out.println("Template Path:" + getTemplatePath());
@@ -316,7 +338,7 @@ public class QTestGenTask extends Task {
 
     Set<String> includeOnly = null;
     if (includeQueryFile != null && !includeQueryFile.isEmpty()) {
-      includeOnly = new HashSet<String>(Arrays.asList(includeQueryFile.split(",")));
+      includeOnly = Sets.<String>newHashSet(CSV_SPLITTER.split(includeQueryFile));
     }
 
     List<File> qFiles;
@@ -326,7 +348,7 @@ public class QTestGenTask extends Task {
     File outDir = null;
     File resultsDir = null;
     File logDir = null;
-    
+
     try {
       // queryDirectory should not be null
       queryDir = new File(queryDirectory);
@@ -335,7 +357,7 @@ public class QTestGenTask extends Task {
       Set<File> testFiles = new HashSet<File>();
       if (queryFile != null && !queryFile.equals("")) {
         // The user may have passed a list of files - comma separated
-        for (String qFile : queryFile.split(",")) {
+        for (String qFile : CSV_SPLITTER.split(queryFile)) {
           if (includeOnly != null && !includeOnly.contains(qFile)) {
             continue;
           }
@@ -346,7 +368,7 @@ public class QTestGenTask extends Task {
           }
         }
       } else if (queryFileRegex != null && !queryFileRegex.equals("")) {
-        for (String regex : queryFileRegex.split(",")) {
+        for (String regex : CSV_SPLITTER.split(queryFileRegex)) {
           testFiles.addAll(Arrays.asList(queryDir.listFiles(
               new QFileRegexFilter(regex, includeOnly))));
         }
@@ -358,7 +380,7 @@ public class QTestGenTask extends Task {
 
       if (excludeQueryFile != null && !excludeQueryFile.equals("")) {
         // Exclude specified query files, comma separated
-        for (String qFile : excludeQueryFile.split(",")) {
+        for (String qFile : CSV_SPLITTER.split(excludeQueryFile)) {
           if (null != queryDir) {
             testFiles.remove(new File(queryDir, qFile));
           } else {
@@ -444,6 +466,8 @@ public class QTestGenTask extends Task {
       ctx.put("clusterMode", clusterMode);
       ctx.put("hiveConfDir", escapePath(hiveConfDir));
       ctx.put("hadoopVersion", hadoopVersion);
+      ctx.put("initScript", initScript);
+      ctx.put("cleanupScript", cleanupScript);
 
       File outFile = new File(outDir, className + ".java");
       FileWriter writer = new FileWriter(outFile);
@@ -466,9 +490,11 @@ public class QTestGenTask extends Task {
       throw new BuildException("Generation failed", e);
     }
   }
+
   private String relativePath(File hiveRootDir, File file) {
     return escapePath(hiveRootDir.toURI().relativize(file.toURI()).getPath());
-  }  
+  }
+
   private static String escapePath(String path) {
     if (System.getProperty("os.name").toLowerCase().startsWith("win")) {
       // Escape the backward slash in CanonicalPath if the unit test runs on windows

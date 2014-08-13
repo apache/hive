@@ -71,24 +71,38 @@ public class HashMapWrapper extends AbstractMapJoinTableContainer implements Ser
   }
 
   public HashMapWrapper() {
-    this(HiveConf.ConfVars.HIVEHASHTABLETHRESHOLD.defaultIntVal,
-        HiveConf.ConfVars.HIVEHASHTABLELOADFACTOR.defaultFloatVal, false, false);
+    this(HiveConf.ConfVars.HIVEHASHTABLEKEYCOUNTADJUSTMENT.defaultFloatVal,
+        HiveConf.ConfVars.HIVEHASHTABLETHRESHOLD.defaultIntVal,
+        HiveConf.ConfVars.HIVEHASHTABLELOADFACTOR.defaultFloatVal, false, false, -1);
   }
 
-  public HashMapWrapper(Configuration hconf) {
-    this(HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEHASHTABLETHRESHOLD),
+  public HashMapWrapper(Configuration hconf, long keyCount) {
+    this(HiveConf.getFloatVar(hconf, HiveConf.ConfVars.HIVEHASHTABLEKEYCOUNTADJUSTMENT),
+        HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEHASHTABLETHRESHOLD),
         HiveConf.getFloatVar(hconf, HiveConf.ConfVars.HIVEHASHTABLELOADFACTOR),
         HiveConf.getBoolVar(hconf, HiveConf.ConfVars.HIVEMAPJOINLAZYHASHTABLE),
-        HiveConf.getBoolVar(hconf, HiveConf.ConfVars.HIVEMAPJOINUSEOPTIMIZEDKEYS));
+        HiveConf.getBoolVar(hconf, HiveConf.ConfVars.HIVEMAPJOINUSEOPTIMIZEDKEYS), keyCount);
   }
 
-  private HashMapWrapper(
-      int threshold, float loadFactor, boolean useLazyRows, boolean useOptimizedKeys) {
+  private HashMapWrapper(float keyCountAdj, int threshold, float loadFactor,
+      boolean useLazyRows, boolean useOptimizedKeys, long keyCount) {
     super(createConstructorMetaData(threshold, loadFactor));
+    threshold = calculateTableSize(keyCountAdj, threshold, loadFactor, keyCount);
     mHash = new HashMap<MapJoinKey, MapJoinRowContainer>(threshold, loadFactor);
     this.useLazyRows = useLazyRows;
     this.useOptimizedKeys = useOptimizedKeys;
   }
+
+  public static int calculateTableSize(
+      float keyCountAdj, int threshold, float loadFactor, long keyCount) {
+    if (keyCount >= 0 && keyCountAdj != 0) {
+      // We have statistics for the table. Size appropriately.
+      threshold = (int)Math.ceil(keyCount / (keyCountAdj * loadFactor));
+    }
+    LOG.info("Key count from statistics is " + keyCount + "; setting map size to " + threshold);
+    return threshold;
+  }
+
 
   @Override
   public MapJoinRowContainer get(MapJoinKey key) {

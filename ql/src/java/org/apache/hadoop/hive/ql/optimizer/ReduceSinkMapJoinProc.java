@@ -26,6 +26,7 @@ import java.util.Stack;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.HashTableDummyOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
@@ -33,21 +34,28 @@ import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.parse.GenTezProcContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
+import org.apache.hadoop.hive.ql.plan.ColStatistics;
+import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.HashTableDummyDesc;
+import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
+import org.apache.hadoop.hive.ql.plan.OpTraits;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
+import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TezEdgeProperty;
 import org.apache.hadoop.hive.ql.plan.TezEdgeProperty.EdgeType;
 import org.apache.hadoop.hive.ql.plan.TezWork;
+import org.apache.hadoop.hive.ql.stats.StatsUtils;
 
 public class ReduceSinkMapJoinProc implements NodeProcessor {
 
@@ -111,18 +119,59 @@ public class ReduceSinkMapJoinProc implements NodeProcessor {
     if (pos == -1) {
       throw new SemanticException("Cannot find position of parent in mapjoin");
     }
-    LOG.debug("Mapjoin "+mapJoinOp+", pos: "+pos+" --> "+parentWork.getName());
-    mapJoinOp.getConf().getParentToInput().put(pos, parentWork.getName());
+    MapJoinDesc joinConf = mapJoinOp.getConf();
+    long keyCount = Long.MAX_VALUE, rowCount = Long.MAX_VALUE, bucketCount = 1;
+    Statistics stats = parentRS.getStatistics();
+    if (stats != null) {
+      keyCount = rowCount = stats.getNumRows();
+      if (keyCount <= 0) {
+        keyCount = rowCount = Long.MAX_VALUE;
+      }
+      ArrayList<String> keyCols = parentRS.getConf().getOutputKeyColumnNames();
+      if (keyCols != null && !keyCols.isEmpty()) {
+        // See if we can arrive at a smaller number using distinct stats from key columns.
+        long maxKeyCount = 1;
+        String prefix = Utilities.ReduceField.KEY.toString();
+        for (String keyCol : keyCols) {
+          ExprNodeDesc realCol = parentRS.getColumnExprMap().get(prefix + "." + keyCol);
+          ColStatistics cs = StatsUtils.getColStatisticsFromExpression(null, stats, realCol);
+          if (cs == null || cs.getCountDistint() <= 0) {
+            maxKeyCount = Long.MAX_VALUE;
+            break;
+          }
+          maxKeyCount *= cs.getCountDistint();
+          if (maxKeyCount >= keyCount) {
+            break;
+          }
+        }
+        keyCount = Math.min(maxKeyCount, keyCount);
+      }
+      if (joinConf.isBucketMapJoin()) {
+        OpTraits opTraits = mapJoinOp.getOpTraits();
+        bucketCount = (opTraits == null) ? -1 : opTraits.getNumBuckets();
+        if (bucketCount > 0) {
+          // We cannot obtain a better estimate without CustomPartitionVertex providing it
+          // to us somehow; in which case using statistics would be completely unnecessary.
+          keyCount /= bucketCount;
+        }
+      }
+    }
+    LOG.info("Mapjoin " + mapJoinOp + ", pos: " + pos + " --> " + parentWork.getName() + " ("
+      + keyCount + " keys estimated from " + rowCount + " rows, " + bucketCount + " buckets)");
+    joinConf.getParentToInput().put(pos, parentWork.getName());
+    if (keyCount != Long.MAX_VALUE) {
+      joinConf.getParentKeyCounts().put(pos, keyCount);
+    }
 
     int numBuckets = -1;
     EdgeType edgeType = EdgeType.BROADCAST_EDGE;
-    if (mapJoinOp.getConf().isBucketMapJoin()) {
+    if (joinConf.isBucketMapJoin()) {
 
       // disable auto parallelism for bucket map joins
       parentRS.getConf().setAutoParallel(false);
 
-      numBuckets = (Integer) mapJoinOp.getConf().getBigTableBucketNumMapping().values().toArray()[0];
-      if (mapJoinOp.getConf().getCustomBucketMapJoin()) {
+      numBuckets = (Integer) joinConf.getBigTableBucketNumMapping().values().toArray()[0];
+      if (joinConf.getCustomBucketMapJoin()) {
         edgeType = EdgeType.CUSTOM_EDGE;
       } else {
         edgeType = EdgeType.CUSTOM_SIMPLE_EDGE;

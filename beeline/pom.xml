@@ -48,7 +48,6 @@
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-shims</artifactId>
       <version>${project.version}</version>
-      <scope>runtime</scope>
     </dependency>
     <!-- inter-project -->
     <dependency>
@@ -80,6 +79,11 @@
       <groupId>org.apache.thrift</groupId>
       <artifactId>libthrift</artifactId>
       <version>${libthrift.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>net.sf.supercsv</groupId>
+      <artifactId>super-csv</artifactId>
+      <version>${super-csv.version}</version>
     </dependency>
     <!-- test intra-project -->
     <dependency>

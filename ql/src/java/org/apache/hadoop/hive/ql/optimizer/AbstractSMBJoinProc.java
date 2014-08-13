@@ -41,7 +41,6 @@ import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
@@ -316,13 +315,7 @@ abstract public class AbstractSMBJoinProc extends AbstractBucketJoinProc impleme
 
     Table tbl = topToTable.get(tso);
     if (tbl.isPartitioned()) {
-      PrunedPartitionList prunedParts;
-      try {
-          prunedParts = pGraphContext.getPrunedPartitions(alias, tso);
-      } catch (HiveException e) {
-        LOG.error(org.apache.hadoop.util.StringUtils.stringifyException(e));
-        throw new SemanticException(e.getMessage(), e);
-      }
+      PrunedPartitionList prunedParts = pGraphContext.getPrunedPartitions(alias, tso);
       List<Partition> partitions = prunedParts.getNotDeniedPartns();
       // Populate the names and order of columns for the first partition of the
       // first table

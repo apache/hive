@@ -77,12 +77,6 @@ public class ConstantPropagate implements Transform {
    */
   @Override
   public ParseContext transform(ParseContext pactx) throws SemanticException {
-    if (pactx.getConf().getBoolVar(ConfVars.HIVE_VECTORIZATION_ENABLED)) {
-      // Constant propagate is currently conflict with vectorizer, disabling constant propagate
-      //    if the later is enabled.
-      return pactx;
-    }
-
     pGraphContext = pactx;
     opToParseCtxMap = pGraphContext.getOpParseCtx();
 

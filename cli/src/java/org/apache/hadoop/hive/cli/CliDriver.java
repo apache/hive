@@ -32,7 +32,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import jline.ArgumentCompletor;
 import jline.ArgumentCompletor.AbstractArgumentDelimiter;
@@ -149,24 +148,6 @@ public class CliDriver {
         console.printError("Exception raised from Shell command " + e.getLocalizedMessage(),
             stringifyException(e));
         ret = 1;
-      }
-    } else if (tokens[0].toLowerCase().equals("list")) {
-
-      SessionState.ResourceType t;
-      if (tokens.length < 2 || (t = SessionState.find_resource_type(tokens[1])) == null) {
-        console.printError("Usage: list ["
-            + StringUtils.join(SessionState.ResourceType.values(), "|") + "] [<value> [<value>]*]");
-        ret = 1;
-      } else {
-        List<String> filter = null;
-        if (tokens.length >= 3) {
-          System.arraycopy(tokens, 2, tokens, 0, tokens.length - 2);
-          filter = Arrays.asList(tokens);
-        }
-        Set<String> s = ss.list_resource(t, filter);
-        if (s != null && !s.isEmpty()) {
-          ss.out.println(StringUtils.join(s, "\n"));
-        }
       }
     } else if (ss.isRemoteMode()) { // remote mode -- connecting to remote hive server
       HiveClient client = ss.getClient();

@@ -889,4 +889,10 @@ public class Hadoop20Shims implements HadoopShims {
       throws IOException, AccessControlException, Exception {
     DefaultFileAccess.checkFileAccess(fs, stat, action);
   }
+
+  @Override
+  public String getPassword(Configuration conf, String name) {
+    // No password API, just retrieve value from conf
+    return conf.get(name);
+  }
 }

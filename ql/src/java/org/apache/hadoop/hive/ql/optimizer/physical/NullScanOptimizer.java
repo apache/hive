@@ -86,7 +86,7 @@ public class NullScanOptimizer implements PhysicalPlanResolver {
         return null;
       }
       ExprNodeConstantDesc c = (ExprNodeConstantDesc) condition;
-      if (c.getValue() != Boolean.FALSE) {
+      if (!Boolean.FALSE.equals(c.getValue())) {
         return null;
       }
 
