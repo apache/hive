@@ -213,13 +213,19 @@ POSTHOOK: Input: db2@destintable@ds=2011-11-11
 97	val_97
 PREHOOK: query: drop table db2.destinTable
 PREHOOK: type: DROPTABLE
+PREHOOK: Input: db2@destintable
+PREHOOK: Output: db2@destintable
 POSTHOOK: query: drop table db2.destinTable
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: db2@destintable
 POSTHOOK: Output: db2@destintable
 PREHOOK: query: drop table db1.sourceTable
 PREHOOK: type: DROPTABLE
+PREHOOK: Input: db1@sourcetable
+PREHOOK: Output: db1@sourcetable
 POSTHOOK: query: drop table db1.sourceTable
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: db1@sourcetable
 POSTHOOK: Output: db1@sourcetable
 PREHOOK: query: DROP DATABASE db1
 PREHOOK: type: DROPDATABASE

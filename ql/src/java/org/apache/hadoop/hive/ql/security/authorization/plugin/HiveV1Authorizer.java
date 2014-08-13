@@ -319,7 +319,7 @@ public class HiveV1Authorizer implements HiveAuthorizer {
           privs.addAll(hive.showPrivilegeGrant(HiveObjectType.DATABASE,
               name, type, dbObj.getName(), null, null, null));
         } else {
-          Set<String> columns = privObj.getColumns();
+          List<String> columns = privObj.getColumns();
           if (columns != null && !columns.isEmpty()) {
             // show column level privileges
             for (String columnName : columns) {

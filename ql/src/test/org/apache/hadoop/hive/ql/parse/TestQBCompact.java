@@ -79,8 +79,7 @@ public class TestQBCompact {
     boolean sawException = false;
     AlterTableSimpleDesc desc = parseAndAnalyze("alter table foo compact 'major'");
     Assert.assertEquals("major", desc.getCompactionType());
-    Assert.assertEquals("foo", desc.getTableName());
-    Assert.assertEquals("default", desc.getDbName());
+    Assert.assertEquals("default.foo", desc.getTableName());
   }
 
   @Test
@@ -100,8 +99,7 @@ public class TestQBCompact {
     AlterTableSimpleDesc desc =
         parseAndAnalyze("alter table foo partition(ds = 'today') compact 'major'");
     Assert.assertEquals("major", desc.getCompactionType());
-    Assert.assertEquals("foo", desc.getTableName());
-    Assert.assertEquals("default", desc.getDbName());
+    Assert.assertEquals("default.foo", desc.getTableName());
     HashMap<String, String> parts = desc.getPartSpec();
     Assert.assertEquals(1, parts.size());
     Assert.assertEquals("today", parts.get("ds"));
@@ -112,8 +110,7 @@ public class TestQBCompact {
     AlterTableSimpleDesc desc =
         parseAndAnalyze("alter table foo partition(ds = 'today') compact 'minor'");
     Assert.assertEquals("minor", desc.getCompactionType());
-    Assert.assertEquals("foo", desc.getTableName());
-    Assert.assertEquals("default", desc.getDbName());
+    Assert.assertEquals("default.foo", desc.getTableName());
     HashMap<String, String> parts = desc.getPartSpec();
     Assert.assertEquals(1, parts.size());
     Assert.assertEquals("today", parts.get("ds"));

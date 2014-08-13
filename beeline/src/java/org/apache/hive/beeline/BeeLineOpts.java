@@ -53,6 +53,7 @@ class BeeLineOpts implements Completor {
   public static final String PROPERTY_NAME_EXIT =
       PROPERTY_PREFIX + "system.exit";
   public static final String DEFAULT_NULL_STRING = "NULL";
+  public static final char DEFAULT_DELIMITER_FOR_DSV = '|';
 
   private final BeeLine beeLine;
   private boolean autosave = false;
@@ -90,7 +91,7 @@ class BeeLineOpts implements Completor {
   private String scriptFile = null;
   private String initFile = null;
   private String authType = null;
-
+  private char delimiterForDSV = DEFAULT_DELIMITER_FOR_DSV;
 
   private Map<String, String> hiveVariables = new HashMap<String, String>();
   private Map<String, String> hiveConfVariables = new HashMap<String, String>();
@@ -499,6 +500,14 @@ class BeeLineOpts implements Completor {
 
   public void setTruncateTable(boolean truncateTable) {
     this.truncateTable = truncateTable;
+  }
+
+  public char getDelimiterForDSV() {
+    return delimiterForDSV;
+  }
+
+  public void setDelimiterForDSV(char delimiterForDSV) {
+    this.delimiterForDSV = delimiterForDSV;
   }
 }
 

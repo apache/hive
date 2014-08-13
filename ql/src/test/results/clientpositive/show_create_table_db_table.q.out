@@ -44,8 +44,11 @@ TBLPROPERTIES (
 #### A masked pattern was here ####
 PREHOOK: query: DROP TABLE tmp_feng.tmp_showcrt
 PREHOOK: type: DROPTABLE
+PREHOOK: Input: tmp_feng@tmp_showcrt
+PREHOOK: Output: tmp_feng@tmp_showcrt
 POSTHOOK: query: DROP TABLE tmp_feng.tmp_showcrt
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: tmp_feng@tmp_showcrt
 POSTHOOK: Output: tmp_feng@tmp_showcrt
 PREHOOK: query: DROP DATABASE tmp_feng
 PREHOOK: type: DROPDATABASE

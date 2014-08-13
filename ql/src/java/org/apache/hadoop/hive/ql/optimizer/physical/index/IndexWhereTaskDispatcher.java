@@ -116,12 +116,11 @@ public class IndexWhereTaskDispatcher implements Dispatcher {
 
     // query the metastore to know what columns we have indexed
     Collection<Table> topTables = pctx.getTopToTable().values();
-    Map<Table, List<Index>> indexes = new HashMap<Table, List<Index>>();
-    for (Table tbl : topTables)
-    {
-      List<Index> tblIndexes = IndexUtils.getIndexes(tbl, supportedIndexes);
+    Map<TableScanOperator, List<Index>> indexes = new HashMap<TableScanOperator, List<Index>>();
+    for (Map.Entry<TableScanOperator, Table> entry : pctx.getTopToTable().entrySet()) {
+      List<Index> tblIndexes = IndexUtils.getIndexes(entry.getValue(), supportedIndexes);
       if (tblIndexes.size() > 0) {
-        indexes.put(tbl, tblIndexes);
+        indexes.put(entry.getKey(), tblIndexes);
       }
     }
 

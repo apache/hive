@@ -1,0 +1,206 @@
+PREHOOK: query: create database source
+PREHOOK: type: CREATEDATABASE
+POSTHOOK: query: create database source
+POSTHOOK: type: CREATEDATABASE
+PREHOOK: query: create database target
+PREHOOK: type: CREATEDATABASE
+POSTHOOK: query: create database target
+POSTHOOK: type: CREATEDATABASE
+PREHOOK: query: create table source.src like default.src
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:source
+POSTHOOK: query: create table source.src like default.src
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:source
+POSTHOOK: Output: source@src
+PREHOOK: query: load data local inpath '../../data/files/kv1.txt' overwrite into table source.src
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: source@src
+POSTHOOK: query: load data local inpath '../../data/files/kv1.txt' overwrite into table source.src
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: source@src
+PREHOOK: query: create table source.srcpart like default.srcpart
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:source
+POSTHOOK: query: create table source.srcpart like default.srcpart
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:source
+POSTHOOK: Output: source@srcpart
+PREHOOK: query: load data local inpath '../../data/files/kv1.txt' overwrite into table source.srcpart partition (ds='2008-04-08', hr='11')
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: source@srcpart
+POSTHOOK: query: load data local inpath '../../data/files/kv1.txt' overwrite into table source.srcpart partition (ds='2008-04-08', hr='11')
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: source@srcpart
+POSTHOOK: Output: source@srcpart@ds=2008-04-08/hr=11
+PREHOOK: query: load data local inpath '../../data/files/kv1.txt' overwrite into table source.srcpart partition (ds='2008-04-08', hr='12')
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: source@srcpart
+POSTHOOK: query: load data local inpath '../../data/files/kv1.txt' overwrite into table source.srcpart partition (ds='2008-04-08', hr='12')
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: source@srcpart
+POSTHOOK: Output: source@srcpart@ds=2008-04-08/hr=12
+PREHOOK: query: load data local inpath '../../data/files/kv1.txt' overwrite into table source.srcpart partition (ds='2008-04-09', hr='11')
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: source@srcpart
+POSTHOOK: query: load data local inpath '../../data/files/kv1.txt' overwrite into table source.srcpart partition (ds='2008-04-09', hr='11')
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: source@srcpart
+POSTHOOK: Output: source@srcpart@ds=2008-04-09/hr=11
+PREHOOK: query: load data local inpath '../../data/files/kv1.txt' overwrite into table source.srcpart partition (ds='2008-04-09', hr='12')
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: source@srcpart
+POSTHOOK: query: load data local inpath '../../data/files/kv1.txt' overwrite into table source.srcpart partition (ds='2008-04-09', hr='12')
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: source@srcpart
+POSTHOOK: Output: source@srcpart@ds=2008-04-09/hr=12
+PREHOOK: query: select * from source.src tablesample (10 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: source@src
+#### A masked pattern was here ####
+POSTHOOK: query: select * from source.src tablesample (10 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: source@src
+#### A masked pattern was here ####
+238	val_238
+86	val_86
+311	val_311
+27	val_27
+165	val_165
+409	val_409
+255	val_255
+278	val_278
+98	val_98
+484	val_484
+PREHOOK: query: select * from source.srcpart tablesample (10 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: source@srcpart
+PREHOOK: Input: source@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: source@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: source@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: source@srcpart@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
+POSTHOOK: query: select * from source.srcpart tablesample (10 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: source@srcpart
+POSTHOOK: Input: source@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: source@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: source@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: source@srcpart@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
+238	val_238	2008-04-08	11
+86	val_86	2008-04-08	11
+311	val_311	2008-04-08	11
+27	val_27	2008-04-08	11
+165	val_165	2008-04-08	11
+409	val_409	2008-04-08	11
+255	val_255	2008-04-08	11
+278	val_278	2008-04-08	11
+98	val_98	2008-04-08	11
+484	val_484	2008-04-08	11
+PREHOOK: query: explain
+ALTER TABLE source.src RENAME TO target.src
+PREHOOK: type: ALTERTABLE_RENAME
+POSTHOOK: query: explain
+ALTER TABLE source.src RENAME TO target.src
+POSTHOOK: type: ALTERTABLE_RENAME
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+      Alter Table Operator:
+        Alter Table
+          type: rename
+          new name: target.src
+          old name: source.src
+
+PREHOOK: query: ALTER TABLE source.src RENAME TO target.src
+PREHOOK: type: ALTERTABLE_RENAME
+PREHOOK: Input: source@src
+PREHOOK: Output: source@src
+POSTHOOK: query: ALTER TABLE source.src RENAME TO target.src
+POSTHOOK: type: ALTERTABLE_RENAME
+POSTHOOK: Input: source@src
+POSTHOOK: Output: source@src
+POSTHOOK: Output: target@src
+PREHOOK: query: select * from target.src tablesample (10 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: target@src
+#### A masked pattern was here ####
+POSTHOOK: query: select * from target.src tablesample (10 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: target@src
+#### A masked pattern was here ####
+238	val_238
+86	val_86
+311	val_311
+27	val_27
+165	val_165
+409	val_409
+255	val_255
+278	val_278
+98	val_98
+484	val_484
+PREHOOK: query: explain
+ALTER TABLE source.srcpart RENAME TO target.srcpart
+PREHOOK: type: ALTERTABLE_RENAME
+POSTHOOK: query: explain
+ALTER TABLE source.srcpart RENAME TO target.srcpart
+POSTHOOK: type: ALTERTABLE_RENAME
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+      Alter Table Operator:
+        Alter Table
+          type: rename
+          new name: target.srcpart
+          old name: source.srcpart
+
+PREHOOK: query: ALTER TABLE source.srcpart RENAME TO target.srcpart
+PREHOOK: type: ALTERTABLE_RENAME
+PREHOOK: Input: source@srcpart
+PREHOOK: Output: source@srcpart
+POSTHOOK: query: ALTER TABLE source.srcpart RENAME TO target.srcpart
+POSTHOOK: type: ALTERTABLE_RENAME
+POSTHOOK: Input: source@srcpart
+POSTHOOK: Output: source@srcpart
+POSTHOOK: Output: target@srcpart
+PREHOOK: query: select * from target.srcpart tablesample (10 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: target@srcpart
+PREHOOK: Input: target@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: target@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: target@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: target@srcpart@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
+POSTHOOK: query: select * from target.srcpart tablesample (10 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: target@srcpart
+POSTHOOK: Input: target@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: target@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: target@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: target@srcpart@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
+238	val_238	2008-04-08	11
+86	val_86	2008-04-08	11
+311	val_311	2008-04-08	11
+27	val_27	2008-04-08	11
+165	val_165	2008-04-08	11
+409	val_409	2008-04-08	11
+255	val_255	2008-04-08	11
+278	val_278	2008-04-08	11
+98	val_98	2008-04-08	11
+484	val_484	2008-04-08	11

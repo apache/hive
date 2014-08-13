@@ -59,15 +59,17 @@ public class MapJoinBytesTableContainer implements MapJoinTableContainer {
 
   private List<Object> EMPTY_LIST = new ArrayList<Object>(0);
 
-  public MapJoinBytesTableContainer(Configuration hconf, MapJoinObjectSerDeContext valCtx)
-      throws SerDeException {
-    this(HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEHASHTABLETHRESHOLD),
+  public MapJoinBytesTableContainer(Configuration hconf,
+      MapJoinObjectSerDeContext valCtx, long keyCount) throws SerDeException {
+    this(HiveConf.getFloatVar(hconf, HiveConf.ConfVars.HIVEHASHTABLEKEYCOUNTADJUSTMENT),
+        HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEHASHTABLETHRESHOLD),
         HiveConf.getFloatVar(hconf, HiveConf.ConfVars.HIVEHASHTABLELOADFACTOR),
-        HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEHASHTABLEWBSIZE), valCtx);
+        HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEHASHTABLEWBSIZE), valCtx, keyCount);
   }
 
-  private MapJoinBytesTableContainer(int threshold, float loadFactor, int wbSize,
-      MapJoinObjectSerDeContext valCtx) throws SerDeException {
+  private MapJoinBytesTableContainer(float keyCountAdj, int threshold, float loadFactor,
+      int wbSize, MapJoinObjectSerDeContext valCtx, long keyCount) throws SerDeException {
+    threshold = HashMapWrapper.calculateTableSize(keyCountAdj, threshold, loadFactor, keyCount);
     hashMap = new BytesBytesMultiHashMap(threshold, loadFactor, wbSize);
   }
 

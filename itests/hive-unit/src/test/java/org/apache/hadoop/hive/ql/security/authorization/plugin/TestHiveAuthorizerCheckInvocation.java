@@ -29,7 +29,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -110,7 +109,7 @@ public class TestHiveAuthorizerCheckInvocation {
         getSortedList(tableObj.getColumns()));
   }
 
-  private List<String> getSortedList(Set<String> columns) {
+  private List<String> getSortedList(List<String> columns) {
     List<String> sortedCols = new ArrayList<String>(columns);
     Collections.sort(sortedCols);
     return sortedCols;

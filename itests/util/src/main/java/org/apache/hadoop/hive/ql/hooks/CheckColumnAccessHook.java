@@ -18,9 +18,9 @@
 package org.apache.hadoop.hive.ql.hooks;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
-import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -34,7 +34,7 @@ import org.mortbay.log.Log;
 /*
  * This hook is used for verifying the column access information
  * that is generated and maintained in the QueryPlan object by the
- * ColumnAccessAnalyer. All the hook does is print out the columns
+ * ColumnAccessAnalyzer. All the hook does is print out the columns
  * accessed from each table as recorded in the ColumnAccessInfo
  * in the QueryPlan.
  */
@@ -58,14 +58,14 @@ public class CheckColumnAccessHook implements ExecuteWithHookContext {
     }
 
     LogHelper console = SessionState.getConsole();
-    Map<String, Set<String>> tableToColumnAccessMap =
+    Map<String, List<String>> tableToColumnAccessMap =
       columnAccessInfo.getTableToColumnAccessMap();
 
     // We need a new map to ensure output is always produced in the same order.
     // This makes tests that use this hook deterministic.
     Map<String, String> outputOrderedMap = new HashMap<String, String>();
 
-    for (Map.Entry<String, Set<String>> tableAccess : tableToColumnAccessMap.entrySet()) {
+    for (Map.Entry<String, List<String>> tableAccess : tableToColumnAccessMap.entrySet()) {
       StringBuilder perTableInfo = new StringBuilder();
       perTableInfo.append("Table:").append(tableAccess.getKey()).append("\n");
       // Sort columns to make output deterministic

@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.logging.Log;
@@ -36,6 +35,7 @@ import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.index.IndexMetadataChangeTask;
@@ -57,7 +57,6 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 public final class IndexUtils {
 
   private static final Log LOG = LogFactory.getLog(IndexWhereProcessor.class.getName());
-  private static final Map<Index, Table> indexToIndexTable = new HashMap<Index, Table>();
 
   private IndexUtils(){
   }
@@ -71,9 +70,7 @@ public final class IndexUtils {
    * @throws HiveException
    */
   public static Set<Partition> checkPartitionsCoveredByIndex(TableScanOperator tableScan,
-      ParseContext pctx,
-      Map<Table, List<Index>> indexes)
-    throws HiveException {
+      ParseContext pctx, List<Index> indexes) throws HiveException {
     Hive hive = Hive.get(pctx.getConf());
     // make sure each partition exists on the index table
     PrunedPartitionList queryPartitionList = pctx.getOpToPartList().get(tableScan);
@@ -83,7 +80,6 @@ public final class IndexUtils {
     }
 
     for (Partition part : queryPartitions) {
-      List<Table> sourceIndexTables = getIndexTables(hive, part, indexes);
       if (!containsPartition(hive, part, indexes)) {
         return null; // problem if it doesn't contain the partition
       }
@@ -93,63 +89,24 @@ public final class IndexUtils {
   }
 
   /**
-   * return index tables associated with a given base table
-   */
-  private List<Table> getIndexTables(Hive hive, Table table,
-      Map<Table, List<Index>> indexes) throws
-    HiveException {
-    List<Table> indexTables = new ArrayList<Table>();
-    if (indexes == null || indexes.get(table) == null) {
-      return indexTables;
-    }
-    for (Index index : indexes.get(table)) {
-      Table indexTable = hive.getTable(index.getIndexTableName());
-      indexToIndexTable.put(index, indexTable);
-      indexTables.add(indexTable);
-    }
-    return indexTables;
-  }
-
-  /**
-   * return index tables associated with the base table of the partition
-   */
-  private static List<Table> getIndexTables(Hive hive, Partition part,
-      Map<Table, List<Index>> indexes) throws HiveException {
-    List<Table> indexTables = new ArrayList<Table>();
-    Table partitionedTable = part.getTable();
-    if (indexes == null || indexes.get(partitionedTable) == null) {
-      return indexTables;
-    }
-    for (Index index : indexes.get(partitionedTable)) {
-      Table indexTable = hive.getTable(index.getIndexTableName());
-      indexToIndexTable.put(index, indexTable);
-      indexTables.add(indexTable);
-    }
-    return indexTables;
-  }
-
-  /**
    * check that every index table contains the given partition and is fresh
    */
-  private static boolean containsPartition(Hive hive, Partition part,
-      Map<Table, List<Index>> indexes)
-    throws HiveException {
+  private static boolean containsPartition(Hive hive, Partition part, List<Index> indexes)
+      throws HiveException {
     HashMap<String, String> partSpec = part.getSpec();
-
-    if (indexes == null || indexes.get(part.getTable()) == null) {
-      return false;
-    }
-
     if (partSpec.isEmpty()) {
       // empty specs come from non-partitioned tables
-      return isIndexTableFresh(hive, indexes.get(part.getTable()), part.getTable());
+      return isIndexTableFresh(hive, indexes, part.getTable());
     }
 
-    for (Index index : indexes.get(part.getTable())) {
-      Table indexTable = indexToIndexTable.get(index);
+    for (Index index : indexes) {
+      // index.getDbName() is used as a default database, which is database of target table,
+      // if index.getIndexTableName() does not contain database name
+      String[] qualified = Utilities.getDbTableName(index.getDbName(), index.getIndexTableName());
+      Table indexTable = hive.getTable(qualified[0], qualified[1]);
       // get partitions that match the spec
-      List<Partition> matchingPartitions = hive.getPartitions(indexTable, partSpec);
-      if (matchingPartitions == null || matchingPartitions.size() == 0) {
+      Partition matchingPartition = hive.getPartition(indexTable, partSpec, false);
+      if (matchingPartition == null) {
         LOG.info("Index table " + indexTable + "did not contain built partition that matched " + partSpec);
         return false;
       } else if (!isIndexPartitionFresh(hive, index, part)) {
@@ -160,7 +117,7 @@ public final class IndexUtils {
   }
 
   /**
-   * Check the index partitions on a parttioned table exist and are fresh
+   * Check the index partitions on a partitioned table exist and are fresh
    */
   private static boolean isIndexPartitionFresh(Hive hive, Index index,
       Partition part) throws HiveException {
@@ -187,7 +144,7 @@ public final class IndexUtils {
   }
 
   /**
-   * Check that the indexes on the unpartioned table exist and are fresh
+   * Check that the indexes on the un-partitioned table exist and are fresh
    */
   private static boolean isIndexTableFresh(Hive hive, List<Index> indexes, Table src)
     throws HiveException {
@@ -227,8 +184,8 @@ public final class IndexUtils {
   public static List<Index> getIndexes(Table baseTableMetaData, List<String> matchIndexTypes)
     throws SemanticException {
     List<Index> matchingIndexes = new ArrayList<Index>();
-    List<Index> indexesOnTable = null;
 
+    List<Index> indexesOnTable;
     try {
       indexesOnTable = baseTableMetaData.getAllIndexes((short) -1); // get all indexes
     } catch (HiveException e) {

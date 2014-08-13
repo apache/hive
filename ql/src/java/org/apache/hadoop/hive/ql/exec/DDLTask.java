@@ -35,7 +35,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -600,13 +599,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
     HiveAuthorizer authorizer = getSessionAuthorizer();
     try {
-      Set<String> colSet = showGrantDesc.getColumns() != null ? new HashSet<String>(
-          showGrantDesc.getColumns()) : null;
       List<HivePrivilegeInfo> privInfos = authorizer.showPrivileges(
           AuthorizationUtils.getHivePrincipal(showGrantDesc.getPrincipalDesc()),
-          AuthorizationUtils.getHivePrivilegeObject(showGrantDesc.getHiveObj(),
-              colSet
-              ));
+          AuthorizationUtils.getHivePrivilegeObject(showGrantDesc.getHiveObj()));
       boolean testMode = conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST);
       writeToFile(writeGrantInfo(privInfos, testMode), showGrantDesc.getResFile());
     } catch (IOException e) {
@@ -625,7 +620,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     //Convert to object types used by the authorization plugin interface
     List<HivePrincipal> hivePrincipals = AuthorizationUtils.getHivePrincipals(principals);
     List<HivePrivilege> hivePrivileges = AuthorizationUtils.getHivePrivileges(privileges);
-    HivePrivilegeObject hivePrivObject = AuthorizationUtils.getHivePrivilegeObject(privSubjectDesc, null);
+    HivePrivilegeObject hivePrivObject = AuthorizationUtils.getHivePrivilegeObject(privSubjectDesc);
 
     HivePrincipal grantorPrincipal = new HivePrincipal(
         grantor, AuthorizationUtils.getHivePrincipalType(grantorType));
@@ -754,8 +749,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   }
 
   private int dropIndex(Hive db, DropIndexDesc dropIdx) throws HiveException {
-    db.dropIndex(SessionState.get().getCurrentDatabase(), dropIdx.getTableName(),
-        dropIdx.getIndexName(), true);
+    db.dropIndex(dropIdx.getTableName(), dropIdx.getIndexName(), true);
     return 0;
   }
 
@@ -765,11 +759,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       validateSerDe(crtIndex.getSerde());
     }
 
-    String indexTableName =
-      crtIndex.getIndexTableName() != null ? crtIndex.getIndexTableName() :
-        MetaStoreUtils.getIndexTableName(SessionState.get().getCurrentDatabase(),
-             crtIndex.getTableName(), crtIndex.getIndexName());
-
+    String indexTableName = crtIndex.getIndexTableName();
     if (!Utilities.isDefaultNameNode(conf)) {
       // If location is specified - ensure that it is a full qualified name
       makeLocationQualified(crtIndex, indexTableName);
@@ -792,10 +782,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   }
 
   private int alterIndex(Hive db, AlterIndexDesc alterIndex) throws HiveException {
-    String dbName = alterIndex.getDbName();
     String baseTableName = alterIndex.getBaseTableName();
     String indexName = alterIndex.getIndexName();
-    Index idx = db.getIndex(dbName, baseTableName, indexName);
+    Index idx = db.getIndex(baseTableName, indexName);
 
     switch(alterIndex.getOp()) {
     case ADDPROPS:
@@ -806,8 +795,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         Map<String, String> props = new HashMap<String, String>();
         Map<Map<String, String>, Long> basePartTs = new HashMap<Map<String, String>, Long>();
 
-        Table baseTbl = db.getTable(SessionState.get().getCurrentDatabase(),
-            baseTableName);
+        Table baseTbl = db.getTable(baseTableName);
 
         if (baseTbl.isPartitioned()) {
           List<Partition> baseParts;
@@ -854,7 +842,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
 
     try {
-      db.alterIndex(dbName, baseTableName, indexName, idx);
+      db.alterIndex(baseTableName, indexName, idx);
     } catch (InvalidOperationException e) {
       console.printError("Invalid alter operation: " + e.getMessage());
       LOG.info("alter index: " + stringifyException(e));
@@ -896,7 +884,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    */
   private int renamePartition(Hive db, RenamePartitionDesc renamePartitionDesc) throws HiveException {
 
-    Table tbl = db.getTable(renamePartitionDesc.getDbName(), renamePartitionDesc.getTableName());
+    Table tbl = db.getTable(renamePartitionDesc.getTableName());
 
     Partition oldPart = db.getPartition(tbl, renamePartitionDesc.getOldPartSpec(), false);
     Partition part = db.getPartition(tbl, renamePartitionDesc.getOldPartSpec(), false);
@@ -923,7 +911,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   private int alterTableAlterPart(Hive db, AlterTableAlterPartDesc alterPartitionDesc)
       throws HiveException {
 
-    Table tbl = db.getTable(alterPartitionDesc.getDbName(), alterPartitionDesc.getTableName());
+    Table tbl = db.getTable(alterPartitionDesc.getTableName(), true);
     String tabName = alterPartitionDesc.getTableName();
 
     // This is checked by DDLSemanticAnalyzer
@@ -1015,14 +1003,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   private int touch(Hive db, AlterTableSimpleDesc touchDesc)
       throws HiveException {
 
-    String dbName = touchDesc.getDbName();
-    String tblName = touchDesc.getTableName();
-
-    Table tbl = db.getTable(dbName, tblName);
+    Table tbl = db.getTable(touchDesc.getTableName());
 
     if (touchDesc.getPartSpec() == null) {
       try {
-        db.alterTable(tblName, tbl);
+        db.alterTable(touchDesc.getTableName(), tbl);
       } catch (InvalidOperationException e) {
         throw new HiveException("Uable to update table");
       }
@@ -1034,7 +1019,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         throw new HiveException("Specified partition does not exist");
       }
       try {
-        db.alterPartition(tblName, part);
+        db.alterPartition(touchDesc.getTableName(), part);
       } catch (InvalidOperationException e) {
         throw new HiveException(e);
       }
@@ -1173,10 +1158,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   private int archive(Hive db, AlterTableSimpleDesc simpleDesc,
       DriverContext driverContext)
           throws HiveException {
-    String dbName = simpleDesc.getDbName();
-    String tblName = simpleDesc.getTableName();
 
-    Table tbl = db.getTable(dbName, tblName);
+    Table tbl = db.getTable(simpleDesc.getTableName());
 
     if (tbl.getTableType() != TableType.MANAGED_TABLE) {
       throw new HiveException("ARCHIVE can only be performed on managed tables");
@@ -1378,7 +1361,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
             authority.toString(),
             harPartitionDir.getPath()); // make in Path to ensure no slash at the end
         setArchived(p, harPath, partSpecInfo.values.size());
-        db.alterPartition(tblName, p);
+        db.alterPartition(simpleDesc.getTableName(), p);
       }
     } catch (Exception e) {
       throw new HiveException("Unable to change the partition info for HAR", e);
@@ -1399,10 +1382,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
   private int unarchive(Hive db, AlterTableSimpleDesc simpleDesc)
       throws HiveException {
-    String dbName = simpleDesc.getDbName();
-    String tblName = simpleDesc.getTableName();
 
-    Table tbl = db.getTable(dbName, tblName);
+    Table tbl = db.getTable(simpleDesc.getTableName());
 
     // Means user specified a table, not a partition
     if (simpleDesc.getPartSpec() == null) {
@@ -1587,7 +1568,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     for(Partition p: partitions) {
       setUnArchived(p);
       try {
-        db.alterPartition(tblName, p);
+        db.alterPartition(simpleDesc.getTableName(), p);
       } catch (InvalidOperationException e) {
         throw new HiveException(e);
       }
@@ -1636,10 +1617,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
   private int compact(Hive db, AlterTableSimpleDesc desc) throws HiveException {
 
-    String dbName = desc.getDbName();
-    String tblName = desc.getTableName();
-
-    Table tbl = db.getTable(dbName, tblName);
+    Table tbl = db.getTable(desc.getTableName());
 
     String partName = null;
     if (desc.getPartSpec() == null) {
@@ -1852,7 +1830,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     final String ROW_FORMAT = "row_format";
     final String TBL_LOCATION = "tbl_location";
     final String TBL_PROPERTIES = "tbl_properties";
-    boolean isHbaseTable = false;
+    boolean needsLocation = true;
     StringBuilder createTab_str = new StringBuilder();
 
     String tableName = showCreateTbl.getTableName();
@@ -1864,9 +1842,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       FileSystem fs = resFile.getFileSystem(conf);
       outStream = fs.create(resFile);
 
-      if (tbl.getStorageHandler() != null) {
-        isHbaseTable = tbl.getStorageHandler().toString().equals("org.apache.hadoop.hive.hbase.HBaseStorageHandler");
-      }
+      needsLocation = doesTableNeedLocation(tbl);
 
       if (tbl.isView()) {
         String createTab_stmt = "CREATE VIEW `" + tableName + "` AS " + tbl.getViewExpandedText();
@@ -1883,7 +1859,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       createTab_str.append("<" + LIST_PARTITIONS + ">\n");
       createTab_str.append("<" + SORT_BUCKET + ">\n");
       createTab_str.append("<" + ROW_FORMAT + ">\n");
-      if (!isHbaseTable) {
+      if (needsLocation) {
         createTab_str.append("LOCATION\n");
         createTab_str.append("<" + TBL_LOCATION + ">\n");
       }
@@ -2065,7 +2041,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       createTab_stmt.add(SORT_BUCKET, tbl_sort_bucket);
       createTab_stmt.add(ROW_FORMAT, tbl_row_format);
       // Table location should not be printed with hbase backed tables
-      if (!isHbaseTable) {
+      if (needsLocation) {
         createTab_stmt.add(TBL_LOCATION, tbl_location);
       }
       createTab_stmt.add(TBL_PROPERTIES, tbl_properties);
@@ -2233,15 +2209,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   public int showColumns(Hive db, ShowColumnsDesc showCols)
       throws HiveException {
 
-    String dbName = showCols.getDbName();
-    String tableName = showCols.getTableName();
-    Table table = null;
-    if (dbName == null) {
-      table = db.getTable(tableName);
-    }
-    else {
-      table = db.getTable(dbName, tableName);
-    }
+    Table table = db.getTable(showCols.getTableName());
 
     // write the results in the file
     DataOutputStream outStream = null;
@@ -3280,7 +3248,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     Table oldTbl = tbl.copy();
 
     if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.RENAME) {
-      tbl.setTableName(alterTbl.getNewName());
+      tbl.setDbName(Utilities.getDatabaseName(alterTbl.getNewName()));
+      tbl.setTableName(Utilities.getTableName(alterTbl.getNewName()));
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ADDCOLS) {
       List<FieldSchema> newCols = alterTbl.getNewCols();
       List<FieldSchema> oldCols = tbl.getCols();
@@ -3933,7 +3902,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       tbl.getTTable().getSd().setOutputFormat(tbl.getOutputFormatClass().getName());
     }
 
-    if (!Utilities.isDefaultNameNode(conf) && tbl.getTTable().getSd().isSetLocation()) {
+    if (!Utilities.isDefaultNameNode(conf) && doesTableNeedLocation(tbl)) {
       // If location is specified - ensure that it is a full qualified name
       makeLocationQualified(tbl.getDbName(), tbl.getTTable().getSd(), tbl.getTableName());
     }
@@ -4309,10 +4278,12 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     if (crtIndex.getLocation() == null) {
       // Location is not set, leave it as-is if index doesn't belong to default DB
       // Currently all indexes are created in current DB only
-      if (db.getDatabaseCurrent().getName().equalsIgnoreCase(MetaStoreUtils.DEFAULT_DATABASE_NAME)) {
+      if (Utilities.getDatabaseName(name).equalsIgnoreCase(MetaStoreUtils.DEFAULT_DATABASE_NAME)) {
         // Default database name path is always ignored, use METASTOREWAREHOUSE and object name
         // instead
-        path = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.METASTOREWAREHOUSE), name.toLowerCase());
+        String warehouse = HiveConf.getVar(conf, ConfVars.METASTOREWAREHOUSE);
+        String tableName = Utilities.getTableName(name);
+        path = new Path(warehouse, tableName.toLowerCase());
       }
     }
     else {
@@ -4340,5 +4311,16 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
           Utilities.getQualifiedPath(conf, new Path(HiveConf.getVar(conf, HiveConf.ConfVars.METASTOREWAREHOUSE),
               database.getName().toLowerCase() + ".db")));
     }
+  }
+
+  private static boolean doesTableNeedLocation(Table tbl) {
+    // If we are ok with breaking compatibility of existing 3rd party StorageHandlers,
+    // this method could be moved to the HiveStorageHandler interface.
+    boolean retval = true;
+    if (tbl.getStorageHandler() != null) {
+      retval = !tbl.getStorageHandler().toString().equals(
+          "org.apache.hadoop.hive.hbase.HBaseStorageHandler");
+    }
+    return retval;
   }
 }
