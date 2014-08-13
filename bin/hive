@@ -149,7 +149,11 @@ fi
 export HADOOP_HOME_WARN_SUPPRESS=true 
 
 # pass classpath to hadoop
-export HADOOP_CLASSPATH="${HADOOP_CLASSPATH}:${CLASSPATH}"
+if [ "$HADOOP_CLASSPATH" != "" ]; then
+  export HADOOP_CLASSPATH="${HADOOP_CLASSPATH}:${CLASSPATH}"
+else
+  export HADOOP_CLASSPATH="$CLASSPATH"
+fi
 
 # also pass hive classpath to hadoop
 if [ "$HIVE_CLASSPATH" != "" ]; then
