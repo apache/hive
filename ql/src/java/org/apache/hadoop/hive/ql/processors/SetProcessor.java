@@ -32,6 +32,7 @@ import java.util.TreeMap;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Schema;
+import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.parse.VariableSubstitution;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
@@ -104,11 +105,12 @@ public class SetProcessor implements CommandProcessor {
     try {
       return new CommandProcessorResponse(setVariable(varname, varvalue));
     } catch (Exception e) {
-      return new CommandProcessorResponse(1, e.getMessage(), "42000");
+      return new CommandProcessorResponse(1, e.getMessage(), "42000",
+          e instanceof IllegalArgumentException ? null : e);
     }
   }
 
-  public static int setVariable(String varname, String varvalue) throws IllegalArgumentException {
+  public static int setVariable(String varname, String varvalue) throws Exception {
     SessionState ss = SessionState.get();
     if (varvalue.contains("\n")){
       ss.err.println("Warning: Value had a \\n character in it.");
@@ -126,6 +128,10 @@ public class SetProcessor implements CommandProcessor {
     } else if (varname.startsWith(HIVEVAR_PREFIX)) {
       String propName = varname.substring(HIVEVAR_PREFIX.length());
       ss.getHiveVariables().put(propName, new VariableSubstitution().substitute(ss.getConf(),varvalue));
+    } else if (varname.startsWith(METACONF_PREFIX)) {
+      String propName = varname.substring(METACONF_PREFIX.length());
+      Hive hive = Hive.get(ss.getConf());
+      hive.setMetaConf(propName, new VariableSubstitution().substitute(ss.getConf(), varvalue));
     } else {
       setConf(varname, varname, varvalue, true);
     }
@@ -178,8 +184,7 @@ public class SetProcessor implements CommandProcessor {
     return sortedEnvMap;
   }
 
-
-  private CommandProcessorResponse getVariable(String varname) {
+  private CommandProcessorResponse getVariable(String varname) throws Exception {
     SessionState ss = SessionState.get();
     if (varname.equals("silent")){
       ss.out.println("silent" + "=" + ss.getIsSilent());
@@ -220,6 +225,17 @@ public class SetProcessor implements CommandProcessor {
         return createProcessorSuccessResponse();
       } else {
         ss.out.println(varname + " is undefined as a hive variable");
+        return new CommandProcessorResponse(1);
+      }
+    } else if (varname.indexOf(METACONF_PREFIX) == 0) {
+      String var = varname.substring(METACONF_PREFIX.length());
+      Hive hive = Hive.get(ss.getConf());
+      String value = hive.getMetaConf(var);
+      if (value != null) {
+        ss.out.println(METACONF_PREFIX + var + "=" + value);
+        return createProcessorSuccessResponse();
+      } else {
+        ss.out.println(varname + " is undefined as a hive meta variable");
         return new CommandProcessorResponse(1);
       }
     } else {
@@ -263,10 +279,12 @@ public class SetProcessor implements CommandProcessor {
         return new CommandProcessorResponse(0);
       }
       return executeSetVariable(part[0],part[1]);
-    } else {
-      return getVariable(nwcmd);
     }
-
+    try {
+      return getVariable(nwcmd);
+    } catch (Exception e) {
+      return new CommandProcessorResponse(1, e.getMessage(), "42000", e);
+    }
   }
 
 // create a Schema object containing the give column

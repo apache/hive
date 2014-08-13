@@ -12,6 +12,37 @@ module ThriftHiveMetastore
   class Client < ::FacebookService::Client 
     include ::Thrift::Client
 
+    def getMetaConf(key)
+      send_getMetaConf(key)
+      return recv_getMetaConf()
+    end
+
+    def send_getMetaConf(key)
+      send_message('getMetaConf', GetMetaConf_args, :key => key)
+    end
+
+    def recv_getMetaConf()
+      result = receive_message(GetMetaConf_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'getMetaConf failed: unknown result')
+    end
+
+    def setMetaConf(key, value)
+      send_setMetaConf(key, value)
+      recv_setMetaConf()
+    end
+
+    def send_setMetaConf(key, value)
+      send_message('setMetaConf', SetMetaConf_args, :key => key, :value => value)
+    end
+
+    def recv_setMetaConf()
+      result = receive_message(SetMetaConf_result)
+      raise result.o1 unless result.o1.nil?
+      return
+    end
+
     def create_database(database)
       send_create_database(database)
       recv_create_database()
@@ -1864,6 +1895,28 @@ module ThriftHiveMetastore
   class Processor < ::FacebookService::Processor 
     include ::Thrift::Processor
 
+    def process_getMetaConf(seqid, iprot, oprot)
+      args = read_args(iprot, GetMetaConf_args)
+      result = GetMetaConf_result.new()
+      begin
+        result.success = @handler.getMetaConf(args.key)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      end
+      write_result(result, oprot, 'getMetaConf', seqid)
+    end
+
+    def process_setMetaConf(seqid, iprot, oprot)
+      args = read_args(iprot, SetMetaConf_args)
+      result = SetMetaConf_result.new()
+      begin
+        @handler.setMetaConf(args.key, args.value)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      end
+      write_result(result, oprot, 'setMetaConf', seqid)
+    end
+
     def process_create_database(seqid, iprot, oprot)
       args = read_args(iprot, Create_database_args)
       result = Create_database_result.new()
@@ -3285,6 +3338,74 @@ module ThriftHiveMetastore
   end
 
   # HELPER FUNCTIONS AND STRUCTURES
+
+  class GetMetaConf_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    KEY = 1
+
+    FIELDS = {
+      KEY => {:type => ::Thrift::Types::STRING, :name => 'key'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class GetMetaConf_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRING, :name => 'success'},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class SetMetaConf_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    KEY = 1
+    VALUE = 2
+
+    FIELDS = {
+      KEY => {:type => ::Thrift::Types::STRING, :name => 'key'},
+      VALUE => {:type => ::Thrift::Types::STRING, :name => 'value'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class SetMetaConf_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
 
   class Create_database_args
     include ::Thrift::Struct, ::Thrift::Struct_Union

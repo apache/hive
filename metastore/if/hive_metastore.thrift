@@ -682,6 +682,9 @@ exception NoSuchLockException {
 */
 service ThriftHiveMetastore extends fb303.FacebookService
 {
+  string getMetaConf(1:string key) throws(1:MetaException o1)
+  void setMetaConf(1:string key, 2:string value) throws(1:MetaException o1)
+
   void create_database(1:Database database) throws(1:AlreadyExistsException o1, 2:InvalidObjectException o2, 3:MetaException o3)
   Database get_database(1:string name) throws(1:NoSuchObjectException o1, 2:MetaException o2)
   void drop_database(1:string name, 2:bool deleteData, 3:bool cascade) throws(1:NoSuchObjectException o1, 2:InvalidOperationException o2, 3:MetaException o3)

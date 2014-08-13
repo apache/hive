@@ -22,6 +22,16 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     // Your initialization goes here
   }
 
+  void getMetaConf(std::string& _return, const std::string& key) {
+    // Your implementation goes here
+    printf("getMetaConf\n");
+  }
+
+  void setMetaConf(const std::string& key, const std::string& value) {
+    // Your implementation goes here
+    printf("setMetaConf\n");
+  }
+
   void create_database(const Database& database) {
     // Your implementation goes here
     printf("create_database\n");

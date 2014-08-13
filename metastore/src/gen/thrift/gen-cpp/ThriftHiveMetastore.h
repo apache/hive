@@ -16,6 +16,8 @@ namespace Apache { namespace Hadoop { namespace Hive {
 class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookServiceIf {
  public:
   virtual ~ThriftHiveMetastoreIf() {}
+  virtual void getMetaConf(std::string& _return, const std::string& key) = 0;
+  virtual void setMetaConf(const std::string& key, const std::string& value) = 0;
   virtual void create_database(const Database& database) = 0;
   virtual void get_database(Database& _return, const std::string& name) = 0;
   virtual void drop_database(const std::string& name, const bool deleteData, const bool cascade) = 0;
@@ -155,6 +157,12 @@ class ThriftHiveMetastoreIfSingletonFactory : virtual public ThriftHiveMetastore
 class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual public  ::facebook::fb303::FacebookServiceNull {
  public:
   virtual ~ThriftHiveMetastoreNull() {}
+  void getMetaConf(std::string& /* _return */, const std::string& /* key */) {
+    return;
+  }
+  void setMetaConf(const std::string& /* key */, const std::string& /* value */) {
+    return;
+  }
   void create_database(const Database& /* database */) {
     return;
   }
@@ -506,6 +514,241 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
   void show_compact(ShowCompactResponse& /* _return */, const ShowCompactRequest& /* rqst */) {
     return;
   }
+};
+
+typedef struct _ThriftHiveMetastore_getMetaConf_args__isset {
+  _ThriftHiveMetastore_getMetaConf_args__isset() : key(false) {}
+  bool key;
+} _ThriftHiveMetastore_getMetaConf_args__isset;
+
+class ThriftHiveMetastore_getMetaConf_args {
+ public:
+
+  ThriftHiveMetastore_getMetaConf_args() : key() {
+  }
+
+  virtual ~ThriftHiveMetastore_getMetaConf_args() throw() {}
+
+  std::string key;
+
+  _ThriftHiveMetastore_getMetaConf_args__isset __isset;
+
+  void __set_key(const std::string& val) {
+    key = val;
+  }
+
+  bool operator == (const ThriftHiveMetastore_getMetaConf_args & rhs) const
+  {
+    if (!(key == rhs.key))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_getMetaConf_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_getMetaConf_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_getMetaConf_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_getMetaConf_pargs() throw() {}
+
+  const std::string* key;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_getMetaConf_result__isset {
+  _ThriftHiveMetastore_getMetaConf_result__isset() : success(false), o1(false) {}
+  bool success;
+  bool o1;
+} _ThriftHiveMetastore_getMetaConf_result__isset;
+
+class ThriftHiveMetastore_getMetaConf_result {
+ public:
+
+  ThriftHiveMetastore_getMetaConf_result() : success() {
+  }
+
+  virtual ~ThriftHiveMetastore_getMetaConf_result() throw() {}
+
+  std::string success;
+  MetaException o1;
+
+  _ThriftHiveMetastore_getMetaConf_result__isset __isset;
+
+  void __set_success(const std::string& val) {
+    success = val;
+  }
+
+  void __set_o1(const MetaException& val) {
+    o1 = val;
+  }
+
+  bool operator == (const ThriftHiveMetastore_getMetaConf_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_getMetaConf_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_getMetaConf_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_getMetaConf_presult__isset {
+  _ThriftHiveMetastore_getMetaConf_presult__isset() : success(false), o1(false) {}
+  bool success;
+  bool o1;
+} _ThriftHiveMetastore_getMetaConf_presult__isset;
+
+class ThriftHiveMetastore_getMetaConf_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_getMetaConf_presult() throw() {}
+
+  std::string* success;
+  MetaException o1;
+
+  _ThriftHiveMetastore_getMetaConf_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_setMetaConf_args__isset {
+  _ThriftHiveMetastore_setMetaConf_args__isset() : key(false), value(false) {}
+  bool key;
+  bool value;
+} _ThriftHiveMetastore_setMetaConf_args__isset;
+
+class ThriftHiveMetastore_setMetaConf_args {
+ public:
+
+  ThriftHiveMetastore_setMetaConf_args() : key(), value() {
+  }
+
+  virtual ~ThriftHiveMetastore_setMetaConf_args() throw() {}
+
+  std::string key;
+  std::string value;
+
+  _ThriftHiveMetastore_setMetaConf_args__isset __isset;
+
+  void __set_key(const std::string& val) {
+    key = val;
+  }
+
+  void __set_value(const std::string& val) {
+    value = val;
+  }
+
+  bool operator == (const ThriftHiveMetastore_setMetaConf_args & rhs) const
+  {
+    if (!(key == rhs.key))
+      return false;
+    if (!(value == rhs.value))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_setMetaConf_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_setMetaConf_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_setMetaConf_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_setMetaConf_pargs() throw() {}
+
+  const std::string* key;
+  const std::string* value;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_setMetaConf_result__isset {
+  _ThriftHiveMetastore_setMetaConf_result__isset() : o1(false) {}
+  bool o1;
+} _ThriftHiveMetastore_setMetaConf_result__isset;
+
+class ThriftHiveMetastore_setMetaConf_result {
+ public:
+
+  ThriftHiveMetastore_setMetaConf_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_setMetaConf_result() throw() {}
+
+  MetaException o1;
+
+  _ThriftHiveMetastore_setMetaConf_result__isset __isset;
+
+  void __set_o1(const MetaException& val) {
+    o1 = val;
+  }
+
+  bool operator == (const ThriftHiveMetastore_setMetaConf_result & rhs) const
+  {
+    if (!(o1 == rhs.o1))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_setMetaConf_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_setMetaConf_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_setMetaConf_presult__isset {
+  _ThriftHiveMetastore_setMetaConf_presult__isset() : o1(false) {}
+  bool o1;
+} _ThriftHiveMetastore_setMetaConf_presult__isset;
+
+class ThriftHiveMetastore_setMetaConf_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_setMetaConf_presult() throw() {}
+
+  MetaException o1;
+
+  _ThriftHiveMetastore_setMetaConf_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
 };
 
 typedef struct _ThriftHiveMetastore_create_database_args__isset {
@@ -15582,6 +15825,12 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   boost::shared_ptr< ::apache::thrift::protocol::TProtocol> getOutputProtocol() {
     return poprot_;
   }
+  void getMetaConf(std::string& _return, const std::string& key);
+  void send_getMetaConf(const std::string& key);
+  void recv_getMetaConf(std::string& _return);
+  void setMetaConf(const std::string& key, const std::string& value);
+  void send_setMetaConf(const std::string& key, const std::string& value);
+  void recv_setMetaConf();
   void create_database(const Database& database);
   void send_create_database(const Database& database);
   void recv_create_database();
@@ -15922,6 +16171,8 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   typedef  void (ThriftHiveMetastoreProcessor::*ProcessFunction)(int32_t, ::apache::thrift::protocol::TProtocol*, ::apache::thrift::protocol::TProtocol*, void*);
   typedef std::map<std::string, ProcessFunction> ProcessMap;
   ProcessMap processMap_;
+  void process_getMetaConf(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_setMetaConf(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_create_database(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_database(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_drop_database(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -16036,6 +16287,8 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   ThriftHiveMetastoreProcessor(boost::shared_ptr<ThriftHiveMetastoreIf> iface) :
      ::facebook::fb303::FacebookServiceProcessor(iface),
     iface_(iface) {
+    processMap_["getMetaConf"] = &ThriftHiveMetastoreProcessor::process_getMetaConf;
+    processMap_["setMetaConf"] = &ThriftHiveMetastoreProcessor::process_setMetaConf;
     processMap_["create_database"] = &ThriftHiveMetastoreProcessor::process_create_database;
     processMap_["get_database"] = &ThriftHiveMetastoreProcessor::process_get_database;
     processMap_["drop_database"] = &ThriftHiveMetastoreProcessor::process_drop_database;
@@ -16179,6 +16432,25 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
     ifaces_.push_back(iface);
   }
  public:
+  void getMetaConf(std::string& _return, const std::string& key) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->getMetaConf(_return, key);
+    }
+    ifaces_[i]->getMetaConf(_return, key);
+    return;
+  }
+
+  void setMetaConf(const std::string& key, const std::string& value) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->setMetaConf(key, value);
+    }
+    ifaces_[i]->setMetaConf(key, value);
+  }
+
   void create_database(const Database& database) {
     size_t sz = ifaces_.size();
     size_t i = 0;
