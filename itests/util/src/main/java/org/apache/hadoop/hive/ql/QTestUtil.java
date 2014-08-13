@@ -617,12 +617,17 @@ public class QTestUtil {
     if(!isSessionStateStarted) {
       startSessionState();
     }
+
+    SessionState.get().getConf().setBoolean("hive.test.shutdown.phase", true);
+
     String cleanupCommands = readEntireFileIntoString(new File(cleanupScript));
     LOG.info("Cleanup (" + cleanupScript + "):\n" + cleanupCommands);
     if(cliDriver == null) {
       cliDriver = new CliDriver();
     }
     cliDriver.processLine(cleanupCommands);
+
+    SessionState.get().getConf().setBoolean("hive.test.shutdown.phase", false);
 
     // delete any contents in the warehouse dir
     Path p = new Path(testWarehouse);
