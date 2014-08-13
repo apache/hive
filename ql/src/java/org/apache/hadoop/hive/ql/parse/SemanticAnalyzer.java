@@ -11767,7 +11767,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private boolean canHandleQuery() {
     boolean runOptiqPlanner = false;
 
-    if ((queryProperties.getJoinCount() > 1)
+    if ( conf.getBoolVar(ConfVars.HIVE_IN_TEST) || (queryProperties.getJoinCount() > 1)
         && !queryProperties.hasClusterBy()
         && !queryProperties.hasDistributeBy()
         && !queryProperties.hasSortBy()

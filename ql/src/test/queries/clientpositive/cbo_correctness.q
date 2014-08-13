@@ -3,27 +3,22 @@ set hive.cbo.enable=true;
 drop table if exists t1;
 drop table if exists t2;
 drop table if exists t3;
-drop table if exists t4;
 
-create table t1(key string, value string, c_int int, c_float float, c_boolean boolean)  row format delimited fields terminated by ',' STORED AS TEXTFILE;
-create table t2(key string, value string, c_int int, c_float float, c_boolean boolean)  row format delimited fields terminated by ',' STORED AS TEXTFILE;
+create table t1(key string, value string, c_int int, c_float float, c_boolean boolean)  partitioned by (dt string) row format delimited fields terminated by ',' STORED AS TEXTFILE;
+create table t2(key string, value string, c_int int, c_float float, c_boolean boolean)  partitioned by (dt string) row format delimited fields terminated by ',' STORED AS TEXTFILE;
 create table t3(key string, value string, c_int int, c_float float, c_boolean boolean)  row format delimited fields terminated by ',' STORED AS TEXTFILE;
-create table t4(key string, value string, c_int int, c_float float, c_boolean boolean)  row format delimited fields terminated by ',' STORED AS TEXTFILE;
 
-load data local inpath '../../data/files/cbo_t1.txt' into table t1;
-load data local inpath '../../data/files/cbo_t2.txt' into table t2;
+load data local inpath '../../data/files/cbo_t1.txt' into table t1 partition (dt='2014');
+load data local inpath '../../data/files/cbo_t2.txt' into table t2 partition (dt='2014');
 load data local inpath '../../data/files/cbo_t3.txt' into table t3;
-load data local inpath '../../data/files/cbo_t4.txt' into table t4;
 
 set hive.stats.dbclass=jdbc:derby;
-analyze table t1 compute statistics;
+analyze table t1 partition (dt) compute statistics;
 analyze table t1 compute statistics for columns key, value, c_int, c_float, c_boolean;
-analyze table t2 compute statistics;
+analyze table t2 partition (dt) compute statistics;
 analyze table t2 compute statistics for columns key, value, c_int, c_float, c_boolean;
 analyze table t3 compute statistics;
 analyze table t3 compute statistics for columns key, value, c_int, c_float, c_boolean;
-analyze table t4 compute statistics;
-analyze table t4 compute statistics for columns key, value, c_int, c_float, c_boolean;
 
 set hive.stats.fetch.column.stats=true;
 set hive.auto.convert.join=false;
