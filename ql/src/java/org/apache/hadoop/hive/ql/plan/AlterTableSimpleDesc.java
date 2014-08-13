@@ -29,7 +29,6 @@ import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
  */
 public class AlterTableSimpleDesc extends DDLDesc {
   private String tableName;
-  private String dbName;
   private LinkedHashMap<String, String> partSpec;
   private String compactionType;
 
@@ -39,17 +38,12 @@ public class AlterTableSimpleDesc extends DDLDesc {
   }
 
   /**
-   * @param dbName
-   *          database that contains the table / partition
    * @param tableName
    *          table containing the partition
    * @param partSpec
-   *          partition specification. Null if touching a table.
    */
-  public AlterTableSimpleDesc(String dbName, String tableName,
-      Map<String, String> partSpec, AlterTableDesc.AlterTableTypes type) {
-    super();
-    this.dbName = dbName;
+  public AlterTableSimpleDesc(String tableName,
+      Map<String, String> partSpec, AlterTableTypes type) {
     this.tableName = tableName;
     if(partSpec == null) {
       this.partSpec = null;
@@ -61,16 +55,14 @@ public class AlterTableSimpleDesc extends DDLDesc {
 
   /**
    * Constructor for ALTER TABLE ... COMPACT.
-   * @param dbname name of the database containing the table
    * @param tableName name of the table to compact
    * @param partSpec partition to compact
    * @param compactionType currently supported values: 'major' and 'minor'
    */
-  public AlterTableSimpleDesc(String dbname, String tableName,
-                              LinkedHashMap<String,  String> partSpec,  String compactionType) {
+  public AlterTableSimpleDesc(String tableName,
+      LinkedHashMap<String, String> partSpec, String compactionType) {
     type = AlterTableTypes.COMPACT;
     this.compactionType = compactionType;
-    this.dbName = dbname;
     this.tableName = tableName;
     this.partSpec = partSpec;
   }
@@ -81,14 +73,6 @@ public class AlterTableSimpleDesc extends DDLDesc {
 
   public void setTableName(String tableName) {
     this.tableName = tableName;
-  }
-
-  public String getDbName() {
-    return dbName;
-  }
-
-  public void setDbName(String dbName) {
-    this.dbName = dbName;
   }
 
   public AlterTableDesc.AlterTableTypes getType() {

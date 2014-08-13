@@ -12,3 +12,6 @@ SELECT key FROM src where key > 300 GROUP BY key HAVING max(value) > "val_255";
 
 EXPLAIN SELECT key, max(value) FROM src GROUP BY key HAVING max(value) > "val_255";
 SELECT key, max(value) FROM src GROUP BY key HAVING max(value) > "val_255";
+
+EXPLAIN SELECT key, COUNT(value) FROM src GROUP BY key HAVING count(value) >= 4;
+SELECT key, COUNT(value) FROM src GROUP BY key HAVING count(value) >= 4;

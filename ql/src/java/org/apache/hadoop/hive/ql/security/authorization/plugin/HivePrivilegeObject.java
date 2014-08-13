@@ -19,10 +19,8 @@ package org.apache.hadoop.hive.ql.security.authorization.plugin;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
 import org.apache.hadoop.hive.common.classification.InterfaceStability.Unstable;
@@ -91,7 +89,7 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
   private final String objectName;
   private final List<String> commandParams;
   private final List<String> partKeys;
-  private Set<String> columns;
+  private final List<String> columns;
   private final HivePrivObjectActionType actionType;
 
   public HivePrivilegeObject(HivePrivilegeObjectType type, String dbname, String objectName) {
@@ -106,7 +104,7 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
   public HivePrivilegeObject(HivePrivilegeObjectType type, String dbname, String objectName,
       List<String> partKeys, String column) {
     this(type, dbname, objectName, partKeys,
-        column == null ? null : new HashSet<String>(Arrays.asList(column)),
+        column == null ? null : Arrays.asList(column),
         HivePrivObjectActionType.OTHER, null);
   }
 
@@ -121,12 +119,12 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
   }
 
   public HivePrivilegeObject(HivePrivilegeObjectType type, String dbname, String objectName,
-    List<String> partKeys, Set<String> columns, List<String> commandParams) {
+    List<String> partKeys, List<String> columns, List<String> commandParams) {
     this(type, dbname, objectName, partKeys, columns, HivePrivObjectActionType.OTHER, commandParams);
   }
 
   public HivePrivilegeObject(HivePrivilegeObjectType type, String dbname, String objectName,
-      List<String> partKeys, Set<String> columns, HivePrivObjectActionType actionType,
+      List<String> partKeys, List<String> columns, HivePrivObjectActionType actionType,
       List<String> commandParams) {
     this.type = type;
     this.dbname = dbname;
@@ -170,7 +168,7 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
    * Column information is not set for DDL operations and for tables being written into
    * @return list of applicable columns
    */
-  public Set<String> getColumns() {
+  public List<String> getColumns() {
     return columns;
   }
 
@@ -218,9 +216,4 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
   private String getDbObjectName(String dbname2, String objectName2) {
     return (dbname == null ? "" : dbname + ".") + objectName;
   }
-
-  public void setColumns(Set<String> columnms) {
-    this.columns = columnms;
-  }
-
 }

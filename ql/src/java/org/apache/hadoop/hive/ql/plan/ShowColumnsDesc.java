@@ -23,7 +23,6 @@ import org.apache.hadoop.fs.Path;
 
 public class ShowColumnsDesc extends DDLDesc implements Serializable {
   private static final long serialVersionUID = 1L;
-  String dbName;
   String tableName;
   String resFile;
   /**
@@ -63,16 +62,6 @@ public class ShowColumnsDesc extends DDLDesc implements Serializable {
   }
 
   /**
-   * @param dbName    name of the database
-   * @param tableName name of table to show columns of
-   */
-  public ShowColumnsDesc(Path resFile, String dbName, String tableName) {
-    this.resFile = resFile.toString();
-    this.dbName = dbName;
-    this.tableName = tableName;
-  }
-
-  /**
    * @return the tableName
    */
   @Explain(displayName = "table name")
@@ -102,13 +91,5 @@ public class ShowColumnsDesc extends DDLDesc implements Serializable {
    */
   public void setResFile(String resFile) {
     this.resFile = resFile;
-  }
-
-  public String getDbName() {
-    return dbName;
-  }
-
-  public void setDbName(String dbName) {
-    this.dbName = dbName;
   }
 }

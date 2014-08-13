@@ -3269,6 +3269,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
       boolean success = false, indexTableCreated = false;
 
+      String[] qualified =
+          MetaStoreUtils.getQualifiedName(index.getDbName(), index.getIndexTableName());
+
       try {
         ms.openTransaction();
         Index old_index = null;
@@ -3291,7 +3294,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         Table indexTbl = indexTable;
         if (indexTbl != null) {
           try {
-            indexTbl = ms.getTable(index.getDbName(), index.getIndexTableName());
+            indexTbl = ms.getTable(qualified[0], qualified[1]);
           } catch (Exception e) {
           }
           if (indexTbl != null) {
@@ -3312,7 +3315,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         if (!success) {
           if (indexTableCreated) {
             try {
-              this.drop_table(index.getDbName(), index.getIndexTableName(), false);
+              drop_table(qualified[0], qualified[1], false);
             } catch (Exception e) {
             }
           }
@@ -3366,8 +3369,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
         String idxTblName = index.getIndexTableName();
         if (idxTblName != null) {
-          Table tbl = null;
-          tbl = this.get_table(dbName, idxTblName);
+          String[] qualified = MetaStoreUtils.getQualifiedName(index.getDbName(), idxTblName);
+          Table tbl = get_table(qualified[0], qualified[1]);
           if (tbl.getSd() == null) {
             throw new MetaException("Table metadata is corrupted");
           }

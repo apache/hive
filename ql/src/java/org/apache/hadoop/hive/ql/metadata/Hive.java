@@ -409,6 +409,12 @@ public class Hive {
     }
   }
 
+  public void alterIndex(String baseTableName, String indexName, Index newIdx)
+      throws InvalidOperationException, HiveException {
+    String[] names = Utilities.getDbTableName(baseTableName);
+    alterIndex(names[0], names[1], indexName, newIdx);
+  }
+
   /**
    * Updates the existing index metadata with the new metadata.
    *
@@ -667,17 +673,16 @@ public class Hive {
       throws HiveException {
 
     try {
-      String dbName = SessionState.get().getCurrentDatabase();
       Index old_index = null;
       try {
-        old_index = getIndex(dbName, tableName, indexName);
+        old_index = getIndex(tableName, indexName);
       } catch (Exception e) {
       }
       if (old_index != null) {
-        throw new HiveException("Index " + indexName + " already exists on table " + tableName + ", db=" + dbName);
+        throw new HiveException("Index " + indexName + " already exists on table " + tableName);
       }
 
-      org.apache.hadoop.hive.metastore.api.Table baseTbl = getMSC().getTable(dbName, tableName);
+      org.apache.hadoop.hive.metastore.api.Table baseTbl = getTable(tableName).getTTable();
       if (baseTbl.getTableType() == TableType.VIRTUAL_VIEW.toString()) {
         throw new HiveException("tableName="+ tableName +" is a VIRTUAL VIEW. Index on VIRTUAL VIEW is not supported.");
       }
@@ -686,17 +691,13 @@ public class Hive {
             + " is a TEMPORARY TABLE. Index on TEMPORARY TABLE is not supported.");
       }
 
-      if (indexTblName == null) {
-        indexTblName = MetaStoreUtils.getIndexTableName(dbName, tableName, indexName);
-      } else {
-        org.apache.hadoop.hive.metastore.api.Table temp = null;
-        try {
-          temp = getMSC().getTable(dbName, indexTblName);
-        } catch (Exception e) {
-        }
-        if (temp != null) {
-          throw new HiveException("Table name " + indexTblName + " already exists. Choose another name.");
-        }
+      org.apache.hadoop.hive.metastore.api.Table temp = null;
+      try {
+        temp = getTable(indexTblName).getTTable();
+      } catch (Exception e) {
+      }
+      if (temp != null) {
+        throw new HiveException("Table name " + indexTblName + " already exists. Choose another name.");
       }
 
       org.apache.hadoop.hive.metastore.api.StorageDescriptor storageDescriptor = baseTbl.getSd().deepCopy();
@@ -774,7 +775,9 @@ public class Hive {
       HiveIndexHandler indexHandler = HiveUtils.getIndexHandler(this.getConf(), indexHandlerClass);
 
       if (indexHandler.usesIndexTable()) {
-        tt = new org.apache.hadoop.hive.ql.metadata.Table(dbName, indexTblName).getTTable();
+        String idname = Utilities.getDatabaseName(indexTblName);
+        String itname = Utilities.getTableName(indexTblName);
+        tt = new org.apache.hadoop.hive.ql.metadata.Table(idname, itname).getTTable();
         List<FieldSchema> partKeys = baseTbl.getPartitionKeys();
         tt.setPartitionKeys(partKeys);
         tt.setTableType(TableType.INDEX_TABLE.toString());
@@ -798,7 +801,9 @@ public class Hive {
         throw new RuntimeException("Please specify deferred rebuild using \" WITH DEFERRED REBUILD \".");
       }
 
-      Index indexDesc = new Index(indexName, indexHandlerClass, dbName, tableName, time, time, indexTblName,
+      String tdname = Utilities.getDatabaseName(tableName);
+      String ttname = Utilities.getTableName(tableName);
+      Index indexDesc = new Index(indexName, indexHandlerClass, tdname, ttname, time, time, indexTblName,
           storageDescriptor, params, deferredRebuild);
       if (indexComment != null) {
         indexDesc.getParameters().put("comment", indexComment);
@@ -818,19 +823,6 @@ public class Hive {
     }
   }
 
-  public Index getIndex(String qualifiedIndexName) throws HiveException {
-    String[] names = getQualifiedNames(qualifiedIndexName);
-    switch (names.length) {
-    case 3:
-      return getIndex(names[0], names[1], names[2]);
-    case 2:
-      return getIndex(SessionState.get().getCurrentDatabase(),
-          names[0], names[1]);
-    default:
-      throw new HiveException("Invalid index name:" + qualifiedIndexName);
-    }
-  }
-
   public Index getIndex(String baseTableName, String indexName) throws HiveException {
     String[] names = Utilities.getDbTableName(baseTableName);
     return this.getIndex(names[0], names[1], indexName);
@@ -843,6 +835,11 @@ public class Hive {
     } catch (Exception e) {
       throw new HiveException(e);
     }
+  }
+
+  public boolean dropIndex(String baseTableName, String index_name, boolean deleteData) throws HiveException {
+    String[] names = Utilities.getDbTableName(baseTableName);
+    return dropIndex(names[0], names[1], index_name, deleteData);
   }
 
   public boolean dropIndex(String db_name, String tbl_name, String index_name, boolean deleteData) throws HiveException {

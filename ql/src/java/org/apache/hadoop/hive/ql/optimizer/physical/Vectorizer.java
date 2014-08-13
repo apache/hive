@@ -149,6 +149,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     patternBuilder.append("|float");
     patternBuilder.append("|double");
     patternBuilder.append("|date");
+    patternBuilder.append("|void");
 
     // Decimal types can be specified with different precision and scales e.g. decimal(10,5),
     // as opposed to other data types which can be represented by constant strings.

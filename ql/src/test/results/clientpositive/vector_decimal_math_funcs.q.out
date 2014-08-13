@@ -95,7 +95,7 @@ STAGE PLANS:
             alias: decimal_test
             Statistics: Num rows: 12288 Data size: 2201752 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((cbigint % 500) = 0) and (sin(cdecimal1) >= (- 1.0))) (type: boolean)
+              predicate: (((cbigint % 500) = 0) and (sin(cdecimal1) >= -1.0)) (type: boolean)
               Statistics: Num rows: 2048 Data size: 366958 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: cdecimal1 (type: decimal(20,10)), round(cdecimal1, 2) (type: decimal(13,2)), round(cdecimal1) (type: decimal(11,0)), floor(cdecimal1) (type: decimal(11,0)), ceil(cdecimal1) (type: decimal(11,0)), round(exp(cdecimal1), 58) (type: double), ln(cdecimal1) (type: double), log10(cdecimal1) (type: double), log2(cdecimal1) (type: double), log2((cdecimal1 - 15601.0)) (type: double), log(2.0, cdecimal1) (type: double), power(log2(cdecimal1), 2.0) (type: double), power(log2(cdecimal1), 2.0) (type: double), sqrt(cdecimal1) (type: double), abs(cdecimal1) (type: decimal(38,18)), sin(cdecimal1) (type: double), asin(cdecimal1) (type: double), cos(cdecimal1) (type: double), acos(cdecimal1) (type: double), atan(cdecimal1) (type: double), degrees(cdecimal1) (type: double), radians(cdecimal1) (type: double), cdecimal1 (type: decimal(20,10)), (- cdecimal1) (type: decimal(20,10)), sign(cdecimal1) (type: int), cos(((- sin(log(cdecimal1))) + 3.14159)) (type: double)
