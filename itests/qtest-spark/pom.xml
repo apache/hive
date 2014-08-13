@@ -296,7 +296,7 @@
             </goals>
             <configuration>
               <files>
-                <file>${basedir}/../qtest/testconfiguration.properties</file>
+                <file>${basedir}/../src/test/resources/testconfiguration.properties</file>
               </files>
             </configuration>
           </execution>
