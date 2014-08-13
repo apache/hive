@@ -26,6 +26,8 @@ import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
+import org.codehaus.jackson.JsonNode;
+import org.codehaus.jackson.node.JsonNodeFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -216,13 +218,14 @@ public class TypeInfoToSchema {
   private List<Schema.Field> getFields(Schema.Field schemaField) {
     List<Schema.Field> fields = new ArrayList<Schema.Field>();
 
+    JsonNode nullDefault = JsonNodeFactory.instance.nullNode();
     if (schemaField.schema().getType() == Schema.Type.RECORD) {
       for (Schema.Field field : schemaField.schema().getFields()) {
-        fields.add(new Schema.Field(field.name(), field.schema(), field.doc(), null));
+        fields.add(new Schema.Field(field.name(), field.schema(), field.doc(), nullDefault));
       }
     } else {
       fields.add(new Schema.Field(schemaField.name(), schemaField.schema(), schemaField.doc(),
-          null));
+          nullDefault));
     }
 
     return fields;
