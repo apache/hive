@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterTableEvent;
+import org.apache.hadoop.hive.metastore.events.ConfigChangeEvent;
 import org.apache.hadoop.hive.metastore.events.CreateDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.CreateTableEvent;
 import org.apache.hadoop.hive.metastore.events.DropDatabaseEvent;
@@ -53,6 +54,7 @@ import org.apache.hadoop.hive.metastore.events.PreDropTableEvent;
 import org.apache.hadoop.hive.metastore.events.PreEventContext;
 import org.apache.hadoop.hive.metastore.events.PreLoadPartitionDoneEvent;
 import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.processors.SetProcessor;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.ShimLoader;
 
@@ -375,8 +377,13 @@ public class TestMetaStoreEventListener extends TestCase {
     validateDropDb(db, dropDB.getDatabase());
 
     PreDropDatabaseEvent preDropDB = (PreDropDatabaseEvent)preNotifyList.get(listSize-1);
-    assert dropDB.getStatus();
     validateDropDb(db, preDropDB.getDatabase());
+
+    SetProcessor.setVariable("metaconf:hive.metastore.try.direct.sql", "false");
+    ConfigChangeEvent event = (ConfigChangeEvent) notifyList.get(notifyList.size() - 1);
+    assertEquals("hive.metastore.try.direct.sql", event.getKey());
+    assertEquals("true", event.getOldValue());
+    assertEquals("false", event.getNewValue());
   }
 
 }

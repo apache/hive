@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterTableEvent;
+import org.apache.hadoop.hive.metastore.events.ConfigChangeEvent;
 import org.apache.hadoop.hive.metastore.events.CreateDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.CreateTableEvent;
 import org.apache.hadoop.hive.metastore.events.DropDatabaseEvent;
@@ -55,6 +56,11 @@ public class DummyListener extends MetaStoreEventListener{
 
   public DummyListener(Configuration config) {
     super(config);
+  }
+
+  @Override
+  public void onConfigChange(ConfigChangeEvent configChange) {
+    notifyList.add(configChange);
   }
 
   @Override

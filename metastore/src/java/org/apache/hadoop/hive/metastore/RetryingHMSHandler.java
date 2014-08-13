@@ -43,43 +43,39 @@ public class RetryingHMSHandler implements InvocationHandler {
   private final IHMSHandler base;
   private final MetaStoreInit.MetaStoreInitData metaStoreInitData =
     new MetaStoreInit.MetaStoreInitData();
-  private final HiveConf hiveConf;
 
-  protected RetryingHMSHandler(final HiveConf hiveConf, final String name) throws MetaException {
+  private final HiveConf hiveConf;            // base configuration
+  private final Configuration configuration;  // active configuration
+
+  private RetryingHMSHandler(HiveConf hiveConf, String name, boolean local) throws MetaException {
     this.hiveConf = hiveConf;
+    this.base = new HiveMetaStore.HMSHandler(name, hiveConf, false);
+    if (local) {
+      base.setConf(hiveConf); // tests expect configuration changes applied directly to metastore
+    }
+    configuration = base.getConf();
 
     // This has to be called before initializing the instance of HMSHandler
-    init();
+    // Using the hook on startup ensures that the hook always has priority
+    // over settings in *.xml.  The thread local conf needs to be used because at this point
+    // it has already been initialized using hiveConf.
+    MetaStoreInit.updateConnectionURL(hiveConf, getConf(), null, metaStoreInitData);
 
-    this.base = new HiveMetaStore.HMSHandler(name, hiveConf);
+    base.init();
   }
 
-  public static IHMSHandler getProxy(HiveConf hiveConf, String name) throws MetaException {
+  public static IHMSHandler getProxy(HiveConf hiveConf, String name, boolean local)
+      throws MetaException {
 
-    RetryingHMSHandler handler = new RetryingHMSHandler(hiveConf, name);
+    RetryingHMSHandler handler = new RetryingHMSHandler(hiveConf, name, local);
 
     return (IHMSHandler) Proxy.newProxyInstance(
       RetryingHMSHandler.class.getClassLoader(),
       new Class[] { IHMSHandler.class }, handler);
   }
 
-  private void init() throws MetaException {
-     // Using the hook on startup ensures that the hook always has priority
-     // over settings in *.xml.  The thread local conf needs to be used because at this point
-     // it has already been initialized using hiveConf.
-    MetaStoreInit.updateConnectionURL(hiveConf, getConf(), null, metaStoreInitData);
-
-  }
-
-  private void initMS() {
-    base.setConf(getConf());
-  }
-
-
   @Override
   public Object invoke(final Object proxy, final Method method, final Object[] args) throws Throwable {
-
-    Object ret = null;
 
     boolean gotNewConnectUrl = false;
     boolean reloadConf = HiveConf.getBoolVar(hiveConf,
@@ -95,15 +91,14 @@ public class RetryingHMSHandler implements InvocationHandler {
     }
 
     int retryCount = 0;
-    // Exception caughtException = null;
     Throwable caughtException = null;
     while (true) {
       try {
         if (reloadConf || gotNewConnectUrl) {
-          initMS();
+          base.setConf(getConf());
         }
-        ret = method.invoke(base, args);
-        break;
+        return method.invoke(base, args);
+
       } catch (javax.jdo.JDOException e) {
         caughtException = e;
       } catch (UndeclaredThrowableException e) {
@@ -166,10 +161,9 @@ public class RetryingHMSHandler implements InvocationHandler {
       gotNewConnectUrl = MetaStoreInit.updateConnectionURL(hiveConf, getConf(),
         lastUrl, metaStoreInitData);
     }
-    return ret;
   }
 
   public Configuration getConf() {
-    return hiveConf;
+    return configuration;
   }
 }

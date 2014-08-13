@@ -142,6 +142,7 @@ import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterTableEvent;
+import org.apache.hadoop.hive.metastore.events.ConfigChangeEvent;
 import org.apache.hadoop.hive.metastore.events.CreateDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.CreateTableEvent;
 import org.apache.hadoop.hive.metastore.events.DropDatabaseEvent;
@@ -348,15 +349,19 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     public HMSHandler(String name) throws MetaException {
-      super(name);
-      hiveConf = new HiveConf(this.getClass());
-      init();
+      this(name, new HiveConf(HMSHandler.class), true);
     }
 
     public HMSHandler(String name, HiveConf conf) throws MetaException {
+      this(name, conf, true);
+    }
+
+    public HMSHandler(String name, HiveConf conf, boolean init) throws MetaException {
       super(name);
       hiveConf = conf;
-      init();
+      if (init) {
+        init();
+      }
     }
 
     public HiveConf getHiveConf() {
@@ -378,7 +383,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
     }
 
-    private boolean init() throws MetaException {
+    public void init() throws MetaException {
       rawStoreClassName = hiveConf.getVar(HiveConf.ConfVars.METASTORE_RAW_STORE_IMPL);
       initListeners = MetaStoreUtils.getMetaStoreListeners(
           MetaStoreInitListener.class, hiveConf,
@@ -436,7 +441,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         Timer cleaner = new Timer("Metastore Events Cleaner Thread", true);
         cleaner.schedule(new EventCleanerTask(this), cleanFreq, cleanFreq);
       }
-      return true;
     }
 
     private String addPrefix(String s) {
@@ -448,10 +452,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       threadLocalConf.set(conf);
       RawStore ms = threadLocalMS.get();
       if (ms != null) {
-        ms.setConf(conf);
+        ms.setConf(conf); // reload if DS related configuration is changed
       }
     }
 
+    @Override
     public Configuration getConf() {
       Configuration conf = threadLocalConf.get();
       if (conf == null) {
@@ -463,6 +468,35 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     public Warehouse getWh() {
       return wh;
+    }
+
+    @Override
+    public void setMetaConf(String key, String value) throws MetaException {
+      ConfVars confVar = HiveConf.getMetaConf(key);
+      if (confVar == null) {
+        throw new MetaException("Invalid configuration key " + key);
+      }
+      String validate = confVar.validate(value);
+      if (validate != null) {
+        throw new MetaException("Invalid configuration value " + value + " for key " + key +
+            " by " + validate);
+      }
+      Configuration configuration = getConf();
+      String oldValue = configuration.get(key);
+      configuration.set(key, value);
+
+      for (MetaStoreEventListener listener : listeners) {
+        listener.onConfigChange(new ConfigChangeEvent(this, key, oldValue, value));
+      }
+    }
+
+    @Override
+    public String getMetaConf(String key) throws MetaException {
+      ConfVars confVar = HiveConf.getMetaConf(key);
+      if (confVar == null) {
+        throw new MetaException("Invalid configuration key " + key);
+      }
+      return getConf().get(key);
     }
 
     /**
@@ -676,8 +710,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       logInfo("Shutting down the object store...");
       RawStore ms = threadLocalMS.get();
       if (ms != null) {
-        ms.shutdown();
-        threadLocalMS.remove();
+        try {
+          ms.shutdown();
+        } finally {
+          threadLocalMS.remove();
+        }
       }
       logInfo("Metastore shutdown complete.");
     }
@@ -5002,9 +5039,13 @@ public class HiveMetaStore extends ThriftHiveMetastore {
   }
 
   public static IHMSHandler newHMSHandler(String name, HiveConf hiveConf) throws MetaException {
-    return RetryingHMSHandler.getProxy(hiveConf, name);
+    return newHMSHandler(name, hiveConf, false);
   }
 
+  public static IHMSHandler newHMSHandler(String name, HiveConf hiveConf, boolean local)
+      throws MetaException {
+    return RetryingHMSHandler.getProxy(hiveConf, name, local);
+  }
 
   /**
    * Discard a current delegation token.

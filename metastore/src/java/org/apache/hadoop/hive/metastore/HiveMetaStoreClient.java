@@ -173,7 +173,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     if (localMetaStore) {
       // instantiate the metastore server handler directly instead of connecting
       // through the network
-      client = HiveMetaStore.newHMSHandler("hive client", conf);
+      client = HiveMetaStore.newHMSHandler("hive client", conf, true);
       isConnected = true;
       snapshotActiveConf();
       return;
@@ -441,6 +441,16 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     if ((transport != null) && transport.isOpen()) {
       transport.close();
     }
+  }
+
+  @Override
+  public void setMetaConf(String key, String value) throws TException {
+    client.setMetaConf(key, value);
+  }
+
+  @Override
+  public String getMetaConf(String key) throws TException {
+    return client.getMetaConf(key);
   }
 
   /**
