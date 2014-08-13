@@ -86,7 +86,8 @@ public class TestTypeInfoToSchema {
         "\"fields\":[" +
         "{\"name\":\"testCol\"," +
         "\"type\":" + specificSchema + "," +
-        "\"doc\":\"\"}" +
+        "\"doc\":\"\"," +
+        "\"default\":null}" +
         "]}";
   }
 
