@@ -42,7 +42,8 @@ import java.util.*;
 
 public class SparkClient implements Serializable {
   private static final long serialVersionUID = 1L;
-  protected static transient final Log LOG = LogFactory.getLog(SparkClient.class);
+  protected static transient final Log LOG = LogFactory
+      .getLog(SparkClient.class);
 
   private static final String SPARK_DEFAULT_CONF_FILE = "spark-defaults.conf";
   private static final String SPARK_DEFAULT_MASTER = "local";
@@ -73,12 +74,14 @@ public class SparkClient implements Serializable {
     // set default spark configurations.
     sparkConf.set("spark.master", SPARK_DEFAULT_MASTER);
     sparkConf.set("spark.app.name", SAPRK_DEFAULT_APP_NAME);
-    sparkConf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer");
-    sparkConf.set("spark.default.parallelism",  "1");
+    sparkConf.set("spark.serializer",
+        "org.apache.spark.serializer.KryoSerializer");
+    sparkConf.set("spark.default.parallelism", "1");
     // load properties from spark-defaults.conf.
     InputStream inputStream = null;
     try {
-      inputStream = this.getClass().getClassLoader().getResourceAsStream(SPARK_DEFAULT_CONF_FILE);
+      inputStream = this.getClass().getClassLoader()
+          .getResourceAsStream(SPARK_DEFAULT_CONF_FILE);
       if (inputStream != null) {
         LOG.info("loading spark properties from:" + SPARK_DEFAULT_CONF_FILE);
         Properties properties = new Properties();
@@ -87,13 +90,15 @@ public class SparkClient implements Serializable {
           if (propertyName.startsWith("spark")) {
             String value = properties.getProperty(propertyName);
             sparkConf.set(propertyName, properties.getProperty(propertyName));
-            LOG.info(String.format("load spark configuration from %s (%s -> %s).",
+            LOG.info(String.format(
+                "load spark configuration from %s (%s -> %s).",
                 SPARK_DEFAULT_CONF_FILE, propertyName, value));
           }
         }
       }
     } catch (IOException e) {
-      LOG.info("Failed to open spark configuration file:" + SPARK_DEFAULT_CONF_FILE, e);
+      LOG.info("Failed to open spark configuration file:"
+          + SPARK_DEFAULT_CONF_FILE, e);
     } finally {
       if (inputStream != null) {
         try {
@@ -112,7 +117,8 @@ public class SparkClient implements Serializable {
       if (propertyName.startsWith("spark")) {
         String value = entry.getValue();
         sparkConf.set(propertyName, value);
-        LOG.info(String.format("load spark configuration from hive configuration (%s -> %s).",
+        LOG.info(String.format(
+            "load spark configuration from hive configuration (%s -> %s).",
             propertyName, value));
       }
     }
@@ -122,7 +128,7 @@ public class SparkClient implements Serializable {
 
   public int execute(DriverContext driverContext, SparkWork sparkWork) {
     Context ctx = driverContext.getCtx();
-    HiveConf hiveConf = (HiveConf)ctx.getConf();
+    HiveConf hiveConf = (HiveConf) ctx.getConf();
     refreshLocalResources(sparkWork, hiveConf);
     JobConf jobConf = new JobConf(hiveConf);
 
@@ -138,7 +144,8 @@ public class SparkClient implements Serializable {
     }
 
     // Generate Spark plan
-    SparkPlanGenerator gen = new SparkPlanGenerator(sc, ctx, jobConf, emptyScratchDir);
+    SparkPlanGenerator gen = new SparkPlanGenerator(sc, ctx, jobConf,
+        emptyScratchDir);
     SparkPlan plan;
     try {
       plan = gen.generate(sparkWork);
@@ -148,8 +155,12 @@ public class SparkClient implements Serializable {
     }
 
     // Execute generated plan.
-    // TODO: we should catch any exception and return more meaningful error code.
-    plan.execute();
+    try {
+      plan.execute();
+    } catch (Exception e) {
+      LOG.error("Error executing Spark Plan", e);
+      return 1;
+    }
     return 0;
   }
 
@@ -167,7 +178,8 @@ public class SparkClient implements Serializable {
     }
 
     // add added jars
-    String addedJars = Utilities.getResourceFiles(conf, SessionState.ResourceType.JAR);
+    String addedJars = Utilities.getResourceFiles(conf,
+        SessionState.ResourceType.JAR);
     if (StringUtils.isNotEmpty(addedJars) && StringUtils.isNotBlank(addedJars)) {
       HiveConf.setVar(conf, HiveConf.ConfVars.HIVEADDEDJARS, addedJars);
       addJars(addedJars);
@@ -194,16 +206,20 @@ public class SparkClient implements Serializable {
       }
     }
 
-    //add added files
-    String addedFiles = Utilities.getResourceFiles(conf, SessionState.ResourceType.FILE);
-    if (StringUtils.isNotEmpty(addedFiles) && StringUtils.isNotBlank(addedFiles)) {
+    // add added files
+    String addedFiles = Utilities.getResourceFiles(conf,
+        SessionState.ResourceType.FILE);
+    if (StringUtils.isNotEmpty(addedFiles)
+        && StringUtils.isNotBlank(addedFiles)) {
       HiveConf.setVar(conf, HiveConf.ConfVars.HIVEADDEDFILES, addedFiles);
       addResources(addedFiles);
     }
 
     // add added archives
-    String addedArchives = Utilities.getResourceFiles(conf, SessionState.ResourceType.ARCHIVE);
-    if (StringUtils.isNotEmpty(addedArchives) && StringUtils.isNotBlank(addedArchives)) {
+    String addedArchives = Utilities.getResourceFiles(conf,
+        SessionState.ResourceType.ARCHIVE);
+    if (StringUtils.isNotEmpty(addedArchives)
+        && StringUtils.isNotBlank(addedArchives)) {
       HiveConf.setVar(conf, HiveConf.ConfVars.HIVEADDEDARCHIVES, addedArchives);
       addResources(addedArchives);
     }
@@ -211,7 +227,8 @@ public class SparkClient implements Serializable {
 
   private void addResources(String addedFiles) {
     for (String addedFile : addedFiles.split(",")) {
-      if (StringUtils.isNotEmpty(addedFile) && StringUtils.isNotBlank(addedFile)
+      if (StringUtils.isNotEmpty(addedFile)
+          && StringUtils.isNotBlank(addedFile)
           && !localFiles.contains(addedFile)) {
         localFiles.add(addedFile);
         sc.addFile(addedFile);
@@ -222,7 +239,7 @@ public class SparkClient implements Serializable {
   private void addJars(String addedJars) {
     for (String addedJar : addedJars.split(",")) {
       if (StringUtils.isNotEmpty(addedJar) && StringUtils.isNotBlank(addedJar)
-        && !localJars.contains(addedJar)) {
+          && !localJars.contains(addedJar)) {
         localJars.add(addedJar);
         sc.addJar(addedJar);
       }

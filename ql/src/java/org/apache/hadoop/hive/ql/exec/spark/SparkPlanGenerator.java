@@ -19,8 +19,9 @@
 package org.apache.hadoop.hive.ql.exec.spark;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
@@ -40,6 +41,7 @@ import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.SparkEdgeProperty;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
+import org.apache.hadoop.hive.ql.plan.UnionWork;
 import org.apache.hadoop.hive.ql.stats.StatsFactory;
 import org.apache.hadoop.hive.ql.stats.StatsPublisher;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -57,8 +59,10 @@ public class SparkPlanGenerator {
   private final JobConf jobConf;
   private Context context;
   private Path scratchDir;
+  private Map<BaseWork, SparkTran> unionWorkTrans = new HashMap<BaseWork, SparkTran>();
 
-  public SparkPlanGenerator(JavaSparkContext sc, Context context, JobConf jobConf, Path scratchDir) {
+  public SparkPlanGenerator(JavaSparkContext sc, Context context,
+      JobConf jobConf, Path scratchDir) {
     this.sc = sc;
     this.context = context;
     this.jobConf = jobConf;
@@ -67,45 +71,72 @@ public class SparkPlanGenerator {
 
   public SparkPlan generate(SparkWork sparkWork) throws Exception {
     SparkPlan plan = new SparkPlan();
-    List<SparkTran> trans = new ArrayList<SparkTran>();
+    GraphTran trans = new GraphTran();
     Set<BaseWork> roots = sparkWork.getRoots();
-    assert(roots != null && roots.size() == 1);
-    BaseWork w = roots.iterator().next();
-    MapWork mapWork = (MapWork) w;
-    trans.add(generate(w));
-    while (sparkWork.getChildren(w).size() > 0) {
-      ReduceWork child = (ReduceWork) sparkWork.getChildren(w).get(0);
-      SparkEdgeProperty edge = sparkWork.getEdgeProperty(w, child);
-      SparkShuffler st = generate(edge);
-      ReduceTran rt = generate(child);
-      rt.setShuffler(st);
-      rt.setNumPartitions(edge.getNumPartitions());
-      trans.add(rt);
-      w = child;
+    for (BaseWork w : roots) {
+      if (!(w instanceof MapWork)) {
+        throw new Exception(
+            "The roots in the SparkWork must be MapWork instances!");
+      }
+      MapWork mapWork = (MapWork) w;
+      SparkTran tran = generate(w);
+      JavaPairRDD<BytesWritable, BytesWritable> input = generateRDD(mapWork);
+      trans.addTranWithInput(tran, input);
+
+      while (sparkWork.getChildren(w).size() > 0) {
+        BaseWork child = sparkWork.getChildren(w).get(0);
+        if (child instanceof ReduceWork) {
+          SparkEdgeProperty edge = sparkWork.getEdgeProperty(w, child);
+          SparkShuffler st = generate(edge);
+          ReduceTran rt = generate((ReduceWork) child);
+          rt.setShuffler(st);
+          rt.setNumPartitions(edge.getNumPartitions());
+          trans.addTran(rt);
+          trans.connect(tran, rt);
+          w = child;
+          tran = rt;
+        } else if (child instanceof UnionWork) {
+          if (unionWorkTrans.get(child) != null) {
+            trans.connect(tran, unionWorkTrans.get(child));
+            break;
+          } else {
+            SparkTran ut = generate((UnionWork) child);
+            unionWorkTrans.put(child, ut);
+            trans.addTran(ut);
+            trans.connect(tran, ut);
+            w = child;
+            tran = ut;
+          }
+        }
+      }
     }
-    ChainedTran chainedTran = new ChainedTran(trans);
-    plan.setTran(chainedTran);
-    JavaPairRDD<BytesWritable, BytesWritable> input = generateRDD(mapWork);
-    plan.setInput(input);
+    unionWorkTrans.clear();
+    plan.setTran(trans);
     return plan;
   }
 
-  private JavaPairRDD<BytesWritable, BytesWritable> generateRDD(MapWork mapWork) throws Exception {
-    List<Path> inputPaths = Utilities.getInputPaths(jobConf, mapWork, scratchDir, context, false);
-    Utilities.setInputPaths(jobConf, inputPaths);
-    Utilities.setMapWork(jobConf, mapWork, scratchDir, true);
+  private JavaPairRDD<BytesWritable, BytesWritable> generateRDD(MapWork mapWork)
+      throws Exception {
+    JobConf newJobConf = new JobConf(jobConf);
+    List<Path> inputPaths = Utilities.getInputPaths(newJobConf, mapWork,
+        scratchDir, context, false);
+    Utilities.setInputPaths(newJobConf, inputPaths);
+    Utilities.setMapWork(newJobConf, mapWork, scratchDir, true);
     Class ifClass = getInputFormat(mapWork);
 
     // The mapper class is expected by the HiveInputFormat.
-    jobConf.set("mapred.mapper.class", ExecMapper.class.getName());
-    return sc.hadoopRDD(jobConf, ifClass, WritableComparable.class, Writable.class);
+    newJobConf.set("mapred.mapper.class", ExecMapper.class.getName());
+    return sc.hadoopRDD(newJobConf, ifClass, WritableComparable.class,
+        Writable.class);
   }
 
   private Class getInputFormat(MapWork mWork) throws HiveException {
     if (mWork.getInputformat() != null) {
-      HiveConf.setVar(jobConf, HiveConf.ConfVars.HIVEINPUTFORMAT, mWork.getInputformat());
+      HiveConf.setVar(jobConf, HiveConf.ConfVars.HIVEINPUTFORMAT,
+          mWork.getInputformat());
     }
-    String inpFormat = HiveConf.getVar(jobConf, HiveConf.ConfVars.HIVEINPUTFORMAT);
+    String inpFormat = HiveConf.getVar(jobConf,
+        HiveConf.ConfVars.HIVEINPUTFORMAT);
     if ((inpFormat == null) || (StringUtils.isBlank(inpFormat))) {
       inpFormat = ShimLoader.getHadoopShims().getInputFormatClassName();
     }
@@ -118,7 +149,8 @@ public class SparkPlanGenerator {
     try {
       inputFormatClass = Class.forName(inpFormat);
     } catch (ClassNotFoundException e) {
-      String message = "Failed to load specified input format class:" + inpFormat;
+      String message = "Failed to load specified input format class:"
+          + inpFormat;
       LOG.error(message, e);
       throw new HiveException(message, e);
     }
@@ -135,33 +167,36 @@ public class SparkPlanGenerator {
         statsPublisher = factory.getStatsPublisher();
         if (!statsPublisher.init(jobConf)) { // creating stats table if not exists
           if (HiveConf.getBoolVar(jobConf, HiveConf.ConfVars.HIVE_STATS_RELIABLE)) {
-            throw new HiveException(ErrorMsg.STATSPUBLISHER_INITIALIZATION_ERROR.getErrorCodedMsg());
+            throw new HiveException(
+                ErrorMsg.STATSPUBLISHER_INITIALIZATION_ERROR.getErrorCodedMsg());
           }
         }
       }
     }
     if (bw instanceof MapWork) {
-      return generate((MapWork)bw);
+      return generate((MapWork) bw);
     } else if (bw instanceof ReduceWork) {
-      return generate((ReduceWork)bw);
+      return generate((ReduceWork) bw);
     } else {
-      throw new IllegalArgumentException("Only MapWork and ReduceWork are expected");
+      throw new IllegalArgumentException(
+          "Only MapWork and ReduceWork are expected");
     }
   }
 
   private MapTran generate(MapWork mw) throws IOException {
+    JobConf newJobConf = new JobConf(jobConf);
     MapTran result = new MapTran();
-    Utilities.setMapWork(jobConf, mw, scratchDir, false);
-    Utilities.createTmpDirs(jobConf, mw);
-    jobConf.set("mapred.mapper.class", ExecMapper.class.getName());
-    byte[] confBytes = KryoSerializer.serializeJobConf(jobConf);
+    Utilities.setMapWork(newJobConf, mw, scratchDir, true);
+    Utilities.createTmpDirs(newJobConf, mw);
+    newJobConf.set("mapred.mapper.class", ExecMapper.class.getName());
+    byte[] confBytes = KryoSerializer.serializeJobConf(newJobConf);
     HiveMapFunction mapFunc = new HiveMapFunction(confBytes);
     result.setMapFunction(mapFunc);
     return result;
   }
 
   private SparkShuffler generate(SparkEdgeProperty edge) {
-    if (edge.isShuffleSort()){
+    if (edge.isShuffleSort()) {
       return new SortByShuffler();
     }
     return new GroupByShuffler();
@@ -178,6 +213,11 @@ public class SparkPlanGenerator {
     byte[] confBytes = KryoSerializer.serializeJobConf(newJobConf);
     HiveReduceFunction redFunc = new HiveReduceFunction(confBytes);
     result.setReduceFunction(redFunc);
+    return result;
+  }
+
+  private UnionTran generate(UnionWork uw) {
+    UnionTran result = new UnionTran();
     return result;
   }
 
