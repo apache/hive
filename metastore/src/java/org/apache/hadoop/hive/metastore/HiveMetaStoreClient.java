@@ -788,6 +788,34 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     dropTable(dbname, name, deleteData, ignoreUnknownTab, null);
   }
 
+  /**
+   * @param dbname
+   * @param name
+   * @param deleteData
+   *          delete the underlying data or just delete the table in metadata
+   * @param ifPurge
+   *          completely purge the table (skipping trash) while removing data from warehouse
+   * @throws NoSuchObjectException
+   * @throws ExistingDependentsException
+   * @throws MetaException
+   * @throws TException
+   * @see org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface#drop_table(java.lang.String,
+   *      java.lang.String, boolean)
+   */
+  public void dropTable(String dbname, String name, boolean deleteData,
+      boolean ignoreUnknownTab, boolean ifPurge) throws MetaException, TException,
+      NoSuchObjectException, UnsupportedOperationException {
+      //build new environmentContext with ifPurge;
+      EnvironmentContext envContext = null;
+      if(ifPurge){
+          Map<String, String> warehouseOptions = null;
+          warehouseOptions = new HashMap<String, String>();
+          warehouseOptions.put("ifPurge", "TRUE");
+          envContext = new EnvironmentContext(warehouseOptions);
+      }
+    dropTable(dbname, name, deleteData, ignoreUnknownTab, envContext);
+  }
+
   public void dropTable(String dbname, String name, boolean deleteData,
       boolean ignoreUnknownTab, EnvironmentContext envContext) throws MetaException, TException,
       NoSuchObjectException, UnsupportedOperationException {

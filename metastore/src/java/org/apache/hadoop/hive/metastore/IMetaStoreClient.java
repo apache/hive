@@ -190,6 +190,27 @@ public interface IMetaStoreClient {
       NoSuchObjectException;
 
   /**
+   * Drop the table and choose whether to save the data in the trash.
+   *
+   * @param dbname
+   *          The database for this table
+   * @param tableName
+   *          The table to drop
+   * @param ifPurge
+   *          completely purge the table (skipping trash) while removing data from warehouse
+   * @throws MetaException
+   *           Could not drop table properly.
+   * @throws NoSuchObjectException
+   *           The table wasn't found.
+   * @throws TException
+   *           A thrift communication error occurred
+   * @throws ExistingDependentsException
+   */
+  public void dropTable(String dbname, String tableName, boolean deleteData,
+      boolean ignoreUknownTab, boolean ifPurge) throws MetaException, TException,
+      NoSuchObjectException;
+
+  /**
    * Drop the table in the DEFAULT database.
    *
    * @param tableName
