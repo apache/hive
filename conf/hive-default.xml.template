@@ -933,21 +933,6 @@
     <description>Flag to control enabling Cost Based Optimizations using Optiq framework.</description>
   </property>
   <property>
-    <key>hive.cbo.max.joins.supported</key>
-    <value>10</value>
-    <description> Control queries that will be considered for join reordering, based on number of joins in them. Beyond a certain number of joins, the cost of considering possible permutations is prohibitive.</description>
-  </property>
-  <property>
-    <key>hive.cbo.project.pullabovejoin.rule</key>
-    <value>false</value>
-    <description/>
-  </property>
-  <property>
-    <key>hive.cbo.greedy.join.order</key>
-    <value>false</value>
-    <description/>
-  </property>
-  <property>
     <key>hive.mapjoin.bucket.cache.size</key>
     <value>100</value>
     <description/>
@@ -1551,9 +1536,14 @@
     </description>
   </property>
   <property>
+    <key>hive.hashtable.key.count.adjustment</key>
+    <value>1.0</value>
+    <description>Adjustment to mapjoin hashtable size derived from table and column statistics; the estimate of the number of keys is divided by this value. If the value is 0, statistics are not usedand hive.hashtable.initialCapacity is used instead.</description>
+  </property>
+  <property>
     <key>hive.hashtable.initialCapacity</key>
     <value>100000</value>
-    <description/>
+    <description>Initial capacity of mapjoin hashtable if statistics are absent, or if hive.hashtable.stats.key.estimate.adjustment is set to 0</description>
   </property>
   <property>
     <key>hive.hashtable.loadfactor</key>
@@ -2819,7 +2809,7 @@
   </property>
   <property>
     <key>hive.security.command.whitelist</key>
-    <value>set,reset,dfs,add,delete,compile</value>
+    <value>set,reset,dfs,add,list,delete,compile</value>
     <description>Comma separated list of non-SQL Hive commands users are authorized to execute</description>
   </property>
   <property>

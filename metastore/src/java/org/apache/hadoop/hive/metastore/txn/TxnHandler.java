@@ -32,9 +32,12 @@ import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidTxnListImpl;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.*;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.util.StringUtils;
 
 import javax.sql.DataSource;
+
+import java.io.IOException;
 import java.sql.*;
 import java.util.*;
 
@@ -1602,7 +1605,13 @@ public class TxnHandler {
 
     String driverUrl = HiveConf.getVar(conf, HiveConf.ConfVars.METASTORECONNECTURLKEY);
     String user = HiveConf.getVar(conf, HiveConf.ConfVars.METASTORE_CONNECTION_USER_NAME);
-    String passwd = HiveConf.getVar(conf, HiveConf.ConfVars.METASTOREPWD);
+    String passwd;
+    try {
+      passwd = ShimLoader.getHadoopShims().getPassword(conf,
+          HiveConf.ConfVars.METASTOREPWD.varname);
+    } catch (IOException err) {
+      throw new SQLException("Error getting metastore password", err);
+    }
     String connectionPooler = HiveConf.getVar(conf,
         HiveConf.ConfVars.METASTORE_CONNECTION_POOLING_TYPE).toLowerCase();
 

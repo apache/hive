@@ -19,7 +19,6 @@ package org.apache.hadoop.hive.ql.security.authorization;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.hadoop.classification.InterfaceAudience.LimitedPrivate;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
@@ -173,14 +172,15 @@ public class AuthorizationUtils {
         privObj.getPartValues(), privObj.getColumnName());
   }
 
-  public static HivePrivilegeObject getHivePrivilegeObject(
-      PrivilegeObjectDesc privSubjectDesc, Set<String> columns) throws HiveException {
+  public static HivePrivilegeObject getHivePrivilegeObject(PrivilegeObjectDesc privSubjectDesc)
+      throws HiveException {
 
     // null means ALL for show grants, GLOBAL for grant/revoke
     HivePrivilegeObjectType objectType = null;
 
     String[] dbTable;
     List<String> partSpec = null;
+    List<String> columns = null;
     if (privSubjectDesc == null) {
       dbTable = new String[] {null, null};
     } else {
@@ -192,6 +192,7 @@ public class AuthorizationUtils {
       if (privSubjectDesc.getPartSpec() != null) {
         partSpec = new ArrayList<String>(privSubjectDesc.getPartSpec().values());
       }
+      columns = privSubjectDesc.getColumns();
       objectType = getPrivObjectType(privSubjectDesc);
     }
     return new HivePrivilegeObject(objectType, dbTable[0], dbTable[1], partSpec, columns, null);

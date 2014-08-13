@@ -44,9 +44,12 @@ public class $className extends TestCase {
   protected void setUp() {
 
     MiniClusterType miniMR = MiniClusterType.valueForString("$clusterMode");
+    String initScript = "$initScript";
+    String cleanupScript = "$cleanupScript";
 
     try {
-      qt = new HBaseQTestUtil((HIVE_ROOT + "$resultsDir"), (HIVE_ROOT + "$logDir"), miniMR, setup);
+      qt = new HBaseQTestUtil((HIVE_ROOT + "$resultsDir"), (HIVE_ROOT + "$logDir"), miniMR,
+      setup, initScript, cleanupScript);
     } catch (Exception e) {
       System.err.println("Exception: " + e.getMessage());
       e.printStackTrace();

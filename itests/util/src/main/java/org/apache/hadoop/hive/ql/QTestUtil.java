@@ -38,7 +38,6 @@ import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.Serializable;
 import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -115,6 +114,8 @@ public class QTestUtil {
 
   public static final String UTF_8 = "UTF-8";
   private static final Log LOG = LogFactory.getLog("QTestUtil");
+  private final String defaultInitScript = "q_test_init.sql";
+  private final String defaultCleanupScript = "q_test_cleanup.sql";
 
   private String testWarehouse;
   private final String testFiles;
@@ -142,6 +143,10 @@ public class QTestUtil {
   private boolean miniMr = false;
   private String hadoopVer = null;
   private QTestSetup setup = null;
+  private boolean isSessionStateStarted = false;
+
+  private String initScript;
+  private String cleanupScript;
 
   static {
     for (String srcTable : System.getProperty("test.src.tables", "").trim().split(",")) {
@@ -225,8 +230,9 @@ public class QTestUtil {
     }
   }
 
-  public QTestUtil(String outDir, String logDir) throws Exception {
-    this(outDir, logDir, MiniClusterType.none, null, "0.20");
+  public QTestUtil(String outDir, String logDir, String initScript, String cleanupScript) throws
+      Exception {
+    this(outDir, logDir, MiniClusterType.none, null, "0.20", initScript, cleanupScript);
   }
 
   public String getOutputDirectory() {
@@ -297,13 +303,14 @@ public class QTestUtil {
     }
   }
 
-  public QTestUtil(String outDir, String logDir, MiniClusterType clusterType, String hadoopVer)
+  public QTestUtil(String outDir, String logDir, MiniClusterType clusterType, String hadoopVer,
+                   String initScript, String cleanupScript)
     throws Exception {
-    this(outDir, logDir, clusterType, null, hadoopVer);
+    this(outDir, logDir, clusterType, null, hadoopVer, initScript, cleanupScript);
   }
 
   public QTestUtil(String outDir, String logDir, MiniClusterType clusterType,
-      String confDir, String hadoopVer)
+      String confDir, String hadoopVer, String initScript, String cleanupScript)
     throws Exception {
     this.outDir = outDir;
     this.logDir = logDir;
@@ -353,6 +360,20 @@ public class QTestUtil {
     }
 
     testFiles = dataDir;
+
+    // Use the current directory if it is not specified
+    String scriptsDir = conf.get("test.data.scripts");
+    if (scriptsDir == null) {
+      scriptsDir = new File(".").getAbsolutePath() + "/data/scripts";
+    }
+    if (initScript.isEmpty()) {
+      initScript = defaultInitScript;
+    }
+    if (cleanupScript.isEmpty()) {
+      cleanupScript = defaultCleanupScript;
+    }
+    this.initScript = scriptsDir + "/" + initScript;
+    this.cleanupScript = scriptsDir + "/" + cleanupScript;
 
     overWrite = "true".equalsIgnoreCase(System.getProperty("test.output.overwrite"));
 
@@ -593,14 +614,15 @@ public class QTestUtil {
   }
 
   public void cleanUp() throws Exception {
-    // Drop any tables that remain due to unsuccessful runs
-    for (String s : new String[] {"src", "src1", "src_json", "src_thrift",
-        "src_sequencefile", "srcpart", "srcbucket", "srcbucket2", "dest1",
-        "dest2", "dest3", "dest4", "dest4_sequencefile", "dest_j1", "dest_j2",
-        "dest_g1", "dest_g2", "fetchtask_ioexception",
-        AllVectorTypesRecord.TABLE_NAME}) {
-      db.dropTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, s);
+    if(!isSessionStateStarted) {
+      startSessionState();
     }
+    String cleanupCommands = readEntireFileIntoString(new File(cleanupScript));
+    LOG.info("Cleanup (" + cleanupScript + "):\n" + cleanupCommands);
+    if(cliDriver == null) {
+      cliDriver = new CliDriver();
+    }
+    cliDriver.processLine(cleanupCommands);
 
     // delete any contents in the warehouse dir
     Path p = new Path(testWarehouse);
@@ -653,119 +675,20 @@ public class QTestUtil {
   }
 
   public void createSources() throws Exception {
-
-    startSessionState();
+    if(!isSessionStateStarted) {
+      startSessionState();
+    }
     conf.setBoolean("hive.test.init.phase", true);
 
-    // Create a bunch of tables with columns key and value
-    LinkedList<String> cols = new LinkedList<String>();
-    cols.add("key");
-    cols.add("value");
-
-    LinkedList<String> part_cols = new LinkedList<String>();
-    part_cols.add("ds");
-    part_cols.add("hr");
-    db.createTable("srcpart", cols, part_cols, TextInputFormat.class,
-        IgnoreKeyTextOutputFormat.class);
-
-    Path fpath;
-    HashMap<String, String> part_spec = new HashMap<String, String>();
-    for (String ds : new String[] {"2008-04-08", "2008-04-09"}) {
-      for (String hr : new String[] {"11", "12"}) {
-        part_spec.clear();
-        part_spec.put("ds", ds);
-        part_spec.put("hr", hr);
-        // System.out.println("Loading partition with spec: " + part_spec);
-        // db.createPartition(srcpart, part_spec);
-        fpath = new Path(testFiles, "kv1.txt");
-        // db.loadPartition(fpath, srcpart.getName(), part_spec, true);
-        runLoadCmd("LOAD DATA LOCAL INPATH '" + fpath.toUri().getPath()
-            + "' OVERWRITE INTO TABLE srcpart PARTITION (ds='" + ds + "',hr='"
-            + hr + "')");
-      }
+    String initCommands = readEntireFileIntoString(new File(this.initScript));
+    LOG.info("Initial setup (" + initScript + "):\n" + initCommands);
+    if(cliDriver == null) {
+      cliDriver = new CliDriver();
     }
-    ArrayList<String> bucketCols = new ArrayList<String>();
-    bucketCols.add("key");
-    runCreateTableCmd("CREATE TABLE srcbucket(key int, value string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE");
-    // db.createTable("srcbucket", cols, null, TextInputFormat.class,
-    // IgnoreKeyTextOutputFormat.class, 2, bucketCols);
-    for (String fname : new String[] {"srcbucket0.txt", "srcbucket1.txt"}) {
-      fpath = new Path(testFiles, fname);
-      runLoadCmd("LOAD DATA LOCAL INPATH '" + fpath.toUri().getPath()
-          + "' INTO TABLE srcbucket");
-    }
-
-    runCreateTableCmd("CREATE TABLE srcbucket2(key int, value string) "
-        + "CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE");
-    // db.createTable("srcbucket", cols, null, TextInputFormat.class,
-    // IgnoreKeyTextOutputFormat.class, 2, bucketCols);
-    for (String fname : new String[] {"srcbucket20.txt", "srcbucket21.txt",
-        "srcbucket22.txt", "srcbucket23.txt"}) {
-      fpath = new Path(testFiles, fname);
-      runLoadCmd("LOAD DATA LOCAL INPATH '" + fpath.toUri().getPath()
-          + "' INTO TABLE srcbucket2");
-    }
-
-    for (String tname : new String[] {"src", "src1"}) {
-      db.createTable(tname, cols, null, TextInputFormat.class,
-          IgnoreKeyTextOutputFormat.class);
-    }
-    db.createTable("src_sequencefile", cols, null,
-        SequenceFileInputFormat.class, SequenceFileOutputFormat.class);
-
-    Table srcThrift =
-        new Table(SessionState.get().getCurrentDatabase(), "src_thrift");
-    srcThrift.setInputFormatClass(SequenceFileInputFormat.class.getName());
-    srcThrift.setOutputFormatClass(SequenceFileOutputFormat.class.getName());
-    srcThrift.setSerializationLib(ThriftDeserializer.class.getName());
-    srcThrift.setSerdeParam(serdeConstants.SERIALIZATION_CLASS, Complex.class
-        .getName());
-    srcThrift.setSerdeParam(serdeConstants.SERIALIZATION_FORMAT,
-        TBinaryProtocol.class.getName());
-    db.createTable(srcThrift);
-
-    LinkedList<String> json_cols = new LinkedList<String>();
-    json_cols.add("json");
-    db.createTable("src_json", json_cols, null, TextInputFormat.class,
-        IgnoreKeyTextOutputFormat.class);
-
-    // load the input data into the src table
-    fpath = new Path(testFiles, "kv1.txt");
-    runLoadCmd("LOAD DATA LOCAL INPATH '" + fpath.toUri().getPath() + "' INTO TABLE src");
-
-    // load the input data into the src table
-    fpath = new Path(testFiles, "kv3.txt");
-    runLoadCmd("LOAD DATA LOCAL INPATH '" + fpath.toUri().getPath() + "' INTO TABLE src1");
-
-    // load the input data into the src_sequencefile table
-    fpath = new Path(testFiles, "kv1.seq");
-    runLoadCmd("LOAD DATA LOCAL INPATH '" + fpath.toUri().getPath()
-        + "' INTO TABLE src_sequencefile");
-
-    // load the input data into the src_thrift table
-    fpath = new Path(testFiles, "complex.seq");
-    runLoadCmd("LOAD DATA LOCAL INPATH '" + fpath.toUri().getPath()
-        + "' INTO TABLE src_thrift");
-
-    // load the json data into the src_json table
-    fpath = new Path(testFiles, "json.txt");
-    runLoadCmd("LOAD DATA LOCAL INPATH '" + fpath.toUri().getPath()
-        + "' INTO TABLE src_json");
-
-    FileSystem localFs = FileSystem.getLocal(conf);
-    // create and load data into orc table
-    fpath = new Path(testFiles, AllVectorTypesRecord.TABLE_NAME);
-
-    runCreateTableCmd(AllVectorTypesRecord.TABLE_CREATE_COMMAND);
-    runLoadCmd("LOAD DATA LOCAL INPATH '" + fpath.toUri().getPath()
-        + "' INTO  TABLE "+AllVectorTypesRecord.TABLE_NAME);
-
-    runCmd("DROP FUNCTION IF EXISTS qtest_get_java_boolean ");
-    runCmd("CREATE FUNCTION qtest_get_java_boolean "
-        + " AS 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFTestGetJavaBoolean'");
+    cliDriver.processLine("set test.data.dir=" + testFiles + ";");
+    cliDriver.processLine(initCommands);
 
     conf.setBoolean("hive.test.init.phase", false);
-
   }
 
   public void init() throws Exception {
@@ -786,33 +709,7 @@ public class QTestUtil {
   public void init(String tname) throws Exception {
     cleanUp();
     createSources();
-
-    LinkedList<String> cols = new LinkedList<String>();
-    cols.add("key");
-    cols.add("value");
-
-    LinkedList<String> part_cols = new LinkedList<String>();
-    part_cols.add("ds");
-    part_cols.add("hr");
-
-    db.createTable("dest1", cols, null, TextInputFormat.class,
-        IgnoreKeyTextOutputFormat.class);
-    db.createTable("dest2", cols, null, TextInputFormat.class,
-        IgnoreKeyTextOutputFormat.class);
-
-    db.createTable("dest3", cols, part_cols, TextInputFormat.class,
-        IgnoreKeyTextOutputFormat.class);
-    Table dest3 = db.getTable("dest3");
-
-    HashMap<String, String> part_spec = new HashMap<String, String>();
-    part_spec.put("ds", "2008-04-08");
-    part_spec.put("hr", "12");
-    db.createPartition(dest3, part_spec);
-
-    db.createTable("dest4", cols, null, TextInputFormat.class,
-        IgnoreKeyTextOutputFormat.class);
-    db.createTable("dest4_sequencefile", cols, null,
-        SequenceFileInputFormat.class, SequenceFileOutputFormat.class);
+    cliDriver.processCmd("set hive.cli.print.header=true;");
   }
 
   public void cliInit(String tname) throws Exception {
@@ -866,23 +763,38 @@ public class QTestUtil {
     SessionState.start(ss);
 
     cliDriver = new CliDriver();
+
     if (tname.equals("init_file.q")) {
       ss.initFiles.add("../../data/scripts/test_init_file.sql");
     }
     cliDriver.processInitFiles(ss);
+
     return outf.getAbsolutePath();
   }
 
   private CliSessionState startSessionState()
-      throws FileNotFoundException, UnsupportedEncodingException {
+      throws IOException {
 
     HiveConf.setVar(conf, HiveConf.ConfVars.HIVE_AUTHENTICATOR_MANAGER,
         "org.apache.hadoop.hive.ql.security.DummyAuthenticator");
 
     CliSessionState ss = new CliSessionState(conf);
     assert ss != null;
+    ss.in = System.in;
+    ss.out = System.out;
+    ss.err = System.out;
 
+    SessionState oldSs = SessionState.get();
+    if (oldSs != null && clusterType == MiniClusterType.tez) {
+      oldSs.close();
+    }
+    if (oldSs != null && oldSs.out != null && oldSs.out != System.out) {
+      oldSs.out.close();
+    }
     SessionState.start(ss);
+
+    isSessionStateStarted = true;
+
     return ss;
   }
 
@@ -1571,7 +1483,7 @@ public class QTestUtil {
   {
     QTestUtil[] qt = new QTestUtil[qfiles.length];
     for (int i = 0; i < qfiles.length; i++) {
-      qt[i] = new QTestUtil(resDir, logDir, MiniClusterType.none, null, "0.20");
+      qt[i] = new QTestUtil(resDir, logDir, MiniClusterType.none, null, "0.20", "", "");
       qt[i].addFile(qfiles[i]);
       qt[i].clearTestSideEffects();
     }

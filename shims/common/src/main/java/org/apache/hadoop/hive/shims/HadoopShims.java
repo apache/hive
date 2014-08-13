@@ -685,4 +685,13 @@ public interface HadoopShims {
    */
   public void checkFileAccess(FileSystem fs, FileStatus status, FsAction action)
       throws IOException, AccessControlException, Exception;
+
+  /**
+   * Use password API (if available) to fetch credentials/password
+   * @param conf
+   * @param name
+   * @return
+   */
+  public String getPassword(Configuration conf, String name) throws IOException;
+
 }

@@ -341,7 +341,7 @@ STAGE PLANS:
             alias: alltypesorc
             Statistics: Num rows: 23577 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((cdouble >= (- 500)) and (cdouble < (- 199))) (type: boolean)
+              predicate: ((cdouble >= -500) and (cdouble < -199)) (type: boolean)
               Statistics: Num rows: 2619 Data size: 41904 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: (cdouble + 200.0) (type: double), (cbigint / (cdouble + 200.0)) (type: double), ((cdouble + 200.0) / (cdouble + 200.0)) (type: double), (3 / (cdouble + 200.0)) (type: double), (1.2 / (cdouble + 200.0)) (type: double)

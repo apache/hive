@@ -29,6 +29,8 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.Database;
@@ -80,11 +82,11 @@ public class HiveAlterHandler implements AlterHandler {
     FileSystem destFs = null;
 
     boolean success = false;
-    String oldTblLoc = null;
-    String newTblLoc = null;
     boolean moveData = false;
     boolean rename = false;
     Table oldt = null;
+    List<ObjectPair<Partition, String>> altps = new ArrayList<ObjectPair<Partition, String>>();
+
     try {
       msdb.openTransaction();
       name = name.toLowerCase();
@@ -131,32 +133,32 @@ public class HiveAlterHandler implements AlterHandler {
 
       // if this alter is a rename, the table is not a virtual view, the user
       // didn't change the default location (or new location is empty), and
-      // table is not an external table, that means useris asking metastore to
+      // table is not an external table, that means user is asking metastore to
       // move data to the new location corresponding to the new name
       if (rename
           && !oldt.getTableType().equals(TableType.VIRTUAL_VIEW.toString())
           && (oldt.getSd().getLocation().compareTo(newt.getSd().getLocation()) == 0
             || StringUtils.isEmpty(newt.getSd().getLocation()))
           && !MetaStoreUtils.isExternalTable(oldt)) {
+
+        srcPath = new Path(oldt.getSd().getLocation());
+        srcFs = wh.getFs(srcPath);
+
         // that means user is asking metastore to move data to new location
         // corresponding to the new name
         // get new location
-        newTblLoc = wh.getTablePath(msdb.getDatabase(newt.getDbName()),
-            newt.getTableName()).toString();
-        Path newTblPath = constructRenamedPath(new Path(newTblLoc),
-            new Path(newt.getSd().getLocation()));
-        newTblLoc = newTblPath.toString();
-        newt.getSd().setLocation(newTblLoc);
-        oldTblLoc = oldt.getSd().getLocation();
+        Path databasePath = constructRenamedPath(
+            wh.getDefaultDatabasePath(newt.getDbName()), srcPath);
+        destPath = new Path(databasePath, newt.getTableName());
+        destFs = wh.getFs(destPath);
+
+        newt.getSd().setLocation(destPath.toString());
         moveData = true;
+
         // check that destination does not exist otherwise we will be
         // overwriting data
-        srcPath = new Path(oldTblLoc);
-        srcFs = wh.getFs(srcPath);
-        destPath = new Path(newTblLoc);
-        destFs = wh.getFs(destPath);
         // check that src and dest are on the same file system
-        if (! equalsFileSystem(srcFs, destFs)) {
+        if (!FileUtils.equalsFileSystem(srcFs, destFs)) {
           throw new InvalidOperationException("table new location " + destPath
               + " is on a different file system than the old location "
               + srcPath + ". This operation is not supported");
@@ -176,22 +178,18 @@ public class HiveAlterHandler implements AlterHandler {
               + destPath + " for table " + newt.getDbName() + "."
               + newt.getTableName());
         }
+        String oldTblLocPath = srcPath.toUri().getPath();
+        String newTblLocPath = destPath.toUri().getPath();
+
         // also the location field in partition
         List<Partition> parts = msdb.getPartitions(dbname, name, -1);
         for (Partition part : parts) {
           String oldPartLoc = part.getSd().getLocation();
-          Path oldPartLocPath = new Path(oldPartLoc);
-          String oldTblLocPath = new Path(oldTblLoc).toUri().getPath();
-          String newTblLocPath = new Path(newTblLoc).toUri().getPath();
           if (oldPartLoc.contains(oldTblLocPath)) {
-            Path newPartLocPath = null;
-            URI oldUri = oldPartLocPath.toUri();
-            String newPath = oldUri.getPath().replace(oldTblLocPath,
-                                                      newTblLocPath);
-
-            newPartLocPath = new Path(oldUri.getScheme(),
-                                      oldUri.getAuthority(),
-                                      newPath);
+            URI oldUri = new Path(oldPartLoc).toUri();
+            String newPath = oldUri.getPath().replace(oldTblLocPath, newTblLocPath);
+            Path newPartLocPath = new Path(oldUri.getScheme(), oldUri.getAuthority(), newPath);
+            altps.add(ObjectPair.create(part, part.getSd().getLocation()));
             part.getSd().setLocation(newPartLocPath.toString());
             msdb.alterPartition(dbname, name, part.getValues(), part);
           }
@@ -234,9 +232,23 @@ public class HiveAlterHandler implements AlterHandler {
           try {
             msdb.openTransaction();
             msdb.alterTable(dbname, newt.getTableName(), oldt);
+            for (ObjectPair<Partition, String> pair : altps) {
+              Partition part = pair.getFirst();
+              part.getSd().setLocation(pair.getSecond());
+              msdb.alterPartition(dbname, name, part.getValues(), part);
+            }
             revertMetaDataTransaction = msdb.commitTransaction();
           } catch (Exception e1) {
-            LOG.error("Reverting metadata opeation failed During HDFS operation failed", e1);
+            // we should log this for manual rollback by administrator
+            LOG.error("Reverting metadata by HDFS operation failure failed During HDFS operation failed", e1);
+            LOG.error("Table " + Warehouse.getQualifiedName(newt) +
+                " should be renamed to " + Warehouse.getQualifiedName(oldt));
+            LOG.error("Table " + Warehouse.getQualifiedName(newt) +
+                " should have path " + srcPath);
+            for (ObjectPair<Partition, String> pair : altps) {
+              LOG.error("Partition " + Warehouse.getQualifiedName(pair.getFirst()) +
+                  " should have path " + pair.getSecond());
+            }
             if (!revertMetaDataTransaction) {
               msdb.rollbackTransaction();
             }
@@ -249,21 +261,6 @@ public class HiveAlterHandler implements AlterHandler {
     if (!success) {
       throw new MetaException("Committing the alter table transaction was not successful.");
     }
-  }
-
-  /**
-   * @param fs1
-   * @param fs2
-   * @return return true if both file system arguments point to same file system
-   */
-  private boolean equalsFileSystem(FileSystem fs1, FileSystem fs2) {
-    //When file system cache is disabled, you get different FileSystem objects
-    // for same file system, so '==' can't be used in such cases
-    //FileSystem api doesn't have a .equals() function implemented, so using
-    //the uri for comparison. FileSystem already uses uri+Configuration for
-    //equality in its CACHE .
-    //Once equality has been added in HDFS-4321, we should make use of it
-    return fs1.getUri().equals(fs2.getUri());
   }
 
   public Partition alterPartition(final RawStore msdb, Warehouse wh, final String dbname,

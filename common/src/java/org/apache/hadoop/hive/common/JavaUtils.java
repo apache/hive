@@ -124,6 +124,7 @@ public final class JavaUtils {
         newOutputStream.close();
       }
     }
+    LogFactory.release(loader);
   }
 
   private JavaUtils() {

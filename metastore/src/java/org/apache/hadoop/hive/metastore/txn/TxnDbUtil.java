@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.metastore.txn;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.shims.ShimLoader;
 
 import java.sql.Connection;
 import java.sql.Driver;
@@ -201,7 +202,8 @@ public class TxnDbUtil {
     Properties prop = new Properties();
     String driverUrl = HiveConf.getVar(conf, HiveConf.ConfVars.METASTORECONNECTURLKEY);
     String user = HiveConf.getVar(conf, HiveConf.ConfVars.METASTORE_CONNECTION_USER_NAME);
-    String passwd = HiveConf.getVar(conf, HiveConf.ConfVars.METASTOREPWD);
+    String passwd = ShimLoader.getHadoopShims().getPassword(conf,
+        HiveConf.ConfVars.METASTOREPWD.varname);
     prop.put("user", user);
     prop.put("password", passwd);
     return driver.connect(driverUrl, prop);
