@@ -47,11 +47,7 @@ import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.physical.StageIDsRearranger;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
-import org.apache.hadoop.hive.ql.plan.Explain;
-import org.apache.hadoop.hive.ql.plan.ExplainWork;
-import org.apache.hadoop.hive.ql.plan.HiveOperation;
-import org.apache.hadoop.hive.ql.plan.OperatorDesc;
-import org.apache.hadoop.hive.ql.plan.TezWork;
+import org.apache.hadoop.hive.ql.plan.*;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.security.authorization.AuthorizationFactory;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -423,6 +419,33 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
               JSONObject jsonDep = new JSONObject();
               jsonDep.put("parent", dep.getName());
               jsonDep.put("type", dep.getType());
+              json.accumulate(ent.getKey().toString(), jsonDep);
+            }
+          }
+        } else if (ent.getValue() != null && !((List<?>)ent.getValue()).isEmpty()
+            && ((List<?>)ent.getValue()).get(0) != null &&
+            ((List<?>)ent.getValue()).get(0) instanceof SparkWork.Dependency) {
+          if (out != null) {
+            boolean isFirst = true;
+            for (SparkWork.Dependency dep: (List<SparkWork.Dependency>)ent.getValue()) {
+              if (!isFirst) {
+                out.print(", ");
+              } else {
+                out.print("<- ");
+                isFirst = false;
+              }
+              out.print(dep.getName());
+              out.print(" (");
+              out.print(dep.getShuffleType());
+              out.print(")");
+            }
+            out.println();
+          }
+          if (jsonOutput) {
+            for (SparkWork.Dependency dep: (List<SparkWork.Dependency>)ent.getValue()) {
+              JSONObject jsonDep = new JSONObject();
+              jsonDep.put("parent", dep.getName());
+              jsonDep.put("type", dep.getShuffleType());
               json.accumulate(ent.getKey().toString(), jsonDep);
             }
           }
