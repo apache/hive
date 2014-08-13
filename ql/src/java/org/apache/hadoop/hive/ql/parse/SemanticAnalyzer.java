@@ -9569,7 +9569,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       try {
         // 1. Gen Optimized AST
-        ASTNode newAST = new OptiqBasedPlanner().getOptimizedAST();
+        ASTNode newAST = new OptiqBasedPlanner().getOptimizedAST(prunedPartitions);
 
         // 2. Regen OP plan from optimized AST
         init();
@@ -11786,17 +11786,18 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private class OptiqBasedPlanner implements Frameworks.PlannerAction<RelNode> {
     RelOptCluster                                         m_cluster;
     RelOptSchema                                          m_relOptSchema;
-    SchemaPlus                                            m_rootSchema;
     SemanticException                                     m_semanticException;
+    Map<String, PrunedPartitionList>                      partitionCache;
 
     // TODO: Do we need to keep track of RR, ColNameToPosMap for every op or
     // just last one.
     LinkedHashMap<RelNode, RowResolver>                   m_relToHiveRR                 = new LinkedHashMap<RelNode, RowResolver>();
     LinkedHashMap<RelNode, ImmutableMap<String, Integer>> m_relToHiveColNameOptiqPosMap = new LinkedHashMap<RelNode, ImmutableMap<String, Integer>>();
 
-    private ASTNode getOptimizedAST() throws SemanticException {
+    private ASTNode getOptimizedAST(Map<String, PrunedPartitionList> partitionCache) throws SemanticException {
       ASTNode optiqOptimizedAST = null;
       RelNode optimizedOptiqPlan = null;
+      this.partitionCache = partitionCache;
 
       try {
         optimizedOptiqPlan = Frameworks.withPlanner(this);
@@ -11827,7 +11828,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       m_cluster = cluster;
       m_relOptSchema = relOptSchema;
-      m_rootSchema = rootSchema;
 
       try {
         optiqGenPlan = genLogicalPlan(qb);
@@ -12148,7 +12148,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
         // 4. Build RelOptAbstractTable
         RelOptHiveTable optTable = new RelOptHiveTable(m_relOptSchema,
-            tableAlias, rowType, tab, nonPartitionColumns, partitionColumns, conf);
+            tableAlias, rowType, tab, nonPartitionColumns, partitionColumns, conf, partitionCache);
 
         // 5. Build Hive Table Scan Rel
         tableRel = new HiveTableScanRel(m_cluster,
