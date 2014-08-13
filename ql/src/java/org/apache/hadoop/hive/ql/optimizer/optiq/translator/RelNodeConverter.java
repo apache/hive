@@ -87,7 +87,7 @@ public class RelNodeConverter {
                                                             .<String, Aggregation> builder()
                                                             .put(
                                                                 "count",
-                                                                (Aggregation) SqlStdOperatorTable.COUNT)
+                                                                SqlStdOperatorTable.COUNT)
                                                             .put("sum", SqlStdOperatorTable.SUM)
                                                             .put("min", SqlStdOperatorTable.MIN)
                                                             .put("max", SqlStdOperatorTable.MAX)
@@ -254,6 +254,7 @@ public class RelNodeConverter {
   }
 
   static class JoinProcessor implements NodeProcessor {
+    @Override
     @SuppressWarnings("unchecked")
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
@@ -408,6 +409,7 @@ public class RelNodeConverter {
   }
 
   static class FilterProcessor implements NodeProcessor {
+    @Override
     @SuppressWarnings("unchecked")
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
@@ -434,6 +436,7 @@ public class RelNodeConverter {
   }
 
   static class SelectProcessor implements NodeProcessor {
+    @Override
     @SuppressWarnings("unchecked")
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
@@ -454,6 +457,7 @@ public class RelNodeConverter {
        */
       List<String> oFieldNames = Lists.transform(selectOp.getConf().getOutputColumnNames(),
           new Function<String, String>() {
+            @Override
             public String apply(String hName) {
               return "_o_" + hName;
             }
@@ -467,6 +471,7 @@ public class RelNodeConverter {
   }
 
   static class LimitProcessor implements NodeProcessor {
+    @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       Context ctx = (Context) procCtx;
@@ -492,6 +497,7 @@ public class RelNodeConverter {
   }
 
   static class GroupByProcessor implements NodeProcessor {
+    @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       Context ctx = (Context) procCtx;
@@ -524,6 +530,7 @@ public class RelNodeConverter {
         // noinspection unchecked
         input = HiveProjectRel.create(input, CompositeList.of(Lists.transform(input.getRowType()
             .getFieldList(), new Function<RelDataTypeField, RexNode>() {
+          @Override
           public RexNode apply(RelDataTypeField input) {
             return new RexInputRef(input.getIndex(), input.getType());
           }
@@ -542,6 +549,7 @@ public class RelNodeConverter {
   }
 
   static class ReduceSinkProcessor implements NodeProcessor {
+    @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       Context ctx = (Context) procCtx;
@@ -581,6 +589,7 @@ public class RelNodeConverter {
         // noinspection unchecked
         input = HiveProjectRel.create(input, CompositeList.of(Lists.transform(input.getRowType()
             .getFieldList(), new Function<RelDataTypeField, RexNode>() {
+          @Override
           public RexNode apply(RelDataTypeField input) {
             return new RexInputRef(input.getIndex(), input.getType());
           }
@@ -612,6 +621,7 @@ public class RelNodeConverter {
   }
 
   static class TableScanProcessor implements NodeProcessor {
+    @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       Context ctx = (Context) procCtx;
@@ -634,7 +644,7 @@ public class RelNodeConverter {
       }
       RelDataType rowType = TypeConverter.getType(ctx.cluster, rr, neededCols);
       RelOptHiveTable optTable = new RelOptHiveTable(ctx.schema, tableScanOp.getConf().getAlias(),
-          rowType, ctx.sA.getTable(tableScanOp), null, null, null);
+          rowType, ctx.sA.getTable(tableScanOp), null, null, null, null);
       TableAccessRelBase tableRel = new HiveTableScanRel(ctx.cluster,
           ctx.cluster.traitSetOf(HiveRel.CONVENTION), optTable, rowType);
       ctx.buildColumnMap(tableScanOp, tableRel);
@@ -673,12 +683,13 @@ public class RelNodeConverter {
   }
 
   static class DefaultProcessor implements NodeProcessor {
+    @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       @SuppressWarnings("unchecked")
       Operator<? extends OperatorDesc> op = (Operator<? extends OperatorDesc>) nd;
       Context ctx = (Context) procCtx;
-      RelNode node = (HiveRel) ctx.getParentNode(op, 0);
+      RelNode node = ctx.getParentNode(op, 0);
       ctx.hiveOpToRelNode.put(op, node);
       return node;
     }
