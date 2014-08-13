@@ -20,10 +20,8 @@ package org.apache.hadoop.hive.ql.exec.spark;
 
 import java.util.Iterator;
 
-import org.apache.hadoop.hive.ql.exec.mr.ExecMapper;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.mapred.Reporter;
 import org.apache.spark.api.java.function.PairFlatMapFunction;
 
 import scala.Tuple2;
@@ -47,7 +45,7 @@ BytesWritable, BytesWritable> {
       jobConf = KryoSerializer.deserializeJobConf(this.buffer);
     }
 
-    ExecMapper mapper = new ExecMapper();
+    SparkMapRecordHandler mapper = new SparkMapRecordHandler();
     mapper.configure(jobConf);
 
     return new HiveMapFunctionResultList(jobConf, it, mapper);

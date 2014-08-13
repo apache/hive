@@ -18,7 +18,6 @@
 package org.apache.hadoop.hive.ql.exec.spark;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.ql.exec.mr.ExecMapper;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.mapred.Reporter;
 import scala.Tuple2;
@@ -28,33 +27,33 @@ import java.util.Iterator;
 
 public class HiveMapFunctionResultList extends
     HiveBaseFunctionResultList<Tuple2<BytesWritable, BytesWritable>> {
-  private final ExecMapper mapper;
+  private final SparkMapRecordHandler recordHandler;
 
   /**
    * Instantiate result set Iterable for Map function output.
    *
    * @param inputIterator Input record iterator.
-   * @param mapper Initialized {@link org.apache.hadoop.hive.ql.exec.mr.ExecMapper} instance.
+   * @param handler Initialized {@link SparkMapRecordHandler} instance.
    */
   public HiveMapFunctionResultList(Configuration conf,
-      Iterator<Tuple2<BytesWritable, BytesWritable>> inputIterator, ExecMapper mapper) {
+      Iterator<Tuple2<BytesWritable, BytesWritable>> inputIterator, SparkMapRecordHandler handler) {
     super(conf, inputIterator);
-    this.mapper = mapper;
+    recordHandler = handler;
   }
 
   @Override
   protected void processNextRecord(Tuple2<BytesWritable, BytesWritable> inputRecord)
       throws IOException {
-    mapper.map(inputRecord._1(), inputRecord._2(), this, Reporter.NULL);
+    recordHandler.map(inputRecord._1(), inputRecord._2(), this, Reporter.NULL);
   }
 
   @Override
   protected boolean processingDone() {
-    return ExecMapper.getDone();
+    return recordHandler.getDone();
   }
 
   @Override
   protected void closeRecordProcessor() {
-    mapper.close();
+    recordHandler.close();
   }
 }
