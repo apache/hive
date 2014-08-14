@@ -22,6 +22,7 @@ import java.util.Iterator;
 
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.Reporter;
 import org.apache.spark.api.java.function.PairFlatMapFunction;
 
 import scala.Tuple2;
@@ -45,10 +46,12 @@ BytesWritable, BytesWritable> {
       jobConf = KryoSerializer.deserializeJobConf(this.buffer);
     }
 
-    SparkMapRecordHandler mapper = new SparkMapRecordHandler();
-    mapper.configure(jobConf);
+    SparkMapRecordHandler mapRecordHandler = new SparkMapRecordHandler();
+    HiveMapFunctionResultList result = new HiveMapFunctionResultList(jobConf, it, mapRecordHandler);
+    //TODO we need to implement a Spark specified Reporter to collect stats, refer to HIVE-7709.
+    mapRecordHandler.init(jobConf, result, Reporter.NULL);
 
-    return new HiveMapFunctionResultList(jobConf, it, mapper);
+    return result;
   }
 
 }

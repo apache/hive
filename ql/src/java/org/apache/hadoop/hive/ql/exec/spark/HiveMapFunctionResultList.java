@@ -44,7 +44,7 @@ public class HiveMapFunctionResultList extends
   @Override
   protected void processNextRecord(Tuple2<BytesWritable, BytesWritable> inputRecord)
       throws IOException {
-    recordHandler.map(inputRecord._1(), inputRecord._2(), this, Reporter.NULL);
+    recordHandler.process(inputRecord._2());
   }
 
   @Override
