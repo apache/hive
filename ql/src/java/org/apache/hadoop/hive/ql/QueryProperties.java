@@ -58,9 +58,9 @@ public class QueryProperties {
     return (noOfJoins > 0);
   }
 
-  public void incrementJoinCount(boolean noOuterJoin) {
+  public void incrementJoinCount(boolean outerJoin) {
     noOfJoins++;
-    if (!noOuterJoin)
+    if (outerJoin)
       noOfOuterJoins++;
   }
 
