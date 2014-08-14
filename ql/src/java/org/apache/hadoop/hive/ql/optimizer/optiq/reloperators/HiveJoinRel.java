@@ -61,20 +61,6 @@ public class HiveJoinRel extends JoinRelBase implements HiveRel {
       throws InvalidRelException {
     super(cluster, TraitsUtil.getJoinTraitSet(cluster, traits), left, right, condition, joinType,
         variablesStopped);
-
-    final List<RexNode> leftKeys = new ArrayList<RexNode>();
-    final List<RexNode> rightKeys = new ArrayList<RexNode>();
-    List<Integer> filterNulls = new LinkedList<Integer>();
-    RexNode remaining = null;
-    if (condition != null) {
-      remaining = RelOptUtil.splitJoinCondition(getSystemFieldList(), left,
-          right, condition, leftKeys, rightKeys, filterNulls, null);
-
-      if (!remaining.isAlwaysTrue()) {
-        throw new InvalidRelException(
-            "EnumerableJoinRel only supports equi-join");
-      }
-    }
     this.m_joinAlgorithm = joinAlgo;
     m_leftSemiJoin = leftSemiJoin;
   }
@@ -86,14 +72,10 @@ public class HiveJoinRel extends JoinRelBase implements HiveRel {
   @Override
   public final HiveJoinRel copy(RelTraitSet traitSet, RexNode conditionExpr, RelNode left,
       RelNode right, JoinRelType joinType, boolean semiJoinDone) {
-    return copy(traitSet, conditionExpr, left, right, m_joinAlgorithm, m_mapJoinStreamingSide, m_leftSemiJoin);
-  }
-
-  public HiveJoinRel copy(RelTraitSet traitSet, RexNode conditionExpr, RelNode left, RelNode right,
-      JoinAlgorithm joinalgo, MapJoinStreamingRelation streamingSide, boolean semiJoinDone) {
     try {
+      Set<String> variablesStopped = Collections.emptySet();
       return new HiveJoinRel(getCluster(), traitSet, left, right, conditionExpr, joinType,
-          variablesStopped, joinalgo, streamingSide, semiJoinDone);
+          variablesStopped, JoinAlgorithm.NONE, null, m_leftSemiJoin);
     } catch (InvalidRelException e) {
       // Semantic error not possible. Must be a bug. Convert to
       // internal error.

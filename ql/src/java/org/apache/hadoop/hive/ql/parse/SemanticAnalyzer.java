@@ -237,6 +237,7 @@ import org.eigenbase.rel.metadata.RelMetadataProvider;
 import org.eigenbase.rel.rules.ConvertMultiJoinRule;
 import org.eigenbase.rel.rules.LoptOptimizeJoinRule;
 import org.eigenbase.rel.rules.OptimizeBushyJoinRule;
+import org.eigenbase.rel.rules.PushFilterPastJoinRule;
 import org.eigenbase.relopt.RelOptCluster;
 import org.eigenbase.relopt.RelOptPlanner;
 import org.eigenbase.relopt.RelOptQuery;
@@ -927,8 +928,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       throw new SemanticException(generateErrorMessage(join,
           "Join with multiple children"));
     }
-    
-    queryProperties.incrementJoinCount(!isOuterJoinToken(frm));
+
+    queryProperties.incrementJoinCount(isOuterJoinToken(join));
     for (int num = 0; num < numChildren; num++) {
       ASTNode child = (ASTNode) join.getChild(num);
       if (child.getToken().getType() == HiveParser.TOK_TABREF) {
@@ -9599,7 +9600,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       } catch (Exception e) {
         //TODO: Distinguish between exceptions that can be retried vs user errors
         LOG.error("CBO failed, skipping CBO. ", e);
-        reAnalyzeAST = true;
+        if (!conf.getBoolVar(ConfVars.HIVE_IN_TEST))
+          reAnalyzeAST = true;
       } finally {
         runCBO = false;
         disableJoinMerge = false;
@@ -11846,9 +11848,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       RelTraitSet desiredTraits = cluster.traitSetOf(HiveRel.CONVENTION, RelCollationImpl.EMPTY);
 
       HepProgram hepPgm = null;
-      HepProgramBuilder hepPgmBldr = new HepProgramBuilder().addMatchOrder(
-        HepMatchOrder.BOTTOM_UP).addRuleInstance(new ConvertMultiJoinRule(HiveJoinRel.class));
-        hepPgmBldr.addRuleInstance(new LoptOptimizeJoinRule(HiveJoinRel.HIVE_JOIN_FACTORY));
+      HepProgramBuilder hepPgmBldr = new HepProgramBuilder().addMatchOrder(HepMatchOrder.BOTTOM_UP)
+          .addRuleInstance(new ConvertMultiJoinRule(HiveJoinRel.class));
+      hepPgmBldr.addRuleInstance(new LoptOptimizeJoinRule(HiveJoinRel.HIVE_JOIN_FACTORY,
+          HiveProjectRel.DEFAULT_PROJECT_FACTORY, HiveFilterRel.DEFAULT_FILTER_FACTORY));
 
       hepPgm = hepPgmBldr.build();
       HepPlanner hepPlanner = new HepPlanner(hepPgm);
@@ -11888,10 +11891,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // TODO: Decorelation of subquery should be done before attempting
       // Partition Pruning; otherwise Expression evaluation may try to execute
       // corelated sub query.
-     basePlan = hepPlan(basePlan, mdProvider,
-          HivePushFilterPastJoinRule.FILTER_ON_JOIN,
-          HivePushFilterPastJoinRule.JOIN, new HivePartitionPrunerRule(
-              SemanticAnalyzer.this.conf));
+			basePlan = hepPlan(basePlan, mdProvider,
+					HivePushFilterPastJoinRule.FILTER_ON_JOIN,
+					HivePushFilterPastJoinRule.JOIN,
+					new HivePartitionPrunerRule(SemanticAnalyzer.this.conf));
 
       HiveRelFieldTrimmer fieldTrimmer = new HiveRelFieldTrimmer(null);
       basePlan = fieldTrimmer.trim(basePlan);

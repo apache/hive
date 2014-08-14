@@ -20,6 +20,7 @@ import org.eigenbase.rex.RexCall;
 import org.eigenbase.rex.RexNode;
 import org.eigenbase.rex.RexUtil;
 import org.eigenbase.sql.SqlKind;
+import org.eigenbase.util.Holder;
 
 import com.google.common.collect.ImmutableList;
 
@@ -27,7 +28,7 @@ public abstract class HivePushFilterPastJoinRule extends RelOptRule {
 
   public static final HivePushFilterPastJoinRule FILTER_ON_JOIN = new HivePushFilterPastJoinRule(
       operand(HiveFilterRel.class, operand(HiveJoinRel.class, any())),
-      "HivePushFilterPastJoinRule:filter") {
+      "HivePushFilterPastJoinRule:filter", true) {
     @Override
     public void onMatch(RelOptRuleCall call) {
       HiveFilterRel filter = call.rel(0);
@@ -37,7 +38,7 @@ public abstract class HivePushFilterPastJoinRule extends RelOptRule {
   };
 
   public static final HivePushFilterPastJoinRule JOIN = new HivePushFilterPastJoinRule(
-      operand(HiveJoinRel.class, any()), "HivePushFilterPastJoinRule:no-filter") {
+      operand(HiveJoinRel.class, any()), "HivePushFilterPastJoinRule:no-filter", false) {
     @Override
     public void onMatch(RelOptRuleCall call) {
       HiveJoinRel join = call.rel(0);
@@ -45,13 +46,17 @@ public abstract class HivePushFilterPastJoinRule extends RelOptRule {
     }
   };
 
+  /** Whether to try to strengthen join-type. */
+  private final boolean smart;
+
   // ~ Constructors -----------------------------------------------------------
 
   /**
    * Creates a PushFilterPastJoinRule with an explicit root operand.
    */
-  private HivePushFilterPastJoinRule(RelOptRuleOperand operand, String id) {
+  private HivePushFilterPastJoinRule(RelOptRuleOperand operand, String id, boolean smart) {
     super(operand, "PushFilterRule: " + id);
+    this.smart = smart;
   }
 
   // ~ Methods ----------------------------------------------------------------
@@ -105,9 +110,10 @@ public abstract class HivePushFilterPastJoinRule extends RelOptRule {
     // filters. They can be pushed down if they are not on the NULL
     // generating side.
     boolean filterPushed = false;
+    final Holder<JoinRelType> joinTypeHolder = Holder.of(join.getJoinType());
     if (RelOptUtil.classifyFilters(join, aboveFilters,
-        join.getJoinType() == JoinRelType.INNER, !join.getJoinType().generatesNullsOnLeft(), !join.getJoinType()
-        .generatesNullsOnRight(), joinFilters, leftFilters, rightFilters)) {
+        join.getJoinType(), !join.getJoinType().generatesNullsOnLeft(), !join.getJoinType()
+        .generatesNullsOnRight(), joinFilters, leftFilters, rightFilters, joinTypeHolder, smart)) {
       filterPushed = true;
     }
 
@@ -140,9 +146,9 @@ public abstract class HivePushFilterPastJoinRule extends RelOptRule {
     // Try to push down filters in ON clause. A ON clause filter can only be
     // pushed down if it does not affect the non-matching set, i.e. it is
     // not on the side which is preserved.
-    if (RelOptUtil.classifyFilters(join, joinFilters, false, !join
+    if (RelOptUtil.classifyFilters(join, joinFilters, null, !join
         .getJoinType().generatesNullsOnRight(), !join.getJoinType()
-        .generatesNullsOnLeft(), joinFilters, leftFilters, rightFilters)) {
+        .generatesNullsOnLeft(), joinFilters, leftFilters, rightFilters, joinTypeHolder, smart)) {
       filterPushed = true;
     }
 
@@ -171,7 +177,9 @@ public abstract class HivePushFilterPastJoinRule extends RelOptRule {
     if (joinFilters.size() == 0) {
       // if nothing actually got pushed and there is nothing leftover,
       // then this rule is a no-op
-      if ((leftFilters.size() == 0) && (rightFilters.size() == 0)) {
+      if (leftFilters.isEmpty()
+          && rightFilters.isEmpty()
+          && joinTypeHolder.get() == join.getJoinType()) {
         return;
       }
       joinFilter = rexBuilder.makeLiteral(true);
