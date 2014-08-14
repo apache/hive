@@ -1407,7 +1407,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           // Delete the data in the partitions which have other locations
           deletePartitionData(partPaths);
           // Delete the data in the table
-          deleteTableData(tblPath);
+          deleteTableData(tblPath, envContext);
           // ok even if the data is not deleted
         }
         for (MetaStoreEventListener listener : listeners) {
@@ -1424,9 +1424,24 @@ public class HiveMetaStore extends ThriftHiveMetastore {
      * @param tablePath
      */
     private void deleteTableData(Path tablePath) {
+      deleteTableData(tablePath, null);
+    }
+
+    /**
+     * Deletes the data in a table's location, if it fails logs an error
+     *
+     * @param tablePath
+     * @param envContext
+     */
+    private void deleteTableData(Path tablePath, EnvironmentContext envContext) {
+
       if (tablePath != null) {
         try {
-          wh.deleteDir(tablePath, true);
+          boolean ifPurge = false;
+          if (envContext != null){
+            ifPurge = Boolean.parseBoolean(envContext.getProperties().get("ifPurge"));
+          }
+          wh.deleteDir(tablePath, true, ifPurge);
         } catch (Exception e) {
           LOG.error("Failed to delete table directory: " + tablePath +
               " " + e.getMessage());
@@ -1441,10 +1456,25 @@ public class HiveMetaStore extends ThriftHiveMetastore {
      * @param partPaths
      */
     private void deletePartitionData(List<Path> partPaths) {
+      deletePartitionData(partPaths, null);
+    }
+
+    /**
+    * Give a list of partitions' locations, tries to delete each one
+    * and for each that fails logs an error.
+    *
+    * @param partPaths
+    * @param envContext
+    */
+    private void deletePartitionData(List<Path> partPaths, EnvironmentContext envContext) {
       if (partPaths != null && !partPaths.isEmpty()) {
         for (Path partPath : partPaths) {
           try {
-            wh.deleteDir(partPath, true);
+            boolean ifPurge = false;
+            if (envContext != null){
+              ifPurge = Boolean.parseBoolean(envContext.getProperties().get("ifPurge"));
+            }
+            wh.deleteDir(partPath, true, ifPurge);
           } catch (Exception e) {
             LOG.error("Failed to delete partition directory: " + partPath +
                 " " + e.getMessage());

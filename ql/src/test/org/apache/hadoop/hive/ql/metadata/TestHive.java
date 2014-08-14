@@ -18,9 +18,12 @@
 
 package org.apache.hadoop.hive.ql.metadata;
 
+import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.FS_TRASH_CHECKPOINT_INTERVAL_KEY;
+import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.FS_TRASH_INTERVAL_KEY;
 import static org.apache.hadoop.hive.metastore.MetaStoreUtils.DEFAULT_DATABASE_NAME;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -28,7 +31,10 @@ import java.util.Map;
 
 import junit.framework.TestCase;
 
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.TrashPolicy;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
@@ -63,6 +69,9 @@ public class TestHive extends TestCase {
   protected void setUp() throws Exception {
     super.setUp();
     hiveConf = new HiveConf(this.getClass());
+    // enable trash so it can be tested
+    hiveConf.setFloat(FS_TRASH_CHECKPOINT_INTERVAL_KEY, 30);
+    hiveConf.setFloat(FS_TRASH_INTERVAL_KEY, 30);
     SessionState.start(hiveConf);
     try {
       hm = Hive.get(hiveConf);
@@ -79,6 +88,9 @@ public class TestHive extends TestCase {
   protected void tearDown() throws Exception {
     try {
       super.tearDown();
+      // disable trash
+      hiveConf.setFloat(FS_TRASH_CHECKPOINT_INTERVAL_KEY, 30);
+      hiveConf.setFloat(FS_TRASH_INTERVAL_KEY, 30);
       Hive.closeCurrent();
     } catch (Exception e) {
       System.err.println(StringUtils.stringifyException(e));
@@ -294,7 +306,7 @@ public class TestHive extends TestCase {
     try {
       String dbName = "db_for_testgettables";
       String table1Name = "table1";
-      hm.dropDatabase(dbName, true, true);
+      hm.dropDatabase(dbName, true, true, true);
 
       Database db = new Database();
       db.setName(dbName);
@@ -330,15 +342,91 @@ public class TestHive extends TestCase {
 
       // Drop all tables
       for (String tableName : hm.getAllTables(dbName)) {
+        Table table = hm.getTable(dbName, tableName);
         hm.dropTable(dbName, tableName);
+        assertFalse(fs.exists(table.getPath()));
       }
       hm.dropDatabase(dbName);
     } catch (Throwable e) {
       System.err.println(StringUtils.stringifyException(e));
-      System.err.println("testGetTables() failed");
+      System.err.println("testGetAndDropTables() failed");
       throw e;
     }
   }
+
+  public void testDropTableTrash() throws Throwable {
+    try {
+      String dbName = "db_for_testdroptable";
+      hm.dropDatabase(dbName, true, true, true);
+
+      Database db = new Database();
+      db.setName(dbName);
+      hm.createDatabase(db);
+
+      List<String> ts = new ArrayList<String>(2);
+      String tableBaseName = "droptable";
+      ts.add(tableBaseName + "1");
+      ts.add(tableBaseName + "2");
+      Table tbl1 = createTestTable(dbName, ts.get(0));
+      hm.createTable(tbl1);
+      Table tbl2 = createTestTable(dbName, ts.get(1));
+      hm.createTable(tbl2);
+      // test dropping tables and trash behavior
+      Table table1 = hm.getTable(dbName, ts.get(0));
+      assertNotNull(table1);
+      assertEquals(ts.get(0), table1.getTableName());
+      Path path1 = table1.getPath();
+      FileSystem fs = path1.getFileSystem(hiveConf);
+      assertTrue(fs.exists(path1));
+      // drop table and check that trash works
+      TrashPolicy tp = TrashPolicy.getInstance(hiveConf, fs, fs.getHomeDirectory());
+      assertNotNull("TrashPolicy instance should not be null", tp);
+      assertTrue("TrashPolicy is not enabled for filesystem: " + fs.getUri(), tp.isEnabled());
+      Path trashDir = tp.getCurrentTrashDir();
+      assertNotNull("trash directory should not be null", trashDir);
+      Path trash1 = Path.mergePaths(trashDir, path1);
+      Path pathglob = trash1.suffix("*");;
+      FileStatus before[] = fs.globStatus(pathglob);
+      hm.dropTable(dbName, ts.get(0));
+      assertFalse(fs.exists(path1));
+      FileStatus after[] = fs.globStatus(pathglob);
+      assertTrue("trash dir before and after DROP TABLE noPURGE are not different",
+                 before.length != after.length);
+
+      // drop a table without saving to trash by setting the purge option
+      Table table2 = hm.getTable(dbName, ts.get(1));
+      assertNotNull(table2);
+      assertEquals(ts.get(1), table2.getTableName());
+      Path path2 = table2.getPath();
+      assertTrue(fs.exists(path2));
+      Path trash2 = Path.mergePaths(trashDir, path2);
+      System.out.println("trashDir2 is " + trash2);
+      pathglob = trash2.suffix("*");
+      before = fs.globStatus(pathglob);
+      hm.dropTable(dbName, ts.get(1), true, true, true); // deleteData, ignoreUnknownTable, ifPurge
+      assertFalse(fs.exists(path2));
+      after = fs.globStatus(pathglob);
+      Arrays.sort(before);
+      Arrays.sort(after);
+      assertEquals("trash dir before and after DROP TABLE PURGE are different",
+                   before.length, after.length);
+      assertTrue("trash dir before and after DROP TABLE PURGE are different",
+                 Arrays.equals(before, after));
+
+      // Drop all tables
+      for (String tableName : hm.getAllTables(dbName)) {
+        Table table = hm.getTable(dbName, tableName);
+        hm.dropTable(dbName, tableName);
+        assertFalse(fs.exists(table.getPath()));
+      }
+      hm.dropDatabase(dbName);
+    } catch (Throwable e) {
+      System.err.println(StringUtils.stringifyException(e));
+      System.err.println("testDropTableTrash() failed");
+      throw e;
+    }
+  }
+
 
   public void testPartition() throws Throwable {
     try {

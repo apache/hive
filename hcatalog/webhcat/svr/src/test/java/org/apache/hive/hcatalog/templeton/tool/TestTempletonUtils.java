@@ -315,10 +315,10 @@ public class TestTempletonUtils {
   @Test
   public void testFindContainingJar() throws Exception {
     String result = TempletonUtils.findContainingJar(ShimLoader.class, ".*hive-shims.*");
-    Assert.assertNotNull(result);
+    Assert.assertNotNull("cannot find jar for ShimLoader class in .*hive-shims.*", result);
     result = TempletonUtils.findContainingJar(HadoopShimsSecure.class, ".*hive-shims.*");
-    Assert.assertNotNull(result);
+    Assert.assertNotNull("cannot find jar for HadoopShimsSecure class in .*hive-shims.*", result);
     result = TempletonUtils.findContainingJar(HadoopShimsSecure.class, ".*unknownjar.*");
-    Assert.assertNull(result);
+    Assert.assertNull("unexpectedly found jar for HadoopShimsSecure class: " + result, result);
   }
 }
