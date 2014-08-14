@@ -896,15 +896,19 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private boolean isJoinToken(ASTNode node) {
     if ((node.getToken().getType() == HiveParser.TOK_JOIN)
         || (node.getToken().getType() == HiveParser.TOK_CROSSJOIN)
-        || (node.getToken().getType() == HiveParser.TOK_LEFTOUTERJOIN)
-        || (node.getToken().getType() == HiveParser.TOK_RIGHTOUTERJOIN)
-        || (node.getToken().getType() == HiveParser.TOK_FULLOUTERJOIN)
+        || isOuterJoinToken(node)
         || (node.getToken().getType() == HiveParser.TOK_LEFTSEMIJOIN)
         || (node.getToken().getType() == HiveParser.TOK_UNIQUEJOIN)) {
       return true;
     }
 
     return false;
+  }
+
+  private boolean isOuterJoinToken(ASTNode node) {
+    return (node.getToken().getType() == HiveParser.TOK_LEFTOUTERJOIN)
+      || (node.getToken().getType() == HiveParser.TOK_RIGHTOUTERJOIN)
+      || (node.getToken().getType() == HiveParser.TOK_FULLOUTERJOIN);
   }
 
   /**
@@ -923,7 +927,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       throw new SemanticException(generateErrorMessage(join,
           "Join with multiple children"));
     }
-
+    
+    queryProperties.incrementJoinCount(!isOuterJoinToken(frm));
     for (int num = 0; num < numChildren; num++) {
       ASTNode child = (ASTNode) join.getChild(num);
       if (child.getToken().getType() == HiveParser.TOK_TABREF) {
@@ -6866,7 +6871,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
       desc.setNullSafes(nullsafes);
     }
-    queryProperties.incrementJoinCount(joinOp.getConf().getNoOuterJoin());
     return putOpInsertMap(joinOp, outputRR);
   }
 
