@@ -1307,8 +1307,8 @@ public class TestJdbcDriver2 {
 
     assertEquals(DatabaseMetaData.sqlStateSQL99, meta.getSQLStateType());
     assertFalse(meta.supportsCatalogsInTableDefinitions());
-    assertFalse(meta.supportsSchemasInTableDefinitions());
-    assertFalse(meta.supportsSchemasInDataManipulation());
+    assertTrue(meta.supportsSchemasInTableDefinitions());
+    assertTrue(meta.supportsSchemasInDataManipulation());
     assertFalse(meta.supportsMultipleResultSets());
     assertFalse(meta.supportsStoredProcedures());
     assertTrue(meta.supportsAlterTableWithAddColumn());
