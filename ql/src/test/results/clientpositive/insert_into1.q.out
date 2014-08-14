@@ -5,6 +5,7 @@ POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE insert_into1 (key int, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@insert_into1
 POSTHOOK: query: CREATE TABLE insert_into1 (key int, value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

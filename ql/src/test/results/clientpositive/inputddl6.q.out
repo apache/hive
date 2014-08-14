@@ -4,6 +4,7 @@ PREHOOK: query: -- test for describe extended table
 CREATE TABLE INPUTDDL6(KEY STRING, VALUE STRING) PARTITIONED BY(ds STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@INPUTDDL6
 POSTHOOK: query: -- test for describe extended table
 -- test for describe extended table partition
 -- test for alter table drop partition

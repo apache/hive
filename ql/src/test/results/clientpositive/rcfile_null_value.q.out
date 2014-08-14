@@ -1,6 +1,7 @@
 PREHOOK: query: CREATE TABLE src1_rc(key STRING, value STRING) STORED AS RCFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@src1_rc
 POSTHOOK: query: CREATE TABLE src1_rc(key STRING, value STRING) STORED AS RCFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -51,6 +52,7 @@ POSTHOOK: Input: default@src1_rc
 PREHOOK: query: CREATE TABLE dest1_rc(c1 INT, c2 STRING, c3 INT, c4 STRING) STORED AS RCFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@dest1_rc
 POSTHOOK: query: CREATE TABLE dest1_rc(c1 INT, c2 STRING, c3 INT, c4 STRING) STORED AS RCFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

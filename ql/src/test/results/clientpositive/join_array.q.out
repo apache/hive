@@ -1,6 +1,7 @@
 PREHOOK: query: create table tinyA(a bigint, b bigint) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@tinyA
 POSTHOOK: query: create table tinyA(a bigint, b bigint) stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -8,6 +9,7 @@ POSTHOOK: Output: default@tinyA
 PREHOOK: query: create table tinyB(a bigint, bList array<int>) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@tinyB
 POSTHOOK: query: create table tinyB(a bigint, bList array<int>) stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

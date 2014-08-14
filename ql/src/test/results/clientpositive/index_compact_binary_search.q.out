@@ -1,7 +1,9 @@
 PREHOOK: query: CREATE INDEX src_index ON TABLE src(key) as 'COMPACT' WITH DEFERRED REBUILD
 PREHOOK: type: CREATEINDEX
+PREHOOK: Input: default@src
 POSTHOOK: query: CREATE INDEX src_index ON TABLE src(key) as 'COMPACT' WITH DEFERRED REBUILD
 POSTHOOK: type: CREATEINDEX
+POSTHOOK: Input: default@src
 POSTHOOK: Output: default@default__src_src_index__
 PREHOOK: query: ALTER INDEX src_index ON src REBUILD
 PREHOOK: type: ALTERINDEX_REBUILD
@@ -83,8 +85,10 @@ PREHOOK: Input: default@src
 97	val_97
 PREHOOK: query: DROP INDEX src_index ON src
 PREHOOK: type: DROPINDEX
+PREHOOK: Input: default@src
 PREHOOK: query: CREATE INDEX src_index ON TABLE src(key) as 'COMPACT' WITH DEFERRED REBUILD
 PREHOOK: type: CREATEINDEX
+PREHOOK: Input: default@src
 PREHOOK: query: ALTER INDEX src_index ON src REBUILD
 PREHOOK: type: ALTERINDEX_REBUILD
 PREHOOK: Input: default@src
@@ -158,8 +162,10 @@ PREHOOK: Input: default@src
 97	val_97
 PREHOOK: query: DROP INDEX src_index ON src
 PREHOOK: type: DROPINDEX
+PREHOOK: Input: default@src
 PREHOOK: query: CREATE INDEX src_index ON TABLE src(key) as 'COMPACT' WITH DEFERRED REBUILD
 PREHOOK: type: CREATEINDEX
+PREHOOK: Input: default@src
 PREHOOK: query: ALTER INDEX src_index ON src REBUILD
 PREHOOK: type: ALTERINDEX_REBUILD
 PREHOOK: Input: default@src
@@ -233,8 +239,10 @@ PREHOOK: Input: default@src
 97	val_97
 PREHOOK: query: DROP INDEX src_index ON src
 PREHOOK: type: DROPINDEX
+PREHOOK: Input: default@src
 PREHOOK: query: CREATE INDEX src_index ON TABLE src(key) as 'COMPACT' WITH DEFERRED REBUILD
 PREHOOK: type: CREATEINDEX
+PREHOOK: Input: default@src
 PREHOOK: query: ALTER INDEX src_index ON src REBUILD
 PREHOOK: type: ALTERINDEX_REBUILD
 PREHOOK: Input: default@src
@@ -308,8 +316,10 @@ PREHOOK: Input: default@src
 97	val_97
 PREHOOK: query: DROP INDEX src_index ON src
 PREHOOK: type: DROPINDEX
+PREHOOK: Input: default@src
 PREHOOK: query: CREATE INDEX src_index ON TABLE src(key) as 'COMPACT' WITH DEFERRED REBUILD
 PREHOOK: type: CREATEINDEX
+PREHOOK: Input: default@src
 PREHOOK: query: ALTER INDEX src_index ON src REBUILD
 PREHOOK: type: ALTERINDEX_REBUILD
 PREHOOK: Input: default@src
@@ -383,8 +393,10 @@ PREHOOK: Input: default@src
 97	val_97
 PREHOOK: query: DROP INDEX src_index ON src
 PREHOOK: type: DROPINDEX
+PREHOOK: Input: default@src
 PREHOOK: query: CREATE INDEX src_index ON TABLE src(key) as 'COMPACT' WITH DEFERRED REBUILD
 PREHOOK: type: CREATEINDEX
+PREHOOK: Input: default@src
 PREHOOK: query: ALTER INDEX src_index ON src REBUILD
 PREHOOK: type: ALTERINDEX_REBUILD
 PREHOOK: Input: default@src
@@ -458,3 +470,4 @@ PREHOOK: Input: default@src
 97	val_97
 PREHOOK: query: DROP INDEX src_index ON src
 PREHOOK: type: DROPINDEX
+PREHOOK: Input: default@src

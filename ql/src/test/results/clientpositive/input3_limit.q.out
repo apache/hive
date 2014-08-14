@@ -1,6 +1,7 @@
 PREHOOK: query: CREATE TABLE T1(key STRING, value STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@T1
 POSTHOOK: query: CREATE TABLE T1(key STRING, value STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -24,6 +25,7 @@ POSTHOOK: Output: default@t1
 PREHOOK: query: CREATE TABLE T2(key STRING, value STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@T2
 POSTHOOK: query: CREATE TABLE T2(key STRING, value STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

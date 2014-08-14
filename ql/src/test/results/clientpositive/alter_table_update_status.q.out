@@ -11,6 +11,7 @@ PREHOOK: query: create table src_stat_int (
 )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@src_stat_int
 POSTHOOK: query: create table src_stat_int (
   key         double,
   value       string

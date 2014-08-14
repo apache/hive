@@ -4,6 +4,7 @@ CREATE TABLE T1(key STRING, val STRING) PARTITIONED BY (ds string)
 CLUSTERED BY (val) SORTED BY (key, val) INTO 2 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@T1
 POSTHOOK: query: -- SORT_QUERY_RESULTS
 
 CREATE TABLE T1(key STRING, val STRING) PARTITIONED BY (ds string)
@@ -37,6 +38,7 @@ POSTHOOK: Lineage: t1 PARTITION(ds=1).val SIMPLE [(t1)t1.FieldSchema(name:val, t
 PREHOOK: query: CREATE TABLE outputTbl1(key STRING, val STRING, cnt INT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@outputTbl1
 POSTHOOK: query: CREATE TABLE outputTbl1(key STRING, val STRING, cnt INT)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

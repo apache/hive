@@ -1,6 +1,7 @@
 PREHOOK: query: create table tab1(c int) partitioned by (i int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@tab1
 POSTHOOK: query: create table tab1(c int) partitioned by (i int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

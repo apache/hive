@@ -1,7 +1,9 @@
 PREHOOK: query: use default
 PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:default
 POSTHOOK: query: use default
 POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:default
 PREHOOK: query: -- Test format_number() UDF
 
 DESCRIBE FUNCTION format_number

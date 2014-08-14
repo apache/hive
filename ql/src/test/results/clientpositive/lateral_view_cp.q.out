@@ -7,6 +7,7 @@ POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table array_valued_src (key string, value array<string>)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@array_valued_src
 POSTHOOK: query: create table array_valued_src (key string, value array<string>)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

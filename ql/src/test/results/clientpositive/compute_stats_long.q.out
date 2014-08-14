@@ -1,6 +1,7 @@
 PREHOOK: query: create table tab_int(a int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@tab_int
 POSTHOOK: query: create table tab_int(a int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

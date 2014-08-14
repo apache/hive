@@ -1,6 +1,7 @@
 PREHOOK: query: create table a (val1 int, val2 int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@a
 POSTHOOK: query: create table a (val1 int, val2 int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -8,6 +9,7 @@ POSTHOOK: Output: default@a
 PREHOOK: query: create table b (val1 int, val2 int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@b
 POSTHOOK: query: create table b (val1 int, val2 int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -15,6 +17,7 @@ POSTHOOK: Output: default@b
 PREHOOK: query: create table c (val1 int, val2 int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@c
 POSTHOOK: query: create table c (val1 int, val2 int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -22,6 +25,7 @@ POSTHOOK: Output: default@c
 PREHOOK: query: create table d (val1 int, val2 int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@d
 POSTHOOK: query: create table d (val1 int, val2 int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -29,6 +33,7 @@ POSTHOOK: Output: default@d
 PREHOOK: query: create table e (val1 int, val2 int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@e
 POSTHOOK: query: create table e (val1 int, val2 int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

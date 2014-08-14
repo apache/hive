@@ -2,6 +2,7 @@ PREHOOK: query: -- check add partition without insert privilege
 create table tpart(i int, j int) partitioned by (k string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@tpart
 POSTHOOK: query: -- check add partition without insert privilege
 create table tpart(i int, j int) partitioned by (k string)
 POSTHOOK: type: CREATETABLE

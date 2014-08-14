@@ -1,7 +1,9 @@
 #### A masked pattern was here ####
 PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:jsondb1
 #### A masked pattern was here ####
 POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:jsondb1
 #### A masked pattern was here ####
 PREHOOK: query: DESCRIBE DATABASE jsondb1
 PREHOOK: type: DESCDATABASE
@@ -33,8 +35,10 @@ POSTHOOK: Input: database:jsondb1
 POSTHOOK: Output: database:jsondb1
 PREHOOK: query: CREATE DATABASE jsondb1
 PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:jsondb1
 POSTHOOK: query: CREATE DATABASE jsondb1
 POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:jsondb1
 PREHOOK: query: DESCRIBE DATABASE jsondb1
 PREHOOK: type: DESCDATABASE
 POSTHOOK: query: DESCRIBE DATABASE jsondb1

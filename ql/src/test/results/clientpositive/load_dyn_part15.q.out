@@ -2,6 +2,7 @@ PREHOOK: query: create table if not exists load_dyn_part15_test (key string)
   partitioned by (part_key string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@load_dyn_part15_test
 POSTHOOK: query: create table if not exists load_dyn_part15_test (key string) 
   partitioned by (part_key string)
 POSTHOOK: type: CREATETABLE

@@ -8,6 +8,7 @@ PREHOOK: query: create table char_2 (
 )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@char_2
 POSTHOOK: query: create table char_2 (
   key char(10),
   value char(20)

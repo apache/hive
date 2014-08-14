@@ -53,6 +53,7 @@ POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table tstsrcpart like srcpart
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@tstsrcpart
 POSTHOOK: query: create table tstsrcpart like srcpart
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

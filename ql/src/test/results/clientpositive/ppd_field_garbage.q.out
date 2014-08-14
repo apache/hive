@@ -2,6 +2,7 @@ PREHOOK: query: -- ppd leaves invalid expr in field expr
 CREATE TABLE test_issue (fileid int, infos ARRAY<STRUCT<user:INT>>, test_c STRUCT<user_c:STRUCT<age:INT>>)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@test_issue
 POSTHOOK: query: -- ppd leaves invalid expr in field expr
 CREATE TABLE test_issue (fileid int, infos ARRAY<STRUCT<user:INT>>, test_c STRUCT<user_c:STRUCT<age:INT>>)
 POSTHOOK: type: CREATETABLE

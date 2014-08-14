@@ -30,6 +30,7 @@ TBLPROPERTIES ('avro.schema.literal'='{
   ] }')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@avro1
 POSTHOOK: query: CREATE TABLE avro1
 ROW FORMAT
 SERDE 'org.apache.hadoop.hive.serde2.avro.AvroSerDe'

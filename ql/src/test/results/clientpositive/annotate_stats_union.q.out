@@ -6,6 +6,7 @@ PREHOOK: query: create table if not exists loc_staging (
 ) row format delimited fields terminated by '|' stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@loc_staging
 POSTHOOK: query: create table if not exists loc_staging (
   state string,
   locid int,
@@ -18,6 +19,7 @@ POSTHOOK: Output: default@loc_staging
 PREHOOK: query: create table loc_orc like loc_staging
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@loc_orc
 POSTHOOK: query: create table loc_orc like loc_staging
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -240,12 +242,16 @@ STAGE PLANS:
 
 PREHOOK: query: create database test
 PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:test
 POSTHOOK: query: create database test
 POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:test
 PREHOOK: query: use test
 PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:test
 POSTHOOK: query: use test
 POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:test
 PREHOOK: query: create table if not exists loc_staging (
   state string,
   locid int,
@@ -254,6 +260,7 @@ PREHOOK: query: create table if not exists loc_staging (
 ) row format delimited fields terminated by '|' stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:test
+PREHOOK: Output: test@loc_staging
 POSTHOOK: query: create table if not exists loc_staging (
   state string,
   locid int,
@@ -266,6 +273,7 @@ POSTHOOK: Output: test@loc_staging
 PREHOOK: query: create table loc_orc like loc_staging
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:test
+PREHOOK: Output: test@loc_orc
 POSTHOOK: query: create table loc_orc like loc_staging
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:test

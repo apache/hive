@@ -3,6 +3,7 @@ PREHOOK: query: -- test for internationalization
 CREATE TABLE INPUTDDL5(name STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@INPUTDDL5
 POSTHOOK: query: -- test for internationalization
 -- kv4.txt contains the utf-8 character 0xE982B5E993AE which we are verifying later on
 CREATE TABLE INPUTDDL5(name STRING) STORED AS TEXTFILE

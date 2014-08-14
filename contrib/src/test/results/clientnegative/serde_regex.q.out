@@ -1,7 +1,9 @@
 PREHOOK: query: USE default
 PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:default
 POSTHOOK: query: USE default
 POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:default
 PREHOOK: query: --  This should fail because Regex SerDe supports only columns of type string
 EXPLAIN
 CREATE TABLE serde_regex(
@@ -74,4 +76,5 @@ WITH SERDEPROPERTIES (
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@serde_regex
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. java.lang.RuntimeException: MetaException(message:org.apache.hadoop.hive.serde2.SerDeException org.apache.hadoop.hive.contrib.serde2.RegexSerDe only accepts string columns, but column[5] named status has type int)

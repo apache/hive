@@ -1,0 +1,9 @@
+PREHOOK: query: create table t1 (a int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1
+POSTHOOK: query: create table t1 (a int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1
+FAILED: HiveAccessControlException Permission denied: Principal [name=user2, type=USER] does not have following privileges for operation CREATEINDEX [[OBJECT OWNERSHIP] on Object [type=TABLE_OR_VIEW, name=default.t1]]

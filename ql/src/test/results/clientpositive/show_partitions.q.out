@@ -76,15 +76,20 @@ POSTHOOK: Input: default@srcpart
 ds=2008-04-08/hr=12
 PREHOOK: query: CREATE DATABASE db1
 PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:db1
 POSTHOOK: query: CREATE DATABASE db1
 POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:db1
 PREHOOK: query: USE db1
 PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:db1
 POSTHOOK: query: USE db1
 POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:db1
 PREHOOK: query: CREATE TABLE srcpart (key1 INT, value1 STRING) PARTITIONED BY (ds STRING, hr STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:db1
+PREHOOK: Output: db1@srcpart
 POSTHOOK: query: CREATE TABLE srcpart (key1 INT, value1 STRING) PARTITIONED BY (ds STRING, hr STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:db1
@@ -146,8 +151,10 @@ POSTHOOK: Input: db1@srcpart
 ds=3/hr=3
 PREHOOK: query: use default
 PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:default
 POSTHOOK: query: use default
 POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:default
 PREHOOK: query: -- from default to db1
 SHOW PARTITIONS db1.srcpart PARTITION(ds='4')
 PREHOOK: type: SHOWPARTITIONS

@@ -20,6 +20,7 @@ PREHOOK: query: create table  char_join1_ch1 (
 )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@char_join1_ch1
 POSTHOOK: query: create table  char_join1_ch1 (
   c1 int,
   c2 char(10)
@@ -33,6 +34,7 @@ PREHOOK: query: create table  char_join1_ch2 (
 )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@char_join1_ch2
 POSTHOOK: query: create table  char_join1_ch2 (
   c1 int,
   c2 char(20)
@@ -46,6 +48,7 @@ PREHOOK: query: create table  char_join1_str (
 )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@char_join1_str
 POSTHOOK: query: create table  char_join1_str (
   c1 int,
   c2 string

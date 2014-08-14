@@ -13,6 +13,7 @@ POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table date_udf (d date)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@date_udf
 POSTHOOK: query: create table date_udf (d date)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -20,6 +21,7 @@ POSTHOOK: Output: default@date_udf
 PREHOOK: query: create table date_udf_string (d string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@date_udf_string
 POSTHOOK: query: create table date_udf_string (d string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -53,6 +55,7 @@ PREHOOK: query: create table date_udf_flight (
 )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@date_udf_flight
 POSTHOOK: query: create table date_udf_flight (
   ORIGIN_CITY_NAME string,
   DEST_CITY_NAME string,

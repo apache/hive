@@ -2,6 +2,7 @@ PREHOOK: query: create table table_asc(key int, value string) CLUSTERED BY (key)
 INTO 1 BUCKETS STORED AS RCFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@table_asc
 POSTHOOK: query: create table table_asc(key int, value string) CLUSTERED BY (key) SORTED BY (key asc) 
 INTO 1 BUCKETS STORED AS RCFILE
 POSTHOOK: type: CREATETABLE
@@ -11,6 +12,7 @@ PREHOOK: query: create table table_desc(key int, value string) CLUSTERED BY (key
 INTO 1 BUCKETS STORED AS RCFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@table_desc
 POSTHOOK: query: create table table_desc(key int, value string) CLUSTERED BY (key) SORTED BY (key desc) 
 INTO 1 BUCKETS STORED AS RCFILE
 POSTHOOK: type: CREATETABLE

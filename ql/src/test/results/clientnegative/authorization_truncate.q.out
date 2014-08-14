@@ -2,6 +2,7 @@ PREHOOK: query: -- check add partition without insert privilege
 create table t1(i int, j int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@t1
 POSTHOOK: query: -- check add partition without insert privilege
 create table t1(i int, j int)
 POSTHOOK: type: CREATETABLE

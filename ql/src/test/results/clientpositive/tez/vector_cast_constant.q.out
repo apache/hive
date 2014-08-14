@@ -22,6 +22,7 @@ ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@over1k
 POSTHOOK: query: -- data setup
 CREATE TABLE over1k(t tinyint,
            si smallint,
@@ -61,6 +62,7 @@ PREHOOK: query: CREATE TABLE over1korc(t tinyint,
 STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@over1korc
 POSTHOOK: query: CREATE TABLE over1korc(t tinyint,
            si smallint,
            i int,

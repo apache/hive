@@ -421,6 +421,7 @@ PREHOOK: query: -- dyn partitions
 CREATE TABLE tmp_src_part (c string) PARTITIONED BY (d int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@tmp_src_part
 POSTHOOK: query: -- dyn partitions
 CREATE TABLE tmp_src_part (c string) PARTITIONED BY (d int)
 POSTHOOK: type: CREATETABLE
@@ -837,6 +838,7 @@ PREHOOK: query: -- multi insert
 CREATE TABLE even (c int, d string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@even
 POSTHOOK: query: -- multi insert
 CREATE TABLE even (c int, d string)
 POSTHOOK: type: CREATETABLE
@@ -845,6 +847,7 @@ POSTHOOK: Output: default@even
 PREHOOK: query: CREATE TABLE odd (c int, d string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@odd
 POSTHOOK: query: CREATE TABLE odd (c int, d string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

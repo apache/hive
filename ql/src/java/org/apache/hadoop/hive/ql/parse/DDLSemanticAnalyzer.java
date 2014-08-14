@@ -805,6 +805,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     if (dbProps != null) {
       createDatabaseDesc.setDatabaseProperties(dbProps);
     }
+    Database database = new Database(dbName, dbComment, dbLocation, dbProps);
+    outputs.add(new WriteEntity(database, WriteEntity.WriteType.DDL_NO_LOCK));
 
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
         createDatabaseDesc), conf));
@@ -855,8 +857,12 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), dropDatabaseDesc), conf));
   }
 
-  private void analyzeSwitchDatabase(ASTNode ast) {
+  private void analyzeSwitchDatabase(ASTNode ast) throws SemanticException {
     String dbName = unescapeIdentifier(ast.getChild(0).getText());
+    Database database = getDatabase(dbName, true);
+    ReadEntity dbReadEntity = new ReadEntity(database);
+    dbReadEntity.noLockNeeded();
+    inputs.add(dbReadEntity);
     SwitchDatabaseDesc switchDatabaseDesc = new SwitchDatabaseDesc(dbName);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
         switchDatabaseDesc), conf));
@@ -1075,7 +1081,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   private void analyzeCreateIndex(ASTNode ast) throws SemanticException {
     String indexName = unescapeIdentifier(ast.getChild(0).getText());
     String typeName = unescapeSQLString(ast.getChild(1).getText());
-    String[] qualified = getQualifiedTableName((ASTNode) ast.getChild(2));
+    String[] qTabName = getQualifiedTableName((ASTNode) ast.getChild(2));
     List<String> indexedCols = getColumnNames((ASTNode) ast.getChild(3));
 
     IndexType indexType = HiveIndex.getIndexType(typeName);
@@ -1140,15 +1146,15 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     storageFormat.fillDefaultStorageFormat();
-
     if (indexTableName == null) {
-      indexTableName = MetaStoreUtils.getIndexTableName(qualified[0], qualified[1], indexName);
-      indexTableName = qualified[0] + "." + indexTableName; // on same database with base table
+      indexTableName = MetaStoreUtils.getIndexTableName(qTabName[0], qTabName[1], indexName);
+      indexTableName = qTabName[0] + "." + indexTableName; // on same database with base table
     } else {
       indexTableName = getDotName(Utilities.getDbTableName(indexTableName));
     }
+    inputs.add(new ReadEntity(getTable(qTabName)));
 
-    CreateIndexDesc crtIndexDesc = new CreateIndexDesc(getDotName(qualified), indexName,
+    CreateIndexDesc crtIndexDesc = new CreateIndexDesc(getDotName(qTabName), indexName,
         indexedCols, indexTableName, deferredRebuild, storageFormat.getInputFormat(),
         storageFormat.getOutputFormat(),
         storageFormat.getStorageHandler(), typeName, location, idxProps, tblProps,
@@ -1175,6 +1181,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         throw new SemanticException(ErrorMsg.INVALID_INDEX.getMsg(indexName));
       }
     }
+
+    inputs.add(new ReadEntity(getTable(tableName)));
 
     DropIndexDesc dropIdxDesc = new DropIndexDesc(indexName, tableName);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),

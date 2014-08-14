@@ -17,6 +17,7 @@ POSTHOOK: type: DROPVIEW
 PREHOOK: query: create table ctas_date_1 (key int, value string, dd date)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@ctas_date_1
 POSTHOOK: query: create table ctas_date_1 (key int, value string, dd date)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

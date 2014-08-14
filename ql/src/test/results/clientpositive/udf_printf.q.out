@@ -1,7 +1,9 @@
 PREHOOK: query: use default
 PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:default
 POSTHOOK: query: use default
 POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:default
 PREHOOK: query: -- Test printf() UDF
 
 DESCRIBE FUNCTION printf
@@ -79,6 +81,7 @@ PREHOOK: query: -- Test Timestamp
 create table timestamp_udf (t timestamp)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@timestamp_udf
 POSTHOOK: query: -- Test Timestamp
 create table timestamp_udf (t timestamp)
 POSTHOOK: type: CREATETABLE
@@ -121,6 +124,7 @@ FIELDS TERMINATED BY '9'
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@binay_udf
 POSTHOOK: query: -- Test Binary
 CREATE TABLE binay_udf(key binary, value int)
 ROW FORMAT DELIMITED
@@ -140,6 +144,7 @@ POSTHOOK: Output: default@binay_udf
 PREHOOK: query: create table dest1 (key binary, value int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@dest1
 POSTHOOK: query: create table dest1 (key binary, value int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

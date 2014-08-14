@@ -8,6 +8,7 @@ POSTHOOK: Input: default@src
 PREHOOK: type: CREATETABLE
 #### A masked pattern was here ####
 PREHOOK: Output: database:default
+PREHOOK: Output: default@roottable
 #### A masked pattern was here ####
 POSTHOOK: type: CREATETABLE
 #### A masked pattern was here ####

@@ -1,6 +1,7 @@
 PREHOOK: query: create table ppr_test (key string) partitioned by (ds string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@ppr_test
 POSTHOOK: query: create table ppr_test (key string) partitioned by (ds string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

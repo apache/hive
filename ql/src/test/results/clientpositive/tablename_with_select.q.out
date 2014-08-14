@@ -1,6 +1,7 @@
 PREHOOK: query: CREATE TABLE tmp_select(a INT, b STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@tmp_select
 POSTHOOK: query: CREATE TABLE tmp_select(a INT, b STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

@@ -1,6 +1,7 @@
 PREHOOK: query: create table alter3_src ( col1 string ) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@alter3_src
 POSTHOOK: query: create table alter3_src ( col1 string ) stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -16,6 +17,7 @@ POSTHOOK: Output: default@alter3_src
 PREHOOK: query: create table alter3 ( col1 string ) partitioned by (pcol1 string , pcol2 string) stored as sequencefile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@alter3
 POSTHOOK: query: create table alter3 ( col1 string ) partitioned by (pcol1 string , pcol2 string) stored as sequencefile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -23,6 +25,7 @@ POSTHOOK: Output: default@alter3
 PREHOOK: query: create table alter3_like like alter3
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@alter3_like
 POSTHOOK: query: create table alter3_like like alter3
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -193,20 +196,25 @@ PREHOOK: query: -- With non-default Database
 
 CREATE DATABASE alter3_db
 PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:alter3_db
 POSTHOOK: query: -- With non-default Database
 
 CREATE DATABASE alter3_db
 POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:alter3_db
 PREHOOK: query: USE alter3_db
 PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:alter3_db
 POSTHOOK: query: USE alter3_db
 POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:alter3_db
 PREHOOK: query: SHOW TABLES
 PREHOOK: type: SHOWTABLES
 POSTHOOK: query: SHOW TABLES
 POSTHOOK: type: SHOWTABLES
 PREHOOK: query: CREATE TABLE alter3_src (col1 STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: alter3_db@alter3_src
 PREHOOK: Output: database:alter3_db
 POSTHOOK: query: CREATE TABLE alter3_src (col1 STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
@@ -222,6 +230,7 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: alter3_db@alter3_src
 PREHOOK: query: CREATE TABLE alter3 (col1 STRING) PARTITIONED BY (pcol1 STRING, pcol2 STRING) STORED AS SEQUENCEFILE
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: alter3_db@alter3
 PREHOOK: Output: database:alter3_db
 POSTHOOK: query: CREATE TABLE alter3 (col1 STRING) PARTITIONED BY (pcol1 STRING, pcol2 STRING) STORED AS SEQUENCEFILE
 POSTHOOK: type: CREATETABLE
@@ -229,6 +238,7 @@ POSTHOOK: Output: alter3_db@alter3
 POSTHOOK: Output: database:alter3_db
 PREHOOK: query: CREATE TABLE alter3_like LIKE alter3
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: alter3_db@alter3_like
 PREHOOK: Output: database:alter3_db
 POSTHOOK: query: CREATE TABLE alter3_like LIKE alter3
 POSTHOOK: type: CREATETABLE

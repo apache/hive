@@ -1,6 +1,7 @@
 PREHOOK: query: create table srcpart_empty(key int, value string) partitioned by (ds string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@srcpart_empty
 POSTHOOK: query: create table srcpart_empty(key int, value string) partitioned by (ds string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -8,6 +9,7 @@ POSTHOOK: Output: default@srcpart_empty
 PREHOOK: query: create table src2_empty (key int, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@src2_empty
 POSTHOOK: query: create table src2_empty (key int, value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

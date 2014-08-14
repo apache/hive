@@ -1,7 +1,9 @@
 PREHOOK: query: create database db_alter_onr
 PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:db_alter_onr
 POSTHOOK: query: create database db_alter_onr
 POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:db_alter_onr
 PREHOOK: query: describe database db_alter_onr
 PREHOOK: type: DESCDATABASE
 POSTHOOK: query: describe database db_alter_onr

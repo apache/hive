@@ -15,6 +15,7 @@ PREHOOK: query: CREATE TABLE part_rc(
 )  STORED AS RCFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@part_rc
 POSTHOOK: query: CREATE TABLE part_rc( 
     p_partkey INT,
     p_name STRING,

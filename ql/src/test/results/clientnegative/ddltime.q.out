@@ -1,6 +1,7 @@
 PREHOOK: query: create table T2 like srcpart
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@T2
 POSTHOOK: query: create table T2 like srcpart
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

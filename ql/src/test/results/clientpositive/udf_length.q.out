@@ -14,6 +14,7 @@ Example:
 PREHOOK: query: CREATE TABLE dest1(len INT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@dest1
 POSTHOOK: query: CREATE TABLE dest1(len INT)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -158,6 +159,7 @@ PREHOOK: query: -- Test with non-ascii characters.
 CREATE TABLE dest1(name STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@dest1
 POSTHOOK: query: -- Test with non-ascii characters. 
 CREATE TABLE dest1(name STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE

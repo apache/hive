@@ -16,6 +16,7 @@ CREATE TABLE part(
 )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@part
 POSTHOOK: query: -- data setup
 CREATE TABLE part( 
     p_partkey INT,
@@ -1263,6 +1264,7 @@ dr INT,
 s DOUBLE)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@part_1
 POSTHOOK: query: -- 25. testMultipleInserts3SWQs
 CREATE TABLE part_1( 
 p_mfgr STRING, 
@@ -1285,6 +1287,7 @@ s2 DOUBLE,
 fv1 INT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@part_2
 POSTHOOK: query: CREATE TABLE part_2( 
 p_mfgr STRING, 
 p_name STRING, 
@@ -1306,6 +1309,7 @@ ca INT,
 fv INT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@part_3
 POSTHOOK: query: CREATE TABLE part_3( 
 p_mfgr STRING, 
 p_name STRING, 

@@ -8,6 +8,7 @@ CREATE TABLE doctors (
 STORED AS AVRO
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@doctors
 POSTHOOK: query: -- SORT_QUERY_RESULTS
 
 -- verify that we can actually read avro files
@@ -34,6 +35,7 @@ PARTITIONED BY (part int)
 STORED AS AVRO
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@doctors_copy
 POSTHOOK: query: CREATE TABLE doctors_copy (
   number int,
   first_name string)

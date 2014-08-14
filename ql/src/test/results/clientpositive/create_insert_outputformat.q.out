@@ -3,6 +3,7 @@ PREHOOK: query: CREATE TABLE table_test_output_format(key INT, value STRING) STO
   OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@table_test_output_format
 POSTHOOK: query: CREATE TABLE table_test_output_format(key INT, value STRING) STORED AS
   INPUTFORMAT 'org.apache.hadoop.mapred.TextInputFormat'
   OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat'
@@ -34,6 +35,7 @@ PREHOOK: query: CREATE TABLE table_test_output_format_sequencefile(key INT, valu
   OUTPUTFORMAT 'org.apache.hadoop.mapred.SequenceFileOutputFormat'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@table_test_output_format_sequencefile
 POSTHOOK: query: CREATE TABLE table_test_output_format_sequencefile(key INT, value STRING) STORED AS
   INPUTFORMAT 'org.apache.hadoop.mapred.SequenceFileInputFormat'
   OUTPUTFORMAT 'org.apache.hadoop.mapred.SequenceFileOutputFormat'
@@ -65,6 +67,7 @@ PREHOOK: query: CREATE TABLE table_test_output_format_hivesequencefile(key INT, 
   OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@table_test_output_format_hivesequencefile
 POSTHOOK: query: CREATE TABLE table_test_output_format_hivesequencefile(key INT, value STRING) STORED AS
   INPUTFORMAT 'org.apache.hadoop.mapred.SequenceFileInputFormat'
   OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat'

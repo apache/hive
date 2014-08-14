@@ -33,6 +33,7 @@ PREHOOK: query: CREATE TABLE orc_create_staging (
     MAP KEYS TERMINATED BY ':'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@orc_create_staging
 POSTHOOK: query: CREATE TABLE orc_create_staging (
   str STRING,
   mp  MAP<STRING,STRING>,
@@ -86,6 +87,7 @@ PREHOOK: query: CREATE TABLE orc_create (key INT, value STRING)
    STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@orc_create
 POSTHOOK: query: CREATE TABLE orc_create (key INT, value STRING)
    PARTITIONED BY (ds string)
    STORED AS ORC
@@ -140,6 +142,7 @@ PREHOOK: query: CREATE TABLE orc_create (key INT, value STRING)
    PARTITIONED BY (ds string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@orc_create
 POSTHOOK: query: CREATE TABLE orc_create (key INT, value STRING)
    PARTITIONED BY (ds string)
 POSTHOOK: type: CREATETABLE
@@ -237,6 +240,7 @@ PREHOOK: query: CREATE TABLE orc_create (key INT, value STRING)
    PARTITIONED BY (ds string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@orc_create
 POSTHOOK: query: CREATE TABLE orc_create (key INT, value STRING)
    PARTITIONED BY (ds string)
 POSTHOOK: type: CREATETABLE
@@ -286,6 +290,7 @@ PREHOOK: query: CREATE TABLE orc_create_complex (
 ) STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@orc_create_complex
 POSTHOOK: query: CREATE TABLE orc_create_complex (
   str STRING,
   mp  MAP<STRING,STRING>,
@@ -424,6 +429,7 @@ PREHOOK: query: CREATE TABLE orc_create_people_staging (
   state string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@orc_create_people_staging
 POSTHOOK: query: CREATE TABLE orc_create_people_staging (
   id int,
   first_name string,
@@ -456,6 +462,7 @@ PARTITIONED BY (state string)
 STORED AS orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@orc_create_people
 POSTHOOK: query: CREATE TABLE orc_create_people (
   id int,
   first_name string,

@@ -28,13 +28,17 @@ STAGE PLANS:
 
 PREHOOK: query: CREATE INDEX src1_index ON TABLE src(key) as 'BITMAP' WITH DEFERRED REBUILD
 PREHOOK: type: CREATEINDEX
+PREHOOK: Input: default@src
 POSTHOOK: query: CREATE INDEX src1_index ON TABLE src(key) as 'BITMAP' WITH DEFERRED REBUILD
 POSTHOOK: type: CREATEINDEX
+POSTHOOK: Input: default@src
 POSTHOOK: Output: default@default__src_src1_index__
 PREHOOK: query: CREATE INDEX src2_index ON TABLE src(value) as 'BITMAP' WITH DEFERRED REBUILD
 PREHOOK: type: CREATEINDEX
+PREHOOK: Input: default@src
 POSTHOOK: query: CREATE INDEX src2_index ON TABLE src(value) as 'BITMAP' WITH DEFERRED REBUILD
 POSTHOOK: type: CREATEINDEX
+POSTHOOK: Input: default@src
 POSTHOOK: Output: default@default__src_src2_index__
 PREHOOK: query: ALTER INDEX src1_index ON src REBUILD
 PREHOOK: type: ALTERINDEX_REBUILD
@@ -126,9 +130,13 @@ POSTHOOK: Input: default@src
 2	val_2
 PREHOOK: query: DROP INDEX src1_index ON src
 PREHOOK: type: DROPINDEX
+PREHOOK: Input: default@src
 POSTHOOK: query: DROP INDEX src1_index ON src
 POSTHOOK: type: DROPINDEX
+POSTHOOK: Input: default@src
 PREHOOK: query: DROP INDEX src2_index ON src
 PREHOOK: type: DROPINDEX
+PREHOOK: Input: default@src
 POSTHOOK: query: DROP INDEX src2_index ON src
 POSTHOOK: type: DROPINDEX
+POSTHOOK: Input: default@src

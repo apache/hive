@@ -1,6 +1,7 @@
 PREHOOK: query: create table json_t (key string, jstring string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@json_t
 POSTHOOK: query: create table json_t (key string, jstring string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -409,6 +410,7 @@ PREHOOK: query: -- Verify that json_tuple can handle new lines in JSON values
 CREATE TABLE dest1(c1 STRING) STORED AS RCFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@dest1
 POSTHOOK: query: -- Verify that json_tuple can handle new lines in JSON values
 
 CREATE TABLE dest1(c1 STRING) STORED AS RCFILE
