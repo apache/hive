@@ -77,7 +77,7 @@ public class SparkMapRecordHandler {
 
   private final ExecMapperContext execContext = new ExecMapperContext();
 
-  public void configure(JobConf job) {
+  public void init(JobConf job, OutputCollector output, Reporter reporter) {
     // Allocate the bean at the beginning -
     memoryMXBean = ManagementFactory.getMemoryMXBean();
     l4j.info("maximum memory = " + memoryMXBean.getHeapMemoryUsage().getMax());
@@ -128,6 +128,12 @@ public class SparkMapRecordHandler {
       mo.initializeLocalWork(jc);
       mo.initialize(jc, null);
 
+      oc = output;
+      rp = reporter;
+      OperatorUtils.setChildrenCollector(mo.getChildOperators(), output);
+      mo.setReporter(rp);
+      MapredContext.get().setReporter(reporter);
+
       if (localWork == null) {
         return;
       }
@@ -152,15 +158,7 @@ public class SparkMapRecordHandler {
     }
   }
 
-  public void map(Object key, Object value, OutputCollector output,
-    Reporter reporter) throws IOException {
-    if (oc == null) {
-      oc = output;
-      rp = reporter;
-      OperatorUtils.setChildrenCollector(mo.getChildOperators(), output);
-      mo.setReporter(rp);
-      MapredContext.get().setReporter(reporter);
-    }
+  public void process(Object value) throws IOException {
     // reset the execContext for each new row
     execContext.resetRow();
 
