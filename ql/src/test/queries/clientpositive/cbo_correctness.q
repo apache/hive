@@ -191,22 +191,24 @@ create view v3 as select v1.value val from v1 join t1 on v1.c_boolean = t1.c_boo
 -- view chaining
 select count(val) from v3 where val != '1';
 with q1 as ( select key from t1 where key = '1')
-select *
-from q1
-;
+select count(*) from q1;
 
 with q1 as ( select value from v1 where c_boolean = false)
-select *
-from q1 ;
+select count(value) from q1 ;
 
 create view v4 as
-with q1 as ( select key from t1  where key = '1')
+with q1 as ( select key,c_int from t1  where key = '1')
 select * from q1
 ;
 
 with q1 as ( select c_int from q2 where c_boolean = false),
 q2 as ( select c_int,c_boolean from v1  where value = '1')
-select * from (select c_int from q1) a;
+select sum(c_int) from (select c_int from q1) a;
+
+with q1 as ( select t1.c_int c_int from q2 join t1 where q2.c_int = t1.c_int),
+q2 as ( select c_int,c_boolean from v1  where value = '1')
+select count(*) from q1 join q2 join v4 on q1.c_int = q2.c_int and v4.c_int = q2.c_int;
+
 
 drop view v1;
 drop view v2;

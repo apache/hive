@@ -16316,63 +16316,47 @@ POSTHOOK: Input: default@v3
 #### A masked pattern was here ####
 96
 PREHOOK: query: with q1 as ( select key from t1 where key = '1')
-select *
-from q1
+select count(*) from q1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t1@dt=2014
 #### A masked pattern was here ####
 POSTHOOK: query: with q1 as ( select key from t1 where key = '1')
-select *
-from q1
+select count(*) from q1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t1@dt=2014
 #### A masked pattern was here ####
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
+12
 PREHOOK: query: with q1 as ( select value from v1 where c_boolean = false)
-select *
-from q1
+select count(value) from q1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t1@dt=2014
 PREHOOK: Input: default@v1
 #### A masked pattern was here ####
 POSTHOOK: query: with q1 as ( select value from v1 where c_boolean = false)
-select *
-from q1
+select count(value) from q1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t1@dt=2014
 POSTHOOK: Input: default@v1
 #### A masked pattern was here ####
-1
-1
+2
 PREHOOK: query: create view v4 as
-with q1 as ( select key from t1  where key = '1')
+with q1 as ( select key,c_int from t1  where key = '1')
 select * from q1
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@t1
 POSTHOOK: query: create view v4 as
-with q1 as ( select key from t1  where key = '1')
+with q1 as ( select key,c_int from t1  where key = '1')
 select * from q1
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@t1
 POSTHOOK: Output: default@v4
 PREHOOK: query: with q1 as ( select c_int from q2 where c_boolean = false),
 q2 as ( select c_int,c_boolean from v1  where value = '1')
-select * from (select c_int from q1) a
+select sum(c_int) from (select c_int from q1) a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t1@dt=2014
@@ -16380,14 +16364,33 @@ PREHOOK: Input: default@v1
 #### A masked pattern was here ####
 POSTHOOK: query: with q1 as ( select c_int from q2 where c_boolean = false),
 q2 as ( select c_int,c_boolean from v1  where value = '1')
-select * from (select c_int from q1) a
+select sum(c_int) from (select c_int from q1) a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t1@dt=2014
 POSTHOOK: Input: default@v1
 #### A masked pattern was here ####
-1
-1
+2
+Warning: Shuffle Join JOIN[26][tables = [$hdt$_394, $hdt$_397]] in Stage 'Stage-1:MAPRED' is a cross product
+PREHOOK: query: with q1 as ( select t1.c_int c_int from q2 join t1 where q2.c_int = t1.c_int),
+q2 as ( select c_int,c_boolean from v1  where value = '1')
+select count(*) from q1 join q2 join v4 on q1.c_int = q2.c_int and v4.c_int = q2.c_int
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@dt=2014
+PREHOOK: Input: default@v1
+PREHOOK: Input: default@v4
+#### A masked pattern was here ####
+POSTHOOK: query: with q1 as ( select t1.c_int c_int from q2 join t1 where q2.c_int = t1.c_int),
+q2 as ( select c_int,c_boolean from v1  where value = '1')
+select count(*) from q1 join q2 join v4 on q1.c_int = q2.c_int and v4.c_int = q2.c_int
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@dt=2014
+POSTHOOK: Input: default@v1
+POSTHOOK: Input: default@v4
+#### A masked pattern was here ####
+31104
 PREHOOK: query: drop view v1
 PREHOOK: type: DROPVIEW
 PREHOOK: Input: default@v1
