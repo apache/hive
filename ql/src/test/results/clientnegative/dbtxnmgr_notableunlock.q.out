@@ -5,6 +5,7 @@ POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table drop_notableunlock (c int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@drop_notableunlock
 POSTHOOK: query: create table drop_notableunlock (c int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

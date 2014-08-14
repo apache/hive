@@ -3,6 +3,7 @@ PREHOOK: query: -- SORT_QUERY_RESULTS
 CREATE TABLE columnarserde_create_shortcut(a array<int>, b array<string>, c map<string,string>, d int, e string) STORED AS RCFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@columnarserde_create_shortcut
 POSTHOOK: query: -- SORT_QUERY_RESULTS
 
 CREATE TABLE columnarserde_create_shortcut(a array<int>, b array<string>, c map<string,string>, d int, e string) STORED AS RCFILE
@@ -121,6 +122,7 @@ NULL	NULL	NULL	0	NULL
 PREHOOK: query: CREATE table columnShortcutTable (key STRING, value STRING) STORED AS RCFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@columnShortcutTable
 POSTHOOK: query: CREATE table columnShortcutTable (key STRING, value STRING) STORED AS RCFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

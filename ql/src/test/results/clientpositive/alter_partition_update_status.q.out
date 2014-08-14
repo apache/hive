@@ -1,6 +1,7 @@
 PREHOOK: query: create table src_stat_part_one(key string, value string) partitioned by (partitionId int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@src_stat_part_one
 POSTHOOK: query: create table src_stat_part_one(key string, value string) partitioned by (partitionId int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -52,6 +53,7 @@ key                 	string              	                    	                 
 PREHOOK: query: create table src_stat_part_two(key string, value string) partitioned by (px int, py string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@src_stat_part_two
 POSTHOOK: query: create table src_stat_part_two(key string, value string) partitioned by (px int, py string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

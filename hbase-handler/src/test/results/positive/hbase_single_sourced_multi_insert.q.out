@@ -2,6 +2,7 @@ PREHOOK: query: -- HIVE-4375 Single sourced multi insert consists of native and 
 CREATE TABLE src_x1(key string, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@src_x1
 POSTHOOK: query: -- HIVE-4375 Single sourced multi insert consists of native and non-native table mixed throws NPE
 CREATE TABLE src_x1(key string, value string)
 POSTHOOK: type: CREATETABLE
@@ -12,6 +13,7 @@ STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key, cf:value")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@src_x2
 POSTHOOK: query: CREATE TABLE src_x2(key string, value string)
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key, cf:value")

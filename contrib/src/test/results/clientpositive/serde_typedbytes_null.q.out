@@ -5,6 +5,7 @@ POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE table1 (a STRING) ROW FORMAT SERDE 'org.apache.hadoop.hive.contrib.serde2.TypedBytesSerDe' STORED AS SEQUENCEFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@table1
 POSTHOOK: query: CREATE TABLE table1 (a STRING) ROW FORMAT SERDE 'org.apache.hadoop.hive.contrib.serde2.TypedBytesSerDe' STORED AS SEQUENCEFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

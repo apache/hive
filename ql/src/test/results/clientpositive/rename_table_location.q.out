@@ -7,6 +7,7 @@ STORED AS RCFILE
 PREHOOK: type: CREATETABLE
 #### A masked pattern was here ####
 PREHOOK: Output: database:default
+PREHOOK: Output: default@rename_partition_table
 POSTHOOK: query: -- This test verifies that if the tables location changes, renaming a table will not change
 -- the table location scheme
 

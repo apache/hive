@@ -94,6 +94,11 @@ public class SQLStdHiveAuthorizationValidator implements HiveAuthorizationValida
       RequiredPrivileges requiredPrivs = Operation2Privilege.getRequiredPrivs(hiveOpType, hiveObj,
           ioType);
 
+      if(requiredPrivs.getRequiredPrivilegeSet().isEmpty()){
+        // no privileges required, so don't need to check this object privileges
+        continue;
+      }
+
       // find available privileges
       RequiredPrivileges availPrivs = new RequiredPrivileges(); //start with an empty priv set;
       switch (hiveObj.getType()) {

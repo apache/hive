@@ -9,6 +9,7 @@ POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE test1(name string, age int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@test1
 POSTHOOK: query: CREATE TABLE test1(name string, age int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -16,6 +17,7 @@ POSTHOOK: Output: default@test1
 PREHOOK: query: CREATE TABLE test2(name string) PARTITIONED by (age int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@test2
 POSTHOOK: query: CREATE TABLE test2(name string) PARTITIONED by (age int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

@@ -12,6 +12,7 @@ PREHOOK: query: -- This is to test the union->selectstar->filesink optimization
 create table inputTbl1(key string, val string) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@inputTbl1
 POSTHOOK: query: -- This is to test the union->selectstar->filesink optimization
 -- Union of 2 map-reduce subqueries is performed followed by select star and a file sink
 -- There is no need to write the temporary results of the sub-queries, and then read them 
@@ -30,6 +31,7 @@ POSTHOOK: Output: default@inputTbl1
 PREHOOK: query: create table outputTbl1(key string, values bigint) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@outputTbl1
 POSTHOOK: query: create table outputTbl1(key string, values bigint) stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

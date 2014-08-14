@@ -1,6 +1,7 @@
 PREHOOK: query: CREATE TABLE xxx1(key int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@xxx1
 POSTHOOK: query: CREATE TABLE xxx1(key int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

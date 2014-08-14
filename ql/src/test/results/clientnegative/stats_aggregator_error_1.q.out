@@ -7,6 +7,7 @@ PREHOOK: query: -- In this test, there is a dummy stats aggregator which throws 
 create table tmptable(key string, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@tmptable
 POSTHOOK: query: -- In this test, there is a dummy stats aggregator which throws an error when the
 -- method connect is called (as indicated by the parameter hive.test.dummystats.aggregator)
 -- If stats need not be reliable, the statement succeeds. However, if stats are supposed

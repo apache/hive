@@ -1,6 +1,7 @@
 PREHOOK: query: create table tbl_created_by_init(i int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_created_by_init
 POSTHOOK: query: create table tbl_created_by_init(i int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

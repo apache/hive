@@ -3,6 +3,7 @@ PREHOOK: query: --HIVE-2101 mapjoin sometimes gives wrong results if there is a 
 create table dest_1 (key STRING, value STRING) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@dest_1
 POSTHOOK: query: --HIVE-2101 mapjoin sometimes gives wrong results if there is a filter in the on condition
 
 create table dest_1 (key STRING, value STRING) stored as textfile
@@ -32,6 +33,7 @@ POSTHOOK: Lineage: dest_1.value SIMPLE []
 PREHOOK: query: create table dest_2 (key STRING, value STRING) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@dest_2
 POSTHOOK: query: create table dest_2 (key STRING, value STRING) stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

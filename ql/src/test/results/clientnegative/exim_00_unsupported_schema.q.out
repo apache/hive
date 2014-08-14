@@ -3,6 +3,7 @@ PREHOOK: query: create table exim_department ( dep_id int comment "department id
 	tblproperties("creator"="krishna")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@exim_department
 POSTHOOK: query: create table exim_department ( dep_id int comment "department id")
 	stored as textfile
 	tblproperties("creator"="krishna")

@@ -18,6 +18,7 @@ PREHOOK: query: create table over10k(
        fields terminated by '|'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@over10k
 POSTHOOK: query: create table over10k(
            t tinyint,
            si smallint,

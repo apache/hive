@@ -6,6 +6,7 @@ PREHOOK: query: CREATE table tmp_jo_tab_test (message_line STRING)
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@tmp_jo_tab_test
 POSTHOOK: query: CREATE table tmp_jo_tab_test (message_line STRING)
 STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE

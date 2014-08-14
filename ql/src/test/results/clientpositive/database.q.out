@@ -10,9 +10,11 @@ default
 PREHOOK: query: -- CREATE with comment
 CREATE DATABASE test_db COMMENT 'Hive test database'
 PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:test_db
 POSTHOOK: query: -- CREATE with comment
 CREATE DATABASE test_db COMMENT 'Hive test database'
 POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:test_db
 PREHOOK: query: SHOW DATABASES
 PREHOOK: type: SHOWDATABASES
 POSTHOOK: query: SHOW DATABASES
@@ -22,9 +24,11 @@ test_db
 PREHOOK: query: -- CREATE INE already exists
 CREATE DATABASE IF NOT EXISTS test_db
 PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:test_db
 POSTHOOK: query: -- CREATE INE already exists
 CREATE DATABASE IF NOT EXISTS test_db
 POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:test_db
 PREHOOK: query: SHOW DATABASES
 PREHOOK: type: SHOWDATABASES
 POSTHOOK: query: SHOW DATABASES
@@ -57,9 +61,11 @@ default
 PREHOOK: query: -- CREATE INE doesn't exist
 CREATE DATABASE IF NOT EXISTS test_db COMMENT 'Hive test database'
 PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:test_db
 POSTHOOK: query: -- CREATE INE doesn't exist
 CREATE DATABASE IF NOT EXISTS test_db COMMENT 'Hive test database'
 POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:test_db
 PREHOOK: query: SHOW DATABASES
 PREHOOK: type: SHOWDATABASES
 POSTHOOK: query: SHOW DATABASES
@@ -90,9 +96,11 @@ POSTHOOK: type: DROPDATABASE
 PREHOOK: query: -- SHOW
 CREATE DATABASE test_db
 PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:test_db
 POSTHOOK: query: -- SHOW
 CREATE DATABASE test_db
 POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:test_db
 PREHOOK: query: SHOW DATABASES
 PREHOOK: type: SHOWDATABASES
 POSTHOOK: query: SHOW DATABASES
@@ -115,8 +123,10 @@ POSTHOOK: type: SHOWDATABASES
 default
 PREHOOK: query: USE test_db
 PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:test_db
 POSTHOOK: query: USE test_db
 POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:test_db
 PREHOOK: query: SHOW DATABASES
 PREHOOK: type: SHOWDATABASES
 POSTHOOK: query: SHOW DATABASES
@@ -127,6 +137,7 @@ PREHOOK: query: -- CREATE table in non-default DB
 CREATE TABLE test_table (col1 STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:test_db
+PREHOOK: Output: test_db@test_table
 POSTHOOK: query: -- CREATE table in non-default DB
 CREATE TABLE test_table (col1 STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
@@ -161,6 +172,7 @@ PREHOOK: query: -- CREATE LIKE in non-default DB
 CREATE TABLE test_table_like LIKE test_table
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:test_db
+PREHOOK: Output: test_db@test_table_like
 POSTHOOK: query: -- CREATE LIKE in non-default DB
 CREATE TABLE test_table_like LIKE test_table
 POSTHOOK: type: CREATETABLE
@@ -225,6 +237,7 @@ test_table_like
 PREHOOK: query: CREATE TABLE test_table (col1 STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:test_db
+PREHOOK: Output: test_db@test_table
 POSTHOOK: query: CREATE TABLE test_table (col1 STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:test_db
@@ -246,12 +259,15 @@ POSTHOOK: Input: test_db@test_table
 PREHOOK: query: -- CREATE table that already exists in DEFAULT
 USE test_db
 PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:test_db
 POSTHOOK: query: -- CREATE table that already exists in DEFAULT
 USE test_db
 POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:test_db
 PREHOOK: query: CREATE TABLE src (col1 STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:test_db
+PREHOOK: Output: test_db@src
 POSTHOOK: query: CREATE TABLE src (col1 STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:test_db
@@ -273,8 +289,10 @@ POSTHOOK: Input: test_db@src
 #### A masked pattern was here ####
 PREHOOK: query: USE default
 PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:default
 POSTHOOK: query: USE default
 POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:default
 PREHOOK: query: SELECT * FROM src LIMIT 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -296,9 +314,11 @@ POSTHOOK: Input: default@src
 PREHOOK: query: -- DROP DATABASE
 USE test_db
 PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:test_db
 POSTHOOK: query: -- DROP DATABASE
 USE test_db
 POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:test_db
 PREHOOK: query: DROP TABLE src
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: test_db@src
@@ -329,8 +349,10 @@ POSTHOOK: query: SHOW TABLES
 POSTHOOK: type: SHOWTABLES
 PREHOOK: query: USE default
 PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:default
 POSTHOOK: query: USE default
 POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:default
 PREHOOK: query: DROP DATABASE test_db
 PREHOOK: type: DROPDATABASE
 PREHOOK: Input: database:test_db
@@ -347,9 +369,11 @@ default
 PREHOOK: query: -- DROP EMPTY DATABASE CASCADE
 CREATE DATABASE to_drop_db1
 PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:to_drop_db1
 POSTHOOK: query: -- DROP EMPTY DATABASE CASCADE
 CREATE DATABASE to_drop_db1
 POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:to_drop_db1
 PREHOOK: query: SHOW DATABASES
 PREHOOK: type: SHOWDATABASES
 POSTHOOK: query: SHOW DATABASES
@@ -358,8 +382,10 @@ default
 to_drop_db1
 PREHOOK: query: USE default
 PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:default
 POSTHOOK: query: USE default
 POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:default
 PREHOOK: query: DROP DATABASE to_drop_db1 CASCADE
 PREHOOK: type: DROPDATABASE
 PREHOOK: Input: database:to_drop_db1
@@ -376,9 +402,11 @@ default
 PREHOOK: query: -- DROP NON-EMPTY DATABASE CASCADE
 CREATE DATABASE to_drop_db2
 PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:to_drop_db2
 POSTHOOK: query: -- DROP NON-EMPTY DATABASE CASCADE
 CREATE DATABASE to_drop_db2
 POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:to_drop_db2
 PREHOOK: query: SHOW DATABASES
 PREHOOK: type: SHOWDATABASES
 POSTHOOK: query: SHOW DATABASES
@@ -387,11 +415,14 @@ default
 to_drop_db2
 PREHOOK: query: USE to_drop_db2
 PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:to_drop_db2
 POSTHOOK: query: USE to_drop_db2
 POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:to_drop_db2
 PREHOOK: query: CREATE TABLE temp_tbl (c STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:to_drop_db2
+PREHOOK: Output: to_drop_db2@temp_tbl
 POSTHOOK: query: CREATE TABLE temp_tbl (c STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:to_drop_db2
@@ -399,6 +430,7 @@ POSTHOOK: Output: to_drop_db2@temp_tbl
 PREHOOK: query: CREATE TABLE temp_tbl2 LIKE temp_tbl
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:to_drop_db2
+PREHOOK: Output: to_drop_db2@temp_tbl2
 POSTHOOK: query: CREATE TABLE temp_tbl2 LIKE temp_tbl
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:to_drop_db2
@@ -414,8 +446,10 @@ POSTHOOK: Output: to_drop_db2@temp_tbl2
 POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 PREHOOK: query: USE default
 PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:default
 POSTHOOK: query: USE default
 POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:default
 PREHOOK: query: DROP DATABASE to_drop_db2 CASCADE
 PREHOOK: type: DROPDATABASE
 PREHOOK: Input: database:to_drop_db2
@@ -436,9 +470,11 @@ default
 PREHOOK: query: -- DROP NON-EMPTY DATABASE CASCADE IF EXISTS
 CREATE DATABASE to_drop_db3
 PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:to_drop_db3
 POSTHOOK: query: -- DROP NON-EMPTY DATABASE CASCADE IF EXISTS
 CREATE DATABASE to_drop_db3
 POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:to_drop_db3
 PREHOOK: query: SHOW DATABASES
 PREHOOK: type: SHOWDATABASES
 POSTHOOK: query: SHOW DATABASES
@@ -447,19 +483,24 @@ default
 to_drop_db3
 PREHOOK: query: USE to_drop_db3
 PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:to_drop_db3
 POSTHOOK: query: USE to_drop_db3
 POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:to_drop_db3
 PREHOOK: query: CREATE TABLE temp_tbl (c STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:to_drop_db3
+PREHOOK: Output: to_drop_db3@temp_tbl
 POSTHOOK: query: CREATE TABLE temp_tbl (c STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:to_drop_db3
 POSTHOOK: Output: to_drop_db3@temp_tbl
 PREHOOK: query: USE default
 PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:default
 POSTHOOK: query: USE default
 POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:default
 PREHOOK: query: DROP DATABASE IF EXISTS to_drop_db3 CASCADE
 PREHOOK: type: DROPDATABASE
 PREHOOK: Input: database:to_drop_db3
@@ -495,9 +536,11 @@ POSTHOOK: type: DROPDATABASE
 PREHOOK: query: -- DROP EMPTY DATABASE RESTRICT
 CREATE DATABASE to_drop_db4
 PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:to_drop_db4
 POSTHOOK: query: -- DROP EMPTY DATABASE RESTRICT
 CREATE DATABASE to_drop_db4
 POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:to_drop_db4
 PREHOOK: query: SHOW DATABASES
 PREHOOK: type: SHOWDATABASES
 POSTHOOK: query: SHOW DATABASES
@@ -523,26 +566,32 @@ PREHOOK: query: --
 
 CREATE DATABASE db1
 PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:db1
 POSTHOOK: query: --
 -- Canonical Name Tests
 --
 
 CREATE DATABASE db1
 POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:db1
 PREHOOK: query: CREATE DATABASE db2
 PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:db2
 POSTHOOK: query: CREATE DATABASE db2
 POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:db2
 PREHOOK: query: -- CREATE foreign table
 CREATE TABLE db1.src(key STRING, value STRING)
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:db1
+PREHOOK: Output: db1@db1.src
 POSTHOOK: query: -- CREATE foreign table
 CREATE TABLE db1.src(key STRING, value STRING)
 STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:db1
+POSTHOOK: Output: db1@db1.src
 POSTHOOK: Output: db1@src
 PREHOOK: query: -- LOAD into foreign table
 LOAD DATA LOCAL INPATH '../../data/files/kv1.txt'
@@ -1072,12 +1121,14 @@ PARTITIONED BY (ds STRING, hr STRING)
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:db1
+PREHOOK: Output: db1@db1.srcpart
 POSTHOOK: query: -- CREATE Partitioned foreign table
 CREATE TABLE db1.srcpart(key STRING, value STRING)
 PARTITIONED BY (ds STRING, hr STRING)
 STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:db1
+POSTHOOK: Output: db1@db1.srcpart
 POSTHOOK: Output: db1@srcpart
 PREHOOK: query: -- LOAD data into Partitioned foreign table
 LOAD DATA LOCAL INPATH '../../data/files/kv1.txt'
@@ -1195,9 +1246,11 @@ POSTHOOK: Input: db1@srcpart@ds=2008-04-08/hr=11
 PREHOOK: query: -- SELECT JOINed product of two foreign tables
 USE db2
 PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:db2
 POSTHOOK: query: -- SELECT JOINed product of two foreign tables
 USE db2
 POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:db2
 PREHOOK: query: SELECT a.* FROM db1.src a JOIN default.src1 b
 ON (a.key = b.key)
 PREHOOK: type: QUERY
@@ -1293,8 +1346,10 @@ val_66
 val_8
 PREHOOK: query: USE default
 PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:default
 POSTHOOK: query: USE default
 POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:default
 PREHOOK: query: SELECT * FROM (
   SELECT value FROM db1.conflict_name
 UNION ALL
@@ -1320,6 +1375,7 @@ CREATE TABLE bucketized_src (key INT, value STRING)
 CLUSTERED BY (key) SORTED BY (key) INTO 1 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@bucketized_src
 POSTHOOK: query: -- TABLESAMPLES
 CREATE TABLE bucketized_src (key INT, value STRING)
 CLUSTERED BY (key) SORTED BY (key) INTO 1 BUCKETS
@@ -1351,15 +1407,19 @@ PREHOOK: query: -- CREATE TABLE LIKE
 CREATE TABLE db2.src1 LIKE default.src
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:db2
+PREHOOK: Output: db2@db2.src1
 POSTHOOK: query: -- CREATE TABLE LIKE
 CREATE TABLE db2.src1 LIKE default.src
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:db2
+POSTHOOK: Output: db2@db2.src1
 POSTHOOK: Output: db2@src1
 PREHOOK: query: USE db2
 PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:db2
 POSTHOOK: query: USE db2
 POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:db2
 PREHOOK: query: DESC EXTENDED src1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: db2@src1
@@ -1401,5 +1461,7 @@ POSTHOOK: Input: default@src
 0
 PREHOOK: query: USE default
 PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:default
 POSTHOOK: query: USE default
 POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:default

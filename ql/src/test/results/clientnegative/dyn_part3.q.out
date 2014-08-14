@@ -1,6 +1,7 @@
 PREHOOK: query: create table nzhang_part( key string) partitioned by (value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@nzhang_part
 POSTHOOK: query: create table nzhang_part( key string) partitioned by (value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

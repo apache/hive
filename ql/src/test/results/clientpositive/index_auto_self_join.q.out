@@ -89,8 +89,10 @@ POSTHOOK: Input: default@src
 87	87
 PREHOOK: query: CREATE INDEX src_index ON TABLE src(key) as 'BITMAP' WITH DEFERRED REBUILD
 PREHOOK: type: CREATEINDEX
+PREHOOK: Input: default@src
 POSTHOOK: query: CREATE INDEX src_index ON TABLE src(key) as 'BITMAP' WITH DEFERRED REBUILD
 POSTHOOK: type: CREATEINDEX
+POSTHOOK: Input: default@src
 POSTHOOK: Output: default@default__src_src_index__
 PREHOOK: query: ALTER INDEX src_index ON src REBUILD
 PREHOOK: type: ALTERINDEX_REBUILD
@@ -283,5 +285,7 @@ POSTHOOK: Input: default@src
 87	87
 PREHOOK: query: DROP INDEX src_index on src
 PREHOOK: type: DROPINDEX
+PREHOOK: Input: default@src
 POSTHOOK: query: DROP INDEX src_index on src
 POSTHOOK: type: DROPINDEX
+POSTHOOK: Input: default@src

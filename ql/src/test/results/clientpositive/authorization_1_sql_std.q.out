@@ -1,6 +1,7 @@
 PREHOOK: query: create table src_autho_test (key STRING, value STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@src_autho_test
 POSTHOOK: query: create table src_autho_test (key STRING, value STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

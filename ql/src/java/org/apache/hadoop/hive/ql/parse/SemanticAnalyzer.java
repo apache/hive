@@ -10163,6 +10163,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     String dbName = qualified.length == 1 ? SessionState.get().getCurrentDatabase() : qualified[0];
     Database database  = getDatabase(dbName);
     outputs.add(new WriteEntity(database, WriteEntity.WriteType.DDL_SHARED));
+    outputs.add(new WriteEntity(new Table(dbName, tableName), WriteEntity.WriteType.DDL_NO_LOCK));
 
     if (isTemporary) {
       if (partCols.size() > 0) {

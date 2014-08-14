@@ -12,6 +12,7 @@ PREHOOK: query: -- create two levels of view reference, then invalidate intermed
 CREATE TABLE xxx10 (key int, value int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@xxx10
 POSTHOOK: query: -- create two levels of view reference, then invalidate intermediate view
 -- by dropping a column from underlying table, and verify that
 -- querying outermost view results in full error context

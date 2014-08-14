@@ -4,6 +4,7 @@ CREATE TABLE T1(key STRING, val STRING)
 CLUSTERED BY (key) SORTED BY (key, val) INTO 2 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@T1
 POSTHOOK: query: -- SORT_QUERY_RESULTS
 
 CREATE TABLE T1(key STRING, val STRING)
@@ -34,6 +35,7 @@ POSTHOOK: Lineage: t1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comm
 PREHOOK: query: CREATE TABLE outputTbl1(key string, val string, cnt int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@outputTbl1
 POSTHOOK: query: CREATE TABLE outputTbl1(key string, val string, cnt int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -170,6 +172,7 @@ POSTHOOK: Input: default@outputtbl1
 PREHOOK: query: CREATE TABLE outputTbl2(key string, cnt int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@outputTbl2
 POSTHOOK: query: CREATE TABLE outputTbl2(key string, cnt int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

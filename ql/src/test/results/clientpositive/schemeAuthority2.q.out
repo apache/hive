@@ -1,6 +1,7 @@
 PREHOOK: query: create external table dynPart (key string) partitioned by (value string, value2 string) row format delimited fields terminated by '\\t' stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@dynPart
 POSTHOOK: query: create external table dynPart (key string) partitioned by (value string, value2 string) row format delimited fields terminated by '\\t' stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

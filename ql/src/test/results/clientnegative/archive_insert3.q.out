@@ -4,6 +4,7 @@ PREHOOK: query: -- Tests trying to create partition inside of archived directory
 CREATE TABLE tstsrcpart LIKE srcpart
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@tstsrcpart
 POSTHOOK: query: -- Tests trying to create partition inside of archived directory.
 -- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.17, 0.18, 0.19)
 

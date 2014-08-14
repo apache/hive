@@ -1,6 +1,7 @@
 PREHOOK: query: create table tmpfoo (a String)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@tmpfoo
 POSTHOOK: query: create table tmpfoo (a String)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -69,15 +70,20 @@ POSTHOOK: type: SHOW_TBLPROPERTIES
 bar value	 
 PREHOOK: query: CREATE DATABASE db1
 PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:db1
 POSTHOOK: query: CREATE DATABASE db1
 POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:db1
 PREHOOK: query: USE db1
 PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:db1
 POSTHOOK: query: USE db1
 POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:db1
 PREHOOK: query: CREATE TABLE tmpfoo (b STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:db1
+PREHOOK: Output: db1@tmpfoo
 POSTHOOK: query: CREATE TABLE tmpfoo (b STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:db1
@@ -140,8 +146,10 @@ POSTHOOK: type: SHOW_TBLPROPERTIES
 bar value1	 
 PREHOOK: query: use default
 PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:default
 POSTHOOK: query: use default
 POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:default
 PREHOOK: query: -- from default to db1
 show tblproperties db1.tmpfoo
 PREHOOK: type: SHOW_TBLPROPERTIES

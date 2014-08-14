@@ -39,6 +39,7 @@ with serdeproperties (
 stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@date_serde_regex
 POSTHOOK: query: --
 -- RegexSerDe
 --
@@ -239,6 +240,7 @@ create table date_serde_lb (
 )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@date_serde_lb
 POSTHOOK: query: --
 -- LazyBinary
 --
@@ -296,6 +298,7 @@ create table date_serde_ls (
 )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@date_serde_ls
 POSTHOOK: query: --
 -- LazySimple
 --
@@ -353,6 +356,7 @@ create table date_serde_c (
 ) stored as rcfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@date_serde_c
 POSTHOOK: query: --
 -- Columnar
 --
@@ -410,6 +414,7 @@ create table date_serde_lbc (
 ) stored as rcfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@date_serde_lbc
 POSTHOOK: query: --
 -- LazyBinaryColumnar
 --
@@ -467,6 +472,7 @@ create table date_serde_orc (
 ) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@date_serde_orc
 POSTHOOK: query: --
 -- ORC
 --

@@ -14,6 +14,7 @@ PREHOOK: query: CREATE TABLE sales (name STRING, id INT)
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@sales
 POSTHOOK: query: CREATE TABLE sales (name STRING, id INT)
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t'
 POSTHOOK: type: CREATETABLE
@@ -23,6 +24,7 @@ PREHOOK: query: CREATE TABLE things (id INT, name STRING) partitioned by (ds str
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@things
 POSTHOOK: query: CREATE TABLE things (id INT, name STRING) partitioned by (ds string)
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t'
 POSTHOOK: type: CREATETABLE

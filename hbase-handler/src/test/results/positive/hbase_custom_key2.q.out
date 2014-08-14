@@ -6,6 +6,7 @@ WITH SERDEPROPERTIES (
     "hbase.composite.key.factory"="org.apache.hadoop.hive.hbase.TestHBaseKeyFactory2")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@hbase_ck_4
 POSTHOOK: query: CREATE TABLE hbase_ck_4(key struct<col1:string,col2:string,col3:string>, value string)
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES (

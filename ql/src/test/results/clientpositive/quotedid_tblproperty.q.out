@@ -3,6 +3,7 @@ STORED AS TEXTFILE
 TBLPROPERTIES('columns'='valid_colname,invalid.colname')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@xyz
 POSTHOOK: query: CREATE TABLE xyz(KEY STRING, VALUE STRING) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.TestSerDe' 
 STORED AS TEXTFILE
 TBLPROPERTIES('columns'='valid_colname,invalid.colname')

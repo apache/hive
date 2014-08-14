@@ -11,6 +11,7 @@ COMMENT 'table comment
 two lines'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@test_table
 POSTHOOK: query: -- test comment indent processing for multi-line comments
 
 CREATE TABLE test_table(

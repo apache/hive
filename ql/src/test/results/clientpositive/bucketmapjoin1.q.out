@@ -1,6 +1,7 @@
 PREHOOK: query: CREATE TABLE srcbucket_mapjoin(key int, value string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@srcbucket_mapjoin
 POSTHOOK: query: CREATE TABLE srcbucket_mapjoin(key int, value string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -8,6 +9,7 @@ POSTHOOK: Output: default@srcbucket_mapjoin
 PREHOOK: query: CREATE TABLE srcbucket_mapjoin_part (key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@srcbucket_mapjoin_part
 POSTHOOK: query: CREATE TABLE srcbucket_mapjoin_part (key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -15,6 +17,7 @@ POSTHOOK: Output: default@srcbucket_mapjoin_part
 PREHOOK: query: CREATE TABLE srcbucket_mapjoin_part_2 (key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@srcbucket_mapjoin_part_2
 POSTHOOK: query: CREATE TABLE srcbucket_mapjoin_part_2 (key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -344,6 +347,7 @@ POSTHOOK: Output: default@srcbucket_mapjoin_part_2@ds=2008-04-08
 PREHOOK: query: create table bucketmapjoin_hash_result_1 (key bigint , value1 bigint, value2 bigint)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@bucketmapjoin_hash_result_1
 POSTHOOK: query: create table bucketmapjoin_hash_result_1 (key bigint , value1 bigint, value2 bigint)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -351,6 +355,7 @@ POSTHOOK: Output: default@bucketmapjoin_hash_result_1
 PREHOOK: query: create table bucketmapjoin_hash_result_2 (key bigint , value1 bigint, value2 bigint)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@bucketmapjoin_hash_result_2
 POSTHOOK: query: create table bucketmapjoin_hash_result_2 (key bigint , value1 bigint, value2 bigint)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -358,6 +363,7 @@ POSTHOOK: Output: default@bucketmapjoin_hash_result_2
 PREHOOK: query: create table bucketmapjoin_tmp_result (key string , value1 string, value2 string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@bucketmapjoin_tmp_result
 POSTHOOK: query: create table bucketmapjoin_tmp_result (key string , value1 string, value2 string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

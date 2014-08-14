@@ -5,6 +5,7 @@ PREHOOK: query: --
 create table alter5_src ( col1 string ) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@alter5_src
 POSTHOOK: query: --
 -- Added to validate the fix for HIVE-2117 - explicit partition location
 --
@@ -24,6 +25,7 @@ POSTHOOK: Output: default@alter5_src
 PREHOOK: query: create table alter5 ( col1 string ) partitioned by (dt string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@alter5
 POSTHOOK: query: create table alter5 ( col1 string ) partitioned by (dt string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -135,20 +137,25 @@ PREHOOK: query: -- With non-default Database
 
 CREATE DATABASE alter5_db
 PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:alter5_db
 POSTHOOK: query: -- With non-default Database
 
 CREATE DATABASE alter5_db
 POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:alter5_db
 PREHOOK: query: USE alter5_db
 PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:alter5_db
 POSTHOOK: query: USE alter5_db
 POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:alter5_db
 PREHOOK: query: SHOW TABLES
 PREHOOK: type: SHOWTABLES
 POSTHOOK: query: SHOW TABLES
 POSTHOOK: type: SHOWTABLES
 PREHOOK: query: create table alter5_src ( col1 string ) stored as textfile
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: alter5_db@alter5_src
 PREHOOK: Output: database:alter5_db
 POSTHOOK: query: create table alter5_src ( col1 string ) stored as textfile
 POSTHOOK: type: CREATETABLE
@@ -164,6 +171,7 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: alter5_db@alter5_src
 PREHOOK: query: create table alter5 ( col1 string ) partitioned by (dt string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: alter5_db@alter5
 PREHOOK: Output: database:alter5_db
 POSTHOOK: query: create table alter5 ( col1 string ) partitioned by (dt string)
 POSTHOOK: type: CREATETABLE

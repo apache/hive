@@ -1,6 +1,7 @@
 PREHOOK: query: CREATE TABLE T1(name STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@T1
 POSTHOOK: query: CREATE TABLE T1(name STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -16,6 +17,7 @@ POSTHOOK: Output: default@t1
 PREHOOK: query: CREATE TABLE T2(name STRING) STORED AS SEQUENCEFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@T2
 POSTHOOK: query: CREATE TABLE T2(name STRING) STORED AS SEQUENCEFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -42,6 +44,7 @@ POSTHOOK: Lineage: t2.name SIMPLE [(t1)t1.FieldSchema(name:name, type:string, co
 PREHOOK: query: CREATE TABLE T3(name STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@T3
 POSTHOOK: query: CREATE TABLE T3(name STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

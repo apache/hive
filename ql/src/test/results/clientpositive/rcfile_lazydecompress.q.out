@@ -1,6 +1,7 @@
 PREHOOK: query: CREATE table rcfileTableLazyDecompress (key STRING, value STRING) STORED AS RCFile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@rcfileTableLazyDecompress
 POSTHOOK: query: CREATE table rcfileTableLazyDecompress (key STRING, value STRING) STORED AS RCFile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

@@ -1,14 +1,19 @@
 PREHOOK: query: create database lockneg1
 PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:lockneg1
 POSTHOOK: query: create database lockneg1
 POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:lockneg1
 PREHOOK: query: use lockneg1
 PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:lockneg1
 POSTHOOK: query: use lockneg1
 POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:lockneg1
 PREHOOK: query: create table tstsrcpart like default.srcpart
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:lockneg1
+PREHOOK: Output: lockneg1@tstsrcpart
 POSTHOOK: query: create table tstsrcpart like default.srcpart
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:lockneg1

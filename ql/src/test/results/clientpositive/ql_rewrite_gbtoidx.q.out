@@ -22,6 +22,7 @@ ROW FORMAT DELIMITED
 FIELDS TERMINATED BY '|'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@lineitem
 POSTHOOK: query: CREATE TABLE lineitem (L_ORDERKEY      INT,
                                 L_PARTKEY       INT,
                                 L_SUPPKEY       INT,
@@ -53,8 +54,10 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@lineitem
 PREHOOK: query: CREATE INDEX lineitem_lshipdate_idx ON TABLE lineitem(l_shipdate) AS 'org.apache.hadoop.hive.ql.index.AggregateIndexHandler' WITH DEFERRED REBUILD IDXPROPERTIES("AGGREGATES"="count(l_shipdate)")
 PREHOOK: type: CREATEINDEX
+PREHOOK: Input: default@lineitem
 POSTHOOK: query: CREATE INDEX lineitem_lshipdate_idx ON TABLE lineitem(l_shipdate) AS 'org.apache.hadoop.hive.ql.index.AggregateIndexHandler' WITH DEFERRED REBUILD IDXPROPERTIES("AGGREGATES"="count(l_shipdate)")
 POSTHOOK: type: CREATEINDEX
+POSTHOOK: Input: default@lineitem
 POSTHOOK: Output: default@default__lineitem_lineitem_lshipdate_idx__
 PREHOOK: query: ALTER INDEX lineitem_lshipdate_idx ON lineitem REBUILD
 PREHOOK: type: ALTERINDEX_REBUILD
@@ -992,14 +995,17 @@ STAGE PLANS:
 PREHOOK: query: CREATE TABLE tbl(key int, value int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl
 POSTHOOK: query: CREATE TABLE tbl(key int, value int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl
 PREHOOK: query: CREATE INDEX tbl_key_idx ON TABLE tbl(key) AS 'org.apache.hadoop.hive.ql.index.AggregateIndexHandler' WITH DEFERRED REBUILD IDXPROPERTIES("AGGREGATES"="count(key)")
 PREHOOK: type: CREATEINDEX
+PREHOOK: Input: default@tbl
 POSTHOOK: query: CREATE INDEX tbl_key_idx ON TABLE tbl(key) AS 'org.apache.hadoop.hive.ql.index.AggregateIndexHandler' WITH DEFERRED REBUILD IDXPROPERTIES("AGGREGATES"="count(key)")
 POSTHOOK: type: CREATEINDEX
+POSTHOOK: Input: default@tbl
 POSTHOOK: Output: default@default__tbl_tbl_key_idx__
 PREHOOK: query: ALTER INDEX tbl_key_idx ON tbl REBUILD
 PREHOOK: type: ALTERINDEX_REBUILD
@@ -2166,6 +2172,7 @@ POSTHOOK: Output: default@tbl
 PREHOOK: query: CREATE TABLE tblpart (key int, value string) PARTITIONED BY (ds string, hr int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@tblpart
 POSTHOOK: query: CREATE TABLE tblpart (key int, value string) PARTITIONED BY (ds string, hr int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -2220,8 +2227,10 @@ POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpa
 POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: CREATE INDEX tbl_part_index ON TABLE tblpart(key) AS 'org.apache.hadoop.hive.ql.index.AggregateIndexHandler' WITH DEFERRED REBUILD IDXPROPERTIES("AGGREGATES"="count(key)")
 PREHOOK: type: CREATEINDEX
+PREHOOK: Input: default@tblpart
 POSTHOOK: query: CREATE INDEX tbl_part_index ON TABLE tblpart(key) AS 'org.apache.hadoop.hive.ql.index.AggregateIndexHandler' WITH DEFERRED REBUILD IDXPROPERTIES("AGGREGATES"="count(key)")
 POSTHOOK: type: CREATEINDEX
+POSTHOOK: Input: default@tblpart
 POSTHOOK: Output: default@default__tblpart_tbl_part_index__
 PREHOOK: query: ALTER INDEX tbl_part_index ON tblpart PARTITION (ds='2008-04-08', hr=11) REBUILD
 PREHOOK: type: ALTERINDEX_REBUILD
@@ -2399,8 +2408,10 @@ STAGE PLANS:
 
 PREHOOK: query: DROP INDEX tbl_part_index on tblpart
 PREHOOK: type: DROPINDEX
+PREHOOK: Input: default@tblpart
 POSTHOOK: query: DROP INDEX tbl_part_index on tblpart
 POSTHOOK: type: DROPINDEX
+POSTHOOK: Input: default@tblpart
 PREHOOK: query: DROP TABLE tblpart
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tblpart
@@ -2412,6 +2423,7 @@ POSTHOOK: Output: default@tblpart
 PREHOOK: query: CREATE TABLE tbl(key int, value int) ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl
 POSTHOOK: query: CREATE TABLE tbl(key int, value int) ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -2426,8 +2438,10 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@tbl
 PREHOOK: query: CREATE INDEX tbl_key_idx ON TABLE tbl(key) AS 'org.apache.hadoop.hive.ql.index.AggregateIndexHandler' WITH DEFERRED REBUILD IDXPROPERTIES("AGGREGATES"="count(key)")
 PREHOOK: type: CREATEINDEX
+PREHOOK: Input: default@tbl
 POSTHOOK: query: CREATE INDEX tbl_key_idx ON TABLE tbl(key) AS 'org.apache.hadoop.hive.ql.index.AggregateIndexHandler' WITH DEFERRED REBUILD IDXPROPERTIES("AGGREGATES"="count(key)")
 POSTHOOK: type: CREATEINDEX
+POSTHOOK: Input: default@tbl
 POSTHOOK: Output: default@default__tbl_tbl_key_idx__
 PREHOOK: query: ALTER INDEX tbl_key_idx ON tbl REBUILD
 PREHOOK: type: ALTERINDEX_REBUILD

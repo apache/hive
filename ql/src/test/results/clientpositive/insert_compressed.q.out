@@ -5,6 +5,7 @@ POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table insert_compressed (key int, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@insert_compressed
 POSTHOOK: query: create table insert_compressed (key int, value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

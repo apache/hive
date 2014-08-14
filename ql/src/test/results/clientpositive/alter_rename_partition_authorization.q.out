@@ -12,6 +12,7 @@ POSTHOOK: Output: default@src_auth_tmp
 PREHOOK: query: create table authorization_part (key int, value string) partitioned by (ds string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@authorization_part
 POSTHOOK: query: create table authorization_part (key int, value string) partitioned by (ds string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

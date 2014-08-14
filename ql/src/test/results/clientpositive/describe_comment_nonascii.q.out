@@ -3,6 +3,7 @@ PREHOOK: query: -- HIVE-2905 showing non-ascii comments
 create table dummy (col1 string, col2 string, col3 string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@dummy
 POSTHOOK: query: -- HIVE-2905 showing non-ascii comments
 
 create table dummy (col1 string, col2 string, col3 string)

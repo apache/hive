@@ -5,6 +5,7 @@ PREHOOK: query: -- This test verifies writing a query using dynamic partitions
 create table tmptable(key string) partitioned by (part string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@tmptable
 POSTHOOK: query: -- This test verifies writing a query using dynamic partitions
 -- which results in no partitions actually being created with
 -- hive.stats.reliable set to true

@@ -1,6 +1,7 @@
 PREHOOK: query: CREATE TABLE table_p1 (a STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@table_p1
 POSTHOOK: query: CREATE TABLE table_p1 (a STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -17,6 +18,7 @@ a                   	string
 PREHOOK: query: CREATE TABLE table_p2 LIKE table_p1
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@table_p2
 POSTHOOK: query: CREATE TABLE table_p2 LIKE table_p1
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

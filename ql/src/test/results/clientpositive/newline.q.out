@@ -3,6 +3,7 @@ PREHOOK: query: -- SORT_QUERY_RESULTS
 create table tmp_tmp(key string, value string) stored as rcfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@tmp_tmp
 POSTHOOK: query: -- SORT_QUERY_RESULTS
 
 create table tmp_tmp(key string, value string) stored as rcfile
@@ -52,6 +53,7 @@ POSTHOOK: Output: default@tmp_tmp
 PREHOOK: query: create table tmp_tmp(key string, value string) stored as rcfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@tmp_tmp
 POSTHOOK: query: create table tmp_tmp(key string, value string) stored as rcfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

@@ -6,6 +6,7 @@ PREHOOK: query: -- Note, its important that the partitions created below have a 
 create table stats_part like srcpart
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@stats_part
 POSTHOOK: query: -- Note, its important that the partitions created below have a name greater than 16 characters in
 -- length since KeyVerifyingStatsAggregator depends on checking that a keyPrefix is hashed by the
 -- length of the keyPrefix, having a partition name greather than 16 characters guarantees no false

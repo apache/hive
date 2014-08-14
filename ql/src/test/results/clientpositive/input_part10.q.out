@@ -10,6 +10,7 @@ CREATE TABLE part_special (
 )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@part_special
 POSTHOOK: query: -- EXCLUDE_OS_WINDOWS
 -- excluded on windows because of difference in file name encoding logic
 

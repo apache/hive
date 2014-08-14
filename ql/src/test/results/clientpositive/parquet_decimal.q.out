@@ -5,6 +5,7 @@ POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE dec(name string, value decimal(8,4))
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@dec
 POSTHOOK: query: CREATE TABLE dec(name string, value decimal(8,4))
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -24,6 +25,7 @@ POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE parq_dec(name string, value decimal(5,2)) STORED AS PARQUET
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@parq_dec
 POSTHOOK: query: CREATE TABLE parq_dec(name string, value decimal(5,2)) STORED AS PARQUET
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -105,6 +107,7 @@ POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE parq_dec1(name string, value decimal(4,1)) STORED AS PARQUET
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@parq_dec1
 POSTHOOK: query: CREATE TABLE parq_dec1(name string, value decimal(4,1)) STORED AS PARQUET
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

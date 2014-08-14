@@ -3,6 +3,7 @@ PREHOOK: query: -- SORT_QUERY_RESULTS
 create table dst_union22(k1 string, k2 string, k3 string, k4 string) partitioned by (ds string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@dst_union22
 POSTHOOK: query: -- SORT_QUERY_RESULTS
 
 create table dst_union22(k1 string, k2 string, k3 string, k4 string) partitioned by (ds string)
@@ -12,6 +13,7 @@ POSTHOOK: Output: default@dst_union22
 PREHOOK: query: create table dst_union22_delta(k0 string, k1 string, k2 string, k3 string, k4 string, k5 string) partitioned by (ds string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@dst_union22_delta
 POSTHOOK: query: create table dst_union22_delta(k0 string, k1 string, k2 string, k3 string, k4 string, k5 string) partitioned by (ds string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

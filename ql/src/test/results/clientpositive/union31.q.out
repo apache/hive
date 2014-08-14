@@ -27,6 +27,7 @@ POSTHOOK: Output: default@t2
 PREHOOK: query: create table t3(key string, cnt int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@t3
 POSTHOOK: query: create table t3(key string, cnt int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -34,6 +35,7 @@ POSTHOOK: Output: default@t3
 PREHOOK: query: create table t4(value string, cnt int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@t4
 POSTHOOK: query: create table t4(value string, cnt int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -293,6 +295,7 @@ val_9	2
 PREHOOK: query: create table t5(c1 string, cnt int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@t5
 POSTHOOK: query: create table t5(c1 string, cnt int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -300,6 +303,7 @@ POSTHOOK: Output: default@t5
 PREHOOK: query: create table t6(c1 string, cnt int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@t6
 POSTHOOK: query: create table t6(c1 string, cnt int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -608,6 +612,7 @@ POSTHOOK: Output: default@t2
 PREHOOK: query: create table t7(c1 string, cnt int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@t7
 POSTHOOK: query: create table t7(c1 string, cnt int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -615,6 +620,7 @@ POSTHOOK: Output: default@t7
 PREHOOK: query: create table t8(c1 string, cnt int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@t8
 POSTHOOK: query: create table t8(c1 string, cnt int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

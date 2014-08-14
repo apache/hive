@@ -7,6 +7,7 @@ CREATE TABLE episodes (
 STORED AS AVRO
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@episodes
 POSTHOOK: query: -- SORT_QUERY_RESULTS
 -- Verify that table scans work with partitioned Avro tables
 CREATE TABLE episodes (
@@ -33,6 +34,7 @@ PARTITIONED BY (doctor_pt INT)
 STORED AS AVRO
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@episodes_partitioned
 POSTHOOK: query: CREATE TABLE episodes_partitioned (
   title string COMMENT "episode title",
   air_date string COMMENT "initial date",
