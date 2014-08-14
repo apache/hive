@@ -109,6 +109,7 @@ public final class SemanticAnalyzerFactory {
     commandType.put(HiveParser.TOK_ALTERTABLE_PARTCOLTYPE, HiveOperation.ALTERTABLE_PARTCOLTYPE);
     commandType.put(HiveParser.TOK_SHOW_COMPACTIONS, HiveOperation.SHOW_COMPACTIONS);
     commandType.put(HiveParser.TOK_SHOW_TRANSACTIONS, HiveOperation.SHOW_TRANSACTIONS);
+    commandType.put(HiveParser.TOK_ALTERTABLE_UPDATECOLSTATS, HiveOperation.ALTERTABLE_UPDATETABLESTATS);
   }
 
   static {
@@ -231,12 +232,14 @@ public final class SemanticAnalyzerFactory {
       case HiveParser.TOK_TRUNCATETABLE:
       case HiveParser.TOK_EXCHANGEPARTITION:
       case HiveParser.TOK_SHOW_SET_ROLE:
-
+      case HiveParser.TOK_ALTERTABLE_UPDATECOLSTATS:
         return new DDLSemanticAnalyzer(conf);
       case HiveParser.TOK_ALTERTABLE_PARTITION:
         HiveOperation commandType = null;
         Integer type = ((ASTNode) tree.getChild(1)).getToken().getType();
-        if (tree.getChild(0).getChildCount() > 1) {
+        if (type == HiveParser.TOK_ALTERTABLE_UPDATECOLSTATS) {
+          commandType = HiveOperation.ALTERTABLE_UPDATEPARTSTATS;
+        } else if (tree.getChild(0).getChildCount() > 1) {
           commandType = tablePartitionCommandType.get(type)[1];
         } else {
           commandType = tablePartitionCommandType.get(type)[0];

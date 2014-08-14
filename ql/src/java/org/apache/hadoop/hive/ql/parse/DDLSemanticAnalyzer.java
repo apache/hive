@@ -25,6 +25,7 @@ import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -57,6 +58,7 @@ import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.ArchiveUtils;
+import org.apache.hadoop.hive.ql.exec.ColumnStatsUpdateTask;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -91,6 +93,8 @@ import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
 import org.apache.hadoop.hive.ql.plan.AlterTableExchangePartition;
 import org.apache.hadoop.hive.ql.plan.AlterTableSimpleDesc;
+import org.apache.hadoop.hive.ql.plan.ColumnStatsDesc;
+import org.apache.hadoop.hive.ql.plan.ColumnStatsUpdateWork;
 import org.apache.hadoop.hive.ql.plan.CreateDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.CreateIndexDesc;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
@@ -276,6 +280,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         analyzeAlterTableClusterSort(ast, tableName, partSpec);
       } else if (ast.getToken().getType() == HiveParser.TOK_COMPACT) {
         analyzeAlterTableCompact(ast, tableName, partSpec);
+      } else if(ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_UPDATECOLSTATS){
+        analyzeAlterTableUpdateStats(ast,tblPart);
       }
       break;
     }
@@ -377,6 +383,9 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       break;
     case HiveParser.TOK_ALTERTABLE_RENAME:
       analyzeAlterTableRename(ast, false);
+      break;
+    case HiveParser.TOK_ALTERTABLE_UPDATECOLSTATS:
+      analyzeAlterTableUpdateStats(ast, null);
       break;
     case HiveParser.TOK_ALTERTABLE_TOUCH:
       analyzeAlterTableTouch(ast);
@@ -505,6 +514,57 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     if (fetchTask != null && !rootTasks.isEmpty()) {
       rootTasks.get(rootTasks.size() - 1).setFetchSource(true);
     }
+  }
+
+  private void analyzeAlterTableUpdateStats(ASTNode ast, TablePartition tblPart)
+      throws SemanticException {
+    String tblName = null;
+    String colName = null;
+    Map<String, String> mapProp = null;
+    Map<String, String> partSpec = null;
+    String partName = null;
+    if (tblPart == null) {
+      tblName = getUnescapedName((ASTNode) ast.getChild(0));
+      colName = getUnescapedName((ASTNode) ast.getChild(1));
+      mapProp = getProps((ASTNode) (ast.getChild(2)).getChild(0));
+    } else {
+      tblName = tblPart.tableName;
+      partSpec = tblPart.partSpec;
+      try {
+        partName = Warehouse.makePartName(partSpec, false);
+      } catch (MetaException e) {
+        // TODO Auto-generated catch block
+        throw new SemanticException("partition " + partSpec.toString()
+            + " not found");
+      }
+      colName = getUnescapedName((ASTNode) ast.getChild(0));
+      mapProp = getProps((ASTNode) (ast.getChild(1)).getChild(0));
+    }
+
+    Table tbl = null;
+    try {
+      tbl = db.getTable(tblName);
+    } catch (HiveException e) {
+      throw new SemanticException("table " + tbl + " not found");
+    }
+
+    String colType = null;
+    List<FieldSchema> cols = tbl.getCols();
+    for (FieldSchema col : cols) {
+      if (colName.equalsIgnoreCase(col.getName())) {
+        colType = col.getType();
+        break;
+      }
+    }
+
+    if (colType == null)
+      throw new SemanticException("column type not found");
+
+    ColumnStatsDesc cStatsDesc = new ColumnStatsDesc(tbl.getTableName(),
+        Arrays.asList(colName), Arrays.asList(colType), partSpec == null);
+    ColumnStatsUpdateTask cStatsUpdateTask = (ColumnStatsUpdateTask) TaskFactory
+        .get(new ColumnStatsUpdateWork(cStatsDesc, partName, mapProp), conf);
+    rootTasks.add(cStatsUpdateTask);
   }
 
   private void analyzeSetShowRole(ASTNode ast) throws SemanticException {

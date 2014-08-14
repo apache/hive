@@ -64,38 +64,54 @@ public class StatObjectConverter {
 
      if (statsObj.getStatsData().isSetBooleanStats()) {
        BooleanColumnStatsData boolStats = statsObj.getStatsData().getBooleanStats();
-       mColStats.setBooleanStats(boolStats.getNumTrues(), boolStats.getNumFalses(),
-           boolStats.getNumNulls());
+       mColStats.setBooleanStats(
+           boolStats.isSetNumTrues() ? boolStats.getNumTrues() : null, 
+           boolStats.isSetNumFalses() ? boolStats.getNumFalses() : null,
+           boolStats.isSetNumNulls() ? boolStats.getNumNulls() : null);
      } else if (statsObj.getStatsData().isSetLongStats()) {
        LongColumnStatsData longStats = statsObj.getStatsData().getLongStats();
-       mColStats.setLongStats(longStats.getNumNulls(), longStats.getNumDVs(),
+       mColStats.setLongStats(
+           longStats.isSetNumNulls() ? longStats.getNumNulls() : null, 
+           longStats.isSetNumDVs() ? longStats.getNumDVs() : null,
            longStats.isSetLowValue() ? longStats.getLowValue() : null,
            longStats.isSetHighValue() ? longStats.getHighValue() : null);
      } else if (statsObj.getStatsData().isSetDoubleStats()) {
        DoubleColumnStatsData doubleStats = statsObj.getStatsData().getDoubleStats();
-       mColStats.setDoubleStats(doubleStats.getNumNulls(), doubleStats.getNumDVs(),
+       mColStats.setDoubleStats(
+           doubleStats.isSetNumNulls() ? doubleStats.getNumNulls() : null, 
+           doubleStats.isSetNumDVs() ? doubleStats.getNumDVs() : null,
            doubleStats.isSetLowValue() ? doubleStats.getLowValue() : null,
            doubleStats.isSetHighValue() ? doubleStats.getHighValue() : null);
      } else if (statsObj.getStatsData().isSetDecimalStats()) {
        DecimalColumnStatsData decimalStats = statsObj.getStatsData().getDecimalStats();
        String low = decimalStats.isSetLowValue() ? createJdoDecimalString(decimalStats.getLowValue()) : null;
        String high = decimalStats.isSetHighValue() ? createJdoDecimalString(decimalStats.getHighValue()) : null;
-       mColStats.setDecimalStats(decimalStats.getNumNulls(), decimalStats.getNumDVs(), low, high);
+       mColStats.setDecimalStats(
+           decimalStats.isSetNumNulls() ? decimalStats.getNumNulls() : null, 
+           decimalStats.isSetNumDVs() ? decimalStats.getNumDVs() : null, 
+               low, high);
      } else if (statsObj.getStatsData().isSetStringStats()) {
        StringColumnStatsData stringStats = statsObj.getStatsData().getStringStats();
-       mColStats.setStringStats(stringStats.getNumNulls(), stringStats.getNumDVs(),
-         stringStats.getMaxColLen(), stringStats.getAvgColLen());
+       mColStats.setStringStats(
+           stringStats.isSetNumNulls() ? stringStats.getNumNulls() : null, 
+           stringStats.isSetNumDVs() ? stringStats.getNumDVs() : null,
+           stringStats.isSetMaxColLen() ? stringStats.getMaxColLen() : null, 
+           stringStats.isSetAvgColLen() ? stringStats.getAvgColLen() : null);
      } else if (statsObj.getStatsData().isSetBinaryStats()) {
        BinaryColumnStatsData binaryStats = statsObj.getStatsData().getBinaryStats();
-       mColStats.setBinaryStats(binaryStats.getNumNulls(), binaryStats.getMaxColLen(),
-         binaryStats.getAvgColLen());
+       mColStats.setBinaryStats(
+           binaryStats.isSetNumNulls() ? binaryStats.getNumNulls() : null, 
+           binaryStats.isSetMaxColLen() ? binaryStats.getMaxColLen() : null,
+           binaryStats.isSetAvgColLen() ? binaryStats.getAvgColLen() : null);
      }
      return mColStats;
   }
 
   public static void setFieldsIntoOldStats(
       MTableColumnStatistics mStatsObj, MTableColumnStatistics oldStatsObj) {
-    oldStatsObj.setAvgColLen(mStatsObj.getAvgColLen());
+	  if (mStatsObj.getAvgColLen() != null) {
+	    oldStatsObj.setAvgColLen(mStatsObj.getAvgColLen());
+	  }
     if (mStatsObj.getLongHighValue() != null) {
       oldStatsObj.setLongHighValue(mStatsObj.getLongHighValue());
     }
@@ -114,29 +130,63 @@ public class StatObjectConverter {
     if (mStatsObj.getDecimalHighValue() != null) {
       oldStatsObj.setDecimalHighValue(mStatsObj.getDecimalHighValue());
     }
-    oldStatsObj.setMaxColLen(mStatsObj.getMaxColLen());
-    oldStatsObj.setNumDVs(mStatsObj.getNumDVs());
-    oldStatsObj.setNumFalses(mStatsObj.getNumFalses());
-    oldStatsObj.setNumTrues(mStatsObj.getNumTrues());
-    oldStatsObj.setNumNulls(mStatsObj.getNumNulls());
+    if (mStatsObj.getMaxColLen() != null) {
+  	  oldStatsObj.setMaxColLen(mStatsObj.getMaxColLen());
+    }
+    if (mStatsObj.getNumDVs() != null) {
+  	  oldStatsObj.setNumDVs(mStatsObj.getNumDVs());
+    }
+    if (mStatsObj.getNumFalses() != null) {
+  	  oldStatsObj.setNumFalses(mStatsObj.getNumFalses());
+    }
+    if (mStatsObj.getNumTrues() != null) {
+  	  oldStatsObj.setNumTrues(mStatsObj.getNumTrues());
+    }
+    if (mStatsObj.getNumNulls() != null) {
+  	  oldStatsObj.setNumNulls(mStatsObj.getNumNulls());
+    }
     oldStatsObj.setLastAnalyzed(mStatsObj.getLastAnalyzed());
   }
 
   public static void setFieldsIntoOldStats(
       MPartitionColumnStatistics mStatsObj, MPartitionColumnStatistics oldStatsObj) {
-    oldStatsObj.setAvgColLen(mStatsObj.getAvgColLen());
-    oldStatsObj.setLongHighValue(mStatsObj.getLongHighValue());
-    oldStatsObj.setDoubleHighValue(mStatsObj.getDoubleHighValue());
+    if (mStatsObj.getAvgColLen() != null) {
+          oldStatsObj.setAvgColLen(mStatsObj.getAvgColLen());
+	  }
+    if (mStatsObj.getLongHighValue() != null) {
+		  oldStatsObj.setLongHighValue(mStatsObj.getLongHighValue());
+	  }
+	  if (mStatsObj.getDoubleHighValue() != null) {
+		  oldStatsObj.setDoubleHighValue(mStatsObj.getDoubleHighValue());
+	  }
     oldStatsObj.setLastAnalyzed(mStatsObj.getLastAnalyzed());
-    oldStatsObj.setLongLowValue(mStatsObj.getLongLowValue());
-    oldStatsObj.setDoubleLowValue(mStatsObj.getDoubleLowValue());
-    oldStatsObj.setDecimalLowValue(mStatsObj.getDecimalLowValue());
-    oldStatsObj.setDecimalHighValue(mStatsObj.getDecimalHighValue());
-    oldStatsObj.setMaxColLen(mStatsObj.getMaxColLen());
-    oldStatsObj.setNumDVs(mStatsObj.getNumDVs());
-    oldStatsObj.setNumFalses(mStatsObj.getNumFalses());
-    oldStatsObj.setNumTrues(mStatsObj.getNumTrues());
-    oldStatsObj.setNumNulls(mStatsObj.getNumNulls());
+    if (mStatsObj.getLongLowValue() != null) {
+      oldStatsObj.setLongLowValue(mStatsObj.getLongLowValue());
+    }
+    if (mStatsObj.getDoubleLowValue() != null) {
+      oldStatsObj.setDoubleLowValue(mStatsObj.getDoubleLowValue());
+    }
+    if (mStatsObj.getDecimalLowValue() != null) {
+      oldStatsObj.setDecimalLowValue(mStatsObj.getDecimalLowValue());
+    }
+    if (mStatsObj.getDecimalHighValue() != null) {
+      oldStatsObj.setDecimalHighValue(mStatsObj.getDecimalHighValue());
+    }
+    if (mStatsObj.getMaxColLen() != null) {
+      oldStatsObj.setMaxColLen(mStatsObj.getMaxColLen());
+    }
+    if (mStatsObj.getNumDVs() != null) {
+      oldStatsObj.setNumDVs(mStatsObj.getNumDVs());
+    }
+    if (mStatsObj.getNumFalses() != null) {
+      oldStatsObj.setNumFalses(mStatsObj.getNumFalses());
+    }
+    if (mStatsObj.getNumTrues() != null) {
+      oldStatsObj.setNumTrues(mStatsObj.getNumTrues());
+    }
+    if (mStatsObj.getNumNulls() != null) {
+      oldStatsObj.setNumNulls(mStatsObj.getNumNulls());
+    }
   }
 
   public static ColumnStatisticsObj getTableColumnStatisticsObj(
@@ -241,31 +291,45 @@ public class StatObjectConverter {
 
     if (statsObj.getStatsData().isSetBooleanStats()) {
       BooleanColumnStatsData boolStats = statsObj.getStatsData().getBooleanStats();
-      mColStats.setBooleanStats(boolStats.getNumTrues(), boolStats.getNumFalses(),
-          boolStats.getNumNulls());
+      mColStats.setBooleanStats(
+          boolStats.isSetNumTrues() ? boolStats.getNumTrues() : null, 
+          boolStats.isSetNumFalses() ? boolStats.getNumFalses() : null,
+          boolStats.isSetNumNulls() ? boolStats.getNumNulls() : null);
     } else if (statsObj.getStatsData().isSetLongStats()) {
       LongColumnStatsData longStats = statsObj.getStatsData().getLongStats();
-      mColStats.setLongStats(longStats.getNumNulls(), longStats.getNumDVs(),
+      mColStats.setLongStats(
+          longStats.isSetNumNulls() ? longStats.getNumNulls() : null, 
+          longStats.isSetNumDVs() ? longStats.getNumDVs() : null,
           longStats.isSetLowValue() ? longStats.getLowValue() : null,
           longStats.isSetHighValue() ? longStats.getHighValue() : null);
     } else if (statsObj.getStatsData().isSetDoubleStats()) {
       DoubleColumnStatsData doubleStats = statsObj.getStatsData().getDoubleStats();
-      mColStats.setDoubleStats(doubleStats.getNumNulls(), doubleStats.getNumDVs(),
+      mColStats.setDoubleStats(
+          doubleStats.isSetNumNulls() ? doubleStats.getNumNulls() : null, 
+          doubleStats.isSetNumDVs() ? doubleStats.getNumDVs() : null,
           doubleStats.isSetLowValue() ? doubleStats.getLowValue() : null,
           doubleStats.isSetHighValue() ? doubleStats.getHighValue() : null);
     } else if (statsObj.getStatsData().isSetDecimalStats()) {
       DecimalColumnStatsData decimalStats = statsObj.getStatsData().getDecimalStats();
       String low = decimalStats.isSetLowValue() ? createJdoDecimalString(decimalStats.getLowValue()) : null;
       String high = decimalStats.isSetHighValue() ? createJdoDecimalString(decimalStats.getHighValue()) : null;
-      mColStats.setDecimalStats(decimalStats.getNumNulls(), decimalStats.getNumDVs(), low, high);
+      mColStats.setDecimalStats(
+          decimalStats.isSetNumNulls() ? decimalStats.getNumNulls() : null, 
+          decimalStats.isSetNumDVs() ? decimalStats.getNumDVs() : null, 
+              low, high);
     } else if (statsObj.getStatsData().isSetStringStats()) {
       StringColumnStatsData stringStats = statsObj.getStatsData().getStringStats();
-      mColStats.setStringStats(stringStats.getNumNulls(), stringStats.getNumDVs(),
-        stringStats.getMaxColLen(), stringStats.getAvgColLen());
+      mColStats.setStringStats(
+          stringStats.isSetNumNulls() ? stringStats.getNumNulls() : null, 
+          stringStats.isSetNumDVs() ? stringStats.getNumDVs() : null,
+          stringStats.isSetMaxColLen() ? stringStats.getMaxColLen() : null, 
+          stringStats.isSetAvgColLen() ? stringStats.getAvgColLen() : null);
     } else if (statsObj.getStatsData().isSetBinaryStats()) {
       BinaryColumnStatsData binaryStats = statsObj.getStatsData().getBinaryStats();
-      mColStats.setBinaryStats(binaryStats.getNumNulls(), binaryStats.getMaxColLen(),
-        binaryStats.getAvgColLen());
+      mColStats.setBinaryStats(
+          binaryStats.isSetNumNulls() ? binaryStats.getNumNulls() : null, 
+          binaryStats.isSetMaxColLen() ? binaryStats.getMaxColLen() : null,
+          binaryStats.isSetAvgColLen() ? binaryStats.getAvgColLen() : null);
     }
     return mColStats;
   }
