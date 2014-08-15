@@ -1472,6 +1472,8 @@ public class HiveConf extends Configuration {
         "Minimum number of worker threads when in HTTP mode."),
     HIVE_SERVER2_THRIFT_HTTP_MAX_WORKER_THREADS("hive.server2.thrift.http.max.worker.threads", 500,
         "Maximum number of worker threads when in HTTP mode."),
+    HIVE_SERVER2_THRIFT_HTTP_MAX_IDLE_TIME("hive.server2.thrift.http.max.idle.time", 1800000, 
+        "Maximum idle time in milliseconds for a connection on the server when in HTTP mode."),
 
     // binary transport settings
     HIVE_SERVER2_THRIFT_PORT("hive.server2.thrift.port", 10000,
