@@ -277,7 +277,7 @@ public class GenSparkWork implements NodeProcessor {
           edgeProp.setShuffleGroup();
         }
         String sortOrder = Strings.nullToEmpty(rs.getConf().getOrder()).trim();
-        if (!sortOrder.isEmpty()) {
+        if (!sortOrder.isEmpty() && GenSparkUtils.isSortNecessary(rs)) {
           edgeProp.setShuffleSort();
         }
         sparkWork.connect(work, rWork, edgeProp);
