@@ -148,22 +148,19 @@ public class StorageBasedAuthorizationProvider extends HiveAuthorizationProvider
   public void authorize(Table table, Privilege[] readRequiredPriv, Privilege[] writeRequiredPriv)
       throws HiveException, AuthorizationException {
 
-    // Table path can be null in the case of a new create table - in this case,
-    // we try to determine what the path would be after the create table is issued.
-    Path path = null;
+    // To create/drop/alter a table, the owner should have WRITE permission on the database directory
+    authorize(hive_db.getDatabase(table.getDbName()), readRequiredPriv, writeRequiredPriv);
+
+    // If the user has specified a location - external or not, check if the user has the
     try {
       initWh();
       String location = table.getTTable().getSd().getLocation();
-      if (location == null || location.isEmpty()) {
-        path = wh.getTablePath(hive_db.getDatabase(table.getDbName()), table.getTableName());
-      } else {
-        path = new Path(location);
+      if (location != null && !location.isEmpty()) {
+        authorize(new Path(location), readRequiredPriv, writeRequiredPriv);
       }
     } catch (MetaException ex) {
       throw hiveException(ex);
     }
-
-    authorize(path, readRequiredPriv, writeRequiredPriv);
   }
 
   @Override
