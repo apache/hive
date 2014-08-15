@@ -109,7 +109,7 @@ public class GenSparkUtils {
       edgeProp.setShuffleGroup();
     }
     String sortOrder = Strings.nullToEmpty(reduceSink.getConf().getOrder()).trim();
-    if (!sortOrder.isEmpty()) {
+    if (!sortOrder.isEmpty() && isSortNecessary(reduceSink)) {
       edgeProp.setShuffleSort();
     }
 
@@ -296,5 +296,27 @@ public class GenSparkUtils {
         context.currentTask.setFetchSource(true);
       }
     }
+  }
+
+  /**
+   * Test if the sort order in the RS is necessary.
+   * Unnecessary sort is mainly introduced when GBY is created. Therefore, if the sorting
+   * keys, partitioning keys and grouping keys are the same, we ignore the sort and use
+   * GroupByShuffler to shuffle the data. In this case a group-by transformation should be
+   * sufficient to produce the correct results, i.e. data is properly grouped by the keys
+   * but keys are not guaranteed to be sorted.
+   */
+  public static boolean isSortNecessary(ReduceSinkOperator reduceSinkOperator) {
+    List<Operator<? extends OperatorDesc>> children = reduceSinkOperator.getChildOperators();
+    if (children != null && children.size() == 1 &&
+        children.get(0) instanceof GroupByOperator) {
+      GroupByOperator child = (GroupByOperator) children.get(0);
+      if (reduceSinkOperator.getConf().getKeyCols().equals(
+          reduceSinkOperator.getConf().getPartitionCols()) &&
+          reduceSinkOperator.getConf().getKeyCols().size() == child.getConf().getKeys().size()) {
+        return false;
+      }
+    }
+    return true;
   }
 }
