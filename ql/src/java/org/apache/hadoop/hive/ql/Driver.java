@@ -103,7 +103,6 @@ import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.security.authorization.AuthorizationUtils;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzContext;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzContext.CLIENT_TYPE;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivObjectActionType;
@@ -703,11 +702,7 @@ public class Driver implements CommandProcessor {
       HashSet<WriteEntity> outputs, String command, Map<String, List<String>> tab2cols) throws HiveException {
 
     HiveAuthzContext.Builder authzContextBuilder = new HiveAuthzContext.Builder();
-
-    authzContextBuilder.setClientType(ss.isHiveServerQuery() ? CLIENT_TYPE.HIVESERVER2
-        : CLIENT_TYPE.HIVECLI);
     authzContextBuilder.setUserIpAddress(ss.getUserIpAddress());
-    authzContextBuilder.setSessionString(ss.getSessionId());
     authzContextBuilder.setCommandString(command);
 
     HiveOperationType hiveOpType = getHiveOperationType(op);

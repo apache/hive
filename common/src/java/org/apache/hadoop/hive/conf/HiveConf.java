@@ -36,12 +36,14 @@ import java.util.regex.Pattern;
 
 import javax.security.auth.login.LoginException;
 
-import static org.apache.hadoop.hive.conf.Validator.*;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
+import org.apache.hadoop.hive.conf.Validator.PatternSet;
+import org.apache.hadoop.hive.conf.Validator.RangeValidator;
+import org.apache.hadoop.hive.conf.Validator.StringSet;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -296,9 +298,9 @@ public class HiveConf extends Configuration {
 
     LOCALMODEAUTO("hive.exec.mode.local.auto", false,
         "Let Hive determine whether to run in local mode automatically"),
-    LOCALMODEMAXBYTES("hive.exec.mode.local.auto.inputbytes.max", 134217728L, 
+    LOCALMODEMAXBYTES("hive.exec.mode.local.auto.inputbytes.max", 134217728L,
         "When hive.exec.mode.local.auto is true, input bytes should less than this for local mode."),
-    LOCALMODEMAXINPUTFILES("hive.exec.mode.local.auto.input.files.max", 4, 
+    LOCALMODEMAXINPUTFILES("hive.exec.mode.local.auto.input.files.max", 4,
         "When hive.exec.mode.local.auto is true, the number of tasks should less than this for local mode."),
 
     DROPIGNORESNONEXISTENT("hive.exec.drop.ignorenonexistent", true,
@@ -369,7 +371,7 @@ public class HiveConf extends Configuration {
         "The number of times to retry a HMSHandler call if there were a connection error"),
     HMSHANDLERINTERVAL("hive.hmshandler.retry.interval", 1000,
         "The number of milliseconds between HMSHandler retry attempts"),
-    HMSHANDLERFORCERELOADCONF("hive.hmshandler.force.reload.conf", false, 
+    HMSHANDLERFORCERELOADCONF("hive.hmshandler.force.reload.conf", false,
         "Whether to force reloading of the HMSHandler configuration (including\n" +
         "the connection URL, before the next metastore query that accesses the\n" +
         "datastore. Once reloaded, this value is reset to false. Used for\n" +
@@ -382,7 +384,7 @@ public class HiveConf extends Configuration {
         "Whether to enable TCP keepalive for the metastore server. Keepalive will prevent accumulation of half-open connections."),
 
     METASTORE_INT_ORIGINAL("hive.metastore.archive.intermediate.original",
-        "_INTERMEDIATE_ORIGINAL", 
+        "_INTERMEDIATE_ORIGINAL",
         "Intermediate dir suffixes used for archiving. Not important what they\n" +
         "are, as long as collisions are avoided"),
     METASTORE_INT_ARCHIVED("hive.metastore.archive.intermediate.archived",
@@ -558,7 +560,7 @@ public class HiveConf extends Configuration {
     HIVE_SESSION_HISTORY_ENABLED("hive.session.history.enabled", false,
         "Whether to log Hive query, query plan, runtime statistics etc."),
 
-    HIVEQUERYSTRING("hive.query.string", "", 
+    HIVEQUERYSTRING("hive.query.string", "",
         "Query being executed (might be multiple per a session)"),
 
     HIVEQUERYID("hive.query.id", "",
@@ -797,7 +799,7 @@ public class HiveConf extends Configuration {
         " for small ORC files. Note that enabling this config will not honor padding tolerance\n" +
         " config (hive.exec.orc.block.padding.tolerance)."),
     HIVEMERGEINPUTFORMATSTRIPELEVEL("hive.merge.input.format.stripe.level",
-        "org.apache.hadoop.hive.ql.io.orc.OrcFileStripeMergeInputFormat", 
+        "org.apache.hadoop.hive.ql.io.orc.OrcFileStripeMergeInputFormat",
 	"Input file format to use for ORC stripe level merging (for internal use only)"),
     HIVEMERGECURRENTJOBHASDYNAMICPARTITIONS(
         "hive.merge.current.job.has.dynamic.partitions", false, ""),
@@ -813,7 +815,7 @@ public class HiveConf extends Configuration {
     HIVE_RCFILE_TOLERATE_CORRUPTIONS("hive.io.rcfile.tolerate.corruptions", false, ""),
     HIVE_RCFILE_RECORD_BUFFER_SIZE("hive.io.rcfile.record.buffer.size", 4194304, ""),   // 4M
 
-    HIVE_ORC_FILE_MEMORY_POOL("hive.exec.orc.memory.pool", 0.5f, 
+    HIVE_ORC_FILE_MEMORY_POOL("hive.exec.orc.memory.pool", 0.5f,
         "Maximum fraction of heap that can be used by ORC file writers"),
     HIVE_ORC_WRITE_FORMAT("hive.exec.orc.write.format", null,
         "Define the version of the file to write"),
@@ -1099,8 +1101,8 @@ public class HiveConf extends Configuration {
         "The Java class (implementing the StatsAggregator interface) that is used by default if hive.stats.dbclass is custom type."),
     HIVE_STATS_JDBC_TIMEOUT("hive.stats.jdbc.timeout", 30,
         "Timeout value (number of seconds) used by JDBC connection and statements."),
-    HIVE_STATS_ATOMIC("hive.stats.atomic", false, 
-        "whether to update metastore stats only if all stats are available"), 
+    HIVE_STATS_ATOMIC("hive.stats.atomic", false,
+        "whether to update metastore stats only if all stats are available"),
     HIVE_STATS_RETRIES_MAX("hive.stats.retries.max", 0,
         "Maximum number of retries when stats publisher/aggregator got an exception updating intermediate database. \n" +
         "Default is no tries on failures."),
@@ -1328,6 +1330,8 @@ public class HiveConf extends Configuration {
         "Enables type checking for registered Hive configurations"),
 
     SEMANTIC_ANALYZER_HOOK("hive.semantic.analyzer.hook", "", ""),
+    HIVE_TEST_AUTHORIZATION_SQLSTD_HS2_MODE(
+        "hive.test.authz.sstd.hs2.mode", false, "test hs2 mode from .q tests", true),
     HIVE_AUTHORIZATION_ENABLED("hive.security.authorization.enabled", false,
         "enable or disable the Hive client authorization"),
     HIVE_AUTHORIZATION_MANAGER("hive.security.authorization.manager",
@@ -1661,7 +1665,7 @@ public class HiveConf extends Configuration {
         "Exceeding this will trigger a flush irrelevant of memory pressure condition."),
     HIVE_VECTORIZATION_GROUPBY_FLUSH_PERCENT("hive.vectorized.groupby.flush.percent", (float) 0.1,
         "Percent of entries in the group by aggregation hash flushed when the memory threshold is exceeded."),
-    
+
 
     HIVE_TYPE_CHECK_ON_INSERT("hive.typecheck.on.insert", true, ""),
 
