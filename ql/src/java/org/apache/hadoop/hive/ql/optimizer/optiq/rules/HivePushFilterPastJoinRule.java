@@ -1,6 +1,7 @@
 package org.apache.hadoop.hive.ql.optimizer.optiq.rules;
 
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.List;
 import java.util.ListIterator;
 
@@ -15,6 +16,7 @@ import org.eigenbase.relopt.RelOptRule;
 import org.eigenbase.relopt.RelOptRuleCall;
 import org.eigenbase.relopt.RelOptRuleOperand;
 import org.eigenbase.relopt.RelOptUtil;
+import org.eigenbase.relopt.RelOptUtil.InputFinder;
 import org.eigenbase.rex.RexBuilder;
 import org.eigenbase.rex.RexCall;
 import org.eigenbase.rex.RexNode;
@@ -113,7 +115,7 @@ public abstract class HivePushFilterPastJoinRule extends RelOptRule {
     final Holder<JoinRelType> joinTypeHolder = Holder.of(join.getJoinType());
     if (RelOptUtil.classifyFilters(join, aboveFilters,
         join.getJoinType(), !join.getJoinType().generatesNullsOnLeft(), !join.getJoinType()
-        .generatesNullsOnRight(), joinFilters, leftFilters, rightFilters, joinTypeHolder, smart)) {
+        .generatesNullsOnRight(), joinFilters, leftFilters, rightFilters, joinTypeHolder, false)) {
       filterPushed = true;
     }
 
@@ -128,7 +130,18 @@ public abstract class HivePushFilterPastJoinRule extends RelOptRule {
       if (exp instanceof RexCall) {
         RexCall c = (RexCall) exp;
         if (c.getOperator().getKind() == SqlKind.EQUALS) {
-          continue;
+          boolean validHiveJoinFilter = true;
+          for (RexNode rn : c.getOperands()) {
+            // NOTE: Hive dis-allows projections from both left & right side
+            // of join condition. Example: Hive disallows
+            // (r1.x=r2.x)=(r1.y=r2.y) on join condition.
+            if (filterRefersToBothSidesOfJoin(rn, join)) {
+              validHiveJoinFilter = false;
+              break;
+            }
+          }
+          if (validHiveJoinFilter)
+            continue;
         }
       }
       aboveFilters.add(exp);
@@ -148,7 +161,7 @@ public abstract class HivePushFilterPastJoinRule extends RelOptRule {
     // not on the side which is preserved.
     if (RelOptUtil.classifyFilters(join, joinFilters, null, !join
         .getJoinType().generatesNullsOnRight(), !join.getJoinType()
-        .generatesNullsOnLeft(), joinFilters, leftFilters, rightFilters, joinTypeHolder, smart)) {
+        .generatesNullsOnLeft(), joinFilters, leftFilters, rightFilters, joinTypeHolder, false)) {
       filterPushed = true;
     }
 
@@ -239,6 +252,25 @@ public abstract class HivePushFilterPastJoinRule extends RelOptRule {
       }
     }
     return predicate.isAlwaysTrue();
+  }
+
+  private boolean filterRefersToBothSidesOfJoin(RexNode filter, JoinRelBase j) {
+    boolean refersToBothSides = false;
+
+    int joinNoOfProjects = j.getRowType().getFieldCount();
+    BitSet filterProjs = new BitSet(joinNoOfProjects);
+    BitSet allLeftProjs = new BitSet(joinNoOfProjects);
+    BitSet allRightProjs = new BitSet(joinNoOfProjects);
+    allLeftProjs.set(0, j.getInput(0).getRowType().getFieldCount(), true);
+    allRightProjs.set(j.getInput(0).getRowType().getFieldCount(), joinNoOfProjects, true);
+
+    InputFinder inputFinder = new InputFinder(filterProjs);
+    filter.accept(inputFinder);
+
+    if (allLeftProjs.intersects(filterProjs) && allRightProjs.intersects(filterProjs))
+      refersToBothSides = true;
+
+    return refersToBothSides;
   }
 }
 
