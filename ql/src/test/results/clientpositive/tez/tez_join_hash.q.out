@@ -1,6 +1,7 @@
 PREHOOK: query: create table orc_src (key string, value string) STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@orc_src
 POSTHOOK: query: create table orc_src (key string, value string) STORED AS ORC
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

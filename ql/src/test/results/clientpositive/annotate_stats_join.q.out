@@ -5,6 +5,7 @@ PREHOOK: query: create table if not exists emp (
 ) row format delimited fields terminated by '|' stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@emp
 POSTHOOK: query: create table if not exists emp (
   lastname string,
   deptid int,
@@ -19,6 +20,7 @@ PREHOOK: query: create table if not exists dept (
 ) row format delimited fields terminated by '|' stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@dept
 POSTHOOK: query: create table if not exists dept (
   deptid int,
   deptname string
@@ -34,6 +36,7 @@ PREHOOK: query: create table if not exists loc (
 ) row format delimited fields terminated by '|' stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@loc
 POSTHOOK: query: create table if not exists loc (
   state string,
   locid int,

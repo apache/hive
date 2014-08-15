@@ -2,6 +2,7 @@ PREHOOK: query: CREATE TABLE srcbucket_mapjoin_part_1 (key INT, value STRING) PA
 CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@srcbucket_mapjoin_part_1
 POSTHOOK: query: CREATE TABLE srcbucket_mapjoin_part_1 (key INT, value STRING) PARTITIONED BY (part STRING) 
 CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
@@ -61,6 +62,7 @@ PREHOOK: query: CREATE TABLE srcbucket_mapjoin_part_2 (key INT, value STRING) PA
 CLUSTERED BY (key) INTO 3 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@srcbucket_mapjoin_part_2
 POSTHOOK: query: CREATE TABLE srcbucket_mapjoin_part_2 (key INT, value STRING) PARTITIONED BY (part STRING) 
 CLUSTERED BY (key) INTO 3 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE

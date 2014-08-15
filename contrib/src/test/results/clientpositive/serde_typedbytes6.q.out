@@ -13,6 +13,7 @@ POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE table1 (a STRING) ROW FORMAT SERDE 'org.apache.hadoop.hive.contrib.serde2.TypedBytesSerDe'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@table1
 POSTHOOK: query: CREATE TABLE table1 (a STRING) ROW FORMAT SERDE 'org.apache.hadoop.hive.contrib.serde2.TypedBytesSerDe'
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -20,6 +21,7 @@ POSTHOOK: Output: default@table1
 PREHOOK: query: CREATE TABLE table2 (a STRING, b STRING) ROW FORMAT SERDE 'org.apache.hadoop.hive.contrib.serde2.TypedBytesSerDe'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@table2
 POSTHOOK: query: CREATE TABLE table2 (a STRING, b STRING) ROW FORMAT SERDE 'org.apache.hadoop.hive.contrib.serde2.TypedBytesSerDe'
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -27,6 +29,7 @@ POSTHOOK: Output: default@table2
 PREHOOK: query: CREATE TABLE table3 (a STRING, b STRING, c STRING) ROW FORMAT SERDE 'org.apache.hadoop.hive.contrib.serde2.TypedBytesSerDe'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@table3
 POSTHOOK: query: CREATE TABLE table3 (a STRING, b STRING, c STRING) ROW FORMAT SERDE 'org.apache.hadoop.hive.contrib.serde2.TypedBytesSerDe'
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

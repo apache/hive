@@ -1,38 +1,47 @@
 PREHOOK: query: CREATE TABLE src_union_1 (key int, value string) PARTITIONED BY (ds string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@src_union_1
 POSTHOOK: query: CREATE TABLE src_union_1 (key int, value string) PARTITIONED BY (ds string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_union_1
 PREHOOK: query: CREATE INDEX src_union_1_key_idx ON TABLE src_union_1(key) AS 'COMPACT' WITH DEFERRED REBUILD
 PREHOOK: type: CREATEINDEX
+PREHOOK: Input: default@src_union_1
 POSTHOOK: query: CREATE INDEX src_union_1_key_idx ON TABLE src_union_1(key) AS 'COMPACT' WITH DEFERRED REBUILD
 POSTHOOK: type: CREATEINDEX
+POSTHOOK: Input: default@src_union_1
 POSTHOOK: Output: default@default__src_union_1_src_union_1_key_idx__
 PREHOOK: query: CREATE TABLE src_union_2 (key int, value string) PARTITIONED BY (ds string, part_1 string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@src_union_2
 POSTHOOK: query: CREATE TABLE src_union_2 (key int, value string) PARTITIONED BY (ds string, part_1 string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_union_2
 PREHOOK: query: CREATE INDEX src_union_2_key_idx ON TABLE src_union_2(key) AS 'COMPACT' WITH DEFERRED REBUILD
 PREHOOK: type: CREATEINDEX
+PREHOOK: Input: default@src_union_2
 POSTHOOK: query: CREATE INDEX src_union_2_key_idx ON TABLE src_union_2(key) AS 'COMPACT' WITH DEFERRED REBUILD
 POSTHOOK: type: CREATEINDEX
+POSTHOOK: Input: default@src_union_2
 POSTHOOK: Output: default@default__src_union_2_src_union_2_key_idx__
 PREHOOK: query: CREATE TABLE src_union_3(key int, value string) PARTITIONED BY (ds string, part_1 string, part_2 string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@src_union_3
 POSTHOOK: query: CREATE TABLE src_union_3(key int, value string) PARTITIONED BY (ds string, part_1 string, part_2 string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_union_3
 PREHOOK: query: CREATE INDEX src_union_3_key_idx ON TABLE src_union_3(key) AS 'COMPACT' WITH DEFERRED REBUILD
 PREHOOK: type: CREATEINDEX
+PREHOOK: Input: default@src_union_3
 POSTHOOK: query: CREATE INDEX src_union_3_key_idx ON TABLE src_union_3(key) AS 'COMPACT' WITH DEFERRED REBUILD
 POSTHOOK: type: CREATEINDEX
+POSTHOOK: Input: default@src_union_3
 POSTHOOK: Output: default@default__src_union_3_src_union_3_key_idx__
 STAGE DEPENDENCIES:
   Stage-3 is a root stage

@@ -1028,6 +1028,7 @@ FIELDS TERMINATED BY '\t'
 COLLECTION ITEMS TERMINATED BY ','
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@array_table
 POSTHOOK: query: create table array_table (a array<string>, b array<string>)
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY '\t'
@@ -1099,6 +1100,7 @@ MAP KEYS TERMINATED BY ':'
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@map_table
 POSTHOOK: query: create table map_table (foo STRING , bar MAP<STRING, STRING>)
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY '\t'
@@ -1218,6 +1220,7 @@ STORED AS RCFILE
 PREHOOK: type: CREATETABLE
 #### A masked pattern was here ####
 PREHOOK: Output: database:default
+PREHOOK: Output: default@local_rctable
 POSTHOOK: query: create external table local_rctable(value string, key string)
 STORED AS RCFILE
 #### A masked pattern was here ####

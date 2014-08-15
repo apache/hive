@@ -18,6 +18,7 @@ COLLECTION ITEMS TERMINATED BY ','
 MAP KEYS TERMINATED BY ':'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_create_staging
 POSTHOOK: query: CREATE TABLE parquet_create_staging (
     id int,
     str string,
@@ -40,6 +41,7 @@ PREHOOK: query: CREATE TABLE parquet_create (
 ) STORED AS PARQUET
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_create
 POSTHOOK: query: CREATE TABLE parquet_create (
     id int,
     str string,

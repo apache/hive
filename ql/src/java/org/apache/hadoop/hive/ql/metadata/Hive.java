@@ -2716,4 +2716,19 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  public void setMetaConf(String propName, String propValue) throws HiveException {
+    try {
+      getMSC().setMetaConf(propName, propValue);
+    } catch (TException te) {
+      throw new HiveException(te);
+    }
+  }
+
+  public String getMetaConf(String propName) throws HiveException {
+    try {
+      return getMSC().getMetaConf(propName);
+    } catch (TException te) {
+      throw new HiveException(te);
+    }
+  }
 };

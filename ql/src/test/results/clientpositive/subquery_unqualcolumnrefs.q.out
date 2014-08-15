@@ -16,6 +16,7 @@ CREATE TABLE part(
 )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@part
 POSTHOOK: query: -- data setup
 CREATE TABLE part( 
     p_partkey INT,
@@ -34,6 +35,7 @@ POSTHOOK: Output: default@part
 PREHOOK: query: create table src11 (key1 string, value1 string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@src11
 POSTHOOK: query: create table src11 (key1 string, value1 string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -51,6 +53,7 @@ PREHOOK: query: create table part2(
 )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@part2
 POSTHOOK: query: create table part2( 
     p2_partkey INT,
     p2_name STRING,

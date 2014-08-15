@@ -2,6 +2,7 @@ PREHOOK: query: create table store(s_store_sk int, s_city string)
 stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@store
 POSTHOOK: query: create table store(s_store_sk int, s_city string)
 stored as orc
 POSTHOOK: type: CREATETABLE
@@ -29,6 +30,7 @@ PREHOOK: query: create table store_sales(ss_store_sk int, ss_hdemo_sk int, ss_ne
 stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@store_sales
 POSTHOOK: query: create table store_sales(ss_store_sk int, ss_hdemo_sk int, ss_net_profit double)
 stored as orc
 POSTHOOK: type: CREATETABLE
@@ -57,6 +59,7 @@ PREHOOK: query: create table household_demographics(hd_demo_sk int)
 stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@household_demographics
 POSTHOOK: query: create table household_demographics(hd_demo_sk int)
 stored as orc
 POSTHOOK: type: CREATETABLE

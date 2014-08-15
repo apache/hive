@@ -17,6 +17,7 @@ POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table test1 (key string, value string) clustered by (key) sorted by (key) into 3 buckets
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@test1
 POSTHOOK: query: create table test1 (key string, value string) clustered by (key) sorted by (key) into 3 buckets
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -24,6 +25,7 @@ POSTHOOK: Output: default@test1
 PREHOOK: query: create table test2 (key string, value string) clustered by (value) sorted by (value) into 3 buckets
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@test2
 POSTHOOK: query: create table test2 (key string, value string) clustered by (value) sorted by (value) into 3 buckets
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -31,6 +33,7 @@ POSTHOOK: Output: default@test2
 PREHOOK: query: create table test3 (key string, value string) clustered by (key, value) sorted by (key, value) into 3 buckets
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@test3
 POSTHOOK: query: create table test3 (key string, value string) clustered by (key, value) sorted by (key, value) into 3 buckets
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -38,6 +41,7 @@ POSTHOOK: Output: default@test3
 PREHOOK: query: create table test4 (key string, value string) clustered by (value, key) sorted by (value, key) into 3 buckets
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@test4
 POSTHOOK: query: create table test4 (key string, value string) clustered by (value, key) sorted by (value, key) into 3 buckets
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

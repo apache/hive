@@ -146,6 +146,7 @@ TOK_ALTERTABLE_ARCHIVE;
 TOK_ALTERTABLE_UNARCHIVE;
 TOK_ALTERTABLE_SERDEPROPERTIES;
 TOK_ALTERTABLE_SERIALIZER;
+TOK_ALTERTABLE_UPDATECOLSTATS;
 TOK_TABLE_PARTITION;
 TOK_ALTERTABLE_FILEFORMAT;
 TOK_ALTERTABLE_LOCATION;
@@ -938,6 +939,7 @@ alterTableStatementSuffix
     : alterStatementSuffixRename
     | alterStatementSuffixAddCol
     | alterStatementSuffixRenameCol
+    | alterStatementSuffixUpdateStatsCol
     | alterStatementSuffixDropPartitions
     | alterStatementSuffixAddPartitions
     | alterStatementSuffixTouch
@@ -1026,6 +1028,13 @@ alterStatementSuffixRenameCol
 @after { popMsg(state); }
     : tableName KW_CHANGE KW_COLUMN? oldName=identifier newName=identifier colType (KW_COMMENT comment=StringLiteral)? alterStatementChangeColPosition?
     ->^(TOK_ALTERTABLE_RENAMECOL tableName $oldName $newName colType $comment? alterStatementChangeColPosition?)
+    ;
+
+alterStatementSuffixUpdateStatsCol
+@init { pushMsg("update column statistics", state); }
+@after { popMsg(state); }
+    : identifier KW_UPDATE KW_STATISTICS KW_FOR KW_COLUMN? colName=identifier KW_SET tableProperties (KW_COMMENT comment=StringLiteral)?
+    ->^(TOK_ALTERTABLE_UPDATECOLSTATS identifier $colName tableProperties $comment?)
     ;
 
 alterStatementChangeColPosition
@@ -1130,6 +1139,7 @@ alterTblPartitionStatementSuffix
   | alterStatementSuffixMergeFiles
   | alterStatementSuffixSerdeProperties
   | alterStatementSuffixRenamePart
+  | alterStatementSuffixStatsPart
   | alterStatementSuffixBucketNum
   | alterTblPartitionStatementSuffixSkewedLocation
   | alterStatementSuffixClusterbySortby
@@ -1221,6 +1231,13 @@ alterStatementSuffixRenamePart
     ->^(TOK_ALTERTABLE_RENAMEPART partitionSpec)
     ;
 
+alterStatementSuffixStatsPart
+@init { pushMsg("alter table stats partition statement", state); }
+@after { popMsg(state); }
+    : KW_UPDATE KW_STATISTICS KW_FOR KW_COLUMN? colName=identifier KW_SET tableProperties (KW_COMMENT comment=StringLiteral)?
+    ->^(TOK_ALTERTABLE_UPDATECOLSTATS $colName tableProperties $comment?)
+    ;
+
 alterStatementSuffixMergeFiles
 @init { pushMsg("", state); }
 @after { popMsg(state); }
@@ -1299,6 +1316,7 @@ descStatement
     | (KW_DESCRIBE|KW_DESC) KW_FUNCTION KW_EXTENDED? (name=descFuncNames) -> ^(TOK_DESCFUNCTION $name KW_EXTENDED?)
     | (KW_DESCRIBE|KW_DESC) (KW_DATABASE|KW_SCHEMA) KW_EXTENDED? (dbName=identifier) -> ^(TOK_DESCDATABASE $dbName KW_EXTENDED?)
     ;
+
 
 analyzeStatement
 @init { pushMsg("analyze statement", state); }

@@ -1,6 +1,7 @@
 PREHOOK: query: create table src_p(`x+1` string, `y&y` string) partitioned by (`!@#$%^&*()_q` string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@src_p
 POSTHOOK: query: create table src_p(`x+1` string, `y&y` string) partitioned by (`!@#$%^&*()_q` string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -85,6 +86,7 @@ STAGE PLANS:
 PREHOOK: query: create table src_p2(`x+1` string) partitioned by (`!@#$%^&*()_q` string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@src_p2
 POSTHOOK: query: create table src_p2(`x+1` string) partitioned by (`!@#$%^&*()_q` string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

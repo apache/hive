@@ -6,6 +6,7 @@ PREHOOK: query: create table if not exists loc_staging (
 ) row format delimited fields terminated by '|' stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@loc_staging
 POSTHOOK: query: create table if not exists loc_staging (
   state string,
   locid int,
@@ -30,6 +31,7 @@ PREHOOK: query: create table if not exists loc_orc (
 ) partitioned by(year string) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@loc_orc
 POSTHOOK: query: create table if not exists loc_orc (
   state string,
   locid int,

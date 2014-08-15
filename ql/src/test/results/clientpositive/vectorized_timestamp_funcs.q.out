@@ -3,6 +3,7 @@ PREHOOK: query: -- Test timestamp functions in vectorized mode to verify they ru
 CREATE TABLE alltypesorc_string(ctimestamp1 timestamp, stimestamp1 string) STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@alltypesorc_string
 POSTHOOK: query: -- Test timestamp functions in vectorized mode to verify they run correctly end-to-end.
 
 CREATE TABLE alltypesorc_string(ctimestamp1 timestamp, stimestamp1 string) STORED AS ORC
@@ -32,6 +33,7 @@ POSTHOOK: Lineage: alltypesorc_string.stimestamp1 EXPRESSION [(alltypesorc)allty
 PREHOOK: query: CREATE TABLE alltypesorc_wrong(stimestamp1 string) STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@alltypesorc_wrong
 POSTHOOK: query: CREATE TABLE alltypesorc_wrong(stimestamp1 string) STORED AS ORC
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

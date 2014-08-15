@@ -1,6 +1,7 @@
 PREHOOK: query: create table abcd (a int, b int, c int, d int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@abcd
 POSTHOOK: query: create table abcd (a int, b int, c int, d int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

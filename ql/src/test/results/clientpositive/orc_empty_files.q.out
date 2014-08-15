@@ -5,6 +5,7 @@ STORED AS INPUTFORMAT 'org.apache.hadoop.hive.ql.io.orc.OrcInputFormat'
 OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@test_orc
 POSTHOOK: query: CREATE TABLE test_orc (key STRING, cnt INT)
 CLUSTERED BY (key) INTO 3 BUCKETS
 ROW FORMAT SERDE 'org.apache.hadoop.hive.ql.io.orc.OrcSerde' 

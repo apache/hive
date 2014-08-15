@@ -1,18 +1,24 @@
 PREHOOK: query: CREATE DATABASE db1
 PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:db1
 POSTHOOK: query: CREATE DATABASE db1
 POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:db1
 PREHOOK: query: CREATE TABLE db1.t1(key1 INT, value1 STRING) PARTITIONED BY (ds STRING, part STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:db1
+PREHOOK: Output: db1@db1.t1
 POSTHOOK: query: CREATE TABLE db1.t1(key1 INT, value1 STRING) PARTITIONED BY (ds STRING, part STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:db1
+POSTHOOK: Output: db1@db1.t1
 POSTHOOK: Output: db1@t1
 PREHOOK: query: use db1
 PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:db1
 POSTHOOK: query: use db1
 POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:db1
 PREHOOK: query: ALTER TABLE t1 ADD PARTITION (ds='3', part='3')
 PREHOOK: type: ALTERTABLE_ADDPARTS
 PREHOOK: Output: db1@t1

@@ -2,6 +2,7 @@ PREHOOK: query: CREATE TABLE tbl1(key int, value string) PARTITIONED by (ds stri
 CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS rcfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl1
 POSTHOOK: query: CREATE TABLE tbl1(key int, value string) PARTITIONED by (ds string)
 CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS rcfile
 POSTHOOK: type: CREATETABLE
@@ -11,6 +12,7 @@ PREHOOK: query: CREATE TABLE tbl2(key int, value string) PARTITIONED by (ds stri
 CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS rcfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl2
 POSTHOOK: query: CREATE TABLE tbl2(key int, value string) PARTITIONED by (ds string)
 CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS rcfile
 POSTHOOK: type: CREATETABLE

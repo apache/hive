@@ -280,6 +280,7 @@ STAGE PLANS:
 PREHOOK: query: CREATE TABLE union_out (id int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@union_out
 POSTHOOK: query: CREATE TABLE union_out (id int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

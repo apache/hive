@@ -64,6 +64,7 @@ WITH SERDEPROPERTIES (
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@serde_regex
 POSTHOOK: query: CREATE TABLE serde_regex(
   host STRING,
   identity STRING,
@@ -171,6 +172,7 @@ WITH SERDEPROPERTIES (
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@serde_regex1
 POSTHOOK: query: CREATE TABLE serde_regex1(
   key decimal(38,18),
   value int)

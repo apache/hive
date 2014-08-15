@@ -4,6 +4,7 @@ PREHOOK: query: -- Tests in this file are used to make sure Correlation Optimize
 CREATE TABLE part_table(key string, value string) PARTITIONED BY (partitionId int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@part_table
 POSTHOOK: query: -- Tests in this file are used to make sure Correlation Optimizer
 -- can correctly handle tables with partitions
 

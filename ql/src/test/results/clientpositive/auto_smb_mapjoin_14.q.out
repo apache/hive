@@ -3,6 +3,7 @@ PREHOOK: query: -- SORT_QUERY_RESULTS
 CREATE TABLE tbl1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl1
 POSTHOOK: query: -- SORT_QUERY_RESULTS
 
 CREATE TABLE tbl1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
@@ -12,6 +13,7 @@ POSTHOOK: Output: default@tbl1
 PREHOOK: query: CREATE TABLE tbl2(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl2
 POSTHOOK: query: CREATE TABLE tbl2(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -1357,6 +1359,7 @@ POSTHOOK: Input: default@tbl2
 PREHOOK: query: CREATE TABLE dest1(key int, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@dest1
 POSTHOOK: query: CREATE TABLE dest1(key int, value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -1364,6 +1367,7 @@ POSTHOOK: Output: default@dest1
 PREHOOK: query: CREATE TABLE dest2(key int, val1 string, val2 string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@dest2
 POSTHOOK: query: CREATE TABLE dest2(key int, val1 string, val2 string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -1647,6 +1651,7 @@ POSTHOOK: Output: default@dest2
 PREHOOK: query: CREATE TABLE dest2(key int, cnt int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@dest2
 POSTHOOK: query: CREATE TABLE dest2(key int, cnt int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

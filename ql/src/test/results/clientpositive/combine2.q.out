@@ -1,7 +1,9 @@
 PREHOOK: query: USE default
 PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:default
 POSTHOOK: query: USE default
 POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:default
 PREHOOK: query: -- EXCLUDE_OS_WINDOWS
 -- excluded on windows because of difference in file name encoding logic
 
@@ -10,6 +12,7 @@ PREHOOK: query: -- EXCLUDE_OS_WINDOWS
 create table combine2(key string) partitioned by (value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@combine2
 POSTHOOK: query: -- EXCLUDE_OS_WINDOWS
 -- excluded on windows because of difference in file name encoding logic
 

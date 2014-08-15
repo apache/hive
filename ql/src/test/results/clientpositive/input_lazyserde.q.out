@@ -9,6 +9,7 @@ LINES TERMINATED BY '10'
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@dest1
 POSTHOOK: query: -- SORT_QUERY_RESULTS
 
 CREATE TABLE dest1(a array<int>, b array<string>, c map<string,string>, d int, e string)
@@ -141,6 +142,7 @@ POSTHOOK: Output: default@dest1
 PREHOOK: query: CREATE TABLE dest1(a array<int>) ROW FORMAT DELIMITED FIELDS TERMINATED BY '1' ESCAPED BY '\\'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@dest1
 POSTHOOK: query: CREATE TABLE dest1(a array<int>) ROW FORMAT DELIMITED FIELDS TERMINATED BY '1' ESCAPED BY '\\'
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -184,6 +186,7 @@ POSTHOOK: Output: default@dest1
 PREHOOK: query: CREATE TABLE dest1(a map<string,string>) ROW FORMAT DELIMITED FIELDS TERMINATED BY '1' ESCAPED BY '\\'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@dest1
 POSTHOOK: query: CREATE TABLE dest1(a map<string,string>) ROW FORMAT DELIMITED FIELDS TERMINATED BY '1' ESCAPED BY '\\'
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

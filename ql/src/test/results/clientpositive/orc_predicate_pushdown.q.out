@@ -14,6 +14,7 @@ CREATE TABLE orc_pred(t tinyint,
 STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@orc_pred
 POSTHOOK: query: -- SORT_QUERY_RESULTS
 
 CREATE TABLE orc_pred(t tinyint,
@@ -54,6 +55,7 @@ ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@staging
 POSTHOOK: query: CREATE TABLE staging(t tinyint,
            si smallint,
            i int,

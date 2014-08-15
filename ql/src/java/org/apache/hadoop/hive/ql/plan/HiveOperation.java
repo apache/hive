@@ -27,7 +27,7 @@ public enum HiveOperation {
   IMPORT("IMPORT", null, new Privilege[]{Privilege.ALTER_METADATA, Privilege.ALTER_DATA}),
   CREATEDATABASE("CREATEDATABASE", null, new Privilege[]{Privilege.CREATE}),
   DROPDATABASE("DROPDATABASE", null, new Privilege[]{Privilege.DROP}),
-  SWITCHDATABASE("SWITCHDATABASE", new Privilege[]{Privilege.SELECT}, null),
+  SWITCHDATABASE("SWITCHDATABASE", null, null),
   LOCKDB("LOCKDATABASE",  new Privilege[]{Privilege.LOCK}, null),
   UNLOCKDB("UNLOCKDATABASE",  new Privilege[]{Privilege.LOCK}, null),
   DROPTABLE ("DROPTABLE", null, new Privilege[]{Privilege.DROP}),
@@ -38,6 +38,8 @@ public enum HiveOperation {
   ALTERTABLE_REPLACECOLS("ALTERTABLE_REPLACECOLS", new Privilege[]{Privilege.ALTER_METADATA}, null),
   ALTERTABLE_RENAMECOL("ALTERTABLE_RENAMECOL", new Privilege[]{Privilege.ALTER_METADATA}, null),
   ALTERTABLE_RENAMEPART("ALTERTABLE_RENAMEPART", new Privilege[]{Privilege.DROP}, new Privilege[]{Privilege.CREATE}),
+  ALTERTABLE_UPDATEPARTSTATS("ALTERTABLE_UPDATEPARTSTATS", new Privilege[]{Privilege.ALTER_METADATA}, null),
+  ALTERTABLE_UPDATETABLESTATS("ALTERTABLE_UPDATETABLESTATS", new Privilege[]{Privilege.ALTER_METADATA}, null),
   ALTERTABLE_RENAME("ALTERTABLE_RENAME", new Privilege[]{Privilege.ALTER_METADATA}, null),
   ALTERTABLE_DROPPARTS("ALTERTABLE_DROPPARTS", new Privilege[]{Privilege.DROP}, null),
   // The location is input and table is output for alter-table add partitions

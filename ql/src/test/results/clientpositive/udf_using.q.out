@@ -9,6 +9,7 @@ POSTHOOK: Output: lookup
 PREHOOK: query: create table udf_using (c1 string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@udf_using
 POSTHOOK: query: create table udf_using (c1 string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

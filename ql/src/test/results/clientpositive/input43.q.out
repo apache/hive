@@ -5,6 +5,7 @@ POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table tst_src1 like src1
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@tst_src1
 POSTHOOK: query: create table tst_src1 like src1
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

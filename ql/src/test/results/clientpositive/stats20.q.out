@@ -1,6 +1,7 @@
 PREHOOK: query: CREATE TABLE stats_partitioned(key string, value string) partitioned by (ds string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@stats_partitioned
 POSTHOOK: query: CREATE TABLE stats_partitioned(key string, value string) partitioned by (ds string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

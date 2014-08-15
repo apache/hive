@@ -11,6 +11,7 @@ partitioned by (ds string, hr string)
 stored as rcfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@analyze_srcpart_partial_scan
 POSTHOOK: query: -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
 -- This test uses mapred.max.split.size/mapred.max.split.size for controlling
 -- number of input splits.

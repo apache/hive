@@ -8,6 +8,7 @@ STORED AS RCFILE
 PREHOOK: type: CREATETABLE
 #### A masked pattern was here ####
 PREHOOK: Output: database:default
+PREHOOK: Output: default@test_table
 POSTHOOK: query: -- This test verifies that if a partition exists outside an index table's current location when the
 -- index is dropped the partition's location is dropped as well.
 
@@ -23,10 +24,12 @@ PREHOOK: query: CREATE INDEX test_index ON
 TABLE test_table(key) AS 'compact' WITH DEFERRED REBUILD
 IN TABLE test_index_table
 PREHOOK: type: CREATEINDEX
+PREHOOK: Input: default@test_table
 POSTHOOK: query: CREATE INDEX test_index ON 
 TABLE test_table(key) AS 'compact' WITH DEFERRED REBUILD
 IN TABLE test_index_table
 POSTHOOK: type: CREATEINDEX
+POSTHOOK: Input: default@test_table
 POSTHOOK: Output: default@test_index_table
 PREHOOK: query: ALTER TABLE test_index_table ADD PARTITION (part = '1')
 #### A masked pattern was here ####
@@ -43,6 +46,8 @@ Found 1 items
 #### A masked pattern was here ####
 PREHOOK: query: DROP INDEX test_index ON test_table
 PREHOOK: type: DROPINDEX
+PREHOOK: Input: default@test_table
 POSTHOOK: query: DROP INDEX test_index ON test_table
 POSTHOOK: type: DROPINDEX
+POSTHOOK: Input: default@test_table
 #### A masked pattern was here ####

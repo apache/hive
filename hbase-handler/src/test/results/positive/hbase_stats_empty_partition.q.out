@@ -4,6 +4,7 @@ PREHOOK: query: -- This test verifies that writing an empty partition succeeds w
 create table tmptable(key string, value string) partitioned by (part string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@tmptable
 POSTHOOK: query: -- This test verifies that writing an empty partition succeeds when
 -- hive.stats.reliable is set to true.
 

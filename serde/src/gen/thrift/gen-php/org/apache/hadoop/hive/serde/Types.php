@@ -32,6 +32,8 @@ $GLOBALS['serde_CONSTANTS']['SERIALIZATION_SORT_ORDER'] = "serialization.sort.or
 
 $GLOBALS['serde_CONSTANTS']['SERIALIZATION_USE_JSON_OBJECTS'] = "serialization.use.json.object";
 
+$GLOBALS['serde_CONSTANTS']['SERIALIZATION_ENCODING'] = "serialization.encoding";
+
 $GLOBALS['serde_CONSTANTS']['FIELD_DELIM'] = "field.delim";
 
 $GLOBALS['serde_CONSTANTS']['COLLECTION_DELIM'] = "colelction.delim";

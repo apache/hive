@@ -2,6 +2,7 @@ PREHOOK: query: CREATE TABLE T1(`!@#$%^&*()_q` string, `y&y` string)
 SKEWED BY (`!@#$%^&*()_q`) ON ((2)) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@T1
 POSTHOOK: query: CREATE TABLE T1(`!@#$%^&*()_q` string, `y&y` string)
 SKEWED BY (`!@#$%^&*()_q`) ON ((2)) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
@@ -19,6 +20,7 @@ PREHOOK: query: CREATE TABLE T2(`!@#$%^&*()_q` string, `y&y` string)
 SKEWED BY (`!@#$%^&*()_q`) ON ((2)) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@T2
 POSTHOOK: query: CREATE TABLE T2(`!@#$%^&*()_q` string, `y&y` string)
 SKEWED BY (`!@#$%^&*()_q`) ON ((2)) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE

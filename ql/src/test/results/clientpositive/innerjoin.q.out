@@ -3,6 +3,7 @@ PREHOOK: query: -- SORT_QUERY_RESULTS
 CREATE TABLE dest_j1(key INT, value STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@dest_j1
 POSTHOOK: query: -- SORT_QUERY_RESULTS
 
 CREATE TABLE dest_j1(key INT, value STRING) STORED AS TEXTFILE
@@ -1136,6 +1137,7 @@ PREHOOK: query: -- verify that INNER is a non-reserved word for backwards compat
 create table inner(i int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@inner
 POSTHOOK: query: -- verify that INNER is a non-reserved word for backwards compatibility
 create table inner(i int)
 POSTHOOK: type: CREATETABLE
@@ -1152,6 +1154,7 @@ POSTHOOK: Input: default@inner
 PREHOOK: query: create table i(inner int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@i
 POSTHOOK: query: create table i(inner int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

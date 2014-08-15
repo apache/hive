@@ -1,6 +1,7 @@
 PREHOOK: query: CREATE TABLE tmpT1(key STRING, val STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@tmpT1
 POSTHOOK: query: CREATE TABLE tmpT1(key STRING, val STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -17,6 +18,7 @@ PREHOOK: query: -- testing skew on other data types - int
 CREATE TABLE T1(key INT, val STRING) SKEWED BY (key) ON ((2))
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@T1
 POSTHOOK: query: -- testing skew on other data types - int
 CREATE TABLE T1(key INT, val STRING) SKEWED BY (key) ON ((2))
 POSTHOOK: type: CREATETABLE
@@ -35,6 +37,7 @@ POSTHOOK: Lineage: t1.val SIMPLE [(tmpt1)tmpt1.FieldSchema(name:val, type:string
 PREHOOK: query: CREATE TABLE tmpT2(key STRING, val STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@tmpT2
 POSTHOOK: query: CREATE TABLE tmpT2(key STRING, val STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -50,6 +53,7 @@ POSTHOOK: Output: default@tmpt2
 PREHOOK: query: CREATE TABLE T2(key INT, val STRING) SKEWED BY (key) ON ((3))
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@T2
 POSTHOOK: query: CREATE TABLE T2(key INT, val STRING) SKEWED BY (key) ON ((3))
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

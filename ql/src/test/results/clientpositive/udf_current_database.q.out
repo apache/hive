@@ -50,12 +50,16 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 default
 PREHOOK: query: create database xxx
 PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:xxx
 POSTHOOK: query: create database xxx
 POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:xxx
 PREHOOK: query: use xxx
 PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:xxx
 POSTHOOK: query: use xxx
 POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:xxx
 PREHOOK: query: explain
 select current_database()
 PREHOOK: type: QUERY
@@ -103,8 +107,10 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 xxx
 PREHOOK: query: use default
 PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:default
 POSTHOOK: query: use default
 POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:default
 PREHOOK: query: explain
 select current_database()
 PREHOOK: type: QUERY
@@ -140,8 +146,10 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 default
 PREHOOK: query: use xxx
 PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:xxx
 POSTHOOK: query: use xxx
 POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:xxx
 PREHOOK: query: explain
 select current_database()
 PREHOOK: type: QUERY

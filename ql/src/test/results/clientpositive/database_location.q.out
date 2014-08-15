@@ -1,7 +1,9 @@
 PREHOOK: query: CREATE DATABASE db1
 PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:db1
 POSTHOOK: query: CREATE DATABASE db1
 POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:db1
 PREHOOK: query: DESCRIBE DATABASE EXTENDED db1
 PREHOOK: type: DESCDATABASE
 POSTHOOK: query: DESCRIBE DATABASE EXTENDED db1
@@ -9,11 +11,14 @@ POSTHOOK: type: DESCDATABASE
 db1		location/in/test	hive_test_user	USER	
 PREHOOK: query: USE db1
 PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:db1
 POSTHOOK: query: USE db1
 POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:db1
 PREHOOK: query: CREATE TABLE table_db1 (name STRING, value INT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:db1
+PREHOOK: Output: db1@table_db1
 POSTHOOK: query: CREATE TABLE table_db1 (name STRING, value INT)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:db1
@@ -58,11 +63,13 @@ PREHOOK: query: CREATE DATABASE db2
 COMMENT 'database 2'
 #### A masked pattern was here ####
 PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:db2
 #### A masked pattern was here ####
 POSTHOOK: query: CREATE DATABASE db2
 COMMENT 'database 2'
 #### A masked pattern was here ####
 POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:db2
 #### A masked pattern was here ####
 PREHOOK: query: DESCRIBE DATABASE EXTENDED db2
 PREHOOK: type: DESCDATABASE
@@ -71,11 +78,14 @@ POSTHOOK: type: DESCDATABASE
 db2	database 2	location/in/test	hive_test_user	USER	
 PREHOOK: query: USE db2
 PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:db2
 POSTHOOK: query: USE db2
 POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:db2
 PREHOOK: query: CREATE TABLE table_db2 (name STRING, value INT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:db2
+PREHOOK: Output: db2@table_db2
 POSTHOOK: query: CREATE TABLE table_db2 (name STRING, value INT)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:db2

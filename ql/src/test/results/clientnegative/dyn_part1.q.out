@@ -1,6 +1,7 @@
 PREHOOK: query: create table dynamic_partition (key string) partitioned by (value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@dynamic_partition
 POSTHOOK: query: create table dynamic_partition (key string) partitioned by (value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

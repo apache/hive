@@ -3,6 +3,7 @@ PREHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.20, 0.20S)
 create table nzhang_Tmp(a int, b string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@nzhang_Tmp
 POSTHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.20, 0.20S)
 
 create table nzhang_Tmp(a int, b string)
@@ -912,6 +913,7 @@ POSTHOOK: Output: default@nzhang_ctas5
 PREHOOK: query: create table nzhang_ctas6 (key string, `to` string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@nzhang_ctas6
 POSTHOOK: query: create table nzhang_ctas6 (key string, `to` string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

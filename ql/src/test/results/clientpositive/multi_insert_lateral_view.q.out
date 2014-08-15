@@ -12,6 +12,7 @@ POSTHOOK: Output: default@src_10
 PREHOOK: query: create table src_lv1 (key string, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@src_lv1
 POSTHOOK: query: create table src_lv1 (key string, value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -19,6 +20,7 @@ POSTHOOK: Output: default@src_lv1
 PREHOOK: query: create table src_lv2 (key string, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@src_lv2
 POSTHOOK: query: create table src_lv2 (key string, value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -26,6 +28,7 @@ POSTHOOK: Output: default@src_lv2
 PREHOOK: query: create table src_lv3 (key string, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@src_lv3
 POSTHOOK: query: create table src_lv3 (key string, value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -1270,6 +1273,7 @@ val_98	98.0
 PREHOOK: query: create table src_lv4 (key string, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@src_lv4
 POSTHOOK: query: create table src_lv4 (key string, value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

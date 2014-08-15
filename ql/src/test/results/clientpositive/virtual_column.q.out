@@ -351,6 +351,7 @@ POSTHOOK: Input: default@src
 PREHOOK: query: CREATE TABLE src_index_test_rc (key int, value string) STORED AS RCFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@src_index_test_rc
 POSTHOOK: query: CREATE TABLE src_index_test_rc (key int, value string) STORED AS RCFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -373,15 +374,3 @@ POSTHOOK: query: select INPUT__FILE__NAME, key, BLOCK__OFFSET__INSIDE__FILE from
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_index_test_rc
 #### A masked pattern was here ####
-PREHOOK: query: DROP TABLE src_index_test_rc
-PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@src_index_test_rc
-PREHOOK: Output: default@src_index_test_rc
-POSTHOOK: query: DROP TABLE src_index_test_rc
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@src_index_test_rc
-POSTHOOK: Output: default@src_index_test_rc
-PREHOOK: query: DROP INDEX src_index on src_index_test_rc
-PREHOOK: type: DROPINDEX
-POSTHOOK: query: DROP INDEX src_index on src_index_test_rc
-POSTHOOK: type: DROPINDEX

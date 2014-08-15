@@ -14,8 +14,10 @@ POSTHOOK: query: grant role testrole to user hrt_1
 POSTHOOK: type: GRANT_ROLE
 PREHOOK: query: create database testdb
 PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:testdb
 POSTHOOK: query: create database testdb
 POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:testdb
 #### A masked pattern was here ####
 PREHOOK: type: ALTERDATABASE_OWNER
 PREHOOK: Output: database:testdb
@@ -31,13 +33,16 @@ testdb		location/in/test	testrole	ROLE
 -- create table
 use testdb
 PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:testdb
 #### A masked pattern was here ####
 -- create table
 use testdb
 POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:testdb
 PREHOOK: query: create table foobar (foo string, bar string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:testdb
+PREHOOK: Output: testdb@foobar
 POSTHOOK: query: create table foobar (foo string, bar string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:testdb

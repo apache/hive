@@ -1,6 +1,7 @@
 PREHOOK: query: CREATE TABLE smb_bucket4_1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@smb_bucket4_1
 POSTHOOK: query: CREATE TABLE smb_bucket4_1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -8,6 +9,7 @@ POSTHOOK: Output: default@smb_bucket4_1
 PREHOOK: query: CREATE TABLE smb_bucket4_2(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@smb_bucket4_2
 POSTHOOK: query: CREATE TABLE smb_bucket4_2(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -15,6 +17,7 @@ POSTHOOK: Output: default@smb_bucket4_2
 PREHOOK: query: create table smb_join_results(k1 int, v1 string, k2 int, v2 string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@smb_join_results
 POSTHOOK: query: create table smb_join_results(k1 int, v1 string, k2 int, v2 string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -22,6 +25,7 @@ POSTHOOK: Output: default@smb_join_results
 PREHOOK: query: create table smb_join_results_empty_bigtable(k1 int, v1 string, k2 int, v2 string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@smb_join_results_empty_bigtable
 POSTHOOK: query: create table smb_join_results_empty_bigtable(k1 int, v1 string, k2 int, v2 string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -29,6 +33,7 @@ POSTHOOK: Output: default@smb_join_results_empty_bigtable
 PREHOOK: query: create table normal_join_results(k1 int, v1 string, k2 int, v2 string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@normal_join_results
 POSTHOOK: query: create table normal_join_results(k1 int, v1 string, k2 int, v2 string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

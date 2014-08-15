@@ -11,8 +11,10 @@ POSTHOOK: Input: default@src
 true	false
 PREHOOK: query: create database mydb
 PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:mydb
 POSTHOOK: query: create database mydb
 POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:mydb
 PREHOOK: query: create function mydb.func1 as 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFUpper'
 PREHOOK: type: CREATEFUNCTION
 PREHOOK: Output: database:mydb
@@ -61,8 +63,10 @@ POSTHOOK: Output: database:mydb
 POSTHOOK: Output: mydb.qtest_get_java_boolean
 PREHOOK: query: use default
 PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:default
 POSTHOOK: query: use default
 POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:default
 PREHOOK: query: -- unqualified function should resolve to one in default db
 select qtest_get_java_boolean('abc'), default.qtest_get_java_boolean('abc'), mydb.qtest_get_java_boolean('abc') from default.src limit 1
 PREHOOK: type: QUERY
@@ -76,8 +80,10 @@ POSTHOOK: Input: default@src
 NULL	NULL	ABC
 PREHOOK: query: use mydb
 PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:mydb
 POSTHOOK: query: use mydb
 POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:mydb
 PREHOOK: query: -- unqualified function should resolve to one in mydb db
 select qtest_get_java_boolean('abc'), default.qtest_get_java_boolean('abc'), mydb.qtest_get_java_boolean('abc') from default.src limit 1
 PREHOOK: type: QUERY

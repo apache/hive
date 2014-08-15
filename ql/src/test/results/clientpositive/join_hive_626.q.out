@@ -3,6 +3,7 @@ foo_c string, foo_d string) row format delimited fields terminated by ','
 stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@hive_foo
 POSTHOOK: query: create table hive_foo (foo_id int, foo_name string, foo_a string, foo_b string, 
 foo_c string, foo_d string) row format delimited fields terminated by ','
 stored as textfile
@@ -14,6 +15,7 @@ string, bar_a string, bar_b string, bar_c string, bar_d string) row format
 delimited fields terminated by ',' stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@hive_bar
 POSTHOOK: query: create table hive_bar (bar_id int, bar_0 int, foo_id int, bar_1 int, bar_name
 string, bar_a string, bar_b string, bar_c string, bar_d string) row format 
 delimited fields terminated by ',' stored as textfile
@@ -24,6 +26,7 @@ PREHOOK: query: create table hive_count (bar_id int, n int) row format delimited
 terminated by ',' stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@hive_count
 POSTHOOK: query: create table hive_count (bar_id int, n int) row format delimited fields 
 terminated by ',' stored as textfile
 POSTHOOK: type: CREATETABLE

@@ -1,9 +1,11 @@
 PREHOOK: query: -- test commands such as dfs,add,delete,compile allowed only by admin user, after following statement
 use default
 PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:default
 POSTHOOK: query: -- test commands such as dfs,add,delete,compile allowed only by admin user, after following statement
 use default
 POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:default
 PREHOOK: query: set role admin
 PREHOOK: type: SHOW_ROLES
 POSTHOOK: query: set role admin
@@ -11,6 +13,7 @@ POSTHOOK: type: SHOW_ROLES
 PREHOOK: query: create table a_table1(a int, b int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@a_table1
 POSTHOOK: query: create table a_table1(a int, b int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

@@ -3,6 +3,7 @@ PREHOOK: query: -- current user has been set (comment line before the set cmd is
 CREATE TABLE table_priv_gfail1(i int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@table_priv_gfail1
 POSTHOOK: query: -- current user has been set (comment line before the set cmd is resulting in parse error!!)
 
 CREATE TABLE table_priv_gfail1(i int)

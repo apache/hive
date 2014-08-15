@@ -1,17 +1,23 @@
 PREHOOK: query: create database source
 PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:source
 POSTHOOK: query: create database source
 POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:source
 PREHOOK: query: create database target
 PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:target
 POSTHOOK: query: create database target
 POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:target
 PREHOOK: query: create table source.src like default.src
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:source
+PREHOOK: Output: source@source.src
 POSTHOOK: query: create table source.src like default.src
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:source
+POSTHOOK: Output: source@source.src
 POSTHOOK: Output: source@src
 PREHOOK: query: load data local inpath '../../data/files/kv1.txt' overwrite into table source.src
 PREHOOK: type: LOAD
@@ -24,9 +30,11 @@ POSTHOOK: Output: source@src
 PREHOOK: query: create table source.srcpart like default.srcpart
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:source
+PREHOOK: Output: source@source.srcpart
 POSTHOOK: query: create table source.srcpart like default.srcpart
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:source
+POSTHOOK: Output: source@source.srcpart
 POSTHOOK: Output: source@srcpart
 PREHOOK: query: load data local inpath '../../data/files/kv1.txt' overwrite into table source.srcpart partition (ds='2008-04-08', hr='11')
 PREHOOK: type: LOAD

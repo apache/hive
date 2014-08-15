@@ -112,6 +112,7 @@ PREHOOK: query: -- HIVE-4116 Can't use views using map datatype.
 CREATE TABLE items (id INT, name STRING, info MAP<STRING,STRING>)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@items
 POSTHOOK: query: -- HIVE-4116 Can't use views using map datatype.
 
 CREATE TABLE items (id INT, name STRING, info MAP<STRING,STRING>)

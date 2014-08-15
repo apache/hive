@@ -4,6 +4,7 @@ PREHOOK: query: create table vsmb_bucket_1(key int, value string)
   STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@vsmb_bucket_1
 POSTHOOK: query: create table vsmb_bucket_1(key int, value string) 
   CLUSTERED BY (key) 
   SORTED BY (key) INTO 1 BUCKETS 
@@ -17,6 +18,7 @@ PREHOOK: query: create table vsmb_bucket_2(key int, value string)
   STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@vsmb_bucket_2
 POSTHOOK: query: create table vsmb_bucket_2(key int, value string) 
   CLUSTERED BY (key) 
   SORTED BY (key) INTO 1 BUCKETS 
@@ -30,6 +32,7 @@ PREHOOK: query: create table vsmb_bucket_RC(key int, value string)
   STORED AS RCFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@vsmb_bucket_RC
 POSTHOOK: query: create table vsmb_bucket_RC(key int, value string) 
   CLUSTERED BY (key) 
   SORTED BY (key) INTO 1 BUCKETS 
@@ -43,6 +46,7 @@ PREHOOK: query: create table vsmb_bucket_TXT(key int, value string)
   STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@vsmb_bucket_TXT
 POSTHOOK: query: create table vsmb_bucket_TXT(key int, value string) 
   CLUSTERED BY (key) 
   SORTED BY (key) INTO 1 BUCKETS 

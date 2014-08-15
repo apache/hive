@@ -8,6 +8,7 @@ CREATE TABLE doctors (
 STORED AS AVRO
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@doctors
 POSTHOOK: query: -- SORT_QUERY_RESULTS
 
 -- verify that we can actually read avro files

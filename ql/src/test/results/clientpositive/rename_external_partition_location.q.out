@@ -5,6 +5,7 @@ PREHOOK: query: CREATE EXTERNAL TABLE ex_table ( key INT, value STRING)
 PREHOOK: type: CREATETABLE
 #### A masked pattern was here ####
 PREHOOK: Output: database:default
+PREHOOK: Output: default@ex_table
 POSTHOOK: query: CREATE EXTERNAL TABLE ex_table ( key INT, value STRING)
     PARTITIONED BY (part STRING)
     STORED AS textfile

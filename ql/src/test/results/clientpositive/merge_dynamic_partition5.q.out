@@ -3,6 +3,7 @@ PREHOOK: query: -- this is to test the case where some dynamic partitions are me
 create table srcpart_merge_dp like srcpart
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@srcpart_merge_dp
 POSTHOOK: query: -- this is to test the case where some dynamic partitions are merged and some are moved
 
 create table srcpart_merge_dp like srcpart
@@ -12,6 +13,7 @@ POSTHOOK: Output: default@srcpart_merge_dp
 PREHOOK: query: create table srcpart_merge_dp_rc like srcpart
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@srcpart_merge_dp_rc
 POSTHOOK: query: create table srcpart_merge_dp_rc like srcpart
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -27,6 +29,7 @@ POSTHOOK: Output: default@srcpart_merge_dp_rc
 PREHOOK: query: create table merge_dynamic_part like srcpart
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@merge_dynamic_part
 POSTHOOK: query: create table merge_dynamic_part like srcpart
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

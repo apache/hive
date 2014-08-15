@@ -5,6 +5,7 @@ POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table tstsrcpart like srcpart
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@tstsrcpart
 POSTHOOK: query: create table tstsrcpart like srcpart
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -86,6 +87,7 @@ POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table tst1 (key string, value string) partitioned by (a string, b string, c string, d string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@tst1
 POSTHOOK: query: create table tst1 (key string, value string) partitioned by (a string, b string, c string, d string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

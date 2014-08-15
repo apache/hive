@@ -8,10 +8,10 @@ dfs ${system:test.dfs.mkdir} ${system:test.warehouse.dir}/repairtable/p1=a/p2=a;
 dfs ${system:test.dfs.mkdir} ${system:test.warehouse.dir}/repairtable/p1=b/p2=a;
 dfs -touchz ${system:test.warehouse.dir}/repairtable/p1=b/p2=a/datafile;
 
+MSCK TABLE default.repairtable;
+
+MSCK REPAIR TABLE default.repairtable;
+
 MSCK TABLE repairtable;
 
-MSCK REPAIR TABLE repairtable;
-
-MSCK TABLE repairtable;
-
-DROP TABLE repairtable;
+DROP TABLE default.repairtable;

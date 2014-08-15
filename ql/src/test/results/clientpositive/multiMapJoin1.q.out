@@ -1,6 +1,7 @@
 PREHOOK: query: create table smallTbl1(key string, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@smallTbl1
 POSTHOOK: query: create table smallTbl1(key string, value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -24,6 +25,7 @@ RUN: Stage-2:STATS
 PREHOOK: query: create table smallTbl2(key string, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@smallTbl2
 POSTHOOK: query: create table smallTbl2(key string, value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -47,6 +49,7 @@ RUN: Stage-2:STATS
 PREHOOK: query: create table smallTbl3(key string, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@smallTbl3
 POSTHOOK: query: create table smallTbl3(key string, value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -70,6 +73,7 @@ RUN: Stage-2:STATS
 PREHOOK: query: create table smallTbl4(key string, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@smallTbl4
 POSTHOOK: query: create table smallTbl4(key string, value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -93,6 +97,7 @@ RUN: Stage-2:STATS
 PREHOOK: query: create table bigTbl(key string, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@bigTbl
 POSTHOOK: query: create table bigTbl(key string, value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -678,6 +683,7 @@ RUN: Stage-0:DDL
 PREHOOK: query: create table bigTbl(key1 string, key2 string, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@bigTbl
 POSTHOOK: query: create table bigTbl(key1 string, key2 string, value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

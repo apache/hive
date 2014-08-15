@@ -2,6 +2,7 @@ PREHOOK: query: -- basic
 create table t1(`x+1` string, `y&y` string, `!@#$%^&*()_q` string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@t1
 POSTHOOK: query: -- basic
 create table t1(`x+1` string, `y&y` string, `!@#$%^&*()_q` string)
 POSTHOOK: type: CREATETABLE
@@ -317,6 +318,7 @@ PREHOOK: query: -- escaped back ticks
 create table t4(`x+1``` string, `y&y` string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@t4
 POSTHOOK: query: -- escaped back ticks
 create table t4(`x+1``` string, `y&y` string)
 POSTHOOK: type: CREATETABLE
