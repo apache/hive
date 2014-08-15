@@ -62,7 +62,7 @@ public class TestHiveAuthorizerCheckInvocation {
   static class MockedHiveAuthorizerFactory implements HiveAuthorizerFactory {
     @Override
     public HiveAuthorizer createHiveAuthorizer(HiveMetastoreClientFactory metastoreClientFactory,
-        HiveConf conf, HiveAuthenticationProvider authenticator) {
+        HiveConf conf, HiveAuthenticationProvider authenticator, HiveAuthzSessionContext ctx) {
       TestHiveAuthorizerCheckInvocation.mockedAuthorizer = Mockito.mock(HiveAuthorizer.class);
       return TestHiveAuthorizerCheckInvocation.mockedAuthorizer;
     }

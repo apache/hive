@@ -29,14 +29,8 @@ import org.apache.hadoop.hive.common.classification.InterfaceStability.Evolving;
 @Evolving
 public final class HiveAuthzContext {
 
-  public enum CLIENT_TYPE {
-    HIVESERVER2, HIVECLI
-  };
-
   public static class Builder {
     private String userIpAddress;
-    private String sessionString;
-    private CLIENT_TYPE clientType;
     private String commandString;
 
     /**
@@ -49,18 +43,6 @@ public final class HiveAuthzContext {
     }
     public void setUserIpAddress(String userIpAddress) {
       this.userIpAddress = userIpAddress;
-    }
-    public String getSessionString() {
-      return sessionString;
-    }
-    public void setSessionString(String sessionString) {
-      this.sessionString = sessionString;
-    }
-    public CLIENT_TYPE getClientType() {
-      return clientType;
-    }
-    public void setClientType(CLIENT_TYPE clientType) {
-      this.clientType = clientType;
     }
     public String getCommandString() {
       return commandString;
@@ -76,14 +58,10 @@ public final class HiveAuthzContext {
   }
 
   private final String userIpAddress;
-  private final String sessionString;
-  private final CLIENT_TYPE clientType;
   private final String commandString;
 
   private HiveAuthzContext(Builder builder) {
     this.userIpAddress = builder.userIpAddress;
-    this.sessionString = builder.sessionString;
-    this.clientType = builder.clientType;
     this.commandString = builder.commandString;
 
   }
@@ -92,22 +70,14 @@ public final class HiveAuthzContext {
     return userIpAddress;
   }
 
-  public String getSessionString() {
-    return sessionString;
-  }
-
-  public CLIENT_TYPE getClientType() {
-    return clientType;
-  }
-
   public String getCommandString() {
     return commandString;
   }
 
   @Override
   public String toString() {
-    return "HiveAuthzContext [userIpAddress=" + userIpAddress + ", sessionString=" + sessionString
-        + ", clientType=" + clientType + ", commandString=" + commandString + "]";
+    return "HiveAuthzContext [userIpAddress=" + userIpAddress + ", commandString=" + commandString
+        + "]";
   }
 
 }

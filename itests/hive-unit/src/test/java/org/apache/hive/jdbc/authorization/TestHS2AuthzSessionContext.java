@@ -20,52 +20,40 @@ package org.apache.hive.jdbc.authorization;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.verify;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.HashMap;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
 import org.apache.hadoop.hive.ql.security.SessionStateUserAuthenticator;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAccessControlException;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizer;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizerFactory;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzContext;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzPluginException;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzSessionContext;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveMetastoreClientFactory;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Matchers;
 import org.mockito.Mockito;
 /**
- * Test context information that gets passed to authorization api
+ * Test context information that gets passed to authorization factory
  */
-public class TestHS2AuthzContext {
+public class TestHS2AuthzSessionContext {
   private static MiniHS2 miniHS2 = null;
-  static HiveAuthorizer mockedAuthorizer;
+  private static HiveAuthzSessionContext sessionCtx;
 
   /**
-   * This factory creates a mocked HiveAuthorizer class.
-   * Use the mocked class to capture the argument passed to it in the test case.
+   * This factory captures the HiveAuthzSessionContext argument and returns mocked
+   * HiveAuthorizer class
    */
   static class MockedHiveAuthorizerFactory implements HiveAuthorizerFactory {
     @Override
     public HiveAuthorizer createHiveAuthorizer(HiveMetastoreClientFactory metastoreClientFactory,
         HiveConf conf, HiveAuthenticationProvider authenticator, HiveAuthzSessionContext ctx) {
-      TestHS2AuthzContext.mockedAuthorizer = Mockito.mock(HiveAuthorizer.class);
-      return TestHS2AuthzContext.mockedAuthorizer;
+      TestHS2AuthzSessionContext.sessionCtx = ctx;
+      HiveAuthorizer mockedAuthorizer = Mockito.mock(HiveAuthorizer.class);
+      return mockedAuthorizer;
     }
   }
 
@@ -91,42 +79,10 @@ public class TestHS2AuthzContext {
   }
 
   @Test
-  public void testAuthzContextContentsDriverCmd() throws Exception {
-    String cmd = "show tables";
-    verifyContextContents(cmd, cmd);
-  }
-
-  @Test
-  public void testAuthzContextContentsCmdProcessorCmd() throws Exception {
-    verifyContextContents("dfs -ls /", "-ls /");
-  }
-
-  private void verifyContextContents(final String cmd, String ctxCmd) throws SQLException,
-      HiveAuthzPluginException, HiveAccessControlException {
-    Connection hs2Conn = getConnection("user1");
-    Statement stmt = hs2Conn.createStatement();
-
-    stmt.execute(cmd);
-    stmt.close();
-    hs2Conn.close();
-
-    ArgumentCaptor<HiveAuthzContext> contextCapturer = ArgumentCaptor
-        .forClass(HiveAuthzContext.class);
-
-    verify(mockedAuthorizer).checkPrivileges(any(HiveOperationType.class),
-        Matchers.anyListOf(HivePrivilegeObject.class),
-        Matchers.anyListOf(HivePrivilegeObject.class), contextCapturer.capture());
-
-    HiveAuthzContext context = contextCapturer.getValue();
-
-    assertEquals("Command ", ctxCmd, context.getCommandString());
-    assertTrue("ip address pattern check", context.getIpAddress().contains("."));
-    // ip address size check - check for something better than non zero
-    assertTrue("ip address size check", context.getIpAddress().length() > 7);
-  }
-
-  private Connection getConnection(String userName) throws SQLException {
-    return DriverManager.getConnection(miniHS2.getJdbcURL(), userName, "bar");
+  public void testAuthzSessionContextContents() throws Exception {
+    // session string is supposed to be unique, so its got to be of some reasonable size
+    assertTrue("session string size check", sessionCtx.getSessionString().length() > 10);
+    assertEquals("Client type ", HiveAuthzSessionContext.CLIENT_TYPE.HIVESERVER2, sessionCtx.getClientType());
   }
 
 }
