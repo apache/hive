@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.exec.spark;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorUtils;
-import org.apache.hadoop.hive.ql.exec.mr.ExecReducer;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.mapred.Reporter;
@@ -32,7 +31,7 @@ import java.util.Iterator;
 
 public class HiveReduceFunctionResultList extends
     HiveBaseFunctionResultList<Tuple2<BytesWritable, Iterable<BytesWritable>>> {
-  private final ExecReducer reducer;
+  private final SparkReduceRecordHandler reduceRecordHandler;
 
   /**
    * Instantiate result set Iterable for Reduce function output.
@@ -42,16 +41,16 @@ public class HiveReduceFunctionResultList extends
    */
   public HiveReduceFunctionResultList(Configuration conf,
       Iterator<Tuple2<BytesWritable, Iterable<BytesWritable>>> inputIterator,
-      ExecReducer reducer) {
+    SparkReduceRecordHandler reducer) {
     super(conf, inputIterator);
-    this.reducer = reducer;
+    this.reduceRecordHandler = reducer;
     setOutputCollector();
   }
 
   @Override
   protected void processNextRecord(Tuple2<BytesWritable, Iterable<BytesWritable>> inputRecord)
       throws IOException {
-    reducer.reduce(inputRecord._1(), inputRecord._2().iterator(), this, Reporter.NULL);
+    reduceRecordHandler.processRow(inputRecord._1(), inputRecord._2().iterator());
   }
 
   @Override
@@ -61,13 +60,13 @@ public class HiveReduceFunctionResultList extends
 
   @Override
   protected void closeRecordProcessor() {
-    reducer.close();
+    reduceRecordHandler.close();
   }
 
   private void setOutputCollector() {
-    if (reducer != null && reducer.getReducer() != null) {
+    if (reduceRecordHandler != null && reduceRecordHandler.getReducer() != null) {
       OperatorUtils.setChildrenCollector(
-          Arrays.<Operator<? extends OperatorDesc>>asList(reducer.getReducer()), this);
+          Arrays.<Operator<? extends OperatorDesc>>asList(reduceRecordHandler.getReducer()), this);
     }
   }
 }

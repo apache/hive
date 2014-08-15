@@ -48,8 +48,10 @@ BytesWritable, BytesWritable> {
       jobConf.set("mapred.reducer.class", ExecReducer.class.getName());
     }
 
-    ExecReducer reducer = new ExecReducer();
-    reducer.configure(jobConf);
-    return new HiveReduceFunctionResultList(jobConf, it, reducer);
+    SparkReduceRecordHandler reducerRecordhandler = new SparkReduceRecordHandler();
+    HiveReduceFunctionResultList result = new HiveReduceFunctionResultList(jobConf, it, reducerRecordhandler);
+    reducerRecordhandler.init(jobConf, result, Reporter.NULL);
+
+    return result;
   }
 }
