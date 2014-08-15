@@ -1,6 +1,7 @@
 PREHOOK: query: create table hive_test_smb_bucket1 (key int, value string) partitioned by (ds string) clustered by (key) sorted by (key) into 2 buckets
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@hive_test_smb_bucket1
 POSTHOOK: query: create table hive_test_smb_bucket1 (key int, value string) partitioned by (ds string) clustered by (key) sorted by (key) into 2 buckets
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -8,6 +9,7 @@ POSTHOOK: Output: default@hive_test_smb_bucket1
 PREHOOK: query: create table hive_test_smb_bucket2 (key int, value string) partitioned by (ds string) clustered by (key) sorted by (key) into 2 buckets
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@hive_test_smb_bucket2
 POSTHOOK: query: create table hive_test_smb_bucket2 (key int, value string) partitioned by (ds string) clustered by (key) sorted by (key) into 2 buckets
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

@@ -1,6 +1,7 @@
 PREHOOK: query: CREATE TABLE tmp_pyang_lv (inputs string) STORED AS RCFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@tmp_pyang_lv
 POSTHOOK: query: CREATE TABLE tmp_pyang_lv (inputs string) STORED AS RCFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -581,6 +582,7 @@ POSTHOOK: Input: default@tmp_pyang_lv
 PREHOOK: query: CREATE TABLE tmp_pyang_src_rcfile (key string, value array<string>) STORED AS RCFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@tmp_pyang_src_rcfile
 POSTHOOK: query: CREATE TABLE tmp_pyang_src_rcfile (key string, value array<string>) STORED AS RCFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

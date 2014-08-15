@@ -12,6 +12,7 @@ ROW FORMAT DELIMITED
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@DECIMAL_4_1
 POSTHOOK: query: CREATE TABLE DECIMAL_4_1(key decimal(35,25), value int) 
 ROW FORMAT DELIMITED
    FIELDS TERMINATED BY ' '
@@ -23,6 +24,7 @@ PREHOOK: query: CREATE TABLE DECIMAL_4_2(key decimal(35,25), value decimal(35,25
 STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@DECIMAL_4_2
 POSTHOOK: query: CREATE TABLE DECIMAL_4_2(key decimal(35,25), value decimal(35,25)) 
 STORED AS ORC
 POSTHOOK: type: CREATETABLE

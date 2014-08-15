@@ -1,7 +1,9 @@
 PREHOOK: query: create database lockneg9
 PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:lockneg9
 POSTHOOK: query: create database lockneg9
 POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:lockneg9
 PREHOOK: query: lock database lockneg9 shared
 PREHOOK: type: LOCKDATABASE
 POSTHOOK: query: lock database lockneg9 shared

@@ -38,6 +38,7 @@ TBLPROPERTIES ('avro.schema.literal'='{
 }')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@doctors4
 POSTHOOK: query: -- SORT_QUERY_RESULTS
 
 -- verify that new joins bring in correct schemas (including evolved schemas)
@@ -127,6 +128,7 @@ TBLPROPERTIES ('avro.schema.literal'='{
 }')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@episodes
 POSTHOOK: query: CREATE TABLE episodes
 ROW FORMAT
 SERDE 'org.apache.hadoop.hive.serde2.avro.AvroSerDe'

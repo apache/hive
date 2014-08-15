@@ -6,6 +6,7 @@ lines terminated by '\n'
 stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@impressions
 POSTHOOK: query: -- Delimiter test, taken from delimiter.q
 create temporary table impressions (imp string, msg string)
 row format delimited
@@ -72,6 +73,7 @@ with serdeproperties (
 stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@date_serde_regex
 POSTHOOK: query: -- Try different SerDe formats, taken from date_serde.q
 
 --
@@ -274,6 +276,7 @@ create temporary table date_serde_lb (
 )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@date_serde_lb
 POSTHOOK: query: --
 -- LazyBinary
 --
@@ -331,6 +334,7 @@ create temporary table date_serde_ls (
 )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@date_serde_ls
 POSTHOOK: query: --
 -- LazySimple
 --
@@ -388,6 +392,7 @@ create temporary table date_serde_c (
 ) stored as rcfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@date_serde_c
 POSTHOOK: query: --
 -- Columnar
 --
@@ -445,6 +450,7 @@ create temporary table date_serde_lbc (
 ) stored as rcfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@date_serde_lbc
 POSTHOOK: query: --
 -- LazyBinaryColumnar
 --
@@ -502,6 +508,7 @@ create temporary table date_serde_orc (
 ) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@date_serde_orc
 POSTHOOK: query: --
 -- ORC
 --

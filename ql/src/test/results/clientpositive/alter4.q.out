@@ -1,6 +1,7 @@
 PREHOOK: query: CREATE TABLE set_bucketing_test (key INT, value STRING) CLUSTERED BY (key) INTO 10 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@set_bucketing_test
 POSTHOOK: query: CREATE TABLE set_bucketing_test (key INT, value STRING) CLUSTERED BY (key) INTO 10 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -60,20 +61,25 @@ PREHOOK: query: -- with non-default Database
 
 CREATE DATABASE alter4_db
 PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:alter4_db
 POSTHOOK: query: -- with non-default Database
 
 CREATE DATABASE alter4_db
 POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:alter4_db
 PREHOOK: query: USE alter4_db
 PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:alter4_db
 POSTHOOK: query: USE alter4_db
 POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:alter4_db
 PREHOOK: query: SHOW TABLES
 PREHOOK: type: SHOWTABLES
 POSTHOOK: query: SHOW TABLES
 POSTHOOK: type: SHOWTABLES
 PREHOOK: query: CREATE TABLE set_bucketing_test (key INT, value STRING) CLUSTERED BY (key) INTO 10 BUCKETS
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: alter4_db@set_bucketing_test
 PREHOOK: Output: database:alter4_db
 POSTHOOK: query: CREATE TABLE set_bucketing_test (key INT, value STRING) CLUSTERED BY (key) INTO 10 BUCKETS
 POSTHOOK: type: CREATETABLE
@@ -117,8 +123,10 @@ POSTHOOK: Input: alter4_db@set_bucketing_test
 POSTHOOK: Output: alter4_db@set_bucketing_test
 PREHOOK: query: USE default
 PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:default
 POSTHOOK: query: USE default
 POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:default
 PREHOOK: query: DROP DATABASE alter4_db
 PREHOOK: type: DROPDATABASE
 PREHOOK: Input: database:alter4_db

@@ -15,6 +15,7 @@ OUTPUTFORMAT 'org.apache.hadoop.hive.hbase.HiveHFileOutputFormat'
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@hbsort
 POSTHOOK: query: -- this is a dummy table used for controlling how the HFiles are
 -- created
 create table hbsort(key string, val string, val2 string)
@@ -39,6 +40,7 @@ outputformat
 PREHOOK: type: CREATETABLE
 #### A masked pattern was here ####
 PREHOOK: Output: database:default
+PREHOOK: Output: default@hbpartition
 POSTHOOK: query: -- this is a dummy table used for controlling how the input file
 -- for TotalOrderPartitioner is created
 create table hbpartition(part_break string)

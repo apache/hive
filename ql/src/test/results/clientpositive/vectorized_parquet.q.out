@@ -7,6 +7,7 @@ PREHOOK: query: create table if not exists alltypes_parquet (
   cstring1 string) stored as parquet
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@alltypes_parquet
 POSTHOOK: query: create table if not exists alltypes_parquet (
   cint int, 
   ctinyint tinyint, 

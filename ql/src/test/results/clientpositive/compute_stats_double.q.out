@@ -1,6 +1,7 @@
 PREHOOK: query: create table tab_double(a double)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@tab_double
 POSTHOOK: query: create table tab_double(a double)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

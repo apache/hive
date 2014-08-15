@@ -1,0 +1,109 @@
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+-- verify that we can actually read avro files
+CREATE TABLE doctors (
+  number int,
+  first_name string,
+  last_name string)
+STORED AS AVRO
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@doctors
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+-- verify that we can actually read avro files
+CREATE TABLE doctors (
+  number int,
+  first_name string,
+  last_name string)
+STORED AS AVRO
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@doctors
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' INTO TABLE doctors
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@doctors
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' INTO TABLE doctors
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@doctors
+PREHOOK: query: CREATE TABLE doctors_copy (
+  number int,
+  first_name string)
+STORED AS AVRO
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@doctors_copy
+POSTHOOK: query: CREATE TABLE doctors_copy (
+  number int,
+  first_name string)
+STORED AS AVRO
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@doctors_copy
+PREHOOK: query: INSERT INTO TABLE doctors_copy SELECT number, first_name FROM doctors
+PREHOOK: type: QUERY
+PREHOOK: Input: default@doctors
+PREHOOK: Output: default@doctors_copy
+POSTHOOK: query: INSERT INTO TABLE doctors_copy SELECT number, first_name FROM doctors
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@doctors
+POSTHOOK: Output: default@doctors_copy
+POSTHOOK: Lineage: doctors_copy.first_name SIMPLE [(doctors)doctors.FieldSchema(name:first_name, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: doctors_copy.number SIMPLE [(doctors)doctors.FieldSchema(name:number, type:int, comment:from deserializer), ]
+PREHOOK: query: ALTER TABLE doctors_copy ADD COLUMNS (last_name string)
+PREHOOK: type: ALTERTABLE_ADDCOLS
+PREHOOK: Input: default@doctors_copy
+PREHOOK: Output: default@doctors_copy
+POSTHOOK: query: ALTER TABLE doctors_copy ADD COLUMNS (last_name string)
+POSTHOOK: type: ALTERTABLE_ADDCOLS
+POSTHOOK: Input: default@doctors_copy
+POSTHOOK: Output: default@doctors_copy
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' INTO TABLE doctors_copy
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@doctors_copy
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' INTO TABLE doctors_copy
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@doctors_copy
+PREHOOK: query: DESCRIBE doctors_copy
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@doctors_copy
+POSTHOOK: query: DESCRIBE doctors_copy
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@doctors_copy
+number              	int                 	from deserializer   
+first_name          	string              	from deserializer   
+last_name           	string              	from deserializer   
+PREHOOK: query: SELECT * FROM doctors_copy
+PREHOOK: type: QUERY
+PREHOOK: Input: default@doctors_copy
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM doctors_copy
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@doctors_copy
+#### A masked pattern was here ####
+1	William	Hartnell
+1	William	NULL
+10	David	NULL
+10	David	Tennant
+11	Matt	NULL
+11	Matt	Smith
+2	Patrick	NULL
+2	Patrick	Troughton
+3	Jon	NULL
+3	Jon	Pertwee
+4	Tom	Baker
+4	Tom	NULL
+5	Peter	Davison
+5	Peter	NULL
+6	Colin	Baker
+6	Colin	NULL
+7	Sylvester	McCoy
+7	Sylvester	NULL
+8	Paul	McGann
+8	Paul	NULL
+9	Christopher	Eccleston
+9	Christopher	NULL

@@ -3,6 +3,7 @@ PREHOOK: query: -- SORT_QUERY_RESULTS
 create table src0 like src
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@src0
 POSTHOOK: query: -- SORT_QUERY_RESULTS
 
 create table src0 like src

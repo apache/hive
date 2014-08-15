@@ -17,6 +17,7 @@ POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table gl_src1 (key int, value string) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@gl_src1
 POSTHOOK: query: create table gl_src1 (key int, value string) stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -1120,6 +1121,7 @@ PREHOOK: query: -- empty table
 create table gl_src2 (key int, value string) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@gl_src2
 POSTHOOK: query: -- empty table
 create table gl_src2 (key int, value string) stored as textfile
 POSTHOOK: type: CREATETABLE
@@ -1137,6 +1139,7 @@ PREHOOK: query: -- partition
 create table gl_src_part1 (key int, value string) partitioned by (p string) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@gl_src_part1
 POSTHOOK: query: -- partition
 create table gl_src_part1 (key int, value string) partitioned by (p string) stored as textfile
 POSTHOOK: type: CREATETABLE

@@ -1,6 +1,7 @@
 PREHOOK: query: create table exim_department ( dep_id int) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@exim_department
 POSTHOOK: query: create table exim_department ( dep_id int) stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

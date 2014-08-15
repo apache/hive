@@ -9,6 +9,7 @@ CREATE TABLE date_udf_flight (
 )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@date_udf_flight
 POSTHOOK: query: -- Test timestamp functions in vectorized mode to verify they run correctly end-to-end.
 
 CREATE TABLE date_udf_flight (
@@ -35,6 +36,7 @@ PREHOOK: query: CREATE TABLE date_udf_flight_orc (
 ) STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@date_udf_flight_orc
 POSTHOOK: query: CREATE TABLE date_udf_flight_orc (
   fl_date DATE,
   fl_time TIMESTAMP

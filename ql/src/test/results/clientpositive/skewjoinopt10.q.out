@@ -1,6 +1,7 @@
 PREHOOK: query: CREATE TABLE T1(key STRING, value STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@T1
 POSTHOOK: query: CREATE TABLE T1(key STRING, value STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -20,6 +21,7 @@ POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table array_valued_T1 (key string, value array<string>) SKEWED BY (key) ON ((8))
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@array_valued_T1
 POSTHOOK: query: create table array_valued_T1 (key string, value array<string>) SKEWED BY (key) ON ((8))
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

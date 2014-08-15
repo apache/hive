@@ -1,6 +1,7 @@
 PREHOOK: query: create table dual(a string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@dual
 POSTHOOK: query: create table dual(a string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -12,6 +13,7 @@ POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table test_tbl (id string,name string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@test_tbl
 POSTHOOK: query: create table test_tbl (id string,name string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

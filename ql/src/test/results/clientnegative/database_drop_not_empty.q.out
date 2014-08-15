@@ -6,24 +6,31 @@ default
 PREHOOK: query: -- Try to drop a non-empty database
 CREATE DATABASE test_db
 PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:test_db
 POSTHOOK: query: -- Try to drop a non-empty database
 CREATE DATABASE test_db
 POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:test_db
 PREHOOK: query: USE test_db
 PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:test_db
 POSTHOOK: query: USE test_db
 POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:test_db
 PREHOOK: query: CREATE TABLE t(a INT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:test_db
+PREHOOK: Output: test_db@t
 POSTHOOK: query: CREATE TABLE t(a INT)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:test_db
 POSTHOOK: Output: test_db@t
 PREHOOK: query: USE default
 PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:default
 POSTHOOK: query: USE default
 POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:default
 PREHOOK: query: DROP DATABASE test_db
 PREHOOK: type: DROPDATABASE
 PREHOOK: Input: database:test_db

@@ -408,6 +408,7 @@ View Expanded Text: 	SELECT `_c0` AS `valoo` FROM (SELECT upper(`src`.`value`) F
 PREHOOK: query: CREATE TABLE table1 (key int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@table1
 POSTHOOK: query: CREATE TABLE table1 (key int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

@@ -3,6 +3,7 @@ PREHOOK: query: -- SORT_QUERY_RESULTS
 CREATE TABLE dest_j1(key STRING, cnt1 INT, cnt2 INT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@dest_j1
 POSTHOOK: query: -- SORT_QUERY_RESULTS
 
 CREATE TABLE dest_j1(key STRING, cnt1 INT, cnt2 INT)

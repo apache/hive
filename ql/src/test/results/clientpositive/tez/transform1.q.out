@@ -1,6 +1,7 @@
 PREHOOK: query: create table transform1_t1(a string, b string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@transform1_t1
 POSTHOOK: query: create table transform1_t1(a string, b string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -61,6 +62,7 @@ POSTHOOK: Input: default@transform1_t1
 PREHOOK: query: create table transform1_t2(col array<int>)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@transform1_t2
 POSTHOOK: query: create table transform1_t2(col array<int>)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

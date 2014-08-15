@@ -10,6 +10,7 @@ CREATE TABLE T1(key STRING, val STRING)
 SKEWED BY (key) ON ((2)) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@T1
 POSTHOOK: query: -- This is to test the union->selectstar->filesink and skewjoin optimization
 -- Union of 2 map-reduce subqueries is performed for the skew join
 -- There is no need to write the temporary results of the sub-queries, and then read them 
@@ -35,6 +36,7 @@ PREHOOK: query: CREATE TABLE T2(key STRING, val STRING)
 SKEWED BY (key) ON ((3)) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@T2
 POSTHOOK: query: CREATE TABLE T2(key STRING, val STRING)
 SKEWED BY (key) ON ((3)) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
@@ -325,6 +327,7 @@ NULL	NULL	5	15
 PREHOOK: query: create table DEST1(key1 STRING, val1 STRING, key2 STRING, val2 STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@DEST1
 POSTHOOK: query: create table DEST1(key1 STRING, val1 STRING, key2 STRING, val2 STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

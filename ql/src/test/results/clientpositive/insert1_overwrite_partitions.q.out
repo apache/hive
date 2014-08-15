@@ -1,6 +1,7 @@
 PREHOOK: query: CREATE TABLE sourceTable (one string,two string) PARTITIONED BY (ds string,hr string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@sourceTable
 POSTHOOK: query: CREATE TABLE sourceTable (one string,two string) PARTITIONED BY (ds string,hr string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -26,6 +27,7 @@ POSTHOOK: Output: default@sourcetable@ds=2011-11-11/hr=12
 PREHOOK: query: CREATE TABLE destinTable (one string,two string) PARTITIONED BY (ds string,hr string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@destinTable
 POSTHOOK: query: CREATE TABLE destinTable (one string,two string) PARTITIONED BY (ds string,hr string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -159,6 +161,7 @@ POSTHOOK: Output: default@destintable
 PREHOOK: query: CREATE TABLE destinTable (one string,two string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@destinTable
 POSTHOOK: query: CREATE TABLE destinTable (one string,two string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

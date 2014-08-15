@@ -4,6 +4,7 @@ PREHOOK: query: -- union case: 1 subquery is a map-reduce job, different inputs 
 create table tmptable(key string, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@tmptable
 POSTHOOK: query: -- union case: 1 subquery is a map-reduce job, different inputs for sub-queries, followed by filesink
 
 

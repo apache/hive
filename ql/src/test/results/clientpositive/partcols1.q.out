@@ -1,6 +1,7 @@
 PREHOOK: query: create table test1(col1 string) partitioned by (partitionId int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@test1
 POSTHOOK: query: create table test1(col1 string) partitioned by (partitionId int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

@@ -68,6 +68,7 @@ public class HiveConf extends Configuration {
 
 
   private static final Map<String, ConfVars> vars = new HashMap<String, ConfVars>();
+  private static final Map<String, ConfVars> metaConfs = new HashMap<String, ConfVars>();
   private final List<String> restrictList = new ArrayList<String>();
 
   private boolean isWhiteListRestrictionEnabled = false;
@@ -153,6 +154,19 @@ public class HiveConf extends Configuration {
       HiveConf.ConfVars.HIVE_TXN_MAX_OPEN_BATCH,
       };
 
+  /**
+   * User configurable Metastore vars
+   */
+  public static final HiveConf.ConfVars[] metaConfVars = {
+      HiveConf.ConfVars.METASTORE_TRY_DIRECT_SQL,
+      HiveConf.ConfVars.METASTORE_TRY_DIRECT_SQL_DDL
+  };
+
+  static {
+    for (ConfVars confVar : metaConfVars) {
+      metaConfs.put(confVar.varname, confVar);
+    }
+  }
 
   /**
    * dbVars are the parameters can be set per database. If these
@@ -2030,6 +2044,10 @@ public class HiveConf extends Configuration {
 
   public static ConfVars getConfVars(String name) {
     return vars.get(name);
+  }
+
+  public static ConfVars getMetaConf(String name) {
+    return metaConfs.get(name);
   }
 
   public String getVar(ConfVars var) {

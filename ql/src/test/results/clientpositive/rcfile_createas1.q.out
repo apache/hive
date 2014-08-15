@@ -10,6 +10,7 @@ PREHOOK: query: CREATE TABLE rcfile_createas1a (key INT, value STRING)
     PARTITIONED BY (ds string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@rcfile_createas1a
 POSTHOOK: query: CREATE TABLE rcfile_createas1a (key INT, value STRING)
     PARTITIONED BY (ds string)
 POSTHOOK: type: CREATETABLE

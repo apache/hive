@@ -2,6 +2,7 @@ PREHOOK: query: --HIVE-3699 Multiple insert overwrite into multiple tables query
 create table e1 (count int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@e1
 POSTHOOK: query: --HIVE-3699 Multiple insert overwrite into multiple tables query stores same results in all tables
 create table e1 (count int)
 POSTHOOK: type: CREATETABLE
@@ -10,6 +11,7 @@ POSTHOOK: Output: default@e1
 PREHOOK: query: create table e2 (percentile double)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@e2
 POSTHOOK: query: create table e2 (percentile double)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

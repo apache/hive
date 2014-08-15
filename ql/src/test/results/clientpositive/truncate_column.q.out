@@ -4,6 +4,7 @@ CREATE TABLE test_tab (key STRING, value STRING)
 ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe' STORED AS RCFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@test_tab
 POSTHOOK: query: -- Tests truncating column(s) from a table, also tests that stats are updated
 
 CREATE TABLE test_tab (key STRING, value STRING) 
@@ -496,6 +497,7 @@ PREHOOK: query: -- Test truncating a partition
 CREATE TABLE test_tab_part (key STRING, value STRING) PARTITIONED BY (part STRING) STORED AS RCFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@test_tab_part
 POSTHOOK: query: -- Test truncating a partition
 CREATE TABLE test_tab_part (key STRING, value STRING) PARTITIONED BY (part STRING) STORED AS RCFILE
 POSTHOOK: type: CREATETABLE

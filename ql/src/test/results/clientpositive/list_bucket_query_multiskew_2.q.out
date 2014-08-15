@@ -18,6 +18,7 @@ skewed by (key, value) on (('484','val_484'),('238','val_238'))
 stored as DIRECTORIES
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@fact_daily
 POSTHOOK: query: -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)	
 -- SORT_QUERY_RESULTS
 

@@ -1,7 +1,9 @@
 PREHOOK: query: CREATE DATABASE hbaseDB
 PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:hbaseDB
 POSTHOOK: query: CREATE DATABASE hbaseDB
 POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:hbaseDB
 PREHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.20, 0.20S)
 -- Hadoop 0.23 changes the behavior FsShell on Exit Codes
 -- In Hadoop 0.20
@@ -18,6 +20,7 @@ WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key,cf:string")
 TBLPROPERTIES ("hbase.table.name" = "hbase_table_0")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:hbasedb
+PREHOOK: Output: hbaseDB@hbaseDB.hbase_table_0
 POSTHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.20, 0.20S)
 -- Hadoop 0.23 changes the behavior FsShell on Exit Codes
 -- In Hadoop 0.20
@@ -34,6 +37,7 @@ WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key,cf:string")
 TBLPROPERTIES ("hbase.table.name" = "hbase_table_0")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:hbasedb
+POSTHOOK: Output: hbaseDB@hbaseDB.hbase_table_0
 POSTHOOK: Output: hbaseDB@hbase_table_0
 Found 3 items
 #### A masked pattern was here ####

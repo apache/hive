@@ -1,6 +1,7 @@
 PREHOOK: query: create table alter1(a int, b int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@alter1
 POSTHOOK: query: create table alter1(a int, b int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -203,20 +204,25 @@ PREHOOK: query: -- With non-default Database
 
 CREATE DATABASE alter1_db
 PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:alter1_db
 POSTHOOK: query: -- With non-default Database
 
 CREATE DATABASE alter1_db
 POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:alter1_db
 PREHOOK: query: USE alter1_db
 PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:alter1_db
 POSTHOOK: query: USE alter1_db
 POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:alter1_db
 PREHOOK: query: SHOW TABLES
 PREHOOK: type: SHOWTABLES
 POSTHOOK: query: SHOW TABLES
 POSTHOOK: type: SHOWTABLES
 PREHOOK: query: CREATE TABLE alter1(a INT, b INT)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: alter1_db@alter1
 PREHOOK: Output: database:alter1_db
 POSTHOOK: query: CREATE TABLE alter1(a INT, b INT)
 POSTHOOK: type: CREATETABLE
@@ -403,8 +409,10 @@ POSTHOOK: Input: alter1_db@alter1
 POSTHOOK: Output: alter1_db@alter1
 PREHOOK: query: USE default
 PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:default
 POSTHOOK: query: USE default
 POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:default
 PREHOOK: query: DROP DATABASE alter1_db
 PREHOOK: type: DROPDATABASE
 PREHOOK: Input: database:alter1_db

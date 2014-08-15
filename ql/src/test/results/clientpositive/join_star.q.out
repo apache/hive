@@ -1,6 +1,7 @@
 PREHOOK: query: create table fact(m1 int, m2 int, d1 int, d2 int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@fact
 POSTHOOK: query: create table fact(m1 int, m2 int, d1 int, d2 int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -8,6 +9,7 @@ POSTHOOK: Output: default@fact
 PREHOOK: query: create table dim1(f1 int, f2 int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@dim1
 POSTHOOK: query: create table dim1(f1 int, f2 int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -15,6 +17,7 @@ POSTHOOK: Output: default@dim1
 PREHOOK: query: create table dim2(f3 int, f4 int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@dim2
 POSTHOOK: query: create table dim2(f3 int, f4 int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -22,6 +25,7 @@ POSTHOOK: Output: default@dim2
 PREHOOK: query: create table dim3(f5 int, f6 int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@dim3
 POSTHOOK: query: create table dim3(f5 int, f6 int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -29,6 +33,7 @@ POSTHOOK: Output: default@dim3
 PREHOOK: query: create table dim4(f7 int, f8 int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@dim4
 POSTHOOK: query: create table dim4(f7 int, f8 int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -36,6 +41,7 @@ POSTHOOK: Output: default@dim4
 PREHOOK: query: create table dim5(f9 int, f10 int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@dim5
 POSTHOOK: query: create table dim5(f9 int, f10 int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -43,6 +49,7 @@ POSTHOOK: Output: default@dim5
 PREHOOK: query: create table dim6(f11 int, f12 int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@dim6
 POSTHOOK: query: create table dim6(f11 int, f12 int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -50,6 +57,7 @@ POSTHOOK: Output: default@dim6
 PREHOOK: query: create table dim7(f13 int, f14 int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@dim7
 POSTHOOK: query: create table dim7(f13 int, f14 int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

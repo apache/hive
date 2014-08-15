@@ -18,6 +18,7 @@ PREHOOK: query: CREATE TABLE parquet_columnar_access_stage (
   FIELDS TERMINATED BY '|'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_columnar_access_stage
 POSTHOOK: query: CREATE TABLE parquet_columnar_access_stage (
     s string, 
     i int, 
@@ -35,6 +36,7 @@ PREHOOK: query: CREATE TABLE parquet_columnar_access (
   ) STORED AS PARQUET
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_columnar_access
 POSTHOOK: query: CREATE TABLE parquet_columnar_access (
     s string,
     x int,

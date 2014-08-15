@@ -1,6 +1,7 @@
 PREHOOK: query: CREATE TABLE dest_l1(key INT, value STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@dest_l1
 POSTHOOK: query: CREATE TABLE dest_l1(key INT, value STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

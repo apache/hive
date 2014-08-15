@@ -1,6 +1,7 @@
 PREHOOK: query: create table src_b3(`x+1` string, `!@#$%^&*()_q` string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@src_b3
 POSTHOOK: query: create table src_b3(`x+1` string, `!@#$%^&*()_q` string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -19,6 +20,7 @@ PREHOOK: query: -- alter partition
 create table src_p3(`x+1` string, `y&y` string) partitioned by (`!@#$%^&*()_q` string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@src_p3
 POSTHOOK: query: -- alter partition
 create table src_p3(`x+1` string, `y&y` string) partitioned by (`!@#$%^&*()_q` string)
 POSTHOOK: type: CREATETABLE

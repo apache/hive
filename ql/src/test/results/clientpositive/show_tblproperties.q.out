@@ -1,6 +1,7 @@
 PREHOOK: query: create table tmpfoo (a String)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@tmpfoo
 POSTHOOK: query: create table tmpfoo (a String)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -8,6 +9,11 @@ POSTHOOK: Output: default@tmpfoo
 PREHOOK: query: show tblproperties tmpfoo("bar")
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: show tblproperties tmpfoo("bar")
+POSTHOOK: type: SHOW_TBLPROPERTIES
+Table default.tmpfoo does not have property: bar	 
+PREHOOK: query: show tblproperties default.tmpfoo("bar")
+PREHOOK: type: SHOW_TBLPROPERTIES
+POSTHOOK: query: show tblproperties default.tmpfoo("bar")
 POSTHOOK: type: SHOW_TBLPROPERTIES
 Table default.tmpfoo does not have property: bar	 
 PREHOOK: query: alter table tmpfoo set tblproperties ("bar" = "bar value")
@@ -44,11 +50,123 @@ PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: show tblproperties tmpfoo("bar")
 POSTHOOK: type: SHOW_TBLPROPERTIES
 bar value	 
-PREHOOK: query: drop table tmpfoo
-PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@tmpfoo
-PREHOOK: Output: default@tmpfoo
-POSTHOOK: query: drop table tmpfoo
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@tmpfoo
-POSTHOOK: Output: default@tmpfoo
+PREHOOK: query: show tblproperties default.tmpfoo
+PREHOOK: type: SHOW_TBLPROPERTIES
+POSTHOOK: query: show tblproperties default.tmpfoo
+POSTHOOK: type: SHOW_TBLPROPERTIES
+COLUMN_STATS_ACCURATE	false
+bar	bar value
+#### A masked pattern was here ####
+numFiles	0
+numRows	-1
+rawDataSize	-1
+tmp	true
+totalSize	0
+#### A masked pattern was here ####
+PREHOOK: query: show tblproperties default.tmpfoo("bar")
+PREHOOK: type: SHOW_TBLPROPERTIES
+POSTHOOK: query: show tblproperties default.tmpfoo("bar")
+POSTHOOK: type: SHOW_TBLPROPERTIES
+bar value	 
+PREHOOK: query: CREATE DATABASE db1
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:db1
+POSTHOOK: query: CREATE DATABASE db1
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:db1
+PREHOOK: query: USE db1
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:db1
+POSTHOOK: query: USE db1
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:db1
+PREHOOK: query: CREATE TABLE tmpfoo (b STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:db1
+PREHOOK: Output: db1@tmpfoo
+POSTHOOK: query: CREATE TABLE tmpfoo (b STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:db1
+POSTHOOK: Output: db1@tmpfoo
+PREHOOK: query: alter table tmpfoo set tblproperties ("bar" = "bar value1")
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: db1@tmpfoo
+PREHOOK: Output: db1@tmpfoo
+POSTHOOK: query: alter table tmpfoo set tblproperties ("bar" = "bar value1")
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: db1@tmpfoo
+POSTHOOK: Output: db1@tmpfoo
+PREHOOK: query: alter table tmpfoo set tblproperties ("tmp" = "true1")
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: db1@tmpfoo
+PREHOOK: Output: db1@tmpfoo
+POSTHOOK: query: alter table tmpfoo set tblproperties ("tmp" = "true1")
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: db1@tmpfoo
+POSTHOOK: Output: db1@tmpfoo
+PREHOOK: query: -- from db1 to default db
+show tblproperties default.tmpfoo
+PREHOOK: type: SHOW_TBLPROPERTIES
+POSTHOOK: query: -- from db1 to default db
+show tblproperties default.tmpfoo
+POSTHOOK: type: SHOW_TBLPROPERTIES
+COLUMN_STATS_ACCURATE	false
+bar	bar value
+#### A masked pattern was here ####
+numFiles	0
+numRows	-1
+rawDataSize	-1
+tmp	true
+totalSize	0
+#### A masked pattern was here ####
+PREHOOK: query: show tblproperties default.tmpfoo("bar")
+PREHOOK: type: SHOW_TBLPROPERTIES
+POSTHOOK: query: show tblproperties default.tmpfoo("bar")
+POSTHOOK: type: SHOW_TBLPROPERTIES
+bar value	 
+PREHOOK: query: -- from db1 to db1
+show tblproperties tmpfoo
+PREHOOK: type: SHOW_TBLPROPERTIES
+POSTHOOK: query: -- from db1 to db1
+show tblproperties tmpfoo
+POSTHOOK: type: SHOW_TBLPROPERTIES
+COLUMN_STATS_ACCURATE	false
+bar	bar value1
+#### A masked pattern was here ####
+numFiles	0
+numRows	-1
+rawDataSize	-1
+tmp	true1
+totalSize	0
+#### A masked pattern was here ####
+PREHOOK: query: show tblproperties tmpfoo("bar")
+PREHOOK: type: SHOW_TBLPROPERTIES
+POSTHOOK: query: show tblproperties tmpfoo("bar")
+POSTHOOK: type: SHOW_TBLPROPERTIES
+bar value1	 
+PREHOOK: query: use default
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:default
+POSTHOOK: query: use default
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:default
+PREHOOK: query: -- from default to db1
+show tblproperties db1.tmpfoo
+PREHOOK: type: SHOW_TBLPROPERTIES
+POSTHOOK: query: -- from default to db1
+show tblproperties db1.tmpfoo
+POSTHOOK: type: SHOW_TBLPROPERTIES
+COLUMN_STATS_ACCURATE	false
+bar	bar value1
+#### A masked pattern was here ####
+numFiles	0
+numRows	-1
+rawDataSize	-1
+tmp	true1
+totalSize	0
+#### A masked pattern was here ####
+PREHOOK: query: show tblproperties db1.tmpfoo("bar")
+PREHOOK: type: SHOW_TBLPROPERTIES
+POSTHOOK: query: show tblproperties db1.tmpfoo("bar")
+POSTHOOK: type: SHOW_TBLPROPERTIES
+bar value1	 

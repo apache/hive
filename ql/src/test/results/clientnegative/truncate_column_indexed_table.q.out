@@ -3,6 +3,7 @@ PREHOOK: query: -- Tests truncating a column from an indexed table
 CREATE TABLE test_tab (key STRING, value STRING) STORED AS RCFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@test_tab
 POSTHOOK: query: -- Tests truncating a column from an indexed table
 
 CREATE TABLE test_tab (key STRING, value STRING) STORED AS RCFILE
@@ -21,7 +22,9 @@ POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:stri
 POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: CREATE INDEX test_tab_index ON TABLE test_tab (key) as 'COMPACT' WITH DEFERRED REBUILD
 PREHOOK: type: CREATEINDEX
+PREHOOK: Input: default@test_tab
 POSTHOOK: query: CREATE INDEX test_tab_index ON TABLE test_tab (key) as 'COMPACT' WITH DEFERRED REBUILD
 POSTHOOK: type: CREATEINDEX
+POSTHOOK: Input: default@test_tab
 POSTHOOK: Output: default@default__test_tab_test_tab_index__
 FAILED: SemanticException org.apache.hadoop.hive.ql.parse.SemanticException: Can not truncate columns from table with indexes

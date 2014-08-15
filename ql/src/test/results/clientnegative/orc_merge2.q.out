@@ -6,6 +6,7 @@ PREHOOK: query: CREATE TABLE orcfile_merge (key INT, value STRING)
     PARTITIONED BY (ds STRING, part STRING) STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@orcfile_merge
 POSTHOOK: query: CREATE TABLE orcfile_merge (key INT, value STRING)
     PARTITIONED BY (ds STRING, part STRING) STORED AS ORC
 POSTHOOK: type: CREATETABLE

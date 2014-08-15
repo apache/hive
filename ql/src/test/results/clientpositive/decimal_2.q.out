@@ -5,6 +5,7 @@ POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table decimal_2 (t decimal(18,9))
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@decimal_2
 POSTHOOK: query: create table decimal_2 (t decimal(18,9))
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

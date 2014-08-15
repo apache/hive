@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.serde2.lazy;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -29,11 +30,13 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.AbstractEncodingAwareSerDe;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.ByteStream;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeStats;
+import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -61,7 +64,7 @@ import org.apache.hadoop.io.Writable;
  * Also LazySimpleSerDe outputs typed columns instead of treating all columns as
  * String like MetadataTypedColumnsetSerDe.
  */
-public class LazySimpleSerDe extends AbstractSerDe {
+public class LazySimpleSerDe extends AbstractEncodingAwareSerDe {
 
   public static final Log LOG = LogFactory.getLog(LazySimpleSerDe.class
       .getName());
@@ -186,6 +189,8 @@ public class LazySimpleSerDe extends AbstractSerDe {
   @Override
   public void initialize(Configuration job, Properties tbl)
       throws SerDeException {
+
+    super.initialize(job, tbl);
 
     serdeParams = LazySimpleSerDe.initSerdeParams(job, tbl, getClass()
         .getName());
@@ -330,7 +335,7 @@ public class LazySimpleSerDe extends AbstractSerDe {
    * @see SerDe#deserialize(Writable)
    */
   @Override
-  public Object deserialize(Writable field) throws SerDeException {
+  public Object doDeserialize(Writable field) throws SerDeException {
     if (byteArrayRef == null) {
       byteArrayRef = new ByteArrayRef();
     }
@@ -375,7 +380,7 @@ public class LazySimpleSerDe extends AbstractSerDe {
    * @see SerDe#serialize(Object, ObjectInspector)
    */
   @Override
-  public Writable serialize(Object obj, ObjectInspector objInspector)
+  public Writable doSerialize(Object obj, ObjectInspector objInspector)
       throws SerDeException {
 
     if (objInspector.getCategory() != Category.STRUCT) {
@@ -583,5 +588,17 @@ public class LazySimpleSerDe extends AbstractSerDe {
     }
     return stats;
 
+  }
+
+  @Override
+  protected Writable transformFromUTF8(Writable blob) {
+    Text text = (Text)blob;
+    return SerDeUtils.transformTextFromUTF8(text, this.charset);
+  }
+
+  @Override
+  protected Writable transformToUTF8(Writable blob) {
+    Text text = (Text)blob;
+    return SerDeUtils.transformTextToUTF8(text, this.charset);
   }
 }

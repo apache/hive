@@ -6,6 +6,7 @@ PREHOOK: query: CREATE TABLE dec_comp(arr ARRAY<decimal(5,2)>, m MAP<String, dec
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '|' COLLECTION ITEMS TERMINATED BY ','  MAP KEYS TERMINATED by ':'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@dec_comp
 POSTHOOK: query: CREATE TABLE dec_comp(arr ARRAY<decimal(5,2)>, m MAP<String, decimal(5,2)>, s STRUCT<i:int, d:decimal(5,2)>)
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '|' COLLECTION ITEMS TERMINATED BY ','  MAP KEYS TERMINATED by ':'
 POSTHOOK: type: CREATETABLE
@@ -37,6 +38,7 @@ PREHOOK: query: CREATE TABLE parq_dec_comp(arr ARRAY<decimal(5,2)>, m MAP<String
 STORED AS PARQUET
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@parq_dec_comp
 POSTHOOK: query: CREATE TABLE parq_dec_comp(arr ARRAY<decimal(5,2)>, m MAP<String, decimal(5,2)>, s STRUCT<i:int, d:decimal(5,2)>)
 STORED AS PARQUET
 POSTHOOK: type: CREATETABLE

@@ -10,6 +10,7 @@ PREHOOK: query: create table table_desc1(key string, value string) clustered by 
 sorted by (key DESC, value DESC) into 1 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@table_desc1
 POSTHOOK: query: create table table_desc1(key string, value string) clustered by (key, value)
 sorted by (key DESC, value DESC) into 1 BUCKETS
 POSTHOOK: type: CREATETABLE
@@ -19,6 +20,7 @@ PREHOOK: query: create table table_desc2(key string, value string) clustered by 
 sorted by (key DESC, value DESC) into 1 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@table_desc2
 POSTHOOK: query: create table table_desc2(key string, value string) clustered by (key, value)
 sorted by (key DESC, value DESC) into 1 BUCKETS
 POSTHOOK: type: CREATETABLE

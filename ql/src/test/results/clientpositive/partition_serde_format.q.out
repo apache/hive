@@ -1,6 +1,7 @@
 PREHOOK: query: create table src_part_serde (key int, value string) partitioned by (ds string) stored as sequencefile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@src_part_serde
 POSTHOOK: query: create table src_part_serde (key int, value string) partitioned by (ds string) stored as sequencefile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

@@ -3,6 +3,7 @@ PREHOOK: query: -- HIVE-5056 RS has expression list for values, but it's ignored
 create table testsrc ( `key` int,`val` string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@testsrc
 POSTHOOK: query: -- HIVE-5056 RS has expression list for values, but it's ignored in MapJoinProcessor
 
 create table testsrc ( `key` int,`val` string)
@@ -24,6 +25,7 @@ POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table orderpayment_small (`dealid` int,`date` string,`time` string, `cityid` int, `userid` int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@orderpayment_small
 POSTHOOK: query: create table orderpayment_small (`dealid` int,`date` string,`time` string, `cityid` int, `userid` int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -48,6 +50,7 @@ POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table user_small( userid int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@user_small
 POSTHOOK: query: create table user_small( userid int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

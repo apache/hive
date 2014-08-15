@@ -1,7 +1,9 @@
 PREHOOK: query: use default
 PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:default
 POSTHOOK: query: use default
 POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:default
 PREHOOK: query: -- Test sort_array() UDF
 
 DESCRIBE FUNCTION sort_array
@@ -99,6 +101,7 @@ CREATE TABLE dest1 (
 ) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@dest1
 POSTHOOK: query: -- Test it against data in a table.
 CREATE TABLE dest1 (
 	tinyints ARRAY<TINYINT>,

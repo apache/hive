@@ -6,6 +6,7 @@ PREHOOK: query: CREATE TABLE table1 (
        ) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@table1
 POSTHOOK: query: CREATE TABLE table1 (
        a STRING,
        b ARRAY<STRING>,

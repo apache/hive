@@ -5,6 +5,7 @@ POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table date_1 (d date)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@date_1
 POSTHOOK: query: create table date_1 (d date)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
