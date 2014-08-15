@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.ql.exec.ObjectCacheFactory;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.mr.ExecMapper.ReportStats;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
 import org.apache.hadoop.hive.ql.exec.vector.VectorMapOperator;
 import org.apache.hadoop.hive.ql.plan.MapWork;
@@ -39,12 +40,8 @@ import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.util.StringUtils;
 
 import java.io.IOException;
-import java.lang.management.ManagementFactory;
-import java.lang.management.MemoryMXBean;
-import java.net.URLClassLoader;
-import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 
 /**
@@ -57,45 +54,22 @@ import java.util.Map;
  * - Catch and handle errors during execution of the operators.
  *
  */
-public class SparkMapRecordHandler {
+public class SparkMapRecordHandler extends SparkRecordHandler{
 
   private static final String PLAN_KEY = "__MAP_PLAN__";
   private MapOperator mo;
-  private OutputCollector oc;
-  private JobConf jc;
-  private boolean abort = false;
-  private Reporter rp;
   public static final Log l4j = LogFactory.getLog(SparkMapRecordHandler.class);
   private boolean done;
 
-  // used to log memory usage periodically
-  public static MemoryMXBean memoryMXBean;
-  private long numRows = 0;
-  private long nextCntr = 1;
   private MapredLocalWork localWork = null;
   private boolean isLogInfoEnabled = false;
 
   private final ExecMapperContext execContext = new ExecMapperContext();
 
   public void init(JobConf job, OutputCollector output, Reporter reporter) {
-    // Allocate the bean at the beginning -
-    memoryMXBean = ManagementFactory.getMemoryMXBean();
-    l4j.info("maximum memory = " + memoryMXBean.getHeapMemoryUsage().getMax());
+    super.init(job, output, reporter);
 
     isLogInfoEnabled = l4j.isInfoEnabled();
-
-    try {
-      l4j.info("conf classpath = "
-        + Arrays.asList(((URLClassLoader) job.getClassLoader()).getURLs()));
-      l4j.info("thread classpath = "
-        + Arrays.asList(((URLClassLoader) Thread.currentThread()
-        .getContextClassLoader()).getURLs()));
-    } catch (Exception e) {
-      l4j.info("cannot get classpath: " + e.getMessage());
-    }
-
-    setDone(false);
-
     ObjectCache cache = ObjectCacheFactory.getCache(job);
 
     try {
@@ -128,11 +102,8 @@ public class SparkMapRecordHandler {
       mo.initializeLocalWork(jc);
       mo.initialize(jc, null);
 
-      oc = output;
-      rp = reporter;
       OperatorUtils.setChildrenCollector(mo.getChildOperators(), output);
       mo.setReporter(rp);
-      MapredContext.get().setReporter(reporter);
 
       if (localWork == null) {
         return;
@@ -158,26 +129,17 @@ public class SparkMapRecordHandler {
     }
   }
 
-  public void process(Object value) throws IOException {
+  @Override
+  public void processRow(Object value) throws IOException {
     // reset the execContext for each new row
     execContext.resetRow();
 
     try {
-      if (mo.getDone()) {
-        done = true;
-      } else {
-        // Since there is no concept of a group, we don't invoke
-        // startGroup/endGroup for a mapper
-        mo.process((Writable)value);
-        if (isLogInfoEnabled) {
-          numRows++;
-          if (numRows == nextCntr) {
-            long used_memory = memoryMXBean.getHeapMemoryUsage().getUsed();
-            l4j.info("ExecMapper: processing " + numRows
-              + " rows: used memory = " + used_memory);
-            nextCntr = getNextCntr(numRows);
-          }
-        }
+      // Since there is no concept of a group, we don't invoke
+      // startGroup/endGroup for a mapper
+      mo.process((Writable) value);
+      if (isLogInfoEnabled) {
+        logMemoryInfo();
       }
     } catch (Throwable e) {
       abort = true;
@@ -191,16 +153,9 @@ public class SparkMapRecordHandler {
     }
   }
 
-
-  private long getNextCntr(long cntr) {
-    // A very simple counter to keep track of number of rows processed by the
-    // reducer. It dumps
-    // every 1 million times, and quickly before that
-    if (cntr >= 1000000) {
-      return cntr + 1000000;
-    }
-
-    return 10 * cntr;
+  @Override
+  public void processRow(Object key, Iterator values) throws IOException {
+    throw new UnsupportedOperationException("Do not support this method in SparkMapRecordHandler.");
   }
 
   public void close() {
@@ -229,9 +184,7 @@ public class SparkMapRecordHandler {
       }
 
       if (isLogInfoEnabled) {
-        long used_memory = memoryMXBean.getHeapMemoryUsage().getUsed();
-        l4j.info("ExecMapper: processed " + numRows + " rows: used memory = "
-          + used_memory);
+        logCloseInfo();
       }
 
       ReportStats rps = new ReportStats(rp);
@@ -250,39 +203,6 @@ public class SparkMapRecordHandler {
   }
 
   public  boolean getDone() {
-    return done;
-  }
-
-  public boolean isAbort() {
-    return abort;
-  }
-
-  public void setAbort(boolean abort) {
-    this.abort = abort;
-  }
-
-  public void setDone(boolean done) {
-    this.done = done;
-  }
-
-  /**
-   * reportStats.
-   *
-   */
-  public static class ReportStats implements Operator.OperatorFunc {
-    private final Reporter rp;
-
-    public ReportStats(Reporter rp) {
-      this.rp = rp;
-    }
-
-    public void func(Operator op) {
-      Map<Enum<?>, Long> opStats = op.getStats();
-      for (Map.Entry<Enum<?>, Long> e : opStats.entrySet()) {
-        if (rp != null) {
-          rp.incrCounter(e.getKey(), e.getValue());
-        }
-      }
-    }
+    return mo.getDone();
   }
 }
