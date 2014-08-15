@@ -205,9 +205,9 @@ with q1 as ( select c_int from q2 where c_boolean = false),
 q2 as ( select c_int,c_boolean from v1  where value = '1')
 select sum(c_int) from (select c_int from q1) a;
 
-with q1 as ( select t1.c_int c_int from q2 join t1 where q2.c_int = t1.c_int),
-q2 as ( select c_int,c_boolean from v1  where value = '1')
-select count(*) from q1 join q2 join v4 on q1.c_int = q2.c_int and v4.c_int = q2.c_int;
+--with q1 as ( select t1.c_int c_int from q2 join t1 where q2.c_int = t1.c_int),
+--q2 as ( select c_int,c_boolean from v1  where value = '1')
+--select count(*) from q1 join q2 join v4 on q1.c_int = q2.c_int and v4.c_int = q2.c_int;
 
 
 drop view v1;
