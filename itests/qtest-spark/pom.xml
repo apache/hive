@@ -323,6 +323,7 @@
                   templatePath="${basedir}/${hive.path.to.root}/ql/src/test/templates/" template="TestCliDriver.vm"
                   queryDirectory="${basedir}/${hive.path.to.root}/ql/src/test/queries/clientpositive/"
                   queryFile="${qfile}"
+                  queryFileRegex="${qfile_regex}"
                   includeQueryFile="${spark.query.files}"
                   runDisabled="${run_disabled}"
                   hiveConfDir="${basedir}/${hive.path.to.root}/data/conf/spark"
