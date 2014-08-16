@@ -333,6 +333,9 @@ public class Entity implements Serializable {
     case DUMMYPARTITION:
       return p.getName();
     case FUNCTION:
+      if (database != null) {
+        return database.getName() + "." + stringObject;
+      }
       return stringObject;
     default:
       return d;

@@ -169,6 +169,7 @@ public class FunctionSemanticAnalyzer extends BaseSemanticAnalyzer {
       try {
         String[] qualifiedNameParts = FunctionUtils.getQualifiedFunctionNameParts(functionName);
         String dbName = qualifiedNameParts[0];
+        functionName = qualifiedNameParts[1];
         database = getDatabase(dbName);
       } catch (HiveException e) {
         LOG.error(e);

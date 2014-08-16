@@ -30,6 +30,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
@@ -43,7 +45,6 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Matchers;
 import org.mockito.Mockito;
 
 /**
@@ -52,7 +53,10 @@ import org.mockito.Mockito;
 public class TestHiveAuthorizerCheckInvocation {
   protected static HiveConf conf;
   protected static Driver driver;
-  private static final String tableName = TestHiveAuthorizerCheckInvocation.class.getSimpleName();
+  private static final String tableName = TestHiveAuthorizerCheckInvocation.class.getSimpleName()
+      + "Table";
+  private static final String dbName = TestHiveAuthorizerCheckInvocation.class.getSimpleName()
+      + "Db";
   static HiveAuthorizer mockedAuthorizer;
 
   /**
@@ -82,8 +86,13 @@ public class TestHiveAuthorizerCheckInvocation {
 
     SessionState.start(conf);
     driver = new Driver(conf);
-    CommandProcessorResponse resp = driver.run("create table " + tableName
+    runCmd("create table " + tableName
         + " (i int, j int, k string) partitioned by (city string, date string) ");
+    runCmd("create database " + dbName);
+  }
+
+  private static void runCmd(String cmd) throws CommandNeedRetryException {
+    CommandProcessorResponse resp = driver.run(cmd);
     assertEquals(0, resp.getResponseCode());
   }
 
@@ -101,7 +110,7 @@ public class TestHiveAuthorizerCheckInvocation {
         + " where k = 'X' and city = 'Scottsdale-AZ' ");
     assertEquals(0, status);
 
-    List<HivePrivilegeObject> inputs = getHivePrivilegeObjectInputs();
+    List<HivePrivilegeObject> inputs = getHivePrivilegeObjectInputs().getLeft();
     checkSingleTableInput(inputs);
     HivePrivilegeObject tableObj = inputs.get(0);
     assertEquals("no of columns used", 3, tableObj.getColumns().size());
@@ -123,7 +132,7 @@ public class TestHiveAuthorizerCheckInvocation {
     int status = driver.compile("select * from " + tableName + " order by i");
     assertEquals(0, status);
 
-    List<HivePrivilegeObject> inputs = getHivePrivilegeObjectInputs();
+    List<HivePrivilegeObject> inputs = getHivePrivilegeObjectInputs().getLeft();
     checkSingleTableInput(inputs);
     HivePrivilegeObject tableObj = inputs.get(0);
     assertEquals("no of columns used", 5, tableObj.getColumns().size());
@@ -139,10 +148,58 @@ public class TestHiveAuthorizerCheckInvocation {
     int status = driver.compile("describe " + tableName);
     assertEquals(0, status);
 
-    List<HivePrivilegeObject> inputs = getHivePrivilegeObjectInputs();
+    List<HivePrivilegeObject> inputs = getHivePrivilegeObjectInputs().getLeft();
     checkSingleTableInput(inputs);
     HivePrivilegeObject tableObj = inputs.get(0);
     assertNull("columns used", tableObj.getColumns());
+  }
+
+  @Test
+  public void testPermFunction() throws HiveAuthzPluginException, HiveAccessControlException,
+      CommandNeedRetryException {
+
+    reset(mockedAuthorizer);
+    final String funcName = "testauthfunc1";
+    int status = driver.compile("create function " + dbName + "." + funcName
+        + " as 'org.apache.hadoop.hive.ql.udf.UDFPI'");
+    assertEquals(0, status);
+
+    List<HivePrivilegeObject> outputs = getHivePrivilegeObjectInputs().getRight();
+
+    HivePrivilegeObject funcObj;
+    HivePrivilegeObject dbObj;
+    assertEquals("number of output object", 2, outputs.size());
+    if(outputs.get(0).getType() == HivePrivilegeObjectType.FUNCTION) {
+      funcObj = outputs.get(0);
+      dbObj = outputs.get(1);
+    } else {
+      funcObj = outputs.get(1);
+      dbObj = outputs.get(0);
+    }
+
+    assertEquals("input type", HivePrivilegeObjectType.FUNCTION, funcObj.getType());
+    assertTrue("function name", funcName.equalsIgnoreCase(funcObj.getObjectName()));
+    assertTrue("db name", dbName.equalsIgnoreCase(funcObj.getDbname()));
+
+    assertEquals("input type", HivePrivilegeObjectType.DATABASE, dbObj.getType());
+    assertTrue("db name", dbName.equalsIgnoreCase(dbObj.getDbname()));
+  }
+
+  @Test
+  public void testTempFunction() throws HiveAuthzPluginException, HiveAccessControlException,
+      CommandNeedRetryException {
+
+    reset(mockedAuthorizer);
+    final String funcName = "testAuthFunc2";
+    int status = driver.compile("create temporary function " + funcName
+        + " as 'org.apache.hadoop.hive.ql.udf.UDFPI'");
+    assertEquals(0, status);
+
+    List<HivePrivilegeObject> outputs = getHivePrivilegeObjectInputs().getRight();
+    HivePrivilegeObject funcObj = outputs.get(0);
+    assertEquals("input type", HivePrivilegeObjectType.FUNCTION, funcObj.getType());
+    assertTrue("function name", funcName.equalsIgnoreCase(funcObj.getObjectName()));
+    assertEquals("db name", null, funcObj.getDbname());
   }
 
   private void checkSingleTableInput(List<HivePrivilegeObject> inputs) {
@@ -154,23 +211,26 @@ public class TestHiveAuthorizerCheckInvocation {
   }
 
   /**
-   * @return the inputs passed in current call to authorizer.checkPrivileges
+   * @return pair with left value as inputs and right value as outputs,
+   *  passed in current call to authorizer.checkPrivileges
    * @throws HiveAuthzPluginException
    * @throws HiveAccessControlException
    */
-  private List<HivePrivilegeObject> getHivePrivilegeObjectInputs() throws HiveAuthzPluginException,
+  private Pair<List<HivePrivilegeObject>, List<HivePrivilegeObject>> getHivePrivilegeObjectInputs() throws HiveAuthzPluginException,
       HiveAccessControlException {
     // Create argument capturer
     // a class variable cast to this generic of generic class
     Class<List<HivePrivilegeObject>> class_listPrivObjects = (Class) List.class;
     ArgumentCaptor<List<HivePrivilegeObject>> inputsCapturer = ArgumentCaptor
         .forClass(class_listPrivObjects);
+    ArgumentCaptor<List<HivePrivilegeObject>> outputsCapturer = ArgumentCaptor
+        .forClass(class_listPrivObjects);
 
     verify(mockedAuthorizer).checkPrivileges(any(HiveOperationType.class),
-        inputsCapturer.capture(), Matchers.anyListOf(HivePrivilegeObject.class),
+        inputsCapturer.capture(), outputsCapturer.capture(),
         any(HiveAuthzContext.class));
 
-    return inputsCapturer.getValue();
+    return new ImmutablePair(inputsCapturer.getValue(), outputsCapturer.getValue());
   }
 
 }
