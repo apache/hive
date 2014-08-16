@@ -93,15 +93,15 @@ public class QTestGenTask extends Task {
     }
   }
 
-  public class QFileRegexFilter extends QFileFilter {
+  public class QFileRegexFilter implements FileFilter {
     Pattern filterPattern;
-    public QFileRegexFilter(String filter, Set<String> includeOnly) {
-      super(includeOnly);
+    public QFileRegexFilter(String filter) {
       filterPattern = Pattern.compile(filter);
     }
 
     public boolean accept(File filePath) {
-      if (!super.accept(filePath)) {
+      if (filePath.isDirectory() ||
+          !filePath.getName().endsWith(".q")) {
         return false;
       }
       String testName = StringUtils.chomp(filePath.getName(), ".q");
@@ -350,6 +350,13 @@ public class QTestGenTask extends Task {
     File logDir = null;
 
     try {
+
+      System.out.println("Starting Generation of: " + className);
+      System.out.println("Include Files: " + includeQueryFile);
+      System.out.println("Excluded Files: " + excludeQueryFile);
+      System.out.println("Query Files: " + queryFile);
+      System.out.println("Query Files Regex: " + queryFileRegex);
+
       // queryDirectory should not be null
       queryDir = new File(queryDirectory);
 
@@ -358,9 +365,6 @@ public class QTestGenTask extends Task {
       if (queryFile != null && !queryFile.equals("")) {
         // The user may have passed a list of files - comma separated
         for (String qFile : CSV_SPLITTER.split(queryFile)) {
-          if (includeOnly != null && !includeOnly.contains(qFile)) {
-            continue;
-          }
           if (null != queryDir) {
             testFiles.add(new File(queryDir, qFile));
           } else {
@@ -370,7 +374,7 @@ public class QTestGenTask extends Task {
       } else if (queryFileRegex != null && !queryFileRegex.equals("")) {
         for (String regex : CSV_SPLITTER.split(queryFileRegex)) {
           testFiles.addAll(Arrays.asList(queryDir.listFiles(
-              new QFileRegexFilter(regex, includeOnly))));
+              new QFileRegexFilter(regex))));
         }
       } else if (runDisabled != null && runDisabled.equals("true")) {
         testFiles.addAll(Arrays.asList(queryDir.listFiles(new DisabledQFileFilter(includeOnly))));
