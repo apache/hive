@@ -46,7 +46,7 @@ import org.apache.velocity.exception.ResourceNotFoundException;
 import org.apache.velocity.runtime.RuntimeConstants;
 
 public class QTestGenTask extends Task {
-   private static final Splitter CSV_SPLITTER = Splitter.on(',')
+   private static final Splitter TEST_SPLITTER = Splitter.onPattern("[, ]")
        .trimResults()
        .omitEmptyStrings();
 
@@ -233,7 +233,7 @@ public class QTestGenTask extends Task {
 
   public void setTemplatePath(String templatePath) throws Exception {
     templatePaths.clear();
-    for (String relativePath : CSV_SPLITTER.split(templatePath)) {
+    for (String relativePath : TEST_SPLITTER.split(templatePath)) {
       templatePaths.add(project.resolveFile(relativePath).getCanonicalPath());
     }
     System.out.println("Template Path:" + getTemplatePath());
@@ -338,7 +338,7 @@ public class QTestGenTask extends Task {
 
     Set<String> includeOnly = null;
     if (includeQueryFile != null && !includeQueryFile.isEmpty()) {
-      includeOnly = Sets.<String>newHashSet(CSV_SPLITTER.split(includeQueryFile));
+      includeOnly = Sets.<String>newHashSet(TEST_SPLITTER.split(includeQueryFile));
     }
 
     List<File> qFiles;
@@ -364,7 +364,7 @@ public class QTestGenTask extends Task {
       Set<File> testFiles = new HashSet<File>();
       if (queryFile != null && !queryFile.equals("")) {
         // The user may have passed a list of files - comma separated
-        for (String qFile : CSV_SPLITTER.split(queryFile)) {
+        for (String qFile : TEST_SPLITTER.split(queryFile)) {
           if (null != queryDir) {
             testFiles.add(new File(queryDir, qFile));
           } else {
@@ -372,7 +372,7 @@ public class QTestGenTask extends Task {
           }
         }
       } else if (queryFileRegex != null && !queryFileRegex.equals("")) {
-        for (String regex : CSV_SPLITTER.split(queryFileRegex)) {
+        for (String regex : TEST_SPLITTER.split(queryFileRegex)) {
           testFiles.addAll(Arrays.asList(queryDir.listFiles(
               new QFileRegexFilter(regex))));
         }
@@ -384,7 +384,7 @@ public class QTestGenTask extends Task {
 
       if (excludeQueryFile != null && !excludeQueryFile.equals("")) {
         // Exclude specified query files, comma separated
-        for (String qFile : CSV_SPLITTER.split(excludeQueryFile)) {
+        for (String qFile : TEST_SPLITTER.split(excludeQueryFile)) {
           if (null != queryDir) {
             testFiles.remove(new File(queryDir, qFile));
           } else {
