@@ -29,7 +29,7 @@ import com.google.common.collect.ImmutableList;
 public abstract class HivePushFilterPastJoinRule extends RelOptRule {
 
   public static final HivePushFilterPastJoinRule FILTER_ON_JOIN = new HivePushFilterPastJoinRule(
-      operand(HiveFilterRel.class, operand(HiveJoinRel.class, any())),
+      operand(FilterRelBase.class, operand(HiveJoinRel.class, any())),
       "HivePushFilterPastJoinRule:filter", true) {
     @Override
     public void onMatch(RelOptRuleCall call) {

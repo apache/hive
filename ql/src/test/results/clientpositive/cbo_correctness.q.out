@@ -15963,21 +15963,30 @@ POSTHOOK: Input: default@t1@dt=2014
 POSTHOOK: Input: default@v1
 #### A masked pattern was here ####
 2
-PREHOOK: query: --with q1 as ( select t1.c_int c_int from q2 join t1 where q2.c_int = t1.c_int),
---q2 as ( select c_int,c_boolean from v1  where value = '1')
---select count(*) from q1 join q2 join v4 on q1.c_int = q2.c_int and v4.c_int = q2.c_int;
-
-
-drop view v1
+PREHOOK: query: with q1 as ( select t1.c_int c_int from q2 join t1 where q2.c_int = t1.c_int),
+q2 as ( select c_int,c_boolean from v1  where value = '1')
+select count(*) from q1 join q2 join v4 on q1.c_int = q2.c_int and v4.c_int = q2.c_int
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@dt=2014
+PREHOOK: Input: default@v1
+PREHOOK: Input: default@v4
+#### A masked pattern was here ####
+POSTHOOK: query: with q1 as ( select t1.c_int c_int from q2 join t1 where q2.c_int = t1.c_int),
+q2 as ( select c_int,c_boolean from v1  where value = '1')
+select count(*) from q1 join q2 join v4 on q1.c_int = q2.c_int and v4.c_int = q2.c_int
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@dt=2014
+POSTHOOK: Input: default@v1
+POSTHOOK: Input: default@v4
+#### A masked pattern was here ####
+31104
+PREHOOK: query: drop view v1
 PREHOOK: type: DROPVIEW
 PREHOOK: Input: default@v1
 PREHOOK: Output: default@v1
-POSTHOOK: query: --with q1 as ( select t1.c_int c_int from q2 join t1 where q2.c_int = t1.c_int),
---q2 as ( select c_int,c_boolean from v1  where value = '1')
---select count(*) from q1 join q2 join v4 on q1.c_int = q2.c_int and v4.c_int = q2.c_int;
-
-
-drop view v1
+POSTHOOK: query: drop view v1
 POSTHOOK: type: DROPVIEW
 POSTHOOK: Input: default@v1
 POSTHOOK: Output: default@v1

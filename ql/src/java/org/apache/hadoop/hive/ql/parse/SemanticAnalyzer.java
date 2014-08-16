@@ -11893,8 +11893,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // Partition Pruning; otherwise Expression evaluation may try to execute
       // corelated sub query.
 			basePlan = hepPlan(basePlan, mdProvider,
-					HivePushFilterPastJoinRule.FILTER_ON_JOIN,
 					HivePushFilterPastJoinRule.JOIN,
+					HivePushFilterPastJoinRule.FILTER_ON_JOIN,
 					new HivePartitionPrunerRule(SemanticAnalyzer.this.conf));
 
       HiveRelFieldTrimmer fieldTrimmer = new HiveRelFieldTrimmer(null);
