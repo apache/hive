@@ -179,6 +179,7 @@ public abstract class GenericUDAFStreamingEvaluator<T1> extends
 
       for (int i = 0; i < ss.numFollowing; i++) {
         ss.results.add(getNextResult(ss));
+        ss.numRows++;
       }
       return o;
     }

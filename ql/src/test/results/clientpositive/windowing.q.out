@@ -2334,3 +2334,25 @@ where p_mfgr = 'Manufacturer#6'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
+PREHOOK: query: -- 46. window sz is same as partition sz
+select p_retailprice, avg(p_retailprice) over (partition by p_mfgr order by p_name rows between current row and 6 following), 
+sum(p_retailprice) over (partition by p_mfgr order by p_name rows between current row and 6 following) 
+from part 
+where p_mfgr='Manufacturer#1'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
+POSTHOOK: query: -- 46. window sz is same as partition sz
+select p_retailprice, avg(p_retailprice) over (partition by p_mfgr order by p_name rows between current row and 6 following), 
+sum(p_retailprice) over (partition by p_mfgr order by p_name rows between current row and 6 following) 
+from part 
+where p_mfgr='Manufacturer#1'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
+1173.15	1458.2883333333336	8749.730000000001
+1173.15	1515.3160000000003	7576.580000000002
+1753.76	1600.8575000000003	6403.430000000001
+1602.59	1549.8900000000003	4649.670000000001
+1414.42	1523.5400000000004	3047.080000000001
+1632.66	1632.6600000000008	1632.6600000000008
