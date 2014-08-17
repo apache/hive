@@ -438,3 +438,9 @@ select p_mfgr,
 from part 
 where p_mfgr = 'Manufacturer#6'
 ;
+
+-- 46. window sz is same as partition sz
+select p_retailprice, avg(p_retailprice) over (partition by p_mfgr order by p_name rows between current row and 6 following), 
+sum(p_retailprice) over (partition by p_mfgr order by p_name rows between current row and 6 following) 
+from part 
+where p_mfgr='Manufacturer#1';
