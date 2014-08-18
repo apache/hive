@@ -275,17 +275,6 @@ public class RexNodeConverter {
     return optiqLiteral;
   }
 
-  public static RexNode getAlwaysTruePredicate(RelOptCluster cluster) {
-    RelDataType dt = cluster.getTypeFactory().createSqlType(SqlTypeName.BOOLEAN);
-    SqlOperator optiqOp = SqlFunctionConverter.getOptiqOperator(new GenericUDFOPEqual(),
-        ImmutableList.<RelDataType> of(dt), dt);
-    List<RexNode> childRexNodeLst = new LinkedList<RexNode>();
-    childRexNodeLst.add(cluster.getRexBuilder().makeLiteral(true));
-    childRexNodeLst.add(cluster.getRexBuilder().makeLiteral(true));
-
-    return cluster.getRexBuilder().makeCall(optiqOp, childRexNodeLst);
-  }
-
   public static RexNode convert(RelOptCluster cluster, ExprNodeDesc joinCondnExprNode,
       List<RelNode> inputRels, LinkedHashMap<RelNode, RowResolver> relToHiveRR,
       Map<RelNode, ImmutableMap<String, Integer>> relToHiveColNameOptiqPosMap, boolean flattenExpr)

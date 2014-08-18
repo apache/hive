@@ -231,9 +231,7 @@ public abstract class HivePushFilterPastJoinRule extends RelOptRule {
   }
 
   private void removeAlwaysTruePredicates(List<RexNode> predicates) {
-    if (predicates.size() < 2) {
-      return;
-    }
+
     ListIterator<RexNode> iter = predicates.listIterator();
     while (iter.hasNext()) {
       RexNode exp = iter.next();

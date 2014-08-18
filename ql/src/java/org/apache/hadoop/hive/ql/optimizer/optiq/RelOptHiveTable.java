@@ -13,9 +13,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
-import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.optiq.translator.ExprNodeConverter;
 import org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner;
@@ -98,12 +96,15 @@ public class RelOptHiveTable extends RelOptAbstractTable {
   @Override
   public double getRowCount() {
     if (m_rowCount == -1) {
-      if (m_hiveTblMetadata.isPartitioned()) {
+      if (null == partitionList) {
+        // we are here either unpartitioned table or partitioned table with no predicates
         computePartitionList(m_hiveConf, null);
-            List<Long> rowCounts = StatsUtils.getBasicStatForPartitions(
-              m_hiveTblMetadata, partitionList.getNotDeniedPartns(),
-              StatsSetupConst.ROW_COUNT);
-          m_rowCount = StatsUtils.getSumIgnoreNegatives(rowCounts);
+      }
+      if (m_hiveTblMetadata.isPartitioned()) {
+        List<Long> rowCounts = StatsUtils.getBasicStatForPartitions(
+            m_hiveTblMetadata, partitionList.getNotDeniedPartns(),
+            StatsSetupConst.ROW_COUNT);
+        m_rowCount = StatsUtils.getSumIgnoreNegatives(rowCounts);
 
       } else {
         m_rowCount = StatsUtils.getNumRows(m_hiveTblMetadata);
@@ -132,15 +133,9 @@ public class RelOptHiveTable extends RelOptAbstractTable {
   }
 
   public void computePartitionList(HiveConf conf, RexNode pruneNode) {
-    partitionList = null;
-
-    if (!m_hiveTblMetadata.isPartitioned()) {
-      // no partitions for unpartitioned tables.
-      return;
-    }
 
     try {
-      if (pruneNode == null || InputFinder.bits(pruneNode).length() == 0 ) {
+      if (!m_hiveTblMetadata.isPartitioned() || pruneNode == null || InputFinder.bits(pruneNode).length() == 0 ) {
         // there is no predicate on partitioning column, we need all partitions in this case.
         partitionList = PartitionPruner.prune(m_hiveTblMetadata, null, conf, getName(), partitionCache);
         return;
@@ -187,12 +182,11 @@ public class RelOptHiveTable extends RelOptAbstractTable {
 
       if (null == partitionList) {
         // We could be here either because its an unpartitioned table or because
-        // there are no pruning predicates on a partitioned table. If its latter,
-        // we need to fetch all partitions, so do that now.
+        // there are no pruning predicates on a partitioned table.
         computePartitionList(m_hiveConf, null);
       }
 
-      if (partitionList == null) {
+      if (!m_hiveTblMetadata.isPartitioned()) {
         // 2.1 Handle the case for unpartitioned table.
         hiveColStats = StatsUtils.getTableColumnStats(m_hiveTblMetadata, m_hiveNonPartitionCols,
             nonPartColNamesThatRqrStats);
@@ -290,14 +284,11 @@ public class RelOptHiveTable extends RelOptAbstractTable {
   /*
    * use to check if a set of columns are all partition columns.
    * true only if:
-   * - there is a prunedPartList in place
    * - all columns in BitSet are partition
    * columns.
    */
   public boolean containsPartitionColumnsOnly(BitSet cols) {
-    if (partitionList == null) {
-      return false;
-    }
+
     for (int i = cols.nextSetBit(0); i >= 0; i++, i = cols.nextSetBit(i + 1)) {
       if (!m_hivePartitionColsMap.containsKey(i)) {
         return false;
