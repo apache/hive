@@ -69,10 +69,10 @@ STAGE PLANS:
                 keys:
                   0 6981 (type: int)
                   1 6981 (type: int)
-                outputColumnNames: _col1, _col8
+                outputColumnNames: _col1, _col9
                 Statistics: Num rows: 3379 Data size: 595391 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: 6981 (type: int), 6981 (type: int), _col1 (type: decimal(20,10)), _col8 (type: decimal(23,14))
+                  expressions: 6981 (type: int), 6981 (type: int), _col1 (type: decimal(20,10)), _col9 (type: decimal(23,14))
                   outputColumnNames: _col0, _col1, _col2, _col3
                   Statistics: Num rows: 3379 Data size: 595391 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator

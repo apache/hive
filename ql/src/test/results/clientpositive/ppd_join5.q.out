@@ -82,7 +82,7 @@ STAGE PLANS:
           condition expressions:
             0 {KEY.reducesinkkey0} {KEY.reducesinkkey1}
             1 {VALUE._col0}
-          outputColumnNames: _col0, _col1, _col5
+          outputColumnNames: _col0, _col1, _col6
           Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
@@ -98,7 +98,7 @@ STAGE PLANS:
             Reduce Output Operator
               sort order: 
               Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: string), _col1 (type: string), _col5 (type: int)
+              value expressions: _col0 (type: string), _col1 (type: string), _col6 (type: int)
           TableScan
             alias: c
             Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
@@ -114,12 +114,12 @@ STAGE PLANS:
           condition map:
                Inner Join 0 to 1
           condition expressions:
-            0 {VALUE._col0} {VALUE._col1} {VALUE._col5}
+            0 {VALUE._col0} {VALUE._col1} {VALUE._col6}
             1 {VALUE._col1}
-          outputColumnNames: _col0, _col1, _col5, _col9
+          outputColumnNames: _col0, _col1, _col6, _col11
           Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: _col0 (type: string), _col1 (type: string), _col5 (type: int), _col9 (type: int)
+            expressions: _col0 (type: string), _col1 (type: string), _col6 (type: int), _col11 (type: int)
             outputColumnNames: _col0, _col1, _col2, _col3
             Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
@@ -190,7 +190,7 @@ STAGE PLANS:
           condition expressions:
             0 {KEY.reducesinkkey0} {KEY.reducesinkkey1}
             1 {VALUE._col0}
-          outputColumnNames: _col0, _col1, _col5
+          outputColumnNames: _col0, _col1, _col6
           Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
@@ -206,7 +206,7 @@ STAGE PLANS:
             Reduce Output Operator
               sort order: 
               Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: string), _col1 (type: string), _col5 (type: int)
+              value expressions: _col0 (type: string), _col1 (type: string), _col6 (type: int)
           TableScan
             alias: c
             Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
@@ -222,15 +222,15 @@ STAGE PLANS:
           condition map:
                Inner Join 0 to 1
           condition expressions:
-            0 {VALUE._col0} {VALUE._col1} {VALUE._col5}
+            0 {VALUE._col0} {VALUE._col1} {VALUE._col6}
             1 {VALUE._col1}
-          outputColumnNames: _col0, _col1, _col5, _col9
+          outputColumnNames: _col0, _col1, _col6, _col11
           Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
-            predicate: ((_col5 > 1) or (_col9 > 1)) (type: boolean)
+            predicate: ((_col6 > 1) or (_col11 > 1)) (type: boolean)
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             Select Operator
-              expressions: _col0 (type: string), _col1 (type: string), _col5 (type: int), _col9 (type: int)
+              expressions: _col0 (type: string), _col1 (type: string), _col6 (type: int), _col11 (type: int)
               outputColumnNames: _col0, _col1, _col2, _col3
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               File Output Operator
