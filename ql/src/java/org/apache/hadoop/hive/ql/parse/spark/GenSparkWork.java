@@ -225,7 +225,7 @@ public class GenSparkWork implements NodeProcessor {
 
       // finally hook everything up
       LOG.debug("Connecting union work ("+unionWork+") with work ("+work+")");
-      SparkEdgeProperty edgeProp = new SparkEdgeProperty(0/*EdgeType.CONTAINS*/);
+      SparkEdgeProperty edgeProp = new SparkEdgeProperty(SparkEdgeProperty.SHUFFLE_NONE);
       sparkWork.connect(work, unionWork, edgeProp);
       unionWork.addUnionOperators(context.currentUnionOperators);
       context.currentUnionOperators.clear();
@@ -271,11 +271,9 @@ public class GenSparkWork implements NodeProcessor {
 
       if (!context.connectedReduceSinks.contains(rs)) {
         // add dependency between the two work items
-        SparkEdgeProperty edgeProp = new SparkEdgeProperty(SparkEdgeProperty.SHUFFLE_NONE,
+        // Use group-by as the default shuffler
+        SparkEdgeProperty edgeProp = new SparkEdgeProperty(SparkEdgeProperty.SHUFFLE_GROUP,
             rs.getConf().getNumReducers());
-        if(rWork.getReducer() instanceof GroupByOperator){
-          edgeProp.setShuffleGroup();
-        }
         String sortOrder = Strings.nullToEmpty(rs.getConf().getOrder()).trim();
         if (!sortOrder.isEmpty() && GenSparkUtils.isSortNecessary(rs)) {
           edgeProp.setShuffleSort();

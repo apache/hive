@@ -77,11 +77,10 @@ public class SparkEdgeProperty {
       sb.append("GROUP");
     }
 
-    if (sb.length() != 0) {
-      sb.append(" ");
-    }
-
     if (isShuffleSort()) {
+      if (sb.length() != 0) {
+        sb.append(" ");
+      }
       sb.append("SORT");
     }
 
