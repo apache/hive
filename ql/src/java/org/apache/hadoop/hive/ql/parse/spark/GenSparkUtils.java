@@ -228,6 +228,7 @@ public class GenSparkUtils {
         }
         linked = context.linkedFileSinks.get(path);
         linked.add(desc);
+        desc.setLinkedFileSinkDesc(linked);
       }
 
       if (current instanceof UnionOperator) {
