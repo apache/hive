@@ -158,7 +158,7 @@ public class SparkPlanGenerator {
     return inputFormatClass;
   }
 
-  private SparkTran generate(BaseWork bw) throws IOException, HiveException {
+  private SparkTran generate(BaseWork bw) throws Exception {
     // initialize stats publisher if necessary
     if (bw.isGatheringStats()) {
       StatsPublisher statsPublisher;
@@ -183,9 +183,14 @@ public class SparkPlanGenerator {
     }
   }
 
-  private MapTran generate(MapWork mw) throws IOException {
+  private MapTran generate(MapWork mw) throws Exception {
     JobConf newJobConf = new JobConf(jobConf);
     MapTran result = new MapTran();
+
+    List<Path> inputPaths = Utilities.getInputPaths(newJobConf, mw,
+      scratchDir, context, false);
+    Utilities.setInputPaths(newJobConf, inputPaths);
+
     Utilities.setMapWork(newJobConf, mw, scratchDir, true);
     Utilities.createTmpDirs(newJobConf, mw);
     newJobConf.set("mapred.mapper.class", ExecMapper.class.getName());
