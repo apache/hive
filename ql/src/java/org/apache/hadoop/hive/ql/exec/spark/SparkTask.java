@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.exec.spark;
 import java.io.IOException;
 import java.util.List;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.DriverContext;
@@ -28,10 +29,15 @@ import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.spark.session.SparkSession;
+import org.apache.hadoop.hive.ql.exec.spark.session.SparkSessionManager;
+import org.apache.hadoop.hive.ql.exec.spark.session.SparkSessionManagerImpl;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.util.StringUtils;
 
@@ -50,18 +56,28 @@ public class SparkTask extends Task<SparkWork> {
   public int execute(DriverContext driverContext) {
 
     int rc = 1;
-    SparkClient client = null;
+    SparkSession sparkSession = null;
+    SparkSessionManager sparkSessionManager = null;
     try {
       configureNumberOfReducers();
-      client = SparkClient.getInstance(driverContext.getCtx().getConf());
-      rc = client.execute(driverContext, getWork());
+      sparkSessionManager = SparkSessionManagerImpl.getInstance();
+      sparkSession = SessionState.get().getSparkSession();
+      sparkSession = sparkSessionManager.getSession(sparkSession, conf, true);
+      SessionState.get().setSparkSession(sparkSession);
+
+      rc = sparkSession.submit(driverContext, getWork());
     } catch (Exception e) {
       LOG.error("Failed to execute spark task.", e);
       return 1;
     }
     finally {
-      if (client != null) {
+      if (sparkSession != null && sparkSessionManager != null) {
         rc = close(rc);
+        try {
+          sparkSessionManager.returnSession(sparkSession);
+        } catch(HiveException ex) {
+          LOG.error("Failed to return the session to SessionManager", ex);
+        }
       }
     }
     return rc;
