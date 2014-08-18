@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.BaseCharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
@@ -93,7 +94,7 @@ public class ExprNodeConstantDesc extends ExprNodeDesc implements Serializable {
       return "null";
     }
 
-    if (typeInfo.getTypeName().equals(serdeConstants.STRING_TYPE_NAME)) {
+    if (typeInfo.getTypeName().equals(serdeConstants.STRING_TYPE_NAME) || typeInfo instanceof BaseCharTypeInfo) {
       return "'" + value.toString() + "'";
     } else if (typeInfo.getTypeName().equals(serdeConstants.BINARY_TYPE_NAME)) {
       byte[] bytes = (byte[]) value;

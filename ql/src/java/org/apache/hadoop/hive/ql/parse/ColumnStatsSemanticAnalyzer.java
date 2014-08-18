@@ -427,7 +427,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
     QBParseInfo qbp;
 
     // initialize QB
-    init();
+    init(true);
 
     // Setup the necessary metadata if originating from analyze rewrite
     if (isRewritten) {

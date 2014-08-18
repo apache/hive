@@ -175,7 +175,7 @@ select x from (select count(c_int) over() as x, sum(c_float) over() from t1) t1;
 select * from (select max(c_int) over (partition by key order by value Rows UNBOUNDED PRECEDING), min(c_int) over (partition by key order by value rows current row), count(c_int) over(partition by key order by value ROWS 1 PRECEDING), avg(value) over (partition by key order by value Rows between unbounded preceding and unbounded following), sum(value) over (partition by key order by value rows between unbounded preceding and current row), avg(c_float) over (partition by key order by value Rows between 1 preceding and unbounded following), sum(c_float) over (partition by key order by value rows between 1 preceding and current row), max(c_float) over (partition by key order by value rows between 1 preceding and unbounded following), min(c_float) over (partition by key order by value rows between 1 preceding and 1 following) from t1) t1;
 select i, a, h, b, c, d, e, f, g, a as x, a +1 as y from (select max(c_int) over (partition by key order by value range UNBOUNDED PRECEDING) a, min(c_int) over (partition by key order by value range current row) b, count(c_int) over(partition by key order by value range 1 PRECEDING) c, avg(value) over (partition by key order by value range between unbounded preceding and unbounded following) d, sum(value) over (partition by key order by value range between unbounded preceding and current row) e, avg(c_float) over (partition by key order by value range between 1 preceding and unbounded following) f, sum(c_float) over (partition by key order by value range between 1 preceding and current row) g, max(c_float) over (partition by key order by value range between 1 preceding and unbounded following) h, min(c_float) over (partition by key order by value range between 1 preceding and 1 following) i from t1) t1;
 
-create view v1 as select c_int, value, c_boolean from t1;
+create view v1 as select c_int, value, c_boolean, dt from t1;
 create view v2 as select c_int, value from t2;
 
 select value from v1 where c_boolean=false;
@@ -205,8 +205,8 @@ with q1 as ( select c_int from q2 where c_boolean = false),
 q2 as ( select c_int,c_boolean from v1  where value = '1')
 select sum(c_int) from (select c_int from q1) a;
 
-with q1 as ( select t1.c_int c_int from q2 join t1 where q2.c_int = t1.c_int),
-q2 as ( select c_int,c_boolean from v1  where value = '1')
+with q1 as ( select t1.c_int c_int from q2 join t1 where q2.c_int = t1.c_int  and t1.dt='2014'),
+q2 as ( select c_int,c_boolean from v1  where value = '1' or dt = '14')
 select count(*) from q1 join q2 join v4 on q1.c_int = q2.c_int and v4.c_int = q2.c_int;
 
 
