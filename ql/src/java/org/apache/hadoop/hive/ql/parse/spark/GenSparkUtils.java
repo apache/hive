@@ -102,12 +102,10 @@ public class GenSparkUtils {
 
     sparkWork.add(reduceWork);
 
-    SparkEdgeProperty edgeProp = new SparkEdgeProperty(SparkEdgeProperty.SHUFFLE_NONE,
+    // Use group-by as the default shuffler
+    SparkEdgeProperty edgeProp = new SparkEdgeProperty(SparkEdgeProperty.SHUFFLE_GROUP,
         reduceWork.getNumReduceTasks());
 
-    if (root instanceof GroupByOperator) {
-      edgeProp.setShuffleGroup();
-    }
     String sortOrder = Strings.nullToEmpty(reduceSink.getConf().getOrder()).trim();
     if (!sortOrder.isEmpty() && isSortNecessary(reduceSink)) {
       edgeProp.setShuffleSort();

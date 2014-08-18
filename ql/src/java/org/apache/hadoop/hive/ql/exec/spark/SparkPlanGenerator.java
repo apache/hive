@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.google.common.base.Preconditions;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -201,6 +202,8 @@ public class SparkPlanGenerator {
   }
 
   private SparkShuffler generate(SparkEdgeProperty edge) {
+    Preconditions.checkArgument(!edge.isShuffleNone(),
+        "AssertionError: SHUFFLE_NONE should only be used for UnionWork.");
     if (edge.isShuffleSort()) {
       return new SortByShuffler();
     }
