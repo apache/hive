@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -34,19 +35,20 @@ import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
+@InterfaceAudience.Private
 public class VirtualColumn implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
-  public static VirtualColumn FILENAME = new VirtualColumn("INPUT__FILE__NAME", (PrimitiveTypeInfo)TypeInfoFactory.stringTypeInfo);
-  public static VirtualColumn BLOCKOFFSET = new VirtualColumn("BLOCK__OFFSET__INSIDE__FILE", (PrimitiveTypeInfo)TypeInfoFactory.longTypeInfo);
-  public static VirtualColumn ROWOFFSET = new VirtualColumn("ROW__OFFSET__INSIDE__BLOCK", (PrimitiveTypeInfo)TypeInfoFactory.longTypeInfo);
+  public static final VirtualColumn FILENAME = new VirtualColumn("INPUT__FILE__NAME", (PrimitiveTypeInfo)TypeInfoFactory.stringTypeInfo);
+  public static final VirtualColumn BLOCKOFFSET = new VirtualColumn("BLOCK__OFFSET__INSIDE__FILE", (PrimitiveTypeInfo)TypeInfoFactory.longTypeInfo);
+  public static final VirtualColumn ROWOFFSET = new VirtualColumn("ROW__OFFSET__INSIDE__BLOCK", (PrimitiveTypeInfo)TypeInfoFactory.longTypeInfo);
 
-  public static VirtualColumn RAWDATASIZE = new VirtualColumn("RAW__DATA__SIZE", (PrimitiveTypeInfo)TypeInfoFactory.longTypeInfo);
+  public static final VirtualColumn RAWDATASIZE = new VirtualColumn("RAW__DATA__SIZE", (PrimitiveTypeInfo)TypeInfoFactory.longTypeInfo);
   /**
    * {@link org.apache.hadoop.hive.ql.io.RecordIdentifier} 
    */
-  public static VirtualColumn ROWID = new VirtualColumn("ROW__ID", RecordIdentifier.StructInfo.typeInfo, true, RecordIdentifier.StructInfo.oi);
+  public static final VirtualColumn ROWID = new VirtualColumn("ROW__ID", RecordIdentifier.StructInfo.typeInfo, true, RecordIdentifier.StructInfo.oi);
 
   /**
    * GROUPINGID is used with GROUP BY GROUPINGS SETS, ROLLUP and CUBE.
@@ -55,26 +57,23 @@ public class VirtualColumn implements Serializable {
    * set if that column has been aggregated in that row. Otherwise the
    * value is "0".  Returns the decimal representation of the bit vector.
    */
-  public static VirtualColumn GROUPINGID =
+  public static final VirtualColumn GROUPINGID =
       new VirtualColumn("GROUPING__ID", (PrimitiveTypeInfo) TypeInfoFactory.intTypeInfo);
 
-  public static VirtualColumn[] VIRTUAL_COLUMNS =
+  public static final VirtualColumn[] VIRTUAL_COLUMNS =
       new VirtualColumn[] {FILENAME, BLOCKOFFSET, ROWOFFSET, RAWDATASIZE, GROUPINGID, ROWID};
 
-  private String name;
-  private TypeInfo typeInfo;
-  private boolean isHidden = true;
-  private ObjectInspector oi;
+  private final String name;
+  private final TypeInfo typeInfo;
+  private final boolean isHidden;
+  private final ObjectInspector oi;
 
-  public VirtualColumn() {
-  }
-
-  public VirtualColumn(String name, PrimitiveTypeInfo typeInfo) {
+  private VirtualColumn(String name, PrimitiveTypeInfo typeInfo) {
     this(name, typeInfo, true, 
       PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(typeInfo));
   }
 
-  VirtualColumn(String name, TypeInfo typeInfo, boolean isHidden, ObjectInspector oi) {
+  private VirtualColumn(String name, TypeInfo typeInfo, boolean isHidden, ObjectInspector oi) {
     this.name = name;
     this.typeInfo = typeInfo;
     this.isHidden = isHidden;
@@ -105,16 +104,8 @@ public class VirtualColumn implements Serializable {
     return typeInfo;
   }
 
-  public void setTypeInfo(PrimitiveTypeInfo typeInfo) {
-    this.typeInfo = typeInfo;
-  }
-
   public String getName() {
     return this.name;
-  }
-
-  public void setName(String name) {
-    this.name = name;
   }
 
   public boolean isHidden() {
@@ -125,26 +116,28 @@ public class VirtualColumn implements Serializable {
     return isHidden;
   }
 
-  public void setIsHidden(boolean isHidden) {
-    this.isHidden = isHidden;
-  }
   public ObjectInspector getObjectInspector() {
     return oi;
   }
 
   @Override
   public boolean equals(Object o) {
-    if (o == null) {
-      return false;
-    }
     if (this == o) {
       return true;
+    }
+    if(!(o instanceof VirtualColumn)) {
+      return false;
     }
     VirtualColumn c = (VirtualColumn) o;
     return this.name.equals(c.name)
         && this.typeInfo.getTypeName().equals(c.getTypeInfo().getTypeName());
   }
-
+  @Override
+  public int hashCode() {
+    int c = 19;
+    c = 31 * name.hashCode() + c;
+    return  31 * typeInfo.getTypeName().hashCode() + c;
+  }
   public static Collection<String> removeVirtualColumns(final Collection<String> columns) {
     for(VirtualColumn vcol : VIRTUAL_COLUMNS) {
       columns.remove(vcol.getName());
