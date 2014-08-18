@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobClient;
@@ -485,20 +486,21 @@ public class CompactorMR {
   }
 
   static class CompactorMap<V extends Writable>
-      implements Mapper<NullWritable, CompactorInputSplit,  NullWritable,  NullWritable> {
+      implements Mapper<WritableComparable, CompactorInputSplit,  NullWritable,  NullWritable> {
 
     JobConf jobConf;
     RecordWriter writer;
 
     @Override
-    public void map(NullWritable key, CompactorInputSplit split,
+    public void map(WritableComparable key, CompactorInputSplit split,
                     OutputCollector<NullWritable, NullWritable> nullWritableVOutputCollector,
                     Reporter reporter) throws IOException {
       // This will only get called once, since CompactRecordReader only returns one record,
       // the input split.
       // Based on the split we're passed we go instantiate the real reader and then iterate on it
       // until it finishes.
-      AcidInputFormat aif =
+      @SuppressWarnings("unchecked")//since there is no way to parametrize instance of Class
+      AcidInputFormat<WritableComparable, V> aif =
           instantiate(AcidInputFormat.class, jobConf.get(INPUT_FORMAT_CLASS_NAME));
       ValidTxnList txnList =
           new ValidTxnListImpl(jobConf.get(ValidTxnList.VALID_TXNS_KEY));
@@ -541,7 +543,8 @@ public class CompactorMR {
             .bucket(bucket);
 
         // Instantiate the underlying output format
-        AcidOutputFormat<V> aof =
+        @SuppressWarnings("unchecked")//since there is no way to parametrize instance of Class
+        AcidOutputFormat<WritableComparable, V> aof =
             instantiate(AcidOutputFormat.class, jobConf.get(OUTPUT_FORMAT_CLASS_NAME));
 
         writer = aof.getRawRecordWriter(new Path(jobConf.get(TMP_LOCATION)), options);

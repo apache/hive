@@ -36,9 +36,9 @@ import org.apache.hadoop.hive.ql.io.RecordIdentifier;
 import org.apache.hadoop.hive.ql.io.RecordUpdater;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapred.*;
 import org.apache.hadoop.util.Progressable;
 import org.apache.thrift.TException;
@@ -276,7 +276,7 @@ public abstract class CompactorTest {
     }
   }
 
-  static class MockInputFormat implements AcidInputFormat<Text> {
+  static class MockInputFormat implements AcidInputFormat<WritableComparable,Text> {
 
     @Override
     public AcidInputFormat.RowReader<Text> getReader(InputSplit split,
@@ -315,7 +315,7 @@ public abstract class CompactorTest {
     }
 
     @Override
-    public RecordReader<NullWritable, Text> getRecordReader(InputSplit inputSplit, JobConf entries,
+    public RecordReader<WritableComparable, Text> getRecordReader(InputSplit inputSplit, JobConf entries,
                                                             Reporter reporter) throws IOException {
       return null;
     }
@@ -398,7 +398,7 @@ public abstract class CompactorTest {
   // This class isn't used and I suspect does totally the wrong thing.  It's only here so that I
   // can provide some output format to the tables and partitions I create.  I actually write to
   // those tables directory.
-  static class MockOutputFormat implements AcidOutputFormat<Text> {
+  static class MockOutputFormat implements AcidOutputFormat<WritableComparable, Text> {
 
     @Override
     public RecordUpdater getRecordUpdater(Path path, Options options) throws
@@ -420,7 +420,7 @@ public abstract class CompactorTest {
     }
 
     @Override
-    public RecordWriter<NullWritable, Text> getRecordWriter(FileSystem fileSystem, JobConf entries,
+    public RecordWriter<WritableComparable, Text> getRecordWriter(FileSystem fileSystem, JobConf entries,
                                                             String s,
                                                             Progressable progressable) throws
         IOException {

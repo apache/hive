@@ -84,10 +84,10 @@ STAGE PLANS:
           condition expressions:
             0 
             1 {VALUE._col2}
-          outputColumnNames: _col7
+          outputColumnNames: _col8
           Statistics: Num rows: 34 Data size: 3515 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: _col7 (type: string)
+            expressions: _col8 (type: string)
             outputColumnNames: _col0
             Statistics: Num rows: 34 Data size: 3515 Basic stats: COMPLETE Column stats: NONE
             File Output Operator

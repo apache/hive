@@ -25,11 +25,13 @@ import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.io.RecordIdentifier;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
 public class VirtualColumn implements Serializable {
@@ -41,6 +43,10 @@ public class VirtualColumn implements Serializable {
   public static VirtualColumn ROWOFFSET = new VirtualColumn("ROW__OFFSET__INSIDE__BLOCK", (PrimitiveTypeInfo)TypeInfoFactory.longTypeInfo);
 
   public static VirtualColumn RAWDATASIZE = new VirtualColumn("RAW__DATA__SIZE", (PrimitiveTypeInfo)TypeInfoFactory.longTypeInfo);
+  /**
+   * {@link org.apache.hadoop.hive.ql.io.RecordIdentifier} 
+   */
+  public static VirtualColumn ROWID = new VirtualColumn("ROW__ID", RecordIdentifier.StructInfo.typeInfo, true, RecordIdentifier.StructInfo.oi);
 
   /**
    * GROUPINGID is used with GROUP BY GROUPINGS SETS, ROLLUP and CUBE.
@@ -53,23 +59,26 @@ public class VirtualColumn implements Serializable {
       new VirtualColumn("GROUPING__ID", (PrimitiveTypeInfo) TypeInfoFactory.intTypeInfo);
 
   public static VirtualColumn[] VIRTUAL_COLUMNS =
-      new VirtualColumn[] {FILENAME, BLOCKOFFSET, ROWOFFSET, RAWDATASIZE, GROUPINGID};
+      new VirtualColumn[] {FILENAME, BLOCKOFFSET, ROWOFFSET, RAWDATASIZE, GROUPINGID, ROWID};
 
   private String name;
-  private PrimitiveTypeInfo typeInfo;
+  private TypeInfo typeInfo;
   private boolean isHidden = true;
+  private ObjectInspector oi;
 
   public VirtualColumn() {
   }
 
   public VirtualColumn(String name, PrimitiveTypeInfo typeInfo) {
-    this(name, typeInfo, true);
+    this(name, typeInfo, true, 
+      PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(typeInfo));
   }
 
-  VirtualColumn(String name, PrimitiveTypeInfo typeInfo, boolean isHidden) {
+  VirtualColumn(String name, TypeInfo typeInfo, boolean isHidden, ObjectInspector oi) {
     this.name = name;
     this.typeInfo = typeInfo;
     this.isHidden = isHidden;
+    this.oi = oi;
   }
 
   public static List<VirtualColumn> getStatsRegistry(Configuration conf) {
@@ -87,11 +96,12 @@ public class VirtualColumn implements Serializable {
     if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVEROWOFFSET)) {
       l.add(ROWOFFSET);
     }
+    l.add(ROWID);
 
     return l;
   }
 
-  public PrimitiveTypeInfo getTypeInfo() {
+  public TypeInfo getTypeInfo() {
     return typeInfo;
   }
 
@@ -117,6 +127,9 @@ public class VirtualColumn implements Serializable {
 
   public void setIsHidden(boolean isHidden) {
     this.isHidden = isHidden;
+  }
+  public ObjectInspector getObjectInspector() {
+    return oi;
   }
 
   @Override
@@ -144,8 +157,7 @@ public class VirtualColumn implements Serializable {
     List<ObjectInspector> inspectors = new ArrayList<ObjectInspector>(vcs.size());
     for (VirtualColumn vc : vcs) {
       names.add(vc.getName());
-      inspectors.add(PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(
-          vc.getTypeInfo()));
+      inspectors.add(vc.oi);
     }
     return ObjectInspectorFactory.getStandardStructObjectInspector(names, inspectors);
   }
