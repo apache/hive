@@ -29,13 +29,10 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.ql.exec.MapredContext;
-import org.apache.hadoop.hive.ql.exec.ObjectCache;
-import org.apache.hadoop.hive.ql.exec.ObjectCacheFactory;
-import org.apache.hadoop.hive.ql.exec.Operator;
-import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.*;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapper.ReportStats;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.serde2.Deserializer;
@@ -135,6 +132,8 @@ public class SparkReduceRecordHandler extends SparkRecordHandler{
     }
 
     reducer.setReporter(rp);
+    OperatorUtils.setChildrenCollector(
+        Arrays.<Operator<? extends OperatorDesc>>asList(reducer), output);
 
     // initialize reduce operator tree
     try {
@@ -278,9 +277,5 @@ public class SparkReduceRecordHandler extends SparkRecordHandler{
       MapredContext.close();
       Utilities.clearWorkMap();
     }
-  }
-
-  public Operator<?> getReducer() {
-    return reducer;
   }
 }

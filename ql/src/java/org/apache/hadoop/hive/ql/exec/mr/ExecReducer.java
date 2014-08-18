@@ -321,8 +321,4 @@ public class ExecReducer extends MapReduceBase implements Reducer {
       Utilities.clearWorkMap();
     }
   }
-
-  public Operator<?> getReducer() {
-    return reducer;
-  }
 }
