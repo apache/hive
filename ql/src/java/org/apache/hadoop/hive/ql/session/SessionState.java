@@ -47,6 +47,8 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.MapRedStats;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.spark.session.SparkSession;
+import org.apache.hadoop.hive.ql.exec.spark.session.SparkSessionManagerImpl;
 import org.apache.hadoop.hive.ql.exec.tez.TezSessionPoolManager;
 import org.apache.hadoop.hive.ql.exec.tez.TezSessionState;
 import org.apache.hadoop.hive.ql.history.HiveHistory;
@@ -176,6 +178,8 @@ public class SessionState {
       "hive.internal.ss.authz.settings.applied.marker";
 
   private String userIpAddress;
+
+  private SparkSession sparkSession;
 
   /**
    * Lineage state.
@@ -1070,6 +1074,16 @@ public class SessionState {
       tezSessionState = null;
     }
 
+    if (sparkSession != null) {
+      try {
+        SparkSessionManagerImpl.getInstance().closeSession(sparkSession);
+      } catch(Exception ex) {
+        LOG.error("Error closing spark session.", ex);
+      } finally {
+        sparkSession = null;
+      }
+    }
+
     dropSessionPaths(conf);
   }
 
@@ -1160,4 +1174,12 @@ public class SessionState {
     this.userIpAddress = userIpAddress;
   }
 
+
+  public SparkSession getSparkSession() {
+    return sparkSession;
+  }
+
+  public void setSparkSession(SparkSession sparkSession) {
+    this.sparkSession = sparkSession;
+  }
 }
