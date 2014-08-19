@@ -24,6 +24,7 @@ import org.eigenbase.rel.RelNode;
 import org.eigenbase.rel.RelVisitor;
 import org.eigenbase.rel.SortRel;
 import org.eigenbase.rel.TableAccessRelBase;
+import org.eigenbase.rel.UnionRelBase;
 import org.eigenbase.reltype.RelDataTypeField;
 import org.eigenbase.rex.RexCall;
 import org.eigenbase.rex.RexFieldCollation;
@@ -191,6 +192,20 @@ public class ASTConverter {
       ast = ASTBuilder.join(left.ast, right.ast, join.getJoinType(), cond, semiJoin);
       if (semiJoin)
         s = left.schema;
+    } else if (r instanceof UnionRelBase) {
+      RelNode leftInput = ((UnionRelBase) r).getInput(0);
+      RelNode rightInput = ((UnionRelBase) r).getInput(1);
+
+      ASTConverter leftConv = new ASTConverter(leftInput);
+      ASTConverter rightConv = new ASTConverter(rightInput);
+      ASTNode leftAST = leftConv.convert((SortRel) null);
+      ASTNode rightAST = rightConv.convert((SortRel) null);
+
+      ASTNode unionAST = getUnionAllAST(leftAST, rightAST);
+
+      String sqAlias = ASTConverter.nextAlias();
+      ast = ASTBuilder.subQuery(unionAST, sqAlias);
+      s = new Schema((UnionRelBase) r, sqAlias);
     } else {
       ASTConverter src = new ASTConverter(r);
       ASTNode srcAST = src.convert(order);
@@ -230,6 +245,8 @@ public class ASTConverter {
       } else if (node instanceof ProjectRelBase) {
         handle((ProjectRelBase) node);
       } else if (node instanceof JoinRelBase) {
+        ASTConverter.this.from = node;
+      } else if (node instanceof UnionRelBase) {
         ASTConverter.this.from = node;
       } else if (node instanceof AggregateRelBase) {
         ASTConverter.this.groupBy = (AggregateRelBase) node;
@@ -271,16 +288,16 @@ public class ASTConverter {
 
     private ASTNode getPSpecAST(RexWindow window) {
       ASTNode pSpecAst = null;
-      
+
       ASTNode dByAst = null;
       if (window.partitionKeys != null && !window.partitionKeys.isEmpty()) {
         dByAst = ASTBuilder.createAST(HiveParser.TOK_DISTRIBUTEBY, "TOK_DISTRIBUTEBY");
         for (RexNode pk : window.partitionKeys) {
           ASTNode astCol = pk.accept(this);
           dByAst.addChild(astCol);
-        }        
+        }
       }
-      
+
       ASTNode oByAst = null;
       if (window.orderKeys != null && !window.orderKeys.isEmpty()) {
         oByAst = ASTBuilder.createAST(HiveParser.TOK_ORDERBY, "TOK_ORDERBY");
@@ -288,7 +305,7 @@ public class ASTConverter {
           ASTNode astNode = ok.getDirection() == RelFieldCollation.Direction.ASCENDING ? ASTBuilder
               .createAST(HiveParser.TOK_TABSORTCOLNAMEASC, "TOK_TABSORTCOLNAMEASC") : ASTBuilder
               .createAST(HiveParser.TOK_TABSORTCOLNAMEDESC, "TOK_TABSORTCOLNAMEDESC");
-              ASTNode astCol = ok.left.accept(this);
+          ASTNode astCol = ok.left.accept(this);
           astNode.addChild(astCol);
           oByAst.addChild(astNode);
         }
@@ -304,15 +321,15 @@ public class ASTConverter {
 
       return pSpecAst;
     }
-    
+
     private ASTNode getWindowBound(RexWindowBound wb) {
       ASTNode wbAST = null;
-      
+
       if (wb.isCurrentRow()) {
-        wbAST = ASTBuilder.createAST(HiveParser.KW_CURRENT, "CURRENT");     
-      } else { 
+        wbAST = ASTBuilder.createAST(HiveParser.KW_CURRENT, "CURRENT");
+      } else {
         if (wb.isPreceding())
-        wbAST = ASTBuilder.createAST(HiveParser.KW_PRECEDING, "PRECEDING");
+          wbAST = ASTBuilder.createAST(HiveParser.KW_PRECEDING, "PRECEDING");
         else
           wbAST = ASTBuilder.createAST(HiveParser.KW_FOLLOWING, "FOLLOWING");
         if (wb.isUnbounded()) {
@@ -322,7 +339,7 @@ public class ASTConverter {
           wbAST.addChild(offset);
         }
       }
-      
+
       return wbAST;
     }
 
@@ -330,29 +347,29 @@ public class ASTConverter {
       ASTNode wRangeAst = null;
 
       ASTNode startAST = null;
-      RexWindowBound ub = (RexWindowBound)window.getUpperBound();
+      RexWindowBound ub = (RexWindowBound) window.getUpperBound();
       if (ub != null) {
         startAST = getWindowBound(ub);
       }
-      
+
       ASTNode endAST = null;
-      RexWindowBound lb = (RexWindowBound)window.getLowerBound();
+      RexWindowBound lb = (RexWindowBound) window.getLowerBound();
       if (lb != null) {
         endAST = getWindowBound(lb);
       }
 
       if (startAST != null || endAST != null) {
-        //NOTE: in Hive AST Rows->Range(Physical) & Range -> Values (logical)
+        // NOTE: in Hive AST Rows->Range(Physical) & Range -> Values (logical)
         if (window.isRows())
-        wRangeAst = ASTBuilder.createAST(HiveParser.TOK_WINDOWRANGE, "TOK_WINDOWRANGE");
+          wRangeAst = ASTBuilder.createAST(HiveParser.TOK_WINDOWRANGE, "TOK_WINDOWRANGE");
         else
           wRangeAst = ASTBuilder.createAST(HiveParser.TOK_WINDOWVALUES, "TOK_WINDOWVALUES");
         if (startAST != null)
-        wRangeAst.addChild(startAST);
+          wRangeAst.addChild(startAST);
         if (endAST != null)
           wRangeAst.addChild(endAST);
       }
-      
+
       return wRangeAst;
     }
 
@@ -361,14 +378,14 @@ public class ASTConverter {
       if (!deep) {
         return null;
       }
-      
+
       // 1. Translate the UDAF
       final ASTNode wUDAFAst = visitCall(over);
-      
+
       // 2. Add TOK_WINDOW as child of UDAF
       ASTNode wSpec = ASTBuilder.createAST(HiveParser.TOK_WINDOWSPEC, "TOK_WINDOWSPEC");
       wUDAFAst.addChild(wSpec);
-      
+
       // 3. Add Part Spec & Range Spec as child of TOK_WINDOW
       final RexWindow window = over.getWindow();
       final ASTNode wPSpecAst = getPSpecAST(window);
@@ -377,7 +394,6 @@ public class ASTConverter {
         wSpec.addChild(wPSpecAst);
       if (wRangeAst != null)
         wSpec.addChild(wRangeAst);
-
 
       return wUDAFAst;
     }
@@ -438,6 +454,12 @@ public class ASTConverter {
 
     Schema(ProjectRelBase select, String alias) {
       for (RelDataTypeField field : select.getRowType().getFieldList()) {
+        add(new ColumnInfo(alias, field.getName()));
+      }
+    }
+
+    Schema(UnionRelBase unionRel, String alias) {
+      for (RelDataTypeField field : unionRel.getRowType().getFieldList()) {
         add(new ColumnInfo(alias, field.getName()));
       }
     }
@@ -539,6 +561,14 @@ public class ASTConverter {
                   .add(select).add(where).add(groupBy).add(having).add(order).add(limit));
       return b.node();
     }
+  }
+
+  public ASTNode getUnionAllAST(ASTNode leftAST, ASTNode rightAST) {
+
+    ASTNode unionTokAST = ASTBuilder.construct(HiveParser.TOK_UNION, "TOK_UNION").add(leftAST)
+        .add(rightAST).node();
+
+    return unionTokAST;
   }
 
   public static boolean isFlat(RexCall call) {

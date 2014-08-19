@@ -18,6 +18,7 @@ import org.apache.hadoop.hive.ql.optimizer.optiq.reloperators.HiveProjectRel;
 import org.apache.hadoop.hive.ql.optimizer.optiq.reloperators.HiveRel;
 import org.apache.hadoop.hive.ql.optimizer.optiq.reloperators.HiveSortRel;
 import org.apache.hadoop.hive.ql.optimizer.optiq.reloperators.HiveTableScanRel;
+import org.apache.hadoop.hive.ql.optimizer.optiq.reloperators.HiveUnionRel;
 import org.eigenbase.rel.AggregateCall;
 import org.eigenbase.rel.AggregateRel;
 import org.eigenbase.rel.CalcRel;
@@ -556,7 +557,7 @@ public class HiveRelFieldTrimmer implements ReflectiveVisitor {
    * Variant of {@link #trimFields(RelNode, BitSet, Set)} for {@link SetOpRel}
    * (including UNION and UNION ALL).
    */
-  public TrimResult trimFields(SetOpRel setOp, BitSet fieldsUsed,
+  public TrimResult trimFields(HiveUnionRel setOp, BitSet fieldsUsed,
       Set<RelDataTypeField> extraFields) {
     final RelDataType rowType = setOp.getRowType();
     final int fieldCount = rowType.getFieldCount();
@@ -594,7 +595,7 @@ public class HiveRelFieldTrimmer implements ReflectiveVisitor {
       Mapping remaining = Mappings.divide(mapping, inputMapping);
 
       // Create a projection; does nothing if remaining is identity.
-      newInput = CalcRel.projectMapping(newInput, remaining, null);
+      newInput = HiveProjectRel.projectMapping(newInput, remaining, null);
 
       if (input != newInput) {
         ++changeCount;
@@ -608,7 +609,7 @@ public class HiveRelFieldTrimmer implements ReflectiveVisitor {
       return new TrimResult(setOp, mapping);
     }
 
-    RelNode newSetOp = setOp.copy(setOp.getTraitSet(), newInputs);
+    RelNode newSetOp = setOp.copy(setOp.getTraitSet(), newInputs, true);
     return new TrimResult(newSetOp, mapping);
   }
 
