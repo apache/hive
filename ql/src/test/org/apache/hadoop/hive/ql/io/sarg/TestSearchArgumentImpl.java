@@ -2828,7 +2828,7 @@ public class TestSearchArgumentImpl {
             .build();
     assertEquals("leaf-0 = (LESS_THAN x 1970-01-11)\n" +
         "leaf-1 = (LESS_THAN_EQUALS y hi)\n" +
-        "leaf-2 = (EQUALS z 1)\n" +
+        "leaf-2 = (EQUALS z 1.0)\n" +
         "expr = (and leaf-0 leaf-1 leaf-2)", sarg.toString());
 
     sarg = SearchArgument.FACTORY.newBuilder()

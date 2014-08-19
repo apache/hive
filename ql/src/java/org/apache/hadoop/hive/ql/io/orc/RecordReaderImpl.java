@@ -1292,8 +1292,9 @@ class RecordReaderImpl implements RecordReader {
             BigInteger bInt = SerializationUtils.readBigInteger(valueStream);
             result.vector[i].update(bInt, (short) scratchScaleVector.vector[i]);
 
-            // Change the scale to match the schema if the scale in data is different.
-            if (scale != scratchScaleVector.vector[i]) {
+            // Change the scale to match the schema if the scale is less than in data.
+            // (HIVE-7373) If scale is bigger, then it leaves the original trailing zeros
+            if (scale < scratchScaleVector.vector[i]) {
               result.vector[i].changeScaleDestructive((short) scale);
             }
           }
