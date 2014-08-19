@@ -18,11 +18,8 @@
 
 package org.apache.hadoop.hive.ql.stats;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import com.google.common.base.Joiner;
+import com.google.common.collect.Lists;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileSystem;
@@ -79,8 +76,12 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableStringObj
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableTimestampObjectInspector;
 import org.apache.hadoop.io.BytesWritable;
 
-import com.google.common.base.Joiner;
-import com.google.common.collect.Lists;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class StatsUtils {
 
@@ -1215,5 +1216,34 @@ public class StatsUtils {
       }
     }
     return result;
+  }
+
+  /**
+   * Returns all table aliases from expression nodes
+   * @param columnExprMap - column expression map
+   * @return
+   */
+  public static Set<String> getAllTableAlias(
+      Map<String, ExprNodeDesc> columnExprMap) {
+    Set<String> result = new HashSet<String>();
+    if (columnExprMap != null) {
+      for (ExprNodeDesc end : columnExprMap.values()) {
+        getTableAliasFromExprNode(end, result);
+      }
+    }
+    return result;
+  }
+
+  private static void getTableAliasFromExprNode(ExprNodeDesc end,
+      Set<String> output) {
+
+    if (end instanceof ExprNodeColumnDesc) {
+      output.add(((ExprNodeColumnDesc) end).getTabAlias());
+    } else if (end instanceof ExprNodeGenericFuncDesc) {
+      for (ExprNodeDesc child : end.getChildren()) {
+        getTableAliasFromExprNode(child, output);
+      }
+    }
+
   }
 }
