@@ -41,13 +41,13 @@ import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
 import org.junit.Test;
 
 public class TestAvroObjectInspectorGenerator {
-  private final TypeInfo STRING = TypeInfoFactory.getPrimitiveTypeInfo("string");
-  private final TypeInfo INT = TypeInfoFactory.getPrimitiveTypeInfo("int");
-  private final TypeInfo BOOLEAN = TypeInfoFactory.getPrimitiveTypeInfo("boolean");
-  private final TypeInfo LONG = TypeInfoFactory.getPrimitiveTypeInfo("bigint");
-  private final TypeInfo FLOAT = TypeInfoFactory.getPrimitiveTypeInfo("float");
-  private final TypeInfo DOUBLE = TypeInfoFactory.getPrimitiveTypeInfo("double");
-  private final TypeInfo VOID = TypeInfoFactory.getPrimitiveTypeInfo("void");
+  private static final TypeInfo STRING = TypeInfoFactory.getPrimitiveTypeInfo("string");
+  private static final TypeInfo INT = TypeInfoFactory.getPrimitiveTypeInfo("int");
+  private static final TypeInfo BOOLEAN = TypeInfoFactory.getPrimitiveTypeInfo("boolean");
+  private static final TypeInfo LONG = TypeInfoFactory.getPrimitiveTypeInfo("bigint");
+  private static final TypeInfo FLOAT = TypeInfoFactory.getPrimitiveTypeInfo("float");
+  private static final TypeInfo DOUBLE = TypeInfoFactory.getPrimitiveTypeInfo("double");
+  private static final TypeInfo VOID = TypeInfoFactory.getPrimitiveTypeInfo("void");
 
   // These schemata are used in other tests
   static public final String MAP_WITH_PRIMITIVE_VALUE_TYPE = "{\n" +
@@ -265,7 +265,7 @@ public class TestAvroObjectInspectorGenerator {
         "  \"symbols\" : [\"SPADES\", \"HEARTS\", \"DIAMONDS\", \"CLUBS\"]\n" +
         "}";
 
-    Schema s = Schema.parse(nonRecordSchema);
+    Schema s = AvroSerdeUtils.getSchemaFor(nonRecordSchema);
     try {
       new AvroObjectInspectorGenerator(s);
       fail("Should not be able to handle non-record Avro types");
@@ -311,7 +311,7 @@ public class TestAvroObjectInspectorGenerator {
         "    }\n" +
         "  ]\n" +
         "}";
-    AvroObjectInspectorGenerator aoig = new AvroObjectInspectorGenerator(Schema.parse(bunchOfPrimitives));
+    AvroObjectInspectorGenerator aoig = new AvroObjectInspectorGenerator(AvroSerdeUtils.getSchemaFor(bunchOfPrimitives));
 
     String [] expectedColumnNames = {"aString", "anInt", "aBoolean", "aLong", "aFloat", "aDouble", "aNull"};
     verifyColumnNames(expectedColumnNames, aoig.getColumnNames());
@@ -350,7 +350,7 @@ public class TestAvroObjectInspectorGenerator {
 
   @Test
   public void canHandleMapsWithPrimitiveValueTypes() throws SerDeException {
-    Schema s = Schema.parse(MAP_WITH_PRIMITIVE_VALUE_TYPE);
+    Schema s = AvroSerdeUtils.getSchemaFor(MAP_WITH_PRIMITIVE_VALUE_TYPE);
     AvroObjectInspectorGenerator aoig = new AvroObjectInspectorGenerator(s);
     verifyMap(aoig, "aMap");
   }
@@ -379,7 +379,7 @@ public class TestAvroObjectInspectorGenerator {
 
   @Test
   public void canHandleArrays() throws SerDeException {
-    Schema s = Schema.parse(ARRAY_WITH_PRIMITIVE_ELEMENT_TYPE);
+    Schema s = AvroSerdeUtils.getSchemaFor(ARRAY_WITH_PRIMITIVE_ELEMENT_TYPE);
     AvroObjectInspectorGenerator aoig = new AvroObjectInspectorGenerator(s);
 
     // Column names
@@ -398,7 +398,7 @@ public class TestAvroObjectInspectorGenerator {
 
   @Test
   public void canHandleRecords() throws SerDeException {
-    Schema s = Schema.parse(RECORD_SCHEMA);
+    Schema s = AvroSerdeUtils.getSchemaFor(RECORD_SCHEMA);
     AvroObjectInspectorGenerator aoig = new AvroObjectInspectorGenerator(s);
 
     // Column names
@@ -429,7 +429,7 @@ public class TestAvroObjectInspectorGenerator {
 
   @Test
   public void canHandleUnions() throws SerDeException {
-    Schema s = Schema.parse(UNION_SCHEMA);
+    Schema s = AvroSerdeUtils.getSchemaFor(UNION_SCHEMA);
     AvroObjectInspectorGenerator aoig = new AvroObjectInspectorGenerator(s);
 
     // Column names
@@ -452,7 +452,7 @@ public class TestAvroObjectInspectorGenerator {
 
   @Test // Enums are one of two Avro types that Hive doesn't have any native support for.
   public void canHandleEnums() throws SerDeException {
-    Schema s = Schema.parse(ENUM_SCHEMA);
+    Schema s = AvroSerdeUtils.getSchemaFor(ENUM_SCHEMA);
     AvroObjectInspectorGenerator aoig = new AvroObjectInspectorGenerator(s);
 
     // Column names - we lose the enumness of this schema
@@ -466,7 +466,7 @@ public class TestAvroObjectInspectorGenerator {
 
   @Test // Hive has no concept of Avro's fixed type.  Fixed -> arrays of bytes
   public void canHandleFixed() throws SerDeException {
-    Schema s = Schema.parse(FIXED_SCHEMA);
+    Schema s = AvroSerdeUtils.getSchemaFor(FIXED_SCHEMA);
 
     AvroObjectInspectorGenerator aoig = new AvroObjectInspectorGenerator(s);
 
@@ -483,7 +483,7 @@ public class TestAvroObjectInspectorGenerator {
 
   @Test // Avro considers bytes primitive, Hive doesn't. Make them list of tinyint.
   public void canHandleBytes() throws SerDeException {
-    Schema s = Schema.parse(BYTES_SCHEMA);
+    Schema s = AvroSerdeUtils.getSchemaFor(BYTES_SCHEMA);
 
     AvroObjectInspectorGenerator aoig = new AvroObjectInspectorGenerator(s);
 
@@ -500,7 +500,7 @@ public class TestAvroObjectInspectorGenerator {
 
   @Test // That Union[T, NULL] is converted to just T.
   public void convertsNullableTypes() throws SerDeException {
-    Schema s = Schema.parse(NULLABLE_STRING_SCHEMA);
+    Schema s = AvroSerdeUtils.getSchemaFor(NULLABLE_STRING_SCHEMA);
 
     AvroObjectInspectorGenerator aoig = new AvroObjectInspectorGenerator(s);
     assertEquals(1, aoig.getColumnNames().size());
@@ -517,14 +517,14 @@ public class TestAvroObjectInspectorGenerator {
 
   @Test // That Union[T, NULL] is converted to just T, within a Map
   public void convertsMapsWithNullablePrimitiveTypes() throws SerDeException {
-    Schema s = Schema.parse(MAP_WITH_NULLABLE_PRIMITIVE_VALUE_TYPE_SCHEMA);
+    Schema s = AvroSerdeUtils.getSchemaFor(MAP_WITH_NULLABLE_PRIMITIVE_VALUE_TYPE_SCHEMA);
     AvroObjectInspectorGenerator aoig = new AvroObjectInspectorGenerator(s);
     verifyMap(aoig, "aMap");
   }
 
   @Test // That Union[T, NULL] is converted to just T.
   public void convertsNullableEnum() throws SerDeException {
-    Schema s = Schema.parse(NULLABLE_ENUM_SCHEMA);
+    Schema s = AvroSerdeUtils.getSchemaFor(NULLABLE_ENUM_SCHEMA);
 
     AvroObjectInspectorGenerator aoig = new AvroObjectInspectorGenerator(s);
     assertEquals(1, aoig.getColumnNames().size());
@@ -542,10 +542,10 @@ public class TestAvroObjectInspectorGenerator {
   @Test
   public void objectInspectorsAreCached() throws SerDeException {
     // Verify that Hive is caching the object inspectors for us.
-    Schema s = Schema.parse(KITCHEN_SINK_SCHEMA);
+    Schema s = AvroSerdeUtils.getSchemaFor(KITCHEN_SINK_SCHEMA);
     AvroObjectInspectorGenerator aoig = new AvroObjectInspectorGenerator(s);
 
-    Schema s2 = Schema.parse(KITCHEN_SINK_SCHEMA);
+    Schema s2 = AvroSerdeUtils.getSchemaFor(KITCHEN_SINK_SCHEMA);
     AvroObjectInspectorGenerator aoig2 = new AvroObjectInspectorGenerator(s2);
 
 
