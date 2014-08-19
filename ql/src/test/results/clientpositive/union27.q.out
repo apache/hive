@@ -1,7 +1,9 @@
-PREHOOK: query: create table jackson_sev_same as select * from src
+PREHOOK: query: -- SORT_BEFORE_DIFF
+create table jackson_sev_same as select * from src
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
-POSTHOOK: query: create table jackson_sev_same as select * from src
+POSTHOOK: query: -- SORT_BEFORE_DIFF
+create table jackson_sev_same as select * from src
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@jackson_sev_same

@@ -1,9 +1,13 @@
-PREHOOK: query: -- HIVE-2901
+PREHOOK: query: -- SORT_BEFORE_DIFF
+
+-- HIVE-2901
 select x from (select value as x from src union all select NULL as x from src)a limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- HIVE-2901
+POSTHOOK: query: -- SORT_BEFORE_DIFF
+
+-- HIVE-2901
 select x from (select value as x from src union all select NULL as x from src)a limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src

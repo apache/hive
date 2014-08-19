@@ -1,3 +1,4 @@
+-- SORT_BEFORE_DIFF
 -- union :map-reduce sub-queries followed by join
 
 explain 

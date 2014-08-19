@@ -1,3 +1,4 @@
+-- SORT_BEFORE_DIFF
 -- union case: all subqueries are a map-only jobs, 3 way union, same input for all sub-queries, followed by reducesink
 
 explain 
