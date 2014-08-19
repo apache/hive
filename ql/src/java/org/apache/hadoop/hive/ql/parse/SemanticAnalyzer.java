@@ -112,6 +112,7 @@ import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcContext;
 import org.apache.hadoop.hive.ql.optimizer.optiq.HiveDefaultRelMetadataProvider;
 import org.apache.hadoop.hive.ql.optimizer.optiq.Pair;
 import org.apache.hadoop.hive.ql.optimizer.optiq.RelOptHiveTable;
+import org.apache.hadoop.hive.ql.optimizer.optiq.TraitsUtil;
 import org.apache.hadoop.hive.ql.optimizer.optiq.cost.HiveVolcanoPlanner;
 import org.apache.hadoop.hive.ql.optimizer.optiq.reloperators.HiveAggregateRel;
 import org.apache.hadoop.hive.ql.optimizer.optiq.reloperators.HiveFilterRel;
@@ -120,13 +121,10 @@ import org.apache.hadoop.hive.ql.optimizer.optiq.reloperators.HiveProjectRel;
 import org.apache.hadoop.hive.ql.optimizer.optiq.reloperators.HiveRel;
 import org.apache.hadoop.hive.ql.optimizer.optiq.reloperators.HiveSortRel;
 import org.apache.hadoop.hive.ql.optimizer.optiq.reloperators.HiveTableScanRel;
-import org.apache.hadoop.hive.ql.optimizer.optiq.rules.HiveMergeProjectRule;
+import org.apache.hadoop.hive.ql.optimizer.optiq.reloperators.HiveUnionRel;
 import org.apache.hadoop.hive.ql.optimizer.optiq.rules.HivePartitionPrunerRule;
-import org.apache.hadoop.hive.ql.optimizer.optiq.rules.HivePullUpProjectsAboveJoinRule;
 import org.apache.hadoop.hive.ql.optimizer.optiq.rules.HivePushFilterPastJoinRule;
-import org.apache.hadoop.hive.ql.optimizer.optiq.rules.HivePushJoinThroughJoinRule;
 import org.apache.hadoop.hive.ql.optimizer.optiq.rules.HiveRelFieldTrimmer;
-import org.apache.hadoop.hive.ql.optimizer.optiq.rules.HiveSwapJoinRule;
 import org.apache.hadoop.hive.ql.optimizer.optiq.translator.ASTConverter;
 import org.apache.hadoop.hive.ql.optimizer.optiq.translator.RexNodeConverter;
 import org.apache.hadoop.hive.ql.optimizer.optiq.translator.SqlFunctionConverter;
@@ -228,7 +226,6 @@ import org.eigenbase.rel.InvalidRelException;
 import org.eigenbase.rel.JoinRelType;
 import org.eigenbase.rel.RelCollation;
 import org.eigenbase.rel.RelCollationImpl;
-import org.eigenbase.rel.RelFactories;
 import org.eigenbase.rel.RelFieldCollation;
 import org.eigenbase.rel.RelNode;
 import org.eigenbase.rel.metadata.CachingRelMetadataProvider;
@@ -236,8 +233,6 @@ import org.eigenbase.rel.metadata.ChainedRelMetadataProvider;
 import org.eigenbase.rel.metadata.RelMetadataProvider;
 import org.eigenbase.rel.rules.ConvertMultiJoinRule;
 import org.eigenbase.rel.rules.LoptOptimizeJoinRule;
-import org.eigenbase.rel.rules.OptimizeBushyJoinRule;
-import org.eigenbase.rel.rules.PushFilterPastJoinRule;
 import org.eigenbase.relopt.RelOptCluster;
 import org.eigenbase.relopt.RelOptPlanner;
 import org.eigenbase.relopt.RelOptQuery;
@@ -272,7 +267,6 @@ import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
 /**
@@ -11927,9 +11921,137 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       return planner.findBestExp();
     }
 
-    private RelNode genUnionLogicalPlan(String unionalias, String leftalias,
-        RelNode leftOp, String rightalias, RelNode rightOp) {
-      return null;
+    @SuppressWarnings("nls")
+    private RelNode genUnionLogicalPlan(String unionalias, String leftalias, RelNode leftRel,
+        String rightalias, RelNode rightRel) throws SemanticException {
+      HiveUnionRel unionRel = null;
+
+      // 1. Get Row Resolvers, Column map for original left and right input of
+      // Union Rel
+      RowResolver leftRR = this.m_relToHiveRR.get(leftRel);
+      RowResolver rightRR = this.m_relToHiveRR.get(rightRel);
+      HashMap<String, ColumnInfo> leftmap = leftRR.getFieldMap(leftalias);
+      HashMap<String, ColumnInfo> rightmap = rightRR.getFieldMap(rightalias);
+
+      // 2. Validate that Union is feasible according to Hive (by using type
+      // info from RR)
+      if (leftmap.size() != rightmap.size()) {
+        throw new SemanticException("Schema of both sides of union should match.");
+      }
+
+      ASTNode tabref = qb.getAliases().isEmpty() ? null : qb.getParseInfo().getSrcForAlias(
+          qb.getAliases().get(0));
+      for (Map.Entry<String, ColumnInfo> lEntry : leftmap.entrySet()) {
+        String field = lEntry.getKey();
+        ColumnInfo lInfo = lEntry.getValue();
+        ColumnInfo rInfo = rightmap.get(field);
+        if (rInfo == null) {
+          throw new SemanticException(generateErrorMessage(tabref,
+              "Schema of both sides of union should match. " + rightalias
+                  + " does not have the field " + field));
+        }
+        if (lInfo == null) {
+          throw new SemanticException(generateErrorMessage(tabref,
+              "Schema of both sides of union should match. " + leftalias
+                  + " does not have the field " + field));
+        }
+        if (!lInfo.getInternalName().equals(rInfo.getInternalName())) {
+          throw new SemanticException(generateErrorMessage(tabref,
+              "Schema of both sides of union should match: field " + field + ":"
+                  + " appears on the left side of the UNION at column position: "
+                  + getPositionFromInternalName(lInfo.getInternalName())
+                  + ", and on the right side of the UNION at column position: "
+                  + getPositionFromInternalName(rInfo.getInternalName())
+                  + ". Column positions should match for a UNION"));
+        }
+        // try widening coversion, otherwise fail union
+        TypeInfo commonTypeInfo = FunctionRegistry.getCommonClassForUnionAll(lInfo.getType(),
+            rInfo.getType());
+        if (commonTypeInfo == null) {
+          throw new SemanticException(generateErrorMessage(tabref,
+              "Schema of both sides of union should match: Column " + field + " is of type "
+                  + lInfo.getType().getTypeName() + " on first table and type "
+                  + rInfo.getType().getTypeName() + " on second table"));
+        }
+      }
+
+      // 3. construct Union Output RR using original left & right Input
+      RowResolver unionoutRR = new RowResolver();
+      for (Map.Entry<String, ColumnInfo> lEntry : leftmap.entrySet()) {
+        String field = lEntry.getKey();
+        ColumnInfo lInfo = lEntry.getValue();
+        ColumnInfo rInfo = rightmap.get(field);
+        ColumnInfo unionColInfo = new ColumnInfo(lInfo);
+        unionColInfo.setTabAlias(unionalias);
+        unionColInfo.setType(FunctionRegistry.getCommonClassForUnionAll(lInfo.getType(),
+            rInfo.getType()));
+        unionoutRR.put(unionalias, field, unionColInfo);
+      }
+
+      // 4. Determine which columns requires cast on left/right input (Optiq
+      // requires exact types on both sides of union)
+      boolean leftNeedsTypeCast = false;
+      boolean rightNeedsTypeCast = false;
+      List<RexNode> leftProjs = new ArrayList<RexNode>();
+      List<RexNode> rightProjs = new ArrayList<RexNode>();
+      List<RelDataTypeField> leftRowDT = leftRel.getRowType().getFieldList();
+      List<RelDataTypeField> rightRowDT = rightRel.getRowType().getFieldList();
+
+      RelDataType leftFieldDT;
+      RelDataType rightFieldDT;
+      RelDataType unionFieldDT;
+      List<RelDataType> tmpDTLst = new ArrayList<RelDataType>();
+      for (int i = 0; i < leftRowDT.size(); i++) {
+        leftFieldDT = leftRowDT.get(i).getType();
+        rightFieldDT = rightRowDT.get(i).getType();
+        if (!leftFieldDT.equals(rightFieldDT)) {
+          tmpDTLst.clear();
+          tmpDTLst.add(leftFieldDT);
+          tmpDTLst.add(rightFieldDT);
+          unionFieldDT = m_cluster.getTypeFactory().leastRestrictive(tmpDTLst);
+
+          if (!unionFieldDT.equals(leftFieldDT))
+            leftNeedsTypeCast = true;
+          leftProjs.add(m_cluster.getRexBuilder().ensureType(unionFieldDT,
+              m_cluster.getRexBuilder().makeInputRef(leftFieldDT, i), true));
+
+          if (!unionFieldDT.equals(rightFieldDT))
+            rightNeedsTypeCast = true;
+          rightProjs.add(m_cluster.getRexBuilder().ensureType(unionFieldDT,
+              m_cluster.getRexBuilder().makeInputRef(rightFieldDT, i), true));
+        } else {
+          leftProjs.add(m_cluster.getRexBuilder().ensureType(leftFieldDT,
+              m_cluster.getRexBuilder().makeInputRef(leftFieldDT, i), true));
+          rightProjs.add(m_cluster.getRexBuilder().ensureType(rightFieldDT,
+              m_cluster.getRexBuilder().makeInputRef(rightFieldDT, i), true));
+        }
+      }
+
+      // 5. Introduce Project Rel above original left/right inputs if cast is
+      // needed for type parity
+      RelNode unionLeftInput = leftRel;
+      RelNode unionRightInput = rightRel;
+      if (leftNeedsTypeCast) {
+        unionLeftInput = HiveProjectRel.create(leftRel, leftProjs, leftRel.getRowType()
+            .getFieldNames());
+      }
+      if (rightNeedsTypeCast) {
+        unionRightInput = HiveProjectRel.create(rightRel, rightProjs, rightRel.getRowType()
+            .getFieldNames());
+      }
+
+      // 6. Construct Union Rel
+      ImmutableList.Builder bldr = new ImmutableList.Builder<RelNode>();
+      bldr.add(unionLeftInput);
+      bldr.add(unionRightInput);
+      unionRel = new HiveUnionRel(m_cluster, TraitsUtil.getUnionTraitSet(m_cluster, null),
+          bldr.build());
+
+      m_relToHiveRR.put(unionRel, unionoutRR);
+      m_relToHiveColNameOptiqPosMap.put(unionRel,
+          this.buildHiveToOptiqColumnMap(unionoutRR, unionRel));
+
+      return unionRel;
     }
 
     private RelNode genJoinRelNode(RelNode leftRel, RelNode rightRel,

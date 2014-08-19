@@ -1,5 +1,6 @@
 package org.apache.hadoop.hive.ql.optimizer.optiq.reloperators;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -18,8 +19,12 @@ import org.eigenbase.relopt.RelOptPlanner;
 import org.eigenbase.relopt.RelOptRule;
 import org.eigenbase.relopt.RelTraitSet;
 import org.eigenbase.reltype.RelDataType;
+import org.eigenbase.reltype.RelDataTypeField;
+import org.eigenbase.rex.RexBuilder;
 import org.eigenbase.rex.RexNode;
 import org.eigenbase.rex.RexUtil;
+import org.eigenbase.util.mapping.Mapping;
+import org.eigenbase.util.mapping.MappingType;
 
 public class HiveProjectRel extends ProjectRelBase implements HiveRel {
 
@@ -70,6 +75,57 @@ public class HiveProjectRel extends ProjectRelBase implements HiveRel {
       RelDataType rowType, final List<RelCollation> collationList) {
     RelTraitSet traitSet = TraitsUtil.getSelectTraitSet(cluster, exps, child);
     return new HiveProjectRel(cluster, traitSet, child, exps, rowType, Flags.BOXED);
+  }
+
+  /**
+   * Creates a relational expression which projects the output fields of a
+   * relational expression according to a partial mapping.
+   *
+   * <p>
+   * A partial mapping is weaker than a permutation: every target has one
+   * source, but a source may have 0, 1 or more than one targets. Usually the
+   * result will have fewer fields than the source, unless some source fields
+   * are projected multiple times.
+   *
+   * <p>
+   * This method could optimize the result as {@link #permute} does, but does
+   * not at present.
+   *
+   * @param rel
+   *          Relational expression
+   * @param mapping
+   *          Mapping from source fields to target fields. The mapping type must
+   *          obey the constraints {@link MappingType#isMandatorySource()} and
+   *          {@link MappingType#isSingleSource()}, as does
+   *          {@link MappingType#INVERSE_FUNCTION}.
+   * @param fieldNames
+   *          Field names; if null, or if a particular entry is null, the name
+   *          of the permuted field is used
+   * @return relational expression which projects a subset of the input fields
+   */
+  public static RelNode projectMapping(RelNode rel, Mapping mapping, List<String> fieldNames) {
+    assert mapping.getMappingType().isSingleSource();
+    assert mapping.getMappingType().isMandatorySource();
+
+    if (mapping.isIdentity()) {
+      return rel;
+    }
+
+    final List<String> outputNameList = new ArrayList<String>();
+    final List<RexNode> outputProjList = new ArrayList<RexNode>();
+    final List<RelDataTypeField> fields = rel.getRowType().getFieldList();
+    final RexBuilder rexBuilder = rel.getCluster().getRexBuilder();
+
+    for (int i = 0; i < mapping.getTargetCount(); i++) {
+      int source = mapping.getSource(i);
+      final RelDataTypeField sourceField = fields.get(source);
+      outputNameList
+          .add(((fieldNames == null) || (fieldNames.size() <= i) || (fieldNames.get(i) == null)) ? sourceField
+              .getName() : fieldNames.get(i));
+      outputProjList.add(rexBuilder.makeInputRef(rel, source));
+    }
+
+    return create(rel, (List<RexNode>) outputProjList, outputNameList);
   }
 
   public ProjectRelBase copy(RelTraitSet traitSet, RelNode input, List<RexNode> exps,

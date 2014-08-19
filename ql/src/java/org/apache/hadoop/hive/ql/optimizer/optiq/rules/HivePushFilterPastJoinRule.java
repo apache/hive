@@ -114,7 +114,7 @@ public abstract class HivePushFilterPastJoinRule extends RelOptRule {
     boolean filterPushed = false;
     final Holder<JoinRelType> joinTypeHolder = Holder.of(join.getJoinType());
     if (RelOptUtil.classifyFilters(join, aboveFilters,
-        join.getJoinType(), !join.getJoinType().generatesNullsOnLeft(), !join.getJoinType()
+        join.getJoinType(), true, !join.getJoinType().generatesNullsOnLeft(), !join.getJoinType()
         .generatesNullsOnRight(), joinFilters, leftFilters, rightFilters, joinTypeHolder, false)) {
       filterPushed = true;
     }
@@ -159,7 +159,7 @@ public abstract class HivePushFilterPastJoinRule extends RelOptRule {
     // Try to push down filters in ON clause. A ON clause filter can only be
     // pushed down if it does not affect the non-matching set, i.e. it is
     // not on the side which is preserved.
-    if (RelOptUtil.classifyFilters(join, joinFilters, null, !join
+    if (RelOptUtil.classifyFilters(join, joinFilters, null, false, !join
         .getJoinType().generatesNullsOnRight(), !join.getJoinType()
         .generatesNullsOnLeft(), joinFilters, leftFilters, rightFilters, joinTypeHolder, false)) {
       filterPushed = true;

@@ -188,7 +188,7 @@ select count(*) from v1 a join v1 b on a.value = b.value;
 
 create view v3 as select v1.value val from v1 join t1 on v1.c_boolean = t1.c_boolean;
 
--- view chaining
+-- 10. view chaining
 select count(val) from v3 where val != '1';
 with q1 as ( select key from t1 where key = '1')
 select count(*) from q1;
@@ -214,3 +214,9 @@ drop view v1;
 drop view v2;
 drop view v3;
 drop view v4;
+
+-- 11. Union All
+select * from t1 union all select * from t2 order by key;
+select key from (select key, c_int from (select * from t1 union all select * from t2 where t2.key >=0)r1 union all select key, c_int from t3)r2 where key >=0 order by key;
+select r2.key from (select key, c_int from (select key, c_int from t1 union all select key, c_int from t3 )r1 union all select key, c_int from t3)r2 join   (select key, c_int from (select * from t1 union all select * from t2 where t2.key >=0)r1 union all select key, c_int from t3)r3 on r2.key=r3.key where r3.key >=0 order by r2.key;
+

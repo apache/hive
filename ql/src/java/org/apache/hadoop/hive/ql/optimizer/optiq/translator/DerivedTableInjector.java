@@ -18,6 +18,7 @@ import org.eigenbase.rel.SetOpRel;
 import org.eigenbase.rel.SingleRel;
 import org.eigenbase.rel.TableAccessRelBase;
 import org.eigenbase.rel.TableFunctionRelBase;
+import org.eigenbase.rel.UnionRelBase;
 import org.eigenbase.rel.ValuesRelBase;
 import org.eigenbase.rel.rules.MultiJoinRel;
 import org.eigenbase.relopt.hep.HepRelVertex;
@@ -36,29 +37,46 @@ public class DerivedTableInjector {
     // OB, Limit in sub query.
     // RelNode newTopSelect = introduceTopLevelSelectInResultSchema(rel,
     // resultSchema);
-    RelNode newTopSelect = rel;
-    convertOpTree(newTopSelect, (RelNode) null);
-    return newTopSelect;
+    RelNode newTopNode = rel;
+
+    // NOTE: Hive requires Union to buried in Project (TOK_QUERY,
+    // TOK_SUBQUERY, TOK_UNION)
+    if (newTopNode instanceof UnionRelBase) {
+      newTopNode = introduceDerivedTable(newTopNode);
+    }
+
+    convertOpTree(newTopNode, (RelNode) null);
+
+    return newTopNode;
   }
 
   private static void convertOpTree(RelNode rel, RelNode parent) {
 
     if (rel instanceof EmptyRel) {
-      // TODO: replace with null scan
+      throw new RuntimeException("Found Empty Rel");
     } else if (rel instanceof HepRelVertex) {
-      // TODO: is this relevant?
+      throw new RuntimeException("Found HepRelVertex");
     } else if (rel instanceof JoinRelBase) {
       if (!validJoinParent(rel, parent)) {
         introduceDerivedTable(rel, parent);
       }
     } else if (rel instanceof MultiJoinRel) {
-
+      throw new RuntimeException("Found MultiJoinRel");
     } else if (rel instanceof OneRowRelBase) {
-
+      throw new RuntimeException("Found OneRowRelBase");
     } else if (rel instanceof RelSubset) {
-
+      throw new RuntimeException("Found RelSubset");
     } else if (rel instanceof SetOpRel) {
+      // TODO: Handle more than 2 inputs for setop
+      if (!validSetopParent(rel, parent))
+        introduceDerivedTable(rel, parent);
 
+      SetOpRel setopRel = (SetOpRel) rel;
+      for (RelNode inputRel : setopRel.getInputs()) {
+        if (!validSetopChild(inputRel)) {
+          introduceDerivedTable(inputRel, setopRel);
+        }
+      }
     } else if (rel instanceof SingleRel) {
       if (rel instanceof FilterRelBase) {
         if (!validFilterParent(rel, parent)) {
@@ -104,7 +122,7 @@ public class DerivedTableInjector {
       curNode = curNode.getInput(0);
     }
 
-    //Assumption: tree could only be (limit)?(OB)?(ProjectRelBase)....
+    // Assumption: tree could only be (limit)?(OB)?(ProjectRelBase)....
     List<RexNode> rootChildExps = rootProjRel.getChildExps();
     if (resultSchema.size() != rootChildExps.size()) {
       throw new RuntimeException("Result Schema didn't match Optiq Optimized Op Tree Schema");
@@ -118,6 +136,20 @@ public class DerivedTableInjector {
     }
 
     return HiveProjectRel.create(rootRel, newSelExps, newSelAliases);
+  }
+
+  private static RelNode introduceDerivedTable(final RelNode rel) {
+    List<RexNode> projectList = Lists.transform(rel.getRowType().getFieldList(),
+        new Function<RelDataTypeField, RexNode>() {
+          public RexNode apply(RelDataTypeField field) {
+            return rel.getCluster().getRexBuilder().makeInputRef(field.getType(), field.getIndex());
+          }
+        });
+
+    HiveProjectRel select = HiveProjectRel.create(rel.getCluster(), rel, projectList,
+        rel.getRowType(), rel.getCollationList());
+
+    return select;
   }
 
   private static void introduceDerivedTable(final RelNode rel, RelNode parent) {
@@ -137,17 +169,9 @@ public class DerivedTableInjector {
       throw new RuntimeException("Couldn't find child node in parent's inputs");
     }
 
-    List<RexNode> projectList = Lists.transform(rel.getRowType().getFieldList(),
-        new Function<RelDataTypeField, RexNode>() {
-          public RexNode apply(RelDataTypeField field) {
-            return rel.getCluster().getRexBuilder().makeInputRef(field.getType(), field.getIndex());
-          }
-        });
+    RelNode select = introduceDerivedTable(rel);
 
-    HiveProjectRel select = HiveProjectRel.create(rel.getCluster(), rel, projectList,
-        rel.getRowType(), rel.getCollationList());
     parent.replaceInput(pos, select);
-
   }
 
   private static boolean validJoinParent(RelNode joinNode, RelNode parent) {
@@ -205,6 +229,26 @@ public class DerivedTableInjector {
     RelNode child = sortNode.getChild();
 
     if (!(child instanceof ProjectRelBase)) {
+      validChild = false;
+    }
+
+    return validChild;
+  }
+
+  private static boolean validSetopParent(RelNode setop, RelNode parent) {
+    boolean validChild = true;
+
+    if (parent != null && !(parent instanceof ProjectRelBase)) {
+      validChild = false;
+    }
+
+    return validChild;
+  }
+
+  private static boolean validSetopChild(RelNode setopChild) {
+    boolean validChild = true;
+
+    if (!(setopChild instanceof ProjectRelBase)) {
       validChild = false;
     }
 
