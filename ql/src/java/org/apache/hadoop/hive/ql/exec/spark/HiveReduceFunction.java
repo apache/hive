@@ -45,7 +45,6 @@ BytesWritable, BytesWritable> {
   call(Iterator<Tuple2<BytesWritable,Iterable<BytesWritable>>> it) throws Exception {
     if (jobConf == null) {
       jobConf = KryoSerializer.deserializeJobConf(this.buffer);
-      jobConf.set("mapred.reducer.class", ExecReducer.class.getName());
     }
 
     SparkReduceRecordHandler reducerRecordhandler = new SparkReduceRecordHandler();
