@@ -1,5 +1,5 @@
 set hive.groupby.skewindata=true;
-
+-- SORT_BEFORE_DIFF
 -- This tests that a union all with a map only subquery on one side and a 
 -- subquery involving two map reduce jobs on the other runs correctly.
 
