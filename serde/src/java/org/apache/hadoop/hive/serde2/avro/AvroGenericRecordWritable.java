@@ -93,8 +93,8 @@ public class AvroGenericRecordWritable implements Writable{
 
   @Override
   public void readFields(DataInput in) throws IOException {
-    Schema schema = Schema.parse(in.readUTF());
-    fileSchema = Schema.parse(in.readUTF());
+    Schema schema = AvroSerdeUtils.getSchemaFor(in.readUTF());
+    fileSchema = AvroSerdeUtils.getSchemaFor(in.readUTF());
     recordReaderID = UID.read(in);
     record = new GenericData.Record(schema);
     binaryDecoder = DecoderFactory.defaultFactory().createBinaryDecoder((InputStream) in, binaryDecoder);
