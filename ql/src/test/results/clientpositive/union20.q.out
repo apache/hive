@@ -1,4 +1,5 @@
-PREHOOK: query: -- union :map-reduce sub-queries followed by join
+PREHOOK: query: -- SORT_BEFORE_DIFF
+-- union :map-reduce sub-queries followed by join
 
 explain 
 SELECT unionsrc1.key, unionsrc1.value, unionsrc2.key, unionsrc2.value
@@ -11,7 +12,8 @@ JOIN
       select s4.key as key, s4.value as value from src s4 where s4.key < 10) unionsrc2
 ON (unionsrc1.key = unionsrc2.key)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- union :map-reduce sub-queries followed by join
+POSTHOOK: query: -- SORT_BEFORE_DIFF
+-- union :map-reduce sub-queries followed by join
 
 explain 
 SELECT unionsrc1.key, unionsrc1.value, unionsrc2.key, unionsrc2.value
