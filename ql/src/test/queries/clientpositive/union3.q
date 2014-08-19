@@ -1,3 +1,4 @@
+-- SORT_BEFORE_DIFF
 
 explain
 SELECT *

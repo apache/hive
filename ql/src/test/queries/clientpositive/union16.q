@@ -1,3 +1,4 @@
+-- SORT_BEFORE_DIFF
 EXPLAIN
 SELECT count(1) FROM (
   SELECT key, value FROM src UNION ALL
