@@ -178,7 +178,7 @@ public class SparkClient implements Serializable {
    */
   private synchronized void refreshLocalResources(SparkWork sparkWork, HiveConf conf) {
     // add hive-exec jar
-    addJars(conf.getJar());
+    addJars((new JobConf(this.getClass())).getJar());
 
     // add aux jars
     addJars(HiveConf.getVar(conf, HiveConf.ConfVars.HIVEAUXJARS));
