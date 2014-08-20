@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.ql.exec.tez;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.tez.runtime.common.objectregistry.ObjectRegistry;
+import org.apache.tez.runtime.api.ObjectRegistry;
 import org.apache.tez.runtime.common.objectregistry.ObjectRegistryImpl;
 
 /**
@@ -30,6 +30,7 @@ import org.apache.tez.runtime.common.objectregistry.ObjectRegistryImpl;
 public class ObjectCache implements org.apache.hadoop.hive.ql.exec.ObjectCache {
 
   private static final Log LOG = LogFactory.getLog(ObjectCache.class.getName());
+  // TODO HIVE-7809. This is broken. A new instance of ObjectRegistry should not be created. 
   private final ObjectRegistry registry = new ObjectRegistryImpl();
 
   @Override

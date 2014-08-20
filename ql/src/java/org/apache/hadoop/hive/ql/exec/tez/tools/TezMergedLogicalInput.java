@@ -22,9 +22,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.tez.runtime.api.Input;
+import org.apache.tez.runtime.api.MergedInputContext;
 import org.apache.tez.runtime.api.MergedLogicalInput;
 import org.apache.tez.runtime.api.Reader;
-import org.apache.tez.runtime.api.TezMergedInputContext;
 
 /**
  * TezMergedLogicalInput is an adapter to make union input look like
@@ -34,7 +34,7 @@ public class TezMergedLogicalInput extends MergedLogicalInput {
 
   private Map<Input, Boolean> readyInputs = new IdentityHashMap<Input, Boolean>();
 
-  public TezMergedLogicalInput(TezMergedInputContext context, List<Input> inputs) {
+  public TezMergedLogicalInput(MergedInputContext context, List<Input> inputs) {
     super(context, inputs);
   }
  

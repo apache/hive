@@ -41,21 +41,17 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
-import org.apache.hadoop.hdfs.DistributedFileSystem;
-import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.yarn.api.records.LocalResource;
 import org.apache.tez.client.TezClient;
-import org.apache.tez.client.PreWarmVertex;
+import org.apache.tez.dag.api.PreWarmVertex;
 import org.apache.tez.dag.api.SessionNotRunning;
 import org.apache.tez.dag.api.TezConfiguration;
 import org.apache.tez.dag.api.TezException;
-import org.apache.tez.dag.api.Vertex;
 import org.apache.tez.mapreduce.hadoop.MRHelpers;
 
 /**
@@ -165,7 +161,7 @@ public class TezSessionState {
 
     // Create environment for AM.
     Map<String, String> amEnv = new HashMap<String, String>();
-    MRHelpers.updateEnvironmentForMRAM(conf, amEnv);
+    MRHelpers.updateEnvBasedOnMRAMEnv(conf, amEnv);
 
     // and finally we're ready to create and start the session
     // generate basic tez config
@@ -180,7 +176,7 @@ public class TezSessionState {
       tezConfig.setInt(TezConfiguration.TEZ_AM_SESSION_MIN_HELD_CONTAINERS, n);
     }
 
-    session = new TezClient("HIVE-" + sessionId, tezConfig, true,
+    session = TezClient.create("HIVE-" + sessionId, tezConfig, true,
         commonLocalResources, null);
 
     LOG.info("Opening new Tez Session (id: " + sessionId
@@ -196,9 +192,13 @@ public class TezSessionState {
           commonLocalResources);
       try {
         session.preWarm(prewarmVertex);
-      } catch (InterruptedException ie) {
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("Hive Prewarm threw an exception ", ie);
+      } catch (IOException ie) {
+        if (ie.getMessage().contains("Interrupted while waiting")) {
+          if (LOG.isDebugEnabled()) {
+            LOG.debug("Hive Prewarm threw an exception ", ie);
+          }
+        } else {
+          throw ie;
         }
       }
     }

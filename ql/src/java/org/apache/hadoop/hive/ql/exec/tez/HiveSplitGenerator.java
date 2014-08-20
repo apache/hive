@@ -35,22 +35,23 @@ import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapreduce.split.TezMapReduceSplitsGrouper;
 import org.apache.hadoop.util.ReflectionUtils;
-import org.apache.tez.dag.api.TezConfiguration;
+import org.apache.tez.common.TezUtils;
+import org.apache.tez.dag.api.VertexLocationHint;
 import org.apache.tez.dag.api.VertexLocationHint.TaskLocationHint;
 import org.apache.tez.mapreduce.hadoop.InputSplitInfoMem;
-import org.apache.tez.mapreduce.hadoop.MRHelpers;
+import org.apache.tez.mapreduce.hadoop.MRInputHelpers;
 import org.apache.tez.mapreduce.protos.MRRuntimeProtos.MRInputUserPayloadProto;
 import org.apache.tez.mapreduce.protos.MRRuntimeProtos.MRSplitProto;
 import org.apache.tez.mapreduce.protos.MRRuntimeProtos.MRSplitsProto;
 import org.apache.tez.runtime.api.Event;
-import org.apache.tez.runtime.api.RootInputSpecUpdate;
-import org.apache.tez.runtime.api.events.RootInputConfigureVertexTasksEvent;
-import org.apache.tez.runtime.api.events.RootInputDataInformationEvent;
-import org.apache.tez.runtime.api.events.RootInputInitializerEvent;
-import org.apache.tez.runtime.api.RootInputSpecUpdate;
-import org.apache.tez.runtime.api.TezRootInputInitializer;
-import org.apache.tez.runtime.api.TezRootInputInitializerContext;
+import org.apache.tez.runtime.api.events.InputConfigureVertexTasksEvent;
+import org.apache.tez.runtime.api.events.InputDataInformationEvent;
+import org.apache.tez.runtime.api.events.InputInitializerEvent;
+import org.apache.tez.runtime.api.InputInitializer;
+import org.apache.tez.runtime.api.InputInitializerContext;
+import org.apache.tez.runtime.api.InputSpecUpdate;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
@@ -62,25 +63,25 @@ import com.google.common.collect.Multimap;
  * making sure that splits from different partitions are only grouped if they
  * are of the same schema, format and serde
  */
-public class HiveSplitGenerator extends TezRootInputInitializer {
+public class HiveSplitGenerator extends InputInitializer {
 
   private static final Log LOG = LogFactory.getLog(HiveSplitGenerator.class);
 
   private static final SplitGrouper grouper = new SplitGrouper();
 
-  public HiveSplitGenerator(TezRootInputInitializerContext initializerContext) {
+  public HiveSplitGenerator(InputInitializerContext initializerContext) {
     super(initializerContext);
   }
 
   @Override
   public List<Event> initialize() throws Exception {
-    TezRootInputInitializerContext rootInputContext = getContext();
+    InputInitializerContext rootInputContext = getContext();
 
     MRInputUserPayloadProto userPayloadProto =
-        MRHelpers.parseMRInputPayload(rootInputContext.getUserPayload());
+        MRInputHelpers.parseMRInputPayload(rootInputContext.getInputUserPayload());
 
     Configuration conf =
-        MRHelpers.createConfFromByteString(userPayloadProto.getConfigurationBytes());
+        TezUtils.createConfFromByteString(userPayloadProto.getConfigurationBytes());
 
     boolean sendSerializedEvents =
         conf.getBoolean("mapreduce.tez.input.initializer.serialize.event.payload", true);
@@ -91,7 +92,8 @@ public class HiveSplitGenerator extends TezRootInputInitializer {
 
     InputSplitInfoMem inputSplitInfo = null;
     String realInputFormatName = conf.get("mapred.input.format.class");
-    if (realInputFormatName != null && !realInputFormatName.isEmpty()) {
+    boolean groupingEnabled = userPayloadProto.getGroupingEnabled();
+    if (groupingEnabled) {
       // Need to instantiate the realInputFormat
       InputFormat<?, ?> inputFormat =
           (InputFormat<?, ?>) ReflectionUtils.newInstance(Class.forName(realInputFormatName),
@@ -103,8 +105,8 @@ public class HiveSplitGenerator extends TezRootInputInitializer {
 
       // Create the un-grouped splits
       float waves =
-          conf.getFloat(TezConfiguration.TEZ_AM_GROUPING_SPLIT_WAVES,
-              TezConfiguration.TEZ_AM_GROUPING_SPLIT_WAVES_DEFAULT);
+          conf.getFloat(TezMapReduceSplitsGrouper.TEZ_GROUPING_SPLIT_WAVES,
+              TezMapReduceSplitsGrouper.TEZ_GROUPING_SPLIT_WAVES_DEFAULT);
 
       InputSplit[] splits = inputFormat.getSplits(jobConf, (int) (availableSlots * waves));
       LOG.info("Number of input splits: " + splits.length + ". " + availableSlots
@@ -124,7 +126,13 @@ public class HiveSplitGenerator extends TezRootInputInitializer {
           new InputSplitInfoMem(flatSplits, locationHints, flatSplits.length, null, jobConf);
     } else {
       // no need for grouping and the target #of tasks.
-      inputSplitInfo = MRHelpers.generateInputSplitsToMem(jobConf, false, 0);
+      // This code path should never be triggered at the moment. If grouping is disabled,
+      // DAGUtils uses MRInputAMSplitGenerator.
+      // If this is used in the future - make sure to disable grouping in the payload, if it isn't already disabled
+      throw new RuntimeException(
+          "HiveInputFormat does not support non-grouped splits, InputFormatName is: "
+              + realInputFormatName);
+      // inputSplitInfo = MRInputHelpers.generateInputSplitsToMem(jobConf, false, 0);
     }
 
     return createEventList(sendSerializedEvents, inputSplitInfo);
@@ -181,31 +189,32 @@ public class HiveSplitGenerator extends TezRootInputInitializer {
     return groupedSplits;
   }
 
-  public void handleInputInitializerEvent(List<RootInputInitializerEvent> events) throws Exception {
+  @Override
+  public void handleInputInitializerEvent(List<InputInitializerEvent> events) throws Exception {
   }
 
   private List<Event> createEventList(boolean sendSerializedEvents, InputSplitInfoMem inputSplitInfo) {
 
     List<Event> events = Lists.newArrayListWithCapacity(inputSplitInfo.getNumTasks() + 1);
 
-    RootInputConfigureVertexTasksEvent configureVertexEvent = new
-        RootInputConfigureVertexTasksEvent(inputSplitInfo.getNumTasks(),
-        inputSplitInfo.getTaskLocationHints(),
-        RootInputSpecUpdate.getDefaultSinglePhysicalInputSpecUpdate());
+    InputConfigureVertexTasksEvent configureVertexEvent =
+        InputConfigureVertexTasksEvent.create(inputSplitInfo.getNumTasks(),
+        VertexLocationHint.create(inputSplitInfo.getTaskLocationHints()),
+        InputSpecUpdate.getDefaultSinglePhysicalInputSpecUpdate());
     events.add(configureVertexEvent);
 
     if (sendSerializedEvents) {
       MRSplitsProto splitsProto = inputSplitInfo.getSplitsProto();
       int count = 0;
       for (MRSplitProto mrSplit : splitsProto.getSplitsList()) {
-        RootInputDataInformationEvent diEvent =
-            new RootInputDataInformationEvent(count++, mrSplit.toByteArray());
+        InputDataInformationEvent diEvent =
+            InputDataInformationEvent.create(count++, mrSplit.toByteString().asReadOnlyByteBuffer());
         events.add(diEvent);
       }
     } else {
       int count = 0;
       for (org.apache.hadoop.mapred.InputSplit split : inputSplitInfo.getOldFormatSplits()) {
-        RootInputDataInformationEvent diEvent = new RootInputDataInformationEvent(count++, split);
+        InputDataInformationEvent diEvent = InputDataInformationEvent.create(count++, split);
         events.add(diEvent);
       }
     }

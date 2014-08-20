@@ -19,29 +19,28 @@
 package org.apache.hadoop.hive.ql.exec.tez;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.io.DataInputBuffer;
-import org.apache.tez.dag.api.EdgeManager;
-import org.apache.tez.dag.api.EdgeManagerContext;
+import org.apache.hadoop.io.DataInputByteBuffer;
+import org.apache.tez.dag.api.EdgeManagerPlugin;
+import org.apache.tez.dag.api.EdgeManagerPluginContext;
 import org.apache.tez.runtime.api.events.DataMovementEvent;
 import org.apache.tez.runtime.api.events.InputReadErrorEvent;
 
-import com.google.common.collect.Multimap;
-
-public class CustomPartitionEdge extends EdgeManager {
+public class CustomPartitionEdge extends EdgeManagerPlugin {
 
   private static final Log LOG = LogFactory.getLog(CustomPartitionEdge.class.getName());
 
   CustomEdgeConfiguration conf = null;
-  EdgeManagerContext context = null;
+  final EdgeManagerPluginContext context;
 
   // used by the framework at runtime. initialize is the real initializer at runtime
-  public CustomPartitionEdge(EdgeManagerContext context) {
+  public CustomPartitionEdge(EdgeManagerPluginContext context) {
     super(context);
     this.context = context;
   }
@@ -65,17 +64,17 @@ public class CustomPartitionEdge extends EdgeManager {
   // called at runtime to initialize the custom edge.
   @Override
   public void initialize() {
-    byte[] payload = context.getUserPayload();
+    ByteBuffer payload = context.getUserPayload().getPayload();
     LOG.info("Initializing the edge, payload: " + payload);
     if (payload == null) {
       throw new RuntimeException("Invalid payload");
     }
     // De-serialization code
-    DataInputBuffer dib = new DataInputBuffer();
-    dib.reset(payload, payload.length);
+    DataInputByteBuffer dibb = new DataInputByteBuffer();
+    dibb.reset(payload);
     conf = new CustomEdgeConfiguration();
     try {
-      conf.readFields(dib);
+      conf.readFields(dibb);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
