@@ -507,6 +507,13 @@ public class HiveRelFieldTrimmer implements ReflectiveVisitor {
       Set<RelDataTypeField> inputExtraFields = RelDataTypeImpl.extra(rowType) == null ? Collections
           .<RelDataTypeField> emptySet() : combinedInputExtraFields;
       inputExtraFieldCounts.add(inputExtraFields.size());
+
+      // Cross Join may not reference any thing from below
+      // Ex: select R1.x from r1 join r2;
+      if (inputExtraFields.size() == 0 && inputFieldsUsed.isEmpty()) {
+        inputFieldsUsed.set(0);
+      }
+
       TrimResult trimResult = trimChild(join, input, inputFieldsUsed,
           inputExtraFields);
       newInputs.add(trimResult.left);
