@@ -1,0 +1,497 @@
+PREHOOK: query: -- SORT_BEFORE_DIFF
+EXPLAIN
+SELECT count(1) FROM (
+  SELECT key, value FROM src UNION ALL
+  SELECT key, value FROM src UNION ALL
+  SELECT key, value FROM src UNION ALL
+  SELECT key, value FROM src UNION ALL
+  SELECT key, value FROM src UNION ALL
+
+  SELECT key, value FROM src UNION ALL
+  SELECT key, value FROM src UNION ALL
+  SELECT key, value FROM src UNION ALL
+  SELECT key, value FROM src UNION ALL
+  SELECT key, value FROM src UNION ALL
+
+  SELECT key, value FROM src UNION ALL
+  SELECT key, value FROM src UNION ALL
+  SELECT key, value FROM src UNION ALL
+  SELECT key, value FROM src UNION ALL
+  SELECT key, value FROM src UNION ALL
+
+  SELECT key, value FROM src UNION ALL
+  SELECT key, value FROM src UNION ALL
+  SELECT key, value FROM src UNION ALL
+  SELECT key, value FROM src UNION ALL
+  SELECT key, value FROM src UNION ALL
+
+  SELECT key, value FROM src UNION ALL
+  SELECT key, value FROM src UNION ALL
+  SELECT key, value FROM src UNION ALL
+  SELECT key, value FROM src UNION ALL
+  SELECT key, value FROM src) src
+PREHOOK: type: QUERY
+POSTHOOK: query: -- SORT_BEFORE_DIFF
+EXPLAIN
+SELECT count(1) FROM (
+  SELECT key, value FROM src UNION ALL
+  SELECT key, value FROM src UNION ALL
+  SELECT key, value FROM src UNION ALL
+  SELECT key, value FROM src UNION ALL
+  SELECT key, value FROM src UNION ALL
+
+  SELECT key, value FROM src UNION ALL
+  SELECT key, value FROM src UNION ALL
+  SELECT key, value FROM src UNION ALL
+  SELECT key, value FROM src UNION ALL
+  SELECT key, value FROM src UNION ALL
+
+  SELECT key, value FROM src UNION ALL
+  SELECT key, value FROM src UNION ALL
+  SELECT key, value FROM src UNION ALL
+  SELECT key, value FROM src UNION ALL
+  SELECT key, value FROM src UNION ALL
+
+  SELECT key, value FROM src UNION ALL
+  SELECT key, value FROM src UNION ALL
+  SELECT key, value FROM src UNION ALL
+  SELECT key, value FROM src UNION ALL
+  SELECT key, value FROM src UNION ALL
+
+  SELECT key, value FROM src UNION ALL
+  SELECT key, value FROM src UNION ALL
+  SELECT key, value FROM src UNION ALL
+  SELECT key, value FROM src UNION ALL
+  SELECT key, value FROM src) src
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 3 <- Union 2 (GROUP)
+        Union 2 <- Map 1 (NONE), Map 10 (NONE), Map 11 (NONE), Map 12 (NONE), Map 13 (NONE), Map 14 (NONE), Map 15 (NONE), Map 16 (NONE), Map 17 (NONE), Map 18 (NONE), Map 19 (NONE), Map 20 (NONE), Map 21 (NONE), Map 22 (NONE), Map 23 (NONE), Map 24 (NONE), Map 25 (NONE), Map 26 (NONE), Map 27 (NONE), Map 4 (NONE), Map 5 (NONE), Map 6 (NONE), Map 7 (NONE), Map 8 (NONE), Map 9 (NONE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Select Operator
+                    Select Operator
+                      Group By Operator
+                        aggregations: count(1)
+                        mode: hash
+                        outputColumnNames: _col0
+                        Reduce Output Operator
+                          sort order: 
+                          value expressions: _col0 (type: bigint)
+        Map 10 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Select Operator
+                    Select Operator
+                      Group By Operator
+                        aggregations: count(1)
+                        mode: hash
+                        outputColumnNames: _col0
+                        Reduce Output Operator
+                          sort order: 
+                          value expressions: _col0 (type: bigint)
+        Map 11 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Select Operator
+                    Select Operator
+                      Group By Operator
+                        aggregations: count(1)
+                        mode: hash
+                        outputColumnNames: _col0
+                        Reduce Output Operator
+                          sort order: 
+                          value expressions: _col0 (type: bigint)
+        Map 12 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Select Operator
+                    Select Operator
+                      Group By Operator
+                        aggregations: count(1)
+                        mode: hash
+                        outputColumnNames: _col0
+                        Reduce Output Operator
+                          sort order: 
+                          value expressions: _col0 (type: bigint)
+        Map 13 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Select Operator
+                    Select Operator
+                      Group By Operator
+                        aggregations: count(1)
+                        mode: hash
+                        outputColumnNames: _col0
+                        Reduce Output Operator
+                          sort order: 
+                          value expressions: _col0 (type: bigint)
+        Map 14 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Select Operator
+                    Select Operator
+                      Group By Operator
+                        aggregations: count(1)
+                        mode: hash
+                        outputColumnNames: _col0
+                        Reduce Output Operator
+                          sort order: 
+                          value expressions: _col0 (type: bigint)
+        Map 15 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Select Operator
+                    Select Operator
+                      Group By Operator
+                        aggregations: count(1)
+                        mode: hash
+                        outputColumnNames: _col0
+                        Reduce Output Operator
+                          sort order: 
+                          value expressions: _col0 (type: bigint)
+        Map 16 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Select Operator
+                    Select Operator
+                      Group By Operator
+                        aggregations: count(1)
+                        mode: hash
+                        outputColumnNames: _col0
+                        Reduce Output Operator
+                          sort order: 
+                          value expressions: _col0 (type: bigint)
+        Map 17 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Select Operator
+                    Select Operator
+                      Group By Operator
+                        aggregations: count(1)
+                        mode: hash
+                        outputColumnNames: _col0
+                        Reduce Output Operator
+                          sort order: 
+                          value expressions: _col0 (type: bigint)
+        Map 18 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Select Operator
+                    Select Operator
+                      Group By Operator
+                        aggregations: count(1)
+                        mode: hash
+                        outputColumnNames: _col0
+                        Reduce Output Operator
+                          sort order: 
+                          value expressions: _col0 (type: bigint)
+        Map 19 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Select Operator
+                    Select Operator
+                      Group By Operator
+                        aggregations: count(1)
+                        mode: hash
+                        outputColumnNames: _col0
+                        Reduce Output Operator
+                          sort order: 
+                          value expressions: _col0 (type: bigint)
+        Map 20 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Select Operator
+                    Select Operator
+                      Group By Operator
+                        aggregations: count(1)
+                        mode: hash
+                        outputColumnNames: _col0
+                        Reduce Output Operator
+                          sort order: 
+                          value expressions: _col0 (type: bigint)
+        Map 21 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Select Operator
+                    Select Operator
+                      Group By Operator
+                        aggregations: count(1)
+                        mode: hash
+                        outputColumnNames: _col0
+                        Reduce Output Operator
+                          sort order: 
+                          value expressions: _col0 (type: bigint)
+        Map 22 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Select Operator
+                    Select Operator
+                      Group By Operator
+                        aggregations: count(1)
+                        mode: hash
+                        outputColumnNames: _col0
+                        Reduce Output Operator
+                          sort order: 
+                          value expressions: _col0 (type: bigint)
+        Map 23 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Select Operator
+                    Select Operator
+                      Group By Operator
+                        aggregations: count(1)
+                        mode: hash
+                        outputColumnNames: _col0
+                        Reduce Output Operator
+                          sort order: 
+                          value expressions: _col0 (type: bigint)
+        Map 24 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Select Operator
+                    Select Operator
+                      Group By Operator
+                        aggregations: count(1)
+                        mode: hash
+                        outputColumnNames: _col0
+                        Reduce Output Operator
+                          sort order: 
+                          value expressions: _col0 (type: bigint)
+        Map 25 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Select Operator
+                    Select Operator
+                      Group By Operator
+                        aggregations: count(1)
+                        mode: hash
+                        outputColumnNames: _col0
+                        Reduce Output Operator
+                          sort order: 
+                          value expressions: _col0 (type: bigint)
+        Map 26 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Select Operator
+                    Select Operator
+                      Group By Operator
+                        aggregations: count(1)
+                        mode: hash
+                        outputColumnNames: _col0
+                        Reduce Output Operator
+                          sort order: 
+                          value expressions: _col0 (type: bigint)
+        Map 27 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Select Operator
+                    Select Operator
+                      Group By Operator
+                        aggregations: count(1)
+                        mode: hash
+                        outputColumnNames: _col0
+                        Reduce Output Operator
+                          sort order: 
+                          value expressions: _col0 (type: bigint)
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Select Operator
+                    Select Operator
+                      Group By Operator
+                        aggregations: count(1)
+                        mode: hash
+                        outputColumnNames: _col0
+                        Reduce Output Operator
+                          sort order: 
+                          value expressions: _col0 (type: bigint)
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Select Operator
+                    Select Operator
+                      Group By Operator
+                        aggregations: count(1)
+                        mode: hash
+                        outputColumnNames: _col0
+                        Reduce Output Operator
+                          sort order: 
+                          value expressions: _col0 (type: bigint)
+        Map 6 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Select Operator
+                    Select Operator
+                      Group By Operator
+                        aggregations: count(1)
+                        mode: hash
+                        outputColumnNames: _col0
+                        Reduce Output Operator
+                          sort order: 
+                          value expressions: _col0 (type: bigint)
+        Map 7 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Select Operator
+                    Select Operator
+                      Group By Operator
+                        aggregations: count(1)
+                        mode: hash
+                        outputColumnNames: _col0
+                        Reduce Output Operator
+                          sort order: 
+                          value expressions: _col0 (type: bigint)
+        Map 8 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Select Operator
+                    Select Operator
+                      Group By Operator
+                        aggregations: count(1)
+                        mode: hash
+                        outputColumnNames: _col0
+                        Reduce Output Operator
+                          sort order: 
+                          value expressions: _col0 (type: bigint)
+        Map 9 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Select Operator
+                    Select Operator
+                      Group By Operator
+                        aggregations: count(1)
+                        mode: hash
+                        outputColumnNames: _col0
+                        Reduce Output Operator
+                          sort order: 
+                          value expressions: _col0 (type: bigint)
+        Reducer 3 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col0 (type: bigint)
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Union 2 
+            Vertex: Union 2
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT count(1) FROM (
+  SELECT key, value FROM src UNION ALL
+  SELECT key, value FROM src UNION ALL
+  SELECT key, value FROM src UNION ALL
+  SELECT key, value FROM src UNION ALL
+  SELECT key, value FROM src UNION ALL
+
+  SELECT key, value FROM src UNION ALL
+  SELECT key, value FROM src UNION ALL
+  SELECT key, value FROM src UNION ALL
+  SELECT key, value FROM src UNION ALL
+  SELECT key, value FROM src UNION ALL
+
+  SELECT key, value FROM src UNION ALL
+  SELECT key, value FROM src UNION ALL
+  SELECT key, value FROM src UNION ALL
+  SELECT key, value FROM src UNION ALL
+  SELECT key, value FROM src UNION ALL
+
+  SELECT key, value FROM src UNION ALL
+  SELECT key, value FROM src UNION ALL
+  SELECT key, value FROM src UNION ALL
+  SELECT key, value FROM src UNION ALL
+  SELECT key, value FROM src UNION ALL
+
+  SELECT key, value FROM src UNION ALL
+  SELECT key, value FROM src UNION ALL
+  SELECT key, value FROM src UNION ALL
+  SELECT key, value FROM src UNION ALL
+  SELECT key, value FROM src) src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT count(1) FROM (
+  SELECT key, value FROM src UNION ALL
+  SELECT key, value FROM src UNION ALL
+  SELECT key, value FROM src UNION ALL
+  SELECT key, value FROM src UNION ALL
+  SELECT key, value FROM src UNION ALL
+
+  SELECT key, value FROM src UNION ALL
+  SELECT key, value FROM src UNION ALL
+  SELECT key, value FROM src UNION ALL
+  SELECT key, value FROM src UNION ALL
+  SELECT key, value FROM src UNION ALL
+
+  SELECT key, value FROM src UNION ALL
+  SELECT key, value FROM src UNION ALL
+  SELECT key, value FROM src UNION ALL
+  SELECT key, value FROM src UNION ALL
+  SELECT key, value FROM src UNION ALL
+
+  SELECT key, value FROM src UNION ALL
+  SELECT key, value FROM src UNION ALL
+  SELECT key, value FROM src UNION ALL
+  SELECT key, value FROM src UNION ALL
+  SELECT key, value FROM src UNION ALL
+
+  SELECT key, value FROM src UNION ALL
+  SELECT key, value FROM src UNION ALL
+  SELECT key, value FROM src UNION ALL
+  SELECT key, value FROM src UNION ALL
+  SELECT key, value FROM src) src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+12500
