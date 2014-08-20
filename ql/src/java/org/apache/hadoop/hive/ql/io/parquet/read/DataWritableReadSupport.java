@@ -100,20 +100,22 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
       final List<Type> typeListWanted = new ArrayList<Type>();
       final boolean indexAccess = configuration.getBoolean(PARQUET_COLUMN_INDEX_ACCESS, false);
       for (final Integer idx : indexColumnsWanted) {
-        String col = listColumns.get(idx);
-        if (indexAccess) {
-          typeListWanted.add(tableSchema.getType(col));
-        } else {
-          col = col.toLowerCase();
-          if (lowerCaseFileSchemaColumns.containsKey(col)) {
-            typeListWanted.add(tableSchema.getType(lowerCaseFileSchemaColumns.get(col)));
+        if (idx < listColumns.size()) {
+          String col = listColumns.get(idx);
+          if (indexAccess) {
+            typeListWanted.add(tableSchema.getType(col));
           } else {
-            // should never occur?
-            String msg = "Column " + col + " at index " + idx + " does not exist in " +
+            col = col.toLowerCase();
+            if (lowerCaseFileSchemaColumns.containsKey(col)) {
+              typeListWanted.add(tableSchema.getType(lowerCaseFileSchemaColumns.get(col)));
+            } else {
+              // should never occur?
+              String msg = "Column " + col + " at index " + idx + " does not exist in " +
               lowerCaseFileSchemaColumns;
-            throw new IllegalStateException(msg);
+              throw new IllegalStateException(msg);
+            }
           }
-        }
+	}
       }
       requestedSchemaByUser = resolveSchemaAccess(new MessageType(fileSchema.getName(),
               typeListWanted), fileSchema, configuration);
