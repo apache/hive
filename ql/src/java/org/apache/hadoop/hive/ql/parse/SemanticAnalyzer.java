@@ -10337,6 +10337,19 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     try {
       Table oldView = getTable(createVwDesc.getViewName(), false);
 
+      // Do not allow view to be defined on temp table
+      Set<String> tableAliases = qb.getTabAliases();
+      for (String alias : tableAliases) {
+        try {
+          Table table = db.getTable(qb.getTabNameForAlias(alias));
+          if (table.isTemporary()) {
+            throw new SemanticException("View definition references temporary table " + alias);
+          }
+        } catch (HiveException ex) {
+          throw new SemanticException(ex);
+        }
+      }
+
       // ALTER VIEW AS SELECT requires the view must exist
       if (createVwDesc.getIsAlterViewAs() && oldView == null) {
         String viewNotExistErrorMsg =
