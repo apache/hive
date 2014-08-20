@@ -53,6 +53,8 @@ select t2.c_int+c_float as x , c_int as c_int, (((c_int+c_float)*10)+5) as y fro
 
 -- 4. Test Select + Join + TS
 select t1.c_int, t2.c_int from t1 join             t2 on t1.key=t2.key;
+select t1.key from t1 join t3;
+select t1.key from t1 join t3 where t1.key=t3.key and t1.key >= 1;
 --select t1.c_int           from t1 left semi join   t2 on t1.key=t2.key;
 select t1.c_int, t2.c_int from t1 left outer join  t2 on t1.key=t2.key;
 select t1.c_int, t2.c_int from t1 right outer join t2 on t1.key=t2.key;

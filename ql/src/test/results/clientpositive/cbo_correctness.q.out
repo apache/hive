@@ -751,6 +751,515 @@ NULL	NULL
 NULL	NULL
 NULL	NULL
 NULL	NULL
+Warning: Shuffle Join JOIN[4][tables = [t1, t3]] in Stage 'Stage-1:MAPRED' is a cross product
+PREHOOK: query: select t1.key from t1 join t3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@dt=2014
+PREHOOK: Input: default@t3
+#### A masked pattern was here ####
+POSTHOOK: query: select t1.key from t1 join t3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@dt=2014
+POSTHOOK: Input: default@t3
+#### A masked pattern was here ####
+null
+null
+null
+null
+null
+null
+null
+null
+null
+null
+null
+null
+null
+null
+null
+null
+null
+null
+null
+null
+null
+null
+null
+null
+null
+null
+null
+null
+null
+null
+null
+null
+null
+null
+null
+null
+null
+null
+null
+null
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1 
+1 
+1 
+1 
+1 
+1 
+1 
+1 
+1 
+1 
+1 
+1 
+1 
+1 
+1 
+1 
+1 
+1 
+1 
+1 
+1 
+1 
+1 
+1 
+1 
+1 
+1 
+1 
+1 
+1 
+1 
+1 
+1 
+1 
+1 
+1 
+1 
+1 
+1 
+1 
+ 1 
+ 1 
+ 1 
+ 1 
+ 1 
+ 1 
+ 1 
+ 1 
+ 1 
+ 1 
+ 1 
+ 1 
+ 1 
+ 1 
+ 1 
+ 1 
+ 1 
+ 1 
+ 1 
+ 1 
+ 1 
+ 1 
+ 1 
+ 1 
+ 1 
+ 1 
+ 1 
+ 1 
+ 1 
+ 1 
+ 1 
+ 1 
+ 1 
+ 1 
+ 1 
+ 1 
+ 1 
+ 1 
+ 1 
+ 1 
+ 1
+ 1
+ 1
+ 1
+ 1
+ 1
+ 1
+ 1
+ 1
+ 1
+ 1
+ 1
+ 1
+ 1
+ 1
+ 1
+ 1
+ 1
+ 1
+ 1
+ 1
+ 1
+ 1
+ 1
+ 1
+ 1
+ 1
+ 1
+ 1
+ 1
+ 1
+ 1
+ 1
+ 1
+ 1
+ 1
+ 1
+ 1
+ 1
+ 1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+PREHOOK: query: select t1.key from t1 join t3 where t1.key=t3.key and t1.key >= 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@dt=2014
+PREHOOK: Input: default@t3
+#### A masked pattern was here ####
+POSTHOOK: query: select t1.key from t1 join t3 where t1.key=t3.key and t1.key >= 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@dt=2014
+POSTHOOK: Input: default@t3
+#### A masked pattern was here ####
+ 1
+ 1
+ 1
+ 1
+ 1 
+ 1 
+ 1 
+ 1 
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1 
+1 
+1 
+1 
 PREHOOK: query: --select t1.c_int           from t1 left semi join   t2 on t1.key=t2.key;
 select t1.c_int, t2.c_int from t1 left outer join  t2 on t1.key=t2.key
 PREHOOK: type: QUERY
