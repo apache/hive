@@ -18,14 +18,6 @@
 
 package org.apache.hadoop.hive.ql.io.sarg;
 
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
@@ -56,6 +48,15 @@ import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+
+import java.math.BigDecimal;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * The implementation of SearchArguments.
@@ -947,7 +948,8 @@ final class SearchArgumentImpl implements SearchArgument {
           literal instanceof Long ||
           literal instanceof Double ||
           literal instanceof DateWritable ||
-          literal instanceof HiveDecimal) {
+          literal instanceof HiveDecimal ||
+          literal instanceof BigDecimal) {
         return literal;
       } else if (literal instanceof HiveChar ||
           literal instanceof HiveVarchar) {
@@ -979,7 +981,8 @@ final class SearchArgumentImpl implements SearchArgument {
         return PredicateLeaf.Type.FLOAT;
       } else if (literal instanceof DateWritable) {
         return PredicateLeaf.Type.DATE;
-      } else if (literal instanceof HiveDecimal) {
+      } else if (literal instanceof HiveDecimal ||
+          literal instanceof BigDecimal) {
         return PredicateLeaf.Type.DECIMAL;
       }
       throw new IllegalArgumentException("Unknown type for literal " + literal);
