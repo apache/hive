@@ -17,14 +17,14 @@
  */
 package org.apache.hadoop.hive.ql.exec.tez;
 
-import org.apache.tez.runtime.api.TezProcessorContext;
+import org.apache.tez.runtime.api.ProcessorContext;
 
 /**
  * Subclass that is used to indicate if this is a map or reduce process
  */
 public class MapTezProcessor extends TezProcessor {
 
-  public MapTezProcessor(TezProcessorContext context) {
+  public MapTezProcessor(ProcessorContext context) {
     super(context);
     this.isMap = true;
   }

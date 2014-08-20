@@ -25,16 +25,15 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.io.ReadaheadPool;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.tez.common.TezUtils;
+import org.apache.tez.dag.api.UserPayload;
 import org.apache.tez.runtime.api.AbstractLogicalIOProcessor;
 import org.apache.tez.runtime.api.Event;
-import org.apache.tez.runtime.api.LogicalIOProcessor;
 import org.apache.tez.runtime.api.LogicalInput;
 import org.apache.tez.runtime.api.LogicalOutput;
-import org.apache.tez.runtime.api.TezProcessorContext;
+import org.apache.tez.runtime.api.ProcessorContext;
 
 import java.net.URL;
 import java.net.JarURLConnection;
-import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
@@ -57,14 +56,13 @@ public class HivePreWarmProcessor extends AbstractLogicalIOProcessor {
 
   private Configuration conf;
 
-  public HivePreWarmProcessor(TezProcessorContext context) {
+  public HivePreWarmProcessor(ProcessorContext context) {
     super(context);
   }
 
   @Override
   public void initialize() throws Exception {
-    TezProcessorContext processorContext = getContext();
-    byte[] userPayload = processorContext.getUserPayload();
+    UserPayload userPayload = getContext().getUserPayload();
     this.conf = TezUtils.createConfFromUserPayload(userPayload);
   }
 

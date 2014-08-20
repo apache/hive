@@ -70,7 +70,6 @@ import org.apache.hadoop.io.DataOutputBuffer;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputFormat;
-import org.apache.hadoop.mapred.split.TezGroupedSplitsInputFormat;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.yarn.api.records.LocalResource;
 import org.apache.hadoop.yarn.api.records.LocalResourceType;
@@ -79,43 +78,41 @@ import org.apache.hadoop.yarn.api.records.Resource;
 import org.apache.hadoop.yarn.api.records.URL;
 import org.apache.hadoop.yarn.util.ConverterUtils;
 import org.apache.hadoop.yarn.util.Records;
-import org.apache.tez.client.PreWarmVertex;
+import org.apache.tez.common.TezUtils;
 import org.apache.tez.dag.api.DAG;
 import org.apache.tez.dag.api.DataSinkDescriptor;
 import org.apache.tez.dag.api.DataSourceDescriptor;
 import org.apache.tez.dag.api.Edge;
-import org.apache.tez.dag.api.EdgeManagerDescriptor;
+import org.apache.tez.dag.api.EdgeManagerPluginDescriptor;
 import org.apache.tez.dag.api.EdgeProperty;
 import org.apache.tez.dag.api.GroupInputEdge;
 import org.apache.tez.dag.api.InputDescriptor;
 import org.apache.tez.dag.api.InputInitializerDescriptor;
 import org.apache.tez.dag.api.OutputDescriptor;
+import org.apache.tez.dag.api.PreWarmVertex;
 import org.apache.tez.dag.api.ProcessorDescriptor;
 import org.apache.tez.dag.api.TezConfiguration;
 import org.apache.tez.dag.api.TezException;
+import org.apache.tez.dag.api.UserPayload;
 import org.apache.tez.dag.api.Vertex;
 import org.apache.tez.dag.api.VertexGroup;
-import org.apache.tez.dag.api.VertexLocationHint;
 import org.apache.tez.dag.api.VertexManagerPluginDescriptor;
 import org.apache.tez.dag.library.vertexmanager.ShuffleVertexManager;
-import org.apache.tez.mapreduce.common.MRInputAMSplitGenerator;
-import org.apache.tez.mapreduce.hadoop.InputSplitInfo;
 import org.apache.tez.mapreduce.hadoop.MRHelpers;
+import org.apache.tez.mapreduce.hadoop.MRInputHelpers;
 import org.apache.tez.mapreduce.hadoop.MRJobConfig;
 import org.apache.tez.mapreduce.input.MRInputLegacy;
 import org.apache.tez.mapreduce.output.MROutput;
 import org.apache.tez.mapreduce.partition.MRPartitioner;
-import org.apache.tez.runtime.api.TezRootInputInitializer;
 import org.apache.tez.runtime.library.api.TezRuntimeConfiguration;
-import org.apache.tez.runtime.library.conf.OrderedPartitionedKVEdgeConfigurer;
-import org.apache.tez.runtime.library.conf.UnorderedPartitionedKVEdgeConfigurer;
-import org.apache.tez.runtime.library.conf.UnorderedUnpartitionedKVEdgeConfigurer;
+import org.apache.tez.runtime.library.conf.OrderedPartitionedKVEdgeConfig;
+import org.apache.tez.runtime.library.conf.UnorderedKVEdgeConfig;
+import org.apache.tez.runtime.library.conf.UnorderedPartitionedKVEdgeConfig;
 import org.apache.tez.runtime.library.input.ConcatenatedMergedKeyValueInput;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
-import com.google.protobuf.ByteString;
 
 /**
  * DagUtils. DagUtils is a collection of helper methods to convert
@@ -236,9 +233,10 @@ public class DagUtils {
       mergeInputClass = ConcatenatedMergedKeyValueInput.class;
       int numBuckets = edgeProp.getNumBuckets();
       VertexManagerPluginDescriptor desc =
-          new VertexManagerPluginDescriptor(CustomPartitionVertex.class.getName());
-      byte[] userPayload = ByteBuffer.allocate(4).putInt(numBuckets).array();
-      desc.setUserPayload(userPayload);
+          VertexManagerPluginDescriptor.create(CustomPartitionVertex.class.getName());
+      ByteBuffer userPayload = ByteBuffer.allocate(4).putInt(numBuckets);
+      userPayload.flip();
+      desc.setUserPayload(UserPayload.create(userPayload));
       w.setVertexManagerPlugin(desc);
       break;
     }
@@ -256,8 +254,8 @@ public class DagUtils {
       break;
     }
 
-    return new GroupInputEdge(group, w, createEdgeProperty(edgeProp, vConf),
-        new InputDescriptor(mergeInputClass.getName()));
+    return GroupInputEdge.create(group, w, createEdgeProperty(edgeProp, vConf),
+        InputDescriptor.create(mergeInputClass.getName()));
   }
 
   /**
@@ -276,10 +274,11 @@ public class DagUtils {
     switch(edgeProp.getEdgeType()) {
     case CUSTOM_EDGE: {
       int numBuckets = edgeProp.getNumBuckets();
-      byte[] userPayload = ByteBuffer.allocate(4).putInt(numBuckets).array();
-      VertexManagerPluginDescriptor desc = new VertexManagerPluginDescriptor(
+      ByteBuffer userPayload = ByteBuffer.allocate(4).putInt(numBuckets);
+      userPayload.flip();
+      VertexManagerPluginDescriptor desc = VertexManagerPluginDescriptor.create(
           CustomPartitionVertex.class.getName());
-      desc.setUserPayload(userPayload);
+      desc.setUserPayload(UserPayload.create(userPayload));
       w.setVertexManagerPlugin(desc);
       break;
     }
@@ -291,7 +290,7 @@ public class DagUtils {
       // nothing
     }
 
-    return new Edge(v, w, createEdgeProperty(edgeProp, vConf));
+    return Edge.create(v, w, createEdgeProperty(edgeProp, vConf));
   }
 
   /*
@@ -300,7 +299,7 @@ public class DagUtils {
   @SuppressWarnings("rawtypes")
   private EdgeProperty createEdgeProperty(TezEdgeProperty edgeProp, Configuration conf)
       throws IOException {
-    MRHelpers.translateVertexConfToTez(conf);
+    MRHelpers.translateMRConfToTez(conf);
     String keyClass = conf.get(TezRuntimeConfiguration.TEZ_RUNTIME_KEY_CLASS);
     String valClass = conf.get(TezRuntimeConfiguration.TEZ_RUNTIME_VALUE_CLASS);
     String partitionerClassName = conf.get("mapred.partitioner.class");
@@ -309,28 +308,28 @@ public class DagUtils {
     EdgeType edgeType = edgeProp.getEdgeType();
     switch (edgeType) {
     case BROADCAST_EDGE:
-      UnorderedUnpartitionedKVEdgeConfigurer et1Conf = UnorderedUnpartitionedKVEdgeConfigurer
+      UnorderedKVEdgeConfig et1Conf = UnorderedKVEdgeConfig
           .newBuilder(keyClass, valClass).setFromConfiguration(conf).build();
       return et1Conf.createDefaultBroadcastEdgeProperty();
     case CUSTOM_EDGE:
       assert partitionerClassName != null;
       partitionerConf = createPartitionerConf(partitionerClassName, conf);
-      UnorderedPartitionedKVEdgeConfigurer et2Conf = UnorderedPartitionedKVEdgeConfigurer
+      UnorderedPartitionedKVEdgeConfig et2Conf = UnorderedPartitionedKVEdgeConfig
           .newBuilder(keyClass, valClass, MRPartitioner.class.getName(), partitionerConf)
           .setFromConfiguration(conf).build();
-      EdgeManagerDescriptor edgeDesc =
-          new EdgeManagerDescriptor(CustomPartitionEdge.class.getName());
+      EdgeManagerPluginDescriptor edgeDesc =
+          EdgeManagerPluginDescriptor.create(CustomPartitionEdge.class.getName());
       CustomEdgeConfiguration edgeConf =
           new CustomEdgeConfiguration(edgeProp.getNumBuckets(), null);
       DataOutputBuffer dob = new DataOutputBuffer();
       edgeConf.write(dob);
       byte[] userPayload = dob.getData();
-      edgeDesc.setUserPayload(userPayload);
+      edgeDesc.setUserPayload(UserPayload.create(ByteBuffer.wrap(userPayload)));
       return et2Conf.createDefaultCustomEdgeProperty(edgeDesc);
     case CUSTOM_SIMPLE_EDGE:
       assert partitionerClassName != null;
       partitionerConf = createPartitionerConf(partitionerClassName, conf);
-      UnorderedPartitionedKVEdgeConfigurer et3Conf = UnorderedPartitionedKVEdgeConfigurer
+      UnorderedPartitionedKVEdgeConfig et3Conf = UnorderedPartitionedKVEdgeConfig
           .newBuilder(keyClass, valClass, MRPartitioner.class.getName(), partitionerConf)
           .setFromConfiguration(conf).build();
       return et3Conf.createDefaultEdgeProperty();
@@ -338,7 +337,7 @@ public class DagUtils {
     default:
       assert partitionerClassName != null;
       partitionerConf = createPartitionerConf(partitionerClassName, conf);
-      OrderedPartitionedKVEdgeConfigurer et4Conf = OrderedPartitionedKVEdgeConfigurer
+      OrderedPartitionedKVEdgeConfig et4Conf = OrderedPartitionedKVEdgeConfig
           .newBuilder(keyClass, valClass, MRPartitioner.class.getName(), partitionerConf)
           .setFromConfiguration(conf).build();
       return et4Conf.createDefaultEdgeProperty();
@@ -384,7 +383,7 @@ public class DagUtils {
    */
   private Map<String, String> getContainerEnvironment(Configuration conf, boolean isMap) {
     Map<String, String> environment = new HashMap<String, String>();
-    MRHelpers.updateEnvironmentForMRTasks(conf, environment, isMap);
+    MRHelpers.updateEnvBasedOnMRTaskEnv(conf, environment, isMap);
     return environment;
   }
 
@@ -398,14 +397,14 @@ public class DagUtils {
     if (javaOpts != null && !javaOpts.isEmpty()) {
       String logLevel = HiveConf.getVar(conf, HiveConf.ConfVars.HIVETEZLOGLEVEL);
       List<String> logProps = Lists.newArrayList();
-      MRHelpers.addLog4jSystemProperties(logLevel, logProps);
+      TezUtils.addLog4jSystemProperties(logLevel, logProps);
       StringBuilder sb = new StringBuilder();
       for (String str : logProps) {
         sb.append(str).append(" ");
       }
       return javaOpts + " " + sb.toString();
     }
-    return MRHelpers.getMapJavaOpts(conf);
+    return MRHelpers.getJavaOptsForMRMapper(conf);
   }
 
   /*
@@ -427,11 +426,11 @@ public class DagUtils {
     Vertex map = null;
 
     // use tez to combine splits
-    boolean useTezGroupedSplits = false;
+    boolean groupSplitsInInputInitializer;
+    
+    DataSourceDescriptor dataSource;
 
     int numTasks = -1;
-    Class<? extends TezRootInputInitializer> amSplitGeneratorClass = null;
-    InputSplitInfo inputSplitInfo = null;
     Class inputFormatClass = conf.getClass("mapred.input.format.class",
         InputFormat.class);
 
@@ -445,9 +444,9 @@ public class DagUtils {
     }
 
     if (vertexHasCustomInput) {
-      useTezGroupedSplits = false;
-      // grouping happens in execution phase. Setting the class to TezGroupedSplitsInputFormat
-      // here would cause pre-mature grouping which would be incorrect.
+      groupSplitsInInputInitializer = false;
+      // grouping happens in execution phase. The input payload should not enable grouping here,
+      // it will be enabled in the CustomVertex.
       inputFormatClass = HiveInputFormat.class;
       conf.setClass("mapred.input.format.class", HiveInputFormat.class, InputFormat.class);
       // mapreduce.tez.input.initializer.serialize.event.payload should be set to false when using
@@ -457,62 +456,53 @@ public class DagUtils {
       // we'll set up tez to combine spits for us iff the input format
       // is HiveInputFormat
       if (inputFormatClass == HiveInputFormat.class) {
-        useTezGroupedSplits = true;
-        conf.setClass("mapred.input.format.class", HiveInputFormat.class, InputFormat.class);
+        groupSplitsInInputInitializer = true;
+      } else {
+        groupSplitsInInputInitializer = false;
       }
     }
 
+    // set up the operator plan. Before setting up Inputs since the config is updated.
+    Utilities.setMapWork(conf, mapWork, mrScratchDir, false);
+    
     if (HiveConf.getBoolVar(conf, ConfVars.HIVE_AM_SPLIT_GENERATION)
         && !mapWork.isUseOneNullRowInputFormat()) {
       // if we're generating the splits in the AM, we just need to set
       // the correct plugin.
-      if (useTezGroupedSplits) {
-        amSplitGeneratorClass = HiveSplitGenerator.class;
+      if (groupSplitsInInputInitializer) {
+        // Not setting a payload, since the MRInput payload is the same and can be accessed.
+        InputInitializerDescriptor descriptor = InputInitializerDescriptor.create(
+            HiveSplitGenerator.class.getName());
+        dataSource = MRInputLegacy.createConfigBuilder(conf, inputFormatClass).groupSplits(true)
+            .setCustomInitializerDescriptor(descriptor).build();
       } else {
-        amSplitGeneratorClass = MRInputAMSplitGenerator.class;
+        // Not HiveInputFormat, or a custom VertexManager will take care of grouping splits
+        dataSource = MRInputLegacy.createConfigBuilder(conf, inputFormatClass).groupSplits(false).build();
       }
     } else {
-      // client side split generation means we have to compute them now
-      inputSplitInfo = MRHelpers.generateInputSplits(conf,
-          new Path(tezDir, "split_"+mapWork.getName().replaceAll(" ", "_")));
-      numTasks = inputSplitInfo.getNumTasks();
+      // Setup client side split generation.
+      dataSource = MRInputHelpers.configureMRInputWithLegacySplitGeneration(conf, new Path(tezDir,
+          "split_" + mapWork.getName().replaceAll(" ", "_")), true);
+      numTasks = dataSource.getNumberOfShards();
     }
 
-    // set up the operator plan
-    Utilities.setMapWork(conf, mapWork, mrScratchDir, false);
-
-    byte[] serializedConf = MRHelpers.createUserPayloadFromConf(conf);
-    map = new Vertex(mapWork.getName(),
-        new ProcessorDescriptor(MapTezProcessor.class.getName()).
+    UserPayload serializedConf = TezUtils.createUserPayloadFromConf(conf);
+    map = Vertex.create(mapWork.getName(),
+        ProcessorDescriptor.create(MapTezProcessor.class.getName()).
         setUserPayload(serializedConf), numTasks, getContainerResource(conf));
     map.setTaskEnvironment(getContainerEnvironment(conf, true));
     map.setTaskLaunchCmdOpts(getContainerJavaOpts(conf));
 
     assert mapWork.getAliasToWork().keySet().size() == 1;
 
+    // Add the actual source input
     String alias = mapWork.getAliasToWork().keySet().iterator().next();
-
-    byte[] mrInput = null;
-    if (useTezGroupedSplits) {
-      mrInput = MRHelpers.createMRInputPayloadWithGrouping(serializedConf);
-    } else {
-      mrInput = MRHelpers.createMRInputPayload(serializedConf);
-    }
-    map.addDataSource(alias,
-        new DataSourceDescriptor(new InputDescriptor(MRInputLegacy.class.getName()).
-        setUserPayload(mrInput), new InputInitializerDescriptor(amSplitGeneratorClass.getName()).setUserPayload(mrInput),null));
+    map.addDataSource(alias, dataSource);
 
     Map<String, LocalResource> localResources = new HashMap<String, LocalResource>();
     localResources.put(getBaseName(appJarLr), appJarLr);
     for (LocalResource lr: additionalLr) {
       localResources.put(getBaseName(lr), lr);
-    }
-
-    if (inputSplitInfo != null) {
-      // only relevant for client-side split generation
-      map.setLocationHint(new VertexLocationHint(inputSplitInfo.getTaskLocationHints()));
-      MRHelpers.updateLocalResourcesForInputSplits(FileSystem.get(conf), inputSplitInfo,
-          localResources);
     }
 
     map.setTaskLocalFiles(localResources);
@@ -550,9 +540,9 @@ public class DagUtils {
     Utilities.createTmpDirs(conf, reduceWork);
 
     // create the vertex
-    Vertex reducer = new Vertex(reduceWork.getName(),
-        new ProcessorDescriptor(ReduceTezProcessor.class.getName()).
-        setUserPayload(MRHelpers.createUserPayloadFromConf(conf)),
+    Vertex reducer = Vertex.create(reduceWork.getName(),
+        ProcessorDescriptor.create(ReduceTezProcessor.class.getName()).
+        setUserPayload(TezUtils.createUserPayloadFromConf(conf)),
             reduceWork.isAutoReduceParallelism() ? reduceWork.getMaxReduceTasks() : reduceWork
                 .getNumReduceTasks(), getContainerResource(conf));
 
@@ -606,10 +596,10 @@ public class DagUtils {
       int numContainers, Map<String, LocalResource> localResources) throws
       IOException, TezException {
 
-    ProcessorDescriptor prewarmProcDescriptor = new ProcessorDescriptor(HivePreWarmProcessor.class.getName());
-    prewarmProcDescriptor.setUserPayload(MRHelpers.createUserPayloadFromConf(conf));
+    ProcessorDescriptor prewarmProcDescriptor = ProcessorDescriptor.create(HivePreWarmProcessor.class.getName());
+    prewarmProcDescriptor.setUserPayload(TezUtils.createUserPayloadFromConf(conf));
 
-    PreWarmVertex prewarmVertex = new PreWarmVertex("prewarm", prewarmProcDescriptor, numContainers,getContainerResource(conf));
+    PreWarmVertex prewarmVertex = PreWarmVertex.create("prewarm", prewarmProcDescriptor, numContainers,getContainerResource(conf));
 
     Map<String, LocalResource> combinedResources = new HashMap<String, LocalResource>();
 
@@ -855,7 +845,7 @@ public class DagUtils {
   public JobConf createConfiguration(HiveConf hiveConf) throws IOException {
     hiveConf.setBoolean("mapred.mapper.new-api", false);
 
-    JobConf conf = (JobConf) MRHelpers.getBaseMRConfiguration(hiveConf);
+    JobConf conf = new JobConf(hiveConf);
 
     conf.set("mapred.output.committer.class", NullOutputCommitter.class.getName());
 
@@ -946,8 +936,8 @@ public class DagUtils {
     // final vertices need to have at least one output
     if (!hasChildren) {
       v.addDataSink("out_"+work.getName(), new DataSinkDescriptor(
-          new OutputDescriptor(MROutput.class.getName())
-          .setUserPayload(MRHelpers.createUserPayloadFromConf(conf)), null, null));
+          OutputDescriptor.create(MROutput.class.getName())
+          .setUserPayload(TezUtils.createUserPayloadFromConf(conf)), null, null));
     }
 
     return v;
@@ -1015,16 +1005,16 @@ public class DagUtils {
     if (edgeProp.isAutoReduce()) {
       Configuration pluginConf = new Configuration(false);
       VertexManagerPluginDescriptor desc =
-          new VertexManagerPluginDescriptor(ShuffleVertexManager.class.getName());
+          VertexManagerPluginDescriptor.create(ShuffleVertexManager.class.getName());
       pluginConf.setBoolean(
-          ShuffleVertexManager.TEZ_AM_SHUFFLE_VERTEX_MANAGER_ENABLE_AUTO_PARALLEL, true);
-      pluginConf.setInt(ShuffleVertexManager.TEZ_AM_SHUFFLE_VERTEX_MANAGER_MIN_TASK_PARALLELISM,
+          ShuffleVertexManager.TEZ_SHUFFLE_VERTEX_MANAGER_ENABLE_AUTO_PARALLEL, true);
+      pluginConf.setInt(ShuffleVertexManager.TEZ_SHUFFLE_VERTEX_MANAGER_MIN_TASK_PARALLELISM,
           edgeProp.getMinReducer());
       pluginConf.setLong(
-          ShuffleVertexManager.TEZ_AM_SHUFFLE_VERTEX_MANAGER_DESIRED_TASK_INPUT_SIZE,
+          ShuffleVertexManager.TEZ_SHUFFLE_VERTEX_MANAGER_DESIRED_TASK_INPUT_SIZE,
           edgeProp.getInputSizePerReducer());
-      ByteString payload = MRHelpers.createByteStringFromConf(pluginConf);
-      desc.setUserPayload(payload.toByteArray());
+      UserPayload payload = TezUtils.createUserPayloadFromConf(pluginConf);
+      desc.setUserPayload(payload);
       v.setVertexManagerPlugin(desc);
     }
   }

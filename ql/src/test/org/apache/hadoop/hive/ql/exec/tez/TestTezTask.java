@@ -33,7 +33,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -97,7 +96,7 @@ public class TestTezTask {
           @Override
           public Vertex answer(InvocationOnMock invocation) throws Throwable {
             Object[] args = invocation.getArguments();
-            return new Vertex(((BaseWork)args[1]).getName(),
+            return Vertex.create(((BaseWork)args[1]).getName(),
                 mock(ProcessorDescriptor.class), 0, mock(Resource.class));
           }
         });
@@ -108,7 +107,7 @@ public class TestTezTask {
           @Override
           public Edge answer(InvocationOnMock invocation) throws Throwable {
             Object[] args = invocation.getArguments();
-            return new Edge((Vertex)args[1], (Vertex)args[2], mock(EdgeProperty.class));
+            return Edge.create((Vertex)args[1], (Vertex)args[2], mock(EdgeProperty.class));
           }
         });
 
