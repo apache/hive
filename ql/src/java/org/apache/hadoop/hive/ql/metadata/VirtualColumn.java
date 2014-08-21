@@ -22,7 +22,10 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.ListIterator;
 
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -60,8 +63,9 @@ public class VirtualColumn implements Serializable {
   public static final VirtualColumn GROUPINGID =
       new VirtualColumn("GROUPING__ID", (PrimitiveTypeInfo) TypeInfoFactory.intTypeInfo);
 
-  public static final VirtualColumn[] VIRTUAL_COLUMNS =
-      new VirtualColumn[] {FILENAME, BLOCKOFFSET, ROWOFFSET, RAWDATASIZE, GROUPINGID, ROWID};
+  public static ImmutableSet<String> VIRTUAL_COLUMN_NAMES =
+      ImmutableSet.of(FILENAME.getName(), BLOCKOFFSET.getName(), ROWOFFSET.getName(),
+          RAWDATASIZE.getName(), GROUPINGID.getName(), ROWID.getName());
 
   private final String name;
   private final TypeInfo typeInfo;
@@ -139,10 +143,27 @@ public class VirtualColumn implements Serializable {
     return  31 * typeInfo.getTypeName().hashCode() + c;
   }
   public static Collection<String> removeVirtualColumns(final Collection<String> columns) {
-    for(VirtualColumn vcol : VIRTUAL_COLUMNS) {
-      columns.remove(vcol.getName());
-    }
+    Iterables.removeAll(columns, VIRTUAL_COLUMN_NAMES);
     return columns;
+  }
+
+  public static List<TypeInfo> removeVirtualColumnTypes(final List<String> columnNames,
+      final List<TypeInfo> columnTypes) {
+    if (columnNames.size() != columnTypes.size()) {
+      throw new IllegalArgumentException("Number of column names in configuration " +
+          columnNames.size() + " differs from column types " + columnTypes.size());
+    }
+
+    int i = 0;
+    ListIterator<TypeInfo> it = columnTypes.listIterator();
+    while(it.hasNext()) {
+      it.next();
+      if (VIRTUAL_COLUMN_NAMES.contains(columnNames.get(i))) {
+        it.remove();
+      }
+      ++i;
+    }
+    return columnTypes;
   }
 
   public static StructObjectInspector getVCSObjectInspector(List<VirtualColumn> vcs) {
