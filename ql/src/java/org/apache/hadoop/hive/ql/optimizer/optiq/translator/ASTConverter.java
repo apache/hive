@@ -25,6 +25,7 @@ import org.eigenbase.rel.RelVisitor;
 import org.eigenbase.rel.SortRel;
 import org.eigenbase.rel.TableAccessRelBase;
 import org.eigenbase.rel.UnionRelBase;
+import org.eigenbase.rel.rules.SemiJoinRel;
 import org.eigenbase.reltype.RelDataTypeField;
 import org.eigenbase.rex.RexCall;
 import org.eigenbase.rex.RexFieldCollation;
@@ -187,8 +188,7 @@ public class ASTConverter {
       QueryBlockInfo right = convertSource(join.getRight());
       s = new Schema(left.schema, right.schema);
       ASTNode cond = join.getCondition().accept(new RexVisitor(s));
-      boolean semiJoin = ((join instanceof HiveJoinRel) && ((HiveJoinRel) join).isLeftSemiJoin()) ? true
-          : false;
+      boolean semiJoin = join instanceof SemiJoinRel;
       ast = ASTBuilder.join(left.ast, right.ast, join.getJoinType(), cond, semiJoin);
       if (semiJoin)
         s = left.schema;
