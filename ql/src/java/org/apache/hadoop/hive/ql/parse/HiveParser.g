@@ -331,6 +331,15 @@ TOK_RESOURCE_LIST;
 TOK_COMPACT;
 TOK_SHOW_COMPACTIONS;
 TOK_SHOW_TRANSACTIONS;
+TOK_DELETE_FROM;
+TOK_UPDATE_TABLE;
+TOK_SET_COLUMNS_CLAUSE;
+TOK_VALUE_ROW;
+TOK_VALUES_TABLE;
+TOK_VIRTUAL_TABLE;
+TOK_VIRTUAL_TABREF;
+TOK_ANONYMOUS;
+TOK_COL_NAME;
 }
 
 
@@ -469,6 +478,9 @@ import java.util.HashMap;
     xlateMap.put("KW_DEFINED", "DEFINED");
     xlateMap.put("KW_SUBQUERY", "SUBQUERY");
     xlateMap.put("KW_REWRITE", "REWRITE");
+    xlateMap.put("KW_UPDATE", "UPDATE");
+
+    xlateMap.put("KW_VALUES", "VALUES");
 
     // Operators
     xlateMap.put("DOT", ".");
@@ -638,6 +650,8 @@ execStatement
     | exportStatement
     | importStatement
     | ddlStatement
+    | deleteStatement
+    | updateStatement
     ;
 
 loadStatement
@@ -2095,11 +2109,28 @@ singleFromStatement
     ( b+=body )+ -> ^(TOK_QUERY fromClause body+)
     ;
 
+/*
+The valuesClause rule below ensures that the parse tree for
+"insert into table FOO values (1,2),(3,4)" looks the same as
+"insert into table FOO select a,b from (values(1,2),(3,4)) as BAR(a,b)" which itself is made to look
+very similar to the tree for "insert into table FOO select a,b from BAR".  Since virtual table name
+is implicit, it's represented as TOK_ANONYMOUS.
+*/
 regularBody[boolean topLevel]
    :
    i=insertClause
+   (
    s=selectStatement[topLevel]
      {$s.tree.getChild(1).replaceChildren(0, 0, $i.tree);} -> {$s.tree}
+     |
+     valuesClause
+      -> ^(TOK_QUERY
+            ^(TOK_FROM
+              ^(TOK_VIRTUAL_TABLE ^(TOK_VIRTUAL_TABREF ^(TOK_ANONYMOUS)) valuesClause)
+             )
+            ^(TOK_INSERT {$i.tree} ^(TOK_SELECT ^(TOK_SELEXPR TOK_ALLCOLREF)))
+          )
+   )
    |
    selectStatement[topLevel]
    ;
@@ -2207,4 +2238,35 @@ limitClause
 @after { popMsg(state); }
    :
    KW_LIMIT num=Number -> ^(TOK_LIMIT $num)
+   ;
+
+//DELETE FROM <tableName> WHERE ...;
+deleteStatement
+@init { pushMsg("delete statement", state); }
+@after { popMsg(state); }
+   :
+   KW_DELETE KW_FROM tableName (whereClause)? -> ^(TOK_DELETE_FROM tableName whereClause?)
+   ;
+
+/*SET <columName> = (3 + col2)*/
+columnAssignmentClause
+   :
+   tableOrColumn EQUAL^ atomExpression
+   ;
+
+/*SET col1 = 5, col2 = (4 + col4), ...*/
+setColumnsClause
+   :
+   KW_SET columnAssignmentClause (COMMA columnAssignmentClause)* -> ^(TOK_SET_COLUMNS_CLAUSE columnAssignmentClause* )
+   ;
+
+/* 
+  UPDATE <table> 
+  SET col1 = val1, col2 = val2... WHERE ...
+*/
+updateStatement
+@init { pushMsg("update statement", state); }
+@after { popMsg(state); }
+   :
+   KW_UPDATE tableName setColumnsClause whereClause? -> ^(TOK_UPDATE_TABLE tableName setColumnsClause whereClause?)
    ;

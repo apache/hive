@@ -49,6 +49,9 @@ public enum HiveCommand {
       if (command.length > 1 && "role".equalsIgnoreCase(command[1])) {
         // special handling for set role r1 statement
         return null;
+      } else if(command.length > 1 && "from".equalsIgnoreCase(command[1])) {
+        //special handling for SQL "delete from <table> where..."
+        return null;
       } else if (COMMANDS.contains(cmd)) {
         return HiveCommand.valueOf(cmd);
       }
