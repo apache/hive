@@ -505,7 +505,7 @@ public class DagUtils {
       localResources.put(getBaseName(lr), lr);
     }
 
-    map.setTaskLocalFiles(localResources);
+    map.addTaskLocalFiles(localResources);
     return map;
   }
 
@@ -554,7 +554,7 @@ public class DagUtils {
     for (LocalResource lr: additionalLr) {
       localResources.put(getBaseName(lr), lr);
     }
-    reducer.setTaskLocalFiles(localResources);
+    reducer.addTaskLocalFiles(localResources);
 
     return reducer;
   }
@@ -607,7 +607,7 @@ public class DagUtils {
       combinedResources.putAll(localResources);
     }
 
-    prewarmVertex.setTaskLocalFiles(localResources);
+    prewarmVertex.addTaskLocalFiles(localResources);
     prewarmVertex.setTaskLaunchCmdOpts(getContainerJavaOpts(conf));
     prewarmVertex.setTaskEnvironment(getContainerEnvironment(conf, false));
     return prewarmVertex;

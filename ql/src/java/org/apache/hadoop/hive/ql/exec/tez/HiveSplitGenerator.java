@@ -207,14 +207,15 @@ public class HiveSplitGenerator extends InputInitializer {
       MRSplitsProto splitsProto = inputSplitInfo.getSplitsProto();
       int count = 0;
       for (MRSplitProto mrSplit : splitsProto.getSplitsList()) {
-        InputDataInformationEvent diEvent =
-            InputDataInformationEvent.create(count++, mrSplit.toByteString().asReadOnlyByteBuffer());
+        InputDataInformationEvent diEvent = InputDataInformationEvent.createWithSerializedPayload(
+            count++, mrSplit.toByteString().asReadOnlyByteBuffer());
         events.add(diEvent);
       }
     } else {
       int count = 0;
       for (org.apache.hadoop.mapred.InputSplit split : inputSplitInfo.getOldFormatSplits()) {
-        InputDataInformationEvent diEvent = InputDataInformationEvent.create(count++, split);
+        InputDataInformationEvent diEvent = InputDataInformationEvent.createWithObjectPayload(
+            count++, split);
         events.add(diEvent);
       }
     }
