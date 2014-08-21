@@ -5,6 +5,7 @@ POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE insert_into1_neg (key int, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@insert_into1_neg
 POSTHOOK: query: CREATE TABLE insert_into1_neg (key int, value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -13,8 +14,5 @@ PREHOOK: query: LOCK TABLE insert_into1_neg EXCLUSIVE
 PREHOOK: type: LOCKTABLE
 POSTHOOK: query: LOCK TABLE insert_into1_neg EXCLUSIVE
 POSTHOOK: type: LOCKTABLE
-conflicting lock present for default@insert_into1_neg mode EXCLUSIVE
-conflicting lock present for default@insert_into1_neg mode EXCLUSIVE
-conflicting lock present for default@insert_into1_neg mode EXCLUSIVE
-conflicting lock present for default@insert_into1_neg mode EXCLUSIVE
+Unable to acquire IMPLICIT, EXCLUSIVE lock default@insert_into1_neg after 5 attempts.
 FAILED: Error in acquiring locks: Locks on the underlying objects cannot be acquired. retry after some time

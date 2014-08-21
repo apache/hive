@@ -1,0 +1,176 @@
+PREHOOK: query: DROP TABLE over1k
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE over1k
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE over1korc
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE over1korc
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: -- data setup
+CREATE TABLE over1k(t tinyint,
+           si smallint,
+           i int,
+           b bigint,
+           f float,
+           d double,
+           bo boolean,
+           s string,
+           ts timestamp,
+           dec decimal(4,2),
+           bin binary)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
+STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@over1k
+POSTHOOK: query: -- data setup
+CREATE TABLE over1k(t tinyint,
+           si smallint,
+           i int,
+           b bigint,
+           f float,
+           d double,
+           bo boolean,
+           s string,
+           ts timestamp,
+           dec decimal(4,2),
+           bin binary)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
+STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@over1k
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/over1k' OVERWRITE INTO TABLE over1k
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@over1k
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/over1k' OVERWRITE INTO TABLE over1k
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@over1k
+PREHOOK: query: CREATE TABLE over1korc(t tinyint,
+           si smallint,
+           i int,
+           b bigint,
+           f float,
+           d double,
+           bo boolean,
+           s string,
+           ts timestamp,
+           dec decimal(4,2),
+           bin binary)
+STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@over1korc
+POSTHOOK: query: CREATE TABLE over1korc(t tinyint,
+           si smallint,
+           i int,
+           b bigint,
+           f float,
+           d double,
+           bo boolean,
+           s string,
+           ts timestamp,
+           dec decimal(4,2),
+           bin binary)
+STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@over1korc
+PREHOOK: query: INSERT INTO TABLE over1korc SELECT * FROM over1k
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over1k
+PREHOOK: Output: default@over1korc
+POSTHOOK: query: INSERT INTO TABLE over1korc SELECT * FROM over1k
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over1k
+POSTHOOK: Output: default@over1korc
+POSTHOOK: Lineage: over1korc.b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1korc.bin SIMPLE [(over1k)over1k.FieldSchema(name:bin, type:binary, comment:null), ]
+POSTHOOK: Lineage: over1korc.bo SIMPLE [(over1k)over1k.FieldSchema(name:bo, type:boolean, comment:null), ]
+POSTHOOK: Lineage: over1korc.d SIMPLE [(over1k)over1k.FieldSchema(name:d, type:double, comment:null), ]
+POSTHOOK: Lineage: over1korc.dec SIMPLE [(over1k)over1k.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
+POSTHOOK: Lineage: over1korc.f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1korc.i SIMPLE [(over1k)over1k.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1korc.s SIMPLE [(over1k)over1k.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Lineage: over1korc.si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1korc.t SIMPLE [(over1k)over1k.FieldSchema(name:t, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: over1korc.ts SIMPLE [(over1k)over1k.FieldSchema(name:ts, type:timestamp, comment:null), ]
+PREHOOK: query: EXPLAIN SELECT s AS `string`,
+       CONCAT(CONCAT('      ',s),'      ') AS `none_padded_str`,
+       CONCAT(CONCAT('|',RTRIM(CONCAT(CONCAT('      ',s),'      '))),'|') AS `none_z_rtrim_str`
+       FROM over1korc LIMIT 20
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN SELECT s AS `string`,
+       CONCAT(CONCAT('      ',s),'      ') AS `none_padded_str`,
+       CONCAT(CONCAT('|',RTRIM(CONCAT(CONCAT('      ',s),'      '))),'|') AS `none_z_rtrim_str`
+       FROM over1korc LIMIT 20
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: over1korc
+            Statistics: Num rows: 1049 Data size: 311170 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: s (type: string), concat(concat('      ', s), '      ') (type: string), concat(concat('|', rtrim(concat(concat('      ', s), '      '))), '|') (type: string)
+              outputColumnNames: _col0, _col1, _col2
+              Statistics: Num rows: 1049 Data size: 311170 Basic stats: COMPLETE Column stats: NONE
+              Limit
+                Number of rows: 20
+                Statistics: Num rows: 20 Data size: 5920 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 20 Data size: 5920 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 20
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT s AS `string`,
+       CONCAT(CONCAT('      ',s),'      ') AS `none_padded_str`,
+       CONCAT(CONCAT('|',RTRIM(CONCAT(CONCAT('      ',s),'      '))),'|') AS `none_z_rtrim_str`
+       FROM over1korc LIMIT 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over1korc
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT s AS `string`,
+       CONCAT(CONCAT('      ',s),'      ') AS `none_padded_str`,
+       CONCAT(CONCAT('|',RTRIM(CONCAT(CONCAT('      ',s),'      '))),'|') AS `none_z_rtrim_str`
+       FROM over1korc LIMIT 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over1korc
+#### A masked pattern was here ####
+bob davidson	      bob davidson      	|      bob davidson|
+alice zipper	      alice zipper      	|      alice zipper|
+katie davidson	      katie davidson      	|      katie davidson|
+xavier quirinius	      xavier quirinius      	|      xavier quirinius|
+nick robinson	      nick robinson      	|      nick robinson|
+tom hernandez	      tom hernandez      	|      tom hernandez|
+ulysses hernandez	      ulysses hernandez      	|      ulysses hernandez|
+priscilla ichabod	      priscilla ichabod      	|      priscilla ichabod|
+quinn van buren	      quinn van buren      	|      quinn van buren|
+luke laertes	      luke laertes      	|      luke laertes|
+xavier polk	      xavier polk      	|      xavier polk|
+zach falkner	      zach falkner      	|      zach falkner|
+quinn davidson	      quinn davidson      	|      quinn davidson|
+priscilla van buren	      priscilla van buren      	|      priscilla van buren|
+fred king	      fred king      	|      fred king|
+calvin ellison	      calvin ellison      	|      calvin ellison|
+sarah garcia	      sarah garcia      	|      sarah garcia|
+zach young	      zach young      	|      zach young|
+david underhill	      david underhill      	|      david underhill|
+yuri carson	      yuri carson      	|      yuri carson|

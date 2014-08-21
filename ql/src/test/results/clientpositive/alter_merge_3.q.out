@@ -1,0 +1,72 @@
+PREHOOK: query: create table src_rc_merge_test_part (key int, value string) partitioned by (ds string) stored as rcfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src_rc_merge_test_part
+POSTHOOK: query: create table src_rc_merge_test_part (key int, value string) partitioned by (ds string) stored as rcfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@src_rc_merge_test_part
+#### A masked pattern was here ####
+PREHOOK: type: ALTERTABLE_ADDPARTS
+#### A masked pattern was here ####
+PREHOOK: Output: default@src_rc_merge_test_part
+#### A masked pattern was here ####
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+#### A masked pattern was here ####
+POSTHOOK: Output: default@src_rc_merge_test_part
+POSTHOOK: Output: default@src_rc_merge_test_part@ds=2014-08-04
+PREHOOK: query: alter table src_rc_merge_test_part partition (ds = '2014-08-04') concatenate
+PREHOOK: type: ALTER_PARTITION_MERGE
+PREHOOK: Input: default@src_rc_merge_test_part
+PREHOOK: Output: default@src_rc_merge_test_part@ds=2014-08-04
+POSTHOOK: query: alter table src_rc_merge_test_part partition (ds = '2014-08-04') concatenate
+POSTHOOK: type: ALTER_PARTITION_MERGE
+POSTHOOK: Input: default@src_rc_merge_test_part
+POSTHOOK: Output: default@src_rc_merge_test_part@ds=2014-08-04
+PREHOOK: query: select count(1) from src_rc_merge_test_part where ds='2014-08-04'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_rc_merge_test_part
+PREHOOK: Input: default@src_rc_merge_test_part@ds=2014-08-04
+#### A masked pattern was here ####
+POSTHOOK: query: select count(1) from src_rc_merge_test_part where ds='2014-08-04'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_rc_merge_test_part
+POSTHOOK: Input: default@src_rc_merge_test_part@ds=2014-08-04
+#### A masked pattern was here ####
+15
+#### A masked pattern was here ####
+PREHOOK: type: ALTERTABLE_ADDPARTS
+#### A masked pattern was here ####
+PREHOOK: Output: default@src_rc_merge_test_part
+#### A masked pattern was here ####
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+#### A masked pattern was here ####
+POSTHOOK: Output: default@src_rc_merge_test_part
+POSTHOOK: Output: default@src_rc_merge_test_part@ds=2014-08-05
+PREHOOK: query: alter table src_rc_merge_test_part partition (ds = '2014-08-05') concatenate
+PREHOOK: type: ALTER_PARTITION_MERGE
+PREHOOK: Input: default@src_rc_merge_test_part
+PREHOOK: Output: default@src_rc_merge_test_part@ds=2014-08-05
+POSTHOOK: query: alter table src_rc_merge_test_part partition (ds = '2014-08-05') concatenate
+POSTHOOK: type: ALTER_PARTITION_MERGE
+POSTHOOK: Input: default@src_rc_merge_test_part
+POSTHOOK: Output: default@src_rc_merge_test_part@ds=2014-08-05
+PREHOOK: query: select count(1) from src_rc_merge_test_part where ds='2014-08-05'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_rc_merge_test_part
+PREHOOK: Input: default@src_rc_merge_test_part@ds=2014-08-05
+#### A masked pattern was here ####
+POSTHOOK: query: select count(1) from src_rc_merge_test_part where ds='2014-08-05'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_rc_merge_test_part
+POSTHOOK: Input: default@src_rc_merge_test_part@ds=2014-08-05
+#### A masked pattern was here ####
+15
+PREHOOK: query: drop table src_rc_merge_test_part
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@src_rc_merge_test_part
+PREHOOK: Output: default@src_rc_merge_test_part
+POSTHOOK: query: drop table src_rc_merge_test_part
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@src_rc_merge_test_part
+POSTHOOK: Output: default@src_rc_merge_test_part

@@ -30,10 +30,9 @@ import java.util.Stack;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.metastore.api.Index;
-import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
-import org.apache.hadoop.hive.ql.exec.SelectOperator;
+import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
 import org.apache.hadoop.hive.ql.lib.GraphWalker;
@@ -45,7 +44,6 @@ import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 
 /**
  * RewriteCanApplyCtx class stores the context for the {@link RewriteCanApplyProcFactory}
@@ -84,7 +82,9 @@ public final class RewriteCanApplyCtx implements NodeProcessorCtx {
   private Set<String> aggFuncColList = new LinkedHashSet<String>();
 
   private final ParseContext parseContext;
+  private String alias;
   private String baseTableName;
+  private String indexTableName;
   private String aggFunction;
 
   void resetCanApplyCtx(){
@@ -230,6 +230,14 @@ public final class RewriteCanApplyCtx implements NodeProcessorCtx {
     this.aggFuncCnt = aggFuncCnt;
   }
 
+  public String getAlias() {
+    return alias;
+  }
+
+  public void setAlias(String alias) {
+    this.alias = alias;
+  }
+
   public String getBaseTableName() {
     return baseTableName;
   }
@@ -238,8 +246,24 @@ public final class RewriteCanApplyCtx implements NodeProcessorCtx {
     this.baseTableName = baseTableName;
   }
 
+  public String getIndexTableName() {
+    return indexTableName;
+  }
+
+  public void setIndexTableName(String indexTableName) {
+    this.indexTableName = indexTableName;
+  }
+
   public  ParseContext getParseContext() {
     return parseContext;
+  }
+
+  public Set<String> getAllColumns() {
+    Set<String> allColumns = new LinkedHashSet<String>(selectColumnsList);
+    allColumns.addAll(predicateColumnsList);
+    allColumns.addAll(gbKeyNameList);
+    allColumns.addAll(aggFuncColList);
+    return allColumns;
   }
 
 
@@ -255,15 +279,13 @@ public final class RewriteCanApplyCtx implements NodeProcessorCtx {
    * @param topOp
    * @throws SemanticException
    */
-  void populateRewriteVars(Operator<? extends OperatorDesc> topOp)
+  void populateRewriteVars(TableScanOperator topOp)
     throws SemanticException{
     Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
     opRules.put(new RuleRegExp("R1", FilterOperator.getOperatorName() + "%"),
-        RewriteCanApplyProcFactory.canApplyOnFilterOperator());
+        RewriteCanApplyProcFactory.canApplyOnFilterOperator(topOp));
     opRules.put(new RuleRegExp("R2", GroupByOperator.getOperatorName() + "%"),
-        RewriteCanApplyProcFactory.canApplyOnGroupByOperator());
-    opRules.put(new RuleRegExp("R3", SelectOperator.getOperatorName() + "%"),
-        RewriteCanApplyProcFactory.canApplyOnSelectOperator());
+        RewriteCanApplyProcFactory.canApplyOnGroupByOperator(topOp));
 
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along
@@ -364,5 +386,4 @@ public final class RewriteCanApplyCtx implements NodeProcessorCtx {
     }
     return true;
   }
-
 }

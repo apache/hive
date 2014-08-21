@@ -11,6 +11,7 @@ PREHOOK: query: create table date_join1 (
 )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@date_join1
 POSTHOOK: query: create table date_join1 (
   ORIGIN_CITY_NAME string,
   DEST_CITY_NAME string,

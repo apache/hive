@@ -176,7 +176,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
     return tables;
   }
 
-  
+
   @Override
   public boolean tableExists(String databaseName, String tableName) throws MetaException,
   TException, UnknownDBException {
@@ -252,6 +252,8 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
               + " is not a directory or unable to create one");
         }
       }
+      // Make sure location string is in proper format
+      tbl.getSd().setLocation(tblPath.toString());
     }
 
     // Add temp table info to current session
@@ -334,7 +336,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
               " is not writable by " + conf.getUser());
         }
       } catch (IOException err) {
-        MetaException metaException = 
+        MetaException metaException =
             new MetaException("Error checking temp table path for " + table.getTableName());
         metaException.initCause(err);
         throw metaException;

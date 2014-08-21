@@ -64,6 +64,7 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
 import org.apache.hadoop.hive.metastore.api.AddPartitionsRequest;
 import org.apache.hadoop.hive.metastore.api.AddPartitionsResult;
+import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.CheckLockRequest;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
@@ -89,7 +90,6 @@ import org.apache.hadoop.hive.metastore.api.GrantRevokePrivilegeRequest;
 import org.apache.hadoop.hive.metastore.api.GrantRevokePrivilegeResponse;
 import org.apache.hadoop.hive.metastore.api.GrantRevokeRoleRequest;
 import org.apache.hadoop.hive.metastore.api.GrantRevokeRoleResponse;
-import org.apache.hadoop.hive.metastore.api.GrantRevokeType;
 import org.apache.hadoop.hive.metastore.api.HeartbeatRequest;
 import org.apache.hadoop.hive.metastore.api.HeartbeatTxnRangeRequest;
 import org.apache.hadoop.hive.metastore.api.HeartbeatTxnRangeResponse;
@@ -142,6 +142,7 @@ import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterTableEvent;
+import org.apache.hadoop.hive.metastore.events.ConfigChangeEvent;
 import org.apache.hadoop.hive.metastore.events.CreateDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.CreateTableEvent;
 import org.apache.hadoop.hive.metastore.events.DropDatabaseEvent;
@@ -241,12 +242,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
   public static class HMSHandler extends FacebookBase implements
       IHMSHandler {
     public static final Log LOG = HiveMetaStore.LOG;
-    private static boolean createDefaultDB = false;
-    private static boolean defaultRolesCreated = false;
-    private static boolean adminUsersAdded = false;
     private String rawStoreClassName;
     private final HiveConf hiveConf; // stores datastore (jpox) properties,
                                      // right now they come from jpox.properties
+
+    private static String currentUrl;
 
     private Warehouse wh; // hdfs warehouse
     private final ThreadLocal<RawStore> threadLocalMS =
@@ -316,8 +316,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           address, cmd).toString());
     }
 
-    // The next serial number to be assigned
-    private boolean checkForDefaultDb;
     private static int nextSerialNum = 0;
     private static ThreadLocal<Integer> threadLocalId = new ThreadLocal<Integer>() {
       @Override
@@ -350,20 +348,20 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return threadLocalId.get();
     }
 
-    public static void resetDefaultDBFlag() {
-      createDefaultDB = false;
-    }
-
     public HMSHandler(String name) throws MetaException {
-      super(name);
-      hiveConf = new HiveConf(this.getClass());
-      init();
+      this(name, new HiveConf(HMSHandler.class), true);
     }
 
     public HMSHandler(String name, HiveConf conf) throws MetaException {
+      this(name, conf, true);
+    }
+
+    public HMSHandler(String name, HiveConf conf, boolean init) throws MetaException {
       super(name);
       hiveConf = conf;
-      init();
+      if (init) {
+        init();
+      }
     }
 
     public HiveConf getHiveConf() {
@@ -385,10 +383,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
     }
 
-    private boolean init() throws MetaException {
+    public void init() throws MetaException {
       rawStoreClassName = hiveConf.getVar(HiveConf.ConfVars.METASTORE_RAW_STORE_IMPL);
-      checkForDefaultDb = hiveConf.getBoolean(
-          "hive.metastore.checkForDefaultDb", true);
       initListeners = MetaStoreUtils.getMetaStoreListeners(
           MetaStoreInitListener.class, hiveConf,
           hiveConf.getVar(HiveConf.ConfVars.METASTORE_INIT_HOOKS));
@@ -404,9 +400,12 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       wh = new Warehouse(hiveConf);
 
       synchronized (HMSHandler.class) {
-        createDefaultDB();
-        createDefaultRoles();
-        addAdminUsers();
+        if (currentUrl == null || !currentUrl.equals(MetaStoreInit.getConnectionURL(hiveConf))) {
+          createDefaultDB();
+          createDefaultRoles();
+          addAdminUsers();
+          currentUrl = MetaStoreInit.getConnectionURL(hiveConf);
+        }
       }
 
       if (hiveConf.getBoolean("hive.metastore.metrics.enabled", false)) {
@@ -430,7 +429,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
       String partitionValidationRegex =
           hiveConf.getVar(HiveConf.ConfVars.METASTORE_PARTITION_NAME_WHITELIST_PATTERN);
-      if (partitionValidationRegex != null && partitionValidationRegex != "") {
+      if (partitionValidationRegex != null && !partitionValidationRegex.isEmpty()) {
         partitionValidationPattern = Pattern.compile(partitionValidationRegex);
       } else {
         partitionValidationPattern = null;
@@ -442,7 +441,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         Timer cleaner = new Timer("Metastore Events Cleaner Thread", true);
         cleaner.schedule(new EventCleanerTask(this), cleanFreq, cleanFreq);
       }
-      return true;
     }
 
     private String addPrefix(String s) {
@@ -454,10 +452,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       threadLocalConf.set(conf);
       RawStore ms = threadLocalMS.get();
       if (ms != null) {
-        ms.setConf(conf);
+        ms.setConf(conf); // reload if DS related configuration is changed
       }
     }
 
+    @Override
     public Configuration getConf() {
       Configuration conf = threadLocalConf.get();
       if (conf == null) {
@@ -469,6 +468,35 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     public Warehouse getWh() {
       return wh;
+    }
+
+    @Override
+    public void setMetaConf(String key, String value) throws MetaException {
+      ConfVars confVar = HiveConf.getMetaConf(key);
+      if (confVar == null) {
+        throw new MetaException("Invalid configuration key " + key);
+      }
+      String validate = confVar.validate(value);
+      if (validate != null) {
+        throw new MetaException("Invalid configuration value " + value + " for key " + key +
+            " by " + validate);
+      }
+      Configuration configuration = getConf();
+      String oldValue = configuration.get(key);
+      configuration.set(key, value);
+
+      for (MetaStoreEventListener listener : listeners) {
+        listener.onConfigChange(new ConfigChangeEvent(this, key, oldValue, value));
+      }
+    }
+
+    @Override
+    public String getMetaConf(String key) throws MetaException {
+      ConfVars confVar = HiveConf.getMetaConf(key);
+      if (confVar == null) {
+        throw new MetaException("Invalid configuration key " + key);
+      }
+      return getConf().get(key);
     }
 
     /**
@@ -517,7 +545,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         db.setOwnerType(PrincipalType.ROLE);
         ms.createDatabase(db);
       }
-      HMSHandler.createDefaultDB = true;
     }
 
     /**
@@ -526,9 +553,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
      * @throws MetaException
      */
     private void createDefaultDB() throws MetaException {
-      if (HMSHandler.createDefaultDB || !checkForDefaultDb) {
-        return;
-      }
       try {
         createDefaultDB_core(getMS());
       } catch (InvalidObjectException e) {
@@ -540,11 +564,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
 
     private void createDefaultRoles() throws MetaException {
-
-      if(defaultRolesCreated) {
-        LOG.debug("Admin role already created previously.");
-        return;
-      }
 
       RawStore ms = getMS();
       try {
@@ -579,16 +598,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         // Unlikely to be thrown.
         LOG.warn("Failed while granting global privs to admin", e);
       }
-
-      defaultRolesCreated = true;
     }
 
     private void addAdminUsers() throws MetaException {
 
-      if(adminUsersAdded) {
-        LOG.debug("Admin users already added.");
-        return;
-      }
       // now add pre-configured users to admin role
       String userStr = HiveConf.getVar(hiveConf,ConfVars.USERS_IN_ADMIN_ROLE,"").trim();
       if (userStr.isEmpty()) {
@@ -623,7 +636,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           LOG.debug(userName + " already in admin role", e);
         }
       }
-      adminUsersAdded = true;
     }
 
     private void logInfo(String m) {
@@ -698,8 +710,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       logInfo("Shutting down the object store...");
       RawStore ms = threadLocalMS.get();
       if (ms != null) {
-        ms.shutdown();
-        threadLocalMS.remove();
+        try {
+          ms.shutdown();
+        } finally {
+          threadLocalMS.remove();
+        }
       }
       logInfo("Metastore shutdown complete.");
     }
@@ -3291,6 +3306,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
       boolean success = false, indexTableCreated = false;
 
+      String[] qualified =
+          MetaStoreUtils.getQualifiedName(index.getDbName(), index.getIndexTableName());
+
       try {
         ms.openTransaction();
         Index old_index = null;
@@ -3313,7 +3331,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         Table indexTbl = indexTable;
         if (indexTbl != null) {
           try {
-            indexTbl = ms.getTable(index.getDbName(), index.getIndexTableName());
+            indexTbl = ms.getTable(qualified[0], qualified[1]);
           } catch (Exception e) {
           }
           if (indexTbl != null) {
@@ -3334,7 +3352,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         if (!success) {
           if (indexTableCreated) {
             try {
-              this.drop_table(index.getDbName(), index.getIndexTableName(), false);
+              drop_table(qualified[0], qualified[1], false);
             } catch (Exception e) {
             }
           }
@@ -3388,8 +3406,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
         String idxTblName = index.getIndexTableName();
         if (idxTblName != null) {
-          Table tbl = null;
-          tbl = this.get_table(dbName, idxTblName);
+          String[] qualified = MetaStoreUtils.getQualifiedName(index.getDbName(), idxTblName);
+          Table tbl = get_table(qualified[0], qualified[1]);
           if (tbl.getSd() == null) {
             throw new MetaException("Table metadata is corrupted");
           }
@@ -4031,7 +4049,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       incrementCounter("drop_role");
       firePreEvent(new PreAuthorizationCallEvent(this));
       if (ADMIN.equals(roleName) || PUBLIC.equals(roleName)) {
-        throw new MetaException(PUBLIC + "/" + ADMIN +" role can't be dropped.");
+        throw new MetaException(PUBLIC + "," + ADMIN + " roles can't be dropped.");
       }
       Boolean ret = null;
       try {
@@ -4101,6 +4119,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return ret;
     }
 
+    @Override
     public GrantRevokeRoleResponse grant_revoke_role(GrantRevokeRoleRequest request)
         throws MetaException, org.apache.thrift.TException {
       GrantRevokeRoleResponse response = new GrantRevokeRoleResponse();
@@ -4998,12 +5017,35 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return rolePrinGrantList;
     }
 
+    @Override
+    public AggrStats get_aggr_stats_for(PartitionsStatsRequest request)
+        throws NoSuchObjectException, MetaException, TException {
+      startFunction("get_aggr_stats_for: db=" + request.getDbName() + " table=" + request.getTblName());
+      AggrStats aggrStats = null;
+      try {
+        //TODO: We are setting partitionCnt for which we were able to retrieve stats same as
+        // incoming number from request. This is not correct, but currently no users of this api
+        // rely on this. Only, current user StatsAnnotation don't care for it. StatsOptimizer
+        // will care for it, so before StatsOptimizer begin using it, we need to fix this.
+        aggrStats = new AggrStats(getMS().get_aggr_stats_for(request.getDbName(),
+          request.getTblName(), request.getPartNames(), request.getColNames()), request.getPartNames().size());
+        return aggrStats;
+      } finally {
+          endFunction("get_partitions_statistics_req: ", aggrStats == null, null, request.getTblName());
+      }
+
+    }
+
   }
 
   public static IHMSHandler newHMSHandler(String name, HiveConf hiveConf) throws MetaException {
-    return RetryingHMSHandler.getProxy(hiveConf, name);
+    return newHMSHandler(name, hiveConf, false);
   }
 
+  public static IHMSHandler newHMSHandler(String name, HiveConf hiveConf, boolean local)
+      throws MetaException {
+    return RetryingHMSHandler.getProxy(hiveConf, name, local);
+  }
 
   /**
    * Discard a current delegation token.

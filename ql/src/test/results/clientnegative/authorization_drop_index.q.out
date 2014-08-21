@@ -1,0 +1,16 @@
+PREHOOK: query: create table t1 (a int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1
+POSTHOOK: query: create table t1 (a int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1
+PREHOOK: query: create index t1_index on table t1(a) as 'COMPACT' WITH DEFERRED REBUILD
+PREHOOK: type: CREATEINDEX
+PREHOOK: Input: default@t1
+POSTHOOK: query: create index t1_index on table t1(a) as 'COMPACT' WITH DEFERRED REBUILD
+POSTHOOK: type: CREATEINDEX
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: default@default__t1_t1_index__
+FAILED: HiveAccessControlException Permission denied: Principal [name=user2, type=USER] does not have following privileges for operation DROPINDEX [[OBJECT OWNERSHIP] on Object [type=TABLE_OR_VIEW, name=default.t1]]

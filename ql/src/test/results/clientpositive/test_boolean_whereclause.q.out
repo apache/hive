@@ -1,6 +1,7 @@
 PREHOOK: query: create table if not exists test_boolean(dummy tinyint)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@test_boolean
 POSTHOOK: query: create table if not exists test_boolean(dummy tinyint)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

@@ -16,6 +16,7 @@ CREATE TABLE part(
 )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@part
 POSTHOOK: query: -- data setup
 CREATE TABLE part( 
     p_partkey INT,
@@ -52,6 +53,7 @@ PREHOOK: query: create table part_dec(
 )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@part_dec
 POSTHOOK: query: create table part_dec(
     p_partkey INT,
     p_name STRING,
@@ -97,8 +99,8 @@ from part_dec
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part_dec
 #### A masked pattern was here ####
-Manufacturer#1	1173.15	1173.15	2346.3
-Manufacturer#1	1173.15	1173.15	2346.3
+Manufacturer#1	1173.15	1173.15	2346.30
+Manufacturer#1	1173.15	1173.15	2346.30
 Manufacturer#1	1414.42	1173.15	3760.72
 Manufacturer#1	1602.59	1173.15	5363.31
 Manufacturer#1	1632.66	1173.15	6995.97
@@ -116,7 +118,7 @@ Manufacturer#3	1922.98	1190.27	7532.61
 Manufacturer#4	1206.26	1206.26	1206.26
 Manufacturer#4	1290.35	1206.26	2496.61
 Manufacturer#4	1375.42	1206.26	3872.03
-Manufacturer#4	1620.67	1206.26	5492.7
+Manufacturer#4	1620.67	1206.26	5492.70
 Manufacturer#4	1844.92	1206.26	7337.62
 Manufacturer#5	1018.1	1018.1	1018.1
 Manufacturer#5	1464.48	1018.1	2482.58
@@ -137,8 +139,8 @@ from part_dec
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part_dec
 #### A masked pattern was here ####
-Manufacturer#1	1173.15	1173.15	2346.3
-Manufacturer#1	1173.15	1173.15	2346.3
+Manufacturer#1	1173.15	1173.15	2346.30
+Manufacturer#1	1173.15	1173.15	2346.30
 Manufacturer#1	1414.42	1414.42	1414.42
 Manufacturer#1	1602.59	1602.59	1602.59
 Manufacturer#1	1632.66	1632.66	1632.66

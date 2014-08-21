@@ -1,0 +1,467 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.hadoop.hive.accumulo.predicate;
+
+import static org.junit.Assert.assertNotNull;
+
+import java.sql.Date;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+
+import org.apache.accumulo.core.data.Key;
+import org.apache.accumulo.core.data.Range;
+import org.apache.hadoop.hive.accumulo.AccumuloHiveConstants;
+import org.apache.hadoop.hive.accumulo.columns.ColumnEncoding;
+import org.apache.hadoop.hive.accumulo.columns.HiveAccumuloRowIdColumnMapping;
+import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
+import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
+import org.apache.hadoop.hive.ql.lib.Dispatcher;
+import org.apache.hadoop.hive.ql.lib.GraphWalker;
+import org.apache.hadoop.hive.ql.lib.Node;
+import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.Rule;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+import org.apache.hadoop.hive.ql.udf.UDFLike;
+import org.apache.hadoop.hive.ql.udf.UDFToString;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrGreaterThan;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrLessThan;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPGreaterThan;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPLessThan;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPPlus;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+
+import com.google.common.collect.Lists;
+
+/**
+ *
+ */
+public class TestAccumuloRangeGenerator {
+
+  private AccumuloPredicateHandler handler;
+  private HiveAccumuloRowIdColumnMapping rowIdMapping;
+
+  @Before
+  public void setup() {
+    handler = AccumuloPredicateHandler.getInstance();
+    rowIdMapping = new HiveAccumuloRowIdColumnMapping(AccumuloHiveConstants.ROWID,
+        ColumnEncoding.STRING, "row", TypeInfoFactory.stringTypeInfo.toString());
+  }
+
+  @Test
+  public void testRangeConjunction() throws Exception {
+    // rowId >= 'f'
+    ExprNodeDesc column = new ExprNodeColumnDesc(TypeInfoFactory.stringTypeInfo, "rid", null, false);
+    ExprNodeDesc constant = new ExprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, "f");
+    List<ExprNodeDesc> children = Lists.newArrayList();
+    children.add(column);
+    children.add(constant);
+    ExprNodeDesc node = new ExprNodeGenericFuncDesc(TypeInfoFactory.stringTypeInfo,
+        new GenericUDFOPEqualOrGreaterThan(), children);
+    assertNotNull(node);
+
+    // rowId <= 'm'
+    ExprNodeDesc column2 = new ExprNodeColumnDesc(TypeInfoFactory.stringTypeInfo, "rid", null,
+        false);
+    ExprNodeDesc constant2 = new ExprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, "m");
+    List<ExprNodeDesc> children2 = Lists.newArrayList();
+    children2.add(column2);
+    children2.add(constant2);
+    ExprNodeDesc node2 = new ExprNodeGenericFuncDesc(TypeInfoFactory.stringTypeInfo,
+        new GenericUDFOPEqualOrLessThan(), children2);
+    assertNotNull(node2);
+
+    // And UDF
+    List<ExprNodeDesc> bothFilters = Lists.newArrayList();
+    bothFilters.add(node);
+    bothFilters.add(node2);
+    ExprNodeGenericFuncDesc both = new ExprNodeGenericFuncDesc(TypeInfoFactory.stringTypeInfo,
+        new GenericUDFOPAnd(), bothFilters);
+
+    // Should generate [f,m]
+    List<Range> expectedRanges = Arrays
+        .asList(new Range(new Key("f"), true, new Key("m\0"), false));
+
+    AccumuloRangeGenerator rangeGenerator = new AccumuloRangeGenerator(handler, rowIdMapping, "rid");
+    Dispatcher disp = new DefaultRuleDispatcher(rangeGenerator,
+        Collections.<Rule,NodeProcessor> emptyMap(), null);
+    GraphWalker ogw = new DefaultGraphWalker(disp);
+    ArrayList<Node> topNodes = new ArrayList<Node>();
+    topNodes.add(both);
+    HashMap<Node,Object> nodeOutput = new HashMap<Node,Object>();
+
+    try {
+      ogw.startWalking(topNodes, nodeOutput);
+    } catch (SemanticException ex) {
+      throw new RuntimeException(ex);
+    }
+
+    Object result = nodeOutput.get(both);
+    Assert.assertNotNull(result);
+    Assert.assertTrue("Result from graph walk was not a List", result instanceof List);
+    @SuppressWarnings("unchecked")
+    List<Range> actualRanges = (List<Range>) result;
+    Assert.assertEquals(expectedRanges, actualRanges);
+  }
+
+  @Test
+  public void testRangeDisjunction() throws Exception {
+    // rowId >= 'f'
+    ExprNodeDesc column = new ExprNodeColumnDesc(TypeInfoFactory.stringTypeInfo, "rid", null, false);
+    ExprNodeDesc constant = new ExprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, "f");
+    List<ExprNodeDesc> children = Lists.newArrayList();
+    children.add(column);
+    children.add(constant);
+    ExprNodeDesc node = new ExprNodeGenericFuncDesc(TypeInfoFactory.stringTypeInfo,
+        new GenericUDFOPEqualOrGreaterThan(), children);
+    assertNotNull(node);
+
+    // rowId <= 'm'
+    ExprNodeDesc column2 = new ExprNodeColumnDesc(TypeInfoFactory.stringTypeInfo, "rid", null,
+        false);
+    ExprNodeDesc constant2 = new ExprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, "m");
+    List<ExprNodeDesc> children2 = Lists.newArrayList();
+    children2.add(column2);
+    children2.add(constant2);
+    ExprNodeDesc node2 = new ExprNodeGenericFuncDesc(TypeInfoFactory.stringTypeInfo,
+        new GenericUDFOPEqualOrLessThan(), children2);
+    assertNotNull(node2);
+
+    // Or UDF
+    List<ExprNodeDesc> bothFilters = Lists.newArrayList();
+    bothFilters.add(node);
+    bothFilters.add(node2);
+    ExprNodeGenericFuncDesc both = new ExprNodeGenericFuncDesc(TypeInfoFactory.stringTypeInfo,
+        new GenericUDFOPOr(), bothFilters);
+
+    // Should generate (-inf,+inf)
+    List<Range> expectedRanges = Arrays.asList(new Range());
+
+    AccumuloRangeGenerator rangeGenerator = new AccumuloRangeGenerator(handler, rowIdMapping, "rid");
+    Dispatcher disp = new DefaultRuleDispatcher(rangeGenerator,
+        Collections.<Rule,NodeProcessor> emptyMap(), null);
+    GraphWalker ogw = new DefaultGraphWalker(disp);
+    ArrayList<Node> topNodes = new ArrayList<Node>();
+    topNodes.add(both);
+    HashMap<Node,Object> nodeOutput = new HashMap<Node,Object>();
+
+    try {
+      ogw.startWalking(topNodes, nodeOutput);
+    } catch (SemanticException ex) {
+      throw new RuntimeException(ex);
+    }
+
+    Object result = nodeOutput.get(both);
+    Assert.assertNotNull(result);
+    Assert.assertTrue("Result from graph walk was not a List", result instanceof List);
+    @SuppressWarnings("unchecked")
+    List<Range> actualRanges = (List<Range>) result;
+    Assert.assertEquals(expectedRanges, actualRanges);
+  }
+
+  @Test
+  public void testRangeConjunctionWithDisjunction() throws Exception {
+    // rowId >= 'h'
+    ExprNodeDesc column = new ExprNodeColumnDesc(TypeInfoFactory.stringTypeInfo, "rid", null, false);
+    ExprNodeDesc constant = new ExprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, "h");
+    List<ExprNodeDesc> children = Lists.newArrayList();
+    children.add(column);
+    children.add(constant);
+    ExprNodeDesc node = new ExprNodeGenericFuncDesc(TypeInfoFactory.stringTypeInfo,
+        new GenericUDFOPEqualOrGreaterThan(), children);
+    assertNotNull(node);
+
+    // rowId <= 'd'
+    ExprNodeDesc column2 = new ExprNodeColumnDesc(TypeInfoFactory.stringTypeInfo, "rid", null,
+        false);
+    ExprNodeDesc constant2 = new ExprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, "d");
+    List<ExprNodeDesc> children2 = Lists.newArrayList();
+    children2.add(column2);
+    children2.add(constant2);
+    ExprNodeDesc node2 = new ExprNodeGenericFuncDesc(TypeInfoFactory.stringTypeInfo,
+        new GenericUDFOPEqualOrLessThan(), children2);
+    assertNotNull(node2);
+
+    // rowId >= 'q'
+    ExprNodeDesc column3 = new ExprNodeColumnDesc(TypeInfoFactory.stringTypeInfo, "rid", null,
+        false);
+    ExprNodeDesc constant3 = new ExprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, "q");
+    List<ExprNodeDesc> children3 = Lists.newArrayList();
+    children3.add(column3);
+    children3.add(constant3);
+    ExprNodeDesc node3 = new ExprNodeGenericFuncDesc(TypeInfoFactory.stringTypeInfo,
+        new GenericUDFOPEqualOrGreaterThan(), children3);
+    assertNotNull(node3);
+
+    // Or UDF, (rowId <= 'd' or rowId >= 'q')
+    List<ExprNodeDesc> orFilters = Lists.newArrayList();
+    orFilters.add(node2);
+    orFilters.add(node3);
+    ExprNodeGenericFuncDesc orNode = new ExprNodeGenericFuncDesc(TypeInfoFactory.stringTypeInfo,
+        new GenericUDFOPOr(), orFilters);
+
+    // And UDF, (rowId >= 'h' and (rowId <= 'd' or rowId >= 'q'))
+    List<ExprNodeDesc> andFilters = Lists.newArrayList();
+    andFilters.add(node);
+    andFilters.add(orNode);
+    ExprNodeGenericFuncDesc both = new ExprNodeGenericFuncDesc(TypeInfoFactory.stringTypeInfo,
+        new GenericUDFOPAnd(), andFilters);
+
+    // Should generate ['q', +inf)
+    List<Range> expectedRanges = Arrays.asList(new Range(new Key("q"), true, null, false));
+
+    AccumuloRangeGenerator rangeGenerator = new AccumuloRangeGenerator(handler, rowIdMapping, "rid");
+    Dispatcher disp = new DefaultRuleDispatcher(rangeGenerator,
+        Collections.<Rule,NodeProcessor> emptyMap(), null);
+    GraphWalker ogw = new DefaultGraphWalker(disp);
+    ArrayList<Node> topNodes = new ArrayList<Node>();
+    topNodes.add(both);
+    HashMap<Node,Object> nodeOutput = new HashMap<Node,Object>();
+
+    try {
+      ogw.startWalking(topNodes, nodeOutput);
+    } catch (SemanticException ex) {
+      throw new RuntimeException(ex);
+    }
+
+    Object result = nodeOutput.get(both);
+    Assert.assertNotNull(result);
+    Assert.assertTrue("Result from graph walk was not a List", result instanceof List);
+    @SuppressWarnings("unchecked")
+    List<Range> actualRanges = (List<Range>) result;
+    Assert.assertEquals(expectedRanges, actualRanges);
+  }
+
+  @Test
+  public void testPartialRangeConjunction() throws Exception {
+    // rowId >= 'f'
+    ExprNodeDesc column = new ExprNodeColumnDesc(TypeInfoFactory.stringTypeInfo, "rid", null, false);
+    ExprNodeDesc constant = new ExprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, "f");
+    List<ExprNodeDesc> children = Lists.newArrayList();
+    children.add(column);
+    children.add(constant);
+    ExprNodeDesc node = new ExprNodeGenericFuncDesc(TypeInfoFactory.stringTypeInfo,
+        new GenericUDFOPEqualOrGreaterThan(), children);
+    assertNotNull(node);
+
+    // anythingElse <= 'foo'
+    ExprNodeDesc column2 = new ExprNodeColumnDesc(TypeInfoFactory.stringTypeInfo, "anythingElse",
+        null, false);
+    ExprNodeDesc constant2 = new ExprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, "foo");
+    List<ExprNodeDesc> children2 = Lists.newArrayList();
+    children2.add(column2);
+    children2.add(constant2);
+    ExprNodeDesc node2 = new ExprNodeGenericFuncDesc(TypeInfoFactory.stringTypeInfo,
+        new GenericUDFOPEqualOrLessThan(), children2);
+    assertNotNull(node2);
+
+    // And UDF
+    List<ExprNodeDesc> bothFilters = Lists.newArrayList();
+    bothFilters.add(node);
+    bothFilters.add(node2);
+    ExprNodeGenericFuncDesc both = new ExprNodeGenericFuncDesc(TypeInfoFactory.stringTypeInfo,
+        new GenericUDFOPAnd(), bothFilters);
+
+    // Should generate [f,+inf)
+    List<Range> expectedRanges = Arrays.asList(new Range(new Key("f"), true, null, false));
+
+    AccumuloRangeGenerator rangeGenerator = new AccumuloRangeGenerator(handler, rowIdMapping, "rid");
+    Dispatcher disp = new DefaultRuleDispatcher(rangeGenerator,
+        Collections.<Rule,NodeProcessor> emptyMap(), null);
+    GraphWalker ogw = new DefaultGraphWalker(disp);
+    ArrayList<Node> topNodes = new ArrayList<Node>();
+    topNodes.add(both);
+    HashMap<Node,Object> nodeOutput = new HashMap<Node,Object>();
+
+    try {
+      ogw.startWalking(topNodes, nodeOutput);
+    } catch (SemanticException ex) {
+      throw new RuntimeException(ex);
+    }
+
+    Object result = nodeOutput.get(both);
+    Assert.assertNotNull(result);
+    Assert.assertTrue("Result from graph walk was not a List", result instanceof List);
+    @SuppressWarnings("unchecked")
+    List<Range> actualRanges = (List<Range>) result;
+    Assert.assertEquals(expectedRanges, actualRanges);
+  }
+
+  @Test
+  public void testDateRangeConjunction() throws Exception {
+    // rowId >= '2014-01-01'
+    ExprNodeDesc column = new ExprNodeColumnDesc(TypeInfoFactory.stringTypeInfo, "rid", null, false);
+    ExprNodeDesc constant = new ExprNodeConstantDesc(TypeInfoFactory.dateTypeInfo,
+        Date.valueOf("2014-01-01"));
+    List<ExprNodeDesc> children = Lists.newArrayList();
+    children.add(column);
+    children.add(constant);
+    ExprNodeDesc node = new ExprNodeGenericFuncDesc(TypeInfoFactory.stringTypeInfo,
+        new GenericUDFOPEqualOrGreaterThan(), children);
+    assertNotNull(node);
+
+    // rowId <= '2014-07-01'
+    ExprNodeDesc column2 = new ExprNodeColumnDesc(TypeInfoFactory.stringTypeInfo, "rid", null,
+        false);
+    ExprNodeDesc constant2 = new ExprNodeConstantDesc(TypeInfoFactory.dateTypeInfo,
+        Date.valueOf("2014-07-01"));
+    List<ExprNodeDesc> children2 = Lists.newArrayList();
+    children2.add(column2);
+    children2.add(constant2);
+    ExprNodeDesc node2 = new ExprNodeGenericFuncDesc(TypeInfoFactory.stringTypeInfo,
+        new GenericUDFOPLessThan(), children2);
+    assertNotNull(node2);
+
+    // And UDF
+    List<ExprNodeDesc> bothFilters = Lists.newArrayList();
+    bothFilters.add(node);
+    bothFilters.add(node2);
+    ExprNodeGenericFuncDesc both = new ExprNodeGenericFuncDesc(TypeInfoFactory.stringTypeInfo,
+        new GenericUDFOPAnd(), bothFilters);
+
+    // Should generate [2014-01-01, 2014-07-01)
+    List<Range> expectedRanges = Arrays.asList(new Range(new Key("2014-01-01"), true, new Key(
+        "2014-07-01"), false));
+
+    AccumuloRangeGenerator rangeGenerator = new AccumuloRangeGenerator(handler, rowIdMapping, "rid");
+    Dispatcher disp = new DefaultRuleDispatcher(rangeGenerator,
+        Collections.<Rule,NodeProcessor> emptyMap(), null);
+    GraphWalker ogw = new DefaultGraphWalker(disp);
+    ArrayList<Node> topNodes = new ArrayList<Node>();
+    topNodes.add(both);
+    HashMap<Node,Object> nodeOutput = new HashMap<Node,Object>();
+
+    try {
+      ogw.startWalking(topNodes, nodeOutput);
+    } catch (SemanticException ex) {
+      throw new RuntimeException(ex);
+    }
+
+    Object result = nodeOutput.get(both);
+    Assert.assertNotNull(result);
+    Assert.assertTrue("Result from graph walk was not a List", result instanceof List);
+    @SuppressWarnings("unchecked")
+    List<Range> actualRanges = (List<Range>) result;
+    Assert.assertEquals(expectedRanges, actualRanges);
+  }
+
+  @Test
+  public void testCastExpression() throws Exception {
+    // 40 and 50
+    ExprNodeDesc fourty = new ExprNodeConstantDesc(TypeInfoFactory.intTypeInfo,
+        40), fifty = new ExprNodeConstantDesc(TypeInfoFactory.intTypeInfo, 50);
+
+    // +
+    GenericUDFOPPlus plus = new GenericUDFOPPlus();
+
+    // 40 + 50
+    ExprNodeGenericFuncDesc addition = new ExprNodeGenericFuncDesc(TypeInfoFactory.intTypeInfo, plus, Arrays.asList(fourty, fifty));
+
+    // cast(.... as string)
+    UDFToString stringCast = new UDFToString();
+    GenericUDFBridge stringCastBridge = new GenericUDFBridge("cast", false, stringCast.getClass().getName());
+
+    // cast (40 + 50 as string)
+    ExprNodeGenericFuncDesc cast = new ExprNodeGenericFuncDesc(TypeInfoFactory.stringTypeInfo,
+        stringCastBridge, "cast", Collections.<ExprNodeDesc> singletonList(addition));
+
+    ExprNodeDesc key = new ExprNodeColumnDesc(TypeInfoFactory.stringTypeInfo, "key", null,
+        false);
+
+    ExprNodeGenericFuncDesc node = new ExprNodeGenericFuncDesc(TypeInfoFactory.stringTypeInfo,
+        new GenericUDFOPEqualOrGreaterThan(), Arrays.asList(key, cast));
+
+    AccumuloRangeGenerator rangeGenerator = new AccumuloRangeGenerator(handler, rowIdMapping, "key");
+    Dispatcher disp = new DefaultRuleDispatcher(rangeGenerator,
+        Collections.<Rule,NodeProcessor> emptyMap(), null);
+    GraphWalker ogw = new DefaultGraphWalker(disp);
+    ArrayList<Node> topNodes = new ArrayList<Node>();
+    topNodes.add(node);
+    HashMap<Node,Object> nodeOutput = new HashMap<Node,Object>();
+
+    try {
+      ogw.startWalking(topNodes, nodeOutput);
+    } catch (SemanticException ex) {
+      throw new RuntimeException(ex);
+    }
+
+    // Don't fail -- would be better to actually compute a range of [90,+inf)
+    Object result = nodeOutput.get(node);
+    Assert.assertNull(result);
+  }
+
+  @Test
+  public void testRangeOverNonRowIdField() throws Exception {
+    // foo >= 'f'
+    ExprNodeDesc column = new ExprNodeColumnDesc(TypeInfoFactory.stringTypeInfo, "foo", null, false);
+    ExprNodeDesc constant = new ExprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, "f");
+    List<ExprNodeDesc> children = Lists.newArrayList();
+    children.add(column);
+    children.add(constant);
+    ExprNodeDesc node = new ExprNodeGenericFuncDesc(TypeInfoFactory.stringTypeInfo,
+        new GenericUDFOPEqualOrGreaterThan(), children);
+    assertNotNull(node);
+
+    // foo <= 'm'
+    ExprNodeDesc column2 = new ExprNodeColumnDesc(TypeInfoFactory.stringTypeInfo, "foo", null,
+        false);
+    ExprNodeDesc constant2 = new ExprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, "m");
+    List<ExprNodeDesc> children2 = Lists.newArrayList();
+    children2.add(column2);
+    children2.add(constant2);
+    ExprNodeDesc node2 = new ExprNodeGenericFuncDesc(TypeInfoFactory.stringTypeInfo,
+        new GenericUDFOPEqualOrLessThan(), children2);
+    assertNotNull(node2);
+
+    // And UDF
+    List<ExprNodeDesc> bothFilters = Lists.newArrayList();
+    bothFilters.add(node);
+    bothFilters.add(node2);
+    ExprNodeGenericFuncDesc both = new ExprNodeGenericFuncDesc(TypeInfoFactory.stringTypeInfo,
+        new GenericUDFOPAnd(), bothFilters);
+
+    AccumuloRangeGenerator rangeGenerator = new AccumuloRangeGenerator(handler, rowIdMapping, "rid");
+    Dispatcher disp = new DefaultRuleDispatcher(rangeGenerator,
+        Collections.<Rule,NodeProcessor> emptyMap(), null);
+    GraphWalker ogw = new DefaultGraphWalker(disp);
+    ArrayList<Node> topNodes = new ArrayList<Node>();
+    topNodes.add(both);
+    HashMap<Node,Object> nodeOutput = new HashMap<Node,Object>();
+
+    try {
+      ogw.startWalking(topNodes, nodeOutput);
+    } catch (SemanticException ex) {
+      throw new RuntimeException(ex);
+    }
+
+    // Filters are not over the rowid, therefore scan everything
+    Object result = nodeOutput.get(both);
+    Assert.assertNull(result);
+  }
+}

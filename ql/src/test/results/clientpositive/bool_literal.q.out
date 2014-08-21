@@ -5,6 +5,7 @@ POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE bool_literal(key int, value boolean)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@bool_literal
 POSTHOOK: query: CREATE TABLE bool_literal(key int, value boolean)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

@@ -1,6 +1,7 @@
 PREHOOK: query: create table dest1(key int, val int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@dest1
 POSTHOOK: query: create table dest1(key int, val int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -458,6 +459,7 @@ POSTHOOK: Output: default@dest1
 PREHOOK: query: create table test_src(key string, value string) partitioned by (ds string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@test_src
 POSTHOOK: query: create table test_src(key string, value string) partitioned by (ds string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -465,6 +467,7 @@ POSTHOOK: Output: default@test_src
 PREHOOK: query: create table dest1(key string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@dest1
 POSTHOOK: query: create table dest1(key string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

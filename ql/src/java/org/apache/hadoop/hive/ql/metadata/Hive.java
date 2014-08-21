@@ -43,6 +43,7 @@ import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -63,6 +64,7 @@ import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.RetryingMetaStoreClient;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
@@ -141,6 +143,10 @@ public class Hive {
     }
   };
 
+  public static Hive get(Configuration c, Class<?> clazz) throws HiveException {
+    return get(c instanceof HiveConf ? (HiveConf)c : new HiveConf(c, clazz));
+  }
+
   /**
    * Gets hive object for the current thread. If one is not initialized then a
    * new one is created If the new configuration is different in metadata conf
@@ -153,20 +159,13 @@ public class Hive {
    *
    */
   public static Hive get(HiveConf c) throws HiveException {
-    boolean needsRefresh = false;
     Hive db = hiveDB.get();
-    if (db != null) {
-      for (HiveConf.ConfVars oneVar : HiveConf.metaVars) {
-        // Since metaVars are all of different types, use string for comparison
-        String oldVar = db.getConf().get(oneVar.varname, "");
-        String newVar = c.get(oneVar.varname, "");
-        if (oldVar.compareToIgnoreCase(newVar) != 0) {
-          needsRefresh = true;
-          break;
-        }
-      }
+    if (db == null ||
+        (db.metaStoreClient != null && !db.metaStoreClient.isCompatibleWith(c))) {
+      return get(c, true);
     }
-    return get(c, needsRefresh);
+    db.conf = c;
+    return db;
   }
 
   /**
@@ -195,7 +194,8 @@ public class Hive {
   public static Hive get() throws HiveException {
     Hive db = hiveDB.get();
     if (db == null) {
-      db = new Hive(new HiveConf(Hive.class));
+      SessionState session = SessionState.get();
+      db = new Hive(session == null ? new HiveConf(Hive.class) : session.getConf());
       hiveDB.set(db);
     }
     return db;
@@ -407,6 +407,12 @@ public class Hive {
     } catch (TException e) {
       throw new HiveException("Unable to alter table.", e);
     }
+  }
+
+  public void alterIndex(String baseTableName, String indexName, Index newIdx)
+      throws InvalidOperationException, HiveException {
+    String[] names = Utilities.getDbTableName(baseTableName);
+    alterIndex(names[0], names[1], indexName, newIdx);
   }
 
   /**
@@ -667,17 +673,16 @@ public class Hive {
       throws HiveException {
 
     try {
-      String dbName = SessionState.get().getCurrentDatabase();
       Index old_index = null;
       try {
-        old_index = getIndex(dbName, tableName, indexName);
+        old_index = getIndex(tableName, indexName);
       } catch (Exception e) {
       }
       if (old_index != null) {
-        throw new HiveException("Index " + indexName + " already exists on table " + tableName + ", db=" + dbName);
+        throw new HiveException("Index " + indexName + " already exists on table " + tableName);
       }
 
-      org.apache.hadoop.hive.metastore.api.Table baseTbl = getMSC().getTable(dbName, tableName);
+      org.apache.hadoop.hive.metastore.api.Table baseTbl = getTable(tableName).getTTable();
       if (baseTbl.getTableType() == TableType.VIRTUAL_VIEW.toString()) {
         throw new HiveException("tableName="+ tableName +" is a VIRTUAL VIEW. Index on VIRTUAL VIEW is not supported.");
       }
@@ -686,17 +691,13 @@ public class Hive {
             + " is a TEMPORARY TABLE. Index on TEMPORARY TABLE is not supported.");
       }
 
-      if (indexTblName == null) {
-        indexTblName = MetaStoreUtils.getIndexTableName(dbName, tableName, indexName);
-      } else {
-        org.apache.hadoop.hive.metastore.api.Table temp = null;
-        try {
-          temp = getMSC().getTable(dbName, indexTblName);
-        } catch (Exception e) {
-        }
-        if (temp != null) {
-          throw new HiveException("Table name " + indexTblName + " already exists. Choose another name.");
-        }
+      org.apache.hadoop.hive.metastore.api.Table temp = null;
+      try {
+        temp = getTable(indexTblName).getTTable();
+      } catch (Exception e) {
+      }
+      if (temp != null) {
+        throw new HiveException("Table name " + indexTblName + " already exists. Choose another name.");
       }
 
       org.apache.hadoop.hive.metastore.api.StorageDescriptor storageDescriptor = baseTbl.getSd().deepCopy();
@@ -774,7 +775,9 @@ public class Hive {
       HiveIndexHandler indexHandler = HiveUtils.getIndexHandler(this.getConf(), indexHandlerClass);
 
       if (indexHandler.usesIndexTable()) {
-        tt = new org.apache.hadoop.hive.ql.metadata.Table(dbName, indexTblName).getTTable();
+        String idname = Utilities.getDatabaseName(indexTblName);
+        String itname = Utilities.getTableName(indexTblName);
+        tt = new org.apache.hadoop.hive.ql.metadata.Table(idname, itname).getTTable();
         List<FieldSchema> partKeys = baseTbl.getPartitionKeys();
         tt.setPartitionKeys(partKeys);
         tt.setTableType(TableType.INDEX_TABLE.toString());
@@ -798,7 +801,9 @@ public class Hive {
         throw new RuntimeException("Please specify deferred rebuild using \" WITH DEFERRED REBUILD \".");
       }
 
-      Index indexDesc = new Index(indexName, indexHandlerClass, dbName, tableName, time, time, indexTblName,
+      String tdname = Utilities.getDatabaseName(tableName);
+      String ttname = Utilities.getTableName(tableName);
+      Index indexDesc = new Index(indexName, indexHandlerClass, tdname, ttname, time, time, indexTblName,
           storageDescriptor, params, deferredRebuild);
       if (indexComment != null) {
         indexDesc.getParameters().put("comment", indexComment);
@@ -818,19 +823,6 @@ public class Hive {
     }
   }
 
-  public Index getIndex(String qualifiedIndexName) throws HiveException {
-    String[] names = getQualifiedNames(qualifiedIndexName);
-    switch (names.length) {
-    case 3:
-      return getIndex(names[0], names[1], names[2]);
-    case 2:
-      return getIndex(SessionState.get().getCurrentDatabase(),
-          names[0], names[1]);
-    default:
-      throw new HiveException("Invalid index name:" + qualifiedIndexName);
-    }
-  }
-
   public Index getIndex(String baseTableName, String indexName) throws HiveException {
     String[] names = Utilities.getDbTableName(baseTableName);
     return this.getIndex(names[0], names[1], indexName);
@@ -843,6 +835,11 @@ public class Hive {
     } catch (Exception e) {
       throw new HiveException(e);
     }
+  }
+
+  public boolean dropIndex(String baseTableName, String index_name, boolean deleteData) throws HiveException {
+    String[] names = Utilities.getDbTableName(baseTableName);
+    return dropIndex(names[0], names[1], index_name, deleteData);
   }
 
   public boolean dropIndex(String db_name, String tbl_name, String index_name, boolean deleteData) throws HiveException {
@@ -982,7 +979,7 @@ public class Hive {
       tTable = getMSC().getTable(dbName, tableName);
     } catch (NoSuchObjectException e) {
       if (throwException) {
-        LOG.error(StringUtils.stringifyException(e));
+        LOG.error("Table " + tableName + " not found: " + e.getMessage());
         throw new InvalidTableException(tableName);
       }
       return null;
@@ -1242,7 +1239,7 @@ public class Hive {
            */
           FileSystem oldPartPathFS = oldPartPath.getFileSystem(getConf());
           FileSystem loadPathFS = loadPath.getFileSystem(getConf());
-          if (oldPartPathFS.equals(loadPathFS)) {
+          if (FileUtils.equalsFileSystem(oldPartPathFS,loadPathFS)) {
             newPartPath = oldPartPath;
           }
         }
@@ -2577,6 +2574,16 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  public AggrStats getAggrColStatsFor(String dbName, String tblName,
+    List<String> colNames, List<String> partName) {
+    try {
+      return getMSC().getAggrColStatsFor(dbName, tblName, colNames, partName);
+    } catch (Exception e) {
+      LOG.debug(StringUtils.stringifyException(e));
+      return null;
+    }
+  }
+
   public boolean deleteTableColumnStatistics(String dbName, String tableName, String colName)
     throws HiveException {
     try {
@@ -2709,4 +2716,19 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  public void setMetaConf(String propName, String propValue) throws HiveException {
+    try {
+      getMSC().setMetaConf(propName, propValue);
+    } catch (TException te) {
+      throw new HiveException(te);
+    }
+  }
+
+  public String getMetaConf(String propName) throws HiveException {
+    try {
+      return getMSC().getMetaConf(propName);
+    } catch (TException te) {
+      throw new HiveException(te);
+    }
+  }
 };

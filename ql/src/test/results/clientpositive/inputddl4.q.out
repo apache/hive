@@ -9,6 +9,7 @@ CREATE TABLE INPUTDDL4(viewTime STRING, userid INT,
     CLUSTERED BY(userid) SORTED BY(viewTime) INTO 32 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@INPUTDDL4
 POSTHOOK: query: -- a simple test to test sorted/clustered syntax
 
 CREATE TABLE INPUTDDL4(viewTime STRING, userid INT,

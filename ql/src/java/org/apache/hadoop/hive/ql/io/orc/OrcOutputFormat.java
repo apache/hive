@@ -50,7 +50,7 @@ import java.util.Properties;
  * A Hive OutputFormat for ORC files.
  */
 public class OrcOutputFormat extends FileOutputFormat<NullWritable, OrcSerdeRow>
-                        implements AcidOutputFormat<OrcSerdeRow> {
+                        implements AcidOutputFormat<NullWritable, OrcSerdeRow> {
 
   private static class OrcRecordWriter
       implements RecordWriter<NullWritable, OrcSerdeRow>,

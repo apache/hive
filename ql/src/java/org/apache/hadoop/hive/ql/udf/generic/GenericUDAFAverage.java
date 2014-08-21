@@ -175,9 +175,11 @@ public class GenericUDAFAverage extends AbstractGenericUDAFResolver {
           if (ss.numPreceding != BoundarySpec.UNBOUNDED_AMOUNT
               && (ss.numRows - ss.numFollowing) >= (ss.numPreceding + 1)) {
             Object[] o = ss.intermediateVals.remove(0);
-            Double d = o == null ? 0.0 : (Double) o[0];
-            r = r == null ? null : r - d;
-            cnt = cnt - ((Long) o[1]);
+            if (o != null) {
+              Double d = (Double) o[0];
+              r = r == null ? null : r - d;
+              cnt = cnt - ((Long) o[1]);
+            }
           }
 
           return r == null ? null : new DoubleWritable(r / cnt);
@@ -303,9 +305,11 @@ public class GenericUDAFAverage extends AbstractGenericUDAFResolver {
           if (ss.numPreceding != BoundarySpec.UNBOUNDED_AMOUNT
               && (ss.numRows - ss.numFollowing) >= (ss.numPreceding + 1)) {
             Object[] o = ss.intermediateVals.remove(0);
-            HiveDecimal d = o == null ? HiveDecimal.ZERO : (HiveDecimal) o[0];
-            r = r == null ? null : r.subtract(d);
-            cnt = cnt - ((Long) o[1]);
+            if (o != null) {
+              HiveDecimal d = (HiveDecimal) o[0];
+              r = r == null ? null : r.subtract(d);
+              cnt = cnt - ((Long) o[1]);
+            }
           }
 
           return r == null ? null : new HiveDecimalWritable(

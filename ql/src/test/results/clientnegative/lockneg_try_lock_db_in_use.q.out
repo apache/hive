@@ -1,14 +1,19 @@
 PREHOOK: query: create database lockneg2
 PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:lockneg2
 POSTHOOK: query: create database lockneg2
 POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:lockneg2
 PREHOOK: query: use lockneg2
 PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:lockneg2
 POSTHOOK: query: use lockneg2
 POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:lockneg2
 PREHOOK: query: create table tstsrcpart like default.srcpart
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:lockneg2
+PREHOOK: Output: lockneg2@tstsrcpart
 POSTHOOK: query: create table tstsrcpart like default.srcpart
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:lockneg2
@@ -38,5 +43,5 @@ POSTHOOK: type: SHOWLOCKS
 lockneg2@tstsrcpart	SHARED
 PREHOOK: query: lock database lockneg2 exclusive
 PREHOOK: type: LOCKDATABASE
-conflicting lock present for lockneg2 mode EXCLUSIVE
+Unable to acquire EXPLICIT, EXCLUSIVE lock lockneg2 after 1 attempts.
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask

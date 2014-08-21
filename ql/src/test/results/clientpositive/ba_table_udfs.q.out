@@ -2,15 +2,18 @@ PREHOOK: query: -- SORT_QUERY_RESULTS
 
 USE default
 PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:default
 POSTHOOK: query: -- SORT_QUERY_RESULTS
 
 USE default
 POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:default
 PREHOOK: query: CREATE TABLE dest1(bytes1 BINARY,
                    bytes2 BINARY,
                    string STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@dest1
 POSTHOOK: query: CREATE TABLE dest1(bytes1 BINARY,
                    bytes2 BINARY,
                    string STRING)

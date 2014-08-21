@@ -1,6 +1,7 @@
 PREHOOK: query: CREATE TABLE alter_test (d STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@alter_test
 POSTHOOK: query: CREATE TABLE alter_test (d STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

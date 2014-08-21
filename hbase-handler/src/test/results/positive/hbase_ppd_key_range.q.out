@@ -3,6 +3,7 @@ STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key,cf:string")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@hbase_pushdown
 POSTHOOK: query: CREATE TABLE hbase_pushdown(key string, value string) 
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key,cf:string")
@@ -193,10 +194,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: hbase_pushdown
-            filterExpr: (key >= UDFToString((40 + 50))) (type: boolean)
+            filterExpr: (key >= '90') (type: boolean)
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             Filter Operator
-              predicate: (key >= UDFToString((40 + 50))) (type: boolean)
+              predicate: (key >= '90') (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)

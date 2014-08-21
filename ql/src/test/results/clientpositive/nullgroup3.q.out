@@ -1,6 +1,7 @@
 PREHOOK: query: CREATE TABLE tstparttbl(KEY STRING, VALUE STRING) PARTITIONED BY(ds string) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@tstparttbl
 POSTHOOK: query: CREATE TABLE tstparttbl(KEY STRING, VALUE STRING) PARTITIONED BY(ds string) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -91,6 +92,7 @@ POSTHOOK: Input: default@tstparttbl@ds=2008-04-09
 PREHOOK: query: CREATE TABLE tstparttbl2(KEY STRING, VALUE STRING) PARTITIONED BY(ds string) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@tstparttbl2
 POSTHOOK: query: CREATE TABLE tstparttbl2(KEY STRING, VALUE STRING) PARTITIONED BY(ds string) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -129,9 +131,9 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: tstparttbl2
-            Statistics: Num rows: 0 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+            Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: COMPLETE
             Select Operator
-              Statistics: Num rows: 0 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: COMPLETE
               Group By Operator
                 aggregations: count(1)
                 mode: hash
@@ -189,6 +191,7 @@ POSTHOOK: Output: default@tstparttbl
 PREHOOK: query: CREATE TABLE tstparttbl(KEY STRING, VALUE STRING) PARTITIONED BY(ds string) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@tstparttbl
 POSTHOOK: query: CREATE TABLE tstparttbl(KEY STRING, VALUE STRING) PARTITIONED BY(ds string) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -287,6 +290,7 @@ POSTHOOK: Output: default@tstparttbl2
 PREHOOK: query: CREATE TABLE tstparttbl2(KEY STRING, VALUE STRING) PARTITIONED BY(ds string) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@tstparttbl2
 POSTHOOK: query: CREATE TABLE tstparttbl2(KEY STRING, VALUE STRING) PARTITIONED BY(ds string) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -325,9 +329,9 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: tstparttbl2
-            Statistics: Num rows: 0 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+            Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: COMPLETE
             Select Operator
-              Statistics: Num rows: 0 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: COMPLETE
               Group By Operator
                 aggregations: count(1)
                 mode: hash

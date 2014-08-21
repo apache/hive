@@ -3,6 +3,7 @@ PREHOOK: query: -- Tests truncating a column on which a table is list bucketed
 CREATE TABLE test_tab (key STRING, value STRING) STORED AS RCFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@test_tab
 POSTHOOK: query: -- Tests truncating a column on which a table is list bucketed
 
 CREATE TABLE test_tab (key STRING, value STRING) STORED AS RCFILE

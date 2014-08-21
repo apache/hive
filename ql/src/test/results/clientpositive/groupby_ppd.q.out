@@ -2,6 +2,7 @@ PREHOOK: query: -- see HIVE-2382
 create table invites (id int, foo int, bar int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@invites
 POSTHOOK: query: -- see HIVE-2382
 create table invites (id int, foo int, bar int)
 POSTHOOK: type: CREATETABLE
@@ -26,13 +27,13 @@ STAGE PLANS:
               predicate: (bar = 1) (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Select Operator
-                expressions: bar (type: int), foo (type: int)
-                outputColumnNames: _col0, _col1
+                expressions: foo (type: int)
+                outputColumnNames: _col1
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 Union
                   Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                   Select Operator
-                    expressions: _col1 (type: int), _col0 (type: int)
+                    expressions: _col1 (type: int), 1 (type: int)
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                     Group By Operator
@@ -52,13 +53,13 @@ STAGE PLANS:
               predicate: (bar = 1) (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Select Operator
-                expressions: bar (type: int), foo (type: int)
-                outputColumnNames: _col0, _col1
+                expressions: foo (type: int)
+                outputColumnNames: _col1
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 Union
                   Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                   Select Operator
-                    expressions: _col1 (type: int), _col0 (type: int)
+                    expressions: _col1 (type: int), 1 (type: int)
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                     Group By Operator

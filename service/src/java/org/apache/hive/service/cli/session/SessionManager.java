@@ -34,7 +34,6 @@ import org.apache.hadoop.hive.ql.hooks.HookUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.service.CompositeService;
-import org.apache.hive.service.auth.TSetIpAddressProcessor;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.SessionHandle;
 import org.apache.hive.service.cli.operation.OperationManager;
@@ -47,6 +46,7 @@ import org.apache.hive.service.cli.thrift.TProtocolVersion;
 public class SessionManager extends CompositeService {
 
   private static final Log LOG = LogFactory.getLog(CompositeService.class);
+  public static final String HIVERCFILE = ".hiverc";
   private HiveConf hiveConf;
   private final Map<SessionHandle, HiveSession> handleToSession =
       new ConcurrentHashMap<SessionHandle, HiveSession>();
@@ -111,34 +111,39 @@ public class SessionManager extends CompositeService {
     }
   }
 
-  public SessionHandle openSession(TProtocolVersion protocol, String username, String password,
+  public SessionHandle openSession(TProtocolVersion protocol, String username, String password, String ipAddress,
       Map<String, String> sessionConf) throws HiveSQLException {
-    return openSession(protocol, username, password, sessionConf, false, null);
+    return openSession(protocol, username, password, ipAddress, sessionConf, false, null);
   }
 
-  public SessionHandle openSession(TProtocolVersion protocol, String username, String password,
+  public SessionHandle openSession(TProtocolVersion protocol, String username, String password, String ipAddress,
       Map<String, String> sessionConf, boolean withImpersonation, String delegationToken)
           throws HiveSQLException {
     HiveSession session;
     if (withImpersonation) {
       HiveSessionImplwithUGI hiveSessionUgi = new HiveSessionImplwithUGI(protocol, username, password,
-        hiveConf, sessionConf, TSetIpAddressProcessor.getUserIpAddress(), delegationToken);
+        hiveConf, ipAddress, delegationToken);
       session = HiveSessionProxy.getProxy(hiveSessionUgi, hiveSessionUgi.getSessionUgi());
       hiveSessionUgi.setProxySession(session);
     } else {
-      session = new HiveSessionImpl(protocol, username, password, hiveConf, sessionConf,
-          TSetIpAddressProcessor.getUserIpAddress());
+      session = new HiveSessionImpl(protocol, username, password, hiveConf, ipAddress);
     }
     session.setSessionManager(this);
     session.setOperationManager(operationManager);
-    session.open();
-    handleToSession.put(session.getSessionHandle(), session);
-
+    try {
+      session.initialize(sessionConf);
+      session.open();
+    } catch (Exception e) {
+      throw new HiveSQLException("Failed to open new session", e);
+    }
     try {
       executeSessionHooks(session);
     } catch (Exception e) {
       throw new HiveSQLException("Failed to execute session hooks", e);
     }
+
+    handleToSession.put(session.getSessionHandle(), session);
+
     return session.getSessionHandle();
   }
 

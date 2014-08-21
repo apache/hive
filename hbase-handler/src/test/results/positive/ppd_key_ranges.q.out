@@ -3,6 +3,7 @@ STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key#binary,cf:string")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@hbase_ppd_keyrange
 POSTHOOK: query: CREATE TABLE hbase_ppd_keyrange(key int, value string) 
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key#binary,cf:string")
@@ -191,7 +192,7 @@ STAGE PLANS:
               predicate: (((key >= 9) and (key < 17)) and (key = 11)) (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Select Operator
-                expressions: key (type: int), value (type: string)
+                expressions: 11 (type: int), value (type: string)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 File Output Operator

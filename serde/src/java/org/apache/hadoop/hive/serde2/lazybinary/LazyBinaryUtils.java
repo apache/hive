@@ -125,13 +125,6 @@ public final class LazyBinaryUtils {
     }
   }
 
-  private static ThreadLocal<VInt> vIntThreadLocal = new ThreadLocal<VInt>() {
-    @Override
-    public VInt initialValue() {
-      return new VInt();
-    }
-  };
-
   /**
    * Check a particular field and set its size and offset in bytes based on the
    * field type and the bytes arrays.
@@ -154,8 +147,7 @@ public final class LazyBinaryUtils {
    *          modify this byteinfo object and return it
    */
   public static void checkObjectByteInfo(ObjectInspector objectInspector,
-      byte[] bytes, int offset, RecordInfo recordInfo) {
-    VInt vInt = vIntThreadLocal.get();
+      byte[] bytes, int offset, RecordInfo recordInfo, VInt vInt) {
     Category category = objectInspector.getCategory();
     switch (category) {
     case PRIMITIVE:

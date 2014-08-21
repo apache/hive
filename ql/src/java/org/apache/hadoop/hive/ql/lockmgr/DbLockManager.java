@@ -207,6 +207,16 @@ public class DbLockManager implements HiveLockManager{
     }
   }
 
+  /**
+   * Clear the memory of the locks in this object.  This won't clear the locks from the database.
+   * It is for use with
+   * {@link #DbLockManager(org.apache.hadoop.hive.metastore.HiveMetaStoreClient).commitTxn} and
+   * {@link #DbLockManager(org.apache.hadoop.hive.metastore.HiveMetaStoreClient).rollbackTxn}.
+   */
+  void clearLocalLockRecords() {
+    locks.clear();
+  }
+
   // Sleep before we send checkLock again, but do it with a back off
   // off so we don't sit and hammer the metastore in a tight loop
   private void backoff() {

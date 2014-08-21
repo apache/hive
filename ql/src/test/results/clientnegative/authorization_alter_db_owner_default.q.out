@@ -1,1 +1,1 @@
-FAILED: HiveAccessControlException Permission denied. Principal [name=user1, type=USER] does not have following privileges on Object [type=DATABASE, name=default] for operation ALTERDATABASE_OWNER : [ADMIN PRIVILEGE]
+FAILED: HiveAccessControlException Permission denied: Principal [name=user1, type=USER] does not have following privileges for operation ALTERDATABASE_OWNER [[ADMIN PRIVILEGE] on Object [type=DATABASE, name=default]]

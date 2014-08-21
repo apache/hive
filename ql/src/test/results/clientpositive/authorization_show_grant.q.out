@@ -26,6 +26,7 @@ PREHOOK: query: -- create table and grant privileges to a role
 create table t1(i int, j int, k int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@t1
 POSTHOOK: query: -- create table and grant privileges to a role
 create table t1(i int, j int, k int)
 POSTHOOK: type: CREATETABLE
@@ -34,6 +35,7 @@ POSTHOOK: Output: default@t1
 PREHOOK: query: create table t2(i int, j int, k int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@t2
 POSTHOOK: query: create table t2(i int, j int, k int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

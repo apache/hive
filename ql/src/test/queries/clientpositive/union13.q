@@ -1,3 +1,4 @@
+-- SORT_BEFORE_DIFF
 -- union case: both subqueries are a map-only jobs, same input, followed by filesink
 
 explain 

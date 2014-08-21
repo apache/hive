@@ -1,6 +1,7 @@
 PREHOOK: query: create table tab_string(a string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@tab_string
 POSTHOOK: query: create table tab_string(a string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

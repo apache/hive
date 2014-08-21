@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.ql.lockmgr.HiveLockObject.HiveLockObjectData;
 import org.apache.hadoop.hive.ql.metadata.*;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.zookeeper.CreateMode;
+import org.apache.zookeeper.data.Stat;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooDefs.Ids;
@@ -296,45 +297,77 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
 
   private ZooKeeperHiveLock lock (HiveLockObject key, HiveLockMode mode,
       boolean keepAlive, boolean parentCreated) throws LockException {
-    int tryNum = 1;
+    int tryNum = 0;
     ZooKeeperHiveLock ret = null;
+    Set<String> conflictingLocks = new HashSet<String>();
 
     do {
+      tryNum++;
       try {
         if (tryNum > 1) {
           Thread.sleep(sleepTime);
           prepareRetry();
         }
-        ret = lockPrimitive(key, mode, keepAlive, parentCreated);
+        ret = lockPrimitive(key, mode, keepAlive, parentCreated, conflictingLocks);
         if (ret != null) {
           break;
         }
-        tryNum++;
       } catch (Exception e1) {
-        tryNum++;
         if (e1 instanceof KeeperException) {
           KeeperException e = (KeeperException) e1;
           switch (e.code()) {
           case CONNECTIONLOSS:
           case OPERATIONTIMEOUT:
-            LOG.warn("Possibly transient ZooKeeper exception: ", e);
-            break;
+            LOG.debug("Possibly transient ZooKeeper exception: ", e);
+            continue;
           default:
             LOG.error("Serious Zookeeper exception: ", e);
             break;
           }
         }
         if (tryNum >= numRetriesForLock) {
+          console.printError("Unable to acquire " + key.getData().getLockMode()
+              + ", " + mode + " lock " + key.getDisplayName() + " after "
+              + tryNum + " attempts.");
+          LOG.error("Exceeds maximum retries with errors: ", e1);
+          printConflictingLocks(key,mode,conflictingLocks);
+          conflictingLocks.clear();
           throw new LockException(e1);
         }
       }
     } while (tryNum < numRetriesForLock);
 
+    if (ret == null) {
+      console.printError("Unable to acquire " + key.getData().getLockMode()
+          + ", " + mode + " lock " + key.getDisplayName() + " after "
+          + tryNum + " attempts.");
+      printConflictingLocks(key,mode,conflictingLocks);
+    }
+    conflictingLocks.clear();
     return ret;
   }
 
+  private void printConflictingLocks(HiveLockObject key, HiveLockMode mode,
+      Set<String> conflictingLocks) {
+    if (!conflictingLocks.isEmpty()) {
+      HiveLockObjectData requestedLock = new HiveLockObjectData(key.getData().toString());
+      LOG.debug("Requested lock " + key.getDisplayName()
+          + ":: mode:" + requestedLock.getLockMode() + "," + mode
+          + "; query:" + requestedLock.getQueryStr());
+      for (String conflictingLock : conflictingLocks) {
+        HiveLockObjectData conflictingLockData = new HiveLockObjectData(conflictingLock);
+        LOG.debug("Conflicting lock to " + key.getDisplayName()
+            + ":: mode:" + conflictingLockData.getLockMode()
+            + ";query:" + conflictingLockData.getQueryStr()
+            + ";queryId:" + conflictingLockData.getQueryId()
+            + ";clientIp:" +  conflictingLockData.getClientIp());
+      }
+    }
+  }
+
   private ZooKeeperHiveLock lockPrimitive(HiveLockObject key,
-      HiveLockMode mode, boolean keepAlive, boolean parentCreated)
+      HiveLockMode mode, boolean keepAlive, boolean parentCreated,
+      Set<String> conflictingLocks)
       throws KeeperException, InterruptedException {
     String res;
 
@@ -394,9 +427,19 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
       }
 
       if ((childSeq >= 0) && (childSeq < seqNo)) {
-        zooKeeper.delete(res, -1);
-        console.printError("conflicting lock present for "
-            + key.getDisplayName() + " mode " + mode);
+        try {
+          zooKeeper.delete(res, -1);
+        } finally {
+          if (LOG.isDebugEnabled()) {
+            Stat stat = new Stat();
+            try {
+              String data = new String(zooKeeper.getData(child, false, stat));
+              conflictingLocks.add(data);
+            } catch (Exception e) {
+              //ignored
+            }
+          }
+        }
         return null;
       }
     }

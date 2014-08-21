@@ -1,7 +1,9 @@
 PREHOOK: query: create database D1
 PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:D1
 POSTHOOK: query: create database D1
 POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:D1
 PREHOOK: query: alter database D1 set dbproperties('test'='yesthisis')
 PREHOOK: type: ALTERDATABASE
 PREHOOK: Output: database:d1
@@ -19,6 +21,7 @@ POSTHOOK: Output: database:d1
 PREHOOK: query: create table T1(key string, val string) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@T1
 POSTHOOK: query: create table T1(key string, val string) stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -26,6 +29,7 @@ POSTHOOK: Output: default@T1
 PREHOOK: query: create table T2 like T1
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@T2
 POSTHOOK: query: create table T2 like T1
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -65,6 +69,7 @@ PREHOOK: query: create table T4 (key char(10), val decimal(5,2), b int)
     stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@T4
 POSTHOOK: query: create table T4 (key char(10), val decimal(5,2), b int)
     partitioned by (ds string)
     clustered by (b) into 10 buckets
@@ -148,6 +153,7 @@ POSTHOOK: Output: default@t4@ds=tomorrow
 PREHOOK: query: create table T5 (a string, b int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@T5
 POSTHOOK: query: create table T5 (a string, b int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -172,6 +178,7 @@ POSTHOOK: Output: default@t4@ds=tomorrow
 PREHOOK: query: create table T7 (a string, b int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@T7
 POSTHOOK: query: create table T7 (a string, b int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

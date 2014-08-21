@@ -3,6 +3,7 @@ PREHOOK: query: -- SORT_QUERY_RESULTS
 create table orc_split_elim (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@orc_split_elim
 POSTHOOK: query: -- SORT_QUERY_RESULTS
 
 create table orc_split_elim (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) stored as orc
@@ -267,6 +268,7 @@ PREHOOK: query: -- partitioned table
 create table orc_split_elim_part (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) partitioned by (country string, year int) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@orc_split_elim_part
 POSTHOOK: query: -- partitioned table
 create table orc_split_elim_part (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) partitioned by (country string, year int) stored as orc
 POSTHOOK: type: CREATETABLE

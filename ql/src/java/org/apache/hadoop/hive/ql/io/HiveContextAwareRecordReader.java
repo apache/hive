@@ -20,17 +20,13 @@ package org.apache.hadoop.hive.ql.io;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.io.HiveIOExceptionHandlerUtil;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.FooterBuffer;
@@ -42,16 +38,13 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrGreaterThan;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrLessThan;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPGreaterThan;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPLessThan;
-import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
-import org.apache.hadoop.io.WritableUtils;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
-import org.apache.hadoop.util.ReflectionUtils;
 
 /** This class prepares an IOContext, and provides the ability to perform a binary search on the
   * data.  The binary search can be used by setting the value of inputFormatSorted in the
@@ -119,7 +112,18 @@ public abstract class HiveContextAwareRecordReader<K, V> implements RecordReader
     }
     updateIOContext();
     try {
-      return doNext(key, value);
+      boolean retVal = doNext(key, value);
+      if(retVal) {
+        if(key instanceof RecordIdentifier) {
+          //supports AcidInputFormat which uses the KEY pass ROW__ID info
+          ioCxtRef.ri = (RecordIdentifier)key;
+        }
+        else if(recordReader instanceof AcidInputFormat.AcidRecordReader) {
+          //supports AcidInputFormat which do not use the KEY pass ROW__ID info
+          ioCxtRef.ri = ((AcidInputFormat.AcidRecordReader) recordReader).getRecordIdentifier();
+        }
+      }
+      return retVal;
     } catch (IOException e) {
       ioCxtRef.setIOExceptions(true);
       throw e;

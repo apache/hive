@@ -1,6 +1,7 @@
 PREHOOK: query: create external table external2(a int, b int) partitioned by (ds string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@external2
 POSTHOOK: query: create external table external2(a int, b int) partitioned by (ds string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

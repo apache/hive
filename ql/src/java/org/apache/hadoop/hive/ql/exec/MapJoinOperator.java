@@ -131,7 +131,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
     int bigPos = conf.getPosBigTable();
     List<ObjectInspector> valueOI = new ArrayList<ObjectInspector>();
     for (int i = 0; i < valueIndex.length; i++) {
-      if (valueIndex[i] >= 0) {
+      if (valueIndex[i] >= 0 && !joinKeysObjectInspectors[bigPos].isEmpty()) {
         valueOI.add(joinKeysObjectInspectors[bigPos].get(valueIndex[i]));
       } else {
         valueOI.add(inspectors.get(i));

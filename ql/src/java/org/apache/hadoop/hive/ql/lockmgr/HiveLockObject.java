@@ -70,6 +70,9 @@ public class HiveLockObject {
       lockTime = elem[1];
       lockMode = elem[2];
       queryStr = elem[3];
+      if (elem.length >= 5) {
+        clientIp = elem[4];
+      }
     }
 
     public String getQueryId() {

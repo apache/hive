@@ -3,6 +3,7 @@ PREHOOK: query: -- HIVE-3464
 create table a (key string, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@a
 POSTHOOK: query: -- HIVE-3464
 
 create table a (key string, value string)
@@ -72,10 +73,10 @@ STAGE PLANS:
             1 {KEY.reducesinkkey0} {VALUE._col0}
             2 {KEY.reducesinkkey0} {VALUE._col0}
             3 {KEY.reducesinkkey0} {VALUE._col0}
-          outputColumnNames: _col0, _col1, _col4, _col5, _col8, _col9, _col12, _col13
+          outputColumnNames: _col0, _col1, _col5, _col6, _col10, _col11, _col15, _col16
           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
           Select Operator
-            expressions: _col0 (type: string), _col1 (type: string), _col4 (type: string), _col5 (type: string), _col8 (type: string), _col9 (type: string), _col12 (type: string), _col13 (type: string)
+            expressions: _col0 (type: string), _col1 (type: string), _col5 (type: string), _col6 (type: string), _col10 (type: string), _col11 (type: string), _col15 (type: string), _col16 (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             File Output Operator
@@ -153,10 +154,10 @@ STAGE PLANS:
             1 {KEY.reducesinkkey0} {VALUE._col0}
             2 {KEY.reducesinkkey0} {VALUE._col0}
             3 {KEY.reducesinkkey0} {VALUE._col0}
-          outputColumnNames: _col0, _col1, _col4, _col5, _col8, _col9, _col12, _col13
+          outputColumnNames: _col0, _col1, _col5, _col6, _col10, _col11, _col15, _col16
           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
           Select Operator
-            expressions: _col0 (type: string), _col1 (type: string), _col4 (type: string), _col5 (type: string), _col8 (type: string), _col9 (type: string), _col12 (type: string), _col13 (type: string)
+            expressions: _col0 (type: string), _col1 (type: string), _col5 (type: string), _col6 (type: string), _col10 (type: string), _col11 (type: string), _col15 (type: string), _col16 (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             File Output Operator
@@ -234,10 +235,10 @@ STAGE PLANS:
             1 {KEY.reducesinkkey0} {VALUE._col0}
             2 {KEY.reducesinkkey0} {VALUE._col0}
             3 {KEY.reducesinkkey0} {VALUE._col0}
-          outputColumnNames: _col0, _col1, _col4, _col5, _col8, _col9, _col12, _col13
+          outputColumnNames: _col0, _col1, _col5, _col6, _col10, _col11, _col15, _col16
           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
           Select Operator
-            expressions: _col0 (type: string), _col1 (type: string), _col4 (type: string), _col5 (type: string), _col8 (type: string), _col9 (type: string), _col12 (type: string), _col13 (type: string)
+            expressions: _col0 (type: string), _col1 (type: string), _col5 (type: string), _col6 (type: string), _col10 (type: string), _col11 (type: string), _col15 (type: string), _col16 (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             File Output Operator
@@ -315,10 +316,10 @@ STAGE PLANS:
             1 {KEY.reducesinkkey0} {VALUE._col0}
             2 {KEY.reducesinkkey0} {VALUE._col0}
             3 {KEY.reducesinkkey0} {VALUE._col0}
-          outputColumnNames: _col0, _col1, _col4, _col5, _col8, _col9, _col12, _col13
+          outputColumnNames: _col0, _col1, _col5, _col6, _col10, _col11, _col15, _col16
           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
           Select Operator
-            expressions: _col0 (type: string), _col1 (type: string), _col4 (type: string), _col5 (type: string), _col8 (type: string), _col9 (type: string), _col12 (type: string), _col13 (type: string)
+            expressions: _col0 (type: string), _col1 (type: string), _col5 (type: string), _col6 (type: string), _col10 (type: string), _col11 (type: string), _col15 (type: string), _col16 (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             File Output Operator
@@ -388,7 +389,7 @@ STAGE PLANS:
             0 {KEY.reducesinkkey0} {VALUE._col0}
             1 {KEY.reducesinkkey0} {VALUE._col0}
             2 {KEY.reducesinkkey0} {VALUE._col0}
-          outputColumnNames: _col0, _col1, _col4, _col5, _col8, _col9
+          outputColumnNames: _col0, _col1, _col5, _col6, _col10, _col11
           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
           File Output Operator
             compressed: false
@@ -402,11 +403,11 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             Reduce Output Operator
-              key expressions: _col5 (type: string)
+              key expressions: _col6 (type: string)
               sort order: +
-              Map-reduce partition columns: _col5 (type: string)
+              Map-reduce partition columns: _col6 (type: string)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-              value expressions: _col0 (type: string), _col1 (type: string), _col4 (type: string), _col8 (type: string), _col9 (type: string)
+              value expressions: _col0 (type: string), _col1 (type: string), _col5 (type: string), _col10 (type: string), _col11 (type: string)
           TableScan
             alias: c
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
@@ -421,12 +422,12 @@ STAGE PLANS:
           condition map:
                Left Outer Join0 to 1
           condition expressions:
-            0 {VALUE._col0} {VALUE._col1} {VALUE._col4} {KEY.reducesinkkey0} {VALUE._col7} {VALUE._col8}
+            0 {VALUE._col0} {VALUE._col1} {VALUE._col5} {KEY.reducesinkkey0} {VALUE._col9} {VALUE._col10}
             1 {KEY.reducesinkkey0} {VALUE._col0}
-          outputColumnNames: _col0, _col1, _col4, _col5, _col8, _col9, _col12, _col13
+          outputColumnNames: _col0, _col1, _col5, _col6, _col10, _col11, _col15, _col16
           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
           Select Operator
-            expressions: _col0 (type: string), _col1 (type: string), _col4 (type: string), _col5 (type: string), _col12 (type: string), _col13 (type: string), _col8 (type: string), _col9 (type: string)
+            expressions: _col0 (type: string), _col1 (type: string), _col5 (type: string), _col6 (type: string), _col15 (type: string), _col16 (type: string), _col10 (type: string), _col11 (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             File Output Operator
@@ -494,7 +495,7 @@ STAGE PLANS:
             0 {KEY.reducesinkkey0} {VALUE._col0}
             1 {KEY.reducesinkkey0} {VALUE._col0}
             2 {KEY.reducesinkkey0} {VALUE._col0}
-          outputColumnNames: _col0, _col1, _col4, _col5, _col8, _col9
+          outputColumnNames: _col0, _col1, _col5, _col6, _col10, _col11
           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
           File Output Operator
             compressed: false
@@ -508,11 +509,11 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             Reduce Output Operator
-              key expressions: _col5 (type: string)
+              key expressions: _col6 (type: string)
               sort order: +
-              Map-reduce partition columns: _col5 (type: string)
+              Map-reduce partition columns: _col6 (type: string)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-              value expressions: _col0 (type: string), _col1 (type: string), _col4 (type: string), _col8 (type: string), _col9 (type: string)
+              value expressions: _col0 (type: string), _col1 (type: string), _col5 (type: string), _col10 (type: string), _col11 (type: string)
           TableScan
             alias: c
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
@@ -527,12 +528,12 @@ STAGE PLANS:
           condition map:
                Right Outer Join0 to 1
           condition expressions:
-            0 {VALUE._col0} {VALUE._col1} {VALUE._col4} {KEY.reducesinkkey0} {VALUE._col7} {VALUE._col8}
+            0 {VALUE._col0} {VALUE._col1} {VALUE._col5} {KEY.reducesinkkey0} {VALUE._col9} {VALUE._col10}
             1 {KEY.reducesinkkey0} {VALUE._col0}
-          outputColumnNames: _col0, _col1, _col4, _col5, _col8, _col9, _col12, _col13
+          outputColumnNames: _col0, _col1, _col5, _col6, _col10, _col11, _col15, _col16
           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
           Select Operator
-            expressions: _col0 (type: string), _col1 (type: string), _col4 (type: string), _col5 (type: string), _col12 (type: string), _col13 (type: string), _col8 (type: string), _col9 (type: string)
+            expressions: _col0 (type: string), _col1 (type: string), _col5 (type: string), _col6 (type: string), _col15 (type: string), _col16 (type: string), _col10 (type: string), _col11 (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             File Output Operator
@@ -600,7 +601,7 @@ STAGE PLANS:
             0 {KEY.reducesinkkey0} {VALUE._col0}
             1 {KEY.reducesinkkey0} {VALUE._col0}
             2 {KEY.reducesinkkey0} {VALUE._col0}
-          outputColumnNames: _col0, _col1, _col4, _col5, _col8, _col9
+          outputColumnNames: _col0, _col1, _col5, _col6, _col10, _col11
           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
           File Output Operator
             compressed: false
@@ -614,11 +615,11 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             Reduce Output Operator
-              key expressions: _col5 (type: string)
+              key expressions: _col6 (type: string)
               sort order: +
-              Map-reduce partition columns: _col5 (type: string)
+              Map-reduce partition columns: _col6 (type: string)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-              value expressions: _col0 (type: string), _col1 (type: string), _col4 (type: string), _col8 (type: string), _col9 (type: string)
+              value expressions: _col0 (type: string), _col1 (type: string), _col5 (type: string), _col10 (type: string), _col11 (type: string)
           TableScan
             alias: c
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
@@ -633,12 +634,12 @@ STAGE PLANS:
           condition map:
                Outer Join 0 to 1
           condition expressions:
-            0 {VALUE._col0} {VALUE._col1} {VALUE._col4} {KEY.reducesinkkey0} {VALUE._col7} {VALUE._col8}
+            0 {VALUE._col0} {VALUE._col1} {VALUE._col5} {KEY.reducesinkkey0} {VALUE._col9} {VALUE._col10}
             1 {KEY.reducesinkkey0} {VALUE._col0}
-          outputColumnNames: _col0, _col1, _col4, _col5, _col8, _col9, _col12, _col13
+          outputColumnNames: _col0, _col1, _col5, _col6, _col10, _col11, _col15, _col16
           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
           Select Operator
-            expressions: _col0 (type: string), _col1 (type: string), _col4 (type: string), _col5 (type: string), _col12 (type: string), _col13 (type: string), _col8 (type: string), _col9 (type: string)
+            expressions: _col0 (type: string), _col1 (type: string), _col5 (type: string), _col6 (type: string), _col15 (type: string), _col16 (type: string), _col10 (type: string), _col11 (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             File Output Operator
@@ -704,7 +705,7 @@ STAGE PLANS:
           condition expressions:
             0 {KEY.reducesinkkey0} {VALUE._col0}
             1 {KEY.reducesinkkey0} {VALUE._col0}
-          outputColumnNames: _col0, _col1, _col4, _col5
+          outputColumnNames: _col0, _col1, _col5, _col6
           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
           File Output Operator
             compressed: false
@@ -718,11 +719,11 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             Reduce Output Operator
-              key expressions: _col5 (type: string)
+              key expressions: _col6 (type: string)
               sort order: +
-              Map-reduce partition columns: _col5 (type: string)
+              Map-reduce partition columns: _col6 (type: string)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-              value expressions: _col0 (type: string), _col1 (type: string), _col4 (type: string)
+              value expressions: _col0 (type: string), _col1 (type: string), _col5 (type: string)
           TableScan
             alias: c
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
@@ -737,9 +738,9 @@ STAGE PLANS:
           condition map:
                Left Outer Join0 to 1
           condition expressions:
-            0 {VALUE._col0} {VALUE._col1} {VALUE._col4} {KEY.reducesinkkey0}
+            0 {VALUE._col0} {VALUE._col1} {VALUE._col5} {KEY.reducesinkkey0}
             1 {KEY.reducesinkkey0} {VALUE._col0}
-          outputColumnNames: _col0, _col1, _col4, _col5, _col8, _col9
+          outputColumnNames: _col0, _col1, _col5, _col6, _col10, _col11
           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
           File Output Operator
             compressed: false
@@ -766,18 +767,18 @@ STAGE PLANS:
               sort order: +
               Map-reduce partition columns: _col0 (type: string)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-              value expressions: _col1 (type: string), _col4 (type: string), _col5 (type: string), _col8 (type: string), _col9 (type: string)
+              value expressions: _col1 (type: string), _col5 (type: string), _col6 (type: string), _col10 (type: string), _col11 (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
                Right Outer Join0 to 1
           condition expressions:
-            0 {KEY.reducesinkkey0} {VALUE._col0} {VALUE._col3} {VALUE._col4} {VALUE._col7} {VALUE._col8}
+            0 {KEY.reducesinkkey0} {VALUE._col0} {VALUE._col4} {VALUE._col5} {VALUE._col9} {VALUE._col10}
             1 {KEY.reducesinkkey0} {VALUE._col0}
-          outputColumnNames: _col0, _col1, _col4, _col5, _col8, _col9, _col12, _col13
+          outputColumnNames: _col0, _col1, _col5, _col6, _col10, _col11, _col15, _col16
           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
           Select Operator
-            expressions: _col0 (type: string), _col1 (type: string), _col4 (type: string), _col5 (type: string), _col8 (type: string), _col9 (type: string), _col12 (type: string), _col13 (type: string)
+            expressions: _col0 (type: string), _col1 (type: string), _col5 (type: string), _col6 (type: string), _col10 (type: string), _col11 (type: string), _col15 (type: string), _col16 (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             File Output Operator
@@ -841,7 +842,7 @@ STAGE PLANS:
           condition expressions:
             0 {KEY.reducesinkkey0} {VALUE._col0}
             1 {KEY.reducesinkkey0} {VALUE._col0}
-          outputColumnNames: _col0, _col1, _col4, _col5
+          outputColumnNames: _col0, _col1, _col5, _col6
           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
           File Output Operator
             compressed: false
@@ -855,11 +856,11 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             Reduce Output Operator
-              key expressions: _col5 (type: string)
+              key expressions: _col6 (type: string)
               sort order: +
-              Map-reduce partition columns: _col5 (type: string)
+              Map-reduce partition columns: _col6 (type: string)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-              value expressions: _col0 (type: string), _col1 (type: string), _col4 (type: string)
+              value expressions: _col0 (type: string), _col1 (type: string), _col5 (type: string)
           TableScan
             alias: c
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
@@ -874,9 +875,9 @@ STAGE PLANS:
           condition map:
                Left Outer Join0 to 1
           condition expressions:
-            0 {VALUE._col0} {VALUE._col1} {VALUE._col4} {KEY.reducesinkkey0}
+            0 {VALUE._col0} {VALUE._col1} {VALUE._col5} {KEY.reducesinkkey0}
             1 {KEY.reducesinkkey0} {VALUE._col0}
-          outputColumnNames: _col0, _col1, _col4, _col5, _col8, _col9
+          outputColumnNames: _col0, _col1, _col5, _col6, _col10, _col11
           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
           File Output Operator
             compressed: false
@@ -903,18 +904,18 @@ STAGE PLANS:
               sort order: +
               Map-reduce partition columns: _col0 (type: string)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-              value expressions: _col1 (type: string), _col4 (type: string), _col5 (type: string), _col8 (type: string), _col9 (type: string)
+              value expressions: _col1 (type: string), _col5 (type: string), _col6 (type: string), _col10 (type: string), _col11 (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
                Outer Join 0 to 1
           condition expressions:
-            0 {KEY.reducesinkkey0} {VALUE._col0} {VALUE._col3} {VALUE._col4} {VALUE._col7} {VALUE._col8}
+            0 {KEY.reducesinkkey0} {VALUE._col0} {VALUE._col4} {VALUE._col5} {VALUE._col9} {VALUE._col10}
             1 {KEY.reducesinkkey0} {VALUE._col0}
-          outputColumnNames: _col0, _col1, _col4, _col5, _col8, _col9, _col12, _col13
+          outputColumnNames: _col0, _col1, _col5, _col6, _col10, _col11, _col15, _col16
           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
           Select Operator
-            expressions: _col0 (type: string), _col1 (type: string), _col4 (type: string), _col5 (type: string), _col8 (type: string), _col9 (type: string), _col12 (type: string), _col13 (type: string)
+            expressions: _col0 (type: string), _col1 (type: string), _col5 (type: string), _col6 (type: string), _col10 (type: string), _col11 (type: string), _col15 (type: string), _col16 (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             File Output Operator
@@ -978,7 +979,7 @@ STAGE PLANS:
           condition expressions:
             0 {KEY.reducesinkkey0} {VALUE._col0}
             1 {KEY.reducesinkkey0} {VALUE._col0}
-          outputColumnNames: _col0, _col1, _col4, _col5
+          outputColumnNames: _col0, _col1, _col5, _col6
           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
           File Output Operator
             compressed: false
@@ -992,11 +993,11 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             Reduce Output Operator
-              key expressions: _col5 (type: string)
+              key expressions: _col6 (type: string)
               sort order: +
-              Map-reduce partition columns: _col5 (type: string)
+              Map-reduce partition columns: _col6 (type: string)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-              value expressions: _col0 (type: string), _col1 (type: string), _col4 (type: string)
+              value expressions: _col0 (type: string), _col1 (type: string), _col5 (type: string)
           TableScan
             alias: c
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
@@ -1011,9 +1012,9 @@ STAGE PLANS:
           condition map:
                Right Outer Join0 to 1
           condition expressions:
-            0 {VALUE._col0} {VALUE._col1} {VALUE._col4} {KEY.reducesinkkey0}
+            0 {VALUE._col0} {VALUE._col1} {VALUE._col5} {KEY.reducesinkkey0}
             1 {KEY.reducesinkkey0} {VALUE._col0}
-          outputColumnNames: _col0, _col1, _col4, _col5, _col8, _col9
+          outputColumnNames: _col0, _col1, _col5, _col6, _col10, _col11
           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
           File Output Operator
             compressed: false
@@ -1040,18 +1041,18 @@ STAGE PLANS:
               sort order: +
               Map-reduce partition columns: _col0 (type: string)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-              value expressions: _col1 (type: string), _col4 (type: string), _col5 (type: string), _col8 (type: string), _col9 (type: string)
+              value expressions: _col1 (type: string), _col5 (type: string), _col6 (type: string), _col10 (type: string), _col11 (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
                Left Outer Join0 to 1
           condition expressions:
-            0 {KEY.reducesinkkey0} {VALUE._col0} {VALUE._col3} {VALUE._col4} {VALUE._col7} {VALUE._col8}
+            0 {KEY.reducesinkkey0} {VALUE._col0} {VALUE._col4} {VALUE._col5} {VALUE._col9} {VALUE._col10}
             1 {KEY.reducesinkkey0} {VALUE._col0}
-          outputColumnNames: _col0, _col1, _col4, _col5, _col8, _col9, _col12, _col13
+          outputColumnNames: _col0, _col1, _col5, _col6, _col10, _col11, _col15, _col16
           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
           Select Operator
-            expressions: _col0 (type: string), _col1 (type: string), _col4 (type: string), _col5 (type: string), _col8 (type: string), _col9 (type: string), _col12 (type: string), _col13 (type: string)
+            expressions: _col0 (type: string), _col1 (type: string), _col5 (type: string), _col6 (type: string), _col10 (type: string), _col11 (type: string), _col15 (type: string), _col16 (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             File Output Operator
@@ -1115,7 +1116,7 @@ STAGE PLANS:
           condition expressions:
             0 {KEY.reducesinkkey0} {VALUE._col0}
             1 {KEY.reducesinkkey0} {VALUE._col0}
-          outputColumnNames: _col0, _col1, _col4, _col5
+          outputColumnNames: _col0, _col1, _col5, _col6
           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
           File Output Operator
             compressed: false
@@ -1129,11 +1130,11 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             Reduce Output Operator
-              key expressions: _col5 (type: string)
+              key expressions: _col6 (type: string)
               sort order: +
-              Map-reduce partition columns: _col5 (type: string)
+              Map-reduce partition columns: _col6 (type: string)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-              value expressions: _col0 (type: string), _col1 (type: string), _col4 (type: string)
+              value expressions: _col0 (type: string), _col1 (type: string), _col5 (type: string)
           TableScan
             alias: c
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
@@ -1148,9 +1149,9 @@ STAGE PLANS:
           condition map:
                Right Outer Join0 to 1
           condition expressions:
-            0 {VALUE._col0} {VALUE._col1} {VALUE._col4} {KEY.reducesinkkey0}
+            0 {VALUE._col0} {VALUE._col1} {VALUE._col5} {KEY.reducesinkkey0}
             1 {KEY.reducesinkkey0} {VALUE._col0}
-          outputColumnNames: _col0, _col1, _col4, _col5, _col8, _col9
+          outputColumnNames: _col0, _col1, _col5, _col6, _col10, _col11
           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
           File Output Operator
             compressed: false
@@ -1177,18 +1178,18 @@ STAGE PLANS:
               sort order: +
               Map-reduce partition columns: _col0 (type: string)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-              value expressions: _col1 (type: string), _col4 (type: string), _col5 (type: string), _col8 (type: string), _col9 (type: string)
+              value expressions: _col1 (type: string), _col5 (type: string), _col6 (type: string), _col10 (type: string), _col11 (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
                Outer Join 0 to 1
           condition expressions:
-            0 {KEY.reducesinkkey0} {VALUE._col0} {VALUE._col3} {VALUE._col4} {VALUE._col7} {VALUE._col8}
+            0 {KEY.reducesinkkey0} {VALUE._col0} {VALUE._col4} {VALUE._col5} {VALUE._col9} {VALUE._col10}
             1 {KEY.reducesinkkey0} {VALUE._col0}
-          outputColumnNames: _col0, _col1, _col4, _col5, _col8, _col9, _col12, _col13
+          outputColumnNames: _col0, _col1, _col5, _col6, _col10, _col11, _col15, _col16
           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
           Select Operator
-            expressions: _col0 (type: string), _col1 (type: string), _col4 (type: string), _col5 (type: string), _col8 (type: string), _col9 (type: string), _col12 (type: string), _col13 (type: string)
+            expressions: _col0 (type: string), _col1 (type: string), _col5 (type: string), _col6 (type: string), _col10 (type: string), _col11 (type: string), _col15 (type: string), _col16 (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             File Output Operator
@@ -1253,7 +1254,7 @@ STAGE PLANS:
           condition expressions:
             0 {KEY.reducesinkkey0} {VALUE._col0}
             1 {KEY.reducesinkkey0} {VALUE._col0}
-          outputColumnNames: _col0, _col1, _col4, _col5
+          outputColumnNames: _col0, _col1, _col5, _col6
           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
           File Output Operator
             compressed: false
@@ -1285,24 +1286,24 @@ STAGE PLANS:
               value expressions: value (type: string)
           TableScan
             Reduce Output Operator
-              key expressions: _col5 (type: string)
+              key expressions: _col6 (type: string)
               sort order: +
-              Map-reduce partition columns: _col5 (type: string)
+              Map-reduce partition columns: _col6 (type: string)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-              value expressions: _col0 (type: string), _col1 (type: string), _col4 (type: string)
+              value expressions: _col0 (type: string), _col1 (type: string), _col5 (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
                Left Outer Join0 to 1
                Left Outer Join1 to 2
           condition expressions:
-            0 {VALUE._col0} {VALUE._col1} {VALUE._col4} {KEY.reducesinkkey0}
+            0 {VALUE._col0} {VALUE._col1} {VALUE._col5} {KEY.reducesinkkey0}
             1 {KEY.reducesinkkey0} {VALUE._col0}
             2 {KEY.reducesinkkey0} {VALUE._col0}
-          outputColumnNames: _col0, _col1, _col4, _col5, _col8, _col9, _col12, _col13
+          outputColumnNames: _col0, _col1, _col5, _col6, _col10, _col11, _col15, _col16
           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
           Select Operator
-            expressions: _col0 (type: string), _col1 (type: string), _col4 (type: string), _col5 (type: string), _col8 (type: string), _col9 (type: string), _col12 (type: string), _col13 (type: string)
+            expressions: _col0 (type: string), _col1 (type: string), _col5 (type: string), _col6 (type: string), _col10 (type: string), _col11 (type: string), _col15 (type: string), _col16 (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             File Output Operator

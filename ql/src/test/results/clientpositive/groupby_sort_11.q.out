@@ -2,6 +2,7 @@ PREHOOK: query: CREATE TABLE T1(key STRING, val STRING) PARTITIONED BY (ds strin
 CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@T1
 POSTHOOK: query: CREATE TABLE T1(key STRING, val STRING) PARTITIONED BY (ds string)
 CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
@@ -395,11 +396,11 @@ STAGE PLANS:
                 keys: 1 (type: int)
                 mode: hash
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 10 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
                   sort order: +
-                  Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 10 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(DISTINCT KEY._col0:0._col0)

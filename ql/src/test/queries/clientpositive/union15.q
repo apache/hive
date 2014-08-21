@@ -1,5 +1,5 @@
 set hive.map.aggr = true;
-
+-- SORT_BEFORE_DIFF
 -- union case: 1 subquery is a map-reduce job, different inputs for sub-queries, followed by reducesink
 
 explain 

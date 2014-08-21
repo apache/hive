@@ -1,6 +1,7 @@
 PREHOOK: query: create table if not exists authorization_invalid_v2 (key int, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@authorization_invalid_v2
 POSTHOOK: query: create table if not exists authorization_invalid_v2 (key int, value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

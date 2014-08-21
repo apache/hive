@@ -13,6 +13,7 @@ with serdeproperties ('hbase.columns.mapping' = ':key,cf:val')
 tblproperties ('hbase.table.name' = 'positive_hbase_handler_bulk')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@hb_target
 POSTHOOK: query: -- this is the target HBase table
 create table hb_target(key int, val string)
 stored by 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'

@@ -6,6 +6,7 @@ partitioned by (ds string, hr string)
 stored as rcfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@analyze_srcpart_partial_scan
 POSTHOOK: query: -- test analyze table ... compute statistics partialscan
 
 -- 1. prepare data

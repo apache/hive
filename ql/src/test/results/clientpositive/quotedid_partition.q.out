@@ -1,6 +1,7 @@
 PREHOOK: query: create table src_p(`x+1` string, `y&y` string) partitioned by (`!@#$%^&*()_q` string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@src_p
 POSTHOOK: query: create table src_p(`x+1` string, `y&y` string) partitioned by (`!@#$%^&*()_q` string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -45,7 +46,7 @@ STAGE PLANS:
               predicate: (x+1 = '10') (type: boolean)
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: x+1 (type: string), y&y (type: string), !@#$%^&*()_q (type: string)
+                expressions: '10' (type: string), y&y (type: string), !@#$%^&*()_q (type: string)
                 outputColumnNames: x+1, y&y, !@#$%^&*()_q
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
@@ -85,6 +86,7 @@ STAGE PLANS:
 PREHOOK: query: create table src_p2(`x+1` string) partitioned by (`!@#$%^&*()_q` string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@src_p2
 POSTHOOK: query: create table src_p2(`x+1` string) partitioned by (`!@#$%^&*()_q` string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

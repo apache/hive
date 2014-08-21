@@ -30,6 +30,7 @@ import java.util.Stack;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.ql.exec.AbstractMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.CommonJoinOperator;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
@@ -87,6 +88,7 @@ public final class ColumnPrunerProcFactory {
    * Node Processor for Column Pruning on Filter Operators.
    */
   public static class ColumnPrunerFilterProc implements NodeProcessor {
+    @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx,
         Object... nodeOutputs) throws SemanticException {
       FilterOperator op = (FilterOperator) nd;
@@ -120,6 +122,7 @@ public final class ColumnPrunerProcFactory {
    * Node Processor for Column Pruning on Group By Operators.
    */
   public static class ColumnPrunerGroupByProc implements NodeProcessor {
+    @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx,
         Object... nodeOutputs) throws SemanticException {
       GroupByOperator op = (GroupByOperator) nd;
@@ -154,6 +157,7 @@ public final class ColumnPrunerProcFactory {
   }
 
   public static class ColumnPrunerScriptProc implements NodeProcessor {
+    @Override
     @SuppressWarnings("unchecked")
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx,
         Object... nodeOutputs) throws SemanticException {
@@ -224,6 +228,7 @@ public final class ColumnPrunerProcFactory {
    *   and update the RR & signature on the PTFOp.
    */
   public static class ColumnPrunerPTFProc extends ColumnPrunerScriptProc {
+    @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx,
         Object... nodeOutputs) throws SemanticException {
 
@@ -327,6 +332,7 @@ public final class ColumnPrunerProcFactory {
    * The Default Node Processor for Column Pruning.
    */
   public static class ColumnPrunerDefaultProc implements NodeProcessor {
+    @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx,
         Object... nodeOutputs) throws SemanticException {
       ColumnPrunerProcCtx cppCtx = (ColumnPrunerProcCtx) ctx;
@@ -351,6 +357,7 @@ public final class ColumnPrunerProcFactory {
    * store needed columns in tableScanDesc.
    */
   public static class ColumnPrunerTableScanProc implements NodeProcessor {
+    @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx,
         Object... nodeOutputs) throws SemanticException {
       TableScanOperator scanOp = (TableScanOperator) nd;
@@ -365,52 +372,57 @@ public final class ColumnPrunerProcFactory {
       
       cppCtx.getPrunedColLists().put((Operator<? extends OperatorDesc>) nd,
           cols);
-      List<Integer> neededColumnIds = new ArrayList<Integer>();
-      List<String> neededColumnNames = new ArrayList<String>();
-      List<String> referencedColumnNames = new ArrayList<String>();
       RowResolver inputRR = cppCtx.getOpToParseCtxMap().get(scanOp).getRowResolver();
-      TableScanDesc desc = scanOp.getConf();
-      List<VirtualColumn> virtualCols = desc.getVirtualCols();
-      List<VirtualColumn> newVirtualCols = new ArrayList<VirtualColumn>();
-
-      // add virtual columns for ANALYZE TABLE
-      if(scanOp.getConf().isGatherStats()) {
-        cols.add(VirtualColumn.RAWDATASIZE.getName());
-      }
-
-      for (String column : cols) {
-        String[] tabCol = inputRR.reverseLookup(column);
-        if (tabCol == null) {
-          continue;
-        }
-        referencedColumnNames.add(column);
-        ColumnInfo colInfo = inputRR.get(tabCol[0], tabCol[1]);
-        if (colInfo.getIsVirtualCol()) {
-          // part is also a virtual column, but part col should not in this
-          // list.
-          for (int j = 0; j < virtualCols.size(); j++) {
-            VirtualColumn vc = virtualCols.get(j);
-            if (vc.getName().equals(colInfo.getInternalName())) {
-              newVirtualCols.add(vc);
-            }
-          }
-          //no need to pass virtual columns to reader.
-          continue;
-        }
-        int position = inputRR.getPosition(column);
-        if (position >= 0) {
-          // get the needed columns by id and name
-          neededColumnIds.add(position);
-          neededColumnNames.add(column);
-        }
-      }
-
-      desc.setVirtualCols(newVirtualCols);
-      scanOp.setNeededColumnIDs(neededColumnIds);
-      scanOp.setNeededColumns(neededColumnNames);
-      scanOp.setReferencedColumns(referencedColumnNames);
+      setupNeededColumns(scanOp, inputRR, cols);
       return null;
     }
+  }
+
+  public static void setupNeededColumns(TableScanOperator scanOp, RowResolver inputRR,
+      List<String> cols) throws SemanticException {
+    List<Integer> neededColumnIds = new ArrayList<Integer>();
+    List<String> neededColumnNames = new ArrayList<String>();
+    List<String> referencedColumnNames = new ArrayList<String>();
+    TableScanDesc desc = scanOp.getConf();
+    List<VirtualColumn> virtualCols = desc.getVirtualCols();
+    List<VirtualColumn> newVirtualCols = new ArrayList<VirtualColumn>();
+
+    // add virtual columns for ANALYZE TABLE
+    if(scanOp.getConf().isGatherStats()) {
+      cols.add(VirtualColumn.RAWDATASIZE.getName());
+    }
+
+    for (String column : cols) {
+      String[] tabCol = inputRR.reverseLookup(column);
+      if (tabCol == null) {
+        continue;
+      }
+      referencedColumnNames.add(column);
+      ColumnInfo colInfo = inputRR.get(tabCol[0], tabCol[1]);
+      if (colInfo.getIsVirtualCol()) {
+        // part is also a virtual column, but part col should not in this
+        // list.
+        for (int j = 0; j < virtualCols.size(); j++) {
+          VirtualColumn vc = virtualCols.get(j);
+          if (vc.getName().equals(colInfo.getInternalName())) {
+            newVirtualCols.add(vc);
+          }
+        }
+        //no need to pass virtual columns to reader.
+        continue;
+      }
+      int position = inputRR.getPosition(column);
+      if (position >= 0) {
+        // get the needed columns by id and name
+        neededColumnIds.add(position);
+        neededColumnNames.add(column);
+      }
+    }
+
+    desc.setVirtualCols(newVirtualCols);
+    scanOp.setNeededColumnIDs(neededColumnIds);
+    scanOp.setNeededColumns(neededColumnNames);
+    scanOp.setReferencedColumns(referencedColumnNames);
   }
 
   /**
@@ -426,6 +438,7 @@ public final class ColumnPrunerProcFactory {
    * The Node Processor for Column Pruning on Reduce Sink Operators.
    */
   public static class ColumnPrunerReduceSinkProc implements NodeProcessor {
+    @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx,
         Object... nodeOutputs) throws SemanticException {
       ReduceSinkOperator op = (ReduceSinkOperator) nd;
@@ -435,6 +448,7 @@ public final class ColumnPrunerProcFactory {
 
       List<String> colLists = new ArrayList<String>();
       ArrayList<ExprNodeDesc> keys = conf.getKeyCols();
+      LOG.debug("Reduce Sink Operator " + op.getIdentifier() + " key:" + keys);
       for (ExprNodeDesc key : keys) {
         colLists = Utilities.mergeUniqElems(colLists, key.getCols());
       }
@@ -456,7 +470,6 @@ public final class ColumnPrunerProcFactory {
 
       if (childCols != null) {
         boolean[] flags = new boolean[valCols.size()];
-        Map<String, ExprNodeDesc> exprMap = op.getColumnExprMap();
 
         for (String childCol : childCols) {
           int index = valColNames.indexOf(Utilities.removeValueTag(childCol));
@@ -497,6 +510,7 @@ public final class ColumnPrunerProcFactory {
    * The Node Processor for Column Pruning on Lateral View Join Operators.
    */
   public static class ColumnPrunerLateralViewJoinProc implements NodeProcessor {
+    @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx,
         Object... nodeOutputs) throws SemanticException {
       LateralViewJoinOperator op = (LateralViewJoinOperator) nd;
@@ -585,6 +599,7 @@ public final class ColumnPrunerProcFactory {
    * The Node Processor for Column Pruning on Select Operators.
    */
   public static class ColumnPrunerSelectProc implements NodeProcessor {
+    @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx,
         Object... nodeOutputs) throws SemanticException {
       SelectOperator op = (SelectOperator) nd;
@@ -748,6 +763,12 @@ public final class ColumnPrunerProcFactory {
           nm = oldRR.reverseLookup(outputCol);
         }
 
+        // In case there are multiple columns referenced to the same column name, we won't
+        // do row resolve once more because the ColumnInfo in row resolver is already removed
+        if (nm == null) {
+          continue;
+        }
+
         // Only remove information of a column if it is not a key,
         // i.e. this column is not appearing in keyExprs of the RS
         if (ExprNodeDescUtils.indexOf(outputColExpr, keyExprs) == -1) {
@@ -795,6 +816,7 @@ public final class ColumnPrunerProcFactory {
    * The Node Processor for Column Pruning on Join Operators.
    */
   public static class ColumnPrunerJoinProc implements NodeProcessor {
+    @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx,
         Object... nodeOutputs) throws SemanticException {
       JoinOperator op = (JoinOperator) nd;
@@ -817,9 +839,10 @@ public final class ColumnPrunerProcFactory {
    * The Node Processor for Column Pruning on Map Join Operators.
    */
   public static class ColumnPrunerMapJoinProc implements NodeProcessor {
+    @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx,
         Object... nodeOutputs) throws SemanticException {
-      MapJoinOperator op = (MapJoinOperator) nd;
+      AbstractMapJoinOperator<MapJoinDesc> op = (AbstractMapJoinOperator<MapJoinDesc>) nd;
       pruneJoinOperator(ctx, op, op.getConf(), op.getColumnExprMap(), op
           .getConf().getRetainList(), true);
       return null;
@@ -878,6 +901,7 @@ public final class ColumnPrunerProcFactory {
     List<Operator<? extends OperatorDesc>> childOperators = op
         .getChildOperators();
 
+    LOG.info("JOIN " + op.getIdentifier() + " oldExprs: " + conf.getExprs());
     List<String> childColLists = cppCtx.genColLists(op);
     if (childColLists == null) {
         return;
@@ -985,6 +1009,7 @@ public final class ColumnPrunerProcFactory {
       rs.add(col);
     }
 
+    LOG.info("JOIN " + op.getIdentifier() + " newExprs: " + conf.getExprs());
     op.setColumnExprMap(newColExprMap);
     conf.setOutputColumnNames(outputCols);
     op.getSchema().setSignature(rs);

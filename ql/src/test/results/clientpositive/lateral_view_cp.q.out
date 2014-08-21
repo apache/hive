@@ -7,6 +7,7 @@ POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table array_valued_src (key string, value array<string>)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@array_valued_src
 POSTHOOK: query: create table array_valued_src (key string, value array<string>)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -66,10 +67,10 @@ STAGE PLANS:
           condition expressions:
             0 
             1 {VALUE._col0}
-          outputColumnNames: _col5
+          outputColumnNames: _col6
           Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: _col5 (type: array<string>)
+            expressions: _col6 (type: array<string>)
             outputColumnNames: _col1
             Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
             Lateral View Forward

@@ -5,6 +5,7 @@ POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table tstsrc like src
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@tstsrc
 POSTHOOK: query: create table tstsrc like src
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -29,5 +30,5 @@ POSTHOOK: query: LOCK TABLE tstsrc SHARED
 POSTHOOK: type: LOCKTABLE
 PREHOOK: query: LOCK TABLE tstsrc EXCLUSIVE
 PREHOOK: type: LOCKTABLE
-conflicting lock present for default@tstsrc mode EXCLUSIVE
+Unable to acquire EXPLICIT, EXCLUSIVE lock default@tstsrc after 1 attempts.
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask

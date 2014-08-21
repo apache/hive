@@ -14,6 +14,7 @@ PREHOOK: query: create table over1k(
        fields terminated by '|'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@over1k
 POSTHOOK: query: create table over1k(
            t tinyint,
            si smallint,
@@ -42,6 +43,7 @@ POSTHOOK: Output: default@over1k
 PREHOOK: query: create table over1k_orc like over1k
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@over1k_orc
 POSTHOOK: query: create table over1k_orc like over1k
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -81,6 +83,7 @@ PREHOOK: query: create table over1k_part_orc(
        partitioned by (ds string, t tinyint) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@over1k_part_orc
 POSTHOOK: query: create table over1k_part_orc(
            si smallint,
            i int,
@@ -93,6 +96,7 @@ POSTHOOK: Output: default@over1k_part_orc
 PREHOOK: query: create table over1k_part_limit_orc like over1k_part_orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@over1k_part_limit_orc
 POSTHOOK: query: create table over1k_part_limit_orc like over1k_part_orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -114,6 +118,7 @@ PREHOOK: query: create table over1k_part_buck_orc(
        clustered by (si) into 4 buckets stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@over1k_part_buck_orc
 POSTHOOK: query: create table over1k_part_buck_orc(
            si smallint,
            i int,
@@ -134,6 +139,7 @@ PREHOOK: query: create table over1k_part_buck_sort_orc(
        sorted by (f) into 4 buckets stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@over1k_part_buck_sort_orc
 POSTHOOK: query: create table over1k_part_buck_sort_orc(
            si smallint,
            i int,
@@ -1252,6 +1258,7 @@ create table over1k_part2_orc(
        partitioned by (ds string, t tinyint)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@over1k_part2_orc
 POSTHOOK: query: -- tests for HIVE-6883
 create table over1k_part2_orc(
            si smallint,
@@ -1712,6 +1719,7 @@ create table over1k_part_buck_sort2_orc(
        sorted by (f) into 1 buckets
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@over1k_part_buck_sort2_orc
 POSTHOOK: query: -- hadoop-1 does not honor number of reducers in local mode. There is always only 1 reducer irrespective of the number of buckets.
 -- Hence all records go to one bucket and all other buckets will be empty. Similar to HIVE-6867. However, hadoop-2 honors number
 -- of reducers and records are spread across all reducers. To avoid this inconsistency we will make number of buckets to 1 for this test.

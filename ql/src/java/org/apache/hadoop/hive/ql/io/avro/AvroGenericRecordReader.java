@@ -127,7 +127,7 @@ public class AvroGenericRecordReader implements
     String s = job.get(AvroSerdeUtils.AVRO_SERDE_SCHEMA);
     if(s != null) {
       LOG.info("Found the avro schema in the job: " + s);
-      return Schema.parse(s);
+      return AvroSerdeUtils.getSchemaFor(s);
     }
     // No more places to get the schema from. Give up.  May have to re-encode later.
     return null;

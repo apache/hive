@@ -1,6 +1,7 @@
 PREHOOK: query: create table tstnullinut(a string, b string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@tstnullinut
 POSTHOOK: query: create table tstnullinut(a string, b string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

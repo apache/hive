@@ -31,6 +31,7 @@
   </prerequisites>
 
   <modules>
+    <module>accumulo-handler</module>
     <module>ant</module>
     <module>beeline</module>
     <module>cli</module>
@@ -87,6 +88,7 @@
     <maven.build-helper.plugin.version>1.8</maven.build-helper.plugin.version>
 
     <!-- Library Dependency Versions -->
+    <accumulo.version>1.6.0</accumulo.version>
     <activemq.version>5.5.0</activemq.version>
     <ant.version>1.9.1</ant.version>
     <antlr.version>3.4</antlr.version>
@@ -104,6 +106,8 @@
     <commons-lang.version>2.4</commons-lang.version>
     <commons-lang3.version>3.1</commons-lang3.version>
     <commons-logging.version>1.1.3</commons-logging.version>
+    <commons-pool.version>1.5.4</commons-pool.version>
+    <commons-dbcp.version>1.4</commons-dbcp.version>
     <derby.version>10.10.1.1</derby.version>
     <guava.version>11.0.2</guava.version>
     <groovy.version>2.1.6</groovy.version>
@@ -111,8 +115,8 @@
     <hadoop-20S.version>1.2.1</hadoop-20S.version>
     <hadoop-23.version>2.4.0</hadoop-23.version>
     <hadoop.bin.path>${basedir}/${hive.path.to.root}/testutils/hadoop</hadoop.bin.path>
-    <hbase.hadoop1.version>0.96.0-hadoop1</hbase.hadoop1.version>
-    <hbase.hadoop2.version>0.96.0-hadoop2</hbase.hadoop2.version>
+    <hbase.hadoop1.version>0.98.3-hadoop1</hbase.hadoop1.version>
+    <hbase.hadoop2.version>0.98.3-hadoop2</hbase.hadoop2.version>
     <!-- httpcomponents are not always in version sync -->
     <httpcomponents.client.version>4.2.5</httpcomponents.client.version>
     <httpcomponents.core.version>4.2.5</httpcomponents.core.version>
@@ -145,6 +149,7 @@
     <slf4j.version>1.7.5</slf4j.version>
     <ST4.version>4.0.4</ST4.version>
     <tez.version>0.5.0-SNAPSHOT</tez.version>
+    <super-csv.version>2.2.0</super-csv.version>
     <tempus-fugit.version>1.1</tempus-fugit.version>
     <snappy.version>0.2</snappy.version>
     <wadl-resourcedoc-doclet.version>1.4</wadl-resourcedoc-doclet.version>
@@ -360,6 +365,31 @@
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-exec</artifactId>
         <version>${commons-exec.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.accumulo</groupId>
+        <artifactId>accumulo-core</artifactId>
+        <version>${accumulo.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.accumulo</groupId>
+        <artifactId>accumulo-fate</artifactId>
+        <version>${accumulo.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.accumulo</groupId>
+        <artifactId>accumulo-minicluster</artifactId>
+        <version>${accumulo.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.accumulo</groupId>
+        <artifactId>accumulo-start</artifactId>
+        <version>${accumulo.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.accumulo</groupId>
+        <artifactId>accumulo-trace</artifactId>
+        <version>${accumulo.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.activemq</groupId>
@@ -772,7 +802,7 @@
             <test.warehouse.dir>${test.warehouse.scheme}${test.warehouse.dir}</test.warehouse.dir>
             <java.net.preferIPv4Stack>true</java.net.preferIPv4Stack>
             <!-- EnforceReadOnlyTables hook and QTestUtil -->
-            <test.src.tables>src,src1,srcbucket,srcbucket2,src_json,src_thrift,src_sequencefile,srcpart,alltypesorc</test.src.tables>
+            <test.src.tables>src,src1,srcbucket,srcbucket2,src_json,src_thrift,src_sequencefile,srcpart,alltypesorc,src_hbase</test.src.tables>
             <java.security.krb5.conf>${test.tmp.dir}/conf/krb5.conf</java.security.krb5.conf>
           </systemPropertyVariables>
         </configuration>

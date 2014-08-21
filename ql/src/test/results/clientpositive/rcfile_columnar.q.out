@@ -6,6 +6,7 @@ STORED AS
   OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.RCFileOutputFormat'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@columnTable
 POSTHOOK: query: CREATE table columnTable (key STRING, value STRING)
 ROW FORMAT SERDE
   'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe'

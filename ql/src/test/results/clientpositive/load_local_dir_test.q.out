@@ -1,6 +1,7 @@
 PREHOOK: query: create table load_local (id INT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@load_local
 POSTHOOK: query: create table load_local (id INT)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

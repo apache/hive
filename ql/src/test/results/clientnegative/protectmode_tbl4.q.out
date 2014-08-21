@@ -13,6 +13,7 @@ POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table tbl_protectmode_tbl4_src (col string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_protectmode_tbl4_src
 POSTHOOK: query: create table tbl_protectmode_tbl4_src (col string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -20,6 +21,7 @@ POSTHOOK: Output: default@tbl_protectmode_tbl4_src
 PREHOOK: query: create table tbl_protectmode_tbl4  (col string) partitioned by (p string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_protectmode_tbl4
 POSTHOOK: query: create table tbl_protectmode_tbl4  (col string) partitioned by (p string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

@@ -1,0 +1,58 @@
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+-- verify that we can actually read avro files
+CREATE TABLE doctors (
+  number int,
+  first_name string,
+  last_name string)
+STORED AS AVRO
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@doctors
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+-- verify that we can actually read avro files
+CREATE TABLE doctors (
+  number int,
+  first_name string,
+  last_name string)
+STORED AS AVRO
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@doctors
+PREHOOK: query: DESCRIBE doctors
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@doctors
+POSTHOOK: query: DESCRIBE doctors
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@doctors
+number              	int                 	from deserializer   
+first_name          	string              	from deserializer   
+last_name           	string              	from deserializer   
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' INTO TABLE doctors
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@doctors
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' INTO TABLE doctors
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@doctors
+PREHOOK: query: SELECT * FROM doctors
+PREHOOK: type: QUERY
+PREHOOK: Input: default@doctors
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM doctors
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@doctors
+#### A masked pattern was here ####
+1	William	Hartnell
+10	David	Tennant
+11	Matt	Smith
+2	Patrick	Troughton
+3	Jon	Pertwee
+4	Tom	Baker
+5	Peter	Davison
+6	Colin	Baker
+7	Sylvester	McCoy
+8	Paul	McGann
+9	Christopher	Eccleston

@@ -17,6 +17,7 @@ PREHOOK: query: -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
 CREATE TABLE fact_daily(x int, y STRING) PARTITIONED BY (ds STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@fact_daily
 POSTHOOK: query: -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)	
 -- SORT_QUERY_RESULTS
 
@@ -42,6 +43,7 @@ PREHOOK: query: CREATE TABLE fact_tz(x int, y STRING) PARTITIONED BY (ds STRING,
 PREHOOK: type: CREATETABLE
 #### A masked pattern was here ####
 PREHOOK: Output: database:default
+PREHOOK: Output: default@fact_tz
 POSTHOOK: query: CREATE TABLE fact_tz(x int, y STRING) PARTITIONED BY (ds STRING, hr STRING)	
 #### A masked pattern was here ####
 POSTHOOK: type: CREATETABLE
@@ -240,7 +242,7 @@ STAGE PLANS:
               predicate: (x = 484) (type: boolean)
               Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: x (type: int)
+                expressions: 484 (type: int)
                 outputColumnNames: _col0
                 Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
@@ -757,7 +759,7 @@ STAGE PLANS:
               predicate: (x = 484) (type: boolean)
               Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: x (type: int)
+                expressions: 484 (type: int)
                 outputColumnNames: x
                 Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator

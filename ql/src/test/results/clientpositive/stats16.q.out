@@ -5,6 +5,7 @@ POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table stats16 (key int, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@stats16
 POSTHOOK: query: create table stats16 (key int, value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

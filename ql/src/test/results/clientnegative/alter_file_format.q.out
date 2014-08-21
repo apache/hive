@@ -1,6 +1,7 @@
 PREHOOK: query: create table alter_file_format_test (key int, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@alter_file_format_test
 POSTHOOK: query: create table alter_file_format_test (key int, value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

@@ -1,7 +1,9 @@
 PREHOOK: query: create database lockneg9
 PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:lockneg9
 POSTHOOK: query: create database lockneg9
 POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:lockneg9
 PREHOOK: query: lock database lockneg9 shared
 PREHOOK: type: LOCKDATABASE
 POSTHOOK: query: lock database lockneg9 shared
@@ -10,5 +12,5 @@ PREHOOK: query: show locks database lockneg9
 PREHOOK: type: SHOWLOCKS
 POSTHOOK: query: show locks database lockneg9
 POSTHOOK: type: SHOWLOCKS
-conflicting lock present for lockneg9 mode EXCLUSIVE
+Unable to acquire IMPLICIT, EXCLUSIVE lock lockneg9 after 1 attempts.
 FAILED: Error in acquiring locks: Locks on the underlying objects cannot be acquired. retry after some time

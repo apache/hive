@@ -2,10 +2,12 @@ PREHOOK: query: -- Test SHOW CREATE TABLE on a table name of format "db.table".
 
 CREATE DATABASE tmp_feng comment 'for show create table test'
 PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:tmp_feng
 POSTHOOK: query: -- Test SHOW CREATE TABLE on a table name of format "db.table".
 
 CREATE DATABASE tmp_feng comment 'for show create table test'
 POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:tmp_feng
 PREHOOK: query: SHOW DATABASES
 PREHOOK: type: SHOWDATABASES
 POSTHOOK: query: SHOW DATABASES
@@ -15,14 +17,18 @@ tmp_feng
 PREHOOK: query: CREATE TABLE tmp_feng.tmp_showcrt (key string, value int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:tmp_feng
+PREHOOK: Output: tmp_feng@tmp_feng.tmp_showcrt
 POSTHOOK: query: CREATE TABLE tmp_feng.tmp_showcrt (key string, value int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:tmp_feng
+POSTHOOK: Output: tmp_feng@tmp_feng.tmp_showcrt
 POSTHOOK: Output: tmp_feng@tmp_showcrt
 PREHOOK: query: USE default
 PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:default
 POSTHOOK: query: USE default
 POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:default
 PREHOOK: query: SHOW CREATE TABLE tmp_feng.tmp_showcrt
 PREHOOK: type: SHOW_CREATETABLE
 PREHOOK: Input: tmp_feng@tmp_showcrt
@@ -44,8 +50,11 @@ TBLPROPERTIES (
 #### A masked pattern was here ####
 PREHOOK: query: DROP TABLE tmp_feng.tmp_showcrt
 PREHOOK: type: DROPTABLE
+PREHOOK: Input: tmp_feng@tmp_showcrt
+PREHOOK: Output: tmp_feng@tmp_showcrt
 POSTHOOK: query: DROP TABLE tmp_feng.tmp_showcrt
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: tmp_feng@tmp_showcrt
 POSTHOOK: Output: tmp_feng@tmp_showcrt
 PREHOOK: query: DROP DATABASE tmp_feng
 PREHOOK: type: DROPDATABASE

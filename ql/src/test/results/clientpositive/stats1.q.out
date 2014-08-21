@@ -1,6 +1,7 @@
 PREHOOK: query: create table tmptable(key string, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@tmptable
 POSTHOOK: query: create table tmptable(key string, value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

@@ -346,7 +346,7 @@
             <object class="java.util.HashMap"> 
              <void method="put"> 
               <string>_col1</string> 
-              <object id="ExprNodeGenericFuncDesc0" class="org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc"> 
+              <object class="org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc"> 
                <void property="children"> 
                 <object class="java.util.ArrayList"> 
                  <void method="add"> 
@@ -453,7 +453,7 @@
              </void> 
              <void method="put"> 
               <string>_col0</string> 
-              <object id="ExprNodeGenericFuncDesc1" class="org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc"> 
+              <object class="org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc"> 
                <void property="children"> 
                 <object class="java.util.ArrayList"> 
                  <void method="add"> 
@@ -571,10 +571,17 @@
              <void property="colList"> 
               <object class="java.util.ArrayList"> 
                <void method="add"> 
-                <object idref="ExprNodeGenericFuncDesc1"/> 
+                <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                 <void property="typeInfo"> 
+                  <object idref="PrimitiveTypeInfo0"/> 
+                 </void> 
+                 <void property="value"> 
+                  <int>2</int> 
+                 </void> 
+                </object> 
                </void> 
                <void method="add"> 
-                <object idref="ExprNodeGenericFuncDesc0"/> 
+                <object class="org.apache.hadoop.hive.ql.plan.ExprNodeNullDesc"/> 
                </void> 
               </object> 
              </void> 
@@ -681,7 +688,7 @@
               <string>src</string> 
              </void> 
              <void property="type"> 
-              <object class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
+              <object id="PrimitiveTypeInfo3" class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
                <void property="typeName"> 
                 <string>bigint</string> 
                </void> 
@@ -708,6 +715,52 @@
              </void> 
              <void property="typeName"> 
               <string>string</string> 
+             </void> 
+            </object> 
+           </void> 
+           <void method="add"> 
+            <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
+             <void property="hiddenVirtualCol"> 
+              <boolean>true</boolean> 
+             </void> 
+             <void property="internalName"> 
+              <string>ROW__ID</string> 
+             </void> 
+             <void property="tabAlias"> 
+              <string>src</string> 
+             </void> 
+             <void property="type"> 
+              <object class="org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo"> 
+               <void property="allStructFieldNames"> 
+                <object class="java.util.ArrayList"> 
+                 <void method="add"> 
+                  <string>transactionid</string> 
+                 </void> 
+                 <void method="add"> 
+                  <string>bucketid</string> 
+                 </void> 
+                 <void method="add"> 
+                  <string>rowid</string> 
+                 </void> 
+                </object> 
+               </void> 
+               <void property="allStructFieldTypeInfos"> 
+                <object class="java.util.ArrayList"> 
+                 <void method="add"> 
+                  <object idref="PrimitiveTypeInfo3"/> 
+                 </void> 
+                 <void method="add"> 
+                  <object idref="PrimitiveTypeInfo0"/> 
+                 </void> 
+                 <void method="add"> 
+                  <object idref="PrimitiveTypeInfo3"/> 
+                 </void> 
+                </object> 
+               </void> 
+              </object> 
+             </void> 
+             <void property="typeName"> 
+              <string>struct&lt;transactionid:bigint,bucketid:int,rowid:bigint&gt;</string> 
              </void> 
             </object> 
            </void> 

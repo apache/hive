@@ -6,9 +6,12 @@ default
 PREHOOK: query: -- Try to create a database that already exists
 CREATE DATABASE test_db
 PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:test_db
 POSTHOOK: query: -- Try to create a database that already exists
 CREATE DATABASE test_db
 POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:test_db
 PREHOOK: query: CREATE DATABASE test_db
 PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:test_db
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Database test_db already exists

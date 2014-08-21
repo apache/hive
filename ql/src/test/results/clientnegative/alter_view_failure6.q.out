@@ -15,5 +15,5 @@ SELECT hr,key FROM srcpart
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Output: default@xxx7
-FAILED: SemanticException [Error 10041]: No partition predicate found for Alias "xxx7:srcpart" Table "srcpart"
+FAILED: SemanticException [Error 10041]: No partition predicate found for Alias "default.xxx7:srcpart" Table "srcpart"
 FAILED: SemanticException [Error 10056]: The query does not reference any valid partition. To run this query, set hive.mapred.mode=nonstrict

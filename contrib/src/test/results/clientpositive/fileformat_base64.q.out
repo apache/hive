@@ -29,6 +29,7 @@ PREHOOK: query: CREATE TABLE base64_test(key INT, value STRING) STORED AS
   OUTPUTFORMAT 'org.apache.hadoop.hive.contrib.fileformat.base64.Base64TextOutputFormat'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@base64_test
 POSTHOOK: query: CREATE TABLE base64_test(key INT, value STRING) STORED AS
   INPUTFORMAT 'org.apache.hadoop.hive.contrib.fileformat.base64.Base64TextInputFormat'
   OUTPUTFORMAT 'org.apache.hadoop.hive.contrib.fileformat.base64.Base64TextOutputFormat'

@@ -9,6 +9,7 @@ CREATE TABLE date_udf_flight (
 )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@date_udf_flight
 POSTHOOK: query: -- Test timestamp functions in vectorized mode to verify they run correctly end-to-end.
 
 CREATE TABLE date_udf_flight (
@@ -35,6 +36,7 @@ PREHOOK: query: CREATE TABLE date_udf_flight_orc (
 ) STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@date_udf_flight_orc
 POSTHOOK: query: CREATE TABLE date_udf_flight_orc (
   fl_date DATE,
   fl_time TIMESTAMP
@@ -959,3 +961,14 @@ POSTHOOK: Input: default@date_udf_flight_orc
 2010-10-20	2010-10-22	2010-10-18	-2	2	4
 2010-10-21	2010-10-23	2010-10-19	-2	2	4
 2010-10-21	2010-10-23	2010-10-19	-2	2	4
+PREHOOK: query: -- Test extracting the date part of expression that includes time
+SELECT to_date('2009-07-30 04:17:52') FROM date_udf_flight_orc LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@date_udf_flight_orc
+#### A masked pattern was here ####
+POSTHOOK: query: -- Test extracting the date part of expression that includes time
+SELECT to_date('2009-07-30 04:17:52') FROM date_udf_flight_orc LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_udf_flight_orc
+#### A masked pattern was here ####
+2009-07-30

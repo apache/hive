@@ -361,6 +361,11 @@ struct ColumnStatistics {
 2: required list<ColumnStatisticsObj> statsObj;
 }
 
+struct AggrStats {
+1: required list<ColumnStatisticsObj> colStats,
+2: required i64 partsFound // number of partitions for which stats were found
+}
+
 // schema of the table/query results etc.
 struct Schema {
  // column names, types, comments
@@ -677,6 +682,9 @@ exception NoSuchLockException {
 */
 service ThriftHiveMetastore extends fb303.FacebookService
 {
+  string getMetaConf(1:string key) throws(1:MetaException o1)
+  void setMetaConf(1:string key, 2:string value) throws(1:MetaException o1)
+
   void create_database(1:Database database) throws(1:AlreadyExistsException o1, 2:InvalidObjectException o2, 3:MetaException o3)
   Database get_database(1:string name) throws(1:NoSuchObjectException o1, 2:MetaException o2)
   void drop_database(1:string name, 2:bool deleteData, 3:bool cascade) throws(1:NoSuchObjectException o1, 2:InvalidOperationException o2, 3:MetaException o3)
@@ -950,6 +958,9 @@ service ThriftHiveMetastore extends fb303.FacebookService
               (1:NoSuchObjectException o1, 2:MetaException o2)
   PartitionsStatsResult get_partitions_statistics_req(1:PartitionsStatsRequest request) throws
               (1:NoSuchObjectException o1, 2:MetaException o2)
+  AggrStats get_aggr_stats_for(1:PartitionsStatsRequest request) throws
+              (1:NoSuchObjectException o1, 2:MetaException o2)
+
 
   // delete APIs attempt to delete column statistics, if found, associated with a given db_name, tbl_name, [part_name]
   // and col_name. If the delete API doesn't find the statistics record in the metastore, throws NoSuchObjectException

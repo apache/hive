@@ -1,9 +1,11 @@
 PREHOOK: query: -- test commands such as dfs,add,delete,compile allowed only by admin user, after following statement
 use default
 PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:default
 POSTHOOK: query: -- test commands such as dfs,add,delete,compile allowed only by admin user, after following statement
 use default
 POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:default
 PREHOOK: query: set role admin
 PREHOOK: type: SHOW_ROLES
 POSTHOOK: query: set role admin
@@ -11,6 +13,7 @@ POSTHOOK: type: SHOW_ROLES
 PREHOOK: query: create table a_table1(a int, b int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@a_table1
 POSTHOOK: query: create table a_table1(a int, b int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -29,10 +32,10 @@ POSTHOOK: query: drop table a_table
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TEMPORARY FUNCTION Pyth as 'Pyth'
 PREHOOK: type: CREATEFUNCTION
-PREHOOK: Output: database:default
+PREHOOK: Output: pyth
 POSTHOOK: query: CREATE TEMPORARY FUNCTION Pyth as 'Pyth'
 POSTHOOK: type: CREATEFUNCTION
-POSTHOOK: Output: database:default
+POSTHOOK: Output: pyth
 PREHOOK: query: SELECT Pyth(3,4) FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -44,7 +47,7 @@ POSTHOOK: Input: default@src
 5.0
 PREHOOK: query: DROP TEMPORARY FUNCTION Pyth
 PREHOOK: type: DROPFUNCTION
-PREHOOK: Output: database:default
+PREHOOK: Output: Pyth
 POSTHOOK: query: DROP TEMPORARY FUNCTION Pyth
 POSTHOOK: type: DROPFUNCTION
-POSTHOOK: Output: database:default
+POSTHOOK: Output: Pyth

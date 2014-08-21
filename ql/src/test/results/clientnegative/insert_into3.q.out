@@ -6,6 +6,7 @@ PREHOOK: query: CREATE TABLE insert_into3_neg (key int, value string)
   PARTITIONED BY (ds string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@insert_into3_neg
 POSTHOOK: query: CREATE TABLE insert_into3_neg (key int, value string) 
   PARTITIONED BY (ds string)
 POSTHOOK: type: CREATETABLE
@@ -27,8 +28,5 @@ PREHOOK: query: LOCK TABLE insert_into3_neg PARTITION (ds='1') SHARED
 PREHOOK: type: LOCKTABLE
 POSTHOOK: query: LOCK TABLE insert_into3_neg PARTITION (ds='1') SHARED
 POSTHOOK: type: LOCKTABLE
-conflicting lock present for default@insert_into3_neg@ds=1 mode EXCLUSIVE
-conflicting lock present for default@insert_into3_neg@ds=1 mode EXCLUSIVE
-conflicting lock present for default@insert_into3_neg@ds=1 mode EXCLUSIVE
-conflicting lock present for default@insert_into3_neg@ds=1 mode EXCLUSIVE
+Unable to acquire IMPLICIT, EXCLUSIVE lock default@insert_into3_neg@ds=1 after 5 attempts.
 FAILED: Error in acquiring locks: Locks on the underlying objects cannot be acquired. retry after some time

@@ -1,6 +1,7 @@
 PREHOOK: query: create table srcpart2 (key int, value string) partitioned by (ds string) clustered by (key) sorted by (key) into 2 buckets stored as RCFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@srcpart2
 POSTHOOK: query: create table srcpart2 (key int, value string) partitioned by (ds string) clustered by (key) sorted by (key) into 2 buckets stored as RCFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

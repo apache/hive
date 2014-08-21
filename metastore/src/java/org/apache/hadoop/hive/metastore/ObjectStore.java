@@ -2564,13 +2564,13 @@ public class ObjectStore implements RawStore, Configurable {
       }
 
       // For now only alter name, owner, paramters, cols, bucketcols are allowed
+      oldt.setDatabase(newt.getDatabase());
       oldt.setTableName(newt.getTableName().toLowerCase());
       oldt.setParameters(newt.getParameters());
       oldt.setOwner(newt.getOwner());
       // Fully copy over the contents of the new SD into the old SD,
       // so we don't create an extra SD in the metastore db that has no references.
       copyMSD(newt.getSd(), oldt.getSd());
-      oldt.setDatabase(newt.getDatabase());
       oldt.setRetention(newt.getRetention());
       oldt.setPartitionKeys(newt.getPartitionKeys());
       oldt.setTableType(newt.getTableType());
@@ -2847,7 +2847,8 @@ public class ObjectStore implements RawStore, Configurable {
           "Original table does not exist for the given index.");
     }
 
-    MTable indexTable = getMTable(index.getDbName(), index.getIndexTableName());
+    String[] qualified = MetaStoreUtils.getQualifiedName(index.getDbName(), index.getIndexTableName());
+    MTable indexTable = getMTable(qualified[0], qualified[1]);
     if (indexTable == null) {
       throw new InvalidObjectException(
           "Underlying index table does not exist for the given index.");
@@ -5901,6 +5902,29 @@ public class ObjectStore implements RawStore, Configurable {
     }.run(true);
   }
 
+
+  @Override
+  public List<ColumnStatisticsObj> get_aggr_stats_for(String dbName, String tblName,
+      final List<String> partNames, final List<String> colNames) throws MetaException, NoSuchObjectException {
+
+    return new GetListHelper<ColumnStatisticsObj>(dbName, tblName, true, false) {
+      @Override
+      protected List<ColumnStatisticsObj> getSqlResult(
+          GetHelper<List<ColumnStatisticsObj>> ctx) throws MetaException {
+        return directSql.aggrColStatsForPartitions(dbName, tblName, partNames, colNames);
+      }
+
+      @Override
+      protected List<ColumnStatisticsObj> getJdoResult(
+          GetHelper<List<ColumnStatisticsObj>> ctx) throws MetaException,
+          NoSuchObjectException {
+        // This is fast path for query optimizations, if we can find this info quickly using
+        // directSql, do it. No point in failing back to slow path here.
+        throw new MetaException("Jdo path is not implemented for stats aggr.");
+      }
+      }.run(true);
+  }
+
   private List<MPartitionColumnStatistics> getMPartitionColumnStatistics(
       Table table, List<String> partNames, List<String> colNames)
           throws NoSuchObjectException, MetaException {
@@ -6747,5 +6771,4 @@ public class ObjectStore implements RawStore, Configurable {
     }
     return funcs;
   }
-
 }

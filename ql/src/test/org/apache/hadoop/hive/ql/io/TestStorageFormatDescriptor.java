@@ -38,5 +38,7 @@ public class TestStorageFormatDescriptor {
         (new ORCFileStorageFormatDescriptor()).getNames());
     Assert.assertEquals(Sets.newHashSet(IOConstants.PARQUET, IOConstants.PARQUETFILE),
         (new ParquetFileStorageFormatDescriptor()).getNames());
+    Assert.assertEquals(Sets.newHashSet(IOConstants.AVRO, IOConstants.AVROFILE),
+      (new AvroStorageFormatDescriptor()).getNames());
   }
 }

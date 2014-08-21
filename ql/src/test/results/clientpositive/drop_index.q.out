@@ -1,4 +1,6 @@
 PREHOOK: query: DROP INDEX IF EXISTS UnknownIndex ON src
 PREHOOK: type: DROPINDEX
+PREHOOK: Input: default@src
 POSTHOOK: query: DROP INDEX IF EXISTS UnknownIndex ON src
 POSTHOOK: type: DROPINDEX
+POSTHOOK: Input: default@src

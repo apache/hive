@@ -29,7 +29,6 @@ public class RenamePartitionDesc extends DDLDesc implements Serializable {
   private static final long serialVersionUID = 1L;
 
   String tableName;
-  String dbName;
   String location;
   LinkedHashMap<String, String> oldPartSpec;
   LinkedHashMap<String, String> newPartSpec;
@@ -50,28 +49,11 @@ public class RenamePartitionDesc extends DDLDesc implements Serializable {
    * @param newPartSpec
    *          new partition specification.
    */
-  public RenamePartitionDesc(String dbName, String tableName,
+  public RenamePartitionDesc(String tableName,
       Map<String, String> oldPartSpec, Map<String, String> newPartSpec) {
-    super();
-    this.dbName = dbName;
     this.tableName = tableName;
     this.oldPartSpec = new LinkedHashMap<String,String>(oldPartSpec);
     this.newPartSpec = new LinkedHashMap<String,String>(newPartSpec);
-  }
-
-  /**
-   * @return database name
-   */
-  public String getDbName() {
-    return dbName;
-  }
-
-  /**
-   * @param dbName
-   *          database name
-   */
-  public void setDbName(String dbName) {
-    this.dbName = dbName;
   }
 
   /**

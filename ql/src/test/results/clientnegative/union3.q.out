@@ -3,6 +3,7 @@ PREHOOK: query: -- Ensure that UNION ALL columns are in the correct order on bot
 CREATE TABLE IF NOT EXISTS union3  (bar int, baz int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@union3
 POSTHOOK: query: -- Ensure that UNION ALL columns are in the correct order on both sides
 -- Ensure that the appropriate error message is propagated
 CREATE TABLE IF NOT EXISTS union3  (bar int, baz int)

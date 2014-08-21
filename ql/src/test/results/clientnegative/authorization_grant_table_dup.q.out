@@ -3,6 +3,7 @@ PREHOOK: query: -- current user has been set (comment line before the set cmd is
 CREATE TABLE  tauth_gdup(i int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@tauth_gdup
 POSTHOOK: query: -- current user has been set (comment line before the set cmd is resulting in parse error!!)
 
 CREATE TABLE  tauth_gdup(i int)

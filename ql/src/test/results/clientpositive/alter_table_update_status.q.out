@@ -1,0 +1,102 @@
+PREHOOK: query: create table src_stat as select * from src1
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src1
+POSTHOOK: query: create table src_stat as select * from src1
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src1
+POSTHOOK: Output: default@src_stat
+PREHOOK: query: create table src_stat_int (
+  key         double,
+  value       string
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src_stat_int
+POSTHOOK: query: create table src_stat_int (
+  key         double,
+  value       string
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@src_stat_int
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv3.txt' INTO TABLE src_stat_int
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@src_stat_int
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv3.txt' INTO TABLE src_stat_int
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@src_stat_int
+PREHOOK: query: ANALYZE TABLE src_stat COMPUTE STATISTICS for columns key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_stat
+#### A masked pattern was here ####
+POSTHOOK: query: ANALYZE TABLE src_stat COMPUTE STATISTICS for columns key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_stat
+#### A masked pattern was here ####
+PREHOOK: query: describe formatted src_stat.key
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@src_stat
+POSTHOOK: query: describe formatted src_stat.key
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@src_stat
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+key                 	string              	                    	                    	0                   	14                  	1.72                	3                   	                    	                    	from deserializer   
+PREHOOK: query: ALTER TABLE src_stat UPDATE STATISTICS for column key SET ('numDVs'='1111','avgColLen'='1.111')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: query: ALTER TABLE src_stat UPDATE STATISTICS for column key SET ('numDVs'='1111','avgColLen'='1.111')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: query: describe formatted src_stat.key
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@src_stat
+POSTHOOK: query: describe formatted src_stat.key
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@src_stat
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+key                 	string              	                    	                    	0                   	1111                	1.111               	3                   	                    	                    	from deserializer   
+PREHOOK: query: ALTER TABLE src_stat UPDATE STATISTICS for column value SET ('numDVs'='121','numNulls'='122','avgColLen'='1.23','maxColLen'='124')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: query: ALTER TABLE src_stat UPDATE STATISTICS for column value SET ('numDVs'='121','numNulls'='122','avgColLen'='1.23','maxColLen'='124')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: query: describe formatted src_stat.value
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@src_stat
+POSTHOOK: query: describe formatted src_stat.value
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@src_stat
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+value               	string              	                    	                    	122                 	121                 	1.23                	124                 	                    	                    	from deserializer   
+PREHOOK: query: ANALYZE TABLE src_stat_int COMPUTE STATISTICS for columns key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_stat_int
+#### A masked pattern was here ####
+POSTHOOK: query: ANALYZE TABLE src_stat_int COMPUTE STATISTICS for columns key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_stat_int
+#### A masked pattern was here ####
+PREHOOK: query: describe formatted src_stat_int.key
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@src_stat_int
+POSTHOOK: query: describe formatted src_stat_int.key
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@src_stat_int
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+key                 	double              	66.0                	406.0               	10                  	14                  	                    	                    	                    	                    	from deserializer   
+PREHOOK: query: ALTER TABLE src_stat_int UPDATE STATISTICS for column key SET ('numDVs'='2222','lowValue'='333.22','highValue'='22.22')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: query: ALTER TABLE src_stat_int UPDATE STATISTICS for column key SET ('numDVs'='2222','lowValue'='333.22','highValue'='22.22')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: query: describe formatted src_stat_int.key
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@src_stat_int
+POSTHOOK: query: describe formatted src_stat_int.key
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@src_stat_int
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+key                 	double              	333.22              	22.22               	10                  	2222                	                    	                    	                    	                    	from deserializer   

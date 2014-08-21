@@ -105,7 +105,7 @@ public class FetchOperator implements Serializable {
   private transient JobConf job;
   private transient WritableComparable key;
   private transient Writable value;
-  private transient Writable[] vcValues;
+  private transient Object[] vcValues;
   private transient Deserializer serde;
   private transient Deserializer tblSerde;
   private transient Converter partTblObjectInspectorConverter;
@@ -141,12 +141,11 @@ public class FetchOperator implements Serializable {
       List<String> names = new ArrayList<String>(vcCols.size());
       List<ObjectInspector> inspectors = new ArrayList<ObjectInspector>(vcCols.size());
       for (VirtualColumn vc : vcCols) {
-        inspectors.add(PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(
-                vc.getTypeInfo()));
+        inspectors.add(vc.getObjectInspector());
         names.add(vc.getName());
       }
       vcsOI = ObjectInspectorFactory.getStandardStructObjectInspector(names, inspectors);
-      vcValues = new Writable[vcCols.size()];
+      vcValues = new Object[vcCols.size()];
     }
     isPartitioned = work.isPartitioned();
     tblDataDone = false;

@@ -165,7 +165,7 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
       }
       return retval;
     } catch (IOException e) {
-      throw new RuntimeException(e.getMessage());
+      throw new RuntimeException("Unexpected error: " + e.getMessage(), e);
     }
   }
 

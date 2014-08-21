@@ -1,6 +1,7 @@
 PREHOOK: query: create table foobar(key int, value string) PARTITIONED BY (ds string, hr string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@foobar
 POSTHOOK: query: create table foobar(key int, value string) PARTITIONED BY (ds string, hr string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -14,8 +15,10 @@ POSTHOOK: Output: default@foobar
 POSTHOOK: Output: default@foobar@ds=2008-04-08/hr=12
 PREHOOK: query: CREATE INDEX srcpart_AUTH_index ON TABLE foobar(key) as 'BITMAP' WITH DEFERRED REBUILD
 PREHOOK: type: CREATEINDEX
+PREHOOK: Input: default@foobar
 POSTHOOK: query: CREATE INDEX srcpart_AUTH_index ON TABLE foobar(key) as 'BITMAP' WITH DEFERRED REBUILD
 POSTHOOK: type: CREATEINDEX
+POSTHOOK: Input: default@foobar
 POSTHOOK: Output: default@default__foobar_srcpart_auth_index__
 PREHOOK: query: SHOW INDEXES ON foobar
 PREHOOK: type: SHOWINDEXES
@@ -62,8 +65,10 @@ POSTHOOK: Lineage: default__foobar_srcpart_auth_index__ PARTITION(ds=2008-04-08,
 POSTHOOK: Lineage: default__foobar_srcpart_auth_index__ PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(foobar)foobar.FieldSchema(name:key, type:int, comment:null), ]
 PREHOOK: query: DROP INDEX srcpart_auth_index on foobar
 PREHOOK: type: DROPINDEX
+PREHOOK: Input: default@foobar
 POSTHOOK: query: DROP INDEX srcpart_auth_index on foobar
 POSTHOOK: type: DROPINDEX
+POSTHOOK: Input: default@foobar
 PREHOOK: query: DROP TABLE foobar
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@foobar

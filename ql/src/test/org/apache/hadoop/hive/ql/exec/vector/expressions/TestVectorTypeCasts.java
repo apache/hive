@@ -332,7 +332,7 @@ public class TestVectorTypeCasts {
         StringExpr.compare(v, 0, v.length,
             r.vector[1], r.start[1], r.length[1]));
 
-    v = toBytes("9999999999999999");
+    v = toBytes("9999999999999999.00");
     Assert.assertEquals(0,
         StringExpr.compare(v, 0, v.length,
             r.vector[2], r.start[2], r.length[2]));

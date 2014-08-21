@@ -3,6 +3,7 @@ PREHOOK: query: -- SORT_AND_HASH_QUERY_RESULTS
 CREATE TABLE myinput1(key int, value int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@myinput1
 POSTHOOK: query: -- SORT_AND_HASH_QUERY_RESULTS
 
 CREATE TABLE myinput1(key int, value int)
@@ -542,6 +543,7 @@ LNZKrcVNAvaeDALnsg72bw==
 PREHOOK: query: CREATE TABLE smb_input1(key int, value int) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@smb_input1
 POSTHOOK: query: CREATE TABLE smb_input1(key int, value int) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -549,6 +551,7 @@ POSTHOOK: Output: default@smb_input1
 PREHOOK: query: CREATE TABLE smb_input2(key int, value int) CLUSTERED BY (value) SORTED BY (value) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@smb_input2
 POSTHOOK: query: CREATE TABLE smb_input2(key int, value int) CLUSTERED BY (value) SORTED BY (value) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

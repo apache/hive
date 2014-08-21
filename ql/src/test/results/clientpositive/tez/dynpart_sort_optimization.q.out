@@ -14,6 +14,7 @@ PREHOOK: query: create table over1k(
        fields terminated by '|'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@over1k
 POSTHOOK: query: create table over1k(
            t tinyint,
            si smallint,
@@ -47,6 +48,7 @@ PREHOOK: query: create table over1k_part(
        partitioned by (ds string, t tinyint)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@over1k_part
 POSTHOOK: query: create table over1k_part(
            si smallint,
            i int,
@@ -59,6 +61,7 @@ POSTHOOK: Output: default@over1k_part
 PREHOOK: query: create table over1k_part_limit like over1k_part
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@over1k_part_limit
 POSTHOOK: query: create table over1k_part_limit like over1k_part
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -72,6 +75,7 @@ PREHOOK: query: create table over1k_part_buck(
        clustered by (si) into 4 buckets
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@over1k_part_buck
 POSTHOOK: query: create table over1k_part_buck(
            si smallint,
            i int,
@@ -92,6 +96,7 @@ PREHOOK: query: create table over1k_part_buck_sort(
        sorted by (f) into 4 buckets
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@over1k_part_buck_sort
 POSTHOOK: query: create table over1k_part_buck_sort(
            si smallint,
            i int,
@@ -1218,6 +1223,7 @@ create table over1k_part2(
        partitioned by (ds string, t tinyint)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@over1k_part2
 POSTHOOK: query: -- tests for HIVE-6883
 create table over1k_part2(
            si smallint,
@@ -1686,6 +1692,7 @@ create table over1k_part_buck_sort2(
        sorted by (f) into 1 buckets
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@over1k_part_buck_sort2
 POSTHOOK: query: -- hadoop-1 does not honor number of reducers in local mode. There is always only 1 reducer irrespective of the number of buckets.
 -- Hence all records go to one bucket and all other buckets will be empty. Similar to HIVE-6867. However, hadoop-2 honors number
 -- of reducers and records are spread across all reducers. To avoid this inconsistency we will make number of buckets to 1 for this test.

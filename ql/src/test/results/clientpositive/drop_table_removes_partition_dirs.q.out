@@ -8,6 +8,7 @@ STORED AS RCFILE
 PREHOOK: type: CREATETABLE
 #### A masked pattern was here ####
 PREHOOK: Output: database:default
+PREHOOK: Output: default@test_table
 POSTHOOK: query: -- This test verifies that if a partition exists outside the table's current location when the
 -- table is dropped the partition's location is dropped as well.
 

@@ -5,6 +5,7 @@ POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table tbl1 (col string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl1
 POSTHOOK: query: create table tbl1 (col string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -83,6 +84,7 @@ POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table tbl2 (col string) partitioned by (p string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl2
 POSTHOOK: query: create table tbl2 (col string) partitioned by (p string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

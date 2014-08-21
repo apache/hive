@@ -29,7 +29,10 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.HColumnDescriptor;
 import org.apache.hadoop.hbase.HTableDescriptor;
@@ -68,6 +71,19 @@ import org.apache.hadoop.util.StringUtils;
  */
 public class HBaseStorageHandler extends DefaultStorageHandler
   implements HiveMetaHook, HiveStoragePredicateHandler {
+
+  private static final Log LOG = LogFactory.getLog(HBaseStorageHandler.class);
+
+  /** HBase-internal config by which input format receives snapshot name. */
+  private static final String HBASE_SNAPSHOT_NAME_KEY = "hbase.TableSnapshotInputFormat.snapshot.name";
+  /** HBase-internal config by which input format received restore dir before HBASE-11335. */
+  private static final String HBASE_SNAPSHOT_TABLE_DIR_KEY = "hbase.TableSnapshotInputFormat.table.dir";
+  /** HBase-internal config by which input format received restore dir after HBASE-11335. */
+  private static final String HBASE_SNAPSHOT_RESTORE_DIR_KEY = "hbase.TableSnapshotInputFormat.restore.dir";
+  /** HBase config by which a SlabCache is sized. */
+  private static final String HBASE_OFFHEAP_PCT_KEY = "hbase.offheapcache.percentage";
+  /** HBase config by which a BucketCache is sized. */
+  private static final String HBASE_BUCKETCACHE_SIZE_KEY = "hbase.bucketcache.size";
 
   final static public String DEFAULT_PREFIX = "default.";
 
@@ -258,6 +274,11 @@ public class HBaseStorageHandler extends DefaultStorageHandler
 
   @Override
   public Class<? extends InputFormat> getInputFormatClass() {
+    if (HiveConf.getVar(jobConf, HiveConf.ConfVars.HIVE_HBASE_SNAPSHOT_NAME) != null) {
+      LOG.debug("Using TableSnapshotInputFormat");
+      return HiveHBaseTableSnapshotInputFormat.class;
+    }
+    LOG.debug("Using HiveHBaseTableInputFormat");
     return HiveHBaseTableInputFormat.class;
   }
 
@@ -342,6 +363,37 @@ public class HBaseStorageHandler extends DefaultStorageHandler
     // do this for reconciling HBaseStorageHandler for use in HCatalog
     // check to see if this an input job or an outputjob
     if (this.configureInputJobProps) {
+      String snapshotName = HiveConf.getVar(jobConf, HiveConf.ConfVars.HIVE_HBASE_SNAPSHOT_NAME);
+      if (snapshotName != null) {
+        HBaseTableSnapshotInputFormatUtil.assertSupportsTableSnapshots();
+
+        try {
+          String restoreDir =
+            HiveConf.getVar(jobConf, HiveConf.ConfVars.HIVE_HBASE_SNAPSHOT_RESTORE_DIR);
+          if (restoreDir == null) {
+            throw new IllegalArgumentException(
+              "Cannot process HBase snapshot without specifying " + HiveConf.ConfVars
+                .HIVE_HBASE_SNAPSHOT_RESTORE_DIR);
+          }
+
+          HBaseTableSnapshotInputFormatUtil.configureJob(hbaseConf, snapshotName, new Path(restoreDir));
+          // copy over configs touched by above method
+          jobProperties.put(HBASE_SNAPSHOT_NAME_KEY, hbaseConf.get(HBASE_SNAPSHOT_NAME_KEY));
+          if (hbaseConf.get(HBASE_SNAPSHOT_TABLE_DIR_KEY, null) != null) {
+            jobProperties.put(HBASE_SNAPSHOT_TABLE_DIR_KEY, hbaseConf.get(HBASE_SNAPSHOT_TABLE_DIR_KEY));
+          } else {
+            jobProperties.put(HBASE_SNAPSHOT_RESTORE_DIR_KEY, hbaseConf.get(HBASE_SNAPSHOT_RESTORE_DIR_KEY));
+          }
+
+          TableMapReduceUtil.resetCacheConfig(hbaseConf);
+          // copy over configs touched by above method
+          jobProperties.put(HBASE_OFFHEAP_PCT_KEY, hbaseConf.get(HBASE_OFFHEAP_PCT_KEY));
+          jobProperties.put(HBASE_BUCKETCACHE_SIZE_KEY, hbaseConf.get(HBASE_BUCKETCACHE_SIZE_KEY));
+        } catch (IOException e) {
+          throw new IllegalArgumentException(e);
+        }
+      }
+
       for (String k : jobProperties.keySet()) {
         jobConf.set(k, jobProperties.get(k));
       }
@@ -415,7 +467,8 @@ public class HBaseStorageHandler extends DefaultStorageHandler
        * only need TableMapReduceUtil.addDependencyJars(jobConf) here.
        */
       TableMapReduceUtil.addDependencyJars(
-          jobConf, HBaseStorageHandler.class, TableInputFormatBase.class);
+          jobConf, HBaseStorageHandler.class, TableInputFormatBase.class,
+          org.cliffc.high_scale_lib.Counter.class); // this will be removed for HBase 1.0
       Set<String> merged = new LinkedHashSet<String>(jobConf.getStringCollection("tmpjars"));
 
       Job copy = new Job(jobConf);

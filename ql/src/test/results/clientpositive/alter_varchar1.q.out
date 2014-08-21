@@ -9,6 +9,7 @@ POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table alter_varchar_1 (key string, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@alter_varchar_1
 POSTHOOK: query: create table alter_varchar_1 (key string, value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

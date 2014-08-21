@@ -21,6 +21,7 @@ import org.apache.hadoop.classification.InterfaceAudience.Private;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzPluginException;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzSessionContext;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveMetastoreClientFactory;
 
 /**
@@ -32,8 +33,8 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveMetastoreClie
 public class SQLStdHiveAccessControllerForTest extends SQLStdHiveAccessController {
 
   SQLStdHiveAccessControllerForTest(HiveMetastoreClientFactory metastoreClientFactory, HiveConf conf,
-      HiveAuthenticationProvider authenticator) throws HiveAuthzPluginException {
-    super(metastoreClientFactory, conf, authenticator);
+      HiveAuthenticationProvider authenticator, HiveAuthzSessionContext ctx) throws HiveAuthzPluginException {
+    super(metastoreClientFactory, conf, authenticator, ctx);
   }
 
 

@@ -25,6 +25,7 @@ import java.util.List;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.ListBucketingCtx;
+import org.apache.hadoop.mapred.InputFormat;
 
 @Explain(displayName = "Alter Table Partition Merge Files")
 public class AlterTablePartMergeFilesDesc {
@@ -35,6 +36,7 @@ public class AlterTablePartMergeFilesDesc {
 
   private List<Path> inputDir = new ArrayList<Path>();
   private Path outputDir = null;
+  private Class<? extends InputFormat> inputFormatClass;
 
   public AlterTablePartMergeFilesDesc(String tableName,
       HashMap<String, String> partSpec) {
@@ -88,6 +90,14 @@ public class AlterTablePartMergeFilesDesc {
    */
   public void setLbCtx(ListBucketingCtx lbCtx) {
     this.lbCtx = lbCtx;
+  }
+
+  public Class<? extends InputFormat> getInputFormatClass() {
+    return inputFormatClass;
+  }
+
+  public void setInputFormatClass(Class<? extends InputFormat> inputFormatClass) {
+    this.inputFormatClass = inputFormatClass;
   }
 
 }

@@ -2,6 +2,7 @@ PREHOOK: query: create table src_b(`x+1` string, `!@#$%^&*()_q` string)
 clustered by (`!@#$%^&*()_q`) sorted by (`!@#$%^&*()_q`) into 2 buckets
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@src_b
 POSTHOOK: query: create table src_b(`x+1` string, `!@#$%^&*()_q` string)  
 clustered by (`!@#$%^&*()_q`) sorted by (`!@#$%^&*()_q`) into 2 buckets
 POSTHOOK: type: CREATETABLE
@@ -23,6 +24,7 @@ PREHOOK: query: create table src_b2(`x+1` string, `!@#$%^&*()_q` string)
 clustered by (`!@#$%^&*()_q`) sorted by (`!@#$%^&*()_q`) into 2 buckets
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@src_b2
 POSTHOOK: query: create table src_b2(`x+1` string, `!@#$%^&*()_q` string)  
 clustered by (`!@#$%^&*()_q`) sorted by (`!@#$%^&*()_q`) into 2 buckets
 POSTHOOK: type: CREATETABLE

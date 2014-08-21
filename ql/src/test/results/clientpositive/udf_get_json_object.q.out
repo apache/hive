@@ -26,6 +26,7 @@ Syntax not supported that's worth noticing:
 PREHOOK: query: CREATE TABLE dest1(c1 STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@dest1
 POSTHOOK: query: CREATE TABLE dest1(c1 STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -154,6 +155,7 @@ PREHOOK: query: -- Verify that get_json_object can handle new lines in JSON valu
 CREATE TABLE dest2(c1 STRING) STORED AS RCFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@dest2
 POSTHOOK: query: -- Verify that get_json_object can handle new lines in JSON values
 
 CREATE TABLE dest2(c1 STRING) STORED AS RCFILE

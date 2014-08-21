@@ -1,6 +1,7 @@
 PREHOOK: query: create table alter_partition_format_test (key int, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@alter_partition_format_test
 POSTHOOK: query: create table alter_partition_format_test (key int, value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -63,6 +64,7 @@ PREHOOK: query: --partitioned table
 create table alter_partition_format_test (key int, value string) partitioned by (ds string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@alter_partition_format_test
 POSTHOOK: query: --partitioned table
 create table alter_partition_format_test (key int, value string) partitioned by (ds string)
 POSTHOOK: type: CREATETABLE

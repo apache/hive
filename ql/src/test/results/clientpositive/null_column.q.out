@@ -1,6 +1,7 @@
 PREHOOK: query: create table temp_null(a int) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@temp_null
 POSTHOOK: query: create table temp_null(a int) stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -30,6 +31,7 @@ NULL	NULL
 PREHOOK: query: create table tt(a int, b string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@tt
 POSTHOOK: query: create table tt(a int, b string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -61,6 +63,7 @@ NULL	NULL
 PREHOOK: query: create table tt_b(a int, b string) row format serde "org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe"
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@tt_b
 POSTHOOK: query: create table tt_b(a int, b string) row format serde "org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe"
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -106,6 +109,7 @@ POSTHOOK: Output: target/warehouse/null_columns.out
 PREHOOK: query: create table temp_null2 (key string, value string) partitioned by (ds string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@temp_null2
 POSTHOOK: query: create table temp_null2 (key string, value string) partitioned by (ds string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
