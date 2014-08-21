@@ -110,8 +110,7 @@ public class TypeConverter {
 
     switch (type.getPrimitiveCategory()) {
     case VOID:
-      // @todo: followup on VOID type in hive
-      convertedType = dtFactory.createSqlType(SqlTypeName.OTHER);
+      convertedType = dtFactory.createSqlType(SqlTypeName.NULL);
       break;
     case BOOLEAN:
       convertedType = dtFactory.createSqlType(SqlTypeName.BOOLEAN);
@@ -135,6 +134,7 @@ public class TypeConverter {
       convertedType = dtFactory.createSqlType(SqlTypeName.DOUBLE);
       break;
     case STRING:
+      //TODO: shall we pass -1 for len to distinguish between STRING & VARCHAR on way out
       convertedType = dtFactory.createSqlType(SqlTypeName.VARCHAR, 1);
       break;
     case DATE:
@@ -163,6 +163,10 @@ public class TypeConverter {
       break;
     }
 
+    if (null == convertedType) {
+      throw new RuntimeException("Unsupported Type : " + type.getTypeName());
+    }
+
     return convertedType;
   }
 
@@ -184,6 +188,7 @@ public class TypeConverter {
     List<RelDataType> fTypes = Lists.transform(
         structType.getAllStructFieldTypeInfos(),
         new Function<TypeInfo, RelDataType>() {
+          @Override
           public RelDataType apply(TypeInfo tI) {
             return convert(tI, dtFactory);
           }
@@ -197,7 +202,7 @@ public class TypeConverter {
     // @todo what do we about unions?
     throw new UnsupportedOperationException();
   }
-  
+
   public static TypeInfo convert(RelDataType rType) {
     if ( rType.isStruct() ) {
       return convertStructType(rType);
@@ -209,11 +214,12 @@ public class TypeConverter {
       return convertPrimtiveType(rType);
     }
   }
-  
+
   public static TypeInfo convertStructType(RelDataType rType) {
     List<TypeInfo> fTypes = Lists.transform(
         rType.getFieldList(),
         new Function<RelDataTypeField, TypeInfo>() {
+          @Override
           public TypeInfo apply(RelDataTypeField f) {
             return convert(f.getType());
           }
@@ -221,22 +227,23 @@ public class TypeConverter {
     List<String> fNames = Lists.transform(
         rType.getFieldList(),
         new Function<RelDataTypeField, String>() {
+          @Override
           public String apply(RelDataTypeField f) {
             return f.getName();
           }
         });
     return TypeInfoFactory.getStructTypeInfo(fNames, fTypes);
   }
-  
+
   public static TypeInfo convertMapType(RelDataType rType) {
-    return TypeInfoFactory.getMapTypeInfo(convert(rType.getKeyType()), 
+    return TypeInfoFactory.getMapTypeInfo(convert(rType.getKeyType()),
         convert(rType.getValueType()));
   }
-  
+
   public static TypeInfo convertListType(RelDataType rType) {
     return TypeInfoFactory.getListTypeInfo(convert(rType.getComponentType()));
   }
-  
+
   public static TypeInfo convertPrimtiveType(RelDataType rType) {
     switch(rType.getSqlTypeName()) {
     case BOOLEAN:
@@ -269,7 +276,7 @@ public class TypeConverter {
       default:
       return TypeInfoFactory.voidTypeInfo;
     }
-    
+
   }
 
   /*********************** Convert Optiq Types To Hive Types ***********************/

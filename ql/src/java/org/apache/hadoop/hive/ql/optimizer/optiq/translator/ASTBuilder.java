@@ -108,7 +108,7 @@ class ASTBuilder {
 
   static ASTNode selectExpr(ASTNode expr, String alias) {
     return ASTBuilder.construct(HiveParser.TOK_SELEXPR, "TOK_SELEXPR").add(expr)
-        .add(HiveParser.Identifier, alias).node();
+      .add(HiveParser.Identifier, alias).node();
   }
 
   static ASTNode literal(RexLiteral literal) {
@@ -141,6 +141,9 @@ class ASTBuilder {
     case BOOLEAN:
       type = ((Boolean) val).booleanValue() ? HiveParser.KW_TRUE
           : HiveParser.KW_FALSE;
+      break;
+    case NULL:
+      type = HiveParser.TOK_NULL;
       break;
 
     default:

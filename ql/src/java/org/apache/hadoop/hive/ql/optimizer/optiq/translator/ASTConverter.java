@@ -123,15 +123,23 @@ public class ASTConverter {
     /*
      * 6. Project
      */
-    int i = 0;
-    ASTBuilder b = ASTBuilder.construct(HiveParser.TOK_SELECT, "TOK_SELECT");
+    if (!select.getChildExps().isEmpty()) {
 
-    for (RexNode r : select.getChildExps()) {
-      ASTNode selectExpr = ASTBuilder.selectExpr(r.accept(new RexVisitor(schema)), select
-          .getRowType().getFieldNames().get(i++));
-      b.add(selectExpr);
+      ASTBuilder b = ASTBuilder.construct(HiveParser.TOK_SELECT, "TOK_SELECT");
+      int i = 0;
+
+      for (RexNode r : select.getChildExps()) {
+        ASTNode selectExpr = ASTBuilder.selectExpr(r.accept(new RexVisitor(schema)), select
+            .getRowType().getFieldNames().get(i++));
+        b.add(selectExpr);
+      }
+      hiveAST.select = b.node();
+    } else {
+      //TODO: We should never be here. But we will be for select null from t1.
+      // Once you figure out why, uncomment following line:
+      // throw new IllegalStateException("why am I here?");
     }
-    hiveAST.select = b.node();
+
 
     /*
      * 7. Order Use in Order By from the block above. RelNode has no pointer to
@@ -347,13 +355,13 @@ public class ASTConverter {
       ASTNode wRangeAst = null;
 
       ASTNode startAST = null;
-      RexWindowBound ub = (RexWindowBound) window.getUpperBound();
+      RexWindowBound ub = window.getUpperBound();
       if (ub != null) {
         startAST = getWindowBound(ub);
       }
 
       ASTNode endAST = null;
-      RexWindowBound lb = (RexWindowBound) window.getLowerBound();
+      RexWindowBound lb = window.getLowerBound();
       if (lb != null) {
         endAST = getWindowBound(lb);
       }
@@ -496,7 +504,7 @@ public class ASTConverter {
      * 1. ProjectRel will always be child of SortRel.<br>
      * 2. In Optiq every projection in ProjectRelBase is uniquely named
      * (unambigous) without using table qualifier (table name).<br>
-     * 
+     *
      * @param order
      *          Hive Sort Rel Node
      * @return Schema

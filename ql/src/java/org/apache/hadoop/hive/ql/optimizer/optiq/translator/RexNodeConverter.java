@@ -15,11 +15,11 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeNullDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseCompare;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseNumeric;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToBinary;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToChar;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToDate;
@@ -40,7 +40,6 @@ import org.eigenbase.rex.RexNode;
 import org.eigenbase.rex.RexUtil;
 import org.eigenbase.sql.SqlOperator;
 import org.eigenbase.sql.fun.SqlCastFunction;
-import org.eigenbase.sql.type.SqlTypeName;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
@@ -81,6 +80,10 @@ public class RexNodeConverter {
   }
 
   public RexNode convert(ExprNodeDesc expr) throws SemanticException {
+    if (expr instanceof ExprNodeNullDesc) {
+      return m_cluster.getRexBuilder().makeNullLiteral(TypeConverter.convert(
+        expr.getTypeInfo(), m_cluster.getRexBuilder().getTypeFactory()).getSqlTypeName());
+    }
     if (expr instanceof ExprNodeGenericFuncDesc) {
       return convert((ExprNodeGenericFuncDesc) expr);
     } else if (expr instanceof ExprNodeConstantDesc) {
@@ -90,8 +93,7 @@ public class RexNodeConverter {
     } else {
       throw new RuntimeException("Unsupported Expression");
     }
-    // TODO: handle a) ExprNodeNullDesc b) ExprNodeFieldDesc c)
-    // ExprNodeColumnListDesc
+    // TODO: handle a) ExprNodeFieldDesc b) ExprNodeColumnListDesc
   }
 
   private RexNode convert(final ExprNodeGenericFuncDesc func) throws SemanticException {
@@ -230,9 +232,10 @@ public class RexNodeConverter {
     RelDataType optiqDataType = TypeConverter.convert(hiveType, dtFactory);
 
     PrimitiveCategory hiveTypeCategory = hiveType.getPrimitiveCategory();
-    RexNode optiqLiteral = null;
+
     Object value = literal.getValue();
 
+    RexNode optiqLiteral = null;
     // TODO: Verify if we need to use ConstantObjectInspector to unwrap data
     switch (hiveTypeCategory) {
     case BOOLEAN:
