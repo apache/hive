@@ -110,6 +110,7 @@ import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.Optimizer;
 import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcContext;
 import org.apache.hadoop.hive.ql.optimizer.optiq.HiveDefaultRelMetadataProvider;
+import org.apache.hadoop.hive.ql.optimizer.optiq.HiveOptiqUtil;
 import org.apache.hadoop.hive.ql.optimizer.optiq.Pair;
 import org.apache.hadoop.hive.ql.optimizer.optiq.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.optiq.TraitsUtil;
@@ -223,6 +224,8 @@ import org.apache.hadoop.mapred.InputFormat;
 import org.eigenbase.rel.AggregateCall;
 import org.eigenbase.rel.Aggregation;
 import org.eigenbase.rel.InvalidRelException;
+import org.eigenbase.rel.JoinInfo;
+import org.eigenbase.rel.JoinRelBase;
 import org.eigenbase.rel.JoinRelType;
 import org.eigenbase.rel.RelCollation;
 import org.eigenbase.rel.RelCollationImpl;
@@ -233,6 +236,7 @@ import org.eigenbase.rel.metadata.ChainedRelMetadataProvider;
 import org.eigenbase.rel.metadata.RelMetadataProvider;
 import org.eigenbase.rel.rules.ConvertMultiJoinRule;
 import org.eigenbase.rel.rules.LoptOptimizeJoinRule;
+import org.eigenbase.rel.rules.SemiJoinRel;
 import org.eigenbase.relopt.RelOptCluster;
 import org.eigenbase.relopt.RelOptPlanner;
 import org.eigenbase.relopt.RelOptQuery;
@@ -262,6 +266,7 @@ import org.eigenbase.sql.SqlKind;
 import org.eigenbase.sql.SqlNode;
 import org.eigenbase.sql.SqlLiteral;
 import org.eigenbase.util.CompositeList;
+import org.eigenbase.util.ImmutableIntList;
 
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
@@ -9579,7 +9584,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           throw new RuntimeException(
               "Couldn't do phase1 on CBO optimized query plan");
         }
-        prunedPartitions = ImmutableMap.copyOf(prunedPartitions);
+        // unfortunately making prunedPartitions immutable is not possible here
+        // with SemiJoins not all tables are costed in CBO,
+        // so their PartitionList is not evaluated until the run phase.
+        //prunedPartitions = ImmutableMap.copyOf(prunedPartitions);
         getMetaData(qb);
 
         disableJoinMerge = true;
@@ -12115,9 +12123,37 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         optiqJoinType = JoinRelType.INNER;
         break;
       }
-      joinRel = HiveJoinRel.getJoin(m_cluster, leftRel, rightRel,
-          optiqJoinCond, optiqJoinType, leftSemiJoin);
+      
+      if (leftSemiJoin) {
+        List<RelDataTypeField> sysFieldList = new ArrayList<RelDataTypeField>();
+        List<RexNode> leftJoinKeys = new ArrayList<RexNode>();
+        List<RexNode> rightJoinKeys = new ArrayList<RexNode>();
 
+        RexNode nonEquiConds = RelOptUtil.splitJoinCondition(sysFieldList,
+            leftRel, rightRel, optiqJoinCond, leftJoinKeys, rightJoinKeys,
+            null, null);
+
+        if (!nonEquiConds.isAlwaysTrue()) {
+          throw new SemanticException(
+              "Non equality condition not supported in Semi-Join"
+                  + nonEquiConds);
+        }
+
+        RelNode[] inputRels = new RelNode[] { leftRel, rightRel };
+        final List<Integer> leftKeys = new ArrayList<Integer>();
+        final List<Integer> rightKeys = new ArrayList<Integer>();
+        optiqJoinCond = HiveOptiqUtil.projectNonColumnEquiConditions(
+            HiveProjectRel.DEFAULT_PROJECT_FACTORY, inputRels, leftJoinKeys,
+            rightJoinKeys, 0, leftKeys, rightKeys);
+
+        joinRel = new SemiJoinRel(m_cluster,
+            m_cluster.traitSetOf(HiveRel.CONVENTION), inputRels[0],
+            inputRels[1], optiqJoinCond, ImmutableIntList.copyOf(leftKeys),
+            ImmutableIntList.copyOf(rightKeys));
+      } else {
+        joinRel = HiveJoinRel.getJoin(m_cluster, leftRel, rightRel,
+            optiqJoinCond, optiqJoinType, leftSemiJoin);
+      }
       // 5. Add new JoinRel & its RR to the maps
       m_relToHiveColNameOptiqPosMap.put(joinRel,
           this.buildHiveToOptiqColumnMap(joinRR, joinRel));

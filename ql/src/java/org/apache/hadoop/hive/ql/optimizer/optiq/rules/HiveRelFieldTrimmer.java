@@ -24,6 +24,7 @@ import org.eigenbase.rel.AggregateRel;
 import org.eigenbase.rel.CalcRel;
 import org.eigenbase.rel.InvalidRelException;
 import org.eigenbase.rel.JoinRel;
+import org.eigenbase.rel.JoinRelBase;
 import org.eigenbase.rel.RelCollation;
 import org.eigenbase.rel.RelFieldCollation;
 import org.eigenbase.rel.RelNode;
@@ -33,6 +34,7 @@ import org.eigenbase.rel.TableFunctionRel;
 import org.eigenbase.rel.TableModificationRel;
 import org.eigenbase.rel.ValuesRel;
 import org.eigenbase.rel.rules.RemoveTrivialProjectRule;
+import org.eigenbase.rel.rules.SemiJoinRel;
 import org.eigenbase.relopt.RelOptUtil;
 import org.eigenbase.reltype.RelDataType;
 import org.eigenbase.reltype.RelDataTypeField;
@@ -436,22 +438,19 @@ public class HiveRelFieldTrimmer implements ReflectiveVisitor {
 
   /**
    * Variant of {@link #trimFields(RelNode, BitSet, Set)} for {@link JoinRel}.
+   * 
+   * Have to do this because of the way ReflectUtil works. - if there is an
+   * exact match, things are fine. - otherwise it doesn't allow any ambiguity(in
+   * this case between a superClass(JoinRelBase) and an interface(HiveRel).
    */
-  public TrimResult trimFields(HiveJoinRel join, BitSet fieldsUsed,
+  private TrimResult _trimFields(JoinRelBase join, BitSet fieldsUsed,
       Set<RelDataTypeField> extraFields) {
     final RelDataType rowType = join.getRowType();
-    final int fieldCount = rowType.getFieldCount();
+    final int fieldCount = join.getSystemFieldList().size() +
+        join.getLeft().getRowType().getFieldCount() +
+        join.getRight().getRowType().getFieldCount();
     final RexNode conditionExpr = join.getCondition();
     final int systemFieldCount = join.getSystemFieldList().size();
-
-    /*
-     * todo: hb 6/26/14 for left SemiJoin we cannot trim yet.
-     * HiveJoinRelNode.deriveRowType return only left columns. Default field
-     * trimmer needs to be enhanced to handle this.
-     */
-    if (join.isLeftSemiJoin()) {
-      return new TrimResult(join, Mappings.createIdentity(fieldCount));
-    }
 
     // Add in fields used in the condition.
     BitSet fieldsUsedPlus = (BitSet) fieldsUsed.clone();
@@ -554,12 +553,39 @@ public class HiveRelFieldTrimmer implements ReflectiveVisitor {
         newInputs.get(0), newInputs.get(1));
     RexNode newConditionExpr = conditionExpr.accept(shuttle);
 
-    final HiveJoinRel newJoin = join.copy(join.getTraitSet(), newConditionExpr,
+    final JoinRelBase newJoin = join.copy(join.getTraitSet(), newConditionExpr,
         newInputs.get(0), newInputs.get(1), join.getJoinType(), false);
+
+    /*
+     * For SemiJoins only map fields from the left-side
+     */
+    if ( join instanceof SemiJoinRel ) {
+      Mapping inputMapping = inputMappings.get(0);
+      mapping = Mappings.create(MappingType.INVERSE_SURJECTION,
+          join.getRowType().getFieldCount(), newSystemFieldCount + inputMapping.getTargetCount());
+      for (int i = 0; i < newSystemFieldCount; ++i) {
+        mapping.set(i, i);
+      }
+      offset = systemFieldCount;
+      newOffset = newSystemFieldCount;
+      for (IntPair pair : inputMapping) {
+        mapping.set(pair.source + offset, pair.target + newOffset);
+      }
+    }
 
     return new TrimResult(newJoin, mapping);
   }
 
+  public TrimResult trimFields(HiveJoinRel join, BitSet fieldsUsed,
+      Set<RelDataTypeField> extraFields) {
+    return _trimFields((JoinRelBase) join, fieldsUsed, extraFields);
+  }
+  
+  public TrimResult trimFields(SemiJoinRel join, BitSet fieldsUsed,
+      Set<RelDataTypeField> extraFields) {
+    return _trimFields((JoinRelBase) join, fieldsUsed, extraFields);
+  }
+  
   /**
    * Variant of {@link #trimFields(RelNode, BitSet, Set)} for {@link SetOpRel}
    * (including UNION and UNION ALL).
