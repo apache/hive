@@ -25,12 +25,14 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.SettableStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.apache.hadoop.io.ArrayWritable;
 
 /**
@@ -102,12 +104,10 @@ public class ArrayWritableObjectInspector extends SettableStructObjectInspector 
       return PrimitiveObjectInspectorFactory.writableTimestampObjectInspector;
     } else if (typeInfo.equals(TypeInfoFactory.dateTypeInfo)) {
       throw new UnsupportedOperationException("Parquet does not support date. See HIVE-6384");
-    } else if (typeInfo.getTypeName().toLowerCase().startsWith(serdeConstants.DECIMAL_TYPE_NAME)) {
-      throw new UnsupportedOperationException("Parquet does not support decimal. See HIVE-6384");
     } else if (typeInfo.getTypeName().toLowerCase().startsWith(serdeConstants.CHAR_TYPE_NAME)) {
-      throw new UnsupportedOperationException("Parquet does not support char. See HIVE-6384");
+      return PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector((CharTypeInfo) typeInfo);
     } else if (typeInfo.getTypeName().toLowerCase().startsWith(serdeConstants.VARCHAR_TYPE_NAME)) {
-      throw new UnsupportedOperationException("Parquet does not support varchar. See HIVE-6384");
+      return PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector((VarcharTypeInfo) typeInfo);
     } else {
       throw new UnsupportedOperationException("Unknown field type: " + typeInfo);
     }

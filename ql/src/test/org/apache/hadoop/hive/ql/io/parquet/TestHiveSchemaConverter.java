@@ -88,6 +88,26 @@ public class TestHiveSchemaConverter {
   }
 
   @Test
+  public void testCharType() throws Exception {
+    testConversion(
+        "a",
+        "char(5)",
+        "message hive_schema {\n"
+            + "  optional binary a (UTF8);\n"
+            + "}\n");
+  }
+
+  @Test
+  public void testVarcharType() throws Exception {
+    testConversion(
+        "a",
+        "varchar(10)",
+        "message hive_schema {\n"
+            + "  optional binary a (UTF8);\n"
+            + "}\n");
+  }
+
+  @Test
   public void testArray() throws Exception {
     testConversion("arrayCol",
             "array<int>",

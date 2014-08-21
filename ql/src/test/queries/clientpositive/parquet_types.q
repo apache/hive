@@ -8,7 +8,9 @@ CREATE TABLE parquet_types_staging (
   cfloat float,
   cdouble double,
   cstring1 string,
-  t timestamp
+  t timestamp,
+  cchar char(5),
+  cvarchar varchar(10)
 ) ROW FORMAT DELIMITED
 FIELDS TERMINATED BY '|';
 
@@ -19,7 +21,9 @@ CREATE TABLE parquet_types (
   cfloat float,
   cdouble double,
   cstring1 string,
-  t timestamp
+  t timestamp,
+  cchar char(5),
+  cvarchar varchar(10)
 ) STORED AS PARQUET;
 
 LOAD DATA LOCAL INPATH '../../data/files/parquet_types.txt' OVERWRITE INTO TABLE parquet_types_staging;
