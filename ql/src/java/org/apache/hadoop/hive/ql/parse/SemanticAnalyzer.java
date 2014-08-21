@@ -972,6 +972,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         ASTNode frm = (ASTNode) ast.getChild(0);
         if (frm.getToken().getType() == HiveParser.TOK_TABREF) {
           processTable(qb, frm);
+        } else if (frm.getToken().getType() == HiveParser.TOK_VIRTUAL_TABLE) {
+          throw new RuntimeException("VALUES() clause is not fully supported yet...");
         } else if (frm.getToken().getType() == HiveParser.TOK_SUBQUERY) {
           processSubQuery(qb, frm);
         } else if (frm.getToken().getType() == HiveParser.TOK_LATERAL_VIEW ||
@@ -1164,6 +1166,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       case HiveParser.TOK_CTE:
         processCTE(qb, ast);
         break;
+      case HiveParser.TOK_DELETE_FROM:
+        throw new RuntimeException("DELETE is not (yet) implemented...");
+      case HiveParser.TOK_UPDATE_TABLE:
+        throw new RuntimeException("UPDATE is not (yet) implemented...");
       default:
         skipRecursion = false;
         break;
