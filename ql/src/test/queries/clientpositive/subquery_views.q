@@ -26,6 +26,11 @@ where b.key not in
   )
 ;
 
+explain
+select * 
+from cv2 where cv2.key in (select key from cv2 c where c.key < '11');
+;
+
 select * 
 from cv2 where cv2.key in (select key from cv2 c where c.key < '11');
 ;

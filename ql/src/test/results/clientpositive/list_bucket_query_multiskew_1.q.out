@@ -18,6 +18,7 @@ skewed by (key, value) on (('484','val_484'),('238','val_238'))
 stored as DIRECTORIES
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@fact_daily
 POSTHOOK: query: -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)	
 
 -- List bucketing query logic test case. We simulate the directory structure by DML here. 
@@ -171,7 +172,7 @@ STAGE PLANS:
               predicate: ((key = '484') and (value = 'val_484')) (type: boolean)
               Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: key (type: string)
+                expressions: '484' (type: string)
                 outputColumnNames: _col0
                 Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
@@ -331,7 +332,7 @@ STAGE PLANS:
               predicate: ((key = '238') and (value = 'val_238')) (type: boolean)
               Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: key (type: string), value (type: string)
+                expressions: '238' (type: string), 'val_238' (type: string)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
@@ -638,7 +639,7 @@ STAGE PLANS:
               predicate: (key = '495') (type: boolean)
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: key (type: string), value (type: string)
+                expressions: '495' (type: string), value (type: string)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator

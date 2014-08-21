@@ -1,6 +1,7 @@
 PREHOOK: query: create table alter_table_partition_clusterby_sortby (a int, b int) partitioned by (c string) clustered by (a, b) sorted by (a desc, b asc) into 4 buckets
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@alter_table_partition_clusterby_sortby
 POSTHOOK: query: create table alter_table_partition_clusterby_sortby (a int, b int) partitioned by (c string) clustered by (a, b) sorted by (a desc, b asc) into 4 buckets
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

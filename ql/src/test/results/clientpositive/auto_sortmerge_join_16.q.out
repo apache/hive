@@ -6,6 +6,7 @@ value STRING
 PARTITIONED BY (file_tag STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@stage_bucket_big
 POSTHOOK: query: CREATE TABLE stage_bucket_big
 (
 key BIGINT,
@@ -25,6 +26,7 @@ clustered by (key) sorted by (key) into 12 buckets
 stored as RCFile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@bucket_big
 POSTHOOK: query: CREATE TABLE bucket_big
 (
 key BIGINT,
@@ -44,6 +46,7 @@ value string
 PARTITIONED BY (file_tag STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@stage_bucket_small
 POSTHOOK: query: CREATE TABLE stage_bucket_small
 (
 key BIGINT,
@@ -63,6 +66,7 @@ clustered by (key) sorted by (key) into 12 buckets
 stored as RCFile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@bucket_small
 POSTHOOK: query: CREATE TABLE bucket_small
 (
 key BIGINT,

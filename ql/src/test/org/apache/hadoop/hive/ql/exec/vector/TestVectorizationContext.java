@@ -1189,26 +1189,6 @@ public class TestVectorizationContext {
     children1.set(2,  col3Expr);
     ve = vc.getVectorExpression(exprDesc);
     assertTrue(ve instanceof IfExprStringScalarStringColumn);
-  }
-
-  @Test
-  public void testFoldConstantsForUnaryExpression() throws HiveException {
-    ExprNodeConstantDesc constDesc = new ExprNodeConstantDesc(new Integer(1));
-    GenericUDFToDecimal udf = new GenericUDFToDecimal();
-    udf.setTypeInfo(new DecimalTypeInfo(5, 2));
-    List<ExprNodeDesc> children = new ArrayList<ExprNodeDesc>();
-    children.add(constDesc);
-    ExprNodeGenericFuncDesc exprDesc = new ExprNodeGenericFuncDesc();
-    exprDesc.setGenericUDF(udf);
-    exprDesc.setChildren(children);
-    exprDesc.setTypeInfo(new DecimalTypeInfo(5, 2));
-    Map<String, Integer> columnMap = new HashMap<String, Integer>();
-    columnMap.put("col1", 1);
-    VectorizationContext vc = new VectorizationContext(columnMap, 1);
-    ExprNodeDesc constFoldNodeDesc = vc.foldConstantsForUnaryExpression(exprDesc); 
-    assertTrue(constFoldNodeDesc instanceof ExprNodeConstantDesc);
-    assertTrue(((HiveDecimal)
-      (((ExprNodeConstantDesc)constFoldNodeDesc).getValue())).toString().equals("1"));
   }  
 
 }

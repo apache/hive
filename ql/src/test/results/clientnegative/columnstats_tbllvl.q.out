@@ -15,6 +15,7 @@ PREHOOK: query: CREATE TABLE UserVisits_web_text_none (
 row format delimited fields terminated by '|'  stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@UserVisits_web_text_none
 POSTHOOK: query: CREATE TABLE UserVisits_web_text_none (
   sourceIP string,
   destURL string,

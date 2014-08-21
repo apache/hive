@@ -1,6 +1,7 @@
 PREHOOK: query: create table src_truncate (key string, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@src_truncate
 POSTHOOK: query: create table src_truncate (key string, value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -16,6 +17,7 @@ POSTHOOK: Output: default@src_truncate
 PREHOOK: query: create table srcpart_truncate (key string, value string) partitioned by (ds string, hr string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@srcpart_truncate
 POSTHOOK: query: create table srcpart_truncate (key string, value string) partitioned by (ds string, hr string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

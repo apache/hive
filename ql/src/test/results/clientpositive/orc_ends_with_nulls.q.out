@@ -4,6 +4,7 @@ STORED AS INPUTFORMAT 'org.apache.hadoop.hive.ql.io.orc.OrcInputFormat'
 OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@test_orc
 POSTHOOK: query: CREATE TABLE test_orc (key STRING)
 ROW FORMAT SERDE 'org.apache.hadoop.hive.ql.io.orc.OrcSerde' 
 STORED AS INPUTFORMAT 'org.apache.hadoop.hive.ql.io.orc.OrcInputFormat' 
@@ -26,6 +27,7 @@ PREHOOK: query: -- nulls.txt is a file containing a non-null string row followed
 CREATE TABLE src_null(a STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@src_null
 POSTHOOK: query: -- nulls.txt is a file containing a non-null string row followed by 1000 null string rows
 -- this produces the effect that the number of non-null rows between the last and second
 -- to last index stride are the same (there's only two index strides)

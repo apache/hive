@@ -17,14 +17,14 @@ insert overwrite table loc_orc select * from loc_staging;
 analyze table loc_orc compute statistics for columns state, locid, zip, year;
 
 -- numRows: 8 rawDataSize: 796
-explain extended select * from loc_orc;
+explain select * from loc_orc;
 
 -- numRows: 4 rawDataSize: 396
-explain extended select * from loc_orc limit 4;
+explain select * from loc_orc limit 4;
 
 -- greater than the available number of rows
 -- numRows: 8 rawDataSize: 796
-explain extended select * from loc_orc limit 16;
+explain select * from loc_orc limit 16;
 
 -- numRows: 0 rawDataSize: 0
-explain extended select * from loc_orc limit 0;
+explain select * from loc_orc limit 0;

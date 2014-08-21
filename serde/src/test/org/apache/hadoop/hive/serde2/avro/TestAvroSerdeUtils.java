@@ -58,7 +58,7 @@ public class TestAvroSerdeUtils {
     "}";
 
   private void testField(String schemaString, String fieldName, boolean shouldBeNullable) {
-    Schema s = Schema.parse(schemaString);
+    Schema s = AvroSerdeUtils.getSchemaFor(schemaString);
     assertEquals(shouldBeNullable, isNullableType(s.getField(fieldName).schema()));
   }
 
@@ -106,11 +106,11 @@ public class TestAvroSerdeUtils {
 
   @Test
   public void getTypeFromNullableTypePositiveCase() {
-    Schema s = Schema.parse(NULLABLE_UNION);
+    Schema s = AvroSerdeUtils.getSchemaFor(NULLABLE_UNION);
     Schema typeFromNullableType = getOtherTypeFromNullableType(s.getField("mayBeNull").schema());
     assertEquals(Schema.Type.STRING, typeFromNullableType.getType());
 
-    s = Schema.parse(NULLABLE_UNION2);
+    s = AvroSerdeUtils.getSchemaFor(NULLABLE_UNION2);
     typeFromNullableType = getOtherTypeFromNullableType(s.getField("mayBeNull").schema());
     assertEquals(Schema.Type.STRING, typeFromNullableType.getType());
   }
@@ -126,7 +126,7 @@ public class TestAvroSerdeUtils {
     String schema = TestAvroObjectInspectorGenerator.RECORD_SCHEMA;
     Properties props = new Properties();
     props.put(AvroSerdeUtils.SCHEMA_LITERAL, schema);
-    Schema expected = Schema.parse(schema);
+    Schema expected = AvroSerdeUtils.getSchemaFor(schema);
     assertEquals(expected, AvroSerdeUtils.determineSchemaOrThrowException(props));
   }
 
@@ -163,7 +163,7 @@ public class TestAvroSerdeUtils {
     try {
       s = determineSchemaOrThrowException(props);
       assertNotNull(s);
-      assertEquals(Schema.parse(TestAvroObjectInspectorGenerator.RECORD_SCHEMA), s);
+      assertEquals(AvroSerdeUtils.getSchemaFor(TestAvroObjectInspectorGenerator.RECORD_SCHEMA), s);
     } catch(AvroSerdeException he) {
       fail("Should have parsed schema literal, not thrown exception.");
     }
@@ -197,7 +197,7 @@ public class TestAvroSerdeUtils {
 
       Schema schemaFromHDFS =
               AvroSerdeUtils.getSchemaFromFS(onHDFS, miniDfs.getFileSystem().getConf());
-      Schema expectedSchema = Schema.parse(schemaString);
+      Schema expectedSchema = AvroSerdeUtils.getSchemaFor(schemaString);
       assertEquals(expectedSchema, schemaFromHDFS);
     } finally {
       if(miniDfs != null) miniDfs.shutdown();

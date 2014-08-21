@@ -50,6 +50,7 @@ public class TestHiveAuthorizationTaskFactory {
   private static final String SELECT = "SELECT";
   private static final String DB = "default";
   private static final String TABLE = "table1";
+  private static final String TABLE_QNAME = DB + "." + TABLE;
   private static final String GROUP = "group1";
   private static final String ROLE = "role1";
   private static final String USER = "user1";
@@ -74,6 +75,7 @@ public class TestHiveAuthorizationTaskFactory {
     parseDriver = new ParseDriver();
     analyzer = new DDLSemanticAnalyzer(conf, db);
     Mockito.when(db.getTable(DB, TABLE, false)).thenReturn(table);
+    Mockito.when(db.getTable(TABLE_QNAME, false)).thenReturn(table);
     Mockito.when(db.getPartition(table, new HashMap<String, String>(), false))
       .thenReturn(partition);
     HadoopDefaultAuthenticator auth = new HadoopDefaultAuthenticator();
@@ -121,7 +123,7 @@ public class TestHiveAuthorizationTaskFactory {
       Assert.assertEquals(Privilege.SELECT, privilege.getPrivilege());
     }
     Assert.assertTrue("Expected table", grantDesc.getPrivilegeSubjectDesc().getTable());
-    Assert.assertEquals(TABLE, grantDesc.getPrivilegeSubjectDesc().getObject());
+    Assert.assertEquals(TABLE_QNAME, grantDesc.getPrivilegeSubjectDesc().getObject());
   }
   /**
    * GRANT ... ON TABLE ... TO ROLE ...
@@ -139,7 +141,7 @@ public class TestHiveAuthorizationTaskFactory {
       Assert.assertEquals(Privilege.SELECT, privilege.getPrivilege());
     }
     Assert.assertTrue("Expected table", grantDesc.getPrivilegeSubjectDesc().getTable());
-    Assert.assertEquals(TABLE, grantDesc.getPrivilegeSubjectDesc().getObject());
+    Assert.assertEquals(TABLE_QNAME, grantDesc.getPrivilegeSubjectDesc().getObject());
   }
   /**
    * GRANT ... ON TABLE ... TO GROUP ...
@@ -157,7 +159,7 @@ public class TestHiveAuthorizationTaskFactory {
       Assert.assertEquals(Privilege.SELECT, privilege.getPrivilege());
     }
     Assert.assertTrue("Expected table", grantDesc.getPrivilegeSubjectDesc().getTable());
-    Assert.assertEquals(TABLE, grantDesc.getPrivilegeSubjectDesc().getObject());
+    Assert.assertEquals(TABLE_QNAME, grantDesc.getPrivilegeSubjectDesc().getObject());
   }
   /**
    * REVOKE ... ON TABLE ... FROM USER ...
@@ -175,7 +177,7 @@ public class TestHiveAuthorizationTaskFactory {
       Assert.assertEquals(Privilege.SELECT, privilege.getPrivilege());
     }
     Assert.assertTrue("Expected table", grantDesc.getPrivilegeSubjectDesc().getTable());
-    Assert.assertEquals(TABLE, grantDesc.getPrivilegeSubjectDesc().getObject());
+    Assert.assertEquals(TABLE_QNAME, grantDesc.getPrivilegeSubjectDesc().getObject());
   }
   /**
    * REVOKE ... ON TABLE ... FROM ROLE ...
@@ -193,7 +195,7 @@ public class TestHiveAuthorizationTaskFactory {
       Assert.assertEquals(Privilege.SELECT, privilege.getPrivilege());
     }
     Assert.assertTrue("Expected table", grantDesc.getPrivilegeSubjectDesc().getTable());
-    Assert.assertEquals(TABLE, grantDesc.getPrivilegeSubjectDesc().getObject());
+    Assert.assertEquals(TABLE_QNAME, grantDesc.getPrivilegeSubjectDesc().getObject());
   }
   /**
    * REVOKE ... ON TABLE ... FROM GROUP ...
@@ -211,7 +213,7 @@ public class TestHiveAuthorizationTaskFactory {
       Assert.assertEquals(Privilege.SELECT, privilege.getPrivilege());
     }
     Assert.assertTrue("Expected table", grantDesc.getPrivilegeSubjectDesc().getTable());
-    Assert.assertEquals(TABLE, grantDesc.getPrivilegeSubjectDesc().getObject());
+    Assert.assertEquals(TABLE_QNAME, grantDesc.getPrivilegeSubjectDesc().getObject());
   }
   /**
    * GRANT ROLE ... TO USER ...
@@ -380,7 +382,7 @@ public class TestHiveAuthorizationTaskFactory {
     Assert.assertEquals(PrincipalType.USER, grantDesc.getPrincipalDesc().getType());
     Assert.assertEquals(USER, grantDesc.getPrincipalDesc().getName());
     Assert.assertTrue("Expected table", grantDesc.getHiveObj().getTable());
-    Assert.assertEquals(TABLE, grantDesc.getHiveObj().getObject());
+    Assert.assertEquals(TABLE_QNAME, grantDesc.getHiveObj().getObject());
     Assert.assertTrue("Expected table", grantDesc.getHiveObj().getTable());
   }
   /**
@@ -394,7 +396,7 @@ public class TestHiveAuthorizationTaskFactory {
     Assert.assertEquals(PrincipalType.ROLE, grantDesc.getPrincipalDesc().getType());
     Assert.assertEquals(ROLE, grantDesc.getPrincipalDesc().getName());
     Assert.assertTrue("Expected table", grantDesc.getHiveObj().getTable());
-    Assert.assertEquals(TABLE, grantDesc.getHiveObj().getObject());
+    Assert.assertEquals(TABLE_QNAME, grantDesc.getHiveObj().getObject());
     Assert.assertTrue("Expected table", grantDesc.getHiveObj().getTable());
   }
   /**
@@ -408,7 +410,7 @@ public class TestHiveAuthorizationTaskFactory {
     Assert.assertEquals(PrincipalType.GROUP, grantDesc.getPrincipalDesc().getType());
     Assert.assertEquals(GROUP, grantDesc.getPrincipalDesc().getName());
     Assert.assertTrue("Expected table", grantDesc.getHiveObj().getTable());
-    Assert.assertEquals(TABLE, grantDesc.getHiveObj().getObject());
+    Assert.assertEquals(TABLE_QNAME, grantDesc.getHiveObj().getObject());
     Assert.assertTrue("Expected table", grantDesc.getHiveObj().getTable());
   }
 

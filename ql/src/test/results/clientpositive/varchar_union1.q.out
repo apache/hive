@@ -16,6 +16,7 @@ PREHOOK: query: create table  varchar_union1_vc1 (
 )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@varchar_union1_vc1
 POSTHOOK: query: create table  varchar_union1_vc1 (
   c1 int,
   c2 varchar(10)
@@ -29,6 +30,7 @@ PREHOOK: query: create table  varchar_union1_vc2 (
 )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@varchar_union1_vc2
 POSTHOOK: query: create table  varchar_union1_vc2 (
   c1 int,
   c2 varchar(20)
@@ -42,6 +44,7 @@ PREHOOK: query: create table  varchar_union1_str (
 )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@varchar_union1_str
 POSTHOOK: query: create table  varchar_union1_str (
   c1 int,
   c2 string

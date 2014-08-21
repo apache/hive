@@ -18,10 +18,10 @@ STAGE PLANS:
               Select Operator
                 Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
                 Lateral View Join Operator
-                  outputColumnNames: _col4
+                  outputColumnNames: _col5
                   Statistics: Num rows: 0 Data size: 11624 Basic stats: PARTIAL Column stats: COMPLETE
                   Select Operator
-                    expressions: (1 + assert_true((_col4 < 2))) (type: double)
+                    expressions: (1 + assert_true((_col5 < 2))) (type: double)
                     outputColumnNames: _col0
                     Statistics: Num rows: 0 Data size: 11624 Basic stats: PARTIAL Column stats: COMPLETE
                     Limit
@@ -42,10 +42,10 @@ STAGE PLANS:
                   Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
                   function name: explode
                   Lateral View Join Operator
-                    outputColumnNames: _col4
+                    outputColumnNames: _col5
                     Statistics: Num rows: 0 Data size: 11624 Basic stats: PARTIAL Column stats: COMPLETE
                     Select Operator
-                      expressions: (1 + assert_true((_col4 < 2))) (type: double)
+                      expressions: (1 + assert_true((_col5 < 2))) (type: double)
                       outputColumnNames: _col0
                       Statistics: Num rows: 0 Data size: 11624 Basic stats: PARTIAL Column stats: COMPLETE
                       Limit

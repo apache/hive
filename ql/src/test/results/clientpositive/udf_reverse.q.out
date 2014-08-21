@@ -14,6 +14,7 @@ Example:
 PREHOOK: query: CREATE TABLE dest1(len STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@dest1
 POSTHOOK: query: CREATE TABLE dest1(len STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -160,6 +161,7 @@ PREHOOK: query: -- Test with non-ascii characters
 CREATE TABLE dest1(name STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@dest1
 POSTHOOK: query: -- Test with non-ascii characters
 -- kv4.txt contains the text 0xE982B5E993AE, which should be reversed to
 -- 0xE993AEE982B5

@@ -1,6 +1,7 @@
 PREHOOK: query: create table intable (b boolean, d double, f float, i int, l bigint, s string, t tinyint)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@intable
 POSTHOOK: query: create table intable (b boolean, d double, f float, i int, l bigint, s string, t tinyint)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

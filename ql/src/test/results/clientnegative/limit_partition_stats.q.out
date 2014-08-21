@@ -1,6 +1,7 @@
 PREHOOK: query: create table part (c int) partitioned by (d string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@part
 POSTHOOK: query: create table part (c int) partitioned by (d string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

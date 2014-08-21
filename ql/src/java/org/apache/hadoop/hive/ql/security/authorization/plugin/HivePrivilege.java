@@ -22,13 +22,14 @@ import java.util.Locale;
 
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
 import org.apache.hadoop.hive.common.classification.InterfaceStability.Evolving;
+import org.apache.hadoop.hive.ql.security.authorization.PrivilegeScope;
 
 /**
  * Represents the hive privilege being granted/revoked
  */
 @LimitedPrivate(value = { "" })
 @Evolving
-public class HivePrivilege {
+public class HivePrivilege implements Comparable<HivePrivilege> {
   @Override
   public String toString() {
     return "Privilege [name=" + name + ", columns=" + columns + "]";
@@ -36,10 +37,16 @@ public class HivePrivilege {
 
   private final String name;
   private final List<String> columns;
+  private final List<String> supportedScope;
 
-  public HivePrivilege(String name, List<String> columns){
+  public HivePrivilege(String name, List<String> columns) {
+    this(name, columns, null);
+  }
+
+  public HivePrivilege(String name, List<String> columns, List<String> supportedScope) {
     this.name = name.toUpperCase(Locale.US);
     this.columns = columns;
+    this.supportedScope = supportedScope;
   }
 
   public String getName() {
@@ -48,6 +55,10 @@ public class HivePrivilege {
 
   public List<String> getColumns() {
     return columns;
+  }
+
+  public List<String> getSupportedScope() {
+    return supportedScope;
   }
 
   @Override
@@ -82,5 +93,27 @@ public class HivePrivilege {
   }
 
 
+  public boolean supportsScope(PrivilegeScope scope) {
+    return supportedScope != null && supportedScope.contains(scope.name());
+  }
 
+  public int compareTo(HivePrivilege privilege) {
+    int compare = columns != null ?
+        (privilege.columns != null ? compare(columns, privilege.columns) : 1) :
+        (privilege.columns != null ? -1 : 0);
+    if (compare == 0) {
+      compare = name.compareTo(privilege.name);
+    }
+    return compare;
+  }
+
+  private int compare(List<String> o1, List<String> o2) {
+    for (int i = 0; i < Math.min(o1.size(), o2.size()); i++) {
+      int compare = o1.get(i).compareTo(o2.get(i));
+      if (compare != 0) {
+        return compare;
+      }
+    }
+    return o1.size() > o2.size() ? 1 : (o1.size() < o2.size() ? -1 : 0);
+  }
 }

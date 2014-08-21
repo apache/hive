@@ -2637,6 +2637,50 @@ class ColumnStatistics {
 
 void swap(ColumnStatistics &a, ColumnStatistics &b);
 
+
+class AggrStats {
+ public:
+
+  static const char* ascii_fingerprint; // = "399BDBAF7503E0BFB5E1D99C83D790CD";
+  static const uint8_t binary_fingerprint[16]; // = {0x39,0x9B,0xDB,0xAF,0x75,0x03,0xE0,0xBF,0xB5,0xE1,0xD9,0x9C,0x83,0xD7,0x90,0xCD};
+
+  AggrStats() : partsFound(0) {
+  }
+
+  virtual ~AggrStats() throw() {}
+
+  std::vector<ColumnStatisticsObj>  colStats;
+  int64_t partsFound;
+
+  void __set_colStats(const std::vector<ColumnStatisticsObj> & val) {
+    colStats = val;
+  }
+
+  void __set_partsFound(const int64_t val) {
+    partsFound = val;
+  }
+
+  bool operator == (const AggrStats & rhs) const
+  {
+    if (!(colStats == rhs.colStats))
+      return false;
+    if (!(partsFound == rhs.partsFound))
+      return false;
+    return true;
+  }
+  bool operator != (const AggrStats &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const AggrStats & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(AggrStats &a, AggrStats &b);
+
 typedef struct _Schema__isset {
   _Schema__isset() : fieldSchemas(false), properties(false) {}
   bool fieldSchemas;

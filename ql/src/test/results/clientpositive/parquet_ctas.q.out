@@ -21,6 +21,7 @@ POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table staging (key int, value string) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@staging
 POSTHOOK: query: create table staging (key int, value string) stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

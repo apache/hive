@@ -51,6 +51,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -89,8 +90,7 @@ public class Warehouse {
     try {
       Class<? extends MetaStoreFS> handlerClass = (Class<? extends MetaStoreFS>) Class
           .forName(handlerClassStr, true, JavaUtils.getClassLoader());
-      MetaStoreFS handler = (MetaStoreFS) ReflectionUtils.newInstance(
-          handlerClass, conf);
+      MetaStoreFS handler = ReflectionUtils.newInstance(handlerClass, conf);
       return handler;
     } catch (ClassNotFoundException e) {
       throw new MetaException("Error in loading MetaStoreFS handler."
@@ -185,6 +185,14 @@ public class Warehouse {
   public Path getTablePath(Database db, String tableName)
       throws MetaException {
     return getDnsPath(new Path(getDatabasePath(db), tableName.toLowerCase()));
+  }
+
+  public static String getQualifiedName(Table table) {
+    return table.getDbName() + "." + table.getTableName();
+  }
+
+  public static String getQualifiedName(Partition partition) {
+    return partition.getDbName() + "." + partition.getTableName() + partition.getValues();
   }
 
   public boolean mkdirs(Path f, boolean inheritPermCandidate) throws MetaException {
@@ -563,4 +571,12 @@ public class Warehouse {
     return values;
   }
 
+  public static Map<String, String> makeSpecFromValues(List<FieldSchema> partCols,
+      List<String> values) {
+    Map<String, String> spec = new LinkedHashMap<String, String>();
+    for (int i = 0; i < values.size(); i++) {
+      spec.put(partCols.get(i).getName(), values.get(i));
+    }
+    return spec;
+  }
 }

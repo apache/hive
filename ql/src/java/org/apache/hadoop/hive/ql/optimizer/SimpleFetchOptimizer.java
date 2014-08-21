@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.optimizer;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -27,6 +28,7 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.ContentSummary;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
@@ -106,9 +108,9 @@ public class SimpleFetchOptimizer implements Transform {
         pctx.getConf(), HiveConf.ConfVars.HIVEFETCHTASKCONVERSION);
 
     boolean aggressive = "more".equals(mode);
+    final int limit = pctx.getQB().getParseInfo().getOuterQueryLimit();
     FetchData fetch = checkTree(aggressive, pctx, alias, source);
-    if (fetch != null && checkThreshold(fetch, pctx)) {
-      int limit = pctx.getQB().getParseInfo().getOuterQueryLimit();
+    if (fetch != null && checkThreshold(fetch, limit, pctx)) {
       FetchWork fetchWork = fetch.convertToWork();
       FetchTask fetchTask = (FetchTask) TaskFactory.get(fetchWork, pctx.getConf());
       fetchWork.setSink(fetch.completed(pctx, fetchWork));
@@ -119,7 +121,10 @@ public class SimpleFetchOptimizer implements Transform {
     return null;
   }
 
-  private boolean checkThreshold(FetchData data, ParseContext pctx) throws Exception {
+  private boolean checkThreshold(FetchData data, int limit, ParseContext pctx) throws Exception {
+    if (limit > 0 && data.hasOnlyPruningFilter()) {
+      return true;
+    }
     long threshold = HiveConf.getLongVar(pctx.getConf(),
         HiveConf.ConfVars.HIVEFETCHTASKCONVERSIONTHRESHOLD);
     if (threshold < 0) {
@@ -169,7 +174,7 @@ public class SimpleFetchOptimizer implements Transform {
       PrunedPartitionList pruned = pctx.getPrunedPartitions(alias, ts);
       if (aggressive || !pruned.hasUnknownPartitions()) {
         bypassFilter &= !pruned.hasUnknownPartitions();
-        return checkOperators(new FetchData(parent, table, pruned, splitSample), ts,
+        return checkOperators(new FetchData(parent, table, pruned, splitSample, bypassFilter), ts,
             aggressive, bypassFilter);
       }
     }
@@ -211,6 +216,7 @@ public class SimpleFetchOptimizer implements Transform {
     private final SplitSample splitSample;
     private final PrunedPartitionList partsList;
     private final HashSet<ReadEntity> inputs = new HashSet<ReadEntity>();
+    private final boolean onlyPruningFilter;
 
     // source table scan
     private TableScanOperator scanOp;
@@ -223,14 +229,23 @@ public class SimpleFetchOptimizer implements Transform {
       this.table = table;
       this.partsList = null;
       this.splitSample = splitSample;
+      this.onlyPruningFilter = false;
     }
 
     private FetchData(ReadEntity parent, Table table, PrunedPartitionList partsList,
-        SplitSample splitSample) {
+        SplitSample splitSample, boolean bypassFilter) {
       this.parent = parent;
       this.table = table;
       this.partsList = partsList;
       this.splitSample = splitSample;
+      this.onlyPruningFilter = bypassFilter;
+    }
+    
+    /*
+     * all filters were executed during partition pruning
+     */
+    public boolean hasOnlyPruningFilter() {
+      return this.onlyPruningFilter;
     }
 
     private FetchWork convertToWork() throws HiveException {
@@ -317,7 +332,12 @@ public class SimpleFetchOptimizer implements Transform {
         InputFormat input = HiveInputFormat.getInputFormatFromCache(clazz, conf);
         summary = ((ContentSummaryInputFormat)input).getContentSummary(path, conf);
       } else {
-        summary = path.getFileSystem(conf).getContentSummary(path);
+        FileSystem fs = path.getFileSystem(conf);
+        try {
+          summary = fs.getContentSummary(path);
+        } catch (FileNotFoundException e) {
+          return 0;
+        }
       }
       return summary.getLength();
     }

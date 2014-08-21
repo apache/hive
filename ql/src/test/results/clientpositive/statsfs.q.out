@@ -3,6 +3,7 @@ PREHOOK: query: -- stats computation on partitioned table with analyze command
 create table t1 (key string, value string) partitioned by (ds string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@t1
 POSTHOOK: query: -- stats computation on partitioned table with analyze command
 
 create table t1 (key string, value string) partitioned by (ds string)
@@ -138,6 +139,7 @@ PREHOOK: query: -- stats computation on partitioned table with autogather on ins
 create table t1 (key string, value string) partitioned by (ds string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@t1
 POSTHOOK: query: -- stats computation on partitioned table with autogather on insert query
 
 create table t1 (key string, value string) partitioned by (ds string)
@@ -259,6 +261,7 @@ PREHOOK: query: -- analyze stmt on unpartitioned table
 create table t1 (key string, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@t1
 POSTHOOK: query: -- analyze stmt on unpartitioned table
 
 create table t1 (key string, value string)
@@ -330,6 +333,7 @@ PREHOOK: query: -- stats computation on unpartitioned table with autogather on i
 create table t1 (key string, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@t1
 POSTHOOK: query: -- stats computation on unpartitioned table with autogather on insert query
 
 create table t1 (key string, value string)
@@ -396,6 +400,7 @@ PREHOOK: query: -- stats computation on partitioned table with autogather on ins
 create table t1 (key string, value string) partitioned by (ds string, hr string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@t1
 POSTHOOK: query: -- stats computation on partitioned table with autogather on insert query with dynamic partitioning
 
 

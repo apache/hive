@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
 import org.apache.hadoop.hive.ql.io.RCFileOutputFormat;
@@ -120,7 +121,7 @@ public class TestSemanticAnalysis extends HCatBaseTest {
   @Test
   public void testUsNonExistentDB() throws CommandNeedRetryException {
     CommandProcessorResponse resp = hcatDriver.run("use no_such_db");
-    assertEquals(1, resp.getResponseCode());
+    assertEquals(ErrorMsg.DATABASE_NOT_EXISTS.getErrorCode(), resp.getResponseCode());
   }
 
   @Test

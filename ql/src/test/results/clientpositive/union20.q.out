@@ -1,4 +1,5 @@
-PREHOOK: query: -- union :map-reduce sub-queries followed by join
+PREHOOK: query: -- SORT_BEFORE_DIFF
+-- union :map-reduce sub-queries followed by join
 
 explain 
 SELECT unionsrc1.key, unionsrc1.value, unionsrc2.key, unionsrc2.value
@@ -11,7 +12,8 @@ JOIN
       select s4.key as key, s4.value as value from src s4 where s4.key < 10) unionsrc2
 ON (unionsrc1.key = unionsrc2.key)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- union :map-reduce sub-queries followed by join
+POSTHOOK: query: -- SORT_BEFORE_DIFF
+-- union :map-reduce sub-queries followed by join
 
 explain 
 SELECT unionsrc1.key, unionsrc1.value, unionsrc2.key, unionsrc2.value
@@ -37,20 +39,17 @@ STAGE PLANS:
           TableScan
             alias: s3
             Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
-            Filter Operator
-              predicate: 'tst1' is not null (type: boolean)
-              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: COMPLETE
-              Select Operator
-                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: COMPLETE
-                Group By Operator
-                  aggregations: count(1)
-                  mode: hash
-                  outputColumnNames: _col0
+            Select Operator
+              Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+              Group By Operator
+                aggregations: count(1)
+                mode: hash
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  sort order: 
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                  Reduce Output Operator
-                    sort order: 
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                    value expressions: _col0 (type: bigint)
+                  value expressions: _col0 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
@@ -133,14 +132,14 @@ STAGE PLANS:
             0 {KEY.reducesinkkey0} {VALUE._col0}
             1 {KEY.reducesinkkey0} {VALUE._col0}
           outputColumnNames: _col0, _col1, _col2, _col3
-          Statistics: Num rows: 18 Data size: 0 Basic stats: PARTIAL Column stats: PARTIAL
+          Statistics: Num rows: 6 Data size: 1632 Basic stats: COMPLETE Column stats: PARTIAL
           Select Operator
             expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics: Num rows: 18 Data size: 0 Basic stats: PARTIAL Column stats: PARTIAL
+            Statistics: Num rows: 6 Data size: 1632 Basic stats: COMPLETE Column stats: PARTIAL
             File Output Operator
               compressed: false
-              Statistics: Num rows: 18 Data size: 0 Basic stats: PARTIAL Column stats: PARTIAL
+              Statistics: Num rows: 6 Data size: 1632 Basic stats: COMPLETE Column stats: PARTIAL
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -152,20 +151,17 @@ STAGE PLANS:
           TableScan
             alias: s1
             Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
-            Filter Operator
-              predicate: 'tst1' is not null (type: boolean)
-              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: COMPLETE
-              Select Operator
-                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: COMPLETE
-                Group By Operator
-                  aggregations: count(1)
-                  mode: hash
-                  outputColumnNames: _col0
+            Select Operator
+              Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+              Group By Operator
+                aggregations: count(1)
+                mode: hash
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  sort order: 
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                  Reduce Output Operator
-                    sort order: 
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                    value expressions: _col0 (type: bigint)
+                  value expressions: _col0 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)

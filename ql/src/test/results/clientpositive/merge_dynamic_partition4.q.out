@@ -4,6 +4,7 @@ PREHOOK: query: -- this test verifies that the block merge task that can follow 
 create table srcpart_merge_dp like srcpart
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@srcpart_merge_dp
 POSTHOOK: query: -- this test verifies that the block merge task that can follow a query to generate dynamic
 -- partitions does not produce incorrect results by dropping partitions
 
@@ -14,6 +15,7 @@ POSTHOOK: Output: default@srcpart_merge_dp
 PREHOOK: query: create table srcpart_merge_dp_rc like srcpart
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@srcpart_merge_dp_rc
 POSTHOOK: query: create table srcpart_merge_dp_rc like srcpart
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -29,6 +31,7 @@ POSTHOOK: Output: default@srcpart_merge_dp_rc
 PREHOOK: query: create table merge_dynamic_part like srcpart
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@merge_dynamic_part
 POSTHOOK: query: create table merge_dynamic_part like srcpart
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -199,10 +202,14 @@ STAGE PLANS:
     Stats-Aggr Operator
 
   Stage: Stage-3
-    Block level merge
+    Merge Work
+      merge level: block
+      input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
 
   Stage: Stage-5
-    Block level merge
+    Merge Work
+      merge level: block
+      input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
 
   Stage: Stage-6
     Move Operator

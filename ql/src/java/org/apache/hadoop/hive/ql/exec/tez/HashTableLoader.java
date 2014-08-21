@@ -73,6 +73,7 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
 
     TezContext tezContext = (TezContext) MapredContext.get();
     Map<Integer, String> parentToInput = desc.getParentToInput();
+    Map<Integer, Long> parentKeyCounts = desc.getParentKeyCounts();
 
     boolean useOptimizedTables = HiveConf.getBoolVar(
         hconf, HiveConf.ConfVars.HIVEMAPJOINUSEOPTIMIZEDTABLE);
@@ -102,8 +103,11 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
           }
         }
         isFirstKey = false;
+        Long keyCountObj = parentKeyCounts.get(pos);
+        long keyCount = (keyCountObj == null) ? -1 : keyCountObj.longValue();
         MapJoinTableContainer tableContainer = useOptimizedTables
-            ? new MapJoinBytesTableContainer(hconf, valCtx) : new HashMapWrapper(hconf);
+            ? new MapJoinBytesTableContainer(hconf, valCtx, keyCount)
+            : new HashMapWrapper(hconf, keyCount);
 
         while (kvReader.next()) {
           rowCount++;

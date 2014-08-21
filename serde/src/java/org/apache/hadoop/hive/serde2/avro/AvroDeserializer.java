@@ -262,12 +262,16 @@ class AvroDeserializer {
                                           TypeInfo columnType) throws AvroSerdeException {
     int tag = GenericData.get().resolveUnion(recordSchema, datum); // Determine index of value
     Schema schema = recordSchema.getTypes().get(tag);
-    if(schema.getType().equals(Schema.Type.NULL)) {
+    if (schema.getType().equals(Schema.Type.NULL)) {
       return null;
     }
 
-    return worker(datum, fileSchema == null ? null : fileSchema.getTypes().get(tag), schema,
-        SchemaToTypeInfo.generateTypeInfo(schema));
+    Schema currentFileSchema = null;
+    if (fileSchema != null) {
+       currentFileSchema =
+           fileSchema.getType() == Type.UNION ? fileSchema.getTypes().get(tag) : fileSchema;
+    }
+    return worker(datum, currentFileSchema, schema, SchemaToTypeInfo.generateTypeInfo(schema));
 
   }
 

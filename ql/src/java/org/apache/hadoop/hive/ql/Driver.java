@@ -82,6 +82,7 @@ import org.apache.hadoop.hive.ql.metadata.formatting.MetaDataFormatter;
 import org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
+import org.apache.hadoop.hive.ql.parse.ColumnAccessInfo;
 import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHook;
 import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHookContext;
 import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHookContextImpl;
@@ -102,7 +103,6 @@ import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.security.authorization.AuthorizationUtils;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzContext;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzContext.CLIENT_TYPE;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivObjectActionType;
@@ -503,8 +503,13 @@ public class Driver implements CommandProcessor {
     Hive db = sem.getDb();
 
     if (ss.isAuthorizationModeV2()) {
-      doAuthorizationV2(ss, op, inputs, outputs, command);
-      return;
+      // get mapping of tables to columns used
+      ColumnAccessInfo colAccessInfo = sem.getColumnAccessInfo();
+      // colAccessInfo is set only in case of SemanticAnalyzer
+      Map<String, List<String>> tab2Cols = colAccessInfo != null ? colAccessInfo
+          .getTableToColumnAccessMap() : null;
+      doAuthorizationV2(ss, op, inputs, outputs, command, tab2Cols);
+     return;
     }
     if (op == null) {
       throw new HiveException("Operation should not be null");
@@ -583,56 +588,9 @@ public class Driver implements CommandProcessor {
         }
       }
 
-      //for a select or create-as-select query, populate the partition to column (par2Cols) or
-      // table to columns mapping (tab2Cols)
-      if (op.equals(HiveOperation.CREATETABLE_AS_SELECT)
-          || op.equals(HiveOperation.QUERY)) {
-        SemanticAnalyzer querySem = (SemanticAnalyzer) sem;
-        ParseContext parseCtx = querySem.getParseContext();
-        Map<TableScanOperator, Table> tsoTopMap = parseCtx.getTopToTable();
+      getTablePartitionUsedColumns(op, sem, tab2Cols, part2Cols, tableUsePartLevelAuth);
 
-        for (Map.Entry<String, Operator<? extends OperatorDesc>> topOpMap : querySem
-            .getParseContext().getTopOps().entrySet()) {
-          Operator<? extends OperatorDesc> topOp = topOpMap.getValue();
-          if (topOp instanceof TableScanOperator
-              && tsoTopMap.containsKey(topOp)) {
-            TableScanOperator tableScanOp = (TableScanOperator) topOp;
-            Table tbl = tsoTopMap.get(tableScanOp);
-            List<Integer> neededColumnIds = tableScanOp.getNeededColumnIDs();
-            List<FieldSchema> columns = tbl.getCols();
-            List<String> cols = new ArrayList<String>();
-            for (int i = 0; i < neededColumnIds.size(); i++) {
-              cols.add(columns.get(neededColumnIds.get(i)).getName());
-            }
-            //map may not contain all sources, since input list may have been optimized out
-            //or non-existent tho such sources may still be referenced by the TableScanOperator
-            //if it's null then the partition probably doesn't exist so let's use table permission
-            if (tbl.isPartitioned() &&
-                tableUsePartLevelAuth.get(tbl.getTableName()) == Boolean.TRUE) {
-              String alias_id = topOpMap.getKey();
 
-              PrunedPartitionList partsList = PartitionPruner.prune(tableScanOp,
-                  parseCtx, alias_id);
-              Set<Partition> parts = partsList.getPartitions();
-              for (Partition part : parts) {
-                List<String> existingCols = part2Cols.get(part);
-                if (existingCols == null) {
-                  existingCols = new ArrayList<String>();
-                }
-                existingCols.addAll(cols);
-                part2Cols.put(part, existingCols);
-              }
-            } else {
-              List<String> existingCols = tab2Cols.get(tbl);
-              if (existingCols == null) {
-                existingCols = new ArrayList<String>();
-              }
-              existingCols.addAll(cols);
-              tab2Cols.put(tbl, existingCols);
-            }
-          }
-        }
-      }
 
       // cache the results for table authorization
       Set<String> tableAuthChecked = new HashSet<String>();
@@ -649,7 +607,7 @@ public class Driver implements CommandProcessor {
           Partition partition = read.getPartition();
           tbl = partition.getTable();
           // use partition level authorization
-          if (tableUsePartLevelAuth.get(tbl.getTableName()) == Boolean.TRUE) {
+          if (Boolean.TRUE.equals(tableUsePartLevelAuth.get(tbl.getTableName()))) {
             List<String> cols = part2Cols.get(partition);
             if (cols != null && cols.size() > 0) {
               authorizer.authorize(partition.getTable(),
@@ -667,7 +625,7 @@ public class Driver implements CommandProcessor {
         // check, and the table authorization may already happened because of other
         // partitions
         if (tbl != null && !tableAuthChecked.contains(tbl.getTableName()) &&
-            !(tableUsePartLevelAuth.get(tbl.getTableName()) == Boolean.TRUE)) {
+            !(Boolean.TRUE.equals(tableUsePartLevelAuth.get(tbl.getTableName())))) {
           List<String> cols = tab2Cols.get(tbl);
           if (cols != null && cols.size() > 0) {
             authorizer.authorize(tbl, null, cols,
@@ -683,25 +641,79 @@ public class Driver implements CommandProcessor {
     }
   }
 
+  private static void getTablePartitionUsedColumns(HiveOperation op, BaseSemanticAnalyzer sem,
+      Map<Table, List<String>> tab2Cols, Map<Partition, List<String>> part2Cols,
+      Map<String, Boolean> tableUsePartLevelAuth) throws HiveException {
+    // for a select or create-as-select query, populate the partition to column
+    // (par2Cols) or
+    // table to columns mapping (tab2Cols)
+    if (op.equals(HiveOperation.CREATETABLE_AS_SELECT)
+        || op.equals(HiveOperation.QUERY)) {
+      SemanticAnalyzer querySem = (SemanticAnalyzer) sem;
+      ParseContext parseCtx = querySem.getParseContext();
+      Map<TableScanOperator, Table> tsoTopMap = parseCtx.getTopToTable();
+
+      for (Map.Entry<String, Operator<? extends OperatorDesc>> topOpMap : querySem
+          .getParseContext().getTopOps().entrySet()) {
+        Operator<? extends OperatorDesc> topOp = topOpMap.getValue();
+        if (topOp instanceof TableScanOperator
+            && tsoTopMap.containsKey(topOp)) {
+          TableScanOperator tableScanOp = (TableScanOperator) topOp;
+          Table tbl = tsoTopMap.get(tableScanOp);
+          List<Integer> neededColumnIds = tableScanOp.getNeededColumnIDs();
+          List<FieldSchema> columns = tbl.getCols();
+          List<String> cols = new ArrayList<String>();
+          for (int i = 0; i < neededColumnIds.size(); i++) {
+            cols.add(columns.get(neededColumnIds.get(i)).getName());
+          }
+          //map may not contain all sources, since input list may have been optimized out
+          //or non-existent tho such sources may still be referenced by the TableScanOperator
+          //if it's null then the partition probably doesn't exist so let's use table permission
+          if (tbl.isPartitioned() &&
+              Boolean.TRUE.equals(tableUsePartLevelAuth.get(tbl.getTableName()))) {
+            String alias_id = topOpMap.getKey();
+
+            PrunedPartitionList partsList = PartitionPruner.prune(tableScanOp,
+                parseCtx, alias_id);
+            Set<Partition> parts = partsList.getPartitions();
+            for (Partition part : parts) {
+              List<String> existingCols = part2Cols.get(part);
+              if (existingCols == null) {
+                existingCols = new ArrayList<String>();
+              }
+              existingCols.addAll(cols);
+              part2Cols.put(part, existingCols);
+            }
+          } else {
+            List<String> existingCols = tab2Cols.get(tbl);
+            if (existingCols == null) {
+              existingCols = new ArrayList<String>();
+            }
+            existingCols.addAll(cols);
+            tab2Cols.put(tbl, existingCols);
+          }
+        }
+      }
+    }
+
+  }
+
   private static void doAuthorizationV2(SessionState ss, HiveOperation op, HashSet<ReadEntity> inputs,
-      HashSet<WriteEntity> outputs, String command) throws HiveException {
+      HashSet<WriteEntity> outputs, String command, Map<String, List<String>> tab2cols) throws HiveException {
 
     HiveAuthzContext.Builder authzContextBuilder = new HiveAuthzContext.Builder();
-
-    authzContextBuilder.setClientType(ss.isHiveServerQuery() ? CLIENT_TYPE.HIVESERVER2
-        : CLIENT_TYPE.HIVECLI);
     authzContextBuilder.setUserIpAddress(ss.getUserIpAddress());
-    authzContextBuilder.setSessionString(ss.getSessionId());
     authzContextBuilder.setCommandString(command);
 
     HiveOperationType hiveOpType = getHiveOperationType(op);
-    List<HivePrivilegeObject> inputsHObjs = getHivePrivObjects(inputs);
-    List<HivePrivilegeObject> outputHObjs = getHivePrivObjects(outputs);
+    List<HivePrivilegeObject> inputsHObjs = getHivePrivObjects(inputs, tab2cols);
+    List<HivePrivilegeObject> outputHObjs = getHivePrivObjects(outputs, null);
+
     ss.getAuthorizerV2().checkPrivileges(hiveOpType, inputsHObjs, outputHObjs, authzContextBuilder.build());
-    return;
   }
 
-  private static List<HivePrivilegeObject> getHivePrivObjects(HashSet<? extends Entity> privObjects) {
+  private static List<HivePrivilegeObject> getHivePrivObjects(
+      HashSet<? extends Entity> privObjects, Map<String, List<String>> tableName2Cols) {
     List<HivePrivilegeObject> hivePrivobjs = new ArrayList<HivePrivilegeObject>();
     if(privObjects == null){
       return hivePrivobjs;
@@ -724,18 +736,28 @@ public class Driver implements CommandProcessor {
 
       //support for authorization on partitions needs to be added
       String dbname = null;
-      String tableURI = null;
+      String objName = null;
+      List<String> partKeys = null;
+      List<String> columns = null;
       switch(privObject.getType()){
       case DATABASE:
-        dbname = privObject.getDatabase() == null ? null : privObject.getDatabase().getName();
+        dbname = privObject.getDatabase().getName();
         break;
       case TABLE:
-        dbname = privObject.getTable() == null ? null : privObject.getTable().getDbName();
-        tableURI = privObject.getTable() == null ? null : privObject.getTable().getTableName();
+        dbname = privObject.getTable().getDbName();
+        objName = privObject.getTable().getTableName();
+        columns = tableName2Cols == null ? null :
+            tableName2Cols.get(Table.getCompleteName(dbname, objName));
         break;
       case DFS_DIR:
       case LOCAL_DIR:
-        tableURI = privObject.getD();
+        objName = privObject.getD();
+        break;
+      case FUNCTION:
+        if(privObject.getDatabase() != null) {
+          dbname = privObject.getDatabase().getName();
+        }
+        objName = privObject.getFunctionName();
         break;
       case DUMMYPARTITION:
       case PARTITION:
@@ -745,8 +767,8 @@ public class Driver implements CommandProcessor {
           throw new AssertionError("Unexpected object type");
       }
       HivePrivObjectActionType actionType = AuthorizationUtils.getActionType(privObject);
-      HivePrivilegeObject hPrivObject = new HivePrivilegeObject(privObjType, dbname, tableURI,
-          actionType);
+      HivePrivilegeObject hPrivObject = new HivePrivilegeObject(privObjType, dbname, objName,
+          partKeys, columns, actionType, null);
       hivePrivobjs.add(hPrivObject);
     }
     return hivePrivobjs;
@@ -1210,7 +1232,8 @@ public class Driver implements CommandProcessor {
       }
       resStream = null;
 
-      HookContext hookContext = new HookContext(plan, conf, ctx.getPathToCS());
+      SessionState ss = SessionState.get();
+      HookContext hookContext = new HookContext(plan, conf, ctx.getPathToCS(), ss.getUserName(), ss.getUserIpAddress());
       hookContext.setHookType(HookContext.HookType.PRE_EXEC_HOOK);
 
       for (Hook peh : getHooks(HiveConf.ConfVars.PREEXECHOOKS)) {

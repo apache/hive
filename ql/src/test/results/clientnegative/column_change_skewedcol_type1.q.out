@@ -1,6 +1,7 @@
 PREHOOK: query: CREATE TABLE skewedtable (key STRING, value STRING) SKEWED BY (key) ON (1,5,6)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@skewedtable
 POSTHOOK: query: CREATE TABLE skewedtable (key STRING, value STRING) SKEWED BY (key) ON (1,5,6)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

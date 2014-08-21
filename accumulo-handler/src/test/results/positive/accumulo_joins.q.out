@@ -1,0 +1,282 @@
+PREHOOK: query: DROP TABLE users
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE users
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE states
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE states
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE countries
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE countries
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE users_level
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE users_level
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: -- From HIVE-1257
+
+CREATE TABLE users(key string, state string, country string, country_id int)
+STORED BY 'org.apache.hadoop.hive.accumulo.AccumuloStorageHandler'
+WITH SERDEPROPERTIES (
+"accumulo.columns.mapping" = ":rowID,info:state,info:country,info:country_id"
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@users
+POSTHOOK: query: -- From HIVE-1257
+
+CREATE TABLE users(key string, state string, country string, country_id int)
+STORED BY 'org.apache.hadoop.hive.accumulo.AccumuloStorageHandler'
+WITH SERDEPROPERTIES (
+"accumulo.columns.mapping" = ":rowID,info:state,info:country,info:country_id"
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@users
+PREHOOK: query: CREATE TABLE states(key string, name string)
+STORED BY 'org.apache.hadoop.hive.accumulo.AccumuloStorageHandler'
+WITH SERDEPROPERTIES (
+"accumulo.columns.mapping" = ":rowID,state:name"
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@states
+POSTHOOK: query: CREATE TABLE states(key string, name string)
+STORED BY 'org.apache.hadoop.hive.accumulo.AccumuloStorageHandler'
+WITH SERDEPROPERTIES (
+"accumulo.columns.mapping" = ":rowID,state:name"
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@states
+PREHOOK: query: CREATE TABLE countries(key string, name string, country string, country_id int)
+STORED BY 'org.apache.hadoop.hive.accumulo.AccumuloStorageHandler'
+WITH SERDEPROPERTIES (
+"accumulo.columns.mapping" = ":rowID,info:name,info:country,info:country_id"
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@countries
+POSTHOOK: query: CREATE TABLE countries(key string, name string, country string, country_id int)
+STORED BY 'org.apache.hadoop.hive.accumulo.AccumuloStorageHandler'
+WITH SERDEPROPERTIES (
+"accumulo.columns.mapping" = ":rowID,info:name,info:country,info:country_id"
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@countries
+PREHOOK: query: INSERT OVERWRITE TABLE users SELECT 'user1', 'IA', 'USA', 0
+FROM src WHERE key=100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@users
+POSTHOOK: query: INSERT OVERWRITE TABLE users SELECT 'user1', 'IA', 'USA', 0
+FROM src WHERE key=100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@users
+PREHOOK: query: INSERT OVERWRITE TABLE states SELECT 'IA', 'Iowa'
+FROM src WHERE key=100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@states
+POSTHOOK: query: INSERT OVERWRITE TABLE states SELECT 'IA', 'Iowa'
+FROM src WHERE key=100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@states
+PREHOOK: query: INSERT OVERWRITE TABLE countries SELECT 'USA', 'United States', 'USA', 1
+FROM src WHERE key=100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@countries
+POSTHOOK: query: INSERT OVERWRITE TABLE countries SELECT 'USA', 'United States', 'USA', 1
+FROM src WHERE key=100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@countries
+PREHOOK: query: SELECT u.key, u.country, c.name, c.key FROM users u JOIN countries c 
+ON (u.country = c.key)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@countries
+PREHOOK: Input: default@users
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT u.key, u.country, c.name, c.key FROM users u JOIN countries c 
+ON (u.country = c.key)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@countries
+POSTHOOK: Input: default@users
+#### A masked pattern was here ####
+user1	USA	United States	USA
+PREHOOK: query: SELECT u.key, u.country, c.name, c.key FROM users u JOIN countries c
+ON (u.country = c.country)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@countries
+PREHOOK: Input: default@users
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT u.key, u.country, c.name, c.key FROM users u JOIN countries c
+ON (u.country = c.country)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@countries
+POSTHOOK: Input: default@users
+#### A masked pattern was here ####
+user1	USA	United States	USA
+PREHOOK: query: SELECT u.key, u.country, c.name, c.key FROM users u JOIN countries c 
+ON (u.country_id = c.country_id)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@countries
+PREHOOK: Input: default@users
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT u.key, u.country, c.name, c.key FROM users u JOIN countries c 
+ON (u.country_id = c.country_id)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@countries
+POSTHOOK: Input: default@users
+#### A masked pattern was here ####
+PREHOOK: query: SELECT u.key, u.state, s.name FROM users u JOIN states s 
+ON (u.state = s.key)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@states
+PREHOOK: Input: default@users
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT u.key, u.state, s.name FROM users u JOIN states s 
+ON (u.state = s.key)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@states
+POSTHOOK: Input: default@users
+#### A masked pattern was here ####
+user1	IA	Iowa
+PREHOOK: query: SELECT u.key, u.country, c.name, c.key FROM users u JOIN countries c 
+ON (u.country = c.key)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@countries
+PREHOOK: Input: default@users
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT u.key, u.country, c.name, c.key FROM users u JOIN countries c 
+ON (u.country = c.key)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@countries
+POSTHOOK: Input: default@users
+#### A masked pattern was here ####
+user1	USA	United States	USA
+PREHOOK: query: SELECT u.key, u.country, c.name, c.key FROM users u JOIN countries c
+ON (u.country = c.country)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@countries
+PREHOOK: Input: default@users
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT u.key, u.country, c.name, c.key FROM users u JOIN countries c
+ON (u.country = c.country)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@countries
+POSTHOOK: Input: default@users
+#### A masked pattern was here ####
+user1	USA	United States	USA
+PREHOOK: query: SELECT u.key, u.country, c.name, c.key FROM users u JOIN countries c 
+ON (u.country_id = c.country_id)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@countries
+PREHOOK: Input: default@users
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT u.key, u.country, c.name, c.key FROM users u JOIN countries c 
+ON (u.country_id = c.country_id)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@countries
+POSTHOOK: Input: default@users
+#### A masked pattern was here ####
+PREHOOK: query: SELECT u.key, u.state, s.name FROM users u JOIN states s 
+ON (u.state = s.key)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@states
+PREHOOK: Input: default@users
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT u.key, u.state, s.name FROM users u JOIN states s 
+ON (u.state = s.key)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@states
+POSTHOOK: Input: default@users
+#### A masked pattern was here ####
+user1	IA	Iowa
+PREHOOK: query: DROP TABLE users
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@users
+PREHOOK: Output: default@users
+POSTHOOK: query: DROP TABLE users
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@users
+POSTHOOK: Output: default@users
+PREHOOK: query: DROP TABLE states
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@states
+PREHOOK: Output: default@states
+POSTHOOK: query: DROP TABLE states
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@states
+POSTHOOK: Output: default@states
+PREHOOK: query: DROP TABLE countries
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@countries
+PREHOOK: Output: default@countries
+POSTHOOK: query: DROP TABLE countries
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@countries
+POSTHOOK: Output: default@countries
+PREHOOK: query: CREATE TABLE users(key int, userid int, username string, created int) 
+STORED BY 'org.apache.hadoop.hive.accumulo.AccumuloStorageHandler'
+WITH SERDEPROPERTIES ("accumulo.columns.mapping" = ":rowID,f:userid,f:nickname,f:created")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@users
+POSTHOOK: query: CREATE TABLE users(key int, userid int, username string, created int) 
+STORED BY 'org.apache.hadoop.hive.accumulo.AccumuloStorageHandler'
+WITH SERDEPROPERTIES ("accumulo.columns.mapping" = ":rowID,f:userid,f:nickname,f:created")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@users
+PREHOOK: query: CREATE TABLE users_level(key int, userid int, level int)
+STORED BY 'org.apache.hadoop.hive.accumulo.AccumuloStorageHandler'
+WITH SERDEPROPERTIES ("accumulo.columns.mapping" = ":rowID,f:userid,f:level")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@users_level
+POSTHOOK: query: CREATE TABLE users_level(key int, userid int, level int)
+STORED BY 'org.apache.hadoop.hive.accumulo.AccumuloStorageHandler'
+WITH SERDEPROPERTIES ("accumulo.columns.mapping" = ":rowID,f:userid,f:level")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@users_level
+PREHOOK: query: -- HIVE-1903:  the problem fixed here showed up even without any data,
+-- so no need to load any to test it
+SELECT year(from_unixtime(users.created)) AS year, level, count(users.userid) AS num 
+ FROM users JOIN users_level ON (users.userid = users_level.userid) 
+ GROUP BY year(from_unixtime(users.created)), level
+PREHOOK: type: QUERY
+PREHOOK: Input: default@users
+PREHOOK: Input: default@users_level
+#### A masked pattern was here ####
+POSTHOOK: query: -- HIVE-1903:  the problem fixed here showed up even without any data,
+-- so no need to load any to test it
+SELECT year(from_unixtime(users.created)) AS year, level, count(users.userid) AS num 
+ FROM users JOIN users_level ON (users.userid = users_level.userid) 
+ GROUP BY year(from_unixtime(users.created)), level
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@users
+POSTHOOK: Input: default@users_level
+#### A masked pattern was here ####
+PREHOOK: query: DROP TABLE users
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@users
+PREHOOK: Output: default@users
+POSTHOOK: query: DROP TABLE users
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@users
+POSTHOOK: Output: default@users
+PREHOOK: query: DROP TABLE users_level
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@users_level
+PREHOOK: Output: default@users_level
+POSTHOOK: query: DROP TABLE users_level
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@users_level
+POSTHOOK: Output: default@users_level

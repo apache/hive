@@ -1,6 +1,7 @@
 PREHOOK: query: create table kv_fileformat_check_txt (key string, value string) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@kv_fileformat_check_txt
 POSTHOOK: query: create table kv_fileformat_check_txt (key string, value string) stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -16,6 +17,7 @@ POSTHOOK: Output: default@kv_fileformat_check_txt
 PREHOOK: query: create table kv_fileformat_check_seq (key string, value string) stored as sequencefile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@kv_fileformat_check_seq
 POSTHOOK: query: create table kv_fileformat_check_seq (key string, value string) stored as sequencefile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

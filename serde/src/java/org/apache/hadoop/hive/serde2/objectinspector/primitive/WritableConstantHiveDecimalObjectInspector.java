@@ -58,11 +58,17 @@ implements ConstantObjectInspector {
 
   @Override
   public int precision() {
+    if (value == null) {
+      return super.precision();
+    }
     return value.getHiveDecimal().precision();
   }
 
   @Override
   public int scale() {
+    if (value == null) {
+      return super.scale();
+    }
     return value.getHiveDecimal().scale();
   }
 

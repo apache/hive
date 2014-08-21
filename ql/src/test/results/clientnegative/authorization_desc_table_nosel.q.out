@@ -2,6 +2,7 @@ PREHOOK: query: -- check if alter table fails as different user
 create table t1(i int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@t1
 POSTHOOK: query: -- check if alter table fails as different user
 create table t1(i int)
 POSTHOOK: type: CREATETABLE
@@ -26,4 +27,4 @@ PREHOOK: Output: default@t1
 POSTHOOK: query: revoke select on table t1 from user user2
 POSTHOOK: type: REVOKE_PRIVILEGE
 POSTHOOK: Output: default@t1
-FAILED: HiveAccessControlException Permission denied. Principal [name=user2, type=USER] does not have following privileges on Object [type=TABLE_OR_VIEW, name=default.t1] for operation DESCTABLE : [SELECT]
+FAILED: HiveAccessControlException Permission denied: Principal [name=user2, type=USER] does not have following privileges for operation DESCTABLE [[SELECT] on Object [type=TABLE_OR_VIEW, name=default.t1]]

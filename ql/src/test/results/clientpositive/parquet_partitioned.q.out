@@ -18,6 +18,7 @@ PREHOOK: query: CREATE TABLE parquet_partitioned_staging (
 FIELDS TERMINATED BY '|'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_partitioned_staging
 POSTHOOK: query: CREATE TABLE parquet_partitioned_staging (
     id int,
     str string,
@@ -34,6 +35,7 @@ PREHOOK: query: CREATE TABLE parquet_partitioned (
 STORED AS PARQUET
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_partitioned
 POSTHOOK: query: CREATE TABLE parquet_partitioned (
     id int,
     str string

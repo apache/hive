@@ -50,6 +50,8 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.DisallowTransform
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAccessControlException;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAccessController;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzPluginException;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzSessionContext;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzSessionContext.CLIENT_TYPE;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveMetastoreClientFactory;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrincipal;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilege;
@@ -81,13 +83,46 @@ public class SQLStdHiveAccessController implements HiveAccessController {
       + "have it as current role, for this action.";
   private final String HAS_ADMIN_PRIV_MSG = "grantor need to have ADMIN OPTION on role being"
       + " granted and have it as a current role for this action.";
+  private final HiveAuthzSessionContext sessionCtx;
   public static final Log LOG = LogFactory.getLog(SQLStdHiveAccessController.class);
 
   public SQLStdHiveAccessController(HiveMetastoreClientFactory metastoreClientFactory, HiveConf conf,
-      HiveAuthenticationProvider authenticator) throws HiveAuthzPluginException {
+      HiveAuthenticationProvider authenticator, HiveAuthzSessionContext ctx) throws HiveAuthzPluginException {
     this.metastoreClientFactory = metastoreClientFactory;
     this.authenticator = authenticator;
+    this.sessionCtx = applyTestSettings(ctx, conf);
+
+    assertHiveCliAuthDisabled(conf);
     initUserRoles();
+    LOG.info("Created SQLStdHiveAccessController for session context : " + sessionCtx);
+  }
+
+  /**
+   * Change the session context based on configuration to aid in testing of sql std auth
+   * @param ctx
+   * @param conf
+   * @return
+   */
+  private HiveAuthzSessionContext applyTestSettings(HiveAuthzSessionContext ctx, HiveConf conf) {
+    if(conf.getBoolVar(ConfVars.HIVE_TEST_AUTHORIZATION_SQLSTD_HS2_MODE) &&
+        ctx.getClientType() == CLIENT_TYPE.HIVECLI
+        ){
+      // create new session ctx object with HS2 as client type
+      HiveAuthzSessionContext.Builder ctxBuilder = new HiveAuthzSessionContext.Builder(ctx);
+      ctxBuilder.setClientType(CLIENT_TYPE.HIVESERVER2);
+      return ctxBuilder.build();
+    }
+    return ctx;
+  }
+
+  private void assertHiveCliAuthDisabled(HiveConf conf) throws HiveAuthzPluginException {
+    if (sessionCtx.getClientType() == CLIENT_TYPE.HIVECLI
+        && conf.getBoolVar(ConfVars.HIVE_AUTHORIZATION_ENABLED)) {
+      throw new HiveAuthzPluginException(
+          "SQL standards based authorization should not be enabled from hive cli"
+              + "Instead the use of storage based authorization in hive metastore is reccomended. Set "
+              + ConfVars.HIVE_AUTHORIZATION_ENABLED.varname + "=false to disable authz within cli");
+    }
   }
 
   /**
@@ -105,6 +140,7 @@ public class SQLStdHiveAccessController implements HiveAccessController {
     }
     this.currentUserName = newUserName;
     this.currentRoles = getRolesFromMS();
+    LOG.info("Current user : " + currentUserName + ", Current Roles : " + currentRoles);
   }
 
   private List<HiveRoleGrant> getRolesFromMS() throws HiveAuthzPluginException {
@@ -122,8 +158,8 @@ public class SQLStdHiveAccessController implements HiveAccessController {
       }
       return currentRoles;
     } catch (Exception e) {
-      throw new HiveAuthzPluginException("Failed to retrieve roles for " + currentUserName + ": "
-          + e.getMessage(), e);
+      throw SQLAuthorizationUtils.getPluginException("Failed to retrieve roles for "
+          + currentUserName, e);
     }
   }
 
@@ -178,7 +214,7 @@ public class SQLStdHiveAccessController implements HiveAccessController {
     try {
       metastoreClient.grant_privileges(privBag);
     } catch (Exception e) {
-      throw new HiveAuthzPluginException("Error granting privileges: " + e.getMessage(), e);
+      throw SQLAuthorizationUtils.getPluginException("Error granting privileges", e);
     }
   }
 
@@ -238,7 +274,7 @@ public class SQLStdHiveAccessController implements HiveAccessController {
       // that has desired behavior.
       metastoreClient.revoke_privileges(new PrivilegeBag(revokePrivs), grantOption);
     } catch (Exception e) {
-      throw new HiveAuthzPluginException("Error revoking privileges", e);
+      throw SQLAuthorizationUtils.getPluginException("Error revoking privileges", e);
     }
   }
 
@@ -259,7 +295,7 @@ public class SQLStdHiveAccessController implements HiveAccessController {
       metastoreClientFactory.getHiveMetastoreClient().create_role(
         new Role(roleName, 0, grantorName));
     } catch (TException e) {
-      throw new HiveAuthzPluginException("Error create role : " + e.getMessage(), e);
+      throw SQLAuthorizationUtils.getPluginException("Error create role", e);
     }
   }
 
@@ -273,7 +309,7 @@ public class SQLStdHiveAccessController implements HiveAccessController {
     try {
       metastoreClientFactory.getHiveMetastoreClient().drop_role(roleName);
     } catch (Exception e) {
-      throw new HiveAuthzPluginException("Error dropping role", e);
+      throw SQLAuthorizationUtils.getPluginException("Error dropping role", e);
     }
   }
 
@@ -294,11 +330,11 @@ public class SQLStdHiveAccessController implements HiveAccessController {
               grantorPrinc.getName(),
               AuthorizationUtils.getThriftPrincipalType(grantorPrinc.getType()), grantOption);
         } catch (MetaException e) {
-          throw new HiveAuthzPluginException(e.getMessage(), e);
+          throw SQLAuthorizationUtils.getPluginException("Error granting role", e);
         } catch (Exception e) {
           String msg = "Error granting roles for " + hivePrincipal.getName() + " to role "
-              + roleName + ": " + e.getMessage();
-          throw new HiveAuthzPluginException(msg, e);
+              + roleName;
+          throw SQLAuthorizationUtils.getPluginException(msg, e);
         }
       }
     }
@@ -320,8 +356,8 @@ public class SQLStdHiveAccessController implements HiveAccessController {
               AuthorizationUtils.getThriftPrincipalType(hivePrincipal.getType()), grantOption);
         } catch (Exception e) {
           String msg = "Error revoking roles for " + hivePrincipal.getName() + " to role "
-              + roleName + ": " + e.getMessage();
-          throw new HiveAuthzPluginException(msg, e);
+              + roleName;
+          throw SQLAuthorizationUtils.getPluginException(msg, e);
         }
       }
     }
@@ -337,7 +373,7 @@ public class SQLStdHiveAccessController implements HiveAccessController {
     try {
       return metastoreClientFactory.getHiveMetastoreClient().listRoleNames();
     } catch (Exception e) {
-      throw new HiveAuthzPluginException("Error listing all roles", e);
+      throw SQLAuthorizationUtils.getPluginException("Error listing all roles", e);
     }
   }
 
@@ -350,17 +386,24 @@ public class SQLStdHiveAccessController implements HiveAccessController {
         + " allowed get principals in a role. " + ADMIN_ONLY_MSG);
     }
     try {
-      GetPrincipalsInRoleResponse princGrantInfo =
-          metastoreClientFactory.getHiveMetastoreClient().get_principals_in_role(new GetPrincipalsInRoleRequest(roleName));
-
-      List<HiveRoleGrant> hiveRoleGrants = new ArrayList<HiveRoleGrant>();
-      for(RolePrincipalGrant thriftRoleGrant :  princGrantInfo.getPrincipalGrants()){
-        hiveRoleGrants.add(new HiveRoleGrant(thriftRoleGrant));
-      }
-      return hiveRoleGrants;
+      return getHiveRoleGrants(metastoreClientFactory.getHiveMetastoreClient(), roleName);
     } catch (Exception e) {
-      throw new HiveAuthzPluginException("Error getting principals for all roles", e);
+      throw SQLAuthorizationUtils.getPluginException("Error getting principals for all roles", e);
     }
+  }
+
+
+
+  public static List<HiveRoleGrant> getHiveRoleGrants(IMetaStoreClient client, String roleName)
+      throws Exception {
+    GetPrincipalsInRoleRequest request = new GetPrincipalsInRoleRequest(roleName);
+    GetPrincipalsInRoleResponse princGrantInfo = client.get_principals_in_role(request);
+
+    List<HiveRoleGrant> hiveRoleGrants = new ArrayList<HiveRoleGrant>();
+    for(RolePrincipalGrant thriftRoleGrant :  princGrantInfo.getPrincipalGrants()){
+      hiveRoleGrants.add(new HiveRoleGrant(thriftRoleGrant));
+    }
+    return hiveRoleGrants;
   }
 
   @Override
@@ -415,8 +458,8 @@ public class SQLStdHiveAccessController implements HiveAccessController {
         }
 
         HivePrivilegeObject resPrivObj = new HivePrivilegeObject(
-            getPluginObjType(msObjRef.getObjectType()), msObjRef.getDbName(),
-            msObjRef.getObjectName());
+            getPluginPrivilegeObjType(msObjRef.getObjectType()), msObjRef.getDbName(),
+            msObjRef.getObjectName(), msObjRef.getPartValues(), msObjRef.getColumnName());
 
         // result grantor principal
         HivePrincipal grantorPrincipal = new HivePrincipal(msGrantInfo.getGrantor(),
@@ -429,7 +472,7 @@ public class SQLStdHiveAccessController implements HiveAccessController {
       return resPrivInfos;
 
     } catch (Exception e) {
-      throw new HiveAuthzPluginException("Error showing privileges: "+ e.getMessage(), e);
+      throw SQLAuthorizationUtils.getPluginException("Error showing privileges", e);
     }
 
   }
@@ -474,8 +517,14 @@ public class SQLStdHiveAccessController implements HiveAccessController {
     return false;
   }
 
-  private HivePrivilegeObjectType getPluginObjType(HiveObjectType objectType)
-      throws HiveAuthzPluginException {
+  /**
+   * Convert metastore object type to HivePrivilegeObjectType.
+   * Also verifies that metastore object type is of a type on which metastore privileges are
+   * supported by sql std auth.
+   * @param objectType
+   * @return corresponding HivePrivilegeObjectType
+   */
+  private HivePrivilegeObjectType getPluginPrivilegeObjType(HiveObjectType objectType) {
     switch (objectType) {
     case DATABASE:
       return HivePrivilegeObjectType.DATABASE;
@@ -521,6 +570,7 @@ public class SQLStdHiveAccessController implements HiveAccessController {
       currentRoles.add(adminRole);
       return;
     }
+    LOG.info("Current user : " + currentUserName + ", Current Roles : " + currentRoles);
     // If we are here it means, user is requesting a role he doesn't belong to.
     throw new HiveAccessControlException(currentUserName +" doesn't belong to role "
       +roleName);
@@ -537,11 +587,7 @@ public class SQLStdHiveAccessController implements HiveAccessController {
    */
   boolean isUserAdmin() throws HiveAuthzPluginException {
     List<HiveRoleGrant> roles;
-    try {
-      roles = getCurrentRoles();
-    } catch (Exception e) {
-      throw new HiveAuthzPluginException(e);
-    }
+    roles = getCurrentRoles();
     for (HiveRoleGrant role : roles) {
       if (role.getRoleName().equalsIgnoreCase(HiveMetaStore.ADMIN)) {
         return true;
@@ -552,11 +598,7 @@ public class SQLStdHiveAccessController implements HiveAccessController {
 
   private boolean doesUserHasAdminOption(List<String> roleNames) throws HiveAuthzPluginException {
     List<HiveRoleGrant> currentRoles;
-    try {
-      currentRoles = getCurrentRoles();
-    } catch (Exception e) {
-        throw new HiveAuthzPluginException(e);
-    }
+    currentRoles = getCurrentRoles();
     for (String roleName : roleNames) {
       boolean roleFound = false;
       for (HiveRoleGrant currentRole : currentRoles) {
@@ -593,8 +635,8 @@ public class SQLStdHiveAccessController implements HiveAccessController {
       }
       return hiveRoleGrants;
     } catch (Exception e) {
-      throw new HiveAuthzPluginException("Error getting role grant information for user "
-          + principal.getName() + ": " + e.getMessage(), e);
+      throw SQLAuthorizationUtils.getPluginException("Error getting role grant information for user "
+          + principal.getName(), e);
     }
   }
 
@@ -664,31 +706,37 @@ public class SQLStdHiveAccessController implements HiveAccessController {
 
   @Override
   public void applyAuthorizationConfigPolicy(HiveConf hiveConf) {
-    // grant all privileges for table to its owner
+    // First apply configuration applicable to both Hive Cli and HiveServer2
+    // Not adding any authorization related restrictions to hive cli
+    // grant all privileges for table to its owner - set this in cli as well so that owner
+    // has permissions via HiveServer2 as well.
     hiveConf.setVar(ConfVars.HIVE_AUTHORIZATION_TABLE_OWNER_GRANTS, "INSERT,SELECT,UPDATE,DELETE");
 
-    // Configure PREEXECHOOKS with DisallowTransformHook to disallow transform queries
-    String hooks = hiveConf.getVar(ConfVars.PREEXECHOOKS).trim();
-    if (hooks.isEmpty()) {
-      hooks = DisallowTransformHook.class.getName();
-    } else {
-      hooks = hooks + "," +DisallowTransformHook.class.getName();
-    }
-    LOG.debug("Configuring hooks : " + hooks);
-    hiveConf.setVar(ConfVars.PREEXECHOOKS, hooks);
+    // Apply rest of the configuration only to HiveServer2
+    if(sessionCtx.getClientType() == CLIENT_TYPE.HIVESERVER2) {
+      // Configure PREEXECHOOKS with DisallowTransformHook to disallow transform queries
+      String hooks = hiveConf.getVar(ConfVars.PREEXECHOOKS).trim();
+      if (hooks.isEmpty()) {
+        hooks = DisallowTransformHook.class.getName();
+      } else {
+        hooks = hooks + "," +DisallowTransformHook.class.getName();
+      }
+      LOG.debug("Configuring hooks : " + hooks);
+      hiveConf.setVar(ConfVars.PREEXECHOOKS, hooks);
 
-    // restrict the variables that can be set using set command to a list in whitelist
-    hiveConf.setIsModWhiteListEnabled(true);
-    String whiteListParamsStr = hiveConf.getVar(ConfVars.HIVE_AUTHORIZATION_SQL_STD_AUTH_CONFIG_WHITELIST);
-    if (whiteListParamsStr == null || whiteListParamsStr.trim().equals("")){
-      // set the default configs in whitelist
-      whiteListParamsStr = Joiner.on(",").join(defaultModWhiteListSqlStdAuth);
-      hiveConf.setVar(ConfVars.HIVE_AUTHORIZATION_SQL_STD_AUTH_CONFIG_WHITELIST, whiteListParamsStr);
+      // restrict the variables that can be set using set command to a list in whitelist
+      hiveConf.setIsModWhiteListEnabled(true);
+      String whiteListParamsStr = hiveConf.getVar(ConfVars.HIVE_AUTHORIZATION_SQL_STD_AUTH_CONFIG_WHITELIST);
+      if (whiteListParamsStr == null || whiteListParamsStr.trim().equals("")){
+        // set the default configs in whitelist
+        whiteListParamsStr = Joiner.on(",").join(defaultModWhiteListSqlStdAuth);
+        hiveConf.setVar(ConfVars.HIVE_AUTHORIZATION_SQL_STD_AUTH_CONFIG_WHITELIST, whiteListParamsStr);
+      }
+      for(String whiteListParam : whiteListParamsStr.split(",")){
+        hiveConf.addToModifiableWhiteList(whiteListParam);
+      }
     }
-    for(String whiteListParam : whiteListParamsStr.split(",")){
-      hiveConf.addToModifiableWhiteList(whiteListParam);
-    }
-
   }
+
 
 }

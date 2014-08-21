@@ -4,6 +4,7 @@ PREHOOK: query: -- Tests the copying over of Table Parameters according to a Hiv
 CREATE TABLE table1(a INT, b STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@table1
 POSTHOOK: query: -- Tests the copying over of Table Parameters according to a HiveConf setting
 -- when doing a CREATE TABLE LIKE.
 
@@ -22,6 +23,7 @@ POSTHOOK: Output: default@table1
 PREHOOK: query: CREATE TABLE table2 LIKE table1
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@table2
 POSTHOOK: query: CREATE TABLE table2 LIKE table1
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

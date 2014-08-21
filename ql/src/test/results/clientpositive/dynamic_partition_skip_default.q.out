@@ -1,6 +1,7 @@
 PREHOOK: query: create table dynamic_part_table(intcol string) partitioned by (partcol1 string, partcol2 string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@dynamic_part_table
 POSTHOOK: query: create table dynamic_part_table(intcol string) partitioned by (partcol1 string, partcol2 string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

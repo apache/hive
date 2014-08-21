@@ -125,15 +125,14 @@ public class TestJdbcWithSQLAuthorization {
       // create tables
       try {
         stmt.execute("dfs -ls /tmp/");
-      } catch (SQLException e){
+      } catch (SQLException e) {
         caughtException = true;
-        String msg = "Principal [name=user1, type=USER] does not have following "
-            + "privileges on Object [type=COMMAND_PARAMS, name=[-ls, /tmp/]] for operation "
-            + "DFS : [ADMIN PRIVILEGE]";
+        String msg = "Permission denied: Principal [name=user1, type=USER] does not have "
+            + "following privileges for operation DFS [[ADMIN PRIVILEGE] on "
+            + "Object [type=COMMAND_PARAMS, name=[-ls, /tmp/]]]";
         assertTrue("Checking content of error message:" + e.getMessage(),
             e.getMessage().contains(msg));
-      }
-      finally {
+      } finally {
         stmt.close();
         hs2Conn.close();
       }

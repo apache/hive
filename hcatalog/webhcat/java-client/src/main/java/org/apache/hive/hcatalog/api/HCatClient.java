@@ -155,6 +155,64 @@ public abstract class HCatClient {
     throws HCatException;
 
   /**
+   * Updates the Table's whole schema (including column schema, I/O Formats, SerDe definitions, etc.)
+   * @param dbName The name of the database.
+   * @param tableName The name of the table.
+   * @param newTableDefinition The (new) definition of the table.
+   * @throws HCatException
+   */
+  public abstract void updateTableSchema(String dbName, String tableName, HCatTable newTableDefinition)
+      throws HCatException;
+
+  /**
+   * Serializer for HCatTable.
+   * @param hcatTable The HCatTable to be serialized into string form
+   * @return String representation of the HCatTable.
+   * @throws HCatException, on failure to serialize.
+   */
+  public abstract String serializeTable(HCatTable hcatTable) throws HCatException;
+
+  /**
+   * Deserializer for HCatTable.
+   * @param hcatTableStringRep The String representation of an HCatTable, presumably retrieved from {@link #serializeTable(HCatTable)}
+   * @return HCatTable reconstructed from the string
+   * throws HCatException, on failure to deserialize.
+   */
+  public abstract HCatTable deserializeTable(String hcatTableStringRep) throws HCatException;
+
+  /**
+   * Serializer for HCatPartition.
+   * @param hcatPartition The HCatPartition instance to be serialized.
+   * @return String representation of the HCatPartition.
+   * @throws HCatException, on failure to serialize.
+   */
+  public abstract String serializePartition(HCatPartition hcatPartition) throws HCatException;
+
+  /**
+   * Serializer for a list of HCatPartition.
+   * @param hcatPartitions The HCatPartitions to be serialized.
+   * @return A list of Strings, each representing an HCatPartition.
+   * @throws HCatException, on failure to serialize.
+   */
+  public abstract List<String> serializePartitions(List<HCatPartition> hcatPartitions) throws HCatException;
+
+  /**
+   * Deserializer for an HCatPartition.
+   * @param hcatPartitionStringRep The String representation of the HCatPartition, presumably retrieved from {@link #serializePartition(HCatPartition)}
+   * @return HCatPartition instance reconstructed from the string.
+   * @throws HCatException, on failure to deserialze.
+   */
+  public abstract HCatPartition deserializePartition(String hcatPartitionStringRep) throws HCatException;
+
+  /**
+   * Deserializer for a list of HCatPartition strings.
+   * @param hcatPartitionStringReps The list of HCatPartition strings to be deserialized.
+   * @return A list of HCatPartition instances, each reconstructed from an entry in the string-list.
+   * @throws HCatException, on failure to deserialize.
+   */
+  public abstract List<HCatPartition> deserializePartitions(List<String> hcatPartitionStringReps) throws HCatException;
+
+  /**
    * Creates the table like an existing table.
    *
    * @param dbName The name of the database.

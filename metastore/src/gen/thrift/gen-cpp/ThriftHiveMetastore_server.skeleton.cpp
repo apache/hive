@@ -22,6 +22,16 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     // Your initialization goes here
   }
 
+  void getMetaConf(std::string& _return, const std::string& key) {
+    // Your implementation goes here
+    printf("getMetaConf\n");
+  }
+
+  void setMetaConf(const std::string& key, const std::string& value) {
+    // Your implementation goes here
+    printf("setMetaConf\n");
+  }
+
   void create_database(const Database& database) {
     // Your implementation goes here
     printf("create_database\n");
@@ -375,6 +385,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
   void get_partitions_statistics_req(PartitionsStatsResult& _return, const PartitionsStatsRequest& request) {
     // Your implementation goes here
     printf("get_partitions_statistics_req\n");
+  }
+
+  void get_aggr_stats_for(AggrStats& _return, const PartitionsStatsRequest& request) {
+    // Your implementation goes here
+    printf("get_aggr_stats_for\n");
   }
 
   bool delete_partition_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& part_name, const std::string& col_name) {

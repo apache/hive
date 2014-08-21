@@ -3,6 +3,7 @@ PREHOOK: query: -- partitioned table analyze
 create table dummy (key string, value string) partitioned by (ds string, hr string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@dummy
 POSTHOOK: query: -- partitioned table analyze 
 
 create table dummy (key string, value string) partitioned by (ds string, hr string)
@@ -140,6 +141,7 @@ PREHOOK: query: -- static partitioned table on insert
 create table dummy (key string, value string) partitioned by (ds string, hr string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@dummy
 POSTHOOK: query: -- static partitioned table on insert
 
 create table dummy (key string, value string) partitioned by (ds string, hr string)
@@ -263,6 +265,7 @@ PREHOOK: query: -- dynamic partitioned table on insert
 create table dummy (key int) partitioned by (hr int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@dummy
 POSTHOOK: query: -- dynamic partitioned table on insert
 
 create table dummy (key int) partitioned by (hr int)
@@ -272,6 +275,7 @@ POSTHOOK: Output: default@dummy
 PREHOOK: query: CREATE TABLE tbl(key int, value int) ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl
 POSTHOOK: query: CREATE TABLE tbl(key int, value int) ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

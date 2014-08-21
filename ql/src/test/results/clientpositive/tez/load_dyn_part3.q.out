@@ -15,6 +15,7 @@ ds=2008-04-09/hr=12
 PREHOOK: query: create table if not exists nzhang_part3 like srcpart
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@nzhang_part3
 POSTHOOK: query: create table if not exists nzhang_part3 like srcpart
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

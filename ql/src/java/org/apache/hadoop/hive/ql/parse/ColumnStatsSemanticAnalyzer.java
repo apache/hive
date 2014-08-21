@@ -27,6 +27,7 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -102,6 +103,10 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
   private Map<String,String> getPartKeyValuePairsFromAST(ASTNode tree) {
     ASTNode child = ((ASTNode) tree.getChild(0).getChild(1));
     Map<String,String> partSpec = new HashMap<String, String>();
+    if (null == child) {
+      // case of analyze table T compute statistics for columns;
+      return partSpec;
+    }
     String partKey;
     String partValue;
     for (int i = 0; i < child.getChildCount(); i++) {
@@ -361,6 +366,9 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
       checkIfTemporaryTable();
       checkForPartitionColumns(colNames, Utilities.getColumnNamesFromFieldSchema(tbl.getPartitionKeys()));
       validateSpecifiedColumnNames(colNames);
+      if (conf.getBoolVar(ConfVars.HIVE_STATS_COLLECT_PART_LEVEL_STATS) && tbl.isPartitioned()) {
+        isPartitionStats = true;
+      }
 
       if (isPartitionStats) {
         isTableLevel = false;

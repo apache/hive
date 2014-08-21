@@ -24,6 +24,7 @@ import java.util.List;
 
 import junit.framework.TestCase;
 
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
@@ -72,6 +73,9 @@ public class TestMetastoreAuthorizationProvider extends TestCase {
     return DefaultHiveMetastoreAuthorizationProvider.class.getName();
   }
 
+  protected HiveConf createHiveConf() throws Exception {
+    return new HiveConf(this.getClass());
+  }
 
   @Override
   protected void setUp() throws Exception {
@@ -92,7 +96,7 @@ public class TestMetastoreAuthorizationProvider extends TestCase {
 
     MetaStoreUtils.startMetaStore(port, ShimLoader.getHadoopThriftAuthBridge());
 
-    clientHiveConf = new HiveConf(this.getClass());
+    clientHiveConf = createHiveConf();
 
     // Turn off client-side authorization
     clientHiveConf.setBoolVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_ENABLED,false);
@@ -134,10 +138,23 @@ public class TestMetastoreAuthorizationProvider extends TestCase {
     return "smp_ms_tbl";
   }
 
+  protected boolean isTestEnabled() {
+    return true;
+  }
+
+  protected String setupUser() {
+    return ugi.getUserName();
+  }
+
   public void testSimplePrivileges() throws Exception {
+    if (!isTestEnabled()) {
+      System.out.println("Skipping test " + this.getClass().getName());
+      return;
+    }
+
     String dbName = getTestDbName();
     String tblName = getTestTableName();
-    String userName = ugi.getUserName();
+    String userName = setupUser();
 
     allowCreateDatabase(userName);
 
@@ -156,6 +173,17 @@ public class TestMetastoreAuthorizationProvider extends TestCase {
         String.format("create table %s (a string) partitioned by (b string)", tblName));
 
     assertEquals(1,ret.getResponseCode());
+
+    // Even if table location is specified table creation should fail
+    String tblNameLoc = tblName + "_loc";
+    String tblLocation = new Path(dbLocn).getParent().toUri() + "/" + tblNameLoc;
+
+    driver.run("use " + dbName);
+    ret = driver.run(
+        String.format("create table %s (a string) partitioned by (b string) location '" +
+            tblLocation + "'", tblNameLoc));
+    assertEquals(1, ret.getResponseCode());
+
     // failure from not having permissions to create table
 
     ArrayList<FieldSchema> fields = new ArrayList<FieldSchema>(2);
@@ -198,6 +226,15 @@ public class TestMetastoreAuthorizationProvider extends TestCase {
     Table tbl = msc.getTable(dbName, tblName);
 
     validateCreateTable(tbl,tblName, dbName);
+
+    // Table creation should succeed even if location is specified
+    driver.run("use " + dbName);
+    ret = driver.run(
+        String.format("create table %s (a string) partitioned by (b string) location '" +
+            tblLocation + "'", tblNameLoc));
+    assertEquals(0, ret.getResponseCode());
+    Table tblLoc = msc.getTable(dbName, tblNameLoc);
+    validateCreateTable(tblLoc, tblNameLoc, dbName);
 
     String fakeUser = "mal";
     List<String> fakeGroupNames = new ArrayList<String>();

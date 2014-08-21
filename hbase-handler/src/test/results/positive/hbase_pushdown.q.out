@@ -3,6 +3,7 @@ STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key,cf:string")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@hbase_pushdown
 POSTHOOK: query: CREATE TABLE hbase_pushdown(key int, value string) 
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key,cf:string")
@@ -43,7 +44,7 @@ STAGE PLANS:
               predicate: (key = 90) (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Select Operator
-                expressions: key (type: int), value (type: string)
+                expressions: 90 (type: int), value (type: string)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 File Output Operator
@@ -235,7 +236,7 @@ STAGE PLANS:
               predicate: (((key = 80) and (key = 90)) and (value like '%90%')) (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Select Operator
-                expressions: key (type: int), value (type: string)
+                expressions: 90 (type: int), value (type: string)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 File Output Operator
@@ -398,7 +399,7 @@ STAGE PLANS:
               predicate: (key = 90) (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Select Operator
-                expressions: key (type: int), value (type: string)
+                expressions: 90 (type: int), value (type: string)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 File Output Operator

@@ -13,11 +13,11 @@ POSTHOOK: type: DROPFUNCTION
 PREHOOK: query: create temporary function row_sequence as 
 'org.apache.hadoop.hive.contrib.udf.UDFRowSequence'
 PREHOOK: type: CREATEFUNCTION
-PREHOOK: Output: database:default
+PREHOOK: Output: row_sequence
 POSTHOOK: query: create temporary function row_sequence as 
 'org.apache.hadoop.hive.contrib.udf.UDFRowSequence'
 POSTHOOK: type: CREATEFUNCTION
-POSTHOOK: Output: database:default
+POSTHOOK: Output: row_sequence
 PREHOOK: query: DESCRIBE FUNCTION EXTENDED row_sequence
 PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION EXTENDED row_sequence
@@ -643,7 +643,7 @@ POSTHOOK: Input: default@src
 119	false
 PREHOOK: query: drop temporary function row_sequence
 PREHOOK: type: DROPFUNCTION
-PREHOOK: Output: database:default
+PREHOOK: Output: row_sequence
 POSTHOOK: query: drop temporary function row_sequence
 POSTHOOK: type: DROPFUNCTION
-POSTHOOK: Output: database:default
+POSTHOOK: Output: row_sequence

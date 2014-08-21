@@ -5,6 +5,7 @@ POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table combine_3_srcpart_seq_rc (key int , value string) partitioned by (ds string, hr string) stored as sequencefile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@combine_3_srcpart_seq_rc
 POSTHOOK: query: create table combine_3_srcpart_seq_rc (key int , value string) partitioned by (ds string, hr string) stored as sequencefile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -122,6 +123,7 @@ POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE combine_3_srcpart_seq_rc_bucket(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS stored as sequencefile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@combine_3_srcpart_seq_rc_bucket
 POSTHOOK: query: CREATE TABLE combine_3_srcpart_seq_rc_bucket(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS stored as sequencefile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

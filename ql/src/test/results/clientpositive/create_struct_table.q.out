@@ -4,6 +4,7 @@ row format delimited
   collection items terminated by '\001'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@abc
 POSTHOOK: query: create table abc(strct struct<a:int, b:string, c:string>)
 row format delimited
   fields terminated by '\t'

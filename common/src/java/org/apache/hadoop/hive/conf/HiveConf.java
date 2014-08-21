@@ -36,12 +36,14 @@ import java.util.regex.Pattern;
 
 import javax.security.auth.login.LoginException;
 
-import static org.apache.hadoop.hive.conf.Validator.*;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
+import org.apache.hadoop.hive.conf.Validator.PatternSet;
+import org.apache.hadoop.hive.conf.Validator.RangeValidator;
+import org.apache.hadoop.hive.conf.Validator.StringSet;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -68,6 +70,7 @@ public class HiveConf extends Configuration {
 
 
   private static final Map<String, ConfVars> vars = new HashMap<String, ConfVars>();
+  private static final Map<String, ConfVars> metaConfs = new HashMap<String, ConfVars>();
   private final List<String> restrictList = new ArrayList<String>();
 
   private boolean isWhiteListRestrictionEnabled = false;
@@ -108,7 +111,6 @@ public class HiveConf extends Configuration {
       HiveConf.ConfVars.METASTOREPWD,
       HiveConf.ConfVars.METASTORECONNECTURLHOOK,
       HiveConf.ConfVars.METASTORECONNECTURLKEY,
-      HiveConf.ConfVars.METASTOREFORCERELOADCONF,
       HiveConf.ConfVars.METASTORESERVERMINTHREADS,
       HiveConf.ConfVars.METASTORESERVERMAXTHREADS,
       HiveConf.ConfVars.METASTORE_TCP_KEEP_ALIVE,
@@ -154,6 +156,19 @@ public class HiveConf extends Configuration {
       HiveConf.ConfVars.HIVE_TXN_MAX_OPEN_BATCH,
       };
 
+  /**
+   * User configurable Metastore vars
+   */
+  public static final HiveConf.ConfVars[] metaConfVars = {
+      HiveConf.ConfVars.METASTORE_TRY_DIRECT_SQL,
+      HiveConf.ConfVars.METASTORE_TRY_DIRECT_SQL_DDL
+  };
+
+  static {
+    for (ConfVars confVar : metaConfVars) {
+      metaConfs.put(confVar.varname, confVar);
+    }
+  }
 
   /**
    * dbVars are the parameters can be set per database. If these
@@ -283,9 +298,9 @@ public class HiveConf extends Configuration {
 
     LOCALMODEAUTO("hive.exec.mode.local.auto", false,
         "Let Hive determine whether to run in local mode automatically"),
-    LOCALMODEMAXBYTES("hive.exec.mode.local.auto.inputbytes.max", 134217728L, 
+    LOCALMODEMAXBYTES("hive.exec.mode.local.auto.inputbytes.max", 134217728L,
         "When hive.exec.mode.local.auto is true, input bytes should less than this for local mode."),
-    LOCALMODEMAXINPUTFILES("hive.exec.mode.local.auto.input.files.max", 4, 
+    LOCALMODEMAXINPUTFILES("hive.exec.mode.local.auto.input.files.max", 4,
         "When hive.exec.mode.local.auto is true, the number of tasks should less than this for local mode."),
 
     DROPIGNORESNONEXISTENT("hive.exec.drop.ignorenonexistent", true,
@@ -352,16 +367,11 @@ public class HiveConf extends Configuration {
         "jdbc:derby:;databaseName=metastore_db;create=true",
         "JDBC connect string for a JDBC metastore"),
 
-    METASTOREFORCERELOADCONF("hive.metastore.force.reload.conf", false, 
-        "Whether to force reloading of the metastore configuration (including\n" +
-        "the connection URL, before the next metastore query that accesses the\n" +
-        "datastore. Once reloaded, this value is reset to false. Used for\n" +
-        "testing only."),
     HMSHANDLERATTEMPTS("hive.hmshandler.retry.attempts", 1,
         "The number of times to retry a HMSHandler call if there were a connection error"),
     HMSHANDLERINTERVAL("hive.hmshandler.retry.interval", 1000,
         "The number of milliseconds between HMSHandler retry attempts"),
-    HMSHANDLERFORCERELOADCONF("hive.hmshandler.force.reload.conf", false, 
+    HMSHANDLERFORCERELOADCONF("hive.hmshandler.force.reload.conf", false,
         "Whether to force reloading of the HMSHandler configuration (including\n" +
         "the connection URL, before the next metastore query that accesses the\n" +
         "datastore. Once reloaded, this value is reset to false. Used for\n" +
@@ -374,7 +384,7 @@ public class HiveConf extends Configuration {
         "Whether to enable TCP keepalive for the metastore server. Keepalive will prevent accumulation of half-open connections."),
 
     METASTORE_INT_ORIGINAL("hive.metastore.archive.intermediate.original",
-        "_INTERMEDIATE_ORIGINAL", 
+        "_INTERMEDIATE_ORIGINAL",
         "Intermediate dir suffixes used for archiving. Not important what they\n" +
         "are, as long as collisions are avoided"),
     METASTORE_INT_ARCHIVED("hive.metastore.archive.intermediate.archived",
@@ -550,7 +560,7 @@ public class HiveConf extends Configuration {
     HIVE_SESSION_HISTORY_ENABLED("hive.session.history.enabled", false,
         "Whether to log Hive query, query plan, runtime statistics etc."),
 
-    HIVEQUERYSTRING("hive.query.string", "", 
+    HIVEQUERYSTRING("hive.query.string", "",
         "Query being executed (might be multiple per a session)"),
 
     HIVEQUERYID("hive.query.id", "",
@@ -739,7 +749,7 @@ public class HiveConf extends Configuration {
     // HWI
     HIVEHWILISTENHOST("hive.hwi.listen.host", "0.0.0.0", "This is the host address the Hive Web Interface will listen on"),
     HIVEHWILISTENPORT("hive.hwi.listen.port", "9999", "This is the port the Hive Web Interface will listen on"),
-    HIVEHWIWARFILE("hive.hwi.war.file", "${system:HWI_WAR_FILE}",
+    HIVEHWIWARFILE("hive.hwi.war.file", "${env:HWI_WAR_FILE}",
         "This sets the path to the HWI war file, relative to ${HIVE_HOME}. "),
 
     HIVEHADOOPMAXMEM("hive.mapred.local.mem", 0, "mapper/reducer memory in local mode"),
@@ -783,6 +793,14 @@ public class HiveConf extends Configuration {
     HIVEMERGERCFILEBLOCKLEVEL("hive.merge.rcfile.block.level", true, ""),
     HIVEMERGEINPUTFORMATBLOCKLEVEL("hive.merge.input.format.block.level",
         "org.apache.hadoop.hive.ql.io.rcfile.merge.RCFileBlockMergeInputFormat", ""),
+    HIVEMERGEORCFILESTRIPELEVEL("hive.merge.orcfile.stripe.level", true,
+        "When hive.merge.mapfiles or hive.merge.mapredfiles is enabled while writing a\n" +
+        " table with ORC file format, enabling this config will do stripe level fast merge\n" +
+        " for small ORC files. Note that enabling this config will not honor padding tolerance\n" +
+        " config (hive.exec.orc.block.padding.tolerance)."),
+    HIVEMERGEINPUTFORMATSTRIPELEVEL("hive.merge.input.format.stripe.level",
+        "org.apache.hadoop.hive.ql.io.orc.OrcFileStripeMergeInputFormat",
+	"Input file format to use for ORC stripe level merging (for internal use only)"),
     HIVEMERGECURRENTJOBHASDYNAMICPARTITIONS(
         "hive.merge.current.job.has.dynamic.partitions", false, ""),
 
@@ -797,12 +815,12 @@ public class HiveConf extends Configuration {
     HIVE_RCFILE_TOLERATE_CORRUPTIONS("hive.io.rcfile.tolerate.corruptions", false, ""),
     HIVE_RCFILE_RECORD_BUFFER_SIZE("hive.io.rcfile.record.buffer.size", 4194304, ""),   // 4M
 
-    HIVE_ORC_FILE_MEMORY_POOL("hive.exec.orc.memory.pool", 0.5f, 
+    HIVE_ORC_FILE_MEMORY_POOL("hive.exec.orc.memory.pool", 0.5f,
         "Maximum fraction of heap that can be used by ORC file writers"),
     HIVE_ORC_WRITE_FORMAT("hive.exec.orc.write.format", null,
         "Define the version of the file to write"),
     HIVE_ORC_DEFAULT_STRIPE_SIZE("hive.exec.orc.default.stripe.size",
-        256L * 1024 * 1024,
+        64L * 1024 * 1024,
         "Define the default ORC stripe size"),
     HIVE_ORC_DEFAULT_BLOCK_SIZE("hive.exec.orc.default.block.size", 256L * 1024 * 1024,
         "Define the default file system block size for ORC files."),
@@ -895,7 +913,12 @@ public class HiveConf extends Configuration {
         "This controls how many partitions can be scanned for each partitioned table.\n" +
         "The default value \"-1\" means no limit."),
 
-    HIVEHASHTABLETHRESHOLD("hive.hashtable.initialCapacity", 100000, ""),
+    HIVEHASHTABLEKEYCOUNTADJUSTMENT("hive.hashtable.key.count.adjustment", 1.0f,
+        "Adjustment to mapjoin hashtable size derived from table and column statistics; the estimate" +
+        " of the number of keys is divided by this value. If the value is 0, statistics are not used" +
+        "and hive.hashtable.initialCapacity is used instead."),
+    HIVEHASHTABLETHRESHOLD("hive.hashtable.initialCapacity", 100000, "Initial capacity of " +
+        "mapjoin hashtable if statistics are absent, or if hive.hashtable.stats.key.estimate.adjustment is set to 0"),
     HIVEHASHTABLELOADFACTOR("hive.hashtable.loadfactor", (float) 0.75, ""),
     HIVEHASHTABLEFOLLOWBYGBYMAXMEMORYUSAGE("hive.mapjoin.followby.gby.localtask.max.memory.usage", (float) 0.55,
         "This number means how much memory the local task can take to hold the key/value into an in-memory hash table \n" +
@@ -983,6 +1006,8 @@ public class HiveConf extends Configuration {
         "Whether to transitively replicate predicate filters over equijoin conditions."),
     HIVEPPDREMOVEDUPLICATEFILTERS("hive.ppd.remove.duplicatefilters", true,
         "Whether to push predicates down into storage handlers.  Ignored when hive.optimize.ppd is false."),
+    // Constant propagation optimizer
+    HIVEOPTCONSTANTPROPAGATION("hive.optimize.constant.propagation", true, "Whether to enable constant propagation optimizer"),
     HIVEMETADATAONLYQUERIES("hive.optimize.metadataonly", true, ""),
     HIVENULLSCANOPTIMIZE("hive.optimize.null.scan", true, "Dont scan relations which are guaranteed to not generate any rows"),
     HIVEOPTPPD_STORAGE("hive.optimize.ppd.storage", true,
@@ -1076,8 +1101,8 @@ public class HiveConf extends Configuration {
         "The Java class (implementing the StatsAggregator interface) that is used by default if hive.stats.dbclass is custom type."),
     HIVE_STATS_JDBC_TIMEOUT("hive.stats.jdbc.timeout", 30,
         "Timeout value (number of seconds) used by JDBC connection and statements."),
-    HIVE_STATS_ATOMIC("hive.stats.atomic", false, 
-        "whether to update metastore stats only if all stats are available"), 
+    HIVE_STATS_ATOMIC("hive.stats.atomic", false,
+        "whether to update metastore stats only if all stats are available"),
     HIVE_STATS_RETRIES_MAX("hive.stats.retries.max", 0,
         "Maximum number of retries when stats publisher/aggregator got an exception updating intermediate database. \n" +
         "Default is no tries on failures."),
@@ -1094,7 +1119,9 @@ public class HiveConf extends Configuration {
         "Whether queries will fail because stats cannot be collected completely accurately. \n" +
         "If this is set to true, reading/writing from/into a partition may fail because the stats\n" +
         "could not be computed accurately."),
-
+    HIVE_STATS_COLLECT_PART_LEVEL_STATS("hive.analyze.stmt.collect.partlevel.stats", true,
+        "analyze table T compute statistics for columns. Queries like these should compute partition"
+        + "level stats for partitioned table even when no part spec is specified."),
     HIVE_STATS_GATHER_NUM_THREADS("hive.stats.gather.num.threads", 10,
         "Number of threads used by partialscan/noscan analyze command for partitioned tables.\n" +
         "This is applicable only for file formats that implement StatsProvidingRecordReader (like ORC)."),
@@ -1252,6 +1279,9 @@ public class HiveConf extends Configuration {
         "Disabling this improves HBase write performance at the risk of lost writes in case of a crash."),
     HIVE_HBASE_GENERATE_HFILES("hive.hbase.generatehfiles", false,
         "True when HBaseStorageHandler should generate hfiles instead of operate against the online table."),
+    HIVE_HBASE_SNAPSHOT_NAME("hive.hbase.snapshot.name", null, "The HBase table snapshot name to use."),
+    HIVE_HBASE_SNAPSHOT_RESTORE_DIR("hive.hbase.snapshot.restoredir", "/tmp", "The directory in which to " +
+        "restore the HBase table snapshot."),
 
     // For har files
     HIVEARCHIVEENABLED("hive.archive.enabled", false, "Whether archiving operations are permitted"),
@@ -1261,14 +1291,14 @@ public class HiveConf extends Configuration {
 
     HIVEOUTERJOINSUPPORTSFILTERS("hive.outerjoin.supports.filters", true, ""),
 
-    HIVEFETCHTASKCONVERSION("hive.fetch.task.conversion", "minimal", new StringSet("minimal", "more"),
+    HIVEFETCHTASKCONVERSION("hive.fetch.task.conversion", "more", new StringSet("minimal", "more"),
         "Some select queries can be converted to single FETCH task minimizing latency.\n" +
         "Currently the query should be single sourced not having any subquery and should not have\n" +
         "any aggregations or distincts (which incurs RS), lateral views and joins.\n" +
         "1. minimal : SELECT STAR, FILTER on partition columns, LIMIT only\n" +
         "2. more    : SELECT, FILTER, LIMIT only (support TABLESAMPLE and virtual columns)\n"
     ),
-    HIVEFETCHTASKCONVERSIONTHRESHOLD("hive.fetch.task.conversion.threshold", -1l,
+    HIVEFETCHTASKCONVERSIONTHRESHOLD("hive.fetch.task.conversion.threshold", 1073741824L,
         "Input threshold for applying hive.fetch.task.conversion. If target table is native, input length\n" +
         "is calculated by summation of file lengths. If it's not native, storage handler for the table\n" +
         "can optionally implement org.apache.hadoop.hive.ql.metadata.InputEstimator interface."),
@@ -1300,6 +1330,8 @@ public class HiveConf extends Configuration {
         "Enables type checking for registered Hive configurations"),
 
     SEMANTIC_ANALYZER_HOOK("hive.semantic.analyzer.hook", "", ""),
+    HIVE_TEST_AUTHORIZATION_SQLSTD_HS2_MODE(
+        "hive.test.authz.sstd.hs2.mode", false, "test hs2 mode from .q tests", true),
     HIVE_AUTHORIZATION_ENABLED("hive.security.authorization.enabled", false,
         "enable or disable the Hive client authorization"),
     HIVE_AUTHORIZATION_MANAGER("hive.security.authorization.manager",
@@ -1385,6 +1417,11 @@ public class HiveConf extends Configuration {
         "If the property is set, the value must be a valid URI (java.net.URI, e.g. \"file:///tmp/my-logging.properties\"), \n" +
         "which you can then extract a URL from and pass to PropertyConfigurator.configure(URL)."),
 
+    // Hive global init file location
+    HIVE_GLOBAL_INIT_FILE_LOCATION("hive.server2.global.init.file.location", "${env:HIVE_CONF_DIR}",
+        "The location of HS2 global init file (.hiverc).\n" +
+        "If the property is reset, the value must be a valid path where the init file is located."),
+
     // prefix used to auto generated column aliases (this should be started with '_')
     HIVE_AUTOGEN_COLUMNALIAS_PREFIX_LABEL("hive.autogen.columnalias.prefix.label", "_c",
         "String used as a prefix when auto generating column alias.\n" +
@@ -1439,6 +1476,8 @@ public class HiveConf extends Configuration {
         "Minimum number of worker threads when in HTTP mode."),
     HIVE_SERVER2_THRIFT_HTTP_MAX_WORKER_THREADS("hive.server2.thrift.http.max.worker.threads", 500,
         "Maximum number of worker threads when in HTTP mode."),
+    HIVE_SERVER2_THRIFT_HTTP_MAX_IDLE_TIME("hive.server2.thrift.http.max.idle.time", 1800000, 
+        "Maximum idle time in milliseconds for a connection on the server when in HTTP mode."),
 
     // binary transport settings
     HIVE_SERVER2_THRIFT_PORT("hive.server2.thrift.port", 10000,
@@ -1537,11 +1576,11 @@ public class HiveConf extends Configuration {
     HIVE_SERVER2_SSL_KEYSTORE_PATH("hive.server2.keystore.path", "", ""),
     HIVE_SERVER2_SSL_KEYSTORE_PASSWORD("hive.server2.keystore.password", "", ""),
 
-    HIVE_SECURITY_COMMAND_WHITELIST("hive.security.command.whitelist", "set,reset,dfs,add,delete,compile",
+    HIVE_SECURITY_COMMAND_WHITELIST("hive.security.command.whitelist", "set,reset,dfs,add,list,delete,compile",
         "Comma separated list of non-SQL Hive commands users are authorized to execute"),
 
     HIVE_CONF_RESTRICTED_LIST("hive.conf.restricted.list",
-        "hive.security.authenticator.manager,hive.security.authorization.manager",
+        "hive.security.authenticator.manager,hive.security.authorization.manager,hive.users.in.admin.role",
         "Comma separated list of configuration options which are immutable at runtime"),
 
     // If this is set all move tasks at the end of a multi-insert query will only begin once all
@@ -1626,7 +1665,7 @@ public class HiveConf extends Configuration {
         "Exceeding this will trigger a flush irrelevant of memory pressure condition."),
     HIVE_VECTORIZATION_GROUPBY_FLUSH_PERCENT("hive.vectorized.groupby.flush.percent", (float) 0.1,
         "Percent of entries in the group by aggregation hash flushed when the memory threshold is exceeded."),
-    
+
 
     HIVE_TYPE_CHECK_ON_INSERT("hive.typecheck.on.insert", true, ""),
 
@@ -1662,7 +1701,9 @@ public class HiveConf extends Configuration {
         "  none: default(past) behavior. Implies only alphaNumeric and underscore are valid characters in identifiers.\n" +
         "  column: implies column names can contain any character."
     ),
-    USERS_IN_ADMIN_ROLE("hive.users.in.admin.role", "",
+
+    // role names are case-insensitive
+    USERS_IN_ADMIN_ROLE("hive.users.in.admin.role", "", false,
         "Comma separated list of users who are in admin role for bootstrapping.\n" +
         "More users can be added in ADMIN role later."),
 
@@ -1708,25 +1749,31 @@ public class HiveConf extends Configuration {
     private final String description;
 
     private final boolean excluded;
+    private final boolean caseSensitive;
 
     ConfVars(String varname, Object defaultVal, String description) {
-      this(varname, defaultVal, null, description, false);
+      this(varname, defaultVal, null, description, true, false);
     }
 
     ConfVars(String varname, Object defaultVal, String description, boolean excluded) {
-      this(varname, defaultVal, null, description, excluded);
+      this(varname, defaultVal, null, description, true, excluded);
+    }
+
+    ConfVars(String varname, String defaultVal, boolean caseSensitive, String description) {
+      this(varname, defaultVal, null, description, caseSensitive, false);
     }
 
     ConfVars(String varname, Object defaultVal, Validator validator, String description) {
-      this(varname, defaultVal, validator, description, false);
+      this(varname, defaultVal, validator, description, true, false);
     }
 
-    ConfVars(String varname, Object defaultVal, Validator validator, String description, boolean excluded) {
+    ConfVars(String varname, Object defaultVal, Validator validator, String description, boolean caseSensitive, boolean excluded) {
       this.varname = varname;
       this.validator = validator;
       this.description = description;
       this.defaultExpr = defaultVal == null ? null : String.valueOf(defaultVal);
       this.excluded = excluded;
+      this.caseSensitive = caseSensitive;
       if (defaultVal == null || defaultVal instanceof String) {
         this.valClass = String.class;
         this.valType = VarType.STRING;
@@ -1791,6 +1838,10 @@ public class HiveConf extends Configuration {
 
     public boolean isExcluded() {
       return excluded;
+    }
+
+    public boolean isCaseSensitive() {
+      return caseSensitive;
     }
 
     @Override
@@ -1999,6 +2050,10 @@ public class HiveConf extends Configuration {
 
   public static ConfVars getConfVars(String name) {
     return vars.get(name);
+  }
+
+  public static ConfVars getMetaConf(String name) {
+    return metaConfs.get(name);
   }
 
   public String getVar(ConfVars var) {
@@ -2243,7 +2298,6 @@ public class HiveConf extends Configuration {
   public static URL getHiveServer2SiteLocation() {
     return hiveServer2SiteUrl;
   }
-
 
   /**
    * @return the user name set in hadoop.job.ugi param or the current user from System

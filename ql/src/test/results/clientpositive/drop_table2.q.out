@@ -1,6 +1,7 @@
 PREHOOK: query: create table if not exists temp(col STRING) partitioned by (p STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@temp
 POSTHOOK: query: create table if not exists temp(col STRING) partitioned by (p STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -46,6 +47,7 @@ POSTHOOK: Output: default@temp
 PREHOOK: query: create table if not exists temp(col STRING) partitioned by (p STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@temp
 POSTHOOK: query: create table if not exists temp(col STRING) partitioned by (p STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

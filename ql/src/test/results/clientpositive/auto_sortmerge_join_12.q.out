@@ -4,6 +4,7 @@ CREATE TABLE bucket_small (key string, value string) partitioned by (ds string)
 CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@bucket_small
 POSTHOOK: query: -- small 1 part, 2 bucket & big 2 part, 4 bucket
 
 CREATE TABLE bucket_small (key string, value string) partitioned by (ds string)
@@ -31,6 +32,7 @@ POSTHOOK: Output: default@bucket_small@ds=2008-04-08
 PREHOOK: query: CREATE TABLE bucket_big (key string, value string) partitioned by (ds string) CLUSTERED BY (key) SORTED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@bucket_big
 POSTHOOK: query: CREATE TABLE bucket_big (key string, value string) partitioned by (ds string) CLUSTERED BY (key) SORTED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -105,6 +107,7 @@ PREHOOK: query: CREATE TABLE bucket_medium (key string, value string) partitione
 CLUSTERED BY (key) SORTED BY (key) INTO 3 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@bucket_medium
 POSTHOOK: query: CREATE TABLE bucket_medium (key string, value string) partitioned by (ds string)
 CLUSTERED BY (key) SORTED BY (key) INTO 3 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE

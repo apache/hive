@@ -5,6 +5,7 @@ PREHOOK: query: -- SORT_QUERY_RESULTS
 CREATE TABLE T1(a STRING, b STRING, c STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY ' ' STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@T1
 POSTHOOK: query: -- SORT_QUERY_RESULTS
 
 -- Set merging to false above to make the explain more readable

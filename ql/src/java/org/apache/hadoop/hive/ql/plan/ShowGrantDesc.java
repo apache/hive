@@ -17,8 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.plan;
 
-import java.util.List;
-
 @Explain(displayName="show grant desc")
 public class ShowGrantDesc {
   
@@ -26,8 +24,6 @@ public class ShowGrantDesc {
 
   private PrivilegeObjectDesc hiveObj;
   
-  private List<String> columns;
-
   private String resFile;
 
   /**
@@ -42,11 +38,10 @@ public class ShowGrantDesc {
   }
   
   public ShowGrantDesc(String resFile, PrincipalDesc principalDesc,
-      PrivilegeObjectDesc subjectObj, List<String> columns) {
+      PrivilegeObjectDesc subjectObj) {
     this.resFile = resFile;
     this.principalDesc = principalDesc;
     this.hiveObj = subjectObj;
-    this.columns = columns;
   }
 
   public static String getSchema() {
@@ -77,13 +72,5 @@ public class ShowGrantDesc {
 
   public void setResFile(String resFile) {
     this.resFile = resFile;
-  }
-  
-  public List<String> getColumns() {
-    return columns;
-  }
-
-  public void setColumns(List<String> columns) {
-    this.columns = columns;
   }
 }

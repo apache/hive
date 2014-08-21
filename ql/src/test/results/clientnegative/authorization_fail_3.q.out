@@ -3,6 +3,7 @@ PREHOOK: query: -- SORT_BEFORE_DIFF
 create table authorization_fail_3 (key int, value string) partitioned by (ds string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@authorization_fail_3
 POSTHOOK: query: -- SORT_BEFORE_DIFF
 
 create table authorization_fail_3 (key int, value string) partitioned by (ds string)
@@ -26,7 +27,7 @@ PREHOOK: query: show grant user hive_test_user on table authorization_fail_3
 PREHOOK: type: SHOW_GRANT
 POSTHOOK: query: show grant user hive_test_user on table authorization_fail_3
 POSTHOOK: type: SHOW_GRANT
-default	authorization_fail_3			hive_test_user	USER	Create	false	-1	hive_test_user
+default	authorization_fail_3			hive_test_user	USER	CREATE	false	-1	hive_test_user
 PREHOOK: query: show grant user hive_test_user on table authorization_fail_3 partition (ds='2010')
 PREHOOK: type: SHOW_GRANT
 POSTHOOK: query: show grant user hive_test_user on table authorization_fail_3 partition (ds='2010')

@@ -1,6 +1,7 @@
 PREHOOK: query: create table mp (a string) partitioned by (b string, c string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@mp
 POSTHOOK: query: create table mp (a string) partitioned by (b string, c string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -42,7 +43,8 @@ POSTHOOK: type: ALTERTABLE_DROPPARTS
 ABSTRACT SYNTAX TREE:
   
 TOK_ALTERTABLE_DROPPARTS
-   mp
+   TOK_TABNAME
+      mp
    TOK_PARTSPEC
       TOK_PARTVAL
          b
@@ -57,7 +59,7 @@ STAGE PLANS:
   Stage: Stage-0
       Drop Table Operator:
         Drop Table
-          table: mp
+          table: default.mp
 
 PREHOOK: query: alter table mp drop partition (b='1')
 PREHOOK: type: ALTERTABLE_DROPPARTS

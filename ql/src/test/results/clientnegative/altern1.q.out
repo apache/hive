@@ -1,6 +1,7 @@
 PREHOOK: query: create table altern1(a int, b int) partitioned by (ds string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@altern1
 POSTHOOK: query: create table altern1(a int, b int) partitioned by (ds string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

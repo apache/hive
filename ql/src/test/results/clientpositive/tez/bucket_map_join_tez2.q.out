@@ -1,6 +1,7 @@
 PREHOOK: query: CREATE TABLE srcbucket_mapjoin(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@srcbucket_mapjoin
 POSTHOOK: query: CREATE TABLE srcbucket_mapjoin(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -8,6 +9,7 @@ POSTHOOK: Output: default@srcbucket_mapjoin
 PREHOOK: query: CREATE TABLE tab_part (key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@tab_part
 POSTHOOK: query: CREATE TABLE tab_part (key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -15,6 +17,7 @@ POSTHOOK: Output: default@tab_part
 PREHOOK: query: CREATE TABLE srcbucket_mapjoin_part (key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@srcbucket_mapjoin_part
 POSTHOOK: query: CREATE TABLE srcbucket_mapjoin_part (key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -86,6 +89,7 @@ POSTHOOK: Lineage: tab_part PARTITION(ds=2008-04-08).value SIMPLE [(srcbucket_ma
 PREHOOK: query: CREATE TABLE tab(key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@tab
 POSTHOOK: query: CREATE TABLE tab(key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -161,10 +165,10 @@ STAGE PLANS:
                         keys:
                           0 _col1 (type: string)
                           1 value (type: string)
-                        outputColumnNames: _col0, _col10
+                        outputColumnNames: _col0, _col12
                         Statistics: Num rows: 302 Data size: 3213 Basic stats: COMPLETE Column stats: NONE
                         Select Operator
-                          expressions: _col0 (type: int), _col10 (type: int)
+                          expressions: _col0 (type: int), _col12 (type: int)
                           outputColumnNames: _col0, _col1
                           Statistics: Num rows: 302 Data size: 3213 Basic stats: COMPLETE Column stats: NONE
                           File Output Operator
@@ -198,6 +202,7 @@ STAGE PLANS:
 PREHOOK: query: CREATE TABLE tab1(key int, value string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@tab1
 POSTHOOK: query: CREATE TABLE tab1(key int, value string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -252,10 +257,10 @@ STAGE PLANS:
                       keys:
                         0 UDFToDouble(key) (type: double)
                         1 UDFToDouble(key) (type: double)
-                      outputColumnNames: _col0, _col1, _col5
+                      outputColumnNames: _col0, _col1, _col6
                       Statistics: Num rows: 133 Data size: 1411 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
-                        expressions: _col0 (type: int), _col1 (type: string), _col5 (type: string)
+                        expressions: _col0 (type: int), _col1 (type: string), _col6 (type: string)
                         outputColumnNames: _col0, _col1, _col2
                         Statistics: Num rows: 133 Data size: 1411 Basic stats: COMPLETE Column stats: NONE
                         File Output Operator

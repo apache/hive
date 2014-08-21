@@ -1,6 +1,7 @@
 PREHOOK: query: create table analyze_srcbucket like srcbucket
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@analyze_srcbucket
 POSTHOOK: query: create table analyze_srcbucket like srcbucket
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

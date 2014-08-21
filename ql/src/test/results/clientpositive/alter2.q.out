@@ -1,6 +1,7 @@
 PREHOOK: query: create table alter2(a int, b int) partitioned by (insertdate string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@alter2
 POSTHOOK: query: create table alter2(a int, b int) partitioned by (insertdate string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -103,6 +104,7 @@ POSTHOOK: Output: default@alter2
 PREHOOK: query: create external table alter2(a int, b int) partitioned by (insertdate string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@alter2
 POSTHOOK: query: create external table alter2(a int, b int) partitioned by (insertdate string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -221,20 +223,25 @@ PREHOOK: query: -- Using non-default Database
 
 CREATE DATABASE alter2_db
 PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:alter2_db
 POSTHOOK: query: -- Using non-default Database
 
 CREATE DATABASE alter2_db
 POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:alter2_db
 PREHOOK: query: USE alter2_db
 PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:alter2_db
 POSTHOOK: query: USE alter2_db
 POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:alter2_db
 PREHOOK: query: SHOW TABLES
 PREHOOK: type: SHOWTABLES
 POSTHOOK: query: SHOW TABLES
 POSTHOOK: type: SHOWTABLES
 PREHOOK: query: CREATE TABLE alter2(a int, b int) PARTITIONED BY (insertdate string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: alter2_db@alter2
 PREHOOK: Output: database:alter2_db
 POSTHOOK: query: CREATE TABLE alter2(a int, b int) PARTITIONED BY (insertdate string)
 POSTHOOK: type: CREATETABLE
@@ -337,6 +344,7 @@ POSTHOOK: Input: alter2_db@alter2
 POSTHOOK: Output: alter2_db@alter2
 PREHOOK: query: CREATE EXTERNAL TABLE alter2(a int, b int) PARTITIONED BY (insertdate string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: alter2_db@alter2
 PREHOOK: Output: database:alter2_db
 POSTHOOK: query: CREATE EXTERNAL TABLE alter2(a int, b int) PARTITIONED BY (insertdate string)
 POSTHOOK: type: CREATETABLE
@@ -439,8 +447,10 @@ POSTHOOK: Input: alter2_db@alter2
 POSTHOOK: Output: alter2_db@alter2
 PREHOOK: query: USE default
 PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:default
 POSTHOOK: query: USE default
 POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:default
 PREHOOK: query: DROP DATABASE alter2_db
 PREHOOK: type: DROPDATABASE
 PREHOOK: Input: database:alter2_db

@@ -1,0 +1,1 @@
+FAILED: RuntimeException org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzPluginException: SQL standards based authorization should not be enabled from hive cliInstead the use of storage based authorization in hive metastore is reccomended. Set hive.security.authorization.enabled=false to disable authz within cli

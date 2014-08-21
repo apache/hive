@@ -98,7 +98,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
  */
 public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
   InputFormatChecker, VectorizedInputFormatInterface,
-    AcidInputFormat<OrcStruct> {
+    AcidInputFormat<NullWritable, OrcStruct> {
 
   private static final Log LOG = LogFactory.getLog(OrcInputFormat.class);
   static final HadoopShims SHIMS = ShimLoader.getHadoopShims();
@@ -989,7 +989,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     boolean vectorMode = Utilities.isVectorMode(conf);
 
     // if HiveCombineInputFormat gives us FileSplits instead of OrcSplits,
-    // we know it is not ACID.
+    // we know it is not ACID. (see a check in CombineHiveInputFormat.getSplits() that assures this)
     if (inputSplit.getClass() == FileSplit.class) {
       if (vectorMode) {
         return createVectorizedReader(inputSplit, conf, reporter);
@@ -998,62 +998,75 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
           ((FileSplit) inputSplit).getPath(),
           OrcFile.readerOptions(conf)), conf, (FileSplit) inputSplit);
     }
-
+    
     OrcSplit split = (OrcSplit) inputSplit;
     reporter.setStatus(inputSplit.toString());
 
-    // if we are strictly old-school, just use the old code
+    Options options = new Options(conf).reporter(reporter);
+    final RowReader<OrcStruct> inner = getReader(inputSplit, options);
+    
+    
+    /*Even though there are no delta files, we still need to produce row ids so that an
+    * UPDATE or DELETE statement would work on a table which didn't have any previous updates*/
     if (split.isOriginal() && split.getDeltas().isEmpty()) {
       if (vectorMode) {
         return createVectorizedReader(inputSplit, conf, reporter);
       } else {
-        return new OrcRecordReader(OrcFile.createReader(split.getPath(),
-            OrcFile.readerOptions(conf)), conf, split);
+        return new NullKeyRecordReader(inner, conf);
       }
     }
 
-    Options options = new Options(conf).reporter(reporter);
-    final RowReader<OrcStruct> inner = getReader(inputSplit, options);
     if (vectorMode) {
       return (org.apache.hadoop.mapred.RecordReader)
           new VectorizedOrcAcidRowReader(inner, conf, (FileSplit) inputSplit);
     }
-    final RecordIdentifier id = inner.createKey();
+    return new NullKeyRecordReader(inner, conf);
+  }
+  /**
+   * Return a RecordReader that is compatible with the Hive 0.12 reader
+   * with NullWritable for the key instead of RecordIdentifier.
+   */
+  public static final class NullKeyRecordReader implements AcidRecordReader<NullWritable, OrcStruct> {
+    private final RecordIdentifier id;
+    private final RowReader<OrcStruct> inner;
 
-    // Return a RecordReader that is compatible with the Hive 0.12 reader
-    // with NullWritable for the key instead of RecordIdentifier.
-    return new org.apache.hadoop.mapred.RecordReader<NullWritable, OrcStruct>(){
-      @Override
-      public boolean next(NullWritable nullWritable,
-                          OrcStruct orcStruct) throws IOException {
-        return inner.next(id, orcStruct);
-      }
+    public RecordIdentifier getRecordIdentifier() {
+      return id;
+    }
+    private NullKeyRecordReader(RowReader<OrcStruct> inner, Configuration conf) {
+      this.inner = inner;
+      id = inner.createKey();
+    }
+    @Override
+    public boolean next(NullWritable nullWritable,
+                        OrcStruct orcStruct) throws IOException {
+      return inner.next(id, orcStruct);
+    }
 
-      @Override
-      public NullWritable createKey() {
-        return NullWritable.get();
-      }
+    @Override
+    public NullWritable createKey() {
+      return NullWritable.get();
+    }
 
-      @Override
-      public OrcStruct createValue() {
-        return inner.createValue();
-      }
+    @Override
+    public OrcStruct createValue() {
+      return inner.createValue();
+    }
 
-      @Override
-      public long getPos() throws IOException {
-        return inner.getPos();
-      }
+    @Override
+    public long getPos() throws IOException {
+      return inner.getPos();
+    }
 
-      @Override
-      public void close() throws IOException {
-        inner.close();
-      }
+    @Override
+    public void close() throws IOException {
+      inner.close();
+    }
 
-      @Override
-      public float getProgress() throws IOException {
-        return inner.getProgress();
-      }
-    };
+    @Override
+    public float getProgress() throws IOException {
+      return inner.getProgress();
+    }
   }
 
 

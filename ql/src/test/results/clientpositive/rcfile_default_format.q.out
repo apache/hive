@@ -1,6 +1,7 @@
 PREHOOK: query: CREATE TABLE rcfile_default_format (key STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@rcfile_default_format
 POSTHOOK: query: CREATE TABLE rcfile_default_format (key STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -81,6 +82,7 @@ Storage Desc Params:
 PREHOOK: query: CREATE TABLE rcfile_default_format_txtfile (key STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@rcfile_default_format_txtfile
 POSTHOOK: query: CREATE TABLE rcfile_default_format_txtfile (key STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -218,6 +220,7 @@ Storage Desc Params:
 PREHOOK: query: CREATE TABLE rcfile_default_format_default_serde (key STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@rcfile_default_format_default_serde
 POSTHOOK: query: CREATE TABLE rcfile_default_format_default_serde (key STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -298,6 +301,7 @@ Storage Desc Params:
 PREHOOK: query: CREATE TABLE rcfile_default_serde (key STRING) STORED AS rcfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@rcfile_default_serde
 POSTHOOK: query: CREATE TABLE rcfile_default_serde (key STRING) STORED AS rcfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

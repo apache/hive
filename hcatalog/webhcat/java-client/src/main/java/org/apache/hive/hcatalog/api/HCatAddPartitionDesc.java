@@ -18,18 +18,8 @@
  */
 package org.apache.hive.hcatalog.api;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
-import org.apache.hadoop.hive.metastore.Warehouse;
-import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.Partition;
-import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
-import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hive.hcatalog.common.HCatException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,16 +30,33 @@ import org.slf4j.LoggerFactory;
 public class HCatAddPartitionDesc {
 
   private static final Logger LOG = LoggerFactory.getLogger(HCatAddPartitionDesc.class);
-  private String tableName;
-  private String dbName;
-  private String location;
-  private Map<String, String> partSpec;
+  private HCatPartition hcatPartition;
 
-  private HCatAddPartitionDesc(String dbName, String tbl, String loc, Map<String, String> spec) {
+  // The following data members are only required to support the deprecated constructor (and builder).
+  String dbName, tableName, location;
+  Map<String, String> partitionKeyValues;
+
+  private HCatAddPartitionDesc(HCatPartition hcatPartition) {
+    this.hcatPartition = hcatPartition;
+  }
+
+  private HCatAddPartitionDesc(String dbName, String tableName, String location, Map<String, String> partitionKeyValues) {
+    this.hcatPartition = null;
     this.dbName = dbName;
-    this.tableName = tbl;
-    this.location = loc;
-    this.partSpec = spec;
+    this.tableName = tableName;
+    this.location = location;
+    this.partitionKeyValues = partitionKeyValues;
+  }
+
+  HCatPartition getHCatPartition() {
+    return hcatPartition;
+  }
+
+  HCatPartition getHCatPartition(HCatTable hcatTable) throws HCatException {
+    assert hcatPartition == null : "hcatPartition should have been null at this point.";
+    assert dbName.equalsIgnoreCase(hcatTable.getDbName()) : "DB names don't match.";
+    assert tableName.equalsIgnoreCase(hcatTable.getTableName()) : "Table names don't match.";
+    return new HCatPartition(hcatTable, partitionKeyValues, location);
   }
 
   /**
@@ -57,18 +64,19 @@ public class HCatAddPartitionDesc {
    *
    * @return the location
    */
+  @Deprecated // @deprecated in favour of {@link HCatPartition.#getLocation()}. To be removed in Hive 0.16.
   public String getLocation() {
-    return this.location;
+    return hcatPartition == null? location : hcatPartition.getLocation();
   }
-
 
   /**
    * Gets the partition spec.
    *
    * @return the partition spec
    */
+  @Deprecated // @deprecated in favour of {@link HCatPartition.#getPartitionKeyValMap()}. To be removed in Hive 0.16.
   public Map<String, String> getPartitionSpec() {
-    return this.partSpec;
+    return hcatPartition == null? partitionKeyValues : hcatPartition.getPartitionKeyValMap();
   }
 
   /**
@@ -76,8 +84,9 @@ public class HCatAddPartitionDesc {
    *
    * @return the table name
    */
+  @Deprecated // @deprecated in favour of {@link HCatPartition.#getTableName()}. To be removed in Hive 0.16.
   public String getTableName() {
-    return this.tableName;
+    return hcatPartition == null? tableName : hcatPartition.getTableName();
   }
 
   /**
@@ -85,17 +94,14 @@ public class HCatAddPartitionDesc {
    *
    * @return the database name
    */
+  @Deprecated // @deprecated in favour of {@link HCatPartition.#getDatabaseName()}. To be removed in Hive 0.16.
   public String getDatabaseName() {
-    return this.dbName;
+    return hcatPartition == null? dbName : hcatPartition.getDatabaseName();
   }
 
   @Override
   public String toString() {
-    return "HCatAddPartitionDesc ["
-      + (tableName != null ? "tableName=" + tableName + ", " : "tableName=null")
-      + (dbName != null ? "dbName=" + dbName + ", " : "dbName=null")
-      + (location != null ? "location=" + location + ", " : "location=null")
-      + (partSpec != null ? "partSpec=" + partSpec : "partSpec=null") + "]";
+    return "HCatAddPartitionDesc [" + hcatPartition + "]";
   }
 
   /**
@@ -108,61 +114,48 @@ public class HCatAddPartitionDesc {
    * @return the builder
    * @throws HCatException
    */
-  public static Builder create(String dbName, String tableName, String location,
-                 Map<String, String> partSpec) throws HCatException {
+  @Deprecated // @deprecated in favour of {@link HCatAddPartitionDesc.#create(HCatPartition)}. To be removed in Hive 0.16.
+  public static Builder create(String dbName,
+                               String tableName,
+                               String location,
+                               Map<String, String> partSpec
+                      ) throws HCatException {
+    LOG.error("Unsupported! HCatAddPartitionDesc requires HCatTable to be specified explicitly.");
     return new Builder(dbName, tableName, location, partSpec);
   }
 
-  Partition toHivePartition(Table hiveTable) throws HCatException {
-    Partition hivePtn = new Partition();
-    hivePtn.setDbName(this.dbName);
-    hivePtn.setTableName(this.tableName);
-
-    List<String> pvals = new ArrayList<String>();
-    for (FieldSchema field : hiveTable.getPartitionKeys()) {
-      String val = partSpec.get(field.getName());
-      if (val == null || val.length() == 0) {
-        throw new HCatException("create partition: Value for key "
-          + field.getName() + " is null or empty");
-      }
-      pvals.add(val);
-    }
-
-    hivePtn.setValues(pvals);
-    StorageDescriptor sd = new StorageDescriptor(hiveTable.getSd());
-    hivePtn.setSd(sd);
-    hivePtn.setParameters(hiveTable.getParameters());
-    if (this.location != null) {
-      hivePtn.getSd().setLocation(this.location);
-    } else {
-      String partName;
-      try {
-        partName = Warehouse.makePartName(
-          hiveTable.getPartitionKeys(), pvals);
-        LOG.info("Setting partition location to :" + partName);
-      } catch (MetaException e) {
-        throw new HCatException("Exception while creating partition name.", e);
-      }
-      Path partPath = new Path(hiveTable.getSd().getLocation(), partName);
-      hivePtn.getSd().setLocation(partPath.toString());
-    }
-    hivePtn.setCreateTime((int) (System.currentTimeMillis() / 1000));
-    hivePtn.setLastAccessTimeIsSet(false);
-    return hivePtn;
+  /**
+   * Constructs a Builder instance, using an HCatPartition object.
+   * @param partition An HCatPartition instance.
+   * @return A Builder object that can build an appropriate HCatAddPartitionDesc.
+   * @throws HCatException
+   */
+  public static Builder create(HCatPartition partition) throws HCatException {
+    return new Builder(partition);
   }
 
+  /**
+   * Builder class for constructing an HCatAddPartition instance.
+   */
   public static class Builder {
 
-    private String tableName;
-    private String location;
-    private Map<String, String> values;
-    private String dbName;
+    private HCatPartition hcatPartition;
 
-    private Builder(String dbName, String tableName, String location, Map<String, String> values) {
+    // The following data members are only required to support the deprecated constructor (and builder).
+    String dbName, tableName, location;
+    Map<String, String> partitionSpec;
+
+    private Builder(HCatPartition hcatPartition) {
+      this.hcatPartition = hcatPartition;
+    }
+
+    @Deprecated // To be removed in Hive 0.16.
+    private Builder(String dbName, String tableName, String location, Map<String, String> partitionSpec) {
+      this.hcatPartition = null;
       this.dbName = dbName;
       this.tableName = tableName;
       this.location = location;
-      this.values = values;
+      this.partitionSpec = partitionSpec;
     }
 
     /**
@@ -172,13 +165,9 @@ public class HCatAddPartitionDesc {
      * @throws HCatException
      */
     public HCatAddPartitionDesc build() throws HCatException {
-      if (this.dbName == null) {
-        this.dbName = MetaStoreUtils.DEFAULT_DATABASE_NAME;
-      }
-      HCatAddPartitionDesc desc = new HCatAddPartitionDesc(
-        this.dbName, this.tableName, this.location,
-        this.values);
-      return desc;
+      return hcatPartition == null?
+                new HCatAddPartitionDesc(dbName, tableName, location, partitionSpec)
+              : new HCatAddPartitionDesc(hcatPartition);
     }
   }
 

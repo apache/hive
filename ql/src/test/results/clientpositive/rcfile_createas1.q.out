@@ -10,6 +10,7 @@ PREHOOK: query: CREATE TABLE rcfile_createas1a (key INT, value STRING)
     PARTITIONED BY (ds string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@rcfile_createas1a
 POSTHOOK: query: CREATE TABLE rcfile_createas1a (key INT, value STRING)
     PARTITIONED BY (ds string)
 POSTHOOK: type: CREATETABLE
@@ -110,10 +111,14 @@ STAGE PLANS:
     Stats-Aggr Operator
 
   Stage: Stage-3
-    Block level merge
+    Merge Work
+      merge level: block
+      input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
 
   Stage: Stage-5
-    Block level merge
+    Merge Work
+      merge level: block
+      input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
 
   Stage: Stage-6
     Move Operator

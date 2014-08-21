@@ -9,6 +9,7 @@ SKEWED BY (key) ON ("484")
 STORED AS DIRECTORIES
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@list_bucketing_table
 POSTHOOK: query: -- This tests that bucketing/sorting metadata is not inferred for tables with list bucketing
 
 -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
@@ -90,6 +91,7 @@ SKEWED BY (key) ON ("abc")
 STORED AS DIRECTORIES
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@list_bucketing_table2
 POSTHOOK: query: -- create a table skewed on a key which doesnt exist in the data
 CREATE TABLE list_bucketing_table2 (key STRING, value STRING) 
 PARTITIONED BY (part STRING) 

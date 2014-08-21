@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAccessControl
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizer;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizerFactory;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizerImpl;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzSessionContext;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveMetastoreClientFactory;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.junit.Before;
@@ -111,7 +112,7 @@ public class TestSessionUserName {
 
     @Override
     public HiveAuthorizer createHiveAuthorizer(HiveMetastoreClientFactory metastoreClientFactory,
-        HiveConf conf, HiveAuthenticationProvider authenticator) {
+        HiveConf conf, HiveAuthenticationProvider authenticator, HiveAuthzSessionContext ctx) {
       username = authenticator.getUserName();
       HiveAccessController acontroller = Mockito.mock(HiveAccessController.class);
       return new HiveAuthorizerImpl(acontroller, null);

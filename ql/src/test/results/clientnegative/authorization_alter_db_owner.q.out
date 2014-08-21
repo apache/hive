@@ -2,8 +2,10 @@
 
 create database dbao
 PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:dbao
 #### A masked pattern was here ####
 
 create database dbao
 POSTHOOK: type: CREATEDATABASE
-FAILED: HiveAccessControlException Permission denied. Principal [name=user1, type=USER] does not have following privileges on Object [type=DATABASE, name=dbao] for operation ALTERDATABASE_OWNER : [ADMIN PRIVILEGE]
+POSTHOOK: Output: database:dbao
+FAILED: HiveAccessControlException Permission denied: Principal [name=user1, type=USER] does not have following privileges for operation ALTERDATABASE_OWNER [[ADMIN PRIVILEGE] on Object [type=DATABASE, name=dbao]]

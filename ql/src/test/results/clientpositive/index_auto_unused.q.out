@@ -3,11 +3,13 @@ PREHOOK: query: -- SORT_QUERY_RESULTS
 
 CREATE INDEX src_index ON TABLE src(key) as 'COMPACT' WITH DEFERRED REBUILD
 PREHOOK: type: CREATEINDEX
+PREHOOK: Input: default@src
 POSTHOOK: query: -- SORT_QUERY_RESULTS
 -- test cases where the index should not be used automatically
 
 CREATE INDEX src_index ON TABLE src(key) as 'COMPACT' WITH DEFERRED REBUILD
 POSTHOOK: type: CREATEINDEX
+POSTHOOK: Input: default@src
 POSTHOOK: Output: default@default__src_src_index__
 PREHOOK: query: ALTER INDEX src_index ON src REBUILD
 PREHOOK: type: ALTERINDEX_REBUILD
@@ -234,13 +236,17 @@ POSTHOOK: Input: default@src
 PREHOOK: query: -- columns are not covered by indexes
 DROP INDEX src_index on src
 PREHOOK: type: DROPINDEX
+PREHOOK: Input: default@src
 POSTHOOK: query: -- columns are not covered by indexes
 DROP INDEX src_index on src
 POSTHOOK: type: DROPINDEX
+POSTHOOK: Input: default@src
 PREHOOK: query: CREATE INDEX src_val_index ON TABLE src(value) as 'COMPACT' WITH DEFERRED REBUILD
 PREHOOK: type: CREATEINDEX
+PREHOOK: Input: default@src
 POSTHOOK: query: CREATE INDEX src_val_index ON TABLE src(value) as 'COMPACT' WITH DEFERRED REBUILD
 POSTHOOK: type: CREATEINDEX
+POSTHOOK: Input: default@src
 POSTHOOK: Output: default@default__src_src_val_index__
 PREHOOK: query: ALTER INDEX src_val_index ON src REBUILD
 PREHOOK: type: ALTERINDEX_REBUILD
@@ -319,14 +325,18 @@ POSTHOOK: Input: default@src
 98	val_98
 PREHOOK: query: DROP INDEX src_val_index on src
 PREHOOK: type: DROPINDEX
+PREHOOK: Input: default@src
 POSTHOOK: query: DROP INDEX src_val_index on src
 POSTHOOK: type: DROPINDEX
+POSTHOOK: Input: default@src
 PREHOOK: query: -- required partitions have not been built yet
 CREATE INDEX src_part_index ON TABLE srcpart(key) as 'COMPACT' WITH DEFERRED REBUILD
 PREHOOK: type: CREATEINDEX
+PREHOOK: Input: default@srcpart
 POSTHOOK: query: -- required partitions have not been built yet
 CREATE INDEX src_part_index ON TABLE srcpart(key) as 'COMPACT' WITH DEFERRED REBUILD
 POSTHOOK: type: CREATEINDEX
+POSTHOOK: Input: default@srcpart
 POSTHOOK: Output: default@default__srcpart_src_part_index__
 PREHOOK: query: ALTER INDEX src_part_index ON srcpart PARTITION (ds='2008-04-08', hr=11) REBUILD
 PREHOOK: type: ALTERINDEX_REBUILD
@@ -400,5 +410,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 9	val_9	2008-04-09	12
 PREHOOK: query: DROP INDEX src_part_index on srcpart
 PREHOOK: type: DROPINDEX
+PREHOOK: Input: default@srcpart
 POSTHOOK: query: DROP INDEX src_part_index on srcpart
 POSTHOOK: type: DROPINDEX
+POSTHOOK: Input: default@srcpart

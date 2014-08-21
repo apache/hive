@@ -34,6 +34,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,6 +52,7 @@ import org.apache.hadoop.hive.conf.HiveConfUtil;
 import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
 import org.apache.hadoop.hive.metastore.api.AddPartitionsRequest;
 import org.apache.hadoop.hive.metastore.api.AddPartitionsResult;
+import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.CheckLockRequest;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
@@ -144,6 +146,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   private String tokenStrForm;
   private final boolean localMetaStore;
 
+  private Map<String, String> currentMetaVars;
+
   // for thrift connects
   private int retries = 5;
   private int retryDelaySeconds = 0;
@@ -169,8 +173,9 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     if (localMetaStore) {
       // instantiate the metastore server handler directly instead of connecting
       // through the network
-      client = HiveMetaStore.newHMSHandler("hive client", conf);
+      client = HiveMetaStore.newHMSHandler("hive client", conf, true);
       isConnected = true;
+      snapshotActiveConf();
       return;
     }
 
@@ -228,6 +233,26 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     URI tmp = metastoreUris[0];
     metastoreUris[0] = metastoreUris[index];
     metastoreUris[index] = tmp;
+  }
+
+  @Override
+  public boolean isCompatibleWith(HiveConf conf) {
+    if (currentMetaVars == null) {
+      return false; // recreate
+    }
+    boolean compatible = true;
+    for (ConfVars oneVar : HiveConf.metaVars) {
+      // Since metaVars are all of different types, use string for comparison
+      String oldVar = currentMetaVars.get(oneVar.varname);
+      String newVar = conf.get(oneVar.varname, "");
+      if (oldVar == null ||
+          (oneVar.isCaseSensitive() ? !oldVar.equals(newVar) : !oldVar.equalsIgnoreCase(newVar))) {
+        LOG.info("Mestastore configuration " + oneVar.varname +
+            " changed from " + oldVar + " to " + newVar);
+        compatible = false;
+      }
+    }
+    return compatible;
   }
 
   @Override
@@ -383,7 +408,17 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
       throw new MetaException("Could not connect to meta store using any of the URIs provided." +
         " Most recent failure: " + StringUtils.stringifyException(tte));
     }
+
+    snapshotActiveConf();
+
     LOG.info("Connected to metastore.");
+  }
+
+  private void snapshotActiveConf() {
+    currentMetaVars = new HashMap<String, String>(HiveConf.metaVars.length);
+    for (ConfVars oneVar : HiveConf.metaVars) {
+      currentMetaVars.put(oneVar.varname, conf.get(oneVar.varname, ""));
+    }
   }
 
   public String getTokenStrForm() throws IOException {
@@ -393,6 +428,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   @Override
   public void close() {
     isConnected = false;
+    currentMetaVars = null;
     try {
       if (null != client) {
         client.shutdown();
@@ -405,6 +441,16 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     if ((transport != null) && transport.isOpen()) {
       transport.close();
     }
+  }
+
+  @Override
+  public void setMetaConf(String key, String value) throws TException {
+    client.setMetaConf(key, value);
+  }
+
+  @Override
+  public String getMetaConf(String key) throws TException {
+    return client.getMetaConf(key);
   }
 
   /**
@@ -1784,5 +1830,12 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
       boolean deleteData, EnvironmentContext envContext) throws MetaException, TException,
       NoSuchObjectException, UnsupportedOperationException {
     client.drop_table_with_environment_context(dbname, name, deleteData, envContext);
+  }
+
+  @Override
+  public AggrStats getAggrColStatsFor(String dbName, String tblName,
+    List<String> colNames, List<String> partNames) throws NoSuchObjectException, MetaException, TException {
+    PartitionsStatsRequest req = new PartitionsStatsRequest(dbName, tblName, colNames, partNames);
+    return client.get_aggr_stats_for(req);
   }
 }

@@ -1,9 +1,11 @@
 #### A masked pattern was here ####
 create database dba1
 PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:dba1
 #### A masked pattern was here ####
 create database dba1
 POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:dba1
 PREHOOK: query: set role ADMIN
 PREHOOK: type: SHOW_ROLES
 POSTHOOK: query: set role ADMIN
@@ -38,12 +40,14 @@ public
 
 PREHOOK: query: create database dba2
 PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:dba2
 POSTHOOK: query: create database dba2
 POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:dba2
 PREHOOK: query: show current roles
 PREHOOK: type: SHOW_ROLES
 POSTHOOK: query: show current roles
 POSTHOOK: type: SHOW_ROLES
 public
 
-FAILED: HiveAccessControlException Permission denied. Principal [name=user2, type=USER] does not have following privileges on Object [type=DATABASE, name=dba2] for operation DROPDATABASE : [OBJECT OWNERSHIP]
+FAILED: HiveAccessControlException Permission denied: Principal [name=user2, type=USER] does not have following privileges for operation DROPDATABASE [[OBJECT OWNERSHIP] on Object [type=DATABASE, name=dba2]]

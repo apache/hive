@@ -38,7 +38,7 @@ STAGE PLANS:
           Row Limit Per Split: 1
           Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
           Select Operator
-            expressions: ascii('Facebook') (type: int), ascii('') (type: int), ascii('!') (type: int)
+            expressions: 70 (type: int), 0 (type: int), 33 (type: int)
             outputColumnNames: _col0, _col1, _col2
             Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
             ListSink

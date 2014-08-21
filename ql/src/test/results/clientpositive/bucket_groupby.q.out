@@ -1,6 +1,7 @@
 PREHOOK: query: create table clustergroupby(key string, value string) partitioned by(ds string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@clustergroupby
 POSTHOOK: query: create table clustergroupby(key string, value string) partitioned by(ds string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -995,6 +996,7 @@ POSTHOOK: Output: default@clustergroupby
 PREHOOK: query: create table clustergroupby(key string, value string) partitioned by(ds string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@clustergroupby
 POSTHOOK: query: create table clustergroupby(key string, value string) partitioned by(ds string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -1293,6 +1295,7 @@ POSTHOOK: Output: default@clustergroupby
 PREHOOK: query: create table clustergroupby(key string, value string) partitioned by(ds string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@clustergroupby
 POSTHOOK: query: create table clustergroupby(key string, value string) partitioned by(ds string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

@@ -16,7 +16,7 @@ STAGE PLANS:
           alias: src
           Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
           Select Operator
-            expressions: (if(false, 1, UDFToShort(2)) + 3) (type: int)
+            expressions: 5 (type: int)
             outputColumnNames: _col0
             Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
             Limit

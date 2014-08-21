@@ -18,8 +18,11 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -42,7 +45,13 @@ public class ColumnAccessInfo {
     tableColumns.add(col);
   }
 
-  public Map<String, Set<String>> getTableToColumnAccessMap() {
-    return tableToColumnAccessMap;
+  public Map<String, List<String>> getTableToColumnAccessMap() {
+    Map<String, List<String>> mapping = new HashMap<String, List<String>>();
+    for (Map.Entry<String, Set<String>> entry : tableToColumnAccessMap.entrySet()) {
+      List<String> sortedCols = new ArrayList<String>(entry.getValue());
+      Collections.sort(sortedCols);
+      mapping.put(entry.getKey(), sortedCols);
+    }
+    return mapping;
   }
 }

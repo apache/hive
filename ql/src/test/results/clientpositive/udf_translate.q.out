@@ -24,6 +24,7 @@ PREHOOK: query: -- Create some tables to serve some input data
 CREATE TABLE table_input(input STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@table_input
 POSTHOOK: query: -- Create some tables to serve some input data
 CREATE TABLE table_input(input STRING)
 POSTHOOK: type: CREATETABLE
@@ -32,6 +33,7 @@ POSTHOOK: Output: default@table_input
 PREHOOK: query: CREATE TABLE table_translate(input_string STRING, from_string STRING, to_string STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@table_translate
 POSTHOOK: query: CREATE TABLE table_translate(input_string STRING, from_string STRING, to_string STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

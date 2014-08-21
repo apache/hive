@@ -8,6 +8,7 @@ PREHOOK: query: create table varchar_2 (
 )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@varchar_2
 POSTHOOK: query: create table varchar_2 (
   key varchar(10),
   value varchar(20)

@@ -12,6 +12,9 @@ select sum(hash(*)) from newtypesorc where da='1970-02-20';
 set hive.optimize.index.filter=true;
 select sum(hash(*)) from newtypesorc where da='1970-02-20';
 
+set hive.optimize.index.filter=true;
+select sum(hash(*)) from newtypesorc where da= date '1970-02-20';
+
 set hive.optimize.index.filter=false;
 select sum(hash(*)) from newtypesorc where da=cast('1970-02-20' as date);
 

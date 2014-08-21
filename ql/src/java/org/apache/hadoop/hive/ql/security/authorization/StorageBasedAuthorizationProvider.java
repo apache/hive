@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.security.authorization;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.security.AccessControlException;
+import java.security.PrivilegedExceptionAction;
 import java.util.EnumSet;
 import java.util.List;
 
@@ -35,6 +36,8 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hdfs.DFSConfigKeys;
+import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -45,6 +48,7 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.shims.ShimLoader;
 
 /**
  * StorageBasedAuthorizationProvider is an implementation of
@@ -83,7 +87,7 @@ public class StorageBasedAuthorizationProvider extends HiveAuthorizationProvider
         // till we explicitly initialize it as being from the client side. So, we have a
         // chicken-and-egg problem. So, we now track whether or not we're running from client-side
         // in the SBAP itself.
-        hive_db = new HiveProxy(Hive.get(new HiveConf(getConf(), StorageBasedAuthorizationProvider.class)));
+        hive_db = new HiveProxy(Hive.get(getConf(), StorageBasedAuthorizationProvider.class));
         this.wh = new Warehouse(getConf());
         if (this.wh == null){
           // If wh is still null after just having initialized it, bail out - something's very wrong.
@@ -117,7 +121,7 @@ public class StorageBasedAuthorizationProvider extends HiveAuthorizationProvider
 
     // Update to previous comment: there does seem to be one place that uses this
     // and that is to authorize "show databases" in hcat commandline, which is used
-    // by webhcat. And user-level auth seems to be a resonable default in this case.
+    // by webhcat. And user-level auth seems to be a reasonable default in this case.
     // The now deprecated HdfsAuthorizationProvider in hcatalog approached this in
     // another way, and that was to see if the user had said above appropriate requested
     // privileges for the hive root warehouse directory. That seems to be the best
@@ -144,22 +148,19 @@ public class StorageBasedAuthorizationProvider extends HiveAuthorizationProvider
   public void authorize(Table table, Privilege[] readRequiredPriv, Privilege[] writeRequiredPriv)
       throws HiveException, AuthorizationException {
 
-    // Table path can be null in the case of a new create table - in this case,
-    // we try to determine what the path would be after the create table is issued.
-    Path path = null;
+    // To create/drop/alter a table, the owner should have WRITE permission on the database directory
+    authorize(hive_db.getDatabase(table.getDbName()), readRequiredPriv, writeRequiredPriv);
+
+    // If the user has specified a location - external or not, check if the user has the
     try {
       initWh();
       String location = table.getTTable().getSd().getLocation();
-      if (location == null || location.isEmpty()) {
-        path = wh.getTablePath(hive_db.getDatabase(table.getDbName()), table.getTableName());
-      } else {
-        path = new Path(location);
+      if (location != null && !location.isEmpty()) {
+        authorize(new Path(location), readRequiredPriv, writeRequiredPriv);
       }
     } catch (MetaException ex) {
       throw hiveException(ex);
     }
-
-    authorize(path, readRequiredPriv, writeRequiredPriv);
   }
 
   @Override
@@ -289,7 +290,7 @@ public class StorageBasedAuthorizationProvider extends HiveAuthorizationProvider
    * If the given path does not exists, it checks for its parent folder.
    */
   protected void checkPermissions(final Configuration conf, final Path path,
-      final EnumSet<FsAction> actions) throws IOException, LoginException {
+      final EnumSet<FsAction> actions) throws IOException, LoginException, HiveException {
 
     if (path == null) {
       throw new IllegalArgumentException("path is null");
@@ -298,8 +299,7 @@ public class StorageBasedAuthorizationProvider extends HiveAuthorizationProvider
     final FileSystem fs = path.getFileSystem(conf);
 
     if (fs.exists(path)) {
-      checkPermissions(fs, path, actions,
-          authenticator.getUserName(), authenticator.getGroupNames());
+      checkPermissions(fs, path, actions, authenticator.getUserName());
     } else if (path.getParent() != null) {
       // find the ancestor which exists to check its permissions
       Path par = path.getParent();
@@ -310,8 +310,7 @@ public class StorageBasedAuthorizationProvider extends HiveAuthorizationProvider
         par = par.getParent();
       }
 
-      checkPermissions(fs, par, actions,
-          authenticator.getUserName(), authenticator.getGroupNames());
+      checkPermissions(fs, par, actions, authenticator.getUserName());
     }
   }
 
@@ -321,56 +320,23 @@ public class StorageBasedAuthorizationProvider extends HiveAuthorizationProvider
    */
   @SuppressWarnings("deprecation")
   protected static void checkPermissions(final FileSystem fs, final Path path,
-      final EnumSet<FsAction> actions, String user, List<String> groups) throws IOException,
-      AccessControlException {
-
-    String superGroupName = getSuperGroupName(fs.getConf());
-    if (userBelongsToSuperGroup(superGroupName, groups)) {
-      LOG.info("User \"" + user + "\" belongs to super-group \"" + superGroupName + "\". " +
-          "Permission granted for actions: (" + actions + ").");
-      return;
-    }
-
-    final FileStatus stat;
+      final EnumSet<FsAction> actions, String user) throws IOException,
+      AccessControlException, HiveException {
 
     try {
-      stat = fs.getFileStatus(path);
+      FileStatus stat = fs.getFileStatus(path);
+      for (FsAction action : actions) {
+        FileUtils.checkFileAccessWithImpersonation(fs, stat, action, user);
+      }
     } catch (FileNotFoundException fnfe) {
       // File named by path doesn't exist; nothing to validate.
       return;
     } catch (org.apache.hadoop.fs.permission.AccessControlException ace) {
       // Older hadoop version will throw this @deprecated Exception.
       throw accessControlException(ace);
+    } catch (Exception err) {
+      throw new HiveException(err);
     }
-
-    final FsPermission dirPerms = stat.getPermission();
-    final String grp = stat.getGroup();
-
-    for (FsAction action : actions) {
-      if (user.equals(stat.getOwner())) {
-        if (dirPerms.getUserAction().implies(action)) {
-          continue;
-        }
-      }
-      if (groups.contains(grp)) {
-        if (dirPerms.getGroupAction().implies(action)) {
-          continue;
-        }
-      }
-      if (dirPerms.getOtherAction().implies(action)) {
-        continue;
-      }
-      throw new AccessControlException("action " + action + " not permitted on path "
-          + path + " for user " + user);
-    }
-  }
-
-  private static String getSuperGroupName(Configuration configuration) {
-    return configuration.get(DFSConfigKeys.DFS_PERMISSIONS_SUPERUSERGROUP_KEY, "");
-  }
-
-  private static boolean userBelongsToSuperGroup(String superGroupName, List<String> groups) {
-    return groups.contains(superGroupName);
   }
 
   protected Path getDbLocation(Database db) throws HiveException {

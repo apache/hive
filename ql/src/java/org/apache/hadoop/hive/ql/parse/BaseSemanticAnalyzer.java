@@ -34,6 +34,7 @@ import java.util.Map.Entry;
 
 import org.antlr.runtime.tree.CommonTree;
 import org.antlr.runtime.tree.Tree;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -303,6 +304,28 @@ public abstract class BaseSemanticAnalyzer {
     }
     // column node
     return unescapeIdentifier(tableOrColumnNode.getText());
+  }
+
+  public static String[] getQualifiedTableName(ASTNode tabNameNode) throws SemanticException {
+    if (tabNameNode.getType() != HiveParser.TOK_TABNAME ||
+        (tabNameNode.getChildCount() != 1 && tabNameNode.getChildCount() != 2)) {
+      throw new SemanticException(ErrorMsg.INVALID_TABLE_NAME.getMsg(tabNameNode));
+    }
+    if (tabNameNode.getChildCount() == 2) {
+      String dbName = unescapeIdentifier(tabNameNode.getChild(0).getText());
+      String tableName = unescapeIdentifier(tabNameNode.getChild(1).getText());
+      return new String[] {dbName, tableName};
+    }
+    String tableName = unescapeIdentifier(tabNameNode.getChild(0).getText());
+    return new String[]{SessionState.get().getCurrentDatabase(), tableName};
+  }
+
+  public static String getDotName(String[] qname) throws SemanticException {
+    String genericName = StringUtils.join(qname, ".");
+    if (qname.length != 2) {
+      throw new SemanticException(ErrorMsg.INVALID_TABLE_NAME, genericName);
+    }
+    return genericName;
   }
 
   /**
@@ -817,9 +840,9 @@ public abstract class BaseSemanticAnalyzer {
     this.columnAccessInfo = columnAccessInfo;
   }
 
-  protected HashMap<String, String> extractPartitionSpecs(Tree partspec)
+  protected LinkedHashMap<String, String> extractPartitionSpecs(Tree partspec)
       throws SemanticException {
-    HashMap<String, String> partSpec = new LinkedHashMap<String, String>();
+    LinkedHashMap<String, String> partSpec = new LinkedHashMap<String, String>();
     for (int i = 0; i < partspec.getChildCount(); ++i) {
       CommonTree partspec_val = (CommonTree) partspec.getChild(i);
       String val = stripQuotes(partspec_val.getChild(1).getText());
@@ -1176,23 +1199,16 @@ public abstract class BaseSemanticAnalyzer {
     }
   }
 
+  protected Table getTable(String[] qualified) throws SemanticException {
+    return getTable(qualified[0], qualified[1], true);
+  }
+
   protected Table getTable(String tblName) throws SemanticException {
     return getTable(null, tblName, true);
   }
 
   protected Table getTable(String tblName, boolean throwException) throws SemanticException {
-    String currentDb = SessionState.get().getCurrentDatabase();
-    return getTable(currentDb, tblName, throwException);
-  }
-
-  // qnName : possibly contains database name (dot separated)
-  protected Table getTableWithQN(String qnName, boolean throwException) throws SemanticException {
-    int dot = qnName.indexOf('.');
-    if (dot < 0) {
-      String currentDb = SessionState.get().getCurrentDatabase();
-      return getTable(currentDb, qnName, throwException);
-    }
-    return getTable(qnName.substring(0, dot), qnName.substring(dot + 1), throwException);
+    return getTable(null, tblName, throwException);
   }
 
   protected Table getTable(String database, String tblName, boolean throwException)

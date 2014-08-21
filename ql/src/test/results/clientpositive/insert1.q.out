@@ -3,6 +3,7 @@ PREHOOK: query: -- SORT_QUERY_RESULTS
 create table insert1(key int, value string) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@insert1
 POSTHOOK: query: -- SORT_QUERY_RESULTS
 
 create table insert1(key int, value string) stored as textfile
@@ -12,6 +13,7 @@ POSTHOOK: Output: default@insert1
 PREHOOK: query: create table insert2(key int, value string) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@insert2
 POSTHOOK: query: create table insert2(key int, value string) stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -48,10 +50,10 @@ STAGE PLANS:
             alias: a
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             Filter Operator
-              predicate: (key = (- 1)) (type: boolean)
+              predicate: (key = -1) (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Select Operator
-                expressions: key (type: int), value (type: string)
+                expressions: -1 (type: int), value (type: string)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 File Output Operator
@@ -137,10 +139,10 @@ STAGE PLANS:
             alias: a
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             Filter Operator
-              predicate: (key = (- 1)) (type: boolean)
+              predicate: (key = -1) (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Select Operator
-                expressions: key (type: int), value (type: string)
+                expressions: -1 (type: int), value (type: string)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 File Output Operator
@@ -207,16 +209,20 @@ STAGE PLANS:
 PREHOOK: query: -- HIVE-3465
 create database x
 PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:x
 POSTHOOK: query: -- HIVE-3465
 create database x
 POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:x
 PREHOOK: query: create table x.insert1(key int, value string) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:x
+PREHOOK: Output: x@x.insert1
 POSTHOOK: query: create table x.insert1(key int, value string) stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:x
 POSTHOOK: Output: x@insert1
+POSTHOOK: Output: x@x.insert1
 PREHOOK: query: explain insert into table x.INSERT1 select a.key, a.value from insert2 a WHERE (a.key=-1)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain insert into table x.INSERT1 select a.key, a.value from insert2 a WHERE (a.key=-1)
@@ -239,10 +245,10 @@ STAGE PLANS:
             alias: a
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             Filter Operator
-              predicate: (key = (- 1)) (type: boolean)
+              predicate: (key = -1) (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Select Operator
-                expressions: key (type: int), value (type: string)
+                expressions: -1 (type: int), value (type: string)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 File Output Operator
@@ -328,10 +334,10 @@ STAGE PLANS:
             alias: a
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             Filter Operator
-              predicate: (key = (- 1)) (type: boolean)
+              predicate: (key = -1) (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Select Operator
-                expressions: key (type: int), value (type: string)
+                expressions: -1 (type: int), value (type: string)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 File Output Operator
@@ -567,16 +573,21 @@ STAGE PLANS:
 PREHOOK: query: -- HIVE-3676
 CREATE DATABASE db2
 PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:db2
 POSTHOOK: query: -- HIVE-3676
 CREATE DATABASE db2
 POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:db2
 PREHOOK: query: USE db2
 PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:db2
 POSTHOOK: query: USE db2
 POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:db2
 PREHOOK: query: CREATE TABLE result(col1 STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:db2
+PREHOOK: Output: db2@result
 POSTHOOK: query: CREATE TABLE result(col1 STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:db2
@@ -611,18 +622,24 @@ db2_insert1
 db2_insert2
 PREHOOK: query: USE default
 PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:default
 POSTHOOK: query: USE default
 POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:default
 PREHOOK: query: CREATE DATABASE db1
 PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:db1
 POSTHOOK: query: CREATE DATABASE db1
 POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:db1
 PREHOOK: query: CREATE TABLE db1.result(col1 STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:db1
+PREHOOK: Output: db1@db1.result
 POSTHOOK: query: CREATE TABLE db1.result(col1 STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:db1
+POSTHOOK: Output: db1@db1.result
 POSTHOOK: Output: db1@result
 PREHOOK: query: INSERT OVERWRITE TABLE db1.result SELECT 'db1_insert1' FROM src LIMIT 1
 PREHOOK: type: QUERY

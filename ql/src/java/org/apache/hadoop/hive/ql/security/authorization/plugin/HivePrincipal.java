@@ -25,10 +25,19 @@ import org.apache.hadoop.hive.common.classification.InterfaceStability.Evolving;
  */
 @LimitedPrivate(value = { "" })
 @Evolving
-public class HivePrincipal {
+public class HivePrincipal implements Comparable<HivePrincipal> {
+
+  @Override
+  public int compareTo(HivePrincipal o) {
+    int compare = name.compareTo(o.name);
+    if (compare == 0) {
+      compare = type.compareTo(o.type);
+    }
+    return compare;
+  }
 
   public enum HivePrincipalType{
-    USER, ROLE, UNKNOWN
+    USER, GROUP, ROLE, UNKNOWN
   }
 
   @Override

@@ -1,0 +1,11 @@
+PREHOOK: query: -- CREATE VIEW should fail if it references a temp table
+create temporary table tmp1 (c1 string, c2 string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tmp1
+POSTHOOK: query: -- CREATE VIEW should fail if it references a temp table
+create temporary table tmp1 (c1 string, c2 string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tmp1
+FAILED: SemanticException org.apache.hadoop.hive.ql.parse.SemanticException: View definition references temporary table tmp1

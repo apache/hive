@@ -79,13 +79,13 @@ import jline.ConsoleReader;
 import jline.FileNameCompletor;
 import jline.History;
 import jline.SimpleCompletor;
-import org.apache.hadoop.io.IOUtils;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.hadoop.io.IOUtils;
 
 
 /**
@@ -148,6 +148,7 @@ public class BeeLine implements Closeable {
       "table", new TableOutputFormat(this),
       "csv", new SeparatedValuesOutputFormat(this, ','),
       "tsv", new SeparatedValuesOutputFormat(this, '\t'),
+      "dsv", new SeparatedValuesOutputFormat(this, BeeLineOpts.DEFAULT_DELIMITER_FOR_DSV),
       "xmlattr", new XMLAttributeOutputFormat(this),
       "xmlelements", new XMLElementOutputFormat(this),
   });

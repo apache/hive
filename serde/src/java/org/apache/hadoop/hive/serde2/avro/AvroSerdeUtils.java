@@ -29,7 +29,9 @@ import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.mapred.JobConf;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigInteger;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -49,6 +51,9 @@ public class AvroSerdeUtils {
   public static final String SCHEMA_LITERAL = "avro.schema.literal";
   public static final String SCHEMA_URL = "avro.schema.url";
   public static final String SCHEMA_NONE = "none";
+  public static final String SCHEMA_NAMESPACE = "avro.schema.namespace";
+  public static final String SCHEMA_NAME = "avro.schema.name";
+  public static final String SCHEMA_DOC = "avro.schema.doc";
   public static final String EXCEPTION_MESSAGE = "Neither " + SCHEMA_LITERAL + " nor "
           + SCHEMA_URL + " specified, can't determine table schema";
   public static final String AVRO_SERDE_SCHEMA = "avro.serde.schema";
@@ -64,7 +69,7 @@ public class AvroSerdeUtils {
           throws IOException, AvroSerdeException {
     String schemaString = properties.getProperty(SCHEMA_LITERAL);
     if(schemaString != null && !schemaString.equals(SCHEMA_NONE))
-      return Schema.parse(schemaString);
+      return AvroSerdeUtils.getSchemaFor(schemaString);
 
     // Try pulling directly from URL
     schemaString = properties.getProperty(SCHEMA_URL);
@@ -75,7 +80,7 @@ public class AvroSerdeUtils {
       Schema s = getSchemaFromFS(schemaString, new Configuration());
       if (s == null) {
         //in case schema is not a file system
-        return Schema.parse(new URL(schemaString).openStream());
+        return AvroSerdeUtils.getSchemaFor(new URL(schemaString).openStream());
       }
       return s;
     } catch (IOException ioe) {
@@ -120,7 +125,7 @@ public class AvroSerdeUtils {
     }
     try {
       in = fs.open(new Path(schemaFSUrl));
-      Schema s = Schema.parse(in);
+      Schema s = AvroSerdeUtils.getSchemaFor(in);
       return s;
     } finally {
       if(in != null) in.close();
@@ -191,4 +196,31 @@ public class AvroSerdeUtils {
     return dec;
   }
 
+  public static Schema getSchemaFor(String str) {
+    Schema.Parser parser = new Schema.Parser();
+    Schema schema = parser.parse(str);
+    return schema;
+  }
+
+  public static Schema getSchemaFor(File file) {
+    Schema.Parser parser = new Schema.Parser();
+    Schema schema;
+    try {
+      schema = parser.parse(file);
+    } catch (IOException e) {
+      throw new RuntimeException("Failed to parse Avro schema from " + file.getName(), e);
+    }
+    return schema;
+  }
+
+  public static Schema getSchemaFor(InputStream stream) {
+    Schema.Parser parser = new Schema.Parser();
+    Schema schema;
+    try {
+      schema = parser.parse(stream);
+    } catch (IOException e) {
+      throw new RuntimeException("Failed to parse Avro schema", e);
+    }
+    return schema;
+  }
 }

@@ -278,7 +278,7 @@ public class VectorizedRowBatchCtx {
         case PRIMITIVE: {
           PrimitiveObjectInspector poi = (PrimitiveObjectInspector) foi;
           // Vectorization currently only supports the following data types:
-          // BOOLEAN, BYTE, SHORT, INT, LONG, FLOAT, DOUBLE, STRING, TIMESTAMP,
+          // BOOLEAN, BYTE, SHORT, INT, LONG, FLOAT, DOUBLE, BINARY, STRING, TIMESTAMP,
           // DATE and DECIMAL
           switch (poi.getPrimitiveCategory()) {
           case BOOLEAN:
@@ -294,6 +294,7 @@ public class VectorizedRowBatchCtx {
           case DOUBLE:
             result.cols[j] = new DoubleColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
             break;
+          case BINARY:
           case STRING:
             result.cols[j] = new BytesColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
             break;
@@ -404,7 +405,7 @@ public class VectorizedRowBatchCtx {
             lcv.isNull[0] = true;
             lcv.isRepeating = true;
           } else { 
-            lcv.fill((Boolean)value == true ? 1 : 0);
+            lcv.fill((Boolean) value == true ? 1 : 0);
             lcv.isNull[0] = false;
           }
         }
@@ -417,7 +418,7 @@ public class VectorizedRowBatchCtx {
             lcv.isNull[0] = true;
             lcv.isRepeating = true;
           } else { 
-            lcv.fill((Byte)value);
+            lcv.fill((Byte) value);
             lcv.isNull[0] = false;
           }
         }
@@ -430,7 +431,7 @@ public class VectorizedRowBatchCtx {
             lcv.isNull[0] = true;
             lcv.isRepeating = true;
           } else { 
-            lcv.fill((Short)value);
+            lcv.fill((Short) value);
             lcv.isNull[0] = false;
           }
         }
@@ -443,7 +444,7 @@ public class VectorizedRowBatchCtx {
             lcv.isNull[0] = true;
             lcv.isRepeating = true;
           } else { 
-            lcv.fill((Integer)value);
+            lcv.fill((Integer) value);
             lcv.isNull[0] = false;
           }          
         }
@@ -456,7 +457,7 @@ public class VectorizedRowBatchCtx {
             lcv.isNull[0] = true;
             lcv.isRepeating = true;
           } else { 
-            lcv.fill((Long)value);
+            lcv.fill((Long) value);
             lcv.isNull[0] = false;
           }          
         }
@@ -469,7 +470,7 @@ public class VectorizedRowBatchCtx {
             lcv.isNull[0] = true;
             lcv.isRepeating = true;
           } else { 
-            lcv.fill(((Date)value).getTime());
+            lcv.fill(((Date) value).getTime());
             lcv.isNull[0] = false;
           }          
         }
@@ -521,17 +522,31 @@ public class VectorizedRowBatchCtx {
             dv.isNull[0] = true;
             dv.isRepeating = true;
           } else {
-            HiveDecimal hd = (HiveDecimal)(value);
-            dv.vector[0] = new Decimal128(hd.toString(), (short)hd.scale());
+            HiveDecimal hd = (HiveDecimal) value;
+            dv.vector[0] = new Decimal128(hd.toString(), (short) hd.scale());
             dv.isRepeating = true;
             dv.isNull[0] = false;      
           }
         }
         break;
-          
+
+        case BINARY: {
+            BytesColumnVector bcv = (BytesColumnVector) batch.cols[colIndex];
+            byte[] bytes = (byte[]) value;
+            if (bytes == null) {
+              bcv.noNulls = false;
+              bcv.isNull[0] = true;
+              bcv.isRepeating = true;
+            } else {
+              bcv.fill(bytes);
+              bcv.isNull[0] = false;
+            }
+          }
+          break;
+
         case STRING: {
           BytesColumnVector bcv = (BytesColumnVector) batch.cols[colIndex];
-          String sVal = (String)value;
+          String sVal = (String) value;
           if (sVal == null) {
             bcv.noNulls = false;
             bcv.isNull[0] = true;

@@ -1,6 +1,7 @@
 PREHOOK: query: create table stats_src like src
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@stats_src
 POSTHOOK: query: create table stats_src like src
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -62,6 +63,7 @@ Storage Desc Params:
 PREHOOK: query: create table stats_part like srcpart
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@stats_part
 POSTHOOK: query: create table stats_part like srcpart
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

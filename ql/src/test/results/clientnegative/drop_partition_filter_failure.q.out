@@ -1,6 +1,7 @@
 PREHOOK: query: create table ptestfilter1 (a string, b int) partitioned by (c string, d string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@ptestfilter1
 POSTHOOK: query: create table ptestfilter1 (a string, b int) partitioned by (c string, d string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

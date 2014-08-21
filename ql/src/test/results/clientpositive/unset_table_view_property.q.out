@@ -1,6 +1,7 @@
 PREHOOK: query: CREATE TABLE testTable(col1 INT, col2 INT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@testTable
 POSTHOOK: query: CREATE TABLE testTable(col1 INT, col2 INT)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

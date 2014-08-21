@@ -22,7 +22,7 @@ STAGE PLANS:
             Row Limit Per Split: 1
             Statistics: Num rows: 0 Data size: 1 Basic stats: PARTIAL Column stats: COMPLETE
             Select Operator
-              expressions: current_database() (type: string)
+              expressions: 'default' (type: string)
               outputColumnNames: _col0
               Statistics: Num rows: 0 Data size: 1 Basic stats: PARTIAL Column stats: COMPLETE
               File Output Operator
@@ -50,12 +50,16 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 default
 PREHOOK: query: create database xxx
 PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:xxx
 POSTHOOK: query: create database xxx
 POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:xxx
 PREHOOK: query: use xxx
 PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:xxx
 POSTHOOK: query: use xxx
 POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:xxx
 PREHOOK: query: explain
 select current_database()
 PREHOOK: type: QUERY
@@ -75,7 +79,7 @@ STAGE PLANS:
             Row Limit Per Split: 1
             Statistics: Num rows: 0 Data size: 1 Basic stats: PARTIAL Column stats: COMPLETE
             Select Operator
-              expressions: current_database() (type: string)
+              expressions: 'xxx' (type: string)
               outputColumnNames: _col0
               Statistics: Num rows: 0 Data size: 1 Basic stats: PARTIAL Column stats: COMPLETE
               File Output Operator
@@ -103,8 +107,10 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 xxx
 PREHOOK: query: use default
 PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:default
 POSTHOOK: query: use default
 POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:default
 PREHOOK: query: explain
 select current_database()
 PREHOOK: type: QUERY
@@ -124,7 +130,7 @@ STAGE PLANS:
           Row Limit Per Split: 1
           Statistics: Num rows: 0 Data size: 1 Basic stats: PARTIAL Column stats: COMPLETE
           Select Operator
-            expressions: current_database() (type: string)
+            expressions: 'default' (type: string)
             outputColumnNames: _col0
             Statistics: Num rows: 0 Data size: 1 Basic stats: PARTIAL Column stats: COMPLETE
             ListSink
@@ -140,8 +146,10 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 default
 PREHOOK: query: use xxx
 PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:xxx
 POSTHOOK: query: use xxx
 POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:xxx
 PREHOOK: query: explain
 select current_database()
 PREHOOK: type: QUERY
@@ -161,7 +169,7 @@ STAGE PLANS:
           Row Limit Per Split: 1
           Statistics: Num rows: 0 Data size: 1 Basic stats: PARTIAL Column stats: COMPLETE
           Select Operator
-            expressions: current_database() (type: string)
+            expressions: 'xxx' (type: string)
             outputColumnNames: _col0
             Statistics: Num rows: 0 Data size: 1 Basic stats: PARTIAL Column stats: COMPLETE
             ListSink

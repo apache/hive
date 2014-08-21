@@ -1177,3 +1177,80 @@ POSTHOOK: Input: default@src
 96	val_96
 97	val_97
 98	val_98
+PREHOOK: query: EXPLAIN SELECT key, COUNT(value) FROM src GROUP BY key HAVING count(value) >= 4
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN SELECT key, COUNT(value) FROM src GROUP BY key HAVING count(value) >= 4
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: src
+            Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: key (type: string), value (type: string)
+              outputColumnNames: key, value
+              Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                aggregations: count(value)
+                keys: key (type: string)
+                mode: hash
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
+                  Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: bigint)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          keys: KEY._col0 (type: string)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 14 Data size: 2805 Basic stats: COMPLETE Column stats: NONE
+          Filter Operator
+            predicate: (_col1 >= 4) (type: boolean)
+            Statistics: Num rows: 4 Data size: 801 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: _col0 (type: string), _col1 (type: bigint)
+              outputColumnNames: _col0, _col1
+              Statistics: Num rows: 4 Data size: 801 Basic stats: COMPLETE Column stats: NONE
+              File Output Operator
+                compressed: false
+                Statistics: Num rows: 4 Data size: 801 Basic stats: COMPLETE Column stats: NONE
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT key, COUNT(value) FROM src GROUP BY key HAVING count(value) >= 4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT key, COUNT(value) FROM src GROUP BY key HAVING count(value) >= 4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+138	4
+169	4
+230	5
+277	4
+348	5
+401	5
+406	4
+468	4
+469	5
+489	4

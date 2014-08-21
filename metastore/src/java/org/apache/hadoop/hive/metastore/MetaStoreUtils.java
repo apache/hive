@@ -1538,4 +1538,12 @@ public class MetaStoreUtils {
       return part.getValues().size();
     }
   }
+
+  public static String[] getQualifiedName(String defaultDbName, String tableName) {
+    String[] names = tableName.split("\\.");
+    if (names.length == 1) {
+      return new String[] { defaultDbName, tableName};
+    }
+    return new String[] {names[0], names[1]};
+  }
 }

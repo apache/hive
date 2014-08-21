@@ -132,7 +132,7 @@ public class PartitionPruner implements Transform {
    * condition.
    */
   public static PrunedPartitionList prune(TableScanOperator ts, ParseContext parseCtx,
-      String alias) throws HiveException {
+      String alias) throws SemanticException {
     return prune(parseCtx.getTopToTable().get(ts), parseCtx.getOpToPartPruner().get(ts),
         parseCtx.getConf(), alias, parseCtx.getPrunedPartitions());
   }
@@ -157,7 +157,7 @@ public class PartitionPruner implements Transform {
    */
   private static PrunedPartitionList prune(Table tab, ExprNodeDesc prunerExpr,
       HiveConf conf, String alias, Map<String, PrunedPartitionList> prunedPartitionsMap)
-          throws HiveException {
+          throws SemanticException {
     LOG.trace("Started pruning partiton");
     LOG.trace("dbname = " + tab.getDbName());
     LOG.trace("tabname = " + tab.getTableName());
@@ -267,7 +267,7 @@ public class PartitionPruner implements Transform {
   }
 
   private static PrunedPartitionList getPartitionsFromServer(Table tab,
-      ExprNodeDesc prunerExpr, HiveConf conf, String alias) throws HiveException {
+      ExprNodeDesc prunerExpr, HiveConf conf, String alias) throws SemanticException {
     try {
       if (!tab.isPartitioned()) {
         // If the table is not partitioned, return everything.
@@ -334,10 +334,10 @@ public class PartitionPruner implements Transform {
       return new PrunedPartitionList(tab, new LinkedHashSet<Partition>(partitions),
           new ArrayList<String>(referred),
           hasUnknownPartitions || !isPruningByExactFilter);
-    } catch (HiveException e) {
+    } catch (SemanticException e) {
       throw e;
     } catch (Exception e) {
-      throw new HiveException(e);
+      throw new SemanticException(e);
     }
   }
 

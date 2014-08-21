@@ -48,9 +48,9 @@ public abstract class GenericUDFBasePad extends GenericUDF {
       throw new UDFArgumentException(udfName + " requires three arguments. Found :"
 	  + arguments.length);
     }
-    converter1 = checkArguments(arguments, 0);
-    converter2 = checkArguments(arguments, 1);
-    converter3 = checkArguments(arguments, 2);
+    converter1 = checkTextArguments(arguments, 0);
+    converter2 = checkIntArguments(arguments, 1);
+    converter3 = checkTextArguments(arguments, 2);
     return PrimitiveObjectInspectorFactory.writableStringObjectInspector;
   }
 
@@ -91,31 +91,39 @@ public abstract class GenericUDFBasePad extends GenericUDF {
   protected abstract void performOp(byte[] data, byte[] txt, byte[] padTxt, int len, Text str,
       Text pad);
 
-  private Converter checkArguments(ObjectInspector[] arguments, int i)
+  // Convert input arguments to Text, if necessary.
+  private Converter checkTextArguments(ObjectInspector[] arguments, int i)
     throws UDFArgumentException {
     if (arguments[i].getCategory() != ObjectInspector.Category.PRIMITIVE) {
       throw new UDFArgumentTypeException(i + 1, "Only primitive type arguments are accepted but "
-	  + arguments[i].getTypeName() + " is passed. as  arguments");
+      + arguments[i].getTypeName() + " is passed. as  arguments");
+    }
+
+    Converter converter = ObjectInspectorConverters.getConverter((PrimitiveObjectInspector) arguments[i],
+          PrimitiveObjectInspectorFactory.writableStringObjectInspector);
+
+    return converter;
+  }
+
+  private Converter checkIntArguments(ObjectInspector[] arguments, int i)
+    throws UDFArgumentException {
+    if (arguments[i].getCategory() != ObjectInspector.Category.PRIMITIVE) {
+      throw new UDFArgumentTypeException(i + 1, "Only primitive type arguments are accepted but "
+      + arguments[i].getTypeName() + " is passed. as  arguments");
     }
     PrimitiveCategory inputType = ((PrimitiveObjectInspector) arguments[i]).getPrimitiveCategory();
     Converter converter;
     switch (inputType) {
-    case STRING:
-    case CHAR:
-    case VARCHAR:
-      converter = ObjectInspectorConverters.getConverter((PrimitiveObjectInspector) arguments[i],
-	  PrimitiveObjectInspectorFactory.writableStringObjectInspector);
-      break;
     case INT:
     case SHORT:
     case BYTE:
       converter = ObjectInspectorConverters.getConverter((PrimitiveObjectInspector) arguments[i],
-	  PrimitiveObjectInspectorFactory.writableIntObjectInspector);
+      PrimitiveObjectInspectorFactory.writableIntObjectInspector);
       break;
     default:
       throw new UDFArgumentTypeException(i + 1, udfName
-	  + " only takes STRING/CHAR/INT/SHORT/BYTE/VARCHAR types as " + (i + 1) + "-ths argument, got "
-	  + inputType);
+      + " only takes INT/SHORT/BYTE types as " + (i + 1) + "-ths argument, got "
+      + inputType);
     }
     return converter;
   }

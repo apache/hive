@@ -9,6 +9,7 @@ POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table timestamp_udf (t timestamp)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@timestamp_udf
 POSTHOOK: query: create table timestamp_udf (t timestamp)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -16,6 +17,7 @@ POSTHOOK: Output: default@timestamp_udf
 PREHOOK: query: create table timestamp_udf_string (t string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@timestamp_udf_string
 POSTHOOK: query: create table timestamp_udf_string (t string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

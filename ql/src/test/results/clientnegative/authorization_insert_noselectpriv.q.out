@@ -2,6 +2,7 @@ PREHOOK: query: -- check insert without select priv
 create table t1(i int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@t1
 POSTHOOK: query: -- check insert without select priv
 create table t1(i int)
 POSTHOOK: type: CREATETABLE
@@ -10,8 +11,9 @@ POSTHOOK: Output: default@t1
 PREHOOK: query: create table t2(i int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@t2
 POSTHOOK: query: create table t2(i int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t2
-FAILED: HiveAccessControlException Permission denied. Principal [name=user1, type=USER] does not have following privileges on Object [type=TABLE_OR_VIEW, name=default.t1] for operation QUERY : [SELECT]
+FAILED: HiveAccessControlException Permission denied: Principal [name=user1, type=USER] does not have following privileges for operation QUERY [[SELECT] on Object [type=TABLE_OR_VIEW, name=default.t1]]

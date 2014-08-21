@@ -1,11 +1,13 @@
-PREHOOK: query: -- union case: 1 subquery is a map-reduce job, different inputs for sub-queries, followed by reducesink
+PREHOOK: query: -- SORT_BEFORE_DIFF
+-- union case: 1 subquery is a map-reduce job, different inputs for sub-queries, followed by reducesink
 
 explain 
   select unionsrc.key, count(1) FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
                                         UNION  ALL  
                                             select s2.key as key, s2.value as value from src1 s2) unionsrc group by unionsrc.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- union case: 1 subquery is a map-reduce job, different inputs for sub-queries, followed by reducesink
+POSTHOOK: query: -- SORT_BEFORE_DIFF
+-- union case: 1 subquery is a map-reduce job, different inputs for sub-queries, followed by reducesink
 
 explain 
   select unionsrc.key, count(1) FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
@@ -90,14 +92,14 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 88 Basic stats: COMPLETE Column stats: PARTIAL
+                Statistics: Num rows: 1 Data size: 100 Basic stats: COMPLETE Column stats: PARTIAL
                 Select Operator
                   expressions: _col0 (type: string), _col1 (type: bigint)
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 1 Data size: 100 Basic stats: COMPLETE Column stats: PARTIAL
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 1 Data size: 100 Basic stats: COMPLETE Column stats: PARTIAL
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat

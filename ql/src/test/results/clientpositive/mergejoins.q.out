@@ -1,6 +1,7 @@
 PREHOOK: query: create table a (val1 int, val2 int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@a
 POSTHOOK: query: create table a (val1 int, val2 int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -8,6 +9,7 @@ POSTHOOK: Output: default@a
 PREHOOK: query: create table b (val1 int, val2 int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@b
 POSTHOOK: query: create table b (val1 int, val2 int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -15,6 +17,7 @@ POSTHOOK: Output: default@b
 PREHOOK: query: create table c (val1 int, val2 int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@c
 POSTHOOK: query: create table c (val1 int, val2 int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -22,6 +25,7 @@ POSTHOOK: Output: default@c
 PREHOOK: query: create table d (val1 int, val2 int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@d
 POSTHOOK: query: create table d (val1 int, val2 int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -29,6 +33,7 @@ POSTHOOK: Output: default@d
 PREHOOK: query: create table e (val1 int, val2 int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@e
 POSTHOOK: query: create table e (val1 int, val2 int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -105,7 +110,7 @@ STAGE PLANS:
             1 {KEY.reducesinkkey0} {VALUE._col0}
             2 {KEY.reducesinkkey0} {VALUE._col0}
             3 {KEY.reducesinkkey0} {VALUE._col0}
-          outputColumnNames: _col0, _col1, _col4, _col5, _col8, _col9, _col12, _col13
+          outputColumnNames: _col0, _col1, _col5, _col6, _col10, _col11, _col15, _col16
           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
           File Output Operator
             compressed: false
@@ -123,7 +128,7 @@ STAGE PLANS:
               sort order: +
               Map-reduce partition columns: _col1 (type: int)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-              value expressions: _col0 (type: int), _col4 (type: int), _col5 (type: int), _col8 (type: int), _col9 (type: int), _col12 (type: int), _col13 (type: int)
+              value expressions: _col0 (type: int), _col5 (type: int), _col6 (type: int), _col10 (type: int), _col11 (type: int), _col15 (type: int), _col16 (type: int)
           TableScan
             alias: e
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
@@ -141,12 +146,12 @@ STAGE PLANS:
           condition map:
                Inner Join 0 to 1
           condition expressions:
-            0 {VALUE._col0} {KEY.reducesinkkey0} {VALUE._col3} {VALUE._col4} {VALUE._col7} {VALUE._col8} {VALUE._col11} {VALUE._col12}
+            0 {VALUE._col0} {KEY.reducesinkkey0} {VALUE._col4} {VALUE._col5} {VALUE._col9} {VALUE._col10} {VALUE._col14} {VALUE._col15}
             1 {VALUE._col0} {KEY.reducesinkkey0}
-          outputColumnNames: _col0, _col1, _col4, _col5, _col8, _col9, _col12, _col13, _col16, _col17
+          outputColumnNames: _col0, _col1, _col5, _col6, _col10, _col11, _col15, _col16, _col20, _col21
           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
           Select Operator
-            expressions: _col0 (type: int), _col1 (type: int), _col4 (type: int), _col5 (type: int), _col8 (type: int), _col9 (type: int), _col12 (type: int), _col13 (type: int), _col16 (type: int), _col17 (type: int)
+            expressions: _col0 (type: int), _col1 (type: int), _col5 (type: int), _col6 (type: int), _col10 (type: int), _col11 (type: int), _col15 (type: int), _col16 (type: int), _col20 (type: int), _col21 (type: int)
             outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             File Output Operator
@@ -217,10 +222,10 @@ STAGE PLANS:
             0 
             1 {(KEY.reducesinkkey0 < 10)}
             2 
-          outputColumnNames: _col0, _col1, _col4, _col5, _col8, _col9
+          outputColumnNames: _col0, _col1, _col5, _col6, _col10, _col11
           Statistics: Num rows: 63 Data size: 12786 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: _col0 (type: string), _col1 (type: string), _col4 (type: string), _col5 (type: string), _col8 (type: string), _col9 (type: string)
+            expressions: _col0 (type: string), _col1 (type: string), _col5 (type: string), _col6 (type: string), _col10 (type: string), _col11 (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
             Statistics: Num rows: 63 Data size: 12786 Basic stats: COMPLETE Column stats: NONE
             File Output Operator

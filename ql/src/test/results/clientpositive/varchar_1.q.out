@@ -9,6 +9,7 @@ POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table varchar1 (key varchar(10), value varchar(20))
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@varchar1
 POSTHOOK: query: create table varchar1 (key varchar(10), value varchar(20))
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -16,6 +17,7 @@ POSTHOOK: Output: default@varchar1
 PREHOOK: query: create table varchar1_1 (key string, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@varchar1_1
 POSTHOOK: query: create table varchar1_1 (key string, value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

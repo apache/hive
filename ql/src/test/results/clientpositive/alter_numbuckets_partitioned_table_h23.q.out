@@ -2,6 +2,7 @@ PREHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.20,0.20S)
 create table tst1(key string, value string) partitioned by (ds string) clustered by (key) into 10 buckets
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@tst1
 POSTHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.20,0.20S)
 create table tst1(key string, value string) partitioned by (ds string) clustered by (key) into 10 buckets
 POSTHOOK: type: CREATETABLE

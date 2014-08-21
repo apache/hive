@@ -18,6 +18,7 @@ POSTHOOK: Output: default@sc
 PREHOOK: query: create table sc_part (key string) partitioned by (ts string) stored as rcfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@sc_part
 POSTHOOK: query: create table sc_part (key string) partitioned by (ts string) stored as rcfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

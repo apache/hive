@@ -34,6 +34,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class TestThatEvolvedSchemasActAsWeWant {
+
   @Test
   public void resolvedSchemasShouldReturnReaderSchema() throws IOException {
     // Need to verify that when reading a datum with an updated reader schema
@@ -68,7 +69,7 @@ public class TestThatEvolvedSchemasActAsWeWant {
         "    ]\n" +
         "}";
 
-    Schema[] schemas = {Schema.parse(v0), Schema.parse(v1)};
+    Schema[] schemas = {AvroSerdeUtils.getSchemaFor(v0), AvroSerdeUtils.getSchemaFor(v1)};
 
     // Encode a schema with v0, write out.
     GenericRecord record = new GenericData.Record(schemas[0]);

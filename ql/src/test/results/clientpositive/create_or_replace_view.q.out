@@ -290,6 +290,7 @@ PREHOOK: query: -- updating to fix view with invalid definition
 create table srcpart_temp like srcpart
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@srcpart_temp
 POSTHOOK: query: -- updating to fix view with invalid definition
 create table srcpart_temp like srcpart
 POSTHOOK: type: CREATETABLE

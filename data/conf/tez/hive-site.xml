@@ -121,6 +121,12 @@
 </property>
 
 <property>
+  <name>test.data.scripts</name>
+  <value>${hive.root}/data/scripts</value>
+  <description></description>
+</property>
+
+<property>
   <name>hive.jar.path</name>
   <value>${maven.local.repository}/org/apache/hive/hive-exec/${hive.version}/hive-exec-${hive.version}.jar</value>
   <description></description>
