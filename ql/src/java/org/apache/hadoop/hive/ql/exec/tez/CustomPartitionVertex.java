@@ -272,8 +272,8 @@ public class CustomPartitionVertex extends VertexManagerPlugin {
     int count = 0;
     for (InputSplit inputSplit : finalSplits) {
       MRSplitProto serializedSplit = MRInputHelpers.createSplitProto(inputSplit);
-      InputDataInformationEvent diEvent =
-          InputDataInformationEvent.create(count, serializedSplit.toByteString().asReadOnlyByteBuffer());
+      InputDataInformationEvent diEvent = InputDataInformationEvent.createWithSerializedPayload(
+          count, serializedSplit.toByteString().asReadOnlyByteBuffer());
       diEvent.setTargetIndex(count);
       count++;
       taskEvents.add(diEvent);

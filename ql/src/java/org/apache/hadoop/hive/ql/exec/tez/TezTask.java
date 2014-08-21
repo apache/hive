@@ -66,7 +66,7 @@ import org.apache.tez.dag.api.client.StatusGetOpts;
  * using the Tez APIs directly.
  *
  */
-@SuppressWarnings({"serial", "deprecation"})
+@SuppressWarnings({"serial"})
 public class TezTask extends Task<TezWork> {
 
   private static final String CLASS_NAME = TezTask.class.getName();
@@ -302,7 +302,7 @@ public class TezTask extends Task<TezWork> {
 
     try {
       // ready to start execution on the cluster
-      sessionState.getSession().addAppMasterLocalResources(resourceMap);
+      sessionState.getSession().addAppMasterLocalFiles(resourceMap);
       dagClient = sessionState.getSession().submitDAG(dag);
     } catch (SessionNotRunning nr) {
       console.printInfo("Tez session was closed. Reopening...");
