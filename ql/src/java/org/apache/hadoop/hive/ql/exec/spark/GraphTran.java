@@ -55,7 +55,7 @@ public class GraphTran {
   }
 
   public void execute() throws Exception {
-    JavaPairRDD<BytesWritable, BytesWritable> resultRDD = null;
+    Map<SparkTran, JavaPairRDD<BytesWritable, BytesWritable>> resultRDDs = new HashMap<SparkTran, JavaPairRDD<BytesWritable, BytesWritable>>();
     for (SparkTran tran : rootTrans) {
       // make sure all the root trans are MapTran
       if (!(tran instanceof MapTran)) {
@@ -94,9 +94,12 @@ public class GraphTran {
         }
         tran = childTran;
       }
-      resultRDD = rdd;
+      // if the current transformation is a leaf tran and it has not got processed yet, cache its corresponding RDD 
+      if (!resultRDDs.containsKey(tran) && getChildren(tran).isEmpty()) {
+        resultRDDs.put(tran, rdd);
+      }
     }
-    if (resultRDD != null) {
+    for (JavaPairRDD<BytesWritable, BytesWritable> resultRDD : resultRDDs.values()) {
       resultRDD.foreach(HiveVoidFunction.getInstance());
     }
   }
