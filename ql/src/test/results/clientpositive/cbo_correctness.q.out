@@ -17849,3 +17849,33 @@ POSTHOOK: Input: default@t3
  1 	2
 1 	2
 1	12
+PREHOOK: query: -- 13. null expr in select list
+select null from t3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t3
+#### A masked pattern was here ####
+POSTHOOK: query: -- 13. null expr in select list
+select null from t3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t3
+#### A masked pattern was here ####
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL

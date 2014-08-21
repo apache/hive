@@ -13147,14 +13147,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
       selectStar = selectStar && exprList.getChildCount() == posn + 1;
 
-      // 7. Replace NULL with CAST(NULL AS STRING)
       ArrayList<String> columnNames = new ArrayList<String>();
       for (int i = 0; i < col_list.size(); i++) {
-        // Replace NULL with CAST(NULL AS STRING)
-        if (col_list.get(i) instanceof ExprNodeNullDesc) {
-          col_list.set(i, new ExprNodeConstantDesc(
-              TypeInfoFactory.stringTypeInfo, null));
-        }
         columnNames.add(getColumnInternalName(i));
       }
 
