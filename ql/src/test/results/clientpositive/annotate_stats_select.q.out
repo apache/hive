@@ -19,6 +19,7 @@ collection items terminated by ','
 map keys terminated by ':' stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@alltypes
 POSTHOOK: query: create table if not exists alltypes (
  bo1 boolean,
  ti1 tinyint,
@@ -44,6 +45,7 @@ POSTHOOK: Output: default@alltypes
 PREHOOK: query: create table alltypes_orc like alltypes
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@alltypes_orc
 POSTHOOK: query: create table alltypes_orc like alltypes
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

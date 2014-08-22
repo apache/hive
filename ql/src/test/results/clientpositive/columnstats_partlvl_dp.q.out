@@ -6,6 +6,7 @@ PREHOOK: query: CREATE TABLE Employee_Part(employeeID int, employeeName String) 
 row format delimited fields terminated by '|'  stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@Employee_Part
 POSTHOOK: query: CREATE TABLE Employee_Part(employeeID int, employeeName String) partitioned by (employeeSalary double, country string)
 row format delimited fields terminated by '|'  stored as textfile
 POSTHOOK: type: CREATETABLE
@@ -396,6 +397,7 @@ PREHOOK: query: CREATE TABLE Employee(employeeID int, employeeName String) parti
 row format delimited fields terminated by '|'  stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@Employee
 POSTHOOK: query: CREATE TABLE Employee(employeeID int, employeeName String) partitioned by (employeeSalary double, country string)
 row format delimited fields terminated by '|'  stored as textfile
 POSTHOOK: type: CREATETABLE

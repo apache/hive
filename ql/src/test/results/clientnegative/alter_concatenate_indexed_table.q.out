@@ -1,6 +1,7 @@
 PREHOOK: query: create table src_rc_concatenate_test(key int, value string) stored as rcfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@src_rc_concatenate_test
 POSTHOOK: query: create table src_rc_concatenate_test(key int, value string) stored as rcfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -66,8 +67,10 @@ POSTHOOK: Input: default@src_rc_concatenate_test
 214	-7678496319
 PREHOOK: query: create index src_rc_concatenate_test_index on table src_rc_concatenate_test(key) as 'compact' WITH DEFERRED REBUILD IDXPROPERTIES ("prop1"="val1", "prop2"="val2")
 PREHOOK: type: CREATEINDEX
+PREHOOK: Input: default@src_rc_concatenate_test
 POSTHOOK: query: create index src_rc_concatenate_test_index on table src_rc_concatenate_test(key) as 'compact' WITH DEFERRED REBUILD IDXPROPERTIES ("prop1"="val1", "prop2"="val2")
 POSTHOOK: type: CREATEINDEX
+POSTHOOK: Input: default@src_rc_concatenate_test
 POSTHOOK: Output: default@default__src_rc_concatenate_test_src_rc_concatenate_test_index__
 PREHOOK: query: show indexes on src_rc_concatenate_test
 PREHOOK: type: SHOWINDEXES

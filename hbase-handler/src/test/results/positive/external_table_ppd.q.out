@@ -16,6 +16,7 @@ TBLPROPERTIES ("hbase.table.name" = "t_hive",
                "hbase.table.default.storage.type" = "binary")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@t_hbase
 POSTHOOK: query: CREATE TABLE t_hbase(key STRING,
                      tinyint_col TINYINT,
                      smallint_col SMALLINT,

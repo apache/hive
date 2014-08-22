@@ -2564,13 +2564,13 @@ public class ObjectStore implements RawStore, Configurable {
       }
 
       // For now only alter name, owner, paramters, cols, bucketcols are allowed
+      oldt.setDatabase(newt.getDatabase());
       oldt.setTableName(newt.getTableName().toLowerCase());
       oldt.setParameters(newt.getParameters());
       oldt.setOwner(newt.getOwner());
       // Fully copy over the contents of the new SD into the old SD,
       // so we don't create an extra SD in the metastore db that has no references.
       copyMSD(newt.getSd(), oldt.getSd());
-      oldt.setDatabase(newt.getDatabase());
       oldt.setRetention(newt.getRetention());
       oldt.setPartitionKeys(newt.getPartitionKeys());
       oldt.setTableType(newt.getTableType());

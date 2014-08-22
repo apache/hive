@@ -1,6 +1,7 @@
 PREHOOK: query: CREATE TABLE test_src(key int, value string) stored as RCFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@test_src
 POSTHOOK: query: CREATE TABLE test_src(key int, value string) stored as RCFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

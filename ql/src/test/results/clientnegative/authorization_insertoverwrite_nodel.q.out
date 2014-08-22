@@ -2,6 +2,7 @@ PREHOOK: query: -- check insert overwrite without delete priv
 create table t1(i int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@t1
 POSTHOOK: query: -- check insert overwrite without delete priv
 create table t1(i int)
 POSTHOOK: type: CREATETABLE
@@ -29,6 +30,7 @@ default	t1			user1	USER	INSERT	false	-1	hive_test_user
 PREHOOK: query: create table user1tab(i int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@user1tab
 POSTHOOK: query: create table user1tab(i int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

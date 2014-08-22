@@ -1,6 +1,7 @@
 PREHOOK: query: create table create_table_creator_priv_test(i int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@create_table_creator_priv_test
 POSTHOOK: query: create table create_table_creator_priv_test(i int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

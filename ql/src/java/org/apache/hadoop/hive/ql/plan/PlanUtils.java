@@ -157,7 +157,7 @@ public final class PlanUtils {
     } catch (ClassNotFoundException e) {
       // mimicking behaviour in CreateTableDesc tableDesc creation
       // returning null table description for output.
-      e.printStackTrace();
+      LOG.warn("Unable to find class in getDefaultTableDesc: " + e.getMessage(), e);
       return null;
     }
     return ret;
@@ -364,8 +364,7 @@ public final class PlanUtils {
       ret.setInputFileFormatClass(in_class);
       ret.setOutputFileFormatClass(out_class);
     } catch (ClassNotFoundException e) {
-      e.printStackTrace();
-      return null;
+      throw new RuntimeException("Unable to find class in getTableDesc: " + e.getMessage(), e);
     }
     return ret;
   }

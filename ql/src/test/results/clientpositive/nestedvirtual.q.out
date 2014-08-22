@@ -1,6 +1,7 @@
 PREHOOK: query: CREATE TABLE pokes (foo INT, bar STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@pokes
 POSTHOOK: query: CREATE TABLE pokes (foo INT, bar STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -8,6 +9,7 @@ POSTHOOK: Output: default@pokes
 PREHOOK: query: create table pokes2(foo INT, bar STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@pokes2
 POSTHOOK: query: create table pokes2(foo INT, bar STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -48,6 +50,7 @@ POSTHOOK: Output: default@pokes2
 PREHOOK: query: CREATE TABLE pokes (foo INT, bar STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@pokes
 POSTHOOK: query: CREATE TABLE pokes (foo INT, bar STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -55,6 +58,7 @@ POSTHOOK: Output: default@pokes
 PREHOOK: query: create table pokes2(foo INT, bar STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@pokes2
 POSTHOOK: query: create table pokes2(foo INT, bar STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -95,6 +99,7 @@ POSTHOOK: Output: default@pokes2
 PREHOOK: query: CREATE TABLE pokes (foo INT, bar STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@pokes
 POSTHOOK: query: CREATE TABLE pokes (foo INT, bar STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -102,6 +107,7 @@ POSTHOOK: Output: default@pokes
 PREHOOK: query: create table pokes2(foo INT, bar STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@pokes2
 POSTHOOK: query: create table pokes2(foo INT, bar STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

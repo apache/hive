@@ -5,6 +5,7 @@ PREHOOK: query: -- test for loading into tables with the correct file format
 CREATE TABLE T1(name STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@T1
 POSTHOOK: query: -- test for loading into tables with the correct file format
 -- test for loading into partitions with the correct file format
 
@@ -33,6 +34,7 @@ POSTHOOK: Input: default@t1
 PREHOOK: query: CREATE TABLE T2(name STRING) STORED AS SEQUENCEFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@T2
 POSTHOOK: query: CREATE TABLE T2(name STRING) STORED AS SEQUENCEFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -57,6 +59,7 @@ POSTHOOK: Input: default@t2
 PREHOOK: query: CREATE TABLE T3(name STRING) PARTITIONED BY(ds STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@T3
 POSTHOOK: query: CREATE TABLE T3(name STRING) PARTITIONED BY(ds STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -84,6 +87,7 @@ POSTHOOK: Input: default@t3@ds=2008-04-09
 PREHOOK: query: CREATE TABLE T4(name STRING) PARTITIONED BY(ds STRING) STORED AS SEQUENCEFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@T4
 POSTHOOK: query: CREATE TABLE T4(name STRING) PARTITIONED BY(ds STRING) STORED AS SEQUENCEFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

@@ -1,6 +1,7 @@
 PREHOOK: query: CREATE TABLE stats_invalid (key string, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@stats_invalid
 POSTHOOK: query: CREATE TABLE stats_invalid (key string, value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

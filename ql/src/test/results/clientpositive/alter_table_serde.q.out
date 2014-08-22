@@ -2,6 +2,7 @@ PREHOOK: query: -- test table
 create table test_table (id int, query string, name string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@test_table
 POSTHOOK: query: -- test table
 create table test_table (id int, query string, name string)
 POSTHOOK: type: CREATETABLE
@@ -68,6 +69,7 @@ PREHOOK: query: --- test partitioned table
 create table test_table (id int, query string, name string) partitioned by (dt string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@test_table
 POSTHOOK: query: --- test partitioned table
 create table test_table (id int, query string, name string) partitioned by (dt string)
 POSTHOOK: type: CREATETABLE

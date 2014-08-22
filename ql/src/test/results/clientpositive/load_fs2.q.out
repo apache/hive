@@ -4,6 +4,7 @@ PREHOOK: query: -- HIVE-3300 [jira] LOAD DATA INPATH fails if a hdfs file with s
 create table result (key string, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@result
 POSTHOOK: query: -- HIVE-3300 [jira] LOAD DATA INPATH fails if a hdfs file with same name is added to table
 -- 'loader' table is used only for uploading kv1.txt to HDFS (!hdfs -put is not working on minMRDriver)
 
@@ -14,6 +15,7 @@ POSTHOOK: Output: default@result
 PREHOOK: query: create table loader (key string, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@loader
 POSTHOOK: query: create table loader (key string, value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

@@ -14,6 +14,7 @@ POSTHOOK: type: DROPTABLE
 PREHOOK: type: CREATETABLE
 #### A masked pattern was here ####
 PREHOOK: Output: database:default
+PREHOOK: Output: default@target
 #### A masked pattern was here ####
 POSTHOOK: type: CREATETABLE
 #### A masked pattern was here ####
@@ -23,6 +24,7 @@ POSTHOOK: Output: default@target
 PREHOOK: type: CREATETABLE
 #### A masked pattern was here ####
 PREHOOK: Output: database:default
+PREHOOK: Output: default@temp
 #### A masked pattern was here ####
 POSTHOOK: type: CREATETABLE
 #### A masked pattern was here ####

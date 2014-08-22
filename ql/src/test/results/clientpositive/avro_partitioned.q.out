@@ -30,6 +30,7 @@ TBLPROPERTIES ('avro.schema.literal'='{
 }')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@episodes
 POSTHOOK: query: -- SORT_QUERY_RESULTS
 -- Verify that table scans work with partitioned Avro tables
 CREATE TABLE episodes
@@ -102,6 +103,7 @@ TBLPROPERTIES ('avro.schema.literal'='{
 }')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@episodes_partitioned
 POSTHOOK: query: CREATE TABLE episodes_partitioned
 PARTITIONED BY (doctor_pt INT)
 ROW FORMAT
@@ -305,6 +307,7 @@ INPUTFORMAT 'org.apache.hadoop.hive.ql.io.avro.AvroContainerInputFormat'
 OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.avro.AvroContainerOutputFormat'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@episodes_partitioned_serdeproperties
 POSTHOOK: query: -- Verify that reading from an Avro partition works
 -- even if it has an old schema relative to the current table level schema
 

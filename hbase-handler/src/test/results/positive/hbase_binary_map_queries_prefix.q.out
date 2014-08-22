@@ -12,6 +12,7 @@ PREHOOK: query: CREATE TABLE hbase_src(key STRING,
                        string_col STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@hbase_src
 POSTHOOK: query: CREATE TABLE hbase_src(key STRING,
                        tinyint_col TINYINT,
                        smallint_col SMALLINT,
@@ -57,6 +58,7 @@ WITH SERDEPROPERTIES ("hbase.columns.mapping"=":key,cf-string:,cf-string:simple_
 TBLPROPERTIES ("hbase.table.name"="t_hive_maps")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@t_hbase_maps
 POSTHOOK: query: CREATE TABLE t_hbase_maps(key STRING,
                           string_map_col MAP<STRING, STRING>,
                           simple_string_col STRING)
@@ -123,6 +125,7 @@ WITH SERDEPROPERTIES ("hbase.columns.mapping"=":key,cf-string:string_col.*,cf-st
 TBLPROPERTIES ("hbase.table.name"="t_hive_maps")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@t_ext_hbase_maps
 POSTHOOK: query: CREATE EXTERNAL TABLE t_ext_hbase_maps(key STRING,
                                        string_map_cols MAP<STRING, STRING>, simple_string_col STRING)
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'

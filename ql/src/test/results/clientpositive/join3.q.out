@@ -1,6 +1,7 @@
 PREHOOK: query: CREATE TABLE dest1(key INT, value STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@dest1
 POSTHOOK: query: CREATE TABLE dest1(key INT, value STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -65,10 +66,10 @@ STAGE PLANS:
             0 {KEY.reducesinkkey0}
             1 
             2 {VALUE._col0}
-          outputColumnNames: _col0, _col9
+          outputColumnNames: _col0, _col11
           Statistics: Num rows: 63 Data size: 6393 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: UDFToInteger(_col0) (type: int), _col9 (type: string)
+            expressions: UDFToInteger(_col0) (type: int), _col11 (type: string)
             outputColumnNames: _col0, _col1
             Statistics: Num rows: 63 Data size: 6393 Basic stats: COMPLETE Column stats: NONE
             File Output Operator

@@ -341,6 +341,7 @@ Storage Desc Params:
 PREHOOK: query: create table srcpart_serdeprops like srcpart
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@srcpart_serdeprops
 POSTHOOK: query: create table srcpart_serdeprops like srcpart
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

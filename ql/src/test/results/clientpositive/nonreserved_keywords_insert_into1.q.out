@@ -5,6 +5,7 @@ POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE insert (key INT, as STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@insert
 POSTHOOK: query: CREATE TABLE insert (key INT, as STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

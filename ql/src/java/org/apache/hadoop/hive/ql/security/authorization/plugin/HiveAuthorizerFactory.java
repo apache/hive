@@ -37,9 +37,11 @@ public interface HiveAuthorizerFactory {
    *  different thread, so get the current instance in each method invocation.
    * @param conf - current HiveConf
    * @param hiveAuthenticator - authenticator, provides user name
+   * @param ctx - session context information
    * @return new instance of HiveAuthorizer
    * @throws HiveAuthzPluginException
    */
   HiveAuthorizer createHiveAuthorizer(HiveMetastoreClientFactory metastoreClientFactory,
-      HiveConf conf, HiveAuthenticationProvider hiveAuthenticator) throws HiveAuthzPluginException;
+      HiveConf conf, HiveAuthenticationProvider hiveAuthenticator, HiveAuthzSessionContext ctx)
+      throws HiveAuthzPluginException;
 }

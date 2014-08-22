@@ -1,6 +1,7 @@
 PREHOOK: query: create table src_orc_merge_test(key int, value string) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@src_orc_merge_test
 POSTHOOK: query: create table src_orc_merge_test(key int, value string) stored as orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -116,6 +117,7 @@ POSTHOOK: Input: default@src_orc_merge_test
 PREHOOK: query: create table src_orc_merge_test_part(key int, value string) partitioned by (ds string) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@src_orc_merge_test_part
 POSTHOOK: query: create table src_orc_merge_test_part(key int, value string) partitioned by (ds string) stored as orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

@@ -1,6 +1,7 @@
 PREHOOK: query: create table alter_rename_partition_src ( col1 string ) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@alter_rename_partition_src
 POSTHOOK: query: create table alter_rename_partition_src ( col1 string ) stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -16,6 +17,7 @@ POSTHOOK: Output: default@alter_rename_partition_src
 PREHOOK: query: create table alter_rename_partition ( col1 string ) partitioned by (pcol1 string , pcol2 string) stored as sequencefile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@alter_rename_partition
 POSTHOOK: query: create table alter_rename_partition ( col1 string ) partitioned by (pcol1 string , pcol2 string) stored as sequencefile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

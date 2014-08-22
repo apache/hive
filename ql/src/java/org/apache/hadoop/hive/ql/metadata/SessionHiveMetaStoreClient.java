@@ -249,6 +249,8 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
               + " is not a directory or unable to create one");
         }
       }
+      // Make sure location string is in proper format
+      tbl.getSd().setLocation(tblPath.toString());
     }
 
     // Add temp table info to current session

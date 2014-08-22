@@ -34,7 +34,6 @@ import org.apache.hadoop.hive.ql.hooks.HookUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.service.CompositeService;
-import org.apache.hive.service.auth.TSetIpAddressProcessor;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.SessionHandle;
 import org.apache.hive.service.cli.operation.OperationManager;
@@ -131,15 +130,20 @@ public class SessionManager extends CompositeService {
     }
     session.setSessionManager(this);
     session.setOperationManager(operationManager);
-    session.initialize(sessionConf);
-    session.open();
-    handleToSession.put(session.getSessionHandle(), session);
-
+    try {
+      session.initialize(sessionConf);
+      session.open();
+    } catch (Exception e) {
+      throw new HiveSQLException("Failed to open new session", e);
+    }
     try {
       executeSessionHooks(session);
     } catch (Exception e) {
       throw new HiveSQLException("Failed to execute session hooks", e);
     }
+
+    handleToSession.put(session.getSessionHandle(), session);
+
     return session.getSessionHandle();
   }
 

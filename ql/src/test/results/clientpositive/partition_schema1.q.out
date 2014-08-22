@@ -1,6 +1,7 @@
 PREHOOK: query: create table partition_schema1(key string, value string) partitioned by (dt string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@partition_schema1
 POSTHOOK: query: create table partition_schema1(key string, value string) partitioned by (dt string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

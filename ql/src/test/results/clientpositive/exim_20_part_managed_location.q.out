@@ -5,6 +5,7 @@ PREHOOK: query: create table exim_employee ( emp_id int comment "employee id")
 	tblproperties("creator"="krishna")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@exim_employee
 POSTHOOK: query: create table exim_employee ( emp_id int comment "employee id") 	
 	comment "employee table"
 	partitioned by (emp_country string comment "two char iso code", emp_state string comment "free text")
@@ -82,12 +83,16 @@ POSTHOOK: Input: default@exim_employee
 POSTHOOK: Output: default@exim_employee
 PREHOOK: query: create database importer
 PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:importer
 POSTHOOK: query: create database importer
 POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:importer
 PREHOOK: query: use importer
 PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:importer
 POSTHOOK: query: use importer
 POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:importer
 #### A masked pattern was here ####
 PREHOOK: query: import table exim_employee partition (emp_country="us", emp_state="tn") 
 	from 'ql/test/data/exports/exim_employee'

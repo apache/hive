@@ -52,6 +52,7 @@ PREHOOK: query: CREATE TABLE TestV1_Staples (
       )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@TestV1_Staples
 POSTHOOK: query: CREATE TABLE TestV1_Staples (
       Item_Count INT,
       Ship_Priority STRING,

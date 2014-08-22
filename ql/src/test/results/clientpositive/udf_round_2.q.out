@@ -2,6 +2,7 @@ PREHOOK: query: -- test for NaN (not-a-number)
 create table tstTbl1(n double)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@tstTbl1
 POSTHOOK: query: -- test for NaN (not-a-number)
 create table tstTbl1(n double)
 POSTHOOK: type: CREATETABLE

@@ -3,7 +3,4 @@ PREHOOK: type: SHOWDATABASES
 POSTHOOK: query: SHOW DATABASES
 POSTHOOK: type: SHOWDATABASES
 default
-PREHOOK: query: -- Try to switch to a database that does not exist
-USE does_not_exist
-PREHOOK: type: SWITCHDATABASE
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Database does not exist: does_not_exist
+FAILED: SemanticException [Error 10072]: Database does not exist: does_not_exist

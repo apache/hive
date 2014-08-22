@@ -5,6 +5,7 @@ POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE infertypes(ti TINYINT, si SMALLINT, i INT, bi BIGINT, fl FLOAT, db DOUBLE, str STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@infertypes
 POSTHOOK: query: CREATE TABLE infertypes(ti TINYINT, si SMALLINT, i INT, bi BIGINT, fl FLOAT, db DOUBLE, str STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

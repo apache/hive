@@ -9,6 +9,7 @@ POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table tbl_protectmode_1  (col string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_protectmode_1
 POSTHOOK: query: create table tbl_protectmode_1  (col string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

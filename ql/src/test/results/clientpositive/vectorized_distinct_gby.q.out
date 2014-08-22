@@ -1,6 +1,7 @@
 PREHOOK: query: create table dtest(a int, b int) clustered by (a) sorted by (a) into 1 buckets stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@dtest
 POSTHOOK: query: create table dtest(a int, b int) clustered by (a) sorted by (a) into 1 buckets stored as orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

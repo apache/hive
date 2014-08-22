@@ -36,6 +36,7 @@ TBLPROPERTIES ('avro.schema.literal'='{
 }')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@doctors4
 POSTHOOK: query: -- verify that new joins bring in correct schemas (including evolved schemas)
 
 CREATE TABLE doctors4

@@ -9,6 +9,7 @@ POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE insert_into4a (key int, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@insert_into4a
 POSTHOOK: query: CREATE TABLE insert_into4a (key int, value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -16,6 +17,7 @@ POSTHOOK: Output: default@insert_into4a
 PREHOOK: query: CREATE TABLE insert_into4b (key int, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@insert_into4b
 POSTHOOK: query: CREATE TABLE insert_into4b (key int, value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

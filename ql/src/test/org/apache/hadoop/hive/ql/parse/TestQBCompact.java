@@ -65,7 +65,6 @@ public class TestQBCompact {
   private AlterTableSimpleDesc parseAndAnalyze(String query) throws Exception {
     ParseDriver hd = new ParseDriver();
     ASTNode head = (ASTNode)hd.parse(query).getChild(0);
-    System.out.println("HERE " + head.dump());
     BaseSemanticAnalyzer a = SemanticAnalyzerFactory.get(conf, head);
     a.analyze(head, new Context(conf));
     List<Task<? extends Serializable>> roots = a.getRootTasks();

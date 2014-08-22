@@ -61,8 +61,8 @@ public class TestAvroSerde {
       "    ]\n" +
       "}";
 
-  static final Schema originalSchema = Schema.parse(originalSchemaString);
-  static final Schema newSchema = Schema.parse(newSchemaString);
+  static final Schema originalSchema = AvroSerdeUtils.getSchemaFor(originalSchemaString);
+  static final Schema newSchema = AvroSerdeUtils.getSchemaFor(newSchemaString);
 
   @Test
   public void initializeDoesNotReuseSchemasFromConf() throws SerDeException {
@@ -81,7 +81,7 @@ public class TestAvroSerde {
 
     // Verify that the schema now within the configuration is the one passed
     // in via the properties
-    assertEquals(newSchema, Schema.parse(conf.get(AVRO_SERDE_SCHEMA)));
+    assertEquals(newSchema, AvroSerdeUtils.getSchemaFor(conf.get(AVRO_SERDE_SCHEMA)));
   }
 
   @Test

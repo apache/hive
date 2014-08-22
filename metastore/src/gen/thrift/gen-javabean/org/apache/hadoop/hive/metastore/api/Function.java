@@ -993,14 +993,14 @@ public class Function implements org.apache.thrift.TBase<Function, Function._Fie
           case 8: // RESOURCE_URIS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list378 = iprot.readListBegin();
-                struct.resourceUris = new ArrayList<ResourceUri>(_list378.size);
-                for (int _i379 = 0; _i379 < _list378.size; ++_i379)
+                org.apache.thrift.protocol.TList _list386 = iprot.readListBegin();
+                struct.resourceUris = new ArrayList<ResourceUri>(_list386.size);
+                for (int _i387 = 0; _i387 < _list386.size; ++_i387)
                 {
-                  ResourceUri _elem380; // required
-                  _elem380 = new ResourceUri();
-                  _elem380.read(iprot);
-                  struct.resourceUris.add(_elem380);
+                  ResourceUri _elem388; // required
+                  _elem388 = new ResourceUri();
+                  _elem388.read(iprot);
+                  struct.resourceUris.add(_elem388);
                 }
                 iprot.readListEnd();
               }
@@ -1059,9 +1059,9 @@ public class Function implements org.apache.thrift.TBase<Function, Function._Fie
         oprot.writeFieldBegin(RESOURCE_URIS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.resourceUris.size()));
-          for (ResourceUri _iter381 : struct.resourceUris)
+          for (ResourceUri _iter389 : struct.resourceUris)
           {
-            _iter381.write(oprot);
+            _iter389.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -1134,9 +1134,9 @@ public class Function implements org.apache.thrift.TBase<Function, Function._Fie
       if (struct.isSetResourceUris()) {
         {
           oprot.writeI32(struct.resourceUris.size());
-          for (ResourceUri _iter382 : struct.resourceUris)
+          for (ResourceUri _iter390 : struct.resourceUris)
           {
-            _iter382.write(oprot);
+            _iter390.write(oprot);
           }
         }
       }
@@ -1176,14 +1176,14 @@ public class Function implements org.apache.thrift.TBase<Function, Function._Fie
       }
       if (incoming.get(7)) {
         {
-          org.apache.thrift.protocol.TList _list383 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-          struct.resourceUris = new ArrayList<ResourceUri>(_list383.size);
-          for (int _i384 = 0; _i384 < _list383.size; ++_i384)
+          org.apache.thrift.protocol.TList _list391 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+          struct.resourceUris = new ArrayList<ResourceUri>(_list391.size);
+          for (int _i392 = 0; _i392 < _list391.size; ++_i392)
           {
-            ResourceUri _elem385; // required
-            _elem385 = new ResourceUri();
-            _elem385.read(iprot);
-            struct.resourceUris.add(_elem385);
+            ResourceUri _elem393; // required
+            _elem393 = new ResourceUri();
+            _elem393.read(iprot);
+            struct.resourceUris.add(_elem393);
           }
         }
         struct.setResourceUrisIsSet(true);

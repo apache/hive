@@ -21,6 +21,7 @@ import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_ORC_ZEROCOPY;
 
 import java.io.EOFException;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.sql.Timestamp;
@@ -1292,8 +1293,9 @@ class RecordReaderImpl implements RecordReader {
             BigInteger bInt = SerializationUtils.readBigInteger(valueStream);
             result.vector[i].update(bInt, (short) scratchScaleVector.vector[i]);
 
-            // Change the scale to match the schema if the scale in data is different.
-            if (scale != scratchScaleVector.vector[i]) {
+            // Change the scale to match the schema if the scale is less than in data.
+            // (HIVE-7373) If scale is bigger, then it leaves the original trailing zeros
+            if (scale < scratchScaleVector.vector[i]) {
               result.vector[i].changeScaleDestructive((short) scale);
             }
           }
@@ -2410,6 +2412,9 @@ class RecordReaderImpl implements RecordReader {
 
   private static Object getBaseObjectForComparison(Object predObj, Object statsObj) {
     if (predObj != null) {
+      if (predObj instanceof ExprNodeConstantDesc) {
+        predObj = ((ExprNodeConstantDesc) predObj).getValue();
+      }
       // following are implicitly convertible
       if (statsObj instanceof Long) {
         if (predObj instanceof Double) {
@@ -2428,10 +2433,6 @@ class RecordReaderImpl implements RecordReader {
           return Double.valueOf(predObj.toString());
         }
       } else if (statsObj instanceof String) {
-        // Ex: where d = date '1970-02-01' will be ExprNodeConstantDesc
-        if (predObj instanceof ExprNodeConstantDesc) {
-          return ((ExprNodeConstantDesc) predObj).getValue().toString();
-        }
         return predObj.toString();
       } else if (statsObj instanceof HiveDecimal) {
         if (predObj instanceof Long) {
@@ -2440,6 +2441,8 @@ class RecordReaderImpl implements RecordReader {
           return HiveDecimal.create(predObj.toString());
         } else if (predObj instanceof String) {
           return HiveDecimal.create(predObj.toString());
+        } else if (predObj instanceof BigDecimal) {
+          return HiveDecimal.create((BigDecimal)predObj);
         }
       }
     }

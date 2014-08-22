@@ -10,6 +10,7 @@ CREATE TABLE T1(key STRING, val STRING)
 SKEWED BY (key) ON ((2)) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@T1
 POSTHOOK: query: -- This is to test the union->selectstar->filesink and skewjoin optimization
 -- Union of 2 map-reduce subqueries is performed for the skew join
 -- There is no need to write the temporary results of the sub-queries, and then read them 
@@ -35,6 +36,7 @@ PREHOOK: query: CREATE TABLE T2(key STRING, val STRING)
 SKEWED BY (key) ON ((3)) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@T2
 POSTHOOK: query: CREATE TABLE T2(key STRING, val STRING)
 SKEWED BY (key) ON ((3)) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
@@ -98,10 +100,10 @@ STAGE PLANS:
           condition expressions:
             0 {KEY.reducesinkkey0} {VALUE._col0}
             1 {KEY.reducesinkkey0} {VALUE._col0}
-          outputColumnNames: _col0, _col1, _col4, _col5
+          outputColumnNames: _col0, _col1, _col5, _col6
           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
           Select Operator
-            expressions: _col0 (type: string), _col1 (type: string), _col4 (type: string), _col5 (type: string)
+            expressions: _col0 (type: string), _col1 (type: string), _col5 (type: string), _col6 (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             File Output Operator
@@ -146,10 +148,10 @@ STAGE PLANS:
           condition expressions:
             0 {KEY.reducesinkkey0} {VALUE._col0}
             1 {KEY.reducesinkkey0} {VALUE._col0}
-          outputColumnNames: _col0, _col1, _col4, _col5
+          outputColumnNames: _col0, _col1, _col5, _col6
           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
           Select Operator
-            expressions: _col0 (type: string), _col1 (type: string), _col4 (type: string), _col5 (type: string)
+            expressions: _col0 (type: string), _col1 (type: string), _col5 (type: string), _col6 (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             File Output Operator
@@ -234,10 +236,10 @@ STAGE PLANS:
           condition expressions:
             0 {KEY.reducesinkkey0} {VALUE._col0}
             1 {KEY.reducesinkkey0} {VALUE._col0}
-          outputColumnNames: _col0, _col1, _col4, _col5
+          outputColumnNames: _col0, _col1, _col5, _col6
           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
           Select Operator
-            expressions: _col0 (type: string), _col1 (type: string), _col4 (type: string), _col5 (type: string)
+            expressions: _col0 (type: string), _col1 (type: string), _col5 (type: string), _col6 (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             File Output Operator
@@ -282,10 +284,10 @@ STAGE PLANS:
           condition expressions:
             0 {KEY.reducesinkkey0} {VALUE._col0}
             1 {KEY.reducesinkkey0} {VALUE._col0}
-          outputColumnNames: _col0, _col1, _col4, _col5
+          outputColumnNames: _col0, _col1, _col5, _col6
           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
           Select Operator
-            expressions: _col0 (type: string), _col1 (type: string), _col4 (type: string), _col5 (type: string)
+            expressions: _col0 (type: string), _col1 (type: string), _col5 (type: string), _col6 (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             File Output Operator
@@ -325,6 +327,7 @@ NULL	NULL	5	15
 PREHOOK: query: create table DEST1(key1 STRING, val1 STRING, key2 STRING, val2 STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@DEST1
 POSTHOOK: query: create table DEST1(key1 STRING, val1 STRING, key2 STRING, val2 STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -377,10 +380,10 @@ STAGE PLANS:
           condition expressions:
             0 {KEY.reducesinkkey0} {VALUE._col0}
             1 {KEY.reducesinkkey0} {VALUE._col0}
-          outputColumnNames: _col0, _col1, _col4, _col5
+          outputColumnNames: _col0, _col1, _col5, _col6
           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
           Select Operator
-            expressions: _col0 (type: string), _col1 (type: string), _col4 (type: string), _col5 (type: string)
+            expressions: _col0 (type: string), _col1 (type: string), _col5 (type: string), _col6 (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             File Output Operator
@@ -436,10 +439,10 @@ STAGE PLANS:
           condition expressions:
             0 {KEY.reducesinkkey0} {VALUE._col0}
             1 {KEY.reducesinkkey0} {VALUE._col0}
-          outputColumnNames: _col0, _col1, _col4, _col5
+          outputColumnNames: _col0, _col1, _col5, _col6
           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
           Select Operator
-            expressions: _col0 (type: string), _col1 (type: string), _col4 (type: string), _col5 (type: string)
+            expressions: _col0 (type: string), _col1 (type: string), _col5 (type: string), _col6 (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             File Output Operator
@@ -531,10 +534,10 @@ STAGE PLANS:
           condition expressions:
             0 {KEY.reducesinkkey0} {VALUE._col0}
             1 {KEY.reducesinkkey0} {VALUE._col0}
-          outputColumnNames: _col0, _col1, _col4, _col5
+          outputColumnNames: _col0, _col1, _col5, _col6
           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
           Select Operator
-            expressions: _col0 (type: string), _col1 (type: string), _col4 (type: string), _col5 (type: string)
+            expressions: _col0 (type: string), _col1 (type: string), _col5 (type: string), _col6 (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             File Output Operator
@@ -590,10 +593,10 @@ STAGE PLANS:
           condition expressions:
             0 {KEY.reducesinkkey0} {VALUE._col0}
             1 {KEY.reducesinkkey0} {VALUE._col0}
-          outputColumnNames: _col0, _col1, _col4, _col5
+          outputColumnNames: _col0, _col1, _col5, _col6
           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
           Select Operator
-            expressions: _col0 (type: string), _col1 (type: string), _col4 (type: string), _col5 (type: string)
+            expressions: _col0 (type: string), _col1 (type: string), _col5 (type: string), _col6 (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             File Output Operator

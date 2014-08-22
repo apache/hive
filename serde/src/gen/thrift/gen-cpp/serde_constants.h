@@ -23,6 +23,7 @@ class serdeConstants {
   std::string SERIALIZATION_LAST_COLUMN_TAKES_REST;
   std::string SERIALIZATION_SORT_ORDER;
   std::string SERIALIZATION_USE_JSON_OBJECTS;
+  std::string SERIALIZATION_ENCODING;
   std::string FIELD_DELIM;
   std::string COLLECTION_DELIM;
   std::string LINE_DELIM;

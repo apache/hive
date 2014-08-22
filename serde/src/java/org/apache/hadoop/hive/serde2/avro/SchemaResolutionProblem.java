@@ -55,5 +55,5 @@ class SchemaResolutionProblem {
         "        }\n" +
         "    ]\n" +
         "}";
-  public final static Schema SIGNAL_BAD_SCHEMA = Schema.parse(sentinelString);
+  public final static Schema SIGNAL_BAD_SCHEMA = AvroSerdeUtils.getSchemaFor(sentinelString);
 }

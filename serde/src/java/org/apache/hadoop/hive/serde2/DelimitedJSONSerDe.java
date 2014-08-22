@@ -46,7 +46,7 @@ public class DelimitedJSONSerDe extends LazySimpleSerDe {
    * Not implemented.
    */
   @Override
-  public Object deserialize(Writable field) throws SerDeException {
+  public Object doDeserialize(Writable field) throws SerDeException {
     LOG.error("DelimitedJSONSerDe cannot deserialize.");
     throw new SerDeException("DelimitedJSONSerDe cannot deserialize.");
   }

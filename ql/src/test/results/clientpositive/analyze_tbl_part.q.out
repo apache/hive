@@ -1,0 +1,83 @@
+PREHOOK: query: create table src_stat_part(key string, value string) partitioned by (partitionId int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src_stat_part
+POSTHOOK: query: create table src_stat_part(key string, value string) partitioned by (partitionId int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@src_stat_part
+PREHOOK: query: insert overwrite table src_stat_part partition (partitionId=1)
+select * from src1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src1
+PREHOOK: Output: default@src_stat_part@partitionid=1
+POSTHOOK: query: insert overwrite table src_stat_part partition (partitionId=1)
+select * from src1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src1
+POSTHOOK: Output: default@src_stat_part@partitionid=1
+POSTHOOK: Lineage: src_stat_part PARTITION(partitionid=1).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_stat_part PARTITION(partitionid=1).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert overwrite table src_stat_part partition (partitionId=2)
+select * from src1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src1
+PREHOOK: Output: default@src_stat_part@partitionid=2
+POSTHOOK: query: insert overwrite table src_stat_part partition (partitionId=2)
+select * from src1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src1
+POSTHOOK: Output: default@src_stat_part@partitionid=2
+POSTHOOK: Lineage: src_stat_part PARTITION(partitionid=2).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_stat_part PARTITION(partitionid=2).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: ANALYZE TABLE src_stat_part partition (partitionId) COMPUTE STATISTICS for columns key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_stat_part
+PREHOOK: Input: default@src_stat_part@partitionid=1
+PREHOOK: Input: default@src_stat_part@partitionid=2
+#### A masked pattern was here ####
+POSTHOOK: query: ANALYZE TABLE src_stat_part partition (partitionId) COMPUTE STATISTICS for columns key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_stat_part
+POSTHOOK: Input: default@src_stat_part@partitionid=1
+POSTHOOK: Input: default@src_stat_part@partitionid=2
+#### A masked pattern was here ####
+PREHOOK: query: describe formatted src_stat_part.key PARTITION(partitionId=1)
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@src_stat_part
+POSTHOOK: query: describe formatted src_stat_part.key PARTITION(partitionId=1)
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@src_stat_part
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+key                 	string              	                    	                    	0                   	14                  	1.72                	3                   	                    	                    	from deserializer   
+PREHOOK: query: ANALYZE TABLE src_stat_part partition (partitionId) COMPUTE STATISTICS for columns key, value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_stat_part
+PREHOOK: Input: default@src_stat_part@partitionid=1
+PREHOOK: Input: default@src_stat_part@partitionid=2
+#### A masked pattern was here ####
+POSTHOOK: query: ANALYZE TABLE src_stat_part partition (partitionId) COMPUTE STATISTICS for columns key, value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_stat_part
+POSTHOOK: Input: default@src_stat_part@partitionid=1
+POSTHOOK: Input: default@src_stat_part@partitionid=2
+#### A masked pattern was here ####
+PREHOOK: query: describe formatted src_stat_part.key PARTITION(partitionId=1)
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@src_stat_part
+POSTHOOK: query: describe formatted src_stat_part.key PARTITION(partitionId=1)
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@src_stat_part
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+key                 	string              	                    	                    	0                   	14                  	1.72                	3                   	                    	                    	from deserializer   
+PREHOOK: query: describe formatted src_stat_part.value PARTITION(partitionId=2)
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@src_stat_part
+POSTHOOK: query: describe formatted src_stat_part.value PARTITION(partitionId=2)
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@src_stat_part
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+value               	string              	                    	                    	0                   	14                  	4.92                	7                   	                    	                    	from deserializer   

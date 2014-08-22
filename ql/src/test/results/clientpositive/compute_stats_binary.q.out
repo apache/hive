@@ -1,6 +1,7 @@
 PREHOOK: query: create table tab_binary(a binary)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@tab_binary
 POSTHOOK: query: create table tab_binary(a binary)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

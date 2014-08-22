@@ -3,6 +3,7 @@ PREHOOK: query: -- SORT_BEFORE_DIFF
 create table dummy (key string, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@dummy
 POSTHOOK: query: -- SORT_BEFORE_DIFF
 
 create table dummy (key string, value string)

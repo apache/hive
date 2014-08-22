@@ -33,6 +33,7 @@ public class SystemVariables {
   public static final String SYSTEM_PREFIX = "system:";
   public static final String HIVECONF_PREFIX = "hiveconf:";
   public static final String HIVEVAR_PREFIX = "hivevar:";
+  public static final String METACONF_PREFIX = "metaconf:";
   public static final String SET_COLUMN_NAME = "set";
 
   protected String getSubstitute(Configuration conf, String var) {

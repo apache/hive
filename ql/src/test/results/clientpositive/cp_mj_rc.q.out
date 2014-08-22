@@ -1,6 +1,7 @@
 PREHOOK: query: create table src_six_columns (k1 string, v1 string, k2 string, v2 string, k3 string, v3 string) stored as rcfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@src_six_columns
 POSTHOOK: query: create table src_six_columns (k1 string, v1 string, k2 string, v2 string, k3 string, v3 string) stored as rcfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -22,6 +23,7 @@ POSTHOOK: Lineage: src_six_columns.v3 SIMPLE [(src)src.FieldSchema(name:value, t
 PREHOOK: query: create table src_two_columns (k1 string, v1 string) stored as rcfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@src_two_columns
 POSTHOOK: query: create table src_two_columns (k1 string, v1 string) stored as rcfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

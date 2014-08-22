@@ -1,6 +1,7 @@
 PREHOOK: query: CREATE TABLE sent_tmp (val array<string>)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@sent_tmp
 POSTHOOK: query: CREATE TABLE sent_tmp (val array<string>)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -8,6 +9,7 @@ POSTHOOK: Output: default@sent_tmp
 PREHOOK: query: CREATE TABLE sent_tmp2 (val string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@sent_tmp2
 POSTHOOK: query: CREATE TABLE sent_tmp2 (val string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -111,6 +113,7 @@ POSTHOOK: Output: default@sent_tmp2
 PREHOOK: query: CREATE TABLE sent_tmp (val array<string>)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@sent_tmp
 POSTHOOK: query: CREATE TABLE sent_tmp (val array<string>)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -118,6 +121,7 @@ POSTHOOK: Output: default@sent_tmp
 PREHOOK: query: CREATE TABLE sent_tmp2 (val string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@sent_tmp2
 POSTHOOK: query: CREATE TABLE sent_tmp2 (val string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

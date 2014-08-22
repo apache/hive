@@ -31,6 +31,7 @@
   </prerequisites>
 
   <modules>
+    <module>accumulo-handler</module>
     <module>ant</module>
     <module>beeline</module>
     <module>cli</module>
@@ -87,6 +88,7 @@
     <maven.build-helper.plugin.version>1.8</maven.build-helper.plugin.version>
 
     <!-- Library Dependency Versions -->
+    <accumulo.version>1.6.0</accumulo.version>
     <activemq.version>5.5.0</activemq.version>
     <ant.version>1.9.1</ant.version>
     <antlr.version>3.4</antlr.version>
@@ -147,7 +149,7 @@
     <slf4j.version>1.7.5</slf4j.version>
     <ST4.version>4.0.4</ST4.version>
     <super-csv.version>2.2.0</super-csv.version>
-    <tez.version>0.4.0-incubating</tez.version>
+    <tez.version>0.4.1-incubating</tez.version>
     <tempus-fugit.version>1.1</tempus-fugit.version>
     <snappy.version>0.2</snappy.version>
     <wadl-resourcedoc-doclet.version>1.4</wadl-resourcedoc-doclet.version>
@@ -363,6 +365,31 @@
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-exec</artifactId>
         <version>${commons-exec.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.accumulo</groupId>
+        <artifactId>accumulo-core</artifactId>
+        <version>${accumulo.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.accumulo</groupId>
+        <artifactId>accumulo-fate</artifactId>
+        <version>${accumulo.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.accumulo</groupId>
+        <artifactId>accumulo-minicluster</artifactId>
+        <version>${accumulo.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.accumulo</groupId>
+        <artifactId>accumulo-start</artifactId>
+        <version>${accumulo.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.accumulo</groupId>
+        <artifactId>accumulo-trace</artifactId>
+        <version>${accumulo.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.activemq</groupId>

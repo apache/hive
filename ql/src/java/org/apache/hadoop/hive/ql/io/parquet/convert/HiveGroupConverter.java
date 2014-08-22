@@ -13,6 +13,9 @@
  */
 package org.apache.hadoop.hive.ql.io.parquet.convert;
 
+import java.util.List;
+
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.io.Writable;
 
 import parquet.io.api.Converter;
@@ -23,17 +26,20 @@ import parquet.schema.Type.Repetition;
 public abstract class HiveGroupConverter extends GroupConverter {
 
   protected static Converter getConverterFromDescription(final Type type, final int index,
-      final HiveGroupConverter parent) {
+      final HiveGroupConverter parent, List<TypeInfo> hiveSchemaTypeInfos) {
     if (type == null) {
       return null;
     }
     if (type.isPrimitive()) {
-      return ETypeConverter.getNewConverter(type.asPrimitiveType(), index, parent);
+      return ETypeConverter.getNewConverter(type.asPrimitiveType(), index, parent,
+          hiveSchemaTypeInfos);
     } else {
       if (type.asGroupType().getRepetition() == Repetition.REPEATED) {
-        return new ArrayWritableGroupConverter(type.asGroupType(), parent, index);
+        return new ArrayWritableGroupConverter(type.asGroupType(), parent, index,
+            hiveSchemaTypeInfos);
       } else {
-        return new DataWritableGroupConverter(type.asGroupType(), parent, index);
+        return new DataWritableGroupConverter(type.asGroupType(), parent, index,
+            hiveSchemaTypeInfos);
       }
     }
   }

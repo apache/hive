@@ -1,17 +1,23 @@
 PREHOOK: query: CREATE DATABASE db1
 PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:db1
 POSTHOOK: query: CREATE DATABASE db1
 POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:db1
 PREHOOK: query: CREATE DATABASE db2
 PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:db2
 POSTHOOK: query: CREATE DATABASE db2
 POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:db2
 PREHOOK: query: CREATE TABLE db1.sourceTable (one string,two string) PARTITIONED BY (ds string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:db1
+PREHOOK: Output: db1@db1.sourceTable
 POSTHOOK: query: CREATE TABLE db1.sourceTable (one string,two string) PARTITIONED BY (ds string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:db1
+POSTHOOK: Output: db1@db1.sourceTable
 POSTHOOK: Output: db1@sourceTable
 PREHOOK: query: load data local inpath '../../data/files/kv1.txt' INTO TABLE db1.sourceTable partition(ds='2011-11-11')
 PREHOOK: type: LOAD
@@ -33,9 +39,11 @@ POSTHOOK: Output: db1@sourcetable@ds=2011-11-11
 PREHOOK: query: CREATE TABLE db2.destinTable (one string,two string) PARTITIONED BY (ds string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:db2
+PREHOOK: Output: db2@db2.destinTable
 POSTHOOK: query: CREATE TABLE db2.destinTable (one string,two string) PARTITIONED BY (ds string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:db2
+POSTHOOK: Output: db2@db2.destinTable
 POSTHOOK: Output: db2@destinTable
 PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE db2.destinTable PARTITION (ds='2011-11-11')
 SELECT one,two FROM db1.sourceTable WHERE ds='2011-11-11' order by one desc, two desc limit 5

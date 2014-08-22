@@ -4,6 +4,7 @@ PREHOOK: query: -- test analyze table compute statistiscs [noscan] on external t
 PREHOOK: type: CREATETABLE
 #### A masked pattern was here ####
 PREHOOK: Output: database:default
+PREHOOK: Output: default@anaylyze_external
 POSTHOOK: query: -- test analyze table compute statistiscs [noscan] on external table 
 -- 1 test table
 #### A masked pattern was here ####
@@ -126,6 +127,7 @@ PREHOOK: query: -- 2 test partition
 create table texternal(key string, val string) partitioned by (insertdate string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@texternal
 POSTHOOK: query: -- 2 test partition
 -- prepare data
 create table texternal(key string, val string) partitioned by (insertdate string)
@@ -167,6 +169,7 @@ PREHOOK: query: -- create external table
 PREHOOK: type: CREATETABLE
 #### A masked pattern was here ####
 PREHOOK: Output: database:default
+PREHOOK: Output: default@anaylyze_external
 POSTHOOK: query: -- create external table
 #### A masked pattern was here ####
 POSTHOOK: type: CREATETABLE

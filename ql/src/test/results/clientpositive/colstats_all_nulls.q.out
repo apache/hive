@@ -1,6 +1,7 @@
 PREHOOK: query: CREATE TABLE src_null(a bigint) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@src_null
 POSTHOOK: query: CREATE TABLE src_null(a bigint) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

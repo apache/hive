@@ -3,6 +3,7 @@ PREHOOK: query: -- SORT_QUERY_RESULTS
 create table combine1_1(key string, value string) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@combine1_1
 POSTHOOK: query: -- SORT_QUERY_RESULTS
 
 create table combine1_1(key string, value string) stored as textfile

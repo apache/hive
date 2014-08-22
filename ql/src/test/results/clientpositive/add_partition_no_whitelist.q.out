@@ -3,6 +3,7 @@ PREHOOK: query: -- Test with no partition name whitelist pattern
 CREATE TABLE part_nowhitelist_test (key STRING, value STRING) PARTITIONED BY (ds STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@part_nowhitelist_test
 POSTHOOK: query: -- Test with no partition name whitelist pattern
 
 CREATE TABLE part_nowhitelist_test (key STRING, value STRING) PARTITIONED BY (ds STRING)

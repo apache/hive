@@ -1,17 +1,23 @@
 PREHOOK: query: create database source
 PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:source
 POSTHOOK: query: create database source
 POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:source
 PREHOOK: query: create database target
 PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:target
 POSTHOOK: query: create database target
 POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:target
 PREHOOK: query: create table source.src like default.src
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:source
+PREHOOK: Output: source@source.src
 POSTHOOK: query: create table source.src like default.src
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:source
+POSTHOOK: Output: source@source.src
 POSTHOOK: Output: source@src
 PREHOOK: query: load data local inpath '../../data/files/kv1.txt' overwrite into table source.src
 PREHOOK: type: LOAD
@@ -24,9 +30,11 @@ POSTHOOK: Output: source@src
 PREHOOK: query: create table source.srcpart like default.srcpart
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:source
+PREHOOK: Output: source@source.srcpart
 POSTHOOK: query: create table source.srcpart like default.srcpart
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:source
+POSTHOOK: Output: source@source.srcpart
 POSTHOOK: Output: source@srcpart
 PREHOOK: query: load data local inpath '../../data/files/kv1.txt' overwrite into table source.srcpart partition (ds='2008-04-08', hr='11')
 PREHOOK: type: LOAD
@@ -204,3 +212,56 @@ POSTHOOK: Input: target@srcpart@ds=2008-04-09/hr=12
 278	val_278	2008-04-08	11
 98	val_98	2008-04-08	11
 484	val_484	2008-04-08	11
+PREHOOK: query: create table source.src like default.src
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:source
+PREHOOK: Output: source@source.src
+POSTHOOK: query: create table source.src like default.src
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:source
+POSTHOOK: Output: source@source.src
+POSTHOOK: Output: source@src
+PREHOOK: query: create table source.src1 like default.src
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:source
+PREHOOK: Output: source@source.src1
+POSTHOOK: query: create table source.src1 like default.src
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:source
+POSTHOOK: Output: source@source.src1
+POSTHOOK: Output: source@src1
+PREHOOK: query: load data local inpath '../../data/files/kv1.txt' overwrite into table source.src
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: source@src
+POSTHOOK: query: load data local inpath '../../data/files/kv1.txt' overwrite into table source.src
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: source@src
+PREHOOK: query: ALTER TABLE source.src RENAME TO target.src1
+PREHOOK: type: ALTERTABLE_RENAME
+PREHOOK: Input: source@src
+PREHOOK: Output: source@src
+POSTHOOK: query: ALTER TABLE source.src RENAME TO target.src1
+POSTHOOK: type: ALTERTABLE_RENAME
+POSTHOOK: Input: source@src
+POSTHOOK: Output: source@src
+POSTHOOK: Output: target@src1
+PREHOOK: query: select * from target.src1 tablesample (10 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: target@src1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from target.src1 tablesample (10 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: target@src1
+#### A masked pattern was here ####
+238	val_238
+86	val_86
+311	val_311
+27	val_27
+165	val_165
+409	val_409
+255	val_255
+278	val_278
+98	val_98
+484	val_484

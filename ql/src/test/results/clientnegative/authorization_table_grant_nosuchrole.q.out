@@ -4,6 +4,7 @@ PREHOOK: query: ----------------------------------------
 create table t1(i int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@t1
 POSTHOOK: query: ----------------------------------------
 -- granting object privilege to a role that does not exist should fail
 ----------------------------------------

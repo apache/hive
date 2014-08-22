@@ -110,7 +110,7 @@ public class HiveSessionImpl implements HiveSession {
   }
 
   @Override
-  public void initialize(Map<String, String> sessionConfMap) {
+  public void initialize(Map<String, String> sessionConfMap) throws Exception {
     //process global init file: .hiverc
     processGlobalInitFile();
     SessionState.setCurrentSessionState(sessionState);
@@ -168,7 +168,7 @@ public class HiveSessionImpl implements HiveSession {
     }
   }
 
-  private void configureSession(Map<String, String> sessionConfMap) {
+  private void configureSession(Map<String, String> sessionConfMap) throws Exception {
     for (Map.Entry<String, String> entry : sessionConfMap.entrySet()) {
       String key = entry.getKey();
       if (key.startsWith("set:")) {

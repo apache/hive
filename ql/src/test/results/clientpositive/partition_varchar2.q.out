@@ -5,6 +5,7 @@ POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table partition_varchar_2 (key string, value varchar(20)) partitioned by (dt varchar(15), region int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@partition_varchar_2
 POSTHOOK: query: create table partition_varchar_2 (key string, value varchar(20)) partitioned by (dt varchar(15), region int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
