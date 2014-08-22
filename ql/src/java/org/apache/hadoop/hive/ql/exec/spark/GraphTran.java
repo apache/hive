@@ -30,19 +30,14 @@ import org.apache.spark.api.java.JavaPairRDD;
 
 public class GraphTran {
 
-  private Set<SparkTran> rootTrans = new HashSet<SparkTran>();
-  private Set<SparkTran> leafTrans = new HashSet<SparkTran>();
-  private Map<SparkTran, List<SparkTran>> transGraph = new HashMap<SparkTran, List<SparkTran>>();
-  private Map<SparkTran, List<SparkTran>> invertedTransGraph = new HashMap<SparkTran, List<SparkTran>>();
-  private Map<SparkTran, List<JavaPairRDD<BytesWritable, BytesWritable>>> unionInputs = new HashMap<SparkTran, List<JavaPairRDD<BytesWritable, BytesWritable>>>();
-  private Map<SparkTran, JavaPairRDD<BytesWritable, BytesWritable>> mapInputs = new HashMap<SparkTran, JavaPairRDD<BytesWritable, BytesWritable>>();
+  private final Set<SparkTran> rootTrans = new HashSet<SparkTran>();
+  private final Set<SparkTran> leafTrans = new HashSet<SparkTran>();
+  private final Map<SparkTran, List<SparkTran>> transGraph = new HashMap<SparkTran, List<SparkTran>>();
+  private final Map<SparkTran, List<SparkTran>> invertedTransGraph = new HashMap<SparkTran, List<SparkTran>>();
+  private final Map<SparkTran, List<JavaPairRDD<BytesWritable, BytesWritable>>> unionInputs = new HashMap<SparkTran, List<JavaPairRDD<BytesWritable, BytesWritable>>>();
+  private final Map<SparkTran, JavaPairRDD<BytesWritable, BytesWritable>> mapInputs = new HashMap<SparkTran, JavaPairRDD<BytesWritable, BytesWritable>>();
 
-  public void addTran(SparkTran tran) {
-    addTranWithInput(tran, null);
-  }
-
-  public void addTranWithInput(SparkTran tran,
-    JavaPairRDD<BytesWritable, BytesWritable> input) {
+  public void addRootTranWithInput(SparkTran tran, JavaPairRDD<BytesWritable, BytesWritable> input) {
     if (!rootTrans.contains(tran)) {
       rootTrans.add(tran);
       leafTrans.add(tran);
@@ -54,16 +49,16 @@ public class GraphTran {
     }
   }
 
-  public void execute() throws Exception {
+  public void execute() throws IllegalStateException {
     Map<SparkTran, JavaPairRDD<BytesWritable, BytesWritable>> resultRDDs = new HashMap<SparkTran, JavaPairRDD<BytesWritable, BytesWritable>>();
     for (SparkTran tran : rootTrans) {
       // make sure all the root trans are MapTran
       if (!(tran instanceof MapTran)) {
-        throw new Exception("root transformations must be MapTran!");
+        throw new IllegalStateException("root transformations must be MapTran!");
       }
       JavaPairRDD<BytesWritable, BytesWritable> input = mapInputs.get(tran);
       if (input == null) {
-        throw new Exception("input is missing for transformation!");
+        throw new IllegalStateException("input is missing for transformation!");
       }
       JavaPairRDD<BytesWritable, BytesWritable> rdd = tran.transform(input);
 
@@ -104,24 +99,38 @@ public class GraphTran {
     }
   }
 
-  public void connect(SparkTran a, SparkTran b) {
-    transGraph.get(a).add(b);
-    invertedTransGraph.get(b).add(a);
-    rootTrans.remove(b);
-    leafTrans.remove(a);
+  /**
+   * Connects the two SparkTrans in the graph.  Does not allow multiple connections
+   * between the same pair of SparkTrans.
+   * @param parent
+   * @param child
+   */
+  public void connect(SparkTran parent, SparkTran child) throws IllegalStateException {
+    if (getChildren(parent).contains(child)) {
+      throw new IllegalStateException("Connection already exists");
+    }
+    leafTrans.add(child);
+    if (transGraph.get(child) == null) {
+      transGraph.put(child, new LinkedList<SparkTran>());
+    }
+    if (invertedTransGraph.get(child) == null) {
+      invertedTransGraph.put(child, new LinkedList<SparkTran>());
+    }
+    transGraph.get(parent).add(child);
+    invertedTransGraph.get(child).add(parent);
   }
 
-  public List<SparkTran> getParents(SparkTran tran) throws Exception {
+  public List<SparkTran> getParents(SparkTran tran) throws IllegalStateException {
     if (!invertedTransGraph.containsKey(tran)
         || invertedTransGraph.get(tran) == null) {
-      throw new Exception("Cannot get parent transformations for " + tran);
+      throw new IllegalStateException("Cannot get parent transformations for " + tran);
     }
     return new LinkedList<SparkTran>(invertedTransGraph.get(tran));
   }
 
-  public List<SparkTran> getChildren(SparkTran tran) throws Exception {
+  public List<SparkTran> getChildren(SparkTran tran) throws IllegalStateException {
     if (!transGraph.containsKey(tran) || transGraph.get(tran) == null) {
-      throw new Exception("Cannot get children transformations for " + tran);
+      throw new IllegalStateException("Cannot get children transformations for " + tran);
     }
     return new LinkedList<SparkTran>(transGraph.get(tran));
   }

@@ -32,11 +32,11 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapper;
 import org.apache.hadoop.hive.ql.exec.mr.ExecReducer;
 import org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat;
-import org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.MapWork;
@@ -61,7 +61,8 @@ public class SparkPlanGenerator {
   private final JobConf jobConf;
   private Context context;
   private Path scratchDir;
-  private Map<BaseWork, SparkTran> unionWorkTrans = new HashMap<BaseWork, SparkTran>();
+  //used to make sure parents join to the same children, in case of Union and Reduce-side join.
+  private Map<BaseWork, SparkTran> childWorkTrans = new HashMap<BaseWork, SparkTran>();
 
   public SparkPlanGenerator(JavaSparkContext sc, Context context,
       JobConf jobConf, Path scratchDir) {
@@ -84,38 +85,71 @@ public class SparkPlanGenerator {
       JobConf newJobConf = cloneJobConf(mapWork);
       SparkTran tran = generate(newJobConf, mapWork);
       JavaPairRDD<BytesWritable, BytesWritable> input = generateRDD(newJobConf, mapWork);
-      trans.addTranWithInput(tran, input);
+      trans.addRootTranWithInput(tran, input);
 
       while (sparkWork.getChildren(w).size() > 0) {
         BaseWork child = sparkWork.getChildren(w).get(0);
+        SparkTran childTran = childWorkTrans.get(child);
         if (child instanceof ReduceWork) {
-          SparkEdgeProperty edge = sparkWork.getEdgeProperty(w, child);
-          SparkShuffler st = generate(edge);
-          ReduceTran rt = generate((ReduceWork) child);
-          rt.setShuffler(st);
-          rt.setNumPartitions(edge.getNumPartitions());
-          trans.addTran(rt);
-          trans.connect(tran, rt);
+          ReduceTran rt = null;
+          if (((ReduceWork) child).getReducer() instanceof JoinOperator) {
+            // Reduce-side join operator: The strategy to insert a UnionTran (UT) to union the output
+            // of the two separate input map-trans (MT), which are then shuffled to the appropriate partition
+            // for the ReduceTran (RT).
+
+            // Before:    MW   MW
+            //             \   /
+            //              RW (JoinOperator)
+
+            // After:     MT   MT
+            //             \   /
+            //              UT
+            //              |
+            //              RT (JoinOperator)
+            if (childTran == null) {
+              //create a new UT, and put it in the map.
+              rt = generateRTWithEdge(sparkWork, w, child);
+              UnionTran ut = generateUnionTran();
+              trans.connect(tran, ut);
+              trans.connect(ut, rt);
+              childWorkTrans.put(child, ut);
+            } else {
+              //already a UT in the map, connect
+              trans.connect(tran, childTran);
+              break;
+            }
+          } else {
+            rt = generateRTWithEdge(sparkWork, w, child);
+            trans.connect(tran, rt);
+          }
           w = child;
           tran = rt;
         } else if (child instanceof UnionWork) {
-          if (unionWorkTrans.get(child) != null) {
-            trans.connect(tran, unionWorkTrans.get(child));
-            break;
-          } else {
-            SparkTran ut = generate((UnionWork) child);
-            unionWorkTrans.put(child, ut);
-            trans.addTran(ut);
+          if (childTran == null) {
+            SparkTran ut = generateUnionTran();
+            childWorkTrans.put(child, ut);
             trans.connect(tran, ut);
             w = child;
             tran = ut;
+          } else {
+            trans.connect(tran, childTran);
+            break;
           }
         }
       }
     }
-    unionWorkTrans.clear();
+    childWorkTrans.clear();
     plan.setTran(trans);
     return plan;
+  }
+
+  private ReduceTran generateRTWithEdge(SparkWork sparkWork, BaseWork parent, BaseWork child) throws Exception {
+    SparkEdgeProperty edge = sparkWork.getEdgeProperty(parent, child);
+    SparkShuffler st = generate(edge);
+    ReduceTran rt = generate((ReduceWork) child);
+    rt.setShuffler(st);
+    rt.setNumPartitions(edge.getNumPartitions());
+    return rt;
   }
 
   private JavaPairRDD<BytesWritable, BytesWritable> generateRDD(JobConf jobConf, MapWork mapWork)
@@ -181,7 +215,7 @@ public class SparkPlanGenerator {
     return result;
   }
 
-  private UnionTran generate(UnionWork uw) {
+  private UnionTran generateUnionTran() {
     UnionTran result = new UnionTran();
     return result;
   }
