@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.optimizer.stats.annotation;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -811,6 +812,7 @@ public class StatsRulesProcFactory {
           // 2 relations, multiple attributes
           boolean multiAttr = false;
           int numAttr = 1;
+          int numParent = parents.size();
 
           Map<String, ColStatistics> joinedColStats = Maps.newHashMap();
           Map<Integer, List<String>> joinKeys = Maps.newHashMap();
@@ -873,12 +875,19 @@ public class StatsRulesProcFactory {
                   perAttrDVs.add(cs.getCountDistint());
                 }
               }
+
               distinctVals.add(getDenominator(perAttrDVs));
               perAttrDVs.clear();
             }
 
-            for (Long l : distinctVals) {
-              denom *= l;
+            if (numAttr > numParent) {
+              // To avoid denominator getting larger and aggressively reducing
+              // number of rows, we will ease out denominator.
+              denom = getEasedOutDenominator(distinctVals);
+            } else {
+              for (Long l : distinctVals) {
+                denom *= l;
+              }
             }
           } else {
             for (List<String> jkeys : joinKeys.values()) {
@@ -981,6 +990,20 @@ public class StatsRulesProcFactory {
         }
       }
       return null;
+    }
+
+    private Long getEasedOutDenominator(List<Long> distinctVals) {
+      // Exponential back-off for NDVs.
+      // 1) Descending order sort of NDVs
+      // 2) denominator = NDV1 * (NDV2 ^ (1/2)) * (NDV3 ^ (1/4))) * ....
+      Collections.sort(distinctVals, Collections.reverseOrder());
+
+      long denom = distinctVals.get(0);
+      for (int i = 1; i < distinctVals.size(); i++) {
+        denom = (long) (denom * Math.pow(distinctVals.get(i), 1.0 / (1 << i)));
+      }
+
+      return denom;
     }
 
     private void updateStatsForJoinType(Statistics stats, long newNumRows,
