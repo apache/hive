@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.net.URI;
 import java.util.Map;
 
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.ql.metadata.DummyPartition;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -276,11 +277,13 @@ public class Entity implements Serializable {
     }
 
     if (typ == Type.TABLE) {
-      return t.getDataLocation().toUri();
+      Path path = t.getDataLocation();
+      return path == null ? null : path.toUri();
     }
 
     if (typ == Type.PARTITION) {
-      return p.getDataLocation().toUri();
+      Path path = p.getDataLocation();
+      return path == null ? null : path.toUri();
     }
 
     if (typ == Type.DFS_DIR || typ == Type.LOCAL_DIR) {
