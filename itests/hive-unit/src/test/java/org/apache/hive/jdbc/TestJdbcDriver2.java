@@ -868,7 +868,7 @@ public class TestJdbcDriver2 {
     assertNotNull("ResultSet is null", res);
     assertTrue("getResultSet() not returning expected ResultSet", res == stmt
         .getResultSet());
-    assertEquals("get update count not as expected", 0, stmt.getUpdateCount());
+    assertEquals("get update count not as expected", -1, stmt.getUpdateCount());
     int i = 0;
 
     ResultSetMetaData meta = res.getMetaData();
