@@ -41,6 +41,7 @@ public abstract class HiveBaseFunctionResultList<T> implements
     Iterable, OutputCollector<BytesWritable, BytesWritable>, Serializable {
 
   private final Iterator<T> inputIterator;
+  private boolean isClosed = false;
 
   // Contains results from last processed input record.
   private final HiveKVResultCache lastRecordOutput;
@@ -106,7 +107,10 @@ public abstract class HiveBaseFunctionResultList<T> implements
       }
 
       // At this point we are done processing the input. Close the record processor
-      closeRecordProcessor();
+      if (!isClosed) {
+        closeRecordProcessor();
+        isClosed = true;
+      }
 
       // It is possible that some operators add records after closing the processor, so make sure
       // to check the lastRecordOutput
