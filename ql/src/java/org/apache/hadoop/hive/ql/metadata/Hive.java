@@ -89,6 +89,7 @@ import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
+import org.apache.hadoop.hive.metastore.api.SetPartitionsStatsRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
@@ -2548,6 +2549,15 @@ private void constructOneLBLocationMap(FileStatus fSta,
   public boolean updatePartitionColumnStatistics(ColumnStatistics statsObj) throws HiveException {
     try {
       return getMSC().updatePartitionColumnStatistics(statsObj);
+    } catch (Exception e) {
+      LOG.debug(StringUtils.stringifyException(e));
+      throw new HiveException(e);
+    }
+  }
+  
+  public boolean setPartitionColumnStatistics(SetPartitionsStatsRequest request) throws HiveException {
+    try {
+      return getMSC().setPartitionColumnStatistics(request);
     } catch (Exception e) {
       LOG.debug(StringUtils.stringifyException(e));
       throw new HiveException(e);
