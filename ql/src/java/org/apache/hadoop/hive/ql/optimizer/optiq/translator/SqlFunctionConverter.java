@@ -12,6 +12,8 @@ import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.ParseDriver;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNegative;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPPositive;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.eigenbase.reltype.RelDataType;
@@ -49,6 +51,12 @@ public class SqlFunctionConverter {
 
   public static SqlOperator getOptiqOperator(GenericUDF hiveUDF,
       ImmutableList<RelDataType> optiqArgTypes, RelDataType retType) {
+    // handle overloaded methods first
+    if (hiveUDF instanceof GenericUDFOPNegative) {
+      return SqlStdOperatorTable.UNARY_MINUS;
+    } else if (hiveUDF instanceof GenericUDFOPPositive) {
+      return SqlStdOperatorTable.UNARY_PLUS;
+    } // do genric lookup
     return getOptiqFn(getName(hiveUDF), optiqArgTypes, retType);
   }
 
@@ -111,8 +119,15 @@ public class SqlFunctionConverter {
       node = (ASTNode) ParseDriver.adaptor.create(hToken.type, hToken.text);
     } else {
       node = (ASTNode) ParseDriver.adaptor.create(HiveParser.TOK_FUNCTION, "TOK_FUNCTION");
-      if (op.kind != SqlKind.CAST)
-        node.addChild((ASTNode) ParseDriver.adaptor.create(HiveParser.Identifier, op.getName()));
+      if (op.kind != SqlKind.CAST) {
+        if (op.kind == SqlKind.MINUS_PREFIX) {
+          node = (ASTNode) ParseDriver.adaptor.create(HiveParser.MINUS, "MINUS");
+        } else if (op.kind == SqlKind.PLUS_PREFIX) {
+          node = (ASTNode) ParseDriver.adaptor.create(HiveParser.PLUS, "PLUS");
+        } else {
+          node.addChild((ASTNode) ParseDriver.adaptor.create(HiveParser.Identifier, op.getName()));
+        }
+      }
     }
 
     for (ASTNode c : children) {
@@ -144,7 +159,7 @@ public class SqlFunctionConverter {
     if (hiveUDF instanceof GenericUDFBridge) {
       udfName = ((GenericUDFBridge) hiveUDF).getUdfName();
     } else {
-      Class udfClass = hiveUDF.getClass();
+      Class<? extends GenericUDF> udfClass = hiveUDF.getClass();
       Annotation udfAnnotation = udfClass.getAnnotation(Description.class);
 
       if (udfAnnotation != null && udfAnnotation instanceof Description) {
