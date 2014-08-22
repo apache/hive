@@ -142,9 +142,9 @@ class RunLengthIntegerWriterV2 implements IntegerWriter {
   private final boolean signed;
   private EncodingType encoding;
   private int numLiterals;
-  private long[] zigzagLiterals;
-  private long[] baseRedLiterals;
-  private long[] adjDeltas;
+  private final long[] zigzagLiterals = new long[MAX_SCOPE];
+  private final long[] baseRedLiterals = new long[MAX_SCOPE];
+  private final long[] adjDeltas = new long[MAX_SCOPE];
   private long fixedDelta;
   private int zzBits90p;
   private int zzBits100p;
@@ -252,8 +252,11 @@ class RunLengthIntegerWriterV2 implements IntegerWriter {
       // store the first value as delta value using zigzag encoding
       utils.writeVslong(output, adjDeltas[0]);
 
-      // adjacent delta values are bit packed
-      utils.writeInts(adjDeltas, 1, adjDeltas.length - 1, fb, output);
+      // adjacent delta values are bit packed. The length of adjDeltas array is
+      // always one less than the number of literals (delta difference for n
+      // elements is n-1). We have already written one element, write the
+      // remaining numLiterals - 2 elements here
+      utils.writeInts(adjDeltas, 1, numLiterals - 2, fb, output);
     }
   }
 
@@ -323,7 +326,7 @@ class RunLengthIntegerWriterV2 implements IntegerWriter {
     // base reduced literals are bit packed
     int closestFixedBits = utils.getClosestFixedBits(fb);
 
-    utils.writeInts(baseRedLiterals, 0, baseRedLiterals.length, closestFixedBits,
+    utils.writeInts(baseRedLiterals, 0, numLiterals, closestFixedBits,
         output);
 
     // write patch list
@@ -372,7 +375,7 @@ class RunLengthIntegerWriterV2 implements IntegerWriter {
     output.write(headerSecondByte);
 
     // bit packing the zigzag encoded literals
-    utils.writeInts(zigzagLiterals, 0, zigzagLiterals.length, fb, output);
+    utils.writeInts(zigzagLiterals, 0, numLiterals, fb, output);
 
     // reset run length
     variableRunLength = 0;
@@ -414,14 +417,6 @@ class RunLengthIntegerWriterV2 implements IntegerWriter {
   }
 
   private void determineEncoding() {
-    // used for direct encoding
-    zigzagLiterals = new long[numLiterals];
-
-    // used for patched base encoding
-    baseRedLiterals = new long[numLiterals];
-
-    // used for delta encoding
-    adjDeltas = new long[numLiterals - 1];
 
     int idx = 0;
 
@@ -530,10 +525,10 @@ class RunLengthIntegerWriterV2 implements IntegerWriter {
     // is not significant then we can use direct or delta encoding
 
     double p = 0.9;
-    zzBits90p = utils.percentileBits(zigzagLiterals, p);
+    zzBits90p = utils.percentileBits(zigzagLiterals, 0, numLiterals, p);
 
     p = 1.0;
-    zzBits100p = utils.percentileBits(zigzagLiterals, p);
+    zzBits100p = utils.percentileBits(zigzagLiterals, 0, numLiterals, p);
 
     int diffBitsLH = zzBits100p - zzBits90p;
 
@@ -543,18 +538,18 @@ class RunLengthIntegerWriterV2 implements IntegerWriter {
         && isFixedDelta == false) {
       // patching is done only on base reduced values.
       // remove base from literals
-      for(int i = 0; i < zigzagLiterals.length; i++) {
+      for(int i = 0; i < numLiterals; i++) {
         baseRedLiterals[i] = literals[i] - min;
       }
 
       // 95th percentile width is used to determine max allowed value
       // after which patching will be done
       p = 0.95;
-      brBits95p = utils.percentileBits(baseRedLiterals, p);
+      brBits95p = utils.percentileBits(baseRedLiterals, 0, numLiterals, p);
 
       // 100th percentile is used to compute the max patch width
       p = 1.0;
-      brBits100p = utils.percentileBits(baseRedLiterals, p);
+      brBits100p = utils.percentileBits(baseRedLiterals, 0, numLiterals, p);
 
       // after base reducing the values, if the difference in bits between
       // 95th percentile and 100th percentile value is zero then there
@@ -592,7 +587,7 @@ class RunLengthIntegerWriterV2 implements IntegerWriter {
 
     // since we are considering only 95 percentile, the size of gap and
     // patch array can contain only be 5% values
-    patchLength = (int) Math.ceil((baseRedLiterals.length * 0.05));
+    patchLength = (int) Math.ceil((numLiterals * 0.05));
 
     int[] gapList = new int[patchLength];
     long[] patchList = new long[patchLength];
@@ -616,7 +611,7 @@ class RunLengthIntegerWriterV2 implements IntegerWriter {
     int gap = 0;
     int maxGap = 0;
 
-    for(int i = 0; i < baseRedLiterals.length; i++) {
+    for(int i = 0; i < numLiterals; i++) {
       // if value is above mask then create the patch and record the gap
       if (baseRedLiterals[i] > mask) {
         gap = i - prev;
@@ -694,9 +689,6 @@ class RunLengthIntegerWriterV2 implements IntegerWriter {
     numLiterals = 0;
     encoding = null;
     prevDelta = 0;
-    zigzagLiterals = null;
-    baseRedLiterals = null;
-    adjDeltas = null;
     fixedDelta = 0;
     zzBits90p = 0;
     zzBits100p = 0;
