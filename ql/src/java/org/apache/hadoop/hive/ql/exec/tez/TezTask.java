@@ -134,7 +134,7 @@ public class TezTask extends Task<TezWork> {
       }
 
       List<LocalResource> additionalLr = session.getLocalizedResources();
-      
+
       // log which resources we're adding (apart from the hive exec)
       if (LOG.isDebugEnabled()) {
         if (additionalLr == null || additionalLr.size() == 0) {
@@ -165,7 +165,7 @@ public class TezTask extends Task<TezWork> {
       counters = client.getDAGStatus(statusGetOpts).getDAGCounters();
       TezSessionPoolManager.getInstance().returnSession(session);
 
-      if (LOG.isInfoEnabled()) {
+      if (LOG.isInfoEnabled() && counters != null) {
         for (CounterGroup group: counters) {
           LOG.info(group.getDisplayName() +":");
           for (TezCounter counter: group) {

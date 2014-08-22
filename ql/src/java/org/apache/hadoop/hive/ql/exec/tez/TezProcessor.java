@@ -130,7 +130,7 @@ public class TezProcessor extends AbstractLogicalIOProcessor {
       LOG.info("Running task: " + getContext().getUniqueIdentifier());
 
       if (isMap) {
-        rproc = new MapRecordProcessor();
+        rproc = new MapRecordProcessor(jobConf);
         MRInputLegacy mrInput = getMRInput(inputs);
         try {
           mrInput.init();
@@ -201,6 +201,7 @@ public class TezProcessor extends AbstractLogicalIOProcessor {
       this.writer = (KeyValueWriter) output.getWriter();
     }
 
+    @Override
     public void collect(Object key, Object value) throws IOException {
       writer.write(key, value);
     }
