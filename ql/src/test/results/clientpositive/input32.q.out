@@ -1,6 +1,7 @@
 PREHOOK: query: create table dest32(a int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@dest32
 POSTHOOK: query: create table dest32(a int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -8,6 +9,7 @@ POSTHOOK: Output: default@dest32
 PREHOOK: query: create table tst_dest32(a int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@tst_dest32
 POSTHOOK: query: create table tst_dest32(a int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

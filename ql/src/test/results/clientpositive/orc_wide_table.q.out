@@ -2010,6 +2010,7 @@ PREHOOK: query: create table test_txt(
 ) row format delimited fields terminated by ','
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@test_txt
 POSTHOOK: query: create table test_txt(
 	c1 varchar(64),
 	c2 int,
@@ -4026,6 +4027,7 @@ POSTHOOK: Output: default@test_txt
 PREHOOK: query: create table test_orc like test_txt
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@test_orc
 POSTHOOK: query: create table test_orc like test_txt
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

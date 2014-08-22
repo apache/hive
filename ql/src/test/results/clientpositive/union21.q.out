@@ -1,4 +1,5 @@
-PREHOOK: query: -- union of constants, udf outputs, and columns from text table and thrift table
+PREHOOK: query: -- SORT_BEFORE_DIFF
+-- union of constants, udf outputs, and columns from text table and thrift table
 
 explain
 SELECT key, count(1)
@@ -15,7 +16,8 @@ FROM (
 ) union_output
 GROUP BY key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- union of constants, udf outputs, and columns from text table and thrift table
+POSTHOOK: query: -- SORT_BEFORE_DIFF
+-- union of constants, udf outputs, and columns from text table and thrift table
 
 explain
 SELECT key, count(1)

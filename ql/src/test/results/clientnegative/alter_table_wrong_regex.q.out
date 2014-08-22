@@ -7,6 +7,7 @@ PREHOOK: query: create table aa ( test STRING )
   WITH SERDEPROPERTIES ("input.regex" = "(.*)", "output.format.string" = "$1s")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@aa
 POSTHOOK: query: create table aa ( test STRING )
   ROW FORMAT SERDE 'org.apache.hadoop.hive.contrib.serde2.RegexSerDe'
   WITH SERDEPROPERTIES ("input.regex" = "(.*)", "output.format.string" = "$1s")

@@ -21,6 +21,7 @@ PREHOOK: query: create table abc(mydata uniontype<int,double,array<string>,struc
 strct struct<a:int, b:string, c:string>)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@abc
 POSTHOOK: query: create table abc(mydata uniontype<int,double,array<string>,struct<a:int,b:string>>,
 strct struct<a:int, b:string, c:string>)
 POSTHOOK: type: CREATETABLE

@@ -5,6 +5,7 @@ PREHOOK: query: -- This tests inferring how data is bucketed/sorted from the ope
 CREATE TABLE test_table_out (key STRING, value STRING, agg STRING) PARTITIONED BY (part STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@test_table_out
 POSTHOOK: query: -- This tests inferring how data is bucketed/sorted from the operators in the reducer
 -- and populating that information in partitions' metadata, in particular, this tests
 -- the grouping operators rollup/cube/grouping sets
@@ -16,6 +17,7 @@ POSTHOOK: Output: default@test_table_out
 PREHOOK: query: CREATE TABLE test_table_out_2 (key STRING, value STRING, grouping_key STRING, agg STRING) PARTITIONED BY (part STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@test_table_out_2
 POSTHOOK: query: CREATE TABLE test_table_out_2 (key STRING, value STRING, grouping_key STRING, agg STRING) PARTITIONED BY (part STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

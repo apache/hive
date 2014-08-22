@@ -1,3 +1,4 @@
+-- SORT_BEFORE_DIFF
 create table jackson_sev_same as select * from src;
 create table dim_pho as select * from src;
 create table jackson_sev_add as select * from src;

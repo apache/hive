@@ -1,7 +1,9 @@
 PREHOOK: query: create database db1
 PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:db1
 POSTHOOK: query: create database db1
 POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:db1
 PREHOOK: query: show databases
 PREHOOK: type: SHOWDATABASES
 POSTHOOK: query: show databases
@@ -13,11 +15,13 @@ PREHOOK: query: create database db2 with dbproperties (
   'hive.warehouse.dir' = '/user/hive/warehouse',
 #### A masked pattern was here ####
 PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:db2
 POSTHOOK: query: create database db2 with dbproperties (
   'mapred.jobtracker.url'='http://my.jobtracker.com:53000',
   'hive.warehouse.dir' = '/user/hive/warehouse',
 #### A masked pattern was here ####
 POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:db2
 PREHOOK: query: describe database db2
 PREHOOK: type: DESCDATABASE
 POSTHOOK: query: describe database db2

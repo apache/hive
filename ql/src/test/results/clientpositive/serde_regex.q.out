@@ -64,6 +64,7 @@ WITH SERDEPROPERTIES (
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@serde_regex
 POSTHOOK: query: CREATE TABLE serde_regex(
   host STRING,
   identity STRING,
@@ -171,6 +172,7 @@ WITH SERDEPROPERTIES (
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@serde_regex1
 POSTHOOK: query: CREATE TABLE serde_regex1(
   key decimal(38,18),
   value int)
@@ -199,7 +201,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@serde_regex1
 #### A masked pattern was here ####
 NULL	0
--1234567890.123456789	-1234567890
+-1234567890.1234567890	-1234567890
 -4400	4400
 -1255.49	-1255
 -1.122	-11
@@ -208,7 +210,7 @@ NULL	0
 -0.333	0
 -0.33	0
 -0.3	0
-0	0
+0.000000000000000000	0
 0	0
 0	0
 0.01	0
@@ -219,8 +221,8 @@ NULL	0
 0.33	0
 0.333	0
 1	1
-1	1
-1	1
+1.0	1
+1.000000000000000000	1
 1.12	1
 1.122	1
 2	2
@@ -228,14 +230,14 @@ NULL	0
 3.14	3
 3.14	3
 3.14	3
-3.14	4
+3.140	4
 10	10
 20	20
 100	100
-124	124
+124.00	124
 125.2	125
 200	200
-1234567890.12345678	1234567890
+1234567890.1234567800	1234567890
 PREHOOK: query: DROP TABLE serde_regex1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@serde_regex1

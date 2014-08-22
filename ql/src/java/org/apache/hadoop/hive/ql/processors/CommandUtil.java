@@ -22,10 +22,13 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAccessControlException;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzContext;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzPluginException;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 import org.apache.hadoop.hive.ql.session.SessionState;
+
+import com.google.common.base.Joiner;
 
 class CommandUtil {
 
@@ -68,7 +71,10 @@ class CommandUtil {
   static void authorizeCommandThrowEx(SessionState ss, HiveOperationType type,
       List<String> command) throws HiveAuthzPluginException, HiveAccessControlException {
     HivePrivilegeObject commandObj = HivePrivilegeObject.createHivePrivilegeObject(command);
-    ss.getAuthorizerV2().checkPrivileges(type, Arrays.asList(commandObj), null, null);
+    HiveAuthzContext.Builder ctxBuilder = new HiveAuthzContext.Builder();
+    ctxBuilder.setCommandString(Joiner.on(' ').join(command));
+    ctxBuilder.setUserIpAddress(ss.getUserIpAddress());
+    ss.getAuthorizerV2().checkPrivileges(type, Arrays.asList(commandObj), null, ctxBuilder.build());
   }
 
 

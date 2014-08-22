@@ -1,6 +1,7 @@
 PREHOOK: query: CREATE TABLE dest4_sequencefile(key INT, value STRING) STORED AS SEQUENCEFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@dest4_sequencefile
 POSTHOOK: query: CREATE TABLE dest4_sequencefile(key INT, value STRING) STORED AS SEQUENCEFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

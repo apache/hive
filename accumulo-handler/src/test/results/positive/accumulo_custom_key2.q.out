@@ -1,0 +1,45 @@
+PREHOOK: query: CREATE TABLE accumulo_ck_3(key struct<col1:string,col2:string,col3:string>, value string)
+STORED BY 'org.apache.hadoop.hive.accumulo.AccumuloStorageHandler'
+WITH SERDEPROPERTIES (
+    "accumulo.table.name" = "accumulo_custom2",
+    "accumulo.columns.mapping" = ":rowid,cf:string",
+    "accumulo.composite.rowid"="org.apache.hadoop.hive.accumulo.serde.FirstCharAccumuloCompositeRowId")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@accumulo_ck_3
+POSTHOOK: query: CREATE TABLE accumulo_ck_3(key struct<col1:string,col2:string,col3:string>, value string)
+STORED BY 'org.apache.hadoop.hive.accumulo.AccumuloStorageHandler'
+WITH SERDEPROPERTIES (
+    "accumulo.table.name" = "accumulo_custom2",
+    "accumulo.columns.mapping" = ":rowid,cf:string",
+    "accumulo.composite.rowid"="org.apache.hadoop.hive.accumulo.serde.FirstCharAccumuloCompositeRowId")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@accumulo_ck_3
+PREHOOK: query: insert overwrite table accumulo_ck_3 select struct('abcd','mnop','wxyz'),'value'
+from src where key = 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@accumulo_ck_3
+POSTHOOK: query: insert overwrite table accumulo_ck_3 select struct('abcd','mnop','wxyz'),'value'
+from src where key = 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@accumulo_ck_3
+PREHOOK: query: select * from accumulo_ck_3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@accumulo_ck_3
+#### A masked pattern was here ####
+POSTHOOK: query: select * from accumulo_ck_3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@accumulo_ck_3
+#### A masked pattern was here ####
+{"col1":"a","col2":"m","col3":"w"}	value
+PREHOOK: query: DROP TABLE accumulo_ck_3
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@accumulo_ck_3
+PREHOOK: Output: default@accumulo_ck_3
+POSTHOOK: query: DROP TABLE accumulo_ck_3
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@accumulo_ck_3
+POSTHOOK: Output: default@accumulo_ck_3

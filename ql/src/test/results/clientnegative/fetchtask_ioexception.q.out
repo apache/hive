@@ -3,6 +3,7 @@ PREHOOK: query: CREATE TABLE fetchtask_ioexception (
   VALUE STRING) STORED AS SEQUENCEFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@fetchtask_ioexception
 POSTHOOK: query: CREATE TABLE fetchtask_ioexception (
   KEY STRING,
   VALUE STRING) STORED AS SEQUENCEFILE

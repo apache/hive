@@ -1,4 +1,5 @@
-PREHOOK: query: -- union case: both subqueries are map jobs on same input, followed by filesink
+PREHOOK: query: -- SORT_BEFORE_DIFF
+-- union case: both subqueries are map jobs on same input, followed by filesink
 
 EXPLAIN
 FROM (
@@ -8,7 +9,8 @@ FROM (
 ) unioninput
 INSERT OVERWRITE DIRECTORY 'target/warehouse/union.out' SELECT unioninput.*
 PREHOOK: type: QUERY
-POSTHOOK: query: -- union case: both subqueries are map jobs on same input, followed by filesink
+POSTHOOK: query: -- SORT_BEFORE_DIFF
+-- union case: both subqueries are map jobs on same input, followed by filesink
 
 EXPLAIN
 FROM (

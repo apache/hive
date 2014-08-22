@@ -1,6 +1,7 @@
 PREHOOK: query: create table tmp(col0 string, col1 string,col2 string,col3 string,col4 string,col5 string,col6 string,col7 string,col8 string,col9 string,col10 string,col11 string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@tmp
 POSTHOOK: query: create table tmp(col0 string, col1 string,col2 string,col3 string,col4 string,col5 string,col6 string,col7 string,col8 string,col9 string,col10 string,col11 string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -93,15 +94,15 @@ STAGE PLANS:
                 keys:
                   0 '111' (type: string)
                   1 '111' (type: string)
-                outputColumnNames: _col1, _col9
+                outputColumnNames: _col1, _col10
                 Statistics: Num rows: 15 Data size: 1598 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: _col1 (type: string), _col9 (type: string)
-                  outputColumnNames: _col1, _col9
+                  expressions: _col1 (type: string), _col10 (type: string)
+                  outputColumnNames: _col1, _col10
                   Statistics: Num rows: 15 Data size: 1598 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     aggregations: count(1)
-                    keys: _col1 (type: string), _col9 (type: string)
+                    keys: _col1 (type: string), _col10 (type: string)
                     mode: hash
                     outputColumnNames: _col0, _col1, _col2
                     Statistics: Num rows: 15 Data size: 1598 Basic stats: COMPLETE Column stats: NONE

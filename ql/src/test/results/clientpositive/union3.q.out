@@ -1,4 +1,6 @@
-PREHOOK: query: explain
+PREHOOK: query: -- SORT_BEFORE_DIFF
+
+explain
 SELECT *
 FROM (
   SELECT 1 AS id
@@ -16,7 +18,9 @@ FROM (
   FROM (SELECT * FROM src LIMIT 1) s2
 ) a
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: -- SORT_BEFORE_DIFF
+
+explain
 SELECT *
 FROM (
   SELECT 1 AS id
@@ -280,6 +284,7 @@ STAGE PLANS:
 PREHOOK: query: CREATE TABLE union_out (id int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@union_out
 POSTHOOK: query: CREATE TABLE union_out (id int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

@@ -3466,9 +3466,9 @@ public final class Utilities {
       String origUmask, FileSystem fs) throws IOException {
     if (unsetUmask) {
       if (origUmask != null) {
-        conf.set("fs.permissions.umask-mode", origUmask);
+        conf.set(FsPermission.UMASK_LABEL, origUmask);
       } else {
-        conf.unset("fs.permissions.umask-mode");
+        conf.unset(FsPermission.UMASK_LABEL);
       }
     }
 
@@ -3482,10 +3482,10 @@ public final class Utilities {
         recursive);
 
     if (recursive) {
-      origUmask = conf.get("fs.permissions.umask-mode");
+      origUmask = conf.get(FsPermission.UMASK_LABEL);
       // this umask is required because by default the hdfs mask is 022 resulting in
       // all parents getting the fsPermission & !(022) permission instead of fsPermission
-      conf.set("fs.permissions.umask-mode", "000");
+      conf.set(FsPermission.UMASK_LABEL, "000");
     }
 
     FileSystem fs = ShimLoader.getHadoopShims().getNonCachedFileSystem(mkdirPath.toUri(), conf);

@@ -5,6 +5,7 @@ POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE insert_into5_neg (key int, value string) TBLPROPERTIES ("immutable"="true")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@insert_into5_neg
 POSTHOOK: query: CREATE TABLE insert_into5_neg (key int, value string) TBLPROPERTIES ("immutable"="true")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

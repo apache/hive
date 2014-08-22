@@ -26,3 +26,10 @@ ALTER TABLE source.srcpart RENAME TO target.srcpart;
 ALTER TABLE source.srcpart RENAME TO target.srcpart;
 
 select * from target.srcpart tablesample (10 rows);
+
+create table source.src like default.src;
+create table source.src1 like default.src;
+load data local inpath '../../data/files/kv1.txt' overwrite into table source.src;
+
+ALTER TABLE source.src RENAME TO target.src1;
+select * from target.src1 tablesample (10 rows);

@@ -19,6 +19,7 @@ POSTHOOK: type: GRANT_ROLE
 PREHOOK: query: create table tpriv_current_role(i int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@tpriv_current_role
 POSTHOOK: query: create table tpriv_current_role(i int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

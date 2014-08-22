@@ -13,6 +13,7 @@ FL_NUM string
 )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@flights_tiny
 POSTHOOK: query: create table flights_tiny ( 
 ORIGIN_CITY_NAME string, 
 DEST_CITY_NAME string, 

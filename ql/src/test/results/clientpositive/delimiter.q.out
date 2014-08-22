@@ -5,6 +5,7 @@ lines terminated by '\n'
 stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@impressions
 POSTHOOK: query: create table impressions (imp string, msg string)
 row format delimited
 fields terminated by '\t'

@@ -1,6 +1,7 @@
 PREHOOK: query: create table tab_decimal(a decimal(10,3))
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@tab_decimal
 POSTHOOK: query: create table tab_decimal(a decimal(10,3))
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

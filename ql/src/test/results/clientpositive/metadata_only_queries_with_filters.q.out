@@ -14,6 +14,7 @@ PREHOOK: query: create table over10k(
        fields terminated by '|'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@over10k
 POSTHOOK: query: create table over10k(
            t tinyint,
            si smallint,
@@ -53,6 +54,7 @@ PREHOOK: query: create table stats_tbl_part(
            bin binary) partitioned by (dt int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@stats_tbl_part
 POSTHOOK: query: create table stats_tbl_part(
            t tinyint,
            si smallint,

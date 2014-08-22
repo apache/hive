@@ -18,6 +18,7 @@ CREATE TABLE test_serializer(string1 STRING,
  STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@test_serializer
 POSTHOOK: query: -- Verify that nullable fields properly work
 CREATE TABLE test_serializer(string1 STRING,
                              int1 INT,
@@ -83,6 +84,7 @@ PREHOOK: query: CREATE TABLE as_avro
   )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@as_avro
 POSTHOOK: query: CREATE TABLE as_avro
   ROW FORMAT
   SERDE 'org.apache.hadoop.hive.serde2.avro.AvroSerDe'

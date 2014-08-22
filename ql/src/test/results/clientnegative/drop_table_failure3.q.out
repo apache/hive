@@ -1,14 +1,19 @@
 PREHOOK: query: create database dtf3
 PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:dtf3
 POSTHOOK: query: create database dtf3
 POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:dtf3
 PREHOOK: query: use dtf3
 PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:dtf3
 POSTHOOK: query: use dtf3
 POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:dtf3
 PREHOOK: query: create table drop_table_failure_temp(col STRING) partitioned by (p STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:dtf3
+PREHOOK: Output: dtf3@drop_table_failure_temp
 POSTHOOK: query: create table drop_table_failure_temp(col STRING) partitioned by (p STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:dtf3

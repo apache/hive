@@ -165,13 +165,13 @@ public class DbTxnManager extends HiveTxnManagerImpl {
           break;
 
         case TABLE:
+        case DUMMYPARTITION:   // in case of dynamic partitioning lock the table
           t = output.getTable();
           compBuilder.setDbName(t.getDbName());
           compBuilder.setTableName(t.getTableName());
           break;
 
         case PARTITION:
-        case DUMMYPARTITION:
           compBuilder.setPartitionName(output.getPartition().getName());
           t = output.getPartition().getTable();
           compBuilder.setDbName(t.getDbName());
@@ -301,7 +301,10 @@ public class DbTxnManager extends HiveTxnManagerImpl {
     try {
       if (txnId > 0) rollbackTxn();
       if (lockMgr != null) lockMgr.close();
+      if (client != null) client.close();
     } catch (Exception e) {
+      LOG.error("Caught exception " + e.getClass().getName() + " with message <" + e.getMessage()
+      + ">, swallowing as there is nothing we can do with it.");
       // Not much we can do about it here.
     }
   }

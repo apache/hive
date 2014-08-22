@@ -283,6 +283,7 @@ POSTHOOK: Input: default@foo
 PREHOOK: query: CREATE TEMPORARY TABLE baz LIKE foo
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@baz
 POSTHOOK: query: CREATE TEMPORARY TABLE baz LIKE foo
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -300,6 +301,7 @@ POSTHOOK: Lineage: baz.value SIMPLE [(foo)foo.FieldSchema(name:value, type:strin
 PREHOOK: query: CREATE TEMPORARY TABLE bay (key string, value string) STORED AS orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@bay
 POSTHOOK: query: CREATE TEMPORARY TABLE bay (key string, value string) STORED AS orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -359,12 +361,16 @@ srcbucket2
 srcpart
 PREHOOK: query: CREATE DATABASE two
 PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:two
 POSTHOOK: query: CREATE DATABASE two
 POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:two
 PREHOOK: query: USE two
 PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:two
 POSTHOOK: query: USE two
 POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:two
 PREHOOK: query: SHOW TABLES
 PREHOOK: type: SHOWTABLES
 POSTHOOK: query: SHOW TABLES
@@ -383,8 +389,10 @@ POSTHOOK: type: SHOWTABLES
 foo
 PREHOOK: query: use default
 PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:default
 POSTHOOK: query: use default
 POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:default
 PREHOOK: query: DROP DATABASE two CASCADE
 PREHOOK: type: DROPDATABASE
 PREHOOK: Input: database:two

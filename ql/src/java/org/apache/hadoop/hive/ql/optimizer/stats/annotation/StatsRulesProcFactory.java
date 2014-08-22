@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.optimizer.stats.annotation;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -67,8 +68,10 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
 import org.apache.hadoop.hive.serde.serdeConstants;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Stack;
 
 public class StatsRulesProcFactory {
@@ -803,12 +806,13 @@ public class StatsRulesProcFactory {
           // statistics object that is combination of statistics from all
           // relations involved in JOIN
           Statistics stats = new Statistics();
-          List<Long> rowCountParents = Lists.newArrayList();
+          Map<String, Long> rowCountParents = new HashMap<String, Long>();
           List<Long> distinctVals = Lists.newArrayList();
 
           // 2 relations, multiple attributes
           boolean multiAttr = false;
           int numAttr = 1;
+          int numParent = parents.size();
 
           Map<String, ColStatistics> joinedColStats = Maps.newHashMap();
           Map<Integer, List<String>> joinKeys = Maps.newHashMap();
@@ -818,8 +822,19 @@ public class StatsRulesProcFactory {
             ReduceSinkOperator parent = (ReduceSinkOperator) jop.getParentOperators().get(pos);
 
             Statistics parentStats = parent.getStatistics();
-            rowCountParents.add(parentStats.getNumRows());
             List<ExprNodeDesc> keyExprs = parent.getConf().getKeyCols();
+
+            // Parent RS may have column statistics from multiple parents.
+            // Populate table alias to row count map, this will be used later to
+            // scale down/up column statistics based on new row count
+            // NOTE: JOIN with UNION as parent of RS will not have table alias
+            // propagated properly. UNION operator does not propagate the table
+            // alias of subqueries properly to expression nodes. Hence union20.q
+            // will have wrong number of rows.
+            Set<String> tableAliases = StatsUtils.getAllTableAlias(parent.getColumnExprMap());
+            for (String tabAlias : tableAliases) {
+              rowCountParents.put(tabAlias, parentStats.getNumRows());
+            }
 
             // multi-attribute join key
             if (keyExprs.size() > 1) {
@@ -860,12 +875,19 @@ public class StatsRulesProcFactory {
                   perAttrDVs.add(cs.getCountDistint());
                 }
               }
+
               distinctVals.add(getDenominator(perAttrDVs));
               perAttrDVs.clear();
             }
 
-            for (Long l : distinctVals) {
-              denom *= l;
+            if (numAttr > numParent) {
+              // To avoid denominator getting larger and aggressively reducing
+              // number of rows, we will ease out denominator.
+              denom = getEasedOutDenominator(distinctVals);
+            } else {
+              for (Long l : distinctVals) {
+                denom *= l;
+              }
             }
           } else {
             for (List<String> jkeys : joinKeys.values()) {
@@ -890,6 +912,7 @@ public class StatsRulesProcFactory {
           Map<String, ExprNodeDesc> colExprMap = jop.getColumnExprMap();
           RowSchema rs = jop.getSchema();
           List<ColStatistics> outColStats = Lists.newArrayList();
+          Map<String, String> outInTabAlias = new HashMap<String, String>();
           for (ColumnInfo ci : rs.getSignature()) {
             String key = ci.getInternalName();
             ExprNodeDesc end = colExprMap.get(key);
@@ -901,6 +924,7 @@ public class StatsRulesProcFactory {
               ColStatistics cs = joinedColStats.get(fqColName);
               String outColName = key;
               String outTabAlias = ci.getTabAlias();
+              outInTabAlias.put(outTabAlias, tabAlias);
               if (cs != null) {
                 cs.setColumnName(outColName);
                 cs.setTableAlias(outTabAlias);
@@ -911,7 +935,8 @@ public class StatsRulesProcFactory {
 
           // update join statistics
           stats.setColumnStats(outColStats);
-          long newRowCount = computeNewRowCount(rowCountParents, denom);
+          long newRowCount = computeNewRowCount(
+              Lists.newArrayList(rowCountParents.values()), denom);
 
           if (newRowCount <= 0 && LOG.isDebugEnabled()) {
             newRowCount = 0;
@@ -920,7 +945,8 @@ public class StatsRulesProcFactory {
                 + " #Rows of parents: " + rowCountParents.toString() + ". Denominator: " + denom);
           }
 
-          updateStatsForJoinType(stats, newRowCount, true, jop.getConf());
+          updateStatsForJoinType(stats, newRowCount, jop.getConf(),
+              rowCountParents, outInTabAlias);
           jop.setStatistics(stats);
 
           if (LOG.isDebugEnabled()) {
@@ -966,37 +992,54 @@ public class StatsRulesProcFactory {
       return null;
     }
 
+    private Long getEasedOutDenominator(List<Long> distinctVals) {
+      // Exponential back-off for NDVs.
+      // 1) Descending order sort of NDVs
+      // 2) denominator = NDV1 * (NDV2 ^ (1/2)) * (NDV3 ^ (1/4))) * ....
+      Collections.sort(distinctVals, Collections.reverseOrder());
+
+      long denom = distinctVals.get(0);
+      for (int i = 1; i < distinctVals.size(); i++) {
+        denom = (long) (denom * Math.pow(distinctVals.get(i), 1.0 / (1 << i)));
+      }
+
+      return denom;
+    }
+
     private void updateStatsForJoinType(Statistics stats, long newNumRows,
-        boolean useColStats, JoinDesc conf) {
-      long oldRowCount = stats.getNumRows();
-      double ratio = (double) newNumRows / (double) oldRowCount;
+        JoinDesc conf, Map<String, Long> rowCountParents,
+        Map<String, String> outInTabAlias) {
       stats.setNumRows(newNumRows);
 
-      if (useColStats) {
-        List<ColStatistics> colStats = stats.getColumnStats();
-        for (ColStatistics cs : colStats) {
-          long oldDV = cs.getCountDistint();
-          long newDV = oldDV;
+      // scale down/up the column statistics based on the changes in number of
+      // rows from each parent. For ex: If there are 2 parents for JOIN operator
+      // with 1st parent having 200 rows and 2nd parent having 2000 rows. Now if
+      // the new number of rows after applying join rule is 10, then the column
+      // stats for columns from 1st parent should be scaled down by 200/10 = 20x
+      // and stats for columns from 2nd parent should be scaled down by 200x
+      List<ColStatistics> colStats = stats.getColumnStats();
+      for (ColStatistics cs : colStats) {
+        long oldRowCount = rowCountParents.get(outInTabAlias.get(cs.getTableAlias()));
+        double ratio = (double) newNumRows / (double) oldRowCount;
+        long oldDV = cs.getCountDistint();
+        long newDV = oldDV;
 
-          // if ratio is greater than 1, then number of rows increases. This can happen
-          // when some operators like GROUPBY duplicates the input rows in which case
-          // number of distincts should not change. Update the distinct count only when
-          // the output number of rows is less than input number of rows.
-          if (ratio <= 1.0) {
-            newDV = (long) Math.ceil(ratio * oldDV);
-          }
-          // Assumes inner join
-          // TODO: HIVE-5579 will handle different join types
-          cs.setNumNulls(0);
-          cs.setCountDistint(newDV);
+        // if ratio is greater than 1, then number of rows increases. This can happen
+        // when some operators like GROUPBY duplicates the input rows in which case
+        // number of distincts should not change. Update the distinct count only when
+        // the output number of rows is less than input number of rows.
+        if (ratio <= 1.0) {
+          newDV = (long) Math.ceil(ratio * oldDV);
         }
-        stats.setColumnStats(colStats);
-        long newDataSize = StatsUtils.getDataSizeFromColumnStats(newNumRows, colStats);
-        stats.setDataSize(newDataSize);
-      } else {
-        long newDataSize = (long) (ratio * stats.getDataSize());
-        stats.setDataSize(newDataSize);
+        // Assumes inner join
+        // TODO: HIVE-5579 will handle different join types
+        cs.setNumNulls(0);
+        cs.setCountDistint(newDV);
       }
+      stats.setColumnStats(colStats);
+      long newDataSize = StatsUtils
+          .getDataSizeFromColumnStats(newNumRows, colStats);
+      stats.setDataSize(newDataSize);
     }
 
     private long computeNewRowCount(List<Long> rowCountParents, long denom) {

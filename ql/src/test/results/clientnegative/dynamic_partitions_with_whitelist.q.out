@@ -1,6 +1,7 @@
 PREHOOK: query: create table source_table like srcpart
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@source_table
 POSTHOOK: query: create table source_table like srcpart
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -8,6 +9,7 @@ POSTHOOK: Output: default@source_table
 PREHOOK: query: create table dest_table like srcpart
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@dest_table
 POSTHOOK: query: create table dest_table like srcpart
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

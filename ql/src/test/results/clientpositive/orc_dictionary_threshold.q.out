@@ -8,6 +8,7 @@ STORED AS INPUTFORMAT 'org.apache.hadoop.hive.ql.io.orc.OrcInputFormat'
 OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@test_orc
 POSTHOOK: query: -- Set the threshold to -1 to guarantee dictionary encoding is turned off
 -- Tests that the data can be read back correctly when a string column is stored
 -- without dictionary encoding
@@ -63,6 +64,7 @@ POSTHOOK: Output: default@test_orc
 PREHOOK: query: CREATE TABLE src_thousand(key STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@src_thousand
 POSTHOOK: query: CREATE TABLE src_thousand(key STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

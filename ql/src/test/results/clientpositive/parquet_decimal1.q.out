@@ -6,6 +6,7 @@ PREHOOK: query: CREATE TABLE dec_comp(arr ARRAY<decimal(5,2)>, m MAP<String, dec
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '|' COLLECTION ITEMS TERMINATED BY ','  MAP KEYS TERMINATED by ':'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@dec_comp
 POSTHOOK: query: CREATE TABLE dec_comp(arr ARRAY<decimal(5,2)>, m MAP<String, decimal(5,2)>, s STRUCT<i:int, d:decimal(5,2)>)
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '|' COLLECTION ITEMS TERMINATED BY ','  MAP KEYS TERMINATED by ':'
 POSTHOOK: type: CREATETABLE
@@ -27,7 +28,7 @@ POSTHOOK: query: SELECT * FROM dec_comp
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dec_comp
 #### A masked pattern was here ####
-[3.14,6.28,7.3]	{"k1":92.77,"k2":29.39}	{"i":5,"d":9.03}
+[3.14,6.28,7.30]	{"k1":92.77,"k2":29.39}	{"i":5,"d":9.03}
 [12.4,1.33,0.34]	{"k2":2.79,"k4":29.09}	{"i":11,"d":0.03}
 PREHOOK: query: DROP TABLE IF EXISTS parq_dec_comp
 PREHOOK: type: DROPTABLE
@@ -37,6 +38,7 @@ PREHOOK: query: CREATE TABLE parq_dec_comp(arr ARRAY<decimal(5,2)>, m MAP<String
 STORED AS PARQUET
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@parq_dec_comp
 POSTHOOK: query: CREATE TABLE parq_dec_comp(arr ARRAY<decimal(5,2)>, m MAP<String, decimal(5,2)>, s STRUCT<i:int, d:decimal(5,2)>)
 STORED AS PARQUET
 POSTHOOK: type: CREATETABLE
@@ -70,8 +72,8 @@ POSTHOOK: query: SELECT * FROM parq_dec_comp
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parq_dec_comp
 #### A masked pattern was here ####
-[3.14,6.28,7.3]	{"k2":29.39,"k1":92.77}	{"i":5,"d":9.03}
-[12.4,1.33,0.34]	{"k4":29.09,"k2":2.79}	{"i":11,"d":0.03}
+[3.14,6.28,7.30]	{"k2":29.39,"k1":92.77}	{"i":5,"d":9.03}
+[12.40,1.33,0.34]	{"k4":29.09,"k2":2.79}	{"i":11,"d":0.03}
 PREHOOK: query: DROP TABLE dec_comp
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@dec_comp

@@ -2,6 +2,7 @@ PREHOOK: query: -- Create table
 create table if not exists alter_part_nodrop_table(key string, value string ) partitioned by (year string, month string) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@alter_part_nodrop_table
 POSTHOOK: query: -- Create table
 create table if not exists alter_part_nodrop_table(key string, value string ) partitioned by (year string, month string) stored as textfile
 POSTHOOK: type: CREATETABLE

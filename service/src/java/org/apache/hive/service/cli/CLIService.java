@@ -377,7 +377,7 @@ public class CLIService extends CompositeService implements ICLIService {
         LOG.trace(opHandle + ": The background operation was cancelled", e);
       } catch (ExecutionException e) {
         // The background operation thread was aborted
-        LOG.trace(opHandle + ": The background operation was aborted", e);
+        LOG.warn(opHandle + ": The background operation was aborted", e);
       } catch (InterruptedException e) {
         // No op, this thread was interrupted
         // In this case, the call might return sooner than long polling timeout

@@ -1,6 +1,7 @@
 PREHOOK: query: create table tst1(key STRING, cnt INT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@tst1
 POSTHOOK: query: create table tst1(key STRING, cnt INT)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

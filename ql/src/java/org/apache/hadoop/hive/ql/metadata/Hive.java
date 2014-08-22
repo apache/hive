@@ -89,6 +89,7 @@ import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
+import org.apache.hadoop.hive.metastore.api.SetPartitionsStatsRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
@@ -979,7 +980,7 @@ public class Hive {
       tTable = getMSC().getTable(dbName, tableName);
     } catch (NoSuchObjectException e) {
       if (throwException) {
-        LOG.error(StringUtils.stringifyException(e));
+        LOG.error("Table " + tableName + " not found: " + e.getMessage());
         throw new InvalidTableException(tableName);
       }
       return null;
@@ -2553,6 +2554,15 @@ private void constructOneLBLocationMap(FileStatus fSta,
       throw new HiveException(e);
     }
   }
+  
+  public boolean setPartitionColumnStatistics(SetPartitionsStatsRequest request) throws HiveException {
+    try {
+      return getMSC().setPartitionColumnStatistics(request);
+    } catch (Exception e) {
+      LOG.debug(StringUtils.stringifyException(e));
+      throw new HiveException(e);
+    }
+  }
 
   public List<ColumnStatisticsObj> getTableColumnStatistics(
       String dbName, String tableName, List<String> colNames) throws HiveException {
@@ -2716,4 +2726,19 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  public void setMetaConf(String propName, String propValue) throws HiveException {
+    try {
+      getMSC().setMetaConf(propName, propValue);
+    } catch (TException te) {
+      throw new HiveException(te);
+    }
+  }
+
+  public String getMetaConf(String propName) throws HiveException {
+    try {
+      return getMSC().getMetaConf(propName);
+    } catch (TException te) {
+      throw new HiveException(te);
+    }
+  }
 };

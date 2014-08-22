@@ -7,6 +7,7 @@ ROW FORMAT SERDE 'org.apache.hadoop.hive.contrib.serde2.s3.S3LogDeserializer'
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@s3log
 POSTHOOK: query: CREATE TABLE s3log
 ROW FORMAT SERDE 'org.apache.hadoop.hive.contrib.serde2.s3.S3LogDeserializer'
 STORED AS TEXTFILE

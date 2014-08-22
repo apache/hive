@@ -55,7 +55,7 @@ public interface HiveSessionBase {
    * Initialize the session
    * @param sessionConfMap
    */
-  public void initialize(Map<String, String> sessionConfMap);
+  public void initialize(Map<String, String> sessionConfMap) throws Exception;
 
   public SessionHandle getSessionHandle();
 

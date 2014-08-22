@@ -4,6 +4,7 @@ STORED AS RCFILE
 PREHOOK: type: CREATETABLE
 #### A masked pattern was here ####
 PREHOOK: Output: database:default
+PREHOOK: Output: default@citl_table
 POSTHOOK: query: CREATE TABLE citl_table (key STRING, value STRING) PARTITIONED BY (part STRING)
 STORED AS RCFILE
 #### A masked pattern was here ####

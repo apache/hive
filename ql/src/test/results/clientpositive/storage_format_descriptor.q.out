@@ -5,6 +5,7 @@ POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE stored_as_custom_text_serde(key string, value string) STORED AS customtextserde
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@stored_as_custom_text_serde
 POSTHOOK: query: CREATE TABLE stored_as_custom_text_serde(key string, value string) STORED AS customtextserde
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

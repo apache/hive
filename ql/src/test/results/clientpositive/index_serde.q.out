@@ -31,6 +31,7 @@ TBLPROPERTIES ('avro.schema.literal'='{
 }')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@doctors
 POSTHOOK: query: -- SORT_QUERY_RESULTS
 -- Want to ensure we can build and use indices on tables stored with SerDes
 -- Build the (Avro backed) table
@@ -85,9 +86,11 @@ POSTHOOK: Output: default@doctors
 PREHOOK: query: -- Create and build an index
 CREATE INDEX doctors_index ON TABLE doctors(number) AS 'COMPACT' WITH DEFERRED REBUILD
 PREHOOK: type: CREATEINDEX
+PREHOOK: Input: default@doctors
 POSTHOOK: query: -- Create and build an index
 CREATE INDEX doctors_index ON TABLE doctors(number) AS 'COMPACT' WITH DEFERRED REBUILD
 POSTHOOK: type: CREATEINDEX
+POSTHOOK: Input: default@doctors
 POSTHOOK: Output: default@default__doctors_doctors_index__
 PREHOOK: query: DESCRIBE EXTENDED default__doctors_doctors_index__
 PREHOOK: type: DESCTABLE
@@ -233,8 +236,10 @@ POSTHOOK: Input: default@doctors
 9	Christopher	Eccleston
 PREHOOK: query: DROP INDEX doctors_index ON doctors
 PREHOOK: type: DROPINDEX
+PREHOOK: Input: default@doctors
 POSTHOOK: query: DROP INDEX doctors_index ON doctors
 POSTHOOK: type: DROPINDEX
+POSTHOOK: Input: default@doctors
 PREHOOK: query: DROP TABLE doctors
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@doctors

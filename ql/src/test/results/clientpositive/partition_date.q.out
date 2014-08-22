@@ -5,6 +5,7 @@ POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table partition_date_1 (key string, value string) partitioned by (dt date, region string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@partition_date_1
 POSTHOOK: query: create table partition_date_1 (key string, value string) partitioned by (dt date, region string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

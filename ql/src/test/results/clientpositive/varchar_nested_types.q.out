@@ -25,6 +25,7 @@ POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table varchar_nested_1 (key int, value varchar(20))
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@varchar_nested_1
 POSTHOOK: query: create table varchar_nested_1 (key int, value varchar(20))
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -45,6 +46,7 @@ PREHOOK: query: -- arrays
 create table varchar_nested_array (c1 array<varchar(20)>)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@varchar_nested_array
 POSTHOOK: query: -- arrays
 create table varchar_nested_array (c1 array<varchar(20)>)
 POSTHOOK: type: CREATETABLE
@@ -81,6 +83,7 @@ PREHOOK: query: -- maps
 create table varchar_nested_map (c1 map<int, varchar(20)>)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@varchar_nested_map
 POSTHOOK: query: -- maps
 create table varchar_nested_map (c1 map<int, varchar(20)>)
 POSTHOOK: type: CREATETABLE
@@ -117,6 +120,7 @@ PREHOOK: query: -- structs
 create table varchar_nested_struct (c1 struct<a:int, b:varchar(20), c:string>)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@varchar_nested_struct
 POSTHOOK: query: -- structs
 create table varchar_nested_struct (c1 struct<a:int, b:varchar(20), c:string>)
 POSTHOOK: type: CREATETABLE

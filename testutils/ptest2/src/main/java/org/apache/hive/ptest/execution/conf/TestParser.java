@@ -47,6 +47,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 public class TestParser {
+  private static final Splitter TEST_SPLITTER = Splitter.onPattern("[, ]")
+    .trimResults().omitEmptyStrings();
 
   private final Context context;
   private final String testCasePropertyName;
@@ -61,18 +63,17 @@ public class TestParser {
     this.logger = logger;
   }
   private List<TestBatch> parseTests() {
-    Splitter splitter = Splitter.on(" ").trimResults().omitEmptyStrings();
     Context unitContext = new Context(context.getSubProperties(
         Joiner.on(".").join("unitTests", "")));
-    Set<String> excluded = Sets.newHashSet(splitter.split(unitContext.getString("exclude", "")));
-    Set<String> isolated = Sets.newHashSet(splitter.split(unitContext.getString("isolate", "")));
-    Set<String> included = Sets.newHashSet(splitter.split(unitContext.getString("include", "")));
+    Set<String> excluded = Sets.newHashSet(TEST_SPLITTER.split(unitContext.getString("exclude", "")));
+    Set<String> isolated = Sets.newHashSet(TEST_SPLITTER.split(unitContext.getString("isolate", "")));
+    Set<String> included = Sets.newHashSet(TEST_SPLITTER.split(unitContext.getString("include", "")));
     if(!included.isEmpty() && !excluded.isEmpty()) {
       throw new IllegalArgumentException(String.format("Included and excluded mutally exclusive." +
           " Included = %s, excluded = %s", included.toString(), excluded.toString()));
     }
     List<File> unitTestsDirs = Lists.newArrayList();
-    for(String unitTestDir : Splitter.on(" ").omitEmptyStrings()
+    for(String unitTestDir : TEST_SPLITTER
         .split(checkNotNull(unitContext.getString("directories"), "directories"))) {
       File unitTestParent = new File(sourceDirectory, unitTestDir);
       if(unitTestParent.isDirectory()) {
@@ -111,7 +112,6 @@ public class TestParser {
   private List<QFileTestBatch> parseQFileTests() {
     Map<String, Properties> properties = parseQTestProperties();
 
-    Splitter splitter = Splitter.on(" ").trimResults().omitEmptyStrings();
     List<QFileTestBatch> result = Lists.newArrayList();
     for(String alias : context.getString("qFileTests", "").split(" ")) {
       Context testContext = new Context(context.getSubProperties(
@@ -122,20 +122,20 @@ public class TestParser {
       File directory = new File(sourceDirectory,
           checkNotNull(testContext.getString("directory"), "directory").trim());
       Set<String> excludedTests = Sets.newHashSet();
-      for(String excludedTestGroup : splitter.split(testContext.getString("exclude", ""))) {
+      for(String excludedTestGroup : TEST_SPLITTER.split(testContext.getString("exclude", ""))) {
         excludedTests.addAll(Arrays.asList(testContext.
             getString(Joiner.on(".").join("groups", excludedTestGroup), "").trim().split(" ")));
         expandTestProperties(excludedTests, properties);
       }
       Set<String> isolatedTests = Sets.newHashSet();
-      for(String ioslatedTestGroup : splitter.split(testContext.getString("isolate", ""))) {
+      for(String ioslatedTestGroup : TEST_SPLITTER.split(testContext.getString("isolate", ""))) {
         isolatedTests.addAll(Arrays.asList(testContext.
             getString(Joiner.on(".").join("groups", ioslatedTestGroup), "").trim().split(" ")));
         expandTestProperties(isolatedTests, properties);
       }
 
       Set<String> includedTests = Sets.newHashSet();
-      for(String includedTestGroup : splitter.split(testContext.getString("include", ""))) {
+      for(String includedTestGroup : TEST_SPLITTER.split(testContext.getString("include", ""))) {
         includedTests.addAll(Arrays.asList(testContext.
             getString(Joiner.on(".").join("groups", includedTestGroup), "").trim().split(" ")));
         expandTestProperties(includedTests, properties);
@@ -249,7 +249,7 @@ public class TestParser {
           logger.warn("No properties found in file: " + propName + " for property: " + propValue);
           throw new IllegalArgumentException("No propertifies found in file: " + propName + " for property: " + propValue);
         }
-        Iterable<String> splits = Splitter.on(',').trimResults().omitEmptyStrings().split(result);
+        Iterable<String> splits = TEST_SPLITTER.split(result);
         for (String split : splits) {
           toAdd.add(split);
         }

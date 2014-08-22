@@ -1,6 +1,7 @@
 PREHOOK: query: CREATE TABLE shcol_test(KEY STRING, VALUE STRING) PARTITIONED BY(ds STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@shcol_test
 POSTHOOK: query: CREATE TABLE shcol_test(KEY STRING, VALUE STRING) PARTITIONED BY(ds STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -38,16 +39,21 @@ ds
 PREHOOK: query: -- SHOW COLUMNS
 CREATE DATABASE test_db
 PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:test_db
 POSTHOOK: query: -- SHOW COLUMNS
 CREATE DATABASE test_db
 POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:test_db
 PREHOOK: query: USE test_db
 PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:test_db
 POSTHOOK: query: USE test_db
 POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:test_db
 PREHOOK: query: CREATE TABLE foo(a INT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:test_db
+PREHOOK: Output: test_db@foo
 POSTHOOK: query: CREATE TABLE foo(a INT)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:test_db
@@ -55,9 +61,11 @@ POSTHOOK: Output: test_db@foo
 PREHOOK: query: -- SHOW COLUMNS basic syntax tests
 USE test_db
 PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:test_db
 POSTHOOK: query: -- SHOW COLUMNS basic syntax tests
 USE test_db
 POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:test_db
 PREHOOK: query: SHOW COLUMNS from foo
 PREHOOK: type: SHOWCOLUMNS
 PREHOOK: Input: test_db@foo
@@ -75,16 +83,21 @@ a
 PREHOOK: query: -- SHOW COLUMNS from a database with a name that requires escaping
 CREATE DATABASE `database`
 PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:database
 POSTHOOK: query: -- SHOW COLUMNS from a database with a name that requires escaping
 CREATE DATABASE `database`
 POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:database
 PREHOOK: query: USE `database`
 PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:database
 POSTHOOK: query: USE `database`
 POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:database
 PREHOOK: query: CREATE TABLE foo(a INT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:database
+PREHOOK: Output: database@foo
 POSTHOOK: query: CREATE TABLE foo(a INT)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:database
@@ -98,8 +111,10 @@ POSTHOOK: Input: database@foo
 a                   
 PREHOOK: query: use default
 PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:default
 POSTHOOK: query: use default
 POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:default
 PREHOOK: query: SHOW COLUMNS from test_db.foo
 PREHOOK: type: SHOWCOLUMNS
 PREHOOK: Input: test_db@foo

@@ -8,6 +8,7 @@ create table convert_enum_to_string
       "serialization.format"="org.apache.thrift.protocol.TBinaryProtocol")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@convert_enum_to_string
 POSTHOOK: query: -- Ensure Enum fields are converted to strings (instead of struct<value:int>)
 
 create table convert_enum_to_string

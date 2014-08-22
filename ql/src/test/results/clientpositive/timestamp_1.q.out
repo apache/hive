@@ -5,6 +5,7 @@ POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table timestamp_1 (t timestamp)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@timestamp_1
 POSTHOOK: query: create table timestamp_1 (t timestamp)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

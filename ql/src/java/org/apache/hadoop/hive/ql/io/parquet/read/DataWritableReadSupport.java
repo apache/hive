@@ -14,6 +14,7 @@
 package org.apache.hadoop.hive.ql.io.parquet.read;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,6 +24,8 @@ import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.io.parquet.convert.DataWritableRecordConverter;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.ArrayWritable;
 import org.apache.hadoop.util.StringUtils;
 
@@ -60,6 +63,28 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
     return (List<String>) VirtualColumn.
         removeVirtualColumns(StringUtils.getStringCollection(columns));
   }
+
+  private static List<TypeInfo> getColumnTypes(Configuration configuration) {
+
+    List<String> columnNames;
+    String columnNamesProperty = configuration.get(IOConstants.COLUMNS);
+    if (columnNamesProperty.length() == 0) {
+      columnNames = new ArrayList<String>();
+    } else {
+      columnNames = Arrays.asList(columnNamesProperty.split(","));
+    }
+    List<TypeInfo> columnTypes;
+    String columnTypesProperty = configuration.get(IOConstants.COLUMNS_TYPES);
+    if (columnTypesProperty.length() == 0) {
+      columnTypes = new ArrayList<TypeInfo>();
+    } else {
+      columnTypes = TypeInfoUtils.getTypeInfosFromTypeString(columnTypesProperty);
+    }
+
+    columnTypes = VirtualColumn.removeVirtualColumnTypes(columnNames, columnTypes);
+    return columnTypes;
+  }
+
   /**
    *
    * It creates the readContext for Parquet side with the requested schema during the init phase.
@@ -100,20 +125,22 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
       final List<Type> typeListWanted = new ArrayList<Type>();
       final boolean indexAccess = configuration.getBoolean(PARQUET_COLUMN_INDEX_ACCESS, false);
       for (final Integer idx : indexColumnsWanted) {
-        String col = listColumns.get(idx);
-        if (indexAccess) {
-          typeListWanted.add(tableSchema.getType(col));
-        } else {
-          col = col.toLowerCase();
-          if (lowerCaseFileSchemaColumns.containsKey(col)) {
-            typeListWanted.add(tableSchema.getType(lowerCaseFileSchemaColumns.get(col)));
+        if (idx < listColumns.size()) {
+          String col = listColumns.get(idx);
+          if (indexAccess) {
+            typeListWanted.add(tableSchema.getType(col));
           } else {
-            // should never occur?
-            String msg = "Column " + col + " at index " + idx + " does not exist in " +
+            col = col.toLowerCase();
+            if (lowerCaseFileSchemaColumns.containsKey(col)) {
+              typeListWanted.add(tableSchema.getType(lowerCaseFileSchemaColumns.get(col)));
+            } else {
+              // should never occur?
+              String msg = "Column " + col + " at index " + idx + " does not exist in " +
               lowerCaseFileSchemaColumns;
-            throw new IllegalStateException(msg);
+              throw new IllegalStateException(msg);
+            }
           }
-        }
+	}
       }
       requestedSchemaByUser = resolveSchemaAccess(new MessageType(fileSchema.getName(),
               typeListWanted), fileSchema, configuration);
@@ -146,7 +173,8 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
     }
     final MessageType tableSchema = resolveSchemaAccess(MessageTypeParser.
         parseMessageType(metadata.get(HIVE_SCHEMA_KEY)), fileSchema, configuration);
-    return new DataWritableRecordConverter(readContext.getRequestedSchema(), tableSchema);
+    return new DataWritableRecordConverter(readContext.getRequestedSchema(), tableSchema,
+        getColumnTypes(configuration));
   }
 
   /**

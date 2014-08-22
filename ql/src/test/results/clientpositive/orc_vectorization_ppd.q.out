@@ -2,6 +2,7 @@ PREHOOK: query: -- create table with 1000 rows
 create table srcorc(key string, value string) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@srcorc
 POSTHOOK: query: -- create table with 1000 rows
 create table srcorc(key string, value string) stored as textfile
 POSTHOOK: type: CREATETABLE
@@ -36,6 +37,7 @@ s3 string)
 stored as ORC tblproperties("orc.row.index.stride"="1000", "orc.stripe.size"="100000", "orc.compress.size"="10000")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@vectororc
 POSTHOOK: query: -- load table with each row group having 1000 rows and stripe 1 & 2 having 5000 & 2000 rows respectively
 create table if not exists vectororc
 (s1 string,
@@ -141,6 +143,7 @@ s3 string)
 stored as ORC tblproperties("orc.row.index.stride"="1000", "orc.stripe.size"="100000", "orc.compress.size"="10000")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@testorc
 POSTHOOK: query: -- since vectororc table has multiple orc file we will load them into a single file using another table
 create table if not exists testorc
 (s1 string,

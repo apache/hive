@@ -149,7 +149,7 @@ public class LazyBinaryArray extends
       if ((bytes[nullByteCur] & (1 << (i % 8))) != 0) {
         elementIsNull[i] = false;
         LazyBinaryUtils.checkObjectByteInfo(listEleObjectInspector, bytes,
-            lastElementByteEnd, recordInfo);
+            lastElementByteEnd, recordInfo, vInt);
         elementStart[i] = lastElementByteEnd + recordInfo.elementOffset;
         elementLength[i] = recordInfo.elementSize;
         lastElementByteEnd = elementStart[i] + elementLength[i];

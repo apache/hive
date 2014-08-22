@@ -22,6 +22,7 @@ ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@over1k
 POSTHOOK: query: -- data setup
 CREATE TABLE over1k(t tinyint,
            si smallint,
@@ -61,6 +62,7 @@ PREHOOK: query: CREATE TABLE over1korc(t tinyint,
 STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@over1korc
 POSTHOOK: query: CREATE TABLE over1korc(t tinyint,
            si smallint,
            i int,
@@ -155,7 +157,7 @@ POSTHOOK: query: SELECT t, si, i, b, f, d, bo, s, ts, dec, bin FROM over1korc OR
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over1korc
 #### A masked pattern was here ####
-108	301	65536	4294967357	90.05	17.59	true	ethan johnson	2013-03-01 09:11:58.703271	75.7	undecided
+108	301	65536	4294967357	90.05	17.59	true	ethan johnson	2013-03-01 09:11:58.703271	75.70	undecided
 118	497	65536	4294967381	50.32	12.72	false	david nixon	2013-03-01 09:11:58.703285	83.48	values clariffication
 18	280	65536	4294967320	32.92	45.94	false	holly white	2013-03-01 09:11:58.703086	58.86	topology
 69	489	65536	4294967404	33.52	17.99	false	oscar ichabod	2013-03-01 09:11:58.703247	32.68	topology
@@ -237,7 +239,7 @@ POSTHOOK: query: SELECT t, si, i, b, f, d, bo, s, ts, dec, bin FROM over1korc OR
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over1korc
 #### A masked pattern was here ####
-108	301	65536	4294967357	90.05	17.59	true	ethan johnson	1860-11-12 20:05:55.011470936	75.7	undecided     
+108	301	65536	4294967357	90.05	17.59	true	ethan johnson	1860-11-12 20:05:55.011470936	75.70	undecided     
 118	497	65536	4294967381	50.32	12.72	false	david nixon	1860-11-12 20:05:55.011484936	83.48	values clariffication           
 18	280	65536	4294967320	32.92	45.94	false	holly white	1860-11-12 20:05:55.011285936	58.86	topologyariffication           
 69	489	65536	4294967404	33.52	17.99	false	oscar ichabod	1860-11-12 20:05:55.011446936	32.68	topologyariffication           

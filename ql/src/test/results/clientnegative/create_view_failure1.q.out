@@ -6,6 +6,7 @@ PREHOOK: query: -- views and tables share the same namespace
 CREATE TABLE xxx12(key int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@xxx12
 POSTHOOK: query: -- views and tables share the same namespace
 CREATE TABLE xxx12(key int)
 POSTHOOK: type: CREATETABLE

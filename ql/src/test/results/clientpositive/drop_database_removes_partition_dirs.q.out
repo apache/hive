@@ -3,15 +3,19 @@ PREHOOK: query: -- This test verifies that if a partition exists outside a table
 
 CREATE DATABASE test_database
 PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:test_database
 POSTHOOK: query: -- This test verifies that if a partition exists outside a table's current location when the
 -- database is dropped the partition's location is dropped as well.
 
 CREATE DATABASE test_database
 POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:test_database
 PREHOOK: query: USE test_database
 PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:test_database
 POSTHOOK: query: USE test_database
 POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:test_database
 PREHOOK: query: CREATE TABLE test_table (key STRING, value STRING)
 PARTITIONED BY (part STRING)
 STORED AS RCFILE
@@ -19,6 +23,7 @@ STORED AS RCFILE
 PREHOOK: type: CREATETABLE
 #### A masked pattern was here ####
 PREHOOK: Output: database:test_database
+PREHOOK: Output: test_database@test_table
 POSTHOOK: query: CREATE TABLE test_table (key STRING, value STRING)
 PARTITIONED BY (part STRING)
 STORED AS RCFILE
@@ -54,8 +59,10 @@ Found 1 items
 #### A masked pattern was here ####
 PREHOOK: query: USE default
 PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:default
 POSTHOOK: query: USE default
 POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:default
 PREHOOK: query: DROP DATABASE test_database CASCADE
 PREHOOK: type: DROPDATABASE
 PREHOOK: Input: database:test_database

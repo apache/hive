@@ -95,10 +95,14 @@ public class ThriftHttpCLIService extends ThriftCLIService {
         sslContextFactory.setKeyStorePassword(keyStorePassword);
         connector = new SslSelectChannelConnector(sslContextFactory);
       }
-
+      
       connector.setPort(portNum);
       // Linux:yes, Windows:no
       connector.setReuseAddress(!Shell.WINDOWS);
+      
+      int maxIdleTime = hiveConf.getIntVar(ConfVars.HIVE_SERVER2_THRIFT_HTTP_MAX_IDLE_TIME);
+      connector.setMaxIdleTime(maxIdleTime);
+      
       httpServer.addConnector(connector);
 
       hiveAuthFactory = new HiveAuthFactory(hiveConf);

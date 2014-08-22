@@ -2,12 +2,24 @@ PREHOOK: query: DESCRIBE FUNCTION when
 PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION when
 POSTHOOK: type: DESCFUNCTION
-There is no documentation for function 'when'
+CASE WHEN a THEN b [WHEN c THEN d]* [ELSE e] END - When a = true, returns b; when c = true, return d; else return e
 PREHOOK: query: DESCRIBE FUNCTION EXTENDED when
 PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION EXTENDED when
 POSTHOOK: type: DESCFUNCTION
-There is no documentation for function 'when'
+CASE WHEN a THEN b [WHEN c THEN d]* [ELSE e] END - When a = true, returns b; when c = true, return d; else return e
+Example:
+ SELECT
+ CASE
+   WHEN deptno=1 THEN Engineering
+   WHEN deptno=2 THEN Finance
+   ELSE admin
+ END,
+ CASE
+   WHEN zone=7 THEN Americas
+   ELSE Asia-Pac
+ END
+ FROM emp_details
 PREHOOK: query: EXPLAIN
 SELECT CASE
         WHEN 1=1 THEN 2
@@ -179,4 +191,4 @@ FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-123	123.0	abcd
+123.0	123.0	abcd

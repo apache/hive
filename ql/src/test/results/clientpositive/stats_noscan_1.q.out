@@ -4,6 +4,7 @@ PREHOOK: query: -- test analyze table ... compute statistics noscan
 create table analyze_srcpart like srcpart
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@analyze_srcpart
 POSTHOOK: query: -- test analyze table ... compute statistics noscan
 
 -- 1. test full spec
@@ -294,6 +295,7 @@ PREHOOK: query: -- 2. test partial spec
 create table analyze_srcpart_partial like srcpart
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@analyze_srcpart_partial
 POSTHOOK: query: -- 2. test partial spec
 create table analyze_srcpart_partial like srcpart
 POSTHOOK: type: CREATETABLE

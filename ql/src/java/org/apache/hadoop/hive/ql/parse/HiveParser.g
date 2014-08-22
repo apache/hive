@@ -146,6 +146,7 @@ TOK_ALTERTABLE_ARCHIVE;
 TOK_ALTERTABLE_UNARCHIVE;
 TOK_ALTERTABLE_SERDEPROPERTIES;
 TOK_ALTERTABLE_SERIALIZER;
+TOK_ALTERTABLE_UPDATECOLSTATS;
 TOK_TABLE_PARTITION;
 TOK_ALTERTABLE_FILEFORMAT;
 TOK_ALTERTABLE_LOCATION;
@@ -330,6 +331,15 @@ TOK_RESOURCE_LIST;
 TOK_COMPACT;
 TOK_SHOW_COMPACTIONS;
 TOK_SHOW_TRANSACTIONS;
+TOK_DELETE_FROM;
+TOK_UPDATE_TABLE;
+TOK_SET_COLUMNS_CLAUSE;
+TOK_VALUE_ROW;
+TOK_VALUES_TABLE;
+TOK_VIRTUAL_TABLE;
+TOK_VIRTUAL_TABREF;
+TOK_ANONYMOUS;
+TOK_COL_NAME;
 }
 
 
@@ -468,6 +478,9 @@ import java.util.HashMap;
     xlateMap.put("KW_DEFINED", "DEFINED");
     xlateMap.put("KW_SUBQUERY", "SUBQUERY");
     xlateMap.put("KW_REWRITE", "REWRITE");
+    xlateMap.put("KW_UPDATE", "UPDATE");
+
+    xlateMap.put("KW_VALUES", "VALUES");
 
     // Operators
     xlateMap.put("DOT", ".");
@@ -637,6 +650,8 @@ execStatement
     | exportStatement
     | importStatement
     | ddlStatement
+    | deleteStatement
+    | updateStatement
     ;
 
 loadStatement
@@ -938,6 +953,7 @@ alterTableStatementSuffix
     : alterStatementSuffixRename
     | alterStatementSuffixAddCol
     | alterStatementSuffixRenameCol
+    | alterStatementSuffixUpdateStatsCol
     | alterStatementSuffixDropPartitions
     | alterStatementSuffixAddPartitions
     | alterStatementSuffixTouch
@@ -1026,6 +1042,13 @@ alterStatementSuffixRenameCol
 @after { popMsg(state); }
     : tableName KW_CHANGE KW_COLUMN? oldName=identifier newName=identifier colType (KW_COMMENT comment=StringLiteral)? alterStatementChangeColPosition?
     ->^(TOK_ALTERTABLE_RENAMECOL tableName $oldName $newName colType $comment? alterStatementChangeColPosition?)
+    ;
+
+alterStatementSuffixUpdateStatsCol
+@init { pushMsg("update column statistics", state); }
+@after { popMsg(state); }
+    : identifier KW_UPDATE KW_STATISTICS KW_FOR KW_COLUMN? colName=identifier KW_SET tableProperties (KW_COMMENT comment=StringLiteral)?
+    ->^(TOK_ALTERTABLE_UPDATECOLSTATS identifier $colName tableProperties $comment?)
     ;
 
 alterStatementChangeColPosition
@@ -1130,6 +1153,7 @@ alterTblPartitionStatementSuffix
   | alterStatementSuffixMergeFiles
   | alterStatementSuffixSerdeProperties
   | alterStatementSuffixRenamePart
+  | alterStatementSuffixStatsPart
   | alterStatementSuffixBucketNum
   | alterTblPartitionStatementSuffixSkewedLocation
   | alterStatementSuffixClusterbySortby
@@ -1221,6 +1245,13 @@ alterStatementSuffixRenamePart
     ->^(TOK_ALTERTABLE_RENAMEPART partitionSpec)
     ;
 
+alterStatementSuffixStatsPart
+@init { pushMsg("alter table stats partition statement", state); }
+@after { popMsg(state); }
+    : KW_UPDATE KW_STATISTICS KW_FOR KW_COLUMN? colName=identifier KW_SET tableProperties (KW_COMMENT comment=StringLiteral)?
+    ->^(TOK_ALTERTABLE_UPDATECOLSTATS $colName tableProperties $comment?)
+    ;
+
 alterStatementSuffixMergeFiles
 @init { pushMsg("", state); }
 @after { popMsg(state); }
@@ -1299,6 +1330,7 @@ descStatement
     | (KW_DESCRIBE|KW_DESC) KW_FUNCTION KW_EXTENDED? (name=descFuncNames) -> ^(TOK_DESCFUNCTION $name KW_EXTENDED?)
     | (KW_DESCRIBE|KW_DESC) (KW_DATABASE|KW_SCHEMA) KW_EXTENDED? (dbName=identifier) -> ^(TOK_DESCDATABASE $dbName KW_EXTENDED?)
     ;
+
 
 analyzeStatement
 @init { pushMsg("analyze statement", state); }
@@ -2077,11 +2109,28 @@ singleFromStatement
     ( b+=body )+ -> ^(TOK_QUERY fromClause body+)
     ;
 
+/*
+The valuesClause rule below ensures that the parse tree for
+"insert into table FOO values (1,2),(3,4)" looks the same as
+"insert into table FOO select a,b from (values(1,2),(3,4)) as BAR(a,b)" which itself is made to look
+very similar to the tree for "insert into table FOO select a,b from BAR".  Since virtual table name
+is implicit, it's represented as TOK_ANONYMOUS.
+*/
 regularBody[boolean topLevel]
    :
    i=insertClause
+   (
    s=selectStatement[topLevel]
      {$s.tree.getChild(1).replaceChildren(0, 0, $i.tree);} -> {$s.tree}
+     |
+     valuesClause
+      -> ^(TOK_QUERY
+            ^(TOK_FROM
+              ^(TOK_VIRTUAL_TABLE ^(TOK_VIRTUAL_TABREF ^(TOK_ANONYMOUS)) valuesClause)
+             )
+            ^(TOK_INSERT {$i.tree} ^(TOK_SELECT ^(TOK_SELEXPR TOK_ALLCOLREF)))
+          )
+   )
    |
    selectStatement[topLevel]
    ;
@@ -2189,4 +2238,35 @@ limitClause
 @after { popMsg(state); }
    :
    KW_LIMIT num=Number -> ^(TOK_LIMIT $num)
+   ;
+
+//DELETE FROM <tableName> WHERE ...;
+deleteStatement
+@init { pushMsg("delete statement", state); }
+@after { popMsg(state); }
+   :
+   KW_DELETE KW_FROM tableName (whereClause)? -> ^(TOK_DELETE_FROM tableName whereClause?)
+   ;
+
+/*SET <columName> = (3 + col2)*/
+columnAssignmentClause
+   :
+   tableOrColumn EQUAL^ atomExpression
+   ;
+
+/*SET col1 = 5, col2 = (4 + col4), ...*/
+setColumnsClause
+   :
+   KW_SET columnAssignmentClause (COMMA columnAssignmentClause)* -> ^(TOK_SET_COLUMNS_CLAUSE columnAssignmentClause* )
+   ;
+
+/* 
+  UPDATE <table> 
+  SET col1 = val1, col2 = val2... WHERE ...
+*/
+updateStatement
+@init { pushMsg("update statement", state); }
+@after { popMsg(state); }
+   :
+   KW_UPDATE tableName setColumnsClause whereClause? -> ^(TOK_UPDATE_TABLE tableName setColumnsClause whereClause?)
    ;

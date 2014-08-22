@@ -1,6 +1,7 @@
 PREHOOK: query: create table t1( key_int1 int, key_int2 int, key_string1 string, key_string2 string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@t1
 POSTHOOK: query: create table t1( key_int1 int, key_int2 int, key_string1 string, key_string2 string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

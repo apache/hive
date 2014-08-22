@@ -18,8 +18,17 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
+import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.udf.UDFType;
+@Description(
+    name = "lag",
+    value = "LAG  (scalar_expression [,offset] [,default]) OVER ([query_partition_clause] order_by_clause); "
+        + "The LAG function is used to access data from a previous row.",
+    extended = "Example:\n "
+    + "select p1.p_mfgr, p1.p_name, p1.p_size,\n"
+    + " p1.p_size - lag(p1.p_size,1,p1.p_size) over( distribute by p1.p_mfgr sort by p1.p_name) as deltaSz\n"
+    + " from part p1 join part p2 on p1.p_partkey = p2.p_partkey")
 
 @UDFType(impliesOrder = true)
 public class GenericUDFLag extends GenericUDFLeadLag {

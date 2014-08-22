@@ -13,6 +13,7 @@ POSTHOOK: type: DROPVIEW
 PREHOOK: query: create table ctas_char_1 (key char(10), value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@ctas_char_1
 POSTHOOK: query: create table ctas_char_1 (key char(10), value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

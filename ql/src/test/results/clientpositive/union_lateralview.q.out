@@ -1,6 +1,7 @@
 PREHOOK: query: create table test_union_lateral_view(key int, arr_ele int, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@test_union_lateral_view
 POSTHOOK: query: create table test_union_lateral_view(key int, arr_ele int, value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
