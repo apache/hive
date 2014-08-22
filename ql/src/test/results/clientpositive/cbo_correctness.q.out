@@ -17879,3 +17879,15 @@ NULL
 NULL
 NULL
 NULL
+PREHOOK: query: -- 14. unary operator
+select key from t1 where c_int = -6  or c_int = +6
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@dt=2014
+#### A masked pattern was here ####
+POSTHOOK: query: -- 14. unary operator
+select key from t1 where c_int = -6  or c_int = +6
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@dt=2014
+#### A masked pattern was here ####

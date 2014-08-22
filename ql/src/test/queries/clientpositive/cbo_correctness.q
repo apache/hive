@@ -217,3 +217,6 @@ select * from (select key as a, c_int+1 as b, sum(c_int) as c from t1 where (t1.
 
 -- 13. null expr in select list
 select null from t3;
+
+-- 14. unary operator
+select key from t1 where c_int = -6  or c_int = +6;
