@@ -122,6 +122,7 @@ import org.apache.hadoop.hive.metastore.api.PrivilegeGrantInfo;
 import org.apache.hadoop.hive.metastore.api.RequestPartsSpec;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
+import org.apache.hadoop.hive.metastore.api.SetPartitionsStatsRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowLocksRequest;
@@ -5034,6 +5035,17 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           endFunction("get_partitions_statistics_req: ", aggrStats == null, null, request.getTblName());
       }
 
+    }
+
+    @Override
+    public boolean set_aggr_stats_for(SetPartitionsStatsRequest request)
+        throws NoSuchObjectException, InvalidObjectException, MetaException,
+        InvalidInputException, TException {
+      boolean ret = true;
+      for (ColumnStatistics colStats : request.getColStats()) {
+        ret = ret && update_partition_column_statistics(colStats);
+      }
+      return ret;
     }
 
   }

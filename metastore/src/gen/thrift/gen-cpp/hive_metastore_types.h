@@ -2681,6 +2681,43 @@ class AggrStats {
 
 void swap(AggrStats &a, AggrStats &b);
 
+
+class SetPartitionsStatsRequest {
+ public:
+
+  static const char* ascii_fingerprint; // = "635C0DA9A947DA57AAE693A5DFB86569";
+  static const uint8_t binary_fingerprint[16]; // = {0x63,0x5C,0x0D,0xA9,0xA9,0x47,0xDA,0x57,0xAA,0xE6,0x93,0xA5,0xDF,0xB8,0x65,0x69};
+
+  SetPartitionsStatsRequest() {
+  }
+
+  virtual ~SetPartitionsStatsRequest() throw() {}
+
+  std::vector<ColumnStatistics>  colStats;
+
+  void __set_colStats(const std::vector<ColumnStatistics> & val) {
+    colStats = val;
+  }
+
+  bool operator == (const SetPartitionsStatsRequest & rhs) const
+  {
+    if (!(colStats == rhs.colStats))
+      return false;
+    return true;
+  }
+  bool operator != (const SetPartitionsStatsRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const SetPartitionsStatsRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(SetPartitionsStatsRequest &a, SetPartitionsStatsRequest &b);
+
 typedef struct _Schema__isset {
   _Schema__isset() : fieldSchemas(false), properties(false) {}
   bool fieldSchemas;
