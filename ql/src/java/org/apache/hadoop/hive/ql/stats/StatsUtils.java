@@ -224,7 +224,7 @@ public class StatsUtils {
           if (aggrStats.getPartsFound() != partNames.size() && colState != State.NONE) {
             LOG.debug("Column stats requested for : " + partNames.size() +" partitions. "
               + "Able to retrieve for " + aggrStats.getPartsFound() + " partitions");
-            stats.updateColumnStatsState(State.PARTIAL);
+            colState = State.PARTIAL;
           }
           stats.setColumnStatsState(colState);
         }

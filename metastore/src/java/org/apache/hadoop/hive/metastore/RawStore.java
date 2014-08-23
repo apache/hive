@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.conf.Configurable;
+import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Database;
@@ -548,6 +549,6 @@ public interface RawStore extends Configurable {
    */
   public List<String> getFunctions(String dbName, String pattern) throws MetaException;
 
-  public List<ColumnStatisticsObj> get_aggr_stats_for(String dbName, String tblName,
+  public AggrStats get_aggr_stats_for(String dbName, String tblName,
     List<String> partNames, List<String> colNames) throws MetaException, NoSuchObjectException;
 }
