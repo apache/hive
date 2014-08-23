@@ -29,6 +29,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.mapred.Partitioner;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -224,6 +225,14 @@ public class SparkPlanGenerator {
     JobConf cloned = new JobConf(jobConf);
     // Make sure we'll use a different plan path from the original one
     HiveConf.setVar(cloned, HiveConf.ConfVars.PLAN, "");
+    try {
+      cloned.setPartitionerClass((Class<? extends Partitioner>) (Class.forName(HiveConf.getVar(cloned,
+        HiveConf.ConfVars.HIVEPARTITIONER))));
+    } catch (ClassNotFoundException e) {
+      String msg = "Could not find partitioner class: " + e.getMessage() + " which is specified by: " +
+        HiveConf.ConfVars.HIVEPARTITIONER.varname;
+      throw new IllegalArgumentException(msg, e);
+    }
     if (work instanceof MapWork) {
       List<Path> inputPaths = Utilities.getInputPaths(cloned, (MapWork) work, scratchDir, context, false);
       Utilities.setInputPaths(cloned, inputPaths);
