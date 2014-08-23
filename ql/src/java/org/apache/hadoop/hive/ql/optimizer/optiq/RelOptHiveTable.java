@@ -176,15 +176,15 @@ public class RelOptHiveTable extends RelOptAbstractTable {
       }
     }
 
+    if (null == partitionList) {
+      // We could be here either because its an unpartitioned table or because
+      // there are no pruning predicates on a partitioned table.
+      computePartitionList(m_hiveConf, null);
+    }
+
     // 2. Obtain Col Stats for Non Partition Cols
     if (nonPartColNamesThatRqrStats.size() > 0) {
       List<ColStatistics> hiveColStats;
-
-      if (null == partitionList) {
-        // We could be here either because its an unpartitioned table or because
-        // there are no pruning predicates on a partitioned table.
-        computePartitionList(m_hiveConf, null);
-      }
 
       if (!m_hiveTblMetadata.isPartitioned()) {
         // 2.1 Handle the case for unpartitioned table.

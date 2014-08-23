@@ -220,3 +220,6 @@ select null from t3;
 
 -- 14. unary operator
 select key from t1 where c_int = -6  or c_int = +6;
+
+-- 15. query referencing only partition columns
+select count(t1.dt) from t1 join t2 on t1.dt  = t2.dt  where t1.dt = '2014' ;
