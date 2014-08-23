@@ -17894,3 +17894,20 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t1@dt=2014
 #### A masked pattern was here ####
+PREHOOK: query: -- 15. query referencing only partition columns
+select count(t1.dt) from t1 join t2 on t1.dt  = t2.dt  where t1.dt = '2014'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@dt=2014
+PREHOOK: Input: default@t2
+PREHOOK: Input: default@t2@dt=2014
+#### A masked pattern was here ####
+POSTHOOK: query: -- 15. query referencing only partition columns
+select count(t1.dt) from t1 join t2 on t1.dt  = t2.dt  where t1.dt = '2014'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@dt=2014
+POSTHOOK: Input: default@t2
+POSTHOOK: Input: default@t2@dt=2014
+#### A masked pattern was here ####
+400
