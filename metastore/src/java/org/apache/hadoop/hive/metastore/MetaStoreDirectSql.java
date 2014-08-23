@@ -21,19 +21,18 @@ package org.apache.hadoop.hive.metastore;
 import static org.apache.commons.lang.StringUtils.join;
 import static org.apache.commons.lang.StringUtils.repeat;
 
+import java.math.BigDecimal;
+import java.nio.ByteBuffer;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.concurrent.atomic.AtomicLong;
 
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
@@ -43,10 +42,12 @@ import javax.jdo.datastore.JDOConnection;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
+import org.apache.hadoop.hive.metastore.api.Decimal;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Order;
@@ -65,9 +66,8 @@ import org.apache.hadoop.hive.metastore.parser.ExpressionTree.LogicalOperator;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.Operator;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.TreeNode;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.TreeVisitor;
-import org.apache.hadoop.hive.metastore.parser.FilterLexer;
 import org.apache.hadoop.hive.serde.serdeConstants;
-import org.datanucleus.store.schema.SchemaTool;
+import org.datanucleus.store.rdbms.query.ForwardQueryResult;
 
 import com.google.common.collect.Lists;
 
@@ -97,7 +97,7 @@ class MetaStoreDirectSql {
    * Whether direct SQL can be used with the current datastore backing {@link #pm}.
    */
   private final boolean isCompatibleDatastore;
-
+  
   public MetaStoreDirectSql(PersistenceManager pm) {
     this.pm = pm;
     Transaction tx = pm.currentTransaction();
@@ -893,33 +893,247 @@ class MetaStoreDirectSql {
     return result;
   }
 
-  public List<ColumnStatisticsObj> aggrColStatsForPartitions(String dbName, String tableName,
+  public AggrStats aggrColStatsForPartitions(String dbName, String tableName,
       List<String> partNames, List<String> colNames) throws MetaException {
-    String qText = "select \"COLUMN_NAME\", \"COLUMN_TYPE\", "
-      + "min(\"LONG_LOW_VALUE\"), max(\"LONG_HIGH_VALUE\"), min(\"DOUBLE_LOW_VALUE\"), max(\"DOUBLE_HIGH_VALUE\"), "
-      + "min(\"BIG_DECIMAL_LOW_VALUE\"), max(\"BIG_DECIMAL_HIGH_VALUE\"), sum(\"NUM_NULLS\"), max(\"NUM_DISTINCTS\"), "
-      + "max(\"AVG_COL_LEN\"), max(\"MAX_COL_LEN\"), sum(\"NUM_TRUES\"), sum(\"NUM_FALSES\") from \"PART_COL_STATS\""
-      + " where \"DB_NAME\" = ? and \"TABLE_NAME\" = ? and \"COLUMN_NAME\" in ("
-      + makeParams(colNames.size()) + ") AND \"PARTITION_NAME\" in ("
-      + makeParams(partNames.size()) + ") group by \"COLUMN_NAME\", \"COLUMN_TYPE\"";
+    long partsFound = partsFoundForPartitions(dbName, tableName, partNames,
+        colNames);
+    List<ColumnStatisticsObj> stats = columnStatisticsObjForPartitions(dbName,
+        tableName, partNames, colNames, partsFound);
+    return new AggrStats(stats, partsFound);
+  }
 
+  private long partsFoundForPartitions(String dbName, String tableName,
+      List<String> partNames, List<String> colNames) throws MetaException {
+    long partsFound = 0;
     boolean doTrace = LOG.isDebugEnabled();
+    String qText = "select count(\"COLUMN_NAME\") from \"PART_COL_STATS\""
+        + " where \"DB_NAME\" = ? and \"TABLE_NAME\" = ? "
+        + " and \"COLUMN_NAME\" in (" + makeParams(colNames.size()) + ")"
+        + " and \"PARTITION_NAME\" in (" + makeParams(partNames.size()) + ")"
+        + " group by \"PARTITION_NAME\"";
     long start = doTrace ? System.nanoTime() : 0;
     Query query = pm.newQuery("javax.jdo.query.SQL", qText);
-    Object qResult = query.executeWithArray(prepareParams(dbName, tableName, partNames, colNames));
-    if (qResult == null) {
-      query.closeAll();
-      return Lists.newArrayList();
-    }
-    List<Object[]> list = ensureList(qResult);
-    List<ColumnStatisticsObj> colStats = new ArrayList<ColumnStatisticsObj>(list.size());
-    for (Object[] row : list) {
-      colStats.add(prepareCSObj(row,0));
-    }
+    Object qResult = query.executeWithArray(prepareParams(dbName, tableName,
+        partNames, colNames));
     long end = doTrace ? System.nanoTime() : 0;
     timingTrace(doTrace, qText, start, end);
-    query.closeAll();
-    return colStats;
+    ForwardQueryResult fqr = (ForwardQueryResult) qResult;
+    List<Integer> colnumbers = new ArrayList<Integer>();
+    colnumbers.addAll(fqr);
+    for (Integer colnumber : colnumbers) {
+      if (colnumber == colNames.size())
+        partsFound++;
+    }
+    return partsFound;
+  }
+
+  private List<ColumnStatisticsObj> columnStatisticsObjForPartitions(
+      String dbName, String tableName, List<String> partNames,
+      List<String> colNames, long partsFound) throws MetaException {
+    String commonPrefix = "select \"COLUMN_NAME\", \"COLUMN_TYPE\", "
+        + "min(\"LONG_LOW_VALUE\"), max(\"LONG_HIGH_VALUE\"), min(\"DOUBLE_LOW_VALUE\"), max(\"DOUBLE_HIGH_VALUE\"), "
+        + "min(\"BIG_DECIMAL_LOW_VALUE\"), max(\"BIG_DECIMAL_HIGH_VALUE\"), sum(\"NUM_NULLS\"), max(\"NUM_DISTINCTS\"), "
+        + "max(\"AVG_COL_LEN\"), max(\"MAX_COL_LEN\"), sum(\"NUM_TRUES\"), sum(\"NUM_FALSES\") from \"PART_COL_STATS\""
+        + " where \"DB_NAME\" = ? and \"TABLE_NAME\" = ? ";
+    String qText = null;
+    long start = 0;
+    long end = 0;
+    Query query = null;
+    boolean doTrace = LOG.isDebugEnabled();
+    Object qResult = null;
+    ForwardQueryResult fqr = null;
+    // Check if the status of all the columns of all the partitions exists
+    // Extrapolation is not needed.
+    if (partsFound == partNames.size()) {
+      qText = commonPrefix 
+          + " and \"COLUMN_NAME\" in (" + makeParams(colNames.size()) + ")"
+          + " and \"PARTITION_NAME\" in (" + makeParams(partNames.size()) + ")"
+          + " group by \"COLUMN_NAME\", \"COLUMN_TYPE\"";
+      start = doTrace ? System.nanoTime() : 0;
+      query = pm.newQuery("javax.jdo.query.SQL", qText);
+      qResult = query.executeWithArray(prepareParams(dbName, tableName,
+          partNames, colNames));      
+      if (qResult == null) {
+        query.closeAll();
+        return Lists.newArrayList();
+      }
+      end = doTrace ? System.nanoTime() : 0;
+      timingTrace(doTrace, qText, start, end);
+      List<Object[]> list = ensureList(qResult);
+      List<ColumnStatisticsObj> colStats = new ArrayList<ColumnStatisticsObj>(
+          list.size());
+      for (Object[] row : list) {
+        colStats.add(prepareCSObj(row, 0));
+      }
+      query.closeAll();
+      return colStats;
+    } else {
+      // Extrapolation is needed for some columns.
+      // In this case, at least a column status for a partition is missing.
+      // We need to extrapolate this partition based on the other partitions
+      List<ColumnStatisticsObj> colStats = new ArrayList<ColumnStatisticsObj>(
+          colNames.size());
+      qText = "select \"COLUMN_NAME\", \"COLUMN_TYPE\", count(\"PARTITION_NAME\") "
+          + " from \"PART_COL_STATS\""
+          + " where \"DB_NAME\" = ? and \"TABLE_NAME\" = ? "
+          + " and \"COLUMN_NAME\" in (" + makeParams(colNames.size()) + ")"
+          + " and \"PARTITION_NAME\" in (" + makeParams(partNames.size()) + ")"
+          + " group by \"COLUMN_NAME\", \"COLUMN_TYPE\"";
+      start = doTrace ? System.nanoTime() : 0;
+      query = pm.newQuery("javax.jdo.query.SQL", qText);
+      qResult = query.executeWithArray(prepareParams(dbName, tableName,
+          partNames, colNames));
+      end = doTrace ? System.nanoTime() : 0;
+      timingTrace(doTrace, qText, start, end);
+      if (qResult == null) {
+        query.closeAll();
+        return Lists.newArrayList();
+      }
+      List<String> noExtraColumnNames = new ArrayList<String>();
+      Map<String, String[]> extraColumnNameTypeParts = new HashMap<String, String[]>();
+      List<Object[]> list = ensureList(qResult);
+      for (Object[] row : list) {
+        String colName = (String) row[0];
+        String colType = (String) row[1];
+        if ((Integer) row[2] == partNames.size() || (Integer) row[2] < 2) {
+          // Extrapolation is not needed for this column if
+          // count(\"PARTITION_NAME\")==partNames.size()
+          // Or, extrapolation is not possible for this column if
+          // count(\"PARTITION_NAME\")<2
+          noExtraColumnNames.add(colName);
+        } else {
+          extraColumnNameTypeParts.put(colName,
+              new String[] { colType, String.valueOf((Integer) row[2]) });
+        }
+      }
+      query.closeAll();
+      // Extrapolation is not needed for columns noExtraColumnNames
+      if (noExtraColumnNames.size() != 0) {
+        qText = commonPrefix 
+            + " and \"COLUMN_NAME\" in ("+ makeParams(noExtraColumnNames.size()) + ")"
+            + " and \"PARTITION_NAME\" in ("+ makeParams(partNames.size()) +")"
+            + " group by \"COLUMN_NAME\", \"COLUMN_TYPE\"";
+        start = doTrace ? System.nanoTime() : 0;
+        query = pm.newQuery("javax.jdo.query.SQL", qText);
+        qResult = query.executeWithArray(prepareParams(dbName, tableName,
+            partNames, noExtraColumnNames));
+        if (qResult == null) {
+          query.closeAll();
+          return Lists.newArrayList();
+        }
+        list = ensureList(qResult);
+        for (Object[] row : list) {
+          colStats.add(prepareCSObj(row, 0));
+        }
+        end = doTrace ? System.nanoTime() : 0;
+        timingTrace(doTrace, qText, start, end);
+        query.closeAll();
+      }
+      // Extrapolation is needed for extraColumnNames.
+      // give a sequence number for all the partitions
+      if (extraColumnNameTypeParts.size() != 0) {
+        Map<String, Integer> indexMap = new HashMap<String, Integer>();
+        for (int index = 0; index < partNames.size(); index++) {
+          indexMap.put(partNames.get(index), index);
+        }
+        // get sum for all columns to reduce the number of queries
+        Map<String, Map<Integer, Object>> sumMap = new HashMap<String, Map<Integer, Object>>();
+        qText = "select \"COLUMN_NAME\", sum(\"NUM_NULLS\"), sum(\"NUM_TRUES\"), sum(\"NUM_FALSES\")"
+            + " from \"PART_COL_STATS\""
+            + " where \"DB_NAME\" = ? and \"TABLE_NAME\" = ? "
+            + " and \"COLUMN_NAME\" in (" +makeParams(extraColumnNameTypeParts.size())+ ")"
+            + " and \"PARTITION_NAME\" in (" + makeParams(partNames.size()) + ")"
+            + " group by \"COLUMN_NAME\"";
+        start = doTrace ? System.nanoTime() : 0;
+        query = pm.newQuery("javax.jdo.query.SQL", qText);
+        List<String> extraColumnNames = new ArrayList<String>();
+        extraColumnNames.addAll(extraColumnNameTypeParts.keySet());
+        qResult = query.executeWithArray(prepareParams(dbName, tableName,
+            partNames, extraColumnNames));
+        if (qResult == null) {
+          query.closeAll();
+          return Lists.newArrayList();
+        }
+        list = ensureList(qResult);
+        // see the indexes for colstats in IExtrapolatePartStatus
+        Integer[] sumIndex = new Integer[] { 6, 10, 11 };
+        for (Object[] row : list) {
+          Map<Integer, Object> indexToObject = new HashMap<Integer, Object>();
+          for (int ind = 1; ind < row.length; ind++) {
+            indexToObject.put(sumIndex[ind - 1], row[ind]);
+          }
+          sumMap.put((String) row[0], indexToObject);
+        }
+        end = doTrace ? System.nanoTime() : 0;
+        timingTrace(doTrace, qText, start, end);
+        query.closeAll();
+        for (Map.Entry<String, String[]> entry : extraColumnNameTypeParts
+            .entrySet()) {
+          Object[] row = new Object[IExtrapolatePartStatus.colStatNames.length + 2];
+          String colName = entry.getKey();
+          String colType = entry.getValue()[0];
+          Long sumVal = Long.parseLong(entry.getValue()[1]);
+          // fill in colname
+          row[0] = colName;
+          // fill in coltype
+          row[1] = colType;
+          // use linear extrapolation. more complicated one can be added in the future.
+          IExtrapolatePartStatus extrapolateMethod = new LinearExtrapolatePartStatus();
+          // fill in colstatus
+          Integer[] index = IExtrapolatePartStatus.indexMaps.get(colType
+              .toLowerCase());
+          //if the colType is not the known type, long, double, etc, then get all index.
+          if (index == null) {
+            index = IExtrapolatePartStatus.indexMaps.get("default");
+          }
+          for (int colStatIndex : index) {
+            String colStatName = IExtrapolatePartStatus.colStatNames[colStatIndex];
+            // if the aggregation type is sum, we do a scale-up
+            if (IExtrapolatePartStatus.aggrTypes[colStatIndex] == IExtrapolatePartStatus.AggrType.Sum) {
+              Long val = (Long) sumMap.get(colName).get(colStatIndex);
+              if (val == null) {
+                row[2 + colStatIndex] = null;
+              } else {
+                row[2 + colStatIndex] = (Long) (val / sumVal * (partNames
+                    .size()));
+              }
+            } else {
+              // if the aggregation type is min/max, we extrapolate from the
+              // left/right borders
+              qText = "select \""
+                  + colStatName
+                  + "\",\"PARTITION_NAME\" from \"PART_COL_STATS\""
+                  + " where \"DB_NAME\" = ? and \"TABLE_NAME\" = ?"
+                  + " and \"COLUMN_NAME\" in (" +makeParams(1)+ ")"
+                  + " and \"PARTITION_NAME\" in (" + makeParams(partNames.size()) + ")"
+                  + " order by \'" + colStatName + "\'";
+              start = doTrace ? System.nanoTime() : 0;
+              query = pm.newQuery("javax.jdo.query.SQL", qText);
+              qResult = query.executeWithArray(prepareParams(dbName,
+                  tableName, partNames, Arrays.asList(colName)));
+              if (qResult == null) {
+                query.closeAll();
+                return Lists.newArrayList();
+              }
+              fqr = (ForwardQueryResult) qResult;
+              Object[] min = (Object[]) (fqr.get(0));
+              Object[] max = (Object[]) (fqr.get(fqr.size() - 1));
+              end = doTrace ? System.nanoTime() : 0;
+              timingTrace(doTrace, qText, start, end);
+              query.closeAll();
+              if (min[0] == null || max[0] == null) {
+                row[2 + colStatIndex] = null;
+              } else {
+                row[2 + colStatIndex] = extrapolateMethod.extrapolate(min, max,
+                    colStatIndex, indexMap);
+              }
+            }
+          }
+          colStats.add(prepareCSObj(row, 0));
+        }
+      }
+      return colStats;
+    }
   }
 
   private ColumnStatisticsObj prepareCSObj (Object[] row, int i) throws MetaException {
@@ -949,7 +1163,7 @@ class MetaStoreDirectSql {
 
     return params;
   }
-
+  
   public List<ColumnStatistics> getPartitionStats(String dbName, String tableName,
       List<String> partNames, List<String> colNames) throws MetaException {
     if (colNames.isEmpty() || partNames.isEmpty()) {

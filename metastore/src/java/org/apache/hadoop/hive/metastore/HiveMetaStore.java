@@ -5024,12 +5024,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       startFunction("get_aggr_stats_for: db=" + request.getDbName() + " table=" + request.getTblName());
       AggrStats aggrStats = null;
       try {
-        //TODO: We are setting partitionCnt for which we were able to retrieve stats same as
-        // incoming number from request. This is not correct, but currently no users of this api
-        // rely on this. Only, current user StatsAnnotation don't care for it. StatsOptimizer
-        // will care for it, so before StatsOptimizer begin using it, we need to fix this.
         aggrStats = new AggrStats(getMS().get_aggr_stats_for(request.getDbName(),
-          request.getTblName(), request.getPartNames(), request.getColNames()), request.getPartNames().size());
+          request.getTblName(), request.getPartNames(), request.getColNames()));
         return aggrStats;
       } finally {
           endFunction("get_partitions_statistics_req: ", aggrStats == null, null, request.getTblName());

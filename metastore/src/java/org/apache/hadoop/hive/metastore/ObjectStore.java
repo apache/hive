@@ -60,6 +60,7 @@ import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
@@ -5904,25 +5905,28 @@ public class ObjectStore implements RawStore, Configurable {
 
 
   @Override
-  public List<ColumnStatisticsObj> get_aggr_stats_for(String dbName, String tblName,
+  public AggrStats get_aggr_stats_for(String dbName, String tblName,
       final List<String> partNames, final List<String> colNames) throws MetaException, NoSuchObjectException {
-
-    return new GetListHelper<ColumnStatisticsObj>(dbName, tblName, true, false) {
+    return new GetHelper<AggrStats>(dbName, tblName, true, false) {
       @Override
-      protected List<ColumnStatisticsObj> getSqlResult(
-          GetHelper<List<ColumnStatisticsObj>> ctx) throws MetaException {
-        return directSql.aggrColStatsForPartitions(dbName, tblName, partNames, colNames);
+      protected AggrStats getSqlResult(GetHelper<AggrStats> ctx)
+          throws MetaException {
+        return directSql.aggrColStatsForPartitions(dbName, tblName, partNames,
+            colNames);
       }
-
       @Override
-      protected List<ColumnStatisticsObj> getJdoResult(
-          GetHelper<List<ColumnStatisticsObj>> ctx) throws MetaException,
-          NoSuchObjectException {
-        // This is fast path for query optimizations, if we can find this info quickly using
+      protected AggrStats getJdoResult(GetHelper<AggrStats> ctx)
+          throws MetaException, NoSuchObjectException {
+        // This is fast path for query optimizations, if we can find this info
+        // quickly using
         // directSql, do it. No point in failing back to slow path here.
         throw new MetaException("Jdo path is not implemented for stats aggr.");
       }
-      }.run(true);
+      @Override
+      protected String describeResult() {
+        return null;
+      }
+    }.run(true);
   }
 
   private List<MPartitionColumnStatistics> getMPartitionColumnStatistics(
