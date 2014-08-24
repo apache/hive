@@ -225,4 +225,9 @@ public class SparkClient implements Serializable {
       }
     }
   }
+  
+  public void close() {
+    sc.stop();
+    client = null;
+  }
 }
