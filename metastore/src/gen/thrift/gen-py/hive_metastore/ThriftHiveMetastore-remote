@@ -97,6 +97,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print '  TableStatsResult get_table_statistics_req(TableStatsRequest request)'
   print '  PartitionsStatsResult get_partitions_statistics_req(PartitionsStatsRequest request)'
   print '  AggrStats get_aggr_stats_for(PartitionsStatsRequest request)'
+  print '  bool set_aggr_stats_for(SetPartitionsStatsRequest request)'
   print '  bool delete_partition_column_statistics(string db_name, string tbl_name, string part_name, string col_name)'
   print '  bool delete_table_column_statistics(string db_name, string tbl_name, string col_name)'
   print '  void create_function(Function func)'
@@ -629,6 +630,12 @@ elif cmd == 'get_aggr_stats_for':
     print 'get_aggr_stats_for requires 1 args'
     sys.exit(1)
   pp.pprint(client.get_aggr_stats_for(eval(args[0]),))
+
+elif cmd == 'set_aggr_stats_for':
+  if len(args) != 1:
+    print 'set_aggr_stats_for requires 1 args'
+    sys.exit(1)
+  pp.pprint(client.set_aggr_stats_for(eval(args[0]),))
 
 elif cmd == 'delete_partition_column_statistics':
   if len(args) != 4:

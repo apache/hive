@@ -244,7 +244,7 @@ final class SerializationUtils {
    * @param p - percentile value (>=0.0 to <=1.0)
    * @return pth percentile bits
    */
-  int percentileBits(long[] data, double p) {
+  int percentileBits(long[] data, int offset, int length, double p) {
     if ((p > 1.0) || (p <= 0.0)) {
       return -1;
     }
@@ -254,13 +254,12 @@ final class SerializationUtils {
     int[] hist = new int[32];
 
     // compute the histogram
-    for(long l : data) {
-      int idx = encodeBitWidth(findClosestNumBits(l));
+    for(int i = offset; i < (offset + length); i++) {
+      int idx = encodeBitWidth(findClosestNumBits(data[i]));
       hist[idx] += 1;
     }
 
-    int len = data.length;
-    int perLen = (int) (len * (1.0 - p));
+    int perLen = (int) (length * (1.0 - p));
 
     // return the bits required by pth percentile length
     for(int i = hist.length - 1; i >= 0; i--) {

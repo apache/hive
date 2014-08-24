@@ -52,7 +52,7 @@ public interface Deserializer {
    * Deserialize an object out of a Writable blob. In most cases, the return
    * value of this function will be constant since the function will reuse the
    * returned object. If the client wants to keep a copy of the object, the
-   * client needs to clone the returnDeserializered value by calling
+   * client needs to clone the returned deserialized value by calling
    * ObjectInspectorUtils.getStandardObject().
    *
    * @param blob

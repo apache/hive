@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.serde2.SerDeStatsStruct;
 import org.apache.hadoop.hive.serde2.StructObject;
 import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinaryUtils.RecordInfo;
+import org.apache.hadoop.hive.serde2.lazybinary.LazyBinaryUtils.VInt;
 import org.apache.hadoop.hive.serde2.lazybinary.objectinspector.LazyBinaryStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
@@ -96,7 +97,8 @@ public class LazyBinaryStruct extends LazyBinaryNonPrimitive<LazyBinaryStructObj
     serializedSize = length;
   }
 
-  RecordInfo recordInfo = new LazyBinaryUtils.RecordInfo();
+  final VInt vInt = new VInt();
+  final RecordInfo recordInfo = new LazyBinaryUtils.RecordInfo();
   boolean missingFieldWarned = false;
   boolean extraFieldWarned = false;
 
@@ -138,7 +140,7 @@ public class LazyBinaryStruct extends LazyBinaryNonPrimitive<LazyBinaryStructObj
       if ((nullByte & (1 << (i % 8))) != 0) {
         fieldIsNull[i] = false;
         LazyBinaryUtils.checkObjectByteInfo(fieldRefs.get(i)
-            .getFieldObjectInspector(), bytes, lastFieldByteEnd, recordInfo);
+            .getFieldObjectInspector(), bytes, lastFieldByteEnd, recordInfo, vInt);
         fieldStart[i] = lastFieldByteEnd + recordInfo.elementOffset;
         fieldLength[i] = recordInfo.elementSize;
         lastFieldByteEnd = fieldStart[i] + fieldLength[i];
@@ -200,6 +202,7 @@ public class LazyBinaryStruct extends LazyBinaryNonPrimitive<LazyBinaryStructObj
   }
 
   public static final class SingleFieldGetter {
+    private final VInt vInt = new VInt();
     private final LazyBinaryStructObjectInspector soi;
     private final int fieldIndex;
     private final RecordInfo recordInfo = new LazyBinaryUtils.RecordInfo();
@@ -219,7 +222,7 @@ public class LazyBinaryStruct extends LazyBinaryNonPrimitive<LazyBinaryStructObj
       for (int i = 0; i <= fieldIndex; i++) {
         if ((nullByte & (1 << (i % 8))) != 0) {
           LazyBinaryUtils.checkObjectByteInfo(fieldRefs.get(i)
-              .getFieldObjectInspector(), fieldBytes, lastFieldByteEnd, recordInfo);
+              .getFieldObjectInspector(), fieldBytes, lastFieldByteEnd, recordInfo, vInt);
           fieldStart = lastFieldByteEnd + recordInfo.elementOffset;
           fieldLength = recordInfo.elementSize;
           lastFieldByteEnd = fieldStart + fieldLength;

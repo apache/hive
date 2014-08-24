@@ -21,6 +21,7 @@ package org.apache.hive.jdbc;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 import java.sql.SQLWarning;
 import java.util.HashMap;
 import java.util.Map;
@@ -435,7 +436,7 @@ public class HiveStatement implements java.sql.Statement {
 
   @Override
   public ResultSet getGeneratedKeys() throws SQLException {
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -469,7 +470,7 @@ public class HiveStatement implements java.sql.Statement {
 
   @Override
   public boolean getMoreResults() throws SQLException {
-    throw new SQLException("Method not supported");
+    return false;
   }
 
   /*
@@ -480,7 +481,7 @@ public class HiveStatement implements java.sql.Statement {
 
   @Override
   public boolean getMoreResults(int current) throws SQLException {
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -550,7 +551,7 @@ public class HiveStatement implements java.sql.Statement {
   @Override
   public int getUpdateCount() throws SQLException {
     checkConnection("getUpdateCount");
-    return 0;
+    return -1;
   }
 
   /*
@@ -600,7 +601,7 @@ public class HiveStatement implements java.sql.Statement {
 
   @Override
   public void setCursorName(String name) throws SQLException {
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -611,7 +612,9 @@ public class HiveStatement implements java.sql.Statement {
 
   @Override
   public void setEscapeProcessing(boolean enable) throws SQLException {
-    throw new SQLException("Method not supported");
+    if (enable) {
+      throw new SQLException("Method not supported");
+    }
   }
 
   /*

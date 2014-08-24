@@ -16,6 +16,7 @@ package org.apache.hadoop.hive.ql.io.parquet.convert;
 import java.util.List;
 
 import org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
@@ -25,7 +26,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
 import parquet.schema.ConversionPatterns;
-import parquet.schema.DecimalMetadata;
 import parquet.schema.GroupType;
 import parquet.schema.MessageType;
 import parquet.schema.OriginalType;
@@ -81,6 +81,14 @@ public class HiveSchemaConverter {
         return new PrimitiveType(repetition, PrimitiveTypeName.INT96, name);
       } else if (typeInfo.equals(TypeInfoFactory.voidTypeInfo)) {
         throw new UnsupportedOperationException("Void type not implemented");
+      } else if (typeInfo.getTypeName().toLowerCase().startsWith(
+          serdeConstants.CHAR_TYPE_NAME)) {
+        return Types.optional(PrimitiveTypeName.BINARY).as(OriginalType.UTF8)
+            .named(name);
+      } else if (typeInfo.getTypeName().toLowerCase().startsWith(
+          serdeConstants.VARCHAR_TYPE_NAME)) {
+        return Types.optional(PrimitiveTypeName.BINARY).as(OriginalType.UTF8)
+            .named(name);
       } else if (typeInfo instanceof DecimalTypeInfo) {
         DecimalTypeInfo decimalTypeInfo = (DecimalTypeInfo) typeInfo;
         int prec = decimalTypeInfo.precision();

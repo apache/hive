@@ -41,6 +41,7 @@ import org.apache.hadoop.hive.metastore.api.DoubleColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.LongColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.SetPartitionsStatsRequest;
 import org.apache.hadoop.hive.metastore.api.StringColumnStatsData;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.QueryPlan;
@@ -342,9 +343,7 @@ public class ColumnStatsTask extends Task<ColumnStatsWork> implements Serializab
     // Construct a column statistics object from the result
     List<ColumnStatistics> colStats = constructColumnStatsFromPackedRows();
     // Persist the column statistics object to the metastore
-    for (ColumnStatistics colStat : colStats) {
-      db.updatePartitionColumnStatistics(colStat);
-    }
+    db.setPartitionColumnStatistics(new SetPartitionsStatsRequest(colStats));
     return 0;
   }
 

@@ -163,7 +163,7 @@ public class LazyBinaryMap extends
       if ((bytes[nullByteCur] & (1 << ((i * 2) % 8))) != 0) {
         keyIsNull[i] = false;
         LazyBinaryUtils.checkObjectByteInfo(((MapObjectInspector) oi)
-            .getMapKeyObjectInspector(), bytes, lastElementByteEnd, recordInfo);
+            .getMapKeyObjectInspector(), bytes, lastElementByteEnd, recordInfo, vInt);
         keyStart[i] = lastElementByteEnd + recordInfo.elementOffset;
         keyLength[i] = recordInfo.elementSize;
         lastElementByteEnd = keyStart[i] + keyLength[i];
@@ -178,7 +178,7 @@ public class LazyBinaryMap extends
         valueIsNull[i] = false;
         LazyBinaryUtils.checkObjectByteInfo(((MapObjectInspector) oi)
             .getMapValueObjectInspector(), bytes, lastElementByteEnd,
-            recordInfo);
+            recordInfo, vInt);
         valueStart[i] = lastElementByteEnd + recordInfo.elementOffset;
         valueLength[i] = recordInfo.elementSize;
         lastElementByteEnd = valueStart[i] + valueLength[i];

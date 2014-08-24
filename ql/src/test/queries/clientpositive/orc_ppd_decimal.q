@@ -85,6 +85,18 @@ set hive.optimize.index.filter=true;
 select sum(hash(*)) from newtypesorc where d<=cast('11.22' as float);
 
 set hive.optimize.index.filter=false;
+select sum(hash(*)) from newtypesorc where d<=cast('11.22' as decimal);
+
+set hive.optimize.index.filter=true;
+select sum(hash(*)) from newtypesorc where d<=cast('11.22' as decimal);
+
+set hive.optimize.index.filter=false;
+select sum(hash(*)) from newtypesorc where d<=11.22BD;
+
+set hive.optimize.index.filter=true;
+select sum(hash(*)) from newtypesorc where d<=11.22BD;
+
+set hive.optimize.index.filter=false;
 select sum(hash(*)) from newtypesorc where d<=12;
 
 set hive.optimize.index.filter=true;

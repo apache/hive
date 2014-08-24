@@ -21,12 +21,12 @@ import junit.framework.Assert;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
+import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;import org.apache.hadoop.hive.metastore.api.ShowLocksResponseElement;import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
-import org.apache.hadoop.hive.ql.metadata.Partition;
+import org.apache.hadoop.hive.ql.metadata.DummyPartition;import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.log4j.Level;
@@ -132,6 +132,43 @@ public class TestDbTxnManager {
     Assert.assertEquals(1, locks.size());
     Assert.assertEquals(1,
         TxnDbUtil.countLockComponents(((DbLockManager.DbHiveLock) locks.get(0)).lockId));
+    txnMgr.commitTxn();
+    locks = txnMgr.getLockManager().getLocks(false, false);
+    Assert.assertEquals(0, locks.size());
+  }
+
+
+  @Test
+  public void testSingleWritePartition() throws Exception {
+    WriteEntity we = addPartitionOutput(newTable(true), WriteEntity.WriteType.INSERT);
+    QueryPlan qp = new MockQueryPlan(this);
+    txnMgr.openTxn("fred");
+    txnMgr.acquireLocks(qp, ctx, "fred");
+    List<HiveLock> locks = ctx.getHiveLocks();
+    Assert.assertEquals(1, locks.size());
+    Assert.assertEquals(1,
+        TxnDbUtil.countLockComponents(((DbLockManager.DbHiveLock) locks.get(0)).lockId));
+    txnMgr.commitTxn();
+    locks = txnMgr.getLockManager().getLocks(false, false);
+    Assert.assertEquals(0, locks.size());
+  }
+
+  @Test
+  public void testWriteDynamicPartition() throws Exception {
+    WriteEntity we = addDynamicPartitionedOutput(newTable(true), WriteEntity.WriteType.INSERT);
+    QueryPlan qp = new MockQueryPlan(this);
+    txnMgr.openTxn("fred");
+    txnMgr.acquireLocks(qp, ctx, "fred");
+    List<HiveLock> locks = ctx.getHiveLocks();
+    Assert.assertEquals(1, locks.size());
+    /*Assert.assertEquals(1,
+        TxnDbUtil.countLockComponents(((DbLockManager.DbHiveLock) locks.get(0)).lockId));
+    */// Make sure we're locking the whole table, since this is dynamic partitioning
+    ShowLocksResponse rsp = ((DbLockManager)txnMgr.getLockManager()).getLocks();
+    List<ShowLocksResponseElement> elms = rsp.getLocks();
+    Assert.assertEquals(1, elms.size());
+    Assert.assertNotNull(elms.get(0).getTablename());
+    Assert.assertNull(elms.get(0).getPartname());
     txnMgr.commitTxn();
     locks = txnMgr.getLockManager().getLocks(false, false);
     Assert.assertEquals(0, locks.size());
@@ -252,6 +289,7 @@ public class TestDbTxnManager {
 
   @After
   public void tearDown() throws Exception {
+    if (txnMgr != null) txnMgr.closeTxnManager();
     TxnDbUtil.cleanDb();
   }
 
@@ -315,6 +353,14 @@ public class TestDbTxnManager {
     partSpec.put("version", Integer.toString(nextInput++));
     Partition p = new Partition(t, partSpec, new Path("/dev/null"));
     WriteEntity we = new WriteEntity(p, writeType);
+    writeEntities.add(we);
+    return we;
+  }
+
+  private WriteEntity addDynamicPartitionedOutput(Table t, WriteEntity.WriteType writeType)
+      throws Exception {
+    DummyPartition dp = new DummyPartition(t, "no clue what I should call this");
+    WriteEntity we = new WriteEntity(dp, writeType, false);
     writeEntities.add(we);
     return we;
   }

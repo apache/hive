@@ -55,7 +55,7 @@ public class TestAvroDeserializer {
         "    {\"name\": \"isANull\", \"type\": \"null\"}\n" +
         "  ]\n" +
         "}";
-    Schema s = Schema.parse(schemaString);
+    Schema s = AvroSerdeUtils.getSchemaFor(schemaString);
     GenericData.Record record = new GenericData.Record(s);
 
     record.put("isANull", null);
@@ -83,7 +83,7 @@ public class TestAvroDeserializer {
 
   @Test
   public void canDeserializeMapsWithPrimitiveKeys() throws SerDeException, IOException {
-    Schema s = Schema.parse(TestAvroObjectInspectorGenerator.MAP_WITH_PRIMITIVE_VALUE_TYPE);
+    Schema s = AvroSerdeUtils.getSchemaFor(TestAvroObjectInspectorGenerator.MAP_WITH_PRIMITIVE_VALUE_TYPE);
     GenericData.Record record = new GenericData.Record(s);
 
     Map<String, Long> m = new Hashtable<String, Long>();
@@ -129,7 +129,7 @@ public class TestAvroDeserializer {
 
   @Test
   public void canDeserializeArrays() throws SerDeException, IOException {
-    Schema s = Schema.parse(TestAvroObjectInspectorGenerator.ARRAY_WITH_PRIMITIVE_ELEMENT_TYPE);
+    Schema s = AvroSerdeUtils.getSchemaFor(TestAvroObjectInspectorGenerator.ARRAY_WITH_PRIMITIVE_ELEMENT_TYPE);
     GenericData.Record record = new GenericData.Record(s);
 
     List<String> list = new ArrayList<String>();
@@ -187,7 +187,7 @@ public class TestAvroDeserializer {
 
   @Test
   public void canDeserializeRecords() throws SerDeException, IOException {
-    Schema s = Schema.parse(TestAvroObjectInspectorGenerator.RECORD_SCHEMA);
+    Schema s = AvroSerdeUtils.getSchemaFor(TestAvroObjectInspectorGenerator.RECORD_SCHEMA);
     GenericData.Record record = new GenericData.Record(s);
     GenericData.Record innerRecord = new GenericData.Record(s.getField("aRecord").schema());
     innerRecord.put("int1", 42);
@@ -246,7 +246,7 @@ public class TestAvroDeserializer {
 
   @Test
   public void canDeserializeUnions() throws SerDeException, IOException {
-    Schema s = Schema.parse(TestAvroObjectInspectorGenerator.UNION_SCHEMA);
+    Schema s = AvroSerdeUtils.getSchemaFor(TestAvroObjectInspectorGenerator.UNION_SCHEMA);
     GenericData.Record record = new GenericData.Record(s);
 
     record.put("aUnion", "this is a string");
@@ -295,7 +295,7 @@ public class TestAvroDeserializer {
 
   @Test // Enums are one of two types we fudge for Hive. Enums go in, Strings come out.
   public void canDeserializeEnums() throws SerDeException, IOException {
-    Schema s = Schema.parse(TestAvroObjectInspectorGenerator.ENUM_SCHEMA);
+    Schema s = AvroSerdeUtils.getSchemaFor(TestAvroObjectInspectorGenerator.ENUM_SCHEMA);
     GenericData.Record record = new GenericData.Record(s);
 
     record.put("baddies", new GenericData.EnumSymbol(s.getField("baddies").schema(),"DALEKS"));
@@ -325,7 +325,7 @@ public class TestAvroDeserializer {
 
   @Test // Fixed doesn't exist in Hive. Fixeds go in, lists of bytes go out.
   public void canDeserializeFixed() throws SerDeException, IOException {
-    Schema s = Schema.parse(TestAvroObjectInspectorGenerator.FIXED_SCHEMA);
+    Schema s = AvroSerdeUtils.getSchemaFor(TestAvroObjectInspectorGenerator.FIXED_SCHEMA);
     GenericData.Record record = new GenericData.Record(s);
 
     byte [] bytes = "ANANCIENTBLUEBOX".getBytes();
@@ -361,7 +361,7 @@ public class TestAvroDeserializer {
 
   @Test
   public void canDeserializeBytes() throws SerDeException, IOException {
-    Schema s = Schema.parse(TestAvroObjectInspectorGenerator.BYTES_SCHEMA);
+    Schema s = AvroSerdeUtils.getSchemaFor(TestAvroObjectInspectorGenerator.BYTES_SCHEMA);
     GenericData.Record record = new GenericData.Record(s);
 
     byte [] bytes = "ANANCIENTBLUEBOX".getBytes();
@@ -400,7 +400,7 @@ public class TestAvroDeserializer {
 
   @Test
   public void canDeserializeNullableTypes() throws IOException, SerDeException {
-    Schema s = Schema.parse(TestAvroObjectInspectorGenerator.NULLABLE_STRING_SCHEMA);
+    Schema s = AvroSerdeUtils.getSchemaFor(TestAvroObjectInspectorGenerator.NULLABLE_STRING_SCHEMA);
     GenericData.Record record = new GenericData.Record(s);
     record.put("nullableString", "this is a string");
 
@@ -413,7 +413,7 @@ public class TestAvroDeserializer {
 
    @Test
    public void canDeserializeNullableEnums() throws IOException, SerDeException {
-     Schema s = Schema.parse(TestAvroObjectInspectorGenerator.NULLABLE_ENUM_SCHEMA);
+     Schema s = AvroSerdeUtils.getSchemaFor(TestAvroObjectInspectorGenerator.NULLABLE_ENUM_SCHEMA);
      GenericData.Record record = new GenericData.Record(s);
      record.put("nullableEnum", new GenericData.EnumSymbol(AvroSerdeUtils.getOtherTypeFromNullableType(s.getField("nullableEnum").schema()), "CYBERMEN"));
 
@@ -426,7 +426,8 @@ public class TestAvroDeserializer {
 
   @Test
   public void canDeserializeMapWithNullablePrimitiveValues() throws SerDeException, IOException {
-    Schema s = Schema.parse(TestAvroObjectInspectorGenerator.MAP_WITH_NULLABLE_PRIMITIVE_VALUE_TYPE_SCHEMA);
+    Schema s = AvroSerdeUtils.getSchemaFor(TestAvroObjectInspectorGenerator
+        .MAP_WITH_NULLABLE_PRIMITIVE_VALUE_TYPE_SCHEMA);
     GenericData.Record record = new GenericData.Record(s);
 
     Map<String, Long> m = new HashMap<String, Long>();
@@ -504,7 +505,7 @@ public class TestAvroDeserializer {
 
   @Test
   public void verifyCaching() throws SerDeException, IOException {
-    Schema s = Schema.parse(TestAvroObjectInspectorGenerator.RECORD_SCHEMA);
+    Schema s = AvroSerdeUtils.getSchemaFor(TestAvroObjectInspectorGenerator.RECORD_SCHEMA);
     GenericData.Record record = new GenericData.Record(s);
     GenericData.Record innerRecord = new GenericData.Record(s.getField("aRecord").schema());
     innerRecord.put("int1", 42);
@@ -541,7 +542,7 @@ public class TestAvroDeserializer {
     assertEquals(0, de.getReEncoderCache().size());
 
   //Read the record with **different** record reader ID and **evolved** schema
-    Schema evolvedSchema = Schema.parse(s.toString());
+    Schema evolvedSchema = AvroSerdeUtils.getSchemaFor(s.toString());
     evolvedSchema.getField("aRecord").schema().addProp("Testing", "meaningless");
     garw.setRecordReaderID(recordReaderID = new UID()); //New record reader ID
     row =

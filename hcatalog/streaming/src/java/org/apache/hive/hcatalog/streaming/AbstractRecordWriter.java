@@ -53,7 +53,7 @@ abstract class AbstractRecordWriter implements RecordWriter {
   private int currentBucketId = 0;
   private final Path partitionPath;
 
-  final AcidOutputFormat<?> outf;
+  final AcidOutputFormat<?,?> outf;
 
   protected AbstractRecordWriter(HiveEndPoint endPoint, HiveConf conf)
           throws ConnectionError, StreamingException {
@@ -70,7 +70,7 @@ abstract class AbstractRecordWriter implements RecordWriter {
                 + endPoint);
       }
       String outFormatName = this.tbl.getSd().getOutputFormat();
-      outf = (AcidOutputFormat<?>) ReflectionUtils.newInstance(Class.forName(outFormatName), conf);
+      outf = (AcidOutputFormat<?,?>) ReflectionUtils.newInstance(Class.forName(outFormatName), conf);
     } catch (MetaException e) {
       throw new ConnectionError(endPoint, e);
     } catch (NoSuchObjectException e) {

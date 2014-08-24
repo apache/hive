@@ -53,7 +53,7 @@ public class TestAvroSerializer {
         "  \"fields\": [" +
         recordValues +
         "  ] }";
-    return Schema.parse(s);
+    return AvroSerdeUtils.getSchemaFor(s);
   }
 
   /**
@@ -231,7 +231,7 @@ public class TestAvroSerializer {
   public void canSerializeEnums() throws SerDeException, IOException {
     String type = "{\"type\": \"enum\", \"name\": \"enum1_values\", " +
             "\"symbols\":[\"BLUE\",\"RED\",\"GREEN\"]}";
-    Schema schema = Schema.parse(type);
+    Schema schema = AvroSerdeUtils.getSchemaFor(type);
     String field = "{ \"name\":\"enum1\", \"type\": " + schema + " }";
     for(enum1 e : enum1.values()) {
       GenericEnumSymbol symbol = new GenericData.EnumSymbol(schema, e.toString());
@@ -247,7 +247,7 @@ public class TestAvroSerializer {
     String type = "{\"type\": \"enum\", \"name\": \"enum1_values\",\n" +
             "  \"namespace\": \"org.apache.hadoop.hive\",\n" +
             "  \"symbols\":[\"BLUE\",\"RED\",\"GREEN\"]}";
-    Schema schema = Schema.parse(type);
+    Schema schema = AvroSerdeUtils.getSchemaFor(type);
     String field = "{ \"name\":\"nullableenum\", \"type\": [\"null\", " + schema + "] }";
     GenericEnumSymbol symbol = new GenericData.EnumSymbol(schema, enum1.BLUE.toString());
     GenericRecord r = serializeAndDeserialize(field, "nullableenum", symbol);

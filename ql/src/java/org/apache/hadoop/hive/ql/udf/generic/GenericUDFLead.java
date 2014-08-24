@@ -18,8 +18,19 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
+import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.udf.UDFType;
+@Description(
+    name = "lead",
+    value = "LEAD (scalar_expression [,offset] [,default]) OVER ([query_partition_clause] order_by_clause); "
+        + "The LEAD function is used to return data from the next row. ",
+    extended = "Example:\n "
+    + "select p_name, p_retailprice, lead(p_retailprice) over() as l1,\n"
+    + " lag(p_retailprice) over() as l2\n"
+    + " from part\n"
+    + " where p_retailprice = 1173.15")
+
 
 @UDFType(impliesOrder = true)
 public class GenericUDFLead extends GenericUDFLeadLag {
