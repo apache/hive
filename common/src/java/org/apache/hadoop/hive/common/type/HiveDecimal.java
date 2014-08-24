@@ -30,7 +30,6 @@ import java.math.RoundingMode;
 public class HiveDecimal implements Comparable<HiveDecimal> {
   public static final int MAX_PRECISION = 38;
   public static final int MAX_SCALE = 38;
-
   /**
    * Default precision/scale when user doesn't specify in the column metadata, such as
    * decimal and decimal(8).
@@ -113,7 +112,7 @@ public class HiveDecimal implements Comparable<HiveDecimal> {
 
   @Override
   public int hashCode() {
-    return bd.hashCode();
+    return trim(bd).hashCode();
   }
 
   @Override
@@ -169,7 +168,7 @@ public class HiveDecimal implements Comparable<HiveDecimal> {
   }
 
   public HiveDecimal multiply(HiveDecimal dec) {
-    return create(bd.multiply(dec.bd), false);
+    return create(bd.multiply(dec.bd), true);
   }
 
   public BigInteger unscaledValue() {
@@ -202,7 +201,7 @@ public class HiveDecimal implements Comparable<HiveDecimal> {
   }
 
   public HiveDecimal divide(HiveDecimal dec) {
-    return create(bd.divide(dec.bd, MAX_SCALE, RoundingMode.HALF_UP), true);
+    return create(trim(bd.divide(dec.bd, MAX_SCALE, RoundingMode.HALF_UP)), true);
   }
 
   /**
@@ -232,8 +231,6 @@ public class HiveDecimal implements Comparable<HiveDecimal> {
       return null;
     }
 
-    bd = trim(bd);
-
     int intDigits = bd.precision() - bd.scale();
 
     if (intDigits > MAX_PRECISION) {
@@ -244,8 +241,6 @@ public class HiveDecimal implements Comparable<HiveDecimal> {
     if (bd.scale() > maxScale ) {
       if (allowRounding) {
         bd = bd.setScale(maxScale, RoundingMode.HALF_UP);
-        // Trimming is again necessary, because rounding may introduce new trailing 0's.
-        bd = trim(bd);
       } else {
         bd = null;
       }
@@ -258,8 +253,6 @@ public class HiveDecimal implements Comparable<HiveDecimal> {
     if (bd == null) {
       return null;
     }
-
-    bd = trim(bd);
 
     int maxIntDigits = maxPrecision - maxScale;
     int intDigits = bd.precision() - bd.scale();

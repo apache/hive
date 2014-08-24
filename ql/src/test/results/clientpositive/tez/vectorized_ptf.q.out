@@ -240,7 +240,7 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
-                    value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string)
+                    value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string), ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
                     auto parallelism: true
             Path -> Alias:
 #### A masked pattern was here ####
@@ -846,7 +846,7 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
-                    value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string)
+                    value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string), ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
                     auto parallelism: true
             Path -> Alias:
 #### A masked pattern was here ####
@@ -1103,7 +1103,7 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
-                    value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string)
+                    value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string), ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
                     auto parallelism: true
             Path -> Alias:
 #### A masked pattern was here ####
@@ -1391,7 +1391,7 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
-                    value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string)
+                    value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string), ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
                     auto parallelism: true
             Path -> Alias:
 #### A masked pattern was here ####
@@ -1689,7 +1689,7 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
-                    value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string)
+                    value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string), ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
                     auto parallelism: true
             Path -> Alias:
 #### A masked pattern was here ####
@@ -2019,7 +2019,7 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
-                    value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string)
+                    value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string), ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
                     auto parallelism: true
             Path -> Alias:
 #### A masked pattern was here ####
@@ -2332,7 +2332,7 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
-                    value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string)
+                    value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string), ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
                     auto parallelism: true
             Path -> Alias:
 #### A masked pattern was here ####
@@ -2392,10 +2392,10 @@ STAGE PLANS:
                 condition expressions:
                   0 
                   1 {KEY.reducesinkkey0} {VALUE._col0} {VALUE._col1} {VALUE._col2} {VALUE._col3} {VALUE._col4} {VALUE._col5} {VALUE._col6} {VALUE._col7}
-                outputColumnNames: _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19
+                outputColumnNames: _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20
                 Statistics: Num rows: 14 Data size: 8823 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: _col11 (type: int), _col12 (type: string), _col13 (type: string), _col14 (type: string), _col15 (type: string), _col16 (type: int), _col17 (type: string), _col18 (type: double), _col19 (type: string)
+                  expressions: _col12 (type: int), _col13 (type: string), _col14 (type: string), _col15 (type: string), _col16 (type: string), _col17 (type: int), _col18 (type: string), _col19 (type: double), _col20 (type: string)
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
                   Statistics: Num rows: 14 Data size: 8823 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
@@ -2589,7 +2589,7 @@ STAGE PLANS:
                       Map-reduce partition columns: p_mfgr (type: string)
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
-                      value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string)
+                      value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string), ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
                       auto parallelism: true
             Path -> Alias:
 #### A masked pattern was here ####
@@ -2866,7 +2866,7 @@ STAGE PLANS:
                       Map-reduce partition columns: p_mfgr (type: string)
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
-                      value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string)
+                      value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string), ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
                       auto parallelism: true
             Path -> Alias:
 #### A masked pattern was here ####
@@ -3145,7 +3145,7 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
-                    value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string)
+                    value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string), ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
                     auto parallelism: true
             Path -> Alias:
 #### A masked pattern was here ####
@@ -3434,7 +3434,7 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
-                    value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string)
+                    value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string), ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
                     auto parallelism: true
             Path -> Alias:
 #### A masked pattern was here ####
@@ -3500,7 +3500,7 @@ STAGE PLANS:
                       Map-reduce partition columns: _col2 (type: string)
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
-                      value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string), _col9 (type: bigint), _col10 (type: string)
+                      value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string), _col9 (type: bigint), _col10 (type: string), _col11 (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
                       auto parallelism: true
         Reducer 3 
             Needs Tagging: false
@@ -3760,7 +3760,7 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
-                    value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string)
+                    value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string), ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
                     auto parallelism: true
             Path -> Alias:
 #### A masked pattern was here ####
@@ -4213,7 +4213,7 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
-                    value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string)
+                    value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string), ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
                     auto parallelism: true
             Path -> Alias:
 #### A masked pattern was here ####
@@ -4472,7 +4472,7 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
-                    value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string)
+                    value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string), ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
                     auto parallelism: true
             Path -> Alias:
 #### A masked pattern was here ####
@@ -5214,7 +5214,7 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
-                    value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string)
+                    value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string), ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
                     auto parallelism: true
             Path -> Alias:
 #### A masked pattern was here ####
@@ -5473,20 +5473,20 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 POSTHOOK: Output: default@part_4
 POSTHOOK: Output: default@part_5
-POSTHOOK: Lineage: part_4.dr SCRIPT [(part)part.FieldSchema(name:p_partkey, type:int, comment:null), (part)part.FieldSchema(name:p_name, type:string, comment:null), (part)part.FieldSchema(name:p_mfgr, type:string, comment:null), (part)part.FieldSchema(name:p_brand, type:string, comment:null), (part)part.FieldSchema(name:p_type, type:string, comment:null), (part)part.FieldSchema(name:p_size, type:int, comment:null), (part)part.FieldSchema(name:p_container, type:string, comment:null), (part)part.FieldSchema(name:p_retailprice, type:double, comment:null), (part)part.FieldSchema(name:p_comment, type:string, comment:null), (part)part.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (part)part.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: part_4.p_mfgr SCRIPT [(part)part.FieldSchema(name:p_partkey, type:int, comment:null), (part)part.FieldSchema(name:p_name, type:string, comment:null), (part)part.FieldSchema(name:p_mfgr, type:string, comment:null), (part)part.FieldSchema(name:p_brand, type:string, comment:null), (part)part.FieldSchema(name:p_type, type:string, comment:null), (part)part.FieldSchema(name:p_size, type:int, comment:null), (part)part.FieldSchema(name:p_container, type:string, comment:null), (part)part.FieldSchema(name:p_retailprice, type:double, comment:null), (part)part.FieldSchema(name:p_comment, type:string, comment:null), (part)part.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (part)part.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: part_4.p_name SCRIPT [(part)part.FieldSchema(name:p_partkey, type:int, comment:null), (part)part.FieldSchema(name:p_name, type:string, comment:null), (part)part.FieldSchema(name:p_mfgr, type:string, comment:null), (part)part.FieldSchema(name:p_brand, type:string, comment:null), (part)part.FieldSchema(name:p_type, type:string, comment:null), (part)part.FieldSchema(name:p_size, type:int, comment:null), (part)part.FieldSchema(name:p_container, type:string, comment:null), (part)part.FieldSchema(name:p_retailprice, type:double, comment:null), (part)part.FieldSchema(name:p_comment, type:string, comment:null), (part)part.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (part)part.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: part_4.p_size SCRIPT [(part)part.FieldSchema(name:p_partkey, type:int, comment:null), (part)part.FieldSchema(name:p_name, type:string, comment:null), (part)part.FieldSchema(name:p_mfgr, type:string, comment:null), (part)part.FieldSchema(name:p_brand, type:string, comment:null), (part)part.FieldSchema(name:p_type, type:string, comment:null), (part)part.FieldSchema(name:p_size, type:int, comment:null), (part)part.FieldSchema(name:p_container, type:string, comment:null), (part)part.FieldSchema(name:p_retailprice, type:double, comment:null), (part)part.FieldSchema(name:p_comment, type:string, comment:null), (part)part.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (part)part.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: part_4.r SCRIPT [(part)part.FieldSchema(name:p_partkey, type:int, comment:null), (part)part.FieldSchema(name:p_name, type:string, comment:null), (part)part.FieldSchema(name:p_mfgr, type:string, comment:null), (part)part.FieldSchema(name:p_brand, type:string, comment:null), (part)part.FieldSchema(name:p_type, type:string, comment:null), (part)part.FieldSchema(name:p_size, type:int, comment:null), (part)part.FieldSchema(name:p_container, type:string, comment:null), (part)part.FieldSchema(name:p_retailprice, type:double, comment:null), (part)part.FieldSchema(name:p_comment, type:string, comment:null), (part)part.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (part)part.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: part_4.s SCRIPT [(part)part.FieldSchema(name:p_partkey, type:int, comment:null), (part)part.FieldSchema(name:p_name, type:string, comment:null), (part)part.FieldSchema(name:p_mfgr, type:string, comment:null), (part)part.FieldSchema(name:p_brand, type:string, comment:null), (part)part.FieldSchema(name:p_type, type:string, comment:null), (part)part.FieldSchema(name:p_size, type:int, comment:null), (part)part.FieldSchema(name:p_container, type:string, comment:null), (part)part.FieldSchema(name:p_retailprice, type:double, comment:null), (part)part.FieldSchema(name:p_comment, type:string, comment:null), (part)part.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (part)part.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: part_5.cud SCRIPT [(part)part.FieldSchema(name:p_partkey, type:int, comment:null), (part)part.FieldSchema(name:p_name, type:string, comment:null), (part)part.FieldSchema(name:p_mfgr, type:string, comment:null), (part)part.FieldSchema(name:p_brand, type:string, comment:null), (part)part.FieldSchema(name:p_type, type:string, comment:null), (part)part.FieldSchema(name:p_size, type:int, comment:null), (part)part.FieldSchema(name:p_container, type:string, comment:null), (part)part.FieldSchema(name:p_retailprice, type:double, comment:null), (part)part.FieldSchema(name:p_comment, type:string, comment:null), (part)part.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (part)part.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: part_5.dr SCRIPT [(part)part.FieldSchema(name:p_partkey, type:int, comment:null), (part)part.FieldSchema(name:p_name, type:string, comment:null), (part)part.FieldSchema(name:p_mfgr, type:string, comment:null), (part)part.FieldSchema(name:p_brand, type:string, comment:null), (part)part.FieldSchema(name:p_type, type:string, comment:null), (part)part.FieldSchema(name:p_size, type:int, comment:null), (part)part.FieldSchema(name:p_container, type:string, comment:null), (part)part.FieldSchema(name:p_retailprice, type:double, comment:null), (part)part.FieldSchema(name:p_comment, type:string, comment:null), (part)part.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (part)part.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: part_5.fv1 SCRIPT [(part)part.FieldSchema(name:p_partkey, type:int, comment:null), (part)part.FieldSchema(name:p_name, type:string, comment:null), (part)part.FieldSchema(name:p_mfgr, type:string, comment:null), (part)part.FieldSchema(name:p_brand, type:string, comment:null), (part)part.FieldSchema(name:p_type, type:string, comment:null), (part)part.FieldSchema(name:p_size, type:int, comment:null), (part)part.FieldSchema(name:p_container, type:string, comment:null), (part)part.FieldSchema(name:p_retailprice, type:double, comment:null), (part)part.FieldSchema(name:p_comment, type:string, comment:null), (part)part.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (part)part.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: part_5.p_mfgr SCRIPT [(part)part.FieldSchema(name:p_partkey, type:int, comment:null), (part)part.FieldSchema(name:p_name, type:string, comment:null), (part)part.FieldSchema(name:p_mfgr, type:string, comment:null), (part)part.FieldSchema(name:p_brand, type:string, comment:null), (part)part.FieldSchema(name:p_type, type:string, comment:null), (part)part.FieldSchema(name:p_size, type:int, comment:null), (part)part.FieldSchema(name:p_container, type:string, comment:null), (part)part.FieldSchema(name:p_retailprice, type:double, comment:null), (part)part.FieldSchema(name:p_comment, type:string, comment:null), (part)part.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (part)part.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: part_5.p_name SCRIPT [(part)part.FieldSchema(name:p_partkey, type:int, comment:null), (part)part.FieldSchema(name:p_name, type:string, comment:null), (part)part.FieldSchema(name:p_mfgr, type:string, comment:null), (part)part.FieldSchema(name:p_brand, type:string, comment:null), (part)part.FieldSchema(name:p_type, type:string, comment:null), (part)part.FieldSchema(name:p_size, type:int, comment:null), (part)part.FieldSchema(name:p_container, type:string, comment:null), (part)part.FieldSchema(name:p_retailprice, type:double, comment:null), (part)part.FieldSchema(name:p_comment, type:string, comment:null), (part)part.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (part)part.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: part_5.p_size SCRIPT [(part)part.FieldSchema(name:p_partkey, type:int, comment:null), (part)part.FieldSchema(name:p_name, type:string, comment:null), (part)part.FieldSchema(name:p_mfgr, type:string, comment:null), (part)part.FieldSchema(name:p_brand, type:string, comment:null), (part)part.FieldSchema(name:p_type, type:string, comment:null), (part)part.FieldSchema(name:p_size, type:int, comment:null), (part)part.FieldSchema(name:p_container, type:string, comment:null), (part)part.FieldSchema(name:p_retailprice, type:double, comment:null), (part)part.FieldSchema(name:p_comment, type:string, comment:null), (part)part.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (part)part.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: part_5.r SCRIPT [(part)part.FieldSchema(name:p_partkey, type:int, comment:null), (part)part.FieldSchema(name:p_name, type:string, comment:null), (part)part.FieldSchema(name:p_mfgr, type:string, comment:null), (part)part.FieldSchema(name:p_brand, type:string, comment:null), (part)part.FieldSchema(name:p_type, type:string, comment:null), (part)part.FieldSchema(name:p_size, type:int, comment:null), (part)part.FieldSchema(name:p_container, type:string, comment:null), (part)part.FieldSchema(name:p_retailprice, type:double, comment:null), (part)part.FieldSchema(name:p_comment, type:string, comment:null), (part)part.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (part)part.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: part_5.s2 SCRIPT [(part)part.FieldSchema(name:p_partkey, type:int, comment:null), (part)part.FieldSchema(name:p_name, type:string, comment:null), (part)part.FieldSchema(name:p_mfgr, type:string, comment:null), (part)part.FieldSchema(name:p_brand, type:string, comment:null), (part)part.FieldSchema(name:p_type, type:string, comment:null), (part)part.FieldSchema(name:p_size, type:int, comment:null), (part)part.FieldSchema(name:p_container, type:string, comment:null), (part)part.FieldSchema(name:p_retailprice, type:double, comment:null), (part)part.FieldSchema(name:p_comment, type:string, comment:null), (part)part.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (part)part.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: part_4.dr SCRIPT [(part)part.FieldSchema(name:p_partkey, type:int, comment:null), (part)part.FieldSchema(name:p_name, type:string, comment:null), (part)part.FieldSchema(name:p_mfgr, type:string, comment:null), (part)part.FieldSchema(name:p_brand, type:string, comment:null), (part)part.FieldSchema(name:p_type, type:string, comment:null), (part)part.FieldSchema(name:p_size, type:int, comment:null), (part)part.FieldSchema(name:p_container, type:string, comment:null), (part)part.FieldSchema(name:p_retailprice, type:double, comment:null), (part)part.FieldSchema(name:p_comment, type:string, comment:null), (part)part.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (part)part.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), (part)part.FieldSchema(name:ROW__ID, type:struct<transactionId:bigint,bucketId:int,rowId:bigint>, comment:), ]
+POSTHOOK: Lineage: part_4.p_mfgr SCRIPT [(part)part.FieldSchema(name:p_partkey, type:int, comment:null), (part)part.FieldSchema(name:p_name, type:string, comment:null), (part)part.FieldSchema(name:p_mfgr, type:string, comment:null), (part)part.FieldSchema(name:p_brand, type:string, comment:null), (part)part.FieldSchema(name:p_type, type:string, comment:null), (part)part.FieldSchema(name:p_size, type:int, comment:null), (part)part.FieldSchema(name:p_container, type:string, comment:null), (part)part.FieldSchema(name:p_retailprice, type:double, comment:null), (part)part.FieldSchema(name:p_comment, type:string, comment:null), (part)part.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (part)part.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), (part)part.FieldSchema(name:ROW__ID, type:struct<transactionId:bigint,bucketId:int,rowId:bigint>, comment:), ]
+POSTHOOK: Lineage: part_4.p_name SCRIPT [(part)part.FieldSchema(name:p_partkey, type:int, comment:null), (part)part.FieldSchema(name:p_name, type:string, comment:null), (part)part.FieldSchema(name:p_mfgr, type:string, comment:null), (part)part.FieldSchema(name:p_brand, type:string, comment:null), (part)part.FieldSchema(name:p_type, type:string, comment:null), (part)part.FieldSchema(name:p_size, type:int, comment:null), (part)part.FieldSchema(name:p_container, type:string, comment:null), (part)part.FieldSchema(name:p_retailprice, type:double, comment:null), (part)part.FieldSchema(name:p_comment, type:string, comment:null), (part)part.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (part)part.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), (part)part.FieldSchema(name:ROW__ID, type:struct<transactionId:bigint,bucketId:int,rowId:bigint>, comment:), ]
+POSTHOOK: Lineage: part_4.p_size SCRIPT [(part)part.FieldSchema(name:p_partkey, type:int, comment:null), (part)part.FieldSchema(name:p_name, type:string, comment:null), (part)part.FieldSchema(name:p_mfgr, type:string, comment:null), (part)part.FieldSchema(name:p_brand, type:string, comment:null), (part)part.FieldSchema(name:p_type, type:string, comment:null), (part)part.FieldSchema(name:p_size, type:int, comment:null), (part)part.FieldSchema(name:p_container, type:string, comment:null), (part)part.FieldSchema(name:p_retailprice, type:double, comment:null), (part)part.FieldSchema(name:p_comment, type:string, comment:null), (part)part.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (part)part.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), (part)part.FieldSchema(name:ROW__ID, type:struct<transactionId:bigint,bucketId:int,rowId:bigint>, comment:), ]
+POSTHOOK: Lineage: part_4.r SCRIPT [(part)part.FieldSchema(name:p_partkey, type:int, comment:null), (part)part.FieldSchema(name:p_name, type:string, comment:null), (part)part.FieldSchema(name:p_mfgr, type:string, comment:null), (part)part.FieldSchema(name:p_brand, type:string, comment:null), (part)part.FieldSchema(name:p_type, type:string, comment:null), (part)part.FieldSchema(name:p_size, type:int, comment:null), (part)part.FieldSchema(name:p_container, type:string, comment:null), (part)part.FieldSchema(name:p_retailprice, type:double, comment:null), (part)part.FieldSchema(name:p_comment, type:string, comment:null), (part)part.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (part)part.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), (part)part.FieldSchema(name:ROW__ID, type:struct<transactionId:bigint,bucketId:int,rowId:bigint>, comment:), ]
+POSTHOOK: Lineage: part_4.s SCRIPT [(part)part.FieldSchema(name:p_partkey, type:int, comment:null), (part)part.FieldSchema(name:p_name, type:string, comment:null), (part)part.FieldSchema(name:p_mfgr, type:string, comment:null), (part)part.FieldSchema(name:p_brand, type:string, comment:null), (part)part.FieldSchema(name:p_type, type:string, comment:null), (part)part.FieldSchema(name:p_size, type:int, comment:null), (part)part.FieldSchema(name:p_container, type:string, comment:null), (part)part.FieldSchema(name:p_retailprice, type:double, comment:null), (part)part.FieldSchema(name:p_comment, type:string, comment:null), (part)part.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (part)part.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), (part)part.FieldSchema(name:ROW__ID, type:struct<transactionId:bigint,bucketId:int,rowId:bigint>, comment:), ]
+POSTHOOK: Lineage: part_5.cud SCRIPT [(part)part.FieldSchema(name:p_partkey, type:int, comment:null), (part)part.FieldSchema(name:p_name, type:string, comment:null), (part)part.FieldSchema(name:p_mfgr, type:string, comment:null), (part)part.FieldSchema(name:p_brand, type:string, comment:null), (part)part.FieldSchema(name:p_type, type:string, comment:null), (part)part.FieldSchema(name:p_size, type:int, comment:null), (part)part.FieldSchema(name:p_container, type:string, comment:null), (part)part.FieldSchema(name:p_retailprice, type:double, comment:null), (part)part.FieldSchema(name:p_comment, type:string, comment:null), (part)part.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (part)part.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), (part)part.FieldSchema(name:ROW__ID, type:struct<transactionId:bigint,bucketId:int,rowId:bigint>, comment:), ]
+POSTHOOK: Lineage: part_5.dr SCRIPT [(part)part.FieldSchema(name:p_partkey, type:int, comment:null), (part)part.FieldSchema(name:p_name, type:string, comment:null), (part)part.FieldSchema(name:p_mfgr, type:string, comment:null), (part)part.FieldSchema(name:p_brand, type:string, comment:null), (part)part.FieldSchema(name:p_type, type:string, comment:null), (part)part.FieldSchema(name:p_size, type:int, comment:null), (part)part.FieldSchema(name:p_container, type:string, comment:null), (part)part.FieldSchema(name:p_retailprice, type:double, comment:null), (part)part.FieldSchema(name:p_comment, type:string, comment:null), (part)part.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (part)part.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), (part)part.FieldSchema(name:ROW__ID, type:struct<transactionId:bigint,bucketId:int,rowId:bigint>, comment:), ]
+POSTHOOK: Lineage: part_5.fv1 SCRIPT [(part)part.FieldSchema(name:p_partkey, type:int, comment:null), (part)part.FieldSchema(name:p_name, type:string, comment:null), (part)part.FieldSchema(name:p_mfgr, type:string, comment:null), (part)part.FieldSchema(name:p_brand, type:string, comment:null), (part)part.FieldSchema(name:p_type, type:string, comment:null), (part)part.FieldSchema(name:p_size, type:int, comment:null), (part)part.FieldSchema(name:p_container, type:string, comment:null), (part)part.FieldSchema(name:p_retailprice, type:double, comment:null), (part)part.FieldSchema(name:p_comment, type:string, comment:null), (part)part.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (part)part.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), (part)part.FieldSchema(name:ROW__ID, type:struct<transactionId:bigint,bucketId:int,rowId:bigint>, comment:), ]
+POSTHOOK: Lineage: part_5.p_mfgr SCRIPT [(part)part.FieldSchema(name:p_partkey, type:int, comment:null), (part)part.FieldSchema(name:p_name, type:string, comment:null), (part)part.FieldSchema(name:p_mfgr, type:string, comment:null), (part)part.FieldSchema(name:p_brand, type:string, comment:null), (part)part.FieldSchema(name:p_type, type:string, comment:null), (part)part.FieldSchema(name:p_size, type:int, comment:null), (part)part.FieldSchema(name:p_container, type:string, comment:null), (part)part.FieldSchema(name:p_retailprice, type:double, comment:null), (part)part.FieldSchema(name:p_comment, type:string, comment:null), (part)part.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (part)part.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), (part)part.FieldSchema(name:ROW__ID, type:struct<transactionId:bigint,bucketId:int,rowId:bigint>, comment:), ]
+POSTHOOK: Lineage: part_5.p_name SCRIPT [(part)part.FieldSchema(name:p_partkey, type:int, comment:null), (part)part.FieldSchema(name:p_name, type:string, comment:null), (part)part.FieldSchema(name:p_mfgr, type:string, comment:null), (part)part.FieldSchema(name:p_brand, type:string, comment:null), (part)part.FieldSchema(name:p_type, type:string, comment:null), (part)part.FieldSchema(name:p_size, type:int, comment:null), (part)part.FieldSchema(name:p_container, type:string, comment:null), (part)part.FieldSchema(name:p_retailprice, type:double, comment:null), (part)part.FieldSchema(name:p_comment, type:string, comment:null), (part)part.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (part)part.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), (part)part.FieldSchema(name:ROW__ID, type:struct<transactionId:bigint,bucketId:int,rowId:bigint>, comment:), ]
+POSTHOOK: Lineage: part_5.p_size SCRIPT [(part)part.FieldSchema(name:p_partkey, type:int, comment:null), (part)part.FieldSchema(name:p_name, type:string, comment:null), (part)part.FieldSchema(name:p_mfgr, type:string, comment:null), (part)part.FieldSchema(name:p_brand, type:string, comment:null), (part)part.FieldSchema(name:p_type, type:string, comment:null), (part)part.FieldSchema(name:p_size, type:int, comment:null), (part)part.FieldSchema(name:p_container, type:string, comment:null), (part)part.FieldSchema(name:p_retailprice, type:double, comment:null), (part)part.FieldSchema(name:p_comment, type:string, comment:null), (part)part.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (part)part.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), (part)part.FieldSchema(name:ROW__ID, type:struct<transactionId:bigint,bucketId:int,rowId:bigint>, comment:), ]
+POSTHOOK: Lineage: part_5.r SCRIPT [(part)part.FieldSchema(name:p_partkey, type:int, comment:null), (part)part.FieldSchema(name:p_name, type:string, comment:null), (part)part.FieldSchema(name:p_mfgr, type:string, comment:null), (part)part.FieldSchema(name:p_brand, type:string, comment:null), (part)part.FieldSchema(name:p_type, type:string, comment:null), (part)part.FieldSchema(name:p_size, type:int, comment:null), (part)part.FieldSchema(name:p_container, type:string, comment:null), (part)part.FieldSchema(name:p_retailprice, type:double, comment:null), (part)part.FieldSchema(name:p_comment, type:string, comment:null), (part)part.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (part)part.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), (part)part.FieldSchema(name:ROW__ID, type:struct<transactionId:bigint,bucketId:int,rowId:bigint>, comment:), ]
+POSTHOOK: Lineage: part_5.s2 SCRIPT [(part)part.FieldSchema(name:p_partkey, type:int, comment:null), (part)part.FieldSchema(name:p_name, type:string, comment:null), (part)part.FieldSchema(name:p_mfgr, type:string, comment:null), (part)part.FieldSchema(name:p_brand, type:string, comment:null), (part)part.FieldSchema(name:p_type, type:string, comment:null), (part)part.FieldSchema(name:p_size, type:int, comment:null), (part)part.FieldSchema(name:p_container, type:string, comment:null), (part)part.FieldSchema(name:p_retailprice, type:double, comment:null), (part)part.FieldSchema(name:p_comment, type:string, comment:null), (part)part.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (part)part.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), (part)part.FieldSchema(name:ROW__ID, type:struct<transactionId:bigint,bucketId:int,rowId:bigint>, comment:), ]
 PREHOOK: query: select * from part_4
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part_4
@@ -5722,7 +5722,7 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
-                    value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string)
+                    value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string), ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
                     auto parallelism: true
             Path -> Alias:
 #### A masked pattern was here ####
@@ -5788,7 +5788,7 @@ STAGE PLANS:
                       Map-reduce partition columns: _col2 (type: string), _col1 (type: string)
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
-                      value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string), _col9 (type: bigint), _col10 (type: string)
+                      value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string), _col9 (type: bigint), _col10 (type: string), _col11 (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
                       auto parallelism: true
         Reducer 3 
             Needs Tagging: false
@@ -6079,7 +6079,7 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
-                    value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string)
+                    value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string), ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
                     auto parallelism: true
             Path -> Alias:
 #### A masked pattern was here ####
@@ -6143,7 +6143,7 @@ STAGE PLANS:
                     Map-reduce partition columns: _col2 (type: string), _col1 (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
-                    value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string), _col9 (type: bigint), _col10 (type: string)
+                    value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string), _col9 (type: bigint), _col10 (type: string), _col11 (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
                     auto parallelism: true
         Reducer 3 
             Needs Tagging: false
@@ -6158,7 +6158,7 @@ STAGE PLANS:
                     Map-reduce partition columns: _col2 (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
-                    value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string), _col9 (type: bigint), _col10 (type: string)
+                    value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string), _col9 (type: bigint), _col10 (type: string), _col11 (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
                     auto parallelism: true
         Reducer 4 
             Needs Tagging: false
@@ -6432,7 +6432,7 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string), p_name (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
-                    value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string)
+                    value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string), ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
                     auto parallelism: true
             Path -> Alias:
 #### A masked pattern was here ####
@@ -6496,7 +6496,7 @@ STAGE PLANS:
                     Map-reduce partition columns: _col2 (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
-                    value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string), _col9 (type: bigint), _col10 (type: string)
+                    value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string), _col9 (type: bigint), _col10 (type: string), _col11 (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
                     auto parallelism: true
         Reducer 3 
             Needs Tagging: false
@@ -6782,7 +6782,7 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string), p_name (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
-                    value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string)
+                    value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string), ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
                     auto parallelism: true
             Path -> Alias:
 #### A masked pattern was here ####
@@ -6846,7 +6846,7 @@ STAGE PLANS:
                     Map-reduce partition columns: _col2 (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
-                    value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string), _col9 (type: bigint), _col10 (type: string)
+                    value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string), _col9 (type: bigint), _col10 (type: string), _col11 (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
                     auto parallelism: true
         Reducer 3 
             Needs Tagging: false
@@ -6863,7 +6863,7 @@ STAGE PLANS:
                       Map-reduce partition columns: _col2 (type: string), _col1 (type: string)
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
-                      value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string), _col9 (type: bigint), _col10 (type: string)
+                      value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string), _col9 (type: bigint), _col10 (type: string), _col11 (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
                       auto parallelism: true
         Reducer 4 
             Needs Tagging: false
@@ -7180,7 +7180,7 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string), p_name (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
-                    value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string)
+                    value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string), ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
                     auto parallelism: true
             Path -> Alias:
 #### A masked pattern was here ####
@@ -7246,7 +7246,7 @@ STAGE PLANS:
                       Map-reduce partition columns: _col2 (type: string)
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
-                      value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string), _col9 (type: bigint), _col10 (type: string)
+                      value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string), _col9 (type: bigint), _col10 (type: string), _col11 (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
                       auto parallelism: true
         Reducer 3 
             Needs Tagging: false
@@ -7529,7 +7529,7 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string), p_name (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
-                    value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string)
+                    value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string), ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
                     auto parallelism: true
             Path -> Alias:
 #### A masked pattern was here ####
@@ -7595,7 +7595,7 @@ STAGE PLANS:
                       Map-reduce partition columns: _col2 (type: string), _col1 (type: string)
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
-                      value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string), _col9 (type: bigint), _col10 (type: string)
+                      value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string), _col9 (type: bigint), _col10 (type: string), _col11 (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
                       auto parallelism: true
         Reducer 3 
             Needs Tagging: false

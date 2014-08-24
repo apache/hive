@@ -366,6 +366,10 @@ struct AggrStats {
 2: required i64 partsFound // number of partitions for which stats were found
 }
 
+struct SetPartitionsStatsRequest {
+1: required list<ColumnStatistics> colStats
+}
+
 // schema of the table/query results etc.
 struct Schema {
  // column names, types, comments
@@ -960,6 +964,8 @@ service ThriftHiveMetastore extends fb303.FacebookService
               (1:NoSuchObjectException o1, 2:MetaException o2)
   AggrStats get_aggr_stats_for(1:PartitionsStatsRequest request) throws
               (1:NoSuchObjectException o1, 2:MetaException o2)
+  bool set_aggr_stats_for(1:SetPartitionsStatsRequest request) throws
+              (1:NoSuchObjectException o1, 2:InvalidObjectException o2, 3:MetaException o3, 4:InvalidInputException o4)
 
 
   // delete APIs attempt to delete column statistics, if found, associated with a given db_name, tbl_name, [part_name]

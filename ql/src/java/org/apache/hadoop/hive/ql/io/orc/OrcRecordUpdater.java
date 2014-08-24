@@ -88,6 +88,9 @@ public class OrcRecordUpdater implements RecordUpdater {
   private final IntWritable bucket = new IntWritable();
   private final LongWritable rowId = new LongWritable();
   private long insertedRows = 0;
+  // This records how many rows have been inserted or deleted.  It is separate from insertedRows
+  // because that is monotonically increasing to give new unique row ids.
+  private long rowCountDelta = 0;
   private final KeyIndexBuilder indexBuilder = new KeyIndexBuilder();
 
   static class AcidStats {
@@ -263,6 +266,7 @@ public class OrcRecordUpdater implements RecordUpdater {
     }
     addEvent(INSERT_OPERATION, currentTransaction, currentTransaction,
         insertedRows++, row);
+    rowCountDelta++;
   }
 
   @Override
@@ -283,6 +287,7 @@ public class OrcRecordUpdater implements RecordUpdater {
     }
     addEvent(DELETE_OPERATION, currentTransaction, originalTransaction, rowId,
         null);
+    rowCountDelta--;
   }
 
   @Override
@@ -317,7 +322,11 @@ public class OrcRecordUpdater implements RecordUpdater {
 
   @Override
   public SerDeStats getStats() {
-    return null;
+    SerDeStats stats = new SerDeStats();
+    stats.setRowCount(rowCountDelta);
+    // Don't worry about setting raw data size diff.  I have no idea how to calculate that
+    // without finding the row we are updating or deleting, which would be a mess.
+    return stats;
   }
 
   @VisibleForTesting

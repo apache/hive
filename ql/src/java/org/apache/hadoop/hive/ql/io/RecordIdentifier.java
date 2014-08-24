@@ -19,16 +19,81 @@
 package org.apache.hadoop.hive.ql.io;
 
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.WritableComparable;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
- * Gives the Record identifer information for the current record.
+ * Gives the Record identifier information for the current record.
  */
 public class RecordIdentifier implements WritableComparable<RecordIdentifier> {
+  /**
+   * This is in support of {@link org.apache.hadoop.hive.ql.metadata.VirtualColumn#ROWID}
+   * Contains metadata about each field in RecordIdentifier that needs to be part of ROWID
+   * which is represented as a struct {@link org.apache.hadoop.hive.ql.io.RecordIdentifier.StructInfo}.
+   * Each field of RecordIdentifier which should be part of ROWID should be in this enum... which 
+   * really means that it should be part of VirtualColumn (so make a subclass for rowid).
+   */
+  public static enum Field {
+    //note the enum names match field names in the struct
+    transactionId(TypeInfoFactory.longTypeInfo,
+      PrimitiveObjectInspectorFactory.javaLongObjectInspector),
+    bucketId(TypeInfoFactory.intTypeInfo, PrimitiveObjectInspectorFactory.javaIntObjectInspector),
+    rowId(TypeInfoFactory.longTypeInfo, PrimitiveObjectInspectorFactory.javaLongObjectInspector);
+    public final TypeInfo fieldType;
+    public final ObjectInspector fieldOI;
+    Field(TypeInfo fieldType, ObjectInspector fieldOI) {
+      this.fieldType = fieldType;
+      this.fieldOI = fieldOI;
+    }
+  }
+  /**
+   * RecordIdentifier is passed along the operator tree as a struct.  This class contains a few
+   * utilities for that.
+   */
+  public static final class StructInfo {
+    private static final List<String> fieldNames = new ArrayList<String>(Field.values().length);
+    private static final List<TypeInfo> fieldTypes = new ArrayList<TypeInfo>(fieldNames.size());
+    private static final List<ObjectInspector> fieldOis = 
+      new ArrayList<ObjectInspector>(fieldNames.size());
+    static {
+      for(Field f : Field.values()) {
+        fieldNames.add(f.name());
+        fieldTypes.add(f.fieldType);
+        fieldOis.add(f.fieldOI);
+      }
+    }
+    public static final TypeInfo typeInfo = 
+      TypeInfoFactory.getStructTypeInfo(fieldNames, fieldTypes);
+    public static final ObjectInspector oi = 
+      ObjectInspectorFactory.getStandardStructObjectInspector(fieldNames, fieldOis);
+
+    /**
+     * Copies relevant fields from {@code ri} to {@code struct}
+     * @param ri
+     * @param struct must be of size Field.values().size()
+     */
+    public static void toArray(RecordIdentifier ri, Object[] struct) {
+      assert struct != null && struct.length == Field.values().length;
+      if(ri == null) {
+        Arrays.fill(struct, null);
+        return;
+      }
+      struct[Field.transactionId.ordinal()] = ri.getTransactionId();
+      struct[Field.bucketId.ordinal()] = ri.getBucketId();
+      struct[Field.rowId.ordinal()] = ri.getRowId();
+    }
+  }
+  
   private long transactionId;
   private int bucketId;
   private long rowId;

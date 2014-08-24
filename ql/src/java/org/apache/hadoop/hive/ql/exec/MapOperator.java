@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.io.IOContext;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
+import org.apache.hadoop.hive.ql.io.RecordIdentifier;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.plan.MapWork;
@@ -140,7 +141,7 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
     String tableName;
     String partName;
     List<VirtualColumn> vcs;
-    Writable[] vcValues;
+    Object[] vcValues;
 
     private boolean isPartitioned() {
       return partObjectInspector != null;
@@ -165,7 +166,7 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
    * op.
    *
    * @param hconf
-   * @param mrwork
+   * @param mapWork
    * @throws HiveException
    */
   public void initializeAsRoot(Configuration hconf, MapWork mapWork)
@@ -250,13 +251,13 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
 
     // The op may not be a TableScan for mapjoins
     // Consider the query: select /*+MAPJOIN(a)*/ count(*) FROM T1 a JOIN T2 b ON a.key = b.key;
-    // In that case, it will be a Select, but the rowOI need not be ammended
+    // In that case, it will be a Select, but the rowOI need not be amended
     if (ctx.op instanceof TableScanOperator) {
       TableScanOperator tsOp = (TableScanOperator) ctx.op;
       TableScanDesc tsDesc = tsOp.getConf();
       if (tsDesc != null && tsDesc.hasVirtualCols()) {
         opCtx.vcs = tsDesc.getVirtualCols();
-        opCtx.vcValues = new Writable[opCtx.vcs.size()];
+        opCtx.vcValues = new Object[opCtx.vcs.size()];
         opCtx.vcsObjectInspector = VirtualColumn.getVCSObjectInspector(opCtx.vcs);
         if (opCtx.isPartitioned()) {
           opCtx.rowWithPartAndVC = Arrays.copyOfRange(opCtx.rowWithPart, 0, 3);
@@ -550,13 +551,13 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
     }
   }
 
-  public static Writable[] populateVirtualColumnValues(ExecMapperContext ctx,
-      List<VirtualColumn> vcs, Writable[] vcValues, Deserializer deserializer) {
+  public static Object[] populateVirtualColumnValues(ExecMapperContext ctx,
+      List<VirtualColumn> vcs, Object[] vcValues, Deserializer deserializer) {
     if (vcs == null) {
       return vcValues;
     }
     if (vcValues == null) {
-      vcValues = new Writable[vcs.size()];
+      vcValues = new Object[vcs.size()];
     }
     for (int i = 0; i < vcs.size(); i++) {
       VirtualColumn vc = vcs.get(i);
@@ -600,6 +601,19 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
         }
         if (current != old.get()) {
           old.set(current);
+        }
+      }
+      else if(vc.equals(VirtualColumn.ROWID)) {
+        if(ctx.getIoCxt().ri == null) {
+          vcValues[i] = null;
+        }
+        else {
+          if(vcValues[i] == null) {
+            vcValues[i] = new Object[RecordIdentifier.Field.values().length];
+          }
+          RecordIdentifier.StructInfo.toArray(ctx.getIoCxt().ri, (Object[])vcValues[i]);
+          ctx.getIoCxt().ri = null;//so we don't accidentally cache the value; shouldn't
+          //happen since IO layer either knows how to produce ROW__ID or not - but to be safe
         }
       }
     }

@@ -973,7 +973,7 @@ public class TestInputOutputFormat {
     List<? extends StructField> fields =inspector.getAllStructFieldRefs();
     IntObjectInspector intInspector =
         (IntObjectInspector) fields.get(0).getFieldObjectInspector();
-    assertEquals(0.0, reader.getProgress(), 0.00001);
+    assertEquals(0.33, reader.getProgress(), 0.01);
     while (reader.next(key, value)) {
       assertEquals(++rowNum, intInspector.get(inspector.
           getStructFieldData(serde.deserialize(value), fields.get(0))));

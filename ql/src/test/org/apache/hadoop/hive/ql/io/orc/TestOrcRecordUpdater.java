@@ -24,6 +24,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.RecordUpdater;
+import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.io.IntWritable;
@@ -95,6 +96,10 @@ public class TestOrcRecordUpdater {
     updater.insert(12, new MyRow("fourth"));
     updater.insert(12, new MyRow("fifth"));
     updater.flush();
+
+    // Check the stats
+    assertEquals(5L, updater.getStats().getRowCount());
+
     Path bucketPath = AcidUtils.createFilename(root, options);
     Path sidePath = OrcRecordUpdater.getSideFile(bucketPath);
     DataInputStream side = fs.open(sidePath);
@@ -158,6 +163,8 @@ public class TestOrcRecordUpdater {
     reader = OrcFile.createReader(bucketPath,
         new OrcFile.ReaderOptions(conf).filesystem(fs));
     assertEquals(6, reader.getNumberOfRows());
+    assertEquals(6L, updater.getStats().getRowCount());
+
     assertEquals(false, fs.exists(sidePath));
   }
 
@@ -182,6 +189,7 @@ public class TestOrcRecordUpdater {
     RecordUpdater updater = new OrcRecordUpdater(root, options);
     updater.update(100, 10, 30, new MyRow("update"));
     updater.delete(100, 40, 60);
+    assertEquals(-1L, updater.getStats().getRowCount());
     updater.close(false);
     Path bucketPath = AcidUtils.createFilename(root, options);
 

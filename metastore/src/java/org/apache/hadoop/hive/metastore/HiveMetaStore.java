@@ -122,6 +122,7 @@ import org.apache.hadoop.hive.metastore.api.PrivilegeGrantInfo;
 import org.apache.hadoop.hive.metastore.api.RequestPartsSpec;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
+import org.apache.hadoop.hive.metastore.api.SetPartitionsStatsRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowLocksRequest;
@@ -5023,17 +5024,24 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       startFunction("get_aggr_stats_for: db=" + request.getDbName() + " table=" + request.getTblName());
       AggrStats aggrStats = null;
       try {
-        //TODO: We are setting partitionCnt for which we were able to retrieve stats same as
-        // incoming number from request. This is not correct, but currently no users of this api
-        // rely on this. Only, current user StatsAnnotation don't care for it. StatsOptimizer
-        // will care for it, so before StatsOptimizer begin using it, we need to fix this.
         aggrStats = new AggrStats(getMS().get_aggr_stats_for(request.getDbName(),
-          request.getTblName(), request.getPartNames(), request.getColNames()), request.getPartNames().size());
+          request.getTblName(), request.getPartNames(), request.getColNames()));
         return aggrStats;
       } finally {
           endFunction("get_partitions_statistics_req: ", aggrStats == null, null, request.getTblName());
       }
 
+    }
+
+    @Override
+    public boolean set_aggr_stats_for(SetPartitionsStatsRequest request)
+        throws NoSuchObjectException, InvalidObjectException, MetaException,
+        InvalidInputException, TException {
+      boolean ret = true;
+      for (ColumnStatistics colStats : request.getColStats()) {
+        ret = ret && update_partition_column_statistics(colStats);
+      }
+      return ret;
     }
 
   }

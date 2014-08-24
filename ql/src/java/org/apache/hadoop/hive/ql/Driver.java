@@ -754,6 +754,9 @@ public class Driver implements CommandProcessor {
         objName = privObject.getD();
         break;
       case FUNCTION:
+        if(privObject.getDatabase() != null) {
+          dbname = privObject.getDatabase().getName();
+        }
         objName = privObject.getFunctionName();
         break;
       case DUMMYPARTITION:

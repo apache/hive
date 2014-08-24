@@ -105,6 +105,7 @@ import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
 import org.apache.hadoop.hive.metastore.api.RequestPartsSpec;
 import org.apache.hadoop.hive.metastore.api.Role;
+import org.apache.hadoop.hive.metastore.api.SetPartitionsStatsRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowLocksRequest;
@@ -1263,6 +1264,13 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     throws NoSuchObjectException, InvalidObjectException, MetaException, TException,
     InvalidInputException{
     return client.update_partition_column_statistics(statsObj);
+  }
+  
+  /** {@inheritDoc} */
+  public boolean setPartitionColumnStatistics(SetPartitionsStatsRequest request)
+    throws NoSuchObjectException, InvalidObjectException, MetaException, TException,
+    InvalidInputException{
+    return client.set_aggr_stats_for(request);
   }
 
   /** {@inheritDoc} */

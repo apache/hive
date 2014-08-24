@@ -19,38 +19,13 @@
 package org.apache.hive.hcatalog.api;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
-import org.apache.hadoop.hive.metastore.TableType;
-import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
-import org.apache.hadoop.hive.metastore.api.SerDeInfo;
-import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
-import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
-import org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat;
-import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
-import org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat;
-import org.apache.hadoop.hive.ql.io.orc.OrcSerde;
-import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
-import org.apache.hadoop.hive.ql.io.RCFileOutputFormat;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
-import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.serde.serdeConstants;
-import org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe;
-import org.apache.hadoop.mapred.SequenceFileInputFormat;
-import org.apache.hadoop.mapred.TextInputFormat;
 import org.apache.hive.hcatalog.common.HCatException;
 import org.apache.hive.hcatalog.data.schema.HCatFieldSchema;
-import org.apache.hive.hcatalog.data.schema.HCatSchemaUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * The Class HCatCreateTableDesc for defining attributes for a new table.
@@ -58,31 +33,12 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings("deprecation")
 public class HCatCreateTableDesc {
 
-  private static final Logger LOG = LoggerFactory.getLogger(HCatCreateTableDesc.class);
-
-  private String tableName;
-  private String dbName;
-  private boolean isExternal;
-  private String comment;
-  private String location;
-  private List<HCatFieldSchema> cols;
-  private List<HCatFieldSchema> partCols;
-  private List<String> bucketCols;
-  private int numBuckets;
-  private List<Order> sortCols;
-  private Map<String, String> tblProps;
   private boolean ifNotExists;
-  private String fileFormat;
-  private String inputformat;
-  private String outputformat;
-  private String serde;
-  private String storageHandler;
-  private Map<String, String> serdeParams;
+  private HCatTable hcatTable;
 
-  private HCatCreateTableDesc(String dbName, String tableName, List<HCatFieldSchema> columns) {
-    this.dbName = dbName;
-    this.tableName = tableName;
-    this.cols = columns;
+  private HCatCreateTableDesc(HCatTable hcatTable, boolean ifNotExists) {
+    this.hcatTable = hcatTable;
+    this.ifNotExists = ifNotExists;
   }
 
   /**
@@ -93,109 +49,36 @@ public class HCatCreateTableDesc {
    * @param columns the columns
    * @return the builder
    */
+  @Deprecated // @deprecated in favour of {@link #create(HCatTable)}. To be removed in Hive 0.16.
   public static Builder create(String dbName, String tableName, List<HCatFieldSchema> columns) {
     return new Builder(dbName, tableName, columns);
   }
 
-  Table toHiveTable(HiveConf conf) throws HCatException {
+  /**
+   * Getter for HCatCreateTableDesc.Builder instance.
+   * @param table Spec for HCatTable to be created.
+   * @param ifNotExists Only create the table if it doesn't already exist.
+   * @return Builder instance.
+   */
+  public static Builder create(HCatTable table, boolean ifNotExists) {
+    return new Builder(table, ifNotExists);
+  }
 
-    /*
-     * get the same defaults as are set when a Table is created via the Hive Driver.
-     */
-   Table newTable = org.apache.hadoop.hive.ql.metadata.Table.getEmptyTable(dbName, tableName);
-    newTable.setDbName(dbName);
-    newTable.setTableName(tableName);
-    if (tblProps != null) {
-      for ( Map.Entry<String,String> e : tblProps.entrySet()){
-        newTable.getParameters().put(e.getKey(), e.getValue());
-      }
-    }
+  /**
+   * Getter for HCatCreateTableDesc.Builder instance. By default, ifNotExists is false.
+   * So the attempt to create the table is made even if the table already exists.
+   * @param table Spec for HCatTable to be created.
+   * @return Builder instance.
+   */
+  public static Builder create(HCatTable table) {
+    return new Builder(table, false);
+  }
 
-    if (isExternal) {
-      newTable.putToParameters("EXTERNAL", "TRUE");
-      newTable.setTableType(TableType.EXTERNAL_TABLE.toString());
-    } else {
-      newTable.setTableType(TableType.MANAGED_TABLE.toString());
-    }
-
-    // Initialize an sd if one does not exist
-    if (newTable.getSd() == null) {
-      newTable.setSd(new StorageDescriptor());
-    }
-    StorageDescriptor sd = newTable.getSd();
-
-    if (sd.getSerdeInfo() == null){
-      sd.setSerdeInfo(new SerDeInfo());
-    }
-    if (location != null) {
-      sd.setLocation(location);
-    }
-    if (this.comment != null) {
-      newTable.putToParameters("comment", comment);
-    }
-    if (!StringUtils.isEmpty(fileFormat)) {
-      sd.setInputFormat(inputformat);
-      sd.setOutputFormat(outputformat);
-      if (serde != null) {
-        sd.getSerdeInfo().setSerializationLib(serde);
-      } else {
-        LOG.info("Using LazySimpleSerDe for table " + tableName);
-        sd.getSerdeInfo()
-          .setSerializationLib(
-            org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.class
-              .getName());
-      }
-    } else {
-      try {
-        LOG.info("Creating instance of storage handler to get input/output, serder info.");
-        HiveStorageHandler sh = HiveUtils.getStorageHandler(conf,
-          storageHandler);
-        sd.setInputFormat(sh.getInputFormatClass().getName());
-        sd.setOutputFormat(sh.getOutputFormatClass().getName());
-        sd.getSerdeInfo().setSerializationLib(
-          sh.getSerDeClass().getName());
-        newTable.putToParameters(
-          org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE,
-          storageHandler);
-      } catch (HiveException e) {
-        throw new HCatException(
-          "Exception while creating instance of storage handler",
-          e);
-      }
-    }
-    if(serdeParams != null) {
-      for(Map.Entry<String, String> param : serdeParams.entrySet()) {
-        sd.getSerdeInfo().putToParameters(param.getKey(), param.getValue());
-      }
-    }
-    if (this.partCols != null) {
-      ArrayList<FieldSchema> hivePtnCols = new ArrayList<FieldSchema>();
-      for (HCatFieldSchema fs : this.partCols) {
-        hivePtnCols.add(HCatSchemaUtils.getFieldSchema(fs));
-      }
-      newTable.setPartitionKeys(hivePtnCols);
-    }
-
-    if (this.cols != null) {
-      ArrayList<FieldSchema> hiveTblCols = new ArrayList<FieldSchema>();
-      for (HCatFieldSchema fs : this.cols) {
-        hiveTblCols.add(HCatSchemaUtils.getFieldSchema(fs));
-      }
-      newTable.getSd().setCols(hiveTblCols);
-    }
-
-    if (this.bucketCols != null) {
-      newTable.getSd().setBucketCols(bucketCols);
-      newTable.getSd().setNumBuckets(numBuckets);
-    }
-
-    if (this.sortCols != null) {
-      newTable.getSd().setSortCols(sortCols);
-    }
-
-    newTable.setCreateTime((int) (System.currentTimeMillis() / 1000));
-    newTable.setLastAccessTimeIsSet(false);
-    return newTable;
+  /**
+   * Getter for underlying HCatTable instance.
+   */
+  public HCatTable getHCatTable() {
+    return this.hcatTable;
   }
 
   /**
@@ -212,8 +95,9 @@ public class HCatCreateTableDesc {
    *
    * @return the table name
    */
+  @Deprecated // @deprecated in favour of {@link HCatTable.#getTableName()}. To be removed in Hive 0.16.
   public String getTableName() {
-    return this.tableName;
+    return this.hcatTable.getTableName();
   }
 
   /**
@@ -221,8 +105,9 @@ public class HCatCreateTableDesc {
    *
    * @return the cols
    */
+  @Deprecated // @deprecated in favour of {@link HCatTable.#getCols()}. To be removed in Hive 0.16.
   public List<HCatFieldSchema> getCols() {
-    return this.cols;
+    return this.hcatTable.getCols();
   }
 
   /**
@@ -230,8 +115,9 @@ public class HCatCreateTableDesc {
    *
    * @return the partition cols
    */
+  @Deprecated // @deprecated in favour of {@link HCatTable.#getPartCols()}. To be removed in Hive 0.16.
   public List<HCatFieldSchema> getPartitionCols() {
-    return this.partCols;
+    return this.hcatTable.getPartCols();
   }
 
   /**
@@ -239,12 +125,14 @@ public class HCatCreateTableDesc {
    *
    * @return the bucket cols
    */
+  @Deprecated // @deprecated in favour of {@link HCatTable.#getBucketCols()}. To be removed in Hive 0.16.
   public List<String> getBucketCols() {
-    return this.bucketCols;
+    return this.hcatTable.getBucketCols();
   }
 
+  @Deprecated // @deprecated in favour of {@link HCatTable.#getNumBuckets()}.
   public int getNumBuckets() {
-    return this.numBuckets;
+    return this.hcatTable.getNumBuckets();
   }
 
   /**
@@ -252,8 +140,9 @@ public class HCatCreateTableDesc {
    *
    * @return the comments
    */
+  @Deprecated // @deprecated in favour of {@link HCatTable.#comment()}. To be removed in Hive 0.16.
   public String getComments() {
-    return this.comment;
+    return this.hcatTable.comment();
   }
 
   /**
@@ -261,8 +150,9 @@ public class HCatCreateTableDesc {
    *
    * @return the storage handler
    */
+  @Deprecated // @deprecated in favour of {@link HCatTable.#getStorageHandler()}. To be removed in Hive 0.16.
   public String getStorageHandler() {
-    return this.storageHandler;
+    return this.hcatTable.getStorageHandler();
   }
 
   /**
@@ -270,8 +160,9 @@ public class HCatCreateTableDesc {
    *
    * @return the location
    */
+  @Deprecated // @deprecated in favour of {@link HCatTable.#getLocation()}. To be removed in Hive 0.16.
   public String getLocation() {
-    return this.location;
+    return this.hcatTable.getLocation();
   }
 
   /**
@@ -279,8 +170,11 @@ public class HCatCreateTableDesc {
    *
    * @return the external
    */
+  @Deprecated // @deprecated in favour of {@link HCatTable.#getTableType()}. To be removed in Hive 0.16.
   public boolean getExternal() {
-    return this.isExternal;
+
+    return this.hcatTable.getTabletype()
+                         .equalsIgnoreCase(HCatTable.Type.EXTERNAL_TABLE.toString());
   }
 
   /**
@@ -288,8 +182,9 @@ public class HCatCreateTableDesc {
    *
    * @return the sort cols
    */
+  @Deprecated // @deprecated in favour of {@link HCatTable.#getSortCols()}. To be removed in Hive 0.16.
   public List<Order> getSortCols() {
-    return this.sortCols;
+    return this.hcatTable.getSortCols();
   }
 
   /**
@@ -297,8 +192,9 @@ public class HCatCreateTableDesc {
    *
    * @return the tbl props
    */
+  @Deprecated // @deprecated in favour of {@link HCatTable.#getTblProps()}. To be removed in Hive 0.16.
   public Map<String, String> getTblProps() {
-    return this.tblProps;
+    return this.hcatTable.getTblProps();
   }
 
   /**
@@ -306,8 +202,9 @@ public class HCatCreateTableDesc {
    *
    * @return the file format
    */
+  @Deprecated // @deprecated in favour of {@link HCatTable.#fileFormat()}. To be removed in Hive 0.16.
   public String getFileFormat() {
-    return this.fileFormat;
+    return this.hcatTable.fileFormat();
   }
 
   /**
@@ -315,74 +212,39 @@ public class HCatCreateTableDesc {
    *
    * @return the database name
    */
+  @Deprecated // @deprecated in favour of {@link HCatTable.#getDbName()}. To be removed in Hive 0.16.
   public String getDatabaseName() {
-    return this.dbName;
+    return this.hcatTable.getDbName();
   }
+
  /**
    * Gets the SerDe parameters; for example see {@link org.apache.hive.hcatalog.api.HCatCreateTableDesc.Builder#fieldsTerminatedBy(char)}
    */
+  @Deprecated
   public Map<String, String> getSerdeParams() {
-    return serdeParams;
+    return this.hcatTable.getSerdeParams();
   }
 
   @Override
   public String toString() {
-    return "HCatCreateTableDesc ["
-      + (tableName != null ? "tableName=" + tableName + ", " : "tableName=null")
-      + (dbName != null ? "dbName=" + dbName + ", " : "dbName=null")
-      + "isExternal="
-      + isExternal
-      + ", "
-      + (comment != null ? "comment=" + comment + ", " : "comment=null")
-      + (location != null ? "location=" + location + ", " : "location=null")
-      + (cols != null ? "cols=" + cols + ", " : "cols=null")
-      + (partCols != null ? "partCols=" + partCols + ", " : "partCols=null")
-      + (bucketCols != null ? "bucketCols=" + bucketCols + ", " : "bucketCols=null")
-      + "numBuckets="
-      + numBuckets
-      + ", "
-      + (sortCols != null ? "sortCols=" + sortCols + ", " : "sortCols=null")
-      + (tblProps != null ? "tblProps=" + tblProps + ", " : "tblProps=null")
-      + "ifNotExists="
-      + ifNotExists
-      + ", "
-      + (fileFormat != null ? "fileFormat=" + fileFormat + ", " : "fileFormat=null")
-      + (inputformat != null ? "inputformat=" + inputformat + ", "
-      : "inputformat=null")
-      + (outputformat != null ? "outputformat=" + outputformat + ", "
-      : "outputformat=null")
-      + (serde != null ? "serde=" + serde + ", " : "serde=null")
-      + (storageHandler != null ? "storageHandler=" + storageHandler
-      : "storageHandler=null") 
-      + ",serdeParams=" + (serdeParams == null ? "null" : serdeParams)
-      + "]";
+    return "HCatCreateTableDesc [ " + hcatTable.toString()
+        + ", ifNotExists = " + ifNotExists + "]";
   }
 
   public static class Builder {
 
-    private String tableName;
-    private boolean isExternal;
-    private List<HCatFieldSchema> cols;
-    private List<HCatFieldSchema> partCols;
-    private List<String> bucketCols;
-    private List<Order> sortCols;
-    private int numBuckets;
-    private String comment;
-    private String fileFormat;
-    private String location;
-    private String storageHandler;
-    private Map<String, String> tblProps;
     private boolean ifNotExists;
-    private String dbName;
-    private Map<String, String> serdeParams;
+    private HCatTable hcatTable;
 
-
+    @Deprecated // @deprecated in favour of {@link #Builder(HCatTable, boolean)}. To be removed in Hive 0.16.
     private Builder(String dbName, String tableName, List<HCatFieldSchema> columns) {
-      this.dbName = dbName;
-      this.tableName = tableName;
-      this.cols = columns;
+      hcatTable = new HCatTable(dbName, tableName).cols(columns);
     }
 
+    private Builder(HCatTable hcatTable, boolean ifNotExists) {
+      this.hcatTable = hcatTable;
+      this.ifNotExists = ifNotExists;
+    }
 
     /**
      * If not exists.
@@ -403,8 +265,9 @@ public class HCatCreateTableDesc {
      * @param partCols the partition cols
      * @return the builder
      */
+    @Deprecated // @deprecated in favour of {@link HCatTable.#partCols(List<FieldSchema>)}. To be removed in Hive 0.16.
     public Builder partCols(List<HCatFieldSchema> partCols) {
-      this.partCols = partCols;
+      this.hcatTable.partCols(partCols);
       return this;
     }
 
@@ -415,9 +278,10 @@ public class HCatCreateTableDesc {
      * @param bucketCols the bucket cols
      * @return the builder
      */
+    @Deprecated // @deprecated in favour of {@link HCatTable.#bucketCols(List<FieldSchema>) and HCatTable.#numBuckets(int)}.
+    // To be removed in Hive 0.16.
     public Builder bucketCols(List<String> bucketCols, int buckets) {
-      this.bucketCols = bucketCols;
-      this.numBuckets = buckets;
+      this.hcatTable.bucketCols(bucketCols).numBuckets(buckets);
       return this;
     }
 
@@ -427,8 +291,9 @@ public class HCatCreateTableDesc {
      * @param storageHandler the storage handler
      * @return the builder
      */
-    public Builder storageHandler(String storageHandler) {
-      this.storageHandler = storageHandler;
+    @Deprecated // @deprecated in favour of {@link HCatTable.#storageHandler(String)}. To be removed in Hive 0.16.
+    public Builder storageHandler(String storageHandler) throws HCatException {
+      this.hcatTable.storageHandler(storageHandler);
       return this;
     }
 
@@ -438,8 +303,9 @@ public class HCatCreateTableDesc {
      * @param location the location
      * @return the builder
      */
+    @Deprecated // @deprecated in favour of {@link HCatTable.#location(String)}. To be removed in Hive 0.16.
     public Builder location(String location) {
-      this.location = location;
+      this.hcatTable.location(location);
       return this;
     }
 
@@ -449,8 +315,9 @@ public class HCatCreateTableDesc {
      * @param comment the comment
      * @return the builder
      */
+    @Deprecated // @deprecated in favour of {@link HCatTable.#comment(String)}. To be removed in Hive 0.16.
     public Builder comments(String comment) {
-      this.comment = comment;
+      this.hcatTable.comment(comment);
       return this;
     }
 
@@ -460,8 +327,9 @@ public class HCatCreateTableDesc {
      * @param isExternal the is external
      * @return the builder
      */
+    @Deprecated // @deprecated in favour of {@link HCatTable.#tableType(HCatTable.Type)}. To be removed in Hive 0.16.
     public Builder isTableExternal(boolean isExternal) {
-      this.isExternal = isExternal;
+      this.hcatTable.tableType(isExternal? HCatTable.Type.EXTERNAL_TABLE : HCatTable.Type.MANAGED_TABLE);
       return this;
     }
 
@@ -471,8 +339,9 @@ public class HCatCreateTableDesc {
      * @param sortCols the sort cols
      * @return the builder
      */
+    @Deprecated // @deprecated in favour of {@link HCatTable.#sortCols(ArrayList<Order>)}. To be removed in Hive 0.16.
     public Builder sortCols(ArrayList<Order> sortCols) {
-      this.sortCols = sortCols;
+      this.hcatTable.sortCols(sortCols);
       return this;
     }
 
@@ -482,8 +351,10 @@ public class HCatCreateTableDesc {
      * @param tblProps the tbl props
      * @return the builder
      */
+    @Deprecated // @deprecated in favour of {@link HCatTable.#sortCols(Map<String, String>)}.
+    // To be removed in Hive 0.16.
     public Builder tblProps(Map<String, String> tblProps) {
-      this.tblProps = tblProps;
+      this.hcatTable.tblProps(tblProps);
       return this;
     }
 
@@ -493,54 +364,60 @@ public class HCatCreateTableDesc {
      * @param format the format
      * @return the builder
      */
+    @Deprecated // @deprecated in favour of {@link HCatTable.#fileFormat(String)}. To be removed in Hive 0.16.
     public Builder fileFormat(String format) {
-      this.fileFormat = format;
+      this.hcatTable.fileFormat(format);
       return this;
     }
     /**
      * See <i>row_format</i> element of CREATE_TABLE DDL for Hive.
      */
+    @Deprecated // @deprecated in favour of {@link HCatTable.#fieldsTerminatedBy()}. To be removed in Hive 0.16.
     public Builder fieldsTerminatedBy(char delimiter) {
       return serdeParam(serdeConstants.FIELD_DELIM, Character.toString(delimiter));
     }
     /**
      * See <i>row_format</i> element of CREATE_TABLE DDL for Hive.
      */
+    @Deprecated // @deprecated in favour of {@link HCatTable.#escapeChar()}.
     public Builder escapeChar(char escapeChar) {
       return serdeParam(serdeConstants.ESCAPE_CHAR, Character.toString(escapeChar));
     }
     /**
      * See <i>row_format</i> element of CREATE_TABLE DDL for Hive.
      */
+    @Deprecated // @deprecated in favour of {@link HCatTable.#collectionItemsTerminatedBy()}. To be removed in Hive 0.16.
     public Builder collectionItemsTerminatedBy(char delimiter) {
       return serdeParam(serdeConstants.COLLECTION_DELIM, Character.toString(delimiter));
     }
     /**
      * See <i>row_format</i> element of CREATE_TABLE DDL for Hive.
      */
+    @Deprecated // @deprecated in favour of {@link HCatTable.#mapKeysTerminatedBy()}. To be removed in Hive 0.16.
     public Builder mapKeysTerminatedBy(char delimiter) {
       return serdeParam(serdeConstants.MAPKEY_DELIM, Character.toString(delimiter));
     }
     /**
      * See <i>row_format</i> element of CREATE_TABLE DDL for Hive.
      */
+    @Deprecated // @deprecated in favour of {@link HCatTable.#linesTerminatedBy()}. To be removed in Hive 0.16.
     public Builder linesTerminatedBy(char delimiter) {
       return serdeParam(serdeConstants.LINE_DELIM, Character.toString(delimiter));
     }
     /**
      * See <i>row_format</i> element of CREATE_TABLE DDL for Hive.
      */
+    @Deprecated // @deprecated in favour of {@link HCatTable.#nullDefinedAs()}. To be removed in Hive 0.16.
     public Builder nullDefinedAs(char nullChar) {
       return serdeParam(serdeConstants.SERIALIZATION_NULL_FORMAT, Character.toString(nullChar));
     }
     /**
      * used for setting arbitrary SerDe parameter
      */
+    @Deprecated // @deprecated in favour of {@link HCatTable.#serdeParam(Map<String, String>)}.
+    // To be removed in Hive 0.16.
     public Builder serdeParam(String paramName, String value) {
-      if(serdeParams == null) {
-        serdeParams = new HashMap<String, String>();
-      }
-      serdeParams.put(paramName, value);
+      hcatTable.serdeParam(paramName, value);
       return this;
     }
     /**
@@ -550,52 +427,9 @@ public class HCatCreateTableDesc {
      * @throws HCatException
      */
     public HCatCreateTableDesc build() throws HCatException {
-      if (this.dbName == null) {
-        LOG.info("Database name found null. Setting db to :"
-          + MetaStoreUtils.DEFAULT_DATABASE_NAME);
-        this.dbName = MetaStoreUtils.DEFAULT_DATABASE_NAME;
-      }
-      HCatCreateTableDesc desc = new HCatCreateTableDesc(this.dbName,
-        this.tableName, this.cols);
-      desc.ifNotExists = this.ifNotExists;
-      desc.isExternal = this.isExternal;
-      desc.comment = this.comment;
-      desc.partCols = this.partCols;
-      desc.bucketCols = this.bucketCols;
-      desc.numBuckets = this.numBuckets;
-      desc.location = this.location;
-      desc.tblProps = this.tblProps;
-      desc.sortCols = this.sortCols;
-      desc.serde = null;
-      if (!StringUtils.isEmpty(fileFormat)) {
-        desc.fileFormat = fileFormat;
-        if ("SequenceFile".equalsIgnoreCase(fileFormat)) {
-          desc.inputformat = SequenceFileInputFormat.class.getName();
-          desc.outputformat = HiveSequenceFileOutputFormat.class
-            .getName();
-        } else if ("RCFile".equalsIgnoreCase(fileFormat)) {
-          desc.inputformat = RCFileInputFormat.class.getName();
-          desc.outputformat = RCFileOutputFormat.class.getName();
-          desc.serde = ColumnarSerDe.class.getName();
-        } else if ("orcfile".equalsIgnoreCase(fileFormat)) {
-          desc.inputformat = OrcInputFormat.class.getName();
-          desc.outputformat = OrcOutputFormat.class.getName();
-          desc.serde = OrcSerde.class.getName();
-        }
-        desc.storageHandler = StringUtils.EMPTY;
-      } else if (!StringUtils.isEmpty(storageHandler)) {
-        desc.storageHandler = storageHandler;
-      } else {
-        desc.fileFormat = "TextFile";
-        LOG.info("Using text file format for the table.");
-        desc.inputformat = TextInputFormat.class.getName();
-        LOG.info("Table input format:" + desc.inputformat);
-        desc.outputformat = HiveIgnoreKeyTextOutputFormat.class
-          .getName();
-        LOG.info("Table output format:" + desc.outputformat);
-      }
-      desc.serdeParams = this.serdeParams;
-      return desc;
+      return new HCatCreateTableDesc(this.hcatTable, this.ifNotExists);
     }
-  }
-}
+
+  } // class Builder;
+
+} // class HCatAddPartitionDesc;

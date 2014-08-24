@@ -23,7 +23,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapred.Reporter;
 
 import java.io.IOException;
@@ -34,7 +34,7 @@ import java.util.Properties;
  * An extension for OutputFormats that want to implement ACID transactions.
  * @param <V> the row type of the file
  */
-public interface AcidOutputFormat<V> extends HiveOutputFormat<NullWritable, V> {
+public interface AcidOutputFormat<K extends WritableComparable, V> extends HiveOutputFormat<K, V> {
 
   /**
    * Options to control how the files are written

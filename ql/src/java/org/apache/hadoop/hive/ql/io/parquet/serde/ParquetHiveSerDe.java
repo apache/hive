@@ -42,6 +42,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInsp
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ByteObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.DoubleObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.FloatObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveCharObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveVarcharObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ShortObjectInspector;
@@ -60,6 +62,7 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
+import parquet.io.api.Binary;
 
 /**
  *
@@ -280,6 +283,12 @@ public class ParquetHiveSerDe extends AbstractSerDe {
       return new BytesWritable(tgt);
     case TIMESTAMP:
       return new TimestampWritable(((TimestampObjectInspector) inspector).getPrimitiveJavaObject(obj));
+    case CHAR:
+      String strippedValue = ((HiveCharObjectInspector) inspector).getPrimitiveJavaObject(obj).getStrippedValue();
+      return new BytesWritable(Binary.fromString(strippedValue).getBytes());
+    case VARCHAR:
+      String value = ((HiveVarcharObjectInspector) inspector).getPrimitiveJavaObject(obj).getValue();
+        return new BytesWritable(Binary.fromString(value).getBytes());
     default:
       throw new SerDeException("Unknown primitive : " + inspector.getPrimitiveCategory());
     }

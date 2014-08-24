@@ -118,15 +118,15 @@ STAGE PLANS:
             0 
             1 {KEY.reducesinkkey0}
             2 
-          outputColumnNames: _col4
+          outputColumnNames: _col5
           Statistics: Num rows: 8 Data size: 37 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: _col4 (type: int)
-            outputColumnNames: _col4
+            expressions: _col5 (type: int)
+            outputColumnNames: _col5
             Statistics: Num rows: 8 Data size: 37 Basic stats: COMPLETE Column stats: NONE
             Group By Operator
               aggregations: count(1)
-              keys: _col4 (type: int)
+              keys: _col5 (type: int)
               mode: hash
               outputColumnNames: _col0, _col1
               Statistics: Num rows: 8 Data size: 37 Basic stats: COMPLETE Column stats: NONE
@@ -286,17 +286,17 @@ STAGE PLANS:
               0 
               1 {KEY.reducesinkkey0}
               2 
-            outputColumnNames: _col4
+            outputColumnNames: _col5
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             Select Operator
-              expressions: _col4 (type: int)
-              outputColumnNames: _col4
+              expressions: _col5 (type: int)
+              outputColumnNames: _col5
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Mux Operator
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 Group By Operator
                   aggregations: count(1)
-                  keys: _col4 (type: int)
+                  keys: _col5 (type: int)
                   mode: complete
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
@@ -452,15 +452,15 @@ STAGE PLANS:
                   0 key (type: int)
                   1 key (type: int)
                   2 key (type: int)
-                outputColumnNames: _col4
+                outputColumnNames: _col5
                 Statistics: Num rows: 8 Data size: 37 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: _col4 (type: int)
-                  outputColumnNames: _col4
+                  expressions: _col5 (type: int)
+                  outputColumnNames: _col5
                   Statistics: Num rows: 8 Data size: 37 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     aggregations: count(1)
-                    keys: _col4 (type: int)
+                    keys: _col5 (type: int)
                     mode: hash
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 8 Data size: 37 Basic stats: COMPLETE Column stats: NONE
@@ -906,15 +906,15 @@ STAGE PLANS:
             0 
             1 {KEY.reducesinkkey0}
             2 
-          outputColumnNames: _col4
+          outputColumnNames: _col5
           Statistics: Num rows: 15 Data size: 66 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: _col4 (type: int)
-            outputColumnNames: _col4
+            expressions: _col5 (type: int)
+            outputColumnNames: _col5
             Statistics: Num rows: 15 Data size: 66 Basic stats: COMPLETE Column stats: NONE
             Group By Operator
               aggregations: count(1)
-              keys: _col4 (type: int)
+              keys: _col5 (type: int)
               mode: hash
               outputColumnNames: _col0, _col1
               Statistics: Num rows: 15 Data size: 66 Basic stats: COMPLETE Column stats: NONE
@@ -1068,15 +1068,15 @@ STAGE PLANS:
             0 
             1 
             2 {KEY.reducesinkkey0}
-          outputColumnNames: _col8
+          outputColumnNames: _col10
           Statistics: Num rows: 15 Data size: 66 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: _col8 (type: int)
-            outputColumnNames: _col8
+            expressions: _col10 (type: int)
+            outputColumnNames: _col10
             Statistics: Num rows: 15 Data size: 66 Basic stats: COMPLETE Column stats: NONE
             Group By Operator
               aggregations: count(1)
-              keys: _col8 (type: int)
+              keys: _col10 (type: int)
               mode: hash
               outputColumnNames: _col0, _col1
               Statistics: Num rows: 15 Data size: 66 Basic stats: COMPLETE Column stats: NONE
@@ -1227,17 +1227,17 @@ STAGE PLANS:
               0 
               1 
               2 {KEY.reducesinkkey0}
-            outputColumnNames: _col8
+            outputColumnNames: _col10
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             Select Operator
-              expressions: _col8 (type: int)
-              outputColumnNames: _col8
+              expressions: _col10 (type: int)
+              outputColumnNames: _col10
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Mux Operator
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 Group By Operator
                   aggregations: count(1)
-                  keys: _col8 (type: int)
+                  keys: _col10 (type: int)
                   mode: complete
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
@@ -1369,15 +1369,15 @@ STAGE PLANS:
             0 
             1 {KEY.reducesinkkey0}
             2 
-          outputColumnNames: _col4
+          outputColumnNames: _col5
           Statistics: Num rows: 15 Data size: 66 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: _col4 (type: int)
-            outputColumnNames: _col4
+            expressions: _col5 (type: int)
+            outputColumnNames: _col5
             Statistics: Num rows: 15 Data size: 66 Basic stats: COMPLETE Column stats: NONE
             Group By Operator
               aggregations: count(1)
-              keys: _col4 (type: int)
+              keys: _col5 (type: int)
               mode: hash
               outputColumnNames: _col0, _col1
               Statistics: Num rows: 15 Data size: 66 Basic stats: COMPLETE Column stats: NONE
@@ -1531,15 +1531,15 @@ STAGE PLANS:
             0 
             1 {KEY.reducesinkkey0}
             2 
-          outputColumnNames: _col4
+          outputColumnNames: _col5
           Statistics: Num rows: 15 Data size: 66 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: _col4 (type: int)
-            outputColumnNames: _col4
+            expressions: _col5 (type: int)
+            outputColumnNames: _col5
             Statistics: Num rows: 15 Data size: 66 Basic stats: COMPLETE Column stats: NONE
             Group By Operator
               aggregations: count(1)
-              keys: _col4 (type: int)
+              keys: _col5 (type: int)
               mode: hash
               outputColumnNames: _col0, _col1
               Statistics: Num rows: 15 Data size: 66 Basic stats: COMPLETE Column stats: NONE
@@ -1689,15 +1689,15 @@ STAGE PLANS:
             0 
             1 {KEY.reducesinkkey0}
             2 
-          outputColumnNames: _col4
+          outputColumnNames: _col5
           Statistics: Num rows: 15 Data size: 66 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: _col4 (type: int)
-            outputColumnNames: _col4
+            expressions: _col5 (type: int)
+            outputColumnNames: _col5
             Statistics: Num rows: 15 Data size: 66 Basic stats: COMPLETE Column stats: NONE
             Group By Operator
               aggregations: count(1)
-              keys: _col4 (type: int)
+              keys: _col5 (type: int)
               mode: hash
               outputColumnNames: _col0, _col1
               Statistics: Num rows: 15 Data size: 66 Basic stats: COMPLETE Column stats: NONE

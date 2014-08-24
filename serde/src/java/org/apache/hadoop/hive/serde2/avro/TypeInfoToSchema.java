@@ -38,7 +38,6 @@ import java.util.List;
  */
 public class TypeInfoToSchema {
 
-  private static final Schema.Parser PARSER = new Schema.Parser();
   private long recordCounter = 0;
 
   /**
@@ -139,7 +138,7 @@ public class TypeInfoToSchema {
         DecimalTypeInfo decimalTypeInfo = (DecimalTypeInfo) typeInfo;
         String precision = String.valueOf(decimalTypeInfo.precision());
         String scale = String.valueOf(decimalTypeInfo.scale());
-        schema = PARSER.parse("{" +
+        schema = AvroSerdeUtils.getSchemaFor("{" +
             "\"type\":\"bytes\"," +
             "\"logicalType\":\"decimal\"," +
             "\"precision\":" + precision + "," +

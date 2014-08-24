@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
+import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -31,6 +32,23 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
  * thrown. 2. c and f should be compatible types, or an exception will be
  * thrown.
  */
+@Description(
+    name = "case",
+    value = "CASE a WHEN b THEN c [WHEN d THEN e]* [ELSE f] END - "
+        + "When a = b, returns c; when a = d, return e; else return f",
+    extended = "Example:\n "
+    + "SELECT\n"
+    + " CASE deptno\n"
+    + "   WHEN 1 THEN Engineering\n"
+    + "   WHEN 2 THEN Finance\n"
+    + "   ELSE admin\n"
+    + " END,\n"
+    + " CASE zone\n"
+    + "   WHEN 7 THEN Americas\n"
+    + "   ELSE Asia-Pac\n"
+    + " END\n"
+    + " FROM emp_details")
+
 public class GenericUDFCase extends GenericUDF {
   private transient ObjectInspector[] argumentOIs;
   private transient GenericUDFUtils.ReturnObjectInspectorResolver returnOIResolver;

@@ -1,0 +1,140 @@
+package org.apache.hadoop.hive.accumulo.serde;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+
+import org.apache.accumulo.core.data.Mutation;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.accumulo.AccumuloHiveRow;
+import org.apache.hadoop.hive.accumulo.LazyAccumuloRow;
+import org.apache.hadoop.hive.accumulo.columns.ColumnMapping;
+import org.apache.hadoop.hive.accumulo.columns.HiveAccumuloRowIdColumnMapping;
+import org.apache.hadoop.hive.serde2.SerDe;
+import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.SerDeStats;
+import org.apache.hadoop.hive.serde2.lazy.LazyFactory;
+import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.SerDeParameters;
+import org.apache.hadoop.hive.serde2.lazy.objectinspector.LazyObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.lazy.objectinspector.LazySimpleStructObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.io.Writable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+/**
+ * Deserialization from Accumulo to LazyAccumuloRow for Hive.
+ *
+ */
+public class AccumuloSerDe implements SerDe {
+
+  private AccumuloSerDeParameters accumuloSerDeParameters;
+  private LazyAccumuloRow cachedRow;
+  private ObjectInspector cachedObjectInspector;
+  private AccumuloRowSerializer serializer;
+
+  private static final Logger log = LoggerFactory.getLogger(AccumuloSerDe.class);
+
+  public void initialize(Configuration conf, Properties properties) throws SerDeException {
+    accumuloSerDeParameters = new AccumuloSerDeParameters(conf, properties, getClass().getName());
+
+    final SerDeParameters serDeParams = accumuloSerDeParameters.getSerDeParameters();
+    final List<ColumnMapping> mappings = accumuloSerDeParameters.getColumnMappings();
+    final List<TypeInfo> columnTypes = accumuloSerDeParameters.getHiveColumnTypes();
+    final AccumuloRowIdFactory factory = accumuloSerDeParameters.getRowIdFactory();
+
+    ArrayList<ObjectInspector> columnObjectInspectors = getColumnObjectInspectors(columnTypes, serDeParams, mappings, factory);
+
+    cachedObjectInspector = LazyObjectInspectorFactory.getLazySimpleStructObjectInspector(
+        serDeParams.getColumnNames(), columnObjectInspectors, serDeParams.getSeparators()[0],
+        serDeParams.getNullSequence(), serDeParams.isLastColumnTakesRest(),
+        serDeParams.isEscaped(), serDeParams.getEscapeChar());
+
+    cachedRow = new LazyAccumuloRow((LazySimpleStructObjectInspector) cachedObjectInspector);
+
+    serializer = new AccumuloRowSerializer(accumuloSerDeParameters.getRowIdOffset(),
+        accumuloSerDeParameters.getSerDeParameters(), accumuloSerDeParameters.getColumnMappings(),
+        accumuloSerDeParameters.getTableVisibilityLabel(),
+        accumuloSerDeParameters.getRowIdFactory());
+
+    if (log.isInfoEnabled()) {
+      log.info("Initialized with {} type: {}", accumuloSerDeParameters.getSerDeParameters()
+          .getColumnNames(), accumuloSerDeParameters.getSerDeParameters().getColumnTypes());
+    }
+  }
+
+  protected ArrayList<ObjectInspector> getColumnObjectInspectors(List<TypeInfo> columnTypes,
+      SerDeParameters serDeParams, List<ColumnMapping> mappings, AccumuloRowIdFactory factory)
+      throws SerDeException {
+    ArrayList<ObjectInspector> columnObjectInspectors = new ArrayList<ObjectInspector>(
+        columnTypes.size());
+    for (int i = 0; i < columnTypes.size(); i++) {
+      TypeInfo type = columnTypes.get(i);
+      ColumnMapping mapping = mappings.get(i);
+      if (mapping instanceof HiveAccumuloRowIdColumnMapping) {
+        columnObjectInspectors.add(factory.createRowIdObjectInspector(type));
+      } else {
+        columnObjectInspectors.add(LazyFactory.createLazyObjectInspector(type,
+            serDeParams.getSeparators(), 1, serDeParams.getNullSequence(), serDeParams.isEscaped(),
+            serDeParams.getEscapeChar()));
+      }
+    }
+
+    return columnObjectInspectors;
+  }
+
+  /***
+   * For testing purposes.
+   */
+  public LazyAccumuloRow getCachedRow() {
+    return cachedRow;
+  }
+
+  public Class<? extends Writable> getSerializedClass() {
+    return Mutation.class;
+  }
+
+  @Override
+  public Writable serialize(Object o, ObjectInspector objectInspector) throws SerDeException {
+    try {
+      return serializer.serialize(o, objectInspector);
+    } catch (IOException e) {
+      throw new SerDeException(e);
+    }
+  }
+
+  @Override
+  public Object deserialize(Writable writable) throws SerDeException {
+    if (!(writable instanceof AccumuloHiveRow)) {
+      throw new SerDeException(getClass().getName() + " : " + "Expected AccumuloHiveRow. Got "
+          + writable.getClass().getName());
+    }
+
+    cachedRow.init((AccumuloHiveRow) writable, accumuloSerDeParameters.getColumnMappings(),
+        accumuloSerDeParameters.getRowIdFactory());
+
+    return cachedRow;
+  }
+
+  public ObjectInspector getObjectInspector() throws SerDeException {
+    return cachedObjectInspector;
+  }
+
+  public SerDeStats getSerDeStats() {
+    throw new UnsupportedOperationException("SerdeStats not supported.");
+  }
+
+  public AccumuloSerDeParameters getParams() {
+    return accumuloSerDeParameters;
+  }
+
+  public boolean getIteratorPushdown() {
+    return accumuloSerDeParameters.getIteratorPushdown();
+  }
+
+  protected AccumuloRowSerializer getSerializer() {
+    return serializer;
+  }
+}

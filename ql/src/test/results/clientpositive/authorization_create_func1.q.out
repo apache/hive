@@ -13,11 +13,11 @@ POSTHOOK: Output: temp_fn
 PREHOOK: query: create function perm_fn as 'org.apache.hadoop.hive.ql.udf.UDFAscii'
 PREHOOK: type: CREATEFUNCTION
 PREHOOK: Output: database:default
-PREHOOK: Output: perm_fn
+PREHOOK: Output: default.perm_fn
 POSTHOOK: query: create function perm_fn as 'org.apache.hadoop.hive.ql.udf.UDFAscii'
 POSTHOOK: type: CREATEFUNCTION
 POSTHOOK: Output: database:default
-POSTHOOK: Output: perm_fn
+POSTHOOK: Output: default.perm_fn
 PREHOOK: query: drop temporary function temp_fn
 PREHOOK: type: DROPFUNCTION
 PREHOOK: Output: temp_fn
@@ -27,8 +27,8 @@ POSTHOOK: Output: temp_fn
 PREHOOK: query: drop function perm_fn
 PREHOOK: type: DROPFUNCTION
 PREHOOK: Output: database:default
-PREHOOK: Output: perm_fn
+PREHOOK: Output: default.perm_fn
 POSTHOOK: query: drop function perm_fn
 POSTHOOK: type: DROPFUNCTION
 POSTHOOK: Output: database:default
-POSTHOOK: Output: perm_fn
+POSTHOOK: Output: default.perm_fn

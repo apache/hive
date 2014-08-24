@@ -222,10 +222,10 @@ public class HiveAlterHandler implements AlterHandler {
       if (success && moveData) {
         // change the file name in hdfs
         // check that src exists otherwise there is no need to copy the data
+        // rename the src to destination
         try {
-          if (srcFs.exists(srcPath)) {
-            // rename the src to destination
-            srcFs.rename(srcPath, destPath);
+          if (srcFs.exists(srcPath) && !srcFs.rename(srcPath, destPath)) {
+            throw new IOException("Renaming " + srcPath + " to " + destPath + " is failed");
           }
         } catch (IOException e) {
           boolean revertMetaDataTransaction = false;

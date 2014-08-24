@@ -61,6 +61,10 @@ public class IOContext {
   Comparison comparison = null;
   // The class name of the generic UDF being used by the filter
   String genericUDFClassName = null;
+  /**
+   * supports {@link org.apache.hadoop.hive.ql.metadata.VirtualColumn#ROWID}
+   */
+  public RecordIdentifier ri;
 
   public static enum Comparison {
     GREATER,
