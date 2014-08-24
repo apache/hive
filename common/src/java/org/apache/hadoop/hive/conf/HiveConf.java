@@ -75,7 +75,16 @@ public class HiveConf extends Configuration {
 
   private boolean isWhiteListRestrictionEnabled = false;
   private final List<String> modWhiteList = new ArrayList<String>();
+  private boolean isSparkConfigUpdated = false;
 
+
+  public boolean getSparkConfigUpdated() {
+    return isSparkConfigUpdated;
+  }
+
+  public void setSparkConfigUpdated(boolean isSparkConfigUpdated) {
+    this.isSparkConfigUpdated = isSparkConfigUpdated;
+  }
 
   static {
     ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
@@ -1947,6 +1956,7 @@ public class HiveConf extends Configuration {
       throw new IllegalArgumentException("Cannot modify " + name + " at runtime. It is in the list"
           + "of parameters that can't be modified at runtime");
     }
+    isSparkConfigUpdated = name.startsWith("spark");
     set(name, value);
   }
 

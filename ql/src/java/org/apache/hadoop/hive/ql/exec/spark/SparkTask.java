@@ -62,9 +62,15 @@ public class SparkTask extends Task<SparkWork> {
       configureNumberOfReducers();
       sparkSessionManager = SparkSessionManagerImpl.getInstance();
       sparkSession = SessionState.get().getSparkSession();
+      
+      // Spark configurations are updated close the existing session 
+      if(conf.getSparkConfigUpdated()){
+	sparkSessionManager.closeSession(sparkSession);
+	sparkSession =  null;
+	conf.setSparkConfigUpdated(false);
+      }
       sparkSession = sparkSessionManager.getSession(sparkSession, conf, true);
       SessionState.get().setSparkSession(sparkSession);
-
       rc = sparkSession.submit(driverContext, getWork());
     } catch (Exception e) {
       LOG.error("Failed to execute spark task.", e);

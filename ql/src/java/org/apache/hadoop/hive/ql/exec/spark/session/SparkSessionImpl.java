@@ -33,6 +33,7 @@ public class SparkSessionImpl implements SparkSession {
   private HiveConf conf;
   private boolean isOpen;
   private final String sessionId;
+  private SparkClient sparkClient;
 
   public SparkSessionImpl() {
     sessionId = makeSessionId();
@@ -47,8 +48,8 @@ public class SparkSessionImpl implements SparkSession {
   @Override
   public int submit(DriverContext driverContext, SparkWork sparkWork) {
     Preconditions.checkState(isOpen, "Session is not open. Can't submit jobs.");
-    return SparkClient.getInstance(driverContext.getCtx().getConf())
-        .execute(driverContext, sparkWork);
+    sparkClient = SparkClient.getInstance(driverContext.getCtx().getConf());
+    return sparkClient.execute(driverContext, sparkWork);
   }
 
   @Override
@@ -69,6 +70,10 @@ public class SparkSessionImpl implements SparkSession {
   @Override
   public void close() {
     isOpen = false;
+    if (sparkClient != null) {
+      sparkClient.close();
+    }
+    sparkClient = null;
   }
 
   public static String makeSessionId() {
