@@ -97,9 +97,11 @@ public abstract class HiveBaseFunctionResultList<T> implements
       while (inputIterator.hasNext() && !processingDone()) {
         try {
           processNextRecord(inputIterator.next());
-          if (lastRecordOutput.hasNext()) {
-            return true;
-          }
+          // TODO Current HiveKVResultCache does not support read-then-write,
+          // should not enable lazy execution here. See HIVE-7873
+          // if (lastRecordOutput.hasNext()) {
+          //   return true;
+          // }
         } catch (IOException ex) {
           // TODO: better handling of exception.
           throw new RuntimeException("Error while processing input.", ex);
