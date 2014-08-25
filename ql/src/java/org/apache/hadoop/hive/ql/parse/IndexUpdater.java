@@ -88,6 +88,7 @@ public class IndexUpdater {
       sb.append("ALTER INDEX ");
       sb.append(idx.getIndexName());
       sb.append(" ON ");
+      sb.append(idx.getDbName()).append('.');
       sb.append(idx.getOrigTableName());
       sb.append(" REBUILD");
       driver.compile(sb.toString(), false);
@@ -125,6 +126,7 @@ public class IndexUpdater {
     sb.append("ALTER INDEX ");
     sb.append(index.getIndexName());
     sb.append(" ON ");
+    sb.append(index.getDbName()).append('.');
     sb.append(index.getOrigTableName());
     sb.append(" PARTITION ");
     sb.append(ps.toString());
