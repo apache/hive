@@ -208,6 +208,16 @@ public class RelOptHiveTable extends RelOptAbstractTable {
       } else {
         // 2.2 Obtain col stats for partitioned table.
         try {
+          if (partitionList.getNotDeniedPartns().isEmpty()) {
+            // no need to make a metastore call
+            m_rowCount = 0;
+            hiveColStats = new ArrayList<ColStatistics>();
+            for (String c : nonPartColNamesThatRqrStats) {
+              // add empty stats object for each column
+              hiveColStats.add(new ColStatistics(m_hiveTblMetadata.getTableName(), c, null));
+            }
+            colNamesFailedStats.clear();
+          } else {
           Statistics stats = StatsUtils.collectStatistics(m_hiveConf, partitionList,
               m_hiveTblMetadata, m_hiveNonPartitionCols, nonPartColNamesThatRqrStats, true, true);
           m_rowCount = stats.getNumRows();
@@ -219,6 +229,7 @@ public class RelOptHiveTable extends RelOptAbstractTable {
             } else {
               colNamesFailedStats.add(c);
             }
+          }
           }
         } catch (HiveException e) {
           String logMsg = "Collecting stats failed.";
