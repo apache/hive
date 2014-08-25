@@ -9408,7 +9408,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // analyze create view command
     if (ast.getToken().getType() == HiveParser.TOK_CREATEVIEW ||
-        ast.getToken().getType() == HiveParser.TOK_ALTERVIEW_AS) {
+        (ast.getToken().getType() == HiveParser.TOK_ALTERVIEW && ast.getChild(1).getType() == HiveParser.TOK_QUERY)) {
       child = analyzeCreateView(ast, qb);
       SessionState.get().setCommandType(HiveOperation.CREATEVIEW);
       if (child == null) {
@@ -10096,7 +10096,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       case HiveParser.TOK_TABLEPARTCOLS:
         partCols = getColumns((ASTNode) child.getChild(0), false);
         break;
-      case HiveParser.TOK_TABLEBUCKETS:
+      case HiveParser.TOK_ALTERTABLE_BUCKETS:
         bucketCols = getColumnNames((ASTNode) child.getChild(0));
         if (child.getChildCount() == 2) {
           numBuckets = (Integer.valueOf(child.getChild(1).getText()))
@@ -10319,7 +10319,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       throw new SemanticException("Can't combine IF NOT EXISTS and OR REPLACE.");
     }
 
-    if (ast.getToken().getType() == HiveParser.TOK_ALTERVIEW_AS) {
+    if (ast.getToken().getType() == HiveParser.TOK_ALTERVIEW &&
+        ast.getChild(1).getType() == HiveParser.TOK_QUERY) {
       isAlterViewAs = true;
       orReplace = true;
     }

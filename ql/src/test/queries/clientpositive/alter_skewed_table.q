@@ -1,6 +1,6 @@
 set hive.mapred.supports.subdirectories=true;
 
-create table original (key STRING, value STRING); 
+create table original (key STRING, value STRING);
 
 describe formatted original;
 
@@ -10,23 +10,27 @@ describe formatted original;
 
 drop table original;
 
-create table original2 (key STRING, value STRING) ; 
+create database skew_test;
 
-describe formatted original2;
+create table skew_test.original2 (key STRING, value STRING) ;
 
-alter table original2 SKEWED BY (key, value) ON ((1,1),(5,6));
+describe formatted skew_test.original2;
 
-describe formatted original2;
+alter table skew_test.original2 SKEWED BY (key, value) ON ((1,1),(5,6));
 
-drop table original2;
+describe formatted skew_test.original2;
 
-create table original3 (key STRING, value STRING) SKEWED BY (key, value) ON ((1,1),(5,6)); 
+drop table skew_test.original2;
 
-describe formatted original3;
+create table skew_test.original3 (key STRING, value STRING) SKEWED BY (key, value) ON ((1,1),(5,6));
 
-alter table original3 not skewed;
+describe formatted skew_test.original3;
 
-describe formatted original3;
+alter table skew_test.original3 not skewed;
 
-drop table original3;
+describe formatted skew_test.original3;
+
+drop table skew_test.original3;
+
+drop database skew_test;
 

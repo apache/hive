@@ -646,6 +646,20 @@ public abstract class BaseSemanticAnalyzer {
       this(db, conf, ast, true, false);
     }
 
+    public tableSpec(Hive db, HiveConf conf, String tableName, Map<String, String> partSpec)
+        throws HiveException {
+      this.tableName = tableName;
+      this.partSpec = partSpec;
+      this.tableHandle = db.getTable(tableName);
+      if (partSpec != null) {
+        this.specType = SpecType.STATIC_PARTITION;
+        this.partHandle = db.getPartition(tableHandle, partSpec, false);
+        this.partitions = Arrays.asList(partHandle);
+      } else {
+        this.specType = SpecType.TABLE_ONLY;
+      }
+    }
+
     public tableSpec(Hive db, HiveConf conf, ASTNode ast, boolean allowDynamicPartitionsSpec,
         boolean allowPartialPartitionsSpec) throws SemanticException {
       assert (ast.getToken().getType() == HiveParser.TOK_TAB
@@ -1188,15 +1202,16 @@ public abstract class BaseSemanticAnalyzer {
   }
 
   protected Database getDatabase(String dbName, boolean throwException) throws SemanticException {
+    Database database;
     try {
-      Database database = db.getDatabase(dbName);
-      if (database == null && throwException) {
-        throw new SemanticException(ErrorMsg.DATABASE_NOT_EXISTS.getMsg(dbName));
-      }
-      return database;
-    } catch (HiveException e) {
+      database = db.getDatabase(dbName);
+    } catch (Exception e) {
       throw new SemanticException(ErrorMsg.DATABASE_NOT_EXISTS.getMsg(dbName), e);
     }
+    if (database == null && throwException) {
+      throw new SemanticException(ErrorMsg.DATABASE_NOT_EXISTS.getMsg(dbName));
+    }
+    return database;
   }
 
   protected Table getTable(String[] qualified) throws SemanticException {
@@ -1213,43 +1228,46 @@ public abstract class BaseSemanticAnalyzer {
 
   protected Table getTable(String database, String tblName, boolean throwException)
       throws SemanticException {
+    Table tab;
     try {
-      Table tab = database == null ? db.getTable(tblName, false)
+      tab = database == null ? db.getTable(tblName, false)
           : db.getTable(database, tblName, false);
-      if (tab == null && throwException) {
-        throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(tblName));
-      }
-      return tab;
-    } catch (HiveException e) {
+    } catch (Exception e) {
       throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(tblName), e);
     }
+    if (tab == null && throwException) {
+      throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(tblName));
+    }
+    return tab;
   }
 
   protected Partition getPartition(Table table, Map<String, String> partSpec,
       boolean throwException) throws SemanticException {
+    Partition partition;
     try {
-      Partition partition = db.getPartition(table, partSpec, false);
-      if (partition == null && throwException) {
-        throw new SemanticException(toMessage(ErrorMsg.INVALID_PARTITION, partSpec));
-      }
-      return partition;
-    } catch (HiveException e) {
+      partition = db.getPartition(table, partSpec, false);
+    } catch (Exception e) {
       throw new SemanticException(toMessage(ErrorMsg.INVALID_PARTITION, partSpec), e);
     }
+    if (partition == null && throwException) {
+      throw new SemanticException(toMessage(ErrorMsg.INVALID_PARTITION, partSpec));
+    }
+    return partition;
   }
 
   protected List<Partition> getPartitions(Table table, Map<String, String> partSpec,
       boolean throwException) throws SemanticException {
+    List<Partition> partitions;
     try {
-      List<Partition> partitions = partSpec == null ? db.getPartitions(table) :
+      partitions = partSpec == null ? db.getPartitions(table) :
           db.getPartitions(table, partSpec);
-      if (partitions.isEmpty() && throwException) {
-        throw new SemanticException(toMessage(ErrorMsg.INVALID_PARTITION, partSpec));
-      }
-      return partitions;
-    } catch (HiveException e) {
+    } catch (Exception e) {
       throw new SemanticException(toMessage(ErrorMsg.INVALID_PARTITION, partSpec), e);
     }
+    if (partitions.isEmpty() && throwException) {
+      throw new SemanticException(toMessage(ErrorMsg.INVALID_PARTITION, partSpec));
+    }
+    return partitions;
   }
 
   protected String toMessage(ErrorMsg message, Object detail) {

@@ -92,27 +92,34 @@ POSTHOOK: query: drop table original
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@original
 POSTHOOK: Output: default@original
-PREHOOK: query: create table original2 (key STRING, value STRING)
+PREHOOK: query: create database skew_test
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:skew_test
+POSTHOOK: query: create database skew_test
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:skew_test
+PREHOOK: query: create table skew_test.original2 (key STRING, value STRING)
 PREHOOK: type: CREATETABLE
-PREHOOK: Output: database:default
-PREHOOK: Output: default@original2
-POSTHOOK: query: create table original2 (key STRING, value STRING)
+PREHOOK: Output: database:skew_test
+PREHOOK: Output: skew_test@skew_test.original2
+POSTHOOK: query: create table skew_test.original2 (key STRING, value STRING)
 POSTHOOK: type: CREATETABLE
-POSTHOOK: Output: database:default
-POSTHOOK: Output: default@original2
-PREHOOK: query: describe formatted original2
+POSTHOOK: Output: database:skew_test
+POSTHOOK: Output: skew_test@original2
+POSTHOOK: Output: skew_test@skew_test.original2
+PREHOOK: query: describe formatted skew_test.original2
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@original2
-POSTHOOK: query: describe formatted original2
+PREHOOK: Input: skew_test@original2
+POSTHOOK: query: describe formatted skew_test.original2
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@original2
+POSTHOOK: Input: skew_test@original2
 # col_name            	data_type           	comment             
 	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
 # Detailed Table Information	 	 
-Database:           	default             	 
+Database:           	skew_test           	 
 #### A masked pattern was here ####
 Protect Mode:       	None                	 
 Retention:          	0                   	 
@@ -131,27 +138,27 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: alter table original2 SKEWED BY (key, value) ON ((1,1),(5,6))
+PREHOOK: query: alter table skew_test.original2 SKEWED BY (key, value) ON ((1,1),(5,6))
 PREHOOK: type: ALTERTABLE_SKEWED
-PREHOOK: Input: default@original2
-PREHOOK: Output: default@original2
-POSTHOOK: query: alter table original2 SKEWED BY (key, value) ON ((1,1),(5,6))
+PREHOOK: Input: skew_test@original2
+PREHOOK: Output: skew_test@original2
+POSTHOOK: query: alter table skew_test.original2 SKEWED BY (key, value) ON ((1,1),(5,6))
 POSTHOOK: type: ALTERTABLE_SKEWED
-POSTHOOK: Input: default@original2
-POSTHOOK: Output: default@original2
-PREHOOK: query: describe formatted original2
+POSTHOOK: Input: skew_test@original2
+POSTHOOK: Output: skew_test@original2
+PREHOOK: query: describe formatted skew_test.original2
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@original2
-POSTHOOK: query: describe formatted original2
+PREHOOK: Input: skew_test@original2
+POSTHOOK: query: describe formatted skew_test.original2
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@original2
+POSTHOOK: Input: skew_test@original2
 # col_name            	data_type           	comment             
 	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
 # Detailed Table Information	 	 
-Database:           	default             	 
+Database:           	skew_test           	 
 #### A masked pattern was here ####
 Protect Mode:       	None                	 
 Retention:          	0                   	 
@@ -178,35 +185,36 @@ Skewed Columns:     	[key, value]
 Skewed Values:      	[[1, 1], [5, 6]]    	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: drop table original2
+PREHOOK: query: drop table skew_test.original2
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@original2
-PREHOOK: Output: default@original2
-POSTHOOK: query: drop table original2
+PREHOOK: Input: skew_test@original2
+PREHOOK: Output: skew_test@original2
+POSTHOOK: query: drop table skew_test.original2
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@original2
-POSTHOOK: Output: default@original2
-PREHOOK: query: create table original3 (key STRING, value STRING) SKEWED BY (key, value) ON ((1,1),(5,6))
+POSTHOOK: Input: skew_test@original2
+POSTHOOK: Output: skew_test@original2
+PREHOOK: query: create table skew_test.original3 (key STRING, value STRING) SKEWED BY (key, value) ON ((1,1),(5,6))
 PREHOOK: type: CREATETABLE
-PREHOOK: Output: database:default
-PREHOOK: Output: default@original3
-POSTHOOK: query: create table original3 (key STRING, value STRING) SKEWED BY (key, value) ON ((1,1),(5,6))
+PREHOOK: Output: database:skew_test
+PREHOOK: Output: skew_test@skew_test.original3
+POSTHOOK: query: create table skew_test.original3 (key STRING, value STRING) SKEWED BY (key, value) ON ((1,1),(5,6))
 POSTHOOK: type: CREATETABLE
-POSTHOOK: Output: database:default
-POSTHOOK: Output: default@original3
-PREHOOK: query: describe formatted original3
+POSTHOOK: Output: database:skew_test
+POSTHOOK: Output: skew_test@original3
+POSTHOOK: Output: skew_test@skew_test.original3
+PREHOOK: query: describe formatted skew_test.original3
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@original3
-POSTHOOK: query: describe formatted original3
+PREHOOK: Input: skew_test@original3
+POSTHOOK: query: describe formatted skew_test.original3
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@original3
+POSTHOOK: Input: skew_test@original3
 # col_name            	data_type           	comment             
 	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
 # Detailed Table Information	 	 
-Database:           	default             	 
+Database:           	skew_test           	 
 #### A masked pattern was here ####
 Protect Mode:       	None                	 
 Retention:          	0                   	 
@@ -227,27 +235,27 @@ Skewed Columns:     	[key, value]
 Skewed Values:      	[[1, 1], [5, 6]]    	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: alter table original3 not skewed
+PREHOOK: query: alter table skew_test.original3 not skewed
 PREHOOK: type: ALTERTABLE_SKEWED
-PREHOOK: Input: default@original3
-PREHOOK: Output: default@original3
-POSTHOOK: query: alter table original3 not skewed
+PREHOOK: Input: skew_test@original3
+PREHOOK: Output: skew_test@original3
+POSTHOOK: query: alter table skew_test.original3 not skewed
 POSTHOOK: type: ALTERTABLE_SKEWED
-POSTHOOK: Input: default@original3
-POSTHOOK: Output: default@original3
-PREHOOK: query: describe formatted original3
+POSTHOOK: Input: skew_test@original3
+POSTHOOK: Output: skew_test@original3
+PREHOOK: query: describe formatted skew_test.original3
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@original3
-POSTHOOK: query: describe formatted original3
+PREHOOK: Input: skew_test@original3
+POSTHOOK: query: describe formatted skew_test.original3
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@original3
+POSTHOOK: Input: skew_test@original3
 # col_name            	data_type           	comment             
 	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
 # Detailed Table Information	 	 
-Database:           	default             	 
+Database:           	skew_test           	 
 #### A masked pattern was here ####
 Protect Mode:       	None                	 
 Retention:          	0                   	 
@@ -272,11 +280,19 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: drop table original3
+PREHOOK: query: drop table skew_test.original3
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@original3
-PREHOOK: Output: default@original3
-POSTHOOK: query: drop table original3
+PREHOOK: Input: skew_test@original3
+PREHOOK: Output: skew_test@original3
+POSTHOOK: query: drop table skew_test.original3
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@original3
-POSTHOOK: Output: default@original3
+POSTHOOK: Input: skew_test@original3
+POSTHOOK: Output: skew_test@original3
+PREHOOK: query: drop database skew_test
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:skew_test
+PREHOOK: Output: database:skew_test
+POSTHOOK: query: drop database skew_test
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:skew_test
+POSTHOOK: Output: database:skew_test
