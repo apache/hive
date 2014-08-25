@@ -19175,3 +19175,17 @@ POSTHOOK: Input: default@src_cbo
 96	1
 97	2
 98	2
+PREHOOK: query: -- 17. get stats with empty partition list
+select t1.value from t1 join t2 on t1.key = t2.key where t1.dt = '10' and t1.c_boolean = true
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t2
+PREHOOK: Input: default@t2@dt=2014
+#### A masked pattern was here ####
+POSTHOOK: query: -- 17. get stats with empty partition list
+select t1.value from t1 join t2 on t1.key = t2.key where t1.dt = '10' and t1.c_boolean = true
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t2
+POSTHOOK: Input: default@t2@dt=2014
+#### A masked pattern was here ####

@@ -450,3 +450,8 @@ from (select b.key, count(*)
     )
 ) a
 ;
+
+-- 17. get stats with empty partition list
+select t1.value from t1 join t2 on t1.key = t2.key where t1.dt = '10' and t1.c_boolean = true;
+
+
