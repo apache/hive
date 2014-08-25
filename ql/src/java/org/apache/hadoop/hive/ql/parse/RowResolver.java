@@ -355,12 +355,16 @@ public class RowResolver implements Serializable{
   // TODO: 1) How to handle collisions? 2) Should we be cloning ColumnInfo or
   // not?
   public static int add(RowResolver rrToAddTo, RowResolver rrToAddFrom,
-      int outputColPos) throws SemanticException {
+      int outputColPos, int numColumns) throws SemanticException {
     String tabAlias;
     String colAlias;
     String[] qualifiedColName;
+    int i = 0;
 
     for (ColumnInfo cInfoFrmInput : rrToAddFrom.getRowSchema().getSignature()) {
+      if ( numColumns >= 0 && i == numColumns ) {
+        break;
+      }
       ColumnInfo newCI = null;
       qualifiedColName = rrToAddFrom.getInvRslvMap().get(
           cInfoFrmInput.getInternalName());
@@ -377,10 +381,24 @@ public class RowResolver implements Serializable{
         throw new RuntimeException("Ambigous Column Names");
 
       rrToAddTo.put(tabAlias, colAlias, newCI);
+
+      qualifiedColName = rrToAddFrom.getAlternateMappings(cInfoFrmInput
+          .getInternalName());
+      if (qualifiedColName != null) {
+        tabAlias = qualifiedColName[0];
+        colAlias = qualifiedColName[1];
+        rrToAddTo.put(tabAlias, colAlias, newCI);
+      }
+      i++;
     }
 
     return outputColPos;
 	}
+
+  public static int add(RowResolver rrToAddTo, RowResolver rrToAddFrom,
+      int outputColPos) throws SemanticException {
+    return add(rrToAddTo, rrToAddFrom, outputColPos, -1);
+  }
 
 	/**
 	 * Return a new row resolver that is combination of left RR and right RR.

@@ -12374,14 +12374,197 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       return filterRel;
     }
 
-    private RelNode genFilterLogicalPlan(QB qb, RelNode srcRel)
+    private RelNode genFilterRelNode(QB qb, ASTNode searchCond, RelNode srcRel,
+        Map<String, RelNode> aliasToRel, boolean forHavingClause)
+        throws SemanticException {
+      /*
+       * Handle Subquery predicates.
+       *
+       * Notes (8/22/14 hb):
+       * Why is this a copy of the code from {@link #genFilterPlan}
+       * - for now we will support the same behavior as non CBO route.
+       * - but plan to allow nested SubQueries(Restriction.9.m) and
+       *   multiple SubQuery expressions(Restriction.8.m). This
+       *   requires use to utilize Optiq's Decorrelation mechanics,
+       *   and for Optiq to fix/flush out Null semantics(OPTIQ-373)
+       * - besides only the driving code has been copied. Most of
+       *   the code which is SubQueryUtils and QBSubQuery is reused.
+       *
+       */
+      int numSrcColumns = srcRel.getRowType().getFieldCount();
+      List<ASTNode> subQueriesInOriginalTree = SubQueryUtils
+          .findSubQueries(searchCond);
+      if (subQueriesInOriginalTree.size() > 0) {
+
+        /*
+         * Restriction.9.m :: disallow nested SubQuery expressions.
+         */
+        if (qb.getSubQueryPredicateDef() != null) {
+          throw new SemanticException(
+              ErrorMsg.UNSUPPORTED_SUBQUERY_EXPRESSION.getMsg(
+                  subQueriesInOriginalTree.get(0),
+                  "Nested SubQuery expressions are not supported."));
+        }
+
+        /*
+         * Restriction.8.m :: We allow only 1 SubQuery expression per Query.
+         */
+        if (subQueriesInOriginalTree.size() > 1) {
+
+          throw new SemanticException(
+              ErrorMsg.UNSUPPORTED_SUBQUERY_EXPRESSION.getMsg(
+                  subQueriesInOriginalTree.get(1),
+                  "Only 1 SubQuery expression is supported."));
+        }
+
+        /*
+         * Clone the Search AST; apply all rewrites on the clone.
+         */
+        ASTNode clonedSearchCond = (ASTNode) SubQueryUtils.adaptor
+            .dupTree(searchCond);
+        List<ASTNode> subQueries = SubQueryUtils
+            .findSubQueries(clonedSearchCond);
+
+        RowResolver inputRR = m_relToHiveRR.get(srcRel);
+
+        for (int i = 0; i < subQueries.size(); i++) {
+          ASTNode subQueryAST = subQueries.get(i);
+          ASTNode originalSubQueryAST = subQueriesInOriginalTree.get(i);
+
+          int sqIdx = qb.incrNumSubQueryPredicates();
+          clonedSearchCond = SubQueryUtils.rewriteParentQueryWhere(
+              clonedSearchCond, subQueryAST);
+
+          QBSubQuery subQuery = SubQueryUtils.buildSubQuery(qb.getId(), sqIdx,
+              subQueryAST, originalSubQueryAST, ctx);
+
+          if (!forHavingClause) {
+            qb.setWhereClauseSubQueryPredicate(subQuery);
+          } else {
+            qb.setHavingClauseSubQueryPredicate(subQuery);
+          }
+          String havingInputAlias = null;
+
+          if (forHavingClause) {
+            havingInputAlias = "gby_sq" + sqIdx;
+            aliasToRel.put(havingInputAlias, srcRel);
+          }
+
+          subQuery.validateAndRewriteAST(inputRR, forHavingClause,
+              havingInputAlias, aliasToRel.keySet());
+
+          QB qbSQ = new QB(subQuery.getOuterQueryId(), subQuery.getAlias(),
+              true);
+          qbSQ.setSubQueryDef(subQuery.getSubQuery());
+          Phase1Ctx ctx_1 = initPhase1Ctx();
+          doPhase1(subQuery.getSubQueryAST(), qbSQ, ctx_1);
+          getMetaData(qbSQ);
+          RelNode subQueryRelNode = genLogicalPlan(qbSQ);
+          aliasToRel.put(subQuery.getAlias(), subQueryRelNode);
+          RowResolver sqRR = m_relToHiveRR.get(subQueryRelNode);
+
+          /*
+           * Check.5.h :: For In and Not In the SubQuery must implicitly or
+           * explicitly only contain one select item.
+           */
+          if (subQuery.getOperator().getType() != SubQueryType.EXISTS
+              && subQuery.getOperator().getType() != SubQueryType.NOT_EXISTS
+              && sqRR.getColumnInfos().size()
+                  - subQuery.getNumOfCorrelationExprsAddedToSQSelect() > 1) {
+            throw new SemanticException(
+                ErrorMsg.INVALID_SUBQUERY_EXPRESSION.getMsg(subQueryAST,
+                    "SubQuery can contain only 1 item in Select List."));
+          }
+
+          /*
+           * If this is a Not In SubQuery Predicate then Join in the Null Check
+           * SubQuery. See QBSubQuery.NotInCheck for details on why and how this
+           * is constructed.
+           */
+          if (subQuery.getNotInCheck() != null) {
+            QBSubQuery.NotInCheck notInCheck = subQuery.getNotInCheck();
+            notInCheck.setSQRR(sqRR);
+            QB qbSQ_nic = new QB(subQuery.getOuterQueryId(),
+                notInCheck.getAlias(), true);
+            qbSQ_nic.setSubQueryDef(notInCheck.getSubQuery());
+            ctx_1 = initPhase1Ctx();
+            doPhase1(notInCheck.getSubQueryAST(), qbSQ_nic, ctx_1);
+            getMetaData(qbSQ_nic);
+            RelNode subQueryNICRelNode = genLogicalPlan(qbSQ_nic);
+            aliasToRel.put(notInCheck.getAlias(), subQueryNICRelNode);
+            srcRel = genJoinRelNode(srcRel, subQueryNICRelNode,
+            // set explicitly to inner until we figure out SemiJoin use
+            // notInCheck.getJoinType(),
+                JoinType.INNER, notInCheck.getJoinConditionAST());
+            inputRR = m_relToHiveRR.get(srcRel);
+            if (forHavingClause) {
+              aliasToRel.put(havingInputAlias, srcRel);
+            }
+          }
+
+          /*
+           * Gen Join between outer Operator and SQ op
+           */
+          subQuery.buildJoinCondition(inputRR, sqRR, forHavingClause,
+              havingInputAlias);
+          srcRel = genJoinRelNode(srcRel, subQueryRelNode,
+              subQuery.getJoinType(), subQuery.getJoinConditionAST());
+          searchCond = subQuery.updateOuterQueryFilter(clonedSearchCond);
+
+          srcRel = genFilterRelNode(searchCond, srcRel);
+
+          /*
+           * For Not Exists and Not In, add a projection on top of the Left
+           * Outer Join.
+           */
+          if (subQuery.getOperator().getType() != SubQueryType.NOT_EXISTS
+              || subQuery.getOperator().getType() != SubQueryType.NOT_IN) {
+            srcRel = projectLeftOuterSide(srcRel, numSrcColumns);
+          }
+        }
+        return srcRel;
+      }
+
+      return genFilterRelNode(searchCond, srcRel);
+    }
+
+    private RelNode projectLeftOuterSide(RelNode srcRel, int numColumns)
+        throws SemanticException {
+      RowResolver iRR = m_relToHiveRR.get(srcRel);
+      RowResolver oRR = new RowResolver();
+      RowResolver.add(oRR, iRR, 0, numColumns);
+
+      List<RexNode> optiqColLst = new ArrayList<RexNode>();
+      List<String> oFieldNames = new ArrayList<String>();
+      RelDataType iType = srcRel.getRowType();
+
+      for (int i = 0; i < iType.getFieldCount(); i++) {
+        RelDataTypeField fType = iType.getFieldList().get(i);
+        String fName = iType.getFieldNames().get(i);
+        optiqColLst.add(m_cluster.getRexBuilder().makeInputRef(fType.getType(),
+            i));
+        oFieldNames.add(fName);
+      }
+
+      HiveRel selRel = HiveProjectRel.create(srcRel, optiqColLst, oFieldNames);
+
+      this.m_relToHiveColNameOptiqPosMap.put(selRel,
+          buildHiveToOptiqColumnMap(oRR, selRel));
+      this.m_relToHiveRR.put(selRel, oRR);
+      return selRel;
+    }
+
+    private RelNode genFilterLogicalPlan(QB qb, RelNode srcRel,
+        Map<String, RelNode> aliasToRel,
+        boolean forHavingClause)
         throws SemanticException {
       RelNode filterRel = null;
 
       Iterator<ASTNode> whereClauseIterator = getQBParseInfo(qb)
           .getDestToWhereExpr().values().iterator();
       if (whereClauseIterator.hasNext()) {
-        filterRel = genFilterRelNode((ASTNode) whereClauseIterator.next().getChild(0), srcRel);
+        filterRel = genFilterRelNode(qb, (ASTNode) whereClauseIterator.next().getChild(0),
+            srcRel, aliasToRel, forHavingClause);
       }
 
       return filterRel;
@@ -13263,7 +13446,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
 
       // 2. Build Rel for where Clause
-      filterRel = genFilterLogicalPlan(qb, srcRel);
+      filterRel = genFilterLogicalPlan(qb, srcRel, aliasToRel, false);
       srcRel = (filterRel == null) ? srcRel : filterRel;
 
       // 3. Build Rel for GB Clause
@@ -13271,7 +13454,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       srcRel = (gbRel == null) ? srcRel : gbRel;
 
       // 4. Build Rel for GB Having Clause
-      gbHavingRel = genGBHavingLogicalPlan(qb, srcRel);
+      gbHavingRel = genGBHavingLogicalPlan(qb, srcRel, aliasToRel);
       srcRel = (gbHavingRel == null) ? srcRel : gbHavingRel;
 
       // 5. Build Rel for Select Clause
@@ -13316,7 +13499,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       return srcRel;
     }
 
-    private RelNode genGBHavingLogicalPlan(QB qb, RelNode srcRel)
+    private RelNode genGBHavingLogicalPlan(QB qb, RelNode srcRel,
+        Map<String, RelNode> aliasToRel)
         throws SemanticException {
       RelNode gbFilter = null;
       QBParseInfo qbp = getQBParseInfo(qb);
@@ -13324,7 +13508,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           .iterator().next());
 
       if (havingClause != null)
-        gbFilter = genFilterRelNode((ASTNode) havingClause.getChild(0), srcRel);
+        gbFilter = genFilterRelNode(qb, (ASTNode) havingClause.getChild(0), srcRel, aliasToRel, true);
 
       return gbFilter;
     }
