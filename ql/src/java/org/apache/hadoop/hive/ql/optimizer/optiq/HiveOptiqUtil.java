@@ -131,8 +131,8 @@ public class HiveOptiqUtil {
 
     for (i = 0; i < origColEqConds.size(); i++) {
       Pair<Integer, Integer> p = origColEqConds.get(i);
-      RexNode leftKey = leftJoinKeys.get(p.left);
-      RexNode rightKey = rightJoinKeys.get(p.right);
+      RexNode leftKey = leftJoinKeys.get(i);
+      RexNode rightKey = rightJoinKeys.get(i);
       leftKeys.add(p.left);
       rightKeys.add(p.right);
       RexNode cond = rexBuilder.makeCall(

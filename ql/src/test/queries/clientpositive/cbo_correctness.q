@@ -12,6 +12,45 @@ load data local inpath '../../data/files/cbo_t1.txt' into table t1 partition (dt
 load data local inpath '../../data/files/cbo_t2.txt' into table t2 partition (dt='2014');
 load data local inpath '../../data/files/cbo_t3.txt' into table t3;
 
+CREATE TABLE part( 
+    p_partkey INT,
+    p_name STRING,
+    p_mfgr STRING,
+    p_brand STRING,
+    p_type STRING,
+    p_size INT,
+    p_container STRING,
+    p_retailprice DOUBLE,
+    p_comment STRING
+);
+
+LOAD DATA LOCAL INPATH '../../data/files/part_tiny.txt' overwrite into table part;
+
+DROP TABLE lineitem;
+CREATE TABLE lineitem (L_ORDERKEY      INT,
+                                L_PARTKEY       INT,
+                                L_SUPPKEY       INT,
+                                L_LINENUMBER    INT,
+                                L_QUANTITY      DOUBLE,
+                                L_EXTENDEDPRICE DOUBLE,
+                                L_DISCOUNT      DOUBLE,
+                                L_TAX           DOUBLE,
+                                L_RETURNFLAG    STRING,
+                                L_LINESTATUS    STRING,
+                                l_shipdate      STRING,
+                                L_COMMITDATE    STRING,
+                                L_RECEIPTDATE   STRING,
+                                L_SHIPINSTRUCT  STRING,
+                                L_SHIPMODE      STRING,
+                                L_COMMENT       STRING)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '|';
+
+LOAD DATA LOCAL INPATH '../../data/files/lineitem.txt' OVERWRITE INTO TABLE lineitem;
+
+create table src_cbo as select * from src;
+
+
 set hive.stats.dbclass=jdbc:derby;
 analyze table t1 partition (dt) compute statistics;
 analyze table t1 compute statistics for columns key, value, c_int, c_float, c_boolean;
@@ -19,6 +58,12 @@ analyze table t2 partition (dt) compute statistics;
 analyze table t2 compute statistics for columns key, value, c_int, c_float, c_boolean;
 analyze table t3 compute statistics;
 analyze table t3 compute statistics for columns key, value, c_int, c_float, c_boolean;
+analyze table src_cbo compute statistics;
+analyze table src_cbo compute statistics for columns;
+analyze table part compute statistics;
+analyze table part compute statistics for columns;
+analyze table lineitem compute statistics;
+analyze table lineitem compute statistics for columns;
 
 set hive.stats.fetch.column.stats=true;
 set hive.auto.convert.join=false;
@@ -223,3 +268,185 @@ select key from t1 where c_int = -6  or c_int = +6;
 
 -- 15. query referencing only partition columns
 select count(t1.dt) from t1 join t2 on t1.dt  = t2.dt  where t1.dt = '2014' ;
+
+-- 16. SubQueries Not In
+-- non agg, non corr
+select * 
+from src_cbo 
+where src_cbo.key not in  
+  ( select key  from src_cbo s1 
+    where s1.key > '2'
+  )
+;
+
+-- non agg, corr
+select p_mfgr, b.p_name, p_size 
+from part b 
+where b.p_name not in 
+  (select p_name 
+  from (select p_mfgr, p_name, p_size as r from part) a 
+  where r < 10 and b.p_mfgr = a.p_mfgr 
+  )
+;
+
+-- agg, non corr
+select p_name, p_size 
+from 
+part where part.p_size not in 
+  (select avg(p_size) 
+  from (select p_size from part) a 
+  where p_size < 10
+  )
+;
+
+-- agg, corr
+select p_mfgr, p_name, p_size 
+from part b where b.p_size not in 
+  (select min(p_size) 
+  from (select p_mfgr, p_size from part) a 
+  where p_size < 10 and b.p_mfgr = a.p_mfgr
+  )
+;
+
+-- non agg, non corr, Group By in Parent Query
+select li.l_partkey, count(*) 
+from lineitem li 
+where li.l_linenumber = 1 and 
+  li.l_orderkey not in (select l_orderkey from lineitem where l_shipmode = 'AIR') 
+group by li.l_partkey
+;
+
+-- add null check test from sq_notin.q once HIVE-7721 resolved.
+
+-- non agg, corr, having
+select b.p_mfgr, min(p_retailprice) 
+from part b 
+group by b.p_mfgr
+having b.p_mfgr not in 
+  (select p_mfgr 
+  from (select p_mfgr, min(p_retailprice) l, max(p_retailprice) r, avg(p_retailprice) a from part group by p_mfgr) a 
+  where min(p_retailprice) = l and r - l > 600
+  )
+;
+
+-- agg, non corr, having
+select b.p_mfgr, min(p_retailprice) 
+from part b 
+group by b.p_mfgr
+having b.p_mfgr not in 
+  (select p_mfgr 
+  from part a
+  group by p_mfgr
+  having max(p_retailprice) - min(p_retailprice) > 600
+  )
+;
+
+-- 17. SubQueries In
+-- non agg, non corr
+select * 
+from src_cbo 
+where src_cbo.key in (select key from src_cbo s1 where s1.key > '9')
+;
+
+-- agg, corr
+-- add back once rank issue fixed for cbo
+
+-- distinct, corr
+select * 
+from src_cbo b 
+where b.key in
+        (select distinct a.key 
+         from src_cbo a 
+         where b.value = a.value and a.key > '9'
+        )
+;
+
+-- non agg, corr, with join in Parent Query
+select p.p_partkey, li.l_suppkey 
+from (select distinct l_partkey as p_partkey from lineitem) p join lineitem li on p.p_partkey = li.l_partkey 
+where li.l_linenumber = 1 and
+ li.l_orderkey in (select l_orderkey from lineitem where l_shipmode = 'AIR' and l_linenumber = li.l_linenumber)
+;
+
+-- where and having
+-- Plan is:
+-- Stage 1: b semijoin sq1:src_cbo (subquery in where)
+-- Stage 2: group by Stage 1 o/p
+-- Stage 5: group by on sq2:src_cbo (subquery in having)
+-- Stage 6: Stage 2 o/p semijoin Stage 5
+explain
+select key, value, count(*) 
+from src_cbo b
+where b.key in (select key from src_cbo where src_cbo.key > '8')
+group by key, value
+having count(*) in (select count(*) from src_cbo s1 where s1.key > '9' group by s1.key )
+;
+
+-- non agg, non corr, windowing
+explain
+select p_mfgr, p_name, avg(p_size) 
+from part 
+group by p_mfgr, p_name
+having p_name in 
+  (select first_value(p_name) over(partition by p_mfgr order by p_size) from part)
+;
+
+-- 18. SubQueries Not Exists
+-- distinct, corr
+select * 
+from src_cbo b 
+where not exists 
+  (select distinct a.key 
+  from src_cbo a 
+  where b.value = a.value and a.value > 'val_2'
+  )
+;
+
+-- no agg, corr, having
+select * 
+from src_cbo b 
+group by key, value
+having not exists 
+  (select a.key 
+  from src_cbo a 
+  where b.value = a.value  and a.key = b.key and a.value > 'val_12'
+  )
+;
+
+-- 19. SubQueries Exists
+-- view test
+create view cv1 as 
+select * 
+from src_cbo b 
+where exists
+  (select a.key 
+  from src_cbo a 
+  where b.value = a.value  and a.key = b.key and a.value > 'val_9')
+;
+
+select * from cv1
+;
+
+-- sq in from
+select * 
+from (select * 
+      from src_cbo b 
+      where exists 
+          (select a.key 
+          from src_cbo a 
+          where b.value = a.value  and a.key = b.key and a.value > 'val_9')
+     ) a
+;
+
+-- sq in from, having
+select *
+from (select b.key, count(*) 
+  from src_cbo b 
+  group by b.key
+  having exists 
+    (select a.key 
+    from src_cbo a 
+    where a.key = b.key and a.value > 'val_9'
+    )
+) a
+;
