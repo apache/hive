@@ -135,9 +135,7 @@ public class ASTConverter {
       }
       hiveAST.select = b.node();
     } else {
-      //TODO: We should never be here. But we will be for select null from t1.
-      // Once you figure out why, uncomment following line:
-      // throw new IllegalStateException("why am I here?");
+      throw new IllegalStateException("Expected non-zero children for select.");
     }
 
 

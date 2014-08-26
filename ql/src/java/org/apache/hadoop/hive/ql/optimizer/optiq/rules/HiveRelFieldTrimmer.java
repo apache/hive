@@ -438,7 +438,7 @@ public class HiveRelFieldTrimmer implements ReflectiveVisitor {
 
   /**
    * Variant of {@link #trimFields(RelNode, BitSet, Set)} for {@link JoinRel}.
-   * 
+   *
    * Have to do this because of the way ReflectUtil works. - if there is an
    * exact match, things are fine. - otherwise it doesn't allow any ambiguity(in
    * this case between a superClass(JoinRelBase) and an interface(HiveRel).
@@ -578,14 +578,14 @@ public class HiveRelFieldTrimmer implements ReflectiveVisitor {
 
   public TrimResult trimFields(HiveJoinRel join, BitSet fieldsUsed,
       Set<RelDataTypeField> extraFields) {
-    return _trimFields((JoinRelBase) join, fieldsUsed, extraFields);
+    return _trimFields(join, fieldsUsed, extraFields);
   }
-  
+
   public TrimResult trimFields(SemiJoinRel join, BitSet fieldsUsed,
       Set<RelDataTypeField> extraFields) {
-    return _trimFields((JoinRelBase) join, fieldsUsed, extraFields);
+    return _trimFields(join, fieldsUsed, extraFields);
   }
-  
+
   /**
    * Variant of {@link #trimFields(RelNode, BitSet, Set)} for {@link SetOpRel}
    * (including UNION and UNION ALL).
@@ -879,7 +879,7 @@ public class HiveRelFieldTrimmer implements ReflectiveVisitor {
   public TrimResult trimFields(final HiveTableScanRel tableAccessRel,
       BitSet fieldsUsed, Set<RelDataTypeField> extraFields) {
     final int fieldCount = tableAccessRel.getRowType().getFieldCount();
-    if (fieldsUsed.equals(BitSets.range(fieldCount)) && extraFields.isEmpty()) {
+    if (fieldsUsed.isEmpty() || (fieldsUsed.equals(BitSets.range(fieldCount)) && extraFields.isEmpty())) {
       return trimFields((HiveRel) tableAccessRel, fieldsUsed, extraFields);
     }
     final RelNode _newTableAccessRel = tableAccessRel.project(fieldsUsed,
