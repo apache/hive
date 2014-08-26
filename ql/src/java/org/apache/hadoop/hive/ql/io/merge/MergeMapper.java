@@ -18,8 +18,6 @@
 
 package org.apache.hadoop.hive.ql.io.merge;
 
-import java.io.IOException;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileStatus;
@@ -30,6 +28,10 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.MapReduceBase;
+
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 
 public class MergeMapper extends MapReduceBase {
   protected JobConf jc;
@@ -48,6 +50,7 @@ public class MergeMapper extends MapReduceBase {
   protected Path tmpPath;
   protected Path taskTmpPath;
   protected Path dpPath;
+  protected Set<Path> incompatFileSet;
 
   public final static Log LOG = LogFactory.getLog("MergeMapper");
 
@@ -62,6 +65,7 @@ public class MergeMapper extends MapReduceBase {
         HiveConf.ConfVars.HIVEMERGECURRENTJOBCONCATENATELISTBUCKETINGDEPTH);
 
     Path specPath = MergeOutputFormat.getMergeOutputPath(job);
+    incompatFileSet = new HashSet<Path>();
     Path tmpPath = Utilities.toTempPath(specPath);
     Path taskTmpPath = Utilities.toTaskTempPath(specPath);
     updatePaths(tmpPath, taskTmpPath);
@@ -176,6 +180,23 @@ public class MergeMapper extends MapReduceBase {
       if (!fs.rename(outPath, finalPath)) {
         throw new IOException("Unable to rename output to " + finalPath);
       }
+
+      // move any incompatible files to final path
+      if (!incompatFileSet.isEmpty()) {
+        for (Path incompatFile : incompatFileSet) {
+          String fileName = incompatFile.getName();
+          Path destFile = new Path(finalPath.getParent(), fileName);
+          try {
+            Utilities.renameOrMoveFiles(fs, incompatFile, destFile);
+            LOG.info("Moved incompatible file " + incompatFile + " to "
+                + destFile);
+          } catch (HiveException e) {
+            LOG.error("Unable to move " + incompatFile + " to " + destFile);
+            throw new IOException(e);
+          }
+        }
+      }
+
     } else {
       if (!autoDelete) {
         fs.delete(outPath, true);

@@ -1538,6 +1538,24 @@ public final class Utilities {
       Pattern.compile("^.*?([0-9]+)(_[0-9]{1,6})?(\\..*)?$");
 
   /**
+   * Some jobs like "INSERT INTO" jobs create copies of files like 0000001_0_copy_2.
+   * For such files,
+   * Group 1: 00000001 [taskId]
+   * Group 3: 0        [task attempId]
+   * Group 4: _copy_2  [copy suffix]
+   * Group 6: copy     [copy keyword]
+   * Group 8: 2        [copy file index]
+   */
+  private static final Pattern COPY_FILE_NAME_TO_TASK_ID_REGEX =
+      Pattern.compile("^.*?"+ // any prefix
+                      "([0-9]+)"+ // taskId
+                      "(_)"+ // separator
+                      "([0-9]{1,6})?"+ // attemptId (limited to 6 digits)
+                      "((_)(\\Bcopy\\B)(_)"+ // copy keyword
+                      "([0-9]{1,6})$)?"+ // copy file index
+                      "(\\..*)?$"); // any suffix/file extension
+
+  /**
    * This retruns prefix part + taskID for bucket join for partitioned table
    */
   private static final Pattern FILE_NAME_PREFIXED_TASK_ID_REGEX =
@@ -1862,26 +1880,70 @@ public final class Utilities {
           // speculative runs), but the largest should be the correct one since the result
           // of a successful run should never be smaller than a failed/speculative run.
           FileStatus toDelete = null;
-          if (otherFile.getLen() >= one.getLen()) {
-            toDelete = one;
+
+          // "LOAD .. INTO" and "INSERT INTO" commands will generate files with
+          // "_copy_x" suffix. These files are usually read by map tasks and the
+          // task output gets written to some tmp path. The output file names will
+          // be of format taskId_attemptId. The usual path for all these tasks is
+          // srcPath -> taskTmpPath -> tmpPath -> finalPath.
+          // But, MergeFileTask can move files directly from src path to final path
+          // without copying it to tmp path. In such cases, different files with
+          // "_copy_x" suffix will be identified as duplicates (change in value
+          // of x is wrongly identified as attempt id) and will be deleted.
+          // To avoid that we will ignore files with "_copy_x" suffix from duplicate
+          // elimination.
+          if (!isCopyFile(one.getPath().getName())) {
+            if (otherFile.getLen() >= one.getLen()) {
+              toDelete = one;
+            } else {
+              toDelete = otherFile;
+              taskIdToFile.put(taskId, one);
+            }
+            long len1 = toDelete.getLen();
+            long len2 = taskIdToFile.get(taskId).getLen();
+            if (!fs.delete(toDelete.getPath(), true)) {
+              throw new IOException(
+                  "Unable to delete duplicate file: " + toDelete.getPath()
+                      + ". Existing file: " +
+                      taskIdToFile.get(taskId).getPath());
+            } else {
+              LOG.warn("Duplicate taskid file removed: " + toDelete.getPath() +
+                  " with length "
+                  + len1 + ". Existing file: " +
+                  taskIdToFile.get(taskId).getPath() + " with length "
+                  + len2);
+            }
           } else {
-            toDelete = otherFile;
-            taskIdToFile.put(taskId, one);
-          }
-          long len1 = toDelete.getLen();
-          long len2 = taskIdToFile.get(taskId).getLen();
-          if (!fs.delete(toDelete.getPath(), true)) {
-            throw new IOException("Unable to delete duplicate file: " + toDelete.getPath()
-                + ". Existing file: " + taskIdToFile.get(taskId).getPath());
-          } else {
-            LOG.warn("Duplicate taskid file removed: " + toDelete.getPath() + " with length "
-                + len1 + ". Existing file: " + taskIdToFile.get(taskId).getPath() + " with length "
-                + len2);
+            LOG.info(one.getPath() + " file identified as duplicate. This file is" +
+                " not deleted as it has copySuffix.");
           }
         }
       }
     }
     return taskIdToFile;
+  }
+
+  public static boolean isCopyFile(String filename) {
+    String taskId = filename;
+    String copyFileSuffix = null;
+    int dirEnd = filename.lastIndexOf(Path.SEPARATOR);
+    if (dirEnd != -1) {
+      taskId = filename.substring(dirEnd + 1);
+    }
+    Matcher m = COPY_FILE_NAME_TO_TASK_ID_REGEX.matcher(taskId);
+    if (!m.matches()) {
+      LOG.warn("Unable to verify if file name " + filename + " has _copy_ suffix.");
+    } else {
+      taskId = m.group(1);
+      copyFileSuffix = m.group(4);
+    }
+
+    LOG.debug("Filename: " + filename + " TaskId: " + taskId + " CopySuffix: " + copyFileSuffix);
+    if (taskId != null && copyFileSuffix != null) {
+      return true;
+    }
+
+    return false;
   }
 
   public static String getNameMessage(Exception e) {
