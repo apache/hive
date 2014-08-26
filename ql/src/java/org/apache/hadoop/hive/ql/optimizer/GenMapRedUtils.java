@@ -1671,6 +1671,9 @@ public final class GenMapRedUtils {
           // tez blurs the boundary between map and reduce, thus it has it's own
           // config
           return hconf.getBoolVar(ConfVars.HIVEMERGETEZFILES);
+        } else if (currTask.getWork() instanceof SparkWork) {
+          // spark has its own config for merging
+          return hconf.getBoolVar(ConfVars.HIVEMERGESPARKFILES);
         }
 
         if (fsOp.getConf().isLinkedFileSink()) {
