@@ -12734,23 +12734,53 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         aggParameters.add(paraExprNode);
       }
 
-      // 2 Determine type of UDAF
-      // This is the GenericUDAF name
-      String aggName = unescapeIdentifier(aggAst.getChild(0).getText());
+      // 2. Is this distinct UDAF
       boolean isDistinct = aggAst.getType() == HiveParser.TOK_FUNCTIONDI;
-      boolean isAllColumns = aggAst.getType() == HiveParser.TOK_FUNCTIONSTAR;
 
-      // 3 Get UDAF Evaluator
-      Mode amode = groupByDescModeToUDAFMode(GroupByDesc.Mode.COMPLETE, isDistinct);
-      GenericUDAFEvaluator genericUDAFEvaluator = getGenericUDAFEvaluator(aggName, aggParameters,
-          aggAst, isDistinct, isAllColumns);
-      assert (genericUDAFEvaluator != null);
+      // 3. Determine type of UDAF
+      TypeInfo udafRetType = null;
 
-      // 4. Get UDAF Info using UDAF Evaluator
-      GenericUDAFInfo udaf = getGenericUDAFInfo(genericUDAFEvaluator, amode, aggParameters);
+      // 3.1 Obtain UDAF name
+      String aggName = unescapeIdentifier(aggAst.getChild(0).getText());
 
-      // 5. Construct AggInfo
-      aInfo = new AggInfo(aggParameters, udaf.returnType, aggName, isDistinct);
+      // 3.2 Rank functions type is 'int'/'double'
+      if (FunctionRegistry.isRankingFunction(aggName)) {
+        if (aggName.equalsIgnoreCase("percent_rank"))
+          udafRetType = TypeInfoFactory.doubleTypeInfo;
+        else
+          udafRetType = TypeInfoFactory.intTypeInfo;
+      } else {
+        // 3.3 Try obtaining UDAF evaluators to determine the ret type
+        try {
+          boolean isAllColumns = aggAst.getType() == HiveParser.TOK_FUNCTIONSTAR;
+
+          // 3.3.1 Get UDAF Evaluator
+          Mode amode = groupByDescModeToUDAFMode(GroupByDesc.Mode.COMPLETE, isDistinct);
+          GenericUDAFEvaluator genericUDAFEvaluator = getGenericUDAFEvaluator(aggName,
+              aggParameters, aggAst, isDistinct, isAllColumns);
+          assert (genericUDAFEvaluator != null);
+
+          // 3.3.2 Get UDAF Info using UDAF Evaluator
+          GenericUDAFInfo udaf = getGenericUDAFInfo(genericUDAFEvaluator, amode, aggParameters);
+          udafRetType = udaf.returnType;
+        } catch (Exception e) {
+          LOG.debug("CBO: Couldn't Obtain UDAF evaluators for " + aggName
+              + ", trying to translate to GenericUDF");
+        }
+
+        // 3.4 Try GenericUDF translation
+        if (udafRetType == null) {
+          TypeCheckCtx tcCtx = new TypeCheckCtx(inputRR);
+          // We allow stateful functions in the SELECT list (but nowhere else)
+          tcCtx.setAllowStatefulFunctions(true);
+          tcCtx.setAllowDistinctFunctions(false);
+          ExprNodeDesc exp = genExprNodeDesc((ASTNode) aggAst.getChild(0), inputRR, tcCtx);
+          udafRetType = exp.getTypeInfo();
+        }
+      }
+
+      // 4. Construct AggInfo
+      aInfo = new AggInfo(aggParameters, udafRetType, aggName, isDistinct);
 
       return aInfo;
     }
