@@ -29,7 +29,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.service.AbstractService;
 import org.apache.hive.service.auth.HiveAuthFactory;
 import org.apache.hive.service.auth.TSetIpAddressProcessor;
@@ -242,7 +241,9 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
     if (userName == null) {
       userName = req.getUsername();
     }
-    return getProxyUser(userName, req.getConfiguration(), getIpAddress());
+    String effectiveClientUser = getProxyUser(userName, req.getConfiguration(), getIpAddress());
+    LOG.debug("Client's username: " + effectiveClientUser);
+    return effectiveClientUser;
   }
 
   /**
