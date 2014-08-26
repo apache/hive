@@ -46,7 +46,6 @@ import org.apache.hive.service.CompositeService;
 import org.apache.hive.service.ServiceException;
 import org.apache.hive.service.auth.HiveAuthFactory;
 import org.apache.hive.service.cli.operation.Operation;
-import org.apache.hive.service.cli.session.HiveSession;
 import org.apache.hive.service.cli.session.SessionManager;
 import org.apache.hive.service.cli.thrift.TProtocolVersion;
 
@@ -80,11 +79,8 @@ public class CLIService extends CompositeService implements ICLIService {
     this.hiveConf = hiveConf;
     sessionManager = new SessionManager();
     addService(sessionManager);
-    /**
-     * If auth mode is Kerberos, do a kerberos login for the service from the keytab
-     */
-    if (hiveConf.getVar(ConfVars.HIVE_SERVER2_AUTHENTICATION).equalsIgnoreCase(
-        HiveAuthFactory.AuthTypes.KERBEROS.toString())) {
+    //  If the hadoop cluster is secure, do a kerberos login for the service from the keytab
+    if (ShimLoader.getHadoopShims().isSecurityEnabled()) {
       try {
         HiveAuthFactory.loginFromKeytab(hiveConf);
         this.serviceUGI = ShimLoader.getHadoopShims().getUGIForConf(hiveConf);
