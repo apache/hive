@@ -18,19 +18,23 @@
 
 package org.apache.hadoop.hive.ql.io.orc;
 
-import java.io.IOException;
-import java.util.List;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.merge.MergeMapper;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.shims.CombineHiveKey;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.Mapper;
 import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.Reporter;
+
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Map task fast merging of ORC files.
@@ -96,31 +100,9 @@ public class OrcFileMergeMapper extends MergeMapper implements
             .inspector(reader.getObjectInspector()));
       }
 
-      // check compatibility with subsequent files
-      if ((k.getTypes().get(0).getSubtypesCount() != columnCount)) {
-        throw new IOException("ORCFileMerge failed because the input files are not compatible."
-            + " Column counts does not match.");
-      }
-
-      if (!k.compression.equals(compression)) {
-        throw new IOException("ORCFileMerge failed because the input files are not compatible."
-            + " Compression codec does not match.");
-      }
-
-      if (k.compressBufferSize != compressBuffSize) {
-        throw new IOException("ORCFileMerge failed because the input files are not compatible."
-            + " Compression buffer size does not match.");
-
-      }
-
-      if (!k.versionList.equals(version)) {
-        throw new IOException("ORCFileMerge failed because the input files are not compatible."
-            + " Version does not match.");
-      }
-
-      if (k.rowIndexStride != rowIndexStride) {
-        throw new IOException("ORCFileMerge failed because the input files are not compatible."
-            + " Row index stride does not match.");
+      if (!checkCompatibility(k, value)) {
+        incompatFileSet.add(k.getInputPath());
+        return;
       }
 
       // next file in the path
@@ -151,6 +133,43 @@ public class OrcFileMergeMapper extends MergeMapper implements
       close();
       throw new IOException(e);
     }
+  }
+
+  private boolean checkCompatibility(OrcFileKeyWrapper k,
+      OrcFileValueWrapper value) {
+    // check compatibility with subsequent files
+    if ((k.getTypes().get(0).getSubtypesCount() != columnCount)) {
+      LOG.info("Incompatible ORC file merge! Column counts does not match for "
+          + k.getInputPath());
+      return false;
+    }
+
+    if (!k.compression.equals(compression)) {
+      LOG.info("Incompatible ORC file merge! Compression codec does not match" +
+          " for " + k.getInputPath());
+      return false;
+    }
+
+    if (k.compressBufferSize != compressBuffSize) {
+      LOG.info("Incompatible ORC file merge! Compression buffer size does not" +
+          " match for " + k.getInputPath());
+      return false;
+
+    }
+
+    if (!k.versionList.equals(version)) {
+      LOG.info("Incompatible ORC file merge! Version does not match for "
+          + k.getInputPath());
+      return false;
+    }
+
+    if (k.rowIndexStride != rowIndexStride) {
+      LOG.info("Incompatible ORC file merge! Row index stride does not match" +
+          " for " + k.getInputPath());
+      return false;
+    }
+
+    return true;
   }
 
   @Override
