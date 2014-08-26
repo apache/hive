@@ -19,9 +19,10 @@
 package org.apache.hadoop.hive.ql.exec.spark;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 
-import org.apache.hadoop.conf.Configuration;
+import com.google.common.collect.Lists;
 import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.DriverContext;
@@ -34,8 +35,10 @@ import org.apache.hadoop.hive.ql.exec.spark.session.SparkSessionManager;
 import org.apache.hadoop.hive.ql.exec.spark.session.SparkSessionManagerImpl;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
+import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
+import org.apache.hadoop.hive.ql.plan.UnionWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.mapred.JobConf;
@@ -65,9 +68,9 @@ public class SparkTask extends Task<SparkWork> {
       
       // Spark configurations are updated close the existing session 
       if(conf.getSparkConfigUpdated()){
-	sparkSessionManager.closeSession(sparkSession);
-	sparkSession =  null;
-	conf.setSparkConfigUpdated(false);
+        sparkSessionManager.closeSession(sparkSession);
+        sparkSession =  null;
+        conf.setSparkConfigUpdated(false);
       }
       sparkSession = sparkSessionManager.getSession(sparkSession, conf, true);
       SessionState.get().setSparkSession(sparkSession);
@@ -126,6 +129,30 @@ public class SparkTask extends Task<SparkWork> {
   @Override
   public String getName() {
     return "SPARK";
+  }
+
+  @Override
+  public Collection<MapWork> getMapWork() {
+    List<MapWork> result = Lists.newArrayList();
+    SparkWork work = getWork();
+
+    // framework expects MapWork instances that have no physical parents (i.e.: union parent is
+    // fine, broadcast parent isn't)
+    for (BaseWork w: work.getAllWorkUnsorted()) {
+      if (w instanceof MapWork) {
+        List<BaseWork> parents = work.getParents(w);
+        boolean candidate = true;
+        for (BaseWork parent: parents) {
+          if (!(parent instanceof UnionWork)) {
+            candidate = false;
+          }
+        }
+        if (candidate) {
+          result.add((MapWork)w);
+        }
+      }
+    }
+    return result;
   }
 
   /**

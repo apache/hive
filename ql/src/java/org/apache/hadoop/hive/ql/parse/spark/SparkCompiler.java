@@ -54,6 +54,7 @@ import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.optimizer.physical.CrossProductCheck;
+import org.apache.hadoop.hive.ql.optimizer.physical.NullScanOptimizer;
 import org.apache.hadoop.hive.ql.optimizer.physical.PhysicalContext;
 import org.apache.hadoop.hive.ql.optimizer.physical.StageIDsRearranger;
 import org.apache.hadoop.hive.ql.optimizer.physical.Vectorizer;
@@ -245,17 +246,29 @@ public class SparkCompiler extends TaskCompiler {
     PhysicalContext physicalCtx = new PhysicalContext(conf, pCtx, pCtx.getContext(), rootTasks,
        pCtx.getFetchTask());
 
+    if (conf.getBoolVar(HiveConf.ConfVars.HIVENULLSCANOPTIMIZE)) {
+      physicalCtx = new NullScanOptimizer().resolve(physicalCtx);
+    } else {
+      LOG.debug("Skipping null scan query optimization");
+    }
+
     if (conf.getBoolVar(HiveConf.ConfVars.HIVE_CHECK_CROSS_PRODUCT)) {
       physicalCtx = new CrossProductCheck().resolve(physicalCtx);
+    } else {
+      LOG.debug("Skipping cross product analysis");
     }
 
     if (conf.getBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED)) {
       (new Vectorizer()).resolve(physicalCtx);
+    } else {
+      LOG.debug("Skipping vectorization");
     }
+
     if (!"none".equalsIgnoreCase(conf.getVar(HiveConf.ConfVars.HIVESTAGEIDREARRANGE))) {
       (new StageIDsRearranger()).resolve(physicalCtx);
+    } else {
+      LOG.debug("Skipping stage id rearranger");
     }
     return;
   }
-
 }
