@@ -1,4 +1,5 @@
 set hive.cbo.enable=true;
+set hive.exec.check.crossproducts=false;
 
 drop table if exists t1;
 drop table if exists t2;
@@ -187,9 +188,11 @@ select * from (select key as a, c_int+1 as b, sum(c_int) as c from t1 where (t1.
 
 select * from (select key as a, c_int+1 as b, sum(c_int) as c from t1 where (t1.c_int + 1 >= 0) and (t1.c_int > 0 or t1.c_float >= 0)  group by c_float, t1.c_int, key having t1.c_float > 0 and (c_int >=1 or c_float >= 1) and (c_int + c_float) >= 0 order by b % c asc, b desc limit 5) t1 left outer join (select key as p, c_int+1 as q, sum(c_int) as r from t2 where (t2.c_int + 1 >= 0) and (t2.c_int > 0 or t2.c_float >= 0)  group by c_float, t2.c_int, key  having t2.c_float > 0 and (c_int >=1 or c_float >= 1) and (c_int + c_float) >= 0 limit 5) t2 on t1.a=p left outer join t3 on t1.a=key where (b + t2.q >= 0) and (b > 0 or c_int >= 0) group by t3.c_int, c  having t3.c_int > 0 and (c_int >=1 or c >= 1) and (c_int + c) >= 0  order by t3.c_int % c asc, t3.c_int desc limit 5;
 
--- 8. Test UDAF
+-- 8. Test UDF/UDAF
 select count(*), count(c_int), sum(c_int), avg(c_int), max(c_int), min(c_int) from t1;
+select count(*), count(c_int), sum(c_int), avg(c_int), max(c_int), min(c_int), case c_int when 0  then 1 when 1 then 2 else 3 end, sum(case c_int when 0  then 1 when 1 then 2 else 3 end) from t1 group by c_int;
 select * from (select count(*) as a, count(distinct c_int) as b, sum(c_int) as c, avg(c_int) as d, max(c_int) as e, min(c_int) as f from t1) t1;
+select * from (select count(*) as a, count(distinct c_int) as b, sum(c_int) as c, avg(c_int) as d, max(c_int) as e, min(c_int) as f, case c_int when 0  then 1 when 1 then 2 else 3 end as g, sum(case c_int when 0  then 1 when 1 then 2 else 3 end) as h from t1 group by c_int) t1;
 select f,a,e,b from (select count(*) as a, count(c_int) as b, sum(c_int) as c, avg(c_int) as d, max(c_int) as e, min(c_int) as f from t1) t1;
 select f,a,e,b from (select count(*) as a, count(distinct c_int) as b, sum(distinct c_int) as c, avg(distinct c_int) as d, max(distinct c_int) as e, min(distinct c_int) as f from t1) t1;
 select count(c_int) as a, avg(c_float), key from t1 group by key;
@@ -199,12 +202,13 @@ select count(distinct c_int) as a, avg(c_float) from t1 group by c_float, c_int;
 
 -- 9. Test Windowing Functions
 select count(c_int) over() from t1;
-select * from (select count(c_int) over() from t1) t1;
-select count(c_int) over(), sum(c_float) over() from t1;
+select count(c_int) over(), sum(c_float) over(), max(c_int) over(), min(c_int) over(), row_number() over(), rank() over(), dense_rank() over(), percent_rank() over(), lead(c_int, 2, c_int) over(), lag(c_float, 2, c_float) over() from t1;
+select * from (select count(c_int) over(), sum(c_float) over(), max(c_int) over(), min(c_int) over(), row_number() over(), rank() over(), dense_rank() over(), percent_rank() over(), lead(c_int, 2, c_int) over(), lag(c_float, 2, c_float) over() from t1) t1;
 select x from (select count(c_int) over() as x, sum(c_float) over() from t1) t1;
 select * from (select max(c_int) over (partition by key order by value Rows UNBOUNDED PRECEDING), min(c_int) over (partition by key order by value rows current row), count(c_int) over(partition by key order by value ROWS 1 PRECEDING), avg(value) over (partition by key order by value Rows between unbounded preceding and unbounded following), sum(value) over (partition by key order by value rows between unbounded preceding and current row), avg(c_float) over (partition by key order by value Rows between 1 preceding and unbounded following), sum(c_float) over (partition by key order by value rows between 1 preceding and current row), max(c_float) over (partition by key order by value rows between 1 preceding and unbounded following), min(c_float) over (partition by key order by value rows between 1 preceding and 1 following) from t1) t1;
 select i, a, h, b, c, d, e, f, g, a as x, a +1 as y from (select max(c_int) over (partition by key order by value range UNBOUNDED PRECEDING) a, min(c_int) over (partition by key order by value range current row) b, count(c_int) over(partition by key order by value range 1 PRECEDING) c, avg(value) over (partition by key order by value range between unbounded preceding and unbounded following) d, sum(value) over (partition by key order by value range between unbounded preceding and current row) e, avg(c_float) over (partition by key order by value range between 1 preceding and unbounded following) f, sum(c_float) over (partition by key order by value range between 1 preceding and current row) g, max(c_float) over (partition by key order by value range between 1 preceding and unbounded following) h, min(c_float) over (partition by key order by value range between 1 preceding and 1 following) i from t1) t1;
 
+-- 10. Test views
 create view v1 as select c_int, value, c_boolean, dt from t1;
 create view v2 as select c_int, value from t2;
 
@@ -218,7 +222,6 @@ select count(*) from v1 a join v1 b on a.value = b.value;
 
 create view v3 as select v1.value val from v1 join t1 on v1.c_boolean = t1.c_boolean;
 
--- 10. view chaining
 select count(val) from v3 where val != '1';
 with q1 as ( select key from t1 where key = '1')
 select count(*) from q1;
@@ -296,7 +299,7 @@ part where part.p_size not in
   (select avg(p_size) 
   from (select p_size from part) a 
   where p_size < 10
-  )
+  ) order by p_name
 ;
 
 -- agg, corr
@@ -305,7 +308,7 @@ from part b where b.p_size not in
   (select min(p_size) 
   from (select p_mfgr, p_size from part) a 
   where p_size < 10 and b.p_mfgr = a.p_mfgr
-  )
+  ) order by  p_name
 ;
 
 -- non agg, non corr, Group By in Parent Query
@@ -374,7 +377,6 @@ where li.l_linenumber = 1 and
 -- Stage 2: group by Stage 1 o/p
 -- Stage 5: group by on sq2:src_cbo (subquery in having)
 -- Stage 6: Stage 2 o/p semijoin Stage 5
-explain
 select key, value, count(*) 
 from src_cbo b
 where b.key in (select key from src_cbo where src_cbo.key > '8')
@@ -383,7 +385,6 @@ having count(*) in (select count(*) from src_cbo s1 where s1.key > '9' group by 
 ;
 
 -- non agg, non corr, windowing
-explain
 select p_mfgr, p_name, avg(p_size) 
 from part 
 group by p_mfgr, p_name
