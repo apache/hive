@@ -14,6 +14,7 @@ import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.optiq.translator.ExprNodeConverter;
 import org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner;
@@ -246,8 +247,6 @@ public class RelOptHiveTable extends RelOptAbstractTable {
     }
 
     // 3. Obtain Stats for Partition Cols
-    // TODO: Just using no of partitions for NDV is a gross approximation for
-    // multi col partitions; Hack till HIVE-7392 gets fixed.
     if (colNamesFailedStats.isEmpty() && !partColNamesThatRqrStats.isEmpty()) {
        m_numPartitions = partitionList.getPartitions().size();
       ColStatistics cStats = null;
@@ -255,8 +254,7 @@ public class RelOptHiveTable extends RelOptAbstractTable {
         cStats = new ColStatistics(m_hiveTblMetadata.getTableName(),
             partColNamesThatRqrStats.get(i), m_hivePartitionColsMap.get(
                 partColIndxsThatRqrStats.get(i)).getTypeName());
-        cStats.setCountDistint(m_numPartitions);
-
+        cStats.setCountDistint(getDistinctCount(partitionList.getPartitions(),partColNamesThatRqrStats.get(i)));
         m_hiveColStatsMap.put(partColIndxsThatRqrStats.get(i), cStats);
       }
     }
@@ -268,6 +266,14 @@ public class RelOptHiveTable extends RelOptAbstractTable {
       LOG.error(logMsg);
       throw new RuntimeException(logMsg);
     }
+  }
+
+  private int getDistinctCount(Set<Partition> partitions, String partColName) {
+    Set<String> distinctVals = new HashSet<String>(partitions.size());
+    for (Partition partition : partitions) {
+      distinctVals.add(partition.getSpec().get(partColName));
+    }
+    return distinctVals.size();
   }
 
   public List<ColStatistics> getColStat(List<Integer> projIndxLst) {
