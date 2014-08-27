@@ -166,7 +166,7 @@ public class CLIService extends CompositeService implements ICLIService {
           throws HiveSQLException {
     SessionHandle sessionHandle = sessionManager.openSession(protocol, username, password, null, configuration,
         true, delegationToken);
-    LOG.debug(sessionHandle + ": openSession()");
+    LOG.debug(sessionHandle + ": openSessionWithImpersonation()");
     return sessionHandle;
   }
 
