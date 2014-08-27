@@ -145,7 +145,11 @@ public class VectorFileSinkOperator extends FileSinkOperator {
       }
 
       rowOutWriters = fpaths.getOutWriters();
-      if (conf.isGatherStats()) {
+      // check if all record writers implement statistics. if atleast one RW
+      // doesn't implement stats interface we will fallback to conventional way
+      // of gathering stats
+      isCollectRWStats = areAllTrue(statsFromRecordWriter);
+      if (conf.isGatherStats() && !isCollectRWStats) {
         if (statsCollectRawDataSize) {
           SerDeStats stats = serializer.getSerDeStats();
           if (stats != null) {
