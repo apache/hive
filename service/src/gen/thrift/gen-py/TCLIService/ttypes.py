@@ -5752,6 +5752,7 @@ class TFetchResultsReq:
    - operationHandle
    - orientation
    - maxRows
+   - fetchType
   """
 
   thrift_spec = (
@@ -5759,12 +5760,14 @@ class TFetchResultsReq:
     (1, TType.STRUCT, 'operationHandle', (TOperationHandle, TOperationHandle.thrift_spec), None, ), # 1
     (2, TType.I32, 'orientation', None,     0, ), # 2
     (3, TType.I64, 'maxRows', None, None, ), # 3
+    (4, TType.I16, 'fetchType', None, 0, ), # 4
   )
 
-  def __init__(self, operationHandle=None, orientation=thrift_spec[2][4], maxRows=None,):
+  def __init__(self, operationHandle=None, orientation=thrift_spec[2][4], maxRows=None, fetchType=thrift_spec[4][4],):
     self.operationHandle = operationHandle
     self.orientation = orientation
     self.maxRows = maxRows
+    self.fetchType = fetchType
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -5791,6 +5794,11 @@ class TFetchResultsReq:
           self.maxRows = iprot.readI64();
         else:
           iprot.skip(ftype)
+      elif fid == 4:
+        if ftype == TType.I16:
+          self.fetchType = iprot.readI16();
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -5812,6 +5820,10 @@ class TFetchResultsReq:
     if self.maxRows is not None:
       oprot.writeFieldBegin('maxRows', TType.I64, 3)
       oprot.writeI64(self.maxRows)
+      oprot.writeFieldEnd()
+    if self.fetchType is not None:
+      oprot.writeFieldBegin('fetchType', TType.I16, 4)
+      oprot.writeI16(self.fetchType)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
