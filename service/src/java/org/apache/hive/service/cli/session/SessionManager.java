@@ -38,6 +38,7 @@ import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.SessionHandle;
 import org.apache.hive.service.cli.operation.OperationManager;
 import org.apache.hive.service.cli.thrift.TProtocolVersion;
+import org.apache.hive.service.server.ThreadFactoryWithGarbageCleanup;
 
 /**
  * SessionManager.
@@ -64,22 +65,27 @@ public class SessionManager extends CompositeService {
     } catch (HiveException e) {
       throw new RuntimeException("Error applying authorization policy on hive configuration", e);
     }
-
     this.hiveConf = hiveConf;
-    int backgroundPoolSize = hiveConf.getIntVar(ConfVars.HIVE_SERVER2_ASYNC_EXEC_THREADS);
-    LOG.info("HiveServer2: Async execution thread pool size: " + backgroundPoolSize);
-    int backgroundPoolQueueSize = hiveConf.getIntVar(ConfVars.HIVE_SERVER2_ASYNC_EXEC_WAIT_QUEUE_SIZE);
-    LOG.info("HiveServer2: Async execution wait queue size: " + backgroundPoolQueueSize);
-    int keepAliveTime = hiveConf.getIntVar(ConfVars.HIVE_SERVER2_ASYNC_EXEC_KEEPALIVE_TIME);
-    LOG.info("HiveServer2: Async execution thread keepalive time: " + keepAliveTime);
-    // Create a thread pool with #backgroundPoolSize threads
-    // Threads terminate when they are idle for more than the keepAliveTime
-    // An bounded blocking queue is used to queue incoming operations, if #operations > backgroundPoolSize
-    backgroundOperationPool = new ThreadPoolExecutor(backgroundPoolSize, backgroundPoolSize,
-        keepAliveTime, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(backgroundPoolQueueSize));
-    backgroundOperationPool.allowCoreThreadTimeOut(true);
+    createBackgroundOperationPool();
     addService(operationManager);
     super.init(hiveConf);
+  }
+
+  private void createBackgroundOperationPool() {
+    int backgroundPoolSize = hiveConf.getIntVar(ConfVars.HIVE_SERVER2_ASYNC_EXEC_THREADS);
+    LOG.info("HiveServer2: Background operation thread pool size: " + backgroundPoolSize);
+    int backgroundPoolQueueSize = hiveConf.getIntVar(ConfVars.HIVE_SERVER2_ASYNC_EXEC_WAIT_QUEUE_SIZE);
+    LOG.info("HiveServer2: Background operation thread wait queue size: " + backgroundPoolQueueSize);
+    int keepAliveTime = hiveConf.getIntVar(ConfVars.HIVE_SERVER2_ASYNC_EXEC_KEEPALIVE_TIME);
+    LOG.info("HiveServer2: Background operation thread keepalive time: " + keepAliveTime);
+    // Create a thread pool with #backgroundPoolSize threads
+    // Threads terminate when they are idle for more than the keepAliveTime
+    // A bounded blocking queue is used to queue incoming operations, if #operations > backgroundPoolSize
+    String threadPoolName = "HiveServer2-Background-Pool";
+    backgroundOperationPool = new ThreadPoolExecutor(backgroundPoolSize, backgroundPoolSize,
+        keepAliveTime, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(backgroundPoolQueueSize),
+        new ThreadFactoryWithGarbageCleanup(threadPoolName));
+    backgroundOperationPool.allowCoreThreadTimeOut(true);
   }
 
   private void applyAuthorizationConfigPolicy(HiveConf newHiveConf) throws HiveException {

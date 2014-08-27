@@ -252,6 +252,8 @@ public class ObjectStore implements RawStore, Configurable {
       expressionProxy = createExpressionProxy(hiveConf);
       directSql = new MetaStoreDirectSql(pm);
     }
+    LOG.debug("RawStore: " + this + ", with PersistenceManager: " + pm +
+        " created in the thread with id: " + Thread.currentThread().getId());
   }
 
   /**
@@ -343,6 +345,8 @@ public class ObjectStore implements RawStore, Configurable {
   @Override
   public void shutdown() {
     if (pm != null) {
+      LOG.debug("RawStore: " + this + ", with PersistenceManager: " + pm +
+          " will be shutdown");
       pm.close();
     }
   }
