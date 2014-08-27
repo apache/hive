@@ -21,9 +21,12 @@ POSTHOOK: Output: default@invites
 PREHOOK: query: CREATE VIEW tv1.view1 as SELECT * FROM invites
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@invites
+PREHOOK: Output: database:tv1
+PREHOOK: Output: tv1@view1
 POSTHOOK: query: CREATE VIEW tv1.view1 as SELECT * FROM invites
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@invites
+POSTHOOK: Output: database:tv1
 POSTHOOK: Output: tv1@view1
 PREHOOK: query: DESCRIBE EXTENDED tv1.view1
 PREHOOK: type: DESCTABLE

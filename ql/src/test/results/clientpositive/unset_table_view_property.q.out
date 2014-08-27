@@ -7,12 +7,11 @@ POSTHOOK: Output: database:vt
 PREHOOK: query: CREATE TABLE vt.testTable(col1 INT, col2 INT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:vt
-PREHOOK: Output: vt@vt.testTable
+PREHOOK: Output: vt@testTable
 POSTHOOK: query: CREATE TABLE vt.testTable(col1 INT, col2 INT)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:vt
 POSTHOOK: Output: vt@testTable
-POSTHOOK: Output: vt@vt.testTable
 PREHOOK: query: SHOW TBLPROPERTIES vt.testTable
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES vt.testTable
@@ -207,10 +206,13 @@ PREHOOK: query: -- UNSET VIEW PROPERTIES
 CREATE VIEW vt.testView AS SELECT value FROM src WHERE key=86
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
+PREHOOK: Output: database:vt
+PREHOOK: Output: vt@testView
 POSTHOOK: query: -- UNSET VIEW PROPERTIES
 CREATE VIEW vt.testView AS SELECT value FROM src WHERE key=86
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
+POSTHOOK: Output: database:vt
 POSTHOOK: Output: vt@testView
 PREHOOK: query: ALTER VIEW vt.testView SET TBLPROPERTIES ('propA'='100', 'propB'='200')
 PREHOOK: type: ALTERVIEW_PROPERTIES

@@ -10,11 +10,10 @@ POSTHOOK: type: CREATEDATABASE
 POSTHOOK: Output: database:ac
 PREHOOK: query: create table ac.alter_char_1 (key string, value string)
 PREHOOK: type: CREATETABLE
-PREHOOK: Output: ac@ac.alter_char_1
+PREHOOK: Output: ac@alter_char_1
 PREHOOK: Output: database:ac
 POSTHOOK: query: create table ac.alter_char_1 (key string, value string)
 POSTHOOK: type: CREATETABLE
-POSTHOOK: Output: ac@ac.alter_char_1
 POSTHOOK: Output: ac@alter_char_1
 POSTHOOK: Output: database:ac
 PREHOOK: query: insert overwrite table ac.alter_char_1

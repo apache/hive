@@ -7,11 +7,10 @@ POSTHOOK: Output: database:dmp
 PREHOOK: query: create table dmp.mp (a string) partitioned by (b string, c string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:dmp
-PREHOOK: Output: dmp@dmp.mp
+PREHOOK: Output: dmp@mp
 POSTHOOK: query: create table dmp.mp (a string) partitioned by (b string, c string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:dmp
-POSTHOOK: Output: dmp@dmp.mp
 POSTHOOK: Output: dmp@mp
 PREHOOK: query: alter table dmp.mp add partition (b='1', c='1')
 PREHOOK: type: ALTERTABLE_ADDPARTS

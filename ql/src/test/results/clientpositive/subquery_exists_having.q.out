@@ -320,6 +320,8 @@ having exists
   )
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@cv1
 POSTHOOK: query: -- view test
 create view cv1 as 
 select b.key, count(*) as c
@@ -332,6 +334,7 @@ having exists
   )
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@cv1
 PREHOOK: query: select * from cv1
 PREHOOK: type: QUERY

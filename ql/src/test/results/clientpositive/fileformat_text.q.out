@@ -18,7 +18,7 @@ STAGE PLANS:
           columns: key int, value string
           input format: org.apache.hadoop.mapred.TextInputFormat
           output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-          name: dest1
+          name: default.dest1
 
 PREHOOK: query: CREATE TABLE dest1(key INT, value STRING) STORED AS
   INPUTFORMAT 'org.apache.hadoop.mapred.TextInputFormat'

@@ -82,7 +82,7 @@ STAGE PLANS:
           input format: org.apache.hadoop.mapred.TextInputFormat
           output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
           serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-          name: tmp_src
+          name: default.tmp_src
 
   Stage: Stage-3
     Stats-Aggr Operator
@@ -96,9 +96,12 @@ STAGE PLANS:
 PREHOOK: query: CREATE TABLE tmp_src AS SELECT * FROM (SELECT value, count(value) AS cnt FROM src GROUP BY value) f1 ORDER BY cnt
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tmp_src
 POSTHOOK: query: CREATE TABLE tmp_src AS SELECT * FROM (SELECT value, count(value) AS cnt FROM src GROUP BY value) f1 ORDER BY cnt
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tmp_src
 PREHOOK: query: SELECT * FROM tmp_src
 PREHOOK: type: QUERY
@@ -1478,10 +1481,13 @@ PREHOOK: query: -- create empty table
 CREATE TABLE empty STORED AS orc AS SELECT * FROM tmp_src_part WHERE d = -1000
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@tmp_src_part
+PREHOOK: Output: database:default
+PREHOOK: Output: default@empty
 POSTHOOK: query: -- create empty table
 CREATE TABLE empty STORED AS orc AS SELECT * FROM tmp_src_part WHERE d = -1000
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@tmp_src_part
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@empty
 PREHOOK: query: SELECT * FROM empty
 PREHOOK: type: QUERY

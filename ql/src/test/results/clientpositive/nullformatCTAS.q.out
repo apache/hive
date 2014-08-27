@@ -97,7 +97,7 @@ STAGE PLANS:
           input format: org.apache.hadoop.mapred.TextInputFormat
           output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
           serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-          name: null_tab3
+          name: default.null_tab3
 
   Stage: Stage-2
     Stats-Aggr Operator
@@ -136,10 +136,13 @@ PREHOOK: query: CREATE TABLE null_tab3 ROW FORMAT DELIMITED NULL DEFINED AS 'foo
    AS SELECT a, b FROM base_tab
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@base_tab
+PREHOOK: Output: database:default
+PREHOOK: Output: default@null_tab3
 POSTHOOK: query: CREATE TABLE null_tab3 ROW FORMAT DELIMITED NULL DEFINED AS 'fooNull'
    AS SELECT a, b FROM base_tab
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@base_tab
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@null_tab3
 PREHOOK: query: DESCRIBE EXTENDED null_tab3
 PREHOOK: type: DESCTABLE

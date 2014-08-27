@@ -10,6 +10,8 @@ FROM src
 WHERE key=86
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@view_partitioned
 POSTHOOK: query: CREATE VIEW view_partitioned
 PARTITIONED ON (value)
 AS
@@ -18,6 +20,7 @@ FROM src
 WHERE key=86
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@view_partitioned
 PREHOOK: query: ALTER VIEW view_partitioned
 ADD PARTITION (value='val_86')

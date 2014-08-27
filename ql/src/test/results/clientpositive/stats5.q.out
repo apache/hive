@@ -1,9 +1,12 @@
 PREHOOK: query: create table analyze_src as select * from src
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@analyze_src
 POSTHOOK: query: create table analyze_src as select * from src
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@analyze_src
 PREHOOK: query: explain analyze table analyze_src compute statistics
 PREHOOK: type: QUERY

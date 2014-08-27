@@ -50,9 +50,12 @@ POSTHOOK: Output: db5@temp_tbl
 PREHOOK: query: CREATE VIEW temp_tbl_view AS SELECT * FROM temp_tbl
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: db5@temp_tbl
+PREHOOK: Output: database:db5
+PREHOOK: Output: db5@temp_tbl_view
 POSTHOOK: query: CREATE VIEW temp_tbl_view AS SELECT * FROM temp_tbl
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: db5@temp_tbl
+POSTHOOK: Output: database:db5
 POSTHOOK: Output: db5@temp_tbl_view
 PREHOOK: query: CREATE INDEX idx1 ON TABLE temp_tbl(id) AS 'COMPACT' with DEFERRED REBUILD
 PREHOOK: type: CREATEINDEX
@@ -95,9 +98,12 @@ POSTHOOK: Output: db5@temp_tbl2
 PREHOOK: query: CREATE VIEW temp_tbl2_view AS SELECT * FROM temp_tbl2
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: db5@temp_tbl2
+PREHOOK: Output: database:db5
+PREHOOK: Output: db5@temp_tbl2_view
 POSTHOOK: query: CREATE VIEW temp_tbl2_view AS SELECT * FROM temp_tbl2
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: db5@temp_tbl2
+POSTHOOK: Output: database:db5
 POSTHOOK: Output: db5@temp_tbl2_view
 #### A masked pattern was here ####
 PREHOOK: type: CREATEINDEX
