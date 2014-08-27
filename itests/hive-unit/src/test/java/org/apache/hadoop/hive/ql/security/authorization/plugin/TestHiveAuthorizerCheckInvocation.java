@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.security.authorization.plugin;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
@@ -138,6 +139,47 @@ public class TestHiveAuthorizerCheckInvocation {
     assertEquals("no of columns used", 5, tableObj.getColumns().size());
     assertEquals("Columns used", Arrays.asList("city", "date", "i", "j", "k"),
         getSortedList(tableObj.getColumns()));
+  }
+
+  @Test
+  public void testCreateTableWithDb() throws HiveAuthzPluginException, HiveAccessControlException,
+      CommandNeedRetryException {
+    final String newTable = "ctTableWithDb";
+    checkCreateViewOrTableWithDb(newTable, "create table " + dbName + "." + newTable + "(i int)");
+  }
+
+  @Test
+  public void testCreateViewWithDb() throws HiveAuthzPluginException, HiveAccessControlException,
+      CommandNeedRetryException {
+    final String newTable = "ctViewWithDb";
+    checkCreateViewOrTableWithDb(newTable, "create table " + dbName + "." + newTable + "(i int)");
+  }
+
+  private void checkCreateViewOrTableWithDb(String newTable, String cmd)
+      throws HiveAuthzPluginException, HiveAccessControlException {
+    reset(mockedAuthorizer);
+    int status = driver.compile(cmd);
+    assertEquals(0, status);
+
+    List<HivePrivilegeObject> outputs = getHivePrivilegeObjectInputs().getRight();
+    assertEquals("num outputs", 2, outputs.size());
+    for (HivePrivilegeObject output : outputs) {
+      switch (output.getType()) {
+      case DATABASE:
+        assertTrue("database name", output.getDbname().equalsIgnoreCase(dbName));
+        break;
+      case TABLE_OR_VIEW:
+        assertTrue("database name", output.getDbname().equalsIgnoreCase(dbName));
+        assertEqualsIgnoreCase("table name", output.getObjectName(), newTable);
+        break;
+      default:
+        fail("Unexpected type : " + output.getType());
+      }
+    }
+  }
+
+  private void assertEqualsIgnoreCase(String msg, String expected, String actual) {
+    assertEquals(msg, expected.toLowerCase(), actual.toLowerCase());
   }
 
   @Test

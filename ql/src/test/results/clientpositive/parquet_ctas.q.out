@@ -39,9 +39,12 @@ POSTHOOK: Lineage: staging.value SIMPLE [(src)src.FieldSchema(name:value, type:s
 PREHOOK: query: create table parquet_ctas stored as parquet as select * from staging
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@staging
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_ctas
 POSTHOOK: query: create table parquet_ctas stored as parquet as select * from staging
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@staging
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@parquet_ctas
 PREHOOK: query: describe parquet_ctas
 PREHOOK: type: DESCTABLE
@@ -72,9 +75,12 @@ POSTHOOK: Input: default@parquet_ctas
 PREHOOK: query: create table parquet_ctas_advanced stored as parquet as select key+1,concat(value,"value") from staging
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@staging
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_ctas_advanced
 POSTHOOK: query: create table parquet_ctas_advanced stored as parquet as select key+1,concat(value,"value") from staging
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@staging
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@parquet_ctas_advanced
 PREHOOK: query: describe parquet_ctas_advanced
 PREHOOK: type: DESCTABLE
@@ -105,9 +111,12 @@ POSTHOOK: Input: default@parquet_ctas_advanced
 PREHOOK: query: create table parquet_ctas_alias stored as parquet as select key+1 as mykey,concat(value,"value") as myvalue from staging
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@staging
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_ctas_alias
 POSTHOOK: query: create table parquet_ctas_alias stored as parquet as select key+1 as mykey,concat(value,"value") as myvalue from staging
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@staging
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@parquet_ctas_alias
 PREHOOK: query: describe parquet_ctas_alias
 PREHOOK: type: DESCTABLE
@@ -138,9 +147,12 @@ POSTHOOK: Input: default@parquet_ctas_alias
 PREHOOK: query: create table parquet_ctas_mixed stored as parquet as select key,key+1,concat(value,"value") as myvalue from staging
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@staging
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_ctas_mixed
 POSTHOOK: query: create table parquet_ctas_mixed stored as parquet as select key,key+1,concat(value,"value") as myvalue from staging
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@staging
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@parquet_ctas_mixed
 PREHOOK: query: describe parquet_ctas_mixed
 PREHOOK: type: DESCTABLE

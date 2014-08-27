@@ -12,12 +12,11 @@ PREHOOK: query: -- Create temp, and populate it with some values in src.
 CREATE TABLE it.temp(key STRING, val STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:it
-PREHOOK: Output: it@it.temp
+PREHOOK: Output: it@temp
 POSTHOOK: query: -- Create temp, and populate it with some values in src.
 CREATE TABLE it.temp(key STRING, val STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:it
-POSTHOOK: Output: it@it.temp
 POSTHOOK: Output: it@temp
 PREHOOK: query: -- Build an index on it.temp.
 CREATE INDEX temp_index ON TABLE it.temp(key) as 'COMPACT' WITH DEFERRED REBUILD

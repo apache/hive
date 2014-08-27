@@ -101,12 +101,11 @@ POSTHOOK: Output: database:skew_test
 PREHOOK: query: create table skew_test.original2 (key STRING, value STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:skew_test
-PREHOOK: Output: skew_test@skew_test.original2
+PREHOOK: Output: skew_test@original2
 POSTHOOK: query: create table skew_test.original2 (key STRING, value STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:skew_test
 POSTHOOK: Output: skew_test@original2
-POSTHOOK: Output: skew_test@skew_test.original2
 PREHOOK: query: describe formatted skew_test.original2
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: skew_test@original2
@@ -196,12 +195,11 @@ POSTHOOK: Output: skew_test@original2
 PREHOOK: query: create table skew_test.original3 (key STRING, value STRING) SKEWED BY (key, value) ON ((1,1),(5,6))
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:skew_test
-PREHOOK: Output: skew_test@skew_test.original3
+PREHOOK: Output: skew_test@original3
 POSTHOOK: query: create table skew_test.original3 (key STRING, value STRING) SKEWED BY (key, value) ON ((1,1),(5,6))
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:skew_test
 POSTHOOK: Output: skew_test@original3
-POSTHOOK: Output: skew_test@skew_test.original3
 PREHOOK: query: describe formatted skew_test.original3
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: skew_test@original3

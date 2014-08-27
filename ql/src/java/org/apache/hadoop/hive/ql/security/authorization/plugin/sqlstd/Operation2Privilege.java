@@ -278,8 +278,9 @@ public class Operation2Privilege {
 (SEL_NOGRANT_AR, null));
     op2Priv.put(HiveOperationType.SHOW_TBLPROPERTIES, PrivRequirement.newIOPrivRequirement
 (SEL_NOGRANT_AR, null));
-    op2Priv.put(HiveOperationType.CREATETABLE_AS_SELECT, PrivRequirement.newIOPrivRequirement
-(SEL_NOGRANT_AR, null));
+    op2Priv.put(HiveOperationType.CREATETABLE_AS_SELECT, PrivRequirement.newPrivRequirementList(
+        new PrivRequirement(SEL_NOGRANT_AR, IOType.INPUT),
+        new PrivRequirement(OWNER_PRIV_AR, HivePrivilegeObjectType.DATABASE)));
 
     // QUERY,LOAD op can contain an insert & overwrite,
     // require delete privilege if this is an insert-overwrite
@@ -302,8 +303,9 @@ public class Operation2Privilege {
 
     // for now allow only create-view with 'select with grant'
     // the owner will also have select with grant privileges on new view
-    op2Priv.put(HiveOperationType.CREATEVIEW, PrivRequirement.newIOPrivRequirement
-(SEL_GRANT_AR, null));
+    op2Priv.put(HiveOperationType.CREATEVIEW, PrivRequirement.newPrivRequirementList(
+        new PrivRequirement(SEL_GRANT_AR, IOType.INPUT),
+        new PrivRequirement(OWNER_PRIV_AR, HivePrivilegeObjectType.DATABASE)));
 
     op2Priv.put(HiveOperationType.SHOWFUNCTIONS, PrivRequirement.newIOPrivRequirement
 (null, null));

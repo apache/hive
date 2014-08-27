@@ -7,11 +7,10 @@ POSTHOOK: Output: database:tc
 PREHOOK: query: create table tc.tstsrc like default.src
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:tc
-PREHOOK: Output: tc@tc.tstsrc
+PREHOOK: Output: tc@tstsrc
 POSTHOOK: query: create table tc.tstsrc like default.src
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:tc
-POSTHOOK: Output: tc@tc.tstsrc
 POSTHOOK: Output: tc@tstsrc
 PREHOOK: query: insert overwrite table tc.tstsrc select key, value from default.src
 PREHOOK: type: QUERY
@@ -26,11 +25,10 @@ POSTHOOK: Lineage: tstsrc.value SIMPLE [(src)src.FieldSchema(name:value, type:st
 PREHOOK: query: create table tc.tstsrcpart like default.srcpart
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:tc
-PREHOOK: Output: tc@tc.tstsrcpart
+PREHOOK: Output: tc@tstsrcpart
 POSTHOOK: query: create table tc.tstsrcpart like default.srcpart
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:tc
-POSTHOOK: Output: tc@tc.tstsrcpart
 POSTHOOK: Output: tc@tstsrcpart
 PREHOOK: query: insert overwrite table tc.tstsrcpart partition (ds='2008-04-08', hr='12')
 select key, value from default.srcpart where ds='2008-04-08' and hr='12'

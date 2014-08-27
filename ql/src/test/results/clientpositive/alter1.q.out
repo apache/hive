@@ -216,12 +216,11 @@ POSTHOOK: query: SHOW TABLES alter1_db
 POSTHOOK: type: SHOWTABLES
 PREHOOK: query: CREATE TABLE alter1_db.alter1(a INT, b INT)
 PREHOOK: type: CREATETABLE
-PREHOOK: Output: alter1_db@alter1_db.alter1
+PREHOOK: Output: alter1_db@alter1
 PREHOOK: Output: database:alter1_db
 POSTHOOK: query: CREATE TABLE alter1_db.alter1(a INT, b INT)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: alter1_db@alter1
-POSTHOOK: Output: alter1_db@alter1_db.alter1
 POSTHOOK: Output: database:alter1_db
 PREHOOK: query: DESCRIBE EXTENDED alter1_db.alter1
 PREHOOK: type: DESCTABLE

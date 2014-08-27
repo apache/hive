@@ -3,11 +3,14 @@ PREHOOK: query: -- SORT_BEFORE_DIFF
 create table src_auth_tmp as select * from src
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src_auth_tmp
 POSTHOOK: query: -- SORT_BEFORE_DIFF
 
 create table src_auth_tmp as select * from src
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_auth_tmp
 PREHOOK: query: create table authorization_part (key int, value string) partitioned by (ds string)
 PREHOOK: type: CREATETABLE

@@ -1413,22 +1413,28 @@ create view T1_v as
 select key from src where key <'11'
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@T1_v
 POSTHOOK: query: -- null check
 create view T1_v as 
 select key from src where key <'11'
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@T1_v
 PREHOOK: query: create view T2_v as 
 select case when key > '104' then null else key end as key from T1_v
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
 PREHOOK: Input: default@t1_v
+PREHOOK: Output: database:default
+PREHOOK: Output: default@T2_v
 POSTHOOK: query: create view T2_v as 
 select case when key > '104' then null else key end as key from T1_v
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@t1_v
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@T2_v
 Warning: Shuffle Join JOIN[24][tables = [t1_v, sq_1_notin_nullcheck]] in Stage 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: explain

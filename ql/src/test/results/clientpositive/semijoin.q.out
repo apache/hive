@@ -1,9 +1,12 @@
 PREHOOK: query: create table t1 as select cast(key as int) key, value from src where key <= 10
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1
 POSTHOOK: query: create table t1 as select cast(key as int) key, value from src where key <= 10
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1
 PREHOOK: query: select * from t1 sort by key
 PREHOOK: type: QUERY
@@ -27,9 +30,12 @@ POSTHOOK: Input: default@t1
 PREHOOK: query: create table t2 as select cast(2*key as int) key, value from t1
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@t1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t2
 POSTHOOK: query: create table t2 as select cast(2*key as int) key, value from t1
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@t1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t2
 PREHOOK: query: select * from t2 sort by key
 PREHOOK: type: QUERY
@@ -54,10 +60,13 @@ PREHOOK: query: create table t3 as select * from (select * from t1 union all sel
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t3
 POSTHOOK: query: create table t3 as select * from (select * from t1 union all select * from t2) b
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t3
 PREHOOK: query: select * from t3 sort by key, value
 PREHOOK: type: QUERY

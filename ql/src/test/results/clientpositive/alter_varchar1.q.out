@@ -10,12 +10,11 @@ POSTHOOK: type: CREATEDATABASE
 POSTHOOK: Output: database:avc
 PREHOOK: query: create table avc.alter_varchar_1 (key string, value string)
 PREHOOK: type: CREATETABLE
-PREHOOK: Output: avc@avc.alter_varchar_1
+PREHOOK: Output: avc@alter_varchar_1
 PREHOOK: Output: database:avc
 POSTHOOK: query: create table avc.alter_varchar_1 (key string, value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: avc@alter_varchar_1
-POSTHOOK: Output: avc@avc.alter_varchar_1
 POSTHOOK: Output: database:avc
 PREHOOK: query: insert overwrite table avc.alter_varchar_1
   select key, value from src order by key limit 5

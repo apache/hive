@@ -7,9 +7,12 @@ POSTHOOK: Output: database:vt
 PREHOOK: query: create view vt.v as select * from srcpart
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@srcpart
+PREHOOK: Output: database:vt
+PREHOOK: Output: vt@v
 POSTHOOK: query: create view vt.v as select * from srcpart
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@srcpart
+POSTHOOK: Output: database:vt
 POSTHOOK: Output: vt@v
 PREHOOK: query: describe formatted vt.v
 PREHOOK: type: DESCTABLE
@@ -49,10 +52,13 @@ PREHOOK: query: -- modifying definition of unpartitioned view
 create or replace view vt.v partitioned on (ds, hr) as select * from srcpart
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@srcpart
+PREHOOK: Output: database:vt
+PREHOOK: Output: vt@v
 POSTHOOK: query: -- modifying definition of unpartitioned view
 create or replace view vt.v partitioned on (ds, hr) as select * from srcpart
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@srcpart
+POSTHOOK: Output: database:vt
 POSTHOOK: Output: vt@v
 PREHOOK: query: alter view vt.v add partition (ds='2008-04-08',hr='11')
 PREHOOK: type: ALTERTABLE_ADDPARTS
@@ -167,10 +173,13 @@ PREHOOK: query: -- altering partitioned view 1
 create or replace view vt.v partitioned on (ds, hr) as select value, ds, hr from srcpart
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@srcpart
+PREHOOK: Output: database:vt
+PREHOOK: Output: vt@v
 POSTHOOK: query: -- altering partitioned view 1
 create or replace view vt.v partitioned on (ds, hr) as select value, ds, hr from srcpart
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@srcpart
+POSTHOOK: Output: database:vt
 POSTHOOK: Output: vt@v
 PREHOOK: query: select * from vt.v where value='val_409' and ds='2008-04-08' and hr='11'
 PREHOOK: type: QUERY
@@ -234,10 +243,13 @@ PREHOOK: query: -- altering partitioned view 2
 create or replace view vt.v partitioned on (ds, hr) as select key, value, ds, hr from srcpart
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@srcpart
+PREHOOK: Output: database:vt
+PREHOOK: Output: vt@v
 POSTHOOK: query: -- altering partitioned view 2
 create or replace view vt.v partitioned on (ds, hr) as select key, value, ds, hr from srcpart
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@srcpart
+POSTHOOK: Output: database:vt
 POSTHOOK: Output: vt@v
 PREHOOK: query: select * from vt.v where value='val_409' and ds='2008-04-08' and hr='11'
 PREHOOK: type: QUERY
@@ -319,9 +331,12 @@ POSTHOOK: Output: default@srcpart_temp
 PREHOOK: query: create view vt.v partitioned on (ds, hr) as select * from srcpart_temp
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@srcpart_temp
+PREHOOK: Output: database:vt
+PREHOOK: Output: vt@v
 POSTHOOK: query: create view vt.v partitioned on (ds, hr) as select * from srcpart_temp
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@srcpart_temp
+POSTHOOK: Output: database:vt
 POSTHOOK: Output: vt@v
 PREHOOK: query: drop table srcpart_temp
 PREHOOK: type: DROPTABLE
@@ -335,10 +350,13 @@ PREHOOK: query: -- vt.v is now invalid
 create or replace view vt.v partitioned on (ds, hr) as select * from srcpart
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@srcpart
+PREHOOK: Output: database:vt
+PREHOOK: Output: vt@v
 POSTHOOK: query: -- vt.v is now invalid
 create or replace view vt.v partitioned on (ds, hr) as select * from srcpart
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@srcpart
+POSTHOOK: Output: database:vt
 POSTHOOK: Output: vt@v
 PREHOOK: query: describe formatted vt.v
 PREHOOK: type: DESCTABLE

@@ -1024,6 +1024,8 @@ from part
 group by p_mfgr, p_brand
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@part
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mfgr_price_view
 POSTHOOK: query: -- 22. testViewAsTableInputWithWindowing
 create view IF NOT EXISTS mfgr_price_view as 
 select p_mfgr, p_brand, 
@@ -1032,6 +1034,7 @@ from part
 group by p_mfgr, p_brand
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@part
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mfgr_price_view
 PREHOOK: query: select * 
 from (
@@ -1113,6 +1116,8 @@ from part
 window w1 as (distribute by p_mfgr sort by p_name rows between 2 preceding and current row)
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@part
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mfgr_brand_price_view
 POSTHOOK: query: -- 23. testCreateViewWithWindowingQuery
 create view IF NOT EXISTS mfgr_brand_price_view as 
 select p_mfgr, p_brand, 
@@ -1121,6 +1126,7 @@ from part
 window w1 as (distribute by p_mfgr sort by p_name rows between 2 preceding and current row)
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@part
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mfgr_brand_price_view
 PREHOOK: query: select * from mfgr_brand_price_view
 PREHOOK: type: QUERY

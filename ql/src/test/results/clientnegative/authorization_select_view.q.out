@@ -11,8 +11,11 @@ POSTHOOK: Output: default@t1
 PREHOOK: query: create view v1 as select * from t1
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@t1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@v1
 POSTHOOK: query: create view v1 as select * from t1
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@t1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@v1
 FAILED: HiveAccessControlException Permission denied: Principal [name=user1, type=USER] does not have following privileges for operation QUERY [[SELECT] on Object [type=TABLE_OR_VIEW, name=default.v1]]

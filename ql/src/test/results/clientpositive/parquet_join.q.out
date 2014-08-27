@@ -39,16 +39,22 @@ POSTHOOK: Lineage: staging.value SIMPLE [(src)src.FieldSchema(name:value, type:s
 PREHOOK: query: create table parquet_jointable1 stored as parquet as select * from staging
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@staging
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_jointable1
 POSTHOOK: query: create table parquet_jointable1 stored as parquet as select * from staging
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@staging
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@parquet_jointable1
 PREHOOK: query: create table parquet_jointable2 stored as parquet as select key,key+1,concat(value,"value") as myvalue from staging
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@staging
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_jointable2
 POSTHOOK: query: create table parquet_jointable2 stored as parquet as select key,key+1,concat(value,"value") as myvalue from staging
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@staging
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@parquet_jointable2
 PREHOOK: query: -- MR join
 
