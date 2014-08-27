@@ -66,7 +66,6 @@ public class CLIService extends CompositeService implements ICLIService {
 
   private HiveConf hiveConf;
   private SessionManager sessionManager;
-  private IMetaStoreClient metastoreClient;
   private UserGroupInformation serviceUGI;
   private UserGroupInformation httpUGI;
 
@@ -128,21 +127,23 @@ public class CLIService extends CompositeService implements ICLIService {
     } catch (IOException eIO) {
       throw new ServiceException("Error setting stage directories", eIO);
     }
-
+    // Initialize and test a connection to the metastore
+    IMetaStoreClient metastoreClient = null;
     try {
-      // Initialize and test a connection to the metastore
       metastoreClient = new HiveMetaStoreClient(hiveConf);
       metastoreClient.getDatabases("default");
     } catch (Exception e) {
       throw new ServiceException("Unable to connect to MetaStore!", e);
     }
+    finally {
+      if (metastoreClient != null) {
+        metastoreClient.close();
+      }
+    }
   }
 
   @Override
   public synchronized void stop() {
-    if (metastoreClient != null) {
-      metastoreClient.close();
-    }
     super.stop();
   }
 

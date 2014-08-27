@@ -60,6 +60,7 @@ import org.apache.hive.service.cli.RowSet;
 import org.apache.hive.service.cli.RowSetFactory;
 import org.apache.hive.service.cli.TableSchema;
 import org.apache.hive.service.cli.session.HiveSession;
+import org.apache.hive.service.server.ThreadWithGarbageCleanup;
 
 /**
  * SQLOperation.
@@ -171,27 +172,23 @@ public class SQLOperation extends ExecuteStatementOperation {
     if (!shouldRunAsync()) {
       runInternal(opConfig);
     } else {
+      // We'll pass ThreadLocals in the background thread from the foreground (handler) thread
       final SessionState parentSessionState = SessionState.get();
-      // current Hive object needs to be set in aysnc thread in case of remote metastore.
-      // The metastore client in Hive is associated with right user
-      final Hive sessionHive = getCurrentHive();
-      // current UGI will get used by metastore when metsatore is in embedded mode
-      // so this needs to get passed to the new async thread
+      // ThreadLocal Hive object needs to be set in background thread.
+      // The metastore client in Hive is associated with right user.
+      final Hive parentHive = getSessionHive();
+      // Current UGI will get used by metastore when metsatore is in embedded mode
+      // So this needs to get passed to the new background thread
       final UserGroupInformation currentUGI = getCurrentUGI(opConfig);
-
       // Runnable impl to call runInternal asynchronously,
       // from a different thread
       Runnable backgroundOperation = new Runnable() {
-
         @Override
         public void run() {
           PrivilegedExceptionAction<Object> doAsAction = new PrivilegedExceptionAction<Object>() {
             @Override
             public Object run() throws HiveSQLException {
-
-              // Storing the current Hive object necessary when doAs is enabled
-              // User information is part of the metastore client member in Hive
-              Hive.set(sessionHive);
+              Hive.set(parentHive);
               SessionState.setCurrentSessionState(parentSessionState);
               try {
                 runInternal(opConfig);
@@ -202,11 +199,24 @@ public class SQLOperation extends ExecuteStatementOperation {
               return null;
             }
           };
+
           try {
             ShimLoader.getHadoopShims().doAs(currentUGI, doAsAction);
           } catch (Exception e) {
             setOperationException(new HiveSQLException(e));
             LOG.error("Error running hive query as user : " + currentUGI.getShortUserName(), e);
+          }
+          finally {
+            /**
+             * We'll cache the ThreadLocal RawStore object for this background thread for an orderly cleanup
+             * when this thread is garbage collected later.
+             * @see org.apache.hive.service.server.ThreadWithGarbageCleanup#finalize()
+             */
+            if (ThreadWithGarbageCleanup.currentThread() instanceof ThreadWithGarbageCleanup) {
+              ThreadWithGarbageCleanup currentThread =
+                  (ThreadWithGarbageCleanup) ThreadWithGarbageCleanup.currentThread();
+              currentThread.cacheThreadLocalRawStore();
+            }
           }
         }
       };
@@ -223,6 +233,12 @@ public class SQLOperation extends ExecuteStatementOperation {
     }
   }
 
+  /**
+   * Returns the current UGI on the stack
+   * @param opConfig
+   * @return UserGroupInformation
+   * @throws HiveSQLException
+   */
   private UserGroupInformation getCurrentUGI(HiveConf opConfig) throws HiveSQLException {
     try {
       return ShimLoader.getHadoopShims().getUGIForConf(opConfig);
@@ -231,11 +247,16 @@ public class SQLOperation extends ExecuteStatementOperation {
     }
   }
 
-  private Hive getCurrentHive() throws HiveSQLException {
+  /**
+   * Returns the ThreadLocal Hive for the current thread
+   * @return Hive
+   * @throws HiveSQLException
+   */
+  private Hive getSessionHive() throws HiveSQLException {
     try {
       return Hive.get();
     } catch (HiveException e) {
-      throw new HiveSQLException("Failed to get current Hive object", e);
+      throw new HiveSQLException("Failed to get ThreadLocal Hive object", e);
     }
   }
 

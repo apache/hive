@@ -54,7 +54,6 @@ import org.apache.hive.common.HiveCompat;
  * Hive Configuration.
  */
 public class HiveConf extends Configuration {
-
   protected String hiveJar;
   protected Properties origProp;
   protected String auxJars;
@@ -1476,8 +1475,11 @@ public class HiveConf extends Configuration {
         "Minimum number of worker threads when in HTTP mode."),
     HIVE_SERVER2_THRIFT_HTTP_MAX_WORKER_THREADS("hive.server2.thrift.http.max.worker.threads", 500,
         "Maximum number of worker threads when in HTTP mode."),
-    HIVE_SERVER2_THRIFT_HTTP_MAX_IDLE_TIME("hive.server2.thrift.http.max.idle.time", 1800000, 
+    HIVE_SERVER2_THRIFT_HTTP_MAX_IDLE_TIME("hive.server2.thrift.http.max.idle.time", 1800000,
         "Maximum idle time in milliseconds for a connection on the server when in HTTP mode."),
+    HIVE_SERVER2_THRIFT_HTTP_WORKER_KEEPALIVE_TIME("hive.server2.thrift.http.worker.keepalive.time", 60,
+        "Keepalive time (in seconds) for an idle http worker thread. When number of workers > min workers, " +
+        "excess threads are killed after this time interval."),
 
     // binary transport settings
     HIVE_SERVER2_THRIFT_PORT("hive.server2.thrift.port", 10000,
@@ -1500,7 +1502,9 @@ public class HiveConf extends Configuration {
         "Minimum number of Thrift worker threads"),
     HIVE_SERVER2_THRIFT_MAX_WORKER_THREADS("hive.server2.thrift.max.worker.threads", 500,
         "Maximum number of Thrift worker threads"),
-
+    HIVE_SERVER2_THRIFT_WORKER_KEEPALIVE_TIME("hive.server2.thrift.worker.keepalive.time", 60,
+        "Keepalive time (in seconds) for an idle worker thread. When number of workers > min workers, " +
+        "excess threads are killed after this time interval."),
     // Configuration for async thread pool in SessionManager
     HIVE_SERVER2_ASYNC_EXEC_THREADS("hive.server2.async.exec.threads", 100,
         "Number of threads in the async thread pool for HiveServer2"),
