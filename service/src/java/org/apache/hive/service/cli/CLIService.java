@@ -420,25 +420,20 @@ public class CLIService extends CompositeService implements ICLIService {
   }
 
   /* (non-Javadoc)
-   * @see org.apache.hive.service.cli.ICLIService#fetchResults(org.apache.hive.service.cli.OperationHandle, org.apache.hive.service.cli.FetchOrientation, long)
-   */
-  @Override
-  public RowSet fetchResults(OperationHandle opHandle, FetchOrientation orientation, long maxRows)
-      throws HiveSQLException {
-    RowSet rowSet = sessionManager.getOperationManager().getOperation(opHandle)
-        .getParentSession().fetchResults(opHandle, orientation, maxRows);
-    LOG.debug(opHandle + ": fetchResults()");
-    return rowSet;
-  }
-
-  /* (non-Javadoc)
    * @see org.apache.hive.service.cli.ICLIService#fetchResults(org.apache.hive.service.cli.OperationHandle)
    */
   @Override
   public RowSet fetchResults(OperationHandle opHandle)
       throws HiveSQLException {
+    return fetchResults(opHandle, Operation.DEFAULT_FETCH_ORIENTATION,
+        Operation.DEFAULT_FETCH_MAX_ROWS, FetchType.QUERY_OUTPUT);
+  }
+
+  @Override
+  public RowSet fetchResults(OperationHandle opHandle, FetchOrientation orientation,
+                             long maxRows, FetchType fetchType) throws HiveSQLException {
     RowSet rowSet = sessionManager.getOperationManager().getOperation(opHandle)
-        .getParentSession().fetchResults(opHandle);
+        .getParentSession().fetchResults(opHandle, orientation, maxRows, fetchType);
     LOG.debug(opHandle + ": fetchResults()");
     return rowSet;
   }

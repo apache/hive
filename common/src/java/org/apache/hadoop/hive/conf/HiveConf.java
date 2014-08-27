@@ -1404,6 +1404,14 @@ public class HiveConf extends Configuration {
         "to construct a list exception handlers to handle exceptions thrown\n" +
         "by record readers"),
 
+    // operation log configuration
+    HIVE_SERVER2_LOGGING_OPERATION_ENABLED("hive.server2.logging.operation.enabled", true,
+        "When true, HS2 will save operation logs"),
+    HIVE_SERVER2_LOGGING_OPERATION_LOG_LOCATION("hive.server2.logging.operation.log.location",
+        "${system:java.io.tmpdir}" + File.separator + "${system:user.name}" + File.separator +
+            "operation_logs",
+        "Top level directory where operation logs are stored if logging functionality is enabled"),
+
     // logging configuration
     HIVE_LOG4J_FILE("hive.log4j.file", "",
         "Hive log4j configuration file.\n" +

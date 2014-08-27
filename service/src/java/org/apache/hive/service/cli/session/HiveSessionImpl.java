@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.cli.HiveFileProcessor;
@@ -44,14 +45,7 @@ import org.apache.hadoop.hive.ql.processors.SetProcessor;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.common.util.HiveVersionInfo;
 import org.apache.hive.service.auth.HiveAuthFactory;
-import org.apache.hive.service.cli.FetchOrientation;
-import org.apache.hive.service.cli.GetInfoType;
-import org.apache.hive.service.cli.GetInfoValue;
-import org.apache.hive.service.cli.HiveSQLException;
-import org.apache.hive.service.cli.OperationHandle;
-import org.apache.hive.service.cli.RowSet;
-import org.apache.hive.service.cli.SessionHandle;
-import org.apache.hive.service.cli.TableSchema;
+import org.apache.hive.service.cli.*;
 import org.apache.hive.service.cli.operation.ExecuteStatementOperation;
 import org.apache.hive.service.cli.operation.GetCatalogsOperation;
 import org.apache.hive.service.cli.operation.GetColumnsOperation;
@@ -87,6 +81,8 @@ public class HiveSessionImpl implements HiveSession {
   private OperationManager operationManager;
   private IMetaStoreClient metastoreClient = null;
   private final Set<OperationHandle> opHandleSet = new HashSet<OperationHandle>();
+  private boolean isOperationLogEnabled;
+  private File sessionLogDir;
 
   public HiveSessionImpl(TProtocolVersion protocol, String username, String password,
       HiveConf serverhiveConf, String ipAddress) {
@@ -184,6 +180,34 @@ public class HiveSessionImpl implements HiveSession {
         hiveConf.verifyAndSet(key, entry.getValue());
       }
     }
+  }
+
+  @Override
+  public void setOperationLogSessionDir(File operationLogRootDir) {
+    sessionLogDir = new File(operationLogRootDir, sessionHandle.getHandleIdentifier().toString());
+    isOperationLogEnabled = true;
+
+    if (!sessionLogDir.exists()) {
+      if (!sessionLogDir.mkdir()) {
+        LOG.warn("Unable to create operation log session directory: " +
+            sessionLogDir.getAbsolutePath());
+        isOperationLogEnabled = false;
+      }
+    }
+
+    if (isOperationLogEnabled) {
+      LOG.info("Operation log session directory is created: " + sessionLogDir.getAbsolutePath());
+    }
+  }
+
+  @Override
+  public boolean isOperationLogEnabled() {
+    return isOperationLogEnabled;
+  }
+
+  @Override
+  public File getOperationLogSessionDir() {
+    return sessionLogDir;
   }
 
   @Override
@@ -497,6 +521,9 @@ public class HiveSessionImpl implements HiveSession {
         operationManager.closeOperation(opHandle);
       }
       opHandleSet.clear();
+      // Cleanup session log directory.
+      cleanupSessionLogDir();
+
       HiveHistory hiveHist = sessionState.getHiveHistory();
       if (null != hiveHist) {
         hiveHist.closeStream();
@@ -506,6 +533,16 @@ public class HiveSessionImpl implements HiveSession {
       throw new HiveSQLException("Failure to close", ioe);
     } finally {
       release();
+    }
+  }
+
+  private void cleanupSessionLogDir() {
+    if (isOperationLogEnabled) {
+      try {
+        FileUtils.forceDelete(sessionLogDir);
+      } catch (Exception e) {
+        LOG.error("Failed to cleanup session log dir: " + sessionHandle, e);
+      }
     }
   }
 
@@ -556,22 +593,17 @@ public class HiveSessionImpl implements HiveSession {
   }
 
   @Override
-  public RowSet fetchResults(OperationHandle opHandle, FetchOrientation orientation, long maxRows)
-      throws HiveSQLException {
+  public RowSet fetchResults(OperationHandle opHandle, FetchOrientation orientation,
+      long maxRows, FetchType fetchType) throws HiveSQLException {
     acquire();
     try {
-      return sessionManager.getOperationManager()
-          .getOperationNextRowSet(opHandle, orientation, maxRows);
-    } finally {
-      release();
-    }
-  }
-
-  @Override
-  public RowSet fetchResults(OperationHandle opHandle) throws HiveSQLException {
-    acquire();
-    try {
-      return sessionManager.getOperationManager().getOperationNextRowSet(opHandle);
+      if (fetchType == FetchType.QUERY_OUTPUT) {
+        return sessionManager.getOperationManager()
+            .getOperationNextRowSet(opHandle, orientation, maxRows);
+      } else {
+        return sessionManager.getOperationManager()
+            .getOperationLogRowSet(opHandle, orientation, maxRows);
+      }
     } finally {
       release();
     }

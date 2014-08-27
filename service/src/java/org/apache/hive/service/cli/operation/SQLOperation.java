@@ -135,7 +135,7 @@ public class SQLOperation extends ExecuteStatementOperation {
     }
   }
 
-  private void runInternal(HiveConf sqlOperationConf) throws HiveSQLException {
+  private void runQuery(HiveConf sqlOperationConf) throws HiveSQLException {
     try {
       // In Hive server mode, we are not able to retry in the FetchTask
       // case, when calling fetch queries since execute() has returned.
@@ -165,12 +165,12 @@ public class SQLOperation extends ExecuteStatementOperation {
   }
 
   @Override
-  public void run() throws HiveSQLException {
+  public void runInternal() throws HiveSQLException {
     setState(OperationState.PENDING);
     final HiveConf opConfig = getConfigForOperation();
     prepare(opConfig);
     if (!shouldRunAsync()) {
-      runInternal(opConfig);
+      runQuery(opConfig);
     } else {
       // We'll pass ThreadLocals in the background thread from the foreground (handler) thread
       final SessionState parentSessionState = SessionState.get();
@@ -190,11 +190,15 @@ public class SQLOperation extends ExecuteStatementOperation {
             public Object run() throws HiveSQLException {
               Hive.set(parentHive);
               SessionState.setCurrentSessionState(parentSessionState);
+              // Set current OperationLog in this async thread for keeping on saving query log.
+              registerCurrentOperationLog();
               try {
-                runInternal(opConfig);
+                runQuery(opConfig);
               } catch (HiveSQLException e) {
                 setOperationException(e);
                 LOG.error("Error running hive query: ", e);
+              } finally {
+                unregisterOperationLog();
               }
               return null;
             }
@@ -260,6 +264,18 @@ public class SQLOperation extends ExecuteStatementOperation {
     }
   }
 
+  private void registerCurrentOperationLog() {
+    if (isOperationLogEnabled) {
+      if (operationLog == null) {
+        LOG.warn("Failed to get current OperationLog object of Operation: " +
+            getHandle().getHandleIdentifier());
+        isOperationLogEnabled = false;
+        return;
+      }
+      OperationLog.setCurrentOperationLog(operationLog);
+    }
+  }
+
   private void cleanup(OperationState state) throws HiveSQLException {
     setState(state);
     if (shouldRunAsync()) {
@@ -288,6 +304,7 @@ public class SQLOperation extends ExecuteStatementOperation {
   @Override
   public void close() throws HiveSQLException {
     cleanup(OperationState.CLOSED);
+    cleanupOperationLog();
   }
 
   @Override
