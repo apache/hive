@@ -8,7 +8,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import net.hydromatic.optiq.util.BitSets;
 
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.ql.optimizer.optiq.reloperators.HiveJoinRel;
 import org.apache.hadoop.hive.ql.optimizer.optiq.reloperators.HiveSortRel;
 import org.apache.hadoop.hive.ql.optimizer.optiq.translator.SqlFunctionConverter.HiveToken;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
@@ -123,21 +122,15 @@ public class ASTConverter {
     /*
      * 6. Project
      */
-    if (!select.getChildExps().isEmpty()) {
+    ASTBuilder b = ASTBuilder.construct(HiveParser.TOK_SELECT, "TOK_SELECT");
+    int i = 0;
 
-      ASTBuilder b = ASTBuilder.construct(HiveParser.TOK_SELECT, "TOK_SELECT");
-      int i = 0;
-
-      for (RexNode r : select.getChildExps()) {
-        ASTNode selectExpr = ASTBuilder.selectExpr(r.accept(new RexVisitor(schema)), select
-            .getRowType().getFieldNames().get(i++));
-        b.add(selectExpr);
-      }
-      hiveAST.select = b.node();
-    } else {
-      throw new IllegalStateException("Expected non-zero children for select.");
+    for (RexNode r : select.getChildExps()) {
+      ASTNode selectExpr = ASTBuilder.selectExpr(r.accept(new RexVisitor(schema)), select
+          .getRowType().getFieldNames().get(i++));
+      b.add(selectExpr);
     }
-
+    hiveAST.select = b.node();
 
     /*
      * 7. Order Use in Order By from the block above. RelNode has no pointer to
@@ -226,7 +219,7 @@ public class ASTConverter {
 
     public void handle(FilterRelBase filter) {
       RelNode child = filter.getChild();
-      if (child instanceof AggregateRelBase) {
+      if (child instanceof AggregateRelBase && !((AggregateRelBase) child).getGroupSet().isEmpty()) {
         ASTConverter.this.having = filter;
       } else {
         ASTConverter.this.where = filter;
@@ -502,7 +495,7 @@ public class ASTConverter {
      * 1. ProjectRel will always be child of SortRel.<br>
      * 2. In Optiq every projection in ProjectRelBase is uniquely named
      * (unambigous) without using table qualifier (table name).<br>
-     *
+     * 
      * @param order
      *          Hive Sort Rel Node
      * @return Schema

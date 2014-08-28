@@ -207,7 +207,8 @@ public class DerivedTableInjector {
     // TOODO: Verify GB having is not a seperate filter (if so we shouldn't
     // introduce derived table)
     if (parent instanceof JoinRelBase || parent instanceof SetOpRel
-        || parent instanceof AggregateRelBase) {
+        || parent instanceof AggregateRelBase
+        || (parent instanceof FilterRelBase && ((AggregateRelBase) gbNode).getGroupSet().isEmpty())) {
       validParent = false;
     }
 
