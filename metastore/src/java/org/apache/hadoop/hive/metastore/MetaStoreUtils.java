@@ -48,6 +48,7 @@ import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
@@ -1043,11 +1044,17 @@ public class MetaStoreUtils {
 
   public static void startMetaStore(final int port,
       final HadoopThriftAuthBridge bridge) throws Exception {
+    startMetaStore(port, bridge, new HiveConf(HMSHandler.class));
+  }
+
+  public static void startMetaStore(final int port,
+      final HadoopThriftAuthBridge bridge, final HiveConf hiveConf)
+      throws Exception{
     Thread thread = new Thread(new Runnable() {
       @Override
       public void run() {
         try {
-          HiveMetaStore.startMetaStore(port, bridge);
+          HiveMetaStore.startMetaStore(port, bridge, hiveConf);
         } catch (Throwable e) {
           LOG.error("Metastore Thrift Server threw an exception...",e);
         }
@@ -1057,6 +1064,7 @@ public class MetaStoreUtils {
     thread.start();
     loopUntilHMSReady(port);
   }
+
   /**
    * A simple connect test to make sure that the metastore is up
    * @throws Exception
