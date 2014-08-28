@@ -164,11 +164,14 @@ create table char_nested_cta as
   select * from char_nested_struct
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@char_nested_struct
+PREHOOK: Output: database:default
+PREHOOK: Output: default@char_nested_cta
 POSTHOOK: query: -- nested type with create table as
 create table char_nested_cta as 
   select * from char_nested_struct
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@char_nested_struct
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@char_nested_cta
 PREHOOK: query: describe char_nested_cta
 PREHOOK: type: DESCTABLE
@@ -191,11 +194,14 @@ create table char_nested_view as
   select * from char_nested_struct
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@char_nested_struct
+PREHOOK: Output: database:default
+PREHOOK: Output: default@char_nested_view
 POSTHOOK: query: -- nested type with view
 create table char_nested_view as 
   select * from char_nested_struct
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@char_nested_struct
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@char_nested_view
 PREHOOK: query: describe char_nested_view
 PREHOOK: type: DESCTABLE

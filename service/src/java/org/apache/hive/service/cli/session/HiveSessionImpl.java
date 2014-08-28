@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.cli.HiveFileProcessor;
@@ -44,14 +45,7 @@ import org.apache.hadoop.hive.ql.processors.SetProcessor;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.common.util.HiveVersionInfo;
 import org.apache.hive.service.auth.HiveAuthFactory;
-import org.apache.hive.service.cli.FetchOrientation;
-import org.apache.hive.service.cli.GetInfoType;
-import org.apache.hive.service.cli.GetInfoValue;
-import org.apache.hive.service.cli.HiveSQLException;
-import org.apache.hive.service.cli.OperationHandle;
-import org.apache.hive.service.cli.RowSet;
-import org.apache.hive.service.cli.SessionHandle;
-import org.apache.hive.service.cli.TableSchema;
+import org.apache.hive.service.cli.*;
 import org.apache.hive.service.cli.operation.ExecuteStatementOperation;
 import org.apache.hive.service.cli.operation.GetCatalogsOperation;
 import org.apache.hive.service.cli.operation.GetColumnsOperation;
@@ -62,6 +56,7 @@ import org.apache.hive.service.cli.operation.GetTypeInfoOperation;
 import org.apache.hive.service.cli.operation.MetadataOperation;
 import org.apache.hive.service.cli.operation.OperationManager;
 import org.apache.hive.service.cli.thrift.TProtocolVersion;
+import org.apache.hive.service.server.ThreadWithGarbageCleanup;
 
 /**
  * HiveSession
@@ -86,6 +81,8 @@ public class HiveSessionImpl implements HiveSession {
   private OperationManager operationManager;
   private IMetaStoreClient metastoreClient = null;
   private final Set<OperationHandle> opHandleSet = new HashSet<OperationHandle>();
+  private boolean isOperationLogEnabled;
+  private File sessionLogDir;
 
   public HiveSessionImpl(TProtocolVersion protocol, String username, String password,
       HiveConf serverhiveConf, String ipAddress) {
@@ -95,14 +92,19 @@ public class HiveSessionImpl implements HiveSession {
     this.hiveConf = new HiveConf(serverhiveConf);
     this.ipAddress = ipAddress;
 
-    // set an explicit session name to control the download directory name
+    // Set an explicit session name to control the download directory name
     hiveConf.set(ConfVars.HIVESESSIONID.varname,
         sessionHandle.getHandleIdentifier().toString());
-    // use thrift transportable formatter
+    // Use thrift transportable formatter
     hiveConf.set(ListSinkOperator.OUTPUT_FORMATTER,
         FetchFormatter.ThriftFormatter.class.getName());
     hiveConf.setInt(ListSinkOperator.OUTPUT_PROTOCOL, protocol.getValue());
 
+    /**
+     * Create a new SessionState object that will be associated with this HiveServer2 session.
+     * When the server executes multiple queries in the same session,
+     * this SessionState object is reused across multiple queries.
+     */
     sessionState = new SessionState(hiveConf, username);
     sessionState.setUserIpAddress(ipAddress);
     sessionState.setIsHiveServerQuery(true);
@@ -111,11 +113,9 @@ public class HiveSessionImpl implements HiveSession {
 
   @Override
   public void initialize(Map<String, String> sessionConfMap) throws Exception {
-    //process global init file: .hiverc
+    // Process global init file: .hiverc
     processGlobalInitFile();
-    SessionState.setCurrentSessionState(sessionState);
-
-    //set conf properties specified by user from client side
+    // Set conf properties specified by user from client side
     if (sessionConfMap != null) {
       configureSession(sessionConfMap);
     }
@@ -169,6 +169,7 @@ public class HiveSessionImpl implements HiveSession {
   }
 
   private void configureSession(Map<String, String> sessionConfMap) throws Exception {
+    SessionState.setCurrentSessionState(sessionState);
     for (Map.Entry<String, String> entry : sessionConfMap.entrySet()) {
       String key = entry.getKey();
       if (key.startsWith("set:")) {
@@ -179,6 +180,34 @@ public class HiveSessionImpl implements HiveSession {
         hiveConf.verifyAndSet(key, entry.getValue());
       }
     }
+  }
+
+  @Override
+  public void setOperationLogSessionDir(File operationLogRootDir) {
+    sessionLogDir = new File(operationLogRootDir, sessionHandle.getHandleIdentifier().toString());
+    isOperationLogEnabled = true;
+
+    if (!sessionLogDir.exists()) {
+      if (!sessionLogDir.mkdir()) {
+        LOG.warn("Unable to create operation log session directory: " +
+            sessionLogDir.getAbsolutePath());
+        isOperationLogEnabled = false;
+      }
+    }
+
+    if (isOperationLogEnabled) {
+      LOG.info("Operation log session directory is created: " + sessionLogDir.getAbsolutePath());
+    }
+  }
+
+  @Override
+  public boolean isOperationLogEnabled() {
+    return isOperationLogEnabled;
+  }
+
+  @Override
+  public File getOperationLogSessionDir() {
+    return sessionLogDir;
   }
 
   @Override
@@ -211,14 +240,26 @@ public class HiveSessionImpl implements HiveSession {
   }
 
   protected synchronized void acquire() throws HiveSQLException {
-    // need to make sure that the this connections session state is
-    // stored in the thread local for sessions.
+    // Need to make sure that the this HiveServer2's session's session state is
+    // stored in the thread local for the handler thread.
     SessionState.setCurrentSessionState(sessionState);
   }
 
+  /**
+   * 1. We'll remove the ThreadLocal SessionState as this thread might now serve
+   * other requests.
+   * 2. We'll cache the ThreadLocal RawStore object for this background thread for an orderly cleanup
+   * when this thread is garbage collected later.
+   * @see org.apache.hive.service.server.ThreadWithGarbageCleanup#finalize()
+   */
   protected synchronized void release() {
     assert sessionState != null;
     SessionState.detachSession();
+    if (ThreadWithGarbageCleanup.currentThread() instanceof ThreadWithGarbageCleanup) {
+      ThreadWithGarbageCleanup currentThread =
+          (ThreadWithGarbageCleanup) ThreadWithGarbageCleanup.currentThread();
+      currentThread.cacheThreadLocalRawStore();
+    }
   }
 
   @Override
@@ -468,7 +509,7 @@ public class HiveSessionImpl implements HiveSession {
     try {
       acquire();
       /**
-       *  For metadata operations like getTables(), getColumns() etc,
+       * For metadata operations like getTables(), getColumns() etc,
        * the session allocates a private metastore handler which should be
        * closed at the end of the session
        */
@@ -480,6 +521,9 @@ public class HiveSessionImpl implements HiveSession {
         operationManager.closeOperation(opHandle);
       }
       opHandleSet.clear();
+      // Cleanup session log directory.
+      cleanupSessionLogDir();
+
       HiveHistory hiveHist = sessionState.getHiveHistory();
       if (null != hiveHist) {
         hiveHist.closeStream();
@@ -489,6 +533,16 @@ public class HiveSessionImpl implements HiveSession {
       throw new HiveSQLException("Failure to close", ioe);
     } finally {
       release();
+    }
+  }
+
+  private void cleanupSessionLogDir() {
+    if (isOperationLogEnabled) {
+      try {
+        FileUtils.forceDelete(sessionLogDir);
+      } catch (Exception e) {
+        LOG.error("Failed to cleanup session log dir: " + sessionHandle, e);
+      }
     }
   }
 
@@ -539,22 +593,17 @@ public class HiveSessionImpl implements HiveSession {
   }
 
   @Override
-  public RowSet fetchResults(OperationHandle opHandle, FetchOrientation orientation, long maxRows)
-      throws HiveSQLException {
+  public RowSet fetchResults(OperationHandle opHandle, FetchOrientation orientation,
+      long maxRows, FetchType fetchType) throws HiveSQLException {
     acquire();
     try {
-      return sessionManager.getOperationManager()
-          .getOperationNextRowSet(opHandle, orientation, maxRows);
-    } finally {
-      release();
-    }
-  }
-
-  @Override
-  public RowSet fetchResults(OperationHandle opHandle) throws HiveSQLException {
-    acquire();
-    try {
-      return sessionManager.getOperationManager().getOperationNextRowSet(opHandle);
+      if (fetchType == FetchType.QUERY_OUTPUT) {
+        return sessionManager.getOperationManager()
+            .getOperationNextRowSet(opHandle, orientation, maxRows);
+      } else {
+        return sessionManager.getOperationManager()
+            .getOperationLogRowSet(opHandle, orientation, maxRows);
+      }
     } finally {
       release();
     }

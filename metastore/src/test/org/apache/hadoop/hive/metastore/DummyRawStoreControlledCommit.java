@@ -24,6 +24,7 @@ import java.util.Map;
 
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Database;
@@ -712,7 +713,7 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
-  public List<ColumnStatisticsObj> get_aggr_stats_for(String dbName,
+  public AggrStats get_aggr_stats_for(String dbName,
       String tblName, List<String> partNames, List<String> colNames)
       throws MetaException {
     return null;

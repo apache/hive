@@ -3,11 +3,14 @@ PREHOOK: query: -- SORT_QUERY_RESULTS
 create table src_10 as select * from src limit 10
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src_10
 POSTHOOK: query: -- SORT_QUERY_RESULTS
 
 create table src_10 as select * from src limit 10
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_10
 PREHOOK: query: create table src_lv1 (key string, value string)
 PREHOOK: type: CREATETABLE

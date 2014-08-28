@@ -11,9 +11,12 @@ POSTHOOK: Output: default@test_issue
 PREHOOK: query: CREATE VIEW v_test_issue AS SELECT fileid, i.user, test_c.user_c.age FROM test_issue LATERAL VIEW explode(infos) info AS i
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@test_issue
+PREHOOK: Output: database:default
+PREHOOK: Output: default@v_test_issue
 POSTHOOK: query: CREATE VIEW v_test_issue AS SELECT fileid, i.user, test_c.user_c.age FROM test_issue LATERAL VIEW explode(infos) info AS i
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@test_issue
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@v_test_issue
 PREHOOK: query: -- dummy data
 LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE test_issue

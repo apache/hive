@@ -59,9 +59,12 @@ POSTHOOK: Input: default@t1
 PREHOOK: query: create table T3 as select * from T1
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@t1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@T3
 POSTHOOK: query: create table T3 as select * from T1
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@t1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@T3
 PREHOOK: query: create table T4 (key char(10), val decimal(5,2), b int)
     partitioned by (ds string)
@@ -221,9 +224,12 @@ POSTHOOK: Output: default@t4@ds=tomorrow
 PREHOOK: query: create view V1 as select key from T1
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@t1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@V1
 POSTHOOK: query: create view V1 as select key from T1
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@t1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@V1
 PREHOOK: query: alter view V1 set tblproperties ('test'='thisisatest')
 PREHOOK: type: ALTERVIEW_PROPERTIES

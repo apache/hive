@@ -352,7 +352,7 @@ STAGE PLANS:
           input format: org.apache.hadoop.mapred.TextInputFormat
           output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
           serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-          name: smb_mapjoin9_results
+          name: default.smb_mapjoin9_results
 
   Stage: Stage-3
     Stats-Aggr Operator
@@ -397,6 +397,8 @@ PREHOOK: Input: default@hive_test_smb_bucket1
 PREHOOK: Input: default@hive_test_smb_bucket1@ds=2010-10-15
 PREHOOK: Input: default@hive_test_smb_bucket2
 PREHOOK: Input: default@hive_test_smb_bucket2@ds=2010-10-15
+PREHOOK: Output: database:default
+PREHOOK: Output: default@smb_mapjoin9_results
 POSTHOOK: query: create table smb_mapjoin9_results as
 SELECT /* + MAPJOIN(b) */ b.key as k1, b.value, b.ds, a.key as k2
 FROM hive_test_smb_bucket1 a JOIN 
@@ -407,6 +409,7 @@ POSTHOOK: Input: default@hive_test_smb_bucket1
 POSTHOOK: Input: default@hive_test_smb_bucket1@ds=2010-10-15
 POSTHOOK: Input: default@hive_test_smb_bucket2
 POSTHOOK: Input: default@hive_test_smb_bucket2@ds=2010-10-15
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@smb_mapjoin9_results
 PREHOOK: query: drop table smb_mapjoin9_results
 PREHOOK: type: DROPTABLE

@@ -50,10 +50,13 @@ PREHOOK: query: -- need one file
 create table gl_tgt as select key from gl_src1 limit 1
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@gl_src1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@gl_tgt
 POSTHOOK: query: -- need one file
 create table gl_tgt as select key from gl_src1 limit 1
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@gl_src1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@gl_tgt
 PREHOOK: query: select * from gl_tgt ORDER BY key ASC
 PREHOOK: type: QUERY

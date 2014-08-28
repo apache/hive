@@ -9537,7 +9537,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // analyze create view command
     if (ast.getToken().getType() == HiveParser.TOK_CREATEVIEW ||
-        ast.getToken().getType() == HiveParser.TOK_ALTERVIEW_AS) {
+        (ast.getToken().getType() == HiveParser.TOK_ALTERVIEW && ast.getChild(1).getType() == HiveParser.TOK_QUERY)) {
       child = analyzeCreateView(ast, qb);
       SessionState.get().setCommandType(HiveOperation.CREATEVIEW);
       if (child == null) {
@@ -9545,7 +9545,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
       viewSelect = child;
       // prevent view from referencing itself
-      viewsExpanded.add(SessionState.get().getCurrentDatabase() + "." + createVwDesc.getViewName());
+      viewsExpanded.add(createVwDesc.getViewName());
     }
 
     // continue analyzing from the child ASTNode.
@@ -10193,7 +10193,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    */
   private ASTNode analyzeCreateTable(ASTNode ast, QB qb)
       throws SemanticException {
-    String tableName = getUnescapedName((ASTNode) ast.getChild(0));
+    String[] qualifiedTabName = getQualifiedTableName((ASTNode) ast.getChild(0));
+    String dbDotTab = getDotName(qualifiedTabName);
+
     String likeTableName = null;
     List<FieldSchema> cols = new ArrayList<FieldSchema>();
     List<FieldSchema> partCols = new ArrayList<FieldSchema>();
@@ -10219,7 +10221,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     RowFormatParams rowFormatParams = new RowFormatParams();
     StorageFormat storageFormat = new StorageFormat(conf);
 
-    LOG.info("Creating table " + tableName + " position="
+    LOG.info("Creating table " + dbDotTab + " position="
         + ast.getCharPositionInLine());
     int numCh = ast.getChildCount();
 
@@ -10291,7 +10293,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       case HiveParser.TOK_TABLEPARTCOLS:
         partCols = getColumns((ASTNode) child.getChild(0), false);
         break;
-      case HiveParser.TOK_TABLEBUCKETS:
+      case HiveParser.TOK_ALTERTABLE_BUCKETS:
         bucketCols = getColumnNames((ASTNode) child.getChild(0));
         if (child.getChildCount() == 2) {
           numBuckets = (Integer.valueOf(child.getChild(1).getText()))
@@ -10350,7 +10352,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // check for existence of table
     if (ifNotExists) {
       try {
-        Table table = getTable(tableName, false);
+        Table table = getTable(qualifiedTabName, false);
         if (table != null) { // table exists
           return null;
         }
@@ -10360,11 +10362,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
 
-    String[] qualified = Hive.getQualifiedNames(tableName);
-    String dbName = qualified.length == 1 ? SessionState.get().getCurrentDatabase() : qualified[0];
-    Database database  = getDatabase(dbName);
-    outputs.add(new WriteEntity(database, WriteEntity.WriteType.DDL_SHARED));
-    outputs.add(new WriteEntity(new Table(dbName, tableName), WriteEntity.WriteType.DDL_NO_LOCK));
+    addDbAndTabToOutputs(qualifiedTabName);
 
     if (isTemporary) {
       if (partCols.size() > 0) {
@@ -10393,7 +10391,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     case CREATE_TABLE: // REGULAR CREATE TABLE DDL
       tblProps = addDefaultProperties(tblProps);
 
-      crtTblDesc = new CreateTableDesc(tableName, isExt, isTemporary, cols, partCols,
+      crtTblDesc = new CreateTableDesc(dbDotTab, isExt, isTemporary, cols, partCols,
           bucketCols, sortCols, numBuckets, rowFormatParams.fieldDelim,
           rowFormatParams.fieldEscape,
           rowFormatParams.collItemDelim, rowFormatParams.mapKeyDelim, rowFormatParams.lineDelim,
@@ -10422,7 +10420,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
               + "and source table in CREATE TABLE LIKE is partitioned.");
         }
       }
-      CreateTableLikeDesc crtTblLikeDesc = new CreateTableLikeDesc(tableName, isExt, isTemporary,
+      CreateTableLikeDesc crtTblLikeDesc = new CreateTableLikeDesc(dbDotTab, isExt, isTemporary,
           storageFormat.getInputFormat(), storageFormat.getOutputFormat(), location,
           storageFormat.getSerde(), storageFormat.getSerdeProps(), tblProps, ifNotExists,
           likeTableName);
@@ -10435,9 +10433,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       // Verify that the table does not already exist
       try {
-        Table dumpTable = db.newTable(tableName);
+        Table dumpTable = db.newTable(dbDotTab);
         if (null != db.getTable(dumpTable.getDbName(), dumpTable.getTableName(), false)) {
-          throw new SemanticException(ErrorMsg.TABLE_ALREADY_EXISTS.getMsg(tableName));
+          throw new SemanticException(ErrorMsg.TABLE_ALREADY_EXISTS.getMsg(dbDotTab));
         }
       } catch (HiveException e) {
         throw new SemanticException(e);
@@ -10445,11 +10443,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       tblProps = addDefaultProperties(tblProps);
 
-      crtTblDesc = new CreateTableDesc(dbName, tableName, isExt, isTemporary, cols, partCols,
-          bucketCols, sortCols, numBuckets, rowFormatParams.fieldDelim,
-          rowFormatParams.fieldEscape,
-          rowFormatParams.collItemDelim, rowFormatParams.mapKeyDelim, rowFormatParams.lineDelim,
-          comment, storageFormat.getInputFormat(),
+      crtTblDesc = new CreateTableDesc(qualifiedTabName[0], dbDotTab, isExt, isTemporary, cols,
+          partCols, bucketCols, sortCols, numBuckets, rowFormatParams.fieldDelim,
+          rowFormatParams.fieldEscape, rowFormatParams.collItemDelim, rowFormatParams.mapKeyDelim,
+          rowFormatParams.lineDelim, comment, storageFormat.getInputFormat(),
           storageFormat.getOutputFormat(), location, storageFormat.getSerde(),
           storageFormat.getStorageHandler(), storageFormat.getSerdeProps(), tblProps, ifNotExists,
           skewedColNames, skewedValues);
@@ -10466,9 +10463,17 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return null;
   }
 
+  private void addDbAndTabToOutputs(String[] qualifiedTabName) throws SemanticException {
+    Database database  = getDatabase(qualifiedTabName[0]);
+    outputs.add(new WriteEntity(database, WriteEntity.WriteType.DDL_SHARED));
+    outputs.add(new WriteEntity(new Table(qualifiedTabName[0], qualifiedTabName[1]),
+        WriteEntity.WriteType.DDL_NO_LOCK));
+  }
+
   private ASTNode analyzeCreateView(ASTNode ast, QB qb)
       throws SemanticException {
-    String tableName = getUnescapedName((ASTNode) ast.getChild(0));
+    String[] qualTabName = getQualifiedTableName((ASTNode) ast.getChild(0));
+    String dbDotTable = getDotName(qualTabName);
     List<FieldSchema> cols = null;
     boolean ifNotExists = false;
     boolean orReplace = false;
@@ -10478,7 +10483,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     Map<String, String> tblProps = null;
     List<String> partColNames = null;
 
-    LOG.info("Creating view " + tableName + " position="
+    LOG.info("Creating view " + dbDotTable + " position="
         + ast.getCharPositionInLine());
     int numCh = ast.getChildCount();
     for (int num = 1; num < numCh; num++) {
@@ -10514,19 +10519,21 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       throw new SemanticException("Can't combine IF NOT EXISTS and OR REPLACE.");
     }
 
-    if (ast.getToken().getType() == HiveParser.TOK_ALTERVIEW_AS) {
+    if (ast.getToken().getType() == HiveParser.TOK_ALTERVIEW &&
+        ast.getChild(1).getType() == HiveParser.TOK_QUERY) {
       isAlterViewAs = true;
       orReplace = true;
     }
 
     createVwDesc = new CreateViewDesc(
-      tableName, cols, comment, tblProps, partColNames,
+      dbDotTable, cols, comment, tblProps, partColNames,
       ifNotExists, orReplace, isAlterViewAs);
 
     unparseTranslator.enable();
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
         createVwDesc), conf));
 
+    addDbAndTabToOutputs(qualTabName);
     return selectStmt;
   }
 

@@ -86,27 +86,36 @@ POSTHOOK: Input: default@src
 PREHOOK: query: CREATE VIEW view1 AS SELECT value FROM src WHERE key=86
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@view1
 POSTHOOK: query: CREATE VIEW view1 AS SELECT value FROM src WHERE key=86
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@view1
 PREHOOK: query: CREATE VIEW view2 AS SELECT * FROM src
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@view2
 POSTHOOK: query: CREATE VIEW view2 AS SELECT * FROM src
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@view2
 PREHOOK: query: CREATE VIEW view3(valoo) 
 TBLPROPERTIES ("fear" = "factor")
 AS SELECT upper(value) FROM src WHERE key=86
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@view3
 POSTHOOK: query: CREATE VIEW view3(valoo) 
 TBLPROPERTIES ("fear" = "factor")
 AS SELECT upper(value) FROM src WHERE key=86
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@view3
 PREHOOK: query: SELECT * from view1
 PREHOOK: type: QUERY
@@ -159,8 +168,8 @@ STAGE PLANS:
         Create View
           or replace: false
           columns: valoo string
-          expanded text: SELECT `_c0` AS `valoo` FROM (SELECT upper(`src`.`value`) FROM `default`.`src` WHERE `src`.`key`=86) `view0`
-          name: view0
+          expanded text: SELECT `_c0` AS `valoo` FROM (SELECT upper(`src`.`value`) FROM `default`.`src` WHERE `src`.`key`=86) `default.view0`
+          name: default.view0
           original text: SELECT upper(value) FROM src WHERE key=86
 
 PREHOOK: query: -- make sure EXPLAIN works with a query which references a view
@@ -354,7 +363,7 @@ Sort Columns:       	[]
 	 	 
 # View Information	 	 
 View Original Text: 	SELECT upper(value) FROM src WHERE key=86	 
-View Expanded Text: 	SELECT `_c0` AS `valoo` FROM (SELECT upper(`src`.`value`) FROM `default`.`src` WHERE `src`.`key`=86) `view3`	 
+View Expanded Text: 	SELECT `_c0` AS `valoo` FROM (SELECT upper(`src`.`value`) FROM `default`.`src` WHERE `src`.`key`=86) `default.view3`	 
 PREHOOK: query: ALTER VIEW view3 SET TBLPROPERTIES ("biggest" = "loser")
 PREHOOK: type: ALTERVIEW_PROPERTIES
 PREHOOK: Input: default@view3
@@ -404,7 +413,7 @@ Sort Columns:       	[]
 	 	 
 # View Information	 	 
 View Original Text: 	SELECT upper(value) FROM src WHERE key=86	 
-View Expanded Text: 	SELECT `_c0` AS `valoo` FROM (SELECT upper(`src`.`value`) FROM `default`.`src` WHERE `src`.`key`=86) `view3`	 
+View Expanded Text: 	SELECT `_c0` AS `valoo` FROM (SELECT upper(`src`.`value`) FROM `default`.`src` WHERE `src`.`key`=86) `default.view3`	 
 PREHOOK: query: CREATE TABLE table1 (key int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -470,9 +479,12 @@ POSTHOOK: Input: default@table1
 PREHOOK: query: CREATE VIEW view4 AS SELECT * FROM table1
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@table1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@view4
 POSTHOOK: query: CREATE VIEW view4 AS SELECT * FROM table1
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@table1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@view4
 PREHOOK: query: SELECT * FROM view4
 PREHOOK: type: QUERY
@@ -540,11 +552,14 @@ FROM view4 v1 join view4 v2
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@table1
 PREHOOK: Input: default@view4
+PREHOOK: Output: database:default
+PREHOOK: Output: default@view5
 POSTHOOK: query: CREATE VIEW view5 AS SELECT v1.key as key1, v2.key as key2
 FROM view4 v1 join view4 v2
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@table1
 POSTHOOK: Input: default@view4
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@view5
 Warning: Shuffle Join JOIN[6][tables = [v1, v2]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: SELECT * FROM view5
@@ -574,12 +589,15 @@ CREATE VIEW view6(valoo COMMENT 'I cannot spell') AS
 SELECT upper(value) as blarg FROM src WHERE key=86
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@view6
 POSTHOOK: query: -- verify that column name and comment in DDL portion
 -- overrides column alias in SELECT
 CREATE VIEW view6(valoo COMMENT 'I cannot spell') AS
 SELECT upper(value) as blarg FROM src WHERE key=86
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@view6
 PREHOOK: query: DESCRIBE view6
 PREHOOK: type: DESCTABLE
@@ -596,6 +614,8 @@ ORDER BY key, value
 LIMIT 10
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@view7
 POSTHOOK: query: -- verify that ORDER BY and LIMIT are both supported in view def
 CREATE VIEW view7 AS
 SELECT * FROM src
@@ -604,6 +624,7 @@ ORDER BY key, value
 LIMIT 10
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@view7
 PREHOOK: query: SELECT * FROM view7
 PREHOOK: type: QUERY
@@ -705,11 +726,14 @@ SELECT test_translate('abc', 'a', 'b')
 FROM table1
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@table1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@view8
 POSTHOOK: query: CREATE VIEW view8(c) AS
 SELECT test_translate('abc', 'a', 'b')
 FROM table1
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@table1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@view8
 PREHOOK: query: DESCRIBE EXTENDED view8
 PREHOOK: type: DESCTABLE
@@ -721,7 +745,7 @@ c                   	string
 	 	 
 #### A masked pattern was here ####
 FROM table1, viewExpandedText:SELECT `_c0` AS `c` FROM (SELECT `test_translate`('abc', 'a', 'b')	 	 
-FROM `default`.`table1`) `view8`, tableType:VIRTUAL_VIEW)		 
+FROM `default`.`table1`) `default.view8`, tableType:VIRTUAL_VIEW)		 
 PREHOOK: query: DESCRIBE FORMATTED view8
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@view8
@@ -754,7 +778,7 @@ Sort Columns:       	[]
 View Original Text: 	SELECT test_translate('abc', 'a', 'b')	 
 FROM table1	 	 
 View Expanded Text: 	SELECT `_c0` AS `c` FROM (SELECT `test_translate`('abc', 'a', 'b')	 
-FROM `default`.`table1`) `view8`	 	 
+FROM `default`.`table1`) `default.view8`	 	 
 PREHOOK: query: SELECT * FROM view8
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table1
@@ -782,12 +806,15 @@ SELECT test_max(length(value))
 FROM src
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@view9
 POSTHOOK: query: -- disable map-side aggregation
 CREATE VIEW view9(m) AS
 SELECT test_max(length(value))
 FROM src
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@view9
 PREHOOK: query: DESCRIBE EXTENDED view9
 PREHOOK: type: DESCTABLE
@@ -799,7 +826,7 @@ m                   	int
 	 	 
 #### A masked pattern was here ####
 FROM src, viewExpandedText:SELECT `_c0` AS `m` FROM (SELECT `test_max`(length(`src`.`value`))	 	 
-FROM `default`.`src`) `view9`, tableType:VIRTUAL_VIEW)		 
+FROM `default`.`src`) `default.view9`, tableType:VIRTUAL_VIEW)		 
 PREHOOK: query: DESCRIBE FORMATTED view9
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@view9
@@ -832,7 +859,7 @@ Sort Columns:       	[]
 View Original Text: 	SELECT test_max(length(value))	 
 FROM src	 	 
 View Expanded Text: 	SELECT `_c0` AS `m` FROM (SELECT `test_max`(length(`src`.`value`))	 
-FROM `default`.`src`) `view9`	 	 
+FROM `default`.`src`) `default.view9`	 	 
 PREHOOK: query: SELECT * FROM view9
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -858,12 +885,15 @@ SELECT test_max(length(value))
 FROM src
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@view9
 POSTHOOK: query: -- enable map-side aggregation
 CREATE VIEW view9(m) AS
 SELECT test_max(length(value))
 FROM src
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@view9
 PREHOOK: query: DESCRIBE EXTENDED view9
 PREHOOK: type: DESCTABLE
@@ -875,7 +905,7 @@ m                   	int
 	 	 
 #### A masked pattern was here ####
 FROM src, viewExpandedText:SELECT `_c0` AS `m` FROM (SELECT `test_max`(length(`src`.`value`))	 	 
-FROM `default`.`src`) `view9`, tableType:VIRTUAL_VIEW)		 
+FROM `default`.`src`) `default.view9`, tableType:VIRTUAL_VIEW)		 
 PREHOOK: query: DESCRIBE FORMATTED view9
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@view9
@@ -908,7 +938,7 @@ Sort Columns:       	[]
 View Original Text: 	SELECT test_max(length(value))	 
 FROM src	 	 
 View Expanded Text: 	SELECT `_c0` AS `m` FROM (SELECT `test_max`(length(`src`.`value`))	 
-FROM `default`.`src`) `view9`	 	 
+FROM `default`.`src`) `default.view9`	 	 
 PREHOOK: query: SELECT * FROM view9
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -925,11 +955,14 @@ CREATE VIEW view10 AS
 SELECT slurp.* FROM (SELECT * FROM src WHERE key=86) slurp
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@view10
 POSTHOOK: query: -- test usage of a subselect within a view
 CREATE VIEW view10 AS
 SELECT slurp.* FROM (SELECT * FROM src WHERE key=86) slurp
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@view10
 PREHOOK: query: DESCRIBE EXTENDED view10
 PREHOOK: type: DESCTABLE
@@ -999,11 +1032,14 @@ SELECT test_explode(array(1,2,3)) AS (boom)
 FROM table1
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@table1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@view11
 POSTHOOK: query: CREATE VIEW view11 AS
 SELECT test_explode(array(1,2,3)) AS (boom)
 FROM table1
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@table1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@view11
 PREHOOK: query: DESCRIBE EXTENDED view11
 PREHOOK: type: DESCTABLE
@@ -1067,11 +1103,14 @@ CREATE VIEW view12 AS
 SELECT * FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@view12
 POSTHOOK: query: -- test usage of LATERAL within a view
 CREATE VIEW view12 AS
 SELECT * FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@view12
 PREHOOK: query: DESCRIBE EXTENDED view12
 PREHOOK: type: DESCTABLE
@@ -1151,12 +1190,15 @@ SELECT s.key
 FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 5 ON key) s
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@srcbucket
+PREHOOK: Output: database:default
+PREHOOK: Output: default@view13
 POSTHOOK: query: -- test usage of TABLESAMPLE within a view
 CREATE VIEW view13 AS
 SELECT s.key
 FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 5 ON key) s
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@srcbucket
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@view13
 PREHOOK: query: DESCRIBE EXTENDED view13
 PREHOOK: type: DESCTABLE
@@ -1240,6 +1282,8 @@ JOIN
 ON (unionsrc1.key = unionsrc2.key)
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@view14
 POSTHOOK: query: -- test usage of JOIN+UNION+AGG all within same view
 CREATE VIEW view14 AS
 SELECT unionsrc1.key as k1, unionsrc1.value as v1,
@@ -1254,6 +1298,7 @@ JOIN
 ON (unionsrc1.key = unionsrc2.key)
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@view14
 PREHOOK: query: DESCRIBE EXTENDED view14
 PREHOOK: type: DESCTABLE
@@ -1379,6 +1424,8 @@ FROM src
 GROUP BY key
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@view15
 POSTHOOK: query: -- test usage of GROUP BY within view
 CREATE VIEW view15 AS
 SELECT key,COUNT(value) AS value_count
@@ -1386,6 +1433,7 @@ FROM src
 GROUP BY key
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@view15
 PREHOOK: query: DESCRIBE EXTENDED view15
 PREHOOK: type: DESCTABLE
@@ -1467,12 +1515,15 @@ SELECT DISTINCT value
 FROM src
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@view16
 POSTHOOK: query: -- test usage of DISTINCT within view
 CREATE VIEW view16 AS
 SELECT DISTINCT value
 FROM src
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@view16
 PREHOOK: query: DESCRIBE EXTENDED view16
 PREHOOK: type: DESCTABLE

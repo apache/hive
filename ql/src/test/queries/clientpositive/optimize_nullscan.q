@@ -1,3 +1,5 @@
+-- SORT_BEFORE_DIFF
+
 explain extended 
 select key from src where false;
 select key from src where false;

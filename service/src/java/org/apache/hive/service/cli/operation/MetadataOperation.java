@@ -46,6 +46,7 @@ public abstract class MetadataOperation extends Operation {
   @Override
   public void close() throws HiveSQLException {
     setState(OperationState.CLOSED);
+    cleanupOperationLog();
   }
 
   /**

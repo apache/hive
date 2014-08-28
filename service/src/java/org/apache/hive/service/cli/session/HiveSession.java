@@ -23,13 +23,7 @@ import java.util.Map;
 
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hive.service.auth.HiveAuthFactory;
-import org.apache.hive.service.cli.FetchOrientation;
-import org.apache.hive.service.cli.GetInfoType;
-import org.apache.hive.service.cli.GetInfoValue;
-import org.apache.hive.service.cli.HiveSQLException;
-import org.apache.hive.service.cli.OperationHandle;
-import org.apache.hive.service.cli.RowSet;
-import org.apache.hive.service.cli.TableSchema;
+import org.apache.hive.service.cli.*;
 
 public interface HiveSession extends HiveSessionBase {
 
@@ -144,10 +138,8 @@ public interface HiveSession extends HiveSessionBase {
   public TableSchema getResultSetMetadata(OperationHandle opHandle)
       throws HiveSQLException;
 
-  public RowSet fetchResults(OperationHandle opHandle, FetchOrientation orientation, long maxRows)
-      throws HiveSQLException;
-
-  public RowSet fetchResults(OperationHandle opHandle) throws HiveSQLException;
+  public RowSet fetchResults(OperationHandle opHandle, FetchOrientation orientation,
+      long maxRows, FetchType fetchType) throws HiveSQLException;
 
   public String getDelegationToken(HiveAuthFactory authFactory, String owner,
       String renewer) throws HiveSQLException;

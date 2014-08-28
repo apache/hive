@@ -153,9 +153,12 @@ POSTHOOK: Output: default@lineitem
 PREHOOK: query: create table src_cbo as select * from src
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src_cbo
 POSTHOOK: query: create table src_cbo as select * from src
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_cbo
 PREHOOK: query: analyze table t1 partition (dt) compute statistics
 PREHOOK: type: QUERY
@@ -16441,17 +16444,23 @@ PREHOOK: query: -- 10. Test views
 create view v1 as select c_int, value, c_boolean, dt from t1
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@t1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@v1
 POSTHOOK: query: -- 10. Test views
 create view v1 as select c_int, value, c_boolean, dt from t1
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@t1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@v1
 PREHOOK: query: create view v2 as select c_int, value from t2
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@t2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@v2
 POSTHOOK: query: create view v2 as select c_int, value from t2
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@t2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@v2
 PREHOOK: query: select value from v1 where c_boolean=false
 PREHOOK: type: QUERY
@@ -16535,10 +16544,13 @@ PREHOOK: query: create view v3 as select v1.value val from v1 join t1 on v1.c_bo
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@v1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@v3
 POSTHOOK: query: create view v3 as select v1.value val from v1 join t1 on v1.c_boolean = t1.c_boolean
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@v1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@v3
 PREHOOK: query: select count(val) from v3 where val != '1'
 PREHOOK: type: QUERY
@@ -16588,11 +16600,14 @@ with q1 as ( select key,c_int from t1  where key = '1')
 select * from q1
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@t1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@v4
 POSTHOOK: query: create view v4 as
 with q1 as ( select key,c_int from t1  where key = '1')
 select * from q1
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@t1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@v4
 PREHOOK: query: with q1 as ( select c_int from q2 where c_boolean = false),
 q2 as ( select c_int,c_boolean from v1  where value = '1')
@@ -18781,6 +18796,8 @@ where exists
   where b.value = a.value  and a.key = b.key and a.value > 'val_9')
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src_cbo
+PREHOOK: Output: database:default
+PREHOOK: Output: default@cv1
 POSTHOOK: query: -- 19. SubQueries Exists
 -- view test
 create view cv1 as 
@@ -18792,6 +18809,7 @@ where exists
   where b.value = a.value  and a.key = b.key and a.value > 'val_9')
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src_cbo
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@cv1
 PREHOOK: query: select * from cv1
 PREHOOK: type: QUERY

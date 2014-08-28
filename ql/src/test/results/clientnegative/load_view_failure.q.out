@@ -5,8 +5,11 @@ POSTHOOK: type: DROPVIEW
 PREHOOK: query: CREATE VIEW xxx11 AS SELECT * FROM src
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@xxx11
 POSTHOOK: query: CREATE VIEW xxx11 AS SELECT * FROM src
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@xxx11
 FAILED: SemanticException [Error 10090]: A view cannot be used as target table for LOAD or INSERT

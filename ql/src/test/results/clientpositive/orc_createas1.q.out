@@ -105,7 +105,7 @@ STAGE PLANS:
           input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
           serde name: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-          name: orc_createas1b
+          name: default.orc_createas1b
 
   Stage: Stage-2
     Stats-Aggr Operator
@@ -131,11 +131,14 @@ PREHOOK: query: CREATE TABLE orc_createas1b
     SELECT * FROM src
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@orc_createas1b
 POSTHOOK: query: CREATE TABLE orc_createas1b
     STORED AS ORC AS
     SELECT * FROM src
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_createas1b
 PREHOOK: query: EXPLAIN SELECT * FROM orc_createas1b ORDER BY key LIMIT 5
 PREHOOK: type: QUERY
@@ -261,7 +264,7 @@ STAGE PLANS:
           input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
           serde name: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-          name: orc_createas1c
+          name: default.orc_createas1c
 
   Stage: Stage-2
     Stats-Aggr Operator
@@ -290,6 +293,8 @@ PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@orc_createas1a
 PREHOOK: Input: default@orc_createas1a@ds=1
 PREHOOK: Input: default@orc_createas1a@ds=2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@orc_createas1c
 POSTHOOK: query: CREATE TABLE orc_createas1c
     STORED AS ORC AS 
         SELECT key, value, PMOD(HASH(key), 50) as part
@@ -298,6 +303,7 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@orc_createas1a
 POSTHOOK: Input: default@orc_createas1a@ds=1
 POSTHOOK: Input: default@orc_createas1a@ds=2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_createas1c
 PREHOOK: query: SELECT SUM(HASH(c)) FROM (
     SELECT TRANSFORM(key, value) USING 'tr \t _' AS (c)
