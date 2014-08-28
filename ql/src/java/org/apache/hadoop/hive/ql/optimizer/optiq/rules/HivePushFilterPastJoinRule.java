@@ -115,7 +115,7 @@ public abstract class HivePushFilterPastJoinRule extends RelOptRule {
     final Holder<JoinRelType> joinTypeHolder = Holder.of(join.getJoinType());
     if (RelOptUtil.classifyFilters(join, aboveFilters,
         join.getJoinType(), true, !join.getJoinType().generatesNullsOnLeft(), !join.getJoinType()
-        .generatesNullsOnRight(), joinFilters, leftFilters, rightFilters, joinTypeHolder, false)) {
+        .generatesNullsOnRight(), joinFilters, leftFilters, rightFilters, joinTypeHolder, smart)) {
       filterPushed = true;
     }
 

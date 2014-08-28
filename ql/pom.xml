@@ -28,7 +28,7 @@
   <name>Hive Query Language</name>
 
   <properties>
-    <optiq.version>0.9.0-incubating-SNAPSHOT</optiq.version>
+    <optiq.version>0.9.1-incubating-SNAPSHOT</optiq.version>
     <hive.path.to.root>..</hive.path.to.root>
   </properties>
 
