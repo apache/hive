@@ -772,6 +772,8 @@ from part
 group by p_mfgr, p_brand
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@part
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mfgr_price_view
 POSTHOOK: query: -- 16. testViewAsTableInputToPTF
 create view IF NOT EXISTS mfgr_price_view as 
 select p_mfgr, p_brand, 
@@ -780,6 +782,7 @@ from part
 group by p_mfgr, p_brand
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@part
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mfgr_price_view
 PREHOOK: query: select p_mfgr, p_brand, s, 
 sum(s) over w1  as s1

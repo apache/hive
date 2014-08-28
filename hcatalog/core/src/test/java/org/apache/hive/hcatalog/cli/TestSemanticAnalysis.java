@@ -156,7 +156,7 @@ public class TestSemanticAnalysis extends HCatBaseTest {
   public void testCreateTableIfNotExists() throws MetaException, TException, NoSuchObjectException, CommandNeedRetryException {
 
     hcatDriver.run("drop table " + TBL_NAME);
-    hcatDriver.run("create table junit_sem_analysis (a int) stored as RCFILE");
+    hcatDriver.run("create table " + TBL_NAME + " (a int) stored as RCFILE");
     Table tbl = client.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, TBL_NAME);
     List<FieldSchema> cols = tbl.getSd().getCols();
     assertEquals(1, cols.size());

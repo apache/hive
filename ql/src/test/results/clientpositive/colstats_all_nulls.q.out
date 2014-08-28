@@ -17,9 +17,12 @@ POSTHOOK: Output: default@src_null
 PREHOOK: query: create table all_nulls as SELECT a, cast(a as double) as b, cast(a as decimal) as c  FROM src_null where a is null limit 5
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src_null
+PREHOOK: Output: database:default
+PREHOOK: Output: default@all_nulls
 POSTHOOK: query: create table all_nulls as SELECT a, cast(a as double) as b, cast(a as decimal) as c  FROM src_null where a is null limit 5
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src_null
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@all_nulls
 PREHOOK: query: analyze table all_nulls compute statistics for columns
 PREHOOK: type: QUERY

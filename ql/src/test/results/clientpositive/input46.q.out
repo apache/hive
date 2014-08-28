@@ -7,34 +7,38 @@ POSTHOOK: Output: database:table_in_database_creation
 PREHOOK: query: create table table_in_database_creation.test1  as select * from src limit 1
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
+PREHOOK: Output: database:table_in_database_creation
+PREHOOK: Output: table_in_database_creation@test1
 POSTHOOK: query: create table table_in_database_creation.test1  as select * from src limit 1
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
+POSTHOOK: Output: database:table_in_database_creation
 POSTHOOK: Output: table_in_database_creation@test1
-PREHOOK: query: create table `table_in_database_creation.test2` as select * from src limit 1
+PREHOOK: query: create table `table_in_database_creation`.`test2` as select * from src limit 1
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
-POSTHOOK: query: create table `table_in_database_creation.test2` as select * from src limit 1
+PREHOOK: Output: database:table_in_database_creation
+PREHOOK: Output: table_in_database_creation@test2
+POSTHOOK: query: create table `table_in_database_creation`.`test2` as select * from src limit 1
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
+POSTHOOK: Output: database:table_in_database_creation
 POSTHOOK: Output: table_in_database_creation@test2
 PREHOOK: query: create table table_in_database_creation.test3 (a string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:table_in_database_creation
-PREHOOK: Output: table_in_database_creation@table_in_database_creation.test3
+PREHOOK: Output: table_in_database_creation@test3
 POSTHOOK: query: create table table_in_database_creation.test3 (a string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:table_in_database_creation
-POSTHOOK: Output: table_in_database_creation@table_in_database_creation.test3
 POSTHOOK: Output: table_in_database_creation@test3
-PREHOOK: query: create table `table_in_database_creation.test4` (a string)
+PREHOOK: query: create table `table_in_database_creation`.`test4` (a string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:table_in_database_creation
-PREHOOK: Output: table_in_database_creation@table_in_database_creation.test4
-POSTHOOK: query: create table `table_in_database_creation.test4` (a string)
+PREHOOK: Output: table_in_database_creation@test4
+POSTHOOK: query: create table `table_in_database_creation`.`test4` (a string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:table_in_database_creation
-POSTHOOK: Output: table_in_database_creation@table_in_database_creation.test4
 POSTHOOK: Output: table_in_database_creation@test4
 PREHOOK: query: drop database table_in_database_creation cascade
 PREHOOK: type: DROPDATABASE

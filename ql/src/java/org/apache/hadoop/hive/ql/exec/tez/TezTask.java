@@ -263,7 +263,7 @@ public class TezTask extends Task<TezWork> {
         }
       } else {
         // Regular vertices
-        JobConf wxConf = utils.initializeVertexConf(conf, w);
+        JobConf wxConf = utils.initializeVertexConf(conf, ctx, w);
         Vertex wx = utils.createVertex(wxConf, w, scratchDir, appJarLr,
           additionalLr, fs, ctx, !isFinal, work);
         dag.addVertex(wx);

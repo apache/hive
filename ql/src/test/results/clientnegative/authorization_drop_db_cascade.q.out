@@ -9,11 +9,10 @@ POSTHOOK: Output: database:dba1
 PREHOOK: query: create table dba1.tab1(i int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:dba1
-PREHOOK: Output: dba1@dba1.tab1
+PREHOOK: Output: dba1@tab1
 POSTHOOK: query: create table dba1.tab1(i int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:dba1
-POSTHOOK: Output: dba1@dba1.tab1
 POSTHOOK: Output: dba1@tab1
 PREHOOK: query: drop database dba1 cascade
 PREHOOK: type: DROPDATABASE
@@ -36,11 +35,10 @@ POSTHOOK: Output: database:dba2
 PREHOOK: query: create table dba2.tab2(i int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:dba2
-PREHOOK: Output: dba2@dba2.tab2
+PREHOOK: Output: dba2@tab2
 POSTHOOK: query: create table dba2.tab2(i int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:dba2
-POSTHOOK: Output: dba2@dba2.tab2
 POSTHOOK: Output: dba2@tab2
 PREHOOK: query: set role ADMIN
 PREHOOK: type: SHOW_ROLES

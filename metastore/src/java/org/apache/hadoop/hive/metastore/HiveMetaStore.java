@@ -250,7 +250,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     private static String currentUrl;
 
     private Warehouse wh; // hdfs warehouse
-    private final ThreadLocal<RawStore> threadLocalMS =
+    private static final ThreadLocal<RawStore> threadLocalMS =
         new ThreadLocal<RawStore>() {
           @Override
           protected synchronized RawStore initialValue() {
@@ -264,6 +264,14 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         return null;
       }
     };
+
+    public static RawStore getRawStore() {
+      return threadLocalMS.get();
+    }
+
+    public static void removeRawStore() {
+      threadLocalMS.remove();
+    }
 
     // Thread local configuration is needed as many threads could make changes
     // to the conf using the connection hook
@@ -384,6 +392,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
     }
 
+    @Override
     public void init() throws MetaException {
       rawStoreClassName = hiveConf.getVar(HiveConf.ConfVars.METASTORE_RAW_STORE_IMPL);
       initListeners = MetaStoreUtils.getMetaStoreListeners(
@@ -5024,12 +5033,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       startFunction("get_aggr_stats_for: db=" + request.getDbName() + " table=" + request.getTblName());
       AggrStats aggrStats = null;
       try {
-        //TODO: We are setting partitionCnt for which we were able to retrieve stats same as
-        // incoming number from request. This is not correct, but currently no users of this api
-        // rely on this. Only, current user StatsAnnotation don't care for it. StatsOptimizer
-        // will care for it, so before StatsOptimizer begin using it, we need to fix this.
         aggrStats = new AggrStats(getMS().get_aggr_stats_for(request.getDbName(),
-          request.getTblName(), request.getPartNames(), request.getColNames()), request.getPartNames().size());
+          request.getTblName(), request.getPartNames(), request.getColNames()));
         return aggrStats;
       } finally {
           endFunction("get_partitions_statistics_req: ", aggrStats == null, null, request.getTblName());

@@ -28,19 +28,17 @@ import org.apache.hive.service.auth.HiveAuthFactory;
  *
  */
 public abstract class CLIServiceClient implements ICLIService {
+  private static final long DEFAULT_MAX_ROWS = 1000;
 
   public SessionHandle openSession(String username, String password)
       throws HiveSQLException {
     return openSession(username, password, Collections.<String, String>emptyMap());
   }
 
-  /* (non-Javadoc)
-   * @see org.apache.hive.service.cli.ICLIService#fetchResults(org.apache.hive.service.cli.OperationHandle)
-   */
   @Override
   public RowSet fetchResults(OperationHandle opHandle) throws HiveSQLException {
     // TODO: provide STATIC default value
-    return fetchResults(opHandle, FetchOrientation.FETCH_NEXT, 1000);
+    return fetchResults(opHandle, FetchOrientation.FETCH_NEXT, DEFAULT_MAX_ROWS, FetchType.QUERY_OUTPUT);
   }
 
   @Override

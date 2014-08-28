@@ -124,6 +124,7 @@ import com.google.protobuf.ByteString;
  */
 public class DagUtils {
 
+  public static final String TEZ_TMP_DIR_KEY = "_hive_tez_tmp_dir";
   private static final Log LOG = LogFactory.getLog(DagUtils.class.getName());
   private static final String TEZ_DIR = "_tez_scratch_dir";
   private static DagUtils instance;
@@ -158,7 +159,7 @@ public class DagUtils {
    * Creates the configuration object necessary to run a specific vertex from
    * map work. This includes input formats, input processor, etc.
    */
-  private JobConf initializeVertexConf(JobConf baseConf, MapWork mapWork) {
+  private JobConf initializeVertexConf(JobConf baseConf, Context context, MapWork mapWork) {
     JobConf conf = new JobConf(baseConf);
 
     if (mapWork.getNumMapTasks() != null) {
@@ -200,6 +201,7 @@ public class DagUtils {
       inpFormat = CombineHiveInputFormat.class.getName();
     }
 
+    conf.set(TEZ_TMP_DIR_KEY, context.getMRTmpPath().toUri().toString());
     conf.set("mapred.mapper.class", ExecMapper.class.getName());
     conf.set("mapred.input.format.class", inpFormat);
 
@@ -524,7 +526,7 @@ public class DagUtils {
   /*
    * Helper function to create JobConf for specific ReduceWork.
    */
-  private JobConf initializeVertexConf(JobConf baseConf, ReduceWork reduceWork) {
+  private JobConf initializeVertexConf(JobConf baseConf, Context context, ReduceWork reduceWork) {
     JobConf conf = new JobConf(baseConf);
 
     conf.set("mapred.reducer.class", ExecReducer.class.getName());
@@ -896,14 +898,14 @@ public class DagUtils {
    * @param work BaseWork will be used to populate the configuration object.
    * @return JobConf new configuration object
    */
-  public JobConf initializeVertexConf(JobConf conf, BaseWork work) {
+  public JobConf initializeVertexConf(JobConf conf, Context context, BaseWork work) {
 
     // simply dispatch the call to the right method for the actual (sub-) type of
     // BaseWork.
     if (work instanceof MapWork) {
-      return initializeVertexConf(conf, (MapWork)work);
+      return initializeVertexConf(conf, context, (MapWork)work);
     } else if (work instanceof ReduceWork) {
-      return initializeVertexConf(conf, (ReduceWork)work);
+      return initializeVertexConf(conf, context, (ReduceWork)work);
     } else {
       assert false;
       return null;

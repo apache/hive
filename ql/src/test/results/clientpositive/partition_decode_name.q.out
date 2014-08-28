@@ -6,6 +6,8 @@ from (select '2011-01-11', '2011-01-11+14:18:26' from src tablesample (1 rows)
       select '2011-01-11', '2011-01-11+16:18:26' from src tablesample (1 rows) ) s
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@sc
 POSTHOOK: query: create table sc as select * 
 from (select '2011-01-11', '2011-01-11+14:18:26' from src tablesample (1 rows)
       union all 
@@ -14,6 +16,7 @@ from (select '2011-01-11', '2011-01-11+14:18:26' from src tablesample (1 rows)
       select '2011-01-11', '2011-01-11+16:18:26' from src tablesample (1 rows) ) s
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@sc
 PREHOOK: query: create table sc_part (key string) partitioned by (ts string) stored as rcfile
 PREHOOK: type: CREATETABLE

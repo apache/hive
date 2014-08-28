@@ -92,8 +92,8 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   protected transient ListBucketingCtx lbCtx;
   protected transient boolean isSkewedStoredAsSubDirectories;
   protected transient boolean statsCollectRawDataSize;
-  private transient boolean[] statsFromRecordWriter;
-  private transient boolean isCollectRWStats;
+  protected transient boolean[] statsFromRecordWriter;
+  protected transient boolean isCollectRWStats;
   private transient FSPaths prevFsp;
   private transient FSPaths fpaths;
   private transient ObjectInspector keyOI;
@@ -626,7 +626,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     }
   }
 
-  private boolean areAllTrue(boolean[] statsFromRW) {
+  protected boolean areAllTrue(boolean[] statsFromRW) {
     for(boolean b : statsFromRW) {
       if (!b) {
         return false;

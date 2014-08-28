@@ -51,18 +51,23 @@ desc alter_coltype partition (dt='100', ts=3.0);
 
 drop table alter_coltype;
 
-create table alterdynamic_part_table(intcol string) partitioned by (partcol1 string, partcol2 string);
+create database pt;
+
+create table pt.alterdynamic_part_table(intcol string) partitioned by (partcol1 string, partcol2 string);
 
 set hive.exec.dynamic.partition.mode=nonstrict;
 
-insert into table alterdynamic_part_table partition(partcol1, partcol2) select '1', '1', '1' from src where key=150 limit 5;
+insert into table pt.alterdynamic_part_table partition(partcol1, partcol2) select '1', '1', '1' from src where key=150 limit 5;
 
-insert into table alterdynamic_part_table partition(partcol1, partcol2) select '1', '2', '1' from src where key=150 limit 5;
-insert into table alterdynamic_part_table partition(partcol1, partcol2) select NULL, '1', '1' from src where key=150 limit 5;
+insert into table pt.alterdynamic_part_table partition(partcol1, partcol2) select '1', '2', '1' from src where key=150 limit 5;
+insert into table pt.alterdynamic_part_table partition(partcol1, partcol2) select NULL, '1', '1' from src where key=150 limit 5;
 
-alter table alterdynamic_part_table partition column (partcol1 int);
+alter table pt.alterdynamic_part_table partition column (partcol1 int);
 
-explain extended select intcol from alterdynamic_part_table where partcol1='1' and partcol2='1';
+explain extended select intcol from pt.alterdynamic_part_table where partcol1='1' and partcol2='1';
 
-explain extended select intcol from alterdynamic_part_table where (partcol1='2' and partcol2='1')or (partcol1='1' and partcol2='__HIVE_DEFAULT_PARTITION__');
-select intcol from alterdynamic_part_table where (partcol1='2' and partcol2='1')or (partcol1='1' and partcol2='__HIVE_DEFAULT_PARTITION__');
+explain extended select intcol from pt.alterdynamic_part_table where (partcol1='2' and partcol2='1')or (partcol1='1' and partcol2='__HIVE_DEFAULT_PARTITION__');
+select intcol from pt.alterdynamic_part_table where (partcol1='2' and partcol2='1')or (partcol1='1' and partcol2='__HIVE_DEFAULT_PARTITION__');
+
+drop table pt.alterdynamic_part_table;
+drop database pt;

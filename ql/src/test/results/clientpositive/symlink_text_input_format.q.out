@@ -18,7 +18,7 @@ STAGE PLANS:
           columns: key string, value string
           input format: org.apache.hadoop.hive.ql.io.SymlinkTextInputFormat
           output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-          name: symlink_text_input_format
+          name: default.symlink_text_input_format
 
 PREHOOK: query: CREATE TABLE symlink_text_input_format (key STRING, value STRING) STORED AS INPUTFORMAT 'org.apache.hadoop.hive.ql.io.SymlinkTextInputFormat' OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat'
 PREHOOK: type: CREATETABLE

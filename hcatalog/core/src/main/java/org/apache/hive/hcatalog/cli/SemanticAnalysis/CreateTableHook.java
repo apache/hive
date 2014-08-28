@@ -86,7 +86,7 @@ final class CreateTableHook extends HCatSemanticAnalyzerBase {
           "Operation not supported. Create table as " +
             "Select is not a valid operation.");
 
-      case HiveParser.TOK_TABLEBUCKETS:
+      case HiveParser.TOK_ALTERTABLE_BUCKETS:
         break;
 
       case HiveParser.TOK_LIKETABLE:

@@ -72,7 +72,7 @@ STAGE PLANS:
           input format: org.apache.hadoop.mapred.TextInputFormat
           output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
           serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-          name: summary
+          name: default.summary
 
   Stage: Stage-2
     Stats-Aggr Operator
@@ -80,9 +80,12 @@ STAGE PLANS:
 PREHOOK: query: create table summary as select *, sum(key), count(value) from src
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@summary
 POSTHOOK: query: create table summary as select *, sum(key), count(value) from src
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@summary
 PREHOOK: query: describe formatted summary
 PREHOOK: type: DESCTABLE
@@ -189,7 +192,7 @@ STAGE PLANS:
           input format: org.apache.hadoop.mapred.TextInputFormat
           output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
           serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-          name: x4
+          name: default.x4
 
   Stage: Stage-2
     Stats-Aggr Operator
@@ -197,9 +200,12 @@ STAGE PLANS:
 PREHOOK: query: create table x4 as select *, rank() over(partition by key order by value) as rr from src1
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@x4
 POSTHOOK: query: create table x4 as select *, rank() over(partition by key order by value) as rr from src1
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@x4
 PREHOOK: query: describe formatted x4
 PREHOOK: type: DESCTABLE
@@ -354,7 +360,7 @@ STAGE PLANS:
           input format: org.apache.hadoop.mapred.TextInputFormat
           output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
           serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-          name: x5
+          name: default.x5
 
   Stage: Stage-3
     Stats-Aggr Operator
@@ -362,9 +368,12 @@ STAGE PLANS:
 PREHOOK: query: create table x5 as select *, lead(key,1) over(partition by key order by value) as lead1 from src limit 20
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@x5
 POSTHOOK: query: create table x5 as select *, lead(key,1) over(partition by key order by value) as lead1 from src limit 20
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@x5
 PREHOOK: query: describe formatted x5
 PREHOOK: type: DESCTABLE
@@ -497,7 +506,7 @@ STAGE PLANS:
           input format: org.apache.hadoop.mapred.TextInputFormat
           output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
           serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-          name: x6
+          name: default.x6
 
   Stage: Stage-2
     Stats-Aggr Operator
@@ -505,9 +514,12 @@ STAGE PLANS:
 PREHOOK: query: create table x6 as select * from (select *, max(key) from src1) a
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@x6
 POSTHOOK: query: create table x6 as select * from (select *, max(key) from src1) a
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@x6
 PREHOOK: query: describe formatted x6
 PREHOOK: type: DESCTABLE
@@ -619,7 +631,7 @@ STAGE PLANS:
           input format: org.apache.hadoop.mapred.TextInputFormat
           output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
           serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-          name: x7
+          name: default.x7
 
   Stage: Stage-2
     Stats-Aggr Operator
@@ -627,9 +639,12 @@ STAGE PLANS:
 PREHOOK: query: create table x7 as select * from (select * from src group by key) a
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@x7
 POSTHOOK: query: create table x7 as select * from (select * from src group by key) a
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@x7
 PREHOOK: query: describe formatted x7
 PREHOOK: type: DESCTABLE
@@ -1051,7 +1066,7 @@ STAGE PLANS:
           input format: org.apache.hadoop.mapred.TextInputFormat
           output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
           serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-          name: x8
+          name: default.x8
 
   Stage: Stage-2
     Stats-Aggr Operator
@@ -1059,9 +1074,12 @@ STAGE PLANS:
 PREHOOK: query: create table x8 as select * from (select * from src group by key having key < 9) a
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@x8
 POSTHOOK: query: create table x8 as select * from (select * from src group by key having key < 9) a
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@x8
 PREHOOK: query: describe formatted x8
 PREHOOK: type: DESCTABLE
@@ -1185,7 +1203,7 @@ STAGE PLANS:
           input format: org.apache.hadoop.mapred.TextInputFormat
           output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
           serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-          name: x9
+          name: default.x9
 
   Stage: Stage-2
     Stats-Aggr Operator
@@ -1193,9 +1211,12 @@ STAGE PLANS:
 PREHOOK: query: create table x9 as select * from (select max(value),key from src group by key having key < 9 AND max(value) IS NOT NULL) a
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@x9
 POSTHOOK: query: create table x9 as select * from (select max(value),key from src group by key having key < 9 AND max(value) IS NOT NULL) a
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@x9
 PREHOOK: query: describe formatted x9
 PREHOOK: type: DESCTABLE

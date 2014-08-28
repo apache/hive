@@ -28,9 +28,12 @@ POSTHOOK: Output: foo@t1@ds=today
 PREHOOK: query: create view V1 as select key from T1
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: foo@t1
+PREHOOK: Output: database:foo
+PREHOOK: Output: foo@V1
 POSTHOOK: query: create view V1 as select key from T1
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: foo@t1
+POSTHOOK: Output: database:foo
 POSTHOOK: Output: foo@V1
 PREHOOK: query: show tables
 PREHOOK: type: SHOWTABLES

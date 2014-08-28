@@ -10,6 +10,8 @@ where exists
   where b.value = a.value  and a.key = b.key and a.value > 'val_9')
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@cv1
 POSTHOOK: query: -- SORT_QUERY_RESULTS
 
 -- exists test
@@ -22,6 +24,7 @@ where exists
   where b.value = a.value  and a.key = b.key and a.value > 'val_9')
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@cv1
 PREHOOK: query: select * 
 from cv1 where cv1.key in (select key from cv1 c where c.key > '95')
@@ -51,6 +54,8 @@ where b.key not in
   )
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@cv2
 POSTHOOK: query: -- not in test
 create view cv2 as 
 select * 
@@ -62,6 +67,7 @@ where b.key not in
   )
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@cv2
 Warning: Shuffle Join JOIN[42][tables = [b, sq_1_notin_nullcheck]] in Stage 'Stage-5:MAPRED' is a cross product
 Warning: Shuffle Join JOIN[18][tables = [b, sq_1_notin_nullcheck]] in Stage 'Stage-1:MAPRED' is a cross product
@@ -416,6 +422,8 @@ group by key, value
 having count(*) in (select count(*) from src s1 where s1.key > '9' group by s1.key )
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@cv3
 POSTHOOK: query: -- in where + having
 create view cv3 as
 select key, value, count(*) 
@@ -425,6 +433,7 @@ group by key, value
 having count(*) in (select count(*) from src s1 where s1.key > '9' group by s1.key )
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@cv3
 PREHOOK: query: select * from cv3
 PREHOOK: type: QUERY

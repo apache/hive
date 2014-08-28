@@ -46,7 +46,6 @@ import org.apache.hive.service.CompositeService;
 import org.apache.hive.service.ServiceException;
 import org.apache.hive.service.auth.HiveAuthFactory;
 import org.apache.hive.service.cli.operation.Operation;
-import org.apache.hive.service.cli.session.HiveSession;
 import org.apache.hive.service.cli.session.SessionManager;
 import org.apache.hive.service.cli.thrift.TProtocolVersion;
 
@@ -67,7 +66,6 @@ public class CLIService extends CompositeService implements ICLIService {
 
   private HiveConf hiveConf;
   private SessionManager sessionManager;
-  private IMetaStoreClient metastoreClient;
   private UserGroupInformation serviceUGI;
   private UserGroupInformation httpUGI;
 
@@ -80,11 +78,8 @@ public class CLIService extends CompositeService implements ICLIService {
     this.hiveConf = hiveConf;
     sessionManager = new SessionManager();
     addService(sessionManager);
-    /**
-     * If auth mode is Kerberos, do a kerberos login for the service from the keytab
-     */
-    if (hiveConf.getVar(ConfVars.HIVE_SERVER2_AUTHENTICATION).equalsIgnoreCase(
-        HiveAuthFactory.AuthTypes.KERBEROS.toString())) {
+    //  If the hadoop cluster is secure, do a kerberos login for the service from the keytab
+    if (ShimLoader.getHadoopShims().isSecurityEnabled()) {
       try {
         HiveAuthFactory.loginFromKeytab(hiveConf);
         this.serviceUGI = ShimLoader.getHadoopShims().getUGIForConf(hiveConf);
@@ -132,21 +127,23 @@ public class CLIService extends CompositeService implements ICLIService {
     } catch (IOException eIO) {
       throw new ServiceException("Error setting stage directories", eIO);
     }
-
+    // Initialize and test a connection to the metastore
+    IMetaStoreClient metastoreClient = null;
     try {
-      // Initialize and test a connection to the metastore
       metastoreClient = new HiveMetaStoreClient(hiveConf);
       metastoreClient.getDatabases("default");
     } catch (Exception e) {
       throw new ServiceException("Unable to connect to MetaStore!", e);
     }
+    finally {
+      if (metastoreClient != null) {
+        metastoreClient.close();
+      }
+    }
   }
 
   @Override
   public synchronized void stop() {
-    if (metastoreClient != null) {
-      metastoreClient.close();
-    }
     super.stop();
   }
 
@@ -170,7 +167,7 @@ public class CLIService extends CompositeService implements ICLIService {
           throws HiveSQLException {
     SessionHandle sessionHandle = sessionManager.openSession(protocol, username, password, null, configuration,
         true, delegationToken);
-    LOG.debug(sessionHandle + ": openSession()");
+    LOG.debug(sessionHandle + ": openSessionWithImpersonation()");
     return sessionHandle;
   }
 
@@ -423,25 +420,20 @@ public class CLIService extends CompositeService implements ICLIService {
   }
 
   /* (non-Javadoc)
-   * @see org.apache.hive.service.cli.ICLIService#fetchResults(org.apache.hive.service.cli.OperationHandle, org.apache.hive.service.cli.FetchOrientation, long)
-   */
-  @Override
-  public RowSet fetchResults(OperationHandle opHandle, FetchOrientation orientation, long maxRows)
-      throws HiveSQLException {
-    RowSet rowSet = sessionManager.getOperationManager().getOperation(opHandle)
-        .getParentSession().fetchResults(opHandle, orientation, maxRows);
-    LOG.debug(opHandle + ": fetchResults()");
-    return rowSet;
-  }
-
-  /* (non-Javadoc)
    * @see org.apache.hive.service.cli.ICLIService#fetchResults(org.apache.hive.service.cli.OperationHandle)
    */
   @Override
   public RowSet fetchResults(OperationHandle opHandle)
       throws HiveSQLException {
+    return fetchResults(opHandle, Operation.DEFAULT_FETCH_ORIENTATION,
+        Operation.DEFAULT_FETCH_MAX_ROWS, FetchType.QUERY_OUTPUT);
+  }
+
+  @Override
+  public RowSet fetchResults(OperationHandle opHandle, FetchOrientation orientation,
+                             long maxRows, FetchType fetchType) throws HiveSQLException {
     RowSet rowSet = sessionManager.getOperationManager().getOperation(opHandle)
-        .getParentSession().fetchResults(opHandle);
+        .getParentSession().fetchResults(opHandle, orientation, maxRows, fetchType);
     LOG.debug(opHandle + ": fetchResults()");
     return rowSet;
   }
