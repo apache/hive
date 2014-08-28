@@ -48,6 +48,14 @@ public class HiveSessionImplwithUGI extends HiveSessionImpl {
     super(protocol, username, password, hiveConf, ipAddress);
     setSessionUGI(username);
     setDelegationToken(delegationToken);
+
+    // create a new metastore connection for this particular user session
+    Hive.set(null);
+    try {
+      sessionHive = Hive.get(getHiveConf());
+    } catch (HiveException e) {
+      throw new HiveSQLException("Failed to setup metastore connection", e);
+    }
   }
 
   // setup appropriate UGI for the session
@@ -114,13 +122,6 @@ public class HiveSessionImplwithUGI extends HiveSessionImpl {
         ShimLoader.getHadoopShims().setTokenStr(sessionUgi, delegationTokenStr, HS2TOKEN);
       } catch (IOException e) {
         throw new HiveSQLException("Couldn't setup delegation token in the ugi", e);
-      }
-      // create a new metastore connection using the delegation token
-      Hive.set(null);
-      try {
-        sessionHive = Hive.get(getHiveConf());
-      } catch (HiveException e) {
-        throw new HiveSQLException("Failed to setup metastore connection", e);
       }
     }
   }
