@@ -9517,12 +9517,37 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     LOG.info("Completed plan generation");
 
+    // put accessed columns to readEntity
+    if (HiveConf.getBoolVar(this.conf, HiveConf.ConfVars.HIVE_STATS_COLLECT_SCANCOLS)) {
+      putAccessedColumnsToReadEntity(inputs, columnAccessInfo);
+    }
+
     if (!ctx.getExplain()) {
       // if desired check we're not going over partition scan limits
       enforceScanLimits(pCtx, origFetchTask);
     }
 
     return;
+  }
+
+  private void putAccessedColumnsToReadEntity(HashSet<ReadEntity> inputs, ColumnAccessInfo columnAccessInfo) {
+    Map<String, List<String>> tableToColumnAccessMap = columnAccessInfo.getTableToColumnAccessMap();
+    if (tableToColumnAccessMap != null && !tableToColumnAccessMap.isEmpty()) {
+      for(ReadEntity entity: inputs) {
+        switch (entity.getType()) {
+          case TABLE:
+            entity.getAccessedColumns().addAll(
+                tableToColumnAccessMap.get(entity.getTable().getCompleteName()));
+            break;
+          case PARTITION:
+            entity.getAccessedColumns().addAll(
+                tableToColumnAccessMap.get(entity.getPartition().getTable().getCompleteName()));
+            break;
+          default:
+            // no-op
+        }
+      }
+    }
   }
 
   private void enforceScanLimits(ParseContext pCtx, FetchTask fTask)
