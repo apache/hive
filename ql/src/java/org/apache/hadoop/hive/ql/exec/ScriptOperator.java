@@ -50,6 +50,7 @@ import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.util.Shell;
 import org.apache.hadoop.util.StringUtils;
+import org.apache.spark.SparkFiles;
 
 /**
  * ScriptOperator.
@@ -188,6 +189,7 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
       if (pathenv == null || pathSep == null || fileSep == null) {
         return null;
       }
+
       int val = -1;
       String classvalue = pathenv + pathSep;
 
@@ -296,6 +298,11 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
         if (!new File(prog).isAbsolute()) {
           PathFinder finder = new PathFinder("PATH");
           finder.prependPathComponent(currentDir.toString());
+
+          // In spark local mode, we need to search added files in root directory.
+          if (HiveConf.getVar(hconf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("spark")) {
+            finder.prependPathComponent(SparkFiles.getRootDirectory());
+          }
           File f = finder.getAbsolutePath(prog);
           if (f != null) {
             cmdArgs[0] = f.getAbsolutePath();
