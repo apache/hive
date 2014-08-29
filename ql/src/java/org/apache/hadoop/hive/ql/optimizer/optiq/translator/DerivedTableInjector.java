@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.ql.optimizer.optiq.HiveOptiqUtil;
 import org.apache.hadoop.hive.ql.optimizer.optiq.reloperators.HiveAggregateRel;
 import org.apache.hadoop.hive.ql.optimizer.optiq.reloperators.HiveProjectRel;
 import org.apache.hadoop.hive.ql.optimizer.optiq.reloperators.HiveSortRel;
@@ -139,12 +140,7 @@ public class DerivedTableInjector {
   }
 
   private static RelNode introduceDerivedTable(final RelNode rel) {
-    List<RexNode> projectList = Lists.transform(rel.getRowType().getFieldList(),
-        new Function<RelDataTypeField, RexNode>() {
-          public RexNode apply(RelDataTypeField field) {
-            return rel.getCluster().getRexBuilder().makeInputRef(field.getType(), field.getIndex());
-          }
-        });
+    List<RexNode> projectList = HiveOptiqUtil.getProjsFromBelowAsInputRef(rel);
 
     HiveProjectRel select = HiveProjectRel.create(rel.getCluster(), rel, projectList,
         rel.getRowType(), rel.getCollationList());
