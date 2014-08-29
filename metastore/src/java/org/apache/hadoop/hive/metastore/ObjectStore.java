@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore;
 
 import static org.apache.commons.lang.StringUtils.join;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -129,6 +130,7 @@ import org.apache.hadoop.hive.metastore.parser.ExpressionTree.LeafNode;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.Operator;
 import org.apache.hadoop.hive.metastore.parser.FilterLexer;
 import org.apache.hadoop.hive.metastore.parser.FilterParser;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.thrift.TException;
 import org.datanucleus.store.rdbms.exceptions.MissingTableException;
@@ -296,6 +298,16 @@ public class ObjectStore implements RawStore, Configurable {
               + " from  jpox.properties with " + e.getValue());
         }
       }
+    }
+    // Password may no longer be in the conf, use getPassword()
+    try {
+      String passwd =
+          ShimLoader.getHadoopShims().getPassword(conf, HiveConf.ConfVars.METASTOREPWD.varname);
+      if (passwd != null && !passwd.isEmpty()) {
+        prop.setProperty(HiveConf.ConfVars.METASTOREPWD.varname, passwd);
+      }
+    } catch (IOException err) {
+      throw new RuntimeException("Error getting metastore password: " + err.getMessage(), err);
     }
 
     if (LOG.isDebugEnabled()) {
