@@ -1166,6 +1166,10 @@ public class StatsUtils {
     return getFullyQualifiedName(dbName, tabName, partName, colName);
   }
 
+  public static String getFullyQualifiedTableName(String dbName, String tabName) {
+    return getFullyQualifiedName(dbName, tabName);
+  }
+
   private static String getFullyQualifiedName(String... names) {
     List<String> nonNullAndEmptyNames = Lists.newArrayList();
     for (String name : names) {
