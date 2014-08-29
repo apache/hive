@@ -15,6 +15,9 @@ import org.eigenbase.sql.fun.SqlStdOperatorTable;
 import org.eigenbase.sql.validate.SqlValidatorUtil;
 import org.eigenbase.util.Pair;
 
+import com.google.common.base.Function;
+import com.google.common.collect.Lists;
+
 /**
  * Generic utility functions needed for Optiq based Hive CBO.
  */
@@ -39,6 +42,16 @@ public class HiveOptiqUtil {
     }
 
     return vCols;
+  }
+
+  public static List<RexNode> getProjsFromBelowAsInputRef(final RelNode rel) {
+    List<RexNode> projectList = Lists.transform(rel.getRowType().getFieldList(),
+        new Function<RelDataTypeField, RexNode>() {
+          public RexNode apply(RelDataTypeField field) {
+            return rel.getCluster().getRexBuilder().makeInputRef(field.getType(), field.getIndex());
+          }
+        });
+    return projectList;
   }
 
   public static List<Integer> translateBitSetToProjIndx(BitSet projBitSet) {

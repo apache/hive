@@ -16380,6 +16380,47 @@ POSTHOOK: Input: default@t1@dt=2014
 18
 18
 18
+PREHOOK: query: select 1+sum(c_int) over() from t1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@dt=2014
+#### A masked pattern was here ####
+POSTHOOK: query: select 1+sum(c_int) over() from t1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@dt=2014
+#### A masked pattern was here ####
+19
+19
+19
+19
+19
+19
+19
+19
+19
+19
+19
+19
+19
+19
+19
+19
+19
+19
+19
+19
+PREHOOK: query: select sum(c_int)+sum(sum(c_int)) over() from t1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@dt=2014
+#### A masked pattern was here ####
+POSTHOOK: query: select sum(c_int)+sum(sum(c_int)) over() from t1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@dt=2014
+#### A masked pattern was here ####
+36
 PREHOOK: query: select * from (select max(c_int) over (partition by key order by value Rows UNBOUNDED PRECEDING), min(c_int) over (partition by key order by value rows current row), count(c_int) over(partition by key order by value ROWS 1 PRECEDING), avg(value) over (partition by key order by value Rows between unbounded preceding and unbounded following), sum(value) over (partition by key order by value rows between unbounded preceding and current row), avg(c_float) over (partition by key order by value Rows between 1 preceding and unbounded following), sum(c_float) over (partition by key order by value rows between 1 preceding and current row), max(c_float) over (partition by key order by value rows between 1 preceding and unbounded following), min(c_float) over (partition by key order by value rows between 1 preceding and 1 following) from t1) t1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
