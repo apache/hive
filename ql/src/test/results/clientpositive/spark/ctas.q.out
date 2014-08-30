@@ -91,7 +91,7 @@ STAGE PLANS:
           input format: org.apache.hadoop.mapred.TextInputFormat
           output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
           serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-          name: nzhang_CTAS1
+          name: default.nzhang_CTAS1
 
   Stage: Stage-3
     Stats-Aggr Operator
@@ -105,10 +105,13 @@ STAGE PLANS:
 PREHOOK: query: create table nzhang_CTAS1 as select key k, value from src sort by k, value limit 10
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@nzhang_CTAS1
 [Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: create table nzhang_CTAS1 as select key k, value from src sort by k, value limit 10
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@nzhang_CTAS1
 PREHOOK: query: select * from nzhang_CTAS1
 PREHOOK: type: QUERY
@@ -237,7 +240,7 @@ STAGE PLANS:
           input format: org.apache.hadoop.mapred.TextInputFormat
           output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
           serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-          name: nzhang_ctas2
+          name: default.nzhang_ctas2
 
   Stage: Stage-3
     Stats-Aggr Operator
@@ -251,10 +254,13 @@ STAGE PLANS:
 PREHOOK: query: create table nzhang_ctas2 as select * from src sort by key, value limit 10
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@nzhang_ctas2
 [Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: create table nzhang_ctas2 as select * from src sort by key, value limit 10
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@nzhang_ctas2
 PREHOOK: query: select * from nzhang_ctas2
 PREHOOK: type: QUERY
@@ -383,7 +389,7 @@ STAGE PLANS:
           input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
           output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
           serde name: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
-          name: nzhang_ctas3
+          name: default.nzhang_ctas3
 
   Stage: Stage-3
     Stats-Aggr Operator
@@ -397,10 +403,13 @@ STAGE PLANS:
 PREHOOK: query: create table nzhang_ctas3 row format serde "org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe" stored as RCFile as select key/2 half_key, concat(value, "_con") conb  from src sort by half_key, conb limit 10
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@nzhang_ctas3
 [Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: create table nzhang_ctas3 row format serde "org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe" stored as RCFile as select key/2 half_key, concat(value, "_con") conb  from src sort by half_key, conb limit 10
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@nzhang_ctas3
 PREHOOK: query: select * from nzhang_ctas3
 PREHOOK: type: QUERY
@@ -595,7 +604,7 @@ STAGE PLANS:
           input format: org.apache.hadoop.mapred.TextInputFormat
           output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
           serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-          name: nzhang_ctas4
+          name: default.nzhang_ctas4
 
   Stage: Stage-3
     Stats-Aggr Operator
@@ -609,10 +618,13 @@ STAGE PLANS:
 PREHOOK: query: create table nzhang_ctas4 row format delimited fields terminated by ',' stored as textfile as select key, value from src sort by key, value limit 10
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@nzhang_ctas4
 [Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: create table nzhang_ctas4 row format delimited fields terminated by ',' stored as textfile as select key, value from src sort by key, value limit 10
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@nzhang_ctas4
 PREHOOK: query: select * from nzhang_ctas4
 PREHOOK: type: QUERY
@@ -858,7 +870,7 @@ STAGE PLANS:
 
           output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
           serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-          name: nzhang_ctas5
+          name: default.nzhang_ctas5
 
   Stage: Stage-3
     Stats-Aggr Operator
@@ -873,10 +885,13 @@ STAGE PLANS:
 PREHOOK: query: create table nzhang_ctas5 row format delimited fields terminated by ',' lines terminated by '\012' stored as textfile as select key, value from src sort by key, value limit 10
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@nzhang_ctas5
 [Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: create table nzhang_ctas5 row format delimited fields terminated by ',' lines terminated by '\012' stored as textfile as select key, value from src sort by key, value limit 10
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@nzhang_ctas5
 PREHOOK: query: create table nzhang_ctas6 (key string, `to` string)
 PREHOOK: type: CREATETABLE
@@ -900,8 +915,11 @@ POSTHOOK: Lineage: nzhang_ctas6.to SIMPLE [(src)src.FieldSchema(name:value, type
 PREHOOK: query: create table nzhang_ctas7 as select key, `to` from nzhang_ctas6
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@nzhang_ctas6
+PREHOOK: Output: database:default
+PREHOOK: Output: default@nzhang_ctas7
 [Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: create table nzhang_ctas7 as select key, `to` from nzhang_ctas6
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@nzhang_ctas6
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@nzhang_ctas7
