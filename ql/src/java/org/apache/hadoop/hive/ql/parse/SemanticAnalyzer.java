@@ -2351,7 +2351,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     ExprNodeDesc filterPred = null;
     List<Boolean> nullSafes = joinTree.getNullSafes();
     for (int i = 0; i < joinKeys.length; i++) {
-      if ( nullSafes.get(i)) {
+      if (nullSafes.get(i) || (joinKeys[i] instanceof ExprNodeColumnDesc &&
+         ((ExprNodeColumnDesc)joinKeys[i]).getIsPartitionColOrVirtualCol())) {
+        // no need to generate is not null predicate for partitioning or
+        // virtual column, since those columns can never be null.
         continue;
       }
       List<ExprNodeDesc> args = new ArrayList<ExprNodeDesc>();
