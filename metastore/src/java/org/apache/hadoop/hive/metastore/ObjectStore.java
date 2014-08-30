@@ -89,6 +89,7 @@ import org.apache.hadoop.hive.metastore.api.ResourceType;
 import org.apache.hadoop.hive.metastore.api.ResourceUri;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
+import org.apache.hadoop.hive.metastore.api.SetPartitionsStatsRequest;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -5716,7 +5717,7 @@ public class ObjectStore implements RawStore, Configurable {
       pm.makePersistent(mStatsObj);
     }
   }
-
+  
   @Override
   public boolean updateTableColumnStatistics(ColumnStatistics colStats)
     throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
@@ -5770,6 +5771,34 @@ public class ObjectStore implements RawStore, Configurable {
     }
     committed = commitTransaction();
     return committed;
+    } finally {
+      if (!committed) {
+        rollbackTransaction();
+      }
+    }
+  }
+
+  @Override
+  public boolean updatePartitionColumnStatistics(SetPartitionsStatsRequest request)
+      throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
+    boolean committed = false;
+    try {
+      openTransaction();
+      for (ColumnStatistics colStats : request.getColStats()) {
+        ColumnStatisticsDesc statsDesc = colStats.getStatsDesc();
+        statsDesc.setDbName(statsDesc.getDbName().toLowerCase());
+        statsDesc.setTableName(statsDesc.getTableName().toLowerCase());
+        List<ColumnStatisticsObj> statsObjs = colStats.getStatsObj();
+        for (ColumnStatisticsObj statsObj : statsObjs) {
+          statsObj.setColName(statsObj.getColName().toLowerCase());
+          statsObj.setColType(statsObj.getColType().toLowerCase());
+          MPartitionColumnStatistics mStatsObj = StatObjectConverter
+              .convertToMPartitionColumnStatistics(null, statsDesc, statsObj);
+          pm.makePersistent(mStatsObj);
+        }
+      }
+      committed = commitTransaction();
+      return committed;
     } finally {
       if (!committed) {
         rollbackTransaction();

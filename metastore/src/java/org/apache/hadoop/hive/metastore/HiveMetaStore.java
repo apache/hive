@@ -3719,6 +3719,19 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       } finally {
         endFunction("write_partition_column_statistics: ", ret != false, null, tableName);
       }
+    } 
+    public boolean update_partition_column_statistics(
+        SetPartitionsStatsRequest request) throws NoSuchObjectException,
+        InvalidObjectException, MetaException, TException,
+        InvalidInputException {
+      boolean ret = false;
+      try {
+        ret = getMS().updatePartitionColumnStatistics(request);
+        return ret;
+      } finally {
+        endFunction("write_partition_column_statistics: ", ret != false, null,
+            null);
+      }
     }
 
     @Override
@@ -5046,15 +5059,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     public boolean set_aggr_stats_for(SetPartitionsStatsRequest request)
         throws NoSuchObjectException, InvalidObjectException, MetaException,
         InvalidInputException, TException {
-      boolean ret = true;
-      for (ColumnStatistics colStats : request.getColStats()) {
-        ret = ret && update_partition_column_statistics(colStats);
-      }
-      return ret;
+      return update_partition_column_statistics(request);
     }
-
   }
 
+  
   public static IHMSHandler newHMSHandler(String name, HiveConf hiveConf) throws MetaException {
     return newHMSHandler(name, hiveConf, false);
   }
