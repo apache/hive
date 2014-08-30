@@ -67,9 +67,6 @@ public class AuthorizationUtils {
     case ROLE:
       return HivePrincipalType.ROLE;
     case GROUP:
-      if (SessionState.get().getAuthorizationMode() == SessionState.AuthorizationMode.V2) {
-        throw new HiveException(ErrorMsg.UNSUPPORTED_AUTHORIZATION_PRINCIPAL_TYPE_GROUP);
-      }
       return HivePrincipalType.GROUP;
     default:
       //should not happen as we take care of all existing types
