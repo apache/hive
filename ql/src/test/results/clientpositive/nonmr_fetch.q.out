@@ -1015,7 +1015,7 @@ STAGE PLANS:
           input format: org.apache.hadoop.mapred.TextInputFormat
           output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
           serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-          name: srcx
+          name: default.srcx
 
   Stage: Stage-2
     Stats-Aggr Operator

@@ -1317,6 +1317,7 @@ class WriterImpl implements Writer, MemoryManager.Callback {
         Timestamp val =
             ((TimestampObjectInspector) inspector).
                 getPrimitiveJavaObject(obj);
+        indexStatistics.updateTimestamp(val);
         seconds.write((val.getTime() / MILLIS_PER_SECOND) - BASE_TIMESTAMP);
         nanos.write(formatNanos(val.getNanos()));
       }

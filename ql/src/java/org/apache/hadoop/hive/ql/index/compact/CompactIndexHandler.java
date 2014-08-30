@@ -103,7 +103,8 @@ public class CompactIndexHandler extends TableBasedIndexHandler {
     StringBuilder command= new StringBuilder();
     LinkedHashMap<String, String> partSpec = indexTblPartDesc.getPartSpec();
 
-    command.append("INSERT OVERWRITE TABLE " + HiveUtils.unparseIdentifier(indexTableName ));
+    command.append("INSERT OVERWRITE TABLE " +
+        HiveUtils.unparseIdentifier(dbName) + "." + HiveUtils.unparseIdentifier(indexTableName ));
     if (partitioned && indexTblPartDesc != null) {
       command.append(" PARTITION ( ");
       List<String> ret = getPartKVPairStringArray(partSpec);
@@ -126,7 +127,8 @@ public class CompactIndexHandler extends TableBasedIndexHandler {
     command.append(" collect_set (");
     command.append(VirtualColumn.BLOCKOFFSET.getName());
     command.append(") ");
-    command.append(" FROM " + HiveUtils.unparseIdentifier(baseTableName) );
+    command.append(" FROM " +
+        HiveUtils.unparseIdentifier(dbName) + "." + HiveUtils.unparseIdentifier(baseTableName));
     LinkedHashMap<String, String> basePartSpec = baseTablePartDesc.getPartSpec();
     if(basePartSpec != null) {
       command.append(" WHERE ");

@@ -1054,6 +1054,9 @@ struct TFetchResultsReq {
   // Max number of rows that should be returned in
   // the rowset.
   3: required i64 maxRows
+
+  // The type of a fetch results request. 0 represents Query output. 1 represents Log
+  4: optional i16 fetchType = 0
 }
 
 struct TFetchResultsResp {

@@ -38,7 +38,7 @@ public class SQLStdHiveAuthorizationValidatorForTest extends SQLStdHiveAuthoriza
 
   public SQLStdHiveAuthorizationValidatorForTest(HiveMetastoreClientFactory metastoreClientFactory,
       HiveConf conf, HiveAuthenticationProvider authenticator,
-      SQLStdHiveAccessController privController) {
+      SQLStdHiveAccessControllerWrapper privController) {
     super(metastoreClientFactory, conf, authenticator, privController);
   }
 

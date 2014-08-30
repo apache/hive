@@ -105,7 +105,7 @@ STAGE PLANS:
           input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
           output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
           serde name: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
-          name: rcfile_createas1b
+          name: default.rcfile_createas1b
 
   Stage: Stage-2
     Stats-Aggr Operator
@@ -134,6 +134,8 @@ PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@rcfile_createas1a
 PREHOOK: Input: default@rcfile_createas1a@ds=1
 PREHOOK: Input: default@rcfile_createas1a@ds=2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@rcfile_createas1b
 POSTHOOK: query: CREATE TABLE rcfile_createas1b
     STORED AS RCFILE AS 
         SELECT key, value, PMOD(HASH(key), 50) as part
@@ -142,6 +144,7 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@rcfile_createas1a
 POSTHOOK: Input: default@rcfile_createas1a@ds=1
 POSTHOOK: Input: default@rcfile_createas1a@ds=2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@rcfile_createas1b
 PREHOOK: query: SELECT SUM(HASH(c)) FROM (
     SELECT TRANSFORM(key, value) USING 'tr \t _' AS (c)

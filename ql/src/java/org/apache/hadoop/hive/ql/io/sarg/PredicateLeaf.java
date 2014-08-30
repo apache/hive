@@ -47,7 +47,8 @@ public interface PredicateLeaf {
     FLOAT,   // float and double
     STRING,  // string, char, varchar
     DATE,
-    DECIMAL
+    DECIMAL,
+    TIMESTAMP
   }
 
   /**

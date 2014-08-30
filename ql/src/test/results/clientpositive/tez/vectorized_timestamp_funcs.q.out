@@ -106,15 +106,15 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc_string
-                  Statistics: Num rows: 40 Data size: 622 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 40 Data size: 5694 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: to_unix_timestamp(ctimestamp1) (type: bigint), year(ctimestamp1) (type: int), month(ctimestamp1) (type: int), day(ctimestamp1) (type: int), dayofmonth(ctimestamp1) (type: int), weekofyear(ctimestamp1) (type: int), hour(ctimestamp1) (type: int), minute(ctimestamp1) (type: int), second(ctimestamp1) (type: int)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
-                    Statistics: Num rows: 40 Data size: 622 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 40 Data size: 5694 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: bigint)
                       sort order: +
-                      Statistics: Num rows: 40 Data size: 622 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 40 Data size: 5694 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: int), _col6 (type: int), _col7 (type: int), _col8 (type: int)
             Execution mode: vectorized
         Reducer 2 
@@ -122,10 +122,10 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: bigint), VALUE._col0 (type: int), VALUE._col1 (type: int), VALUE._col2 (type: int), VALUE._col3 (type: int), VALUE._col4 (type: int), VALUE._col5 (type: int), VALUE._col6 (type: int), VALUE._col7 (type: int)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
-                Statistics: Num rows: 40 Data size: 622 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 40 Data size: 5694 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 40 Data size: 622 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 40 Data size: 5694 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -249,15 +249,15 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc_string
-                  Statistics: Num rows: 40 Data size: 622 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 40 Data size: 5694 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: to_unix_timestamp(stimestamp1) (type: bigint), year(stimestamp1) (type: int), month(stimestamp1) (type: int), day(stimestamp1) (type: int), dayofmonth(stimestamp1) (type: int), weekofyear(stimestamp1) (type: int), hour(stimestamp1) (type: int), minute(stimestamp1) (type: int), second(stimestamp1) (type: int)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
-                    Statistics: Num rows: 40 Data size: 622 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 40 Data size: 5694 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: bigint)
                       sort order: +
-                      Statistics: Num rows: 40 Data size: 622 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 40 Data size: 5694 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: int), _col6 (type: int), _col7 (type: int), _col8 (type: int)
             Execution mode: vectorized
         Reducer 2 
@@ -265,10 +265,10 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: bigint), VALUE._col0 (type: int), VALUE._col1 (type: int), VALUE._col2 (type: int), VALUE._col3 (type: int), VALUE._col4 (type: int), VALUE._col5 (type: int), VALUE._col6 (type: int), VALUE._col7 (type: int)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
-                Statistics: Num rows: 40 Data size: 622 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 40 Data size: 5694 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 40 Data size: 622 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 40 Data size: 5694 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -392,15 +392,15 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc_string
-                  Statistics: Num rows: 40 Data size: 622 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 40 Data size: 5694 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: (to_unix_timestamp(ctimestamp1) = to_unix_timestamp(stimestamp1)) (type: boolean), (year(ctimestamp1) = year(stimestamp1)) (type: boolean), (month(ctimestamp1) = month(stimestamp1)) (type: boolean), (day(ctimestamp1) = day(stimestamp1)) (type: boolean), (dayofmonth(ctimestamp1) = dayofmonth(stimestamp1)) (type: boolean), (weekofyear(ctimestamp1) = weekofyear(stimestamp1)) (type: boolean), (hour(ctimestamp1) = hour(stimestamp1)) (type: boolean), (minute(ctimestamp1) = minute(stimestamp1)) (type: boolean), (second(ctimestamp1) = second(stimestamp1)) (type: boolean)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
-                    Statistics: Num rows: 40 Data size: 622 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 40 Data size: 5694 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: boolean)
                       sort order: +
-                      Statistics: Num rows: 40 Data size: 622 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 40 Data size: 5694 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col1 (type: boolean), _col2 (type: boolean), _col3 (type: boolean), _col4 (type: boolean), _col5 (type: boolean), _col6 (type: boolean), _col7 (type: boolean), _col8 (type: boolean)
             Execution mode: vectorized
         Reducer 2 
@@ -408,10 +408,10 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: boolean), VALUE._col0 (type: boolean), VALUE._col1 (type: boolean), VALUE._col2 (type: boolean), VALUE._col3 (type: boolean), VALUE._col4 (type: boolean), VALUE._col5 (type: boolean), VALUE._col6 (type: boolean), VALUE._col7 (type: boolean)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
-                Statistics: Num rows: 40 Data size: 622 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 40 Data size: 5694 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 40 Data size: 622 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 40 Data size: 5694 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -539,15 +539,15 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc_wrong
-                  Statistics: Num rows: 1 Data size: 698 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 103 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: to_unix_timestamp(stimestamp1) (type: bigint), year(stimestamp1) (type: int), month(stimestamp1) (type: int), day(stimestamp1) (type: int), dayofmonth(stimestamp1) (type: int), weekofyear(stimestamp1) (type: int), hour(stimestamp1) (type: int), minute(stimestamp1) (type: int), second(stimestamp1) (type: int)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
-                    Statistics: Num rows: 1 Data size: 698 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 103 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: bigint)
                       sort order: +
-                      Statistics: Num rows: 1 Data size: 698 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 103 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: int), _col6 (type: int), _col7 (type: int), _col8 (type: int)
             Execution mode: vectorized
         Reducer 2 
@@ -555,10 +555,10 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: bigint), VALUE._col0 (type: int), VALUE._col1 (type: int), VALUE._col2 (type: int), VALUE._col3 (type: int), VALUE._col4 (type: int), VALUE._col5 (type: int), VALUE._col6 (type: int), VALUE._col7 (type: int)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
-                Statistics: Num rows: 1 Data size: 698 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 103 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 698 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 103 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat

@@ -79,7 +79,7 @@ STAGE PLANS:
           input format: org.apache.hadoop.mapred.TextInputFormat
           output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
           serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-          name: table_db1
+          name: db1.table_db1
 
   Stage: Stage-2
     Stats-Aggr Operator
@@ -117,9 +117,12 @@ STAGE PLANS:
 PREHOOK: query: CREATE TABLE table_db1 AS SELECT * FROM default.src
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
+PREHOOK: Output: database:db1
+PREHOOK: Output: db1@table_db1
 POSTHOOK: query: CREATE TABLE table_db1 AS SELECT * FROM default.src
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
+POSTHOOK: Output: database:db1
 POSTHOOK: Output: db1@table_db1
 PREHOOK: query: DESCRIBE FORMATTED table_db1
 PREHOOK: type: DESCTABLE

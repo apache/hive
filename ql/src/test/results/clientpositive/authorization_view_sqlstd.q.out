@@ -22,19 +22,25 @@ PREHOOK: query: -- protecting certain columns
 create view vt1 as select i,k from t1
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@t1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@vt1
 POSTHOOK: query: -- protecting certain columns
 create view vt1 as select i,k from t1
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@t1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@vt1
 PREHOOK: query: -- protecting certain rows
 create view vt2 as select * from t1 where i > 1
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@t1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@vt2
 POSTHOOK: query: -- protecting certain rows
 create view vt2 as select * from t1 where i > 1
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@t1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@vt2
 PREHOOK: query: show grant user user1 on all
 PREHOOK: type: SHOW_GRANT

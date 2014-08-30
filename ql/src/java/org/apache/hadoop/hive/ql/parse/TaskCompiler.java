@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.parse;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -227,11 +228,19 @@ public abstract class TaskCompiler {
 
       crtTblDesc.validate(conf);
 
-      // Clear the output for CTAS since we don't need the output from the
-      // mapredWork, the
+      // clear the mapredWork output file from outputs for CTAS
       // DDLWork at the tail of the chain will have the output
-      outputs.clear();
-
+      Iterator<WriteEntity> outIter = outputs.iterator();
+      while (outIter.hasNext()) {
+        switch (outIter.next().getType()) {
+        case DFS_DIR:
+        case LOCAL_DIR:
+          outIter.remove();
+          break;
+        default:
+          break;
+        }
+      }
       Task<? extends Serializable> crtTblTask = TaskFactory.get(new DDLWork(
           inputs, outputs, crtTblDesc), conf);
 

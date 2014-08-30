@@ -11,9 +11,12 @@ POSTHOOK: Output: default@dest_g2
 PREHOOK: query: CREATE TEMPORARY TABLE src_temp AS SELECT * FROM src
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src_temp
 POSTHOOK: query: CREATE TEMPORARY TABLE src_temp AS SELECT * FROM src
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_temp
 PREHOOK: query: FROM src_temp
 INSERT OVERWRITE TABLE dest_g2 SELECT substr(src_temp.key,1,1), count(DISTINCT substr(src_temp.value,5)), concat(substr(src_temp.key,1,1),sum(substr(src_temp.value,5))) GROUP BY substr(src_temp.key,1,1)

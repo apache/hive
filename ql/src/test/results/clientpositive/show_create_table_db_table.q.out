@@ -17,11 +17,10 @@ tmp_feng
 PREHOOK: query: CREATE TABLE tmp_feng.tmp_showcrt (key string, value int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:tmp_feng
-PREHOOK: Output: tmp_feng@tmp_feng.tmp_showcrt
+PREHOOK: Output: tmp_feng@tmp_showcrt
 POSTHOOK: query: CREATE TABLE tmp_feng.tmp_showcrt (key string, value int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:tmp_feng
-POSTHOOK: Output: tmp_feng@tmp_feng.tmp_showcrt
 POSTHOOK: Output: tmp_feng@tmp_showcrt
 PREHOOK: query: USE default
 PREHOOK: type: SWITCHDATABASE

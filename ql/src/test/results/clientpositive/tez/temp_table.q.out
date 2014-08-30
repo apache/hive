@@ -46,7 +46,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
           output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
           serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-          name: foo
+          name: default.foo
           isTemporary: true
 
   Stage: Stage-3
@@ -61,9 +61,12 @@ STAGE PLANS:
 PREHOOK: query: CREATE TEMPORARY TABLE foo AS SELECT * FROM src WHERE key % 2 = 0
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@foo
 POSTHOOK: query: CREATE TEMPORARY TABLE foo AS SELECT * FROM src WHERE key % 2 = 0
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@foo
 PREHOOK: query: EXPLAIN CREATE TEMPORARY TABLE bar AS SELECT * FROM src WHERE key % 2 = 1
 PREHOOK: type: CREATETABLE_AS_SELECT
@@ -113,7 +116,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
           output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
           serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-          name: bar
+          name: default.bar
           isTemporary: true
 
   Stage: Stage-3
@@ -128,9 +131,12 @@ STAGE PLANS:
 PREHOOK: query: CREATE TEMPORARY TABLE bar AS SELECT * FROM src WHERE key % 2 = 1
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@bar
 POSTHOOK: query: CREATE TEMPORARY TABLE bar AS SELECT * FROM src WHERE key % 2 = 1
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@bar
 PREHOOK: query: DESCRIBE foo
 PREHOOK: type: DESCTABLE
@@ -378,9 +384,12 @@ POSTHOOK: type: SHOWTABLES
 PREHOOK: query: CREATE TEMPORARY TABLE foo AS SELECT * FROM default.foo
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@foo
+PREHOOK: Output: database:two
+PREHOOK: Output: two@foo
 POSTHOOK: query: CREATE TEMPORARY TABLE foo AS SELECT * FROM default.foo
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@foo
+POSTHOOK: Output: database:two
 POSTHOOK: Output: two@foo
 PREHOOK: query: SHOW TABLES
 PREHOOK: type: SHOWTABLES

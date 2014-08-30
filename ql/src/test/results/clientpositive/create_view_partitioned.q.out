@@ -20,6 +20,8 @@ FROM src
 WHERE key=86
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@vp1
 POSTHOOK: query: -- test partitioned view definition
 -- (underlying table is not actually partitioned)
 CREATE VIEW vp1
@@ -30,6 +32,7 @@ FROM src
 WHERE key=86
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@vp1
 PREHOOK: query: DESCRIBE EXTENDED vp1
 PREHOOK: type: DESCTABLE
@@ -245,6 +248,8 @@ PARTITIONED ON (hr)
 AS SELECT * FROM srcpart WHERE key < 10
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@srcpart
+PREHOOK: Output: database:default
+PREHOOK: Output: default@vp2
 POSTHOOK: query: -- test a partitioned view on top of an underlying partitioned table,
 -- but with only a suffix of the partitioning columns
 CREATE VIEW vp2
@@ -252,6 +257,7 @@ PARTITIONED ON (hr)
 AS SELECT * FROM srcpart WHERE key < 10
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@srcpart
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@vp2
 PREHOOK: query: DESCRIBE FORMATTED vp2
 PREHOOK: type: DESCTABLE
@@ -355,6 +361,8 @@ FROM src
 WHERE key=86
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@vp3
 POSTHOOK: query: -- test a partitioned view where the PARTITIONED ON clause references
 -- an imposed column name
 CREATE VIEW vp3(k,v)
@@ -365,6 +373,7 @@ FROM src
 WHERE key=86
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@vp3
 PREHOOK: query: DESCRIBE FORMATTED vp3
 PREHOOK: type: DESCTABLE
@@ -405,7 +414,7 @@ FROM src
 WHERE key=86	 	 
 View Expanded Text: 	SELECT `key` AS `k`, `value` AS `v` FROM (SELECT `src`.`key`, `src`.`value`	 
 FROM `default`.`src`	 	 
-WHERE `src`.`key`=86) `vp3`	 	 
+WHERE `src`.`key`=86) `default.vp3`	 	 
 PREHOOK: query: ALTER VIEW vp3
 ADD PARTITION (v='val_86')
 PREHOOK: type: ALTERTABLE_ADDPARTS

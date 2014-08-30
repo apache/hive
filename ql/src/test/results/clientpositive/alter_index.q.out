@@ -4,10 +4,10 @@ PREHOOK: Input: default@src
 POSTHOOK: query: drop index src_index_8 on src
 POSTHOOK: type: DROPINDEX
 POSTHOOK: Input: default@src
-PREHOOK: query: create index src_index_8 on table src(key) as 'compact' WITH DEFERRED REBUILD IDXPROPERTIES ("prop1"="val1", "prop2"="val2")
+PREHOOK: query: create index src_index_8 on table default.src(key) as 'compact' WITH DEFERRED REBUILD IDXPROPERTIES ("prop1"="val1", "prop2"="val2")
 PREHOOK: type: CREATEINDEX
 PREHOOK: Input: default@src
-POSTHOOK: query: create index src_index_8 on table src(key) as 'compact' WITH DEFERRED REBUILD IDXPROPERTIES ("prop1"="val1", "prop2"="val2")
+POSTHOOK: query: create index src_index_8 on table default.src(key) as 'compact' WITH DEFERRED REBUILD IDXPROPERTIES ("prop1"="val1", "prop2"="val2")
 POSTHOOK: type: CREATEINDEX
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@default__src_src_index_8__
@@ -22,9 +22,9 @@ _bucketname         	string
 _offsets            	array<bigint>       	                    
 	 	 
 #### A masked pattern was here ####
-PREHOOK: query: alter index src_index_8 on src set IDXPROPERTIES ("prop1"="val1_new", "prop3"="val3")
+PREHOOK: query: alter index src_index_8 on default.src set IDXPROPERTIES ("prop1"="val1_new", "prop3"="val3")
 PREHOOK: type: ALTERINDEX_PROPS
-POSTHOOK: query: alter index src_index_8 on src set IDXPROPERTIES ("prop1"="val1_new", "prop3"="val3")
+POSTHOOK: query: alter index src_index_8 on default.src set IDXPROPERTIES ("prop1"="val1_new", "prop3"="val3")
 POSTHOOK: type: ALTERINDEX_PROPS
 PREHOOK: query: desc extended default__src_src_index_8__
 PREHOOK: type: DESCTABLE
@@ -37,10 +37,10 @@ _bucketname         	string
 _offsets            	array<bigint>       	                    
 	 	 
 #### A masked pattern was here ####
-PREHOOK: query: drop index src_index_8 on src
+PREHOOK: query: drop index src_index_8 on default.src
 PREHOOK: type: DROPINDEX
 PREHOOK: Input: default@src
-POSTHOOK: query: drop index src_index_8 on src
+POSTHOOK: query: drop index src_index_8 on default.src
 POSTHOOK: type: DROPINDEX
 POSTHOOK: Input: default@src
 PREHOOK: query: show tables

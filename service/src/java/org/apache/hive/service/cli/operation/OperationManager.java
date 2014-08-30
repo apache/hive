@@ -18,6 +18,7 @@
 
 package org.apache.hive.service.cli.operation;
 
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,22 +26,19 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hive.service.AbstractService;
-import org.apache.hive.service.cli.FetchOrientation;
-import org.apache.hive.service.cli.HiveSQLException;
-import org.apache.hive.service.cli.OperationHandle;
-import org.apache.hive.service.cli.OperationState;
-import org.apache.hive.service.cli.OperationStatus;
-import org.apache.hive.service.cli.RowSet;
-import org.apache.hive.service.cli.TableSchema;
+import org.apache.hive.service.cli.*;
 import org.apache.hive.service.cli.session.HiveSession;
+import org.apache.log4j.*;
 
 /**
  * OperationManager.
  *
  */
 public class OperationManager extends AbstractService {
-
+  private static final String DEFAULT_LAYOUT_PATTERN = "%d{yy/MM/dd HH:mm:ss} %p %c{2}: %m%n";
   private final Log LOG = LogFactory.getLog(OperationManager.class.getName());
 
   private HiveConf hiveConf;
@@ -54,7 +52,11 @@ public class OperationManager extends AbstractService {
   @Override
   public synchronized void init(HiveConf hiveConf) {
     this.hiveConf = hiveConf;
-
+    if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_LOGGING_OPERATION_ENABLED)) {
+      initOperationLogCapture();
+    } else {
+      LOG.debug("Operation level logging is turned off");
+    }
     super.init(hiveConf);
   }
 
@@ -68,6 +70,30 @@ public class OperationManager extends AbstractService {
   public synchronized void stop() {
     // TODO
     super.stop();
+  }
+
+  private void initOperationLogCapture() {
+    // There should be a ConsoleAppender. Copy its Layout.
+    Logger root = Logger.getRootLogger();
+    Layout layout = null;
+
+    Enumeration<?> appenders = root.getAllAppenders();
+    while (appenders.hasMoreElements()) {
+      Appender ap = (Appender) appenders.nextElement();
+      if (ap.getClass().equals(ConsoleAppender.class)) {
+        layout = ap.getLayout();
+        break;
+      }
+    }
+
+    if (layout == null) {
+      layout = new PatternLayout(DEFAULT_LAYOUT_PATTERN);
+      LOG.info("Cannot find a Layout from a ConsoleAppender. Using default Layout pattern.");
+    }
+
+    // Register another Appender (with the same layout) that talks to us.
+    Appender ap = new LogDivertAppender(layout, this);
+    root.addAppender(ap);
   }
 
   public ExecuteStatementOperation newExecuteStatementOperation(HiveSession parentSession,
@@ -190,5 +216,40 @@ public class OperationManager extends AbstractService {
       FetchOrientation orientation, long maxRows)
           throws HiveSQLException {
     return getOperation(opHandle).getNextRowSet(orientation, maxRows);
+  }
+
+  public RowSet getOperationLogRowSet(OperationHandle opHandle,
+      FetchOrientation orientation, long maxRows)
+          throws HiveSQLException {
+    // get the OperationLog object from the operation
+    OperationLog operationLog = getOperation(opHandle).getOperationLog();
+    if (operationLog == null) {
+      throw new HiveSQLException("Couldn't find log associated with operation handle: " + opHandle);
+    }
+
+    // read logs
+    List<String> logs = operationLog.readOperationLog(orientation, maxRows);
+
+    // convert logs to RowSet
+    TableSchema tableSchema = new TableSchema(getLogSchema());
+    RowSet rowSet = RowSetFactory.create(tableSchema, getOperation(opHandle).getProtocolVersion());
+    for (String log : logs) {
+      rowSet.addRow(new String[] {log});
+    }
+
+    return rowSet;
+  }
+
+  private Schema getLogSchema() {
+    Schema schema = new Schema();
+    FieldSchema fieldSchema = new FieldSchema();
+    fieldSchema.setName("operation_log");
+    fieldSchema.setType("string");
+    schema.addToFieldSchemas(fieldSchema);
+    return schema;
+  }
+
+  public OperationLog getOperationLogByThread() {
+    return OperationLog.getCurrentOperationLog();
   }
 }

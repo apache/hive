@@ -51,6 +51,7 @@ public class HCatPartition {
   private int createTime;
   private int lastAccessTime;
   private StorageDescriptor sd;
+  private List<HCatFieldSchema> columns; // Cache column-list from this.sd.
   private Map<String, String> parameters;
 
   // For use from within HCatClient.getPartitions().
@@ -68,6 +69,7 @@ public class HCatPartition {
     }
 
     this.sd = partition.getSd();
+    this.columns = getColumns(this.sd);
   }
 
   // For constructing HCatPartitions afresh, as an argument to HCatClient.addPartitions().
@@ -77,6 +79,7 @@ public class HCatPartition {
     this.dbName = hcatTable.getDbName();
     this.sd = new StorageDescriptor(hcatTable.getSd());
     this.sd.setLocation(location);
+    this.columns = getColumns(this.sd);
     this.createTime = (int)(System.currentTimeMillis()/1000);
     this.lastAccessTime = -1;
     this.values = new ArrayList<String>(hcatTable.getPartCols().size());
@@ -98,7 +101,7 @@ public class HCatPartition {
     this.dbName = rhs.dbName;
     this.sd = new StorageDescriptor(rhs.sd);
     this.sd.setLocation(location);
-
+    this.columns = getColumns(this.sd);
     this.createTime = (int) (System.currentTimeMillis() / 1000);
     this.lastAccessTime = -1;
     this.values = new ArrayList<String>(hcatTable.getPartCols().size());
@@ -110,6 +113,14 @@ public class HCatPartition {
         values.add(partitionKeyValues.get(partField.getName()));
       }
     }
+  }
+
+  private static List<HCatFieldSchema> getColumns(StorageDescriptor sd) throws HCatException {
+    ArrayList<HCatFieldSchema> columns = new ArrayList<HCatFieldSchema>(sd.getColsSize());
+    for (FieldSchema fieldSchema : sd.getCols()) {
+      columns.add(HCatSchemaUtils.getHCatFieldSchema(fieldSchema));
+    }
+    return columns;
   }
 
   // For use from HCatClient.addPartitions(), to construct from user-input.
@@ -172,11 +183,7 @@ public class HCatPartition {
    *
    * @return the columns
    */
-  public List<HCatFieldSchema> getColumns() throws HCatException {
-    ArrayList<HCatFieldSchema> columns = new ArrayList<HCatFieldSchema>(sd.getColsSize());
-    for (FieldSchema fieldSchema : sd.getCols()) {
-      columns.add(HCatSchemaUtils.getHCatFieldSchema(fieldSchema));
-    }
+  public List<HCatFieldSchema> getColumns() {
     return columns;
   }
 

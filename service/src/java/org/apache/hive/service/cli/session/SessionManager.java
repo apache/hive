@@ -18,6 +18,8 @@
 
 package org.apache.hive.service.cli.session;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -26,6 +28,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -38,6 +41,7 @@ import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.SessionHandle;
 import org.apache.hive.service.cli.operation.OperationManager;
 import org.apache.hive.service.cli.thrift.TProtocolVersion;
+import org.apache.hive.service.server.ThreadFactoryWithGarbageCleanup;
 
 /**
  * SessionManager.
@@ -52,6 +56,8 @@ public class SessionManager extends CompositeService {
       new ConcurrentHashMap<SessionHandle, HiveSession>();
   private final OperationManager operationManager = new OperationManager();
   private ThreadPoolExecutor backgroundOperationPool;
+  private boolean isOperationLogEnabled;
+  private File operationLogRootDir;
 
   public SessionManager() {
     super("SessionManager");
@@ -64,22 +70,31 @@ public class SessionManager extends CompositeService {
     } catch (HiveException e) {
       throw new RuntimeException("Error applying authorization policy on hive configuration", e);
     }
-
     this.hiveConf = hiveConf;
-    int backgroundPoolSize = hiveConf.getIntVar(ConfVars.HIVE_SERVER2_ASYNC_EXEC_THREADS);
-    LOG.info("HiveServer2: Async execution thread pool size: " + backgroundPoolSize);
-    int backgroundPoolQueueSize = hiveConf.getIntVar(ConfVars.HIVE_SERVER2_ASYNC_EXEC_WAIT_QUEUE_SIZE);
-    LOG.info("HiveServer2: Async execution wait queue size: " + backgroundPoolQueueSize);
-    int keepAliveTime = hiveConf.getIntVar(ConfVars.HIVE_SERVER2_ASYNC_EXEC_KEEPALIVE_TIME);
-    LOG.info("HiveServer2: Async execution thread keepalive time: " + keepAliveTime);
-    // Create a thread pool with #backgroundPoolSize threads
-    // Threads terminate when they are idle for more than the keepAliveTime
-    // An bounded blocking queue is used to queue incoming operations, if #operations > backgroundPoolSize
-    backgroundOperationPool = new ThreadPoolExecutor(backgroundPoolSize, backgroundPoolSize,
-        keepAliveTime, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(backgroundPoolQueueSize));
-    backgroundOperationPool.allowCoreThreadTimeOut(true);
+    //Create operation log root directory, if operation logging is enabled
+    if (hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_LOGGING_OPERATION_ENABLED)) {
+      initOperationLogRootDir();
+    }
+    createBackgroundOperationPool();
     addService(operationManager);
     super.init(hiveConf);
+  }
+
+  private void createBackgroundOperationPool() {
+    int backgroundPoolSize = hiveConf.getIntVar(ConfVars.HIVE_SERVER2_ASYNC_EXEC_THREADS);
+    LOG.info("HiveServer2: Background operation thread pool size: " + backgroundPoolSize);
+    int backgroundPoolQueueSize = hiveConf.getIntVar(ConfVars.HIVE_SERVER2_ASYNC_EXEC_WAIT_QUEUE_SIZE);
+    LOG.info("HiveServer2: Background operation thread wait queue size: " + backgroundPoolQueueSize);
+    int keepAliveTime = hiveConf.getIntVar(ConfVars.HIVE_SERVER2_ASYNC_EXEC_KEEPALIVE_TIME);
+    LOG.info("HiveServer2: Background operation thread keepalive time: " + keepAliveTime);
+    // Create a thread pool with #backgroundPoolSize threads
+    // Threads terminate when they are idle for more than the keepAliveTime
+    // A bounded blocking queue is used to queue incoming operations, if #operations > backgroundPoolSize
+    String threadPoolName = "HiveServer2-Background-Pool";
+    backgroundOperationPool = new ThreadPoolExecutor(backgroundPoolSize, backgroundPoolSize,
+        keepAliveTime, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(backgroundPoolQueueSize),
+        new ThreadFactoryWithGarbageCleanup(threadPoolName));
+    backgroundOperationPool.allowCoreThreadTimeOut(true);
   }
 
   private void applyAuthorizationConfigPolicy(HiveConf newHiveConf) throws HiveException {
@@ -89,6 +104,36 @@ public class SessionManager extends CompositeService {
     ss.setIsHiveServerQuery(true);
     SessionState.start(ss);
     ss.applyAuthorizationPolicy();
+  }
+
+  private void initOperationLogRootDir() {
+    operationLogRootDir = new File(
+        hiveConf.getVar(ConfVars.HIVE_SERVER2_LOGGING_OPERATION_LOG_LOCATION));
+    isOperationLogEnabled = true;
+
+    if (operationLogRootDir.exists() && !operationLogRootDir.isDirectory()) {
+      LOG.warn("The operation log root directory exists, but it is not a directory: " +
+          operationLogRootDir.getAbsolutePath());
+      isOperationLogEnabled = false;
+    }
+
+    if (!operationLogRootDir.exists()) {
+      if (!operationLogRootDir.mkdirs()) {
+        LOG.warn("Unable to create operation log root directory: " +
+            operationLogRootDir.getAbsolutePath());
+        isOperationLogEnabled = false;
+      }
+    }
+
+    if (isOperationLogEnabled) {
+      LOG.info("Operation log root directory is created: " + operationLogRootDir.getAbsolutePath());
+      try {
+        FileUtils.forceDeleteOnExit(operationLogRootDir);
+      } catch (IOException e) {
+        LOG.warn("Failed to schedule cleanup HS2 operation logging root dir: " +
+            operationLogRootDir.getAbsolutePath(), e);
+      }
+    }
   }
 
   @Override
@@ -107,6 +152,18 @@ public class SessionManager extends CompositeService {
       } catch (InterruptedException e) {
         LOG.warn("HIVE_SERVER2_ASYNC_EXEC_SHUTDOWN_TIMEOUT = " + timeout +
             " seconds has been exceeded. RUNNING background operations will be shut down", e);
+      }
+    }
+    cleanupLoggingRootDir();
+  }
+
+  private void cleanupLoggingRootDir() {
+    if (isOperationLogEnabled) {
+      try {
+        FileUtils.forceDelete(operationLogRootDir);
+      } catch (Exception e) {
+        LOG.warn("Failed to cleanup root dir of HS2 logging: " + operationLogRootDir
+            .getAbsolutePath(), e);
       }
     }
   }
@@ -132,6 +189,9 @@ public class SessionManager extends CompositeService {
     session.setOperationManager(operationManager);
     try {
       session.initialize(sessionConf);
+      if (isOperationLogEnabled) {
+        session.setOperationLogSessionDir(operationLogRootDir);
+      }
       session.open();
     } catch (Exception e) {
       throw new HiveSQLException("Failed to open new session", e);
