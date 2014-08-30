@@ -32,8 +32,8 @@ public class SQLStdHiveAuthorizerFactory implements HiveAuthorizerFactory{
   @Override
   public HiveAuthorizer createHiveAuthorizer(HiveMetastoreClientFactory metastoreClientFactory,
       HiveConf conf, HiveAuthenticationProvider authenticator, HiveAuthzSessionContext ctx) throws HiveAuthzPluginException {
-    SQLStdHiveAccessController privilegeManager =
-        new SQLStdHiveAccessController(metastoreClientFactory, conf, authenticator, ctx);
+    SQLStdHiveAccessControllerWrapper privilegeManager =
+        new SQLStdHiveAccessControllerWrapper(metastoreClientFactory, conf, authenticator, ctx);
     return new HiveAuthorizerImpl(
         privilegeManager,
         new SQLStdHiveAuthorizationValidator(metastoreClientFactory, conf, authenticator,

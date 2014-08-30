@@ -102,8 +102,7 @@ public class RoleDDLDesc extends DDLDesc implements Serializable {
 
   public RoleDDLDesc(String principalName, PrincipalType principalType,
       RoleOperation operation, String roleOwnerName) {
-    this.name = (principalName != null  && principalType == PrincipalType.ROLE) ?
-      principalName.toLowerCase() : principalName;
+    this.name = principalName;
     this.principalType = principalType;
     this.operation = operation;
     this.roleOwnerName = roleOwnerName;

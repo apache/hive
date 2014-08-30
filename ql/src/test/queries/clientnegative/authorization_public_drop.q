@@ -1,1 +1,1 @@
-drop role PUBLIC;
+drop role public;
