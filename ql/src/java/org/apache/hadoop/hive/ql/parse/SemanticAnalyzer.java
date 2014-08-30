@@ -36,6 +36,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -1042,9 +1044,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         qb.countSel();
         qbp.setSelExprForClause(ctx_1.dest, ast);
 
+        int posn = 0;
         if (((ASTNode) ast.getChild(0)).getToken().getType() == HiveParser.TOK_HINTLIST) {
           qbp.setHints((ASTNode) ast.getChild(0));
+          posn++;
         }
+
+        if ((ast.getChild(posn).getChild(0).getType() == HiveParser.TOK_TRANSFORM))
+          queryProperties.setUsesScript(true);
 
         LinkedHashMap<String, ASTNode> aggregations = doPhase1GetAggregationsFromSelect(ast,
             qb, ctx_1.dest);
@@ -9582,11 +9589,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     Operator sinkOp = null;
 
     if (runCBO) {
+      OptiqBasedPlanner optiqPlanner = new OptiqBasedPlanner();
       boolean reAnalyzeAST = false;
 
       try {
         // 1. Gen Optimized AST
-        ASTNode newAST = new OptiqBasedPlanner().getOptimizedAST(prunedPartitions);
+        ASTNode newAST = optiqPlanner.getOptimizedAST(prunedPartitions);
 
         // 2. Regen OP plan from optimized AST
         init(false);
@@ -9614,10 +9622,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
          * .getRowResolver(), true);
          */
       } catch (Exception e) {
-        //TODO: Distinguish between exceptions that can be retried vs user errors
         LOG.error("CBO failed, skipping CBO. ", e);
-        if (!conf.getBoolVar(ConfVars.HIVE_IN_TEST))
+        if (!conf.getBoolVar(ConfVars.HIVE_IN_TEST) || (optiqPlanner.noColsMissingStats.get() > 0)) {
           reAnalyzeAST = true;
+        }
       } finally {
         runCBO = false;
         disableJoinMerge = false;
@@ -11811,14 +11819,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private boolean canHandleQuery() {
     boolean runOptiqPlanner = false;
 
-    if ( conf.getBoolVar(ConfVars.HIVE_IN_TEST) || (queryProperties.getJoinCount() > 1)
+    if (((queryProperties.getJoinCount() > 1) || conf.getBoolVar(ConfVars.HIVE_IN_TEST))
         && !queryProperties.hasClusterBy()
         && !queryProperties.hasDistributeBy()
         && !queryProperties.hasSortBy()
         && !queryProperties.hasPTF()
         && !queryProperties.usesScript()
-        && !queryProperties.hasMultiDestQuery()
-        && !queryProperties.hasFilterWithSubQuery()) {
+        && !queryProperties.hasMultiDestQuery()) {
       runOptiqPlanner = true;
     } else {
       LOG.info("Can not invoke CBO; query contains operators not supported for CBO.");
@@ -11832,6 +11839,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     RelOptSchema                                          m_relOptSchema;
     SemanticException                                     m_semanticException;
     Map<String, PrunedPartitionList>                      partitionCache;
+    AtomicInteger                                         noColsMissingStats = new AtomicInteger(0);
 
     // TODO: Do we need to keep track of RR, ColNameToPosMap for every op or
     // just last one.
@@ -12350,7 +12358,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
         // 4. Build RelOptAbstractTable
         RelOptHiveTable optTable = new RelOptHiveTable(m_relOptSchema, tableAlias, rowType, tab,
-            nonPartitionColumns, partitionColumns, conf, partitionCache);
+            nonPartitionColumns, partitionColumns, conf, partitionCache, noColsMissingStats);
 
         // 5. Build Hive Table Scan Rel
         tableRel = new HiveTableScanRel(m_cluster, m_cluster.traitSetOf(HiveRel.CONVENTION),

@@ -9,6 +9,7 @@ import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.optimizer.optiq.translator.SqlFunctionConverter.HiveToken;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.typeinfo.BaseCharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
@@ -135,7 +136,8 @@ public class TypeConverter {
       break;
     case STRING:
       //TODO: shall we pass -1 for len to distinguish between STRING & VARCHAR on way out
-      convertedType = dtFactory.createSqlType(SqlTypeName.VARCHAR, 1);
+      convertedType = dtFactory.createSqlType(SqlTypeName.VARCHAR,
+          RelDataType.PRECISION_NOT_SPECIFIED);
       break;
     case DATE:
       convertedType = dtFactory.createSqlType(SqlTypeName.DATE);
@@ -269,7 +271,10 @@ public class TypeConverter {
     case DECIMAL:
       return TypeInfoFactory.getDecimalTypeInfo(rType.getPrecision(), rType.getScale());
     case VARCHAR:
-      return TypeInfoFactory.getVarcharTypeInfo(rType.getPrecision());
+      if (rType.getPrecision() == RelDataType.PRECISION_NOT_SPECIFIED)
+        return TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.STRING_TYPE_NAME);
+      else
+        return TypeInfoFactory.getVarcharTypeInfo(rType.getPrecision());
     case CHAR:
       return TypeInfoFactory.getCharTypeInfo(rType.getPrecision());
     case OTHER:
