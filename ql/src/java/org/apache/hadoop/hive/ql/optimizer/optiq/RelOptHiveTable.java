@@ -7,6 +7,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -48,6 +50,7 @@ public class RelOptHiveTable extends RelOptAbstractTable {
   private Integer                                 m_numPartitions;
   PrunedPartitionList                             partitionList;
   Map<String, PrunedPartitionList>                partitionCache;
+  AtomicInteger                                   noColsMissingStats;
 
   protected static final Log                      LOG               = LogFactory
                                                                         .getLog(RelOptHiveTable.class
@@ -55,7 +58,7 @@ public class RelOptHiveTable extends RelOptAbstractTable {
 
   public RelOptHiveTable(RelOptSchema optiqSchema, String name, RelDataType rowType,
       Table hiveTblMetadata, List<ColumnInfo> hiveNonPartitionCols,
-      List<ColumnInfo> hivePartitionCols, HiveConf hconf, Map<String, PrunedPartitionList> partitionCache) {
+      List<ColumnInfo> hivePartitionCols, HiveConf hconf, Map<String, PrunedPartitionList> partitionCache, AtomicInteger noColsMissingStats) {
     super(optiqSchema, name, rowType);
     m_hiveTblMetadata = hiveTblMetadata;
     m_hiveNonPartitionCols = ImmutableList.copyOf(hiveNonPartitionCols);
@@ -64,6 +67,7 @@ public class RelOptHiveTable extends RelOptAbstractTable {
     m_noOfProjs = hiveNonPartitionCols.size() + hivePartitionCols.size();
     m_hiveConf = hconf;
     this.partitionCache = partitionCache;
+    this.noColsMissingStats = noColsMissingStats;
   }
 
   private static ImmutableMap<Integer, ColumnInfo> getColInfoMap(List<ColumnInfo> hiveCols,
@@ -264,6 +268,7 @@ public class RelOptHiveTable extends RelOptAbstractTable {
       String logMsg = "No Stats for " + m_hiveTblMetadata.getCompleteName() + ", Columns: "
           + getColNamesForLogging(colNamesFailedStats);
       LOG.error(logMsg);
+      noColsMissingStats.getAndAdd(colNamesFailedStats.size());
       throw new RuntimeException(logMsg);
     }
   }
