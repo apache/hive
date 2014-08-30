@@ -45,9 +45,11 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
+import org.apache.hadoop.hive.common.HiveStatsUtils;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
@@ -163,19 +165,25 @@ public class MetaStoreUtils {
     return updateUnpartitionedTableStatsFast(db, tbl, wh, madeDir, false);
   }
 
+  public static boolean updateUnpartitionedTableStatsFast(Database db, Table tbl, Warehouse wh,
+      boolean madeDir, boolean forceRecompute) throws MetaException {
+    return updateUnpartitionedTableStatsFast(tbl,
+        wh.getFileStatusesForUnpartitionedTable(db, tbl), madeDir, forceRecompute);
+  }
+
   /**
    * Updates the numFiles and totalSize parameters for the passed unpartitioned Table by querying
    * the warehouse if the passed Table does not already have values for these parameters.
-   * @param db
    * @param tbl
-   * @param wh
+   * @param fileStatus
    * @param newDir if true, the directory was just created and can be assumed to be empty
    * @param forceRecompute Recompute stats even if the passed Table already has
    * these parameters set
    * @return true if the stats were updated, false otherwise
    */
-  public static boolean updateUnpartitionedTableStatsFast(Database db, Table tbl, Warehouse wh,
-      boolean newDir, boolean forceRecompute) throws MetaException {
+  public static boolean updateUnpartitionedTableStatsFast(Table tbl,
+      FileStatus[] fileStatus, boolean newDir, boolean forceRecompute) throws MetaException {
+
     Map<String,String> params = tbl.getParameters();
     boolean updated = false;
     if (forceRecompute ||
@@ -188,7 +196,6 @@ public class MetaStoreUtils {
         // The table location already exists and may contain data.
         // Let's try to populate those stats that don't require full scan.
         LOG.info("Updating table stats fast for " + tbl.getTableName());
-        FileStatus[] fileStatus = wh.getFileStatusesForUnpartitionedTable(db, tbl);
         populateQuickStats(fileStatus, params);
         LOG.info("Updated size of table " + tbl.getTableName() +" to "+ params.get(StatsSetupConst.TOTAL_SIZE));
         if(!params.containsKey(StatsSetupConst.STATS_GENERATED_VIA_STATS_TASK)) {
@@ -1043,11 +1050,17 @@ public class MetaStoreUtils {
 
   public static void startMetaStore(final int port,
       final HadoopThriftAuthBridge bridge) throws Exception {
+    startMetaStore(port, bridge, new HiveConf(HMSHandler.class));
+  }
+
+  public static void startMetaStore(final int port,
+      final HadoopThriftAuthBridge bridge, final HiveConf hiveConf)
+      throws Exception{
     Thread thread = new Thread(new Runnable() {
       @Override
       public void run() {
         try {
-          HiveMetaStore.startMetaStore(port, bridge);
+          HiveMetaStore.startMetaStore(port, bridge, hiveConf);
         } catch (Throwable e) {
           LOG.error("Metastore Thrift Server threw an exception...",e);
         }
@@ -1057,6 +1070,7 @@ public class MetaStoreUtils {
     thread.start();
     loopUntilHMSReady(port);
   }
+
   /**
    * A simple connect test to make sure that the metastore is up
    * @throws Exception

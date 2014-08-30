@@ -1,0 +1,43 @@
+PREHOOK: query: drop table partition_char_1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table partition_char_1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table partition_char_1 (key string, value char(20)) partitioned by (dt char(10), region int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@partition_char_1
+POSTHOOK: query: create table partition_char_1 (key string, value char(20)) partitioned by (dt char(10), region int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@partition_char_1
+PREHOOK: query: insert overwrite table partition_char_1 partition(dt='2000-01-01', region=1)
+  select * from src tablesample (10 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@partition_char_1@dt=2000-01-01/region=1
+POSTHOOK: query: insert overwrite table partition_char_1 partition(dt='2000-01-01', region=1)
+  select * from src tablesample (10 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@partition_char_1@dt=2000-01-01/region=1
+POSTHOOK: Lineage: partition_char_1 PARTITION(dt=2000-01-01,region=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_char_1 PARTITION(dt=2000-01-01,region=1).value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select * from partition_char_1 limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@partition_char_1
+PREHOOK: Input: default@partition_char_1@dt=2000-01-01/region=1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from partition_char_1 limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partition_char_1
+POSTHOOK: Input: default@partition_char_1@dt=2000-01-01/region=1
+#### A masked pattern was here ####
+238	val_238             	2000-01-01	1
+PREHOOK: query: drop table partition_char_1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@partition_char_1
+PREHOOK: Output: default@partition_char_1
+POSTHOOK: query: drop table partition_char_1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@partition_char_1
+POSTHOOK: Output: default@partition_char_1

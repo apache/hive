@@ -28,34 +28,34 @@ POSTHOOK: query: SHOW GRANT USER hive_test_user ON DATABASE test_db
 POSTHOOK: type: SHOW_GRANT
 test_db				hive_test_user	USER	DROP	false	-1	hive_test_user
 test_db				hive_test_user	USER	SELECT	false	-1	hive_test_user
-PREHOOK: query: CREATE ROLE db_test_role
+PREHOOK: query: CREATE ROLE db_TEST_Role
 PREHOOK: type: CREATEROLE
-POSTHOOK: query: CREATE ROLE db_test_role
+POSTHOOK: query: CREATE ROLE db_TEST_Role
 POSTHOOK: type: CREATEROLE
-PREHOOK: query: GRANT ROLE db_test_role TO USER hive_test_user
+PREHOOK: query: GRANT ROLE db_TEST_Role TO USER hive_test_user
 PREHOOK: type: GRANT_ROLE
-POSTHOOK: query: GRANT ROLE db_test_role TO USER hive_test_user
+POSTHOOK: query: GRANT ROLE db_TEST_Role TO USER hive_test_user
 POSTHOOK: type: GRANT_ROLE
 PREHOOK: query: SHOW ROLE GRANT USER hive_test_user
 PREHOOK: type: SHOW_ROLE_GRANT
 POSTHOOK: query: SHOW ROLE GRANT USER hive_test_user
 POSTHOOK: type: SHOW_ROLE_GRANT
-db_test_role	false	-1	hive_test_user
+db_TEST_Role	false	-1	hive_test_user
 public	false	-1	
-PREHOOK: query: GRANT drop ON DATABASE test_db TO ROLE db_test_role
+PREHOOK: query: GRANT drop ON DATABASE test_db TO ROLE db_TEST_Role
 PREHOOK: type: GRANT_PRIVILEGE
-POSTHOOK: query: GRANT drop ON DATABASE test_db TO ROLE db_test_role
+POSTHOOK: query: GRANT drop ON DATABASE test_db TO ROLE db_TEST_Role
 POSTHOOK: type: GRANT_PRIVILEGE
-PREHOOK: query: GRANT select ON DATABASE test_db TO ROLE db_test_role
+PREHOOK: query: GRANT select ON DATABASE test_db TO ROLE db_TEST_Role
 PREHOOK: type: GRANT_PRIVILEGE
-POSTHOOK: query: GRANT select ON DATABASE test_db TO ROLE db_test_role
+POSTHOOK: query: GRANT select ON DATABASE test_db TO ROLE db_TEST_Role
 POSTHOOK: type: GRANT_PRIVILEGE
-PREHOOK: query: SHOW GRANT ROLE db_test_role ON DATABASE test_db
+PREHOOK: query: SHOW GRANT ROLE db_TEST_Role ON DATABASE test_db
 PREHOOK: type: SHOW_GRANT
-POSTHOOK: query: SHOW GRANT ROLE db_test_role ON DATABASE test_db
+POSTHOOK: query: SHOW GRANT ROLE db_TEST_Role ON DATABASE test_db
 POSTHOOK: type: SHOW_GRANT
-test_db				db_test_role	ROLE	DROP	false	-1	hive_test_user
-test_db				db_test_role	ROLE	SELECT	false	-1	hive_test_user
+test_db				db_TEST_Role	ROLE	DROP	false	-1	hive_test_user
+test_db				db_TEST_Role	ROLE	SELECT	false	-1	hive_test_user
 PREHOOK: query: DROP DATABASE IF EXISTS test_db
 PREHOOK: type: DROPDATABASE
 PREHOOK: Input: database:test_db

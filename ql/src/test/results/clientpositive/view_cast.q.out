@@ -56,9 +56,12 @@ POSTHOOK: type: DROPVIEW
 PREHOOK: query: CREATE VIEW aa_view_tw AS SELECT ks_uid, sr_id, act, at_ks_uid, at_sr_uid, from_unixtime(CAST(CAST( tstamp as BIGINT)/1000 AS BIGINT),'yyyyMMdd') AS act_date, from_unixtime(CAST(CAST( original_tstamp AS BIGINT)/1000 AS BIGINT),'yyyyMMdd') AS content_creation_date FROM atab WHERE dt='20130312' AND nt='tw' AND ks_uid != at_ks_uid
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@atab
+PREHOOK: Output: database:default
+PREHOOK: Output: default@aa_view_tw
 POSTHOOK: query: CREATE VIEW aa_view_tw AS SELECT ks_uid, sr_id, act, at_ks_uid, at_sr_uid, from_unixtime(CAST(CAST( tstamp as BIGINT)/1000 AS BIGINT),'yyyyMMdd') AS act_date, from_unixtime(CAST(CAST( original_tstamp AS BIGINT)/1000 AS BIGINT),'yyyyMMdd') AS content_creation_date FROM atab WHERE dt='20130312' AND nt='tw' AND ks_uid != at_ks_uid
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@atab
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@aa_view_tw
 PREHOOK: query: DROP VIEW IF EXISTS joined_aa_view_tw
 PREHOOK: type: DROPVIEW
@@ -69,11 +72,14 @@ PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@aa_view_tw
 PREHOOK: Input: default@atab
 PREHOOK: Input: default@mstab
+PREHOOK: Output: database:default
+PREHOOK: Output: default@joined_aa_view_tw
 POSTHOOK: query: CREATE VIEW joined_aa_view_tw AS SELECT aa.ks_uid, aa.sr_id, aa.act, at_sr_uid, aa.act_date, aa.at_ks_uid, aa.content_creation_date, coalesce( other.ksc, 10.0) AS at_ksc, coalesce( self.ksc , 10.0 ) AS self_ksc FROM aa_view_tw aa LEFT OUTER JOIN ( SELECT ks_uid, csc AS ksc FROM mstab WHERE dt='20130311' ) self ON ( CAST(aa.ks_uid AS BIGINT) = CAST(self.ks_uid AS BIGINT) ) LEFT OUTER JOIN ( SELECT ks_uid, csc AS ksc FROM mstab WHERE dt='20130311' ) other ON ( CAST(aa.at_ks_uid AS BIGINT) = CAST(other.ks_uid AS BIGINT) )
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@aa_view_tw
 POSTHOOK: Input: default@atab
 POSTHOOK: Input: default@mstab
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@joined_aa_view_tw
 PREHOOK: query: SELECT * FROM joined_aa_view_tw
 PREHOOK: type: QUERY

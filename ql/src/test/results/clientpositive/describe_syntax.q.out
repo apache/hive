@@ -7,11 +7,10 @@ POSTHOOK: Output: database:db1
 PREHOOK: query: CREATE TABLE db1.t1(key1 INT, value1 STRING) PARTITIONED BY (ds STRING, part STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:db1
-PREHOOK: Output: db1@db1.t1
+PREHOOK: Output: db1@t1
 POSTHOOK: query: CREATE TABLE db1.t1(key1 INT, value1 STRING) PARTITIONED BY (ds STRING, part STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:db1
-POSTHOOK: Output: db1@db1.t1
 POSTHOOK: Output: db1@t1
 PREHOOK: query: use db1
 PREHOOK: type: SWITCHDATABASE

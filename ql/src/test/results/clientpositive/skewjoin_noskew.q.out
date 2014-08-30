@@ -147,7 +147,7 @@ STAGE PLANS:
           input format: org.apache.hadoop.mapred.TextInputFormat
           output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
           serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-          name: noskew
+          name: default.noskew
 
   Stage: Stage-3
     Stats-Aggr Operator
@@ -155,9 +155,12 @@ STAGE PLANS:
 PREHOOK: query: create table noskew as select a.* from src a join src b on a.key=b.key order by a.key limit 30
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@noskew
 POSTHOOK: query: create table noskew as select a.* from src a join src b on a.key=b.key order by a.key limit 30
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@noskew
 PREHOOK: query: select * from noskew
 PREHOOK: type: QUERY

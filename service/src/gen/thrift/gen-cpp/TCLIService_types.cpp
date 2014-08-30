@@ -6137,8 +6137,8 @@ void swap(TGetResultSetMetadataResp &a, TGetResultSetMetadataResp &b) {
   swap(a.__isset, b.__isset);
 }
 
-const char* TFetchResultsReq::ascii_fingerprint = "1B96A8C05BA9DD699FC8CD842240ABDE";
-const uint8_t TFetchResultsReq::binary_fingerprint[16] = {0x1B,0x96,0xA8,0xC0,0x5B,0xA9,0xDD,0x69,0x9F,0xC8,0xCD,0x84,0x22,0x40,0xAB,0xDE};
+const char* TFetchResultsReq::ascii_fingerprint = "B4CB1E4F8F8F4D50183DD372AD11753A";
+const uint8_t TFetchResultsReq::binary_fingerprint[16] = {0xB4,0xCB,0x1E,0x4F,0x8F,0x8F,0x4D,0x50,0x18,0x3D,0xD3,0x72,0xAD,0x11,0x75,0x3A};
 
 uint32_t TFetchResultsReq::read(::apache::thrift::protocol::TProtocol* iprot) {
 
@@ -6189,6 +6189,14 @@ uint32_t TFetchResultsReq::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
+      case 4:
+        if (ftype == ::apache::thrift::protocol::T_I16) {
+          xfer += iprot->readI16(this->fetchType);
+          this->__isset.fetchType = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -6223,6 +6231,11 @@ uint32_t TFetchResultsReq::write(::apache::thrift::protocol::TProtocol* oprot) c
   xfer += oprot->writeI64(this->maxRows);
   xfer += oprot->writeFieldEnd();
 
+  if (this->__isset.fetchType) {
+    xfer += oprot->writeFieldBegin("fetchType", ::apache::thrift::protocol::T_I16, 4);
+    xfer += oprot->writeI16(this->fetchType);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -6233,6 +6246,8 @@ void swap(TFetchResultsReq &a, TFetchResultsReq &b) {
   swap(a.operationHandle, b.operationHandle);
   swap(a.orientation, b.orientation);
   swap(a.maxRows, b.maxRows);
+  swap(a.fetchType, b.fetchType);
+  swap(a.__isset, b.__isset);
 }
 
 const char* TFetchResultsResp::ascii_fingerprint = "FC43BC2D6F3B76D4DB0F34226A745C8E";

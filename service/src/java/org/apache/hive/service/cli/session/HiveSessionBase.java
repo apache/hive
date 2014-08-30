@@ -24,6 +24,7 @@ import org.apache.hive.service.cli.SessionHandle;
 import org.apache.hive.service.cli.operation.OperationManager;
 import org.apache.hive.service.cli.thrift.TProtocolVersion;
 
+import java.io.File;
 import java.util.Map;
 
 /**
@@ -38,40 +39,57 @@ public interface HiveSessionBase {
    * Set the session manager for the session
    * @param sessionManager
    */
-  public void setSessionManager(SessionManager sessionManager);
+  void setSessionManager(SessionManager sessionManager);
 
   /**
    * Get the session manager for the session
    */
-  public SessionManager getSessionManager();
+  SessionManager getSessionManager();
 
   /**
    * Set operation manager for the session
    * @param operationManager
    */
-  public void setOperationManager(OperationManager operationManager);
+  void setOperationManager(OperationManager operationManager);
 
   /**
    * Initialize the session
    * @param sessionConfMap
    */
-  public void initialize(Map<String, String> sessionConfMap) throws Exception;
+  void initialize(Map<String, String> sessionConfMap) throws Exception;
 
-  public SessionHandle getSessionHandle();
+  /**
+   * Check whether operation logging is enabled and session dir is created successfully
+   */
+  boolean isOperationLogEnabled();
 
-  public String getUsername();
+  /**
+   * Get the session dir, which is the parent dir of operation logs
+   * @return a file representing the parent directory of operation logs
+   */
+  File getOperationLogSessionDir();
 
-  public String getPassword();
+  /**
+   * Set the session dir, which is the parent dir of operation logs
+   * @param operationLogRootDir the parent dir of the session dir
+   */
+  void setOperationLogSessionDir(File operationLogRootDir);
 
-  public HiveConf getHiveConf();
+  SessionHandle getSessionHandle();
 
-  public SessionState getSessionState();
+  String getUsername();
 
-  public String getUserName();
+  String getPassword();
 
-  public void setUserName(String userName);
+  HiveConf getHiveConf();
 
-  public String getIpAddress();
+  SessionState getSessionState();
 
-  public void setIpAddress(String ipAddress);
+  String getUserName();
+
+  void setUserName(String userName);
+
+  String getIpAddress();
+
+  void setIpAddress(String ipAddress);
 }

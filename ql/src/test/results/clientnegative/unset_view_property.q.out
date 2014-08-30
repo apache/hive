@@ -1,9 +1,12 @@
 PREHOOK: query: CREATE VIEW testView AS SELECT value FROM src WHERE key=86
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@testView
 POSTHOOK: query: CREATE VIEW testView AS SELECT value FROM src WHERE key=86
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@testView
 PREHOOK: query: ALTER VIEW testView SET TBLPROPERTIES ('propA'='100', 'propB'='200')
 PREHOOK: type: ALTERVIEW_PROPERTIES

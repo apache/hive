@@ -126,11 +126,10 @@ TOK_CREATEINDEX;
 TOK_CREATEINDEX_INDEXTBLNAME;
 TOK_DEFERRED_REBUILDINDEX;
 TOK_DROPINDEX;
-TOK_DROPTABLE_PROPERTIES;
 TOK_LIKETABLE;
 TOK_DESCTABLE;
 TOK_DESCFUNCTION;
-TOK_ALTERTABLE_PARTITION;
+TOK_ALTERTABLE;
 TOK_ALTERTABLE_RENAME;
 TOK_ALTERTABLE_ADDCOLS;
 TOK_ALTERTABLE_RENAMECOL;
@@ -152,6 +151,13 @@ TOK_ALTERTABLE_FILEFORMAT;
 TOK_ALTERTABLE_LOCATION;
 TOK_ALTERTABLE_PROPERTIES;
 TOK_ALTERTABLE_CHANGECOL_AFTER_POSITION;
+TOK_ALTERTABLE_DROPPROPERTIES;
+TOK_ALTERTABLE_SKEWED;
+TOK_ALTERTABLE_EXCHANGEPARTITION;
+TOK_ALTERTABLE_SKEWED_LOCATION;
+TOK_ALTERTABLE_BUCKETS;
+TOK_ALTERTABLE_CLUSTER_SORT;
+TOK_ALTERTABLE_COMPACT;
 TOK_ALTERINDEX_REBUILD;
 TOK_ALTERINDEX_PROPERTIES;
 TOK_MSCK;
@@ -177,7 +183,6 @@ TOK_TABCOLLIST;
 TOK_TABCOL;
 TOK_TABLECOMMENT;
 TOK_TABLEPARTCOLS;
-TOK_TABLEBUCKETS;
 TOK_TABLEROWFORMAT;
 TOK_TABLEROWFORMATFIELD;
 TOK_TABLEROWFORMATCOLLITEMS;
@@ -192,7 +197,6 @@ TOK_DISABLE;
 TOK_READONLY;
 TOK_NO_DROP;
 TOK_STORAGEHANDLER;
-TOK_ALTERTABLE_CLUSTER_SORT;
 TOK_NOT_CLUSTERED;
 TOK_NOT_SORTED;
 TOK_TABCOLNAME;
@@ -215,9 +219,9 @@ TOK_DROPMACRO;
 TOK_TEMPORARY;
 TOK_CREATEVIEW;
 TOK_DROPVIEW;
-TOK_ALTERVIEW_AS;
+TOK_ALTERVIEW;
 TOK_ALTERVIEW_PROPERTIES;
-TOK_DROPVIEW_PROPERTIES;
+TOK_ALTERVIEW_DROPPROPERTIES;
 TOK_ALTERVIEW_ADDPARTS;
 TOK_ALTERVIEW_DROPPARTS;
 TOK_ALTERVIEW_RENAME;
@@ -302,8 +306,6 @@ TOK_TABLESKEWED;
 TOK_TABCOLVALUE;
 TOK_TABCOLVALUE_PAIR;
 TOK_TABCOLVALUES;
-TOK_ALTERTABLE_SKEWED;
-TOK_ALTERTBLPART_SKEWED_LOCATION;
 TOK_SKEWED_LOCATIONS;
 TOK_SKEWED_LOCATION_LIST;
 TOK_SKEWED_LOCATION_MAP;
@@ -315,7 +317,6 @@ TOK_WINDOWSPEC;
 TOK_WINDOWVALUES;
 TOK_WINDOWRANGE;
 TOK_IGNOREPROTECTION;
-TOK_EXCHANGEPARTITION;
 TOK_SUBQUERY_EXPR;
 TOK_SUBQUERY_OP;
 TOK_SUBQUERY_OP_NOTIN;
@@ -328,7 +329,6 @@ TOK_FILE;
 TOK_JAR;
 TOK_RESOURCE_URI;
 TOK_RESOURCE_LIST;
-TOK_COMPACT;
 TOK_SHOW_COMPACTIONS;
 TOK_SHOW_TRANSACTIONS;
 TOK_DELETE_FROM;
@@ -935,56 +935,62 @@ dropTableStatement
 alterStatement
 @init { pushMsg("alter statement", state); }
 @after { popMsg(state); }
-    : KW_ALTER!
-        (
-            KW_TABLE! alterTableStatementSuffix
-        |
-            KW_VIEW! alterViewStatementSuffix
-        |
-            KW_INDEX! alterIndexStatementSuffix
-        |
-            (KW_DATABASE|KW_SCHEMA)! alterDatabaseStatementSuffix
-        )
+    : KW_ALTER KW_TABLE tableName alterTableStatementSuffix -> ^(TOK_ALTERTABLE tableName alterTableStatementSuffix)
+    | KW_ALTER KW_VIEW tableName KW_AS? alterViewStatementSuffix -> ^(TOK_ALTERVIEW tableName alterViewStatementSuffix)
+    | KW_ALTER KW_INDEX alterIndexStatementSuffix -> alterIndexStatementSuffix
+    | KW_ALTER (KW_DATABASE|KW_SCHEMA) alterDatabaseStatementSuffix -> alterDatabaseStatementSuffix
     ;
 
 alterTableStatementSuffix
 @init { pushMsg("alter table statement", state); }
 @after { popMsg(state); }
-    : alterStatementSuffixRename
+    : alterStatementSuffixRename[true]
     | alterStatementSuffixAddCol
     | alterStatementSuffixRenameCol
     | alterStatementSuffixUpdateStatsCol
-    | alterStatementSuffixDropPartitions
-    | alterStatementSuffixAddPartitions
+    | alterStatementSuffixDropPartitions[true]
+    | alterStatementSuffixAddPartitions[true]
     | alterStatementSuffixTouch
     | alterStatementSuffixArchive
     | alterStatementSuffixUnArchive
     | alterStatementSuffixProperties
-    | alterTblPartitionStatement
     | alterStatementSuffixSkewedby
     | alterStatementSuffixExchangePartition
     | alterStatementPartitionKeyType
+    | partitionSpec? alterTblPartitionStatementSuffix -> alterTblPartitionStatementSuffix partitionSpec?
     ;
+
+alterTblPartitionStatementSuffix
+@init {pushMsg("alter table partition statement suffix", state);}
+@after {popMsg(state);}
+  : alterStatementSuffixFileFormat
+  | alterStatementSuffixLocation
+  | alterStatementSuffixProtectMode
+  | alterStatementSuffixMergeFiles
+  | alterStatementSuffixSerdeProperties
+  | alterStatementSuffixRenamePart
+  | alterStatementSuffixBucketNum
+  | alterTblPartitionStatementSuffixSkewedLocation
+  | alterStatementSuffixClusterbySortby
+  | alterStatementSuffixCompact
+  | alterStatementSuffixUpdateStatsCol
+  ;
 
 alterStatementPartitionKeyType
 @init {msgs.push("alter partition key type"); }
 @after {msgs.pop();}
-	: tableName KW_PARTITION KW_COLUMN LPAREN columnNameType RPAREN
-	-> ^(TOK_ALTERTABLE_PARTCOLTYPE tableName columnNameType)
+	: KW_PARTITION KW_COLUMN LPAREN columnNameType RPAREN
+	-> ^(TOK_ALTERTABLE_PARTCOLTYPE columnNameType)
 	;
 
 alterViewStatementSuffix
 @init { pushMsg("alter view statement", state); }
 @after { popMsg(state); }
     : alterViewSuffixProperties
-    | alterStatementSuffixRename
-        -> ^(TOK_ALTERVIEW_RENAME alterStatementSuffixRename)
-    | alterStatementSuffixAddPartitions
-        -> ^(TOK_ALTERVIEW_ADDPARTS alterStatementSuffixAddPartitions)
-    | alterStatementSuffixDropPartitions
-        -> ^(TOK_ALTERVIEW_DROPPARTS alterStatementSuffixDropPartitions)
-    | name=tableName KW_AS selectStatementWithCTE
-        -> ^(TOK_ALTERVIEW_AS $name selectStatementWithCTE)
+    | alterStatementSuffixRename[false]
+    | alterStatementSuffixAddPartitions[false]
+    | alterStatementSuffixDropPartitions[false]
+    | selectStatementWithCTE
     ;
 
 alterIndexStatementSuffix
@@ -1022,33 +1028,34 @@ alterDatabaseSuffixSetOwner
     -> ^(TOK_ALTERDATABASE_OWNER $dbName principalName)
     ;
 
-alterStatementSuffixRename
+alterStatementSuffixRename[boolean table]
 @init { pushMsg("rename statement", state); }
 @after { popMsg(state); }
-    : oldName=tableName KW_RENAME KW_TO newName=tableName
-    -> ^(TOK_ALTERTABLE_RENAME $oldName $newName)
+    : KW_RENAME KW_TO tableName
+    -> { table }? ^(TOK_ALTERTABLE_RENAME tableName)
+    ->            ^(TOK_ALTERVIEW_RENAME tableName)
     ;
 
 alterStatementSuffixAddCol
 @init { pushMsg("add column statement", state); }
 @after { popMsg(state); }
-    : tableName (add=KW_ADD | replace=KW_REPLACE) KW_COLUMNS LPAREN columnNameTypeList RPAREN
-    -> {$add != null}? ^(TOK_ALTERTABLE_ADDCOLS tableName columnNameTypeList)
-    ->                 ^(TOK_ALTERTABLE_REPLACECOLS tableName columnNameTypeList)
+    : (add=KW_ADD | replace=KW_REPLACE) KW_COLUMNS LPAREN columnNameTypeList RPAREN
+    -> {$add != null}? ^(TOK_ALTERTABLE_ADDCOLS columnNameTypeList)
+    ->                 ^(TOK_ALTERTABLE_REPLACECOLS columnNameTypeList)
     ;
 
 alterStatementSuffixRenameCol
 @init { pushMsg("rename column name", state); }
 @after { popMsg(state); }
-    : tableName KW_CHANGE KW_COLUMN? oldName=identifier newName=identifier colType (KW_COMMENT comment=StringLiteral)? alterStatementChangeColPosition?
-    ->^(TOK_ALTERTABLE_RENAMECOL tableName $oldName $newName colType $comment? alterStatementChangeColPosition?)
+    : KW_CHANGE KW_COLUMN? oldName=identifier newName=identifier colType (KW_COMMENT comment=StringLiteral)? alterStatementChangeColPosition?
+    ->^(TOK_ALTERTABLE_RENAMECOL $oldName $newName colType $comment? alterStatementChangeColPosition?)
     ;
 
 alterStatementSuffixUpdateStatsCol
 @init { pushMsg("update column statistics", state); }
 @after { popMsg(state); }
-    : identifier KW_UPDATE KW_STATISTICS KW_FOR KW_COLUMN? colName=identifier KW_SET tableProperties (KW_COMMENT comment=StringLiteral)?
-    ->^(TOK_ALTERTABLE_UPDATECOLSTATS identifier $colName tableProperties $comment?)
+    : KW_UPDATE KW_STATISTICS KW_FOR KW_COLUMN? colName=identifier KW_SET tableProperties (KW_COMMENT comment=StringLiteral)?
+    ->^(TOK_ALTERTABLE_UPDATECOLSTATS $colName tableProperties $comment?)
     ;
 
 alterStatementChangeColPosition
@@ -1057,11 +1064,12 @@ alterStatementChangeColPosition
     -> ^(TOK_ALTERTABLE_CHANGECOL_AFTER_POSITION $afterCol)
     ;
 
-alterStatementSuffixAddPartitions
+alterStatementSuffixAddPartitions[boolean table]
 @init { pushMsg("add partition statement", state); }
 @after { popMsg(state); }
-    : tableName KW_ADD ifNotExists? alterStatementSuffixAddPartitionsElement+
-    -> ^(TOK_ALTERTABLE_ADDPARTS tableName ifNotExists? alterStatementSuffixAddPartitionsElement+)
+    : KW_ADD ifNotExists? alterStatementSuffixAddPartitionsElement+
+    -> { table }? ^(TOK_ALTERTABLE_ADDPARTS ifNotExists? alterStatementSuffixAddPartitionsElement+)
+    ->            ^(TOK_ALTERVIEW_ADDPARTS ifNotExists? alterStatementSuffixAddPartitionsElement+)
     ;
 
 alterStatementSuffixAddPartitionsElement
@@ -1071,22 +1079,22 @@ alterStatementSuffixAddPartitionsElement
 alterStatementSuffixTouch
 @init { pushMsg("touch statement", state); }
 @after { popMsg(state); }
-    : tableName KW_TOUCH (partitionSpec)*
-    -> ^(TOK_ALTERTABLE_TOUCH tableName (partitionSpec)*)
+    : KW_TOUCH (partitionSpec)*
+    -> ^(TOK_ALTERTABLE_TOUCH (partitionSpec)*)
     ;
 
 alterStatementSuffixArchive
 @init { pushMsg("archive statement", state); }
 @after { popMsg(state); }
-    : tableName KW_ARCHIVE (partitionSpec)*
-    -> ^(TOK_ALTERTABLE_ARCHIVE tableName (partitionSpec)*)
+    : KW_ARCHIVE (partitionSpec)*
+    -> ^(TOK_ALTERTABLE_ARCHIVE (partitionSpec)*)
     ;
 
 alterStatementSuffixUnArchive
 @init { pushMsg("unarchive statement", state); }
 @after { popMsg(state); }
-    : tableName KW_UNARCHIVE (partitionSpec)*
-    -> ^(TOK_ALTERTABLE_UNARCHIVE tableName (partitionSpec)*)
+    : KW_UNARCHIVE (partitionSpec)*
+    -> ^(TOK_ALTERTABLE_UNARCHIVE (partitionSpec)*)
     ;
 
 partitionLocation
@@ -1096,29 +1104,30 @@ partitionLocation
       KW_LOCATION locn=StringLiteral -> ^(TOK_PARTITIONLOCATION $locn)
     ;
 
-alterStatementSuffixDropPartitions
+alterStatementSuffixDropPartitions[boolean table]
 @init { pushMsg("drop partition statement", state); }
 @after { popMsg(state); }
-    : tableName KW_DROP ifExists? dropPartitionSpec (COMMA dropPartitionSpec)* ignoreProtection?
-    -> ^(TOK_ALTERTABLE_DROPPARTS tableName dropPartitionSpec+ ifExists? ignoreProtection?)
+    : KW_DROP ifExists? dropPartitionSpec (COMMA dropPartitionSpec)* ignoreProtection?
+    -> { table }? ^(TOK_ALTERTABLE_DROPPARTS dropPartitionSpec+ ifExists? ignoreProtection?)
+    ->            ^(TOK_ALTERVIEW_DROPPARTS dropPartitionSpec+ ifExists? ignoreProtection?)
     ;
 
 alterStatementSuffixProperties
 @init { pushMsg("alter properties statement", state); }
 @after { popMsg(state); }
-    : tableName KW_SET KW_TBLPROPERTIES tableProperties
-    -> ^(TOK_ALTERTABLE_PROPERTIES tableName tableProperties)
-    | tableName KW_UNSET KW_TBLPROPERTIES ifExists? tableProperties
-    -> ^(TOK_DROPTABLE_PROPERTIES tableName tableProperties ifExists?)
+    : KW_SET KW_TBLPROPERTIES tableProperties
+    -> ^(TOK_ALTERTABLE_PROPERTIES tableProperties)
+    | KW_UNSET KW_TBLPROPERTIES ifExists? tableProperties
+    -> ^(TOK_ALTERTABLE_DROPPROPERTIES tableProperties ifExists?)
     ;
 
 alterViewSuffixProperties
 @init { pushMsg("alter view properties statement", state); }
 @after { popMsg(state); }
-    : tableName KW_SET KW_TBLPROPERTIES tableProperties
-    -> ^(TOK_ALTERVIEW_PROPERTIES tableName tableProperties)
-    | tableName KW_UNSET KW_TBLPROPERTIES ifExists? tableProperties
-    -> ^(TOK_DROPVIEW_PROPERTIES tableName tableProperties ifExists?)
+    : KW_SET KW_TBLPROPERTIES tableProperties
+    -> ^(TOK_ALTERVIEW_PROPERTIES tableProperties)
+    | KW_UNSET KW_TBLPROPERTIES ifExists? tableProperties
+    -> ^(TOK_ALTERVIEW_DROPPROPERTIES tableProperties ifExists?)
     ;
 
 alterStatementSuffixSerdeProperties
@@ -1135,29 +1144,6 @@ tablePartitionPrefix
 @after {popMsg(state);}
   : tableName partitionSpec?
   ->^(TOK_TABLE_PARTITION tableName partitionSpec?)
-  ;
-
-alterTblPartitionStatement
-@init {pushMsg("alter table partition statement", state);}
-@after {popMsg(state);}
-  : tablePartitionPrefix alterTblPartitionStatementSuffix
-  -> ^(TOK_ALTERTABLE_PARTITION tablePartitionPrefix alterTblPartitionStatementSuffix)
-  ;
-
-alterTblPartitionStatementSuffix
-@init {pushMsg("alter table partition statement suffix", state);}
-@after {popMsg(state);}
-  : alterStatementSuffixFileFormat
-  | alterStatementSuffixLocation
-  | alterStatementSuffixProtectMode
-  | alterStatementSuffixMergeFiles
-  | alterStatementSuffixSerdeProperties
-  | alterStatementSuffixRenamePart
-  | alterStatementSuffixStatsPart
-  | alterStatementSuffixBucketNum
-  | alterTblPartitionStatementSuffixSkewedLocation
-  | alterStatementSuffixClusterbySortby
-  | alterStatementSuffixCompact
   ;
 
 alterStatementSuffixFileFormat
@@ -1179,7 +1165,7 @@ alterTblPartitionStatementSuffixSkewedLocation
 @init {pushMsg("alter partition skewed location", state);}
 @after {popMsg(state);}
   : KW_SET KW_SKEWED KW_LOCATION skewedLocations
-  -> ^(TOK_ALTERTBLPART_SKEWED_LOCATION skewedLocations)
+  -> ^(TOK_ALTERTABLE_SKEWED_LOCATION skewedLocations)
   ;
   
 skewedLocations
@@ -1214,21 +1200,21 @@ alterStatementSuffixLocation
 alterStatementSuffixSkewedby
 @init {pushMsg("alter skewed by statement", state);}
 @after{popMsg(state);}
-	: tableName tableSkewed
-	->^(TOK_ALTERTABLE_SKEWED tableName tableSkewed)
+	: tableSkewed
+	->^(TOK_ALTERTABLE_SKEWED tableSkewed)
 	|
-	 tableName KW_NOT KW_SKEWED
-	->^(TOK_ALTERTABLE_SKEWED tableName)
+	 KW_NOT KW_SKEWED
+	->^(TOK_ALTERTABLE_SKEWED)
 	|
-	 tableName KW_NOT storedAsDirs
-	->^(TOK_ALTERTABLE_SKEWED tableName storedAsDirs)
+	 KW_NOT storedAsDirs
+	->^(TOK_ALTERTABLE_SKEWED storedAsDirs)
 	;
 
 alterStatementSuffixExchangePartition
 @init {pushMsg("alter exchange partition", state);}
 @after{popMsg(state);}
-    : tableName KW_EXCHANGE partitionSpec KW_WITH KW_TABLE exchangename=tableName
-    -> ^(TOK_EXCHANGEPARTITION tableName partitionSpec $exchangename)
+    : KW_EXCHANGE partitionSpec KW_WITH KW_TABLE exchangename=tableName
+    -> ^(TOK_ALTERTABLE_EXCHANGEPARTITION partitionSpec $exchangename)
     ;
 
 alterStatementSuffixProtectMode
@@ -1278,14 +1264,14 @@ alterStatementSuffixBucketNum
 @init { pushMsg("", state); }
 @after { popMsg(state); }
     : KW_INTO num=Number KW_BUCKETS
-    -> ^(TOK_TABLEBUCKETS $num)
+    -> ^(TOK_ALTERTABLE_BUCKETS $num)
     ;
 
 alterStatementSuffixCompact
 @init { msgs.push("compaction request"); }
 @after { msgs.pop(); }
     : KW_COMPACT compactType=StringLiteral
-    -> ^(TOK_COMPACT $compactType)
+    -> ^(TOK_ALTERTABLE_COMPACT $compactType)
     ;
 
 
@@ -1707,7 +1693,7 @@ tableBuckets
 @after { popMsg(state); }
     :
       KW_CLUSTERED KW_BY LPAREN bucketCols=columnNameList RPAREN (KW_SORTED KW_BY LPAREN sortCols=columnNameOrderList RPAREN)? KW_INTO num=Number KW_BUCKETS
-    -> ^(TOK_TABLEBUCKETS $bucketCols $sortCols? $num)
+    -> ^(TOK_ALTERTABLE_BUCKETS $bucketCols $sortCols? $num)
     ;
 
 tableSkewed

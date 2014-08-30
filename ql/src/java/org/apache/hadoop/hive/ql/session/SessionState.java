@@ -45,6 +45,8 @@ import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.ql.MapRedStats;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.spark.session.SparkSession;
@@ -88,6 +90,8 @@ public class SessionState {
   private static final String HDFS_SESSION_PATH_KEY = "_hive.hdfs.session.path";
   private static final String TMP_TABLE_SPACE_KEY = "_hive.tmp_table_space";
   private final Map<String, Map<String, Table>> tempTables = new HashMap<String, Map<String, Table>>();
+  private final Map<String, Map<String, ColumnStatisticsObj>> tempTableColStats =
+      new HashMap<String, Map<String, ColumnStatisticsObj>>();
 
   protected ClassLoader parentLoader;
 
@@ -1157,6 +1161,10 @@ public class SessionState {
 
   public Map<String, Map<String, Table>> getTempTables() {
     return tempTables;
+  }
+
+  public Map<String, Map<String, ColumnStatisticsObj>> getTempTableColStats() {
+    return tempTableColStats;
   }
 
   /**

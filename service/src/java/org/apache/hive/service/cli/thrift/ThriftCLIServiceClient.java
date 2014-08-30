@@ -22,18 +22,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.hive.service.auth.HiveAuthFactory;
-import org.apache.hive.service.cli.CLIServiceClient;
-import org.apache.hive.service.cli.FetchOrientation;
-import org.apache.hive.service.cli.GetInfoType;
-import org.apache.hive.service.cli.GetInfoValue;
-import org.apache.hive.service.cli.HiveSQLException;
-import org.apache.hive.service.cli.OperationHandle;
-import org.apache.hive.service.cli.OperationState;
-import org.apache.hive.service.cli.OperationStatus;
-import org.apache.hive.service.cli.RowSet;
-import org.apache.hive.service.cli.RowSetFactory;
-import org.apache.hive.service.cli.SessionHandle;
-import org.apache.hive.service.cli.TableSchema;
+import org.apache.hive.service.cli.*;
 import org.apache.thrift.TException;
 
 /**
@@ -377,17 +366,15 @@ public class ThriftCLIServiceClient extends CLIServiceClient {
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.apache.hive.service.cli.ICLIService#fetchResults(org.apache.hive.service.cli.OperationHandle, org.apache.hive.service.cli.FetchOrientation, long)
-   */
   @Override
-  public RowSet fetchResults(OperationHandle opHandle, FetchOrientation orientation, long maxRows)
-      throws HiveSQLException {
+  public RowSet fetchResults(OperationHandle opHandle, FetchOrientation orientation, long maxRows,
+      FetchType fetchType) throws HiveSQLException {
     try {
       TFetchResultsReq req = new TFetchResultsReq();
       req.setOperationHandle(opHandle.toTOperationHandle());
       req.setOrientation(orientation.toTFetchOrientation());
       req.setMaxRows(maxRows);
+      req.setFetchType(fetchType.toTFetchType());
       TFetchResultsResp resp = cliService.FetchResults(req);
       checkStatus(resp.getStatus());
       return RowSetFactory.create(resp.getResults(), opHandle.getProtocolVersion());
@@ -404,7 +391,7 @@ public class ThriftCLIServiceClient extends CLIServiceClient {
   @Override
   public RowSet fetchResults(OperationHandle opHandle) throws HiveSQLException {
     // TODO: set the correct default fetch size
-    return fetchResults(opHandle, FetchOrientation.FETCH_NEXT, 10000);
+    return fetchResults(opHandle, FetchOrientation.FETCH_NEXT, 10000, FetchType.QUERY_OUTPUT);
   }
 
   @Override

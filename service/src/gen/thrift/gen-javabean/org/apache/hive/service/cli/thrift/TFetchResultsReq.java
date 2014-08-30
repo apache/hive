@@ -37,6 +37,7 @@ public class TFetchResultsReq implements org.apache.thrift.TBase<TFetchResultsRe
   private static final org.apache.thrift.protocol.TField OPERATION_HANDLE_FIELD_DESC = new org.apache.thrift.protocol.TField("operationHandle", org.apache.thrift.protocol.TType.STRUCT, (short)1);
   private static final org.apache.thrift.protocol.TField ORIENTATION_FIELD_DESC = new org.apache.thrift.protocol.TField("orientation", org.apache.thrift.protocol.TType.I32, (short)2);
   private static final org.apache.thrift.protocol.TField MAX_ROWS_FIELD_DESC = new org.apache.thrift.protocol.TField("maxRows", org.apache.thrift.protocol.TType.I64, (short)3);
+  private static final org.apache.thrift.protocol.TField FETCH_TYPE_FIELD_DESC = new org.apache.thrift.protocol.TField("fetchType", org.apache.thrift.protocol.TType.I16, (short)4);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -47,6 +48,7 @@ public class TFetchResultsReq implements org.apache.thrift.TBase<TFetchResultsRe
   private TOperationHandle operationHandle; // required
   private TFetchOrientation orientation; // required
   private long maxRows; // required
+  private short fetchType; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -56,7 +58,8 @@ public class TFetchResultsReq implements org.apache.thrift.TBase<TFetchResultsRe
      * @see TFetchOrientation
      */
     ORIENTATION((short)2, "orientation"),
-    MAX_ROWS((short)3, "maxRows");
+    MAX_ROWS((short)3, "maxRows"),
+    FETCH_TYPE((short)4, "fetchType");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -77,6 +80,8 @@ public class TFetchResultsReq implements org.apache.thrift.TBase<TFetchResultsRe
           return ORIENTATION;
         case 3: // MAX_ROWS
           return MAX_ROWS;
+        case 4: // FETCH_TYPE
+          return FETCH_TYPE;
         default:
           return null;
       }
@@ -118,7 +123,9 @@ public class TFetchResultsReq implements org.apache.thrift.TBase<TFetchResultsRe
 
   // isset id assignments
   private static final int __MAXROWS_ISSET_ID = 0;
+  private static final int __FETCHTYPE_ISSET_ID = 1;
   private byte __isset_bitfield = 0;
+  private _Fields optionals[] = {_Fields.FETCH_TYPE};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -128,12 +135,16 @@ public class TFetchResultsReq implements org.apache.thrift.TBase<TFetchResultsRe
         new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, TFetchOrientation.class)));
     tmpMap.put(_Fields.MAX_ROWS, new org.apache.thrift.meta_data.FieldMetaData("maxRows", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
+    tmpMap.put(_Fields.FETCH_TYPE, new org.apache.thrift.meta_data.FieldMetaData("fetchType", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I16)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(TFetchResultsReq.class, metaDataMap);
   }
 
   public TFetchResultsReq() {
     this.orientation = org.apache.hive.service.cli.thrift.TFetchOrientation.FETCH_NEXT;
+
+    this.fetchType = (short)0;
 
   }
 
@@ -161,6 +172,7 @@ public class TFetchResultsReq implements org.apache.thrift.TBase<TFetchResultsRe
       this.orientation = other.orientation;
     }
     this.maxRows = other.maxRows;
+    this.fetchType = other.fetchType;
   }
 
   public TFetchResultsReq deepCopy() {
@@ -174,6 +186,8 @@ public class TFetchResultsReq implements org.apache.thrift.TBase<TFetchResultsRe
 
     setMaxRowsIsSet(false);
     this.maxRows = 0;
+    this.fetchType = (short)0;
+
   }
 
   public TOperationHandle getOperationHandle() {
@@ -252,6 +266,28 @@ public class TFetchResultsReq implements org.apache.thrift.TBase<TFetchResultsRe
     __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __MAXROWS_ISSET_ID, value);
   }
 
+  public short getFetchType() {
+    return this.fetchType;
+  }
+
+  public void setFetchType(short fetchType) {
+    this.fetchType = fetchType;
+    setFetchTypeIsSet(true);
+  }
+
+  public void unsetFetchType() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __FETCHTYPE_ISSET_ID);
+  }
+
+  /** Returns true if field fetchType is set (has been assigned a value) and false otherwise */
+  public boolean isSetFetchType() {
+    return EncodingUtils.testBit(__isset_bitfield, __FETCHTYPE_ISSET_ID);
+  }
+
+  public void setFetchTypeIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __FETCHTYPE_ISSET_ID, value);
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case OPERATION_HANDLE:
@@ -278,6 +314,14 @@ public class TFetchResultsReq implements org.apache.thrift.TBase<TFetchResultsRe
       }
       break;
 
+    case FETCH_TYPE:
+      if (value == null) {
+        unsetFetchType();
+      } else {
+        setFetchType((Short)value);
+      }
+      break;
+
     }
   }
 
@@ -291,6 +335,9 @@ public class TFetchResultsReq implements org.apache.thrift.TBase<TFetchResultsRe
 
     case MAX_ROWS:
       return Long.valueOf(getMaxRows());
+
+    case FETCH_TYPE:
+      return Short.valueOf(getFetchType());
 
     }
     throw new IllegalStateException();
@@ -309,6 +356,8 @@ public class TFetchResultsReq implements org.apache.thrift.TBase<TFetchResultsRe
       return isSetOrientation();
     case MAX_ROWS:
       return isSetMaxRows();
+    case FETCH_TYPE:
+      return isSetFetchType();
     }
     throw new IllegalStateException();
   }
@@ -353,6 +402,15 @@ public class TFetchResultsReq implements org.apache.thrift.TBase<TFetchResultsRe
         return false;
     }
 
+    boolean this_present_fetchType = true && this.isSetFetchType();
+    boolean that_present_fetchType = true && that.isSetFetchType();
+    if (this_present_fetchType || that_present_fetchType) {
+      if (!(this_present_fetchType && that_present_fetchType))
+        return false;
+      if (this.fetchType != that.fetchType)
+        return false;
+    }
+
     return true;
   }
 
@@ -374,6 +432,11 @@ public class TFetchResultsReq implements org.apache.thrift.TBase<TFetchResultsRe
     builder.append(present_maxRows);
     if (present_maxRows)
       builder.append(maxRows);
+
+    boolean present_fetchType = true && (isSetFetchType());
+    builder.append(present_fetchType);
+    if (present_fetchType)
+      builder.append(fetchType);
 
     return builder.toHashCode();
   }
@@ -412,6 +475,16 @@ public class TFetchResultsReq implements org.apache.thrift.TBase<TFetchResultsRe
     }
     if (isSetMaxRows()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.maxRows, typedOther.maxRows);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetFetchType()).compareTo(typedOther.isSetFetchType());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetFetchType()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.fetchType, typedOther.fetchType);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -455,6 +528,12 @@ public class TFetchResultsReq implements org.apache.thrift.TBase<TFetchResultsRe
     sb.append("maxRows:");
     sb.append(this.maxRows);
     first = false;
+    if (isSetFetchType()) {
+      if (!first) sb.append(", ");
+      sb.append("fetchType:");
+      sb.append(this.fetchType);
+      first = false;
+    }
     sb.append(")");
     return sb.toString();
   }
@@ -540,6 +619,14 @@ public class TFetchResultsReq implements org.apache.thrift.TBase<TFetchResultsRe
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 4: // FETCH_TYPE
+            if (schemeField.type == org.apache.thrift.protocol.TType.I16) {
+              struct.fetchType = iprot.readI16();
+              struct.setFetchTypeIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -566,6 +653,11 @@ public class TFetchResultsReq implements org.apache.thrift.TBase<TFetchResultsRe
       oprot.writeFieldBegin(MAX_ROWS_FIELD_DESC);
       oprot.writeI64(struct.maxRows);
       oprot.writeFieldEnd();
+      if (struct.isSetFetchType()) {
+        oprot.writeFieldBegin(FETCH_TYPE_FIELD_DESC);
+        oprot.writeI16(struct.fetchType);
+        oprot.writeFieldEnd();
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -586,6 +678,14 @@ public class TFetchResultsReq implements org.apache.thrift.TBase<TFetchResultsRe
       struct.operationHandle.write(oprot);
       oprot.writeI32(struct.orientation.getValue());
       oprot.writeI64(struct.maxRows);
+      BitSet optionals = new BitSet();
+      if (struct.isSetFetchType()) {
+        optionals.set(0);
+      }
+      oprot.writeBitSet(optionals, 1);
+      if (struct.isSetFetchType()) {
+        oprot.writeI16(struct.fetchType);
+      }
     }
 
     @Override
@@ -598,6 +698,11 @@ public class TFetchResultsReq implements org.apache.thrift.TBase<TFetchResultsRe
       struct.setOrientationIsSet(true);
       struct.maxRows = iprot.readI64();
       struct.setMaxRowsIsSet(true);
+      BitSet incoming = iprot.readBitSet(1);
+      if (incoming.get(0)) {
+        struct.fetchType = iprot.readI16();
+        struct.setFetchTypeIsSet(true);
+      }
     }
   }
 

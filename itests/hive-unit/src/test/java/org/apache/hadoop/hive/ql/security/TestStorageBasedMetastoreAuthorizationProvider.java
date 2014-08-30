@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.security;
 
 import java.net.URI;
-import java.security.AccessControlException;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -48,7 +47,7 @@ public class TestStorageBasedMetastoreAuthorizationProvider extends
   @Override
   protected void allowCreateInDb(String dbName, String userName, String location)
       throws Exception {
-    setPermissions(location,"-rwxr--r--");
+    setPermissions(location,"-rwxr--r-t");
   }
 
   @Override
@@ -79,7 +78,7 @@ public class TestStorageBasedMetastoreAuthorizationProvider extends
   @Override
   protected void allowDropOnDb(String dbName, String userName, String location)
       throws Exception {
-    setPermissions(location,"-rwxr--r--");
+    setPermissions(location,"-rwxr--r-t");
   }
 
   protected void setPermissions(String locn, String permissions) throws Exception {

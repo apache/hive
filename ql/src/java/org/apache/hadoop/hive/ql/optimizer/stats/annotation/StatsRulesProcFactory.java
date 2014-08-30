@@ -104,7 +104,8 @@ public class StatsRulesProcFactory {
         tsop.setStatistics(stats.clone());
 
         if (LOG.isDebugEnabled()) {
-          LOG.debug("[0] STATS-" + tsop.toString() + ": " + stats.extendedToString());
+          LOG.debug("[0] STATS-" + tsop.toString() + " (" + table.getTableName()
+              + "): " + stats.extendedToString());
         }
       } catch (CloneNotSupportedException e) {
         throw new SemanticException(ErrorMsg.STATISTICS_CLONING_FAILED.getMsg());
@@ -1092,7 +1093,9 @@ public class StatsRulesProcFactory {
             String key = entry.getValue().get(joinColIdx);
             key = StatsUtils.stripPrefixFromColumnName(key);
             ColStatistics cs = joinedColStats.get(key);
-            cs.setCountDistint(minNDV);
+            if (cs != null) {
+              cs.setCountDistint(minNDV);
+            }
           }
         }
 

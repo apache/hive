@@ -2,21 +2,27 @@ PREHOOK: query: create table A as
 select * from src
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@A
 POSTHOOK: query: create table A as
 select * from src
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@A
 PREHOOK: query: create table B as
 select * from src
 limit 10
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@B
 POSTHOOK: query: create table B as
 select * from src
 limit 10
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@B
 Warning: Map Join MAPJOIN[7][bigTable=a] in task 'Map 2' is a cross product
 PREHOOK: query: explain select * from A join B

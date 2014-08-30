@@ -1,17 +1,17 @@
-drop table tstsrc;
-drop table tstsrcpart;
+create database tc;
 
-create table tstsrc like src;
-insert overwrite table tstsrc select key, value from src;
+create table tc.tstsrc like default.src;
+insert overwrite table tc.tstsrc select key, value from default.src;
 
-create table tstsrcpart like srcpart;
-insert overwrite table tstsrcpart partition (ds='2008-04-08', hr='12')
-select key, value from srcpart where ds='2008-04-08' and hr='12';
+create table tc.tstsrcpart like default.srcpart;
+insert overwrite table tc.tstsrcpart partition (ds='2008-04-08', hr='12')
+select key, value from default.srcpart where ds='2008-04-08' and hr='12';
 
+ALTER TABLE tc.tstsrc TOUCH;
+ALTER TABLE tc.tstsrcpart TOUCH;
+ALTER TABLE tc.tstsrcpart TOUCH PARTITION (ds='2008-04-08', hr='12');
 
-ALTER TABLE tstsrc TOUCH;
-ALTER TABLE tstsrcpart TOUCH;
-ALTER TABLE tstsrcpart TOUCH PARTITION (ds='2008-04-08', hr='12');
+drop table tc.tstsrc;
+drop table tc.tstsrcpart;
 
-drop table tstsrc;
-drop table tstsrcpart;
+drop database tc;

@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.io.orc;
 
+import java.sql.Timestamp;
+
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -716,6 +718,99 @@ class ColumnStatisticsImpl implements ColumnStatistics {
     }
   }
 
+  private static final class TimestampStatisticsImpl extends ColumnStatisticsImpl
+      implements TimestampColumnStatistics {
+    private Long minimum = null;
+    private Long maximum = null;
+
+    TimestampStatisticsImpl() {
+    }
+
+    TimestampStatisticsImpl(OrcProto.ColumnStatistics stats) {
+      super(stats);
+      OrcProto.TimestampStatistics timestampStats = stats.getTimestampStatistics();
+      // min,max values serialized/deserialized as int (milliseconds since epoch)
+      if (timestampStats.hasMaximum()) {
+        maximum = timestampStats.getMaximum();
+      }
+      if (timestampStats.hasMinimum()) {
+        minimum = timestampStats.getMinimum();
+      }
+    }
+
+    @Override
+    void reset() {
+      super.reset();
+      minimum = null;
+      maximum = null;
+    }
+
+    @Override
+    void updateTimestamp(Timestamp value) {
+      if (minimum == null) {
+        minimum = value.getTime();
+        maximum = value.getTime();
+      } else if (minimum > value.getTime()) {
+        minimum = value.getTime();
+      } else if (maximum < value.getTime()) {
+        maximum = value.getTime();
+      }
+    }
+
+    @Override
+    void merge(ColumnStatisticsImpl other) {
+      super.merge(other);
+      TimestampStatisticsImpl timestampStats = (TimestampStatisticsImpl) other;
+      if (minimum == null) {
+        minimum = timestampStats.minimum;
+        maximum = timestampStats.maximum;
+      } else if (timestampStats.minimum != null) {
+        if (minimum > timestampStats.minimum) {
+          minimum = timestampStats.minimum;
+        } else if (maximum < timestampStats.maximum) {
+          maximum = timestampStats.maximum;
+        }
+      }
+    }
+
+    @Override
+    OrcProto.ColumnStatistics.Builder serialize() {
+      OrcProto.ColumnStatistics.Builder result = super.serialize();
+      OrcProto.TimestampStatistics.Builder timestampStats = OrcProto.TimestampStatistics
+          .newBuilder();
+      if (getNumberOfValues() != 0) {
+        timestampStats.setMinimum(minimum);
+        timestampStats.setMaximum(maximum);
+      }
+      result.setTimestampStatistics(timestampStats);
+      return result;
+    }
+
+    @Override
+    public Timestamp getMinimum() {
+      Timestamp minTimestamp = new Timestamp(minimum);
+      return minTimestamp;
+    }
+
+    @Override
+    public Timestamp getMaximum() {
+      Timestamp maxTimestamp = new Timestamp(maximum);
+      return maxTimestamp;
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder buf = new StringBuilder(super.toString());
+      if (getNumberOfValues() != 0) {
+        buf.append(" min: ");
+        buf.append(minimum);
+        buf.append(" max: ");
+        buf.append(maximum);
+      }
+      return buf.toString();
+    }
+  }
+
   private long count = 0;
 
   ColumnStatisticsImpl(OrcProto.ColumnStatistics stats) {
@@ -757,6 +852,10 @@ class ColumnStatisticsImpl implements ColumnStatistics {
 
   void updateDate(DateWritable value) {
     throw new UnsupportedOperationException("Can't update date");
+  }
+
+  void updateTimestamp(Timestamp value) {
+    throw new UnsupportedOperationException("Can't update timestamp");
   }
 
   void merge(ColumnStatisticsImpl stats) {
@@ -806,6 +905,8 @@ class ColumnStatisticsImpl implements ColumnStatistics {
             return new DecimalStatisticsImpl();
           case DATE:
             return new DateStatisticsImpl();
+          case TIMESTAMP:
+            return new TimestampStatisticsImpl();
           case BINARY:
             return new BinaryStatisticsImpl();
           default:
@@ -829,6 +930,8 @@ class ColumnStatisticsImpl implements ColumnStatistics {
       return new DecimalStatisticsImpl(stats);
     } else if (stats.hasDateStatistics()) {
       return new DateStatisticsImpl(stats);
+    } else if (stats.hasTimestampStatistics()) {
+      return new TimestampStatisticsImpl(stats);
     } else if(stats.hasBinaryStatistics()) {
       return new BinaryStatisticsImpl(stats);
     } else {

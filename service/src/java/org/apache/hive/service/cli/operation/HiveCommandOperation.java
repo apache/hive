@@ -94,11 +94,8 @@ public class HiveCommandOperation extends ExecuteStatementOperation {
     IOUtils.cleanup(LOG, parentSession.getSessionState().err);
   }
 
-  /* (non-Javadoc)
-   * @see org.apache.hive.service.cli.operation.Operation#run()
-   */
   @Override
-  public void run() throws HiveSQLException {
+  public void runInternal() throws HiveSQLException {
     setState(OperationState.RUNNING);
     try {
       String command = getStatement().trim();
@@ -136,6 +133,7 @@ public class HiveCommandOperation extends ExecuteStatementOperation {
     setState(OperationState.CLOSED);
     tearDownSessionIO();
     cleanTmpFile();
+    cleanupOperationLog();
   }
 
   /* (non-Javadoc)

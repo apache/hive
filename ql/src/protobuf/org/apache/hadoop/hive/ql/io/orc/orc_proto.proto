@@ -53,6 +53,12 @@ message DateStatistics {
   optional sint32 maximum = 2;
 }
 
+message TimestampStatistics {
+  // min,max values saved as milliseconds since epoch
+  optional sint64 minimum = 1;
+  optional sint64 maximum = 2;
+}
+
 message BinaryStatistics {
   // sum will store the total binary blob length in a stripe
   optional sint64 sum = 1;
@@ -67,6 +73,7 @@ message ColumnStatistics {
   optional DecimalStatistics decimalStatistics = 6;
   optional DateStatistics dateStatistics = 7;
   optional BinaryStatistics binaryStatistics = 8;
+  optional TimestampStatistics timestampStatistics = 9;
 }
 
 message RowIndexEntry {

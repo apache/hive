@@ -2251,6 +2251,8 @@ class RecordReaderImpl implements RecordReader {
       return ((DateColumnStatistics) index).getMaximum();
     } else if (index instanceof DecimalColumnStatistics) {
       return ((DecimalColumnStatistics) index).getMaximum();
+    } else if (index instanceof TimestampColumnStatistics) {
+      return ((TimestampColumnStatistics) index).getMaximum();
     } else {
       return null;
     }
@@ -2273,6 +2275,8 @@ class RecordReaderImpl implements RecordReader {
       return ((DateColumnStatistics) index).getMinimum();
     } else if (index instanceof DecimalColumnStatistics) {
       return ((DecimalColumnStatistics) index).getMinimum();
+    } else if (index instanceof TimestampColumnStatistics) {
+      return ((TimestampColumnStatistics) index).getMinimum();
     } else {
       return null;
     }
