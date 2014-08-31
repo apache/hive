@@ -1,4 +1,4 @@
-set hive.stats.dbclass=counter;
+set hive.stats.dbclass=fs;
 set hive.stats.autogather=true;
 
 DROP TABLE lineitem;
