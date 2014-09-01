@@ -147,7 +147,7 @@ public interface Validator {
     public String validate(String value) {
       try {
         float fvalue = Float.valueOf(value);
-        if (fvalue <= 0 || fvalue >= 1) {
+        if (fvalue < 0 || fvalue > 1) {
           return "Invalid ratio " + value + ", which should be in between 0 to 1";
         }
       } catch (NumberFormatException e) {
