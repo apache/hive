@@ -65,7 +65,7 @@
   <module name="Translation"/>
 
   <module name="Header">
-    <property name="headerFile" value="${basedir}/checkstyle/asf.header"/>
+    <property name="headerFile" value="checkstyle/asf.header"/>
   </module>
 
   <!-- Maximum file line length -->
@@ -78,7 +78,7 @@
 
   <!-- List of files to ignore -->
   <module name="SuppressionFilter">
-    <property name="file" value="${basedir}/checkstyle/suppressions.xml"/>
+    <property name="file" value="checkstyle/suppressions.xml"/>
   </module>
 
   <!-- Ignore JavaCC/JJTree files -->
@@ -178,7 +178,6 @@
     <!-- Checks for common coding problems               -->
     <!-- See http://checkstyle.sf.net/config_coding.html -->
     <!-- module name="AvoidInlineConditionals"/-->
-    <module name="DoubleCheckedLocking"/>
     <module name="EmptyStatement"/>
     <module name="EqualsAvoidNull"/>
     <module name="EqualsHashCode"/>
