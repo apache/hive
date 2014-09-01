@@ -224,7 +224,7 @@ public abstract class DataType {
       if (o1[i] == o2[i]) {
         continue;
       }
-      if (o1[i] > o1[i]) {
+      if (o1[i] > o2[i]) {
         return 1;
       } else {
         return -1;
