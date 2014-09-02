@@ -836,6 +836,10 @@ public class HiveConf extends Configuration {
         "If the number of keys in a dictionary is greater than this fraction of the total number of\n" +
         "non-null rows, turn off dictionary encoding.  Use 1 to always use dictionary encoding."),
     HIVE_ORC_DEFAULT_ROW_INDEX_STRIDE("hive.exec.orc.default.row.index.stride", 10000, "Define the default ORC index stride"),
+    HIVE_ORC_ROW_INDEX_STRIDE_DICTIONARY_CHECK("hive.orc.row.index.stride.dictionary.check", true,
+        "If enabled dictionary check will happen after first row index stride (default 10000 rows)\n" +
+        "else dictionary check will happen before writing first stripe. In both cases, the decision\n" +
+        "to use dictionary or not will be retained thereafter."),
     HIVE_ORC_DEFAULT_BUFFER_SIZE("hive.exec.orc.default.buffer.size", 256 * 1024, "Define the default ORC buffer size"),
     HIVE_ORC_DEFAULT_BLOCK_PADDING("hive.exec.orc.default.block.padding", true, "Define the default block padding"),
     HIVE_ORC_BLOCK_PADDING_TOLERANCE("hive.exec.orc.block.padding.tolerance", 0.05f,
