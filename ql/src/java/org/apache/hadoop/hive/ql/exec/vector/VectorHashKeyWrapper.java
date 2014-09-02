@@ -146,7 +146,7 @@ public class VectorHashKeyWrapper extends KeyWrapper {
     duplicateTo(clone);
     return clone;
   }
-    
+
   public void duplicateTo(VectorHashKeyWrapper clone) {
     clone.longValues = longValues.clone();
     clone.doubleValues = doubleValues.clone();
@@ -155,7 +155,7 @@ public class VectorHashKeyWrapper extends KeyWrapper {
     // Decimal128 requires deep clone
     clone.decimalValues = new Decimal128[decimalValues.length];
     for(int i = 0; i < decimalValues.length; ++i) {
-    	clone.decimalValues[i] = new Decimal128().update(decimalValues[i]);
+      clone.decimalValues[i] = new Decimal128().update(decimalValues[i]);
     }
 
     clone.byteValues = new byte[byteValues.length][];

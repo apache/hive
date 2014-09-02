@@ -68,7 +68,7 @@ public class GenericUDFDateDiff extends GenericUDF {
   private transient PrimitiveCategory inputType1;
   private transient PrimitiveCategory inputType2;
   private IntWritable result = new IntWritable();
-  
+
   public GenericUDFDateDiff() {
     formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
   }
@@ -89,8 +89,8 @@ public class GenericUDFDateDiff extends GenericUDF {
 
   @Override
   public IntWritable evaluate(DeferredObject[] arguments) throws HiveException {
-	output = evaluate(convertToDate(inputType1, inputConverter1, arguments[0]),
-	  convertToDate(inputType2, inputConverter2, arguments[1]));
+    output = evaluate(convertToDate(inputType1, inputConverter1, arguments[0]),
+      convertToDate(inputType2, inputConverter2, arguments[1]));
     return output;
   }
 
