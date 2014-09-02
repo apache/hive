@@ -108,7 +108,7 @@ public class GenHiveTemplate extends Task {
         continue;
       }
       Element property = appendElement(root, "property", null);
-      appendElement(property, "key", confVars.varname);
+      appendElement(property, "name", confVars.varname);
       appendElement(property, "value", confVars.getDefaultExpr());
       appendElement(property, "description", normalize(confVars.getDescription()));
       // wish to add new line here.

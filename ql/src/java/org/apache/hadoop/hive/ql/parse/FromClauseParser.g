@@ -144,7 +144,7 @@ fromSource
 @init { gParent.pushMsg("from source", state); }
 @after { gParent.popMsg(state); }
     :
-    ((Identifier LPAREN)=> partitionedTableFunction | tableSource | subQuerySource) (lateralView^)*
+    ((Identifier LPAREN)=> partitionedTableFunction | tableSource | subQuerySource | virtualTableSource) (lateralView^)*
     ;
 
 tableBucketSample
@@ -253,6 +253,49 @@ searchCondition
 @after { gParent.popMsg(state); }
     :
     expression
+    ;
+
+//-----------------------------------------------------------------------------------
+
+//-------- Row Constructor ----------------------------------------------------------
+//in support of SELECT * FROM (VALUES(1,2,3),(4,5,6),...) as FOO(a,b,c) and
+// INSERT INTO <table> (col1,col2,...) VALUES(...),(...),...
+// INSERT INTO <table> (col1,col2,...) SELECT * FROM (VALUES(1,2,3),(4,5,6),...) as Foo(a,b,c)
+valueRowConstructor
+    :
+    LPAREN atomExpression (COMMA atomExpression)* RPAREN -> ^(TOK_VALUE_ROW atomExpression+)
+    ;
+
+valuesTableConstructor
+    :
+    valueRowConstructor (COMMA valueRowConstructor)* -> ^(TOK_VALUES_TABLE valueRowConstructor+)
+    ;
+
+/*
+VALUES(1),(2) means 2 rows, 1 column each.
+VALUES(1,2),(3,4) means 2 rows, 2 columns each.
+VALUES(1,2,3) means 1 row, 3 columns
+*/
+valuesClause
+    :
+    KW_VALUES valuesTableConstructor -> valuesTableConstructor
+    ;
+
+/*
+This represents a clause like this:
+(VALUES(1,2),(2,3)) as VirtTable(col1,col2)
+*/
+virtualTableSource
+   	:
+   	LPAREN valuesClause RPAREN tableNameColList -> ^(TOK_VIRTUAL_TABLE tableNameColList valuesClause)
+   	;
+/*
+e.g. as VirtTable(col1,col2)
+Note that we only want literals as column names
+*/
+tableNameColList
+    :
+    KW_AS? identifier LPAREN identifier (COMMA identifier)* RPAREN -> ^(TOK_VIRTUAL_TABREF ^(TOK_TABNAME identifier) ^(TOK_COL_NAME identifier+))
     ;
 
 //-----------------------------------------------------------------------------------

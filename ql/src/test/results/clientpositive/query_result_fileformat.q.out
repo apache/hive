@@ -4,12 +4,15 @@ PREHOOK: query: create table nzhang_test1 stored as sequencefile as select 'key1
 http://asdf' value from src limit 1
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@nzhang_test1
 POSTHOOK: query: create table nzhang_test1 stored as sequencefile as select 'key1' as key, 'value
 1
 
 http://asdf' value from src limit 1
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@nzhang_test1
 PREHOOK: query: select * from nzhang_test1
 PREHOOK: type: QUERY

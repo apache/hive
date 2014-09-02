@@ -181,13 +181,10 @@ public class EmbeddedCLIServiceClient extends CLIServiceClient {
     return cliService.getResultSetMetadata(opHandle);
   }
 
-  /* (non-Javadoc)
-   * @see org.apache.hive.service.cli.CLIServiceClient#fetchResults(org.apache.hive.service.cli.OperationHandle, org.apache.hive.service.cli.FetchOrientation, long)
-   */
   @Override
-  public RowSet fetchResults(OperationHandle opHandle, FetchOrientation orientation, long maxRows)
-      throws HiveSQLException {
-    return cliService.fetchResults(opHandle, orientation, maxRows);
+  public RowSet fetchResults(OperationHandle opHandle, FetchOrientation orientation,
+      long maxRows,  FetchType fetchType) throws HiveSQLException {
+    return cliService.fetchResults(opHandle, orientation, maxRows, fetchType);
   }
 
 

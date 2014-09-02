@@ -815,9 +815,11 @@ public class Vectorizer implements PhysicalPlanResolver {
         ret = validateSelectOperator((SelectOperator) op);
         break;
       case REDUCESINK:
-          ret = validateReduceSinkOperator((ReduceSinkOperator) op);
-          break;
+        ret = validateReduceSinkOperator((ReduceSinkOperator) op);
+        break;
       case FILESINK:
+        ret = validateFileSinkOperator((FileSinkOperator) op);
+        break;
       case LIMIT:
         ret = true;
         break;
@@ -899,6 +901,15 @@ public class Vectorizer implements PhysicalPlanResolver {
     return true;
   }
 
+  private boolean validateFileSinkOperator(FileSinkOperator op) {
+    // HIVE-7557: For now, turn off dynamic partitioning to give more time to 
+    // figure out how to make VectorFileSink work correctly with it...
+   if (op.getConf().getDynPartCtx() != null) {
+     return false;
+   }
+   return true;
+  }
+
   private boolean validateExprNodeDesc(List<ExprNodeDesc> descs) {
     return validateExprNodeDesc(descs, VectorExpressionDescriptor.Mode.PROJECTION);
   }
@@ -927,11 +938,9 @@ public class Vectorizer implements PhysicalPlanResolver {
     if (desc instanceof ExprNodeColumnDesc) {
       ExprNodeColumnDesc c = (ExprNodeColumnDesc) desc;
       // Currently, we do not support vectorized virtual columns (see HIVE-5570).
-      for (VirtualColumn vc : VirtualColumn.VIRTUAL_COLUMNS) {
-        if (c.getColumn().equals(vc.getName())) {
-            LOG.info("Cannot vectorize virtual column " + c.getColumn());
-            return false;
-        }
+      if (VirtualColumn.VIRTUAL_COLUMN_NAMES.contains(c.getColumn())) {
+        LOG.info("Cannot vectorize virtual column " + c.getColumn());
+        return false;
       }
     }
     String typeName = desc.getTypeInfo().getTypeName();
@@ -1076,10 +1085,8 @@ public class Vectorizer implements PhysicalPlanResolver {
 
     // Not using method column.getIsVirtualCol() because partitioning columns are also
     // treated as virtual columns in ColumnInfo.
-    for (VirtualColumn vc : VirtualColumn.VIRTUAL_COLUMNS) {
-      if (column.getInternalName().equals(vc.getName())) {
+    if (VirtualColumn.VIRTUAL_COLUMN_NAMES.contains(column.getInternalName())) {
         return true;
-      }
     }
     return false;
   }

@@ -347,7 +347,7 @@ public final class PlanUtils {
 
       if (crtTblDesc.getTableName() != null && crtTblDesc.getDatabaseName() != null) {
         properties.setProperty(org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_NAME,
-            crtTblDesc.getDatabaseName() + "." + crtTblDesc.getTableName());
+            crtTblDesc.getTableName());
       }
 
       if (crtTblDesc.getTblProps() != null) {

@@ -74,4 +74,10 @@ interface CommandHandler {
    * Returns the completors that can handle parameters.
    */
   public Completor[] getParameterCompletors();
+
+  /**
+   * Returns exception thrown for last command
+   * @return
+   */
+  public Throwable getLastException();
 }

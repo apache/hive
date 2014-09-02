@@ -29,6 +29,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import javax.security.auth.login.LoginException;
 
@@ -121,13 +122,14 @@ import com.google.common.collect.Lists;
  */
 public class DagUtils {
 
+  public static final String TEZ_TMP_DIR_KEY = "_hive_tez_tmp_dir";
   private static final Log LOG = LogFactory.getLog(DagUtils.class.getName());
   private static final String TEZ_DIR = "_tez_scratch_dir";
   private static DagUtils instance;
 
   private void addCredentials(MapWork mapWork, DAG dag) {
     Set<String> paths = mapWork.getPathToAliases().keySet();
-    if (paths != null && !paths.isEmpty()) {
+    if (!paths.isEmpty()) {
       Iterator<URI> pathIterator = Iterators.transform(paths.iterator(), new Function<String, URI>() {
         @Override
         public URI apply(String input) {
@@ -155,7 +157,7 @@ public class DagUtils {
    * Creates the configuration object necessary to run a specific vertex from
    * map work. This includes input formats, input processor, etc.
    */
-  private JobConf initializeVertexConf(JobConf baseConf, MapWork mapWork) {
+  private JobConf initializeVertexConf(JobConf baseConf, Context context, MapWork mapWork) {
     JobConf conf = new JobConf(baseConf);
 
     if (mapWork.getNumMapTasks() != null) {
@@ -198,7 +200,13 @@ public class DagUtils {
       inpFormat = CombineHiveInputFormat.class.getName();
     }
 
-    // Is this required ?
+    if (mapWork.getDummyTableScan()) {
+      // hive input format doesn't handle the special condition of no paths + 1
+      // split correctly.
+      inpFormat = CombineHiveInputFormat.class.getName();
+    }
+
+    conf.set(TEZ_TMP_DIR_KEY, context.getMRTmpPath().toUri().toString());
     conf.set("mapred.mapper.class", ExecMapper.class.getName());
     conf.set("mapred.input.format.class", inpFormat);
 
@@ -516,7 +524,7 @@ public class DagUtils {
   /*
    * Helper function to create JobConf for specific ReduceWork.
    */
-  private JobConf initializeVertexConf(JobConf baseConf, ReduceWork reduceWork) {
+  private JobConf initializeVertexConf(JobConf baseConf, Context context, ReduceWork reduceWork) {
     JobConf conf = new JobConf(baseConf);
 
     // Is this required ?
@@ -686,7 +694,7 @@ public class DagUtils {
 
   /**
    * Localizes files, archives and jars from a provided array of names.
-   * @param hdfsDirPathStr Destination directoty in HDFS.
+   * @param hdfsDirPathStr Destination directory in HDFS.
    * @param conf Configuration.
    * @param inputOutputJars The file names to localize.
    * @return List<LocalResource> local resources to add to execution
@@ -760,7 +768,7 @@ public class DagUtils {
   }
 
   /**
-   * @param pathStr - the string from which we try to determine the resource base name
+   * @param path - the path from which we try to determine the resource base name
    * @return the name of the resource from a given path string.
    */
   public String getResourceBaseName(Path path) {
@@ -806,9 +814,8 @@ public class DagUtils {
         int waitAttempts =
             conf.getInt(HiveConf.ConfVars.HIVE_LOCALIZE_RESOURCE_NUM_WAIT_ATTEMPTS.varname,
                 HiveConf.ConfVars.HIVE_LOCALIZE_RESOURCE_NUM_WAIT_ATTEMPTS.defaultIntVal);
-        long sleepInterval =
-            conf.getLong(HiveConf.ConfVars.HIVE_LOCALIZE_RESOURCE_WAIT_INTERVAL.varname,
-                HiveConf.ConfVars.HIVE_LOCALIZE_RESOURCE_WAIT_INTERVAL.defaultLongVal);
+        long sleepInterval = HiveConf.getTimeVar(
+            conf, HiveConf.ConfVars.HIVE_LOCALIZE_RESOURCE_WAIT_INTERVAL, TimeUnit.MILLISECONDS);
         LOG.info("Number of wait attempts: " + waitAttempts + ". Wait interval: "
             + sleepInterval);
         boolean found = false;
@@ -874,14 +881,14 @@ public class DagUtils {
    * @param work BaseWork will be used to populate the configuration object.
    * @return JobConf new configuration object
    */
-  public JobConf initializeVertexConf(JobConf conf, BaseWork work) {
+  public JobConf initializeVertexConf(JobConf conf, Context context, BaseWork work) {
 
     // simply dispatch the call to the right method for the actual (sub-) type of
     // BaseWork.
     if (work instanceof MapWork) {
-      return initializeVertexConf(conf, (MapWork)work);
+      return initializeVertexConf(conf, context, (MapWork)work);
     } else if (work instanceof ReduceWork) {
-      return initializeVertexConf(conf, (ReduceWork)work);
+      return initializeVertexConf(conf, context, (ReduceWork)work);
     } else {
       assert false;
       return null;
@@ -895,7 +902,6 @@ public class DagUtils {
    * @param work The instance of BaseWork representing the actual work to be performed
    * by this vertex.
    * @param scratchDir HDFS scratch dir for this execution unit.
-   * @param list
    * @param appJarLr Local resource for hive-exec.
    * @param additionalLr
    * @param fileSystem FS corresponding to scratchDir and LocalResources

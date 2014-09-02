@@ -614,6 +614,8 @@ SELECT explode(
   ) s1 lateral view explode(barr) arr as b
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@wtest
 POSTHOOK: query: create table wtest as
 select a, b
 from
@@ -628,6 +630,7 @@ SELECT explode(
   ) s1 lateral view explode(barr) arr as b
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@wtest
 PREHOOK: query: select a, b,
 first_value(b) over (partition by a order by b rows between 1 preceding and 1 following ) ,

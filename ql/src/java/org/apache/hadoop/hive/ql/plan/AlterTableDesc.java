@@ -44,11 +44,19 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
    *
    */
   public static enum AlterTableTypes {
-    RENAME, ADDCOLS, REPLACECOLS, ADDPROPS, DROPPROPS, ADDSERDE, ADDSERDEPROPS,
-    ADDFILEFORMAT, ADDCLUSTERSORTCOLUMN, RENAMECOLUMN, ADDPARTITION,
-    TOUCH, ARCHIVE, UNARCHIVE, ALTERPROTECTMODE, ALTERPARTITIONPROTECTMODE,
-    ALTERLOCATION, DROPPARTITION, RENAMEPARTITION, ADDSKEWEDBY, ALTERSKEWEDLOCATION,
-    ALTERBUCKETNUM, ALTERPARTITION, COMPACT
+    RENAME("rename"), ADDCOLS("add columns"), REPLACECOLS("replace columns"),
+    ADDPROPS("add props"), DROPPROPS("drop props"), ADDSERDE("add serde"), ADDSERDEPROPS("add serde props"),
+    ADDFILEFORMAT("add fileformat"), ADDCLUSTERSORTCOLUMN("add cluster sort column"),
+    RENAMECOLUMN("rename column"), ADDPARTITION("add partition"), TOUCH("touch"), ARCHIVE("archieve"),
+    UNARCHIVE("unarchieve"), ALTERPROTECTMODE("alter protect mode"),
+    ALTERPARTITIONPROTECTMODE("alter partition protect mode"), ALTERLOCATION("alter location"),
+    DROPPARTITION("drop partition"), RENAMEPARTITION("rename partition"), ADDSKEWEDBY("add skew column"),
+    ALTERSKEWEDLOCATION("alter skew location"), ALTERBUCKETNUM("alter bucket number"),
+    ALTERPARTITION("alter partition"), COMPACT("compact");
+
+    private final String name;
+    private AlterTableTypes(String name) { this.name = name; }
+    public String getName() { return name; }
   }
 
   public static enum ProtectModeType {
@@ -236,16 +244,7 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
 
   @Explain(displayName = "type")
   public String getAlterTableTypeString() {
-    switch (op) {
-    case RENAME:
-      return "rename";
-    case ADDCOLS:
-      return "add columns";
-    case REPLACECOLS:
-      return "replace columns";
-    }
-
-    return "unknown";
+    return op.getName();
   }
 
   /**

@@ -38,7 +38,7 @@ public class LoadMultiFilesDesc implements Serializable {
   private transient List<Path> srcDirs;
 
   static {
-	  PTFUtils.makeTransient(LoadMultiFilesDesc.class, "targetDirs");
+    PTFUtils.makeTransient(LoadMultiFilesDesc.class, "targetDirs");
   }
   public LoadMultiFilesDesc() {
   }

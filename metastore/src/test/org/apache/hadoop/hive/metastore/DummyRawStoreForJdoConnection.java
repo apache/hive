@@ -25,6 +25,7 @@ import junit.framework.Assert;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Database;
@@ -43,6 +44,7 @@ import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
 import org.apache.hadoop.hive.metastore.api.Role;
+import org.apache.hadoop.hive.metastore.api.SetPartitionsStatsRequest;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.Type;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
@@ -729,10 +731,16 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   }
 
   @Override
-  public List<ColumnStatisticsObj> get_aggr_stats_for(String dbName,
+  public AggrStats get_aggr_stats_for(String dbName,
       String tblName, List<String> partNames, List<String> colNames)
       throws MetaException {
     return null;
+  }
+
+  @Override
+  public boolean updatePartitionColumnStatistics(SetPartitionsStatsRequest request)
+      throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
+    return false;
   }
 }
 

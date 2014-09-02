@@ -1,16 +1,22 @@
 PREHOOK: query: CREATE TABLE src_nontemp AS SELECT * FROM src limit 10
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src_nontemp
 POSTHOOK: query: CREATE TABLE src_nontemp AS SELECT * FROM src limit 10
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_nontemp
 PREHOOK: query: CREATE TEMPORARY TABLE src_temp AS SELECT * FROM src limit 10
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src_temp
 POSTHOOK: query: CREATE TEMPORARY TABLE src_temp AS SELECT * FROM src limit 10
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_temp
 PREHOOK: query: -- Non temp table join
 EXPLAIN

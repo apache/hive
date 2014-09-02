@@ -31,14 +31,11 @@ import org.apache.thrift.TProcessor;
 import org.apache.thrift.protocol.TProtocol;
 
 /**
- *
- * Wraps the underlying thrift processor's process call,
+ * Wraps the underlying Thrift processor's process call,
  * to assume the client user's UGI/Subject for the doAs calls.
- * Gets the client's username from a threadlocal in SessionManager which is
+ * Gets the client's username from a ThreadLocal in SessionManager which is
  * set in the ThriftHttpServlet, and constructs a client UGI object from that.
- *
  */
-
 public class HttpCLIServiceUGIProcessor implements TProcessor {
 
   private final TProcessor underlyingProcessor;
@@ -46,18 +43,18 @@ public class HttpCLIServiceUGIProcessor implements TProcessor {
 
   public HttpCLIServiceUGIProcessor(TProcessor underlyingProcessor) {
     this.underlyingProcessor = underlyingProcessor;
-    this.shim = ShimLoader.getHadoopShims();
+    shim = ShimLoader.getHadoopShims();
   }
 
   @Override
   public boolean process(final TProtocol in, final TProtocol out) throws TException {
-    /**
-     * Build the client UGI from threadlocal username [SessionManager.getUserName()].
-     * The threadlocal username is set in the ThriftHttpServlet.
+    /*
+     * Build the client UGI from ThreadLocal username [SessionManager.getUserName()].
+     * The ThreadLocal username is set in the ThriftHttpServlet.
      */
-    UserGroupInformation clientUgi = null;
     try {
-      clientUgi = shim.createRemoteUser(SessionManager.getUserName(), new ArrayList<String>());
+      UserGroupInformation clientUgi =
+        shim.createRemoteUser(SessionManager.getUserName(), new ArrayList<String>());
       return shim.doAs(clientUgi, new PrivilegedExceptionAction<Boolean>() {
         @Override
         public Boolean run() {
@@ -68,10 +65,9 @@ public class HttpCLIServiceUGIProcessor implements TProcessor {
           }
         }
       });
-    }
-    catch (RuntimeException rte) {
+    } catch (RuntimeException rte) {
       if (rte.getCause() instanceof TException) {
-        throw (TException)rte.getCause();
+        throw (TException) rte.getCause();
       }
       throw rte;
     } catch (InterruptedException ie) {

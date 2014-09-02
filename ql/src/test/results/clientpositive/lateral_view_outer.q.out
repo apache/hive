@@ -185,9 +185,12 @@ POSTHOOK: Input: default@src
 PREHOOK: query: create table array_valued as select key, if (key > 300, array(value, value), null) as value from src
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@array_valued
 POSTHOOK: query: create table array_valued as select key, if (key > 300, array(value, value), null) as value from src
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@array_valued
 PREHOOK: query: explain
 select * from array_valued LATERAL VIEW OUTER explode(value) C AS a limit 10

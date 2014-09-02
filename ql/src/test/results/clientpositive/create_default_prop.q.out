@@ -35,9 +35,12 @@ a                   	string
 PREHOOK: query: CREATE TABLE table_p3 AS SELECT * FROM table_p1
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@table_p1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table_p3
 POSTHOOK: query: CREATE TABLE table_p3 AS SELECT * FROM table_p1
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@table_p1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table_p3
 PREHOOK: query: DESC EXTENDED table_p3
 PREHOOK: type: DESCTABLE

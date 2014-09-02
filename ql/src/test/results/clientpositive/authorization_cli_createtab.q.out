@@ -23,9 +23,12 @@ default	t_cli			hive_test_user	USER	UPDATE	true	-1	hive_test_user
 PREHOOK: query: create view v_cli (i) as select i from t_cli
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@t_cli
+PREHOOK: Output: database:default
+PREHOOK: Output: default@v_cli
 POSTHOOK: query: create view v_cli (i) as select i from t_cli
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@t_cli
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@v_cli
 PREHOOK: query: show grant user hive_test_user on v_cli
 PREHOOK: type: SHOW_GRANT

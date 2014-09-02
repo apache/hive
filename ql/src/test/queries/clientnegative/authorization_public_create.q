@@ -1,1 +1,1 @@
-create role PUBLIC;
+create role public;

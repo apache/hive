@@ -1,9 +1,12 @@
 PREHOOK: query: create table authorization_create_temp_table_1 as select * from src limit 10
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@authorization_create_temp_table_1
 POSTHOOK: query: create table authorization_create_temp_table_1 as select * from src limit 10
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@authorization_create_temp_table_1
 PREHOOK: query: grant select on authorization_create_temp_table_1 to user user1
 PREHOOK: type: GRANT_PRIVILEGE

@@ -63,7 +63,7 @@ public class MapJoinMemoryExhaustionHandler {
     if(maxHeapSize == -1) {
       this.maxHeapSize = 200L * 1024L * 1024L;
       LOG.warn("MemoryMXBean.getHeapMemoryUsage().getMax() returned -1, " +
-      		"defaulting maxHeapSize to 200MB");
+          "defaulting maxHeapSize to 200MB");
     } else {
       this.maxHeapSize = maxHeapSize;
     }

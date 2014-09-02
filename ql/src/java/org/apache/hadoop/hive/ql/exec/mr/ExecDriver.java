@@ -371,7 +371,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
 
       Utilities.setMapRedWork(job, work, ctx.getMRTmpPath());
 
-      if (mWork.getSamplingType() > 0 && rWork != null && rWork.getNumReduceTasks() > 1) {
+      if (mWork.getSamplingType() > 0 && rWork != null && job.getNumReduceTasks() > 1) {
         try {
           handleSampling(driverContext, mWork, job, conf);
           job.setPartitionerClass(HiveTotalOrderPartitioner.class);
@@ -539,7 +539,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     } else {
       throw new IllegalArgumentException("Invalid sampling type " + mWork.getSamplingType());
     }
-    sampler.writePartitionKeys(partitionFile, job);
+    sampler.writePartitionKeys(partitionFile, conf, job);
   }
 
   /**

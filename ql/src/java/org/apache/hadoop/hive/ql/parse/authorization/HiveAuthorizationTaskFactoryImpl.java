@@ -206,7 +206,7 @@ public class HiveAuthorizationTaskFactoryImpl implements HiveAuthorizationTaskFa
 
     List<String> roles = new ArrayList<String>();
     for (int i = rolesStartPos; i < ast.getChildCount(); i++) {
-      roles.add(BaseSemanticAnalyzer.unescapeIdentifier(ast.getChild(i).getText()).toLowerCase());
+      roles.add(BaseSemanticAnalyzer.unescapeIdentifier(ast.getChild(i).getText()));
     }
 
     String roleOwnerName = SessionState.getUserFromAuthenticator();

@@ -129,9 +129,12 @@ NULL
 PREHOOK: query: CREATE TABLE DECIMAL_6_3 AS SELECT key + 5.5 AS k, value * 11 AS v from DECIMAL_6_1 ORDER BY v
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@decimal_6_1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@DECIMAL_6_3
 POSTHOOK: query: CREATE TABLE DECIMAL_6_3 AS SELECT key + 5.5 AS k, value * 11 AS v from DECIMAL_6_1 ORDER BY v
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@decimal_6_1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@DECIMAL_6_3
 PREHOOK: query: desc DECIMAL_6_3
 PREHOOK: type: DESCTABLE

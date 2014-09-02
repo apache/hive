@@ -3,11 +3,14 @@ PREHOOK: query: -- SORT_BEFORE_DIFF
 create table src_autho_test as select * from src
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src_autho_test
 POSTHOOK: query: -- SORT_BEFORE_DIFF
 
 create table src_autho_test as select * from src
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_autho_test
 PREHOOK: query: grant drop on table src_autho_test to user hive_test_user
 PREHOOK: type: GRANT_PRIVILEGE

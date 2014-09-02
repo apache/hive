@@ -8,13 +8,12 @@ PREHOOK: query: -- Create non-temp tables
 create table ttp.tab1 (a1 string, a2 string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:ttp
-PREHOOK: Output: ttp@ttp.tab1
+PREHOOK: Output: ttp@tab1
 POSTHOOK: query: -- Create non-temp tables
 create table ttp.tab1 (a1 string, a2 string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:ttp
 POSTHOOK: Output: ttp@tab1
-POSTHOOK: Output: ttp@ttp.tab1
 PREHOOK: query: insert overwrite table ttp.tab1 select * from src where key = 5 limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -47,12 +46,11 @@ POSTHOOK: Input: ttp@tab1
 PREHOOK: query: create table ttp.tab2 (b1 string, b2 string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:ttp
-PREHOOK: Output: ttp@ttp.tab2
+PREHOOK: Output: ttp@tab2
 POSTHOOK: query: create table ttp.tab2 (b1 string, b2 string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:ttp
 POSTHOOK: Output: ttp@tab2
-POSTHOOK: Output: ttp@ttp.tab2
 PREHOOK: query: insert overwrite table ttp.tab2 select * from src where key = 2 limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -84,13 +82,12 @@ PREHOOK: query: -- Now create temp table with same name
 create temporary table ttp.tab1 (c1 int, c2 string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:ttp
-PREHOOK: Output: ttp@ttp.tab1
+PREHOOK: Output: ttp@tab1
 POSTHOOK: query: -- Now create temp table with same name
 create temporary table ttp.tab1 (c1 int, c2 string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:ttp
 POSTHOOK: Output: ttp@tab1
-POSTHOOK: Output: ttp@ttp.tab1
 PREHOOK: query: insert overwrite table ttp.tab1 select * from src where key = 0 limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src

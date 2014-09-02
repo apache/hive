@@ -47,7 +47,7 @@ import org.codehaus.jackson.type.JavaType;
  */
 @Description(name = "json_tuple",
     value = "_FUNC_(jsonStr, p1, p2, ..., pn) - like get_json_object, but it takes multiple names and return a tuple. " +
-    		"All the input parameters and output column types are string.")
+        "All the input parameters and output column types are string.")
 
 public class GenericUDTFJSONTuple extends GenericUDTF {
 
@@ -106,7 +106,7 @@ public class GenericUDTFJSONTuple extends GenericUDTF {
 
     if (numCols < 1) {
       throw new UDFArgumentException("json_tuple() takes at least two arguments: " +
-      		"the json string and a path expression");
+          "the json string and a path expression");
     }
 
     for (int i = 0; i < args.length; ++i) {

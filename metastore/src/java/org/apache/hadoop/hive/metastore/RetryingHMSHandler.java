@@ -23,6 +23,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.UndeclaredThrowableException;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.logging.Log;
@@ -80,8 +81,8 @@ public class RetryingHMSHandler implements InvocationHandler {
     boolean gotNewConnectUrl = false;
     boolean reloadConf = HiveConf.getBoolVar(hiveConf,
         HiveConf.ConfVars.HMSHANDLERFORCERELOADCONF);
-    int retryInterval = HiveConf.getIntVar(hiveConf,
-        HiveConf.ConfVars.HMSHANDLERINTERVAL);
+    long retryInterval = HiveConf.getTimeVar(hiveConf,
+        HiveConf.ConfVars.HMSHANDLERINTERVAL, TimeUnit.MILLISECONDS);
     int retryLimit = HiveConf.getIntVar(hiveConf,
         HiveConf.ConfVars.HMSHANDLERATTEMPTS);
 

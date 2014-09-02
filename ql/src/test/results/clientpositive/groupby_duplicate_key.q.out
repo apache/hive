@@ -140,7 +140,7 @@ STAGE PLANS:
           input format: org.apache.hadoop.mapred.TextInputFormat
           output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
           serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-          name: dummy
+          name: default.dummy
 
   Stage: Stage-2
     Stats-Aggr Operator
@@ -149,10 +149,13 @@ PREHOOK: query: create table dummy as
 select distinct key, "X" as dummy1, "X" as dummy2 from src tablesample (10 rows)
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dummy
 POSTHOOK: query: create table dummy as
 select distinct key, "X" as dummy1, "X" as dummy2 from src tablesample (10 rows)
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dummy
 PREHOOK: query: select key,dummy1,dummy2 from dummy
 PREHOOK: type: QUERY

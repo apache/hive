@@ -972,6 +972,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         ASTNode frm = (ASTNode) ast.getChild(0);
         if (frm.getToken().getType() == HiveParser.TOK_TABREF) {
           processTable(qb, frm);
+        } else if (frm.getToken().getType() == HiveParser.TOK_VIRTUAL_TABLE) {
+          throw new RuntimeException("VALUES() clause is not fully supported yet...");
         } else if (frm.getToken().getType() == HiveParser.TOK_SUBQUERY) {
           processSubQuery(qb, frm);
         } else if (frm.getToken().getType() == HiveParser.TOK_LATERAL_VIEW ||
@@ -1164,6 +1166,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       case HiveParser.TOK_CTE:
         processCTE(qb, ast);
         break;
+      case HiveParser.TOK_DELETE_FROM:
+        throw new RuntimeException("DELETE is not (yet) implemented...");
+      case HiveParser.TOK_UPDATE_TABLE:
+        throw new RuntimeException("UPDATE is not (yet) implemented...");
       default:
         skipRecursion = false;
         break;
@@ -2233,8 +2239,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         String havingInputAlias = null;
 
         if ( forHavingClause ) {
-        	havingInputAlias = "gby_sq" + sqIdx;
-        	aliasToOpInfo.put(havingInputAlias, input);
+          havingInputAlias = "gby_sq" + sqIdx;
+          aliasToOpInfo.put(havingInputAlias, input);
         }
 
         subQuery.validateAndRewriteAST(inputRR, forHavingClause, havingInputAlias, aliasToOpInfo.keySet());
@@ -2345,7 +2351,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     ExprNodeDesc filterPred = null;
     List<Boolean> nullSafes = joinTree.getNullSafes();
     for (int i = 0; i < joinKeys.length; i++) {
-      if ( nullSafes.get(i)) {
+      if (nullSafes.get(i) || (joinKeys[i] instanceof ExprNodeColumnDesc &&
+         ((ExprNodeColumnDesc)joinKeys[i]).getIsPartitionColOrVirtualCol())) {
+        // no need to generate is not null predicate for partitioning or
+        // virtual column, since those columns can never be null.
         continue;
       }
       List<ExprNodeDesc> args = new ArrayList<ExprNodeDesc>();
@@ -9402,7 +9411,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // analyze create view command
     if (ast.getToken().getType() == HiveParser.TOK_CREATEVIEW ||
-        ast.getToken().getType() == HiveParser.TOK_ALTERVIEW_AS) {
+        (ast.getToken().getType() == HiveParser.TOK_ALTERVIEW && ast.getChild(1).getType() == HiveParser.TOK_QUERY)) {
       child = analyzeCreateView(ast, qb);
       SessionState.get().setCommandType(HiveOperation.CREATEVIEW);
       if (child == null) {
@@ -9410,7 +9419,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
       viewSelect = child;
       // prevent view from referencing itself
-      viewsExpanded.add(SessionState.get().getCurrentDatabase() + "." + createVwDesc.getViewName());
+      viewsExpanded.add(createVwDesc.getViewName());
     }
 
     // continue analyzing from the child ASTNode.
@@ -9511,12 +9520,37 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     LOG.info("Completed plan generation");
 
+    // put accessed columns to readEntity
+    if (HiveConf.getBoolVar(this.conf, HiveConf.ConfVars.HIVE_STATS_COLLECT_SCANCOLS)) {
+      putAccessedColumnsToReadEntity(inputs, columnAccessInfo);
+    }
+
     if (!ctx.getExplain()) {
       // if desired check we're not going over partition scan limits
       enforceScanLimits(pCtx, origFetchTask);
     }
 
     return;
+  }
+
+  private void putAccessedColumnsToReadEntity(HashSet<ReadEntity> inputs, ColumnAccessInfo columnAccessInfo) {
+    Map<String, List<String>> tableToColumnAccessMap = columnAccessInfo.getTableToColumnAccessMap();
+    if (tableToColumnAccessMap != null && !tableToColumnAccessMap.isEmpty()) {
+      for(ReadEntity entity: inputs) {
+        switch (entity.getType()) {
+          case TABLE:
+            entity.getAccessedColumns().addAll(
+                tableToColumnAccessMap.get(entity.getTable().getCompleteName()));
+            break;
+          case PARTITION:
+            entity.getAccessedColumns().addAll(
+                tableToColumnAccessMap.get(entity.getPartition().getTable().getCompleteName()));
+            break;
+          default:
+            // no-op
+        }
+      }
+    }
   }
 
   private void enforceScanLimits(ParseContext pCtx, FetchTask fTask)
@@ -9992,7 +10026,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    */
   private ASTNode analyzeCreateTable(ASTNode ast, QB qb)
       throws SemanticException {
-    String tableName = getUnescapedName((ASTNode) ast.getChild(0));
+    String[] qualifiedTabName = getQualifiedTableName((ASTNode) ast.getChild(0));
+    String dbDotTab = getDotName(qualifiedTabName);
+
     String likeTableName = null;
     List<FieldSchema> cols = new ArrayList<FieldSchema>();
     List<FieldSchema> partCols = new ArrayList<FieldSchema>();
@@ -10018,7 +10054,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     RowFormatParams rowFormatParams = new RowFormatParams();
     StorageFormat storageFormat = new StorageFormat(conf);
 
-    LOG.info("Creating table " + tableName + " position="
+    LOG.info("Creating table " + dbDotTab + " position="
         + ast.getCharPositionInLine());
     int numCh = ast.getChildCount();
 
@@ -10090,7 +10126,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       case HiveParser.TOK_TABLEPARTCOLS:
         partCols = getColumns((ASTNode) child.getChild(0), false);
         break;
-      case HiveParser.TOK_TABLEBUCKETS:
+      case HiveParser.TOK_ALTERTABLE_BUCKETS:
         bucketCols = getColumnNames((ASTNode) child.getChild(0));
         if (child.getChildCount() == 2) {
           numBuckets = (Integer.valueOf(child.getChild(1).getText()))
@@ -10149,7 +10185,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // check for existence of table
     if (ifNotExists) {
       try {
-        Table table = getTable(tableName, false);
+        Table table = getTable(qualifiedTabName, false);
         if (table != null) { // table exists
           return null;
         }
@@ -10159,11 +10195,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
 
-    String[] qualified = Hive.getQualifiedNames(tableName);
-    String dbName = qualified.length == 1 ? SessionState.get().getCurrentDatabase() : qualified[0];
-    Database database  = getDatabase(dbName);
-    outputs.add(new WriteEntity(database, WriteEntity.WriteType.DDL_SHARED));
-    outputs.add(new WriteEntity(new Table(dbName, tableName), WriteEntity.WriteType.DDL_NO_LOCK));
+    addDbAndTabToOutputs(qualifiedTabName);
 
     if (isTemporary) {
       if (partCols.size() > 0) {
@@ -10192,7 +10224,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     case CREATE_TABLE: // REGULAR CREATE TABLE DDL
       tblProps = addDefaultProperties(tblProps);
 
-      crtTblDesc = new CreateTableDesc(tableName, isExt, isTemporary, cols, partCols,
+      crtTblDesc = new CreateTableDesc(dbDotTab, isExt, isTemporary, cols, partCols,
           bucketCols, sortCols, numBuckets, rowFormatParams.fieldDelim,
           rowFormatParams.fieldEscape,
           rowFormatParams.collItemDelim, rowFormatParams.mapKeyDelim, rowFormatParams.lineDelim,
@@ -10221,7 +10253,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
               + "and source table in CREATE TABLE LIKE is partitioned.");
         }
       }
-      CreateTableLikeDesc crtTblLikeDesc = new CreateTableLikeDesc(tableName, isExt, isTemporary,
+      CreateTableLikeDesc crtTblLikeDesc = new CreateTableLikeDesc(dbDotTab, isExt, isTemporary,
           storageFormat.getInputFormat(), storageFormat.getOutputFormat(), location,
           storageFormat.getSerde(), storageFormat.getSerdeProps(), tblProps, ifNotExists,
           likeTableName);
@@ -10234,9 +10266,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       // Verify that the table does not already exist
       try {
-        Table dumpTable = db.newTable(tableName);
+        Table dumpTable = db.newTable(dbDotTab);
         if (null != db.getTable(dumpTable.getDbName(), dumpTable.getTableName(), false)) {
-          throw new SemanticException(ErrorMsg.TABLE_ALREADY_EXISTS.getMsg(tableName));
+          throw new SemanticException(ErrorMsg.TABLE_ALREADY_EXISTS.getMsg(dbDotTab));
         }
       } catch (HiveException e) {
         throw new SemanticException(e);
@@ -10244,11 +10276,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       tblProps = addDefaultProperties(tblProps);
 
-      crtTblDesc = new CreateTableDesc(dbName, tableName, isExt, isTemporary, cols, partCols,
-          bucketCols, sortCols, numBuckets, rowFormatParams.fieldDelim,
-          rowFormatParams.fieldEscape,
-          rowFormatParams.collItemDelim, rowFormatParams.mapKeyDelim, rowFormatParams.lineDelim,
-          comment, storageFormat.getInputFormat(),
+      crtTblDesc = new CreateTableDesc(qualifiedTabName[0], dbDotTab, isExt, isTemporary, cols,
+          partCols, bucketCols, sortCols, numBuckets, rowFormatParams.fieldDelim,
+          rowFormatParams.fieldEscape, rowFormatParams.collItemDelim, rowFormatParams.mapKeyDelim,
+          rowFormatParams.lineDelim, comment, storageFormat.getInputFormat(),
           storageFormat.getOutputFormat(), location, storageFormat.getSerde(),
           storageFormat.getStorageHandler(), storageFormat.getSerdeProps(), tblProps, ifNotExists,
           skewedColNames, skewedValues);
@@ -10265,9 +10296,17 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return null;
   }
 
+  private void addDbAndTabToOutputs(String[] qualifiedTabName) throws SemanticException {
+    Database database  = getDatabase(qualifiedTabName[0]);
+    outputs.add(new WriteEntity(database, WriteEntity.WriteType.DDL_SHARED));
+    outputs.add(new WriteEntity(new Table(qualifiedTabName[0], qualifiedTabName[1]),
+        WriteEntity.WriteType.DDL_NO_LOCK));
+  }
+
   private ASTNode analyzeCreateView(ASTNode ast, QB qb)
       throws SemanticException {
-    String tableName = getUnescapedName((ASTNode) ast.getChild(0));
+    String[] qualTabName = getQualifiedTableName((ASTNode) ast.getChild(0));
+    String dbDotTable = getDotName(qualTabName);
     List<FieldSchema> cols = null;
     boolean ifNotExists = false;
     boolean orReplace = false;
@@ -10277,7 +10316,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     Map<String, String> tblProps = null;
     List<String> partColNames = null;
 
-    LOG.info("Creating view " + tableName + " position="
+    LOG.info("Creating view " + dbDotTable + " position="
         + ast.getCharPositionInLine());
     int numCh = ast.getChildCount();
     for (int num = 1; num < numCh; num++) {
@@ -10313,19 +10352,21 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       throw new SemanticException("Can't combine IF NOT EXISTS and OR REPLACE.");
     }
 
-    if (ast.getToken().getType() == HiveParser.TOK_ALTERVIEW_AS) {
+    if (ast.getToken().getType() == HiveParser.TOK_ALTERVIEW &&
+        ast.getChild(1).getType() == HiveParser.TOK_QUERY) {
       isAlterViewAs = true;
       orReplace = true;
     }
 
     createVwDesc = new CreateViewDesc(
-      tableName, cols, comment, tblProps, partColNames,
+      dbDotTable, cols, comment, tblProps, partColNames,
       ifNotExists, orReplace, isAlterViewAs);
 
     unparseTranslator.enable();
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
         createVwDesc), conf));
 
+    addDbAndTabToOutputs(qualTabName);
     return selectStmt;
   }
 
@@ -11548,40 +11589,40 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private void addAlternateGByKeyMappings(ASTNode gByExpr, ColumnInfo colInfo,
-		  Operator<? extends OperatorDesc> reduceSinkOp, RowResolver gByRR) {
-	  if ( gByExpr.getType() == HiveParser.DOT
+      Operator<? extends OperatorDesc> reduceSinkOp, RowResolver gByRR) {
+    if ( gByExpr.getType() == HiveParser.DOT
           && gByExpr.getChild(0).getType() == HiveParser.TOK_TABLE_OR_COL ) {
-		  String tab_alias = BaseSemanticAnalyzer.unescapeIdentifier(gByExpr
-		            .getChild(0).getChild(0).getText());
-		  String col_alias = BaseSemanticAnalyzer.unescapeIdentifier(
-				  gByExpr.getChild(1).getText());
-		  gByRR.put(tab_alias, col_alias, colInfo);
-	  } else if ( gByExpr.getType() == HiveParser.TOK_TABLE_OR_COL ) {
-		  String col_alias = BaseSemanticAnalyzer.unescapeIdentifier(gByExpr
-		          .getChild(0).getText());
-		  String tab_alias = null;
-		  /*
-		   * If the input to the GBy has a tab alias for the column, then add an entry
-		   * based on that tab_alias.
-		   * For e.g. this query:
-		   * select b.x, count(*) from t1 b group by x
-		   * needs (tab_alias=b, col_alias=x) in the GBy RR.
-		   * tab_alias=b comes from looking at the RowResolver that is the ancestor
-		   * before any GBy/ReduceSinks added for the GBY operation.
-		   */
-		  Operator<? extends OperatorDesc> parent = reduceSinkOp;
-		  while ( parent instanceof ReduceSinkOperator ||
-				  parent instanceof GroupByOperator ) {
-			  parent = parent.getParentOperators().get(0);
-		  }
-		  RowResolver parentRR = opParseCtx.get(parent).getRowResolver();
-		  try {
-			  ColumnInfo pColInfo = parentRR.get(tab_alias, col_alias);
-			  tab_alias = pColInfo == null ? null : pColInfo.getTabAlias();
-		  } catch(SemanticException se) {
-		  }
-		  gByRR.put(tab_alias, col_alias, colInfo);
-	  }
+      String tab_alias = BaseSemanticAnalyzer.unescapeIdentifier(gByExpr
+                .getChild(0).getChild(0).getText());
+      String col_alias = BaseSemanticAnalyzer.unescapeIdentifier(
+          gByExpr.getChild(1).getText());
+      gByRR.put(tab_alias, col_alias, colInfo);
+    } else if ( gByExpr.getType() == HiveParser.TOK_TABLE_OR_COL ) {
+      String col_alias = BaseSemanticAnalyzer.unescapeIdentifier(gByExpr
+              .getChild(0).getText());
+      String tab_alias = null;
+      /*
+       * If the input to the GBy has a tab alias for the column, then add an entry
+       * based on that tab_alias.
+       * For e.g. this query:
+       * select b.x, count(*) from t1 b group by x
+       * needs (tab_alias=b, col_alias=x) in the GBy RR.
+       * tab_alias=b comes from looking at the RowResolver that is the ancestor
+       * before any GBy/ReduceSinks added for the GBY operation.
+       */
+      Operator<? extends OperatorDesc> parent = reduceSinkOp;
+      while ( parent instanceof ReduceSinkOperator ||
+          parent instanceof GroupByOperator ) {
+        parent = parent.getParentOperators().get(0);
+      }
+      RowResolver parentRR = opParseCtx.get(parent).getRowResolver();
+      try {
+        ColumnInfo pColInfo = parentRR.get(tab_alias, col_alias);
+        tab_alias = pColInfo == null ? null : pColInfo.getTabAlias();
+      } catch(SemanticException se) {
+      }
+      gByRR.put(tab_alias, col_alias, colInfo);
+    }
   }
 
   private WriteEntity.WriteType determineWriteType(LoadTableDesc ltd, boolean isNonNativeTable) {

@@ -585,13 +585,12 @@ CREATE TABLE db1.src(key STRING, value STRING)
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:db1
-PREHOOK: Output: db1@db1.src
+PREHOOK: Output: db1@src
 POSTHOOK: query: -- CREATE foreign table
 CREATE TABLE db1.src(key STRING, value STRING)
 STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:db1
-POSTHOOK: Output: db1@db1.src
 POSTHOOK: Output: db1@src
 PREHOOK: query: -- LOAD into foreign table
 LOAD DATA LOCAL INPATH '../../data/files/kv1.txt'
@@ -1121,14 +1120,13 @@ PARTITIONED BY (ds STRING, hr STRING)
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:db1
-PREHOOK: Output: db1@db1.srcpart
+PREHOOK: Output: db1@srcpart
 POSTHOOK: query: -- CREATE Partitioned foreign table
 CREATE TABLE db1.srcpart(key STRING, value STRING)
 PARTITIONED BY (ds STRING, hr STRING)
 STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:db1
-POSTHOOK: Output: db1@db1.srcpart
 POSTHOOK: Output: db1@srcpart
 PREHOOK: query: -- LOAD data into Partitioned foreign table
 LOAD DATA LOCAL INPATH '../../data/files/kv1.txt'
@@ -1305,22 +1303,28 @@ CREATE TABLE conflict_name AS
 SELECT value FROM default.src WHERE key = 66
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
+PREHOOK: Output: database:db2
+PREHOOK: Output: db2@conflict_name
 POSTHOOK: query: -- CREATE TABLE AS SELECT from foreign table
 CREATE TABLE conflict_name AS
 SELECT value FROM default.src WHERE key = 66
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
+POSTHOOK: Output: database:db2
 POSTHOOK: Output: db2@conflict_name
 PREHOOK: query: -- CREATE foreign table
 CREATE TABLE db1.conflict_name AS
 SELECT value FROM db1.src WHERE key = 8
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: db1@src
+PREHOOK: Output: database:db1
+PREHOOK: Output: db1@conflict_name
 POSTHOOK: query: -- CREATE foreign table
 CREATE TABLE db1.conflict_name AS
 SELECT value FROM db1.src WHERE key = 8
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: db1@src
+POSTHOOK: Output: database:db1
 POSTHOOK: Output: db1@conflict_name
 PREHOOK: query: -- query tables with the same names in different DBs
 SELECT * FROM (
@@ -1407,12 +1411,11 @@ PREHOOK: query: -- CREATE TABLE LIKE
 CREATE TABLE db2.src1 LIKE default.src
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:db2
-PREHOOK: Output: db2@db2.src1
+PREHOOK: Output: db2@src1
 POSTHOOK: query: -- CREATE TABLE LIKE
 CREATE TABLE db2.src1 LIKE default.src
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:db2
-POSTHOOK: Output: db2@db2.src1
 POSTHOOK: Output: db2@src1
 PREHOOK: query: USE db2
 PREHOOK: type: SWITCHDATABASE

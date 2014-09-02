@@ -118,14 +118,13 @@ public class TestUtilities extends TestCase {
   }
 
   private void checkFSUMaskReset(boolean recursiveArg) throws IllegalArgumentException, IOException {
-    final String FS_MASK_PARAM = "fs.permissions.umask-mode";
     final String FS_MASK_VAL = "055";
     HiveConf conf = new HiveConf();
     String dir = System.getProperty("test.tmp.dir") + "/testUtilitiesUMaskReset";
-    conf.set(FS_MASK_PARAM, FS_MASK_VAL);
+    conf.set(FsPermission.UMASK_LABEL, FS_MASK_VAL);
     Utilities.createDirsWithPermission(conf, new Path(dir), new FsPermission((short) 00777),
         recursiveArg);
-    assertEquals(conf.get(FS_MASK_PARAM), FS_MASK_VAL);
+    assertEquals(conf.get(FsPermission.UMASK_LABEL), FS_MASK_VAL);
   }
 
 

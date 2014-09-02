@@ -1,0 +1,21 @@
+PREHOOK: query: create database db1
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:db1
+POSTHOOK: query: create database db1
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:db1
+PREHOOK: query: use db1
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:db1
+POSTHOOK: query: use db1
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:db1
+PREHOOK: query: create table tab1(i int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:db1
+PREHOOK: Output: db1@tab1
+POSTHOOK: query: create table tab1(i int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:db1
+POSTHOOK: Output: db1@tab1
+FAILED: HiveAccessControlException Permission denied: Principal [name=user4, type=USER] does not have following privileges for operation CREATEVIEW [[OBJECT OWNERSHIP] on Object [type=DATABASE, name=db1], [SELECT with grant] on Object [type=TABLE_OR_VIEW, name=db1.tab1]]

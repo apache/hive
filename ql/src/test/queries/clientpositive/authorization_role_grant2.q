@@ -31,7 +31,7 @@ set user.name=user2;
 grant src_role_wadmin to role sRc_role2;
 
 set user.name=hive_admin_user;
-set role ADMIN;
+set role ADMIn;
 grant src_role2 to user user3;
 
 set user.name=user3;

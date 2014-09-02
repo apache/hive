@@ -64,15 +64,16 @@ public class JavaHiveCharObjectInspector extends AbstractPrimitiveJavaObjectInsp
   }
 
   public Object set(Object o, HiveChar value) {
-    HiveChar setValue = (HiveChar) o;
-    setValue.setValue(value, getMaxLength());
-    return setValue;
+    if (BaseCharUtils.doesPrimitiveMatchTypeParams(value,
+        (CharTypeInfo) typeInfo)) {
+      return value;
+    } else {
+      return new HiveChar(value, getMaxLength());
+    }
   }
 
   public Object set(Object o, String value) {
-    HiveChar setValue = (HiveChar) o;
-    setValue.setValue(value, getMaxLength());
-    return setValue;
+    return new HiveChar(value, getMaxLength());
   }
 
   public Object create(HiveChar value) {

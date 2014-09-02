@@ -3735,6 +3735,515 @@ public final class OrcProto {
     // @@protoc_insertion_point(class_scope:org.apache.hadoop.hive.ql.io.orc.DateStatistics)
   }
 
+  public interface TimestampStatisticsOrBuilder
+      extends com.google.protobuf.MessageOrBuilder {
+
+    // optional sint64 minimum = 1;
+    /**
+     * <code>optional sint64 minimum = 1;</code>
+     *
+     * <pre>
+     * min,max values saved as milliseconds since epoch
+     * </pre>
+     */
+    boolean hasMinimum();
+    /**
+     * <code>optional sint64 minimum = 1;</code>
+     *
+     * <pre>
+     * min,max values saved as milliseconds since epoch
+     * </pre>
+     */
+    long getMinimum();
+
+    // optional sint64 maximum = 2;
+    /**
+     * <code>optional sint64 maximum = 2;</code>
+     */
+    boolean hasMaximum();
+    /**
+     * <code>optional sint64 maximum = 2;</code>
+     */
+    long getMaximum();
+  }
+  /**
+   * Protobuf type {@code org.apache.hadoop.hive.ql.io.orc.TimestampStatistics}
+   */
+  public static final class TimestampStatistics extends
+      com.google.protobuf.GeneratedMessage
+      implements TimestampStatisticsOrBuilder {
+    // Use TimestampStatistics.newBuilder() to construct.
+    private TimestampStatistics(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private TimestampStatistics(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final TimestampStatistics defaultInstance;
+    public static TimestampStatistics getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public TimestampStatistics getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private TimestampStatistics(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 8: {
+              bitField0_ |= 0x00000001;
+              minimum_ = input.readSInt64();
+              break;
+            }
+            case 16: {
+              bitField0_ |= 0x00000002;
+              maximum_ = input.readSInt64();
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_TimestampStatistics_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_TimestampStatistics_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatistics.class, org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatistics.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<TimestampStatistics> PARSER =
+        new com.google.protobuf.AbstractParser<TimestampStatistics>() {
+      public TimestampStatistics parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new TimestampStatistics(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<TimestampStatistics> getParserForType() {
+      return PARSER;
+    }
+
+    private int bitField0_;
+    // optional sint64 minimum = 1;
+    public static final int MINIMUM_FIELD_NUMBER = 1;
+    private long minimum_;
+    /**
+     * <code>optional sint64 minimum = 1;</code>
+     *
+     * <pre>
+     * min,max values saved as milliseconds since epoch
+     * </pre>
+     */
+    public boolean hasMinimum() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>optional sint64 minimum = 1;</code>
+     *
+     * <pre>
+     * min,max values saved as milliseconds since epoch
+     * </pre>
+     */
+    public long getMinimum() {
+      return minimum_;
+    }
+
+    // optional sint64 maximum = 2;
+    public static final int MAXIMUM_FIELD_NUMBER = 2;
+    private long maximum_;
+    /**
+     * <code>optional sint64 maximum = 2;</code>
+     */
+    public boolean hasMaximum() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <code>optional sint64 maximum = 2;</code>
+     */
+    public long getMaximum() {
+      return maximum_;
+    }
+
+    private void initFields() {
+      minimum_ = 0L;
+      maximum_ = 0L;
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized != -1) return isInitialized == 1;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeSInt64(1, minimum_);
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeSInt64(2, maximum_);
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeSInt64Size(1, minimum_);
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeSInt64Size(2, maximum_);
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    public static org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatistics parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatistics parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatistics parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatistics parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatistics parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatistics parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatistics parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatistics parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatistics parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatistics parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatistics prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code org.apache.hadoop.hive.ql.io.orc.TimestampStatistics}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder>
+       implements org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatisticsOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_TimestampStatistics_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_TimestampStatistics_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatistics.class, org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatistics.Builder.class);
+      }
+
+      // Construct using org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatistics.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        minimum_ = 0L;
+        bitField0_ = (bitField0_ & ~0x00000001);
+        maximum_ = 0L;
+        bitField0_ = (bitField0_ & ~0x00000002);
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_TimestampStatistics_descriptor;
+      }
+
+      public org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatistics getDefaultInstanceForType() {
+        return org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatistics.getDefaultInstance();
+      }
+
+      public org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatistics build() {
+        org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatistics result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatistics buildPartial() {
+        org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatistics result = new org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatistics(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.minimum_ = minimum_;
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        result.maximum_ = maximum_;
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatistics) {
+          return mergeFrom((org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatistics)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatistics other) {
+        if (other == org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatistics.getDefaultInstance()) return this;
+        if (other.hasMinimum()) {
+          setMinimum(other.getMinimum());
+        }
+        if (other.hasMaximum()) {
+          setMaximum(other.getMaximum());
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatistics parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatistics) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      // optional sint64 minimum = 1;
+      private long minimum_ ;
+      /**
+       * <code>optional sint64 minimum = 1;</code>
+       *
+       * <pre>
+       * min,max values saved as milliseconds since epoch
+       * </pre>
+       */
+      public boolean hasMinimum() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>optional sint64 minimum = 1;</code>
+       *
+       * <pre>
+       * min,max values saved as milliseconds since epoch
+       * </pre>
+       */
+      public long getMinimum() {
+        return minimum_;
+      }
+      /**
+       * <code>optional sint64 minimum = 1;</code>
+       *
+       * <pre>
+       * min,max values saved as milliseconds since epoch
+       * </pre>
+       */
+      public Builder setMinimum(long value) {
+        bitField0_ |= 0x00000001;
+        minimum_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional sint64 minimum = 1;</code>
+       *
+       * <pre>
+       * min,max values saved as milliseconds since epoch
+       * </pre>
+       */
+      public Builder clearMinimum() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        minimum_ = 0L;
+        onChanged();
+        return this;
+      }
+
+      // optional sint64 maximum = 2;
+      private long maximum_ ;
+      /**
+       * <code>optional sint64 maximum = 2;</code>
+       */
+      public boolean hasMaximum() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>optional sint64 maximum = 2;</code>
+       */
+      public long getMaximum() {
+        return maximum_;
+      }
+      /**
+       * <code>optional sint64 maximum = 2;</code>
+       */
+      public Builder setMaximum(long value) {
+        bitField0_ |= 0x00000002;
+        maximum_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional sint64 maximum = 2;</code>
+       */
+      public Builder clearMaximum() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        maximum_ = 0L;
+        onChanged();
+        return this;
+      }
+
+      // @@protoc_insertion_point(builder_scope:org.apache.hadoop.hive.ql.io.orc.TimestampStatistics)
+    }
+
+    static {
+      defaultInstance = new TimestampStatistics(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:org.apache.hadoop.hive.ql.io.orc.TimestampStatistics)
+  }
+
   public interface BinaryStatisticsOrBuilder
       extends com.google.protobuf.MessageOrBuilder {
 
@@ -4273,6 +4782,20 @@ public final class OrcProto {
      * <code>optional .org.apache.hadoop.hive.ql.io.orc.BinaryStatistics binaryStatistics = 8;</code>
      */
     org.apache.hadoop.hive.ql.io.orc.OrcProto.BinaryStatisticsOrBuilder getBinaryStatisticsOrBuilder();
+
+    // optional .org.apache.hadoop.hive.ql.io.orc.TimestampStatistics timestampStatistics = 9;
+    /**
+     * <code>optional .org.apache.hadoop.hive.ql.io.orc.TimestampStatistics timestampStatistics = 9;</code>
+     */
+    boolean hasTimestampStatistics();
+    /**
+     * <code>optional .org.apache.hadoop.hive.ql.io.orc.TimestampStatistics timestampStatistics = 9;</code>
+     */
+    org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatistics getTimestampStatistics();
+    /**
+     * <code>optional .org.apache.hadoop.hive.ql.io.orc.TimestampStatistics timestampStatistics = 9;</code>
+     */
+    org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatisticsOrBuilder getTimestampStatisticsOrBuilder();
   }
   /**
    * Protobuf type {@code org.apache.hadoop.hive.ql.io.orc.ColumnStatistics}
@@ -4419,6 +4942,19 @@ public final class OrcProto {
                 binaryStatistics_ = subBuilder.buildPartial();
               }
               bitField0_ |= 0x00000080;
+              break;
+            }
+            case 74: {
+              org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatistics.Builder subBuilder = null;
+              if (((bitField0_ & 0x00000100) == 0x00000100)) {
+                subBuilder = timestampStatistics_.toBuilder();
+              }
+              timestampStatistics_ = input.readMessage(org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatistics.PARSER, extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(timestampStatistics_);
+                timestampStatistics_ = subBuilder.buildPartial();
+              }
+              bitField0_ |= 0x00000100;
               break;
             }
           }
@@ -4631,6 +5167,28 @@ public final class OrcProto {
       return binaryStatistics_;
     }
 
+    // optional .org.apache.hadoop.hive.ql.io.orc.TimestampStatistics timestampStatistics = 9;
+    public static final int TIMESTAMPSTATISTICS_FIELD_NUMBER = 9;
+    private org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatistics timestampStatistics_;
+    /**
+     * <code>optional .org.apache.hadoop.hive.ql.io.orc.TimestampStatistics timestampStatistics = 9;</code>
+     */
+    public boolean hasTimestampStatistics() {
+      return ((bitField0_ & 0x00000100) == 0x00000100);
+    }
+    /**
+     * <code>optional .org.apache.hadoop.hive.ql.io.orc.TimestampStatistics timestampStatistics = 9;</code>
+     */
+    public org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatistics getTimestampStatistics() {
+      return timestampStatistics_;
+    }
+    /**
+     * <code>optional .org.apache.hadoop.hive.ql.io.orc.TimestampStatistics timestampStatistics = 9;</code>
+     */
+    public org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatisticsOrBuilder getTimestampStatisticsOrBuilder() {
+      return timestampStatistics_;
+    }
+
     private void initFields() {
       numberOfValues_ = 0L;
       intStatistics_ = org.apache.hadoop.hive.ql.io.orc.OrcProto.IntegerStatistics.getDefaultInstance();
@@ -4640,6 +5198,7 @@ public final class OrcProto {
       decimalStatistics_ = org.apache.hadoop.hive.ql.io.orc.OrcProto.DecimalStatistics.getDefaultInstance();
       dateStatistics_ = org.apache.hadoop.hive.ql.io.orc.OrcProto.DateStatistics.getDefaultInstance();
       binaryStatistics_ = org.apache.hadoop.hive.ql.io.orc.OrcProto.BinaryStatistics.getDefaultInstance();
+      timestampStatistics_ = org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatistics.getDefaultInstance();
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -4676,6 +5235,9 @@ public final class OrcProto {
       }
       if (((bitField0_ & 0x00000080) == 0x00000080)) {
         output.writeMessage(8, binaryStatistics_);
+      }
+      if (((bitField0_ & 0x00000100) == 0x00000100)) {
+        output.writeMessage(9, timestampStatistics_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -4717,6 +5279,10 @@ public final class OrcProto {
       if (((bitField0_ & 0x00000080) == 0x00000080)) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(8, binaryStatistics_);
+      }
+      if (((bitField0_ & 0x00000100) == 0x00000100)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(9, timestampStatistics_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -4833,6 +5399,7 @@ public final class OrcProto {
           getDecimalStatisticsFieldBuilder();
           getDateStatisticsFieldBuilder();
           getBinaryStatisticsFieldBuilder();
+          getTimestampStatisticsFieldBuilder();
         }
       }
       private static Builder create() {
@@ -4885,6 +5452,12 @@ public final class OrcProto {
           binaryStatisticsBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000080);
+        if (timestampStatisticsBuilder_ == null) {
+          timestampStatistics_ = org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatistics.getDefaultInstance();
+        } else {
+          timestampStatisticsBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000100);
         return this;
       }
 
@@ -4973,6 +5546,14 @@ public final class OrcProto {
         } else {
           result.binaryStatistics_ = binaryStatisticsBuilder_.build();
         }
+        if (((from_bitField0_ & 0x00000100) == 0x00000100)) {
+          to_bitField0_ |= 0x00000100;
+        }
+        if (timestampStatisticsBuilder_ == null) {
+          result.timestampStatistics_ = timestampStatistics_;
+        } else {
+          result.timestampStatistics_ = timestampStatisticsBuilder_.build();
+        }
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -5012,6 +5593,9 @@ public final class OrcProto {
         }
         if (other.hasBinaryStatistics()) {
           mergeBinaryStatistics(other.getBinaryStatistics());
+        }
+        if (other.hasTimestampStatistics()) {
+          mergeTimestampStatistics(other.getTimestampStatistics());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -5890,6 +6474,123 @@ public final class OrcProto {
           binaryStatistics_ = null;
         }
         return binaryStatisticsBuilder_;
+      }
+
+      // optional .org.apache.hadoop.hive.ql.io.orc.TimestampStatistics timestampStatistics = 9;
+      private org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatistics timestampStatistics_ = org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatistics.getDefaultInstance();
+      private com.google.protobuf.SingleFieldBuilder<
+          org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatistics, org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatistics.Builder, org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatisticsOrBuilder> timestampStatisticsBuilder_;
+      /**
+       * <code>optional .org.apache.hadoop.hive.ql.io.orc.TimestampStatistics timestampStatistics = 9;</code>
+       */
+      public boolean hasTimestampStatistics() {
+        return ((bitField0_ & 0x00000100) == 0x00000100);
+      }
+      /**
+       * <code>optional .org.apache.hadoop.hive.ql.io.orc.TimestampStatistics timestampStatistics = 9;</code>
+       */
+      public org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatistics getTimestampStatistics() {
+        if (timestampStatisticsBuilder_ == null) {
+          return timestampStatistics_;
+        } else {
+          return timestampStatisticsBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>optional .org.apache.hadoop.hive.ql.io.orc.TimestampStatistics timestampStatistics = 9;</code>
+       */
+      public Builder setTimestampStatistics(org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatistics value) {
+        if (timestampStatisticsBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          timestampStatistics_ = value;
+          onChanged();
+        } else {
+          timestampStatisticsBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000100;
+        return this;
+      }
+      /**
+       * <code>optional .org.apache.hadoop.hive.ql.io.orc.TimestampStatistics timestampStatistics = 9;</code>
+       */
+      public Builder setTimestampStatistics(
+          org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatistics.Builder builderForValue) {
+        if (timestampStatisticsBuilder_ == null) {
+          timestampStatistics_ = builderForValue.build();
+          onChanged();
+        } else {
+          timestampStatisticsBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000100;
+        return this;
+      }
+      /**
+       * <code>optional .org.apache.hadoop.hive.ql.io.orc.TimestampStatistics timestampStatistics = 9;</code>
+       */
+      public Builder mergeTimestampStatistics(org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatistics value) {
+        if (timestampStatisticsBuilder_ == null) {
+          if (((bitField0_ & 0x00000100) == 0x00000100) &&
+              timestampStatistics_ != org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatistics.getDefaultInstance()) {
+            timestampStatistics_ =
+              org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatistics.newBuilder(timestampStatistics_).mergeFrom(value).buildPartial();
+          } else {
+            timestampStatistics_ = value;
+          }
+          onChanged();
+        } else {
+          timestampStatisticsBuilder_.mergeFrom(value);
+        }
+        bitField0_ |= 0x00000100;
+        return this;
+      }
+      /**
+       * <code>optional .org.apache.hadoop.hive.ql.io.orc.TimestampStatistics timestampStatistics = 9;</code>
+       */
+      public Builder clearTimestampStatistics() {
+        if (timestampStatisticsBuilder_ == null) {
+          timestampStatistics_ = org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatistics.getDefaultInstance();
+          onChanged();
+        } else {
+          timestampStatisticsBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000100);
+        return this;
+      }
+      /**
+       * <code>optional .org.apache.hadoop.hive.ql.io.orc.TimestampStatistics timestampStatistics = 9;</code>
+       */
+      public org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatistics.Builder getTimestampStatisticsBuilder() {
+        bitField0_ |= 0x00000100;
+        onChanged();
+        return getTimestampStatisticsFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>optional .org.apache.hadoop.hive.ql.io.orc.TimestampStatistics timestampStatistics = 9;</code>
+       */
+      public org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatisticsOrBuilder getTimestampStatisticsOrBuilder() {
+        if (timestampStatisticsBuilder_ != null) {
+          return timestampStatisticsBuilder_.getMessageOrBuilder();
+        } else {
+          return timestampStatistics_;
+        }
+      }
+      /**
+       * <code>optional .org.apache.hadoop.hive.ql.io.orc.TimestampStatistics timestampStatistics = 9;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilder<
+          org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatistics, org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatistics.Builder, org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatisticsOrBuilder> 
+          getTimestampStatisticsFieldBuilder() {
+        if (timestampStatisticsBuilder_ == null) {
+          timestampStatisticsBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatistics, org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatistics.Builder, org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatisticsOrBuilder>(
+                  timestampStatistics_,
+                  getParentForChildren(),
+                  isClean());
+          timestampStatistics_ = null;
+        }
+        return timestampStatisticsBuilder_;
       }
 
       // @@protoc_insertion_point(builder_scope:org.apache.hadoop.hive.ql.io.orc.ColumnStatistics)
@@ -16654,6 +17355,11 @@ public final class OrcProto {
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_org_apache_hadoop_hive_ql_io_orc_DateStatistics_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_org_apache_hadoop_hive_ql_io_orc_TimestampStatistics_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_org_apache_hadoop_hive_ql_io_orc_TimestampStatistics_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
     internal_static_org_apache_hadoop_hive_ql_io_orc_BinaryStatistics_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
@@ -16742,74 +17448,78 @@ public final class OrcProto {
       "nt\030\001 \003(\004B\002\020\001\"B\n\021DecimalStatistics\022\017\n\007min" +
       "imum\030\001 \001(\t\022\017\n\007maximum\030\002 \001(\t\022\013\n\003sum\030\003 \001(\t" +
       "\"2\n\016DateStatistics\022\017\n\007minimum\030\001 \001(\021\022\017\n\007m",
-      "aximum\030\002 \001(\021\"\037\n\020BinaryStatistics\022\013\n\003sum\030" +
-      "\001 \001(\022\"\310\004\n\020ColumnStatistics\022\026\n\016numberOfVa" +
-      "lues\030\001 \001(\004\022J\n\rintStatistics\030\002 \001(\01323.org." +
-      "apache.hadoop.hive.ql.io.orc.IntegerStat" +
-      "istics\022L\n\020doubleStatistics\030\003 \001(\01322.org.a" +
-      "pache.hadoop.hive.ql.io.orc.DoubleStatis" +
-      "tics\022L\n\020stringStatistics\030\004 \001(\01322.org.apa" +
-      "che.hadoop.hive.ql.io.orc.StringStatisti" +
-      "cs\022L\n\020bucketStatistics\030\005 \001(\01322.org.apach" +
-      "e.hadoop.hive.ql.io.orc.BucketStatistics",
-      "\022N\n\021decimalStatistics\030\006 \001(\01323.org.apache" +
-      ".hadoop.hive.ql.io.orc.DecimalStatistics" +
-      "\022H\n\016dateStatistics\030\007 \001(\01320.org.apache.ha" +
-      "doop.hive.ql.io.orc.DateStatistics\022L\n\020bi" +
-      "naryStatistics\030\010 \001(\01322.org.apache.hadoop" +
-      ".hive.ql.io.orc.BinaryStatistics\"n\n\rRowI" +
-      "ndexEntry\022\025\n\tpositions\030\001 \003(\004B\002\020\001\022F\n\nstat" +
-      "istics\030\002 \001(\01322.org.apache.hadoop.hive.ql" +
-      ".io.orc.ColumnStatistics\"J\n\010RowIndex\022>\n\005" +
-      "entry\030\001 \003(\0132/.org.apache.hadoop.hive.ql.",
-      "io.orc.RowIndexEntry\"\331\001\n\006Stream\022;\n\004kind\030" +
-      "\001 \002(\0162-.org.apache.hadoop.hive.ql.io.orc" +
-      ".Stream.Kind\022\016\n\006column\030\002 \001(\r\022\016\n\006length\030\003" +
-      " \001(\004\"r\n\004Kind\022\013\n\007PRESENT\020\000\022\010\n\004DATA\020\001\022\n\n\006L" +
-      "ENGTH\020\002\022\023\n\017DICTIONARY_DATA\020\003\022\024\n\020DICTIONA" +
-      "RY_COUNT\020\004\022\r\n\tSECONDARY\020\005\022\r\n\tROW_INDEX\020\006" +
-      "\"\263\001\n\016ColumnEncoding\022C\n\004kind\030\001 \002(\01625.org." +
-      "apache.hadoop.hive.ql.io.orc.ColumnEncod" +
-      "ing.Kind\022\026\n\016dictionarySize\030\002 \001(\r\"D\n\004Kind" +
-      "\022\n\n\006DIRECT\020\000\022\016\n\nDICTIONARY\020\001\022\r\n\tDIRECT_V",
-      "2\020\002\022\021\n\rDICTIONARY_V2\020\003\"\214\001\n\014StripeFooter\022" +
-      "9\n\007streams\030\001 \003(\0132(.org.apache.hadoop.hiv" +
-      "e.ql.io.orc.Stream\022A\n\007columns\030\002 \003(\01320.or" +
-      "g.apache.hadoop.hive.ql.io.orc.ColumnEnc" +
-      "oding\"\370\002\n\004Type\0229\n\004kind\030\001 \002(\0162+.org.apach" +
-      "e.hadoop.hive.ql.io.orc.Type.Kind\022\024\n\010sub" +
-      "types\030\002 \003(\rB\002\020\001\022\022\n\nfieldNames\030\003 \003(\t\022\025\n\rm" +
-      "aximumLength\030\004 \001(\r\022\021\n\tprecision\030\005 \001(\r\022\r\n" +
-      "\005scale\030\006 \001(\r\"\321\001\n\004Kind\022\013\n\007BOOLEAN\020\000\022\010\n\004BY" +
-      "TE\020\001\022\t\n\005SHORT\020\002\022\007\n\003INT\020\003\022\010\n\004LONG\020\004\022\t\n\005FL",
-      "OAT\020\005\022\n\n\006DOUBLE\020\006\022\n\n\006STRING\020\007\022\n\n\006BINARY\020" +
-      "\010\022\r\n\tTIMESTAMP\020\t\022\010\n\004LIST\020\n\022\007\n\003MAP\020\013\022\n\n\006S" +
-      "TRUCT\020\014\022\t\n\005UNION\020\r\022\013\n\007DECIMAL\020\016\022\010\n\004DATE\020" +
-      "\017\022\013\n\007VARCHAR\020\020\022\010\n\004CHAR\020\021\"x\n\021StripeInform" +
-      "ation\022\016\n\006offset\030\001 \001(\004\022\023\n\013indexLength\030\002 \001" +
-      "(\004\022\022\n\ndataLength\030\003 \001(\004\022\024\n\014footerLength\030\004" +
-      " \001(\004\022\024\n\014numberOfRows\030\005 \001(\004\"/\n\020UserMetada" +
-      "taItem\022\014\n\004name\030\001 \002(\t\022\r\n\005value\030\002 \002(\014\"X\n\020S" +
-      "tripeStatistics\022D\n\010colStats\030\001 \003(\01322.org." +
-      "apache.hadoop.hive.ql.io.orc.ColumnStati",
-      "stics\"S\n\010Metadata\022G\n\013stripeStats\030\001 \003(\01322" +
-      ".org.apache.hadoop.hive.ql.io.orc.Stripe" +
-      "Statistics\"\356\002\n\006Footer\022\024\n\014headerLength\030\001 " +
-      "\001(\004\022\025\n\rcontentLength\030\002 \001(\004\022D\n\007stripes\030\003 " +
-      "\003(\01323.org.apache.hadoop.hive.ql.io.orc.S" +
-      "tripeInformation\0225\n\005types\030\004 \003(\0132&.org.ap" +
-      "ache.hadoop.hive.ql.io.orc.Type\022D\n\010metad" +
-      "ata\030\005 \003(\01322.org.apache.hadoop.hive.ql.io" +
-      ".orc.UserMetadataItem\022\024\n\014numberOfRows\030\006 " +
-      "\001(\004\022F\n\nstatistics\030\007 \003(\01322.org.apache.had",
-      "oop.hive.ql.io.orc.ColumnStatistics\022\026\n\016r" +
-      "owIndexStride\030\010 \001(\r\"\305\001\n\nPostScript\022\024\n\014fo" +
-      "oterLength\030\001 \001(\004\022F\n\013compression\030\002 \001(\01621." +
-      "org.apache.hadoop.hive.ql.io.orc.Compres" +
-      "sionKind\022\034\n\024compressionBlockSize\030\003 \001(\004\022\023" +
-      "\n\007version\030\004 \003(\rB\002\020\001\022\026\n\016metadataLength\030\005 " +
-      "\001(\004\022\016\n\005magic\030\300> \001(\t*:\n\017CompressionKind\022\010" +
-      "\n\004NONE\020\000\022\010\n\004ZLIB\020\001\022\n\n\006SNAPPY\020\002\022\007\n\003LZO\020\003"
+      "aximum\030\002 \001(\021\"7\n\023TimestampStatistics\022\017\n\007m" +
+      "inimum\030\001 \001(\022\022\017\n\007maximum\030\002 \001(\022\"\037\n\020BinaryS" +
+      "tatistics\022\013\n\003sum\030\001 \001(\022\"\234\005\n\020ColumnStatist" +
+      "ics\022\026\n\016numberOfValues\030\001 \001(\004\022J\n\rintStatis" +
+      "tics\030\002 \001(\01323.org.apache.hadoop.hive.ql.i" +
+      "o.orc.IntegerStatistics\022L\n\020doubleStatist" +
+      "ics\030\003 \001(\01322.org.apache.hadoop.hive.ql.io" +
+      ".orc.DoubleStatistics\022L\n\020stringStatistic" +
+      "s\030\004 \001(\01322.org.apache.hadoop.hive.ql.io.o" +
+      "rc.StringStatistics\022L\n\020bucketStatistics\030",
+      "\005 \001(\01322.org.apache.hadoop.hive.ql.io.orc" +
+      ".BucketStatistics\022N\n\021decimalStatistics\030\006" +
+      " \001(\01323.org.apache.hadoop.hive.ql.io.orc." +
+      "DecimalStatistics\022H\n\016dateStatistics\030\007 \001(" +
+      "\01320.org.apache.hadoop.hive.ql.io.orc.Dat" +
+      "eStatistics\022L\n\020binaryStatistics\030\010 \001(\01322." +
+      "org.apache.hadoop.hive.ql.io.orc.BinaryS" +
+      "tatistics\022R\n\023timestampStatistics\030\t \001(\01325" +
+      ".org.apache.hadoop.hive.ql.io.orc.Timest" +
+      "ampStatistics\"n\n\rRowIndexEntry\022\025\n\tpositi",
+      "ons\030\001 \003(\004B\002\020\001\022F\n\nstatistics\030\002 \001(\01322.org." +
+      "apache.hadoop.hive.ql.io.orc.ColumnStati" +
+      "stics\"J\n\010RowIndex\022>\n\005entry\030\001 \003(\0132/.org.a" +
+      "pache.hadoop.hive.ql.io.orc.RowIndexEntr" +
+      "y\"\331\001\n\006Stream\022;\n\004kind\030\001 \002(\0162-.org.apache." +
+      "hadoop.hive.ql.io.orc.Stream.Kind\022\016\n\006col" +
+      "umn\030\002 \001(\r\022\016\n\006length\030\003 \001(\004\"r\n\004Kind\022\013\n\007PRE" +
+      "SENT\020\000\022\010\n\004DATA\020\001\022\n\n\006LENGTH\020\002\022\023\n\017DICTIONA" +
+      "RY_DATA\020\003\022\024\n\020DICTIONARY_COUNT\020\004\022\r\n\tSECON" +
+      "DARY\020\005\022\r\n\tROW_INDEX\020\006\"\263\001\n\016ColumnEncoding",
+      "\022C\n\004kind\030\001 \002(\01625.org.apache.hadoop.hive." +
+      "ql.io.orc.ColumnEncoding.Kind\022\026\n\016diction" +
+      "arySize\030\002 \001(\r\"D\n\004Kind\022\n\n\006DIRECT\020\000\022\016\n\nDIC" +
+      "TIONARY\020\001\022\r\n\tDIRECT_V2\020\002\022\021\n\rDICTIONARY_V" +
+      "2\020\003\"\214\001\n\014StripeFooter\0229\n\007streams\030\001 \003(\0132(." +
+      "org.apache.hadoop.hive.ql.io.orc.Stream\022" +
+      "A\n\007columns\030\002 \003(\01320.org.apache.hadoop.hiv" +
+      "e.ql.io.orc.ColumnEncoding\"\370\002\n\004Type\0229\n\004k" +
+      "ind\030\001 \002(\0162+.org.apache.hadoop.hive.ql.io" +
+      ".orc.Type.Kind\022\024\n\010subtypes\030\002 \003(\rB\002\020\001\022\022\n\n",
+      "fieldNames\030\003 \003(\t\022\025\n\rmaximumLength\030\004 \001(\r\022" +
+      "\021\n\tprecision\030\005 \001(\r\022\r\n\005scale\030\006 \001(\r\"\321\001\n\004Ki" +
+      "nd\022\013\n\007BOOLEAN\020\000\022\010\n\004BYTE\020\001\022\t\n\005SHORT\020\002\022\007\n\003" +
+      "INT\020\003\022\010\n\004LONG\020\004\022\t\n\005FLOAT\020\005\022\n\n\006DOUBLE\020\006\022\n" +
+      "\n\006STRING\020\007\022\n\n\006BINARY\020\010\022\r\n\tTIMESTAMP\020\t\022\010\n" +
+      "\004LIST\020\n\022\007\n\003MAP\020\013\022\n\n\006STRUCT\020\014\022\t\n\005UNION\020\r\022" +
+      "\013\n\007DECIMAL\020\016\022\010\n\004DATE\020\017\022\013\n\007VARCHAR\020\020\022\010\n\004C" +
+      "HAR\020\021\"x\n\021StripeInformation\022\016\n\006offset\030\001 \001" +
+      "(\004\022\023\n\013indexLength\030\002 \001(\004\022\022\n\ndataLength\030\003 " +
+      "\001(\004\022\024\n\014footerLength\030\004 \001(\004\022\024\n\014numberOfRow",
+      "s\030\005 \001(\004\"/\n\020UserMetadataItem\022\014\n\004name\030\001 \002(" +
+      "\t\022\r\n\005value\030\002 \002(\014\"X\n\020StripeStatistics\022D\n\010" +
+      "colStats\030\001 \003(\01322.org.apache.hadoop.hive." +
+      "ql.io.orc.ColumnStatistics\"S\n\010Metadata\022G" +
+      "\n\013stripeStats\030\001 \003(\01322.org.apache.hadoop." +
+      "hive.ql.io.orc.StripeStatistics\"\356\002\n\006Foot" +
+      "er\022\024\n\014headerLength\030\001 \001(\004\022\025\n\rcontentLengt" +
+      "h\030\002 \001(\004\022D\n\007stripes\030\003 \003(\01323.org.apache.ha" +
+      "doop.hive.ql.io.orc.StripeInformation\0225\n" +
+      "\005types\030\004 \003(\0132&.org.apache.hadoop.hive.ql",
+      ".io.orc.Type\022D\n\010metadata\030\005 \003(\01322.org.apa" +
+      "che.hadoop.hive.ql.io.orc.UserMetadataIt" +
+      "em\022\024\n\014numberOfRows\030\006 \001(\004\022F\n\nstatistics\030\007" +
+      " \003(\01322.org.apache.hadoop.hive.ql.io.orc." +
+      "ColumnStatistics\022\026\n\016rowIndexStride\030\010 \001(\r" +
+      "\"\305\001\n\nPostScript\022\024\n\014footerLength\030\001 \001(\004\022F\n" +
+      "\013compression\030\002 \001(\01621.org.apache.hadoop.h" +
+      "ive.ql.io.orc.CompressionKind\022\034\n\024compres" +
+      "sionBlockSize\030\003 \001(\004\022\023\n\007version\030\004 \003(\rB\002\020\001" +
+      "\022\026\n\016metadataLength\030\005 \001(\004\022\016\n\005magic\030\300> \001(\t",
+      "*:\n\017CompressionKind\022\010\n\004NONE\020\000\022\010\n\004ZLIB\020\001\022" +
+      "\n\n\006SNAPPY\020\002\022\007\n\003LZO\020\003"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -16852,86 +17562,92 @@ public final class OrcProto {
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_ql_io_orc_DateStatistics_descriptor,
               new java.lang.String[] { "Minimum", "Maximum", });
-          internal_static_org_apache_hadoop_hive_ql_io_orc_BinaryStatistics_descriptor =
+          internal_static_org_apache_hadoop_hive_ql_io_orc_TimestampStatistics_descriptor =
             getDescriptor().getMessageTypes().get(6);
+          internal_static_org_apache_hadoop_hive_ql_io_orc_TimestampStatistics_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_org_apache_hadoop_hive_ql_io_orc_TimestampStatistics_descriptor,
+              new java.lang.String[] { "Minimum", "Maximum", });
+          internal_static_org_apache_hadoop_hive_ql_io_orc_BinaryStatistics_descriptor =
+            getDescriptor().getMessageTypes().get(7);
           internal_static_org_apache_hadoop_hive_ql_io_orc_BinaryStatistics_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_ql_io_orc_BinaryStatistics_descriptor,
               new java.lang.String[] { "Sum", });
           internal_static_org_apache_hadoop_hive_ql_io_orc_ColumnStatistics_descriptor =
-            getDescriptor().getMessageTypes().get(7);
+            getDescriptor().getMessageTypes().get(8);
           internal_static_org_apache_hadoop_hive_ql_io_orc_ColumnStatistics_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_ql_io_orc_ColumnStatistics_descriptor,
-              new java.lang.String[] { "NumberOfValues", "IntStatistics", "DoubleStatistics", "StringStatistics", "BucketStatistics", "DecimalStatistics", "DateStatistics", "BinaryStatistics", });
+              new java.lang.String[] { "NumberOfValues", "IntStatistics", "DoubleStatistics", "StringStatistics", "BucketStatistics", "DecimalStatistics", "DateStatistics", "BinaryStatistics", "TimestampStatistics", });
           internal_static_org_apache_hadoop_hive_ql_io_orc_RowIndexEntry_descriptor =
-            getDescriptor().getMessageTypes().get(8);
+            getDescriptor().getMessageTypes().get(9);
           internal_static_org_apache_hadoop_hive_ql_io_orc_RowIndexEntry_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_ql_io_orc_RowIndexEntry_descriptor,
               new java.lang.String[] { "Positions", "Statistics", });
           internal_static_org_apache_hadoop_hive_ql_io_orc_RowIndex_descriptor =
-            getDescriptor().getMessageTypes().get(9);
+            getDescriptor().getMessageTypes().get(10);
           internal_static_org_apache_hadoop_hive_ql_io_orc_RowIndex_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_ql_io_orc_RowIndex_descriptor,
               new java.lang.String[] { "Entry", });
           internal_static_org_apache_hadoop_hive_ql_io_orc_Stream_descriptor =
-            getDescriptor().getMessageTypes().get(10);
+            getDescriptor().getMessageTypes().get(11);
           internal_static_org_apache_hadoop_hive_ql_io_orc_Stream_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_ql_io_orc_Stream_descriptor,
               new java.lang.String[] { "Kind", "Column", "Length", });
           internal_static_org_apache_hadoop_hive_ql_io_orc_ColumnEncoding_descriptor =
-            getDescriptor().getMessageTypes().get(11);
+            getDescriptor().getMessageTypes().get(12);
           internal_static_org_apache_hadoop_hive_ql_io_orc_ColumnEncoding_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_ql_io_orc_ColumnEncoding_descriptor,
               new java.lang.String[] { "Kind", "DictionarySize", });
           internal_static_org_apache_hadoop_hive_ql_io_orc_StripeFooter_descriptor =
-            getDescriptor().getMessageTypes().get(12);
+            getDescriptor().getMessageTypes().get(13);
           internal_static_org_apache_hadoop_hive_ql_io_orc_StripeFooter_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_ql_io_orc_StripeFooter_descriptor,
               new java.lang.String[] { "Streams", "Columns", });
           internal_static_org_apache_hadoop_hive_ql_io_orc_Type_descriptor =
-            getDescriptor().getMessageTypes().get(13);
+            getDescriptor().getMessageTypes().get(14);
           internal_static_org_apache_hadoop_hive_ql_io_orc_Type_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_ql_io_orc_Type_descriptor,
               new java.lang.String[] { "Kind", "Subtypes", "FieldNames", "MaximumLength", "Precision", "Scale", });
           internal_static_org_apache_hadoop_hive_ql_io_orc_StripeInformation_descriptor =
-            getDescriptor().getMessageTypes().get(14);
+            getDescriptor().getMessageTypes().get(15);
           internal_static_org_apache_hadoop_hive_ql_io_orc_StripeInformation_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_ql_io_orc_StripeInformation_descriptor,
               new java.lang.String[] { "Offset", "IndexLength", "DataLength", "FooterLength", "NumberOfRows", });
           internal_static_org_apache_hadoop_hive_ql_io_orc_UserMetadataItem_descriptor =
-            getDescriptor().getMessageTypes().get(15);
+            getDescriptor().getMessageTypes().get(16);
           internal_static_org_apache_hadoop_hive_ql_io_orc_UserMetadataItem_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_ql_io_orc_UserMetadataItem_descriptor,
               new java.lang.String[] { "Name", "Value", });
           internal_static_org_apache_hadoop_hive_ql_io_orc_StripeStatistics_descriptor =
-            getDescriptor().getMessageTypes().get(16);
+            getDescriptor().getMessageTypes().get(17);
           internal_static_org_apache_hadoop_hive_ql_io_orc_StripeStatistics_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_ql_io_orc_StripeStatistics_descriptor,
               new java.lang.String[] { "ColStats", });
           internal_static_org_apache_hadoop_hive_ql_io_orc_Metadata_descriptor =
-            getDescriptor().getMessageTypes().get(17);
+            getDescriptor().getMessageTypes().get(18);
           internal_static_org_apache_hadoop_hive_ql_io_orc_Metadata_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_ql_io_orc_Metadata_descriptor,
               new java.lang.String[] { "StripeStats", });
           internal_static_org_apache_hadoop_hive_ql_io_orc_Footer_descriptor =
-            getDescriptor().getMessageTypes().get(18);
+            getDescriptor().getMessageTypes().get(19);
           internal_static_org_apache_hadoop_hive_ql_io_orc_Footer_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_ql_io_orc_Footer_descriptor,
               new java.lang.String[] { "HeaderLength", "ContentLength", "Stripes", "Types", "Metadata", "NumberOfRows", "Statistics", "RowIndexStride", });
           internal_static_org_apache_hadoop_hive_ql_io_orc_PostScript_descriptor =
-            getDescriptor().getMessageTypes().get(19);
+            getDescriptor().getMessageTypes().get(20);
           internal_static_org_apache_hadoop_hive_ql_io_orc_PostScript_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_ql_io_orc_PostScript_descriptor,

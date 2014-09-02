@@ -164,10 +164,13 @@ PREHOOK: query: -- HIVE-4181 TOK_FUNCTIONSTAR for UDTF
 create table allcolref as select array(key, value) from src
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@allcolref
 POSTHOOK: query: -- HIVE-4181 TOK_FUNCTIONSTAR for UDTF
 create table allcolref as select array(key, value) from src
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@allcolref
 PREHOOK: query: explain select explode(*) as x from allcolref limit 10
 PREHOOK: type: QUERY
