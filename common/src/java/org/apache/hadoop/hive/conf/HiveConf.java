@@ -1587,8 +1587,8 @@ public class HiveConf extends Configuration {
         "must be a proper implementation of the interface\n" +
         "org.apache.hive.service.auth.PasswdAuthenticationProvider. HiveServer2\n" +
         "will call its Authenticate(user, passed) method to authenticate requests.\n" +
-        "The implementation may optionally extend Hadoop's\n" +
-        "org.apache.hadoop.conf.Configured class to grab Hive's Configuration object."),
+        "The implementation may optionally implement Hadoop's\n" +
+        "org.apache.hadoop.conf.Configurable class to grab Hive's Configuration object."),
     HIVE_SERVER2_PAM_SERVICES("hive.server2.authentication.pam.services", null,
       "List of the underlying pam services that should be used when auth type is PAM\n" +
       "A file with the same name must exist in /etc/pam.d"),
