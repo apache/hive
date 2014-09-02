@@ -50,16 +50,9 @@ public class HivePrincipal implements Comparable<HivePrincipal> {
 
   public HivePrincipal(String name, HivePrincipalType type){
     this.type = type;
-    if (type == HivePrincipalType.ROLE) {
-      // lower case role to make operations on it case insensitive
-      // when the old default authorization gets deprecated, this can move
-      // to ObjectStore code base
-      this.name = name.toLowerCase();
-    } else {
-      this.name = name;
-    }
-
+    this.name = name;
   }
+
   public String getName() {
     return name;
   }

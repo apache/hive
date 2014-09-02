@@ -348,17 +348,17 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
             // want to isolate any potential issue it may introduce.
             ArrayList<LinkedHashMap<String, String>> dp =
               db.loadDynamicPartitions(
-                  tbd.getSourcePath(),
-                  tbd.getTable().getTableName(),
-                	tbd.getPartitionSpec(),
-                	tbd.getReplace(),
-                	dpCtx.getNumDPCols(),
-                	tbd.getHoldDDLTime(),
-                	isSkewedStoredAsDirs(tbd));
+                tbd.getSourcePath(),
+                tbd.getTable().getTableName(),
+                tbd.getPartitionSpec(),
+                tbd.getReplace(),
+                dpCtx.getNumDPCols(),
+                tbd.getHoldDDLTime(),
+                isSkewedStoredAsDirs(tbd));
 
             if (dp.size() == 0 && conf.getBoolVar(HiveConf.ConfVars.HIVE_ERROR_ON_EMPTY_PARTITION)) {
               throw new HiveException("This query creates no partitions." +
-              		" To turn off this error, set hive.error.on.empty.partition=false.");
+                  " To turn off this error, set hive.error.on.empty.partition=false.");
             }
 
             // for each partition spec, get the partition
@@ -412,13 +412,13 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
                   numBuckets, sortCols);
             }
 
-          	dc = new DataContainer(table.getTTable(), partn.getTPartition());
-          	// add this partition to post-execution hook
-          	if (work.getOutputs() != null) {
-          	  work.getOutputs().add(new WriteEntity(partn,
+            dc = new DataContainer(table.getTTable(), partn.getTPartition());
+            // add this partition to post-execution hook
+            if (work.getOutputs() != null) {
+              work.getOutputs().add(new WriteEntity(partn,
                   (tbd.getReplace() ? WriteEntity.WriteType.INSERT_OVERWRITE
                       : WriteEntity.WriteType.INSERT)));
-          	}
+            }
          }
         }
         if (SessionState.get() != null && dc != null) {

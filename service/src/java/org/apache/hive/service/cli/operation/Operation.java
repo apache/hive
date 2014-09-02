@@ -17,8 +17,11 @@
  */
 package org.apache.hive.service.cli.operation;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.EnumSet;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -41,20 +44,28 @@ public abstract class Operation {
   private final OperationHandle opHandle;
   private HiveConf configuration;
   public static final Log LOG = LogFactory.getLog(Operation.class.getName());
+  public static final FetchOrientation DEFAULT_FETCH_ORIENTATION = FetchOrientation.FETCH_NEXT;
   public static final long DEFAULT_FETCH_MAX_ROWS = 100;
   protected boolean hasResultSet;
   protected volatile HiveSQLException operationException;
   protected final boolean runAsync;
   protected volatile Future<?> backgroundHandle;
+  protected OperationLog operationLog;
+  protected boolean isOperationLogEnabled;
+
+  private long operationTimeout;
+  private long lastAccessTime;
 
   protected static final EnumSet<FetchOrientation> DEFAULT_FETCH_ORIENTATION_SET =
       EnumSet.of(FetchOrientation.FETCH_NEXT,FetchOrientation.FETCH_FIRST);
 
   protected Operation(HiveSession parentSession, OperationType opType, boolean runInBackground) {
-    super();
     this.parentSession = parentSession;
     this.runAsync = runInBackground;
     this.opHandle = new OperationHandle(opType, parentSession.getProtocolVersion());
+    lastAccessTime = System.currentTimeMillis();
+    operationTimeout = HiveConf.getTimeVar(parentSession.getHiveConf(),
+        HiveConf.ConfVars.HIVE_SERVER2_IDLE_OPERATION_TIMEOUT, TimeUnit.MILLISECONDS);
   }
 
   public Future<?> getBackgroundHandle() {
@@ -106,10 +117,38 @@ public abstract class Operation {
     opHandle.setHasResultSet(hasResultSet);
   }
 
+  public OperationLog getOperationLog() {
+    return operationLog;
+  }
+
   protected final OperationState setState(OperationState newState) throws HiveSQLException {
     state.validateTransition(newState);
     this.state = newState;
+    this.lastAccessTime = System.currentTimeMillis();
     return this.state;
+  }
+
+  public boolean isTimedOut(long current) {
+    if (operationTimeout == 0) {
+      return false;
+    }
+    if (operationTimeout > 0) {
+      // check only when it's in terminal state
+      return state.isTerminal() && lastAccessTime + operationTimeout <= current;
+    }
+    return lastAccessTime + -operationTimeout <= current;
+  }
+
+  public long getLastAccessTime() {
+    return lastAccessTime;
+  }
+
+  public long getOperationTimeout() {
+    return operationTimeout;
+  }
+
+  public void setOperationTimeout(long operationTimeout) {
+    this.operationTimeout = operationTimeout;
   }
 
   protected void setOperationException(HiveSQLException operationException) {
@@ -120,6 +159,7 @@ public abstract class Operation {
     if (this.state != state) {
       throw new HiveSQLException("Expected state " + state + ", but found " + this.state);
     }
+    this.lastAccessTime = System.currentTimeMillis();
   }
 
   public boolean isRunning() {
@@ -138,7 +178,97 @@ public abstract class Operation {
     return OperationState.ERROR.equals(state);
   }
 
-  public abstract void run() throws HiveSQLException;
+  protected void createOperationLog() {
+    if (parentSession.isOperationLogEnabled()) {
+      File operationLogFile = new File(parentSession.getOperationLogSessionDir(),
+          opHandle.getHandleIdentifier().toString());
+      isOperationLogEnabled = true;
+
+      // create log file
+      try {
+        if (operationLogFile.exists()) {
+          LOG.warn("The operation log file should not exist, but it is already there: " +
+              operationLogFile.getAbsolutePath());
+          operationLogFile.delete();
+        }
+        if (!operationLogFile.createNewFile()) {
+          // the log file already exists and cannot be deleted.
+          // If it can be read/written, keep its contents and use it.
+          if (!operationLogFile.canRead() || !operationLogFile.canWrite()) {
+            LOG.warn("The already existed operation log file cannot be recreated, " +
+                "and it cannot be read or written: " + operationLogFile.getAbsolutePath());
+            isOperationLogEnabled = false;
+            return;
+          }
+        }
+      } catch (Exception e) {
+        LOG.warn("Unable to create operation log file: " + operationLogFile.getAbsolutePath(), e);
+        isOperationLogEnabled = false;
+        return;
+      }
+
+      // create OperationLog object with above log file
+      try {
+        operationLog = new OperationLog(opHandle.toString(), operationLogFile);
+      } catch (FileNotFoundException e) {
+        LOG.warn("Unable to instantiate OperationLog object for operation: " +
+            opHandle, e);
+        isOperationLogEnabled = false;
+        return;
+      }
+
+      // register this operationLog to current thread
+      OperationLog.setCurrentOperationLog(operationLog);
+    }
+  }
+
+  protected void unregisterOperationLog() {
+    if (isOperationLogEnabled) {
+      OperationLog.removeCurrentOperationLog();
+    }
+  }
+
+  /**
+   * Invoked before runInternal().
+   * Set up some preconditions, or configurations.
+   */
+  protected void beforeRun() {
+    createOperationLog();
+  }
+
+  /**
+   * Invoked after runInternal(), even if an exception is thrown in runInternal().
+   * Clean up resources, which was set up in beforeRun().
+   */
+  protected void afterRun() {
+    unregisterOperationLog();
+  }
+
+  /**
+   * Implemented by subclass of Operation class to execute specific behaviors.
+   * @throws HiveSQLException
+   */
+  protected abstract void runInternal() throws HiveSQLException;
+
+  public void run() throws HiveSQLException {
+    beforeRun();
+    try {
+      runInternal();
+    } finally {
+      afterRun();
+    }
+  }
+
+  protected void cleanupOperationLog() {
+    if (isOperationLogEnabled) {
+      if (operationLog == null) {
+        LOG.error("Operation [ " + opHandle.getHandleIdentifier() + " ] "
+          + "logging is enabled, but its OperationLog object cannot be found.");
+      } else {
+        operationLog.close();
+      }
+    }
+  }
 
   // TODO: make this abstract and implement in subclasses.
   public void cancel() throws HiveSQLException {

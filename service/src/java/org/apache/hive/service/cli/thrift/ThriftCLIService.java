@@ -29,20 +29,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.service.AbstractService;
 import org.apache.hive.service.auth.HiveAuthFactory;
 import org.apache.hive.service.auth.TSetIpAddressProcessor;
-import org.apache.hive.service.cli.CLIService;
-import org.apache.hive.service.cli.FetchOrientation;
-import org.apache.hive.service.cli.GetInfoType;
-import org.apache.hive.service.cli.GetInfoValue;
-import org.apache.hive.service.cli.HiveSQLException;
-import org.apache.hive.service.cli.OperationHandle;
-import org.apache.hive.service.cli.OperationStatus;
-import org.apache.hive.service.cli.RowSet;
-import org.apache.hive.service.cli.SessionHandle;
-import org.apache.hive.service.cli.TableSchema;
+import org.apache.hive.service.cli.*;
 import org.apache.hive.service.cli.session.SessionManager;
 import org.apache.thrift.TException;
 import org.apache.thrift.server.TServer;
@@ -71,6 +61,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
 
   protected int minWorkerThreads;
   protected int maxWorkerThreads;
+  protected long workerKeepAliveTime;
 
   protected static HiveAuthFactory hiveAuthFactory;
 
@@ -242,7 +233,9 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
     if (userName == null) {
       userName = req.getUsername();
     }
-    return getProxyUser(userName, req.getConfiguration(), getIpAddress());
+    String effectiveClientUser = getProxyUser(userName, req.getConfiguration(), getIpAddress());
+    LOG.debug("Client's username: " + effectiveClientUser);
+    return effectiveClientUser;
   }
 
   /**
@@ -532,7 +525,8 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       RowSet rowSet = cliService.fetchResults(
           new OperationHandle(req.getOperationHandle()),
           FetchOrientation.getFetchOrientation(req.getOrientation()),
-          req.getMaxRows());
+          req.getMaxRows(),
+          FetchType.getFetchType(req.getFetchType()));
       resp.setResults(rowSet.toTRowSet());
       resp.setHasMoreRows(false);
       resp.setStatus(OK_STATUS);

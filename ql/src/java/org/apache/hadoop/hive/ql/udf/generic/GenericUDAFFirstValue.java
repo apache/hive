@@ -41,147 +41,128 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
-@WindowFunctionDescription
-(
-		description = @Description(
-								name = "first_value",
-								value = "_FUNC_(x)"
-								),
-		supportsWindow = true,
-		pivotResult = false,
-		impliesOrder = true
+@WindowFunctionDescription(
+  description = @Description(
+    name = "first_value",
+    value = "_FUNC_(x)"
+  ),
+  supportsWindow = true,
+  pivotResult = false,
+  impliesOrder = true
 )
-public class GenericUDAFFirstValue extends AbstractGenericUDAFResolver
-{
-	static final Log LOG = LogFactory.getLog(GenericUDAFFirstValue.class.getName());
+public class GenericUDAFFirstValue extends AbstractGenericUDAFResolver {
 
-	@Override
-	public GenericUDAFEvaluator getEvaluator(TypeInfo[] parameters) throws SemanticException
-	{
-		if (parameters.length > 2)
-		{
-			throw new UDFArgumentTypeException(2, "At most 2 arguments expected");
-		}
-		if ( parameters.length > 1 && !parameters[1].equals(TypeInfoFactory.booleanTypeInfo) )
-		{
-			throw new UDFArgumentTypeException(1, "second argument must be a boolean expression");
-		}
-		return createEvaluator();
-	}
+  static final Log LOG = LogFactory.getLog(GenericUDAFFirstValue.class.getName());
 
-	protected GenericUDAFFirstValueEvaluator createEvaluator()
-	{
-		return new GenericUDAFFirstValueEvaluator();
-	}
+  @Override
+  public GenericUDAFEvaluator getEvaluator(TypeInfo[] parameters) throws SemanticException {
+    if (parameters.length > 2) {
+      throw new UDFArgumentTypeException(2, "At most 2 arguments expected");
+    }
+    if (parameters.length > 1 && !parameters[1].equals(TypeInfoFactory.booleanTypeInfo)) {
+      throw new UDFArgumentTypeException(1, "second argument must be a boolean expression");
+    }
+    return createEvaluator();
+  }
 
-	static class FirstValueBuffer implements AggregationBuffer
-	{
-		Object val;
-		boolean valSet;
-		boolean firstRow;
-		boolean skipNulls;
+  protected GenericUDAFFirstValueEvaluator createEvaluator() {
+    return new GenericUDAFFirstValueEvaluator();
+  }
 
-		FirstValueBuffer()
-		{
-			init();
-		}
+  static class FirstValueBuffer implements AggregationBuffer {
 
-		void init()
-		{
-			val = null;
-			valSet = false;
-			firstRow = true;
-			skipNulls = false;
-		}
+    Object val;
+    boolean valSet;
+    boolean firstRow;
+    boolean skipNulls;
 
-	}
+    FirstValueBuffer() {
+      init();
+    }
 
-	public static class GenericUDAFFirstValueEvaluator extends GenericUDAFEvaluator
-	{
-		ObjectInspector inputOI;
-		ObjectInspector outputOI;
+    void init() {
+      val = null;
+      valSet = false;
+      firstRow = true;
+      skipNulls = false;
+    }
 
-		@Override
-		public ObjectInspector init(Mode m, ObjectInspector[] parameters) throws HiveException
-		{
-			super.init(m, parameters);
-			if (m != Mode.COMPLETE)
-			{
-				throw new HiveException(
-						"Only COMPLETE mode supported for Rank function");
-			}
-			inputOI = parameters[0];
-			outputOI = ObjectInspectorUtils.getStandardObjectInspector(inputOI, ObjectInspectorCopyOption.WRITABLE);
-			return outputOI;
-		}
+  }
 
-		@Override
-		public AggregationBuffer getNewAggregationBuffer() throws HiveException
-		{
-			return new FirstValueBuffer();
-		}
+  public static class GenericUDAFFirstValueEvaluator extends GenericUDAFEvaluator {
 
-		@Override
-		public void reset(AggregationBuffer agg) throws HiveException
-		{
-			((FirstValueBuffer) agg).init();
-		}
+    ObjectInspector inputOI;
+    ObjectInspector outputOI;
 
-		@Override
-		public void iterate(AggregationBuffer agg, Object[] parameters) throws HiveException
-		{
-			FirstValueBuffer fb = (FirstValueBuffer) agg;
+    @Override
+    public ObjectInspector init(Mode m, ObjectInspector[] parameters) throws HiveException {
+      super.init(m, parameters);
+      if (m != Mode.COMPLETE) {
+        throw new HiveException("Only COMPLETE mode supported for Rank function");
+      }
+      inputOI = parameters[0];
+      outputOI = ObjectInspectorUtils.getStandardObjectInspector(inputOI,
+        ObjectInspectorCopyOption.WRITABLE);
+      return outputOI;
+    }
 
-			if (fb.firstRow )
-			{
-				fb.firstRow = false;
-				if ( parameters.length == 2  )
-				{
-					fb.skipNulls = PrimitiveObjectInspectorUtils.getBoolean(
-							parameters[1],
-							PrimitiveObjectInspectorFactory.writableBooleanObjectInspector);
-				}
-			}
+    @Override
+    public AggregationBuffer getNewAggregationBuffer() throws HiveException {
+      return new FirstValueBuffer();
+    }
 
-			if ( !fb.valSet )
-			{
-				fb.val = ObjectInspectorUtils.copyToStandardObject(parameters[0], inputOI, ObjectInspectorCopyOption.WRITABLE);
-				if ( !fb.skipNulls || fb.val != null )
-				{
-					fb.valSet = true;
-				}
-			}
-		}
+    @Override
+    public void reset(AggregationBuffer agg) throws HiveException {
+      ((FirstValueBuffer) agg).init();
+    }
 
-		@Override
-		public Object terminatePartial(AggregationBuffer agg) throws HiveException
-		{
-			throw new HiveException("terminatePartial not supported");
-		}
+    @Override
+    public void iterate(AggregationBuffer agg, Object[] parameters) throws HiveException {
+      FirstValueBuffer fb = (FirstValueBuffer) agg;
 
-		@Override
-		public void merge(AggregationBuffer agg, Object partial) throws HiveException
-		{
-			throw new HiveException("merge not supported");
-		}
+      if (fb.firstRow) {
+        fb.firstRow = false;
+        if (parameters.length == 2) {
+          fb.skipNulls = PrimitiveObjectInspectorUtils.getBoolean(parameters[1],
+            PrimitiveObjectInspectorFactory.writableBooleanObjectInspector);
+        }
+      }
 
-		@Override
-		public Object terminate(AggregationBuffer agg) throws HiveException
-		{
-			return ((FirstValueBuffer) agg).val;
-		}
-		
+      if (!fb.valSet) {
+        fb.val = ObjectInspectorUtils.copyToStandardObject(parameters[0], inputOI,
+          ObjectInspectorCopyOption.WRITABLE);
+        if (!fb.skipNulls || fb.val != null) {
+          fb.valSet = true;
+        }
+      }
+    }
+
+    @Override
+    public Object terminatePartial(AggregationBuffer agg) throws HiveException {
+      throw new HiveException("terminatePartial not supported");
+    }
+
+    @Override
+    public void merge(AggregationBuffer agg, Object partial) throws HiveException {
+      throw new HiveException("merge not supported");
+    }
+
+    @Override
+    public Object terminate(AggregationBuffer agg) throws HiveException {
+      return ((FirstValueBuffer) agg).val;
+    }
+
     @Override
     public GenericUDAFEvaluator getWindowingEvaluator(WindowFrameDef wFrmDef) {
       BoundaryDef start = wFrmDef.getStart();
       BoundaryDef end = wFrmDef.getEnd();
-      return new FirstValStreamingFixedWindow(this, start.getAmt(),
-          end.getAmt());
+      return new FirstValStreamingFixedWindow(this, start.getAmt(), end.getAmt());
     }
 
-	}
-	
+  }
+
   static class ValIndexPair {
+
     Object val;
     int idx;
 
@@ -191,16 +172,15 @@ public class GenericUDAFFirstValue extends AbstractGenericUDAFResolver
     }
   }
 
-  static class FirstValStreamingFixedWindow extends
-      GenericUDAFStreamingEvaluator<Object> {
+  static class FirstValStreamingFixedWindow extends GenericUDAFStreamingEvaluator<Object> {
 
     class State extends GenericUDAFStreamingEvaluator<Object>.StreamingState {
+
       private final Deque<ValIndexPair> valueChain;
 
       public State(int numPreceding, int numFollowing, AggregationBuffer buf) {
         super(numPreceding, numFollowing, buf);
-        valueChain = new ArrayDeque<ValIndexPair>(numPreceding + numFollowing
-            + 1);
+        valueChain = new ArrayDeque<ValIndexPair>(numPreceding + numFollowing + 1);
       }
 
       @Override
@@ -222,8 +202,8 @@ public class GenericUDAFFirstValue extends AbstractGenericUDAFResolver
          */
 
         int wdwSz = numPreceding + numFollowing + 1;
-        return underlying + (underlying * wdwSz) + (underlying * wdwSz)
-            + (3 * JavaDataModel.PRIMITIVES1);
+        return underlying + (underlying * wdwSz) + (underlying * wdwSz) + (3
+                                                                           * JavaDataModel.PRIMITIVES1);
       }
 
       protected void reset() {
@@ -232,8 +212,8 @@ public class GenericUDAFFirstValue extends AbstractGenericUDAFResolver
       }
     }
 
-    public FirstValStreamingFixedWindow(GenericUDAFEvaluator wrappedEval,
-        int numPreceding, int numFollowing) {
+    public FirstValStreamingFixedWindow(GenericUDAFEvaluator wrappedEval, int numPreceding,
+      int numFollowing) {
       super(wrappedEval, numPreceding, numFollowing);
     }
 
@@ -253,8 +233,7 @@ public class GenericUDAFFirstValue extends AbstractGenericUDAFResolver
     }
 
     @Override
-    public void iterate(AggregationBuffer agg, Object[] parameters)
-        throws HiveException {
+    public void iterate(AggregationBuffer agg, Object[] parameters) throws HiveException {
 
       State s = (State) agg;
       FirstValueBuffer fb = (FirstValueBuffer) s.wrappedBuf;
@@ -266,15 +245,14 @@ public class GenericUDAFFirstValue extends AbstractGenericUDAFResolver
         wrappedEval.iterate(fb, parameters);
       }
 
-      Object o = ObjectInspectorUtils.copyToStandardObject(parameters[0],
-          inputOI(), ObjectInspectorCopyOption.WRITABLE);
+      Object o = ObjectInspectorUtils.copyToStandardObject(parameters[0], inputOI(),
+        ObjectInspectorCopyOption.WRITABLE);
 
       /*
        * add row to chain. except in case of UNB preceding: - only 1 firstVal
        * needs to be tracked.
        */
-      if (s.numPreceding != BoundarySpec.UNBOUNDED_AMOUNT
-          || s.valueChain.isEmpty()) {
+      if (s.numPreceding != BoundarySpec.UNBOUNDED_AMOUNT || s.valueChain.isEmpty()) {
         /*
          * add value to chain if it is not null or if skipNulls is false.
          */
@@ -309,8 +287,7 @@ public class GenericUDAFFirstValue extends AbstractGenericUDAFResolver
     public Object terminate(AggregationBuffer agg) throws HiveException {
       State s = (State) agg;
       FirstValueBuffer fb = (FirstValueBuffer) s.wrappedBuf;
-      ValIndexPair r = fb.skipNulls && s.valueChain.size() == 0 ? null
-          : s.valueChain.getFirst();
+      ValIndexPair r = fb.skipNulls && s.valueChain.size() == 0 ? null : s.valueChain.getFirst();
 
       for (int i = 0; i < s.numFollowing; i++) {
         s.results.add(r == null ? null : r.val);

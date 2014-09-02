@@ -40,14 +40,14 @@ public abstract class GenericUDFBaseTrim extends GenericUDF {
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
     if (arguments.length != 1) {
       throw new UDFArgumentException(udfName + " requires one value argument. Found :"
-	  + arguments.length);
+        + arguments.length);
     }
     PrimitiveObjectInspector argumentOI;
     if(arguments[0] instanceof PrimitiveObjectInspector) {
       argumentOI = (PrimitiveObjectInspector) arguments[0];
     } else {
       throw new UDFArgumentException(udfName + " takes only primitive types. found "
-	  + arguments[0].getTypeName());
+        + arguments[0].getTypeName());
     }
     switch (argumentOI.getPrimitiveCategory()) {
     case STRING:
@@ -56,7 +56,7 @@ public abstract class GenericUDFBaseTrim extends GenericUDF {
       break;
     default:
       throw new UDFArgumentException(udfName + " takes only STRING/CHAR/VARCHAR types. Found "
-	  + argumentOI.getPrimitiveCategory());
+        + argumentOI.getPrimitiveCategory());
     }
     converter = new TextConverter(argumentOI);
     return PrimitiveObjectInspectorFactory.writableStringObjectInspector;

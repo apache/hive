@@ -16,12 +16,19 @@ package org.apache.hadoop.hive.ql.io.parquet.convert;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.List;
 
+import org.apache.hadoop.hive.common.type.HiveChar;
+import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTime;
 import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTimeUtils;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
+import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.FloatWritable;
@@ -145,6 +152,32 @@ public enum ETypeConverter {
         }
       };
     }
+  },
+  ECHAR_CONVERTER(HiveCharWritable.class) {
+    @Override
+    Converter getConverter(final PrimitiveType type, final int index, final HiveGroupConverter parent) {
+      return new BinaryConverter<HiveCharWritable>(type, parent, index) {
+        @Override
+        protected HiveCharWritable convert(Binary binary) {
+          HiveChar hiveChar = new HiveChar();
+          hiveChar.setValue(binary.toStringUsingUTF8());
+          return new HiveCharWritable(hiveChar);
+        }
+      };
+    }
+  },
+  EVARCHAR_CONVERTER(HiveVarcharWritable.class) {
+    @Override
+    Converter getConverter(final PrimitiveType type, final int index, final HiveGroupConverter parent) {
+      return new BinaryConverter<HiveVarcharWritable>(type, parent, index) {
+        @Override
+        protected HiveVarcharWritable convert(Binary binary) {
+          HiveVarchar hiveVarchar = new HiveVarchar();
+          hiveVarchar.setValue(binary.toStringUsingUTF8());
+          return new HiveVarcharWritable(hiveVarchar);
+        }
+      };
+    }
   };
 
   final Class<?> _type;
@@ -159,7 +192,8 @@ public enum ETypeConverter {
 
   abstract Converter getConverter(final PrimitiveType type, final int index, final HiveGroupConverter parent);
 
-  public static Converter getNewConverter(final PrimitiveType type, final int index, final HiveGroupConverter parent) {
+  public static Converter getNewConverter(final PrimitiveType type, final int index,
+      final HiveGroupConverter parent, List<TypeInfo> hiveSchemaTypeInfos) {
     if (type.isPrimitive() && (type.asPrimitiveType().getPrimitiveTypeName().equals(PrimitiveType.PrimitiveTypeName.INT96))) {
       //TODO- cleanup once parquet support Timestamp type annotation.
       return ETypeConverter.ETIMESTAMP_CONVERTER.getConverter(type, index, parent);
@@ -167,7 +201,15 @@ public enum ETypeConverter {
     if (OriginalType.DECIMAL == type.getOriginalType()) {
       return EDECIMAL_CONVERTER.getConverter(type, index, parent);
     } else if (OriginalType.UTF8 == type.getOriginalType()) {
-      return ESTRING_CONVERTER.getConverter(type, index, parent);
+      if (hiveSchemaTypeInfos.get(index).getTypeName()
+          .startsWith(serdeConstants.CHAR_TYPE_NAME)) {
+        return ECHAR_CONVERTER.getConverter(type, index, parent);
+      } else if (hiveSchemaTypeInfos.get(index).getTypeName()
+          .startsWith(serdeConstants.VARCHAR_TYPE_NAME)) {
+        return EVARCHAR_CONVERTER.getConverter(type, index, parent);
+      } else if (type.isPrimitive()) {
+        return ESTRING_CONVERTER.getConverter(type, index, parent);
+      }
     }
 
     Class<?> javaType = type.getPrimitiveTypeName().javaType;

@@ -27,6 +27,7 @@ import java.sql.SQLRecoverableException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -46,7 +47,8 @@ public class JDBCStatsAggregator implements StatsAggregator {
   private final Log LOG = LogFactory.getLog(this.getClass().getName());
   private int timeout = 30;
   private final String comment = "Hive stats aggregation: " + this.getClass().getName();
-  private int maxRetries, waitWindow;
+  private int maxRetries;
+  private long waitWindow;
   private final Random r;
 
   public JDBCStatsAggregator() {
@@ -57,11 +59,14 @@ public class JDBCStatsAggregator implements StatsAggregator {
   @Override
   public boolean connect(Configuration hiveconf, Task sourceTask) {
     this.hiveconf = hiveconf;
-    timeout = HiveConf.getIntVar(hiveconf, HiveConf.ConfVars.HIVE_STATS_JDBC_TIMEOUT);
+    timeout = (int) HiveConf.getTimeVar(
+        hiveconf, HiveConf.ConfVars.HIVE_STATS_JDBC_TIMEOUT, TimeUnit.SECONDS);
     connectionString = HiveConf.getVar(hiveconf, HiveConf.ConfVars.HIVESTATSDBCONNECTIONSTRING);
     String driver = HiveConf.getVar(hiveconf, HiveConf.ConfVars.HIVESTATSJDBCDRIVER);
     maxRetries = HiveConf.getIntVar(hiveconf, HiveConf.ConfVars.HIVE_STATS_RETRIES_MAX);
-    waitWindow = HiveConf.getIntVar(hiveconf, HiveConf.ConfVars.HIVE_STATS_RETRIES_WAIT);
+    waitWindow = HiveConf.getTimeVar(
+        hiveconf, HiveConf.ConfVars.HIVE_STATS_RETRIES_WAIT, TimeUnit.MILLISECONDS);
+    this.sourceTask = sourceTask;
 
     try {
       Class.forName(driver).newInstance();

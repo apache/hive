@@ -64,7 +64,7 @@ public class RCFileRecordReader<K extends LongWritable, V extends BytesRefArrayW
     private final Map<String, RCFileSyncEntry> cache;
 
     public RCFileSyncCache() {
-	cache = Collections.synchronizedMap(new WeakHashMap<String, RCFileSyncEntry>());
+      cache = Collections.synchronizedMap(new WeakHashMap<String, RCFileSyncEntry>());
     }
 
     public void put(FileSplit split, long endSync) {

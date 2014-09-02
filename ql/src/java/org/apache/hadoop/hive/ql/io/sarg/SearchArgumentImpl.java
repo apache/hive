@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.io.sarg;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
+
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.common.type.HiveChar;
@@ -50,6 +51,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -107,6 +109,12 @@ final class SearchArgumentImpl implements SearchArgument {
 
     @Override
     public Object getLiteral() {
+      // To get around a kryo 2.22 bug while deserialize a Timestamp into Date
+      // (https://github.com/EsotericSoftware/kryo/issues/88)
+      // When we see a Date, convert back into Timestamp
+      if (literal instanceof java.util.Date) {
+        return new Timestamp(((java.util.Date)literal).getTime());
+      }
       return literal;
     }
 
@@ -317,6 +325,8 @@ final class SearchArgumentImpl implements SearchArgument {
             return PredicateLeaf.Type.FLOAT;
           case DATE:
             return PredicateLeaf.Type.DATE;
+          case TIMESTAMP:
+            return PredicateLeaf.Type.TIMESTAMP;
           case DECIMAL:
             return PredicateLeaf.Type.DECIMAL;
           default:
@@ -354,6 +364,7 @@ final class SearchArgumentImpl implements SearchArgument {
         case FLOAT:
           return ((Number) lit.getValue()).doubleValue();
         case DATE:
+        case TIMESTAMP:
         case DECIMAL:
           return lit;
         default:
@@ -948,6 +959,7 @@ final class SearchArgumentImpl implements SearchArgument {
           literal instanceof Long ||
           literal instanceof Double ||
           literal instanceof DateWritable ||
+          literal instanceof Timestamp ||
           literal instanceof HiveDecimal ||
           literal instanceof BigDecimal) {
         return literal;
@@ -981,7 +993,9 @@ final class SearchArgumentImpl implements SearchArgument {
         return PredicateLeaf.Type.FLOAT;
       } else if (literal instanceof DateWritable) {
         return PredicateLeaf.Type.DATE;
-      } else if (literal instanceof HiveDecimal ||
+      } else if (literal instanceof Timestamp) {
+        return PredicateLeaf.Type.TIMESTAMP;
+      }else if (literal instanceof HiveDecimal ||
           literal instanceof BigDecimal) {
         return PredicateLeaf.Type.DECIMAL;
       }

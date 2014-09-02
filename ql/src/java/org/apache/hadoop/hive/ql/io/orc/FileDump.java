@@ -120,14 +120,14 @@ public final class FileDump {
           RowIndex[] indices = rows.readRowIndex(stripeIx);
           for (int col : rowIndexCols) {
             StringBuilder buf = new StringBuilder();
-            buf.append("    Column ").append(col).append(": row index");
+            buf.append("    Row group index column ").append(col).append(":");
             RowIndex index = null;
             if ((col >= indices.length) || ((index = indices[col]) == null)) {
               buf.append(" not found\n");
               continue;
             }
             for (int entryIx = 0; entryIx < index.getEntryCount(); ++entryIx) {
-              buf.append("      RG ").append(entryIx).append(": ");
+              buf.append("\n      Entry ").append(entryIx).append(":");
               RowIndexEntry entry = index.getEntry(entryIx);
               if (entry == null) {
                 buf.append("unknown\n");
@@ -139,15 +139,17 @@ public final class FileDump {
               } else {
                 ColumnStatistics cs = ColumnStatisticsImpl.deserialize(colStats);
                 Object min = RecordReaderImpl.getMin(cs), max = RecordReaderImpl.getMax(cs);
-                buf.append("[").append(min).append(", ").append(max).append(") at ");
+                buf.append(" count: ").append(cs.getNumberOfValues());
+                buf.append(" min: ").append(min);
+                buf.append(" max: ").append(max);
               }
+              buf.append(" positions: ");
               for (int posIx = 0; posIx < entry.getPositionsCount(); ++posIx) {
                 if (posIx != 0) {
                   buf.append(",");
                 }
                 buf.append(entry.getPositions(posIx));
               }
-              buf.append("\n");
             }
             System.out.println(buf);
           }

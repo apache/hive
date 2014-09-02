@@ -270,7 +270,7 @@ public class PTFRowContainer<Row extends List<Object>> extends RowContainer<Row>
 
       FileSystem fs = finalOutPath.getFileSystem(jc);
       final SequenceFile.Writer outStream = Utilities.createSequenceWriter(jc, fs, finalOutPath,
-	  BytesWritable.class, valueClass, isCompressed, progress);
+        BytesWritable.class, valueClass, isCompressed, progress);
 
       return new PTFRecordWriter(outStream);
     }

@@ -359,12 +359,15 @@ select `x+1```, `y&y`
 from t4 where `x+1``` < '200'
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@t4
+PREHOOK: Output: database:default
+PREHOOK: Output: default@v1
 POSTHOOK: query: -- view
 create view v1 as 
 select `x+1```, `y&y`
 from t4 where `x+1``` < '200'
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@t4
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@v1
 PREHOOK: query: select `x+1```, `y&y`, rank() over(partition by `x+1``` order by  `y&y`)
 from v1

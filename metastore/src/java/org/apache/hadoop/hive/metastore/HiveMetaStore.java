@@ -42,6 +42,7 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.Timer;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -122,6 +123,7 @@ import org.apache.hadoop.hive.metastore.api.PrivilegeGrantInfo;
 import org.apache.hadoop.hive.metastore.api.RequestPartsSpec;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
+import org.apache.hadoop.hive.metastore.api.SetPartitionsStatsRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowLocksRequest;
@@ -249,7 +251,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     private static String currentUrl;
 
     private Warehouse wh; // hdfs warehouse
-    private final ThreadLocal<RawStore> threadLocalMS =
+    private static final ThreadLocal<RawStore> threadLocalMS =
         new ThreadLocal<RawStore>() {
           @Override
           protected synchronized RawStore initialValue() {
@@ -263,6 +265,14 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         return null;
       }
     };
+
+    public static RawStore getRawStore() {
+      return threadLocalMS.get();
+    }
+
+    public static void removeRawStore() {
+      threadLocalMS.remove();
+    }
 
     // Thread local configuration is needed as many threads could make changes
     // to the conf using the connection hook
@@ -383,6 +393,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
     }
 
+    @Override
     public void init() throws MetaException {
       rawStoreClassName = hiveConf.getVar(HiveConf.ConfVars.METASTORE_RAW_STORE_IMPL);
       initListeners = MetaStoreUtils.getMetaStoreListeners(
@@ -435,7 +446,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         partitionValidationPattern = null;
       }
 
-      long cleanFreq = hiveConf.getLongVar(ConfVars.METASTORE_EVENT_CLEAN_FREQ) * 1000L;
+      long cleanFreq = hiveConf.getTimeVar(ConfVars.METASTORE_EVENT_CLEAN_FREQ, TimeUnit.MILLISECONDS);
       if (cleanFreq > 0) {
         // In default config, there is no timer.
         Timer cleaner = new Timer("Metastore Events Cleaner Thread", true);
@@ -3709,6 +3720,19 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       } finally {
         endFunction("write_partition_column_statistics: ", ret != false, null, tableName);
       }
+    } 
+    public boolean update_partition_column_statistics(
+        SetPartitionsStatsRequest request) throws NoSuchObjectException,
+        InvalidObjectException, MetaException, TException,
+        InvalidInputException {
+      boolean ret = false;
+      try {
+        ret = getMS().updatePartitionColumnStatistics(request);
+        return ret;
+      } finally {
+        endFunction("write_partition_column_statistics: ", ret != false, null,
+            null);
+      }
     }
 
     @Override
@@ -5023,12 +5047,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       startFunction("get_aggr_stats_for: db=" + request.getDbName() + " table=" + request.getTblName());
       AggrStats aggrStats = null;
       try {
-        //TODO: We are setting partitionCnt for which we were able to retrieve stats same as
-        // incoming number from request. This is not correct, but currently no users of this api
-        // rely on this. Only, current user StatsAnnotation don't care for it. StatsOptimizer
-        // will care for it, so before StatsOptimizer begin using it, we need to fix this.
         aggrStats = new AggrStats(getMS().get_aggr_stats_for(request.getDbName(),
-          request.getTblName(), request.getPartNames(), request.getColNames()), request.getPartNames().size());
+          request.getTblName(), request.getPartNames(), request.getColNames()));
         return aggrStats;
       } finally {
           endFunction("get_partitions_statistics_req: ", aggrStats == null, null, request.getTblName());
@@ -5036,8 +5056,15 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     }
 
+    @Override
+    public boolean set_aggr_stats_for(SetPartitionsStatsRequest request)
+        throws NoSuchObjectException, InvalidObjectException, MetaException,
+        InvalidInputException, TException {
+      return update_partition_column_statistics(request);
+    }
   }
 
+  
   public static IHMSHandler newHMSHandler(String name, HiveConf hiveConf) throws MetaException {
     return newHMSHandler(name, hiveConf, false);
   }

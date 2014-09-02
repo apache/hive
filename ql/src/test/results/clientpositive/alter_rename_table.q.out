@@ -13,11 +13,10 @@ POSTHOOK: Output: database:target
 PREHOOK: query: create table source.src like default.src
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:source
-PREHOOK: Output: source@source.src
+PREHOOK: Output: source@src
 POSTHOOK: query: create table source.src like default.src
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:source
-POSTHOOK: Output: source@source.src
 POSTHOOK: Output: source@src
 PREHOOK: query: load data local inpath '../../data/files/kv1.txt' overwrite into table source.src
 PREHOOK: type: LOAD
@@ -30,11 +29,10 @@ POSTHOOK: Output: source@src
 PREHOOK: query: create table source.srcpart like default.srcpart
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:source
-PREHOOK: Output: source@source.srcpart
+PREHOOK: Output: source@srcpart
 POSTHOOK: query: create table source.srcpart like default.srcpart
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:source
-POSTHOOK: Output: source@source.srcpart
 POSTHOOK: Output: source@srcpart
 PREHOOK: query: load data local inpath '../../data/files/kv1.txt' overwrite into table source.srcpart partition (ds='2008-04-08', hr='11')
 PREHOOK: type: LOAD
@@ -215,20 +213,18 @@ POSTHOOK: Input: target@srcpart@ds=2008-04-09/hr=12
 PREHOOK: query: create table source.src like default.src
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:source
-PREHOOK: Output: source@source.src
+PREHOOK: Output: source@src
 POSTHOOK: query: create table source.src like default.src
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:source
-POSTHOOK: Output: source@source.src
 POSTHOOK: Output: source@src
 PREHOOK: query: create table source.src1 like default.src
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:source
-PREHOOK: Output: source@source.src1
+PREHOOK: Output: source@src1
 POSTHOOK: query: create table source.src1 like default.src
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:source
-POSTHOOK: Output: source@source.src1
 POSTHOOK: Output: source@src1
 PREHOOK: query: load data local inpath '../../data/files/kv1.txt' overwrite into table source.src
 PREHOOK: type: LOAD

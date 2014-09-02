@@ -225,7 +225,7 @@ public class MatchPath extends TableFunctionEvaluator
       if ( symbolArgsSz % 2 != 0)
       {
         throwErrorWithSignature("Symbol Name, Expression need to be specified in pairs: " +
-        		"there are odd number of symbol args");
+            "there are odd number of symbol args");
       }
 
       evaluator.symInfo = new SymbolsInfo(symbolArgsSz/2);
@@ -253,7 +253,7 @@ public class MatchPath extends TableFunctionEvaluator
               PrimitiveObjectInspector.PrimitiveCategory.BOOLEAN )
         {
           throwErrorWithSignature(String.format("Currently a Symbol Expression(%s) " +
-          		"must be a boolean expression", symolExprArg.getExpressionTreeString()));
+              "must be a boolean expression", symolExprArg.getExpressionTreeString()));
         }
         evaluator.symInfo.add(symbolName, symolExprArg);
       }

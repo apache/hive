@@ -75,23 +75,23 @@ public class ConstantVectorExpression extends VectorExpression {
     this(outputColumn, "decimal");
     setDecimalValue(value);
   }
-  
+
   /*
    * Support for null constant object
    */
   public ConstantVectorExpression(int outputColumn, String typeString, boolean isNull) {
-	this(outputColumn, typeString);
-	isNullValue = isNull;
+    this(outputColumn, typeString);
+    isNullValue = isNull;
   }
-  
+
   private void evaluateLong(VectorizedRowBatch vrg) {
     LongColumnVector cv = (LongColumnVector) vrg.cols[outputColumn];
     cv.isRepeating = true;
     cv.noNulls = !isNullValue;
     if (!isNullValue) {
-    	cv.vector[0] = longValue;
+      cv.vector[0] = longValue;
     } else {
-    	cv.isNull[0] = true;
+      cv.isNull[0] = true;
     }
   }
 
@@ -100,10 +100,10 @@ public class ConstantVectorExpression extends VectorExpression {
     cv.isRepeating = true;
     cv.noNulls = !isNullValue;
     if (!isNullValue) {
-    	cv.vector[0] = doubleValue;
+      cv.vector[0] = doubleValue;
     } else {
-    	cv.isNull[0] = true;
-    }    
+      cv.isNull[0] = true;
+    }
   }
 
   private void evaluateBytes(VectorizedRowBatch vrg) {
@@ -112,9 +112,9 @@ public class ConstantVectorExpression extends VectorExpression {
     cv.noNulls = !isNullValue;
     cv.initBuffer();
     if (!isNullValue) {
-    	cv.setVal(0, bytesValue, 0, bytesValueLength);
+      cv.setVal(0, bytesValue, 0, bytesValueLength);
     } else {
-    	cv.isNull[0] = true;
+      cv.isNull[0] = true;
     }
   }
 
@@ -123,9 +123,9 @@ public class ConstantVectorExpression extends VectorExpression {
     dcv.isRepeating = true;
     dcv.noNulls = !isNullValue;
     if (!isNullValue) {
-    	dcv.vector[0].update(decimalValue);
+      dcv.vector[0].update(decimalValue);
     } else {
-    	dcv.isNull[0] = true;
+      dcv.isNull[0] = true;
     }
   }
 
@@ -194,7 +194,7 @@ public class ConstantVectorExpression extends VectorExpression {
     } else if (VectorizationContext.isDecimalFamily(typeString)){
       this.type = Type.DECIMAL;
     } else {
-      // everything else that does not belong to string, double, decimal is treated as long.	
+      // everything else that does not belong to string, double, decimal is treated as long.
       this.type = Type.LONG;
     }
   }

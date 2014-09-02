@@ -233,6 +233,10 @@ public class Partition implements Serializable {
     return ret;
   }
 
+  public Path getPartitionPath() {
+    return getDataLocation();
+  }
+
   public Path getDataLocation() {
     if (table.isPartitioned()) {
       return new Path(tPartition.getSd().getLocation());

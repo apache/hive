@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.serde2.lazy.LazyUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableConstantBooleanObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableConstantByteObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableConstantDoubleObjectInspector;
@@ -57,7 +58,7 @@ import org.slf4j.LoggerFactory;
  *
  */
 public class AccumuloRangeGenerator implements NodeProcessor {
-  private static final Logger log = LoggerFactory.getLogger(AccumuloRangeGenerator.class);
+  private static final Logger LOG = LoggerFactory.getLogger(AccumuloRangeGenerator.class);
 
   private final AccumuloPredicateHandler predicateHandler;
   private final HiveAccumuloRowIdColumnMapping rowIdMapping;
@@ -162,7 +163,7 @@ public class AccumuloRangeGenerator implements NodeProcessor {
           andRanges = newRanges;
         }
       } else {
-        log.error("Expected Range from {} but got {}", nd, nodeOutput);
+        LOG.error("Expected Range from {} but got {}", nd, nodeOutput);
         throw new IllegalArgumentException("Expected Range but got "
             + nodeOutput.getClass().getName());
       }
@@ -181,7 +182,7 @@ public class AccumuloRangeGenerator implements NodeProcessor {
         List<Range> childRanges = (List<Range>) nodeOutput;
         orRanges.addAll(childRanges);
       } else {
-        log.error("Expected Range from " + nd + " but got " + nodeOutput);
+        LOG.error("Expected Range from {} but got {}", nd, nodeOutput);
         throw new IllegalArgumentException("Expected Range but got "
             + nodeOutput.getClass().getName());
       }
@@ -324,27 +325,9 @@ public class AccumuloRangeGenerator implements NodeProcessor {
    */
   protected Text getBinaryValue(ConstantObjectInspector objInspector) throws IOException {
     ByteArrayOutputStream out = new ByteArrayOutputStream();
-    if (objInspector instanceof WritableConstantBooleanObjectInspector) {
+    if (objInspector instanceof PrimitiveObjectInspector) {
       LazyUtils.writePrimitive(out, objInspector.getWritableConstantValue(),
-          (WritableConstantBooleanObjectInspector) objInspector);
-    } else if (objInspector instanceof WritableConstantByteObjectInspector) {
-      LazyUtils.writePrimitive(out, objInspector.getWritableConstantValue(),
-          (WritableConstantByteObjectInspector) objInspector);
-    } else if (objInspector instanceof WritableConstantShortObjectInspector) {
-      LazyUtils.writePrimitive(out, objInspector.getWritableConstantValue(),
-          (WritableConstantShortObjectInspector) objInspector);
-    } else if (objInspector instanceof WritableConstantIntObjectInspector) {
-      LazyUtils.writePrimitive(out, objInspector.getWritableConstantValue(),
-          (WritableConstantIntObjectInspector) objInspector);
-    } else if (objInspector instanceof WritableConstantLongObjectInspector) {
-      LazyUtils.writePrimitive(out, objInspector.getWritableConstantValue(),
-          (WritableConstantLongObjectInspector) objInspector);
-    } else if (objInspector instanceof WritableConstantDoubleObjectInspector) {
-      LazyUtils.writePrimitive(out, objInspector.getWritableConstantValue(),
-          (WritableConstantDoubleObjectInspector) objInspector);
-    } else if (objInspector instanceof WritableConstantFloatObjectInspector) {
-      LazyUtils.writePrimitive(out, objInspector.getWritableConstantValue(),
-          (WritableConstantDoubleObjectInspector) objInspector);
+        (PrimitiveObjectInspector) objInspector);
     } else {
       return getUtf8Value(objInspector);
     }

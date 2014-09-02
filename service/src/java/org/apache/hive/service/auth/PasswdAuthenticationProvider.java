@@ -20,18 +20,20 @@ package org.apache.hive.service.auth;
 import javax.security.sasl.AuthenticationException;
 
 public interface PasswdAuthenticationProvider {
+
   /**
    * The Authenticate method is called by the HiveServer2 authentication layer
    * to authenticate users for their requests.
    * If a user is to be granted, return nothing/throw nothing.
    * When a user is to be disallowed, throw an appropriate {@link AuthenticationException}.
-   *
+   * <p/>
    * For an example implementation, see {@link LdapAuthenticationProviderImpl}.
    *
-   * @param user - The username received over the connection request
-   * @param password - The password received over the connection request
-   * @throws AuthenticationException - When a user is found to be
-   * invalid by the implementation
+   * @param user     The username received over the connection request
+   * @param password The password received over the connection request
+   *
+   * @throws AuthenticationException When a user is found to be
+   *                                 invalid by the implementation
    */
   void Authenticate(String user, String password) throws AuthenticationException;
 }

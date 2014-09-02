@@ -133,6 +133,8 @@ where exists
   where b.value = a.value  and a.key = b.key and a.value > 'val_9')
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@cv1
 POSTHOOK: query: -- view test
 create view cv1 as 
 select * 
@@ -143,6 +145,7 @@ where exists
   where b.value = a.value  and a.key = b.key and a.value > 'val_9')
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@cv1
 PREHOOK: query: select * from cv1
 PREHOOK: type: QUERY

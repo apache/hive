@@ -116,6 +116,8 @@ public class MapWork extends BaseWork {
 
   private boolean useOneNullRowInputFormat;
 
+  private boolean dummyTableScan = false;
+
   public MapWork() {}
 
   public MapWork(String name) {
@@ -524,5 +526,13 @@ public class MapWork extends BaseWork {
         }
       }
     }
+  }
+
+  public void setDummyTableScan(boolean dummyTableScan) {
+    this.dummyTableScan = dummyTableScan;
+  }
+
+  public boolean getDummyTableScan() {
+    return dummyTableScan;
   }
 }

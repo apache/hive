@@ -20,24 +20,50 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.conf.Configurable;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.Partitioner;
 import org.apache.hadoop.mapred.lib.TotalOrderPartitioner;
 
-public class HiveTotalOrderPartitioner implements Partitioner<HiveKey, Object> {
+public class HiveTotalOrderPartitioner implements Partitioner<HiveKey, Object>, Configurable {
 
-  private Partitioner<BytesWritable, Object> partitioner
-      = new TotalOrderPartitioner<BytesWritable, Object>();
+  private static final Log LOG = LogFactory.getLog(HiveTotalOrderPartitioner.class);
 
+  private Partitioner<BytesWritable, Object> partitioner;
+
+  @Override
   public void configure(JobConf job) {
-    JobConf newconf = new JobConf(job);
-    newconf.setMapOutputKeyClass(BytesWritable.class);
-    partitioner.configure(newconf);
+    if (partitioner == null) {
+      configurePartitioner(new JobConf(job));
+    }
+  }
+
+  @Override
+  public void setConf(Configuration conf) {
+    // walk-around of TEZ-1403
+    if (partitioner == null) {
+      configurePartitioner(new JobConf(conf));
+    }
   }
 
   public int getPartition(HiveKey key, Object value, int numPartitions) {
     return partitioner.getPartition(key, value, numPartitions);
+  }
+
+  @Override
+  public Configuration getConf() {
+    return null;
+  }
+
+  private void configurePartitioner(JobConf conf) {
+    LOG.info(TotalOrderPartitioner.getPartitionFile(conf));
+    conf.setMapOutputKeyClass(BytesWritable.class);
+    partitioner = new TotalOrderPartitioner<BytesWritable, Object>();
+    partitioner.configure(conf);
   }
 }

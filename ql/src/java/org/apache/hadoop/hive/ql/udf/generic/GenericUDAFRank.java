@@ -38,170 +38,150 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.IntWritable;
 
-@WindowFunctionDescription
-(
-		description = @Description(
-								name = "rank",
-								value = "_FUNC_(x)"
-								),
-		supportsWindow = false,
-		pivotResult = true,
-		rankingFunction = true,
-		impliesOrder = true
-)
-public class GenericUDAFRank extends AbstractGenericUDAFResolver
-{
-	static final Log LOG = LogFactory.getLog(GenericUDAFRank.class.getName());
+@WindowFunctionDescription(
+  description = @Description(
+    name = "rank",
+    value = "_FUNC_(x)"),
+  supportsWindow = false,
+  pivotResult = true,
+  rankingFunction = true,
+  impliesOrder = true)
+public class GenericUDAFRank extends AbstractGenericUDAFResolver {
 
-	@Override
-	public GenericUDAFEvaluator getEvaluator(TypeInfo[] parameters) throws SemanticException
-	{
-		if (parameters.length < 1)
-		{
-			throw new UDFArgumentTypeException(parameters.length - 1, "One or more arguments are expected.");
-		}
-		for(int i=0; i<parameters.length; i++)
-		{
-			ObjectInspector oi = TypeInfoUtils.getStandardJavaObjectInspectorFromTypeInfo(parameters[i]);
-			if (!ObjectInspectorUtils.compareSupported(oi))
-			{
-				throw new UDFArgumentTypeException(i,
-					"Cannot support comparison of map<> type or complex type containing map<>.");
-			}
-		}
-		return createEvaluator();
-	}
+  static final Log LOG = LogFactory.getLog(GenericUDAFRank.class.getName());
 
-	protected GenericUDAFAbstractRankEvaluator createEvaluator()
-	{
-		return new GenericUDAFRankEvaluator();
-	}
+  @Override
+  public GenericUDAFEvaluator getEvaluator(TypeInfo[] parameters) throws SemanticException {
+    if (parameters.length < 1) {
+      throw new UDFArgumentTypeException(parameters.length - 1,
+        "One or more arguments are expected.");
+    }
+    for (int i = 0; i < parameters.length; i++) {
+      ObjectInspector oi = TypeInfoUtils.getStandardJavaObjectInspectorFromTypeInfo(parameters[i]);
+      if (!ObjectInspectorUtils.compareSupported(oi)) {
+        throw new UDFArgumentTypeException(i,
+          "Cannot support comparison of map<> type or complex type containing map<>.");
+      }
+    }
+    return createEvaluator();
+  }
 
-	static class RankBuffer implements AggregationBuffer
-	{
-		ArrayList<IntWritable> rowNums;
-		int currentRowNum;
-		Object[] currVal;
-		int currentRank;
-		int numParams;
-		boolean supportsStreaming;
+  protected GenericUDAFAbstractRankEvaluator createEvaluator() {
+    return new GenericUDAFRankEvaluator();
+  }
 
-		RankBuffer(int numParams, boolean supportsStreaming)
-		{
-			this.numParams = numParams;
-			this.supportsStreaming = supportsStreaming;
-			init();
-		}
+  static class RankBuffer implements AggregationBuffer {
 
-		void init()
-		{
-			rowNums = new ArrayList<IntWritable>();
-			currentRowNum = 0;
-			currentRank = 0;
-			currVal = new Object[numParams];
-			if ( supportsStreaming ) {
-			  /* initialize rowNums to have 1 row */
-			  rowNums.add(null);
-			}
-		}
-		
-		void incrRowNum() { currentRowNum++; }
+    ArrayList<IntWritable> rowNums;
+    int currentRowNum;
+    Object[] currVal;
+    int currentRank;
+    int numParams;
+    boolean supportsStreaming;
 
-		void addRank()
-		{
-		  if ( supportsStreaming ) {
-		    rowNums.set(0, new IntWritable(currentRank));
-		  } else {
-		    rowNums.add(new IntWritable(currentRank));
-		  }
-		}
-	}
+    RankBuffer(int numParams, boolean supportsStreaming) {
+      this.numParams = numParams;
+      this.supportsStreaming = supportsStreaming;
+      init();
+    }
 
-	public static abstract class GenericUDAFAbstractRankEvaluator extends GenericUDAFEvaluator 
-	{
-		ObjectInspector[] inputOI;
-		ObjectInspector[] outputOI;
-		boolean isStreamingMode = false;
+    void init() {
+      rowNums = new ArrayList<IntWritable>();
+      currentRowNum = 0;
+      currentRank = 0;
+      currVal = new Object[numParams];
+      if (supportsStreaming) {
+        /* initialize rowNums to have 1 row */
+        rowNums.add(null);
+      }
+    }
 
-		protected boolean isStreaming() {
-		  return isStreamingMode;
-		}
+    void incrRowNum() { currentRowNum++; }
 
-		@Override
-		public ObjectInspector init(Mode m, ObjectInspector[] parameters) throws HiveException
-		{
-			super.init(m, parameters);
-			if (m != Mode.COMPLETE)
-			{
-				throw new HiveException(
-						"Only COMPLETE mode supported for Rank function");
-			}
-			inputOI = parameters;
-			outputOI = new ObjectInspector[inputOI.length];
-			for(int i=0; i < inputOI.length; i++)
-			{
-				outputOI[i] = ObjectInspectorUtils.getStandardObjectInspector(inputOI[i], ObjectInspectorCopyOption.JAVA);
-			}
-			return ObjectInspectorFactory.getStandardListObjectInspector(PrimitiveObjectInspectorFactory.writableIntObjectInspector);
-		}
+    void addRank() {
+      if (supportsStreaming) {
+        rowNums.set(0, new IntWritable(currentRank));
+      } else {
+        rowNums.add(new IntWritable(currentRank));
+      }
+    }
+  }
 
-		@Override
-		public AggregationBuffer getNewAggregationBuffer() throws HiveException
-		{
-			return new RankBuffer(inputOI.length, isStreamingMode);
-		}
+  public static abstract class GenericUDAFAbstractRankEvaluator extends GenericUDAFEvaluator {
 
-		@Override
-		public void reset(AggregationBuffer agg) throws HiveException
-		{
-			((RankBuffer) agg).init();
-		}
+    ObjectInspector[] inputOI;
+    ObjectInspector[] outputOI;
+    boolean isStreamingMode = false;
 
-		@Override
-		public void iterate(AggregationBuffer agg, Object[] parameters) throws HiveException
-		{
-			RankBuffer rb = (RankBuffer) agg;
-			 int c = GenericUDAFRank.compare(rb.currVal, outputOI, parameters, inputOI);
-			 rb.incrRowNum();
-			if ( rb.currentRowNum == 1 || c != 0 )
-			{
-				nextRank(rb);
-				rb.currVal = GenericUDAFRank.copyToStandardObject(parameters, inputOI, ObjectInspectorCopyOption.JAVA);
-			}
-			rb.addRank();
-		}
+    protected boolean isStreaming() {
+      return isStreamingMode;
+    }
 
-		/*
-		 * Called when the value in the partition has changed. Update the currentRank
-		 */
-		protected void nextRank(RankBuffer rb)
-		{
-			rb.currentRank = rb.currentRowNum;
-		}
+    @Override
+    public ObjectInspector init(Mode m, ObjectInspector[] parameters) throws HiveException {
+      super.init(m, parameters);
+      if (m != Mode.COMPLETE) {
+        throw new HiveException("Only COMPLETE mode supported for Rank function");
+      }
+      inputOI = parameters;
+      outputOI = new ObjectInspector[inputOI.length];
+      for (int i = 0; i < inputOI.length; i++) {
+        outputOI[i] = ObjectInspectorUtils.getStandardObjectInspector(inputOI[i],
+          ObjectInspectorCopyOption.JAVA);
+      }
+      return ObjectInspectorFactory.getStandardListObjectInspector(
+        PrimitiveObjectInspectorFactory.writableIntObjectInspector);
+    }
 
-		@Override
-		public Object terminatePartial(AggregationBuffer agg) throws HiveException
-		{
-			throw new HiveException("terminatePartial not supported");
-		}
+    @Override
+    public AggregationBuffer getNewAggregationBuffer() throws HiveException {
+      return new RankBuffer(inputOI.length, isStreamingMode);
+    }
 
-		@Override
-		public void merge(AggregationBuffer agg, Object partial) throws HiveException
-		{
-			throw new HiveException("merge not supported");
-		}
+    @Override
+    public void reset(AggregationBuffer agg) throws HiveException {
+      ((RankBuffer) agg).init();
+    }
 
-		@Override
-		public Object terminate(AggregationBuffer agg) throws HiveException
-		{
-			return ((RankBuffer) agg).rowNums;
-		}
+    @Override
+    public void iterate(AggregationBuffer agg, Object[] parameters) throws HiveException {
+      RankBuffer rb = (RankBuffer) agg;
+      int c = GenericUDAFRank.compare(rb.currVal, outputOI, parameters, inputOI);
+      rb.incrRowNum();
+      if (rb.currentRowNum == 1 || c != 0) {
+        nextRank(rb);
+        rb.currVal =
+          GenericUDAFRank.copyToStandardObject(parameters, inputOI, ObjectInspectorCopyOption.JAVA);
+      }
+      rb.addRank();
+    }
 
-	}
+    /*
+     * Called when the value in the partition has changed. Update the currentRank
+     */
+    protected void nextRank(RankBuffer rb) {
+      rb.currentRank = rb.currentRowNum;
+    }
 
-  public static class GenericUDAFRankEvaluator extends
-      GenericUDAFAbstractRankEvaluator implements
-      ISupportStreamingModeForWindowing {
+    @Override
+    public Object terminatePartial(AggregationBuffer agg) throws HiveException {
+      throw new HiveException("terminatePartial not supported");
+    }
+
+    @Override
+    public void merge(AggregationBuffer agg, Object partial) throws HiveException {
+      throw new HiveException("merge not supported");
+    }
+
+    @Override
+    public Object terminate(AggregationBuffer agg) throws HiveException {
+      return ((RankBuffer) agg).rowNums;
+    }
+
+  }
+
+  public static class GenericUDAFRankEvaluator extends GenericUDAFAbstractRankEvaluator
+    implements ISupportStreamingModeForWindowing {
 
     @Override
     public Object getNextResult(AggregationBuffer agg) throws HiveException {
@@ -215,18 +195,15 @@ public class GenericUDAFRank extends AbstractGenericUDAFResolver
     }
 
     @Override
-    public int getRowsRemainingAfterTerminate()
-        throws HiveException {
+    public int getRowsRemainingAfterTerminate() throws HiveException {
       return 0;
     }
   }
 
   public static int compare(Object[] o1, ObjectInspector[] oi1, Object[] o2,
-      ObjectInspector[] oi2)
-  {
+    ObjectInspector[] oi2) {
     int c = 0;
-    for (int i = 0; i < oi1.length; i++)
-    {
+    for (int i = 0; i < oi1.length; i++) {
       c = ObjectInspectorUtils.compare(o1[i], oi1[i], o2[i], oi2[i]);
       if (c != 0) {
         return c;
@@ -235,15 +212,11 @@ public class GenericUDAFRank extends AbstractGenericUDAFResolver
     return c;
   }
 
-  public static Object[] copyToStandardObject(Object[] o,
-      ObjectInspector[] oi,
-      ObjectInspectorCopyOption objectInspectorOption)
-  {
+  public static Object[] copyToStandardObject(Object[] o, ObjectInspector[] oi,
+    ObjectInspectorCopyOption objectInspectorOption) {
     Object[] out = new Object[o.length];
-    for (int i = 0; i < oi.length; i++)
-    {
-      out[i] = ObjectInspectorUtils.copyToStandardObject(o[i], oi[i],
-          objectInspectorOption);
+    for (int i = 0; i < oi.length; i++) {
+      out[i] = ObjectInspectorUtils.copyToStandardObject(o[i], oi[i], objectInspectorOption);
     }
     return out;
   }

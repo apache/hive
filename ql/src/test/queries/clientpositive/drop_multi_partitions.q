@@ -1,17 +1,23 @@
-create table mp (a string) partitioned by (b string, c string);
+create database dmp;
 
-alter table mp add partition (b='1', c='1');
-alter table mp add partition (b='1', c='2');
-alter table mp add partition (b='2', c='2');
+create table dmp.mp (a string) partitioned by (b string, c string);
 
-show partitions mp;
+alter table dmp.mp add partition (b='1', c='1');
+alter table dmp.mp add partition (b='1', c='2');
+alter table dmp.mp add partition (b='2', c='2');
 
-explain extended alter table mp drop partition (b='1');
-alter table mp drop partition (b='1');
+show partitions dmp.mp;
 
-show partitions mp;
+explain extended alter table dmp.mp drop partition (b='1');
+alter table dmp.mp drop partition (b='1');
+
+show partitions dmp.mp;
 
 set hive.exec.drop.ignorenonexistent=false;
-alter table mp drop if exists partition (b='3');
+alter table dmp.mp drop if exists partition (b='3');
 
-show partitions mp;
+show partitions dmp.mp;
+
+drop table dmp.mp;
+
+drop database dmp;

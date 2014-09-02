@@ -1,9 +1,12 @@
 PREHOOK: query: create table s1 as select * from src where key = 0
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@s1
 POSTHOOK: query: create table s1 as select * from src where key = 0
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@s1
 PREHOOK: query: EXPLAIN
 SELECT * FROM s1 src1 LEFT OUTER JOIN s1 src2 ON (src1.key = src2.key AND src2.key > 10)

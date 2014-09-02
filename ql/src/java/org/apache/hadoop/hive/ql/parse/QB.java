@@ -66,26 +66,26 @@ public class QB {
   private HashMap<String, WindowingSpec> destToWindowingSpec;
 
   /*
-   * If this QB represents a SubQuery predicate then this will point to the SubQuery object.
+   * If this QB represents a  SubQuery predicate then this will point to the SubQuery object.
    */
   private QBSubQuery subQueryPredicateDef;
-  
-	/*
-	 * used to give a unique name to each SubQuery QB Currently there can be at
-	 * most 2 SubQueries in a Query: 1 in the Where clause, and 1 in the Having
-	 * clause.
-	 */
-	private int numSubQueryPredicates;
-	
-	/*
-	 * for now a top level QB can have 1 where clause SQ predicate.
-	 */
-	private QBSubQuery whereClauseSubQueryPredicate;
-	
+
+  /*
+   * used to give a unique name to each SubQuery QB Currently there can be at
+   * most 2 SubQueries in a Query: 1 in the Where clause, and 1 in the Having
+   * clause.
+   */
+  private int numSubQueryPredicates;
+
   /*
    * for now a top level QB can have 1 where clause SQ predicate.
    */
-	private QBSubQuery havingClauseSubQueryPredicate;
+  private QBSubQuery whereClauseSubQueryPredicate;
+
+  /*
+   * for now a top level QB can have 1 where clause SQ predicate.
+   */
+  private QBSubQuery havingClauseSubQueryPredicate;
 
   // results
 
@@ -341,28 +341,28 @@ public class QB {
   protected QBSubQuery getSubQueryPredicateDef() {
     return subQueryPredicateDef;
   }
-  
-	protected int getNumSubQueryPredicates() {
-		return numSubQueryPredicates;
-	}
 
-	protected int incrNumSubQueryPredicates() {
-		return ++numSubQueryPredicates;
-	}
-	
-	void setWhereClauseSubQueryPredicate(QBSubQuery sq) {
-	  whereClauseSubQueryPredicate = sq;
+  protected int getNumSubQueryPredicates() {
+    return numSubQueryPredicates;
   }
-	
-	public QBSubQuery getWhereClauseSubQueryPredicate() {
-	  return whereClauseSubQueryPredicate;
-	}
-	
-	void setHavingClauseSubQueryPredicate(QBSubQuery sq) {
+
+  protected int incrNumSubQueryPredicates() {
+    return ++numSubQueryPredicates;
+  }
+
+  void setWhereClauseSubQueryPredicate(QBSubQuery sq) {
+    whereClauseSubQueryPredicate = sq;
+  }
+
+  public QBSubQuery getWhereClauseSubQueryPredicate() {
+    return whereClauseSubQueryPredicate;
+  }
+
+  void setHavingClauseSubQueryPredicate(QBSubQuery sq) {
     havingClauseSubQueryPredicate = sq;
   }
-	
-	public QBSubQuery getHavingClauseSubQueryPredicate() {
+
+  public QBSubQuery getHavingClauseSubQueryPredicate() {
     return havingClauseSubQueryPredicate;
   }
 

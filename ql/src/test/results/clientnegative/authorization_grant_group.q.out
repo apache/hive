@@ -1,0 +1,17 @@
+PREHOOK: query: -- current user has been set (comment line before the set cmd is resulting in parse error!!)
+
+CREATE TABLE table_gg(i int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table_gg
+POSTHOOK: query: -- current user has been set (comment line before the set cmd is resulting in parse error!!)
+
+CREATE TABLE table_gg(i int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table_gg
+PREHOOK: query: -- grant insert on group should fail
+GRANT INSERT ON table_gg TO group g1
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@table_gg
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Invalid principal type in principal Principal [name=g1, type=GROUP]

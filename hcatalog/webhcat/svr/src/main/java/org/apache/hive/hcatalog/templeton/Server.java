@@ -653,7 +653,7 @@ public class Server {
     verifyParam(inputs, "input");
     verifyParam(mapper, "mapper");
     verifyParam(reducer, "reducer");
-    
+
     Map<String, Object> userArgs = new HashMap<String, Object>();
     userArgs.put("user.name", getDoAsUser());
     userArgs.put("input", inputs);
@@ -680,8 +680,8 @@ public class Server {
   /**
    * Run a MapReduce Jar job.
    * Params correspond to the REST api params
-   * @param  usesHcatalog if {@code true}, means the Jar uses HCat and thus needs to access 
-   *    metastore, which requires additional steps for WebHCat to perform in a secure cluster.  
+   * @param  usesHcatalog if {@code true}, means the Jar uses HCat and thus needs to access
+   *    metastore, which requires additional steps for WebHCat to perform in a secure cluster.
    * @param callback URL which WebHCat will call when the hive job finishes
    * @see org.apache.hive.hcatalog.templeton.tool.TempletonControllerJob
    */
@@ -703,7 +703,7 @@ public class Server {
     verifyUser();
     verifyParam(jar, "jar");
     verifyParam(mainClass, "class");
-    
+
     Map<String, Object> userArgs = new HashMap<String, Object>();
     userArgs.put("user.name", getDoAsUser());
     userArgs.put("jar", jar);
@@ -729,7 +729,7 @@ public class Server {
    * Run a Pig job.
    * Params correspond to the REST api params.  If '-useHCatalog' is in the {@code pigArgs, usesHcatalog},
    * is interpreted as true.
-   * @param  usesHcatalog if {@code true}, means the Pig script uses HCat and thus needs to access 
+   * @param  usesHcatalog if {@code true}, means the Pig script uses HCat and thus needs to access
    *    metastore, which requires additional steps for WebHCat to perform in a secure cluster.
    *    This does nothing to ensure that Pig is installed on target node in the cluster.
    * @param callback URL which WebHCat will call when the hive job finishes
@@ -752,7 +752,7 @@ public class Server {
     if (execute == null && srcFile == null) {
       throw new BadParam("Either execute or file parameter required");
     }
-    
+
     //add all function arguments to a map
     Map<String, Object> userArgs = new HashMap<String, Object>();
     userArgs.put("user.name", getDoAsUser());
@@ -819,7 +819,7 @@ public class Server {
    * @param execute    SQL statement to run, equivalent to "-e" from hive command line
    * @param srcFile    name of hive script file to run, equivalent to "-f" from hive
    *                   command line
-   * @param hiveArgs   additional command line argument passed to the hive command line. 
+   * @param hiveArgs   additional command line argument passed to the hive command line.
    *                   Please check https://cwiki.apache.org/Hive/languagemanual-cli.html
    *                   for detailed explanation of command line arguments
    * @param otherFiles additional files to be shipped to the launcher, such as the jars
@@ -846,7 +846,7 @@ public class Server {
     if (execute == null && srcFile == null) {
       throw new BadParam("Either execute or file parameter required");
     }
-    
+
     //add all function arguments to a map
     Map<String, Object> userArgs = new HashMap<String, Object>();
     userArgs.put("user.name", getDoAsUser());
@@ -903,42 +903,42 @@ public class Server {
    * Example usages:
    * 1. curl -s 'http://localhost:50111/templeton/v1/jobs?user.name=hsubramaniyan'
    * Return all the Job IDs submitted by hsubramaniyan
-   * 2. curl -s 
+   * 2. curl -s
    * 'http://localhost:50111/templeton/v1/jobs?user.name=hsubramaniyan&showall=true'
    * Return all the Job IDs that are visible to hsubramaniyan
    * 3. curl -s
    * 'http://localhost:50111/templeton/v1/jobs?user.name=hsubramaniyan&jobid=job_201312091733_0003'
    * Return all the Job IDs for hsubramaniyan after job_201312091733_0003.
-   * 4. curl -s 'http://localhost:50111/templeton/v1/jobs? 
+   * 4. curl -s 'http://localhost:50111/templeton/v1/jobs?
    * user.name=hsubramaniyan&jobid=job_201312091733_0003&numrecords=5'
-   * Return the first 5(atmost) Job IDs submitted by hsubramaniyan after job_201312091733_0003.  
-   * 5.  curl -s 
+   * Return the first 5(atmost) Job IDs submitted by hsubramaniyan after job_201312091733_0003.
+   * 5.  curl -s
    * 'http://localhost:50111/templeton/v1/jobs?user.name=hsubramaniyan&numrecords=5'
-   * Return the first 5(atmost) Job IDs submitted by hsubramaniyan after sorting the Job ID list 
+   * Return the first 5(atmost) Job IDs submitted by hsubramaniyan after sorting the Job ID list
    * lexicographically.
    * </p>
    * <p>
    * Supporting pagination using "jobid" and "numrecords" parameters:
    * Step 1: Get the start "jobid" = job_xxx_000, "numrecords" = n
-   * Step 2: Issue a curl command by specifying the user-defined "numrecords" and "jobid" 
-   * Step 3: If list obtained from Step 2 has size equal to "numrecords", retrieve the list's 
+   * Step 2: Issue a curl command by specifying the user-defined "numrecords" and "jobid"
+   * Step 3: If list obtained from Step 2 has size equal to "numrecords", retrieve the list's
    * last record and get the Job Id of the last record as job_yyy_k, else quit.
    * Step 4: set "jobid"=job_yyy_k and go to step 2.
-   * </p> 
+   * </p>
    * @param fields If "fields" set to "*", the request will return full details of the job.
    * If "fields" is missing, will only return the job ID. Currently the value can only
    * be "*", other values are not allowed and will throw exception.
    * @param showall If "showall" is set to "true", the request will return all jobs the user
    * has permission to view, not only the jobs belonging to the user.
-   * @param jobid If "jobid" is present, the records whose Job Id is lexicographically greater 
-   * than "jobid" are only returned. For example, if "jobid" = "job_201312091733_0001", 
-   * the jobs whose Job ID is greater than "job_201312091733_0001" are returned. The number of 
+   * @param jobid If "jobid" is present, the records whose Job Id is lexicographically greater
+   * than "jobid" are only returned. For example, if "jobid" = "job_201312091733_0001",
+   * the jobs whose Job ID is greater than "job_201312091733_0001" are returned. The number of
    * records returned depends on the value of "numrecords".
-   * @param numrecords If the "jobid" and "numrecords" parameters are present, the top #numrecords 
-   * records appearing after "jobid" will be returned after sorting the Job Id list 
-   * lexicographically. 
-   * If "jobid" parameter is missing and "numrecords" is present, the top #numrecords will 
-   * be returned after lexicographically sorting the Job Id list. If "jobid" parameter is present 
+   * @param numrecords If the "jobid" and "numrecords" parameters are present, the top #numrecords
+   * records appearing after "jobid" will be returned after sorting the Job Id list
+   * lexicographically.
+   * If "jobid" parameter is missing and "numrecords" is present, the top #numrecords will
+   * be returned after lexicographically sorting the Job Id list. If "jobid" parameter is present
    * and "numrecords" is missing, all the records whose Job Id is greater than "jobid" are returned.
    * @return list of job items based on the filter conditions specified by the user.
    */
@@ -950,7 +950,7 @@ public class Server {
                                        @QueryParam("jobid") String jobid,
                                        @QueryParam("numrecords") String numrecords)
     throws NotAuthorizedException, BadParam, IOException, InterruptedException {
-    
+
     verifyUser();
 
     boolean showDetails = false;
@@ -971,9 +971,9 @@ public class Server {
     try {
       if (numrecords != null) {
         numRecords = Integer.parseInt(numrecords);
-	if (numRecords <= 0) {
-	  throw new BadParam("numrecords should be an integer > 0");
-	}    
+  if (numRecords <= 0) {
+    throw new BadParam("numrecords should be an integer > 0");
+  }
       }
       else {
         numRecords = -1;
@@ -983,18 +983,18 @@ public class Server {
       throw new BadParam("Invalid numrecords format: numrecords should be an integer > 0");
     }
 
-    // Sort the list lexicographically            
+    // Sort the list lexicographically
     Collections.sort(list);
 
     for (String job : list) {
       // If numRecords = -1, fetch all records.
       // Hence skip all the below checks when numRecords = -1.
       if (numRecords != -1) {
-        // If currRecord >= numRecords, we have already fetched the top #numRecords                                                                                                              
+        // If currRecord >= numRecords, we have already fetched the top #numRecords
         if (currRecord >= numRecords) {
           break;
-        } 
-        // If the current record needs to be returned based on the 
+        }
+        // If the current record needs to be returned based on the
         // filter conditions specified by the user, increment the counter
         else if ((jobid != null && job.compareTo(jobid) > 0) || jobid == null) {
           currRecord++;
@@ -1101,7 +1101,7 @@ public class Server {
    * value of user.name query param, in kerberos mode it's the kinit'ed user.
    */
   private String getRequestingUser() {
-    if (theSecurityContext == null) { 
+    if (theSecurityContext == null) {
       return null;
     }
     String userName = null;
@@ -1114,7 +1114,7 @@ public class Server {
     if(userName == null) {
       return null;
     }
-    //map hue/foo.bar@something.com->hue since user group checks 
+    //map hue/foo.bar@something.com->hue since user group checks
     // and config files are in terms of short name
     return UserGroupInformation.createRemoteUser(userName).getShortUserName();
   }
@@ -1161,7 +1161,7 @@ public class Server {
       return unkHost;
     }
   }
-  
+
   private void checkEnableLogPrerequisite(boolean enablelog, String statusdir) throws BadParam {
     if (enablelog && !TempletonUtils.isset(statusdir))
       throw new BadParam("enablelog is only applicable when statusdir is set");

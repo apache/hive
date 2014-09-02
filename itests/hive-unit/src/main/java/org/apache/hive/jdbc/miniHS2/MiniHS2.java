@@ -28,6 +28,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.HiveMetaStore;
@@ -49,6 +50,7 @@ public class MiniHS2 extends AbstractHiveService {
   public static final String HS2_BINARY_MODE = "binary";
   public static final String HS2_HTTP_MODE = "http";
   private static final String driverName = "org.apache.hive.jdbc.HiveDriver";
+  private static final FsPermission FULL_PERM = new FsPermission((short)00777);
   private HiveServer2 hiveServer2 = null;
   private final File baseDir;
   private final Path baseDfsDir;
@@ -59,6 +61,7 @@ public class MiniHS2 extends AbstractHiveService {
   private boolean useMiniKdc = false;
   private final String serverPrincipal;
   private final String serverKeytab;
+  private final boolean isMetastoreRemote;
 
   public static class Builder {
     private HiveConf hiveConf = new HiveConf();
@@ -67,6 +70,7 @@ public class MiniHS2 extends AbstractHiveService {
     private String serverPrincipal;
     private String serverKeytab;
     private boolean isHTTPTransMode = false;
+    private boolean isMetastoreRemote;
 
     public Builder() {
     }
@@ -80,6 +84,11 @@ public class MiniHS2 extends AbstractHiveService {
       this.useMiniKdc = true;
       this.serverPrincipal = serverPrincipal;
       this.serverKeytab = serverKeytab;
+      return this;
+    }
+
+    public Builder withRemoteMetastore() {
+      this.isMetastoreRemote = true;
       return this;
     }
 
@@ -107,7 +116,8 @@ public class MiniHS2 extends AbstractHiveService {
       } else {
         hiveConf.setVar(ConfVars.HIVE_SERVER2_TRANSPORT_MODE, HS2_BINARY_MODE);
       }
-      return new MiniHS2(hiveConf, useMiniMR, useMiniKdc, serverPrincipal, serverKeytab);
+      return new MiniHS2(hiveConf, useMiniMR, useMiniKdc, serverPrincipal, serverKeytab,
+          isMetastoreRemote);
     }
   }
 
@@ -139,12 +149,14 @@ public class MiniHS2 extends AbstractHiveService {
     return useMiniKdc;
   }
 
-  private MiniHS2(HiveConf hiveConf, boolean useMiniMR, boolean useMiniKdc, String serverPrincipal, String serverKeytab) throws Exception {
+  private MiniHS2(HiveConf hiveConf, boolean useMiniMR, boolean useMiniKdc,
+      String serverPrincipal, String serverKeytab, boolean isMetastoreRemote) throws Exception {
     super(hiveConf, "localhost", MetaStoreUtils.findFreePort(), MetaStoreUtils.findFreePort());
     this.useMiniMR = useMiniMR;
     this.useMiniKdc = useMiniKdc;
     this.serverPrincipal = serverPrincipal;
     this.serverKeytab = serverKeytab;
+    this.isMetastoreRemote = isMetastoreRemote;
     baseDir =  Files.createTempDir();
     FileSystem fs;
     if (useMiniMR) {
@@ -169,6 +181,9 @@ public class MiniHS2 extends AbstractHiveService {
 
     fs.mkdirs(baseDfsDir);
     Path wareHouseDir = new Path(baseDfsDir, "warehouse");
+    // Create warehouse with 777, so that user impersonation has no issues.
+    FileSystem.mkdirs(fs, wareHouseDir, FULL_PERM);
+
     fs.mkdirs(wareHouseDir);
     setWareHouseDir(wareHouseDir.toString());
     System.setProperty(HiveConf.ConfVars.METASTORECONNECTURLKEY.varname, metaStoreURL);
@@ -180,10 +195,15 @@ public class MiniHS2 extends AbstractHiveService {
     hiveConf.setIntVar(ConfVars.HIVE_SERVER2_THRIFT_HTTP_PORT, getHttpPort());
 
     Path scratchDir = new Path(baseDfsDir, "scratch");
-    fs.mkdirs(scratchDir);
+
+    // Create scratchdir with 777, so that user impersonation has no issues.
+    FileSystem.mkdirs(fs, scratchDir, FULL_PERM);
     System.setProperty(HiveConf.ConfVars.SCRATCHDIR.varname, scratchDir.toString());
-    System.setProperty(HiveConf.ConfVars.LOCALSCRATCHDIR.varname,
-        baseDir.getPath() + File.separator + "scratch");
+    hiveConf.setVar(ConfVars.SCRATCHDIR, scratchDir.toString());
+
+    String localScratchDir = baseDir.getPath() + File.separator + "scratch";
+    System.setProperty(HiveConf.ConfVars.LOCALSCRATCHDIR.varname, localScratchDir);
+    hiveConf.setVar(ConfVars.LOCALSCRATCHDIR, localScratchDir);
   }
 
   public MiniHS2(HiveConf hiveConf) throws Exception {
@@ -191,10 +211,17 @@ public class MiniHS2 extends AbstractHiveService {
   }
 
   public MiniHS2(HiveConf hiveConf, boolean useMiniMR) throws Exception {
-    this(hiveConf, useMiniMR, false, null, null);
+    this(hiveConf, useMiniMR, false, null, null, false);
   }
 
   public void start(Map<String, String> confOverlay) throws Exception {
+    if (isMetastoreRemote) {
+      int metaStorePort = MetaStoreUtils.findFreePort();
+      getHiveConf().setVar(ConfVars.METASTOREURIS, "thrift://localhost:" + metaStorePort);
+      MetaStoreUtils.startMetaStore(metaStorePort,
+      ShimLoader.getHadoopThriftAuthBridge(), getHiveConf());
+    }
+
     hiveServer2 = new HiveServer2();
     // Set confOverlay parameters
     for (Map.Entry<String, String> entry : confOverlay.entrySet()) {
@@ -208,6 +235,9 @@ public class MiniHS2 extends AbstractHiveService {
 
   public void stop() {
     verifyStarted();
+    // Currently there is no way to stop the MetaStore service. It will be stopped when the
+    // test JVM exits. This is how other tests are also using MetaStore server.
+
     hiveServer2.stop();
     setStarted(false);
     try {

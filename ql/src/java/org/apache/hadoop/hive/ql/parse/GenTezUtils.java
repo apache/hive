@@ -177,9 +177,18 @@ public class GenTezUtils {
 
     // map work starts with table scan operators
     assert root instanceof TableScanOperator;
-    String alias = ((TableScanOperator)root).getConf().getAlias();
+    TableScanOperator ts = (TableScanOperator) root;
+
+    String alias = ts.getConf().getAlias();
 
     setupMapWork(mapWork, context, partitions, root, alias);
+
+    if (context.parseContext != null
+        && context.parseContext.getTopToTable() != null
+        && context.parseContext.getTopToTable().containsKey(ts)
+        && context.parseContext.getTopToTable().get(ts).isDummyTable()) {
+      mapWork.setDummyTableScan(true);
+    }
 
     // add new item to the tez work
     tezWork.add(mapWork);

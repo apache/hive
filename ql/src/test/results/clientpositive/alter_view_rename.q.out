@@ -1,3 +1,15 @@
+PREHOOK: query: CREATE DATABASE tv1
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:tv1
+POSTHOOK: query: CREATE DATABASE tv1
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:tv1
+PREHOOK: query: CREATE DATABASE tv2
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:tv2
+POSTHOOK: query: CREATE DATABASE tv2
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:tv2
 PREHOOK: query: CREATE TABLE invites (foo INT, bar STRING) PARTITIONED BY (ds STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -6,53 +18,56 @@ POSTHOOK: query: CREATE TABLE invites (foo INT, bar STRING) PARTITIONED BY (ds S
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@invites
-PREHOOK: query: CREATE VIEW view1 as SELECT * FROM invites
+PREHOOK: query: CREATE VIEW tv1.view1 as SELECT * FROM invites
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@invites
-POSTHOOK: query: CREATE VIEW view1 as SELECT * FROM invites
+PREHOOK: Output: database:tv1
+PREHOOK: Output: tv1@view1
+POSTHOOK: query: CREATE VIEW tv1.view1 as SELECT * FROM invites
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@invites
-POSTHOOK: Output: default@view1
-PREHOOK: query: DESCRIBE EXTENDED view1
+POSTHOOK: Output: database:tv1
+POSTHOOK: Output: tv1@view1
+PREHOOK: query: DESCRIBE EXTENDED tv1.view1
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@view1
-POSTHOOK: query: DESCRIBE EXTENDED view1
+PREHOOK: Input: tv1@view1
+POSTHOOK: query: DESCRIBE EXTENDED tv1.view1
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@view1
+POSTHOOK: Input: tv1@view1
 foo                 	int                 	                    
 bar                 	string              	                    
 ds                  	string              	                    
 	 	 
 #### A masked pattern was here ####
-PREHOOK: query: ALTER VIEW view1 RENAME TO view2
+PREHOOK: query: ALTER VIEW tv1.view1 RENAME TO tv2.view2
 PREHOOK: type: ALTERVIEW_RENAME
-PREHOOK: Input: default@view1
-PREHOOK: Output: default@view1
-POSTHOOK: query: ALTER VIEW view1 RENAME TO view2
+PREHOOK: Input: tv1@view1
+PREHOOK: Output: tv1@view1
+POSTHOOK: query: ALTER VIEW tv1.view1 RENAME TO tv2.view2
 POSTHOOK: type: ALTERVIEW_RENAME
-POSTHOOK: Input: default@view1
-POSTHOOK: Output: default@view1
-POSTHOOK: Output: default@view2
-PREHOOK: query: DESCRIBE EXTENDED view2
+POSTHOOK: Input: tv1@view1
+POSTHOOK: Output: tv1@view1
+POSTHOOK: Output: tv2@view2
+PREHOOK: query: DESCRIBE EXTENDED tv2.view2
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@view2
-POSTHOOK: query: DESCRIBE EXTENDED view2
+PREHOOK: Input: tv2@view2
+POSTHOOK: query: DESCRIBE EXTENDED tv2.view2
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@view2
+POSTHOOK: Input: tv2@view2
 foo                 	int                 	                    
 bar                 	string              	                    
 ds                  	string              	                    
 	 	 
 #### A masked pattern was here ####
-PREHOOK: query: SELECT * FROM view2
+PREHOOK: query: SELECT * FROM tv2.view2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@invites
-PREHOOK: Input: default@view2
+PREHOOK: Input: tv2@view2
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM view2
+POSTHOOK: query: SELECT * FROM tv2.view2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@invites
-POSTHOOK: Input: default@view2
+POSTHOOK: Input: tv2@view2
 #### A masked pattern was here ####
 PREHOOK: query: DROP TABLE invites
 PREHOOK: type: DROPTABLE
@@ -62,11 +77,27 @@ POSTHOOK: query: DROP TABLE invites
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@invites
 POSTHOOK: Output: default@invites
-PREHOOK: query: DROP VIEW view2
+PREHOOK: query: DROP VIEW tv2.view2
 PREHOOK: type: DROPVIEW
-PREHOOK: Input: default@view2
-PREHOOK: Output: default@view2
-POSTHOOK: query: DROP VIEW view2
+PREHOOK: Input: tv2@view2
+PREHOOK: Output: tv2@view2
+POSTHOOK: query: DROP VIEW tv2.view2
 POSTHOOK: type: DROPVIEW
-POSTHOOK: Input: default@view2
-POSTHOOK: Output: default@view2
+POSTHOOK: Input: tv2@view2
+POSTHOOK: Output: tv2@view2
+PREHOOK: query: DROP DATABASE tv1
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:tv1
+PREHOOK: Output: database:tv1
+POSTHOOK: query: DROP DATABASE tv1
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:tv1
+POSTHOOK: Output: database:tv1
+PREHOOK: query: DROP DATABASE tv2
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:tv2
+PREHOOK: Output: database:tv2
+POSTHOOK: query: DROP DATABASE tv2
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:tv2
+POSTHOOK: Output: database:tv2

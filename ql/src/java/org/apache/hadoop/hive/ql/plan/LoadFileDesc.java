@@ -37,7 +37,7 @@ public class LoadFileDesc extends LoadDesc implements Serializable {
   private String destinationCreateTable;
 
   static {
-	  PTFUtils.makeTransient(LoadFileDesc.class, "targetDir");
+    PTFUtils.makeTransient(LoadFileDesc.class, "targetDir");
   }
   public LoadFileDesc() {
   }

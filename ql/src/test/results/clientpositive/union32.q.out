@@ -6,6 +6,8 @@ PREHOOK: query: -- SORT_QUERY_RESULTS
 CREATE TABLE t1 AS SELECT * FROM src WHERE key < 10
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1
 POSTHOOK: query: -- SORT_QUERY_RESULTS
 
 -- This tests various union queries which have columns on one side of the query
@@ -14,13 +16,17 @@ POSTHOOK: query: -- SORT_QUERY_RESULTS
 CREATE TABLE t1 AS SELECT * FROM src WHERE key < 10
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1
 PREHOOK: query: CREATE TABLE t2 AS SELECT * FROM src WHERE key < 10
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t2
 POSTHOOK: query: CREATE TABLE t2 AS SELECT * FROM src WHERE key < 10
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t2
 PREHOOK: query: -- Test simple union with double
 EXPLAIN

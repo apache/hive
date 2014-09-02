@@ -4,9 +4,9 @@
  * copyright ownership. The ASF licenses this file to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance with the License. You may obtain a
  * copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software distributed under the License
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
@@ -100,7 +100,7 @@ public final class ConstantPropagateProcFactory {
 
   /**
    * Get ColumnInfo from column expression.
-   * 
+   *
    * @param rr
    * @param desc
    * @return
@@ -139,7 +139,7 @@ public final class ConstantPropagateProcFactory {
 
   /**
    * Cast type from expression type to expected type ti.
-   * 
+   *
    * @param desc constant expression
    * @param ti expected type info
    * @return cast constant, or null if the type cast failed.
@@ -189,10 +189,10 @@ public final class ConstantPropagateProcFactory {
 
   /**
    * Fold input expression desc.
-   * 
+   *
    * If desc is a UDF and all parameters are constants, evaluate it. If desc is a column expression,
    * find it from propagated constants, and if there is, replace it with constant.
-   * 
+   *
    * @param desc folding expression
    * @param constants current propagated constant map
    * @param cppCtx
@@ -296,7 +296,7 @@ public final class ConstantPropagateProcFactory {
 
   /**
    * Propagate assignment expression, adding an entry into constant map constants.
-   * 
+   *
    * @param udf expression UDF, currently only 2 UDFs are supported: '=' and 'is null'.
    * @param newExprs child expressions (parameters).
    * @param cppCtx
@@ -350,7 +350,7 @@ public final class ConstantPropagateProcFactory {
           ExprNodeConstantDesc c = (ExprNodeConstantDesc) childExpr;
           if (Boolean.TRUE.equals(c.getValue())) {
 
-        	  // if true, prune it
+            // if true, prune it
             return newExprs.get(Math.abs(i - 1));
           } else {
 
@@ -384,7 +384,7 @@ public final class ConstantPropagateProcFactory {
 
   /**
    * Evaluate column, replace the deterministic columns with constants if possible
-   * 
+   *
    * @param desc
    * @param ctx
    * @param op
@@ -435,7 +435,7 @@ public final class ConstantPropagateProcFactory {
 
   /**
    * Evaluate UDF
-   * 
+   *
    * @param udf UDF object
    * @param exprs
    * @param oldExprs
@@ -512,7 +512,7 @@ public final class ConstantPropagateProcFactory {
 
   /**
    * Change operator row schema, replace column with constant if it is.
-   * 
+   *
    * @param op
    * @param constants
    * @throws SemanticException
@@ -584,7 +584,7 @@ public final class ConstantPropagateProcFactory {
 
   /**
    * Factory method to get the ConstantPropagateFilterProc class.
-   * 
+   *
    * @return ConstantPropagateFilterProc
    */
   public static ConstantPropagateFilterProc getFilterProc() {
@@ -621,7 +621,7 @@ public final class ConstantPropagateProcFactory {
 
   /**
    * Factory method to get the ConstantPropagateGroupByProc class.
-   * 
+   *
    * @return ConstantPropagateGroupByProc
    */
   public static ConstantPropagateGroupByProc getGroupByProc() {
@@ -650,7 +650,7 @@ public final class ConstantPropagateProcFactory {
 
   /**
    * Factory method to get the ConstantPropagateDefaultProc class.
-   * 
+   *
    * @return ConstantPropagateDefaultProc
    */
   public static ConstantPropagateDefaultProc getDefaultProc() {
@@ -683,7 +683,7 @@ public final class ConstantPropagateProcFactory {
 
   /**
    * The Factory method to get the ConstantPropagateSelectProc class.
-   * 
+   *
    * @return ConstantPropagateSelectProc
    */
   public static ConstantPropagateSelectProc getSelectProc() {
@@ -877,7 +877,7 @@ public final class ConstantPropagateProcFactory {
         return null;
       }
 
-      // Note: the following code (removing folded constants in exprs) is deeply coupled with 
+      // Note: the following code (removing folded constants in exprs) is deeply coupled with
       //    ColumnPruner optimizer.
       // Assuming ColumnPrunner will remove constant columns so we don't deal with output columns.
       //    Except one case that the join operator is followed by a redistribution (RS operator).

@@ -224,7 +224,7 @@ public class StatsUtils {
           if (aggrStats.getPartsFound() != partNames.size() && colState != State.NONE) {
             LOG.debug("Column stats requested for : " + partNames.size() +" partitions. "
               + "Able to retrieve for " + aggrStats.getPartsFound() + " partitions");
-            stats.updateColumnStatsState(State.PARTIAL);
+            colState = State.PARTIAL;
           }
           stats.setColumnStatsState(colState);
         }
@@ -1164,6 +1164,10 @@ public class StatsUtils {
   public static String getFullyQualifiedColumnName(String dbName, String tabName, String partName,
       String colName) {
     return getFullyQualifiedName(dbName, tabName, partName, colName);
+  }
+
+  public static String getFullyQualifiedTableName(String dbName, String tabName) {
+    return getFullyQualifiedName(dbName, tabName);
   }
 
   private static String getFullyQualifiedName(String... names) {

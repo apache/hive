@@ -1598,11 +1598,13 @@ class TFetchResultsReq
   OPERATIONHANDLE = 1
   ORIENTATION = 2
   MAXROWS = 3
+  FETCHTYPE = 4
 
   FIELDS = {
     OPERATIONHANDLE => {:type => ::Thrift::Types::STRUCT, :name => 'operationHandle', :class => ::TOperationHandle},
     ORIENTATION => {:type => ::Thrift::Types::I32, :name => 'orientation', :default =>     0, :enum_class => ::TFetchOrientation},
-    MAXROWS => {:type => ::Thrift::Types::I64, :name => 'maxRows'}
+    MAXROWS => {:type => ::Thrift::Types::I64, :name => 'maxRows'},
+    FETCHTYPE => {:type => ::Thrift::Types::I16, :name => 'fetchType', :default => 0, :optional => true}
   }
 
   def struct_fields; FIELDS; end

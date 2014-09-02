@@ -18,10 +18,13 @@ PREHOOK: query: create table jssarma_nilzma_bad as select a.val, a.filename, a.o
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@pokes
 PREHOOK: Input: default@pokes2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@jssarma_nilzma_bad
 POSTHOOK: query: create table jssarma_nilzma_bad as select a.val, a.filename, a.offset from (select hash(foo) as val, INPUT__FILE__NAME as filename, BLOCK__OFFSET__INSIDE__FILE as  offset from pokes) a join pokes2 b on (a.val = b.foo)
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@pokes
 POSTHOOK: Input: default@pokes2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@jssarma_nilzma_bad
 PREHOOK: query: drop table jssarma_nilzma_bad
 PREHOOK: type: DROPTABLE
@@ -67,10 +70,13 @@ PREHOOK: query: create table jssarma_nilzma_bad as select a.val, a.filename, a.o
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@pokes
 PREHOOK: Input: default@pokes2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@jssarma_nilzma_bad
 POSTHOOK: query: create table jssarma_nilzma_bad as select a.val, a.filename, a.offset from (select hash(foo) as val, INPUT__FILE__NAME as filename, BLOCK__OFFSET__INSIDE__FILE as  offset from pokes) a join pokes2 b on (a.val = b.foo)
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@pokes
 POSTHOOK: Input: default@pokes2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@jssarma_nilzma_bad
 PREHOOK: query: drop table jssarma_nilzma_bad
 PREHOOK: type: DROPTABLE
@@ -116,10 +122,13 @@ PREHOOK: query: create table jssarma_nilzma_bad as select a.val, a.filename, a.o
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@pokes
 PREHOOK: Input: default@pokes2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@jssarma_nilzma_bad
 POSTHOOK: query: create table jssarma_nilzma_bad as select a.val, a.filename, a.offset from (select hash(foo) as val, INPUT__FILE__NAME as filename, BLOCK__OFFSET__INSIDE__FILE as  offset from pokes) a join pokes2 b on (a.val = b.foo)
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@pokes
 POSTHOOK: Input: default@pokes2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@jssarma_nilzma_bad
 PREHOOK: query: drop table jssarma_nilzma_bad
 PREHOOK: type: DROPTABLE

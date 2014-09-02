@@ -115,6 +115,8 @@ PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@t1_mapping
 PREHOOK: Input: default@t1_new
 PREHOOK: Input: default@t1_old
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1
 POSTHOOK: query: create view t1 partitioned on (ds) as
 select * from
 (
@@ -128,6 +130,7 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@t1_mapping
 POSTHOOK: Input: default@t1_new
 POSTHOOK: Input: default@t1_old
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1
 PREHOOK: query: explain extended
 select * from t1 where ds = '2011-10-13'
