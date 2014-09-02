@@ -1363,8 +1363,8 @@ public final class Utilities {
       codecClass = FileOutputFormat.getOutputCompressorClass(jc, DefaultCodec.class);
       codec = (CompressionCodec) ReflectionUtils.newInstance(codecClass, jc);
     }
-    return (SequenceFile.createWriter(fs, jc, file, keyClass, valClass, compressionType, codec,
-	progressable));
+    return SequenceFile.createWriter(fs, jc, file, keyClass, valClass, compressionType, codec,
+      progressable);
 
   }
 
@@ -3525,7 +3525,7 @@ public final class Utilities {
     return createDirsWithPermission(conf, mkdir, fsPermission, recursive);
   }
 
-  private static void resetConfAndCloseFS (Configuration conf, boolean unsetUmask, 
+  private static void resetConfAndCloseFS (Configuration conf, boolean unsetUmask,
       String origUmask, FileSystem fs) throws IOException {
     if (unsetUmask) {
       if (origUmask != null) {

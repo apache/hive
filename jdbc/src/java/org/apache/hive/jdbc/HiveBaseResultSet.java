@@ -160,7 +160,7 @@ public abstract class HiveBaseResultSet implements ResultSet {
   }
 
   public InputStream getBinaryStream(String columnName) throws SQLException {
-	return getBinaryStream(findColumn(columnName));
+    return getBinaryStream(findColumn(columnName));
   }
 
   public Blob getBlob(int i) throws SQLException {

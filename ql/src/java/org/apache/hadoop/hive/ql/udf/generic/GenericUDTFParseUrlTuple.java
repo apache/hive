@@ -86,7 +86,7 @@ public class GenericUDTFParseUrlTuple extends GenericUDTF {
 
     if (numCols < 1) {
       throw new UDFArgumentException("parse_url_tuple() takes at least two arguments: " +
-      		"the url string and a part name");
+          "the url string and a part name");
     }
 
     for (int i = 0; i < args.length; ++i) {

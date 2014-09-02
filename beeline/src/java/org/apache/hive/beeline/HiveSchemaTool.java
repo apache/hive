@@ -287,7 +287,7 @@ public class HiveSchemaTool {
       }
     } catch (IOException e) {
       throw new HiveMetaException("Schema initialization FAILED!" +
-      		" Metastore state would be inconsistent !!", e);
+          " Metastore state would be inconsistent !!", e);
     }
   }
 

@@ -807,7 +807,7 @@ public class HiveConf extends Configuration {
         " config (hive.exec.orc.block.padding.tolerance)."),
     HIVEMERGEINPUTFORMATSTRIPELEVEL("hive.merge.input.format.stripe.level",
         "org.apache.hadoop.hive.ql.io.orc.OrcFileStripeMergeInputFormat",
-	"Input file format to use for ORC stripe level merging (for internal use only)"),
+        "Input file format to use for ORC stripe level merging (for internal use only)"),
     HIVEMERGECURRENTJOBHASDYNAMICPARTITIONS(
         "hive.merge.current.job.has.dynamic.partitions", false, ""),
 
