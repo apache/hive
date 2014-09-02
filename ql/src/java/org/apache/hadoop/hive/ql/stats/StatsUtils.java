@@ -25,10 +25,12 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
+import org.apache.hadoop.hive.metastore.api.Decimal;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
@@ -76,6 +78,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableStringObj
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableTimestampObjectInspector;
 import org.apache.hadoop.io.BytesWritable;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -404,18 +408,22 @@ public class StatsUtils {
       cs.setCountDistint(csd.getLongStats().getNumDVs());
       cs.setNumNulls(csd.getLongStats().getNumNulls());
       cs.setAvgColLen(JavaDataModel.get().primitive1());
+      cs.setRange(csd.getLongStats().getLowValue(), csd.getLongStats().getHighValue());
     } else if (colType.equalsIgnoreCase(serdeConstants.BIGINT_TYPE_NAME)) {
       cs.setCountDistint(csd.getLongStats().getNumDVs());
       cs.setNumNulls(csd.getLongStats().getNumNulls());
       cs.setAvgColLen(JavaDataModel.get().primitive2());
+      cs.setRange(csd.getLongStats().getLowValue(), csd.getLongStats().getHighValue());
     } else if (colType.equalsIgnoreCase(serdeConstants.FLOAT_TYPE_NAME)) {
       cs.setCountDistint(csd.getDoubleStats().getNumDVs());
       cs.setNumNulls(csd.getDoubleStats().getNumNulls());
       cs.setAvgColLen(JavaDataModel.get().primitive1());
+      cs.setRange(csd.getDoubleStats().getLowValue(), csd.getDoubleStats().getHighValue());
     } else if (colType.equalsIgnoreCase(serdeConstants.DOUBLE_TYPE_NAME)) {
       cs.setCountDistint(csd.getDoubleStats().getNumDVs());
       cs.setNumNulls(csd.getDoubleStats().getNumNulls());
       cs.setAvgColLen(JavaDataModel.get().primitive2());
+      cs.setRange(csd.getDoubleStats().getLowValue(), csd.getDoubleStats().getHighValue());
     } else if (colType.equalsIgnoreCase(serdeConstants.STRING_TYPE_NAME)
         || colType.startsWith(serdeConstants.CHAR_TYPE_NAME)
         || colType.startsWith(serdeConstants.VARCHAR_TYPE_NAME)) {
@@ -441,6 +449,13 @@ public class StatsUtils {
       cs.setAvgColLen(JavaDataModel.get().lengthOfDecimal());
       cs.setCountDistint(csd.getDecimalStats().getNumDVs());
       cs.setNumNulls(csd.getDecimalStats().getNumNulls());
+      Decimal val = csd.getDecimalStats().getHighValue();
+      BigDecimal maxVal = HiveDecimal.
+          create(new BigInteger(val.getUnscaled()), val.getScale()).bigDecimalValue();
+      val = csd.getDecimalStats().getLowValue();
+      BigDecimal minVal = HiveDecimal.
+          create(new BigInteger(val.getUnscaled()), val.getScale()).bigDecimalValue();
+      cs.setRange(minVal, maxVal);
     } else if (colType.equalsIgnoreCase(serdeConstants.DATE_TYPE_NAME)) {
       cs.setAvgColLen(JavaDataModel.get().lengthOfDate());
     } else {
