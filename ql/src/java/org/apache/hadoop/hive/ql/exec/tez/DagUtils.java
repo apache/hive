@@ -201,6 +201,12 @@ public class DagUtils {
       inpFormat = CombineHiveInputFormat.class.getName();
     }
 
+    if (mapWork.getDummyTableScan()) {
+      // hive input format doesn't handle the special condition of no paths + 1
+      // split correctly.
+      inpFormat = CombineHiveInputFormat.class.getName();
+    }
+
     conf.set(TEZ_TMP_DIR_KEY, context.getMRTmpPath().toUri().toString());
     conf.set("mapred.mapper.class", ExecMapper.class.getName());
     conf.set("mapred.input.format.class", inpFormat);
