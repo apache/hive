@@ -42,6 +42,7 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.Timer;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -445,7 +446,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         partitionValidationPattern = null;
       }
 
-      long cleanFreq = hiveConf.getLongVar(ConfVars.METASTORE_EVENT_CLEAN_FREQ) * 1000L;
+      long cleanFreq = hiveConf.getTimeVar(ConfVars.METASTORE_EVENT_CLEAN_FREQ, TimeUnit.MILLISECONDS);
       if (cleanFreq > 0) {
         // In default config, there is no timer.
         Timer cleaner = new Timer("Metastore Events Cleaner Thread", true);

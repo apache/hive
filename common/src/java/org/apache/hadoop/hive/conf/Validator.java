@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 /**
@@ -31,57 +32,85 @@ public interface Validator {
 
   String validate(String value);
 
-  static class StringSet implements Validator {
+  String toDescription();
 
+  class StringSet implements Validator {
+
+    private final boolean caseSensitive;
     private final Set<String> expected = new LinkedHashSet<String>();
 
     public StringSet(String... values) {
+      this(false, values);
+    }
+
+    public StringSet(boolean caseSensitive, String... values) {
+      this.caseSensitive = caseSensitive;
       for (String value : values) {
-        expected.add(value.toLowerCase());
+        expected.add(caseSensitive ? value : value.toLowerCase());
       }
     }
 
     @Override
     public String validate(String value) {
-      if (value == null || !expected.contains(value.toLowerCase())) {
+      if (value == null || !expected.contains(caseSensitive ? value : value.toLowerCase())) {
         return "Invalid value.. expects one of " + expected;
       }
       return null;
     }
+
+    @Override
+    public String toDescription() {
+      return "Expects one of " + expected;
+    }
   }
 
-  static enum RANGE_TYPE {
+  enum TYPE {
     INT {
       @Override
       protected boolean inRange(String value, Object lower, Object upper) {
         int ivalue = Integer.parseInt(value);
-        return (Integer)lower <= ivalue && ivalue <= (Integer)upper;
+        if (lower != null && ivalue < (Integer)lower) {
+          return false;
+        }
+        if (upper != null && ivalue > (Integer)upper) {
+          return false;
+        }
+        return true;
       }
     },
     LONG {
       @Override
       protected boolean inRange(String value, Object lower, Object upper) {
         long lvalue = Long.parseLong(value);
-        return (Long)lower <= lvalue && lvalue <= (Long)upper;
+        if (lower != null && lvalue < (Long)lower) {
+          return false;
+        }
+        if (upper != null && lvalue > (Long)upper) {
+          return false;
+        }
+        return true;
       }
     },
     FLOAT {
       @Override
       protected boolean inRange(String value, Object lower, Object upper) {
         float fvalue = Float.parseFloat(value);
-        return (Float)lower <= fvalue && fvalue <= (Float)upper;
+        if (lower != null && fvalue < (Float)lower) {
+          return false;
+        }
+        if (upper != null && fvalue > (Float)upper) {
+          return false;
+        }
+        return true;
       }
     };
 
-    public static RANGE_TYPE valueOf(Object lower, Object upper) {
-      if (lower instanceof Integer && upper instanceof Integer) {
-        assert (Integer)lower < (Integer)upper;
+    public static TYPE valueOf(Object lower, Object upper) {
+      if (lower instanceof Integer || upper instanceof Integer) {
         return INT;
-      } else if (lower instanceof Long && upper instanceof Long) {
-        assert (Long)lower < (Long)upper;
+      } else if (lower instanceof Long || upper instanceof Long) {
         return LONG;
-      } else if (lower instanceof Float && upper instanceof Float) {
-        assert (Float)lower < (Float)upper;
+      } else if (lower instanceof Float || upper instanceof Float) {
         return FLOAT;
       }
       throw new IllegalArgumentException("invalid range from " + lower + " to " + upper);
@@ -90,15 +119,15 @@ public interface Validator {
     protected abstract boolean inRange(String value, Object lower, Object upper);
   }
 
-  static class RangeValidator implements Validator {
+  class RangeValidator implements Validator {
 
-    private final RANGE_TYPE type;
+    private final TYPE type;
     private final Object lower, upper;
 
     public RangeValidator(Object lower, Object upper) {
       this.lower = lower;
       this.upper = upper;
-      this.type = RANGE_TYPE.valueOf(lower, upper);
+      this.type = TYPE.valueOf(lower, upper);
     }
 
     @Override
@@ -115,9 +144,23 @@ public interface Validator {
       }
       return null;
     }
+
+    @Override
+    public String toDescription() {
+      if (lower == null && upper == null) {
+        return null;
+      }
+      if (lower != null && upper != null) {
+        return "Expects value between " + lower + " and " + upper;
+      }
+      if (lower != null) {
+        return "Expects value bigger than " + lower;
+      }
+      return "Expects value smaller than " + upper;
+    }
   }
 
-  static class PatternSet implements Validator {
+  class PatternSet implements Validator {
 
     private final List<Pattern> expected = new ArrayList<Pattern>();
 
@@ -139,9 +182,14 @@ public interface Validator {
       }
       return "Invalid value.. expects one of patterns " + expected;
     }
+
+    @Override
+    public String toDescription() {
+      return "Expects one of the pattern in " + expected;
+    }
   }
 
-  static class RatioValidator implements Validator {
+  class RatioValidator implements Validator {
 
     @Override
     public String validate(String value) {
@@ -154,6 +202,78 @@ public interface Validator {
         return e.toString();
       }
       return null;
+    }
+
+    @Override
+    public String toDescription() {
+      return "Expects value between 0.0f and 1.0f";
+    }
+  }
+
+  class TimeValidator implements Validator {
+
+    private final TimeUnit timeUnit;
+
+    private final Long min;
+    private final boolean minInclusive;
+
+    private final Long max;
+    private final boolean maxInclusive;
+
+    public TimeValidator(TimeUnit timeUnit) {
+      this(timeUnit, null, false, null, false);
+    }
+
+    public TimeValidator(TimeUnit timeUnit,
+        Long min, boolean minInclusive, Long max, boolean maxInclusive) {
+      this.timeUnit = timeUnit;
+      this.min = min;
+      this.minInclusive = minInclusive;
+      this.max = max;
+      this.maxInclusive = maxInclusive;
+    }
+
+    public TimeUnit getTimeUnit() {
+      return timeUnit;
+    }
+
+    @Override
+    public String validate(String value) {
+      try {
+        long time = HiveConf.toTime(value, timeUnit, timeUnit);
+        if (min != null && (minInclusive ? time < min : time <= min)) {
+          return value + " is smaller than " + timeString(min);
+        }
+        if (max != null && (maxInclusive ? time > max : time >= max)) {
+          return value + " is bigger than " + timeString(max);
+        }
+      } catch (Exception e) {
+        return e.toString();
+      }
+      return null;
+    }
+
+    public String toDescription() {
+      String description =
+          "Expects a time value with unit " +
+          "(d/day, h/hour, m/min, s/sec, ms/msec, us/usec, ns/nsec)" +
+          ", which is " + HiveConf.stringFor(timeUnit) + " if not specified";
+      if (min != null && max != null) {
+        description += ".\nThe time should be in between " +
+            timeString(min) + (minInclusive ? " (inclusive)" : " (exclusive)") + " and " +
+            timeString(max) + (maxInclusive ? " (inclusive)" : " (exclusive)");
+      } else if (min != null) {
+        description += ".\nThe time should be bigger than " +
+            (minInclusive ? "or equal to " : "") + timeString(min);
+      } else if (max != null) {
+        description += ".\nThe time should be smaller than " +
+            (maxInclusive ? "or equal to " : "") + timeString(max);
+      }
+      return description;
+    }
+
+    private String timeString(long time) {
+      return time + " " + HiveConf.stringFor(timeUnit);
     }
   }
 }

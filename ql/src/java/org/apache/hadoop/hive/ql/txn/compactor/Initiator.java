@@ -43,6 +43,7 @@ import java.io.IOException;
 import java.security.PrivilegedExceptionAction;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 /**
  * A class to initiate compactions.  This will run in a separate thread.
@@ -50,7 +51,6 @@ import java.util.Set;
 public class Initiator extends CompactorThread {
   static final private String CLASS_NAME = Initiator.class.getName();
   static final private Log LOG = LogFactory.getLog(CLASS_NAME);
-  static final private int threadId = 10000;
 
   static final private String NO_COMPACTION = "NO_AUTO_COMPACTION";
 
@@ -63,7 +63,7 @@ public class Initiator extends CompactorThread {
     try {
       recoverFailedCompactions(false);
 
-      int abortedThreashold = HiveConf.getIntVar(conf,
+      int abortedThreshold = HiveConf.getIntVar(conf,
           HiveConf.ConfVars.HIVE_COMPACTOR_ABORTEDTXN_THRESHOLD);
 
       // Make sure we run through the loop once before checking to stop as this makes testing
@@ -77,7 +77,7 @@ public class Initiator extends CompactorThread {
         try {
           ShowCompactResponse currentCompactions = txnHandler.showCompact(new ShowCompactRequest());
           ValidTxnList txns = TxnHandler.createValidTxnList(txnHandler.getOpenTxns());
-          Set<CompactionInfo> potentials = txnHandler.findPotentialCompactions(abortedThreashold);
+          Set<CompactionInfo> potentials = txnHandler.findPotentialCompactions(abortedThreshold);
           LOG.debug("Found " + potentials.size() + " potential compactions, " +
               "checking to see if we should compact any of them");
           for (CompactionInfo ci : potentials) {
@@ -140,13 +140,13 @@ public class Initiator extends CompactorThread {
   public void init(BooleanPointer stop) throws MetaException {
     super.init(stop);
     checkInterval =
-        HiveConf.getLongVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_CHECK_INTERVAL) * 1000;
+        conf.getTimeVar(HiveConf.ConfVars.HIVE_COMPACTOR_CHECK_INTERVAL, TimeUnit.MILLISECONDS) ;
   }
 
   private void recoverFailedCompactions(boolean remoteOnly) throws MetaException {
     if (!remoteOnly) txnHandler.revokeFromLocalWorkers(Worker.hostname());
-    txnHandler.revokeTimedoutWorkers(HiveConf.getLongVar(conf,
-        HiveConf.ConfVars.HIVE_COMPACTOR_WORKER_TIMEOUT));
+    txnHandler.revokeTimedoutWorkers(HiveConf.getTimeVar(conf,
+        HiveConf.ConfVars.HIVE_COMPACTOR_WORKER_TIMEOUT, TimeUnit.MILLISECONDS));
   }
 
   // Figure out if there are any currently running compactions on the same table or partition.
