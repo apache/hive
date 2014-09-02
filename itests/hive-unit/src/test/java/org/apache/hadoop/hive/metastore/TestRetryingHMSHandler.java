@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.metastore;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import junit.framework.Assert;
 import junit.framework.TestCase;
@@ -58,7 +59,7 @@ public class TestRetryingHMSHandler extends TestCase {
     hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + port);
     hiveConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES, 3);
     hiveConf.setIntVar(HiveConf.ConfVars.HMSHANDLERATTEMPTS, 2);
-    hiveConf.setIntVar(HiveConf.ConfVars.HMSHANDLERINTERVAL, 0);
+    hiveConf.setTimeVar(HiveConf.ConfVars.HMSHANDLERINTERVAL, 0, TimeUnit.MILLISECONDS);
     hiveConf.setBoolVar(HiveConf.ConfVars.HMSHANDLERFORCERELOADCONF, false);
     msc = new HiveMetaStoreClient(hiveConf, null);
   }

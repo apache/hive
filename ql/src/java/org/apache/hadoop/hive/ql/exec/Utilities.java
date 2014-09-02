@@ -2743,7 +2743,7 @@ public final class Utilities {
    * first time it is caught, or SQLTransientException when the maxRetries has reached.
    */
   public static <T> T executeWithRetry(SQLCommand<T> cmd, PreparedStatement stmt,
-      int baseWindow, int maxRetries)  throws SQLException {
+      long baseWindow, int maxRetries)  throws SQLException {
 
     Random r = new Random();
     T result = null;
@@ -2785,7 +2785,7 @@ public final class Utilities {
    * first time it is caught, or SQLTransientException when the maxRetries has reached.
    */
   public static Connection connectWithRetry(String connectionString,
-      int waitWindow, int maxRetries) throws SQLException {
+      long waitWindow, int maxRetries) throws SQLException {
 
     Random r = new Random();
 
@@ -2827,7 +2827,7 @@ public final class Utilities {
    * first time it is caught, or SQLTransientException when the maxRetries has reached.
    */
   public static PreparedStatement prepareWithRetry(Connection conn, String stmt,
-      int waitWindow, int maxRetries) throws SQLException {
+      long waitWindow, int maxRetries) throws SQLException {
 
     Random r = new Random();
 
@@ -2867,7 +2867,7 @@ public final class Utilities {
    * @param r a random generator.
    * @return number of milliseconds for the next wait time.
    */
-  public static long getRandomWaitTime(int baseWindow, int failures, Random r) {
+  public static long getRandomWaitTime(long baseWindow, int failures, Random r) {
     return (long) (
           baseWindow * failures +     // grace period for the last round of attempt
           baseWindow * (failures + 1) * r.nextDouble()); // expanding time window for each failure
@@ -3376,7 +3376,7 @@ public final class Utilities {
   /**
    * Returns true if a plan is both configured for vectorized execution
    * and vectorization is allowed. The plan may be configured for vectorization
-   * but vectorization dissalowed eg. for FetchOperator execution.
+   * but vectorization disallowed eg. for FetchOperator execution.
    */
   public static boolean isVectorMode(Configuration conf) {
     if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED) &&
