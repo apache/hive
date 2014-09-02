@@ -32,6 +32,7 @@ public class ColStatistics {
   private double avgColLen;
   private long numTrues;
   private long numFalses;
+  private Range range;
 
   public ColStatistics(String tabAlias, String colName, String colType) {
     this.setTableAlias(tabAlias);
@@ -118,6 +119,17 @@ public class ColStatistics {
     this.numFalses = numFalses;
   }
 
+  public Range getRange() {
+    return range;
+  }
+
+  public void setRange(Number minVal, Number maxVal) {
+    this.range = new Range(minVal, maxVal);
+  }
+
+  public void setRange(Range r) {
+    this.range = r;
+  }
 
   @Override
   public String toString() {
@@ -150,7 +162,24 @@ public class ColStatistics {
     clone.setNumNulls(numNulls);
     clone.setNumTrues(numTrues);
     clone.setNumFalses(numFalses);
+    if (range != null ) {
+      clone.setRange(range.clone());
+    }
     return clone;
+  }
+
+  public static class Range {
+    public final Number minValue;
+    public final Number maxValue;
+    Range(Number minValue, Number maxValue) {
+      super();
+      this.minValue = minValue;
+      this.maxValue = maxValue;
+    }
+    @Override
+    public Range clone() {
+      return new Range(minValue, maxValue);
+    }
   }
 
 }
