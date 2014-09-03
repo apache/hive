@@ -109,6 +109,7 @@ import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.util.StringUtils;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.thrift.TException;
 
 import com.google.common.collect.Sets;
@@ -128,6 +129,7 @@ public class Hive {
 
   private HiveConf conf = null;
   private IMetaStoreClient metaStoreClient;
+  private UserGroupInformation owner;
 
   private static ThreadLocal<Hive> hiveDB = new ThreadLocal<Hive>() {
     @Override
@@ -181,7 +183,11 @@ public class Hive {
    */
   public static Hive get(HiveConf c, boolean needsRefresh) throws HiveException {
     Hive db = hiveDB.get();
-    if (db == null || needsRefresh) {
+    if (db == null || needsRefresh || !db.isCurrentUserOwner()) {
+      if (db != null) {
+        LOG.debug("Creating new db. db = " + db + ", needsRefresh = " + needsRefresh +
+          ", db.isCurrentUserOwner = " + db.isCurrentUserOwner());
+      }
       closeCurrent();
       c.set("fs.scheme.class", "dfs");
       Hive newdb = new Hive(c);
@@ -194,6 +200,11 @@ public class Hive {
 
   public static Hive get() throws HiveException {
     Hive db = hiveDB.get();
+    if (db != null && !db.isCurrentUserOwner()) {
+      LOG.debug("Creating new db. db.isCurrentUserOwner = " + db.isCurrentUserOwner());
+      db.close();
+      db = null;
+    }
     if (db == null) {
       SessionState session = SessionState.get();
       db = new Hive(session == null ? new HiveConf(Hive.class) : session.getConf());
@@ -219,6 +230,17 @@ public class Hive {
   private Hive(HiveConf c) throws HiveException {
     conf = c;
   }
+
+
+  private boolean isCurrentUserOwner() throws HiveException {
+    try {
+      return owner == null || owner.equals(UserGroupInformation.getCurrentUser());
+    } catch(IOException e) {
+      throw new HiveException("Error getting current user: " + e.getMessage(), e);
+    }
+  }
+
+
 
   /**
    * closes the connection to metastore for the calling thread
@@ -2496,6 +2518,13 @@ private void constructOneLBLocationMap(FileStatus fSta,
   @Unstable
   public IMetaStoreClient getMSC() throws MetaException {
     if (metaStoreClient == null) {
+      try {
+        owner = UserGroupInformation.getCurrentUser();
+      } catch(IOException e) {
+        String msg = "Error getting current user: " + e.getMessage();
+        LOG.error(msg, e);
+        throw new MetaException(msg + "\n" + StringUtils.stringifyException(e));
+      }
       metaStoreClient = createMetaStoreClient();
     }
     return metaStoreClient;
