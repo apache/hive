@@ -552,8 +552,5 @@ public interface RawStore extends Configurable {
 
   public AggrStats get_aggr_stats_for(String dbName, String tblName,
     List<String> partNames, List<String> colNames) throws MetaException, NoSuchObjectException;
-
-  boolean updatePartitionColumnStatistics(
-      SetPartitionsStatsRequest request) throws NoSuchObjectException,
-      MetaException, InvalidObjectException, InvalidInputException;
+  
 }
