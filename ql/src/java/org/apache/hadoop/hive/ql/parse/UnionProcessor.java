@@ -22,30 +22,28 @@ import java.util.Stack;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
+import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 
 /**
- * FileSinkProcessor is a simple rule to remember seen file sinks for later
+ * FileSinkProcessor is a simple rule to remember seen unions for later
  * processing.
  *
  */
-public class FileSinkProcessor implements NodeProcessor {
+public class UnionProcessor implements NodeProcessor {
 
-  static final private Log LOG = LogFactory.getLog(FileSinkProcessor.class.getName());
+  static final private Log LOG = LogFactory.getLog(UnionProcessor.class.getName());
 
   @Override
-  public Object process(Node nd, Stack<Node> stack,
-      NodeProcessorCtx procCtx, Object... nodeOutputs)
+  public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs)
       throws SemanticException {
-
     GenTezProcContext context = (GenTezProcContext) procCtx;
-    FileSinkOperator fileSink = (FileSinkOperator) nd;
+    UnionOperator union = (UnionOperator) nd;
 
-    // just remember it for later processing
-    context.fileSinkSet.add(fileSink);
-    return true;
+    // simply need to remember that we've seen a union.
+    context.currentUnionOperators.add(union);
+    return null;
   }
 }

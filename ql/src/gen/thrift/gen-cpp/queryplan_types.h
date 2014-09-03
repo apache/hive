@@ -56,7 +56,8 @@ struct OperatorType {
     HASHTABLEDUMMY = 17,
     PTF = 18,
     MUX = 19,
-    DEMUX = 20
+    DEMUX = 20,
+    EVENT = 21
   };
 };
 

@@ -396,8 +396,7 @@ public final class PcrExprProcFactory {
         return new NodeInfoWrapper(WalkState.CONSTANT, null,
             (ExprNodeDesc) nd);
       }
-      assert (false);
-      return null;
+      return new NodeInfoWrapper(WalkState.UNKNOWN, null, (ExprNodeDesc)nd);
     }
   }
 

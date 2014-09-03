@@ -46,12 +46,12 @@ import org.apache.tez.mapreduce.protos.MRRuntimeProtos.MRInputUserPayloadProto;
 import org.apache.tez.mapreduce.protos.MRRuntimeProtos.MRSplitProto;
 import org.apache.tez.mapreduce.protos.MRRuntimeProtos.MRSplitsProto;
 import org.apache.tez.runtime.api.Event;
-import org.apache.tez.runtime.api.events.InputConfigureVertexTasksEvent;
-import org.apache.tez.runtime.api.events.InputDataInformationEvent;
-import org.apache.tez.runtime.api.events.InputInitializerEvent;
 import org.apache.tez.runtime.api.InputInitializer;
 import org.apache.tez.runtime.api.InputInitializerContext;
 import org.apache.tez.runtime.api.InputSpecUpdate;
+import org.apache.tez.runtime.api.events.InputConfigureVertexTasksEvent;
+import org.apache.tez.runtime.api.events.InputDataInformationEvent;
+import org.apache.tez.runtime.api.events.InputInitializerEvent;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
@@ -63,11 +63,14 @@ import com.google.common.collect.Multimap;
  * making sure that splits from different partitions are only grouped if they
  * are of the same schema, format and serde
  */
+@SuppressWarnings("deprecation")
 public class HiveSplitGenerator extends InputInitializer {
 
   private static final Log LOG = LogFactory.getLog(HiveSplitGenerator.class);
 
   private static final SplitGrouper grouper = new SplitGrouper();
+  private final DynamicPartitionPruner pruner = new DynamicPartitionPruner();
+  private InputInitializerContext context;
 
   public HiveSplitGenerator(InputInitializerContext initializerContext) {
     super(initializerContext);
@@ -76,6 +79,8 @@ public class HiveSplitGenerator extends InputInitializer {
   @Override
   public List<Event> initialize() throws Exception {
     InputInitializerContext rootInputContext = getContext();
+
+    context = rootInputContext;
 
     MRInputUserPayloadProto userPayloadProto =
         MRInputHelpers.parseMRInputPayload(rootInputContext.getInputUserPayload());
@@ -89,6 +94,11 @@ public class HiveSplitGenerator extends InputInitializer {
     // Read all credentials into the credentials instance stored in JobConf.
     JobConf jobConf = new JobConf(conf);
     ShimLoader.getHadoopShims().getMergedCredentials(jobConf);
+
+    MapWork work = Utilities.getMapWork(jobConf);
+
+    // perform dynamic partition pruning
+    pruner.prune(work, jobConf, context);
 
     InputSplitInfoMem inputSplitInfo = null;
     String realInputFormatName = conf.get("mapred.input.format.class");
@@ -137,6 +147,7 @@ public class HiveSplitGenerator extends InputInitializer {
 
     return createEventList(sendSerializedEvents, inputSplitInfo);
   }
+
 
   public static Multimap<Integer, InputSplit> generateGroupedSplits(JobConf jobConf,
       Configuration conf, InputSplit[] splits, float waves, int availableSlots)
@@ -189,10 +200,6 @@ public class HiveSplitGenerator extends InputInitializer {
     return groupedSplits;
   }
 
-  @Override
-  public void handleInputInitializerEvent(List<InputInitializerEvent> events) throws Exception {
-  }
-
   private List<Event> createEventList(boolean sendSerializedEvents, InputSplitInfoMem inputSplitInfo) {
 
     List<Event> events = Lists.newArrayListWithCapacity(inputSplitInfo.getNumTasks() + 1);
@@ -220,5 +227,12 @@ public class HiveSplitGenerator extends InputInitializer {
       }
     }
     return events;
+  }
+
+  @Override
+  public void handleInputInitializerEvent(List<InputInitializerEvent> events) throws Exception {
+    for (InputInitializerEvent e : events) {
+      pruner.getQueue().put(e);
+    }
   }
 }

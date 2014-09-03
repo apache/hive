@@ -26,9 +26,9 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -117,6 +117,14 @@ public class MapWork extends BaseWork {
   private boolean useOneNullRowInputFormat;
 
   private boolean dummyTableScan = false;
+
+  // used for dynamic partitioning
+  private Map<String, List<TableDesc>> eventSourceTableDescMap =
+      new LinkedHashMap<String, List<TableDesc>>();
+  private Map<String, List<String>> eventSourceColumnNameMap =
+      new LinkedHashMap<String, List<String>>();
+  private Map<String, List<ExprNodeDesc>> eventSourcePartKeyExprMap =
+      new LinkedHashMap<String, List<ExprNodeDesc>>();
 
   public MapWork() {}
 
@@ -534,5 +542,29 @@ public class MapWork extends BaseWork {
 
   public boolean getDummyTableScan() {
     return dummyTableScan;
+  }
+
+  public void setEventSourceTableDescMap(Map<String, List<TableDesc>> map) {
+    this.eventSourceTableDescMap = map;
+  }
+
+  public Map<String, List<TableDesc>> getEventSourceTableDescMap() {
+    return eventSourceTableDescMap;
+  }
+
+  public void setEventSourceColumnNameMap(Map<String, List<String>> map) {
+    this.eventSourceColumnNameMap = map;
+  }
+
+  public Map<String, List<String>> getEventSourceColumnNameMap() {
+    return eventSourceColumnNameMap;
+  }
+
+  public Map<String, List<ExprNodeDesc>> getEventSourcePartKeyExprMap() {
+    return eventSourcePartKeyExprMap;
+  }
+
+  public void setEventSourcePartKeyExprMap(Map<String, List<ExprNodeDesc>> map) {
+    this.eventSourcePartKeyExprMap = map;
   }
 }
