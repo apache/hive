@@ -736,12 +736,7 @@ public class DummyRawStoreForJdoConnection implements RawStore {
       throws MetaException {
     return null;
   }
-
-  @Override
-  public boolean updatePartitionColumnStatistics(SetPartitionsStatsRequest request)
-      throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
-    return false;
-  }
+  
 }
 
 

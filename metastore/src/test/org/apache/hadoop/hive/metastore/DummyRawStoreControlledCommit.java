@@ -720,10 +720,4 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
     return null;
   }
 
-  @Override
-  public boolean updatePartitionColumnStatistics(SetPartitionsStatsRequest request)
-      throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
-    return objectStore.updatePartitionColumnStatistics(request);
-  }
-
 }
