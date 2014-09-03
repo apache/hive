@@ -211,7 +211,7 @@ public class TezTask extends Task<TezWork> {
     FileSystem fs = scratchDir.getFileSystem(conf);
 
     // the name of the dag is what is displayed in the AM/Job UI
-    DAG dag = new DAG(work.getName());
+    DAG dag = DAG.create(work.getName());
 
     for (BaseWork w: ws) {
 

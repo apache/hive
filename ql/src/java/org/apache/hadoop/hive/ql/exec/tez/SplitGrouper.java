@@ -35,7 +35,7 @@ import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.split.TezGroupedSplit;
 import org.apache.hadoop.mapred.split.TezMapredSplitsGrouper;
-import org.apache.tez.dag.api.VertexLocationHint.TaskLocationHint;
+import org.apache.tez.dag.api.TaskLocationHint;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
@@ -141,13 +141,13 @@ public class SplitGrouper {
       String rack = (split instanceof TezGroupedSplit) ? ((TezGroupedSplit) split).getRack() : null;
       if (rack == null) {
         if (split.getLocations() != null) {
-          locationHints.add(new TaskLocationHint(new HashSet<String>(Arrays.asList(split
+          locationHints.add(TaskLocationHint.createTaskLocationHint(new HashSet<String>(Arrays.asList(split
               .getLocations())), null));
         } else {
-          locationHints.add(new TaskLocationHint(null, null));
+          locationHints.add(TaskLocationHint.createTaskLocationHint(null, null));
         }
       } else {
-        locationHints.add(new TaskLocationHint(null, Collections.singleton(rack)));
+        locationHints.add(TaskLocationHint.createTaskLocationHint(null, Collections.singleton(rack)));
       }
     }
 
