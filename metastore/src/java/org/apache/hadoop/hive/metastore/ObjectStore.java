@@ -5779,34 +5779,6 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
-  @Override
-  public boolean updatePartitionColumnStatistics(SetPartitionsStatsRequest request)
-      throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
-    boolean committed = false;
-    try {
-      openTransaction();
-      for (ColumnStatistics colStats : request.getColStats()) {
-        ColumnStatisticsDesc statsDesc = colStats.getStatsDesc();
-        statsDesc.setDbName(statsDesc.getDbName().toLowerCase());
-        statsDesc.setTableName(statsDesc.getTableName().toLowerCase());
-        List<ColumnStatisticsObj> statsObjs = colStats.getStatsObj();
-        for (ColumnStatisticsObj statsObj : statsObjs) {
-          statsObj.setColName(statsObj.getColName().toLowerCase());
-          statsObj.setColType(statsObj.getColType().toLowerCase());
-          MPartitionColumnStatistics mStatsObj = StatObjectConverter
-              .convertToMPartitionColumnStatistics(null, statsDesc, statsObj);
-          pm.makePersistent(mStatsObj);
-        }
-      }
-      committed = commitTransaction();
-      return committed;
-    } finally {
-      if (!committed) {
-        rollbackTransaction();
-      }
-    }
-  }
-
   private List<MTableColumnStatistics> getMTableColumnStatistics(
       Table table, List<String> colNames) throws MetaException {
     boolean committed = false;
