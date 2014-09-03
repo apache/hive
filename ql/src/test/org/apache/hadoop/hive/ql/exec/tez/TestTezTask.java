@@ -203,7 +203,7 @@ public class TestTezTask {
 
   @Test
   public void testSubmit() throws Exception {
-    DAG dag = new DAG("test");
+    DAG dag = DAG.create("test");
     task.submit(conf, dag, path, appLr, sessionState, new LinkedList());
     // validate close/reopen
     verify(sessionState, times(1)).open(any(HiveConf.class));
