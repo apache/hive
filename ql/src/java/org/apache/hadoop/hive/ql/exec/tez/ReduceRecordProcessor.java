@@ -138,7 +138,7 @@ public class ReduceRecordProcessor  extends RecordProcessor{
 
     try {
       keyTableDesc = redWork.getKeyDesc();
-      inputKeyDeserializer = (SerDe) ReflectionUtils.newInstance(keyTableDesc
+      inputKeyDeserializer = ReflectionUtils.newInstance(keyTableDesc
           .getDeserializerClass(), null);
       SerDeUtils.initializeSerDe(inputKeyDeserializer, null, keyTableDesc.getProperties(), null);
       keyObjectInspector = inputKeyDeserializer.getObjectInspector();
@@ -150,7 +150,7 @@ public class ReduceRecordProcessor  extends RecordProcessor{
         keyStructInspector = (StructObjectInspector)keyObjectInspector;
         batches = new VectorizedRowBatch[maxTags];
         valueStructInspectors = new StructObjectInspector[maxTags];
-        valueStringWriters = (List<VectorExpressionWriter>[])new List[maxTags];
+        valueStringWriters = new List[maxTags];
         keysColumnOffset = keyStructInspector.getAllStructFieldRefs().size();
         buffer = new DataOutputBuffer();
       }
@@ -213,7 +213,8 @@ public class ReduceRecordProcessor  extends RecordProcessor{
     }
 
     MapredContext.init(false, new JobConf(jconf));
-    ((TezContext)MapredContext.get()).setInputs(inputs);
+    ((TezContext) MapredContext.get()).setInputs(inputs);
+    ((TezContext) MapredContext.get()).setTezProcessorContext(processorContext);
 
     // initialize reduce operator tree
     try {
@@ -304,7 +305,7 @@ public class ReduceRecordProcessor  extends RecordProcessor{
     Map<Integer, String> tag2input = redWork.getTagToInput();
     ArrayList<LogicalInput> shuffleInputs = new ArrayList<LogicalInput>();
     for(String inpStr : tag2input.values()){
-      shuffleInputs.add((LogicalInput)inputs.get(inpStr));
+      shuffleInputs.add(inputs.get(inpStr));
     }
     return shuffleInputs;
   }

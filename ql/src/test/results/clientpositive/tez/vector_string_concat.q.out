@@ -117,14 +117,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: over1korc
-          Statistics: Num rows: 1049 Data size: 311170 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: s (type: string), concat(concat('      ', s), '      ') (type: string), concat(concat('|', rtrim(concat(concat('      ', s), '      '))), '|') (type: string)
             outputColumnNames: _col0, _col1, _col2
-            Statistics: Num rows: 1049 Data size: 311170 Basic stats: COMPLETE Column stats: NONE
             Limit
               Number of rows: 20
-              Statistics: Num rows: 20 Data size: 5920 Basic stats: COMPLETE Column stats: NONE
               ListSink
 
 PREHOOK: query: SELECT s AS `string`,

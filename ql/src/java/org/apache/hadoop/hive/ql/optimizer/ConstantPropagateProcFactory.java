@@ -941,12 +941,12 @@ public final class ConstantPropagateProcFactory {
         return null;
       }
 
-      List<ExprNodeDesc> newChildren = new ArrayList<ExprNodeDesc>();
-      for (ExprNodeDesc expr : pred.getChildren()) {
-        ExprNodeDesc constant = foldExpr(expr, constants, cppCtx, op, 0, false);
-        newChildren.add(constant);
+      ExprNodeDesc constant = foldExpr(pred, constants, cppCtx, op, 0, false);
+      if (constant instanceof ExprNodeGenericFuncDesc) {
+        conf.setFilterExpr((ExprNodeGenericFuncDesc) constant);
+      } else {
+        conf.setFilterExpr(null);
       }
-      pred.setChildren(newChildren);
       return null;
     }
   }
