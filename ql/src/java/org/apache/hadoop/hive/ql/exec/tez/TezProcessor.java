@@ -69,6 +69,7 @@ public class TezProcessor extends AbstractLogicalIOProcessor {
 
   public TezProcessor(ProcessorContext context) {
     super(context);
+    ObjectCache.setupObjectRegistry(context.getObjectRegistry());
   }
 
   @Override
