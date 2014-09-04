@@ -60,8 +60,8 @@ public class CounterStatsAggregator implements StatsAggregator, StatsCollectionT
   @Override
   public String aggregateStats(String counterGrpName, String statType) {
     // In case of counters, aggregation is done by JobTracker / MR AM itself
-	// so no need to aggregate, simply return the counter value for requested stat.
-	return String.valueOf(counters.getGroup(counterGrpName).getCounter(statType));
+    // so no need to aggregate, simply return the counter value for requested stat.
+    return String.valueOf(counters.getGroup(counterGrpName).getCounter(statType));
   }
 
   @Override

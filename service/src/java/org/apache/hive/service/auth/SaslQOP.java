@@ -22,7 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Possible values of  SASL quality-of-protection value.
+ * Possible values of SASL quality-of-protection value.
  */
 public enum SaslQOP {
   AUTH("auth"), // Authentication only.
@@ -32,14 +32,15 @@ public enum SaslQOP {
 
   public final String saslQop;
 
-  private static final Map<String, SaslQOP> strToEnum
-          = new HashMap<String, SaslQOP>();
+  private static final Map<String, SaslQOP> STR_TO_ENUM = new HashMap<String, SaslQOP>();
+
   static {
-    for (SaslQOP SaslQOP : values())
-      strToEnum.put(SaslQOP.toString(), SaslQOP);
+    for (SaslQOP saslQop : values()) {
+      STR_TO_ENUM.put(saslQop.toString(), saslQop);
+    }
   }
 
-  private SaslQOP(final String saslQop) {
+  SaslQOP(String saslQop) {
     this.saslQop = saslQop;
   }
 
@@ -48,13 +49,13 @@ public enum SaslQOP {
   }
 
   public static SaslQOP fromString(String str) {
-    if(str != null) {
+    if (str != null) {
       str = str.toLowerCase();
     }
-    SaslQOP saslQOP = strToEnum.get(str);
-    if(saslQOP == null) {
-      throw new IllegalArgumentException("Unknown auth type: " + str + " Allowed values are: "
-              + strToEnum.keySet());
+    SaslQOP saslQOP = STR_TO_ENUM.get(str);
+    if (saslQOP == null) {
+      throw new IllegalArgumentException(
+        "Unknown auth type: " + str + " Allowed values are: " + STR_TO_ENUM.keySet());
     }
     return saslQOP;
   }

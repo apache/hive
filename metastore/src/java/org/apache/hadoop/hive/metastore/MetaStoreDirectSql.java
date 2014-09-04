@@ -42,6 +42,7 @@ import javax.jdo.datastore.JDOConnection;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.commons.math3.stat.StatUtils;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
@@ -918,11 +919,11 @@ class MetaStoreDirectSql {
     long end = doTrace ? System.nanoTime() : 0;
     timingTrace(doTrace, qText, start, end);
     ForwardQueryResult fqr = (ForwardQueryResult) qResult;
-    List<Integer> colnumbers = new ArrayList<Integer>();
-    colnumbers.addAll(fqr);
-    for (Integer colnumber : colnumbers) {
-      if (colnumber == colNames.size())
+    Iterator<?> iter = fqr.iterator();
+    while (iter.hasNext()) {
+      if (StatObjectConverter.extractSqlLong(iter.next()) == colNames.size()) {
         partsFound++;
+      }
     }
     return partsFound;
   }
@@ -995,15 +996,15 @@ class MetaStoreDirectSql {
       for (Object[] row : list) {
         String colName = (String) row[0];
         String colType = (String) row[1];
-        if ((Integer) row[2] == partNames.size() || (Integer) row[2] < 2) {
-          // Extrapolation is not needed for this column if
-          // count(\"PARTITION_NAME\")==partNames.size()
-          // Or, extrapolation is not possible for this column if
-          // count(\"PARTITION_NAME\")<2
+        // Extrapolation is not needed for this column if
+        // count(\"PARTITION_NAME\")==partNames.size()
+        // Or, extrapolation is not possible for this column if
+        // count(\"PARTITION_NAME\")<2
+        Long count = StatObjectConverter.extractSqlLong(row[2]);
+        if (count == partNames.size() || count < 2) {
           noExtraColumnNames.add(colName);
         } else {
-          extraColumnNameTypeParts.put(colName,
-              new String[] { colType, String.valueOf((Integer) row[2]) });
+          extraColumnNameTypeParts.put(colName, new String[] { colType, String.valueOf(count) });
         }
       }
       query.closeAll();
@@ -1090,12 +1091,12 @@ class MetaStoreDirectSql {
             String colStatName = IExtrapolatePartStatus.colStatNames[colStatIndex];
             // if the aggregation type is sum, we do a scale-up
             if (IExtrapolatePartStatus.aggrTypes[colStatIndex] == IExtrapolatePartStatus.AggrType.Sum) {
-              Long val = (Long) sumMap.get(colName).get(colStatIndex);
-              if (val == null) {
+              Object o = sumMap.get(colName).get(colStatIndex);
+              if (o == null) {
                 row[2 + colStatIndex] = null;
               } else {
-                row[2 + colStatIndex] = (Long) (val / sumVal * (partNames
-                    .size()));
+                Long val = StatObjectConverter.extractSqlLong(o);
+                row[2 + colStatIndex] = (Long) (val / sumVal * (partNames.size()));
               }
             } else {
               // if the aggregation type is min/max, we extrapolate from the

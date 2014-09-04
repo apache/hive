@@ -2374,8 +2374,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         String havingInputAlias = null;
 
         if ( forHavingClause ) {
-        	havingInputAlias = "gby_sq" + sqIdx;
-        	aliasToOpInfo.put(havingInputAlias, input);
+          havingInputAlias = "gby_sq" + sqIdx;
+          aliasToOpInfo.put(havingInputAlias, input);
         }
 
         subQuery.validateAndRewriteAST(inputRR, forHavingClause, havingInputAlias, aliasToOpInfo.keySet());
@@ -2486,7 +2486,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     ExprNodeDesc filterPred = null;
     List<Boolean> nullSafes = joinTree.getNullSafes();
     for (int i = 0; i < joinKeys.length; i++) {
-      if ( nullSafes.get(i)) {
+      if (nullSafes.get(i) || (joinKeys[i] instanceof ExprNodeColumnDesc &&
+         ((ExprNodeColumnDesc)joinKeys[i]).getIsPartitionColOrVirtualCol())) {
+        // no need to generate is not null predicate for partitioning or
+        // virtual column, since those columns can never be null.
         continue;
       }
       List<ExprNodeDesc> args = new ArrayList<ExprNodeDesc>();
@@ -9721,12 +9724,37 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     LOG.info("Completed plan generation");
 
+    // put accessed columns to readEntity
+    if (HiveConf.getBoolVar(this.conf, HiveConf.ConfVars.HIVE_STATS_COLLECT_SCANCOLS)) {
+      putAccessedColumnsToReadEntity(inputs, columnAccessInfo);
+    }
+
     if (!ctx.getExplain()) {
       // if desired check we're not going over partition scan limits
       enforceScanLimits(pCtx, origFetchTask);
     }
 
     return;
+  }
+
+  private void putAccessedColumnsToReadEntity(HashSet<ReadEntity> inputs, ColumnAccessInfo columnAccessInfo) {
+    Map<String, List<String>> tableToColumnAccessMap = columnAccessInfo.getTableToColumnAccessMap();
+    if (tableToColumnAccessMap != null && !tableToColumnAccessMap.isEmpty()) {
+      for(ReadEntity entity: inputs) {
+        switch (entity.getType()) {
+          case TABLE:
+            entity.getAccessedColumns().addAll(
+                tableToColumnAccessMap.get(entity.getTable().getCompleteName()));
+            break;
+          case PARTITION:
+            entity.getAccessedColumns().addAll(
+                tableToColumnAccessMap.get(entity.getPartition().getTable().getCompleteName()));
+            break;
+          default:
+            // no-op
+        }
+      }
+    }
   }
 
   private void enforceScanLimits(ParseContext pCtx, FetchTask fTask)
@@ -11765,40 +11793,40 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private void addAlternateGByKeyMappings(ASTNode gByExpr, ColumnInfo colInfo,
-		  Operator<? extends OperatorDesc> reduceSinkOp, RowResolver gByRR) {
-	  if ( gByExpr.getType() == HiveParser.DOT
+      Operator<? extends OperatorDesc> reduceSinkOp, RowResolver gByRR) {
+    if ( gByExpr.getType() == HiveParser.DOT
           && gByExpr.getChild(0).getType() == HiveParser.TOK_TABLE_OR_COL ) {
-		  String tab_alias = BaseSemanticAnalyzer.unescapeIdentifier(gByExpr
-		            .getChild(0).getChild(0).getText());
-		  String col_alias = BaseSemanticAnalyzer.unescapeIdentifier(
-				  gByExpr.getChild(1).getText());
-		  gByRR.put(tab_alias, col_alias, colInfo);
-	  } else if ( gByExpr.getType() == HiveParser.TOK_TABLE_OR_COL ) {
-		  String col_alias = BaseSemanticAnalyzer.unescapeIdentifier(gByExpr
-		          .getChild(0).getText());
-		  String tab_alias = null;
-		  /*
-		   * If the input to the GBy has a tab alias for the column, then add an entry
-		   * based on that tab_alias.
-		   * For e.g. this query:
-		   * select b.x, count(*) from t1 b group by x
-		   * needs (tab_alias=b, col_alias=x) in the GBy RR.
-		   * tab_alias=b comes from looking at the RowResolver that is the ancestor
-		   * before any GBy/ReduceSinks added for the GBY operation.
-		   */
-		  Operator<? extends OperatorDesc> parent = reduceSinkOp;
-		  while ( parent instanceof ReduceSinkOperator ||
-				  parent instanceof GroupByOperator ) {
-			  parent = parent.getParentOperators().get(0);
-		  }
-		  RowResolver parentRR = opParseCtx.get(parent).getRowResolver();
-		  try {
-			  ColumnInfo pColInfo = parentRR.get(tab_alias, col_alias);
-			  tab_alias = pColInfo == null ? null : pColInfo.getTabAlias();
-		  } catch(SemanticException se) {
-		  }
-		  gByRR.put(tab_alias, col_alias, colInfo);
-	  }
+      String tab_alias = BaseSemanticAnalyzer.unescapeIdentifier(gByExpr
+                .getChild(0).getChild(0).getText());
+      String col_alias = BaseSemanticAnalyzer.unescapeIdentifier(
+          gByExpr.getChild(1).getText());
+      gByRR.put(tab_alias, col_alias, colInfo);
+    } else if ( gByExpr.getType() == HiveParser.TOK_TABLE_OR_COL ) {
+      String col_alias = BaseSemanticAnalyzer.unescapeIdentifier(gByExpr
+              .getChild(0).getText());
+      String tab_alias = null;
+      /*
+       * If the input to the GBy has a tab alias for the column, then add an entry
+       * based on that tab_alias.
+       * For e.g. this query:
+       * select b.x, count(*) from t1 b group by x
+       * needs (tab_alias=b, col_alias=x) in the GBy RR.
+       * tab_alias=b comes from looking at the RowResolver that is the ancestor
+       * before any GBy/ReduceSinks added for the GBY operation.
+       */
+      Operator<? extends OperatorDesc> parent = reduceSinkOp;
+      while ( parent instanceof ReduceSinkOperator ||
+          parent instanceof GroupByOperator ) {
+        parent = parent.getParentOperators().get(0);
+      }
+      RowResolver parentRR = opParseCtx.get(parent).getRowResolver();
+      try {
+        ColumnInfo pColInfo = parentRR.get(tab_alias, col_alias);
+        tab_alias = pColInfo == null ? null : pColInfo.getTabAlias();
+      } catch(SemanticException se) {
+      }
+      gByRR.put(tab_alias, col_alias, colInfo);
+    }
   }
 
   private WriteEntity.WriteType determineWriteType(LoadTableDesc ltd, boolean isNonNativeTable) {

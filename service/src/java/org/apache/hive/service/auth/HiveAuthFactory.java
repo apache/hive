@@ -23,7 +23,6 @@ import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
-
 import javax.security.auth.login.LoginException;
 import javax.security.sasl.Sasl;
 
@@ -41,13 +40,14 @@ import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
 import org.apache.thrift.transport.TTransportFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+/**
+ * This class helps in some aspects of authentication. It creates the proper Thrift classes for the
+ * given configuration as well as helps with authenticating requests.
+ */
 public class HiveAuthFactory {
-  private static final Logger LOG = LoggerFactory.getLogger(HiveAuthFactory.class);
 
-  public static enum AuthTypes {
+  public enum AuthTypes {
     NOSASL("NOSASL"),
     NONE("NONE"),
     LDAP("LDAP"),
@@ -55,7 +55,7 @@ public class HiveAuthFactory {
     CUSTOM("CUSTOM"),
     PAM("PAM");
 
-    private String authType;
+    private final String authType;
 
     AuthTypes(String authType) {
       this.authType = authType;
@@ -65,11 +65,11 @@ public class HiveAuthFactory {
       return authType;
     }
 
-  };
+  }
 
-  private HadoopThriftAuthBridge.Server saslServer = null;
+  private HadoopThriftAuthBridge.Server saslServer;
   private String authTypeStr;
-  private String transportMode;
+  private final String transportMode;
   private final HiveConf conf;
 
   public static final String HS2_PROXY_USER = "hive.server2.proxy.user";
@@ -81,21 +81,19 @@ public class HiveAuthFactory {
     authTypeStr = conf.getVar(HiveConf.ConfVars.HIVE_SERVER2_AUTHENTICATION);
 
     // In http mode we use NOSASL as the default auth type
-    if (transportMode.equalsIgnoreCase("http")) {
+    if ("http".equalsIgnoreCase(transportMode)) {
       if (authTypeStr == null) {
         authTypeStr = AuthTypes.NOSASL.getAuthName();
       }
-    }
-    else {
+    } else {
       if (authTypeStr == null) {
         authTypeStr = AuthTypes.NONE.getAuthName();
       }
       if (authTypeStr.equalsIgnoreCase(AuthTypes.KERBEROS.getAuthName())
           && ShimLoader.getHadoopShims().isSecureShimImpl()) {
-        saslServer = ShimLoader.getHadoopThriftAuthBridge().createServer(
-            conf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_KEYTAB),
-            conf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL)
-            );
+        saslServer = ShimLoader.getHadoopThriftAuthBridge()
+          .createServer(conf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_KEYTAB),
+                        conf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL));
         // start delegation token manager
         try {
           saslServer.startDelegationTokenSecretManager(conf, null);
@@ -108,8 +106,7 @@ public class HiveAuthFactory {
 
   public Map<String, String> getSaslProperties() {
     Map<String, String> saslProps = new HashMap<String, String>();
-    SaslQOP saslQOP =
-        SaslQOP.fromString(conf.getVar(ConfVars.HIVE_SERVER2_THRIFT_SASL_QOP));
+    SaslQOP saslQOP = SaslQOP.fromString(conf.getVar(ConfVars.HIVE_SERVER2_THRIFT_SASL_QOP));
     saslProps.put(Sasl.QOP, saslQOP.toString());
     saslProps.put(Sasl.SERVER_AUTH, "true");
     return saslProps;
@@ -139,12 +136,10 @@ public class HiveAuthFactory {
     return transportFactory;
   }
 
-  public TProcessorFactory getAuthProcFactory(ThriftCLIService service)
-      throws LoginException {
-    if (transportMode.equalsIgnoreCase("http")) {
+  public TProcessorFactory getAuthProcFactory(ThriftCLIService service) throws LoginException {
+    if ("http".equalsIgnoreCase(transportMode)) {
       return HttpAuthUtils.getAuthProcFactory(service);
-    }
-    else {
+    } else {
       if (authTypeStr.equalsIgnoreCase(AuthTypes.KERBEROS.getAuthName())) {
         return KerberosSaslHelper.getKerberosProcessorFactory(saslServer, service);
       } else {
@@ -154,18 +149,14 @@ public class HiveAuthFactory {
   }
 
   public String getRemoteUser() {
-    if (saslServer != null) {
-      return saslServer.getRemoteUser();
-    } else {
-      return null;
-    }
+    return saslServer == null ? null : saslServer.getRemoteUser();
   }
 
   public String getIpAddress() {
-    if(saslServer != null && saslServer.getRemoteAddress() != null) {
-      return saslServer.getRemoteAddress().getHostAddress();
-    } else {
+    if (saslServer == null || saslServer.getRemoteAddress() == null) {
       return null;
+    } else {
+      return saslServer.getRemoteAddress().getHostAddress();
     }
   }
 
@@ -173,62 +164,58 @@ public class HiveAuthFactory {
   public static void loginFromKeytab(HiveConf hiveConf) throws IOException {
     String principal = hiveConf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL);
     String keyTabFile = hiveConf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_KEYTAB);
-    if (!principal.isEmpty() && !keyTabFile.isEmpty()) {
-      ShimLoader.getHadoopShims().loginUserFromKeytab(principal, keyTabFile);
+    if (principal.isEmpty() || keyTabFile.isEmpty()) {
+      throw new IOException("HiveServer2 Kerberos principal or keytab is not correctly configured");
     } else {
-      throw new IOException ("HiveServer2 kerberos principal or keytab " +
-          "is not correctly configured");
+      ShimLoader.getHadoopShims().loginUserFromKeytab(principal, keyTabFile);
     }
   }
 
-  // Perform spnego login using the hadoop shim API if the configuration is available
-  public static UserGroupInformation loginFromSpnegoKeytabAndReturnUGI(
-      HiveConf hiveConf) throws IOException {
+  // Perform SPNEGO login using the hadoop shim API if the configuration is available
+  public static UserGroupInformation loginFromSpnegoKeytabAndReturnUGI(HiveConf hiveConf)
+    throws IOException {
     String principal = hiveConf.getVar(ConfVars.HIVE_SERVER2_SPNEGO_PRINCIPAL);
     String keyTabFile = hiveConf.getVar(ConfVars.HIVE_SERVER2_SPNEGO_KEYTAB);
-    if (!principal.isEmpty() && !keyTabFile.isEmpty()) {
-      return ShimLoader.getHadoopShims().loginUserFromKeytabAndReturnUGI(
-          principal, keyTabFile);
+    if (principal.isEmpty() || keyTabFile.isEmpty()) {
+      throw new IOException("HiveServer2 SPNEGO principal or keytab is not correctly configured");
     } else {
-      throw new IOException ("HiveServer2 SPNego principal or keytab " +
-          "is not correctly configured");
+      return ShimLoader.getHadoopShims().loginUserFromKeytabAndReturnUGI(principal, keyTabFile);
     }
   }
 
-  public static TTransport getSocketTransport(String host, int port, int loginTimeout)
-      throws TTransportException {
+  public static TTransport getSocketTransport(String host, int port, int loginTimeout) {
     return new TSocket(host, port, loginTimeout);
   }
 
   public static TTransport getSSLSocket(String host, int port, int loginTimeout)
-      throws TTransportException {
+    throws TTransportException {
     return TSSLTransportFactory.getClientSocket(host, port, loginTimeout);
   }
 
   public static TTransport getSSLSocket(String host, int port, int loginTimeout,
-      String trustStorePath, String trustStorePassWord) throws TTransportException {
+    String trustStorePath, String trustStorePassWord) throws TTransportException {
     TSSLTransportFactory.TSSLTransportParameters params =
-        new TSSLTransportFactory.TSSLTransportParameters();
+      new TSSLTransportFactory.TSSLTransportParameters();
     params.setTrustStore(trustStorePath, trustStorePassWord);
     params.requireClientAuth(true);
     return TSSLTransportFactory.getClientSocket(host, port, loginTimeout, params);
   }
 
   public static TServerSocket getServerSocket(String hiveHost, int portNum)
-      throws TTransportException {
-    InetSocketAddress serverAddress = null;
-    if (hiveHost != null && !hiveHost.isEmpty()) {
-      serverAddress = new InetSocketAddress(hiveHost, portNum);
+    throws TTransportException {
+    InetSocketAddress serverAddress;
+    if (hiveHost == null || hiveHost.isEmpty()) {
+      serverAddress = new InetSocketAddress(portNum);
     } else {
-      serverAddress = new  InetSocketAddress(portNum);
+      serverAddress = new InetSocketAddress(hiveHost, portNum);
     }
-    return new TServerSocket(serverAddress );
+    return new TServerSocket(serverAddress);
   }
 
-  public static TServerSocket getServerSSLSocket(String hiveHost, int portNum,
-      String keyStorePath, String keyStorePassWord) throws TTransportException, UnknownHostException {
+  public static TServerSocket getServerSSLSocket(String hiveHost, int portNum, String keyStorePath,
+    String keyStorePassWord) throws TTransportException, UnknownHostException {
     TSSLTransportFactory.TSSLTransportParameters params =
-        new TSSLTransportFactory.TSSLTransportParameters();
+      new TSSLTransportFactory.TSSLTransportParameters();
     params.setKeyStore(keyStorePath, keyStorePassWord);
 
     InetAddress serverAddress;
@@ -243,8 +230,7 @@ public class HiveAuthFactory {
   // retrieve delegation token for the given user
   public String getDelegationToken(String owner, String renewer) throws HiveSQLException {
     if (saslServer == null) {
-      throw new HiveSQLException(
-          "Delegation token only supported over kerberos authentication");
+      throw new HiveSQLException("Delegation token only supported over kerberos authentication");
     }
 
     try {
@@ -263,8 +249,7 @@ public class HiveAuthFactory {
   // cancel given delegation token
   public void cancelDelegationToken(String delegationToken) throws HiveSQLException {
     if (saslServer == null) {
-      throw new HiveSQLException(
-          "Delegation token only supported over kerberos authentication");
+      throw new HiveSQLException("Delegation token only supported over kerberos authentication");
     }
     try {
       saslServer.cancelDelegationToken(delegationToken);
@@ -275,8 +260,7 @@ public class HiveAuthFactory {
 
   public void renewDelegationToken(String delegationToken) throws HiveSQLException {
     if (saslServer == null) {
-      throw new HiveSQLException(
-          "Delegation token only supported over kerberos authentication");
+      throw new HiveSQLException("Delegation token only supported over kerberos authentication");
     }
     try {
       saslServer.renewDelegationToken(delegationToken);
@@ -287,21 +271,21 @@ public class HiveAuthFactory {
 
   public String getUserFromToken(String delegationToken) throws HiveSQLException {
     if (saslServer == null) {
-      throw new HiveSQLException(
-          "Delegation token only supported over kerberos authentication");
+      throw new HiveSQLException("Delegation token only supported over kerberos authentication");
     }
     try {
       return saslServer.getUserFromToken(delegationToken);
     } catch (IOException e) {
-      throw new HiveSQLException("Error extracting user from delegation token " + delegationToken, e);
+      throw new HiveSQLException("Error extracting user from delegation token " + delegationToken,
+                                 e);
     }
   }
 
   public static void verifyProxyAccess(String realUser, String proxyUser, String ipAddress,
-      HiveConf hiveConf) throws HiveSQLException {
-    UserGroupInformation sessionUgi;
+    HiveConf hiveConf) throws HiveSQLException {
 
     try {
+      UserGroupInformation sessionUgi;
       if (ShimLoader.getHadoopShims().isSecurityEnabled()) {
         sessionUgi = ShimLoader.getHadoopShims().createProxyUser(realUser);
       } else {
@@ -309,11 +293,11 @@ public class HiveAuthFactory {
       }
       if (!proxyUser.equalsIgnoreCase(realUser)) {
         ShimLoader.getHadoopShims().
-        authorizeProxyAccess(proxyUser, sessionUgi, ipAddress, hiveConf);
+          authorizeProxyAccess(proxyUser, sessionUgi, ipAddress, hiveConf);
       }
     } catch (IOException e) {
-      throw new HiveSQLException("Failed to validate proxy privilage of " + realUser +
-          " for " + proxyUser, e);
+      throw new HiveSQLException(
+        "Failed to validate proxy privilege of " + realUser + " for " + proxyUser, e);
     }
   }
 

@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -13,22 +14,33 @@ import java.util.regex.Pattern;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.HiveMetaHookLoader;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
+import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
 import org.apache.hadoop.hive.metastore.api.HiveObjectType;
+import org.apache.hadoop.hive.metastore.api.InvalidInputException;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.metastore.api.PartitionsStatsRequest;
 import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
+import org.apache.hadoop.hive.metastore.api.TableStatsRequest;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.thrift.TException;
 
 public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements IMetaStoreClient {
@@ -71,6 +83,12 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
     // First try temp table
     org.apache.hadoop.hive.metastore.api.Table table = getTempTable(dbname, name);
     if (table != null) {
+      try {
+        deleteTempTableColumnStatsForTable(dbname, name);
+      } catch (NoSuchObjectException err){
+        // No stats to delete, forgivable error.
+        LOG.info(err);
+      }
       dropTempTable(table, deleteData, envContext);
       return;
     }
@@ -217,6 +235,41 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
     return super.get_privilege_set(hiveObject, userName, groupNames);
   }
 
+  /** {@inheritDoc} */
+  @Override
+  public boolean updateTableColumnStatistics(ColumnStatistics statsObj)
+      throws NoSuchObjectException, InvalidObjectException, MetaException, TException,
+      InvalidInputException {
+    String dbName = statsObj.getStatsDesc().getDbName().toLowerCase();
+    String tableName = statsObj.getStatsDesc().getTableName().toLowerCase();
+    if (getTempTable(dbName, tableName) != null) {
+      return updateTempTableColumnStats(dbName, tableName, statsObj);
+    }
+    return super.updateTableColumnStatistics(statsObj);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public List<ColumnStatisticsObj> getTableColumnStatistics(String dbName, String tableName,
+      List<String> colNames) throws NoSuchObjectException, MetaException, TException,
+      InvalidInputException, InvalidObjectException {
+    if (getTempTable(dbName, tableName) != null) {
+      return getTempTableColumnStats(dbName, tableName, colNames);
+    }
+    return super.getTableColumnStatistics(dbName, tableName, colNames);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean deleteTableColumnStatistics(String dbName, String tableName, String colName)
+      throws NoSuchObjectException, InvalidObjectException, MetaException, TException,
+      InvalidInputException {
+    if (getTempTable(dbName, tableName) != null) {
+      return deleteTempTableColumnStats(dbName, tableName, colName);
+    }
+    return super.deleteTableColumnStatistics(dbName, tableName, colName);
+  }
+
   private void createTempTable(org.apache.hadoop.hive.metastore.api.Table tbl,
       EnvironmentContext envContext) throws AlreadyExistsException, InvalidObjectException,
       MetaException, NoSuchObjectException, TException {
@@ -277,15 +330,19 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
       org.apache.hadoop.hive.metastore.api.Table oldt,
       org.apache.hadoop.hive.metastore.api.Table newt,
       EnvironmentContext envContext) throws InvalidOperationException, MetaException, TException {
-    Table newTable = new Table(deepCopyAndLowerCaseTable(newt));
     dbname = dbname.toLowerCase();
     tbl_name = tbl_name.toLowerCase();
+    boolean shouldDeleteColStats = false;
 
     // Disallow changing temp table location
     if (!newt.getSd().getLocation().equals(oldt.getSd().getLocation())) {
       throw new MetaException("Temp table location cannot be changed");
     }
 
+    org.apache.hadoop.hive.metastore.api.Table newtCopy = deepCopyAndLowerCaseTable(newt);
+    MetaStoreUtils.updateUnpartitionedTableStatsFast(newtCopy,
+        wh.getFileStatusesForSD(newtCopy.getSd()), false, true);
+    Table newTable = new Table(newtCopy);
     String newDbName = newTable.getDbName();
     String newTableName = newTable.getTableName();
     if (!newDbName.equals(oldt.getDbName()) || !newTableName.equals(oldt.getTableName())) {
@@ -303,6 +360,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
       if (tables == null || tables.remove(tbl_name) == null) {
         throw new MetaException("Could not find temp table entry for " + dbname + "." + tbl_name);
       }
+      shouldDeleteColStats = true;
 
       tables = getTempTablesForDatabase(newDbName);
       if (tables == null) {
@@ -311,8 +369,50 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
       }
       tables.put(newTableName, newTable);
     } else {
+      if (haveTableColumnsChanged(oldt, newt)) {
+        shouldDeleteColStats = true;
+      }
       getTempTablesForDatabase(dbname).put(tbl_name, newTable);
     }
+
+    if (shouldDeleteColStats) {
+      try {
+        deleteTempTableColumnStatsForTable(dbname, tbl_name);
+      } catch (NoSuchObjectException err){
+        // No stats to delete, forgivable error.
+        LOG.info(err);
+      }
+    }
+  }
+
+  private static boolean haveTableColumnsChanged(org.apache.hadoop.hive.metastore.api.Table oldt,
+      org.apache.hadoop.hive.metastore.api.Table newt) {
+    List<FieldSchema> oldCols = oldt.getSd().getCols();
+    List<FieldSchema> newCols = newt.getSd().getCols();
+    if (oldCols.size() != newCols.size()) {
+      return true;
+    }
+    Iterator<FieldSchema> oldColsIter = oldCols.iterator();
+    Iterator<FieldSchema> newColsIter = newCols.iterator();
+    while (oldColsIter.hasNext()) {
+      // Don't use FieldSchema.equals() since it also compares comments,
+      // which is unnecessary for this method.
+      if (!fieldSchemaEqualsIgnoreComment(oldColsIter.next(), newColsIter.next())) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private static boolean fieldSchemaEqualsIgnoreComment(FieldSchema left, FieldSchema right) {
+    // Just check name/type for equality, don't compare comment
+    if (!left.getName().equals(right.getName())) {
+      return true;
+    }
+    if (!left.getType().equals(right.getType())) {
+      return true;
+    }
+    return false;
   }
 
   private void dropTempTable(org.apache.hadoop.hive.metastore.api.Table table, boolean deleteData,
@@ -372,5 +472,103 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
       return null;
     }
     return ss.getTempTables().get(dbName);
+  }
+
+  private Map<String, ColumnStatisticsObj> getTempTableColumnStatsForTable(String dbName,
+      String tableName) {
+    SessionState ss = SessionState.get();
+    if (ss == null) {
+      LOG.debug("No current SessionState, skipping temp tables");
+      return null;
+    }
+    String lookupName = StatsUtils.getFullyQualifiedTableName(dbName.toLowerCase(),
+        tableName.toLowerCase());
+    return ss.getTempTableColStats().get(lookupName);
+  }
+
+  private static List<ColumnStatisticsObj> copyColumnStatisticsObjList(Map<String, ColumnStatisticsObj> csoMap) {
+    List<ColumnStatisticsObj> retval = new ArrayList<ColumnStatisticsObj>(csoMap.size());
+    for (ColumnStatisticsObj cso : csoMap.values()) {
+      retval.add(new ColumnStatisticsObj(cso));
+    }
+    return retval;
+  }
+
+  private List<ColumnStatisticsObj> getTempTableColumnStats(String dbName, String tableName,
+      List<String> colNames) {
+    Map<String, ColumnStatisticsObj> tableColStats =
+        getTempTableColumnStatsForTable(dbName, tableName);
+    List<ColumnStatisticsObj> retval = new ArrayList<ColumnStatisticsObj>();
+
+    if (tableColStats != null) {
+      for (String colName : colNames) {
+        colName = colName.toLowerCase();
+        if (tableColStats.containsKey(colName)) {
+          retval.add(new ColumnStatisticsObj(tableColStats.get(colName)));
+        }
+      }
+    }
+    return retval;
+  }
+
+  private boolean updateTempTableColumnStats(String dbName, String tableName,
+      ColumnStatistics colStats) throws MetaException {
+    SessionState ss = SessionState.get();
+    if (ss == null) {
+      throw new MetaException("No current SessionState, cannot update temporary table stats for "
+          + dbName + "." + tableName);
+    }
+    Map<String, ColumnStatisticsObj> ssTableColStats =
+        getTempTableColumnStatsForTable(dbName, tableName);
+    if (ssTableColStats == null) {
+      // Add new entry for this table
+      ssTableColStats = new HashMap<String, ColumnStatisticsObj>();
+      ss.getTempTableColStats().put(
+          StatsUtils.getFullyQualifiedTableName(dbName, tableName),
+          ssTableColStats);
+    }
+    mergeColumnStats(ssTableColStats, colStats);
+    return true;
+  }
+
+  private static void mergeColumnStats(Map<String, ColumnStatisticsObj> oldStats,
+      ColumnStatistics newStats) {
+    List<ColumnStatisticsObj> newColList = newStats.getStatsObj();
+    if (newColList != null) {
+      for (ColumnStatisticsObj colStat : newColList) {
+        // This is admittedly a bit simple, StatsObjectConverter seems to allow
+        // old stats attributes to be kept if the new values do not overwrite them.
+        oldStats.put(colStat.getColName().toLowerCase(), colStat);
+      }
+    }
+  }
+
+  private boolean deleteTempTableColumnStatsForTable(String dbName, String tableName)
+      throws NoSuchObjectException {
+    Map<String, ColumnStatisticsObj> deletedEntry =
+        getTempTableColumnStatsForTable(dbName, tableName);
+    if (deletedEntry != null) {
+      SessionState.get().getTempTableColStats().remove(
+          StatsUtils.getFullyQualifiedTableName(dbName, tableName));
+    } else {
+      throw new NoSuchObjectException("Column stats doesn't exist for db=" + dbName +
+          " temp table=" + tableName);
+    }
+    return true;
+  }
+
+  private boolean deleteTempTableColumnStats(String dbName, String tableName, String columnName)
+      throws NoSuchObjectException {
+    ColumnStatisticsObj deletedEntry = null;
+    Map<String, ColumnStatisticsObj> ssTableColStats =
+        getTempTableColumnStatsForTable(dbName, tableName);
+    if (ssTableColStats != null) {
+      deletedEntry = ssTableColStats.remove(columnName.toLowerCase());
+    }
+    if (deletedEntry == null) {
+      throw new NoSuchObjectException("Column stats doesn't exist for db=" + dbName +
+          " temp table=" + tableName);
+    }
+    return true;
   }
 }

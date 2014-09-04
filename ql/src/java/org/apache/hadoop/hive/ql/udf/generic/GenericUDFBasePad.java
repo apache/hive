@@ -46,7 +46,7 @@ public abstract class GenericUDFBasePad extends GenericUDF {
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
     if (arguments.length != 3) {
       throw new UDFArgumentException(udfName + " requires three arguments. Found :"
-	  + arguments.length);
+        + arguments.length);
     }
     converter1 = checkTextArguments(arguments, 0);
     converter2 = checkIntArguments(arguments, 1);

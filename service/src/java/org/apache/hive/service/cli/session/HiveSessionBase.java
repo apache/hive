@@ -92,4 +92,6 @@ public interface HiveSessionBase {
   String getIpAddress();
 
   void setIpAddress(String ipAddress);
+
+  long getLastAccessTime();
 }

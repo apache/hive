@@ -9,10 +9,10 @@ CREATE TABLE  t_gpr1(i int);
 
 -- all privileges should have been set for user
 
-GRANT ALL ON t_gpr1 TO ROLE public;
+GRANT ALL ON t_gpr1 TO ROLE pubLic;
 
 SHOW GRANT USER user1 ON TABLE t_gpr1;
-SHOW GRANT ROLE public ON TABLE t_gpr1;
+SHOW GRANT ROLE pubLic ON TABLE t_gpr1;
 
 set user.name=user2;
 SHOW CURRENT ROLES;

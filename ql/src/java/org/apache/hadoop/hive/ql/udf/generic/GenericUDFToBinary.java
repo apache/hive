@@ -59,7 +59,7 @@ public class GenericUDFToBinary extends GenericUDF {
         || (argumentOI instanceof StringObjectInspector)
         || (argumentOI instanceof VoidObjectInspector))){
       throw new UDFArgumentException("Only string, char, varchar or binary data can be cast into binary " +
-      		"data types.");
+          "data types.");
     }
     baConverter = new BinaryConverter(argumentOI,
         PrimitiveObjectInspectorFactory.writableBinaryObjectInspector);

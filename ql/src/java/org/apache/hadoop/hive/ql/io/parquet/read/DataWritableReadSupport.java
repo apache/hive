@@ -140,7 +140,7 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
               throw new IllegalStateException(msg);
             }
           }
-	}
+        }
       }
       requestedSchemaByUser = resolveSchemaAccess(new MessageType(fileSchema.getName(),
               typeListWanted), fileSchema, configuration);

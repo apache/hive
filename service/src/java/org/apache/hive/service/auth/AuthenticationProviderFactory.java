@@ -19,15 +19,18 @@ package org.apache.hive.service.auth;
 
 import javax.security.sasl.AuthenticationException;
 
-public class AuthenticationProviderFactory {
+/**
+ * This class helps select a {@link PasswdAuthenticationProvider} for a given {@code AuthMethod}.
+ */
+public final class AuthenticationProviderFactory {
 
-  public static enum AuthMethods {
+  public enum AuthMethods {
     LDAP("LDAP"),
     PAM("PAM"),
     CUSTOM("CUSTOM"),
     NONE("NONE");
 
-    String authMethod;
+    private final String authMethod;
 
     AuthMethods(String authMethod) {
       this.authMethod = authMethod;
@@ -37,7 +40,8 @@ public class AuthenticationProviderFactory {
       return authMethod;
     }
 
-    public static AuthMethods getValidAuthMethod(String authMethodStr) throws AuthenticationException {
+    public static AuthMethods getValidAuthMethod(String authMethodStr)
+      throws AuthenticationException {
       for (AuthMethods auth : AuthMethods.values()) {
         if (authMethodStr.equals(auth.getAuthMethod())) {
           return auth;
@@ -47,24 +51,20 @@ public class AuthenticationProviderFactory {
     }
   }
 
-  private AuthenticationProviderFactory () {
+  private AuthenticationProviderFactory() {
   }
 
   public static PasswdAuthenticationProvider getAuthenticationProvider(AuthMethods authMethod)
-      throws AuthenticationException {
-    if (authMethod.equals(AuthMethods.LDAP)) {
+    throws AuthenticationException {
+    if (authMethod == AuthMethods.LDAP) {
       return new LdapAuthenticationProviderImpl();
-    }
-    else if (authMethod.equals(AuthMethods.PAM)) {
+    } else if (authMethod == AuthMethods.PAM) {
       return new PamAuthenticationProviderImpl();
-    }
-    else if (authMethod.equals(AuthMethods.CUSTOM)) {
+    } else if (authMethod == AuthMethods.CUSTOM) {
       return new CustomAuthenticationProviderImpl();
-    }
-    else if (authMethod.equals(AuthMethods.NONE)) {
+    } else if (authMethod == AuthMethods.NONE) {
       return new AnonymousAuthenticationProviderImpl();
-    }
-    else {
+    } else {
       throw new AuthenticationException("Unsupported authentication method");
     }
   }

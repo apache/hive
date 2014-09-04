@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -25,6 +24,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -414,6 +414,45 @@ public class SQLAuthorizationUtils {
 
   static HiveAuthzPluginException getPluginException(String prefix, Exception e) {
     return new HiveAuthzPluginException(prefix + ": " + e.getMessage(), e);
+  }
+
+  /**
+   * Validate the principal type, and convert role name to lower case
+   * @param hPrincipal
+   * @return validated principal
+   * @throws HiveAuthzPluginException
+   */
+  public static HivePrincipal getValidatedPrincipal(HivePrincipal hPrincipal)
+      throws HiveAuthzPluginException {
+    if (hPrincipal == null || hPrincipal.getType() == null) {
+      // null principal
+      return hPrincipal;
+    }
+    switch (hPrincipal.getType()) {
+    case USER:
+      return hPrincipal;
+    case ROLE:
+      // lower case role names, for case insensitive behavior
+      return new HivePrincipal(hPrincipal.getName().toLowerCase(), hPrincipal.getType());
+    default:
+      throw new HiveAuthzPluginException("Invalid principal type in principal " + hPrincipal);
+    }
+  }
+
+  /**
+   * Calls getValidatedPrincipal on each principal in list and updates the list
+   * @param hivePrincipals
+   * @return
+   * @return
+   * @throws HiveAuthzPluginException
+   */
+  public static List<HivePrincipal> getValidatedPrincipals(List<HivePrincipal> hivePrincipals)
+      throws HiveAuthzPluginException {
+    ListIterator<HivePrincipal> it = hivePrincipals.listIterator();
+    while(it.hasNext()){
+      it.set(getValidatedPrincipal(it.next()));
+    }
+    return hivePrincipals;
   }
 
 }

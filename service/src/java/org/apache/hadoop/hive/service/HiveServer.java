@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.logging.Log;
@@ -62,8 +63,6 @@ import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TServerTransport;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportFactory;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
 import com.facebook.fb303.fb_status;
 
 /**
@@ -670,8 +669,11 @@ public class HiveServer extends ThriftHive {
 
 
       boolean tcpKeepAlive = conf.getBoolVar(HiveConf.ConfVars.SERVER_TCP_KEEP_ALIVE);
+      int timeout = (int) HiveConf.getTimeVar(
+          conf, HiveConf.ConfVars.SERVER_READ_SOCKET_TIMEOUT, TimeUnit.MILLISECONDS);
 
-      TServerTransport serverTransport = tcpKeepAlive ? new TServerSocketKeepAlive(cli.port) : new TServerSocket(cli.port, 1000 * conf.getIntVar(HiveConf.ConfVars.SERVER_READ_SOCKET_TIMEOUT));
+      TServerTransport serverTransport =
+          tcpKeepAlive ? new TServerSocketKeepAlive(cli.port) : new TServerSocket(cli.port, timeout);
 
       // set all properties specified on the command line
       for (Map.Entry<Object, Object> item : hiveconf.entrySet()) {

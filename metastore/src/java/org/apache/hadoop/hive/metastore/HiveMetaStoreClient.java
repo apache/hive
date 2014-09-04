@@ -39,6 +39,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 import javax.security.auth.login.LoginException;
 
@@ -151,7 +152,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
 
   // for thrift connects
   private int retries = 5;
-  private int retryDelaySeconds = 0;
+  private long retryDelaySeconds = 0;
 
   static final protected Log LOG = LogFactory.getLog("hive.metastore");
 
@@ -182,7 +183,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
 
     // get the number retries
     retries = HiveConf.getIntVar(conf, HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES);
-    retryDelaySeconds = conf.getIntVar(ConfVars.METASTORE_CLIENT_CONNECT_RETRY_DELAY);
+    retryDelaySeconds = conf.getTimeVar(
+        ConfVars.METASTORE_CLIENT_CONNECT_RETRY_DELAY, TimeUnit.SECONDS);
 
     // user wants file store based configuration
     if (conf.getVar(HiveConf.ConfVars.METASTOREURIS) != null) {
@@ -317,13 +319,14 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     HadoopShims shim = ShimLoader.getHadoopShims();
     boolean useSasl = conf.getBoolVar(ConfVars.METASTORE_USE_THRIFT_SASL);
     boolean useFramedTransport = conf.getBoolVar(ConfVars.METASTORE_USE_THRIFT_FRAMED_TRANSPORT);
-    int clientSocketTimeout = conf.getIntVar(ConfVars.METASTORE_CLIENT_SOCKET_TIMEOUT);
+    int clientSocketTimeout = (int) conf.getTimeVar(
+        ConfVars.METASTORE_CLIENT_SOCKET_TIMEOUT, TimeUnit.MILLISECONDS);
 
     for (int attempt = 0; !isConnected && attempt < retries; ++attempt) {
       for (URI store : metastoreUris) {
         LOG.info("Trying to connect to metastore with URI " + store);
         try {
-          transport = new TSocket(store.getHost(), store.getPort(), 1000 * clientSocketTimeout);
+          transport = new TSocket(store.getHost(), store.getPort(), clientSocketTimeout);
           if (useSasl) {
             // Wrap thrift connection with SASL for secure connection.
             try {

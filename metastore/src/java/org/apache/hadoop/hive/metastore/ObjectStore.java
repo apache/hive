@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore;
 
 import static org.apache.commons.lang.StringUtils.join;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -34,6 +35,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -88,6 +90,7 @@ import org.apache.hadoop.hive.metastore.api.ResourceType;
 import org.apache.hadoop.hive.metastore.api.ResourceUri;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
+import org.apache.hadoop.hive.metastore.api.SetPartitionsStatsRequest;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -129,6 +132,7 @@ import org.apache.hadoop.hive.metastore.parser.ExpressionTree.LeafNode;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.Operator;
 import org.apache.hadoop.hive.metastore.parser.FilterLexer;
 import org.apache.hadoop.hive.metastore.parser.FilterParser;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.thrift.TException;
 import org.datanucleus.store.rdbms.exceptions.MissingTableException;
@@ -157,7 +161,7 @@ public class ObjectStore implements RawStore, Configurable {
 
   private static final Map<String, Class> PINCLASSMAP;
   static {
-    Map<String, Class> map = new HashMap();
+    Map<String, Class> map = new HashMap<String, Class>();
     map.put("table", MTable.class);
     map.put("storagedescriptor", MStorageDescriptor.class);
     map.put("serdeinfo", MSerDeInfo.class);
@@ -296,6 +300,16 @@ public class ObjectStore implements RawStore, Configurable {
               + " from  jpox.properties with " + e.getValue());
         }
       }
+    }
+    // Password may no longer be in the conf, use getPassword()
+    try {
+      String passwd =
+          ShimLoader.getHadoopShims().getPassword(conf, HiveConf.ConfVars.METASTOREPWD.varname);
+      if (passwd != null && !passwd.isEmpty()) {
+        prop.setProperty(HiveConf.ConfVars.METASTOREPWD.varname, passwd);
+      }
+    } catch (IOException err) {
+      throw new RuntimeException("Error getting metastore password: " + err.getMessage(), err);
     }
 
     if (LOG.isDebugEnabled()) {
@@ -1068,14 +1082,14 @@ public class ObjectStore implements RawStore, Configurable {
     return keys;
   }
 
-  private SerDeInfo converToSerDeInfo(MSerDeInfo ms) throws MetaException {
+  private SerDeInfo convertToSerDeInfo(MSerDeInfo ms) throws MetaException {
     if (ms == null) {
       throw new MetaException("Invalid SerDeInfo object");
     }
     return new SerDeInfo(ms.getName(), ms.getSerializationLib(), convertMap(ms.getParameters()));
   }
 
-  private MSerDeInfo converToMSerDeInfo(SerDeInfo ms) throws MetaException {
+  private MSerDeInfo convertToMSerDeInfo(SerDeInfo ms) throws MetaException {
     if (ms == null) {
       throw new MetaException("Invalid SerDeInfo object");
     }
@@ -1107,7 +1121,7 @@ public class ObjectStore implements RawStore, Configurable {
 
     StorageDescriptor sd = new StorageDescriptor(noFS ? null : convertToFieldSchemas(mFieldSchemas),
         msd.getLocation(), msd.getInputFormat(), msd.getOutputFormat(), msd
-        .isCompressed(), msd.getNumBuckets(), converToSerDeInfo(msd
+        .isCompressed(), msd.getNumBuckets(), convertToSerDeInfo(msd
         .getSerDeInfo()), convertList(msd.getBucketCols()), convertToOrders(msd
         .getSortCols()), convertMap(msd.getParameters()));
     SkewedInfo skewedInfo = new SkewedInfo(convertList(msd.getSkewedColNames()),
@@ -1219,7 +1233,7 @@ public class ObjectStore implements RawStore, Configurable {
     }
     return new MStorageDescriptor(mcd, sd
         .getLocation(), sd.getInputFormat(), sd.getOutputFormat(), sd
-        .isCompressed(), sd.getNumBuckets(), converToMSerDeInfo(sd
+        .isCompressed(), sd.getNumBuckets(), convertToMSerDeInfo(sd
         .getSerdeInfo()), sd.getBucketCols(),
         convertToMOrders(sd.getSortCols()), sd.getParameters(),
         (null == sd.getSkewedInfo()) ? null
@@ -2382,7 +2396,7 @@ public class ObjectStore implements RawStore, Configurable {
    * Makes a JDO query filter string.
    * Makes a JDO query filter string for tables or partitions.
    * @param dbName Database name.
-   * @param table Table. If null, the query returned is over tables in a database.
+   * @param mtable Table. If null, the query returned is over tables in a database.
    *   If not null, the query returned is over partitions in a table.
    * @param filter The filter from which JDOQL filter will be made.
    * @param params Parameters for the filter. Some parameters may be added here.
@@ -5704,7 +5718,7 @@ public class ObjectStore implements RawStore, Configurable {
       pm.makePersistent(mStatsObj);
     }
   }
-
+  
   @Override
   public boolean updateTableColumnStatistics(ColumnStatistics colStats)
     throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
@@ -6166,7 +6180,7 @@ public class ObjectStore implements RawStore, Configurable {
     boolean commited = false;
     long delCnt;
     LOG.debug("Begin executing cleanupEvents");
-    Long expiryTime = HiveConf.getLongVar(getConf(), ConfVars.METASTORE_EVENT_EXPIRY_DURATION) * 1000L;
+    Long expiryTime = HiveConf.getTimeVar(getConf(), ConfVars.METASTORE_EVENT_EXPIRY_DURATION, TimeUnit.MILLISECONDS);
     Long curTime = System.currentTimeMillis();
     try {
       openTransaction();

@@ -37,6 +37,7 @@ import org.apache.zookeeper.ZooKeeper;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -53,7 +54,7 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
   private int sessionTimeout;
   private String quorumServers;
 
-  private int sleepTime;
+  private long sleepTime;
   private int numRetriesForLock;
   private int numRetriesForUnLock;
 
@@ -106,7 +107,8 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
     sessionTimeout = conf.getIntVar(HiveConf.ConfVars.HIVE_ZOOKEEPER_SESSION_TIMEOUT);
     quorumServers = ZooKeeperHiveLockManager.getQuorumServers(conf);
 
-    sleepTime = conf.getIntVar(HiveConf.ConfVars.HIVE_LOCK_SLEEP_BETWEEN_RETRIES) * 1000;
+    sleepTime = conf.getTimeVar(
+        HiveConf.ConfVars.HIVE_LOCK_SLEEP_BETWEEN_RETRIES, TimeUnit.MILLISECONDS);
     numRetriesForLock = conf.getIntVar(HiveConf.ConfVars.HIVE_LOCK_NUMRETRIES);
     numRetriesForUnLock = conf.getIntVar(HiveConf.ConfVars.HIVE_UNLOCK_NUMRETRIES);
 
@@ -132,7 +134,8 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
   @Override
   public void refresh() {
     HiveConf conf = ctx.getConf();
-    sleepTime = conf.getIntVar(HiveConf.ConfVars.HIVE_LOCK_SLEEP_BETWEEN_RETRIES) * 1000;
+    sleepTime = conf.getTimeVar(
+        HiveConf.ConfVars.HIVE_LOCK_SLEEP_BETWEEN_RETRIES, TimeUnit.MILLISECONDS);
     numRetriesForLock = conf.getIntVar(HiveConf.ConfVars.HIVE_LOCK_NUMRETRIES);
     numRetriesForUnLock = conf.getIntVar(HiveConf.ConfVars.HIVE_UNLOCK_NUMRETRIES);
   }
@@ -268,7 +271,7 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
    * @param mode
    *          The mode of the lock
    * @param keepAlive
-   *          Whether the lock is to be persisted after the statement Acuire the
+   *          Whether the lock is to be persisted after the statement Acquire the
    *          lock. Return null if a conflicting lock is present.
    **/
   public ZooKeeperHiveLock lock(HiveLockObject key, HiveLockMode mode,
@@ -515,8 +518,8 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
     try {
       int sessionTimeout = conf.getIntVar(HiveConf.ConfVars.HIVE_ZOOKEEPER_SESSION_TIMEOUT);
       String quorumServers = getQuorumServers(conf);
-      Watcher dummWatcher = new DummyWatcher();
-      zkpClient = new ZooKeeper(quorumServers, sessionTimeout, dummWatcher);
+      Watcher dummyWatcher = new DummyWatcher();
+      zkpClient = new ZooKeeper(quorumServers, sessionTimeout, dummyWatcher);
       String parent = conf.getVar(HiveConf.ConfVars.HIVE_ZOOKEEPER_NAMESPACE);
       List<HiveLock> locks = getLocks(conf, zkpClient, null, parent, false, false);
       Exception lastExceptionGot = null;
