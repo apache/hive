@@ -326,7 +326,9 @@ public final class Utilities {
       assert path != null;
       if (!gWorkMap.containsKey(path)) {
         Path localPath;
-        if (ShimLoader.getHadoopShims().isLocalMode(conf)) {
+        if (conf.getBoolean("mapreduce.task.uberized", false) && name.equals(REDUCE_PLAN_NAME)) {
+          localPath = new Path(name);
+        } else if (ShimLoader.getHadoopShims().isLocalMode(conf)) {
           localPath = path;
         } else {
           localPath = new Path(name);
