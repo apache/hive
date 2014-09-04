@@ -1,9 +1,6 @@
 package org.apache.hadoop.hive.ql.optimizer.optiq.reloperators;
 
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Set;
 
 import org.apache.hadoop.hive.ql.optimizer.optiq.TraitsUtil;
@@ -17,7 +14,6 @@ import org.eigenbase.rel.metadata.RelMetadataQuery;
 import org.eigenbase.relopt.RelOptCluster;
 import org.eigenbase.relopt.RelOptCost;
 import org.eigenbase.relopt.RelOptPlanner;
-import org.eigenbase.relopt.RelOptUtil;
 import org.eigenbase.relopt.RelTraitSet;
 import org.eigenbase.reltype.RelDataType;
 import org.eigenbase.reltype.RelDataTypeField;
@@ -37,12 +33,12 @@ public class HiveJoinRel extends JoinRelBase implements HiveRel {
   public enum MapJoinStreamingRelation {
     NONE, LEFT_RELATION, RIGHT_RELATION
   }
-  
+
   public static final JoinFactory HIVE_JOIN_FACTORY = new HiveJoinFactoryImpl();
 
   private final boolean m_leftSemiJoin;
   private final JoinAlgorithm      m_joinAlgorithm;
-  private MapJoinStreamingRelation m_mapJoinStreamingSide = MapJoinStreamingRelation.NONE;
+  private final MapJoinStreamingRelation m_mapJoinStreamingSide = MapJoinStreamingRelation.NONE;
 
   public static HiveJoinRel getJoin(RelOptCluster cluster, RelNode left, RelNode right,
       RexNode condition, JoinRelType joinType, boolean leftSemiJoin) {
@@ -99,11 +95,12 @@ public class HiveJoinRel extends JoinRelBase implements HiveRel {
     double leftRCount = RelMetadataQuery.getRowCount(getLeft());
     double rightRCount = RelMetadataQuery.getRowCount(getRight());
     return HiveCost.FACTORY.makeCost(leftRCount + rightRCount, 0.0, 0.0);
-  }  
+  }
 
   /**
    * @return returns rowtype representing only the left join input
    */
+  @Override
   public RelDataType deriveRowType() {
     if (m_leftSemiJoin) {
       return deriveJoinRowType(left.getRowType(), null, JoinRelType.INNER,
@@ -116,7 +113,7 @@ public class HiveJoinRel extends JoinRelBase implements HiveRel {
   private static class HiveJoinFactoryImpl implements JoinFactory {
     /**
      * Creates a join.
-     * 
+     *
      * @param left
      *          Left input
      * @param right

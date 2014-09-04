@@ -10,12 +10,10 @@ import org.eigenbase.rel.RelNode;
 import org.eigenbase.relopt.RelOptCluster;
 import org.eigenbase.relopt.RelTraitSet;
 import org.eigenbase.reltype.RelDataType;
-import org.eigenbase.rex.RexNode;
 
 public class TraitsUtil {
 
-  public static RelTraitSet getSelectTraitSet(RelOptCluster cluster, List<RexNode> exps,
-      RelNode child) {
+  public static RelTraitSet getSelectTraitSet(RelOptCluster cluster, RelNode child) {
     return cluster.traitSetOf(HiveRel.CONVENTION, RelCollationImpl.EMPTY);
   }
 
