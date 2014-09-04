@@ -30,12 +30,8 @@ import javax.security.auth.login.LoginException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.conf.SystemVariables;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -118,15 +114,6 @@ public class CLIService extends CompositeService implements ICLIService {
   @Override
   public synchronized void start() {
     super.start();
-
-    try {
-      // make sure that the base scratch directories exists and writable
-      setupStagingDir(hiveConf.getVar(HiveConf.ConfVars.SCRATCHDIR), false);
-      setupStagingDir(hiveConf.getVar(HiveConf.ConfVars.LOCALSCRATCHDIR), true);
-      setupStagingDir(hiveConf.getVar(HiveConf.ConfVars.DOWNLOADED_RESOURCES_DIR), true);
-    } catch (IOException eIO) {
-      throw new ServiceException("Error setting stage directories", eIO);
-    }
     // Initialize and test a connection to the metastore
     IMetaStoreClient metastoreClient = null;
     try {
@@ -460,25 +447,6 @@ public class CLIService extends CompositeService implements ICLIService {
     }
   }
 
-  // create the give Path if doesn't exists and make it writable
-  private void setupStagingDir(String dirPath, boolean isLocal) throws IOException {
-    Path scratchDir = getStaticPath(new Path(dirPath));
-    if (scratchDir == null) {
-      return;
-    }
-    FileSystem fs;
-    if (isLocal) {
-      fs = FileSystem.getLocal(hiveConf);
-    } else {
-      fs = scratchDir.getFileSystem(hiveConf);
-    }
-    if (!fs.exists(scratchDir)) {
-      fs.mkdirs(scratchDir);
-    }
-    FsPermission fsPermission = new FsPermission((short)0777);
-    fs.setPermission(scratchDir, fsPermission);
-  }
-
   @Override
   public String getDelegationToken(SessionHandle sessionHandle, HiveAuthFactory authFactory,
       String owner, String renewer) throws HiveSQLException {
@@ -501,17 +469,5 @@ public class CLIService extends CompositeService implements ICLIService {
       String tokenStr) throws HiveSQLException {
     sessionManager.getSession(sessionHandle).renewDelegationToken(authFactory, tokenStr);
     LOG.info(sessionHandle  + ": renewDelegationToken()");
-  }
-
-  // DOWNLOADED_RESOURCES_DIR for example, which is by default ${system:java.io.tmpdir}/${hive.session.id}_resources,
-  // {system:java.io.tmpdir} would be already evaluated but ${hive.session.id} would be not in here.
-  // for that case, this returns evaluatd parts only, in this case, "/tmp"
-  // what for ${hive.session.id}_resources/${system:java.io.tmpdir}? just don't do that.
-  private Path getStaticPath(Path path) {
-    Path current = path;
-    for (; current != null && SystemVariables.containsVar(current.getName());
-        current = current.getParent()) {
-    }
-    return current;
   }
 }

@@ -92,7 +92,6 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
-import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.common.HiveInterruptCallback;
 import org.apache.hadoop.hive.common.HiveInterruptUtils;
 import org.apache.hadoop.hive.common.HiveStatsUtils;
@@ -3355,7 +3354,6 @@ public final class Utilities {
   private static void createTmpDirs(Configuration conf,
       List<Operator<? extends OperatorDesc>> ops) throws IOException {
 
-    FsPermission fsPermission = new FsPermission((short)00777);
     while (!ops.isEmpty()) {
       Operator<? extends OperatorDesc> op = ops.remove(0);
 
@@ -3365,7 +3363,8 @@ public final class Utilities {
 
         if (tempDir != null) {
           Path tempPath = Utilities.toTempPath(tempDir);
-          createDirsWithPermission(conf, tempPath, fsPermission);
+          FileSystem fs = tempPath.getFileSystem(conf);
+          fs.mkdirs(tempPath);
         }
       }
 
@@ -3499,76 +3498,6 @@ public final class Utilities {
     }
     return footerCount;
   }
-
-  /**
-   * @param conf the configuration used to derive the filesystem to create the path
-   * @param mkdir the path to be created
-   * @param fsPermission ignored if it is hive server session and doAs is enabled
-   * @return true if successfully created the directory else false
-   * @throws IOException if hdfs experiences any error conditions
-   */
-  public static boolean createDirsWithPermission(Configuration conf, Path mkdir,
-      FsPermission fsPermission) throws IOException {
-
-    boolean recursive = false;
-    if (SessionState.get() != null) {
-      recursive = SessionState.get().isHiveServerQuery() &&
-          conf.getBoolean(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS.varname,
-              HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS.defaultBoolVal);
-      // we reset the permission in case of hive server and doAs enabled because
-      // currently scratch directory uses /tmp/hive-hive as the scratch directory.
-      // However, with doAs enabled, the first user to create this directory would
-      // own the directory and subsequent users cannot access the scratch directory.
-      // The right fix is to have scratch dir per user.
-      fsPermission = new FsPermission((short)00777);
-    }
-
-    // if we made it so far without exception we are good!
-    return createDirsWithPermission(conf, mkdir, fsPermission, recursive);
-  }
-
-  private static void resetConfAndCloseFS (Configuration conf, boolean unsetUmask,
-      String origUmask, FileSystem fs) throws IOException {
-    if (unsetUmask) {
-      if (origUmask != null) {
-        conf.set(FsPermission.UMASK_LABEL, origUmask);
-      } else {
-        conf.unset(FsPermission.UMASK_LABEL);
-      }
-    }
-
-    fs.close();
-  }
-
-  public static boolean createDirsWithPermission(Configuration conf, Path mkdirPath,
-      FsPermission fsPermission, boolean recursive) throws IOException {
-    String origUmask = null;
-    LOG.debug("Create dirs " + mkdirPath + " with permission " + fsPermission + " recursive " +
-        recursive);
-
-    if (recursive) {
-      origUmask = conf.get(FsPermission.UMASK_LABEL);
-      // this umask is required because by default the hdfs mask is 022 resulting in
-      // all parents getting the fsPermission & !(022) permission instead of fsPermission
-      conf.set(FsPermission.UMASK_LABEL, "000");
-    }
-
-    FileSystem fs = ShimLoader.getHadoopShims().getNonCachedFileSystem(mkdirPath.toUri(), conf);
-    boolean retval = false;
-    try {
-      retval = fs.mkdirs(mkdirPath, fsPermission);
-      resetConfAndCloseFS(conf, recursive, origUmask, fs);
-    } catch (IOException ioe) {
-      try {
-        resetConfAndCloseFS(conf, recursive, origUmask, fs);
-      }
-      catch (IOException e) {
-        // do nothing - double failure
-      }
-    }
-    return retval;
-  }
-
 
   /**
    * Convert path to qualified path.
