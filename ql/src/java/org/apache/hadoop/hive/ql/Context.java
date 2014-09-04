@@ -18,6 +18,18 @@
 
 package org.apache.hadoop.hive.ql;
 
+import java.io.DataInput;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.URI;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.antlr.runtime.TokenRewriteStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -30,7 +42,6 @@ import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.TaskRunner;
-import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLock;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockManager;
@@ -40,18 +51,6 @@ import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.util.StringUtils;
-
-import java.io.DataInput;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.net.URI;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Context for Semantic Analyzers. Usage: not reusable - construct a new one for
@@ -191,7 +190,7 @@ public class Context {
    * @param scratchDir path of tmp directory
    */
   private Path getScratchDir(String scheme, String authority,
-                               boolean mkdir, String scratchDir) {
+      boolean mkdir, String scratchDir) {
 
     String fileSystem =  scheme + ":" + authority;
     Path dir = fsScratchDirs.get(fileSystem + "-" + TaskRunner.getTaskRunnerID());
@@ -203,11 +202,11 @@ public class Context {
         try {
           FileSystem fs = dirPath.getFileSystem(conf);
           dirPath = new Path(fs.makeQualified(dirPath).toString());
-          FsPermission fsPermission = new FsPermission(Short.parseShort(scratchDirPermission.trim(), 8));
+          FsPermission fsPermission = new FsPermission(scratchDirPermission);
 
-          if (!Utilities.createDirsWithPermission(conf, dirPath, fsPermission)) {
+          if (!fs.mkdirs(dirPath, fsPermission)) {
             throw new RuntimeException("Cannot make directory: "
-                                       + dirPath.toString());
+                + dirPath.toString());
           }
           if (isHDFSCleanup) {
             fs.deleteOnExit(dirPath);
@@ -233,7 +232,7 @@ public class Context {
       FileSystem fs = FileSystem.getLocal(conf);
       URI uri = fs.getUri();
       return getScratchDir(uri.getScheme(), uri.getAuthority(),
-                           mkdir, localScratchDir);
+          mkdir, localScratchDir);
     } catch (IOException e) {
       throw new RuntimeException (e);
     }
@@ -257,7 +256,7 @@ public class Context {
       URI uri = dir.toUri();
 
       Path newScratchDir = getScratchDir(uri.getScheme(), uri.getAuthority(),
-                           !explain, uri.getPath());
+          !explain, uri.getPath());
       LOG.info("New scratch dir is " + newScratchDir);
       return newScratchDir;
     } catch (IOException e) {
@@ -270,7 +269,7 @@ public class Context {
 
   private Path getExternalScratchDir(URI extURI) {
     return getScratchDir(extURI.getScheme(), extURI.getAuthority(),
-                         !explain, nonLocalScratchPath.toUri().getPath());
+        !explain, nonLocalScratchPath.toUri().getPath());
   }
 
   /**
@@ -283,7 +282,7 @@ public class Context {
         p.getFileSystem(conf).delete(p, true);
       } catch (Exception e) {
         LOG.warn("Error Removing Scratch: "
-                 + StringUtils.stringifyException(e));
+            + StringUtils.stringifyException(e));
       }
     }
     fsScratchDirs.clear();
@@ -305,7 +304,7 @@ public class Context {
    */
   public boolean isMRTmpFileURI(String uriStr) {
     return (uriStr.indexOf(executionId) != -1) &&
-      (uriStr.indexOf(MR_PREFIX) != -1);
+        (uriStr.indexOf(MR_PREFIX) != -1);
   }
 
   /**
@@ -315,7 +314,7 @@ public class Context {
    */
   public Path getMRTmpPath() {
     return new Path(getMRScratchDir(), MR_PREFIX +
-      nextPathId());
+        nextPathId());
   }
 
   /**
@@ -343,7 +342,7 @@ public class Context {
       return getExtTmpPathRelTo(path.getParent());
     }
     return new Path(getExternalScratchDir(extURI), EXT_PREFIX +
-      nextPathId());
+        nextPathId());
   }
 
   /**
@@ -353,8 +352,8 @@ public class Context {
    */
   public Path getExtTmpPathRelTo(Path path) {
     URI uri = path.toUri();
-    return new Path (getScratchDir(uri.getScheme(), uri.getAuthority(), !explain, 
-    uri.getPath() + Path.SEPARATOR + "_" + this.executionId), EXT_PREFIX + nextPathId());
+    return new Path (getScratchDir(uri.getScheme(), uri.getAuthority(), !explain,
+        uri.getPath() + Path.SEPARATOR + "_" + this.executionId), EXT_PREFIX + nextPathId());
   }
 
   /**
