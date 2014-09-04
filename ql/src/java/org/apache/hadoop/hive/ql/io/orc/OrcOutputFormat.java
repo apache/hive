@@ -211,18 +211,14 @@ public class OrcOutputFormat extends FileOutputFormat<NullWritable, OrcSerdeRow>
     }
 
     @Override
-    public void update(long currentTransaction, long originalTransaction,
-                       long rowId, Object row) throws IOException {
+    public void update(long currentTransaction, Object row) throws IOException {
       out.println("update " + path + " currTxn: " + currentTransaction +
-          " origTxn: " + originalTransaction + " row: " + rowId + " obj: " +
-          stringifyObject(row, inspector));
+          " obj: " + stringifyObject(row, inspector));
     }
 
     @Override
-    public void delete(long currentTransaction, long originalTransaction,
-                       long rowId) throws IOException {
-      out.println("delete " + path + " currTxn: " + currentTransaction +
-         " origTxn: " + originalTransaction + " row: " + rowId);
+    public void delete(long currentTransaction, Object row) throws IOException {
+      out.println("delete " + path + " currTxn: " + currentTransaction + " obj: " + row);
     }
 
     @Override

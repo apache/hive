@@ -52,6 +52,7 @@ public interface AcidOutputFormat<K extends WritableComparable, V> extends HiveO
     private int bucket;
     private PrintStream dummyStream = null;
     private boolean oldStyle = false;
+    private int recIdCol = -1;  // Column the record identifier is in, -1 indicates no record id
 
     /**
      * Create the options object.
@@ -164,6 +165,16 @@ public interface AcidOutputFormat<K extends WritableComparable, V> extends HiveO
     }
 
     /**
+     * Which column the row id field is in.
+     * @param recIdCol
+     * @return this
+     */
+    public Options recordIdColumn(int recIdCol) {
+      this.recIdCol = recIdCol;
+      return this;
+    }
+
+    /**
      * Temporary switch while we are in development that replaces the
      * implementation with a dummy one that just prints to stream.
      * @param stream the stream to print to
@@ -212,6 +223,10 @@ public interface AcidOutputFormat<K extends WritableComparable, V> extends HiveO
 
     public int getBucket() {
       return bucket;
+    }
+
+    public int getRecordIdColumn() {
+      return recIdCol;
     }
 
     public PrintStream getDummyStream() {
