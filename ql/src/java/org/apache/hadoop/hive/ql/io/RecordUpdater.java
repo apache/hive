@@ -40,26 +40,17 @@ public interface RecordUpdater {
   /**
    * Update an old record with a new set of values.
    * @param currentTransaction the current transaction id
-   * @param originalTransaction the row's original transaction id
-   * @param rowId the original row id
    * @param row the new values for the row
    * @throws IOException
    */
-  void update(long currentTransaction,
-              long originalTransaction,
-              long rowId,
-              Object row) throws IOException;
+  void update(long currentTransaction, Object row) throws IOException;
 
   /**
    * Delete a row from the table.
    * @param currentTransaction the current transaction id
-   * @param originalTransaction the rows original transaction id
-   * @param rowId the original row id
    * @throws IOException
    */
-  void delete(long currentTransaction,
-              long originalTransaction,
-              long rowId) throws IOException;
+  void delete(long currentTransaction, Object row) throws IOException;
 
   /**
    * Flush the current set of rows to the underlying file system, so that
