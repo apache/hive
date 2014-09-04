@@ -40,6 +40,7 @@ public abstract class AbstractCommandHandler implements CommandHandler {
   private final String helpText;
   private Completor[] parameterCompletors = new Completor[0];
 
+  protected transient Throwable lastException;
 
   public AbstractCommandHandler(BeeLine beeLine, String[] names, String helpText,
       Completor[] completors) {
@@ -100,5 +101,10 @@ public abstract class AbstractCommandHandler implements CommandHandler {
   @Override
   public Completor[] getParameterCompletors() {
     return parameterCompletors;
+  }
+
+  @Override
+  public Throwable getLastException() {
+    return lastException;
   }
 }

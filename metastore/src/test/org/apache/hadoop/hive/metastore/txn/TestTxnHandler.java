@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.metastore.txn;
 
-import junit.framework.Assert;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -26,11 +25,11 @@ import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static junit.framework.Assert.*;
 
@@ -868,7 +867,7 @@ public class TestTxnHandler {
 
   @Test
   public void testHeartbeatLock() throws Exception {
-    conf.setIntVar(HiveConf.ConfVars.HIVE_TXN_TIMEOUT, 1);
+    conf.setTimeVar(HiveConf.ConfVars.HIVE_TXN_TIMEOUT, 1, TimeUnit.SECONDS);
     HeartbeatRequest h = new HeartbeatRequest();
     LockComponent comp = new LockComponent(LockType.EXCLUSIVE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");

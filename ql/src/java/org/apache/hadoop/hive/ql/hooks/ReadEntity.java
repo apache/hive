@@ -19,7 +19,9 @@
 package org.apache.hadoop.hive.ql.hooks;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.hadoop.fs.Path;
@@ -49,7 +51,8 @@ public class ReadEntity extends Entity implements Serializable {
   // For views, the entities can be nested - by default, entities are at the top level
   private final Set<ReadEntity> parents = new HashSet<ReadEntity>();
 
-
+  // The accessed columns of query
+  private final List<String> accessedColumns = new ArrayList<String>();
 
   /**
    * For serialization only.
@@ -158,5 +161,9 @@ public class ReadEntity extends Entity implements Serializable {
 
   public void noLockNeeded() {
     needsLock = false;
+  }
+
+  public List<String> getAccessedColumns() {
+    return accessedColumns;
   }
 }

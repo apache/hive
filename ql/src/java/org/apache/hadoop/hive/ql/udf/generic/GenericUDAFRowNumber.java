@@ -34,110 +34,89 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.io.IntWritable;
 
-@WindowFunctionDescription
-(
-		description = @Description(
-								name = "row_number",
-								value = "_FUNC_() - The ROW_NUMBER function assigns a unique number (sequentially, starting from 1, as defined by ORDER BY) to each row within the partition."
-								),
-		supportsWindow = false,
-		pivotResult = true
+@WindowFunctionDescription(
+  description = @Description(
+    name = "row_number",
+    value = "_FUNC_() - The ROW_NUMBER function assigns a unique number (sequentially, starting "
+            + "from 1, as defined by ORDER BY) to each row within the partition."
+  ),
+  supportsWindow = false,
+  pivotResult = true
 )
-public class GenericUDAFRowNumber extends AbstractGenericUDAFResolver
-{
-	static final Log LOG = LogFactory.getLog(GenericUDAFRowNumber.class.getName());
+public class GenericUDAFRowNumber extends AbstractGenericUDAFResolver {
 
-	@Override
-	public GenericUDAFEvaluator getEvaluator(TypeInfo[] parameters)
-			throws SemanticException
-	{
-		if (parameters.length != 0)
-		{
-			throw new UDFArgumentTypeException(parameters.length - 1,
-					"No argument is expected.");
-		}
-		return new GenericUDAFRowNumberEvaluator();
-	}
+  static final Log LOG = LogFactory.getLog(GenericUDAFRowNumber.class.getName());
 
-	static class RowNumberBuffer implements AggregationBuffer
-	{
-		ArrayList<IntWritable> rowNums;
-		int nextRow;
+  @Override
+  public GenericUDAFEvaluator getEvaluator(TypeInfo[] parameters) throws SemanticException {
+    if (parameters.length != 0) {
+      throw new UDFArgumentTypeException(parameters.length - 1, "No argument is expected.");
+    }
+    return new GenericUDAFRowNumberEvaluator();
+  }
 
-		void init()
-		{
-			rowNums = new ArrayList<IntWritable>();
-		}
+  static class RowNumberBuffer implements AggregationBuffer {
 
-		RowNumberBuffer()
-		{
-			init();
-			nextRow = 1;
-		}
+    ArrayList<IntWritable> rowNums;
+    int nextRow;
 
-		void incr()
-		{
-			rowNums.add(new IntWritable(nextRow++));
-		}
-	}
+    void init() {
+      rowNums = new ArrayList<IntWritable>();
+    }
 
-	public static class GenericUDAFRowNumberEvaluator extends
-			GenericUDAFEvaluator
-	{
+    RowNumberBuffer() {
+      init();
+      nextRow = 1;
+    }
 
-		@Override
-		public ObjectInspector init(Mode m, ObjectInspector[] parameters)
-				throws HiveException
-		{
-			super.init(m, parameters);
-			if (m != Mode.COMPLETE)
-			{
-				throw new HiveException("Only COMPLETE mode supported for row_number function");
-			}
+    void incr() {
+      rowNums.add(new IntWritable(nextRow++));
+    }
+  }
 
-			return ObjectInspectorFactory.getStandardListObjectInspector(
-					PrimitiveObjectInspectorFactory.writableIntObjectInspector);
-		}
+  public static class GenericUDAFRowNumberEvaluator extends GenericUDAFEvaluator {
 
-		@Override
-		public AggregationBuffer getNewAggregationBuffer() throws HiveException
-		{
-			return new RowNumberBuffer();
-		}
+    @Override
+    public ObjectInspector init(Mode m, ObjectInspector[] parameters) throws HiveException {
+      super.init(m, parameters);
+      if (m != Mode.COMPLETE) {
+        throw new HiveException("Only COMPLETE mode supported for row_number function");
+      }
 
-		@Override
-		public void reset(AggregationBuffer agg) throws HiveException
-		{
-			((RowNumberBuffer) agg).init();
-		}
+      return ObjectInspectorFactory.getStandardListObjectInspector(
+        PrimitiveObjectInspectorFactory.writableIntObjectInspector);
+    }
 
-		@Override
-		public void iterate(AggregationBuffer agg, Object[] parameters)
-				throws HiveException
-		{
-			((RowNumberBuffer) agg).incr();
-		}
+    @Override
+    public AggregationBuffer getNewAggregationBuffer() throws HiveException {
+      return new RowNumberBuffer();
+    }
 
-		@Override
-		public Object terminatePartial(AggregationBuffer agg)
-				throws HiveException
-		{
-			throw new HiveException("terminatePartial not supported");
-		}
+    @Override
+    public void reset(AggregationBuffer agg) throws HiveException {
+      ((RowNumberBuffer) agg).init();
+    }
 
-		@Override
-		public void merge(AggregationBuffer agg, Object partial)
-				throws HiveException
-		{
-			throw new HiveException("merge not supported");
-		}
+    @Override
+    public void iterate(AggregationBuffer agg, Object[] parameters) throws HiveException {
+      ((RowNumberBuffer) agg).incr();
+    }
 
-		@Override
-		public Object terminate(AggregationBuffer agg) throws HiveException
-		{
-			return ((RowNumberBuffer) agg).rowNums;
-		}
+    @Override
+    public Object terminatePartial(AggregationBuffer agg) throws HiveException {
+      throw new HiveException("terminatePartial not supported");
+    }
 
-	}
+    @Override
+    public void merge(AggregationBuffer agg, Object partial) throws HiveException {
+      throw new HiveException("merge not supported");
+    }
+
+    @Override
+    public Object terminate(AggregationBuffer agg) throws HiveException {
+      return ((RowNumberBuffer) agg).rowNums;
+    }
+
+  }
 }
 

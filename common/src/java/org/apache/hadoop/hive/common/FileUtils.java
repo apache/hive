@@ -24,7 +24,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.AccessControlException;
 import java.security.PrivilegedExceptionAction;
-import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
 
@@ -34,12 +33,10 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileUtil;
-import org.apache.hadoop.fs.FsShell;
 import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.fs.permission.FsAction;
-import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.HadoopShims.HdfsFileStatus;
@@ -628,4 +625,62 @@ public final class FileUtils {
     //Once equality has been added in HDFS-4321, we should make use of it
     return fs1.getUri().equals(fs2.getUri());
   }
+
+  /**
+   * Checks if delete can be performed on given path by given user.
+   * If file does not exist it just returns without throwing an Exception
+   * @param path
+   * @param conf
+   * @param user
+   * @throws AccessControlException
+   * @throws InterruptedException
+   * @throws Exception
+   */
+  public static void checkDeletePermission(Path path, Configuration conf, String user)
+      throws AccessControlException, InterruptedException, Exception {
+   // This requires ability to delete the given path.
+    // The following 2 conditions should be satisfied for this-
+    // 1. Write permissions on parent dir
+    // 2. If sticky bit is set on parent dir then one of following should be
+    // true
+    //   a. User is owner of the current dir/file
+    //   b. User is owner of the parent dir
+    //   Super users are also allowed to drop the file, but there is no good way of checking
+    //   if a user is a super user. Also super users running hive queries is not a common
+    //   use case. super users can also do a chown to be able to drop the file
+
+    final FileSystem fs = path.getFileSystem(conf);
+    if (!fs.exists(path)) {
+      // no file/dir to be deleted
+      return;
+    }
+    Path parPath = path.getParent();
+    // check user has write permissions on the parent dir
+    FileStatus stat = fs.getFileStatus(path);
+    FileUtils.checkFileAccessWithImpersonation(fs, stat, FsAction.WRITE, user);
+
+    // check if sticky bit is set on the parent dir
+    FileStatus parStatus = fs.getFileStatus(parPath);
+    if (!parStatus.getPermission().getStickyBit()) {
+      // no sticky bit, so write permission on parent dir is sufficient
+      // no further checks needed
+      return;
+    }
+
+    // check if user is owner of parent dir
+    if (parStatus.getOwner().equals(user)) {
+      return;
+    }
+
+    // check if user is owner of current dir/file
+    FileStatus childStatus = fs.getFileStatus(path);
+    if (childStatus.getOwner().equals(user)) {
+      return;
+    }
+    String msg = String.format("Permission Denied: User %s can't delete %s because sticky bit is"
+        + " set on the parent dir and user does not own this file or its parent", user, path);
+    throw new IOException(msg);
+
+  }
+
 }

@@ -42,6 +42,7 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.Timer;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -445,7 +446,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         partitionValidationPattern = null;
       }
 
-      long cleanFreq = hiveConf.getLongVar(ConfVars.METASTORE_EVENT_CLEAN_FREQ) * 1000L;
+      long cleanFreq = hiveConf.getTimeVar(ConfVars.METASTORE_EVENT_CLEAN_FREQ, TimeUnit.MILLISECONDS);
       if (cleanFreq > 0) {
         // In default config, there is no timer.
         Timer cleaner = new Timer("Metastore Events Cleaner Thread", true);
@@ -3719,7 +3720,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       } finally {
         endFunction("write_partition_column_statistics: ", ret != false, null, tableName);
       }
-    }
+    } 
 
     @Override
     public boolean delete_partition_column_statistics(String dbName, String tableName,
@@ -5044,17 +5045,17 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     @Override
     public boolean set_aggr_stats_for(SetPartitionsStatsRequest request)
-        throws NoSuchObjectException, InvalidObjectException, MetaException,
-        InvalidInputException, TException {
+        throws NoSuchObjectException, InvalidObjectException, MetaException, InvalidInputException,
+        TException {
       boolean ret = true;
       for (ColumnStatistics colStats : request.getColStats()) {
         ret = ret && update_partition_column_statistics(colStats);
       }
       return ret;
     }
-
   }
 
+  
   public static IHMSHandler newHMSHandler(String name, HiveConf hiveConf) throws MetaException {
     return newHMSHandler(name, hiveConf, false);
   }

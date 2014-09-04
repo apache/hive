@@ -353,14 +353,14 @@ public class OpProcFactory {
           if (inpOp.getSchema() != null && inpOp.getSchema().getSignature() != null ) {
             for(ColumnInfo ci : inpOp.getSchema().getSignature()) {
               Dependency inp_dep = lctx.getIndex().getDependency(inpOp, ci);
-            	// The dependency can be null as some of the input cis may not have
-            	// been set in case of joins.
-            	if (inp_dep != null) {
-            	  for(BaseColumnInfo bci : inp_dep.getBaseCols()) {
-            	    new_type = LineageCtx.getNewDependencyType(inp_dep.getType(), new_type);
-            	    tai_set.add(bci.getTabAlias());
-            	  }
-            	}
+              // The dependency can be null as some of the input cis may not have
+              // been set in case of joins.
+              if (inp_dep != null) {
+                for(BaseColumnInfo bci : inp_dep.getBaseCols()) {
+                  new_type = LineageCtx.getNewDependencyType(inp_dep.getType(), new_type);
+                  tai_set.add(bci.getTabAlias());
+                }
+              }
             }
           }
 

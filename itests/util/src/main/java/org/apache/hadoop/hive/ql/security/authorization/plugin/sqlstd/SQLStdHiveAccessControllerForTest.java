@@ -30,7 +30,7 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveMetastoreClie
  * To be used for testing purposes only!
  */
 @Private
-public class SQLStdHiveAccessControllerForTest extends SQLStdHiveAccessController {
+public class SQLStdHiveAccessControllerForTest extends SQLStdHiveAccessControllerWrapper {
 
   SQLStdHiveAccessControllerForTest(HiveMetastoreClientFactory metastoreClientFactory, HiveConf conf,
       HiveAuthenticationProvider authenticator, HiveAuthzSessionContext ctx) throws HiveAuthzPluginException {

@@ -34,10 +34,12 @@ import org.slf4j.LoggerFactory;
  * This class is responsible for setting the ipAddress for operations executed via HiveServer2.
  * <p>
  * <ul>
- * <li>Ipaddress is only set for operations that calls listeners with hookContext @see ExecuteWithHookContext.</li>
- * <li>Ipaddress is only set if the underlying transport mechanism is socket. </li>
+ * <li>IP address is only set for operations that calls listeners with hookContext</li>
+ * <li>IP address is only set if the underlying transport mechanism is socket</li>
  * </ul>
  * </p>
+ *
+ * @see org.apache.hadoop.hive.ql.hooks.ExecuteWithHookContext
  */
 public class TSetIpAddressProcessor<I extends Iface> extends TCLIService.Processor<Iface> {
 
@@ -54,26 +56,26 @@ public class TSetIpAddressProcessor<I extends Iface> extends TCLIService.Process
     try {
       return super.process(in, out);
     } finally {
-      threadLocalUserName.remove();
-      threadLocalIpAddress.remove();
+      THREAD_LOCAL_USER_NAME.remove();
+      THREAD_LOCAL_IP_ADDRESS.remove();
     }
   }
 
   private void setUserName(final TProtocol in) {
     TTransport transport = in.getTransport();
     if (transport instanceof TSaslServerTransport) {
-      String userName = ((TSaslServerTransport)transport).getSaslServer().getAuthorizationID();
-      threadLocalUserName.set(userName);
+      String userName = ((TSaslServerTransport) transport).getSaslServer().getAuthorizationID();
+      THREAD_LOCAL_USER_NAME.set(userName);
     }
   }
 
   protected void setIpAddress(final TProtocol in) {
     TTransport transport = in.getTransport();
     TSocket tSocket = getUnderlyingSocketFromTransport(transport);
-    if (tSocket != null) {
-      threadLocalIpAddress.set(tSocket.getSocket().getInetAddress().toString());
-    } else {
+    if (tSocket == null) {
       LOGGER.warn("Unknown Transport, cannot determine ipAddress");
+    } else {
+      THREAD_LOCAL_IP_ADDRESS.set(tSocket.getSocket().getInetAddress().toString());
     }
   }
 
@@ -92,14 +94,14 @@ public class TSetIpAddressProcessor<I extends Iface> extends TCLIService.Process
     return null;
   }
 
-  private static ThreadLocal<String> threadLocalIpAddress = new ThreadLocal<String>() {
+  private static final ThreadLocal<String> THREAD_LOCAL_IP_ADDRESS = new ThreadLocal<String>() {
     @Override
     protected synchronized String initialValue() {
       return null;
     }
   };
 
-  private static ThreadLocal<String> threadLocalUserName = new ThreadLocal<String>(){
+  private static final ThreadLocal<String> THREAD_LOCAL_USER_NAME = new ThreadLocal<String>() {
     @Override
     protected synchronized String initialValue() {
       return null;
@@ -107,10 +109,10 @@ public class TSetIpAddressProcessor<I extends Iface> extends TCLIService.Process
   };
 
   public static String getUserIpAddress() {
-    return threadLocalIpAddress.get();
+    return THREAD_LOCAL_IP_ADDRESS.get();
   }
 
   public static String getUserName() {
-    return threadLocalUserName.get();
+    return THREAD_LOCAL_USER_NAME.get();
   }
 }

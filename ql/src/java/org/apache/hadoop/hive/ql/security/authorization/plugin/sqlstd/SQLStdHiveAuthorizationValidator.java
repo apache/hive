@@ -43,17 +43,17 @@ public class SQLStdHiveAuthorizationValidator implements HiveAuthorizationValida
   private final HiveMetastoreClientFactory metastoreClientFactory;
   private final HiveConf conf;
   private final HiveAuthenticationProvider authenticator;
-  private final SQLStdHiveAccessController privController;
+  private final SQLStdHiveAccessControllerWrapper privController;
   public static final Log LOG = LogFactory.getLog(SQLStdHiveAuthorizationValidator.class);
 
   public SQLStdHiveAuthorizationValidator(HiveMetastoreClientFactory metastoreClientFactory,
       HiveConf conf, HiveAuthenticationProvider authenticator,
-      SQLStdHiveAccessController privController) {
+      SQLStdHiveAccessControllerWrapper privilegeManager) {
 
     this.metastoreClientFactory = metastoreClientFactory;
     this.conf = conf;
     this.authenticator = authenticator;
-    this.privController = privController;
+    this.privController = privilegeManager;
   }
 
   @Override

@@ -29,6 +29,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import javax.security.auth.login.LoginException;
 
@@ -95,7 +96,6 @@ import org.apache.tez.dag.api.ProcessorDescriptor;
 import org.apache.tez.dag.api.TezException;
 import org.apache.tez.dag.api.Vertex;
 import org.apache.tez.dag.api.VertexGroup;
-import org.apache.tez.dag.api.VertexLocationHint;
 import org.apache.tez.dag.api.VertexManagerPluginDescriptor;
 import org.apache.tez.dag.library.vertexmanager.ShuffleVertexManager;
 import org.apache.tez.mapreduce.hadoop.InputSplitInfo;
@@ -131,7 +131,7 @@ public class DagUtils {
 
   private void addCredentials(MapWork mapWork, DAG dag) {
     Set<String> paths = mapWork.getPathToAliases().keySet();
-    if (paths != null && !paths.isEmpty()) {
+    if (!paths.isEmpty()) {
       Iterator<URI> pathIterator = Iterators.transform(paths.iterator(), new Function<String, URI>() {
         @Override
         public URI apply(String input) {
@@ -198,6 +198,12 @@ public class DagUtils {
     }
 
     if (mapWork.isUseOneNullRowInputFormat()) {
+      inpFormat = CombineHiveInputFormat.class.getName();
+    }
+
+    if (mapWork.getDummyTableScan()) {
+      // hive input format doesn't handle the special condition of no paths + 1
+      // split correctly.
       inpFormat = CombineHiveInputFormat.class.getName();
     }
 
@@ -710,7 +716,7 @@ public class DagUtils {
 
   /**
    * Localizes files, archives and jars from a provided array of names.
-   * @param hdfsDirPathStr Destination directoty in HDFS.
+   * @param hdfsDirPathStr Destination directory in HDFS.
    * @param conf Configuration.
    * @param inputOutputJars The file names to localize.
    * @return List<LocalResource> local resources to add to execution
@@ -784,7 +790,7 @@ public class DagUtils {
   }
 
   /**
-   * @param pathStr - the string from which we try to determine the resource base name
+   * @param path - the path from which we try to determine the resource base name
    * @return the name of the resource from a given path string.
    */
   public String getResourceBaseName(Path path) {
@@ -830,9 +836,8 @@ public class DagUtils {
         int waitAttempts =
             conf.getInt(HiveConf.ConfVars.HIVE_LOCALIZE_RESOURCE_NUM_WAIT_ATTEMPTS.varname,
                 HiveConf.ConfVars.HIVE_LOCALIZE_RESOURCE_NUM_WAIT_ATTEMPTS.defaultIntVal);
-        long sleepInterval =
-            conf.getLong(HiveConf.ConfVars.HIVE_LOCALIZE_RESOURCE_WAIT_INTERVAL.varname,
-                HiveConf.ConfVars.HIVE_LOCALIZE_RESOURCE_WAIT_INTERVAL.defaultLongVal);
+        long sleepInterval = HiveConf.getTimeVar(
+            conf, HiveConf.ConfVars.HIVE_LOCALIZE_RESOURCE_WAIT_INTERVAL, TimeUnit.MILLISECONDS);
         LOG.info("Number of wait attempts: " + waitAttempts + ". Wait interval: "
             + sleepInterval);
         boolean found = false;
@@ -919,7 +924,6 @@ public class DagUtils {
    * @param work The instance of BaseWork representing the actual work to be performed
    * by this vertex.
    * @param scratchDir HDFS scratch dir for this execution unit.
-   * @param list
    * @param appJarLr Local resource for hive-exec.
    * @param additionalLr
    * @param fileSystem FS corresponding to scratchDir and LocalResources

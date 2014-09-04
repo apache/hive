@@ -27,14 +27,13 @@ import java.lang.annotation.Target;
 import org.apache.hadoop.hive.ql.udf.ptf.WindowingTableFunction;
 
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE})
+@Target(ElementType.TYPE)
 @Documented
-public @interface PartitionTableFunctionDescription
-{
-	Description description ();
+public @interface PartitionTableFunctionDescription {
+  Description description ();
 
-	/**
-	 * if true it is not usable in the language. {@link WindowingTableFunction} is the only internal function.
-	 */
-	boolean isInternal() default false;
+  /**
+   * if true it is not usable in the language. {@link WindowingTableFunction} is the only internal function.
+   */
+  boolean isInternal() default false;
 }

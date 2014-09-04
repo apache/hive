@@ -120,7 +120,7 @@ public class CompactorMR {
     job.setBoolean(IS_MAJOR, isMajor);
     job.setBoolean(IS_COMPRESSED, sd.isCompressed());
     job.set(TABLE_PROPS, new StringableMap(t.getParameters()).toString());
-    job.setInt(NUM_BUCKETS, sd.getBucketColsSize());
+    job.setInt(NUM_BUCKETS, sd.getNumBuckets());
     job.set(ValidTxnList.VALID_TXNS_KEY, txns.toString());
     setColumnTypes(job, sd.getCols());
 

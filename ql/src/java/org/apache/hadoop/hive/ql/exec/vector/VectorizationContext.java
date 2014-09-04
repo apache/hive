@@ -325,11 +325,11 @@ public class VectorizationContext {
             childExpressions, mode, exprDesc.getTypeInfo());
       }
     } else if (exprDesc instanceof ExprNodeNullDesc) {
-    	ve = getConstantVectorExpression(null, exprDesc.getTypeInfo(), mode);
+      ve = getConstantVectorExpression(null, exprDesc.getTypeInfo(), mode);
     } else if (exprDesc instanceof ExprNodeConstantDesc) {
       ve = getConstantVectorExpression(((ExprNodeConstantDesc) exprDesc).getValue(), exprDesc.getTypeInfo(),
           mode);
-    } 
+    }
     if (ve == null) {
       throw new HiveException("Could not vectorize expression: "+exprDesc.getName());
     }
@@ -413,8 +413,8 @@ public class VectorizationContext {
         }
       }
     } else {
-      for (ExprNodeDesc child : children) {    	
-    	ExprNodeDesc castExpression = getImplicitCastExpression(genericUDF, child, commonType);
+      for (ExprNodeDesc child : children) {
+        ExprNodeDesc castExpression = getImplicitCastExpression(genericUDF, child, commonType);
         if (castExpression != null) {
           atleastOneCastNeeded = true;
           childrenWithCasts.add(castExpression);
@@ -515,7 +515,7 @@ public class VectorizationContext {
     }
     return null;
   }
-  
+
   private int getPrecisionForType(PrimitiveTypeInfo typeInfo) {
     if (isFloatFamily(typeInfo.getTypeName())) {
       return HiveDecimal.MAX_PRECISION;
@@ -572,8 +572,8 @@ public class VectorizationContext {
       ((GenericUDFBridge) genericUdf).setUdfClassName(udfClass.getClass().getName());
     }
     if (genericUdf instanceof SettableUDF) {
-	((SettableUDF)genericUdf).setTypeInfo(castType);
-    }    
+      ((SettableUDF) genericUdf).setTypeInfo(castType);
+    }
     return genericUdf;
   }
 
@@ -662,63 +662,63 @@ public class VectorizationContext {
    * @throws HiveException
    */
   ExprNodeDesc evaluateCastOnConstants(ExprNodeDesc exprDesc) throws HiveException {
-	  if (!(exprDesc instanceof ExprNodeGenericFuncDesc)) {
-		  return exprDesc;
-	  }
-      
-	  if (exprDesc.getChildren() == null || (exprDesc.getChildren().size() != 1) ) {
-		  return exprDesc;
-	  }
-  
-	  ExprNodeConstantDesc foldedChild = null;
-	  if (!( exprDesc.getChildren().get(0) instanceof ExprNodeConstantDesc)) {
-		  
-		  // try recursive folding
-		  ExprNodeDesc expr = evaluateCastOnConstants(exprDesc.getChildren().get(0));
-		  if (expr instanceof ExprNodeConstantDesc) {
-			  foldedChild = (ExprNodeConstantDesc) expr;
-		  }
-	  } else {
-		  foldedChild = (ExprNodeConstantDesc) exprDesc.getChildren().get(0);
-	  }
-  
-	  if (foldedChild == null) {
-		  return exprDesc;
-	  }
-  
-	  ObjectInspector childoi = foldedChild.getWritableObjectInspector();
-	  GenericUDF gudf = ((ExprNodeGenericFuncDesc) exprDesc).getGenericUDF();
-      
-	  // Only evaluate +ve/-ve or cast on constant or recursive casting.
-	  if (gudf instanceof GenericUDFOPNegative || gudf instanceof GenericUDFOPPositive ||
-			  castExpressionUdfs.contains(gudf.getClass())
-			  || ((gudf instanceof GenericUDFBridge)
-					  && castExpressionUdfs.contains(((GenericUDFBridge) gudf).getUdfClass()))) {
-		  ExprNodeEvaluator<?> evaluator = ExprNodeEvaluatorFactory.get(exprDesc);
-		  ObjectInspector output = evaluator.initialize(childoi);
-		  Object constant = evaluator.evaluate(null);
-		  Object java = ObjectInspectorUtils.copyToStandardJavaObject(constant, output);  
-		  return new ExprNodeConstantDesc(exprDesc.getTypeInfo(), java);
-	  }
-  
-	  return exprDesc;
+    if (!(exprDesc instanceof ExprNodeGenericFuncDesc)) {
+      return exprDesc;
+    }
+
+    if (exprDesc.getChildren() == null || (exprDesc.getChildren().size() != 1) ) {
+      return exprDesc;
+    }
+
+    ExprNodeConstantDesc foldedChild = null;
+    if (!( exprDesc.getChildren().get(0) instanceof ExprNodeConstantDesc)) {
+
+      // try recursive folding
+      ExprNodeDesc expr = evaluateCastOnConstants(exprDesc.getChildren().get(0));
+      if (expr instanceof ExprNodeConstantDesc) {
+        foldedChild = (ExprNodeConstantDesc) expr;
+      }
+    } else {
+      foldedChild = (ExprNodeConstantDesc) exprDesc.getChildren().get(0);
+    }
+
+    if (foldedChild == null) {
+      return exprDesc;
+    }
+
+    ObjectInspector childoi = foldedChild.getWritableObjectInspector();
+    GenericUDF gudf = ((ExprNodeGenericFuncDesc) exprDesc).getGenericUDF();
+
+    // Only evaluate +ve/-ve or cast on constant or recursive casting.
+    if (gudf instanceof GenericUDFOPNegative || gudf instanceof GenericUDFOPPositive ||
+        castExpressionUdfs.contains(gudf.getClass())
+        || ((gudf instanceof GenericUDFBridge)
+            && castExpressionUdfs.contains(((GenericUDFBridge) gudf).getUdfClass()))) {
+      ExprNodeEvaluator<?> evaluator = ExprNodeEvaluatorFactory.get(exprDesc);
+      ObjectInspector output = evaluator.initialize(childoi);
+      Object constant = evaluator.evaluate(null);
+      Object java = ObjectInspectorUtils.copyToStandardJavaObject(constant, output);
+      return new ExprNodeConstantDesc(exprDesc.getTypeInfo(), java);
+    }
+
+    return exprDesc;
   }
-  
+
   /* For cast on constant operator in all members of the input list and return new list
    * containing results.
    */
   private List<ExprNodeDesc> evaluateCastOnConstants(List<ExprNodeDesc> childExpr)
-		  throws HiveException {
-	  List<ExprNodeDesc> evaluatedChildren = new ArrayList<ExprNodeDesc>();
-	  if (childExpr != null) {
+      throws HiveException {
+    List<ExprNodeDesc> evaluatedChildren = new ArrayList<ExprNodeDesc>();
+    if (childExpr != null) {
         for (ExprNodeDesc expr : childExpr) {
-        	expr = this.evaluateCastOnConstants(expr);
-        	evaluatedChildren.add(expr);
+          expr = this.evaluateCastOnConstants(expr);
+          evaluatedChildren.add(expr);
         }
-	  }
-	  return evaluatedChildren;
+    }
+    return evaluatedChildren;
   }
-      
+
   private VectorExpression getConstantVectorExpression(Object constantValue, TypeInfo typeInfo,
       Mode mode) throws HiveException {
     String type =  typeInfo.getTypeName();
@@ -728,7 +728,7 @@ public class VectorizationContext {
       outCol = ocm.allocateOutputColumn(colVectorType);
     }
     if (constantValue == null) {
-    	return new ConstantVectorExpression(outCol, type, true);
+      return new ConstantVectorExpression(outCol, type, true);
     } else if (decimalTypePattern.matcher(type).matches()) {
       VectorExpression ve = new ConstantVectorExpression(outCol, (Decimal128) constantValue);
       ve.setOutputType(typeInfo.getTypeName());
@@ -907,9 +907,9 @@ public class VectorizationContext {
   private VectorExpression getGenericUdfVectorExpression(GenericUDF udf,
       List<ExprNodeDesc> childExpr, Mode mode, TypeInfo returnType) throws HiveException {
 
-	List<ExprNodeDesc> castedChildren = evaluateCastOnConstants(childExpr);
-	childExpr = castedChildren;	  
-	  
+    List<ExprNodeDesc> castedChildren = evaluateCastOnConstants(childExpr);
+    childExpr = castedChildren;
+
     //First handle special cases
     if (udf instanceof GenericUDFBetween) {
       return getBetweenFilterExpression(childExpr, mode, returnType);
@@ -933,8 +933,8 @@ public class VectorizationContext {
       }
     } else if (udf instanceof GenericUDFToDecimal) {
       return getCastToDecimal(childExpr, returnType);
-    } 
-    
+    }
+
     // Now do a general lookup
     Class<?> udfClass = udf.getClass();
     if (udf instanceof GenericUDFBridge) {
@@ -1003,7 +1003,7 @@ public class VectorizationContext {
       }
     }
   }
-      
+
   /**
    * Create a filter or boolean-valued expression for column IN ( <list-of-constants> )
    */
@@ -1014,8 +1014,8 @@ public class VectorizationContext {
     String colType = colExpr.getTypeString();
 
     // prepare arguments for createVectorExpression
-    List<ExprNodeDesc> childrenForInList =  evaluateCastOnConstants(childExpr.subList(1, childExpr.size()));	
-    
+    List<ExprNodeDesc> childrenForInList =  evaluateCastOnConstants(childExpr.subList(1, childExpr.size()));
+
     /* This method assumes that the IN list has no NULL entries. That is enforced elsewhere,
      * in the Vectorizer class. If NULL is passed in as a list entry, behavior is not defined.
      * If in the future, NULL values are allowed in the IN list, be sure to handle 3-valued
@@ -1110,105 +1110,105 @@ public class VectorizationContext {
       return getCastToString(childExpr, returnType);
     }
     return null;
-  } 
-  
+  }
+
   private Decimal128 castConstantToDecimal(Object scalar, TypeInfo type) throws HiveException {
-	  PrimitiveTypeInfo ptinfo = (PrimitiveTypeInfo) type;
-	  String typename = type.getTypeName();
-	  Decimal128 d = new Decimal128();
-	  int scale = HiveDecimalUtils.getScaleForType(ptinfo);
-	  switch (ptinfo.getPrimitiveCategory()) {
-	  case FLOAT:
-		  float floatVal = ((Float) scalar).floatValue();
-		  d.update(floatVal, (short) scale);
-		  break;
-	  case DOUBLE:
-		  double doubleVal = ((Double) scalar).doubleValue();
-		  d.update(doubleVal, (short) scale);
-		  break;
-	  case BYTE:
-		  byte byteVal = ((Byte) scalar).byteValue();
-		  d.update(byteVal, (short) scale);
-		  break;
-	  case SHORT:
-		  short shortVal = ((Short) scalar).shortValue();
-		  d.update(shortVal, (short) scale);
-		  break;
-	  case INT:
-		  int intVal = ((Integer) scalar).intValue();
-		  d.update(intVal, (short) scale);
-		  break;
-	  case LONG:
-		  long longVal = ((Long) scalar).longValue();
-		  d.update(longVal, (short) scale);
-		  break;
-	  case DECIMAL:
-		  HiveDecimal decimalVal = (HiveDecimal) scalar;
-		  d.update(decimalVal.unscaledValue(), (short) scale);
-		  break;
-	  default:
-		  throw new HiveException("Unsupported type "+typename+" for cast to Decimal128");
-	  }
-	  return d;
+    PrimitiveTypeInfo ptinfo = (PrimitiveTypeInfo) type;
+    String typename = type.getTypeName();
+    Decimal128 d = new Decimal128();
+    int scale = HiveDecimalUtils.getScaleForType(ptinfo);
+    switch (ptinfo.getPrimitiveCategory()) {
+    case FLOAT:
+      float floatVal = ((Float) scalar).floatValue();
+      d.update(floatVal, (short) scale);
+      break;
+    case DOUBLE:
+      double doubleVal = ((Double) scalar).doubleValue();
+      d.update(doubleVal, (short) scale);
+      break;
+    case BYTE:
+      byte byteVal = ((Byte) scalar).byteValue();
+      d.update(byteVal, (short) scale);
+      break;
+    case SHORT:
+      short shortVal = ((Short) scalar).shortValue();
+      d.update(shortVal, (short) scale);
+      break;
+    case INT:
+      int intVal = ((Integer) scalar).intValue();
+      d.update(intVal, (short) scale);
+      break;
+    case LONG:
+      long longVal = ((Long) scalar).longValue();
+      d.update(longVal, (short) scale);
+      break;
+    case DECIMAL:
+      HiveDecimal decimalVal = (HiveDecimal) scalar;
+      d.update(decimalVal.unscaledValue(), (short) scale);
+      break;
+    default:
+      throw new HiveException("Unsupported type "+typename+" for cast to Decimal128");
+    }
+    return d;
   }
 
   private String castConstantToString(Object scalar, TypeInfo type) throws HiveException {
-	  PrimitiveTypeInfo ptinfo = (PrimitiveTypeInfo) type;
-	  String typename = type.getTypeName();
-	  switch (ptinfo.getPrimitiveCategory()) {
-	  case FLOAT:
-	  case DOUBLE:
-	  case BYTE:
-	  case SHORT:
-	  case INT:
-	  case LONG:
-		  return ((Number) scalar).toString();
-	  case DECIMAL:
-		  HiveDecimal decimalVal = (HiveDecimal) scalar;
-		  return decimalVal.toString();
-	  default:
-		  throw new HiveException("Unsupported type "+typename+" for cast to String");
-	  }
+    PrimitiveTypeInfo ptinfo = (PrimitiveTypeInfo) type;
+    String typename = type.getTypeName();
+    switch (ptinfo.getPrimitiveCategory()) {
+    case FLOAT:
+    case DOUBLE:
+    case BYTE:
+    case SHORT:
+    case INT:
+    case LONG:
+      return ((Number) scalar).toString();
+    case DECIMAL:
+      HiveDecimal decimalVal = (HiveDecimal) scalar;
+      return decimalVal.toString();
+    default:
+      throw new HiveException("Unsupported type "+typename+" for cast to String");
+    }
   }
 
   private Double castConstantToDouble(Object scalar, TypeInfo type) throws HiveException {
-	  PrimitiveTypeInfo ptinfo = (PrimitiveTypeInfo) type;
-	  String typename = type.getTypeName();
-	  switch (ptinfo.getPrimitiveCategory()) {
-	  case FLOAT:
-	  case DOUBLE:
-	  case BYTE:
-	  case SHORT:
-	  case INT:
-	  case LONG:
-		  return ((Number) scalar).doubleValue();
-	  case DECIMAL:
-		  HiveDecimal decimalVal = (HiveDecimal) scalar;
-		  return decimalVal.doubleValue();
-	  default:
-		  throw new HiveException("Unsupported type "+typename+" for cast to Double");
-	  }
-  }  
+    PrimitiveTypeInfo ptinfo = (PrimitiveTypeInfo) type;
+    String typename = type.getTypeName();
+    switch (ptinfo.getPrimitiveCategory()) {
+    case FLOAT:
+    case DOUBLE:
+    case BYTE:
+    case SHORT:
+    case INT:
+    case LONG:
+      return ((Number) scalar).doubleValue();
+    case DECIMAL:
+      HiveDecimal decimalVal = (HiveDecimal) scalar;
+      return decimalVal.doubleValue();
+    default:
+      throw new HiveException("Unsupported type "+typename+" for cast to Double");
+    }
+  }
 
   private Long castConstantToLong(Object scalar, TypeInfo type) throws HiveException {
-	  PrimitiveTypeInfo ptinfo = (PrimitiveTypeInfo) type;
-	  String typename = type.getTypeName();
-	  switch (ptinfo.getPrimitiveCategory()) {
-	  case FLOAT:
-	  case DOUBLE:
-	  case BYTE:
-	  case SHORT:
-	  case INT:
-	  case LONG:
-		  return ((Number) scalar).longValue();
-	  case DECIMAL:
-		  HiveDecimal decimalVal = (HiveDecimal) scalar;
-		  return decimalVal.longValue();
-	  default:
-		  throw new HiveException("Unsupported type "+typename+" for cast to Long");
-	  }
-  }    
-  
+    PrimitiveTypeInfo ptinfo = (PrimitiveTypeInfo) type;
+    String typename = type.getTypeName();
+    switch (ptinfo.getPrimitiveCategory()) {
+    case FLOAT:
+    case DOUBLE:
+    case BYTE:
+    case SHORT:
+    case INT:
+    case LONG:
+      return ((Number) scalar).longValue();
+    case DECIMAL:
+      HiveDecimal decimalVal = (HiveDecimal) scalar;
+      return decimalVal.longValue();
+    default:
+      throw new HiveException("Unsupported type "+typename+" for cast to Long");
+    }
+  }
+
   private VectorExpression getCastToDecimal(List<ExprNodeDesc> childExpr, TypeInfo returnType)
       throws HiveException {
     ExprNodeDesc child = childExpr.get(0);
@@ -1217,9 +1217,9 @@ public class VectorizationContext {
      // Return a constant vector expression
       Object constantValue = ((ExprNodeConstantDesc) child).getValue();
       Decimal128 decimalValue = castConstantToDecimal(constantValue, child.getTypeInfo());
-      return getConstantVectorExpression(decimalValue, returnType, Mode.PROJECTION);    	
+      return getConstantVectorExpression(decimalValue, returnType, Mode.PROJECTION);
     } else if (child instanceof ExprNodeNullDesc) {
-    	return getConstantVectorExpression(null, returnType, Mode.PROJECTION); 
+      return getConstantVectorExpression(null, returnType, Mode.PROJECTION);
     }
     if (isIntFamily(inputType)) {
       return createVectorExpression(CastLongToDecimal.class, childExpr, Mode.PROJECTION, returnType);
@@ -1234,8 +1234,8 @@ public class VectorizationContext {
       return createVectorExpression(CastTimestampToDecimal.class, childExpr, Mode.PROJECTION, returnType);
     }
     throw new HiveException("Unhandled cast input type: " + inputType);
-  }  
-  
+  }
+
   private VectorExpression getCastToString(List<ExprNodeDesc> childExpr, TypeInfo returnType)
       throws HiveException {
     ExprNodeDesc child = childExpr.get(0);
@@ -1244,9 +1244,9 @@ public class VectorizationContext {
         // Return a constant vector expression
         Object constantValue = ((ExprNodeConstantDesc) child).getValue();
         String strValue = castConstantToString(constantValue, child.getTypeInfo());
-        return getConstantVectorExpression(strValue, returnType, Mode.PROJECTION); 
+        return getConstantVectorExpression(strValue, returnType, Mode.PROJECTION);
     } else if (child instanceof ExprNodeNullDesc) {
-    	return getConstantVectorExpression(null, returnType, Mode.PROJECTION); 
+      return getConstantVectorExpression(null, returnType, Mode.PROJECTION);
     }
     if (inputType.equals("boolean")) {
       // Boolean must come before the integer family. It's a special case.
@@ -1273,9 +1273,9 @@ public class VectorizationContext {
         // Return a constant vector expression
         Object constantValue = ((ExprNodeConstantDesc) child).getValue();
         Double doubleValue = castConstantToDouble(constantValue, child.getTypeInfo());
-        return getConstantVectorExpression(doubleValue, returnType, Mode.PROJECTION);     	
+        return getConstantVectorExpression(doubleValue, returnType, Mode.PROJECTION);
     } else if (child instanceof ExprNodeNullDesc) {
-    	return getConstantVectorExpression(null, returnType, Mode.PROJECTION); 
+      return getConstantVectorExpression(null, returnType, Mode.PROJECTION);
     }
     if (isIntFamily(inputType)) {
       return createVectorExpression(CastLongToDouble.class, childExpr, Mode.PROJECTION, returnType);
@@ -1286,7 +1286,7 @@ public class VectorizationContext {
 
       // float types require no conversion, so use a no-op
       return getIdentityExpression(childExpr);
-    } 
+    }
     // The string type is deliberately omitted -- it's handled elsewhere. See isLegacyPathUDF.
 
     return null;
@@ -1301,7 +1301,7 @@ public class VectorizationContext {
       // Family of related JIRAs: HIVE-7421, HIVE-7422, and HIVE-7424.
       return null;
     } else if (child instanceof ExprNodeNullDesc) {
-    	return getConstantVectorExpression(null, TypeInfoFactory.booleanTypeInfo, Mode.PROJECTION); 
+      return getConstantVectorExpression(null, TypeInfoFactory.booleanTypeInfo, Mode.PROJECTION);
     }
     // Long and double are handled using descriptors, string needs to be specially handled.
     if (inputType.equals("string")) {
@@ -1329,9 +1329,9 @@ public class VectorizationContext {
         // Return a constant vector expression
         Object constantValue = ((ExprNodeConstantDesc) child).getValue();
         Long longValue = castConstantToLong(constantValue, child.getTypeInfo());
-        return getConstantVectorExpression(longValue, TypeInfoFactory.longTypeInfo, Mode.PROJECTION);    	
+        return getConstantVectorExpression(longValue, TypeInfoFactory.longTypeInfo, Mode.PROJECTION);
     } else if (child instanceof ExprNodeNullDesc) {
-    	return getConstantVectorExpression(null, TypeInfoFactory.longTypeInfo, Mode.PROJECTION); 
+      return getConstantVectorExpression(null, TypeInfoFactory.longTypeInfo, Mode.PROJECTION);
     }
     // Float family, timestamp are handled via descriptor based lookup, int family needs
     // special handling.
@@ -1519,11 +1519,11 @@ public class VectorizationContext {
   public static boolean isTimestampFamily(String resultType) {
     return resultType.equalsIgnoreCase("timestamp");
   }
-  
+
   public static boolean isDateFamily(String resultType) {
     return resultType.equalsIgnoreCase("date");
   }
-  
+
   // return true if this is any kind of float
   public static boolean isFloatFamily(String resultType) {
     return resultType.equalsIgnoreCase("double")
