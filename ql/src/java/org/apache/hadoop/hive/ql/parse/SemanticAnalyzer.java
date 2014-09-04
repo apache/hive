@@ -127,7 +127,6 @@ import org.apache.hadoop.hive.ql.optimizer.optiq.reloperators.HiveTableScanRel;
 import org.apache.hadoop.hive.ql.optimizer.optiq.reloperators.HiveUnionRel;
 import org.apache.hadoop.hive.ql.optimizer.optiq.rules.HivePartitionPrunerRule;
 import org.apache.hadoop.hive.ql.optimizer.optiq.rules.HivePushFilterPastJoinRule;
-import org.apache.hadoop.hive.ql.optimizer.optiq.rules.HiveRelFieldTrimmer;
 import org.apache.hadoop.hive.ql.optimizer.optiq.translator.ASTConverter;
 import org.apache.hadoop.hive.ql.optimizer.optiq.translator.RexNodeConverter;
 import org.apache.hadoop.hive.ql.optimizer.optiq.translator.SqlFunctionConverter;
@@ -231,6 +230,7 @@ import org.eigenbase.rel.JoinRelBase;
 import org.eigenbase.rel.JoinRelType;
 import org.eigenbase.rel.RelCollation;
 import org.eigenbase.rel.RelCollationImpl;
+import org.eigenbase.rel.RelFactories;
 import org.eigenbase.rel.RelFieldCollation;
 import org.eigenbase.rel.RelNode;
 import org.eigenbase.rel.metadata.CachingRelMetadataProvider;
@@ -267,6 +267,7 @@ import org.eigenbase.sql.SqlAggFunction;
 import org.eigenbase.sql.SqlWindow;
 import org.eigenbase.sql.parser.SqlParserPos;
 import org.eigenbase.sql.type.SqlTypeName;
+import org.eigenbase.sql2rel.RelFieldTrimmer;
 import org.eigenbase.sql.SqlCall;
 import org.eigenbase.sql.SqlExplainLevel;
 import org.eigenbase.sql.SqlKind;
@@ -11945,7 +11946,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           RemoveTrivialProjectRule.INSTANCE,
           new HivePartitionPrunerRule(SemanticAnalyzer.this.conf));
 
-      HiveRelFieldTrimmer fieldTrimmer = new HiveRelFieldTrimmer(null);
+      RelFieldTrimmer fieldTrimmer = new RelFieldTrimmer(null, HiveProjectRel.DEFAULT_PROJECT_FACTORY,
+          HiveFilterRel.DEFAULT_FILTER_FACTORY, HiveJoinRel.HIVE_JOIN_FACTORY, RelFactories.DEFAULT_SEMI_JOIN_FACTORY,
+          HiveSortRel.HIVE_SORT_REL_FACTORY, HiveAggregateRel.HIVE_AGGR_REL_FACTORY, HiveUnionRel.UNION_REL_FACTORY);
       basePlan = fieldTrimmer.trim(basePlan);
 
       return basePlan;
@@ -12210,7 +12213,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     /**
      * Generate Join Logical Plan Relnode by walking through the join AST.
-     * 
+     *
      * @param qb
      * @param aliasToRel
      *          Alias(Table/Relation alias) to RelNode; only read and not
@@ -12394,7 +12397,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         Map<String, RelNode> aliasToRel, boolean forHavingClause) throws SemanticException {
       /*
        * Handle Subquery predicates.
-       * 
+       *
        * Notes (8/22/14 hb): Why is this a copy of the code from {@link
        * #genFilterPlan} - for now we will support the same behavior as non CBO
        * route. - but plan to allow nested SubQueries(Restriction.9.m) and
@@ -12778,7 +12781,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     /**
      * Generate GB plan.
-     * 
+     *
      * @param qb
      * @param srcRel
      * @return TODO: 1. Grouping Sets (roll up..)
@@ -13118,7 +13121,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         WindowFunctionSpec wFnSpec = (WindowFunctionSpec) wExpSpec;
         ASTNode windowProjAst = wFnSpec.getExpression();
         // TODO: do we need to get to child?
-        int wndSpecASTIndx = getWindowSpecIndx((ASTNode) windowProjAst);
+        int wndSpecASTIndx = getWindowSpecIndx(windowProjAst);
         // 2. Get Hive Aggregate Info
         AggInfo hiveAggInfo = getHiveAggInfo(windowProjAst, wndSpecASTIndx - 1,
             this.m_relToHiveRR.get(srcRel));
@@ -13251,7 +13254,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     /**
      * NOTE: there can only be one select caluse since we don't handle multi
      * destination insert.
-     * 
+     *
      * @throws SemanticException
      */
     private RelNode genSelectLogicalPlan(QB qb, RelNode srcRel) throws SemanticException {

@@ -6,7 +6,6 @@ import java.util.List;
 
 import org.eigenbase.rel.RelFactories.ProjectFactory;
 import org.eigenbase.rel.RelNode;
-import org.eigenbase.reltype.RelDataType;
 import org.eigenbase.reltype.RelDataTypeField;
 import org.eigenbase.rex.RexBuilder;
 import org.eigenbase.rex.RexInputRef;
@@ -27,12 +26,12 @@ public class HiveOptiqUtil {
   /**
    * Get list of virtual columns from the given list of projections.
    * <p>
-   * 
+   *
    * @param exps
    *          list of rex nodes representing projections
    * @return List of Virtual Columns, will not be null.
    */
-  public static List<Integer> getVirtualCols(List<RexNode> exps) {
+  public static List<Integer> getVirtualCols(List<? extends RexNode> exps) {
     List<Integer> vCols = new ArrayList<Integer>();
 
     for (int i = 0; i < exps.size(); i++) {
@@ -47,6 +46,7 @@ public class HiveOptiqUtil {
   public static List<RexNode> getProjsFromBelowAsInputRef(final RelNode rel) {
     List<RexNode> projectList = Lists.transform(rel.getRowType().getFieldList(),
         new Function<RelDataTypeField, RexNode>() {
+          @Override
           public RexNode apply(RelDataTypeField field) {
             return rel.getCluster().getRexBuilder().makeInputRef(field.getType(), field.getIndex());
           }
@@ -73,7 +73,7 @@ public class HiveOptiqUtil {
   /**
    * Push any equi join conditions that are not column references as Projections
    * on top of the children.
-   * 
+   *
    * @param factory
    *          Project factory to use.
    * @param inputRels

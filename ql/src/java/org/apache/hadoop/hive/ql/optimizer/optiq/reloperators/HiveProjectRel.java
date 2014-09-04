@@ -34,7 +34,7 @@ public class HiveProjectRel extends ProjectRelBase implements HiveRel {
 
   /**
    * Creates a HiveProjectRel.
-   * 
+   *
    * @param cluster
    *          Cluster this relational expression belongs to
    * @param child
@@ -47,14 +47,14 @@ public class HiveProjectRel extends ProjectRelBase implements HiveRel {
    *          values as in {@link ProjectRelBase.Flags}
    */
   public HiveProjectRel(RelOptCluster cluster, RelTraitSet traitSet, RelNode child,
-      List<RexNode> exps, RelDataType rowType, int flags) {
+      List<? extends RexNode> exps, RelDataType rowType, int flags) {
     super(cluster, traitSet, child, exps, rowType, flags);
     m_virtualCols = ImmutableList.copyOf(HiveOptiqUtil.getVirtualCols(exps));
   }
 
   /**
    * Creates a HiveProjectRel with no sort keys.
-   * 
+   *
    * @param child
    *          input relational expression
    * @param exps
@@ -62,7 +62,7 @@ public class HiveProjectRel extends ProjectRelBase implements HiveRel {
    * @param fieldNames
    *          aliases of the expressions
    */
-  public static HiveProjectRel create(RelNode child, List<RexNode> exps, List<String> fieldNames) {
+  public static HiveProjectRel create(RelNode child, List<? extends RexNode> exps, List<String> fieldNames) {
     RelOptCluster cluster = child.getCluster();
     RelDataType rowType = RexUtil.createStructType(cluster.getTypeFactory(), exps, fieldNames);
     return create(cluster, child, exps, rowType, Collections.<RelCollation> emptyList());
@@ -71,9 +71,9 @@ public class HiveProjectRel extends ProjectRelBase implements HiveRel {
   /**
    * Creates a HiveProjectRel.
    */
-  public static HiveProjectRel create(RelOptCluster cluster, RelNode child, List<RexNode> exps,
+  public static HiveProjectRel create(RelOptCluster cluster, RelNode child, List<? extends RexNode> exps,
       RelDataType rowType, final List<RelCollation> collationList) {
-    RelTraitSet traitSet = TraitsUtil.getSelectTraitSet(cluster, exps, child);
+    RelTraitSet traitSet = TraitsUtil.getSelectTraitSet(cluster, child);
     return new HiveProjectRel(cluster, traitSet, child, exps, rowType, Flags.BOXED);
   }
 
@@ -125,9 +125,10 @@ public class HiveProjectRel extends ProjectRelBase implements HiveRel {
       outputProjList.add(rexBuilder.makeInputRef(rel, source));
     }
 
-    return create(rel, (List<RexNode>) outputProjList, outputNameList);
+    return create(rel, outputProjList, outputNameList);
   }
 
+  @Override
   public ProjectRelBase copy(RelTraitSet traitSet, RelNode input, List<RexNode> exps,
       RelDataType rowType) {
     assert traitSet.containsIfApplicable(HiveRel.CONVENTION);
@@ -139,6 +140,7 @@ public class HiveProjectRel extends ProjectRelBase implements HiveRel {
     return HiveCost.FACTORY.makeZeroCost();
   }
 
+  @Override
   public void implement(Implementor implementor) {
   }
 
@@ -152,12 +154,14 @@ public class HiveProjectRel extends ProjectRelBase implements HiveRel {
    * .
    */
   private static class HiveProjectFactoryImpl implements ProjectFactory {
+
     @Override
-    public RelNode createProject(RelNode input, List<RexNode> exps, List<String> fieldNames) {
-      RelNode project = HiveProjectRel.create(input, exps, fieldNames);
+    public RelNode createProject(RelNode child,
+        List<? extends RexNode> childExprs, List<String> fieldNames) {
+      RelNode project = HiveProjectRel.create(child, childExprs, fieldNames);
 
       // Make sure extra traits are carried over from the original rel
-      project = RelOptRule.convert(project, input.getTraitSet());
+      project = RelOptRule.convert(project, child.getTraitSet());
       return project;
     }
   }
