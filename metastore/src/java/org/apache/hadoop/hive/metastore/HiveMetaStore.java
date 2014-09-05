@@ -48,6 +48,9 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Pattern;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.Multimaps;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -112,6 +115,10 @@ import org.apache.hadoop.hive.metastore.api.OpenTxnRequest;
 import org.apache.hadoop.hive.metastore.api.OpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PartitionEventType;
+import org.apache.hadoop.hive.metastore.api.PartitionListComposingSpec;
+import org.apache.hadoop.hive.metastore.api.PartitionSpec;
+import org.apache.hadoop.hive.metastore.api.PartitionSpecWithSharedSD;
+import org.apache.hadoop.hive.metastore.api.PartitionWithoutSD;
 import org.apache.hadoop.hive.metastore.api.PartitionsByExprRequest;
 import org.apache.hadoop.hive.metastore.api.PartitionsByExprResult;
 import org.apache.hadoop.hive.metastore.api.PartitionsStatsRequest;
@@ -129,6 +136,7 @@ import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowLocksRequest;
 import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
+import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TableStatsRequest;
 import org.apache.hadoop.hive.metastore.api.TableStatsResult;
@@ -171,6 +179,7 @@ import org.apache.hadoop.hive.metastore.model.MRole;
 import org.apache.hadoop.hive.metastore.model.MRoleMap;
 import org.apache.hadoop.hive.metastore.model.MTableColumnPrivilege;
 import org.apache.hadoop.hive.metastore.model.MTablePrivilege;
+import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.txn.TxnHandler;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -1852,6 +1861,52 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
     }
 
+    private static class PartValEqWrapperLite {
+      List<String> values;
+      String location;
+
+      public PartValEqWrapperLite(Partition partition) {
+        this.values = partition.isSetValues()? partition.getValues() : null;
+        this.location = partition.getSd().getLocation();
+      }
+
+      @Override
+      public int hashCode() {
+        return values == null ? 0 : values.hashCode();
+      }
+
+      @Override
+      public boolean equals(Object obj) {
+        if (this == obj) {
+          return true;
+        }
+        if (obj == null || !(obj instanceof PartValEqWrapperLite)) {
+          return false;
+        }
+
+        List<String> lhsValues = this.values;
+        List<String> rhsValues = ((PartValEqWrapperLite)obj).values;
+
+        if (lhsValues == null || rhsValues == null)
+          return lhsValues == rhsValues;
+
+        if (lhsValues.size() != rhsValues.size())
+          return false;
+
+        for (int i=0; i<lhsValues.size(); ++i) {
+          String lhsValue = lhsValues.get(i);
+          String rhsValue = rhsValues.get(i);
+
+          if ((lhsValue == null && rhsValue != null)
+              || (lhsValue != null && !lhsValue.equals(rhsValue))) {
+            return false;
+          }
+        }
+
+        return true;
+      }
+    }
+
     private List<Partition> add_partitions_core(
         RawStore ms, String dbName, String tblName, List<Partition> parts, boolean ifNotExists)
             throws MetaException, InvalidObjectException, AlreadyExistsException, TException {
@@ -1979,6 +2034,85 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return ret;
     }
 
+    @Override
+    public int add_partitions_pspec(final List<PartitionSpec> partSpecs)
+        throws TException {
+      logInfo("add_partitions_pspec");
+
+      if (partSpecs.isEmpty()) {
+        return 0;
+      }
+
+      String dbName = partSpecs.get(0).getDbName();
+      String tableName = partSpecs.get(0).getTableName();
+
+      return add_partitions_pspec_core(getMS(), dbName, tableName, partSpecs, false);
+    }
+
+    private int add_partitions_pspec_core(
+        RawStore ms, String dbName, String tblName, List<PartitionSpec> partSpecs, boolean ifNotExists)
+        throws TException {
+      boolean success = false;
+      // Ensures that the list doesn't have dups, and keeps track of directories we have created.
+      Map<PartValEqWrapperLite, Boolean> addedPartitions = new HashMap<PartValEqWrapperLite, Boolean>();
+      PartitionSpecProxy partitionSpecProxy = PartitionSpecProxy.Factory.get(partSpecs);
+      PartitionSpecProxy.PartitionIterator partitionIterator = partitionSpecProxy.getPartitionIterator();
+      Table tbl = null;
+      try {
+        ms.openTransaction();
+        tbl = ms.getTable(dbName, tblName);
+        if (tbl == null) {
+          throw new InvalidObjectException("Unable to add partitions because "
+              + "database or table " + dbName + "." + tblName + " does not exist");
+        }
+
+        firePreEvent(new PreAddPartitionEvent(tbl, partitionSpecProxy, this));
+
+        int nPartitions = 0;
+        while(partitionIterator.hasNext()) {
+
+          Partition part = partitionIterator.getCurrent();
+
+          if (!part.getTableName().equals(tblName) || !part.getDbName().equals(dbName)) {
+            throw new MetaException("Partition does not belong to target table "
+                + dbName + "." + tblName + ": " + part);
+          }
+          boolean shouldAdd = startAddPartition(ms, part, ifNotExists);
+          if (!shouldAdd) {
+            LOG.info("Not adding partition " + part + " as it already exists");
+            continue;
+          }
+          boolean madeDir = createLocationForAddedPartition(tbl, part);
+          if (addedPartitions.put(new PartValEqWrapperLite(part), madeDir) != null) {
+            // Technically, for ifNotExists case, we could insert one and discard the other
+            // because the first one now "exists", but it seems better to report the problem
+            // upstream as such a command doesn't make sense.
+            throw new MetaException("Duplicate partitions in the list: " + part);
+          }
+          initializeAddedPartition(tbl, partitionIterator, madeDir);
+
+          ++nPartitions;
+          partitionIterator.next();
+        }
+
+        success = ms.addPartitions(dbName, tblName, partitionSpecProxy, ifNotExists)
+               && ms.commitTransaction();
+
+        return nPartitions;
+      } finally {
+        if (!success) {
+          ms.rollbackTransaction();
+          for (Entry<PartValEqWrapperLite, Boolean> e : addedPartitions.entrySet()) {
+            if (e.getValue()) {
+              wh.deleteDir(new Path(e.getKey().location), true);
+              // we just created this directory - it's not a case of pre-creation, so we nuke
+            }
+          }
+        }
+        fireMetaStoreAddPartitionEvent(tbl, partitionSpecProxy, null, true);
+      }
+    }
+
     private boolean startAddPartition(
         RawStore ms, Partition part, boolean ifNotExists) throws MetaException, TException {
       MetaStoreUtils.validatePartitionNameCharacters(part.getValues(),
@@ -2039,9 +2173,14 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     private void initializeAddedPartition(
         final Table tbl, final Partition part, boolean madeDir) throws MetaException {
+      initializeAddedPartition(tbl, new PartitionSpecProxy.SimplePartitionWrapperIterator(part), madeDir);
+    }
+
+    private void initializeAddedPartition(
+        final Table tbl, final PartitionSpecProxy.PartitionIterator part, boolean madeDir) throws MetaException {
       if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVESTATSAUTOGATHER) &&
           !MetaStoreUtils.isView(tbl)) {
-        MetaStoreUtils.updatePartitionStatsFast(part, wh, madeDir);
+        MetaStoreUtils.updatePartitionStatsFast(part, wh, madeDir, false);
       }
 
       // set create time
@@ -2114,6 +2253,20 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       if (tbl != null && parts != null && !parts.isEmpty()) {
         AddPartitionEvent addPartitionEvent =
             new AddPartitionEvent(tbl, parts, success, this);
+        addPartitionEvent.setEnvironmentContext(envContext);
+
+        for (MetaStoreEventListener listener : listeners) {
+          listener.onAddPartition(addPartitionEvent);
+        }
+      }
+    }
+
+    private void fireMetaStoreAddPartitionEvent(final Table tbl,
+        final PartitionSpecProxy partitionSpec, final EnvironmentContext envContext, boolean success)
+          throws MetaException {
+      if (tbl != null && partitionSpec != null) {
+        AddPartitionEvent addPartitionEvent =
+            new AddPartitionEvent(tbl, partitionSpec, success, this);
         addPartitionEvent.setEnvironmentContext(envContext);
 
         for (MetaStoreEventListener listener : listeners) {
@@ -2579,6 +2732,161 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
       return ret;
 
+    }
+
+    @Override
+    public List<PartitionSpec> get_partitions_pspec(final String db_name, final String tbl_name, final int max_parts)
+      throws NoSuchObjectException, MetaException  {
+
+      String dbName = db_name.toLowerCase();
+      String tableName = tbl_name.toLowerCase();
+
+      startTableFunction("get_partitions_pspec", dbName, tableName);
+
+      List<PartitionSpec> partitionSpecs = null;
+      try {
+        Table table = get_table(dbName, tableName);
+        List<Partition> partitions = get_partitions(dbName, tableName, (short) max_parts);
+
+        if (is_partition_spec_grouping_enabled(table)) {
+          partitionSpecs = get_partitionspecs_grouped_by_storage_descriptor(table, partitions);
+        }
+        else {
+          PartitionSpec pSpec = new PartitionSpec();
+          pSpec.setPartitionList(new PartitionListComposingSpec(partitions));
+          pSpec.setDbName(dbName);
+          pSpec.setTableName(tableName);
+          pSpec.setRootPath(table.getSd().getLocation());
+          partitionSpecs = Arrays.asList(pSpec);
+        }
+
+        return partitionSpecs;
+      }
+      finally {
+        endFunction("get_partitions_pspec", partitionSpecs != null && !partitionSpecs.isEmpty(), null, tbl_name);
+      }
+    }
+
+    private static class StorageDescriptorKey {
+
+      private StorageDescriptor sd;
+
+      StorageDescriptorKey(StorageDescriptor sd) { this.sd = sd; }
+
+      StorageDescriptor getSd() {
+        return sd;
+      }
+
+      private String hashCodeKey() {
+        return sd.getInputFormat() + "\t"
+            + sd.getOutputFormat() +  "\t"
+            + sd.getSerdeInfo().getSerializationLib() + "\t"
+            + sd.getCols();
+      }
+
+      @Override
+      public int hashCode() {
+        return hashCodeKey().hashCode();
+      }
+
+      @Override
+      public boolean equals(Object rhs) {
+        if (rhs == this)
+          return true;
+
+        if (!(rhs instanceof StorageDescriptorKey))
+          return false;
+
+        return (hashCodeKey().equals(((StorageDescriptorKey) rhs).hashCodeKey()));
+      }
+    }
+
+    private List<PartitionSpec> get_partitionspecs_grouped_by_storage_descriptor(Table table, List<Partition> partitions)
+      throws NoSuchObjectException, MetaException {
+
+      assert is_partition_spec_grouping_enabled(table);
+
+      final String tablePath = table.getSd().getLocation();
+
+      ImmutableListMultimap<Boolean, Partition> partitionsWithinTableDirectory
+          = Multimaps.index(partitions, new com.google.common.base.Function<Partition, Boolean>() {
+
+        @Override
+        public Boolean apply(Partition input) {
+          return input.getSd().getLocation().startsWith(tablePath);
+        }
+      });
+
+      List<PartitionSpec> partSpecs = new ArrayList<PartitionSpec>();
+
+      // Classify partitions within the table directory into groups,
+      // based on shared SD properties.
+
+      Map<StorageDescriptorKey, List<PartitionWithoutSD>> sdToPartList
+          = new HashMap<StorageDescriptorKey, List<PartitionWithoutSD>>();
+
+      if (partitionsWithinTableDirectory.containsKey(true)) {
+
+        ImmutableList<Partition> partsWithinTableDir = partitionsWithinTableDirectory.get(true);
+        for (Partition partition : partsWithinTableDir) {
+
+          PartitionWithoutSD partitionWithoutSD
+              = new PartitionWithoutSD( partition.getValues(),
+              partition.getCreateTime(),
+              partition.getLastAccessTime(),
+              partition.getSd().getLocation().substring(tablePath.length()), partition.getParameters());
+
+          StorageDescriptorKey sdKey = new StorageDescriptorKey(partition.getSd());
+          if (!sdToPartList.containsKey(sdKey)) {
+            sdToPartList.put(sdKey, new ArrayList<PartitionWithoutSD>());
+          }
+
+          sdToPartList.get(sdKey).add(partitionWithoutSD);
+
+        } // for (partitionsWithinTableDirectory);
+
+        for (Map.Entry<StorageDescriptorKey, List<PartitionWithoutSD>> entry : sdToPartList.entrySet()) {
+          partSpecs.add(getSharedSDPartSpec(table, entry.getKey(), entry.getValue()));
+        }
+
+      } // Done grouping partitions within table-dir.
+
+      // Lump all partitions outside the tablePath into one PartSpec.
+      if (partitionsWithinTableDirectory.containsKey(false)) {
+        List<Partition> partitionsOutsideTableDir = partitionsWithinTableDirectory.get(false);
+        if (!partitionsOutsideTableDir.isEmpty()) {
+          PartitionSpec partListSpec = new PartitionSpec();
+          partListSpec.setDbName(table.getDbName());
+          partListSpec.setTableName(table.getTableName());
+          partListSpec.setPartitionList(new PartitionListComposingSpec(partitionsOutsideTableDir));
+          partSpecs.add(partListSpec);
+        }
+
+      }
+      return partSpecs;
+    }
+
+    private PartitionSpec getSharedSDPartSpec(Table table, StorageDescriptorKey sdKey, List<PartitionWithoutSD> partitions) {
+
+      StorageDescriptor sd = new StorageDescriptor(sdKey.getSd());
+      sd.setLocation(table.getSd().getLocation()); // Use table-dir as root-dir.
+      PartitionSpecWithSharedSD sharedSDPartSpec =
+          new PartitionSpecWithSharedSD(partitions, sd);
+
+      PartitionSpec ret = new PartitionSpec();
+      ret.setRootPath(sd.getLocation());
+      ret.setSharedSDPartitionSpec(sharedSDPartSpec);
+      ret.setDbName(table.getDbName());
+      ret.setTableName(table.getTableName());
+
+      return ret;
+    }
+
+    private static boolean is_partition_spec_grouping_enabled(Table table) {
+
+      Map<String, String> parameters = table.getParameters();
+      return parameters.containsKey("hive.hcatalog.partition.spec.grouping.enabled")
+          && parameters.get("hive.hcatalog.partition.spec.grouping.enabled").equalsIgnoreCase("true");
     }
 
     @Override
@@ -3787,6 +4095,37 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         endFunction("get_partitions_by_filter", ret != null, ex, tblName);
       }
       return ret;
+    }
+
+    @Override
+    public List<PartitionSpec> get_part_specs_by_filter(final String dbName,
+        final String tblName, final String filter, final int maxParts)
+        throws MetaException, NoSuchObjectException, TException {
+
+      startTableFunction("get_partitions_by_filter_pspec", dbName, tblName);
+
+      List<PartitionSpec> partitionSpecs = null;
+      try {
+        Table table = get_table(dbName, tblName);
+        List<Partition> partitions = get_partitions_by_filter(dbName, tblName, filter, (short) maxParts);
+
+        if (is_partition_spec_grouping_enabled(table)) {
+          partitionSpecs = get_partitionspecs_grouped_by_storage_descriptor(table, partitions);
+        }
+        else {
+          PartitionSpec pSpec = new PartitionSpec();
+          pSpec.setPartitionList(new PartitionListComposingSpec(partitions));
+          pSpec.setRootPath(table.getSd().getLocation());
+          pSpec.setDbName(dbName);
+          pSpec.setTableName(tblName);
+          partitionSpecs = Arrays.asList(pSpec);
+        }
+
+        return partitionSpecs;
+      }
+      finally {
+        endFunction("get_partitions_by_filter_pspec", partitionSpecs != null && !partitionSpecs.isEmpty(), null, tblName);
+      }
     }
 
     @Override
