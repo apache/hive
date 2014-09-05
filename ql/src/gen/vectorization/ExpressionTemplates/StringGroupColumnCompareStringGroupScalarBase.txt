@@ -27,24 +27,14 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 
 /**
  * This is a generated class to evaluate a <OperatorSymbol> comparison on a vector of strings.
- * Do not edit the generated code directly. 
  */
-public class <ClassName> extends VectorExpression {
+public abstract class <ClassName> extends VectorExpression {
 
   private static final long serialVersionUID = 1L;
 
-  private int colNum;
-  private byte[] value;
-  private int outputColumn;
-
-  public <ClassName>(byte[] value, int colNum, int outputColumn) {
-    this.colNum = colNum;
-    this.value = value;
-    this.outputColumn = outputColumn;
-  }
-
-  public <ClassName>() {
-  }
+  protected int colNum;
+  protected byte[] value;
+  protected int outputColumn;
 
   @Override
   public void evaluate(VectorizedRowBatch batch) {
@@ -60,19 +50,20 @@ public class <ClassName> extends VectorExpression {
     byte[][] vector = inputColVector.vector;
     int[] length = inputColVector.length;
     int[] start = inputColVector.start;
-    long[] outVector = outputColVector.vector; 
+    long[] outVector = outputColVector.vector;
+    
 
     // return immediately if batch is empty
     if (n == 0) {
       return;
     }
    
-    outputColVector.isRepeating = false;
+    outputColVector.isRepeating = false; 
     if (inputColVector.noNulls) {
       outputColVector.noNulls = true;
       if (inputColVector.isRepeating) {
         outputColVector.isRepeating = true; 
-        if (StringExpr.compare(value, 0, value.length, vector[0], start[0], length[0]) <OperatorSymbol> 0) {
+        if (StringExpr.compare(vector[0], start[0], length[0], value, 0, value.length) <OperatorSymbol> 0) {
           outVector[0] = 1;
         } else {
           outVector[0] = 0;
@@ -80,7 +71,7 @@ public class <ClassName> extends VectorExpression {
       } else if (batch.selectedInUse) {
         for(int j=0; j != n; j++) {
           int i = sel[j];
-          if (StringExpr.compare(value, 0, value.length, vector[i], start[i], length[i]) <OperatorSymbol> 0) {
+          if (StringExpr.compare(vector[i], start[i], length[i], value, 0, value.length) <OperatorSymbol> 0) {
             outVector[i] = 1;
           } else {
             outVector[i] = 0;
@@ -88,7 +79,7 @@ public class <ClassName> extends VectorExpression {
         }
       } else {
         for(int i = 0; i != n; i++) {
-          if (StringExpr.compare(value, 0, value.length, vector[i], start[i], length[i]) <OperatorSymbol> 0) {
+          if (StringExpr.compare(vector[i], start[i], length[i], value, 0, value.length) <OperatorSymbol> 0) {
             outVector[i] = 1;
           } else {
             outVector[i] = 0;
@@ -101,7 +92,7 @@ public class <ClassName> extends VectorExpression {
         outputColVector.isRepeating = true;
         outNull[0] = nullPos[0];
         if (!nullPos[0]) {
-          if (StringExpr.compare(value, 0, value.length, vector[0], start[0], length[0]) <OperatorSymbol> 0) {
+          if (StringExpr.compare(vector[0], start[0], length[0], value, 0, value.length) <OperatorSymbol> 0) {
             outVector[0] = 1;
           } else {
             outVector[0] = 0;
@@ -112,7 +103,7 @@ public class <ClassName> extends VectorExpression {
           int i = sel[j];
           outNull[i] = nullPos[i];
           if (!nullPos[i]) {
-            if (StringExpr.compare(value, 0, value.length, vector[i], start[i], length[i]) <OperatorSymbol> 0) {
+            if (StringExpr.compare(vector[i], start[i], length[i], value, 0, value.length) <OperatorSymbol> 0) {
               outVector[i] = 1;
             } else {
               outVector[i] = 0;
@@ -123,7 +114,7 @@ public class <ClassName> extends VectorExpression {
         for(int i = 0; i != n; i++) {
           outNull[i] = nullPos[i];
           if (!nullPos[i]) {
-            if (StringExpr.compare(value, 0, value.length, vector[i], start[i], length[i]) <OperatorSymbol> 0) {
+            if (StringExpr.compare(vector[i], start[i], length[i], value, 0, value.length) <OperatorSymbol> 0) {
               outVector[i] = 1;
             } else {
               outVector[i] = 0;
@@ -164,17 +155,4 @@ public class <ClassName> extends VectorExpression {
     this.outputColumn = outputColumn;
   }
 
-  @Override
-  public VectorExpressionDescriptor.Descriptor getDescriptor() {
-    return (new VectorExpressionDescriptor.Builder())
-        .setMode(
-            VectorExpressionDescriptor.Mode.PROJECTION)
-        .setNumArguments(2)
-        .setArgumentTypes(
-            VectorExpressionDescriptor.ArgumentType.getType("string"),
-            VectorExpressionDescriptor.ArgumentType.getType("string"))
-        .setInputExpressionTypes(
-            VectorExpressionDescriptor.InputExpressionType.SCALAR,
-            VectorExpressionDescriptor.InputExpressionType.COLUMN).build();
-  }
 }

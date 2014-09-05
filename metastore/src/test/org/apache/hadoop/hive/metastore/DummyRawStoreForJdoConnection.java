@@ -57,6 +57,7 @@ import org.apache.hadoop.hive.metastore.model.MPartitionPrivilege;
 import org.apache.hadoop.hive.metastore.model.MRoleMap;
 import org.apache.hadoop.hive.metastore.model.MTableColumnPrivilege;
 import org.apache.hadoop.hive.metastore.model.MTablePrivilege;
+import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.thrift.TException;
 
 /**
@@ -695,6 +696,11 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   @Override
   public boolean addPartitions(String dbName, String tblName, List<Partition> parts)
       throws InvalidObjectException, MetaException {
+    return false;
+  }
+
+  @Override
+  public boolean addPartitions(String dbName, String tblName, PartitionSpecProxy partitionSpec, boolean ifNotExists) throws InvalidObjectException, MetaException {
     return false;
   }
 

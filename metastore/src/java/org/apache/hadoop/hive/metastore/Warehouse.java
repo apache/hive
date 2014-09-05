@@ -507,8 +507,18 @@ public class Warehouse {
    */
   public FileStatus[] getFileStatusesForSD(StorageDescriptor desc)
       throws MetaException {
+    return getFileStatusesForLocation(desc.getLocation());
+  }
+
+  /**
+   * @param location
+   * @return array of FileStatus objects corresponding to the files
+   * making up the passed storage description
+   */
+  public FileStatus[] getFileStatusesForLocation(String location)
+      throws MetaException {
     try {
-      Path path = new Path(desc.getLocation());
+      Path path = new Path(location);
       FileSystem fileSys = path.getFileSystem(conf);
       return HiveStatsUtils.getFileStatusRecurse(path, -1, fileSys);
     } catch (IOException ioe) {

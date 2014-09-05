@@ -59,6 +59,7 @@ import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -288,6 +289,22 @@ public class MetaStoreUtils {
    */
   public static boolean updatePartitionStatsFast(Partition part, Warehouse wh,
       boolean madeDir, boolean forceRecompute) throws MetaException {
+    return updatePartitionStatsFast(new PartitionSpecProxy.SimplePartitionWrapperIterator(part),
+                                    wh, madeDir, forceRecompute);
+  }
+
+  /**
+   * Updates the numFiles and totalSize parameters for the passed Partition by querying
+   *  the warehouse if the passed Partition does not already have values for these parameters.
+   * @param part
+   * @param wh
+   * @param madeDir if true, the directory was just created and can be assumed to be empty
+   * @param forceRecompute Recompute stats even if the passed Partition already has
+   * these parameters set
+   * @return true if the stats were updated, false otherwise
+   */
+  public static boolean updatePartitionStatsFast(PartitionSpecProxy.PartitionIterator part, Warehouse wh,
+      boolean madeDir, boolean forceRecompute) throws MetaException {
     Map<String,String> params = part.getParameters();
     boolean updated = false;
     if (forceRecompute ||
@@ -297,10 +314,10 @@ public class MetaStoreUtils {
         params = new HashMap<String,String>();
       }
       if (!madeDir) {
-        // The partitition location already existed and may contain data. Lets try to
+        // The partition location already existed and may contain data. Lets try to
         // populate those statistics that don't require a full scan of the data.
         LOG.warn("Updating partition stats fast for: " + part.getTableName());
-        FileStatus[] fileStatus = wh.getFileStatusesForSD(part.getSd());
+        FileStatus[] fileStatus = wh.getFileStatusesForLocation(part.getLocation());
         populateQuickStats(fileStatus, params);
         LOG.warn("Updated size to " + params.get(StatsSetupConst.TOTAL_SIZE));
         if(!params.containsKey(StatsSetupConst.STATS_GENERATED_VIA_STATS_TASK)) {

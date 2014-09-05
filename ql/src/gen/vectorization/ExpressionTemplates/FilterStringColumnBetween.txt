@@ -184,9 +184,9 @@ public class <ClassName> extends VectorExpression {
             VectorExpressionDescriptor.Mode.FILTER)
         .setNumArguments(3)
         .setArgumentTypes(
-            VectorExpressionDescriptor.ArgumentType.getType("string"),
-            VectorExpressionDescriptor.ArgumentType.getType("string"),
-            VectorExpressionDescriptor.ArgumentType.getType("string"))
+            VectorExpressionDescriptor.ArgumentType.STRING,
+            VectorExpressionDescriptor.ArgumentType.STRING,
+            VectorExpressionDescriptor.ArgumentType.STRING)
         .setInputExpressionTypes(
             VectorExpressionDescriptor.InputExpressionType.COLUMN,
             VectorExpressionDescriptor.InputExpressionType.SCALAR,

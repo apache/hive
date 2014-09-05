@@ -23,9 +23,13 @@ import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.StringConcatColCol;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.StringConcatColScalar;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.StringConcatScalarCol;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.StringGroupConcatColCol;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.StringGroupColConcatStringScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.StringGroupColConcatCharScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.StringGroupColConcatVarCharScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.StringScalarConcatStringGroupCol;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.CharScalarConcatStringGroupCol;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VarCharScalarConcatStringGroupCol;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
@@ -49,8 +53,11 @@ extended = "Returns NULL if any argument is NULL.\n"
 + "Example:\n"
 + "  > SELECT _FUNC_('abc', 'def') FROM src LIMIT 1;\n"
 + "  'abcdef'")
-@VectorizedExpressions({StringConcatColCol.class, StringConcatColScalar.class,
-    StringConcatScalarCol.class})
+@VectorizedExpressions({StringGroupConcatColCol.class,
+    StringGroupColConcatStringScalar.class,
+    StringGroupColConcatCharScalar.class, StringGroupColConcatVarCharScalar.class,
+    StringScalarConcatStringGroupCol.class,
+    CharScalarConcatStringGroupCol.class, VarCharScalarConcatStringGroupCol.class})
 public class GenericUDFConcat extends GenericUDF {
   private transient ObjectInspector[] argumentOIs;
   private transient StringConverter[] stringConverters;

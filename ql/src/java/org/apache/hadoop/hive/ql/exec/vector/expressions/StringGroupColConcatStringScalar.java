@@ -26,20 +26,20 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
  * Vectorized instruction to concatenate a string column to a scalar and put
  * the result in an output column.
  */
-public class StringConcatColScalar extends VectorExpression {
+public class StringGroupColConcatStringScalar extends VectorExpression {
   private static final long serialVersionUID = 1L;
   private int colNum;
   private int outputColumn;
   private byte[] value;
 
-  public StringConcatColScalar(int colNum, byte[] value, int outputColumn) {
+  public StringGroupColConcatStringScalar(int colNum, byte[] value, int outputColumn) {
     this();
     this.colNum = colNum;
     this.outputColumn = outputColumn;
     this.value = value;
   }
 
-  public StringConcatColScalar() {
+  public StringGroupColConcatStringScalar() {
     super();
   }
 
@@ -125,7 +125,7 @@ public class StringConcatColScalar extends VectorExpression {
 
   @Override
   public String getOutputType() {
-    return "String";
+    return "StringGroup";
   }
 
   public int getColNum() {
@@ -155,7 +155,7 @@ public class StringConcatColScalar extends VectorExpression {
             VectorExpressionDescriptor.Mode.PROJECTION)
         .setNumArguments(2)
         .setArgumentTypes(
-            VectorExpressionDescriptor.ArgumentType.STRING,
+            VectorExpressionDescriptor.ArgumentType.STRING_FAMILY,
             VectorExpressionDescriptor.ArgumentType.STRING)
         .setInputExpressionTypes(
             VectorExpressionDescriptor.InputExpressionType.COLUMN,

@@ -25,6 +25,8 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.CastDecimalToBoolean;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.CastDoubleToBooleanViaDoubleToLong;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.CastLongToBooleanViaLongToLong;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.CastDateToBooleanViaLongToLong;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.CastTimestampToBooleanViaLongToLong;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
@@ -43,6 +45,7 @@ import org.apache.hadoop.io.Text;
  *
  */
 @VectorizedExpressions({CastLongToBooleanViaLongToLong.class,
+  CastDateToBooleanViaLongToLong.class, CastTimestampToBooleanViaLongToLong.class,
   CastDoubleToBooleanViaDoubleToLong.class, CastDecimalToBoolean.class})
 public class UDFToBoolean extends UDF {
   private final BooleanWritable booleanWritable = new BooleanWritable();

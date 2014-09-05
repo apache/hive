@@ -24,7 +24,6 @@ import org.apache.hadoop.fs.*;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -280,7 +279,7 @@ public class TestWorker extends CompactorTest {
     // There should still now be 5 directories in the location
     FileSystem fs = FileSystem.get(conf);
     FileStatus[] stat = fs.listStatus(new Path(t.getSd().getLocation()));
-for (int i = 0; i < stat.length; i++) System.out.println("HERE: " + stat[i].getPath().toString());
+    for (int i = 0; i < stat.length; i++) System.out.println("HERE: " + stat[i].getPath().toString());
     Assert.assertEquals(4, stat.length);
 
     // Find the new delta file and make sure it has the right contents
@@ -507,7 +506,7 @@ for (int i = 0; i < stat.length; i++) System.out.println("HERE: " + stat[i].getP
     Assert.assertEquals(1, compacts.size());
     Assert.assertEquals("ready for cleaning", compacts.get(0).getState());
 
-    // There should still now be 5 directories in the location
+    // There should now be 3 directories in the location
     FileSystem fs = FileSystem.get(conf);
     FileStatus[] stat = fs.listStatus(new Path(t.getSd().getLocation()));
     Assert.assertEquals(3, stat.length);
