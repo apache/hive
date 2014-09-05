@@ -700,14 +700,14 @@ public class AddPartitionsRequest implements org.apache.thrift.TBase<AddPartitio
           case 3: // PARTS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list354 = iprot.readListBegin();
-                struct.parts = new ArrayList<Partition>(_list354.size);
-                for (int _i355 = 0; _i355 < _list354.size; ++_i355)
+                org.apache.thrift.protocol.TList _list388 = iprot.readListBegin();
+                struct.parts = new ArrayList<Partition>(_list388.size);
+                for (int _i389 = 0; _i389 < _list388.size; ++_i389)
                 {
-                  Partition _elem356; // required
-                  _elem356 = new Partition();
-                  _elem356.read(iprot);
-                  struct.parts.add(_elem356);
+                  Partition _elem390; // required
+                  _elem390 = new Partition();
+                  _elem390.read(iprot);
+                  struct.parts.add(_elem390);
                 }
                 iprot.readListEnd();
               }
@@ -759,9 +759,9 @@ public class AddPartitionsRequest implements org.apache.thrift.TBase<AddPartitio
         oprot.writeFieldBegin(PARTS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.parts.size()));
-          for (Partition _iter357 : struct.parts)
+          for (Partition _iter391 : struct.parts)
           {
-            _iter357.write(oprot);
+            _iter391.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -796,9 +796,9 @@ public class AddPartitionsRequest implements org.apache.thrift.TBase<AddPartitio
       oprot.writeString(struct.tblName);
       {
         oprot.writeI32(struct.parts.size());
-        for (Partition _iter358 : struct.parts)
+        for (Partition _iter392 : struct.parts)
         {
-          _iter358.write(oprot);
+          _iter392.write(oprot);
         }
       }
       oprot.writeBool(struct.ifNotExists);
@@ -820,14 +820,14 @@ public class AddPartitionsRequest implements org.apache.thrift.TBase<AddPartitio
       struct.tblName = iprot.readString();
       struct.setTblNameIsSet(true);
       {
-        org.apache.thrift.protocol.TList _list359 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-        struct.parts = new ArrayList<Partition>(_list359.size);
-        for (int _i360 = 0; _i360 < _list359.size; ++_i360)
+        org.apache.thrift.protocol.TList _list393 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+        struct.parts = new ArrayList<Partition>(_list393.size);
+        for (int _i394 = 0; _i394 < _list393.size; ++_i394)
         {
-          Partition _elem361; // required
-          _elem361 = new Partition();
-          _elem361.read(iprot);
-          struct.parts.add(_elem361);
+          Partition _elem395; // required
+          _elem395 = new Partition();
+          _elem395.read(iprot);
+          struct.parts.add(_elem395);
         }
       }
       struct.setPartsIsSet(true);
