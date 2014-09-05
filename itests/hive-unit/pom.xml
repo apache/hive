@@ -53,6 +53,16 @@
       <artifactId>hive-exec</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.apache.hive.hcatalog</groupId>
+      <artifactId>hive-hcatalog-core</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hive.hcatalog</groupId>
+      <artifactId>hive-hcatalog-streaming</artifactId>
+      <version>${project.version}</version>
+    </dependency>
 
     <!-- dependencies are always listed in sorted order by groupId, artifectId -->
     <!-- test intra-project -->
