@@ -25,6 +25,12 @@
   <description>Internal marker for test. Used for masking env-dependent values</description>
 </property>
 
+<property>
+  <name>hive.cbo.enable</name>
+  <value>true</value>
+  <description>Enable CBO for Unit Tests</description>
+</property>
+
 <!-- Hive Configuration can either be stored in this file or in the hadoop configuration files  -->
 <!-- that are implied by Hadoop setup variables.                                                -->
 <!-- Aside from Hadoop setup variables - this file is provided as a convenience so that Hive    -->
