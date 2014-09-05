@@ -41,8 +41,10 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeColumnListDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeNullDesc;
 import org.apache.hadoop.hive.ql.plan.Statistics;
@@ -975,6 +977,22 @@ public class StatsUtils {
       colName = ennd.getName();
       colType = "null";
       numNulls = numRows;
+    } else if (end instanceof ExprNodeColumnListDesc) {
+
+      // column list
+      ExprNodeColumnListDesc encd = (ExprNodeColumnListDesc) end;
+      colName = Joiner.on(",").join(encd.getCols());
+      colType = "array";
+      countDistincts = numRows;
+      oi = encd.getWritableObjectInspector();
+    } else if (end instanceof ExprNodeFieldDesc) {
+
+      // field within complex type
+      ExprNodeFieldDesc enfd = (ExprNodeFieldDesc) end;
+      colName = enfd.getFieldName();
+      colType = enfd.getTypeString();
+      countDistincts = numRows;
+      oi = enfd.getWritableObjectInspector();
     }
 
     if (colType.equalsIgnoreCase(serdeConstants.STRING_TYPE_NAME)
