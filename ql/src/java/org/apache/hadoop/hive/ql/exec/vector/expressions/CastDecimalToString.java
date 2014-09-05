@@ -36,6 +36,11 @@ public class CastDecimalToString extends DecimalToStringUnaryUDF {
     super(inputColumn, outputColumn);
   }
 
+  // The assign method will be overridden for CHAR and VARCHAR.
+  protected void assign(BytesColumnVector outV, int i, byte[] bytes, int length) {
+    outV.setVal(i, bytes, 0, length);
+  }
+
   @Override
   protected void func(BytesColumnVector outV, DecimalColumnVector inV, int i) {
     String s = inV.vector[i].getHiveDecimalString();
@@ -47,6 +52,6 @@ public class CastDecimalToString extends DecimalToStringUnaryUDF {
       // This should never happen. If it does, there is a bug.
       throw new RuntimeException("Internal error:  unable to convert decimal to string");
     }
-    outV.setVal(i, b, 0, b.length);
+    assign(outV, i, b, b.length);
   }
 }

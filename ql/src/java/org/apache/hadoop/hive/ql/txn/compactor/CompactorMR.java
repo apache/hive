@@ -100,7 +100,7 @@ public class CompactorMR {
    * @throws java.io.IOException if the job fails
    */
   void run(HiveConf conf, String jobName, Table t, StorageDescriptor sd,
-           ValidTxnList txns, boolean isMajor) throws IOException {
+           ValidTxnList txns, boolean isMajor, Worker.StatsUpdater su) throws IOException {
     JobConf job = new JobConf(conf);
     job.setJobName(jobName);
     job.setOutputKeyClass(NullWritable.class);
@@ -182,6 +182,7 @@ public class CompactorMR {
     LOG.debug("Setting maximume transaction to " + maxTxn);
 
     JobClient.runJob(job).waitForCompletion();
+    su.gatherStats();
   }
 
   /**

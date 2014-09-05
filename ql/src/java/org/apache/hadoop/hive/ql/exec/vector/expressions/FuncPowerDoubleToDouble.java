@@ -70,8 +70,8 @@ public class FuncPowerDoubleToDouble extends MathFuncDoubleToDouble
     b.setMode(VectorExpressionDescriptor.Mode.PROJECTION)
         .setNumArguments(2)
         .setArgumentTypes(
-            VectorExpressionDescriptor.ArgumentType.DOUBLE,
-            VectorExpressionDescriptor.ArgumentType.DOUBLE)
+            VectorExpressionDescriptor.ArgumentType.FLOAT_FAMILY,
+            VectorExpressionDescriptor.ArgumentType.FLOAT_FAMILY)
         .setInputExpressionTypes(
             VectorExpressionDescriptor.InputExpressionType.COLUMN,
             VectorExpressionDescriptor.InputExpressionType.SCALAR);

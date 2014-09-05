@@ -30,7 +30,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
  * The second is a string scalar.
  * The third is a string column or non-constant expression result.
  */
-public class IfExprStringScalarStringColumn extends VectorExpression {
+public class IfExprStringScalarStringGroupColumn extends VectorExpression {
 
   private static final long serialVersionUID = 1L;
 
@@ -38,14 +38,15 @@ public class IfExprStringScalarStringColumn extends VectorExpression {
   private byte[] arg2Scalar;
   private int outputColumn;
 
-  public IfExprStringScalarStringColumn(int arg1Column, byte[] arg2Scalar, int arg3Column, int outputColumn) {
+  public IfExprStringScalarStringGroupColumn(int arg1Column, byte[] arg2Scalar, int arg3Column, int outputColumn) {
     this.arg1Column = arg1Column;
     this.arg2Scalar = arg2Scalar;
     this.arg3Column = arg3Column;
     this.outputColumn = outputColumn;
   }
 
-  public IfExprStringScalarStringColumn() {
+  public IfExprStringScalarStringGroupColumn() {
+    super();
   }
 
   @Override
@@ -162,34 +163,6 @@ public class IfExprStringScalarStringColumn extends VectorExpression {
     return "String";
   }
 
-  public int getArg1Column() {
-    return arg1Column;
-  }
-
-  public void setArg1Column(int colNum) {
-    this.arg1Column = colNum;
-  }
-
-  public byte[] getArg2Scalar() {
-    return arg2Scalar;
-  }
-
-  public void setArg2Scalar(byte[] value) {
-    this.arg2Scalar = value;
-  }
-
-  public int getArg3Column() {
-    return arg3Column;
-  }
-
-  public void setArg3Column(int colNum) {
-    this.arg3Column = colNum;
-  }
-
-  public void setOutputColumn(int outputColumn) {
-    this.outputColumn = outputColumn;
-  }
-
   @Override
   public VectorExpressionDescriptor.Descriptor getDescriptor() {
     return (new VectorExpressionDescriptor.Builder())
@@ -197,9 +170,9 @@ public class IfExprStringScalarStringColumn extends VectorExpression {
             VectorExpressionDescriptor.Mode.PROJECTION)
         .setNumArguments(3)
         .setArgumentTypes(
-            VectorExpressionDescriptor.ArgumentType.getType("long"),
-            VectorExpressionDescriptor.ArgumentType.getType("string"),
-            VectorExpressionDescriptor.ArgumentType.getType("string"))
+            VectorExpressionDescriptor.ArgumentType.INT_FAMILY,
+            VectorExpressionDescriptor.ArgumentType.STRING,
+            VectorExpressionDescriptor.ArgumentType.STRING_FAMILY)
         .setInputExpressionTypes(
             VectorExpressionDescriptor.InputExpressionType.COLUMN,
             VectorExpressionDescriptor.InputExpressionType.SCALAR,

@@ -273,6 +273,32 @@ struct Partition {
   8: optional PrincipalPrivilegeSet privileges
 }
 
+struct PartitionWithoutSD {
+  1: list<string> values // string value is converted to appropriate partition key type
+  2: i32          createTime,
+  3: i32          lastAccessTime,
+  4: string       relativePath,
+  5: map<string, string> parameters,
+  6: optional PrincipalPrivilegeSet privileges
+}
+
+struct PartitionSpecWithSharedSD {
+  1: list<PartitionWithoutSD> partitions,
+  2: StorageDescriptor sd,
+}
+
+struct PartitionListComposingSpec {
+  1: list<Partition> partitions
+}
+
+struct PartitionSpec {
+  1: string dbName,
+  2: string tableName,
+  3: string rootPath,
+  4: optional PartitionSpecWithSharedSD sharedSDPartitionSpec,
+  5: optional PartitionListComposingSpec partitionList
+}
+
 struct Index {
   1: string       indexName, // unique with in the whole database namespace
   2: string       indexHandlerClass, // reserved
@@ -793,6 +819,8 @@ service ThriftHiveMetastore extends fb303.FacebookService
       3:MetaException o3)
   i32 add_partitions(1:list<Partition> new_parts)
                        throws(1:InvalidObjectException o1, 2:AlreadyExistsException o2, 3:MetaException o3)
+  i32 add_partitions_pspec(1:list<PartitionSpec> new_parts)
+                       throws(1:InvalidObjectException o1, 2:AlreadyExistsException o2, 3:MetaException o3)
   Partition append_partition(1:string db_name, 2:string tbl_name, 3:list<string> part_vals)
                        throws (1:InvalidObjectException o1, 2:AlreadyExistsException o2, 3:MetaException o3)
   AddPartitionsResult add_partitions_req(1:AddPartitionsRequest request)
@@ -838,6 +866,9 @@ service ThriftHiveMetastore extends fb303.FacebookService
   list<Partition> get_partitions_with_auth(1:string db_name, 2:string tbl_name, 3:i16 max_parts=-1,
      4: string user_name, 5: list<string> group_names) throws(1:NoSuchObjectException o1, 2:MetaException o2)
 
+  list<PartitionSpec> get_partitions_pspec(1:string db_name, 2:string tbl_name, 3:i32 max_parts=-1)
+                       throws(1:NoSuchObjectException o1, 2:MetaException o2)
+
   list<string> get_partition_names(1:string db_name, 2:string tbl_name, 3:i16 max_parts=-1)
                        throws(1:MetaException o2)
 
@@ -860,6 +891,11 @@ service ThriftHiveMetastore extends fb303.FacebookService
   // get the partitions matching the given partition filter
   list<Partition> get_partitions_by_filter(1:string db_name 2:string tbl_name
     3:string filter, 4:i16 max_parts=-1)
+                       throws(1:MetaException o1, 2:NoSuchObjectException o2)
+
+  // List partitions as PartitionSpec instances.
+  list<PartitionSpec> get_part_specs_by_filter(1:string db_name 2:string tbl_name
+    3:string filter, 4:i32 max_parts=-1)
                        throws(1:MetaException o1, 2:NoSuchObjectException o2)
 
   // get the partitions matching the given partition filter

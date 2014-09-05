@@ -191,12 +191,14 @@ public class VectorUDFDateDiffColCol extends VectorExpression {
         return dateVector;
 
       case STRING:
+      case CHAR:
+      case VARCHAR:
         BytesColumnVector bcv = (BytesColumnVector) inputColVector;
         copySelected(bcv, batch.selectedInUse, batch.selected, batch.size, dateVector);
         return dateVector;
+      default:
+        throw new Error("Unsupported input type " + colType.name());
     }
-
-    return null;
   }
 
   // Copy the current object contents into the output. Only copy selected entries,
@@ -314,8 +316,8 @@ public class VectorUDFDateDiffColCol extends VectorExpression {
     b.setMode(VectorExpressionDescriptor.Mode.PROJECTION)
         .setNumArguments(2)
         .setArgumentTypes(
-            VectorExpressionDescriptor.ArgumentType.ANY,
-            VectorExpressionDescriptor.ArgumentType.ANY)
+            VectorExpressionDescriptor.ArgumentType.STRING_DATETIME_FAMILY,
+            VectorExpressionDescriptor.ArgumentType.STRING_DATETIME_FAMILY)
         .setInputExpressionTypes(
             VectorExpressionDescriptor.InputExpressionType.COLUMN,
             VectorExpressionDescriptor.InputExpressionType.COLUMN);

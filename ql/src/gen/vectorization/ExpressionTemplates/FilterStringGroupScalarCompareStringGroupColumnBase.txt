@@ -26,18 +26,14 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 
 /**
  * This is a generated class to evaluate a <OperatorSymbol> comparison on a vector of strings.
+ * Do not edit the generated code directly. 
  */
-public class <ClassName> extends VectorExpression {
+public abstract class <ClassName> extends VectorExpression {
 
   private static final long serialVersionUID = 1L;
 
-  private int colNum;
-  private byte[] value;
-
-  public <ClassName>(int colNum, byte[] value) {
-    this.colNum = colNum;
-    this.value = value;
-  }
+  protected int colNum;
+  protected byte[] value;
 
   public <ClassName>() {
   }
@@ -65,7 +61,7 @@ public class <ClassName> extends VectorExpression {
       if (inputColVector.isRepeating) {
       
         // All must be selected otherwise size would be zero. Repeating property will not change.
-        if (!(StringExpr.compare(vector[0], start[0], length[0], value, 0, value.length) <OperatorSymbol> 0)) {
+        if (!(StringExpr.compare(value, 0, value.length, vector[0], start[0], length[0]) <OperatorSymbol> 0)) {
 
           //Entire batch is filtered out.
           batch.size = 0;
@@ -74,7 +70,7 @@ public class <ClassName> extends VectorExpression {
         int newSize = 0;
         for(int j=0; j != n; j++) {
           int i = sel[j];
-          if (StringExpr.compare(vector[i], start[i], length[i], value, 0, value.length) <OperatorSymbol> 0) {
+          if (StringExpr.compare(value, 0, value.length, vector[i], start[i], length[i]) <OperatorSymbol> 0) {
             sel[newSize++] = i;
           }
         }
@@ -82,7 +78,7 @@ public class <ClassName> extends VectorExpression {
       } else {
         int newSize = 0;
         for(int i = 0; i != n; i++) {
-          if (StringExpr.compare(vector[i], start[i], length[i], value, 0, value.length) <OperatorSymbol> 0) {
+          if (StringExpr.compare(value, 0, value.length, vector[i], start[i], length[i]) <OperatorSymbol> 0) {
             sel[newSize++] = i;
           }
         }
@@ -96,7 +92,7 @@ public class <ClassName> extends VectorExpression {
       
         // All must be selected otherwise size would be zero. Repeating property will not change.
         if (!nullPos[0]) {
-          if (!(StringExpr.compare(vector[0], start[0], length[0], value, 0, value.length) <OperatorSymbol> 0)) {
+          if (!(StringExpr.compare(value, 0, value.length, vector[0], start[0], length[0]) <OperatorSymbol> 0)) {
 
             //Entire batch is filtered out.
             batch.size = 0;
@@ -109,7 +105,7 @@ public class <ClassName> extends VectorExpression {
         for(int j=0; j != n; j++) {
           int i = sel[j];
           if (!nullPos[i]) {
-           if (StringExpr.compare(vector[i], start[i], length[i], value, 0, value.length) <OperatorSymbol> 0) {
+           if (StringExpr.compare(value, 0, value.length, vector[i], start[i], length[i]) <OperatorSymbol> 0) {
              sel[newSize++] = i;
            }
           }
@@ -121,7 +117,7 @@ public class <ClassName> extends VectorExpression {
         int newSize = 0;
         for(int i = 0; i != n; i++) {
           if (!nullPos[i]) {
-            if (StringExpr.compare(vector[i], start[i], length[i], value, 0, value.length) <OperatorSymbol> 0) {
+            if (StringExpr.compare(value, 0, value.length, vector[i], start[i], length[i]) <OperatorSymbol> 0) {
               sel[newSize++] = i;
             }
           }
@@ -158,19 +154,5 @@ public class <ClassName> extends VectorExpression {
 
   public void setValue(byte[] value) {
     this.value = value;
-  }
-
-  @Override
-  public VectorExpressionDescriptor.Descriptor getDescriptor() {
-    return (new VectorExpressionDescriptor.Builder())
-        .setMode(
-            VectorExpressionDescriptor.Mode.FILTER)
-        .setNumArguments(2)
-        .setArgumentTypes(
-            VectorExpressionDescriptor.ArgumentType.getType("string"),
-            VectorExpressionDescriptor.ArgumentType.getType("string"))
-        .setInputExpressionTypes(
-            VectorExpressionDescriptor.InputExpressionType.COLUMN,
-            VectorExpressionDescriptor.InputExpressionType.SCALAR).build();
   }
 }

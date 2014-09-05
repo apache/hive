@@ -18,7 +18,11 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import java.util.Arrays;
+
 import org.apache.hadoop.hive.common.type.Decimal128;
+import org.apache.hadoop.hive.common.type.HiveChar;
+import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.ql.exec.vector.*;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 
@@ -69,6 +73,16 @@ public class ConstantVectorExpression extends VectorExpression {
   public ConstantVectorExpression(int outputColumn, byte[] value) {
     this(outputColumn, "string");
     setBytesValue(value);
+  }
+
+  public ConstantVectorExpression(int outputColumn, HiveChar value) {
+    this(outputColumn, "char");
+    setBytesValue(value.getStrippedValue().getBytes());
+  }
+
+  public ConstantVectorExpression(int outputColumn, HiveVarchar value) {
+    this(outputColumn, "varchar");
+    setBytesValue(value.getValue().getBytes());
   }
 
   public ConstantVectorExpression(int outputColumn, Decimal128 value) {
@@ -173,7 +187,7 @@ public class ConstantVectorExpression extends VectorExpression {
   }
 
   public void setBytesValue(byte[] bytesValue) {
-    this.bytesValue = bytesValue;
+    this.bytesValue = bytesValue.clone();
     this.bytesValueLength = bytesValue.length;
   }
 

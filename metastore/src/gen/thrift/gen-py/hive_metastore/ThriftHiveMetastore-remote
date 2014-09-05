@@ -51,6 +51,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print '  Partition add_partition(Partition new_part)'
   print '  Partition add_partition_with_environment_context(Partition new_part, EnvironmentContext environment_context)'
   print '  i32 add_partitions( new_parts)'
+  print '  i32 add_partitions_pspec( new_parts)'
   print '  Partition append_partition(string db_name, string tbl_name,  part_vals)'
   print '  AddPartitionsResult add_partitions_req(AddPartitionsRequest request)'
   print '  Partition append_partition_with_environment_context(string db_name, string tbl_name,  part_vals, EnvironmentContext environment_context)'
@@ -67,11 +68,13 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print '  Partition get_partition_by_name(string db_name, string tbl_name, string part_name)'
   print '   get_partitions(string db_name, string tbl_name, i16 max_parts)'
   print '   get_partitions_with_auth(string db_name, string tbl_name, i16 max_parts, string user_name,  group_names)'
+  print '   get_partitions_pspec(string db_name, string tbl_name, i32 max_parts)'
   print '   get_partition_names(string db_name, string tbl_name, i16 max_parts)'
   print '   get_partitions_ps(string db_name, string tbl_name,  part_vals, i16 max_parts)'
   print '   get_partitions_ps_with_auth(string db_name, string tbl_name,  part_vals, i16 max_parts, string user_name,  group_names)'
   print '   get_partition_names_ps(string db_name, string tbl_name,  part_vals, i16 max_parts)'
   print '   get_partitions_by_filter(string db_name, string tbl_name, string filter, i16 max_parts)'
+  print '   get_part_specs_by_filter(string db_name, string tbl_name, string filter, i32 max_parts)'
   print '  PartitionsByExprResult get_partitions_by_expr(PartitionsByExprRequest req)'
   print '   get_partitions_by_names(string db_name, string tbl_name,  names)'
   print '  void alter_partition(string db_name, string tbl_name, Partition new_part)'
@@ -355,6 +358,12 @@ elif cmd == 'add_partitions':
     sys.exit(1)
   pp.pprint(client.add_partitions(eval(args[0]),))
 
+elif cmd == 'add_partitions_pspec':
+  if len(args) != 1:
+    print 'add_partitions_pspec requires 1 args'
+    sys.exit(1)
+  pp.pprint(client.add_partitions_pspec(eval(args[0]),))
+
 elif cmd == 'append_partition':
   if len(args) != 3:
     print 'append_partition requires 3 args'
@@ -451,6 +460,12 @@ elif cmd == 'get_partitions_with_auth':
     sys.exit(1)
   pp.pprint(client.get_partitions_with_auth(args[0],args[1],eval(args[2]),args[3],eval(args[4]),))
 
+elif cmd == 'get_partitions_pspec':
+  if len(args) != 3:
+    print 'get_partitions_pspec requires 3 args'
+    sys.exit(1)
+  pp.pprint(client.get_partitions_pspec(args[0],args[1],eval(args[2]),))
+
 elif cmd == 'get_partition_names':
   if len(args) != 3:
     print 'get_partition_names requires 3 args'
@@ -480,6 +495,12 @@ elif cmd == 'get_partitions_by_filter':
     print 'get_partitions_by_filter requires 4 args'
     sys.exit(1)
   pp.pprint(client.get_partitions_by_filter(args[0],args[1],args[2],eval(args[3]),))
+
+elif cmd == 'get_part_specs_by_filter':
+  if len(args) != 4:
+    print 'get_part_specs_by_filter requires 4 args'
+    sys.exit(1)
+  pp.pprint(client.get_part_specs_by_filter(args[0],args[1],args[2],eval(args[3]),))
 
 elif cmd == 'get_partitions_by_expr':
   if len(args) != 1:

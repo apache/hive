@@ -18,6 +18,10 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import java.util.Arrays;
+
+import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
+
 /**
  * String expression evaluation helper functions.
  */
@@ -32,6 +36,7 @@ public class StringExpr {
    */
   public static int compare(byte[] arg1, int start1, int len1, byte[] arg2, int start2, int len2) {
     for (int i = 0; i < len1 && i < len2; i++) {
+      // Note the "& 0xff" is just a way to convert unsigned bytes to signed integer.
       int b1 = arg1[i + start1] & 0xff;
       int b2 = arg2[i + start2] & 0xff;
       if (b1 != b2) {
@@ -39,5 +44,260 @@ public class StringExpr {
       }
     }
     return len1 - len2;
+  }
+
+  public static int characterCount(byte[] bytes) {
+    int end = bytes.length;
+
+    // count characters
+    int j = 0;
+    int charCount = 0;
+    while(j < end) {
+      // UTF-8 continuation bytes have 2 high bits equal to 0x80.
+      if ((bytes[j] & 0xc0) != 0x80) {
+        ++charCount;
+      }
+      j++;
+    }
+    return charCount;
+  }
+
+  public static int characterCount(byte[] bytes, int start, int length) {
+    int end = start + length;
+
+    // count characters
+    int j = start;
+    int charCount = 0;
+    while(j < end) {
+      // UTF-8 continuation bytes have 2 high bits equal to 0x80.
+      if ((bytes[j] & 0xc0) != 0x80) {
+        ++charCount;
+      }
+      j++;
+    }
+    return charCount;
+  }
+
+  // A setVal with the same function signature as rightTrim, leftTrim, truncate, etc, below.
+  // Useful for class generation via templates.
+  public static void assign(BytesColumnVector outV, int i, byte[] bytes, int start, int length) {
+    // set output vector
+    outV.setVal(i, bytes, start, length);
+  }
+
+  /*
+   * Right trim a slice of a byte array and return the new byte length.
+   */
+  public static int rightTrim(byte[] bytes, int start, int length) {
+    // skip trailing blank characters
+    int j = start + length - 1;
+    while(j >= start && bytes[j] == 0x20) {
+      j--;
+    }
+
+    return (j - start) + 1;
+  }
+
+  /*
+   * Right trim a slice of a byte array and place the result into element i of a vector.
+   */
+  public static void rightTrim(BytesColumnVector outV, int i, byte[] bytes, int start, int length) {
+    // skip trailing blank characters
+    int j = start + length - 1;
+    while(j >= start && bytes[j] == 0x20) {
+      j--;
+    }
+
+    // set output vector
+    outV.setVal(i, bytes, start, (j - start) + 1);
+  }
+
+  /*
+   * Truncate a slice of a byte array to a maximum number of characters and
+   * return the new byte length.
+   */
+  public static int truncate(byte[] bytes, int start, int length, int maxLength) {
+    int end = start + length;
+
+    // count characters forward
+    int j = start;
+    int charCount = 0;
+    while(j < end) {
+      // UTF-8 continuation bytes have 2 high bits equal to 0x80.
+      if ((bytes[j] & 0xc0) != 0x80) {
+        if (charCount == maxLength) {
+          break;
+        }
+        ++charCount;
+      }
+      j++;
+    }
+    return (j - start);
+  }
+
+  /*
+   * Truncate a slice of a byte array to a maximum number of characters and
+   * place the result into element i of a vector.
+   */
+  public static void truncate(BytesColumnVector outV, int i, byte[] bytes, int start, int length, int maxLength) {
+    int end = start + length;
+
+    // count characters forward
+    int j = start;
+    int charCount = 0;
+    while(j < end) {
+      // UTF-8 continuation bytes have 2 high bits equal to 0x80.
+      if ((bytes[j] & 0xc0) != 0x80) {
+        if (charCount == maxLength) {
+          break;
+        }
+        ++charCount;
+      }
+      j++;
+    }
+
+    // set output vector
+    outV.setVal(i, bytes, start, (j - start));
+  }
+
+  /*
+   * Truncate a byte array to a maximum number of characters and
+   * return a byte array with only truncated bytes.
+   */
+  public static byte[] truncateScalar(byte[] bytes, int maxLength) {
+    int end = bytes.length;
+
+    // count characters forward
+    int j = 0;
+    int charCount = 0;
+    while(j < end) {
+      // UTF-8 continuation bytes have 2 high bits equal to 0x80.
+      if ((bytes[j] & 0xc0) != 0x80) {
+        if (charCount == maxLength) {
+          break;
+        }
+        ++charCount;
+      }
+      j++;
+    }
+    if (j == end) {
+      return bytes;
+    } else {
+      return Arrays.copyOf(bytes, j);
+    }
+  }
+
+  /*
+   * Right trim and truncate a slice of a byte array to a maximum number of characters and
+   * return the new byte length.
+   */
+  public static int rightTrimAndTruncate(byte[] bytes, int start, int length, int maxLength) {
+    int end = start + length;
+
+    // count characters forward and watch for final run of pads
+    int j = start;
+    int charCount = 0;
+    int padRunStart = -1;
+    while(j < end) {
+      // UTF-8 continuation bytes have 2 high bits equal to 0x80.
+      if ((bytes[j] & 0xc0) != 0x80) {
+        if (charCount == maxLength) {
+          break;
+        }
+        if (bytes[j] == 0x20) {
+          if (padRunStart == -1) {
+            padRunStart = j;
+          }
+        } else {
+          padRunStart = -1;
+        }
+        ++charCount;
+      } else {
+        padRunStart = -1;
+      }
+      j++;
+    }
+    if (padRunStart != -1) {
+      return (padRunStart - start);
+    } else {
+      return (j - start);
+    }
+  }
+
+  /*
+   * Right trim and truncate a slice of a byte array to a maximum number of characters and
+   * place the result into element i of a vector.
+   */
+  public static void rightTrimAndTruncate(BytesColumnVector outV, int i, byte[] bytes, int start, int length, int maxLength) {
+    int end = start + length;
+
+    // count characters forward and watch for final run of pads
+    int j = start;
+    int charCount = 0;
+    int padRunStart = -1;
+    while(j < end) {
+      // UTF-8 continuation bytes have 2 high bits equal to 0x80.
+      if ((bytes[j] & 0xc0) != 0x80) {
+        if (charCount == maxLength) {
+          break;
+        }
+        if (bytes[j] == 0x20) {
+          if (padRunStart == -1) {
+            padRunStart = j;
+          }
+        } else {
+          padRunStart = -1;
+        }
+        ++charCount;
+      } else {
+        padRunStart = -1;
+      }
+      j++;
+    }
+    // set output vector
+    if (padRunStart != -1) {
+      outV.setVal(i, bytes, start, (padRunStart - start));
+    } else {
+      outV.setVal(i, bytes, start, (j - start) );
+    }
+  }
+
+  /*
+   * Right trim and truncate a byte array to a maximum number of characters and
+   * return a byte array with only the trimmed and truncated bytes.
+   */
+  public static byte[] rightTrimAndTruncateScalar(byte[] bytes, int maxLength) {
+    int end = bytes.length;
+
+    // count characters forward and watch for final run of pads
+    int j = 0;
+    int charCount = 0;
+    int padRunStart = -1;
+    while(j < end) {
+      // UTF-8 continuation bytes have 2 high bits equal to 0x80.
+      if ((bytes[j] & 0xc0) != 0x80) {
+        if (charCount == maxLength) {
+          break;
+        }
+        if (bytes[j] == 0x20) {
+          if (padRunStart == -1) {
+            padRunStart = j;
+          }
+        } else {
+          padRunStart = -1;
+        }
+        ++charCount;
+      } else {
+        padRunStart = -1;
+      }
+      j++;
+    }
+    if (padRunStart != -1) {
+      return Arrays.copyOf(bytes, padRunStart);
+    } else if (j == end) {
+      return bytes;
+    } else {
+      return Arrays.copyOf(bytes, j);
+    }
   }
 }

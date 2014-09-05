@@ -127,6 +127,8 @@ public class VectorUDFDateAddColCol extends VectorExpression {
         break;
 
       case STRING:
+      case CHAR:
+      case VARCHAR:
         // Now disregard null in second pass.
         if ((inputColVector1.isRepeating) && (inputColVector2.isRepeating)) {
           // All must be selected otherwise size would be zero
@@ -144,6 +146,8 @@ public class VectorUDFDateAddColCol extends VectorExpression {
           }
         }
         break;
+      default:
+        throw new Error("Unsupported input type " + inputTypes[0].name());
     }
   }
 
@@ -235,8 +239,8 @@ public class VectorUDFDateAddColCol extends VectorExpression {
     b.setMode(VectorExpressionDescriptor.Mode.PROJECTION)
         .setNumArguments(2)
         .setArgumentTypes(
-            VectorExpressionDescriptor.ArgumentType.ANY,
-            VectorExpressionDescriptor.ArgumentType.LONG)
+            VectorExpressionDescriptor.ArgumentType.STRING_DATETIME_FAMILY,
+            VectorExpressionDescriptor.ArgumentType.INT_FAMILY)
         .setInputExpressionTypes(
             VectorExpressionDescriptor.InputExpressionType.COLUMN,
             VectorExpressionDescriptor.InputExpressionType.COLUMN);

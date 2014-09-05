@@ -122,6 +122,8 @@ public class CastLongToDate extends VectorExpression {
       case DATE:
         inV.copySelected(batch.selectedInUse, batch.selected, batch.size, outV);
         break;
+      default:
+        throw new Error("Unsupported input type " + inputTypes[0].name());
     }
   }
 
@@ -153,7 +155,7 @@ public class CastLongToDate extends VectorExpression {
     b.setMode(VectorExpressionDescriptor.Mode.PROJECTION)
         .setNumArguments(1)
         .setArgumentTypes(
-            VectorExpressionDescriptor.ArgumentType.LONG)
+            VectorExpressionDescriptor.ArgumentType.DATETIME_FAMILY)
         .setInputExpressionTypes(
             VectorExpressionDescriptor.InputExpressionType.COLUMN);
     return b.build();

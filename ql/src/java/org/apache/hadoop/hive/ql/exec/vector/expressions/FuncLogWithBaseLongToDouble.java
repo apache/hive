@@ -62,8 +62,8 @@ public class FuncLogWithBaseLongToDouble extends MathFuncLongToDouble
             VectorExpressionDescriptor.Mode.PROJECTION)
         .setNumArguments(2)
         .setArgumentTypes(
-            VectorExpressionDescriptor.ArgumentType.DOUBLE,
-            VectorExpressionDescriptor.ArgumentType.LONG)
+            VectorExpressionDescriptor.ArgumentType.FLOAT_FAMILY,
+            VectorExpressionDescriptor.ArgumentType.INT_FAMILY)
         .setInputExpressionTypes(
             VectorExpressionDescriptor.InputExpressionType.SCALAR,
             VectorExpressionDescriptor.InputExpressionType.COLUMN).build();

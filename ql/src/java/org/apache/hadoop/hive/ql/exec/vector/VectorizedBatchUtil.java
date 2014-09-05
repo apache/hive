@@ -23,11 +23,16 @@ import java.sql.Timestamp;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.apache.hadoop.hive.common.type.HiveChar;
+import org.apache.hadoop.hive.common.type.HiveVarchar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.StringExpr;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
+import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -126,6 +131,8 @@ public class VectorizedBatchUtil {
           break;
         case BINARY:
         case STRING:
+        case CHAR:
+        case VARCHAR:
           cvList.add(new BytesColumnVector(VectorizedRowBatch.DEFAULT_SIZE));
           break;
         case DECIMAL:
@@ -375,6 +382,51 @@ public class VectorizedBatchUtil {
         }
       }
         break;
+      case CHAR: {
+        BytesColumnVector bcv = (BytesColumnVector) batch.cols[off + i];
+        if (writableCol != null) {
+          bcv.isNull[rowIndex] = false;
+          HiveChar colHiveChar = ((HiveCharWritable) writableCol).getHiveChar();
+          byte[] bytes = colHiveChar.getStrippedValue().getBytes();
+          
+          // We assume the CHAR maximum length was enforced when the object was created.
+          int length = bytes.length;
+
+          int start = buffer.getLength();
+          try {
+            // In vector mode, we store CHAR as unpadded.
+            buffer.write(bytes, 0, length);
+          } catch (IOException ioe) {
+            throw new IllegalStateException("bad write", ioe);
+          }
+          bcv.setRef(rowIndex, buffer.getData(), start, length);
+        } else {
+          setNullColIsNullValue(bcv, rowIndex);
+        }
+      }
+        break;
+      case VARCHAR: {
+          BytesColumnVector bcv = (BytesColumnVector) batch.cols[off + i];
+          if (writableCol != null) {
+            bcv.isNull[rowIndex] = false;
+            HiveVarchar colHiveVarchar = ((HiveVarcharWritable) writableCol).getHiveVarchar();
+            byte[] bytes = colHiveVarchar.getValue().getBytes();
+
+            // We assume the VARCHAR maximum length was enforced when the object was created.
+            int length = bytes.length;
+
+            int start = buffer.getLength();
+            try {
+              buffer.write(bytes, 0, length);
+            } catch (IOException ioe) {
+              throw new IllegalStateException("bad write", ioe);
+            }
+            bcv.setRef(rowIndex, buffer.getData(), start, length);
+          } else {
+            setNullColIsNullValue(bcv, rowIndex);
+          }
+        }
+          break;
       case DECIMAL:
         DecimalColumnVector dcv = (DecimalColumnVector) batch.cols[off + i];
         if (writableCol != null) {

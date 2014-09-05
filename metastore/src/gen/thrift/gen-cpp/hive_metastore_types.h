@@ -1849,6 +1849,267 @@ class Partition {
 
 void swap(Partition &a, Partition &b);
 
+typedef struct _PartitionWithoutSD__isset {
+  _PartitionWithoutSD__isset() : values(false), createTime(false), lastAccessTime(false), relativePath(false), parameters(false), privileges(false) {}
+  bool values;
+  bool createTime;
+  bool lastAccessTime;
+  bool relativePath;
+  bool parameters;
+  bool privileges;
+} _PartitionWithoutSD__isset;
+
+class PartitionWithoutSD {
+ public:
+
+  static const char* ascii_fingerprint; // = "D79FA44499888D0E50B5625E0C536DEA";
+  static const uint8_t binary_fingerprint[16]; // = {0xD7,0x9F,0xA4,0x44,0x99,0x88,0x8D,0x0E,0x50,0xB5,0x62,0x5E,0x0C,0x53,0x6D,0xEA};
+
+  PartitionWithoutSD() : createTime(0), lastAccessTime(0), relativePath() {
+  }
+
+  virtual ~PartitionWithoutSD() throw() {}
+
+  std::vector<std::string>  values;
+  int32_t createTime;
+  int32_t lastAccessTime;
+  std::string relativePath;
+  std::map<std::string, std::string>  parameters;
+  PrincipalPrivilegeSet privileges;
+
+  _PartitionWithoutSD__isset __isset;
+
+  void __set_values(const std::vector<std::string> & val) {
+    values = val;
+  }
+
+  void __set_createTime(const int32_t val) {
+    createTime = val;
+  }
+
+  void __set_lastAccessTime(const int32_t val) {
+    lastAccessTime = val;
+  }
+
+  void __set_relativePath(const std::string& val) {
+    relativePath = val;
+  }
+
+  void __set_parameters(const std::map<std::string, std::string> & val) {
+    parameters = val;
+  }
+
+  void __set_privileges(const PrincipalPrivilegeSet& val) {
+    privileges = val;
+    __isset.privileges = true;
+  }
+
+  bool operator == (const PartitionWithoutSD & rhs) const
+  {
+    if (!(values == rhs.values))
+      return false;
+    if (!(createTime == rhs.createTime))
+      return false;
+    if (!(lastAccessTime == rhs.lastAccessTime))
+      return false;
+    if (!(relativePath == rhs.relativePath))
+      return false;
+    if (!(parameters == rhs.parameters))
+      return false;
+    if (__isset.privileges != rhs.__isset.privileges)
+      return false;
+    else if (__isset.privileges && !(privileges == rhs.privileges))
+      return false;
+    return true;
+  }
+  bool operator != (const PartitionWithoutSD &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const PartitionWithoutSD & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(PartitionWithoutSD &a, PartitionWithoutSD &b);
+
+typedef struct _PartitionSpecWithSharedSD__isset {
+  _PartitionSpecWithSharedSD__isset() : partitions(false), sd(false) {}
+  bool partitions;
+  bool sd;
+} _PartitionSpecWithSharedSD__isset;
+
+class PartitionSpecWithSharedSD {
+ public:
+
+  static const char* ascii_fingerprint; // = "7BEE9305B42DCD083FF06BEE6DDC61CF";
+  static const uint8_t binary_fingerprint[16]; // = {0x7B,0xEE,0x93,0x05,0xB4,0x2D,0xCD,0x08,0x3F,0xF0,0x6B,0xEE,0x6D,0xDC,0x61,0xCF};
+
+  PartitionSpecWithSharedSD() {
+  }
+
+  virtual ~PartitionSpecWithSharedSD() throw() {}
+
+  std::vector<PartitionWithoutSD>  partitions;
+  StorageDescriptor sd;
+
+  _PartitionSpecWithSharedSD__isset __isset;
+
+  void __set_partitions(const std::vector<PartitionWithoutSD> & val) {
+    partitions = val;
+  }
+
+  void __set_sd(const StorageDescriptor& val) {
+    sd = val;
+  }
+
+  bool operator == (const PartitionSpecWithSharedSD & rhs) const
+  {
+    if (!(partitions == rhs.partitions))
+      return false;
+    if (!(sd == rhs.sd))
+      return false;
+    return true;
+  }
+  bool operator != (const PartitionSpecWithSharedSD &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const PartitionSpecWithSharedSD & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(PartitionSpecWithSharedSD &a, PartitionSpecWithSharedSD &b);
+
+typedef struct _PartitionListComposingSpec__isset {
+  _PartitionListComposingSpec__isset() : partitions(false) {}
+  bool partitions;
+} _PartitionListComposingSpec__isset;
+
+class PartitionListComposingSpec {
+ public:
+
+  static const char* ascii_fingerprint; // = "A048235CB9A257C8A74E3691BEFE0674";
+  static const uint8_t binary_fingerprint[16]; // = {0xA0,0x48,0x23,0x5C,0xB9,0xA2,0x57,0xC8,0xA7,0x4E,0x36,0x91,0xBE,0xFE,0x06,0x74};
+
+  PartitionListComposingSpec() {
+  }
+
+  virtual ~PartitionListComposingSpec() throw() {}
+
+  std::vector<Partition>  partitions;
+
+  _PartitionListComposingSpec__isset __isset;
+
+  void __set_partitions(const std::vector<Partition> & val) {
+    partitions = val;
+  }
+
+  bool operator == (const PartitionListComposingSpec & rhs) const
+  {
+    if (!(partitions == rhs.partitions))
+      return false;
+    return true;
+  }
+  bool operator != (const PartitionListComposingSpec &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const PartitionListComposingSpec & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(PartitionListComposingSpec &a, PartitionListComposingSpec &b);
+
+typedef struct _PartitionSpec__isset {
+  _PartitionSpec__isset() : dbName(false), tableName(false), rootPath(false), sharedSDPartitionSpec(false), partitionList(false) {}
+  bool dbName;
+  bool tableName;
+  bool rootPath;
+  bool sharedSDPartitionSpec;
+  bool partitionList;
+} _PartitionSpec__isset;
+
+class PartitionSpec {
+ public:
+
+  static const char* ascii_fingerprint; // = "C3F548C24D072CF6422F25096143E3E8";
+  static const uint8_t binary_fingerprint[16]; // = {0xC3,0xF5,0x48,0xC2,0x4D,0x07,0x2C,0xF6,0x42,0x2F,0x25,0x09,0x61,0x43,0xE3,0xE8};
+
+  PartitionSpec() : dbName(), tableName(), rootPath() {
+  }
+
+  virtual ~PartitionSpec() throw() {}
+
+  std::string dbName;
+  std::string tableName;
+  std::string rootPath;
+  PartitionSpecWithSharedSD sharedSDPartitionSpec;
+  PartitionListComposingSpec partitionList;
+
+  _PartitionSpec__isset __isset;
+
+  void __set_dbName(const std::string& val) {
+    dbName = val;
+  }
+
+  void __set_tableName(const std::string& val) {
+    tableName = val;
+  }
+
+  void __set_rootPath(const std::string& val) {
+    rootPath = val;
+  }
+
+  void __set_sharedSDPartitionSpec(const PartitionSpecWithSharedSD& val) {
+    sharedSDPartitionSpec = val;
+    __isset.sharedSDPartitionSpec = true;
+  }
+
+  void __set_partitionList(const PartitionListComposingSpec& val) {
+    partitionList = val;
+    __isset.partitionList = true;
+  }
+
+  bool operator == (const PartitionSpec & rhs) const
+  {
+    if (!(dbName == rhs.dbName))
+      return false;
+    if (!(tableName == rhs.tableName))
+      return false;
+    if (!(rootPath == rhs.rootPath))
+      return false;
+    if (__isset.sharedSDPartitionSpec != rhs.__isset.sharedSDPartitionSpec)
+      return false;
+    else if (__isset.sharedSDPartitionSpec && !(sharedSDPartitionSpec == rhs.sharedSDPartitionSpec))
+      return false;
+    if (__isset.partitionList != rhs.__isset.partitionList)
+      return false;
+    else if (__isset.partitionList && !(partitionList == rhs.partitionList))
+      return false;
+    return true;
+  }
+  bool operator != (const PartitionSpec &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const PartitionSpec & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(PartitionSpec &a, PartitionSpec &b);
+
 typedef struct _Index__isset {
   _Index__isset() : indexName(false), indexHandlerClass(false), dbName(false), origTableName(false), createTime(false), lastAccessTime(false), indexTableName(false), sd(false), parameters(false), deferredRebuild(false) {}
   bool indexName;

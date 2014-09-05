@@ -48,6 +48,7 @@ import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.StringExpr;
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument.TruthValue;
@@ -908,10 +909,10 @@ class RecordReaderImpl implements RecordReader {
   }
 
   private static class BinaryTreeReader extends TreeReader{
-    private InStream stream;
-    private IntegerReader lengths = null;
+    protected InStream stream;
+    protected IntegerReader lengths = null;
 
-    private final LongColumnVector scratchlcv;
+    protected final LongColumnVector scratchlcv;
 
     BinaryTreeReader(Path path, int columnId, Configuration conf) {
       super(path, columnId, conf);
@@ -983,7 +984,7 @@ class RecordReaderImpl implements RecordReader {
       // Read present/isNull stream
       super.nextVector(result, batchSize);
 
-      BytesColumnVectorUtil.setRefToOrcByteArrays(stream, lengths, scratchlcv, result, batchSize);
+      BytesColumnVectorUtil.readOrcByteArrays(stream, lengths, scratchlcv, result, batchSize);
       return result;
     }
 
@@ -1376,12 +1377,13 @@ class RecordReaderImpl implements RecordReader {
     }
   }
 
+  // This class collects together very similar methods for reading an ORC vector of byte arrays and
+  // creating the BytesColumnVector.
+  //
   private static class BytesColumnVectorUtil {
-    // This method has the common code for reading in bytes into a BytesColumnVector.
-    // It is used by the BINARY, STRING, CHAR, VARCHAR types.
-    public static void setRefToOrcByteArrays(InStream stream, IntegerReader lengths, LongColumnVector scratchlcv,
-            BytesColumnVector result, long batchSize) throws IOException {
 
+    private static byte[] commonReadByteArrays(InStream stream, IntegerReader lengths, LongColumnVector scratchlcv,
+            BytesColumnVector result, long batchSize) throws IOException {
       // Read lengths
       scratchlcv.isNull = result.isNull;  // Notice we are replacing the isNull vector here...
       lengths.nextVector(scratchlcv, batchSize);
@@ -1409,11 +1411,20 @@ class RecordReaderImpl implements RecordReader {
         }
         len -= bytesRead;
         offset += bytesRead;
-      }
+      } 
+
+      return allBytes;
+    }
+
+    // This method has the common code for reading in bytes into a BytesColumnVector.
+    public static void readOrcByteArrays(InStream stream, IntegerReader lengths, LongColumnVector scratchlcv,
+            BytesColumnVector result, long batchSize) throws IOException {
+
+      byte[] allBytes = commonReadByteArrays(stream, lengths, scratchlcv, result, batchSize);
 
       // Too expensive to figure out 'repeating' by comparisons.
       result.isRepeating = false;
-      offset = 0;
+      int offset = 0;
       if (!scratchlcv.isRepeating) {
         for (int i = 0; i < batchSize; i++) {
           if (!scratchlcv.isNull[i]) {
@@ -1518,7 +1529,7 @@ class RecordReaderImpl implements RecordReader {
       // Read present/isNull stream
       super.nextVector(result, batchSize);
 
-      BytesColumnVectorUtil.setRefToOrcByteArrays(stream, lengths, scratchlcv, result, batchSize);
+      BytesColumnVectorUtil.readOrcByteArrays(stream, lengths, scratchlcv, result, batchSize);
       return result;
     }
 
@@ -1734,6 +1745,42 @@ class RecordReaderImpl implements RecordReader {
       result.enforceMaxLength(maxLength);
       return result;
     }
+
+    @Override
+    Object nextVector(Object previousVector, long batchSize) throws IOException {
+      // Get the vector of strings from StringTreeReader, then make a 2nd pass to
+      // adjust down the length (right trim and truncate) if necessary.
+      BytesColumnVector result = (BytesColumnVector) super.nextVector(previousVector, batchSize);
+
+      int adjustedDownLen;
+      if (result.isRepeating) {
+        if (result.noNulls || !result.isNull[0]) {
+          adjustedDownLen = StringExpr.rightTrimAndTruncate(result.vector[0], result.start[0], result.length[0], maxLength);
+          if (adjustedDownLen < result.length[0]) {
+            result.setRef(0, result.vector[0], result.start[0], adjustedDownLen);
+          }
+        }
+      } else {
+        if (result.noNulls){ 
+          for (int i = 0; i < batchSize; i++) {
+            adjustedDownLen = StringExpr.rightTrimAndTruncate(result.vector[i], result.start[i], result.length[i], maxLength);
+            if (adjustedDownLen < result.length[i]) {
+              result.setRef(i, result.vector[i], result.start[i], adjustedDownLen);
+            }
+          }
+        } else {
+          for (int i = 0; i < batchSize; i++) {
+            if (!result.isNull[i]) {
+              adjustedDownLen = StringExpr.rightTrimAndTruncate(result.vector[i], result.start[i], result.length[i], maxLength);
+              if (adjustedDownLen < result.length[i]) {
+                result.setRef(i, result.vector[i], result.start[i], adjustedDownLen);
+              }
+            }
+          }
+        }
+      }
+      return result;
+    }
   }
 
   private static class VarcharTreeReader extends StringTreeReader {
@@ -1760,6 +1807,42 @@ class RecordReaderImpl implements RecordReader {
       // result should now hold the value that was read in.
       // enforce varchar length
       result.enforceMaxLength(maxLength);
+      return result;
+    }
+
+    @Override
+    Object nextVector(Object previousVector, long batchSize) throws IOException {
+      // Get the vector of strings from StringTreeReader, then make a 2nd pass to
+      // adjust down the length (truncate) if necessary.
+      BytesColumnVector result = (BytesColumnVector) super.nextVector(previousVector, batchSize);
+
+      int adjustedDownLen;
+      if (result.isRepeating) {
+      if (result.noNulls || !result.isNull[0]) {
+          adjustedDownLen = StringExpr.truncate(result.vector[0], result.start[0], result.length[0], maxLength);
+          if (adjustedDownLen < result.length[0]) {
+            result.setRef(0, result.vector[0], result.start[0], adjustedDownLen);
+          }
+        }
+      } else {
+        if (result.noNulls){ 
+          for (int i = 0; i < batchSize; i++) {
+            adjustedDownLen = StringExpr.truncate(result.vector[i], result.start[i], result.length[i], maxLength);
+            if (adjustedDownLen < result.length[i]) {
+              result.setRef(i, result.vector[i], result.start[i], adjustedDownLen);
+            }
+          }
+        } else {
+          for (int i = 0; i < batchSize; i++) {
+            if (!result.isNull[i]) {
+              adjustedDownLen = StringExpr.truncate(result.vector[i], result.start[i], result.length[i], maxLength);
+              if (adjustedDownLen < result.length[i]) {
+                result.setRef(i, result.vector[i], result.start[i], adjustedDownLen);
+              }
+            }
+          }
+        }
+      }
       return result;
     }
   }
