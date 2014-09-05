@@ -649,6 +649,11 @@ public final class FileUtils {
     //   if a user is a super user. Also super users running hive queries is not a common
     //   use case. super users can also do a chown to be able to drop the file
 
+    if(path == null) {
+      // no file/dir to be deleted
+      return;
+    }
+
     final FileSystem fs = path.getFileSystem(conf);
     if (!fs.exists(path)) {
       // no file/dir to be deleted
