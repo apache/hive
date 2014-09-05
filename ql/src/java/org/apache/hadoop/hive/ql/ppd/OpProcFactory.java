@@ -906,11 +906,8 @@ public final class OpProcFactory {
     }
 
     ExprNodeDesc condn = ExprNodeDescUtils.mergePredicates(preds);
-    if(!(condn instanceof ExprNodeGenericFuncDesc)) {
-      return null;
-    }
 
-    if (op instanceof TableScanOperator) {
+    if (op instanceof TableScanOperator && condn instanceof ExprNodeGenericFuncDesc) {
       boolean pushFilterToStorage;
       HiveConf hiveConf = owi.getParseContext().getConf();
       pushFilterToStorage =

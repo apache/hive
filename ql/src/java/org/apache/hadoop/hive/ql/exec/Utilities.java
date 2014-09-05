@@ -820,10 +820,12 @@ public final class Utilities {
     }
   }
 
-  public static Set<Operator<?>> cloneOperatorTree(Configuration conf, Set<Operator<?>> roots) {
+  public static List<Operator<?>> cloneOperatorTree(Configuration conf, List<Operator<?>> roots) {
     ByteArrayOutputStream baos = new ByteArrayOutputStream(4096);
     serializePlan(roots, baos, conf, true);
-    Set<Operator<?>> result = deserializePlan(new ByteArrayInputStream(baos.toByteArray()),
+    @SuppressWarnings("unchecked")
+    List<Operator<?>> result =
+        deserializePlan(new ByteArrayInputStream(baos.toByteArray()),
         roots.getClass(), conf, true);
     return result;
   }

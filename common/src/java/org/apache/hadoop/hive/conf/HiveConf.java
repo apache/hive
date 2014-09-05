@@ -374,7 +374,6 @@ public class HiveConf extends Configuration {
     METASTORECONNECTURLKEY("javax.jdo.option.ConnectionURL",
         "jdbc:derby:;databaseName=metastore_db;create=true",
         "JDBC connect string for a JDBC metastore"),
-
     HMSHANDLERATTEMPTS("hive.hmshandler.retry.attempts", 1,
         "The number of times to retry a HMSHandler call if there were a connection error."),
     HMSHANDLERINTERVAL("hive.hmshandler.retry.interval", "1000ms",
@@ -1782,7 +1781,15 @@ public class HiveConf extends Configuration {
         "When auto reducer parallelism is enabled this factor will be used to over-partition data in shuffle edges."),
     TEZ_MIN_PARTITION_FACTOR("hive.tez.min.partition.factor", 0.25f,
         "When auto reducer parallelism is enabled this factor will be used to put a lower limit to the number\n" +
-        "of reducers that tez specifies.")
+        "of reducers that tez specifies."),
+    TEZ_DYNAMIC_PARTITION_PRUNING(
+        "hive.tez.dynamic.partition.pruning", true,
+        "When dynamic pruning is enabled, joins on partition keys will be processed by sending events from the processing " +
+        "vertices to the tez application master. These events will be used to prune unnecessary partitions."),
+    TEZ_DYNAMIC_PARTITION_PRUNING_MAX_EVENT_SIZE("hive.tez.dynamic.partition.pruning.max.event.size", 1*1024*1024L,
+        "Maximum size of events sent by processors in dynamic pruning. If this size is crossed no pruning will take place."),
+    TEZ_DYNAMIC_PARTITION_PRUNING_MAX_DATA_SIZE("hive.tez.dynamic.parition.pruning.max.data.size", 100*1024*1024L,
+        "Maximum total data size of events in dynamic pruning.")
     ;
 
     public final String varname;
