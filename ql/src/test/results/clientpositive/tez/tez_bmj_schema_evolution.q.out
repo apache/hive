@@ -1,6 +1,7 @@
 PREHOOK: query: create table test (key int, value string) partitioned by (p int) clustered by (key) into 2 buckets stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@test
 POSTHOOK: query: create table test (key int, value string) partitioned by (p int) clustered by (key) into 2 buckets stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -8,6 +9,7 @@ POSTHOOK: Output: default@test
 PREHOOK: query: create table test1 (key int, value string) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@test1
 POSTHOOK: query: create table test1 (key int, value string) stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
