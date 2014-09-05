@@ -84,6 +84,8 @@ public class VectorUDFDateAddScalarCol extends VectorExpression {
         break;
 
       case STRING:
+      case CHAR:
+      case VARCHAR:
         try {
           baseDate = formatter.parse(new String(stringValue, "UTF-8"));
           break;
@@ -101,6 +103,8 @@ public class VectorUDFDateAddScalarCol extends VectorExpression {
           }
           return;
         }
+      default:
+        throw new Error("Unsupported input type " + inputTypes[0].name());
     }
 
     if(batch.size == 0) {
@@ -213,8 +217,8 @@ public class VectorUDFDateAddScalarCol extends VectorExpression {
     b.setMode(VectorExpressionDescriptor.Mode.PROJECTION)
         .setNumArguments(2)
         .setArgumentTypes(
-            VectorExpressionDescriptor.ArgumentType.ANY,
-            VectorExpressionDescriptor.ArgumentType.LONG)
+            VectorExpressionDescriptor.ArgumentType.STRING_DATETIME_FAMILY,
+            VectorExpressionDescriptor.ArgumentType.INT_FAMILY)
         .setInputExpressionTypes(
             VectorExpressionDescriptor.InputExpressionType.SCALAR,
             VectorExpressionDescriptor.InputExpressionType.COLUMN);

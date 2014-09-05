@@ -27,20 +27,20 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
  * Vectorized instruction to concatenate two string columns and put
  * the output in a third column.
  */
-public class StringConcatColCol extends VectorExpression {
+public class StringGroupConcatColCol extends VectorExpression {
   private static final long serialVersionUID = 1L;
   private int colNum1;
   private int colNum2;
   private int outputColumn;
 
-  public StringConcatColCol(int colNum1, int colNum2, int outputColumn) {
+  public StringGroupConcatColCol(int colNum1, int colNum2, int outputColumn) {
     this();
     this.colNum1 = colNum1;
     this.colNum2 = colNum2;
     this.outputColumn = outputColumn;
   }
 
-  public StringConcatColCol() {
+  public StringGroupConcatColCol() {
     super();
   }
 
@@ -416,7 +416,7 @@ public class StringConcatColCol extends VectorExpression {
 
   @Override
   public String getOutputType() {
-    return "String";
+    return "StringGroup";
   }
 
   public int getColNum1() {
@@ -446,8 +446,8 @@ public class StringConcatColCol extends VectorExpression {
             VectorExpressionDescriptor.Mode.PROJECTION)
         .setNumArguments(2)
         .setArgumentTypes(
-            VectorExpressionDescriptor.ArgumentType.STRING,
-            VectorExpressionDescriptor.ArgumentType.STRING)
+            VectorExpressionDescriptor.ArgumentType.STRING_FAMILY,
+            VectorExpressionDescriptor.ArgumentType.STRING_FAMILY)
         .setInputExpressionTypes(
             VectorExpressionDescriptor.InputExpressionType.COLUMN,
             VectorExpressionDescriptor.InputExpressionType.COLUMN).build();

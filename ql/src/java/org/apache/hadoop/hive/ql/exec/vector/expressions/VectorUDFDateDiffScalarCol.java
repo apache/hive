@@ -90,6 +90,8 @@ public class VectorUDFDateDiffScalarCol extends VectorExpression {
         break;
 
       case STRING:
+      case CHAR:
+      case VARCHAR:
         try {
           date.setTime(formatter.parse(new String(stringValue, "UTF-8")).getTime());
           baseDate = DateWritable.dateToDays(date);
@@ -108,6 +110,8 @@ public class VectorUDFDateDiffScalarCol extends VectorExpression {
           }
           return;
         }
+      default:
+        throw new Error("Unsupported input type " + inputTypes[0].name());
     }
 
     switch (inputTypes[1]) {
@@ -184,6 +188,8 @@ public class VectorUDFDateDiffScalarCol extends VectorExpression {
         break;
 
       case STRING:
+      case CHAR:
+      case VARCHAR:
         if (inputCol.noNulls) {
           outV.noNulls = true;
           if (batch.selectedInUse) {
@@ -218,6 +224,8 @@ public class VectorUDFDateDiffScalarCol extends VectorExpression {
           }
         }
         break;
+      default:
+        throw new Error("Unsupported input type " + inputTypes[1].name());
     }
   }
 
@@ -287,8 +295,8 @@ public class VectorUDFDateDiffScalarCol extends VectorExpression {
     b.setMode(VectorExpressionDescriptor.Mode.PROJECTION)
         .setNumArguments(2)
         .setArgumentTypes(
-            VectorExpressionDescriptor.ArgumentType.ANY,
-            VectorExpressionDescriptor.ArgumentType.ANY)
+            VectorExpressionDescriptor.ArgumentType.STRING_DATETIME_FAMILY,
+            VectorExpressionDescriptor.ArgumentType.STRING_DATETIME_FAMILY)
         .setInputExpressionTypes(
             VectorExpressionDescriptor.InputExpressionType.SCALAR,
             VectorExpressionDescriptor.InputExpressionType.COLUMN);

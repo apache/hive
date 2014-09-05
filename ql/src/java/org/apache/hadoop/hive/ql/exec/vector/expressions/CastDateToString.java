@@ -35,10 +35,15 @@ public class CastDateToString extends LongToStringUnaryUDF {
     super(inputColumn, outputColumn);
   }
 
+  // The assign method will be overridden for CHAR and VARCHAR.
+  protected void assign(BytesColumnVector outV, int i, byte[] bytes, int length) {
+    outV.setVal(i, bytes, 0, length);
+  }
+
   @Override
   protected void func(BytesColumnVector outV, long[] vector, int i) {
     dt.setTime(DateWritable.daysToMillis((int) vector[i]));
     byte[] temp = dt.toString().getBytes();
-    outV.setVal(i, temp, 0, temp.length);
+    assign(outV, i, temp, temp.length);
   }
 }
