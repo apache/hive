@@ -206,11 +206,18 @@ public class HiveConf extends Configuration {
     PLAN_SERIALIZATION("hive.plan.serialization.format", "kryo",
         "Query plan format serialization between client and task nodes. \n" +
         "Two supported values are : kryo and javaXML. Kryo is default."),
-    SCRATCHDIR("hive.exec.scratchdir", "/tmp/hive-${system:user.name}", "Scratch space for Hive jobs"),
+    SCRATCHDIR("hive.exec.scratchdir", "/tmp/hive", 
+        "HDFS root scratch dir for Hive jobs which gets created with 777 permission. " +
+        "For each connecting user, an HDFS scratch dir: ${hive.exec.scratchdir}/<username> is created, " +
+        "with ${hive.scratch.dir.permission}."),
     LOCALSCRATCHDIR("hive.exec.local.scratchdir",
         "${system:java.io.tmpdir}" + File.separator + "${system:user.name}",
         "Local scratch space for Hive jobs"),
-    SCRATCHDIRPERMISSION("hive.scratch.dir.permission", "700", ""),
+    DOWNLOADED_RESOURCES_DIR("hive.downloaded.resources.dir",
+        "${system:java.io.tmpdir}" + File.separator + "${hive.session.id}_resources",
+        "Temporary local directory for added resources in the remote file system."),
+    SCRATCHDIRPERMISSION("hive.scratch.dir.permission", "700", 
+        "The permission for the user specific scratch directories that get created."),
     SUBMITVIACHILD("hive.exec.submitviachild", false, ""),
     SUBMITLOCALTASKVIACHILD("hive.exec.submit.local.task.via.child", true,
         "Determines whether local tasks (typically mapjoin hashtable generation phase) runs in \n" +
@@ -274,9 +281,6 @@ public class HiveConf extends Configuration {
         "Maximum number of dynamic partitions allowed to be created in each mapper/reducer node."),
     MAXCREATEDFILES("hive.exec.max.created.files", 100000L,
         "Maximum number of HDFS files created by all mappers/reducers in a MapReduce job."),
-    DOWNLOADED_RESOURCES_DIR("hive.downloaded.resources.dir",
-        "${system:java.io.tmpdir}" + File.separator + "${hive.session.id}_resources",
-        "Temporary local directory for added resources in the remote file system."),
     DEFAULTPARTITIONNAME("hive.exec.default.partition.name", "__HIVE_DEFAULT_PARTITION__",
         "The default partition name in case the dynamic partition column value is null/empty string or any other values that cannot be escaped. \n" +
         "This value must not contain any special character used in HDFS URI (e.g., ':', '%', '/' etc). \n" +
