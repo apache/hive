@@ -2,11 +2,18 @@ package org.apache.hadoop.hive.ql.optimizer.optiq.translator;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.hive.common.type.Decimal128;
+import org.apache.hadoop.hive.common.type.HiveChar;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
@@ -20,12 +27,15 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseCompare;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseNumeric;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFTimestamp;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToBinary;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToChar;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToDate;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToDecimal;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToUnixTimeStamp;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToVarchar;
+import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -81,8 +91,9 @@ public class RexNodeConverter {
 
   public RexNode convert(ExprNodeDesc expr) throws SemanticException {
     if (expr instanceof ExprNodeNullDesc) {
-      return m_cluster.getRexBuilder().makeNullLiteral(TypeConverter.convert(
-        expr.getTypeInfo(), m_cluster.getRexBuilder().getTypeFactory()).getSqlTypeName());
+      return m_cluster.getRexBuilder().makeNullLiteral(
+          TypeConverter.convert(expr.getTypeInfo(), m_cluster.getRexBuilder().getTypeFactory())
+              .getSqlTypeName());
     }
     if (expr instanceof ExprNodeGenericFuncDesc) {
       return convert((ExprNodeGenericFuncDesc) expr);
@@ -182,8 +193,9 @@ public class RexNodeConverter {
       GenericUDF udf = func.getGenericUDF();
       if ((udf instanceof GenericUDFToChar) || (udf instanceof GenericUDFToVarchar)
           || (udf instanceof GenericUDFToDecimal) || (udf instanceof GenericUDFToDate)
-          || (udf instanceof GenericUDFToBinary) || (udf instanceof GenericUDFToUnixTimeStamp)
-          || castExprUsingUDFBridge(udf)) {
+          || (udf instanceof GenericUDFToBinary) || castExprUsingUDFBridge(udf)) {
+        // || (udf instanceof GenericUDFToUnixTimeStamp) || (udf instanceof
+        // GenericUDFTimestamp) || castExprUsingUDFBridge(udf)) {
         castExpr = m_cluster.getRexBuilder().makeCast(
             TypeConverter.convert(func.getTypeInfo(), m_cluster.getTypeFactory()),
             childRexNodeLst.get(0));
@@ -233,7 +245,9 @@ public class RexNodeConverter {
 
     PrimitiveCategory hiveTypeCategory = hiveType.getPrimitiveCategory();
 
-    Object value = literal.getValue();
+    ConstantObjectInspector coi = literal.getWritableObjectInspector();
+    Object value = ObjectInspectorUtils.copyToStandardJavaObject(literal
+        .getWritableObjectInspector().getWritableConstantValue(), coi);
 
     RexNode optiqLiteral = null;
     // TODO: Verify if we need to use ConstantObjectInspector to unwrap data
@@ -255,6 +269,10 @@ public class RexNodeConverter {
       break;
     // TODO: is Decimal an exact numeric or approximate numeric?
     case DECIMAL:
+      if (value instanceof HiveDecimal)
+        value = ((HiveDecimal) value).bigDecimalValue();
+      if (value instanceof Decimal128)
+        value = ((Decimal128) value).toBigDecimal();
       optiqLiteral = rexBuilder.makeExactLiteral((BigDecimal) value);
       break;
     case FLOAT:
@@ -263,11 +281,28 @@ public class RexNodeConverter {
     case DOUBLE:
       optiqLiteral = rexBuilder.makeApproxLiteral(new BigDecimal((Double) value), optiqDataType);
       break;
+    case CHAR:
+      if (value instanceof HiveChar)
+        value = ((HiveChar) value).getValue();
+      optiqLiteral = rexBuilder.makeLiteral((String) value);
+      break;
+    case VARCHAR:
+      if (value instanceof HiveVarchar)
+        value = ((HiveVarchar) value).getValue();
+      optiqLiteral = rexBuilder.makeLiteral((String) value);
+      break;
     case STRING:
       optiqLiteral = rexBuilder.makeLiteral((String) value);
       break;
     case DATE:
+      Calendar cal = new GregorianCalendar();
+      cal.setTime((Date) value);
+      optiqLiteral = rexBuilder.makeDateLiteral(cal);
+      break;
     case TIMESTAMP:
+      optiqLiteral = rexBuilder.makeTimestampLiteral((Calendar) value,
+          RelDataType.PRECISION_NOT_SPECIFIED);
+      break;
     case BINARY:
     case VOID:
     case UNKNOWN:

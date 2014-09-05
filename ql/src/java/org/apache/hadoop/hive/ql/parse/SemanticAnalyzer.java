@@ -11847,14 +11847,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   // TODO: Extend QP to indicate LV, Multi Insert, Cubes, Rollups...
   private boolean canHandleQuery() {
     boolean runOptiqPlanner = false;
-
-    if (((queryProperties.getJoinCount() > 1) || conf.getBoolVar(ConfVars.HIVE_IN_TEST))
-        && !queryProperties.hasClusterBy()
-        && !queryProperties.hasDistributeBy()
-        && !queryProperties.hasSortBy()
-        && !queryProperties.hasPTF()
-        && !queryProperties.usesScript()
-        && !queryProperties.hasMultiDestQuery()) {
+    // Assumption: If top level QB is query then everything below it must also
+    // be Query
+    if (qb.getIsQuery()
+        && ((queryProperties.getJoinCount() > 1) || conf.getBoolVar(ConfVars.HIVE_IN_TEST))
+        && !queryProperties.hasClusterBy() && !queryProperties.hasDistributeBy()
+        && !queryProperties.hasSortBy() && !queryProperties.hasPTF()
+        && !queryProperties.usesScript() && !queryProperties.hasMultiDestQuery()) {
       runOptiqPlanner = true;
     } else {
       LOG.info("Can not invoke CBO; query contains operators not supported for CBO.");
@@ -11944,7 +11943,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       optiqOptimizedPlan = hepPlanner.findBestExp();
 
-      if (LOG.isDebugEnabled()) {
+      if (LOG.isDebugEnabled() && !conf.getBoolVar(ConfVars.HIVE_IN_TEST)) {
         LOG.debug("CBO Planning details:\n");
         LOG.debug("Original Plan:\n");
         LOG.debug(RelOptUtil.toString(optiqGenPlan, SqlExplainLevel.ALL_ATTRIBUTES));

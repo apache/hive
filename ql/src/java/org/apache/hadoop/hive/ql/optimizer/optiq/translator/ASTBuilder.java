@@ -1,5 +1,10 @@
 package org.apache.hadoop.hive.ql.optimizer.optiq.translator;
 
+import java.sql.Date;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+
 import org.apache.hadoop.hive.ql.optimizer.optiq.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
@@ -41,30 +46,26 @@ class ASTBuilder {
     return b.node();
   }
 
-  static ASTNode join(ASTNode left, ASTNode right, JoinRelType joinType,
-      ASTNode cond, boolean semiJoin) {
+  static ASTNode join(ASTNode left, ASTNode right, JoinRelType joinType, ASTNode cond,
+      boolean semiJoin) {
     ASTBuilder b = null;
 
     switch (joinType) {
     case INNER:
       if (semiJoin) {
-        b = ASTBuilder.construct(HiveParser.TOK_LEFTSEMIJOIN,
-            "TOK_LEFTSEMIJOIN");
+        b = ASTBuilder.construct(HiveParser.TOK_LEFTSEMIJOIN, "TOK_LEFTSEMIJOIN");
       } else {
         b = ASTBuilder.construct(HiveParser.TOK_JOIN, "TOK_JOIN");
       }
       break;
     case LEFT:
-      b = ASTBuilder.construct(HiveParser.TOK_LEFTOUTERJOIN,
-          "TOK_LEFTOUTERJOIN");
+      b = ASTBuilder.construct(HiveParser.TOK_LEFTOUTERJOIN, "TOK_LEFTOUTERJOIN");
       break;
     case RIGHT:
-      b = ASTBuilder.construct(HiveParser.TOK_RIGHTOUTERJOIN,
-          "TOK_RIGHTOUTERJOIN");
+      b = ASTBuilder.construct(HiveParser.TOK_RIGHTOUTERJOIN, "TOK_RIGHTOUTERJOIN");
       break;
     case FULL:
-      b = ASTBuilder.construct(HiveParser.TOK_FULLOUTERJOIN,
-          "TOK_FULLOUTERJOIN");
+      b = ASTBuilder.construct(HiveParser.TOK_FULLOUTERJOIN, "TOK_FULLOUTERJOIN");
       break;
     }
 
@@ -87,9 +88,8 @@ class ASTBuilder {
   }
 
   static ASTNode unqualifiedName(String colName) {
-    ASTBuilder b = ASTBuilder
-.construct(HiveParser.TOK_TABLE_OR_COL,
-        "TOK_TABLE_OR_COL").add(HiveParser.Identifier, colName);
+    ASTBuilder b = ASTBuilder.construct(HiveParser.TOK_TABLE_OR_COL, "TOK_TABLE_OR_COL").add(
+        HiveParser.Identifier, colName);
     return b.node();
   }
 
@@ -108,39 +108,61 @@ class ASTBuilder {
 
   static ASTNode selectExpr(ASTNode expr, String alias) {
     return ASTBuilder.construct(HiveParser.TOK_SELEXPR, "TOK_SELEXPR").add(expr)
-      .add(HiveParser.Identifier, alias).node();
+        .add(HiveParser.Identifier, alias).node();
   }
 
   static ASTNode literal(RexLiteral literal) {
-    Object val = literal.getValue3();
+    Object val = null;
     int type = 0;
     SqlTypeName sqlType = literal.getType().getSqlTypeName();
 
     switch (sqlType) {
     case TINYINT:
+      val = literal.getValue3();
       type = HiveParser.TinyintLiteral;
       break;
     case SMALLINT:
+      val = literal.getValue3();
       type = HiveParser.SmallintLiteral;
       break;
     case INTEGER:
     case BIGINT:
+      val = literal.getValue3();
       type = HiveParser.BigintLiteral;
       break;
     case DECIMAL:
     case FLOAT:
     case DOUBLE:
     case REAL:
+      val = literal.getValue3();
       type = HiveParser.Number;
       break;
     case VARCHAR:
     case CHAR:
+      val = literal.getValue3();
       type = HiveParser.StringLiteral;
       val = "'" + String.valueOf(val) + "'";
       break;
     case BOOLEAN:
-      type = ((Boolean) val).booleanValue() ? HiveParser.KW_TRUE
-          : HiveParser.KW_FALSE;
+      val = literal.getValue3();
+      type = ((Boolean) val).booleanValue() ? HiveParser.KW_TRUE : HiveParser.KW_FALSE;
+      break;
+    case DATE: {
+      val = literal.getValue();
+      type = HiveParser.TOK_DATELITERAL;
+      DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+      val = df.format(((Calendar) val).getTime());
+      val = "'" + val + "'";
+    }
+      break;
+    case TIME:
+    case TIMESTAMP: {
+      val = literal.getValue();
+      type = HiveParser.TOK_TIMESTAMP;
+      DateFormat df = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+      val = df.format(((Calendar) val).getTime());
+      val = "'" + val + "'";
+    }
       break;
     case NULL:
       type = HiveParser.TOK_NULL;

@@ -22,6 +22,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
 import org.eigenbase.relopt.RelOptCluster;
 import org.eigenbase.reltype.RelDataType;
 import org.eigenbase.reltype.RelDataTypeFactory;
+import org.eigenbase.reltype.RelDataTypeFactoryImpl.JavaType;
 import org.eigenbase.reltype.RelDataTypeField;
 import org.eigenbase.rex.RexBuilder;
 import org.eigenbase.sql.type.SqlTypeName;
@@ -51,8 +52,7 @@ public class TypeConverter {
   };
 
   /*********************** Convert Hive Types To Optiq Types ***********************/
-  public static RelDataType getType(RelOptCluster cluster,
-      List<ColumnInfo> cInfoLst) {
+  public static RelDataType getType(RelOptCluster cluster, List<ColumnInfo> cInfoLst) {
     RexBuilder rexBuilder = cluster.getRexBuilder();
     RelDataTypeFactory dtFactory = rexBuilder.getTypeFactory();
     List<RelDataType> fieldTypes = new LinkedList<RelDataType>();
@@ -65,8 +65,7 @@ public class TypeConverter {
     return dtFactory.createStructType(fieldTypes, fieldNames);
   }
 
-  public static RelDataType getType(RelOptCluster cluster, RowResolver rr,
-      List<String> neededCols) {
+  public static RelDataType getType(RelOptCluster cluster, RowResolver rr, List<String> neededCols) {
     RexBuilder rexBuilder = cluster.getRexBuilder();
     RelDataTypeFactory dtFactory = rexBuilder.getTypeFactory();
     RowSchema rs = rr.getRowSchema();
@@ -105,8 +104,7 @@ public class TypeConverter {
     return convertedType;
   }
 
-  public static RelDataType convert(PrimitiveTypeInfo type,
-      RelDataTypeFactory dtFactory) {
+  public static RelDataType convert(PrimitiveTypeInfo type, RelDataTypeFactory dtFactory) {
     RelDataType convertedType = null;
 
     switch (type.getPrimitiveCategory()) {
@@ -135,9 +133,7 @@ public class TypeConverter {
       convertedType = dtFactory.createSqlType(SqlTypeName.DOUBLE);
       break;
     case STRING:
-      //TODO: shall we pass -1 for len to distinguish between STRING & VARCHAR on way out
-      convertedType = dtFactory.createSqlType(SqlTypeName.VARCHAR,
-          RelDataType.PRECISION_NOT_SPECIFIED);
+      convertedType = dtFactory.createSqlType(SqlTypeName.VARCHAR, Integer.MAX_VALUE);
       break;
     case DATE:
       convertedType = dtFactory.createSqlType(SqlTypeName.DATE);
@@ -149,8 +145,9 @@ public class TypeConverter {
       convertedType = dtFactory.createSqlType(SqlTypeName.BINARY);
       break;
     case DECIMAL:
-      DecimalTypeInfo dtInf = (DecimalTypeInfo)type;
-      convertedType = dtFactory.createSqlType(SqlTypeName.DECIMAL, dtInf.precision(), dtInf.scale());
+      DecimalTypeInfo dtInf = (DecimalTypeInfo) type;
+      convertedType = dtFactory
+          .createSqlType(SqlTypeName.DECIMAL, dtInf.precision(), dtInf.scale());
       break;
     case VARCHAR:
       convertedType = dtFactory.createSqlType(SqlTypeName.VARCHAR,
@@ -172,45 +169,39 @@ public class TypeConverter {
     return convertedType;
   }
 
-  public static RelDataType convert(ListTypeInfo lstType,
-      RelDataTypeFactory dtFactory) {
+  public static RelDataType convert(ListTypeInfo lstType, RelDataTypeFactory dtFactory) {
     RelDataType elemType = convert(lstType.getListElementTypeInfo(), dtFactory);
     return dtFactory.createArrayType(elemType, -1);
   }
 
-  public static RelDataType convert(MapTypeInfo mapType,
-      RelDataTypeFactory dtFactory) {
+  public static RelDataType convert(MapTypeInfo mapType, RelDataTypeFactory dtFactory) {
     RelDataType keyType = convert(mapType.getMapKeyTypeInfo(), dtFactory);
     RelDataType valueType = convert(mapType.getMapValueTypeInfo(), dtFactory);
     return dtFactory.createMapType(keyType, valueType);
   }
 
-  public static RelDataType convert(StructTypeInfo structType,
-      final RelDataTypeFactory dtFactory) {
-    List<RelDataType> fTypes = Lists.transform(
-        structType.getAllStructFieldTypeInfos(),
+  public static RelDataType convert(StructTypeInfo structType, final RelDataTypeFactory dtFactory) {
+    List<RelDataType> fTypes = Lists.transform(structType.getAllStructFieldTypeInfos(),
         new Function<TypeInfo, RelDataType>() {
           @Override
           public RelDataType apply(TypeInfo tI) {
             return convert(tI, dtFactory);
           }
         });
-    return dtFactory.createStructType(fTypes,
-        structType.getAllStructFieldNames());
+    return dtFactory.createStructType(fTypes, structType.getAllStructFieldNames());
   }
 
-  public static RelDataType convert(UnionTypeInfo unionType,
-      RelDataTypeFactory dtFactory) {
+  public static RelDataType convert(UnionTypeInfo unionType, RelDataTypeFactory dtFactory) {
     // @todo what do we about unions?
     throw new UnsupportedOperationException();
   }
 
   public static TypeInfo convert(RelDataType rType) {
-    if ( rType.isStruct() ) {
+    if (rType.isStruct()) {
       return convertStructType(rType);
-    } else if ( rType.getComponentType() != null ) {
+    } else if (rType.getComponentType() != null) {
       return convertListType(rType);
-    } else if ( rType.getKeyType() != null ) {
+    } else if (rType.getKeyType() != null) {
       return convertMapType(rType);
     } else {
       return convertPrimtiveType(rType);
@@ -218,16 +209,14 @@ public class TypeConverter {
   }
 
   public static TypeInfo convertStructType(RelDataType rType) {
-    List<TypeInfo> fTypes = Lists.transform(
-        rType.getFieldList(),
+    List<TypeInfo> fTypes = Lists.transform(rType.getFieldList(),
         new Function<RelDataTypeField, TypeInfo>() {
           @Override
           public TypeInfo apply(RelDataTypeField f) {
             return convert(f.getType());
           }
         });
-    List<String> fNames = Lists.transform(
-        rType.getFieldList(),
+    List<String> fNames = Lists.transform(rType.getFieldList(),
         new Function<RelDataTypeField, String>() {
           @Override
           public String apply(RelDataTypeField f) {
@@ -247,7 +236,7 @@ public class TypeConverter {
   }
 
   public static TypeInfo convertPrimtiveType(RelDataType rType) {
-    switch(rType.getSqlTypeName()) {
+    switch (rType.getSqlTypeName()) {
     case BOOLEAN:
       return TypeInfoFactory.booleanTypeInfo;
     case TINYINT:
@@ -271,14 +260,14 @@ public class TypeConverter {
     case DECIMAL:
       return TypeInfoFactory.getDecimalTypeInfo(rType.getPrecision(), rType.getScale());
     case VARCHAR:
-      if (rType.getPrecision() == RelDataType.PRECISION_NOT_SPECIFIED)
+      if (rType.getPrecision() == Integer.MAX_VALUE)
         return TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.STRING_TYPE_NAME);
       else
         return TypeInfoFactory.getVarcharTypeInfo(rType.getPrecision());
     case CHAR:
       return TypeInfoFactory.getCharTypeInfo(rType.getPrecision());
     case OTHER:
-      default:
+    default:
       return TypeInfoFactory.voidTypeInfo;
     }
 
@@ -290,19 +279,21 @@ public class TypeConverter {
 
     switch (optiqType.getSqlTypeName()) {
     case CHAR: {
-      ht = new HiveToken(HiveParser.TOK_CHAR, "TOK_CHAR",
-          String.valueOf(optiqType.getPrecision()));
+      ht = new HiveToken(HiveParser.TOK_CHAR, "TOK_CHAR", String.valueOf(optiqType.getPrecision()));
     }
       break;
     case VARCHAR: {
-      ht = new HiveToken(HiveParser.TOK_VARCHAR, "TOK_VARCHAR",
-          String.valueOf(optiqType.getPrecision()));
+      if (optiqType.getPrecision() == Integer.MAX_VALUE)
+        ht = new HiveToken(HiveParser.TOK_STRING, "TOK_STRING", String.valueOf(optiqType
+            .getPrecision()));
+      else
+        ht = new HiveToken(HiveParser.TOK_VARCHAR, "TOK_VARCHAR", String.valueOf(optiqType
+            .getPrecision()));
     }
       break;
     case DECIMAL: {
-      ht = new HiveToken(HiveParser.TOK_DECIMAL, "TOK_DECIMAL",
-          String.valueOf(optiqType.getPrecision()), String.valueOf(optiqType
-              .getScale()));
+      ht = new HiveToken(HiveParser.TOK_DECIMAL, "TOK_DECIMAL", String.valueOf(optiqType
+          .getPrecision()), String.valueOf(optiqType.getScale()));
     }
       break;
     default:
