@@ -343,7 +343,10 @@ public class HiveEndPoint {
       if (ep.partitionVals.isEmpty()) {
         return;
       }
-      SessionState state = SessionState.start(new CliSessionState(conf));
+      SessionState localSession = null;
+      if(SessionState.get() == null) {
+        localSession = SessionState.start(new CliSessionState(conf));
+      }
       Driver driver = new Driver(conf);
 
       try {
@@ -372,7 +375,9 @@ public class HiveEndPoint {
       } finally {
         driver.close();
         try {
-          state.close();
+          if(localSession != null) {
+            localSession.close();
+          }
         } catch (IOException e) {
           LOG.warn("Error closing SessionState used to run Hive DDL.");
         }
@@ -563,11 +568,14 @@ public class HiveEndPoint {
 
     /**
      * Get Id of currently open transaction
-     * @return
+     * @return -1 if there is no open TX
      */
     @Override
     public Long getCurrentTxnId() {
-      return txnIds.get(currentTxnIndex);
+      if(currentTxnIndex >= 0) {
+        return txnIds.get(currentTxnIndex);
+      }
+      return -1L;
     }
 
     /**

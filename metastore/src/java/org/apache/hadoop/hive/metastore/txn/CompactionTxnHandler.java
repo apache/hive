@@ -535,6 +535,46 @@ public class CompactionTxnHandler extends TxnHandler {
       deadlockCnt = 0;
     }
   }
+
+  /**
+   * Queries metastore DB directly to find columns in the table which have statistics information.
+   * If {@code ci} includes partition info then per partition stats info is examined, otherwise
+   * table level stats are examined.
+   * @throws MetaException
+   */
+  public List<String> findColumnsWithStats(CompactionInfo ci) throws MetaException {
+    Connection dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+    Statement stmt = null;
+    ResultSet rs = null;
+    try {
+      stmt = dbConn.createStatement();
+      String s = "SELECT COLUMN_NAME FROM " + (ci.partName == null ? "TAB_COL_STATS" : "PART_COL_STATS")
+         + " WHERE DB_NAME='" + ci.dbname + "' AND TABLE_NAME='" + ci.tableName + "'"
+        + (ci.partName == null ? "" : " AND PARTITION_NAME='" + ci.partName + "'");
+      LOG.debug("Going to execute <" + s + ">");
+      rs = stmt.executeQuery(s);
+      List<String> columns = new ArrayList<String>();
+      while(rs.next()) {
+        columns.add(rs.getString(1));
+      }
+      LOG.debug("Found columns to update stats: " + columns + " on " + ci.tableName +
+        (ci.partName == null ? "" : "/" + ci.partName));
+      dbConn.commit();
+      return columns;
+    } catch (SQLException e) {
+      try {
+        LOG.error("Failed to find columns to analyze stats on for " + ci.tableName +
+            (ci.partName == null ? "" : "/" + ci.partName), e);
+        dbConn.rollback();
+      } catch (SQLException e1) {
+        //nothing we can do here
+      }
+      throw new MetaException("Unable to connect to transaction database " +
+        StringUtils.stringifyException(e));
+    } finally {
+      close(rs, stmt, dbConn);
+    }
+  }
 }
 
 
