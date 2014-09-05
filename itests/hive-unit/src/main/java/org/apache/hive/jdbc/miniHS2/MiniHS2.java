@@ -31,7 +31,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.shims.HadoopShims.MiniDFSShim;
 import org.apache.hadoop.hive.shims.HadoopShims.MiniMrShim;
@@ -57,6 +56,7 @@ public class MiniHS2 extends AbstractHiveService {
   private static final AtomicLong hs2Counter = new AtomicLong();
   private MiniMrShim mr;
   private MiniDFSShim dfs;
+  private FileSystem localFS;
   private boolean useMiniMR = false;
   private boolean useMiniKdc = false;
   private final String serverPrincipal;
@@ -137,6 +137,10 @@ public class MiniHS2 extends AbstractHiveService {
     this.dfs = dfs;
   }
 
+  public FileSystem getLocalFS() {
+    return localFS;
+  }
+
   public boolean isUseMiniMR() {
     return useMiniMR;
   }
@@ -157,7 +161,8 @@ public class MiniHS2 extends AbstractHiveService {
     this.serverPrincipal = serverPrincipal;
     this.serverKeytab = serverKeytab;
     this.isMetastoreRemote = isMetastoreRemote;
-    baseDir =  Files.createTempDir();
+    baseDir = Files.createTempDir();
+    localFS = FileSystem.getLocal(hiveConf);
     FileSystem fs;
     if (useMiniMR) {
       dfs = ShimLoader.getHadoopShims().getMiniDfs(hiveConf, 4, true, null);
@@ -371,7 +376,7 @@ public class MiniHS2 extends AbstractHiveService {
           getMiniKdc().loginUser(getMiniKdc().getDefaultUserPrincipal());
           sessionConf.put("principal", serverPrincipal);
         }
-        */
+         */
         sessionHandle = hs2Client.openSession("foo", "bar", sessionConf);
       } catch (Exception e) {
         // service not started yet

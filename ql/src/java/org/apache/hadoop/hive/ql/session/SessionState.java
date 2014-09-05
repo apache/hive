@@ -45,7 +45,6 @@ import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.ql.MapRedStats;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -69,6 +68,7 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzSessionC
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveMetastoreClientFactoryImpl;
 import org.apache.hadoop.hive.ql.util.DosToUnix;
 import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.ReflectionUtils;
 
 import com.google.common.base.Preconditions;
@@ -208,6 +208,8 @@ public class SessionState {
    */
   private Path localSessionPath;
 
+  private String hdfsScratchDirURIString;
+
   /**
    * Get the lineage state stored in this session.
    *
@@ -344,36 +346,39 @@ public class SessionState {
 
     setCurrentSessionState(startSs);
 
-    if(startSs.hiveHist == null){
+    if (startSs.hiveHist == null){
       if (startSs.getConf().getBoolVar(HiveConf.ConfVars.HIVE_SESSION_HISTORY_ENABLED)) {
         startSs.hiveHist = new HiveHistoryImpl(startSs);
-      }else {
-        //Hive history is disabled, create a no-op proxy
+      } else {
+        // Hive history is disabled, create a no-op proxy
         startSs.hiveHist = HiveHistoryProxyHandler.getNoOpHiveHistoryProxy();
-      }
-    }
-
-    if (startSs.getTmpOutputFile() == null) {
-      // set temp file containing results to be sent to HiveClient
-      try {
-        startSs.setTmpOutputFile(createTempFile(startSs.getConf()));
-      } catch (IOException e) {
-        throw new RuntimeException(e);
       }
     }
 
     // Get the following out of the way when you start the session these take a
     // while and should be done when we start up.
     try {
-      //Hive object instance should be created with a copy of the conf object. If the conf is
+      // Hive object instance should be created with a copy of the conf object. If the conf is
       // shared with SessionState, other parts of the code might update the config, but
       // Hive.get(HiveConf) would not recognize the case when it needs refreshing
       Hive.get(new HiveConf(startSs.conf)).getMSC();
-      ShimLoader.getHadoopShims().getUGIForConf(startSs.conf);
+      UserGroupInformation sessionUGI = ShimLoader.getHadoopShims().getUGIForConf(startSs.conf);
       FileSystem.get(startSs.conf);
-      startSs.createSessionPaths(startSs.conf);
+
+      // Create scratch dirs for this session
+      startSs.createSessionDirs(sessionUGI.getShortUserName());
+
+      // Set temp file containing results to be sent to HiveClient
+      if (startSs.getTmpOutputFile() == null) {
+        try {
+          startSs.setTmpOutputFile(createTempFile(startSs.getConf()));
+        } catch (IOException e) {
+          throw new RuntimeException(e);
+        }
+      }
+
     } catch (Exception e) {
-      // catch-all due to some exec time dependencies on session state
+      // Catch-all due to some exec time dependencies on session state
       // that would cause ClassNoFoundException otherwise
       throw new RuntimeException(e);
     }
@@ -394,6 +399,88 @@ public class SessionState {
       LOG.info("No Tez session required at this point. hive.execution.engine=mr.");
     }
     return startSs;
+  }
+
+  /**
+   * Create dirs & session paths for this session:
+   * 1. HDFS scratch dir
+   * 2. Local scratch dir
+   * 3. Local downloaded resource dir
+   * 4. HDFS session path
+   * 5. Local session path
+   * 6. HDFS temp table space
+   * @param userName
+   * @throws IOException
+   */
+  private void createSessionDirs(String userName) throws IOException {
+    HiveConf conf = getConf();
+    // First create the root scratch dir on hdfs (if it doesn't already exist) and make it writable
+    Path rootHDFSDirPath = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCHDIR));
+    String rootHDFSDirPermission = "777";
+    createPath(conf, rootHDFSDirPath, rootHDFSDirPermission, false, false);
+    // Now create session specific dirs
+    String scratchDirPermission = HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCHDIRPERMISSION);
+    Path path;
+    // 1. HDFS scratch dir
+    path = new Path(rootHDFSDirPath, userName);
+    hdfsScratchDirURIString = path.toUri().toString();
+    createPath(conf, path, scratchDirPermission, false, false);
+    // 2. Local scratch dir
+    path = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.LOCALSCRATCHDIR));
+    createPath(conf, path, scratchDirPermission, true, false);
+    // 3. Download resources dir
+    path = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.DOWNLOADED_RESOURCES_DIR));
+    createPath(conf, path, scratchDirPermission, true, false);
+    // Finally, create session paths for this session
+    // Local & non-local tmp location is configurable. however it is the same across
+    // all external file systems
+    String sessionId = getSessionId();
+    // 4. HDFS session path
+    hdfsSessionPath = new Path(hdfsScratchDirURIString, sessionId);
+    createPath(conf, hdfsSessionPath, scratchDirPermission, false, true);
+    conf.set(HDFS_SESSION_PATH_KEY, hdfsSessionPath.toUri().toString());
+    // 5. Local session path
+    localSessionPath = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.LOCALSCRATCHDIR), sessionId);
+    createPath(conf, localSessionPath, scratchDirPermission, true, true);
+    conf.set(LOCAL_SESSION_PATH_KEY, localSessionPath.toUri().toString());
+    // 6. HDFS temp table space
+    hdfsTmpTableSpace = new Path(hdfsSessionPath, TMP_PREFIX);
+    createPath(conf, hdfsTmpTableSpace, scratchDirPermission, false, true);
+    conf.set(TMP_TABLE_SPACE_KEY, hdfsTmpTableSpace.toUri().toString());
+  }
+
+  /**
+   * Create a given path if it doesn't exist.
+   *
+   * @param conf
+   * @param pathString
+   * @param permission
+   * @param isLocal
+   * @param isCleanUp
+   * @return
+   * @throws IOException
+   */
+  private void createPath(HiveConf conf, Path path, String permission, boolean isLocal,
+      boolean isCleanUp) throws IOException {
+    FsPermission fsPermission = new FsPermission(permission);
+    FileSystem fs;
+    if (isLocal) {
+      fs = FileSystem.getLocal(conf);
+    } else {
+      fs = path.getFileSystem(conf);
+    }
+    if (!fs.exists(path)) {
+      fs.mkdirs(path, fsPermission);
+      String dirType = isLocal ? "local" : "HDFS";
+      LOG.info("Created " + dirType + " directory: " + path.toString());
+    }
+    if (isCleanUp) {
+      fs.deleteOnExit(path);
+    }
+  }
+
+  public String getHdfsScratchDirURIString() {
+    return hdfsScratchDirURIString;
   }
 
   public static Path getLocalSessionPath(Configuration conf) {
@@ -447,43 +534,6 @@ public class SessionState {
       localSessionPath.getFileSystem(conf).delete(localSessionPath, true);
     }
   }
-
-  private void createSessionPaths(Configuration conf) throws IOException {
-
-    String scratchDirPermission = HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCHDIRPERMISSION);
-    String sessionId = getSessionId();
-
-    // local & non-local tmp location is configurable. however it is the same across
-    // all external file systems
-    hdfsSessionPath =
-      new Path(HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCHDIR),
-               sessionId);
-    createPath(conf, hdfsSessionPath, scratchDirPermission);
-    conf.set(HDFS_SESSION_PATH_KEY, hdfsSessionPath.toUri().toString());
-
-    localSessionPath = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.LOCALSCRATCHDIR),
-                                sessionId);
-    createPath(conf, localSessionPath, scratchDirPermission);
-    conf.set(LOCAL_SESSION_PATH_KEY, localSessionPath.toUri().toString());
-    hdfsTmpTableSpace = new Path(hdfsSessionPath, TMP_PREFIX);
-    createPath(conf, hdfsTmpTableSpace, scratchDirPermission);
-    conf.set(TMP_TABLE_SPACE_KEY, hdfsTmpTableSpace.toUri().toString());
-  }
-
-  private void createPath(Configuration conf, Path p, String perm) throws IOException {
-    FileSystem fs = p.getFileSystem(conf);
-    p = new Path(fs.makeQualified(p).toString());
-    FsPermission fsPermission = new FsPermission(Short.parseShort(perm.trim(), 8));
-
-    if (!Utilities.createDirsWithPermission(conf, p, fsPermission)) {
-      throw new IOException("Cannot create directory: "
-                            + p.toString());
-    }
-
-    // best effort to clean up if we don't shut down properly
-    fs.deleteOnExit(p);
-  }
-
 
   /**
    * Setup authentication and authorization plugins for this session.
