@@ -55,6 +55,8 @@ public class LazyBinary extends LazyPrimitive<LazyBinaryObjectInspector, BytesWr
                 "decoded the data.");
     }
     byte[] decoded = arrayByteBase64 ? Base64.decodeBase64(recv) : recv;
+    // use the original bytes in case decoding should fail
+    decoded = decoded.length > 0 ? decoded : recv;
     data.set(decoded, 0, decoded.length);
   }
 
