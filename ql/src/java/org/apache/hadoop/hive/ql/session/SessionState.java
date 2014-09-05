@@ -53,6 +53,9 @@ import org.apache.hadoop.hive.ql.exec.tez.TezSessionState;
 import org.apache.hadoop.hive.ql.history.HiveHistory;
 import org.apache.hadoop.hive.ql.history.HiveHistoryImpl;
 import org.apache.hadoop.hive.ql.history.HiveHistoryProxyHandler;
+import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
+import org.apache.hadoop.hive.ql.lockmgr.LockException;
+import org.apache.hadoop.hive.ql.lockmgr.TxnManagerFactory;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -211,6 +214,29 @@ public class SessionState {
   private String hdfsScratchDirURIString;
 
   /**
+   * Transaction manager to use for this session.  This is instantiated lazily by
+   * {@link #initTxnMgr(org.apache.hadoop.hive.conf.HiveConf)}
+   */
+  private HiveTxnManager txnMgr = null;
+
+  /**
+   * When {@link #setCurrentTxn(long)} is set to this or {@link #getCurrentTxn()}} returns this it
+   * indicates that there is not a current transaction in this session.
+  */
+  public static final long NO_CURRENT_TXN = -1L;
+
+  /**
+   * Transaction currently open
+   */
+  private long currentTxn = NO_CURRENT_TXN;
+
+  /**
+   * Whether we are in auto-commit state or not.  Currently we are always in auto-commit,
+   * so there are not setters for this yet.
+   */
+  private boolean txnAutoCommit = true;
+
+  /**
    * Get the lineage state stored in this session.
    *
    * @return LineageState
@@ -309,6 +335,37 @@ public class SessionState {
 
   public String getSessionId() {
     return (conf.getVar(HiveConf.ConfVars.HIVESESSIONID));
+  }
+
+  /**
+   * Initialize the transaction manager.  This is done lazily to avoid hard wiring one
+   * transaction manager at the beginning of the session.  In general users shouldn't change
+   * this, but it's useful for testing.
+   * @param conf Hive configuration to initialize transaction manager
+   * @return transaction manager
+   * @throws LockException
+   */
+  public HiveTxnManager initTxnMgr(HiveConf conf) throws LockException {
+    if (txnMgr == null) {
+      txnMgr = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
+    }
+    return txnMgr;
+  }
+
+  public HiveTxnManager getTxnMgr() {
+    return txnMgr;
+  }
+
+  public long getCurrentTxn() {
+    return currentTxn;
+  }
+
+  public void setCurrentTxn(long currTxn) {
+    currentTxn = currTxn;
+  }
+
+  public boolean isAutoCommit() {
+    return txnAutoCommit;
   }
 
   /**
@@ -1100,6 +1157,7 @@ public class SessionState {
   }
 
   public void close() throws IOException {
+    if (txnMgr != null) txnMgr.closeTxnManager();
     JavaUtils.closeClassLoadersTo(conf.getClassLoader(), parentLoader);
     File resourceDir =
         new File(getConf().getVar(HiveConf.ConfVars.DOWNLOADED_RESOURCES_DIR));
