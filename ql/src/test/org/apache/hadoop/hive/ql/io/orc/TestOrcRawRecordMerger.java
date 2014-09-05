@@ -56,6 +56,7 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNull;
 
 public class TestOrcRawRecordMerger {
 
@@ -454,8 +455,15 @@ public class TestOrcRawRecordMerger {
 
   static class MyRow {
     Text col1;
+    RecordIdentifier ROW__ID;
+
     MyRow(String val) {
       col1 = new Text(val);
+    }
+
+    MyRow(String val, long rowId, long origTxn, int bucket) {
+      col1 = new Text(val);
+      ROW__ID = new RecordIdentifier(origTxn, bucket, rowId);
     }
   }
 
@@ -533,12 +541,12 @@ public class TestOrcRawRecordMerger {
 
     // write a delta
     ru = of.getRecordUpdater(root, options.writingBase(false)
-        .minimumTransactionId(200).maximumTransactionId(200));
-    ru.update(200, 0, 0, new MyRow("update 1"));
-    ru.update(200, 0, 2, new MyRow("update 2"));
-    ru.update(200, 0, 3, new MyRow("update 3"));
-    ru.delete(200, 0, 7);
-    ru.delete(200, 0, 8);
+        .minimumTransactionId(200).maximumTransactionId(200).recordIdColumn(1));
+    ru.update(200, new MyRow("update 1", 0, 0, BUCKET));
+    ru.update(200, new MyRow("update 2", 2, 0, BUCKET));
+    ru.update(200, new MyRow("update 3", 3, 0, BUCKET));
+    ru.delete(200, new MyRow("", 7, 0, BUCKET));
+    ru.delete(200, new MyRow("", 8, 0, BUCKET));
     ru.close(false);
 
     ValidTxnList txnList = new ValidTxnListImpl("200:");
@@ -607,13 +615,13 @@ public class TestOrcRawRecordMerger {
     assertEquals(OrcRecordUpdater.DELETE_OPERATION,
         OrcRecordUpdater.getOperation(event));
     assertEquals(new ReaderKey(0, BUCKET, 7, 200), id);
-    assertEquals(null, OrcRecordUpdater.getRow(event));
+    assertNull(OrcRecordUpdater.getRow(event));
 
     assertEquals(true, merger.next(id, event));
     assertEquals(OrcRecordUpdater.DELETE_OPERATION,
         OrcRecordUpdater.getOperation(event));
     assertEquals(new ReaderKey(0, BUCKET, 8, 200), id);
-    assertEquals(null, OrcRecordUpdater.getRow(event));
+    assertNull(OrcRecordUpdater.getRow(event));
 
     assertEquals(true, merger.next(id, event));
     assertEquals(OrcRecordUpdater.INSERT_OPERATION,
@@ -693,7 +701,7 @@ public class TestOrcRawRecordMerger {
     assertEquals(OrcRecordUpdater.DELETE_OPERATION,
         OrcRecordUpdater.getOperation(event));
     assertEquals(new ReaderKey(0, BUCKET, 7, 200), id);
-    assertEquals(null, OrcRecordUpdater.getRow(event));
+    assertNull(OrcRecordUpdater.getRow(event));
 
     assertEquals(true, merger.next(id, event));
     assertEquals(OrcRecordUpdater.INSERT_OPERATION,
@@ -705,8 +713,7 @@ public class TestOrcRawRecordMerger {
     assertEquals(OrcRecordUpdater.DELETE_OPERATION,
         OrcRecordUpdater.getOperation(event));
     assertEquals(new ReaderKey(0, BUCKET, 8, 200), id);
-    assertEquals(null, OrcRecordUpdater.getRow(event));
-
+    assertNull(OrcRecordUpdater.getRow(event));
     assertEquals(true, merger.next(id, event));
     assertEquals(OrcRecordUpdater.INSERT_OPERATION,
         OrcRecordUpdater.getOperation(event));
@@ -747,6 +754,7 @@ public class TestOrcRawRecordMerger {
     Text mytext;
     float myfloat;
     double mydouble;
+    RecordIdentifier ROW__ID;
 
     BigRow(int myint, long mylong, String mytext, float myfloat, double mydouble) {
       this.myint = myint;
@@ -754,6 +762,21 @@ public class TestOrcRawRecordMerger {
       this.mytext = new Text(mytext);
       this.myfloat = myfloat;
       this.mydouble = mydouble;
+      ROW__ID = null;
+    }
+
+    BigRow(int myint, long mylong, String mytext, float myfloat, double mydouble,
+                    long rowId, long origTxn, int bucket) {
+      this.myint = myint;
+      this.mylong = mylong;
+      this.mytext = new Text(mytext);
+      this.myfloat = myfloat;
+      this.mydouble = mydouble;
+      ROW__ID = new RecordIdentifier(origTxn, bucket, rowId);
+    }
+
+    BigRow(long rowId, long origTxn, int bucket) {
+      ROW__ID = new RecordIdentifier(origTxn, bucket, rowId);
     }
   }
 
@@ -802,16 +825,16 @@ public class TestOrcRawRecordMerger {
     // write a delta
     AcidOutputFormat.Options options = new AcidOutputFormat.Options(conf)
         .writingBase(false).minimumTransactionId(1).maximumTransactionId(1)
-        .bucket(BUCKET).inspector(inspector).filesystem(fs);
+        .bucket(BUCKET).inspector(inspector).filesystem(fs).recordIdColumn(5);
     RecordUpdater ru = of.getRecordUpdater(root, options);
     values = new String[]{"0.0", null, null, "1.1", null, null, null,
         "ignore.7"};
     for(int i=0; i < values.length; ++i) {
       if (values[i] != null) {
-        ru.update(1, 0, i, new BigRow(i, i, values[i], i, i));
+        ru.update(1, new BigRow(i, i, values[i], i, i, i, 0, BUCKET));
       }
     }
-    ru.delete(100, 0, 9);
+    ru.delete(100, new BigRow(9, 0, BUCKET));
     ru.close(false);
 
     // write a delta
@@ -820,10 +843,10 @@ public class TestOrcRawRecordMerger {
     values = new String[]{null, null, "1.0", null, null, null, null, "3.1"};
     for(int i=0; i < values.length; ++i) {
       if (values[i] != null) {
-        ru.update(2, 0, i, new BigRow(i, i, values[i], i, i));
+        ru.update(2, new BigRow(i, i, values[i], i, i, i, 0, BUCKET));
       }
     }
-    ru.delete(100, 0, 8);
+    ru.delete(100, new BigRow(8, 0, BUCKET));
     ru.close(false);
 
     InputFormat inf = new OrcInputFormat();
@@ -902,16 +925,16 @@ public class TestOrcRawRecordMerger {
     ru.close(false);
 
     // write a delta
-    options.writingBase(false).minimumTransactionId(1).maximumTransactionId(1);
+    options.writingBase(false).minimumTransactionId(1).maximumTransactionId(1).recordIdColumn(5);
     ru = of.getRecordUpdater(root, options);
     values = new String[]{"0.0", null, null, "1.1", null, null, null,
         "ignore.7"};
     for(int i=0; i < values.length; ++i) {
       if (values[i] != null) {
-        ru.update(1, 0, i, new BigRow(i, i, values[i], i, i));
+        ru.update(1, new BigRow(i, i, values[i], i, i, i, 0, BUCKET));
       }
     }
-    ru.delete(100, 0, 9);
+    ru.delete(100, new BigRow(9, 0, BUCKET));
     ru.close(false);
 
     // write a delta
@@ -920,10 +943,10 @@ public class TestOrcRawRecordMerger {
     values = new String[]{null, null, "1.0", null, null, null, null, "3.1"};
     for(int i=0; i < values.length; ++i) {
       if (values[i] != null) {
-        ru.update(2, 0, i, new BigRow(i, i, values[i], i, i));
+        ru.update(2, new BigRow(i, i, values[i], i, i, i, 0, BUCKET));
       }
     }
-    ru.delete(100, 0, 8);
+    ru.delete(100, new BigRow(8, 0, BUCKET));
     ru.close(false);
 
     InputFormat inf = new OrcInputFormat();

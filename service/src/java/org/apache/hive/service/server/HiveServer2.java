@@ -131,6 +131,7 @@ public class HiveServer2 extends CompositeService {
   }
 
   public static void main(String[] args) {
+    HiveConf.setLoadHiveServer2Config(true);
     try {
       ServerOptionsProcessor oproc = new ServerOptionsProcessor("hiveserver2");
       if (!oproc.process(args)) {

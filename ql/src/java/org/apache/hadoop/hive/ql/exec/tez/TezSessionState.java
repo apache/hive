@@ -43,7 +43,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.yarn.api.records.LocalResource;
@@ -308,11 +308,11 @@ public class TezSessionState {
     throws IOException {
 
     // tez needs its own scratch dir (per session)
-    Path tezDir = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCHDIR), TEZ_DIR);
+    Path tezDir = new Path(SessionState.get().getHdfsScratchDirURIString(), TEZ_DIR);
     tezDir = new Path(tezDir, sessionId);
     FileSystem fs = tezDir.getFileSystem(conf);
-    FsPermission fsPermission = new FsPermission((short)00777);
-    Utilities.createDirsWithPermission(conf, tezDir, fsPermission, true);
+    FsPermission fsPermission = new FsPermission(HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCHDIRPERMISSION));
+    fs.mkdirs(tezDir, fsPermission);
     // Make sure the path is normalized (we expect validation to pass since we just created it).
     tezDir = DagUtils.validateTargetDir(tezDir, conf).getPath();
     // don't keep the directory around on non-clean exit
