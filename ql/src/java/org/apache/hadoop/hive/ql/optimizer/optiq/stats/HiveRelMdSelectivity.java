@@ -1,6 +1,7 @@
 package org.apache.hadoop.hive.ql.optimizer.optiq.stats;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -77,59 +78,84 @@ public class HiveRelMdSelectivity extends RelMdSelectivity {
     List<JoinLeafPredicateInfo> peLst = jpi.getEquiJoinPredicateElements();
     int noOfPE = peLst.size();
     if (noOfPE > 0) {
-      // 3.1 Use first conjunctive predicate element's NDV as the seed
-      ndvCrossProduct = getMaxNDVForJoinSelectivity(peLst.get(0), colStatMap);
+      ndvCrossProduct = exponentialBackoff(peLst, colStatMap);
 
-      // 3.2 if conjunctive predicate elements are more than one, then walk
-      // through them one by one. Compute cross product of NDV. Cross product is
-      // computed by multiplying the largest NDV of all of the conjunctive
-      // predicate
-      // elements with degraded NDV of rest of the conjunctive predicate
-      // elements. NDV is
-      // degraded using log function.Finally the ndvCrossProduct is fenced at
-      // the join
-      // cross product to ensure that NDV can not exceed worst case join
-      // cardinality.<br>
-      // NDV of a conjunctive predicate element is the max NDV of all arguments
-      // to lhs, rhs expressions.
-      // NDV(JoinCondition) = min (left cardinality * right cardinality,
-      // ndvCrossProduct(JoinCondition))
-      // ndvCrossProduct(JoinCondition) = ndv(pex)*log(ndv(pe1))*log(ndv(pe2))
-      // where pex is the predicate element of join condition with max ndv.
-      // ndv(pe) = max(NDV(left.Expr), NDV(right.Expr))
-      // NDV(expr) = max(NDV( expr args))
-      if (noOfPE > 1) {
-        double maxNDVSoFar = ndvCrossProduct;
-        double ndvToBeSmoothed;
-        double tmpNDV;
-
-        for (int i = 1; i < noOfPE; i++) {
-          tmpNDV = getMaxNDVForJoinSelectivity(peLst.get(i), colStatMap);
-          if (tmpNDV > maxNDVSoFar) {
-            ndvToBeSmoothed = maxNDVSoFar;
-            maxNDVSoFar = tmpNDV;
-            ndvCrossProduct = (ndvCrossProduct / ndvToBeSmoothed) * tmpNDV;
-          } else {
-            ndvToBeSmoothed = tmpNDV;
-          }
-          // TODO: revisit the fence
-          if (ndvToBeSmoothed > 3)
-            ndvCrossProduct *= Math.log(ndvToBeSmoothed);
-          else
-            ndvCrossProduct *= ndvToBeSmoothed;
-        }
-
-        if (j.isLeftSemiJoin())
-          ndvCrossProduct = Math.min(RelMetadataQuery.getRowCount(j.getLeft()),
-              ndvCrossProduct);
-        else
-          ndvCrossProduct = Math.min(RelMetadataQuery.getRowCount(j.getLeft())
-              * RelMetadataQuery.getRowCount(j.getRight()), ndvCrossProduct);
-      }
+      if (j.isLeftSemiJoin())
+        ndvCrossProduct = Math.min(RelMetadataQuery.getRowCount(j.getLeft()),
+            ndvCrossProduct);
+      else
+        ndvCrossProduct = Math.min(RelMetadataQuery.getRowCount(j.getLeft())
+            * RelMetadataQuery.getRowCount(j.getRight()), ndvCrossProduct);
     }
 
     // 4. Join Selectivity = 1/NDV
     return (1 / ndvCrossProduct);
+  }
+
+  // 3.2 if conjunctive predicate elements are more than one, then walk
+  // through them one by one. Compute cross product of NDV. Cross product is
+  // computed by multiplying the largest NDV of all of the conjunctive
+  // predicate
+  // elements with degraded NDV of rest of the conjunctive predicate
+  // elements. NDV is
+  // degraded using log function.Finally the ndvCrossProduct is fenced at
+  // the join
+  // cross product to ensure that NDV can not exceed worst case join
+  // cardinality.<br>
+  // NDV of a conjunctive predicate element is the max NDV of all arguments
+  // to lhs, rhs expressions.
+  // NDV(JoinCondition) = min (left cardinality * right cardinality,
+  // ndvCrossProduct(JoinCondition))
+  // ndvCrossProduct(JoinCondition) = ndv(pex)*log(ndv(pe1))*log(ndv(pe2))
+  // where pex is the predicate element of join condition with max ndv.
+  // ndv(pe) = max(NDV(left.Expr), NDV(right.Expr))
+  // NDV(expr) = max(NDV( expr args))
+  protected double logSmoothing(List<JoinLeafPredicateInfo> peLst, ImmutableMap<Integer, Double> colStatMap) {
+    int noOfPE = peLst.size();
+    double ndvCrossProduct = getMaxNDVForJoinSelectivity(peLst.get(0), colStatMap);
+    if (noOfPE > 1) {
+      double maxNDVSoFar = ndvCrossProduct;
+      double ndvToBeSmoothed;
+      double tmpNDV;
+
+      for (int i = 1; i < noOfPE; i++) {
+        tmpNDV = getMaxNDVForJoinSelectivity(peLst.get(i), colStatMap);
+        if (tmpNDV > maxNDVSoFar) {
+          ndvToBeSmoothed = maxNDVSoFar;
+          maxNDVSoFar = tmpNDV;
+          ndvCrossProduct = (ndvCrossProduct / ndvToBeSmoothed) * tmpNDV;
+        } else {
+          ndvToBeSmoothed = tmpNDV;
+        }
+        // TODO: revisit the fence
+        if (ndvToBeSmoothed > 3)
+          ndvCrossProduct *= Math.log(ndvToBeSmoothed);
+        else
+          ndvCrossProduct *= ndvToBeSmoothed;
+      }
+    }
+    return ndvCrossProduct;
+  }
+
+  /*
+   * a) Order predciates based on ndv in reverse order. b) ndvCrossProduct =
+   * ndv(pe0) * ndv(pe1) ^(1/2) * ndv(pe2) ^(1/4) * ndv(pe3) ^(1/8) ...
+   */
+  protected double exponentialBackoff(List<JoinLeafPredicateInfo> peLst,
+      ImmutableMap<Integer, Double> colStatMap) {
+    int noOfPE = peLst.size();
+    List<Double> ndvs = new ArrayList<Double>(noOfPE);
+    for (int i = 0; i < noOfPE; i++) {
+      ndvs.add(getMaxNDVForJoinSelectivity(peLst.get(i), colStatMap));
+    }
+    Collections.sort(ndvs);
+    Collections.reverse(ndvs);
+    double ndvCrossProduct = 1.0;
+    for (int i = 0; i < ndvs.size(); i++) {
+      double n = Math.pow(ndvs.get(i), Math.pow(1 / 2.0, i));
+      ndvCrossProduct *= n;
+    }
+    return ndvCrossProduct;
   }
 
   private RexNode getCombinedPredicateForJoin(HiveJoinRel j, RexNode additionalPredicate) {
@@ -181,4 +207,5 @@ public class HiveRelMdSelectivity extends RelMdSelectivity {
 
     return maxNDVSoFar;
   }
+  
 }

@@ -11946,9 +11946,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if (LOG.isDebugEnabled() && !conf.getBoolVar(ConfVars.HIVE_IN_TEST)) {
         LOG.debug("CBO Planning details:\n");
         LOG.debug("Original Plan:\n");
-        LOG.debug(RelOptUtil.toString(optiqGenPlan, SqlExplainLevel.ALL_ATTRIBUTES));
+        LOG.debug(RelOptUtil.toString(optiqGenPlan));
         LOG.debug("Plan After PPD, PartPruning, ColumnPruning:\n");
-        LOG.debug(RelOptUtil.toString(optiqPreCboPlan, SqlExplainLevel.ALL_ATTRIBUTES));
+        LOG.debug(RelOptUtil.toString(optiqPreCboPlan));
         LOG.debug("Plan After Join Reordering:\n");
         LOG.debug(RelOptUtil.toString(optiqOptimizedPlan, SqlExplainLevel.ALL_ATTRIBUTES));
       }
