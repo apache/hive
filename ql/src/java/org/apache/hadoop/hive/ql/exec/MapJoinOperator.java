@@ -104,6 +104,8 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
     cache = ObjectCacheFactory.getCache(hconf);
     loader = HashTableLoaderFactory.getLoader(hconf);
 
+    hashMapRowGetters = null;
+
     mapJoinTables = (MapJoinTableContainer[]) cache.retrieve(tableKey);
     mapJoinTableSerdes = (MapJoinTableContainerSerDe[]) cache.retrieve(serdeKey);
     hashTblInitedOnce = true;
@@ -237,7 +239,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
         firstRow = false;
       }
 
-      alias = (byte)tag;
+      alias = (byte) tag;
       if (hashMapRowGetters == null) {
         hashMapRowGetters = new ReusableGetAdaptor[mapJoinTables.length];
         MapJoinKey refKey = getRefKey(alias);
