@@ -51,6 +51,7 @@ import org.apache.hadoop.hive.ql.io.RecordIdentifier;
 import org.apache.hadoop.hive.ql.io.StatsProvidingRecordReader;
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
+import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentFactory;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument.TruthValue;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
@@ -279,10 +280,10 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     } else {
       SearchArgument sarg;
       if (serializedPushdown != null) {
-        sarg = SearchArgument.FACTORY.create
+        sarg = SearchArgumentFactory.create
             (Utilities.deserializeExpression(serializedPushdown));
       } else {
-        sarg = SearchArgument.FACTORY.create(sargPushdown);
+        sarg = SearchArgumentFactory.create(sargPushdown);
       }
       LOG.info("ORC pushdown predicate: " + sarg);
       String[] neededColumnNames = columnNamesString.split(",");
