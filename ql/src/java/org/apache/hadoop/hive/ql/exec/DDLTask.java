@@ -4017,6 +4017,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       tbl.setDbName(names[0]);
       tbl.setTableName(names[1]);
 
+      // using old table object, hence reset the owner to current user for new table.
+      tbl.setOwner(SessionState.getUserFromAuthenticator());
+
       if (crtTbl.getLocation() != null) {
         tbl.setDataLocation(new Path(crtTbl.getLocation()));
       } else {
