@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import com.google.common.primitives.Bytes;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -28,6 +29,7 @@ import org.apache.hadoop.hive.serde2.SerDeStatsStruct;
 import org.apache.hadoop.hive.serde2.StructObject;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.LazySimpleStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
+import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.Text;
 
 /**
@@ -284,5 +286,60 @@ public class LazyStruct extends LazyNonPrimitive<LazySimpleStructObjectInspector
 
   public long getRawDataSerializedSize() {
     return serializedSize;
+  }
+
+  // parse the struct using multi-char delimiter
+  public void parseMultiDelimit(byte[] rawRow, byte[] fieldDelimit) {
+    if (rawRow == null || fieldDelimit == null) {
+      return;
+    }
+    if (fields == null) {
+      List<? extends StructField> fieldRefs = ((StructObjectInspector) oi).getAllStructFieldRefs();
+      fields = new LazyObject[fieldRefs.size()];
+      for (int i = 0; i < fields.length; i++) {
+        fields[i] = LazyFactory.createLazyObject(fieldRefs.get(i).getFieldObjectInspector());
+      }
+      fieldInited = new boolean[fields.length];
+      startPosition = new int[fields.length + 1];
+    }
+    // the indexes of the delimiters
+    int[] delimitIndexes = findIndexes(rawRow, fieldDelimit);
+    int diff = fieldDelimit.length - 1;
+    // first field always starts from 0, even when missing
+    startPosition[0] = 0;
+    for (int i = 1; i < fields.length; i++) {
+      if (delimitIndexes[i - 1] != -1) {
+        int start = delimitIndexes[i - 1] + fieldDelimit.length;
+        startPosition[i] = start - i * diff;
+      } else {
+        startPosition[i] = length + 1;
+      }
+    }
+    startPosition[fields.length] = length + 1;
+    Arrays.fill(fieldInited, false);
+    parsed = true;
+  }
+
+  // find all the indexes of the sub byte[]
+  private int[] findIndexes(byte[] array, byte[] target) {
+    if (fields.length <= 1) {
+      return new int[0];
+    }
+    int[] indexes = new int[fields.length - 1];
+    Arrays.fill(indexes, -1);
+    indexes[0] = Bytes.indexOf(array, target);
+    if (indexes[0] == -1) {
+      return indexes;
+    }
+    int indexInNewArray = indexes[0];
+    for (int i = 1; i < indexes.length; i++) {
+      array = Arrays.copyOfRange(array, indexInNewArray + target.length, array.length);
+      indexInNewArray = Bytes.indexOf(array, target);
+      if (indexInNewArray == -1) {
+        break;
+      }
+      indexes[i] = indexInNewArray + indexes[i - 1] + target.length;
+    }
+    return indexes;
   }
 }
