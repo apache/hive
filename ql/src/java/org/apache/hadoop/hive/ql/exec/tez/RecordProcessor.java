@@ -32,7 +32,7 @@ import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.tez.mapreduce.processor.MRTaskReporter;
 import org.apache.tez.runtime.api.LogicalInput;
 import org.apache.tez.runtime.api.LogicalOutput;
-import org.apache.tez.runtime.api.TezProcessorContext;
+import org.apache.tez.runtime.api.ProcessorContext;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
@@ -47,7 +47,7 @@ public abstract class RecordProcessor  {
   protected Map<String, LogicalInput> inputs;
   protected Map<String, LogicalOutput> outputs;
   protected Map<String, OutputCollector> outMap;
-  protected TezProcessorContext processorContext;
+  protected ProcessorContext processorContext;
 
   public static final Log l4j = LogFactory.getLog(RecordProcessor.class);
 
@@ -72,7 +72,7 @@ public abstract class RecordProcessor  {
    * @param outputs map of Output names to {@link LogicalOutput}s
    * @throws Exception
    */
-  void init(JobConf jconf, TezProcessorContext processorContext, MRTaskReporter mrReporter,
+  void init(JobConf jconf, ProcessorContext processorContext, MRTaskReporter mrReporter,
       Map<String, LogicalInput> inputs, Map<String, LogicalOutput> outputs) throws Exception {
     this.jconf = jconf;
     this.reporter = mrReporter;

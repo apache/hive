@@ -302,6 +302,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
 
       mr = new MiniTezCluster("hive", numberOfTaskTrackers);
       conf.set("fs.defaultFS", nameNode);
+      conf.set("tez.am.log.level", "DEBUG");
       conf.set(MRJobConfig.MR_AM_STAGING_DIR, "/apps_staging_dir");
       mr.init(conf);
       mr.start();

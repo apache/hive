@@ -33,23 +33,23 @@ import org.apache.hadoop.util.StringUtils;
 import org.apache.tez.common.TezUtils;
 import org.apache.tez.mapreduce.input.MRInputLegacy;
 import org.apache.tez.mapreduce.processor.MRTaskReporter;
+import org.apache.tez.runtime.api.AbstractLogicalIOProcessor;
 import org.apache.tez.runtime.api.Event;
-import org.apache.tez.runtime.api.LogicalIOProcessor;
 import org.apache.tez.runtime.api.LogicalInput;
 import org.apache.tez.runtime.api.LogicalOutput;
-import org.apache.tez.runtime.api.TezProcessorContext;
+import org.apache.tez.runtime.api.ProcessorContext;
 import org.apache.tez.runtime.library.api.KeyValueWriter;
 
 /**
  * Hive processor for Tez that forms the vertices in Tez and processes the data.
  * Does what ExecMapper and ExecReducer does for hive in MR framework.
  */
-public class TezProcessor implements LogicalIOProcessor {
+public class TezProcessor extends AbstractLogicalIOProcessor {
 
 
 
   private static final Log LOG = LogFactory.getLog(TezProcessor.class);
-  private boolean isMap = false;
+  protected boolean isMap = false;
 
   RecordProcessor rproc = null;
 
@@ -57,8 +57,6 @@ public class TezProcessor implements LogicalIOProcessor {
 
   private static final String CLASS_NAME = TezProcessor.class.getName();
   private final PerfLogger perfLogger = PerfLogger.getPerfLogger();
-
-  private TezProcessorContext processorContext;
 
   protected static final NumberFormat taskIdFormat = NumberFormat.getInstance();
   protected static final NumberFormat jobIdFormat = NumberFormat.getInstance();
@@ -69,8 +67,9 @@ public class TezProcessor implements LogicalIOProcessor {
     jobIdFormat.setMinimumIntegerDigits(4);
   }
 
-  public TezProcessor(boolean isMap) {
-    this.isMap = isMap;
+  public TezProcessor(ProcessorContext context) {
+    super(context);
+    ObjectCache.setupObjectRegistry(context.getObjectRegistry());
   }
 
   @Override
@@ -86,19 +85,15 @@ public class TezProcessor implements LogicalIOProcessor {
   }
 
   @Override
-  public void initialize(TezProcessorContext processorContext)
-      throws IOException {
+  public void initialize() throws IOException {
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_INITIALIZE_PROCESSOR);
-    this.processorContext = processorContext;
-    //get the jobconf
-    byte[] userPayload = processorContext.getUserPayload();
-    Configuration conf = TezUtils.createConfFromUserPayload(userPayload);
+    Configuration conf = TezUtils.createConfFromUserPayload(getContext().getUserPayload());
     this.jobConf = new JobConf(conf);
-    setupMRLegacyConfigs(processorContext);
+    setupMRLegacyConfigs(getContext());
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_INITIALIZE_PROCESSOR);
   }
 
-  private void setupMRLegacyConfigs(TezProcessorContext processorContext) {
+  private void setupMRLegacyConfigs(ProcessorContext processorContext) {
     // Hive "insert overwrite local directory" uses task id as dir name
     // Setting the id in jobconf helps to have the similar dir name as MR
     StringBuilder taskAttemptIdBuilder = new StringBuilder("attempt_");
@@ -133,10 +128,10 @@ public class TezProcessor implements LogicalIOProcessor {
       // in case of broadcast-join read the broadcast edge inputs
       // (possibly asynchronously)
 
-      LOG.info("Running task: " + processorContext.getUniqueIdentifier());
+      LOG.info("Running task: " + getContext().getUniqueIdentifier());
 
       if (isMap) {
-        rproc = new MapRecordProcessor();
+        rproc = new MapRecordProcessor(jobConf);
         MRInputLegacy mrInput = getMRInput(inputs);
         try {
           mrInput.init();
@@ -160,8 +155,8 @@ public class TezProcessor implements LogicalIOProcessor {
 
       // Outputs will be started later by the individual Processors.
 
-      MRTaskReporter mrReporter = new MRTaskReporter(processorContext);
-      rproc.init(jobConf, processorContext, mrReporter, inputs, outputs);
+      MRTaskReporter mrReporter = new MRTaskReporter(getContext());
+      rproc.init(jobConf, getContext(), mrReporter, inputs, outputs);
       rproc.run();
 
       //done - output does not need to be committed as hive does not use outputcommitter
@@ -207,6 +202,7 @@ public class TezProcessor implements LogicalIOProcessor {
       this.writer = (KeyValueWriter) output.getWriter();
     }
 
+    @Override
     public void collect(Object key, Object value) throws IOException {
       writer.write(key, value);
     }
