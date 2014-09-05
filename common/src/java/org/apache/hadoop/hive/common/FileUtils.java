@@ -655,18 +655,28 @@ public final class FileUtils {
     }
 
     final FileSystem fs = path.getFileSystem(conf);
-    if (!fs.exists(path)) {
+    // check user has write permissions on the parent dir
+    FileStatus stat = null;
+    try {
+      stat = fs.getFileStatus(path);
+    } catch (FileNotFoundException e) {
+      // ignore
+    }
+    if (stat == null) {
       // no file/dir to be deleted
       return;
     }
-    Path parPath = path.getParent();
-    // check user has write permissions on the parent dir
-    FileStatus stat = fs.getFileStatus(path);
     FileUtils.checkFileAccessWithImpersonation(fs, stat, FsAction.WRITE, user);
 
+    HadoopShims shims = ShimLoader.getHadoopShims();
+    if (!shims.supportStickyBit()) {
+      // not supports sticky bit
+      return;
+    }
+
     // check if sticky bit is set on the parent dir
-    FileStatus parStatus = fs.getFileStatus(parPath);
-    if (!parStatus.getPermission().getStickyBit()) {
+    FileStatus parStatus = fs.getFileStatus(path.getParent());
+    if (!shims.hasStickyBit(parStatus.getPermission())) {
       // no sticky bit, so write permission on parent dir is sufficient
       // no further checks needed
       return;
