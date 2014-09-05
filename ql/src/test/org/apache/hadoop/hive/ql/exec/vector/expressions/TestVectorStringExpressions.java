@@ -23,19 +23,38 @@ import java.util.Arrays;
 
 import junit.framework.Assert;
 
+import org.apache.commons.codec.binary.Hex;
+import org.apache.hadoop.hive.common.type.HiveChar;
+import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterStringColEqualStringScalar;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterStringColGreaterEqualStringScalar;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterStringColLessStringColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterStringColLessStringScalar;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterStringScalarEqualStringColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterStringScalarGreaterStringColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterStringScalarLessEqualStringColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.StringColEqualStringScalar;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.StringColLessStringColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.StringScalarEqualStringColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.CharScalarEqualStringGroupColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterCharScalarEqualStringGroupColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterCharScalarGreaterStringGroupColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterCharScalarLessEqualStringGroupColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterStringGroupColEqualCharScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterStringGroupColEqualStringScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterStringGroupColEqualVarCharScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterStringGroupColGreaterEqualCharScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterStringGroupColGreaterEqualStringScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterStringGroupColGreaterEqualVarCharScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterStringGroupColLessCharScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterStringGroupColLessStringGroupColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterStringGroupColLessStringScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterStringGroupColLessVarCharScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterStringScalarEqualStringGroupColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterStringScalarGreaterStringGroupColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterStringScalarLessEqualStringGroupColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterVarCharScalarEqualStringGroupColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterVarCharScalarGreaterStringGroupColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterVarCharScalarLessEqualStringGroupColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.StringGroupColEqualCharScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.StringGroupColEqualStringScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.StringGroupColEqualVarCharScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.StringGroupColLessStringGroupColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.StringScalarEqualStringGroupColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.VarCharScalarEqualStringGroupColumn;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.io.Text;
 import org.junit.Test;
@@ -63,6 +82,8 @@ public class TestVectorStringExpressions {
   private static byte[] blanksRight;
   private static byte[] blanksBoth;
   private static byte[] blankString;
+  private static byte[] blankRanges;
+  private static byte[] ascii_sentence;
 
   static {
     try {
@@ -84,6 +105,11 @@ public class TestVectorStringExpressions {
       blanksRight = "foo  ".getBytes("UTF-8");
       blanksBoth = "  foo  ".getBytes("UTF-8");
       blankString = "  ".getBytes("UTF-8");
+      blankRanges = "   more  than a    bargain    ".getBytes("UTF-8");
+                   //012345678901234567890123456789
+      ascii_sentence = "The fox trotted over the fence.".getBytes("UTF-8");
+                      //0123456789012345678901234567890
+
     } catch (UnsupportedEncodingException e) {
       e.printStackTrace();
     }
@@ -107,6 +133,3032 @@ public class TestVectorStringExpressions {
     b[i++] = (byte) 0xA2;
   }
 
+  //-------------------------------------------------------------
+  
+  // total characters = 2; byte length = 3
+  static void addMultiByteCharLeftPadded1_1(byte[] b) {
+    int i = 0;
+    b[i++] = (byte) 0x20; // blank " " (1 byte)
+    b[i++] = (byte) 0xD0; // Cyrillic Capital DJE U+402 (2 bytes)
+    b[i++] = (byte) 0x82;
+  }
+
+  // total characters = 3; byte length = 9
+  static void addMultiByteCharLeftPadded1_2(byte[] b) {
+    int i = 0;
+    b[i++] = (byte) 0x20; // blank " " (1 byte)
+    b[i++] = (byte) 0xF0; // Smiling Face with Open Mouth and Smiling Eyes U+1F604 (4 bytes)
+    b[i++] = (byte) 0x9F;
+    b[i++] = (byte) 0x98;
+    b[i++] = (byte) 0x84;
+    b[i++] = (byte) 0xF0; // Grimacing Face U+1F62C (4 bytes)
+    b[i++] = (byte) 0x9F;
+    b[i++] = (byte) 0x98;
+    b[i++] = (byte) 0xAC;
+  }
+
+  // total characters = 4; byte length = 6
+  static void addMultiByteCharLeftPadded3_1(byte[] b) {
+    int i = 0;
+    b[i++] = (byte) 0x20; // blank " " (1 byte)
+    b[i++] = (byte) 0x20; // blank " " (1 byte)
+    b[i++] = (byte) 0x20; // blank " " (1 byte)
+    b[i++] = (byte) 0xE4; // Asian character U+4824 (3 bytes)
+    b[i++] = (byte) 0xA0;
+    b[i++] = (byte) 0xA4;
+  }
+
+  //-------------------------------------------------------------
+  
+  // total characters = 2; byte length = 4
+  static void addMultiByteCharRightPadded1_1(byte[] b) {
+    int i = 0;
+    b[i++] = (byte) 0xE0; // Tamil Om U+0BD0 (3 bytes)
+    b[i++] = (byte) 0xAF;
+    b[i++] = (byte) 0x90;
+    b[i++] = (byte) 0x20; // blank " " (1 byte)
+  }
+
+  // total characters = 3; byte length = 5
+  static void addMultiByteCharRightPadded1_2(byte[] b) {
+    int i = 0;
+    b[i++] = (byte) 0xEA; // Va Syllable MEE U+A521 (3 bytes)
+    b[i++] = (byte) 0x94;
+    b[i++] = (byte) 0xA1;
+    b[i++] = (byte) 0x5A; // Latin Capital Letter Z U+005A (1 bytes)
+    b[i++] = (byte) 0x20; // blank " " (1 byte)
+  }
+
+  // total characters = 4; byte length = 9
+  static void addMultiByteCharRightPadded1_3(byte[] b) {
+    int i = 0;
+    b[i++] = (byte) 0xCC; // COMBINING ACUTE ACENT U+0301 (2 bytes)
+    b[i++] = (byte) 0x81;
+    b[i++] = (byte) 0xE0; // DEVENAGARI LETTER KA U+0915 (3 bytes)
+    b[i++] = (byte) 0xA4;
+    b[i++] = (byte) 0x95;
+    b[i++] = (byte) 0xE0; // DEVENAGARI SIGN VIRAMA U+094D (3 bytes)
+    b[i++] = (byte) 0xA5;
+    b[i++] = (byte) 0x8D;
+    b[i++] = (byte) 0x20; // blank " " (1 byte)
+  }
+
+  // total characters = 10; byte length = 26
+  static int addMultiByteCharSentenceOne(byte[] b, int start) {
+    int i = start;
+    b[i++] = (byte) 0xE1; // NEW TAI LUE LETTER THA U+1992 (3 bytes)
+    b[i++] = (byte) 0xA6;
+    b[i++] = (byte) 0x92;
+    b[i++] = (byte) 0xE1; // NEW TAI LUE LETTER LOW XA U+1986 (3 bytes)
+    b[i++] = (byte) 0xA6;
+    b[i++] = (byte) 0x86;
+    b[i++] = (byte) 0xE1; // NEW TAI LUE LETTER HIGH MA U+1996 (3 bytes)
+    b[i++] = (byte) 0xA6;
+    b[i++] = (byte) 0x96;
+    b[i++] = (byte) 0x20; // blank " " (1 byte)
+    b[i++] = (byte) 0xE1; // NEW TAI LUE LETTER LOW QA U+1981 (3 bytes)
+    b[i++] = (byte) 0xA6;
+    b[i++] = (byte) 0x81;
+    b[i++] = (byte) 0x20; // blank " " (1 byte)
+    b[i++] = (byte) 0xE1; // NEW TAI LUE LETTER LOW BA U+19A5 (3 bytes)
+    b[i++] = (byte) 0xA6;
+    b[i++] = (byte) 0xA5;
+    b[i++] = (byte) 0xE1; // NEW TAI LUE LETTER HIGH LA U+199C (3 bytes)
+    b[i++] = (byte) 0xA6;
+    b[i++] = (byte) 0x9C;
+    b[i++] = (byte) 0xE1; // NEW TAI LUE LETTER LOW KVA U+19A8 (3 bytes)
+    b[i++] = (byte) 0xA6;
+    b[i++] = (byte) 0xA8;
+    b[i++] = (byte) 0xE1; // NEW TAI LUE LETTER LOW FA U+199D (3 bytes)
+    b[i++] = (byte) 0xA6;
+    b[i++] = (byte) 0x9D;
+    return i;
+  }
+
+  // total characters = 13; byte length = 24
+  static int addMultiByteCharSentenceTwo(byte[] b, int start) {
+    int i = start;
+    b[i++] = (byte) 0xC9; // LATIN SMALL LETTER TURNED A U+0250 (2 bytes)
+    b[i++] = (byte) 0x90;
+    b[i++] = (byte) 0xC9; // LATIN SMALL LETTER GAMMA U+0263 (2 bytes)
+    b[i++] = (byte) 0xA3;
+    b[i++] = (byte) 0xC9; // LATIN SMALL LETTER TURNED M U+026F (2 bytes)
+    b[i++] = (byte) 0xAF;
+    b[i++] = (byte) 0xCA; // LATIN SMALL LETTER S WITH HOOK U+0282 (2 bytes)
+    b[i++] = (byte) 0x82;
+    b[i++] = (byte) 0x20; // blank " " (1 byte)
+    b[i++] = (byte) 0xCA; // LATIN LETTER SMALL CAPITAL L U+029F (2 bytes)
+    b[i++] = (byte) 0x9F;
+    b[i++] = (byte) 0xCB; // MODIFIER LETTER TRIANGULAR COLON U+02D0 (2 bytes)
+    b[i++] = (byte) 0x90;
+    b[i++] = (byte) 0x20; // blank " " (1 byte)
+    b[i++] = (byte) 0xCB; // RING ABOVE U+02DA (2 bytes)
+    b[i++] = (byte) 0x9A;
+    b[i++] = (byte) 0xCB; // MODIFIER LETTER SMALL L U+02E1 (2 bytes)
+    b[i++] = (byte) 0xA1;
+    b[i++] = (byte) 0xCB; // MODIFIER LETTER SMALL X U+02E3 (2 bytes)
+    b[i++] = (byte) 0xA3;
+    b[i++] = (byte) 0xCB; // MODIFIER LETTER UP ARROWHEAD U+02C4 (2 bytes)
+    b[i++] = (byte) 0x84;
+    b[i++] = (byte) 0x2E; // FULL STOP "." (1 byte)
+    return i;
+  }
+
+  // total characters = 17; byte length = 30
+  static int addMultiByteCharSentenceBlankRanges(byte[] b, int start) {
+    int i = start;
+    b[i++] = (byte) 0xF0; // INSCRIPTIONAL YODH U+10B49 (4 bytes)
+    b[i++] = (byte) 0x90;
+    b[i++] = (byte) 0xAD;
+    b[i++] = (byte) 0x89;
+    b[i++] = (byte) 0xE1; // NEW TAI LUE LETTER LOW FA U+199D (3 bytes)
+    b[i++] = (byte) 0xA6;
+    b[i++] = (byte) 0x9D;
+    b[i++] = (byte) 0x20; // blank " " (1 byte)
+    b[i++] = (byte) 0x20; // blank " " (1 byte)
+    b[i++] = (byte) 0x20; // blank " " (1 byte)
+    b[i++] = (byte) 0x2D; // hyphen-minus "-" U-002D (1 byte)
+    b[i++] = (byte) 0x20; // blank " " (1 byte)
+    b[i++] = (byte) 0x60; // grave accent "-" U-0060 (1 byte)
+    b[i++] = (byte) 0xE2; // BLACK SUN WITH RAYS U+2600 (3 bytes)
+    b[i++] = (byte) 0x98;
+    b[i++] = (byte) 0x80;
+    b[i++] = (byte) 0xE2; // BALLOT BOX WITH X U+2612 (3 bytes)
+    b[i++] = (byte) 0x98;
+    b[i++] = (byte) 0x92;
+    b[i++] = (byte) 0x20; // blank " " (1 byte)
+    b[i++] = (byte) 0x20; // blank " " (1 byte)
+    b[i++] = (byte) 0x20; // blank " " (1 byte)
+    b[i++] = (byte) 0x20; // blank " " (1 byte)
+    b[i++] = (byte) 0x20; // blank " " (1 byte)
+    b[i++] = (byte) 0xE2; // WHITE START U+2606 (3 bytes)
+    b[i++] = (byte) 0x98;
+    b[i++] = (byte) 0x86;
+    b[i++] = (byte) 0xE2; // WHITE FLAG WITH HORIZONTAL MIDDLE BLACK STRIPE U+26FF (3 bytes)
+    b[i++] = (byte) 0x9B;
+    b[i++] = (byte) 0xBF;
+    return i;
+  }
+
+
+  static int addPads(byte[] b, int start, int count) {
+    int i = start;
+    int end = start + count;
+    for ( ; i < end; i++) {
+      b[i] = (byte) 0x20; // blank " " (1 byte)
+    }
+    return i;
+  }
+
+  private boolean vectorEqual(BytesColumnVector vector, int i, byte[] bytes, int offset, int length) {
+    byte[] bytesSlice = new byte[length];
+    System.arraycopy(bytes, offset, bytesSlice, 0, length);
+    int vectorLength = vector.length[i];
+    byte[] vectorSlice = new byte[vectorLength];
+    System.arraycopy(vector.vector[i], vector.start[i], vectorSlice, 0, vectorLength);
+    boolean equals = Arrays.equals(bytesSlice, vectorSlice);
+    if (!equals) {
+      System.out.println("vectorEqual offset " + offset + " length " + length + " vectorSlice.length " + vectorSlice.length);
+      System.out.println("vectorEqual bytesSlice " + Hex.encodeHexString(bytesSlice));
+      System.out.println("vectorEqual vectorSlice " + Hex.encodeHexString(vectorSlice));
+    }
+    return equals;
+  }
+
+  private int vectorCharacterCount(BytesColumnVector vector, int i) {
+    return StringExpr.characterCount(vector.vector[i], vector.start[i], vector.length[i]);
+  }
+
+  @Test
+  // Test basic assign to vector.
+  public void testAssignBytesColumnVector()  {
+      BytesColumnVector outV = new BytesColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
+      outV.initBuffer(35); // initialize with estimated element size 35
+
+      int i = 0;
+
+      int expectedResultLen;
+
+      Assert.assertTrue(StringExpr.characterCount(blue, 0, blue.length) == 4);
+      StringExpr.assign(outV, i, blue, 0, blue.length);
+      expectedResultLen = blue.length;
+      Assert.assertTrue(vectorEqual(outV, i, blue, 0, expectedResultLen));
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(redgreen, 0, redgreen.length) == 8);
+      StringExpr.assign(outV, i, redgreen, 0, redgreen.length);
+      expectedResultLen =  redgreen.length;
+      Assert.assertTrue(vectorEqual(outV, i, redgreen, 0, expectedResultLen));
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(ascii_sentence, 0, ascii_sentence.length) == 31);
+      StringExpr.assign(outV, i, ascii_sentence, 0, ascii_sentence.length);
+      expectedResultLen =  ascii_sentence.length;
+      Assert.assertTrue(vectorEqual(outV, i, ascii_sentence, 0, expectedResultLen));
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(blanksLeft, 0, blanksLeft.length) == 5);
+      StringExpr.assign(outV, i, blanksLeft, 0, blanksLeft.length);
+      expectedResultLen =  blanksLeft.length;
+      Assert.assertTrue(vectorEqual(outV, i, blanksLeft, 0, expectedResultLen));
+      i++;
+
+      // Multi-byte characters with blank ranges.
+      byte[] sentenceBlankRanges = new byte[100];
+      int sentenceBlankRangesLen = addMultiByteCharSentenceBlankRanges(sentenceBlankRanges, 0);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceBlankRanges, 0, sentenceBlankRangesLen) == 17);
+      StringExpr.assign(outV, i, sentenceBlankRanges, 0, sentenceBlankRangesLen);
+      expectedResultLen = sentenceBlankRangesLen;
+      Assert.assertTrue(vectorEqual(outV, i, sentenceBlankRanges, 0, expectedResultLen));
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(sentenceBlankRanges, 0, sentenceBlankRangesLen - 3) == 16);
+      StringExpr.assign(outV, i, sentenceBlankRanges, 0, sentenceBlankRangesLen - 3);
+      expectedResultLen = sentenceBlankRangesLen - 3;
+      Assert.assertTrue(vectorEqual(outV, i, sentenceBlankRanges, 0, expectedResultLen));
+      i++;
+
+      // Some non-zero offsets.
+      Assert.assertTrue(StringExpr.characterCount(sentenceBlankRanges, 4, sentenceBlankRangesLen - 4) == 16);
+      StringExpr.assign(outV, i, sentenceBlankRanges, 4, sentenceBlankRangesLen - 4);
+      expectedResultLen = sentenceBlankRangesLen - 4;
+      Assert.assertTrue(vectorEqual(outV, i, sentenceBlankRanges, 4, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 16);
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(sentenceBlankRanges, 7, 17) == 13);
+      StringExpr.assign(outV, i, sentenceBlankRanges, 7, 17);
+      expectedResultLen = 17;
+      Assert.assertTrue(vectorEqual(outV, i, sentenceBlankRanges, 7, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 13);
+      i++;
+  }
+
+  @Test
+  // Test basic right trim of bytes slice.
+  public void testRightTrimBytesSlice()  {
+      int resultLen;
+      // Nothing to trim (ASCII).
+      Assert.assertTrue(StringExpr.characterCount(blue, 0, blue.length) == 4);
+      resultLen = StringExpr.rightTrim(blue, 0, blue.length);
+      Assert.assertTrue(resultLen == blue.length);
+      Assert.assertTrue(StringExpr.characterCount(blue, 0, resultLen) == 4);
+
+      Assert.assertTrue(StringExpr.characterCount(redgreen, 0, redgreen.length) == 8);
+      resultLen = StringExpr.rightTrim(redgreen, 0, redgreen.length);
+      Assert.assertTrue(resultLen == redgreen.length);
+
+      Assert.assertTrue(StringExpr.characterCount(ascii_sentence, 0, ascii_sentence.length) == 31);
+      resultLen = StringExpr.rightTrim(ascii_sentence, 0, ascii_sentence.length);
+      Assert.assertTrue(resultLen == ascii_sentence.length);
+
+      Assert.assertTrue(StringExpr.characterCount(blanksLeft, 0, blanksLeft.length) == 5);
+      resultLen = StringExpr.rightTrim(blanksLeft, 0, blanksLeft.length);
+      Assert.assertTrue(resultLen == blanksLeft.length);
+
+      // Simple trims.
+      Assert.assertTrue(StringExpr.characterCount(blanksRight, 0, blanksRight.length) == 5);
+      resultLen = StringExpr.rightTrim(blanksRight, 0, blanksRight.length);
+      Assert.assertTrue(resultLen == 3);
+      Assert.assertTrue(StringExpr.characterCount(blanksRight, 0, resultLen) == 3);
+
+      Assert.assertTrue(StringExpr.characterCount(blanksBoth, 0, blanksBoth.length) == 7);
+      resultLen = StringExpr.rightTrim(blanksBoth, 0, blanksBoth.length);
+      Assert.assertTrue(resultLen == 5);
+      Assert.assertTrue(StringExpr.characterCount(blanksBoth, 0, resultLen) == 5);
+     
+      Assert.assertTrue(StringExpr.characterCount(blankString, 0, blankString.length) == 2);
+      resultLen = StringExpr.rightTrim(blankString, 0, blankString.length);
+      Assert.assertTrue(resultLen == 0);
+      Assert.assertTrue(StringExpr.characterCount(blankString, 0, resultLen) == 0);
+
+      Assert.assertTrue(StringExpr.characterCount(blankRanges, 0, blankRanges.length) == 30);
+      resultLen = StringExpr.rightTrim(blankRanges, 0, blankRanges.length);
+      Assert.assertTrue(resultLen == blankRanges.length - 4);
+      Assert.assertTrue(StringExpr.characterCount(blankRanges, 0, resultLen) == 26);
+
+      // Offset trims.
+      Assert.assertTrue(StringExpr.characterCount(blanksRight, 1, blanksRight.length - 1) == 4);
+      resultLen = StringExpr.rightTrim(blanksRight, 1, blanksRight.length - 1);
+      Assert.assertTrue(resultLen == 2);
+      Assert.assertTrue(StringExpr.characterCount(blanksRight, 1, resultLen) == 2);
+
+      Assert.assertTrue(StringExpr.characterCount(blanksBoth, 4, blanksBoth.length - 4) == 3);
+      resultLen = StringExpr.rightTrim(blanksBoth, 4, blanksBoth.length - 4);
+      Assert.assertTrue(resultLen == 1);
+      Assert.assertTrue(StringExpr.characterCount(blanksBoth, 4, resultLen) == 1);
+
+      Assert.assertTrue(StringExpr.characterCount(blanksBoth, 5, blanksBoth.length - 5) == 2);
+      resultLen = StringExpr.rightTrim(blanksBoth, 5, blanksBoth.length -5 );
+      Assert.assertTrue(resultLen == 0);
+      Assert.assertTrue(StringExpr.characterCount(blanksBoth, 5, resultLen) == 0);
+
+      Assert.assertTrue(StringExpr.characterCount(blankString, 1, blankString.length - 1) == 1);
+      resultLen = StringExpr.rightTrim(blankString, 1, blankString.length - 1);
+      Assert.assertTrue(resultLen == 0);
+      Assert.assertTrue(StringExpr.characterCount(blankString, 1, resultLen) == 0);
+
+      Assert.assertTrue(StringExpr.characterCount(blankRanges, 4, blankRanges.length - 4) == 26);
+      resultLen = StringExpr.rightTrim(blankRanges, 4, blankRanges.length - 4);
+      Assert.assertTrue(resultLen == blankRanges.length - 4 -4);
+      Assert.assertTrue(StringExpr.characterCount(blankRanges, 4, resultLen) == 22);
+
+      Assert.assertTrue(StringExpr.characterCount(blankRanges, 6, blankRanges.length - 6) == 24);
+      resultLen = StringExpr.rightTrim(blankRanges, 6, blankRanges.length- 6);
+      Assert.assertTrue(resultLen == blankRanges.length - 6 - 4);
+      Assert.assertTrue(StringExpr.characterCount(blankRanges, 6, resultLen) == 20);
+
+      Assert.assertTrue(StringExpr.characterCount(blankRanges, 7, blankRanges.length - 7) == 23);
+      resultLen = StringExpr.rightTrim(blankRanges, 7, blankRanges.length - 7);
+      Assert.assertTrue(resultLen == blankRanges.length - 7 - 4);
+      Assert.assertTrue(StringExpr.characterCount(blankRanges, 7, resultLen) == 19);
+
+      Assert.assertTrue(StringExpr.characterCount(blankRanges, 7, 8 - 7) == 1);
+      resultLen = StringExpr.rightTrim(blankRanges, 7, 8 - 7);
+      Assert.assertTrue(resultLen == 0);
+      Assert.assertTrue(StringExpr.characterCount(blankRanges, 7, resultLen) == 0);
+
+      // Multi-byte trims.
+      byte[] multiByte = new byte[100];
+
+      addMultiByteCharRightPadded1_1(multiByte);
+      Assert.assertTrue(StringExpr.characterCount(multiByte, 0, 4) == 2);
+      resultLen = StringExpr.rightTrim(multiByte, 0, 4);
+      Assert.assertTrue(resultLen == 3);
+      Assert.assertTrue(StringExpr.characterCount(multiByte, 0, resultLen) == 1);
+
+      addMultiByteCharRightPadded1_2(multiByte);
+      Assert.assertTrue(StringExpr.characterCount(multiByte, 0, 5) == 3);
+      resultLen = StringExpr.rightTrim(multiByte, 0, 5);
+      Assert.assertTrue(resultLen == 4);
+      Assert.assertTrue(StringExpr.characterCount(multiByte, 0, resultLen) == 2);
+
+      addMultiByteCharRightPadded1_3(multiByte);
+      Assert.assertTrue(StringExpr.characterCount(multiByte, 0, 9) == 4);
+      resultLen = StringExpr.rightTrim(multiByte, 0, 9);
+      Assert.assertTrue(resultLen == 8);
+      Assert.assertTrue(StringExpr.characterCount(multiByte, 0, resultLen) == 3);
+
+      addMultiByteCharRightPadded1_1(multiByte);
+      Assert.assertTrue(StringExpr.characterCount(multiByte, 3, 1) == 1);
+      resultLen = StringExpr.rightTrim(multiByte, 3, 1);
+      Assert.assertTrue(resultLen == 0);
+      Assert.assertTrue(StringExpr.characterCount(multiByte, 0, resultLen) == 0);
+
+      addMultiByteCharRightPadded1_2(multiByte);
+      Assert.assertTrue(StringExpr.characterCount(multiByte, 3, 2) == 2);
+      resultLen = StringExpr.rightTrim(multiByte, 3, 2);
+      Assert.assertTrue(resultLen == 1);
+      Assert.assertTrue(StringExpr.characterCount(multiByte, 3, resultLen) == 1);
+
+      byte[] sentenceOne = new byte[100];
+      int sentenceOneLen = addMultiByteCharSentenceOne(sentenceOne, 0);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceOne, 0, sentenceOneLen) == 10);
+      resultLen = StringExpr.rightTrim(sentenceOne, 0, sentenceOneLen);
+      Assert.assertTrue(resultLen == sentenceOneLen);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceOne, 0, sentenceOneLen - 3) == 9);
+      resultLen = StringExpr.rightTrim(sentenceOne, 0, sentenceOneLen - 3);
+      Assert.assertTrue(resultLen == sentenceOneLen - 3);
+
+      byte[] sentenceTwo = new byte[100];
+      int sentenceTwoLen = addMultiByteCharSentenceTwo(sentenceTwo, 0);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceTwo, 0, sentenceTwoLen) == 13);
+      resultLen = StringExpr.rightTrim(sentenceTwo, 0, sentenceTwoLen);
+      Assert.assertTrue(resultLen == sentenceTwoLen);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceTwo, 0, sentenceTwoLen- 5) == 10);
+      resultLen = StringExpr.rightTrim(sentenceTwo, 0, sentenceTwoLen - 5);
+      Assert.assertTrue(resultLen == sentenceTwoLen - 5);
+
+      int start;
+
+      // Left pad longer strings with multi-byte characters.
+      byte[] sentenceOnePaddedLeft = new byte[100];
+      start = addPads(sentenceOnePaddedLeft, 0, 3);
+      int sentenceOnePaddedLeftLen = addMultiByteCharSentenceOne(sentenceOnePaddedLeft, start);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceOnePaddedLeft, 0, sentenceOnePaddedLeftLen) == 3 + 10);
+      resultLen = StringExpr.rightTrim(sentenceOnePaddedLeft, 0, sentenceOnePaddedLeftLen);
+      Assert.assertTrue(resultLen == sentenceOnePaddedLeftLen);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceOnePaddedLeft, 0, sentenceOnePaddedLeftLen - 3) == 3 + 9);
+      resultLen = StringExpr.rightTrim(sentenceOnePaddedLeft, 0, sentenceOnePaddedLeftLen - 3);
+      Assert.assertTrue(resultLen == sentenceOnePaddedLeftLen - 3);
+
+      byte[] sentenceTwoPaddedLeft = new byte[100];
+      start = addPads(sentenceTwoPaddedLeft, 0, 2);
+      int sentenceTwoPaddedLeftLen = addMultiByteCharSentenceTwo(sentenceTwoPaddedLeft, start);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceTwoPaddedLeft, 0, sentenceTwoPaddedLeftLen) == 2 + 13);
+      resultLen = StringExpr.rightTrim(sentenceTwoPaddedLeft, 0, sentenceTwoPaddedLeftLen);
+      Assert.assertTrue(resultLen == sentenceTwoPaddedLeftLen);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceTwoPaddedLeft, 0, sentenceTwoPaddedLeftLen - 5) == 2 + 10);
+      resultLen = StringExpr.rightTrim(sentenceTwoPaddedLeft, 0, sentenceTwoPaddedLeftLen - 5);
+      Assert.assertTrue(resultLen == sentenceTwoPaddedLeftLen - 5);
+
+      // Right pad longer strings with multi-byte characters.
+      byte[] sentenceOnePaddedRight = new byte[100];
+      start = addMultiByteCharSentenceOne(sentenceOnePaddedRight, 0);
+      int sentenceOnePaddedRightLen = addPads(sentenceOnePaddedRight, start, 4);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceOnePaddedRight, 0, sentenceOnePaddedRightLen) == 10 + 4);
+      resultLen = StringExpr.rightTrim(sentenceOnePaddedRight, 0, sentenceOnePaddedRightLen);
+      Assert.assertTrue(resultLen == sentenceOnePaddedRightLen - 4);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceOnePaddedRight, 0, sentenceOnePaddedRightLen - 3 - 4) == 9);
+      resultLen = StringExpr.rightTrim(sentenceOnePaddedRight, 0, sentenceOnePaddedRightLen - 3 - 4);
+      Assert.assertTrue(resultLen == sentenceOnePaddedRightLen - 3 - 4);
+
+      byte[] sentenceTwoPaddedRight = new byte[100];
+      start = addMultiByteCharSentenceTwo(sentenceTwoPaddedRight, 0);
+      int sentenceTwoPaddedRightLen = addPads(sentenceTwoPaddedRight, start, 1);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceTwoPaddedRight, 0, sentenceTwoPaddedRightLen) == 13 + 1);
+      resultLen = StringExpr.rightTrim(sentenceTwoPaddedRight, 0, sentenceTwoPaddedRightLen);
+      Assert.assertTrue(resultLen == sentenceTwoPaddedRightLen - 1);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceTwoPaddedRight, 0, sentenceTwoPaddedRightLen - 5 - 1) == 10);
+      resultLen = StringExpr.rightTrim(sentenceTwoPaddedRight, 0, sentenceTwoPaddedRightLen - 5 - 1);
+      Assert.assertTrue(resultLen == sentenceTwoPaddedRightLen - 5 - 1);
+
+      // Multi-byte characters with blank ranges.
+      byte[] sentenceBlankRanges = new byte[100];
+      int sentenceBlankRangesLen = addMultiByteCharSentenceBlankRanges(sentenceBlankRanges, 0);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceBlankRanges, 0, sentenceBlankRangesLen) == 17);
+      resultLen = StringExpr.rightTrim(sentenceBlankRanges, 0, sentenceBlankRangesLen);
+      Assert.assertTrue(resultLen == sentenceBlankRangesLen);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceBlankRanges, 0, sentenceBlankRangesLen - 3) == 16);
+      resultLen = StringExpr.rightTrim(sentenceBlankRanges, 0, sentenceBlankRangesLen - 3);
+      Assert.assertTrue(resultLen == sentenceBlankRangesLen - 3);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceBlankRanges, 7, 17) == 13);
+      resultLen = StringExpr.rightTrim(sentenceBlankRanges, 7, 17);
+      Assert.assertTrue(resultLen == 12);
+      Assert.assertTrue(StringExpr.characterCount(sentenceBlankRanges, 7, resultLen) == 8);
+  }
+
+  @Test
+  // Test basic right trim to vector.
+  public void testRightTrimBytesColumnVector()  {
+      BytesColumnVector outV = new BytesColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
+      outV.initBuffer(30); // initialize with estimated element size 35
+
+      int i = 0;
+      int expectedResultLen;
+
+      // Nothing to trim (ASCII).
+      Assert.assertTrue(StringExpr.characterCount(blue, 0, blue.length) == 4);
+      StringExpr.rightTrim(outV, i, blue, 0, blue.length);
+      expectedResultLen = blue.length;
+      Assert.assertTrue(vectorEqual(outV, i, blue, 0, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 4);
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(redgreen, 0, redgreen.length) == 8);
+      StringExpr.rightTrim(outV, i, redgreen, 0, redgreen.length);
+      expectedResultLen = redgreen.length;
+      Assert.assertTrue(vectorEqual(outV, i, redgreen, 0, expectedResultLen));
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(ascii_sentence, 0, ascii_sentence.length) == 31);
+      StringExpr.rightTrim(outV, i, ascii_sentence, 0, ascii_sentence.length);
+      expectedResultLen = ascii_sentence.length;
+      Assert.assertTrue(vectorEqual(outV, i, ascii_sentence, 0, expectedResultLen));
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(blanksLeft, 0, blanksLeft.length) == 5);
+      StringExpr.rightTrim(outV, i, blanksLeft, 0, blanksLeft.length);
+      expectedResultLen = blanksLeft.length;
+      Assert.assertTrue(vectorEqual(outV, i, blanksLeft, 0, expectedResultLen));
+      i++;
+
+      // Simple trims.
+      Assert.assertTrue(StringExpr.characterCount(blanksRight, 0, blanksRight.length) == 5);
+      StringExpr.rightTrim(outV, i, blanksRight, 0, blanksRight.length);
+      expectedResultLen = 3;
+      Assert.assertTrue(vectorEqual(outV, i, blanksRight, 0, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 3);
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(blanksBoth, 0, blanksBoth.length) == 7);
+      StringExpr.rightTrim(outV, i, blanksBoth, 0, blanksBoth.length);
+      expectedResultLen = 5;
+      Assert.assertTrue(vectorEqual(outV, i, blanksBoth, 0, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 5);
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(blankString, 0, blankString.length) == 2);
+      StringExpr.rightTrim(outV, i, blankString, 0, blankString.length);
+      expectedResultLen = 0;
+      Assert.assertTrue(vectorEqual(outV, i, blankString, 0, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 0);
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(blankRanges, 0, blankRanges.length) == 30);
+      StringExpr.rightTrim(outV, i, blankRanges, 0, blankRanges.length);
+      expectedResultLen = blankRanges.length - 4;
+      Assert.assertTrue(vectorEqual(outV, i, blankRanges, 0, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 26);
+      i++;
+
+      // Offset trims.
+      Assert.assertTrue(StringExpr.characterCount(blanksRight, 1, blanksRight.length - 1) == 4);
+      StringExpr.rightTrim(outV, i, blanksRight, 1, blanksRight.length - 1);
+      expectedResultLen = 2;
+      Assert.assertTrue(vectorEqual(outV, i, blanksRight, 1, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 2);
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(blanksBoth, 4, blanksBoth.length - 4) == 3);
+      StringExpr.rightTrim(outV, i, blanksBoth, 4, blanksBoth.length - 4);
+      expectedResultLen = 1;
+      Assert.assertTrue(vectorEqual(outV, i, blanksBoth, 4, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 1);
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(blanksBoth, 5, blanksBoth.length - 5) == 2);
+      StringExpr.rightTrim(outV, i, blanksBoth, 5, blanksBoth.length -5 );
+      expectedResultLen = 0;
+      Assert.assertTrue(vectorEqual(outV, i, blanksBoth, 5, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 0);
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(blankString, 1, blankString.length - 1) == 1);
+      StringExpr.rightTrim(outV, i, blankString, 1, blankString.length - 1);
+      expectedResultLen = 0;
+      Assert.assertTrue(vectorEqual(outV, i, blankString, 1, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 0);
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(blankRanges, 4, blankRanges.length - 4) == 26);
+      StringExpr.rightTrim(outV, i, blankRanges, 4, blankRanges.length - 4);
+      expectedResultLen = blankRanges.length - 4 -4;
+      Assert.assertTrue(vectorEqual(outV, i, blankRanges, 4, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 22);
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(blankRanges, 6, blankRanges.length - 6) == 24);
+      StringExpr.rightTrim(outV, i, blankRanges, 6, blankRanges.length- 6);
+      expectedResultLen = blankRanges.length - 6 - 4;
+      Assert.assertTrue(vectorEqual(outV, i, blankRanges, 6, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 20);
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(blankRanges, 7, blankRanges.length - 7) == 23);
+      StringExpr.rightTrim(outV, i, blankRanges, 7, blankRanges.length - 7);
+      expectedResultLen = blankRanges.length - 7 - 4;
+      Assert.assertTrue(vectorEqual(outV, i, blankRanges, 7, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 19);
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(blankRanges, 7, 8 - 7) == 1);
+      StringExpr.rightTrim(outV, i, blankRanges, 7, 8 - 7);
+      expectedResultLen = 0;
+      Assert.assertTrue(vectorEqual(outV, i, blankRanges, 7, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 0);
+      i++;
+
+      // Multi-byte trims.
+      byte[] multiByte = new byte[100];
+
+      addMultiByteCharRightPadded1_1(multiByte);
+      Assert.assertTrue(StringExpr.characterCount(multiByte, 0, 4) == 2);
+      StringExpr.rightTrim(outV, i, multiByte, 0, 4);
+      expectedResultLen = 3;
+      Assert.assertTrue(vectorEqual(outV, i, multiByte, 0, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 1);
+      i++;
+      addMultiByteCharRightPadded1_2(multiByte);
+      Assert.assertTrue(StringExpr.characterCount(multiByte, 0, 5) == 3);
+      StringExpr.rightTrim(outV, i, multiByte, 0, 5);
+      expectedResultLen = 4;
+      Assert.assertTrue(vectorEqual(outV, i, multiByte, 0, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 2);
+      i++;
+      addMultiByteCharRightPadded1_3(multiByte);
+      Assert.assertTrue(StringExpr.characterCount(multiByte, 0, 9) == 4);
+      StringExpr.rightTrim(outV, i, multiByte, 0, 9);
+      expectedResultLen = 8;
+      Assert.assertTrue(vectorEqual(outV, i, multiByte, 0, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 3);
+      i++;
+      addMultiByteCharRightPadded1_1(multiByte);
+      Assert.assertTrue(StringExpr.characterCount(multiByte, 3, 1) == 1);
+      StringExpr.rightTrim(outV, i, multiByte, 3, 1);
+      expectedResultLen = 0;
+      Assert.assertTrue(vectorEqual(outV, i, multiByte, 3, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 0);
+      i++;
+      addMultiByteCharRightPadded1_2(multiByte);
+      Assert.assertTrue(StringExpr.characterCount(multiByte, 3, 2) == 2);
+      StringExpr.rightTrim(outV, i, multiByte, 3, 2);
+      expectedResultLen = 1;
+      Assert.assertTrue(vectorEqual(outV, i, multiByte, 3, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 1);
+      i++;
+
+      byte[] sentenceOne = new byte[100];
+      int sentenceOneLen = addMultiByteCharSentenceOne(sentenceOne, 0);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceOne, 0, sentenceOneLen) == 10);
+      StringExpr.rightTrim(outV, i, sentenceOne, 0, sentenceOneLen);
+      expectedResultLen = sentenceOneLen;
+      Assert.assertTrue(vectorEqual(outV, i, sentenceOne, 0, expectedResultLen));
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(sentenceOne, 0, sentenceOneLen - 3) == 9);
+      StringExpr.rightTrim(outV, i, sentenceOne, 0, sentenceOneLen - 3);
+      expectedResultLen = sentenceOneLen - 3;
+      Assert.assertTrue(vectorEqual(outV, i, sentenceOne, 0, expectedResultLen));
+      i++;
+
+      byte[] sentenceTwo = new byte[100];
+      int sentenceTwoLen = addMultiByteCharSentenceTwo(sentenceTwo, 0);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceTwo, 0, sentenceTwoLen) == 13);
+      StringExpr.rightTrim(outV, i, sentenceTwo, 0, sentenceTwoLen);
+      expectedResultLen = sentenceTwoLen;
+      Assert.assertTrue(vectorEqual(outV, i, sentenceTwo, 0, expectedResultLen));
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(sentenceTwo, 0, sentenceTwoLen- 5) == 10);
+      StringExpr.rightTrim(outV, i, sentenceTwo, 0, sentenceTwoLen - 5);
+      expectedResultLen = sentenceTwoLen - 5;
+      Assert.assertTrue(vectorEqual(outV, i, sentenceTwo, 0, expectedResultLen));
+      i++;
+
+      int start;
+
+      // Left pad longer strings with multi-byte characters.
+      byte[] sentenceOnePaddedLeft = new byte[100];
+      start = addPads(sentenceOnePaddedLeft, 0, 3);
+      int sentenceOnePaddedLeftLen = addMultiByteCharSentenceOne(sentenceOnePaddedLeft, start);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceOnePaddedLeft, 0, sentenceOnePaddedLeftLen) == 3 + 10);
+      StringExpr.rightTrim(outV, i, sentenceOnePaddedLeft, 0, sentenceOnePaddedLeftLen);
+      expectedResultLen = sentenceOnePaddedLeftLen;
+      Assert.assertTrue(vectorEqual(outV, i, sentenceOnePaddedLeft, 0, expectedResultLen));
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(sentenceOnePaddedLeft, 0, sentenceOnePaddedLeftLen - 3) == 3 + 9);
+      StringExpr.rightTrim(outV, i, sentenceOnePaddedLeft, 0, sentenceOnePaddedLeftLen - 3);
+      expectedResultLen = sentenceOnePaddedLeftLen - 3;
+      Assert.assertTrue(vectorEqual(outV, i, sentenceOnePaddedLeft, 0, expectedResultLen));
+      i++;
+
+      byte[] sentenceTwoPaddedLeft = new byte[100];
+      start = addPads(sentenceTwoPaddedLeft, 0, 2);
+      int sentenceTwoPaddedLeftLen = addMultiByteCharSentenceTwo(sentenceTwoPaddedLeft, start);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceTwoPaddedLeft, 0, sentenceTwoPaddedLeftLen) == 2 + 13);
+      StringExpr.rightTrim(outV, i, sentenceTwoPaddedLeft, 0, sentenceTwoPaddedLeftLen);
+      expectedResultLen = sentenceTwoPaddedLeftLen;
+      Assert.assertTrue(vectorEqual(outV, i, sentenceTwoPaddedLeft, 0, expectedResultLen));
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(sentenceTwoPaddedLeft, 0, sentenceTwoPaddedLeftLen - 5) == 2 + 10);
+      StringExpr.rightTrim(outV, i, sentenceTwoPaddedLeft, 0, sentenceTwoPaddedLeftLen - 5);
+      expectedResultLen = sentenceTwoPaddedLeftLen - 5;
+      Assert.assertTrue(vectorEqual(outV, i, sentenceTwoPaddedLeft, 0, expectedResultLen));
+      i++;
+
+      // Right pad longer strings with multi-byte characters.
+      byte[] sentenceOnePaddedRight = new byte[100];
+      start = addMultiByteCharSentenceOne(sentenceOnePaddedRight, 0);
+      int sentenceOnePaddedRightLen = addPads(sentenceOnePaddedRight, start, 4);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceOnePaddedRight, 0, sentenceOnePaddedRightLen) == 10 + 4);
+      StringExpr.rightTrim(outV, i, sentenceOnePaddedRight, 0, sentenceOnePaddedRightLen);
+      expectedResultLen = sentenceOnePaddedRightLen - 4;
+      Assert.assertTrue(vectorEqual(outV, i, sentenceOnePaddedRight, 0, expectedResultLen));
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(sentenceOnePaddedRight, 0, sentenceOnePaddedRightLen - 3 - 4) == 9);
+      StringExpr.rightTrim(outV, i, sentenceOnePaddedRight, 0, sentenceOnePaddedRightLen - 3 - 4);
+      expectedResultLen = sentenceOnePaddedRightLen - 3 - 4;
+      Assert.assertTrue(vectorEqual(outV, i, sentenceOnePaddedRight, 0, expectedResultLen));
+      i++;
+
+      byte[] sentenceTwoPaddedRight = new byte[100];
+      start = addMultiByteCharSentenceTwo(sentenceTwoPaddedRight, 0);
+      int sentenceTwoPaddedRightLen = addPads(sentenceTwoPaddedRight, start, 1);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceTwoPaddedRight, 0, sentenceTwoPaddedRightLen) == 13 + 1);
+      StringExpr.rightTrim(outV, i, sentenceTwoPaddedRight, 0, sentenceTwoPaddedRightLen);
+      expectedResultLen = sentenceTwoPaddedRightLen - 1;
+      Assert.assertTrue(vectorEqual(outV, i, sentenceTwoPaddedRight, 0, expectedResultLen));
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(sentenceTwoPaddedRight, 0, sentenceTwoPaddedRightLen - 5 - 1) == 10);
+      StringExpr.rightTrim(outV, i, sentenceTwoPaddedRight, 0, sentenceTwoPaddedRightLen - 5 - 1);
+      expectedResultLen = sentenceTwoPaddedRightLen - 5 - 1;
+      Assert.assertTrue(vectorEqual(outV, i, sentenceTwoPaddedRight, 0, expectedResultLen));
+      i++;
+
+      // Multi-byte characters with blank ranges.
+      byte[] sentenceBlankRanges = new byte[100];
+      int sentenceBlankRangesLen = addMultiByteCharSentenceBlankRanges(sentenceBlankRanges, 0);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceBlankRanges, 0, sentenceBlankRangesLen) == 17);
+      StringExpr.rightTrim(outV, i, sentenceBlankRanges, 0, sentenceBlankRangesLen);
+      expectedResultLen = sentenceBlankRangesLen;
+      Assert.assertTrue(vectorEqual(outV, i, sentenceBlankRanges, 0, expectedResultLen));
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(sentenceBlankRanges, 0, sentenceBlankRangesLen - 3) == 16);
+      StringExpr.rightTrim(outV, i, sentenceBlankRanges, 0, sentenceBlankRangesLen - 3);
+      expectedResultLen = sentenceBlankRangesLen - 3;
+      Assert.assertTrue(vectorEqual(outV, i, sentenceBlankRanges, 0, expectedResultLen));
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(sentenceBlankRanges, 7, 17) == 13);
+      StringExpr.rightTrim(outV, i, sentenceBlankRanges, 7, 17);
+      expectedResultLen = 12;
+      Assert.assertTrue(vectorEqual(outV, i, sentenceBlankRanges, 7, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 8);
+  }
+
+  @Test
+  // Test basic truncate of bytes slice.
+  public void testTruncateBytesSlice()  {
+      int largeMaxLength = 100;
+      int resultLen;
+
+      // No truncate (ASCII) -- maximum length large.
+      Assert.assertTrue(StringExpr.characterCount(blue, 0, blue.length) == 4);
+      resultLen = StringExpr.truncate(blue, 0, blue.length, largeMaxLength);
+      Assert.assertTrue(resultLen == blue.length);
+      Assert.assertTrue(StringExpr.characterCount(blue, 0, resultLen) == 4);
+
+      Assert.assertTrue(StringExpr.characterCount(redgreen, 0, redgreen.length) == 8);
+      resultLen = StringExpr.truncate(redgreen, 0, redgreen.length, largeMaxLength);
+      Assert.assertTrue(resultLen == redgreen.length);
+
+      Assert.assertTrue(StringExpr.characterCount(ascii_sentence, 0, ascii_sentence.length) == 31);
+      resultLen = StringExpr.truncate(ascii_sentence, 0, ascii_sentence.length, largeMaxLength);
+      Assert.assertTrue(resultLen == ascii_sentence.length);
+
+      Assert.assertTrue(StringExpr.characterCount(blanksLeft, 0, blanksLeft.length) == 5);
+      resultLen = StringExpr.truncate(blanksLeft, 0, blanksLeft.length, largeMaxLength);
+      Assert.assertTrue(resultLen == blanksLeft.length);
+
+      // No truncate (ASCII) -- same maximum length.
+      Assert.assertTrue(StringExpr.characterCount(blue, 0, blue.length) == 4);
+      resultLen = StringExpr.truncate(blue, 0, blue.length, 4);
+      Assert.assertTrue(resultLen == blue.length);
+      Assert.assertTrue(StringExpr.characterCount(blue, 0, resultLen) == 4);
+
+      Assert.assertTrue(StringExpr.characterCount(redgreen, 0, redgreen.length) == 8);
+      resultLen = StringExpr.truncate(redgreen, 0, redgreen.length, 8);
+      Assert.assertTrue(resultLen == redgreen.length);
+
+      Assert.assertTrue(StringExpr.characterCount(ascii_sentence, 0, ascii_sentence.length) == 31);
+      resultLen = StringExpr.truncate(ascii_sentence, 0, ascii_sentence.length, 31);
+      Assert.assertTrue(resultLen == ascii_sentence.length);
+
+      Assert.assertTrue(StringExpr.characterCount(blanksLeft, 0, blanksLeft.length) == 5);
+      resultLen = StringExpr.truncate(blanksLeft, 0, blanksLeft.length, 5);
+      Assert.assertTrue(resultLen == blanksLeft.length);
+
+      // Simple truncation.
+      Assert.assertTrue(StringExpr.characterCount(blue, 0, blue.length) == 4);
+      resultLen = StringExpr.truncate(blue, 0, blue.length, 3);
+      Assert.assertTrue(resultLen == 3);
+      Assert.assertTrue(StringExpr.characterCount(blue, 0, resultLen) == 3);
+
+      Assert.assertTrue(StringExpr.characterCount(redgreen, 0, redgreen.length) == 8);
+      resultLen = StringExpr.truncate(redgreen, 0, redgreen.length, 6);
+      Assert.assertTrue(resultLen == 6);
+
+      Assert.assertTrue(StringExpr.characterCount(ascii_sentence, 0, ascii_sentence.length) == 31);
+      resultLen = StringExpr.truncate(ascii_sentence, 0, ascii_sentence.length, 14);
+      Assert.assertTrue(resultLen == 14);
+
+      Assert.assertTrue(StringExpr.characterCount(blanksLeft, 0, blanksLeft.length) == 5);
+      resultLen = StringExpr.truncate(blanksLeft, 0, blanksLeft.length, 2);
+      Assert.assertTrue(resultLen == 2);
+
+      Assert.assertTrue(StringExpr.characterCount(blanksRight, 0, blanksRight.length) == 5);
+      resultLen = StringExpr.truncate(blanksRight, 0, blanksRight.length, 4);
+      Assert.assertTrue(resultLen == 4);
+      Assert.assertTrue(StringExpr.characterCount(blanksRight, 0, resultLen) == 4);
+
+      Assert.assertTrue(StringExpr.characterCount(blanksBoth, 0, blanksBoth.length) == 7);
+      resultLen = StringExpr.truncate(blanksBoth, 0, blanksBoth.length, 2);
+      Assert.assertTrue(resultLen == 2);
+      Assert.assertTrue(StringExpr.characterCount(blanksBoth, 0, resultLen) == 2);
+     
+      Assert.assertTrue(StringExpr.characterCount(blankString, 0, blankString.length) == 2);
+      resultLen = StringExpr.truncate(blankString, 0, blankString.length, 1);
+      Assert.assertTrue(resultLen == 1);
+      Assert.assertTrue(StringExpr.characterCount(blankString, 0, resultLen) == 1);
+
+      Assert.assertTrue(StringExpr.characterCount(blankRanges, 0, blankRanges.length) == 30);
+      resultLen = StringExpr.truncate(blankRanges, 0, blankRanges.length, 29);
+      Assert.assertTrue(resultLen == 29);
+      Assert.assertTrue(StringExpr.characterCount(blankRanges, 0, resultLen) == 29);
+
+      // Offset truncation.
+      Assert.assertTrue(StringExpr.characterCount(blanksRight, 1, blanksRight.length - 1) == 4);
+      resultLen = StringExpr.truncate(blanksRight, 1, blanksRight.length - 1, 3);
+      Assert.assertTrue(resultLen == 3);
+      Assert.assertTrue(StringExpr.characterCount(blanksRight, 1, resultLen) == 3);
+
+      Assert.assertTrue(StringExpr.characterCount(blanksBoth, 4, blanksBoth.length - 4) == 3);
+      resultLen = StringExpr.truncate(blanksBoth, 4, blanksBoth.length - 4, 2);
+      Assert.assertTrue(resultLen == 2);
+      Assert.assertTrue(StringExpr.characterCount(blanksBoth, 4, resultLen) == 2);
+
+      Assert.assertTrue(StringExpr.characterCount(blanksBoth, 5, blanksBoth.length - 5) == 2);
+      resultLen = StringExpr.truncate(blanksBoth, 5, blanksBoth.length -5, 1);
+      Assert.assertTrue(resultLen == 1);
+      Assert.assertTrue(StringExpr.characterCount(blanksBoth, 5, resultLen) == 1);
+
+      Assert.assertTrue(StringExpr.characterCount(blankRanges, 4, blankRanges.length - 4) == 26);
+      resultLen = StringExpr.truncate(blankRanges, 4, blankRanges.length - 4, 22);
+      Assert.assertTrue(resultLen == 22);
+      Assert.assertTrue(StringExpr.characterCount(blankRanges, 4, resultLen) == 22);
+
+      Assert.assertTrue(StringExpr.characterCount(blankRanges, 6, blankRanges.length - 6) == 24);
+      resultLen = StringExpr.truncate(blankRanges, 6, blankRanges.length- 6, 7);
+      Assert.assertTrue(resultLen == 7);
+      Assert.assertTrue(StringExpr.characterCount(blankRanges, 6, resultLen) == 7);
+
+      Assert.assertTrue(StringExpr.characterCount(blankRanges, 7, blankRanges.length - 7) == 23);
+      resultLen = StringExpr.truncate(blankRanges, 7, blankRanges.length - 7, 20);
+      Assert.assertTrue(resultLen == 20);
+      Assert.assertTrue(StringExpr.characterCount(blankRanges, 7, resultLen) == 20);
+
+      // Multi-byte truncation.
+      byte[] multiByte = new byte[100];
+
+      addMultiByteCharRightPadded1_1(multiByte);
+      Assert.assertTrue(StringExpr.characterCount(multiByte, 0, 4) == 2);
+      resultLen = StringExpr.truncate(multiByte, 0, 4, 1);
+      Assert.assertTrue(resultLen == 3);
+      Assert.assertTrue(StringExpr.characterCount(multiByte, 0, resultLen) == 1);
+
+      addMultiByteCharRightPadded1_2(multiByte);
+      Assert.assertTrue(StringExpr.characterCount(multiByte, 0, 5) == 3);
+      resultLen = StringExpr.truncate(multiByte, 0, 5, 2);
+      Assert.assertTrue(resultLen == 4);
+      Assert.assertTrue(StringExpr.characterCount(multiByte, 0, resultLen) == 2);
+
+      addMultiByteCharRightPadded1_3(multiByte);
+      Assert.assertTrue(StringExpr.characterCount(multiByte, 0, 9) == 4);
+      resultLen = StringExpr.truncate(multiByte, 0, 9, 2);
+      Assert.assertTrue(resultLen == 5);
+      Assert.assertTrue(StringExpr.characterCount(multiByte, 0, resultLen) == 2);
+
+      addMultiByteCharRightPadded1_2(multiByte);
+      Assert.assertTrue(StringExpr.characterCount(multiByte, 3, 2) == 2);
+      resultLen = StringExpr.truncate(multiByte, 3, 2, 1);
+      Assert.assertTrue(resultLen == 1);
+      Assert.assertTrue(StringExpr.characterCount(multiByte, 3, resultLen) == 1);
+
+      byte[] sentenceOne = new byte[100];
+      int sentenceOneLen = addMultiByteCharSentenceOne(sentenceOne, 0);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceOne, 0, sentenceOneLen) == 10);
+      resultLen = StringExpr.truncate(sentenceOne, 0, sentenceOneLen, 8);
+      Assert.assertTrue(resultLen == 20);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceOne, 0, sentenceOneLen - 3) == 9);
+      resultLen = StringExpr.truncate(sentenceOne, 0, sentenceOneLen - 3, 3);
+      Assert.assertTrue(resultLen == 9);
+
+      byte[] sentenceTwo = new byte[100];
+      int sentenceTwoLen = addMultiByteCharSentenceTwo(sentenceTwo, 0);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceTwo, 0, sentenceTwoLen) == 13);
+      resultLen = StringExpr.truncate(sentenceTwo, 0, sentenceTwoLen, 9);
+      Assert.assertTrue(resultLen == 16);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceTwo, 0, sentenceTwoLen- 5) == 10);
+      resultLen = StringExpr.truncate(sentenceTwo, 0, sentenceTwoLen - 5, 6);
+      Assert.assertTrue(resultLen == 11);
+
+      int start;
+
+      // Left pad longer strings with multi-byte characters.
+      byte[] sentenceOnePaddedLeft = new byte[100];
+      start = addPads(sentenceOnePaddedLeft, 0, 3);
+      int sentenceOnePaddedLeftLen = addMultiByteCharSentenceOne(sentenceOnePaddedLeft, start);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceOnePaddedLeft, 0, sentenceOnePaddedLeftLen) == 3 + 10);
+      resultLen = StringExpr.truncate(sentenceOnePaddedLeft, 0, sentenceOnePaddedLeftLen, 4);
+      Assert.assertTrue(resultLen == 6);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceOnePaddedLeft, 0, sentenceOnePaddedLeftLen - 3) == 3 + 9);
+      resultLen = StringExpr.truncate(sentenceOnePaddedLeft, 0, sentenceOnePaddedLeftLen - 3, 7);
+      Assert.assertTrue(resultLen == 13);
+
+      byte[] sentenceTwoPaddedLeft = new byte[100];
+      start = addPads(sentenceTwoPaddedLeft, 0, 2);
+      int sentenceTwoPaddedLeftLen = addMultiByteCharSentenceTwo(sentenceTwoPaddedLeft, start);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceTwoPaddedLeft, 0, sentenceTwoPaddedLeftLen) == 2 + 13);
+      resultLen = StringExpr.truncate(sentenceTwoPaddedLeft, 0, sentenceTwoPaddedLeftLen, 14);
+      Assert.assertTrue(resultLen == 24);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceTwoPaddedLeft, 0, sentenceTwoPaddedLeftLen - 5) == 2 + 10);
+      resultLen = StringExpr.truncate(sentenceTwoPaddedLeft, 0, sentenceTwoPaddedLeftLen - 5, 9);
+      Assert.assertTrue(resultLen == 15);
+
+      // Right pad longer strings with multi-byte characters.
+      byte[] sentenceOnePaddedRight = new byte[100];
+      start = addMultiByteCharSentenceOne(sentenceOnePaddedRight, 0);
+      int sentenceOnePaddedRightLen = addPads(sentenceOnePaddedRight, start, 4);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceOnePaddedRight, 0, sentenceOnePaddedRightLen) == 10 + 4);
+      resultLen = StringExpr.truncate(sentenceOnePaddedRight, 0, sentenceOnePaddedRightLen, 1);
+      Assert.assertTrue(resultLen == 3);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceOnePaddedRight, 0, sentenceOnePaddedRightLen - 3 - 4) == 9);
+      resultLen = StringExpr.truncate(sentenceOnePaddedRight, 0, sentenceOnePaddedRightLen - 3 - 4, 5);
+      Assert.assertTrue(resultLen == 13);
+
+      byte[] sentenceTwoPaddedRight = new byte[100];
+      start = addMultiByteCharSentenceTwo(sentenceTwoPaddedRight, 0);
+      int sentenceTwoPaddedRightLen = addPads(sentenceTwoPaddedRight, start, 1);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceTwoPaddedRight, 0, sentenceTwoPaddedRightLen) == 13 + 1);
+      resultLen = StringExpr.truncate(sentenceTwoPaddedRight, 0, sentenceTwoPaddedRightLen, 6);
+      Assert.assertTrue(resultLen == 11);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceTwoPaddedRight, 0, sentenceTwoPaddedRightLen - 5 - 1) == 10);
+      resultLen = StringExpr.truncate(sentenceTwoPaddedRight, 0, sentenceTwoPaddedRightLen - 5 - 1, 8);
+      Assert.assertTrue(resultLen == 14);
+
+      // Multi-byte characters with blank ranges.
+      byte[] sentenceBlankRanges = new byte[100];
+      int sentenceBlankRangesLen = addMultiByteCharSentenceBlankRanges(sentenceBlankRanges, 0);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceBlankRanges, 0, sentenceBlankRangesLen) == 17);
+      resultLen = StringExpr.truncate(sentenceBlankRanges, 0, sentenceBlankRangesLen, 4);
+      Assert.assertTrue(resultLen == 9);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceBlankRanges, 0, sentenceBlankRangesLen - 3) == 16);
+      resultLen = StringExpr.truncate(sentenceBlankRanges, 0, sentenceBlankRangesLen - 3, 14);
+      Assert.assertTrue(resultLen == 23);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceBlankRanges, 7, 17) == 13);
+      resultLen = StringExpr.truncate(sentenceBlankRanges, 7, 17, 11);
+      Assert.assertTrue(resultLen == 15);
+      Assert.assertTrue(StringExpr.characterCount(sentenceBlankRanges, 7, resultLen) == 11);
+  }
+
+  @Test
+  // Test basic truncate to vector.
+  public void testTruncateBytesColumnVector()  {
+      BytesColumnVector outV = new BytesColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
+      outV.initBuffer(35); // initialize with estimated element size 35
+
+      int i = 0;
+      int largeMaxLength = 100;
+
+      int expectedResultLen;
+
+      // No truncate (ASCII) -- maximum length large.
+      Assert.assertTrue(StringExpr.characterCount(blue, 0, blue.length) == 4);
+      StringExpr.truncate(outV, i, blue, 0, blue.length, largeMaxLength);
+      expectedResultLen = blue.length;
+      Assert.assertTrue(vectorEqual(outV, i, blue, 0, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 4);
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(redgreen, 0, redgreen.length) == 8);
+      StringExpr.truncate(outV, i, redgreen, 0, redgreen.length, largeMaxLength);
+      expectedResultLen = redgreen.length;
+      Assert.assertTrue(vectorEqual(outV, i, redgreen, 0, expectedResultLen));
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(ascii_sentence, 0, ascii_sentence.length) == 31);
+      StringExpr.truncate(outV, i, ascii_sentence, 0, ascii_sentence.length, largeMaxLength);
+      expectedResultLen = ascii_sentence.length;
+      Assert.assertTrue(vectorEqual(outV, i, ascii_sentence, 0, expectedResultLen));
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(blanksLeft, 0, blanksLeft.length) == 5);
+      StringExpr.truncate(outV, i, blanksLeft, 0, blanksLeft.length, largeMaxLength);
+      expectedResultLen = blanksLeft.length;
+      Assert.assertTrue(vectorEqual(outV, i, blanksLeft, 0, expectedResultLen));
+      i++;
+
+      // No truncate (ASCII) -- same maximum length.
+      Assert.assertTrue(StringExpr.characterCount(blue, 0, blue.length) == 4);
+      StringExpr.truncate(outV, i, blue, 0, blue.length, 4);
+      expectedResultLen = blue.length;
+      Assert.assertTrue(vectorEqual(outV, i, blue, 0, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 4);
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(redgreen, 0, redgreen.length) == 8);
+      StringExpr.truncate(outV, i, redgreen, 0, redgreen.length, 8);
+      expectedResultLen = redgreen.length;
+      Assert.assertTrue(vectorEqual(outV, i, redgreen, 0, expectedResultLen));
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(ascii_sentence, 0, ascii_sentence.length) == 31);
+      StringExpr.truncate(outV, i, ascii_sentence, 0, ascii_sentence.length, 31);
+      expectedResultLen = ascii_sentence.length;
+      Assert.assertTrue(vectorEqual(outV, i, ascii_sentence, 0, expectedResultLen));
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(blanksLeft, 0, blanksLeft.length) == 5);
+      StringExpr.truncate(outV, i, blanksLeft, 0, blanksLeft.length, 5);
+      expectedResultLen = blanksLeft.length;
+      Assert.assertTrue(vectorEqual(outV, i, blanksLeft, 0, expectedResultLen));
+      i++;
+
+      // Simple truncation.
+      Assert.assertTrue(StringExpr.characterCount(blue, 0, blue.length) == 4);
+      StringExpr.truncate(outV, i, blue, 0, blue.length, 3);
+      expectedResultLen = 3;
+      Assert.assertTrue(vectorEqual(outV, i, blue, 0, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 3);
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(redgreen, 0, redgreen.length) == 8);
+      StringExpr.truncate(outV, i, redgreen, 0, redgreen.length, 6);
+      expectedResultLen = 6;
+      Assert.assertTrue(vectorEqual(outV, i, redgreen, 0, expectedResultLen));
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(ascii_sentence, 0, ascii_sentence.length) == 31);
+      StringExpr.truncate(outV, i, ascii_sentence, 0, ascii_sentence.length, 14);
+      expectedResultLen = 14;
+      Assert.assertTrue(vectorEqual(outV, i, ascii_sentence, 0, expectedResultLen));
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(blanksLeft, 0, blanksLeft.length) == 5);
+      StringExpr.truncate(outV, i, blanksLeft, 0, blanksLeft.length, 2);
+      expectedResultLen = 2;
+      Assert.assertTrue(vectorEqual(outV, i, blanksLeft, 0, expectedResultLen));
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(blanksRight, 0, blanksRight.length) == 5);
+      StringExpr.truncate(outV, i, blanksRight, 0, blanksRight.length, 4);
+      expectedResultLen = 4;
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 4);
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(blanksBoth, 0, blanksBoth.length) == 7);
+      StringExpr.truncate(outV, i, blanksBoth, 0, blanksBoth.length, 2);
+      expectedResultLen = 2;
+      Assert.assertTrue(vectorEqual(outV, i, blanksBoth, 0, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 2);
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(blankString, 0, blankString.length) == 2);
+      StringExpr.truncate(outV, i, blankString, 0, blankString.length, 1);
+      expectedResultLen = 1;
+      Assert.assertTrue(vectorEqual(outV, i, blankString, 0, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 1);
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(blankRanges, 0, blankRanges.length) == 30);
+      StringExpr.truncate(outV, i, blankRanges, 0, blankRanges.length, 29);
+      expectedResultLen = 29;
+      Assert.assertTrue(vectorEqual(outV, i, blankRanges, 0, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 29);
+      i++;
+
+      // Offset truncation.
+      Assert.assertTrue(StringExpr.characterCount(blanksRight, 1, blanksRight.length - 1) == 4);
+      StringExpr.truncate(outV, i, blanksRight, 1, blanksRight.length - 1, 3);
+      expectedResultLen = 3;
+      Assert.assertTrue(vectorEqual(outV, i, blanksRight, 1, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 3);
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(blanksBoth, 4, blanksBoth.length - 4) == 3);
+      StringExpr.truncate(outV, i, blanksBoth, 4, blanksBoth.length - 4, 2);
+      expectedResultLen = 2;
+      Assert.assertTrue(vectorEqual(outV, i, blanksBoth, 4, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 2);
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(blanksBoth, 5, blanksBoth.length - 5) == 2);
+      StringExpr.truncate(outV, i, blanksBoth, 5, blanksBoth.length -5, 1);
+      expectedResultLen = 1;
+      Assert.assertTrue(vectorEqual(outV, i, blanksBoth, 5, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 1);
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(blankRanges, 4, blankRanges.length - 4) == 26);
+      StringExpr.truncate(outV, i, blankRanges, 4, blankRanges.length - 4, 22);
+      expectedResultLen = 22;
+      Assert.assertTrue(vectorEqual(outV, i, blankRanges, 4, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 22);
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(blankRanges, 6, blankRanges.length - 6) == 24);
+      StringExpr.truncate(outV, i, blankRanges, 6, blankRanges.length- 6, 7);
+      expectedResultLen = 7;
+      Assert.assertTrue(vectorEqual(outV, i, blankRanges, 6, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 7);
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(blankRanges, 7, blankRanges.length - 7) == 23);
+      StringExpr.truncate(outV, i, blankRanges, 7, blankRanges.length - 7, 20);
+      expectedResultLen = 20;
+      Assert.assertTrue(vectorEqual(outV, i, blankRanges, 7, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 20);
+      i++;
+
+      // Multi-byte truncation.
+      byte[] multiByte = new byte[100];
+
+      addMultiByteCharRightPadded1_1(multiByte);
+      Assert.assertTrue(StringExpr.characterCount(multiByte, 0, 4) == 2);
+      StringExpr.truncate(outV, i, multiByte, 0, 4, 1);
+      expectedResultLen = 3;
+      Assert.assertTrue(vectorEqual(outV, i, multiByte, 0, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 1);
+      i++;
+      addMultiByteCharRightPadded1_2(multiByte);
+      Assert.assertTrue(StringExpr.characterCount(multiByte, 0, 5) == 3);
+      StringExpr.truncate(outV, i, multiByte, 0, 5, 2);
+      expectedResultLen = 4;
+      Assert.assertTrue(vectorEqual(outV, i, multiByte, 0, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 2);
+      i++;
+      addMultiByteCharRightPadded1_3(multiByte);
+      Assert.assertTrue(StringExpr.characterCount(multiByte, 0, 9) == 4);
+      StringExpr.truncate(outV, i, multiByte, 0, 9, 2);
+      expectedResultLen = 5;
+      Assert.assertTrue(vectorEqual(outV, i, multiByte, 0, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 2);
+      i++;
+      addMultiByteCharRightPadded1_2(multiByte);
+      Assert.assertTrue(StringExpr.characterCount(multiByte, 3, 2) == 2);
+      StringExpr.truncate(outV, i, multiByte, 3, 2, 1);
+      expectedResultLen = 1;
+      Assert.assertTrue(vectorEqual(outV, i, multiByte, 3, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 1);
+      i++;
+
+      byte[] sentenceOne = new byte[100];
+      int sentenceOneLen = addMultiByteCharSentenceOne(sentenceOne, 0);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceOne, 0, sentenceOneLen) == 10);
+      StringExpr.truncate(outV, i, sentenceOne, 0, sentenceOneLen, 8);
+      expectedResultLen = 20;
+      Assert.assertTrue(vectorEqual(outV, i, sentenceOne, 0, expectedResultLen));
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(sentenceOne, 0, sentenceOneLen - 3) == 9);
+      StringExpr.truncate(outV, i, sentenceOne, 0, sentenceOneLen - 3, 3);
+      expectedResultLen = 9;
+      Assert.assertTrue(vectorEqual(outV, i, sentenceOne, 0, expectedResultLen));
+      i++;
+
+      byte[] sentenceTwo = new byte[100];
+      int sentenceTwoLen = addMultiByteCharSentenceTwo(sentenceTwo, 0);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceTwo, 0, sentenceTwoLen) == 13);
+      StringExpr.truncate(outV, i, sentenceTwo, 0, sentenceTwoLen, 9);
+      expectedResultLen = 16;
+      Assert.assertTrue(vectorEqual(outV, i, sentenceTwo, 0, expectedResultLen));
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(sentenceTwo, 0, sentenceTwoLen- 5) == 10);
+      StringExpr.truncate(outV, i, sentenceTwo, 0, sentenceTwoLen - 5, 6);
+      expectedResultLen = 11;
+      Assert.assertTrue(vectorEqual(outV, i, sentenceTwo, 0, expectedResultLen));
+      i++;
+
+      int start;
+
+      // Left pad longer strings with multi-byte characters.
+      byte[] sentenceOnePaddedLeft = new byte[100];
+      start = addPads(sentenceOnePaddedLeft, 0, 3);
+      int sentenceOnePaddedLeftLen = addMultiByteCharSentenceOne(sentenceOnePaddedLeft, start);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceOnePaddedLeft, 0, sentenceOnePaddedLeftLen) == 3 + 10);
+      StringExpr.truncate(outV, i, sentenceOnePaddedLeft, 0, sentenceOnePaddedLeftLen, 4);
+      expectedResultLen = 6;
+      Assert.assertTrue(vectorEqual(outV, i, sentenceOnePaddedLeft, 0, expectedResultLen));
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(sentenceOnePaddedLeft, 0, sentenceOnePaddedLeftLen - 3) == 3 + 9);
+      StringExpr.truncate(outV, i, sentenceOnePaddedLeft, 0, sentenceOnePaddedLeftLen - 3, 7);
+      expectedResultLen = 13;
+      Assert.assertTrue(vectorEqual(outV, i, sentenceOnePaddedLeft, 0, expectedResultLen));
+      i++;
+
+      byte[] sentenceTwoPaddedLeft = new byte[100];
+      start = addPads(sentenceTwoPaddedLeft, 0, 2);
+      int sentenceTwoPaddedLeftLen = addMultiByteCharSentenceTwo(sentenceTwoPaddedLeft, start);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceTwoPaddedLeft, 0, sentenceTwoPaddedLeftLen) == 2 + 13);
+      StringExpr.truncate(outV, i, sentenceTwoPaddedLeft, 0, sentenceTwoPaddedLeftLen, 14);
+      expectedResultLen = 24;
+      Assert.assertTrue(vectorEqual(outV, i, sentenceTwoPaddedLeft, 0, expectedResultLen));
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(sentenceTwoPaddedLeft, 0, sentenceTwoPaddedLeftLen - 5) == 2 + 10);
+      StringExpr.truncate(outV, i, sentenceTwoPaddedLeft, 0, sentenceTwoPaddedLeftLen - 5, 9);
+      expectedResultLen = 15;
+      Assert.assertTrue(vectorEqual(outV, i, sentenceTwoPaddedLeft, 0, expectedResultLen));
+      i++;
+
+      // Right pad longer strings with multi-byte characters.
+      byte[] sentenceOnePaddedRight = new byte[100];
+      start = addMultiByteCharSentenceOne(sentenceOnePaddedRight, 0);
+      int sentenceOnePaddedRightLen = addPads(sentenceOnePaddedRight, start, 4);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceOnePaddedRight, 0, sentenceOnePaddedRightLen) == 10 + 4);
+      StringExpr.truncate(outV, i, sentenceOnePaddedRight, 0, sentenceOnePaddedRightLen, 1);
+      expectedResultLen = 3;
+      Assert.assertTrue(vectorEqual(outV, i, sentenceOnePaddedRight, 0, expectedResultLen));
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(sentenceOnePaddedRight, 0, sentenceOnePaddedRightLen - 3 - 4) == 9);
+      StringExpr.truncate(outV, i, sentenceOnePaddedRight, 0, sentenceOnePaddedRightLen - 3 - 4, 5);
+      expectedResultLen = 13;
+      Assert.assertTrue(vectorEqual(outV, i, sentenceOnePaddedRight, 0, expectedResultLen));
+      i++;
+
+      byte[] sentenceTwoPaddedRight = new byte[100];
+      start = addMultiByteCharSentenceTwo(sentenceTwoPaddedRight, 0);
+      int sentenceTwoPaddedRightLen = addPads(sentenceTwoPaddedRight, start, 1);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceTwoPaddedRight, 0, sentenceTwoPaddedRightLen) == 13 + 1);
+      StringExpr.truncate(outV, i, sentenceTwoPaddedRight, 0, sentenceTwoPaddedRightLen, 6);
+      expectedResultLen = 11;
+      Assert.assertTrue(vectorEqual(outV, i, sentenceTwoPaddedRight, 0, expectedResultLen));
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(sentenceTwoPaddedRight, 0, sentenceTwoPaddedRightLen - 5 - 1) == 10);
+      StringExpr.truncate(outV, i, sentenceTwoPaddedRight, 0, sentenceTwoPaddedRightLen - 5 - 1, 8);
+      expectedResultLen = 14;
+      Assert.assertTrue(vectorEqual(outV, i, sentenceTwoPaddedRight, 0, expectedResultLen));
+      i++;
+
+      // Multi-byte characters with blank ranges.
+      byte[] sentenceBlankRanges = new byte[100];
+      int sentenceBlankRangesLen = addMultiByteCharSentenceBlankRanges(sentenceBlankRanges, 0);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceBlankRanges, 0, sentenceBlankRangesLen) == 17);
+      StringExpr.truncate(outV, i, sentenceBlankRanges, 0, sentenceBlankRangesLen, 4);
+      expectedResultLen = 9;
+      Assert.assertTrue(vectorEqual(outV, i, sentenceBlankRanges, 0, expectedResultLen));
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(sentenceBlankRanges, 0, sentenceBlankRangesLen - 3) == 16);
+      StringExpr.truncate(outV, i, sentenceBlankRanges, 0, sentenceBlankRangesLen - 3, 14);
+      expectedResultLen = 23;
+      Assert.assertTrue(vectorEqual(outV, i, sentenceBlankRanges,0, expectedResultLen));
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(sentenceBlankRanges, 7, 17) == 13);
+      StringExpr.truncate(outV, i, sentenceBlankRanges, 7, 17, 11);
+      expectedResultLen = 15;
+      Assert.assertTrue(vectorEqual(outV, i, sentenceBlankRanges, 7, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 11);
+      i++;
+  }
+
+  @Test
+  // Test basic truncate to vector.
+  public void testTruncateScalar()  {
+      int largeMaxLength = 100;
+
+      byte[] result;
+
+      // No truncate (ASCII) -- maximum length large.
+      Assert.assertTrue(StringExpr.characterCount(blue) == 4);
+      result = StringExpr.truncateScalar(blue, largeMaxLength);
+      Assert.assertTrue(Arrays.equals(blue, result));
+
+      Assert.assertTrue(StringExpr.characterCount(redgreen) == 8);
+      result = StringExpr.truncateScalar(redgreen, largeMaxLength);
+      Assert.assertTrue(Arrays.equals(redgreen, result));
+
+      Assert.assertTrue(StringExpr.characterCount(ascii_sentence) == 31);
+      result = StringExpr.truncateScalar(ascii_sentence, largeMaxLength);
+      Assert.assertTrue(Arrays.equals(ascii_sentence, result));
+
+      Assert.assertTrue(StringExpr.characterCount(blanksLeft) == 5);
+      result = StringExpr.truncateScalar(blanksLeft, largeMaxLength);
+      Assert.assertTrue(Arrays.equals(blanksLeft, result));
+
+      // No truncate (ASCII) -- same maximum length.
+      Assert.assertTrue(StringExpr.characterCount(blue) == 4);
+      result = StringExpr.truncateScalar(blue, blue.length);
+      Assert.assertTrue(Arrays.equals(blue, result));
+
+      Assert.assertTrue(StringExpr.characterCount(redgreen) == 8);
+      result = StringExpr.truncateScalar(redgreen, redgreen.length);
+      Assert.assertTrue(Arrays.equals(redgreen, result));
+
+      Assert.assertTrue(StringExpr.characterCount(ascii_sentence) == 31);
+      result = StringExpr.truncateScalar(ascii_sentence, ascii_sentence.length);
+      Assert.assertTrue(Arrays.equals(ascii_sentence, result));
+
+      Assert.assertTrue(StringExpr.characterCount(blanksLeft) == 5);
+      result = StringExpr.truncateScalar(blanksLeft, blanksLeft.length);
+      Assert.assertTrue(Arrays.equals(blanksLeft, result));
+
+      // Simple truncation.
+      result = StringExpr.truncateScalar(blue, 3);
+      Assert.assertTrue(Arrays.equals(Arrays.copyOf(blue, 3), result));
+
+      result = StringExpr.truncateScalar(redgreen, 6);
+      Assert.assertTrue(Arrays.equals(Arrays.copyOf(redgreen, 6), result));
+
+      result = StringExpr.truncateScalar(ascii_sentence, 14);
+      Assert.assertTrue(Arrays.equals(Arrays.copyOf(ascii_sentence, 14), result));
+
+      result = StringExpr.truncateScalar(blanksLeft, 2);
+      Assert.assertTrue(Arrays.equals(Arrays.copyOf(blanksLeft, 2), result));
+
+      result = StringExpr.truncateScalar(blanksRight, 4);
+      Assert.assertTrue(Arrays.equals(Arrays.copyOf(blanksRight, 4), result));
+
+      result = StringExpr.truncateScalar(blanksBoth, 2);
+      Assert.assertTrue(Arrays.equals(Arrays.copyOf(blanksBoth, 2), result));
+
+      result = StringExpr.truncateScalar(blankString, 1);
+      Assert.assertTrue(Arrays.equals(Arrays.copyOf(blankString, 1), result));
+
+      result = StringExpr.truncateScalar(blankRanges, 29);
+      Assert.assertTrue(Arrays.equals(Arrays.copyOf(blankRanges, 29), result));
+
+      // Multi-byte truncation.
+      byte[] scratch = new byte[100];
+      byte[] multiByte;
+
+      addMultiByteCharRightPadded1_1(scratch);
+      multiByte = Arrays.copyOf(scratch, 4);
+      Assert.assertTrue(StringExpr.characterCount(multiByte, 0, 4) == 2);
+      result = StringExpr.truncateScalar(multiByte, 1);
+      Assert.assertTrue(Arrays.equals(Arrays.copyOf(multiByte, 3), result));
+
+      addMultiByteCharRightPadded1_2(scratch);
+      multiByte = Arrays.copyOf(scratch, 5);
+      Assert.assertTrue(StringExpr.characterCount(multiByte, 0, 5) == 3);
+      result = StringExpr.truncateScalar(multiByte, 2);
+      Assert.assertTrue(Arrays.equals(Arrays.copyOf(multiByte, 4), result));
+
+      addMultiByteCharRightPadded1_3(scratch);
+      multiByte = Arrays.copyOf(scratch, 9);
+      Assert.assertTrue(StringExpr.characterCount(multiByte, 0, 9) == 4);
+      result = StringExpr.truncateScalar(multiByte, 2);
+      Assert.assertTrue(Arrays.equals(Arrays.copyOf(multiByte, 5), result));
+
+      addMultiByteCharRightPadded1_2(scratch);
+      multiByte = Arrays.copyOfRange(scratch, 3, 3 + 2);
+      Assert.assertTrue(StringExpr.characterCount(multiByte) == 2);
+      result = StringExpr.truncateScalar(multiByte, 1);
+      Assert.assertTrue(Arrays.equals(Arrays.copyOf(multiByte, 1), result));
+
+      int sentenceOneLen = addMultiByteCharSentenceOne(scratch, 0);
+      byte[] sentenceOne = Arrays.copyOf(scratch, sentenceOneLen);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceOne) == 10);
+      result = StringExpr.truncateScalar(sentenceOne, 8);
+      Assert.assertTrue(Arrays.equals(Arrays.copyOf(sentenceOne, 20), result));
+
+      byte[] sentenceOnePortion = Arrays.copyOf(sentenceOne, sentenceOneLen - 3);
+      Assert.assertTrue(StringExpr.characterCount(sentenceOnePortion) == 9);
+      result = StringExpr.truncateScalar(sentenceOnePortion, 3);
+      Assert.assertTrue(Arrays.equals(Arrays.copyOf(sentenceOnePortion, 9), result));
+
+      int sentenceTwoLen = addMultiByteCharSentenceTwo(scratch, 0);
+      byte[] sentenceTwo = Arrays.copyOf(scratch, sentenceTwoLen);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceTwo) == 13);
+      result = StringExpr.truncateScalar(sentenceTwo, 9);
+      Assert.assertTrue(Arrays.equals(Arrays.copyOf(sentenceTwo, 16), result));
+
+      byte[] sentenceTwoPortion = Arrays.copyOf(sentenceTwo, sentenceTwoLen - 5);
+      Assert.assertTrue(StringExpr.characterCount(sentenceTwoPortion) == 10);
+      result = StringExpr.truncateScalar(sentenceTwoPortion, 6);
+      Assert.assertTrue(Arrays.equals(Arrays.copyOf(sentenceTwoPortion, 11), result));
+
+      int start;
+
+      // Left pad longer strings with multi-byte characters.
+      start = addPads(scratch, 0, 3);
+      int sentenceOnePaddedLeftLen = addMultiByteCharSentenceOne(scratch, start);
+      byte[] sentenceOnePaddedLeft = Arrays.copyOf(scratch, sentenceOnePaddedLeftLen);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceOnePaddedLeft) == 3 + 10);
+      result = StringExpr.truncateScalar(sentenceOnePaddedLeft, 4);
+      Assert.assertTrue(Arrays.equals(Arrays.copyOf(sentenceOnePaddedLeft, 6), result));
+
+      byte[] sentenceOnePaddedLeftPortion = Arrays.copyOf(sentenceOnePaddedLeft, sentenceOnePaddedLeftLen - 3);
+      Assert.assertTrue(StringExpr.characterCount(sentenceOnePaddedLeftPortion) == 3 + 9);
+      result = StringExpr.truncateScalar(sentenceOnePaddedLeftPortion, 7);
+      Assert.assertTrue(Arrays.equals(Arrays.copyOf(sentenceOnePaddedLeftPortion, 13), result));
+
+      start = addPads(scratch, 0, 2);
+      int sentenceTwoPaddedLeftLen = addMultiByteCharSentenceTwo(scratch, start);
+      byte[] sentenceTwoPaddedLeft = Arrays.copyOf(scratch, sentenceTwoPaddedLeftLen);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceTwoPaddedLeft) == 2 + 13);
+      result = StringExpr.truncateScalar(sentenceTwoPaddedLeft, 14);
+      Assert.assertTrue(Arrays.equals(Arrays.copyOf(sentenceTwoPaddedLeft, 24), result));
+
+      byte[] sentenceTwoPaddedLeftPortion = Arrays.copyOf(sentenceTwoPaddedLeft, sentenceTwoPaddedLeftLen - 5);
+      Assert.assertTrue(StringExpr.characterCount(sentenceTwoPaddedLeftPortion) == 2 + 10);
+      result = StringExpr.truncateScalar(sentenceTwoPaddedLeftPortion, 9);
+      Assert.assertTrue(Arrays.equals(Arrays.copyOf(sentenceTwoPaddedLeftPortion, 15), result));
+
+      // Right pad longer strings with multi-byte characters.
+      start = addMultiByteCharSentenceOne(scratch, 0);
+      int sentenceOnePaddedRightLen = addPads(scratch, start, 4);
+      byte[] sentenceOnePaddedRight = Arrays.copyOf(scratch, sentenceOnePaddedRightLen);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceOnePaddedRight) == 10 + 4);
+      result = StringExpr.truncateScalar(sentenceOnePaddedRight, 1);
+      Assert.assertTrue(Arrays.equals(Arrays.copyOf(sentenceOnePaddedRight, 3), result));
+
+      byte[] sentenceOnePaddedRightPortion = Arrays.copyOf(sentenceOnePaddedRight, sentenceOnePaddedRightLen - 3 - 4);
+      Assert.assertTrue(StringExpr.characterCount(sentenceOnePaddedRightPortion) == 9);
+      result = StringExpr.truncateScalar(sentenceOnePaddedRightPortion, 5);
+      Assert.assertTrue(Arrays.equals(Arrays.copyOf(sentenceOnePaddedRightPortion, 13), result));
+
+      start = addMultiByteCharSentenceTwo(scratch, 0);
+      int sentenceTwoPaddedRightLen = addPads(scratch, start, 1);
+      byte[] sentenceTwoPaddedRight = Arrays.copyOf(scratch, sentenceTwoPaddedRightLen);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceTwoPaddedRight) == 13 + 1);
+      result = StringExpr.truncateScalar(sentenceTwoPaddedRight, 6);
+      Assert.assertTrue(Arrays.equals(Arrays.copyOf(sentenceTwoPaddedRight, 11), result));
+
+      byte[] sentenceTwoPaddedRightPortion = Arrays.copyOf(sentenceTwoPaddedRight, sentenceTwoPaddedRightLen - 5 - 1);
+      Assert.assertTrue(StringExpr.characterCount(sentenceTwoPaddedRightPortion) == 10);
+      result = StringExpr.truncateScalar(sentenceTwoPaddedRightPortion, 8);
+      Assert.assertTrue(Arrays.equals(Arrays.copyOf(sentenceTwoPaddedRightPortion, 14), result));
+
+      // Multi-byte characters with blank ranges.
+      int sentenceBlankRangesLen = addMultiByteCharSentenceBlankRanges(scratch, 0);
+      byte[] sentenceBlankRanges = Arrays.copyOf(scratch, sentenceBlankRangesLen);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceBlankRanges) == 17);
+      result = StringExpr.truncateScalar(sentenceBlankRanges, 4);
+      Assert.assertTrue(Arrays.equals(Arrays.copyOf(sentenceBlankRanges, 9), result));
+
+      byte[] sentenceBlankRangesPortion = Arrays.copyOf(sentenceBlankRanges, sentenceBlankRangesLen - 3);
+      Assert.assertTrue(StringExpr.characterCount(sentenceBlankRangesPortion) == 16);
+      result = StringExpr.truncateScalar(sentenceBlankRangesPortion, 14);
+      Assert.assertTrue(Arrays.equals(Arrays.copyOf(sentenceBlankRangesPortion, 23), result));
+
+      sentenceBlankRangesPortion = Arrays.copyOfRange(sentenceBlankRanges, 7, 7 + 17);
+      Assert.assertTrue(StringExpr.characterCount(sentenceBlankRangesPortion) == 13);
+      result = StringExpr.truncateScalar(sentenceBlankRangesPortion, 11);
+      Assert.assertTrue(Arrays.equals(Arrays.copyOf(sentenceBlankRangesPortion, 15), result));
+      Assert.assertTrue(StringExpr.characterCount(result) == 11);
+  }
+
+  @Test
+  // Test basic right trim and truncate to vector.
+  public void testRightTrimAndTruncateBytesSlice()  {
+      // This first section repeats the tests of testRightTrimWithOffset with a large maxLength parameter.
+      // (i.e. too large to have an effect).
+      int largeMaxLength = 100;
+
+      int resultLen;
+      // Nothing to trim (ASCII).
+      Assert.assertTrue(StringExpr.characterCount(blue, 0, blue.length) == 4);
+      resultLen = StringExpr.rightTrimAndTruncate(blue, 0, blue.length, largeMaxLength);
+      Assert.assertTrue(resultLen == blue.length);
+      Assert.assertTrue(StringExpr.characterCount(blue, 0, resultLen) == 4);
+
+      Assert.assertTrue(StringExpr.characterCount(redgreen, 0, redgreen.length) == 8);
+      resultLen = StringExpr.rightTrimAndTruncate(redgreen, 0, redgreen.length, largeMaxLength);
+      Assert.assertTrue(resultLen == redgreen.length);
+
+      Assert.assertTrue(StringExpr.characterCount(ascii_sentence, 0, ascii_sentence.length) == 31);
+      resultLen = StringExpr.rightTrimAndTruncate(ascii_sentence, 0, ascii_sentence.length, largeMaxLength);
+      Assert.assertTrue(resultLen == ascii_sentence.length);
+
+      Assert.assertTrue(StringExpr.characterCount(blanksLeft, 0, blanksLeft.length) == 5);
+      resultLen = StringExpr.rightTrimAndTruncate(blanksLeft, 0, blanksLeft.length, largeMaxLength);
+      Assert.assertTrue(resultLen == blanksLeft.length);
+
+      // Simple trims.
+      Assert.assertTrue(StringExpr.characterCount(blanksRight, 0, blanksRight.length) == 5);
+      resultLen = StringExpr.rightTrimAndTruncate(blanksRight, 0, blanksRight.length, largeMaxLength);
+      Assert.assertTrue(resultLen == 3);
+      Assert.assertTrue(StringExpr.characterCount(blanksRight, 0, resultLen) == 3);
+
+      Assert.assertTrue(StringExpr.characterCount(blanksBoth, 0, blanksBoth.length) == 7);
+      resultLen = StringExpr.rightTrimAndTruncate(blanksBoth, 0, blanksBoth.length, largeMaxLength);
+      Assert.assertTrue(resultLen == 5);
+      Assert.assertTrue(StringExpr.characterCount(blanksBoth, 0, resultLen) == 5);
+     
+      Assert.assertTrue(StringExpr.characterCount(blankString, 0, blankString.length) == 2);
+      resultLen = StringExpr.rightTrimAndTruncate(blankString, 0, blankString.length, largeMaxLength);
+      Assert.assertTrue(resultLen == 0);
+      Assert.assertTrue(StringExpr.characterCount(blankString, 0, resultLen) == 0);
+
+      Assert.assertTrue(StringExpr.characterCount(blankRanges, 0, blankRanges.length) == 30);
+      resultLen = StringExpr.rightTrimAndTruncate(blankRanges, 0, blankRanges.length, largeMaxLength);
+      Assert.assertTrue(resultLen == blankRanges.length - 4);
+      Assert.assertTrue(StringExpr.characterCount(blankRanges, 0, resultLen) == 26);
+
+      // Offset trims.
+      Assert.assertTrue(StringExpr.characterCount(blanksRight, 1, blanksRight.length - 1) == 4);
+      resultLen = StringExpr.rightTrimAndTruncate(blanksRight, 1, blanksRight.length - 1, largeMaxLength);
+      Assert.assertTrue(resultLen == 2);
+      Assert.assertTrue(StringExpr.characterCount(blanksRight, 1, resultLen) == 2);
+
+      Assert.assertTrue(StringExpr.characterCount(blanksBoth, 4, blanksBoth.length - 4) == 3);
+      resultLen = StringExpr.rightTrimAndTruncate(blanksBoth, 4, blanksBoth.length - 4, largeMaxLength);
+      Assert.assertTrue(resultLen == 1);
+      Assert.assertTrue(StringExpr.characterCount(blanksBoth, 4, resultLen) == 1);
+
+      Assert.assertTrue(StringExpr.characterCount(blanksBoth, 5, blanksBoth.length - 5) == 2);
+      resultLen = StringExpr.rightTrimAndTruncate(blanksBoth, 5, blanksBoth.length -5, largeMaxLength);
+      Assert.assertTrue(resultLen == 0);
+      Assert.assertTrue(StringExpr.characterCount(blanksBoth, 5, resultLen) == 0);
+
+      Assert.assertTrue(StringExpr.characterCount(blankString, 1, blankString.length - 1) == 1);
+      resultLen = StringExpr.rightTrimAndTruncate(blankString, 1, blankString.length - 1, largeMaxLength);
+      Assert.assertTrue(resultLen == 0);
+      Assert.assertTrue(StringExpr.characterCount(blankString, 1, resultLen) == 0);
+
+      Assert.assertTrue(StringExpr.characterCount(blankRanges, 4, blankRanges.length - 4) == 26);
+      resultLen = StringExpr.rightTrimAndTruncate(blankRanges, 4, blankRanges.length - 4, largeMaxLength);
+      Assert.assertTrue(resultLen == blankRanges.length - 4 -4);
+      Assert.assertTrue(StringExpr.characterCount(blankRanges, 4, resultLen) == 22);
+
+      Assert.assertTrue(StringExpr.characterCount(blankRanges, 6, blankRanges.length - 6) == 24);
+      resultLen = StringExpr.rightTrimAndTruncate(blankRanges, 6, blankRanges.length- 6, largeMaxLength);
+      Assert.assertTrue(resultLen == blankRanges.length - 6 - 4);
+      Assert.assertTrue(StringExpr.characterCount(blankRanges, 6, resultLen) == 20);
+
+      Assert.assertTrue(StringExpr.characterCount(blankRanges, 7, blankRanges.length - 7) == 23);
+      resultLen = StringExpr.rightTrimAndTruncate(blankRanges, 7, blankRanges.length - 7, largeMaxLength);
+      Assert.assertTrue(resultLen == blankRanges.length - 7 - 4);
+      Assert.assertTrue(StringExpr.characterCount(blankRanges, 7, resultLen) == 19);
+
+      Assert.assertTrue(StringExpr.characterCount(blankRanges, 7, 8 - 7) == 1);
+      resultLen = StringExpr.rightTrimAndTruncate(blankRanges, 7, 8 - 7, largeMaxLength);
+      Assert.assertTrue(resultLen == 0);
+      Assert.assertTrue(StringExpr.characterCount(blankRanges, 7, resultLen) == 0);
+
+      // Multi-byte trims.
+      byte[] multiByte = new byte[100];
+
+      addMultiByteCharRightPadded1_1(multiByte);
+      Assert.assertTrue(StringExpr.characterCount(multiByte, 0, 4) == 2);
+      resultLen = StringExpr.rightTrimAndTruncate(multiByte, 0, 4, largeMaxLength);
+      Assert.assertTrue(resultLen == 3);
+      Assert.assertTrue(StringExpr.characterCount(multiByte, 0, resultLen) == 1);
+
+      addMultiByteCharRightPadded1_2(multiByte);
+      Assert.assertTrue(StringExpr.characterCount(multiByte, 0, 5) == 3);
+      resultLen = StringExpr.rightTrimAndTruncate(multiByte, 0, 5, largeMaxLength);
+      Assert.assertTrue(resultLen == 4);
+      Assert.assertTrue(StringExpr.characterCount(multiByte, 0, resultLen) == 2);
+
+      addMultiByteCharRightPadded1_3(multiByte);
+      Assert.assertTrue(StringExpr.characterCount(multiByte, 0, 9) == 4);
+      resultLen = StringExpr.rightTrimAndTruncate(multiByte, 0, 9, largeMaxLength);
+      Assert.assertTrue(resultLen == 8);
+      Assert.assertTrue(StringExpr.characterCount(multiByte, 0, resultLen) == 3);
+
+      addMultiByteCharRightPadded1_1(multiByte);
+      Assert.assertTrue(StringExpr.characterCount(multiByte, 3, 1) == 1);
+      resultLen = StringExpr.rightTrimAndTruncate(multiByte, 3, 1, largeMaxLength);
+      Assert.assertTrue(resultLen == 0);
+      Assert.assertTrue(StringExpr.characterCount(multiByte, 0, resultLen) == 0);
+
+      addMultiByteCharRightPadded1_2(multiByte);
+      Assert.assertTrue(StringExpr.characterCount(multiByte, 3, 2) == 2);
+      resultLen = StringExpr.rightTrimAndTruncate(multiByte, 3, 2, largeMaxLength);
+      Assert.assertTrue(resultLen == 1);
+      Assert.assertTrue(StringExpr.characterCount(multiByte, 3, resultLen) == 1);
+
+      byte[] sentenceOne = new byte[100];
+      int sentenceOneLen = addMultiByteCharSentenceOne(sentenceOne, 0);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceOne, 0, sentenceOneLen) == 10);
+      resultLen = StringExpr.rightTrimAndTruncate(sentenceOne, 0, sentenceOneLen, largeMaxLength);
+      Assert.assertTrue(resultLen == sentenceOneLen);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceOne, 0, sentenceOneLen - 3) == 9);
+      resultLen = StringExpr.rightTrimAndTruncate(sentenceOne, 0, sentenceOneLen - 3, largeMaxLength);
+      Assert.assertTrue(resultLen == sentenceOneLen - 3);
+
+      byte[] sentenceTwo = new byte[100];
+      int sentenceTwoLen = addMultiByteCharSentenceTwo(sentenceTwo, 0);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceTwo, 0, sentenceTwoLen) == 13);
+      resultLen = StringExpr.rightTrimAndTruncate(sentenceTwo, 0, sentenceTwoLen, largeMaxLength);
+      Assert.assertTrue(resultLen == sentenceTwoLen);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceTwo, 0, sentenceTwoLen- 5) == 10);
+      resultLen = StringExpr.rightTrimAndTruncate(sentenceTwo, 0, sentenceTwoLen - 5, largeMaxLength);
+      Assert.assertTrue(resultLen == sentenceTwoLen - 5);
+
+      int start;
+
+      // Left pad longer strings with multi-byte characters.
+      byte[] sentenceOnePaddedLeft = new byte[100];
+      start = addPads(sentenceOnePaddedLeft, 0, 3);
+      int sentenceOnePaddedLeftLen = addMultiByteCharSentenceOne(sentenceOnePaddedLeft, start);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceOnePaddedLeft, 0, sentenceOnePaddedLeftLen) == 3 + 10);
+      resultLen = StringExpr.rightTrimAndTruncate(sentenceOnePaddedLeft, 0, sentenceOnePaddedLeftLen, largeMaxLength);
+      Assert.assertTrue(resultLen == sentenceOnePaddedLeftLen);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceOnePaddedLeft, 0, sentenceOnePaddedLeftLen - 3) == 3 + 9);
+      resultLen = StringExpr.rightTrimAndTruncate(sentenceOnePaddedLeft, 0, sentenceOnePaddedLeftLen - 3, largeMaxLength);
+      Assert.assertTrue(resultLen == sentenceOnePaddedLeftLen - 3);
+
+      byte[] sentenceTwoPaddedLeft = new byte[100];
+      start = addPads(sentenceTwoPaddedLeft, 0, 2);
+      int sentenceTwoPaddedLeftLen = addMultiByteCharSentenceTwo(sentenceTwoPaddedLeft, start);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceTwoPaddedLeft, 0, sentenceTwoPaddedLeftLen) == 2 + 13);
+      resultLen = StringExpr.rightTrimAndTruncate(sentenceTwoPaddedLeft, 0, sentenceTwoPaddedLeftLen, largeMaxLength);
+      Assert.assertTrue(resultLen == sentenceTwoPaddedLeftLen);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceTwoPaddedLeft, 0, sentenceTwoPaddedLeftLen - 5) == 2 + 10);
+      resultLen = StringExpr.rightTrimAndTruncate(sentenceTwoPaddedLeft, 0, sentenceTwoPaddedLeftLen - 5, largeMaxLength);
+      Assert.assertTrue(resultLen == sentenceTwoPaddedLeftLen - 5);
+
+      // Right pad longer strings with multi-byte characters.
+      byte[] sentenceOnePaddedRight = new byte[100];
+      start = addMultiByteCharSentenceOne(sentenceOnePaddedRight, 0);
+      int sentenceOnePaddedRightLen = addPads(sentenceOnePaddedRight, start, 4);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceOnePaddedRight, 0, sentenceOnePaddedRightLen) == 10 + 4);
+      resultLen = StringExpr.rightTrimAndTruncate(sentenceOnePaddedRight, 0, sentenceOnePaddedRightLen, largeMaxLength);
+      Assert.assertTrue(resultLen == sentenceOnePaddedRightLen - 4);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceOnePaddedRight, 0, sentenceOnePaddedRightLen - 3 - 4) == 9);
+      resultLen = StringExpr.rightTrimAndTruncate(sentenceOnePaddedRight, 0, sentenceOnePaddedRightLen - 3 - 4, largeMaxLength);
+      Assert.assertTrue(resultLen == sentenceOnePaddedRightLen - 3 - 4);
+
+      byte[] sentenceTwoPaddedRight = new byte[100];
+      start = addMultiByteCharSentenceTwo(sentenceTwoPaddedRight, 0);
+      int sentenceTwoPaddedRightLen = addPads(sentenceTwoPaddedRight, start, 1);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceTwoPaddedRight, 0, sentenceTwoPaddedRightLen) == 13 + 1);
+      resultLen = StringExpr.rightTrimAndTruncate(sentenceTwoPaddedRight, 0, sentenceTwoPaddedRightLen, largeMaxLength);
+      Assert.assertTrue(resultLen == sentenceTwoPaddedRightLen - 1);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceTwoPaddedRight, 0, sentenceTwoPaddedRightLen - 5 - 1) == 10);
+      resultLen = StringExpr.rightTrimAndTruncate(sentenceTwoPaddedRight, 0, sentenceTwoPaddedRightLen - 5 - 1, largeMaxLength);
+      Assert.assertTrue(resultLen == sentenceTwoPaddedRightLen - 5 - 1);
+
+      // Multi-byte characters with blank ranges.
+      byte[] sentenceBlankRanges = new byte[100];
+      int sentenceBlankRangesLen = addMultiByteCharSentenceBlankRanges(sentenceBlankRanges, 0);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceBlankRanges, 0, sentenceBlankRangesLen) == 17);
+      resultLen = StringExpr.rightTrimAndTruncate(sentenceBlankRanges, 0, sentenceBlankRangesLen, largeMaxLength);
+      Assert.assertTrue(resultLen == sentenceBlankRangesLen);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceBlankRanges, 0, sentenceBlankRangesLen - 3) == 16);
+      resultLen = StringExpr.rightTrimAndTruncate(sentenceBlankRanges, 0, sentenceBlankRangesLen - 3, largeMaxLength);
+      Assert.assertTrue(resultLen == sentenceBlankRangesLen - 3);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceBlankRanges, 7, 17) == 13);
+      resultLen = StringExpr.rightTrimAndTruncate(sentenceBlankRanges, 7, 17, largeMaxLength);
+      Assert.assertTrue(resultLen == 12);
+      Assert.assertTrue(StringExpr.characterCount(sentenceBlankRanges, 7, resultLen) == 8);
+
+      // This next section repeats the tests of testRightTrimWithOffset with a maxLength parameter that is
+      // exactly the number of current characters in the string.  This shouldn't affect the trim.
+
+      // Nothing to trim (ASCII).
+      Assert.assertTrue(StringExpr.characterCount(blue, 0, blue.length) == 4);
+      resultLen = StringExpr.rightTrimAndTruncate(blue, 0, blue.length, 4);
+      Assert.assertTrue(resultLen == blue.length);
+      Assert.assertTrue(StringExpr.characterCount(blue, 0, resultLen) == 4);
+
+      Assert.assertTrue(StringExpr.characterCount(redgreen, 0, redgreen.length) == 8);
+      resultLen = StringExpr.rightTrimAndTruncate(redgreen, 0, redgreen.length, 8);
+      Assert.assertTrue(resultLen == redgreen.length);
+
+      Assert.assertTrue(StringExpr.characterCount(ascii_sentence, 0, ascii_sentence.length) == 31);
+      resultLen = StringExpr.rightTrimAndTruncate(ascii_sentence, 0, ascii_sentence.length, 31);
+      Assert.assertTrue(resultLen == ascii_sentence.length);
+
+      Assert.assertTrue(StringExpr.characterCount(blanksLeft, 0, blanksLeft.length) == 5);
+      resultLen = StringExpr.rightTrimAndTruncate(blanksLeft, 0, blanksLeft.length, 5);
+      Assert.assertTrue(resultLen == blanksLeft.length);
+
+      // Simple trims.
+      Assert.assertTrue(StringExpr.characterCount(blanksRight, 0, blanksRight.length) == 5);
+      resultLen = StringExpr.rightTrimAndTruncate(blanksRight, 0, blanksRight.length, 5);
+      Assert.assertTrue(resultLen == 3);
+      Assert.assertTrue(StringExpr.characterCount(blanksRight, 0, resultLen) == 3);
+
+      Assert.assertTrue(StringExpr.characterCount(blanksBoth, 0, blanksBoth.length) == 7);
+      resultLen = StringExpr.rightTrimAndTruncate(blanksBoth, 0, blanksBoth.length, 7);
+      Assert.assertTrue(resultLen == 5);
+      Assert.assertTrue(StringExpr.characterCount(blanksBoth, 0, resultLen) == 5);
+     
+      Assert.assertTrue(StringExpr.characterCount(blankString, 0, blankString.length) == 2);
+      resultLen = StringExpr.rightTrimAndTruncate(blankString, 0, blankString.length, 2);
+      Assert.assertTrue(resultLen == 0);
+      Assert.assertTrue(StringExpr.characterCount(blankString, 0, resultLen) == 0);
+
+      Assert.assertTrue(StringExpr.characterCount(blankRanges, 0, blankRanges.length) == 30);
+      resultLen = StringExpr.rightTrimAndTruncate(blankRanges, 0, blankRanges.length, 30);
+      Assert.assertTrue(resultLen == blankRanges.length - 4);
+      Assert.assertTrue(StringExpr.characterCount(blankRanges, 0, resultLen) == 26);
+
+      // Offset trims.
+      Assert.assertTrue(StringExpr.characterCount(blanksRight, 1, blanksRight.length - 1) == 4);
+      resultLen = StringExpr.rightTrimAndTruncate(blanksRight, 1, blanksRight.length - 1, 4);
+      Assert.assertTrue(resultLen == 2);
+      Assert.assertTrue(StringExpr.characterCount(blanksRight, 1, resultLen) == 2);
+
+      Assert.assertTrue(StringExpr.characterCount(blanksBoth, 4, blanksBoth.length - 4) == 3);
+      resultLen = StringExpr.rightTrimAndTruncate(blanksBoth, 4, blanksBoth.length - 4, 3);
+      Assert.assertTrue(resultLen == 1);
+      Assert.assertTrue(StringExpr.characterCount(blanksBoth, 4, resultLen) == 1);
+
+      Assert.assertTrue(StringExpr.characterCount(blanksBoth, 5, blanksBoth.length - 5) == 2);
+      resultLen = StringExpr.rightTrimAndTruncate(blanksBoth, 5, blanksBoth.length -5, 2);
+      Assert.assertTrue(resultLen == 0);
+      Assert.assertTrue(StringExpr.characterCount(blanksBoth, 5, resultLen) == 0);
+
+      Assert.assertTrue(StringExpr.characterCount(blankString, 1, blankString.length - 1) == 1);
+      resultLen = StringExpr.rightTrimAndTruncate(blankString, 1, blankString.length - 1, 1);
+      Assert.assertTrue(resultLen == 0);
+      Assert.assertTrue(StringExpr.characterCount(blankString, 1, resultLen) == 0);
+
+      Assert.assertTrue(StringExpr.characterCount(blankRanges, 4, blankRanges.length - 4) == 26);
+      resultLen = StringExpr.rightTrimAndTruncate(blankRanges, 4, blankRanges.length - 4, 26);
+      Assert.assertTrue(resultLen == blankRanges.length - 4 -4);
+      Assert.assertTrue(StringExpr.characterCount(blankRanges, 4, resultLen) == 22);
+
+      Assert.assertTrue(StringExpr.characterCount(blankRanges, 6, blankRanges.length - 6) == 24);
+      resultLen = StringExpr.rightTrimAndTruncate(blankRanges, 6, blankRanges.length- 6, 24);
+      Assert.assertTrue(resultLen == blankRanges.length - 6 - 4);
+      Assert.assertTrue(StringExpr.characterCount(blankRanges, 6, resultLen) == 20);
+
+      Assert.assertTrue(StringExpr.characterCount(blankRanges, 7, blankRanges.length - 7) == 23);
+      resultLen = StringExpr.rightTrimAndTruncate(blankRanges, 7, blankRanges.length - 7, 23);
+      Assert.assertTrue(resultLen == blankRanges.length - 7 - 4);
+      Assert.assertTrue(StringExpr.characterCount(blankRanges, 7, resultLen) == 19);
+
+      Assert.assertTrue(StringExpr.characterCount(blankRanges, 7, 8 - 7) == 1);
+      resultLen = StringExpr.rightTrimAndTruncate(blankRanges, 7, 8 - 7, 1);
+      Assert.assertTrue(resultLen == 0);
+      Assert.assertTrue(StringExpr.characterCount(blankRanges, 7, resultLen) == 0);
+
+      // Multi-byte trims.
+      multiByte = new byte[100];
+
+      addMultiByteCharRightPadded1_1(multiByte);
+      Assert.assertTrue(StringExpr.characterCount(multiByte, 0, 4) == 2);
+      resultLen = StringExpr.rightTrimAndTruncate(multiByte, 0, 4, 2);
+      Assert.assertTrue(resultLen == 3);
+      Assert.assertTrue(StringExpr.characterCount(multiByte, 0, resultLen) == 1);
+
+      addMultiByteCharRightPadded1_2(multiByte);
+      Assert.assertTrue(StringExpr.characterCount(multiByte, 0, 5) == 3);
+      resultLen = StringExpr.rightTrimAndTruncate(multiByte, 0, 5, 3);
+      Assert.assertTrue(resultLen == 4);
+      Assert.assertTrue(StringExpr.characterCount(multiByte, 0, resultLen) == 2);
+
+      addMultiByteCharRightPadded1_3(multiByte);
+      Assert.assertTrue(StringExpr.characterCount(multiByte, 0, 9) == 4);
+      resultLen = StringExpr.rightTrimAndTruncate(multiByte, 0, 9, 4);
+      Assert.assertTrue(resultLen == 8);
+      Assert.assertTrue(StringExpr.characterCount(multiByte, 0, resultLen) == 3);
+
+      addMultiByteCharRightPadded1_1(multiByte);
+      Assert.assertTrue(StringExpr.characterCount(multiByte, 3, 1) == 1);
+      resultLen = StringExpr.rightTrimAndTruncate(multiByte, 3, 1, 1);
+      Assert.assertTrue(resultLen == 0);
+      Assert.assertTrue(StringExpr.characterCount(multiByte, 0, resultLen) == 0);
+
+      addMultiByteCharRightPadded1_2(multiByte);
+      Assert.assertTrue(StringExpr.characterCount(multiByte, 3, 2) == 2);
+      resultLen = StringExpr.rightTrimAndTruncate(multiByte, 3, 2, 2);
+      Assert.assertTrue(resultLen == 1);
+      Assert.assertTrue(StringExpr.characterCount(multiByte, 3, resultLen) == 1);
+
+      sentenceOne = new byte[100];
+      sentenceOneLen = addMultiByteCharSentenceOne(sentenceOne, 0);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceOne, 0, sentenceOneLen) == 10);
+      resultLen = StringExpr.rightTrimAndTruncate(sentenceOne, 0, sentenceOneLen, 10);
+      Assert.assertTrue(resultLen == sentenceOneLen);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceOne, 0, sentenceOneLen - 3) == 9);
+      resultLen = StringExpr.rightTrimAndTruncate(sentenceOne, 0, sentenceOneLen - 3, 9);
+      Assert.assertTrue(resultLen == sentenceOneLen - 3);
+
+      sentenceTwo = new byte[100];
+      sentenceTwoLen = addMultiByteCharSentenceTwo(sentenceTwo, 0);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceTwo, 0, sentenceTwoLen) == 13);
+      resultLen = StringExpr.rightTrimAndTruncate(sentenceTwo, 0, sentenceTwoLen, 13);
+      Assert.assertTrue(resultLen == sentenceTwoLen);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceTwo, 0, sentenceTwoLen- 5) == 10);
+      resultLen = StringExpr.rightTrimAndTruncate(sentenceTwo, 0, sentenceTwoLen - 5, 10);
+      Assert.assertTrue(resultLen == sentenceTwoLen - 5);
+
+      // Left pad longer strings with multi-byte characters.
+      sentenceOnePaddedLeft = new byte[100];
+      start = addPads(sentenceOnePaddedLeft, 0, 3);
+      sentenceOnePaddedLeftLen = addMultiByteCharSentenceOne(sentenceOnePaddedLeft, start);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceOnePaddedLeft, 0, sentenceOnePaddedLeftLen) == 3 + 10);
+      resultLen = StringExpr.rightTrimAndTruncate(sentenceOnePaddedLeft, 0, sentenceOnePaddedLeftLen, 3 + 10);
+      Assert.assertTrue(resultLen == sentenceOnePaddedLeftLen);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceOnePaddedLeft, 0, sentenceOnePaddedLeftLen - 3) == 3 + 9);
+      resultLen = StringExpr.rightTrimAndTruncate(sentenceOnePaddedLeft, 0, sentenceOnePaddedLeftLen - 3, 3 + 9);
+      Assert.assertTrue(resultLen == sentenceOnePaddedLeftLen - 3);
+
+      sentenceTwoPaddedLeft = new byte[100];
+      start = addPads(sentenceTwoPaddedLeft, 0, 2);
+      sentenceTwoPaddedLeftLen = addMultiByteCharSentenceTwo(sentenceTwoPaddedLeft, start);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceTwoPaddedLeft, 0, sentenceTwoPaddedLeftLen) == 2 + 13);
+      resultLen = StringExpr.rightTrimAndTruncate(sentenceTwoPaddedLeft, 0, sentenceTwoPaddedLeftLen, 2 + 13);
+      Assert.assertTrue(resultLen == sentenceTwoPaddedLeftLen);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceTwoPaddedLeft, 0, sentenceTwoPaddedLeftLen - 5) == 2 + 10);
+      resultLen = StringExpr.rightTrimAndTruncate(sentenceTwoPaddedLeft, 0, sentenceTwoPaddedLeftLen - 5, 2 + 10);
+      Assert.assertTrue(resultLen == sentenceTwoPaddedLeftLen - 5);
+
+      // Right pad longer strings with multi-byte characters.
+      sentenceOnePaddedRight = new byte[100];
+      start = addMultiByteCharSentenceOne(sentenceOnePaddedRight, 0);
+      sentenceOnePaddedRightLen = addPads(sentenceOnePaddedRight, start, 4);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceOnePaddedRight, 0, sentenceOnePaddedRightLen) == 10 + 4);
+      resultLen = StringExpr.rightTrimAndTruncate(sentenceOnePaddedRight, 0, sentenceOnePaddedRightLen, 10 + 4);
+      Assert.assertTrue(resultLen == sentenceOnePaddedRightLen - 4);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceOnePaddedRight, 0, sentenceOnePaddedRightLen - 3 - 4) == 9);
+      resultLen = StringExpr.rightTrimAndTruncate(sentenceOnePaddedRight, 0, sentenceOnePaddedRightLen - 3 - 4, 9);
+      Assert.assertTrue(resultLen == sentenceOnePaddedRightLen - 3 - 4);
+
+      sentenceTwoPaddedRight = new byte[100];
+      start = addMultiByteCharSentenceTwo(sentenceTwoPaddedRight, 0);
+      sentenceTwoPaddedRightLen = addPads(sentenceTwoPaddedRight, start, 1);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceTwoPaddedRight, 0, sentenceTwoPaddedRightLen) == 13 + 1);
+      resultLen = StringExpr.rightTrimAndTruncate(sentenceTwoPaddedRight, 0, sentenceTwoPaddedRightLen, 13 + 1);
+      Assert.assertTrue(resultLen == sentenceTwoPaddedRightLen - 1);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceTwoPaddedRight, 0, sentenceTwoPaddedRightLen - 5 - 1) == 10);
+      resultLen = StringExpr.rightTrimAndTruncate(sentenceTwoPaddedRight, 0, sentenceTwoPaddedRightLen - 5 - 1, 10);
+      Assert.assertTrue(resultLen == sentenceTwoPaddedRightLen - 5 - 1);
+
+      // Multi-byte characters with blank ranges.
+      sentenceBlankRanges = new byte[100];
+      sentenceBlankRangesLen = addMultiByteCharSentenceBlankRanges(sentenceBlankRanges, 0);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceBlankRanges, 0, sentenceBlankRangesLen) == 17);
+      resultLen = StringExpr.rightTrimAndTruncate(sentenceBlankRanges, 0, sentenceBlankRangesLen, 17);
+      Assert.assertTrue(resultLen == sentenceBlankRangesLen);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceBlankRanges, 0, sentenceBlankRangesLen - 3) == 16);
+      resultLen = StringExpr.rightTrimAndTruncate(sentenceBlankRanges, 0, sentenceBlankRangesLen - 3, 16);
+      Assert.assertTrue(resultLen == sentenceBlankRangesLen - 3);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceBlankRanges, 7, 17) == 13);
+      resultLen = StringExpr.rightTrimAndTruncate(sentenceBlankRanges, 7, 17, largeMaxLength);
+      Assert.assertTrue(resultLen == 12);
+      Assert.assertTrue(StringExpr.characterCount(sentenceBlankRanges, 7, resultLen) == 8);
+
+      // This next section repeats the tests of testRightTrimWithOffset with a maxLength parameter that is
+      // less than the number of current characters in the string and thus affects the trim.
+
+      // Nothing to trim (ASCII).
+      Assert.assertTrue(StringExpr.characterCount(blue, 0, blue.length) == 4);
+      resultLen = StringExpr.rightTrimAndTruncate(blue, 0, blue.length, 3);
+      Assert.assertTrue(resultLen == 3);
+      Assert.assertTrue(StringExpr.characterCount(blue, 0, resultLen) == 3);
+
+      Assert.assertTrue(StringExpr.characterCount(redgreen, 0, redgreen.length) == 8);
+      resultLen = StringExpr.rightTrimAndTruncate(redgreen, 0, redgreen.length, 6);
+      Assert.assertTrue(resultLen == 6);
+
+      Assert.assertTrue(StringExpr.characterCount(ascii_sentence, 0, ascii_sentence.length) == 31);
+      resultLen = StringExpr.rightTrimAndTruncate(ascii_sentence, 0, ascii_sentence.length, 30);
+      Assert.assertTrue(resultLen == 30);
+
+      Assert.assertTrue(StringExpr.characterCount(blanksLeft, 0, blanksLeft.length) == 5);
+      resultLen = StringExpr.rightTrimAndTruncate(blanksLeft, 0, blanksLeft.length, 1);
+      Assert.assertTrue(resultLen == 0);
+
+      // Simple trims.
+      Assert.assertTrue(StringExpr.characterCount(blanksRight, 0, blanksRight.length) == 5);
+      resultLen = StringExpr.rightTrimAndTruncate(blanksRight, 0, blanksRight.length, 4);
+      Assert.assertTrue(resultLen == 3);
+      Assert.assertTrue(StringExpr.characterCount(blanksRight, 0, resultLen) == 3);
+
+      Assert.assertTrue(StringExpr.characterCount(blanksBoth, 0, blanksBoth.length) == 7);
+      resultLen = StringExpr.rightTrimAndTruncate(blanksBoth, 0, blanksBoth.length, 6);
+      Assert.assertTrue(resultLen == 5);
+      Assert.assertTrue(StringExpr.characterCount(blanksBoth, 0, resultLen) == 5);
+     
+      Assert.assertTrue(StringExpr.characterCount(blankString, 0, blankString.length) == 2);
+      resultLen = StringExpr.rightTrimAndTruncate(blankString, 0, blankString.length, 1);
+      Assert.assertTrue(resultLen == 0);
+      Assert.assertTrue(StringExpr.characterCount(blankString, 0, resultLen) == 0);
+
+      Assert.assertTrue(StringExpr.characterCount(blankRanges, 0, blankRanges.length) == 30);
+      resultLen = StringExpr.rightTrimAndTruncate(blankRanges, 0, blankRanges.length, 19);
+      Assert.assertTrue(resultLen == 15);
+      Assert.assertTrue(StringExpr.characterCount(blankRanges, 0, resultLen) == 15);
+
+      // Offset trims.
+      Assert.assertTrue(StringExpr.characterCount(blanksRight, 1, blanksRight.length - 1) == 4);
+      resultLen = StringExpr.rightTrimAndTruncate(blanksRight, 1, blanksRight.length - 1, 3);
+      Assert.assertTrue(resultLen == 2);
+      Assert.assertTrue(StringExpr.characterCount(blanksRight, 1, resultLen) == 2);
+
+      Assert.assertTrue(StringExpr.characterCount(blanksBoth, 4, blanksBoth.length - 4) == 3);
+      resultLen = StringExpr.rightTrimAndTruncate(blanksBoth, 4, blanksBoth.length - 4, 2);
+      Assert.assertTrue(resultLen == 1);
+      Assert.assertTrue(StringExpr.characterCount(blanksBoth, 4, resultLen) == 1);
+
+      Assert.assertTrue(StringExpr.characterCount(blanksBoth, 5, blanksBoth.length - 5) == 2);
+      resultLen = StringExpr.rightTrimAndTruncate(blanksBoth, 5, blanksBoth.length -5, 1);
+      Assert.assertTrue(resultLen == 0);
+      Assert.assertTrue(StringExpr.characterCount(blanksBoth, 5, resultLen) == 0);
+
+      Assert.assertTrue(StringExpr.characterCount(blankString, 1, blankString.length - 1) == 1);
+      resultLen = StringExpr.rightTrimAndTruncate(blankString, 1, blankString.length - 1, 1);
+      Assert.assertTrue(resultLen == 0);
+      Assert.assertTrue(StringExpr.characterCount(blankString, 1, resultLen) == 0);
+
+      Assert.assertTrue(StringExpr.characterCount(blankRanges, 3, 6) == 6);
+      resultLen = StringExpr.rightTrimAndTruncate(blankRanges, 3, 6, 5);
+      Assert.assertTrue(resultLen == 4);
+      Assert.assertTrue(StringExpr.characterCount(blankRanges, 3, resultLen) == 4);
+
+      Assert.assertTrue(StringExpr.characterCount(blankRanges, 6, blankRanges.length - 6) == 24);
+      resultLen = StringExpr.rightTrimAndTruncate(blankRanges, 6, blankRanges.length- 6, 22);
+      Assert.assertTrue(resultLen == blankRanges.length - 6 - 4);
+      Assert.assertTrue(StringExpr.characterCount(blankRanges, 6, resultLen) == 20);
+
+      Assert.assertTrue(StringExpr.characterCount(blankRanges, 7, blankRanges.length - 7) == 23);
+      resultLen = StringExpr.rightTrimAndTruncate(blankRanges, 7, blankRanges.length - 7, 10);
+      Assert.assertTrue(resultLen == 8);
+      Assert.assertTrue(StringExpr.characterCount(blankRanges, 7, resultLen) == 8);
+
+      Assert.assertTrue(StringExpr.characterCount(blankRanges, 7, 8 - 7) == 1);
+      resultLen = StringExpr.rightTrimAndTruncate(blankRanges, 7, 8 - 7, 1);
+      Assert.assertTrue(resultLen == 0);
+      Assert.assertTrue(StringExpr.characterCount(blankRanges, 7, resultLen) == 0);
+
+      // Multi-byte trims.
+      multiByte = new byte[100];
+
+      addMultiByteCharRightPadded1_1(multiByte);
+      Assert.assertTrue(StringExpr.characterCount(multiByte, 0, 4) == 2);
+      resultLen = StringExpr.rightTrimAndTruncate(multiByte, 0, 4, 1);
+      Assert.assertTrue(resultLen == 3);
+      Assert.assertTrue(StringExpr.characterCount(multiByte, 0, resultLen) == 1);
+
+      addMultiByteCharRightPadded1_2(multiByte);
+      Assert.assertTrue(StringExpr.characterCount(multiByte, 0, 5) == 3);
+      resultLen = StringExpr.rightTrimAndTruncate(multiByte, 0, 5, 2);
+      Assert.assertTrue(resultLen == 4);
+      Assert.assertTrue(StringExpr.characterCount(multiByte, 0, resultLen) == 2);
+
+      addMultiByteCharRightPadded1_3(multiByte);
+      Assert.assertTrue(StringExpr.characterCount(multiByte, 0, 9) == 4);
+      resultLen = StringExpr.rightTrimAndTruncate(multiByte, 0, 9, 3);
+      Assert.assertTrue(resultLen == 8);
+      Assert.assertTrue(StringExpr.characterCount(multiByte, 0, resultLen) == 3);
+
+      addMultiByteCharRightPadded1_1(multiByte);
+      Assert.assertTrue(StringExpr.characterCount(multiByte, 3, 1) == 1);
+      resultLen = StringExpr.rightTrimAndTruncate(multiByte, 3, 1, 1);
+      Assert.assertTrue(resultLen == 0);
+      Assert.assertTrue(StringExpr.characterCount(multiByte, 0, resultLen) == 0);
+
+      addMultiByteCharRightPadded1_2(multiByte);
+      Assert.assertTrue(StringExpr.characterCount(multiByte, 3, 2) == 2);
+      resultLen = StringExpr.rightTrimAndTruncate(multiByte, 3, 2, 1);
+      Assert.assertTrue(resultLen == 1);
+      Assert.assertTrue(StringExpr.characterCount(multiByte, 3, resultLen) == 1);
+
+      sentenceOne = new byte[100];
+      sentenceOneLen = addMultiByteCharSentenceOne(sentenceOne, 0);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceOne, 0, sentenceOneLen) == 10);
+      resultLen = StringExpr.rightTrimAndTruncate(sentenceOne, 0, sentenceOneLen, 7);
+      Assert.assertTrue(resultLen == sentenceOneLen - 9);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceOne, 0, sentenceOneLen - 3) == 9);
+      resultLen = StringExpr.rightTrimAndTruncate(sentenceOne, 0, sentenceOneLen - 3, 6);
+      Assert.assertTrue(resultLen == 13);
+
+      sentenceTwo = new byte[100];
+      sentenceTwoLen = addMultiByteCharSentenceTwo(sentenceTwo, 0);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceTwo, 0, sentenceTwoLen) == 13);
+      resultLen = StringExpr.rightTrimAndTruncate(sentenceTwo, 0, sentenceTwoLen, 13);
+      Assert.assertTrue(resultLen == sentenceTwoLen);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceTwo, 0, sentenceTwoLen- 5) == 10);
+      resultLen = StringExpr.rightTrimAndTruncate(sentenceTwo, 0, sentenceTwoLen - 5, 10);
+      Assert.assertTrue(resultLen == sentenceTwoLen - 5);
+
+      // Left pad longer strings with multi-byte characters.
+      sentenceOnePaddedLeft = new byte[100];
+      start = addPads(sentenceOnePaddedLeft, 0, 3);
+      sentenceOnePaddedLeftLen = addMultiByteCharSentenceOne(sentenceOnePaddedLeft, start);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceOnePaddedLeft, 0, sentenceOnePaddedLeftLen) == 3 + 10);
+      resultLen = StringExpr.rightTrimAndTruncate(sentenceOnePaddedLeft, 0, sentenceOnePaddedLeftLen, 3 + 8);
+      Assert.assertTrue(resultLen == sentenceOnePaddedLeftLen - 6);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceOnePaddedLeft, 0, sentenceOnePaddedLeftLen - 3) == 3 + 9);
+      resultLen = StringExpr.rightTrimAndTruncate(sentenceOnePaddedLeft, 0, sentenceOnePaddedLeftLen - 3, 3 + 6);
+      Assert.assertTrue(resultLen == 16);
+
+      sentenceTwoPaddedLeft = new byte[100];
+      start = addPads(sentenceTwoPaddedLeft, 0, 2);
+      sentenceTwoPaddedLeftLen = addMultiByteCharSentenceTwo(sentenceTwoPaddedLeft, start);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceTwoPaddedLeft, 0, sentenceTwoPaddedLeftLen) == 2 + 13);
+      resultLen = StringExpr.rightTrimAndTruncate(sentenceTwoPaddedLeft, 0, sentenceTwoPaddedLeftLen, 7);
+      Assert.assertTrue(resultLen == 10);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceTwoPaddedLeft, 0, sentenceTwoPaddedLeftLen - 5) == 2 + 10);
+      resultLen = StringExpr.rightTrimAndTruncate(sentenceTwoPaddedLeft, 0, sentenceTwoPaddedLeftLen - 5, 6);
+      Assert.assertTrue(resultLen == 10);
+
+      // Right pad longer strings with multi-byte characters.
+      sentenceOnePaddedRight = new byte[100];
+      start = addMultiByteCharSentenceOne(sentenceOnePaddedRight, 0);
+      sentenceOnePaddedRightLen = addPads(sentenceOnePaddedRight, start, 4);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceOnePaddedRight, 0, sentenceOnePaddedRightLen) == 10 + 4);
+      resultLen = StringExpr.rightTrimAndTruncate(sentenceOnePaddedRight, 0, sentenceOnePaddedRightLen, 10);
+      Assert.assertTrue(resultLen == sentenceOnePaddedRightLen - 4);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceOnePaddedRight, 0, sentenceOnePaddedRightLen - 3 - 4) == 9);
+      resultLen = StringExpr.rightTrimAndTruncate(sentenceOnePaddedRight, 0, sentenceOnePaddedRightLen - 3 - 4, 7);
+      Assert.assertTrue(resultLen == 17);
+
+      sentenceTwoPaddedRight = new byte[100];
+      start = addMultiByteCharSentenceTwo(sentenceTwoPaddedRight, 0);
+      sentenceTwoPaddedRightLen = addPads(sentenceTwoPaddedRight, start, 1);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceTwoPaddedRight, 0, sentenceTwoPaddedRightLen) == 13 + 1);
+      resultLen = StringExpr.rightTrimAndTruncate(sentenceTwoPaddedRight, 0, sentenceTwoPaddedRightLen, 13);
+      Assert.assertTrue(resultLen == sentenceTwoPaddedRightLen - 1);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceTwoPaddedRight, 0, sentenceTwoPaddedRightLen - 5 - 1) == 10);
+      resultLen = StringExpr.rightTrimAndTruncate(sentenceTwoPaddedRight, 0, sentenceTwoPaddedRightLen - 5 - 1, 4);
+      Assert.assertTrue(resultLen == 8);
+
+      // Multi-byte characters with blank ranges.
+      sentenceBlankRanges = new byte[100];
+      sentenceBlankRangesLen = addMultiByteCharSentenceBlankRanges(sentenceBlankRanges, 0);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceBlankRanges, 0, sentenceBlankRangesLen) == 17);
+      resultLen = StringExpr.rightTrimAndTruncate(sentenceBlankRanges, 0, sentenceBlankRangesLen, 4);
+      Assert.assertTrue(resultLen == 7);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceBlankRanges, 0, sentenceBlankRangesLen - 3) == 16);
+      resultLen = StringExpr.rightTrimAndTruncate(sentenceBlankRanges, 0, sentenceBlankRangesLen - 3, 6);
+      Assert.assertTrue(resultLen == 11);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceBlankRanges, 4, 12) == 8);
+      resultLen = StringExpr.rightTrimAndTruncate(sentenceBlankRanges, 4, 12, 6);
+      Assert.assertTrue(resultLen == 7);
+      Assert.assertTrue(StringExpr.characterCount(sentenceBlankRanges, 4, resultLen) == 5);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceBlankRanges, 7, 17) == 13);
+      resultLen = StringExpr.rightTrimAndTruncate(sentenceBlankRanges, 7, 17, 11);
+      Assert.assertTrue(resultLen == 12);
+      Assert.assertTrue(StringExpr.characterCount(sentenceBlankRanges, 7, resultLen) == 8);
+
+  }
+
+  @Test
+  // Test basic right trim and truncate to vector.
+  public void testRightTrimAndTruncateBytesColumnVector()  {
+      BytesColumnVector outV = new BytesColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
+      outV.initBuffer(35); // initialize with estimated element size 35
+
+      int i = 0;
+
+      // This first section repeats the tests of testRightTrimWithOffset with a large maxLength parameter.
+      // (i.e. too large to have an effect).
+      int largeMaxLength = 100;
+
+      int expectedResultLen;
+      // Nothing to trim (ASCII).
+      Assert.assertTrue(StringExpr.characterCount(blue, 0, blue.length) == 4);
+      StringExpr.rightTrimAndTruncate(outV, i, blue, 0, blue.length, largeMaxLength);
+      expectedResultLen = blue.length;
+      Assert.assertTrue(vectorEqual(outV, i, blue, 0, expectedResultLen));
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(redgreen, 0, redgreen.length) == 8);
+      StringExpr.rightTrimAndTruncate(outV, i, redgreen, 0, redgreen.length, largeMaxLength);
+      expectedResultLen =  redgreen.length;
+      Assert.assertTrue(vectorEqual(outV, i, redgreen, 0, expectedResultLen));
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(ascii_sentence, 0, ascii_sentence.length) == 31);
+      StringExpr.rightTrimAndTruncate(outV, i, ascii_sentence, 0, ascii_sentence.length, largeMaxLength);
+      expectedResultLen =  ascii_sentence.length;
+      Assert.assertTrue(vectorEqual(outV, i, ascii_sentence, 0, expectedResultLen));
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(blanksLeft, 0, blanksLeft.length) == 5);
+      StringExpr.rightTrimAndTruncate(outV, i, blanksLeft, 0, blanksLeft.length, largeMaxLength);
+      expectedResultLen =  blanksLeft.length;
+      Assert.assertTrue(vectorEqual(outV, i, blanksLeft, 0, expectedResultLen));
+      i++;
+
+      // Simple trims.
+      Assert.assertTrue(StringExpr.characterCount(blanksRight, 0, blanksRight.length) == 5);
+      StringExpr.rightTrimAndTruncate(outV, i, blanksRight, 0, blanksRight.length, largeMaxLength);
+      expectedResultLen = 3;
+      Assert.assertTrue(vectorEqual(outV, i, blanksRight, 0, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 3);
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(blanksBoth, 0, blanksBoth.length) == 7);
+      StringExpr.rightTrimAndTruncate(outV, i, blanksBoth, 0, blanksBoth.length, largeMaxLength);
+      expectedResultLen = 5;
+      Assert.assertTrue(vectorEqual(outV, i, blanksBoth, 0, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 5);
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(blankString, 0, blankString.length) == 2);
+      StringExpr.rightTrimAndTruncate(outV, i, blankString, 0, blankString.length, largeMaxLength);
+      expectedResultLen =  0;
+      Assert.assertTrue(vectorEqual(outV, i, blankString, 0, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 0);
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(blankRanges, 0, blankRanges.length) == 30);
+      StringExpr.rightTrimAndTruncate(outV, i, blankRanges, 0, blankRanges.length, largeMaxLength);
+      expectedResultLen = blankRanges.length - 4;
+      Assert.assertTrue(vectorEqual(outV, i, blankRanges, 0, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 26);
+      i++;
+      // Offset trims.
+      Assert.assertTrue(StringExpr.characterCount(blanksRight, 1, blanksRight.length - 1) == 4);
+      StringExpr.rightTrimAndTruncate(outV, i, blanksRight, 1, blanksRight.length - 1, largeMaxLength);
+      expectedResultLen = 2;
+      Assert.assertTrue(vectorEqual(outV, i, blanksRight, 1, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 2);
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(blanksBoth, 4, blanksBoth.length - 4) == 3);
+      StringExpr.rightTrimAndTruncate(outV, i, blanksBoth, 4, blanksBoth.length - 4, largeMaxLength);
+      expectedResultLen = 1;
+      Assert.assertTrue(vectorEqual(outV, i, blanksBoth, 4, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 1);
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(blanksBoth, 5, blanksBoth.length - 5) == 2);
+      StringExpr.rightTrimAndTruncate(outV, i, blanksBoth, 5, blanksBoth.length -5, largeMaxLength);
+      expectedResultLen = 0;
+      Assert.assertTrue(vectorEqual(outV, i, blanksBoth, 5, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 0);
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(blankString, 1, blankString.length - 1) == 1);
+      StringExpr.rightTrimAndTruncate(outV, i, blankString, 1, blankString.length - 1, largeMaxLength);
+      expectedResultLen = 0;
+      Assert.assertTrue(vectorEqual(outV, i, blankString, 1, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 0);
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(blankRanges, 4, blankRanges.length - 4) == 26);
+      StringExpr.rightTrimAndTruncate(outV, i, blankRanges, 4, blankRanges.length - 4, largeMaxLength);
+      expectedResultLen = blankRanges.length - 4 -4;
+      Assert.assertTrue(vectorEqual(outV, i, blankRanges, 4, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 22);
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(blankRanges, 6, blankRanges.length - 6) == 24);
+      StringExpr.rightTrimAndTruncate(outV, i, blankRanges, 6, blankRanges.length- 6, largeMaxLength);
+      expectedResultLen = blankRanges.length - 6 - 4;
+      Assert.assertTrue(vectorEqual(outV, i, blankRanges, 6, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 20);
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(blankRanges, 7, blankRanges.length - 7) == 23);
+      StringExpr.rightTrimAndTruncate(outV, i, blankRanges, 7, blankRanges.length - 7, largeMaxLength);
+      expectedResultLen = blankRanges.length - 7 - 4;
+      Assert.assertTrue(vectorEqual(outV, i, blankRanges, 7, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 19);
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(blankRanges, 7, 8 - 7) == 1);
+      StringExpr.rightTrimAndTruncate(outV, i, blankRanges, 7, 8 - 7, largeMaxLength);
+      expectedResultLen = 0;
+      Assert.assertTrue(vectorEqual(outV, i, blankRanges, 7, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 0);
+      i++;
+      // Multi-byte trims.
+      byte[] multiByte = new byte[100];
+
+      addMultiByteCharRightPadded1_1(multiByte);
+      Assert.assertTrue(StringExpr.characterCount(multiByte, 0, 4) == 2);
+      StringExpr.rightTrimAndTruncate(outV, i, multiByte, 0, 4, largeMaxLength);
+      expectedResultLen = 3;
+      Assert.assertTrue(vectorEqual(outV, i, multiByte, 0, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 1);
+      i++;
+      addMultiByteCharRightPadded1_2(multiByte);
+      Assert.assertTrue(StringExpr.characterCount(multiByte, 0, 5) == 3);
+      StringExpr.rightTrimAndTruncate(outV, i, multiByte, 0, 5, largeMaxLength);
+      expectedResultLen = 4;
+      Assert.assertTrue(vectorEqual(outV, i, multiByte, 0, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 2);
+      i++;
+      addMultiByteCharRightPadded1_3(multiByte);
+      Assert.assertTrue(StringExpr.characterCount(multiByte, 0, 9) == 4);
+      StringExpr.rightTrimAndTruncate(outV, i, multiByte, 0, 9, largeMaxLength);
+      expectedResultLen = 8;
+      Assert.assertTrue(vectorEqual(outV, i, multiByte, 0, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 3);
+      i++;
+      addMultiByteCharRightPadded1_1(multiByte);
+      Assert.assertTrue(StringExpr.characterCount(multiByte, 3, 1) == 1);
+      StringExpr.rightTrimAndTruncate(outV, i, multiByte, 3, 1, largeMaxLength);
+      expectedResultLen = 0;
+      Assert.assertTrue(vectorEqual(outV, i, multiByte, 0, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 0);
+      i++;
+      addMultiByteCharRightPadded1_2(multiByte);
+      Assert.assertTrue(StringExpr.characterCount(multiByte, 3, 2) == 2);
+      StringExpr.rightTrimAndTruncate(outV, i, multiByte, 3, 2, largeMaxLength);
+      expectedResultLen = 1;
+      Assert.assertTrue(vectorEqual(outV, i, multiByte, 3, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 1);
+      i++;
+      byte[] sentenceOne = new byte[100];
+      int sentenceOneLen = addMultiByteCharSentenceOne(sentenceOne, 0);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceOne, 0, sentenceOneLen) == 10);
+      StringExpr.rightTrimAndTruncate(outV, i, sentenceOne, 0, sentenceOneLen, largeMaxLength);
+      expectedResultLen = sentenceOneLen;
+      Assert.assertTrue(vectorEqual(outV, i, sentenceOne, 0, expectedResultLen));
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(sentenceOne, 0, sentenceOneLen - 3) == 9);
+      StringExpr.rightTrimAndTruncate(outV, i, sentenceOne, 0, sentenceOneLen - 3, largeMaxLength);
+      expectedResultLen = sentenceOneLen - 3;
+      Assert.assertTrue(vectorEqual(outV, i, sentenceOne, 0, expectedResultLen));
+      i++;
+
+      byte[] sentenceTwo = new byte[100];
+      int sentenceTwoLen = addMultiByteCharSentenceTwo(sentenceTwo, 0);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceTwo, 0, sentenceTwoLen) == 13);
+      StringExpr.rightTrimAndTruncate(outV, i, sentenceTwo, 0, sentenceTwoLen, largeMaxLength);
+      expectedResultLen = sentenceTwoLen;
+      Assert.assertTrue(vectorEqual(outV, i, sentenceTwo, 0, expectedResultLen));
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(sentenceTwo, 0, sentenceTwoLen- 5) == 10);
+      StringExpr.rightTrimAndTruncate(outV, i, sentenceTwo, 0, sentenceTwoLen - 5, largeMaxLength);
+      expectedResultLen = sentenceTwoLen - 5;
+      Assert.assertTrue(vectorEqual(outV, i, sentenceTwo, 0, expectedResultLen));
+      i++;
+
+      int start;
+
+      // Left pad longer strings with multi-byte characters.
+      byte[] sentenceOnePaddedLeft = new byte[100];
+      start = addPads(sentenceOnePaddedLeft, 0, 3);
+      int sentenceOnePaddedLeftLen = addMultiByteCharSentenceOne(sentenceOnePaddedLeft, start);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceOnePaddedLeft, 0, sentenceOnePaddedLeftLen) == 3 + 10);
+      StringExpr.rightTrimAndTruncate(outV, i, sentenceOnePaddedLeft, 0, sentenceOnePaddedLeftLen, largeMaxLength);
+      expectedResultLen = sentenceOnePaddedLeftLen;
+      Assert.assertTrue(vectorEqual(outV, i, sentenceOnePaddedLeft, 0, expectedResultLen));
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(sentenceOnePaddedLeft, 0, sentenceOnePaddedLeftLen - 3) == 3 + 9);
+      StringExpr.rightTrimAndTruncate(outV, i, sentenceOnePaddedLeft, 0, sentenceOnePaddedLeftLen - 3, largeMaxLength);
+      expectedResultLen = sentenceOnePaddedLeftLen - 3;
+      Assert.assertTrue(vectorEqual(outV, i, sentenceOnePaddedLeft, 0, expectedResultLen));
+      i++;
+      byte[] sentenceTwoPaddedLeft = new byte[100];
+      start = addPads(sentenceTwoPaddedLeft, 0, 2);
+      int sentenceTwoPaddedLeftLen = addMultiByteCharSentenceTwo(sentenceTwoPaddedLeft, start);
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(sentenceTwoPaddedLeft, 0, sentenceTwoPaddedLeftLen) == 2 + 13);
+      StringExpr.rightTrimAndTruncate(outV, i, sentenceTwoPaddedLeft, 0, sentenceTwoPaddedLeftLen, largeMaxLength);
+      expectedResultLen = sentenceTwoPaddedLeftLen;
+      Assert.assertTrue(vectorEqual(outV, i, sentenceTwoPaddedLeft, 0, expectedResultLen));
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(sentenceTwoPaddedLeft, 0, sentenceTwoPaddedLeftLen - 5) == 2 + 10);
+      StringExpr.rightTrimAndTruncate(outV, i, sentenceTwoPaddedLeft, 0, sentenceTwoPaddedLeftLen - 5, largeMaxLength);
+      expectedResultLen = sentenceTwoPaddedLeftLen - 5;
+      Assert.assertTrue(vectorEqual(outV, i, sentenceTwoPaddedLeft, 0, expectedResultLen));
+      i++;
+
+      // Right pad longer strings with multi-byte characters.
+      byte[] sentenceOnePaddedRight = new byte[100];
+      start = addMultiByteCharSentenceOne(sentenceOnePaddedRight, 0);
+      int sentenceOnePaddedRightLen = addPads(sentenceOnePaddedRight, start, 4);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceOnePaddedRight, 0, sentenceOnePaddedRightLen) == 10 + 4);
+      StringExpr.rightTrimAndTruncate(outV, i, sentenceOnePaddedRight, 0, sentenceOnePaddedRightLen, largeMaxLength);
+      expectedResultLen = sentenceOnePaddedRightLen - 4;
+      Assert.assertTrue(vectorEqual(outV, i, sentenceOnePaddedRight, 0, expectedResultLen));
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(sentenceOnePaddedRight, 0, sentenceOnePaddedRightLen - 3 - 4) == 9);
+      StringExpr.rightTrimAndTruncate(outV, i, sentenceOnePaddedRight, 0, sentenceOnePaddedRightLen - 3 - 4, largeMaxLength);
+      expectedResultLen = sentenceOnePaddedRightLen - 3 - 4;
+      Assert.assertTrue(vectorEqual(outV, i, sentenceOnePaddedRight, 0, expectedResultLen));
+      i++;
+      byte[] sentenceTwoPaddedRight = new byte[100];
+      start = addMultiByteCharSentenceTwo(sentenceTwoPaddedRight, 0);
+      int sentenceTwoPaddedRightLen = addPads(sentenceTwoPaddedRight, start, 1);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceTwoPaddedRight, 0, sentenceTwoPaddedRightLen) == 13 + 1);
+      StringExpr.rightTrimAndTruncate(outV, i, sentenceTwoPaddedRight, 0, sentenceTwoPaddedRightLen, largeMaxLength);
+      expectedResultLen = sentenceTwoPaddedRightLen - 1;
+      Assert.assertTrue(vectorEqual(outV, i, sentenceTwoPaddedRight, 0, expectedResultLen));
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(sentenceTwoPaddedRight, 0, sentenceTwoPaddedRightLen - 5 - 1) == 10);
+      StringExpr.rightTrimAndTruncate(outV, i, sentenceTwoPaddedRight, 0, sentenceTwoPaddedRightLen - 5 - 1, largeMaxLength);
+      expectedResultLen = sentenceTwoPaddedRightLen - 5 - 1;
+      Assert.assertTrue(vectorEqual(outV, i, sentenceTwoPaddedRight, 0, expectedResultLen));
+      i++;
+      // Multi-byte characters with blank ranges.
+      byte[] sentenceBlankRanges = new byte[100];
+      int sentenceBlankRangesLen = addMultiByteCharSentenceBlankRanges(sentenceBlankRanges, 0);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceBlankRanges, 0, sentenceBlankRangesLen) == 17);
+      StringExpr.rightTrimAndTruncate(outV, i, sentenceBlankRanges, 0, sentenceBlankRangesLen, largeMaxLength);
+      expectedResultLen = sentenceBlankRangesLen;
+      Assert.assertTrue(vectorEqual(outV, i, sentenceBlankRanges, 0, expectedResultLen));
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(sentenceBlankRanges, 0, sentenceBlankRangesLen - 3) == 16);
+      StringExpr.rightTrimAndTruncate(outV, i, sentenceBlankRanges, 0, sentenceBlankRangesLen - 3, largeMaxLength);
+      expectedResultLen = sentenceBlankRangesLen - 3;
+      Assert.assertTrue(vectorEqual(outV, i, sentenceBlankRanges, 0, expectedResultLen));
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(sentenceBlankRanges, 7, 17) == 13);
+      StringExpr.rightTrimAndTruncate(outV, i, sentenceBlankRanges, 7, 17, largeMaxLength);
+      expectedResultLen = 12;
+      Assert.assertTrue(vectorEqual(outV, i, sentenceBlankRanges, 7, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 8);
+      i++;
+
+      // This next section repeats the tests of testRightTrimWithOffset with a maxLength parameter that is
+      // exactly the number of current characters in the string.  This shouldn't affect the trim.
+
+      // Nothing to trim (ASCII).
+      Assert.assertTrue(StringExpr.characterCount(blue, 0, blue.length) == 4);
+      StringExpr.rightTrimAndTruncate(outV, i, blue, 0, blue.length, 4);
+      expectedResultLen = blue.length;
+      Assert.assertTrue(vectorEqual(outV, i, blue, 0, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 4);
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(redgreen, 0, redgreen.length) == 8);
+      StringExpr.rightTrimAndTruncate(outV, i, redgreen, 0, redgreen.length, 8);
+      expectedResultLen = redgreen.length;
+      Assert.assertTrue(vectorEqual(outV, i, redgreen, 0, expectedResultLen));
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(ascii_sentence, 0, ascii_sentence.length) == 31);
+      StringExpr.rightTrimAndTruncate(outV, i, ascii_sentence, 0, ascii_sentence.length, 31);
+      expectedResultLen = ascii_sentence.length;
+      Assert.assertTrue(vectorEqual(outV, i, ascii_sentence, 0, expectedResultLen));
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(blanksLeft, 0, blanksLeft.length) == 5);
+      StringExpr.rightTrimAndTruncate(outV, i, blanksLeft, 0, blanksLeft.length, 5);
+      expectedResultLen = blanksLeft.length;
+      Assert.assertTrue(vectorEqual(outV, i, blanksLeft, 0, expectedResultLen));
+      i++;
+
+      // Simple trims.
+      Assert.assertTrue(StringExpr.characterCount(blanksRight, 0, blanksRight.length) == 5);
+      StringExpr.rightTrimAndTruncate(outV, i, blanksRight, 0, blanksRight.length, 5);
+      expectedResultLen = 3;
+      Assert.assertTrue(vectorEqual(outV, i, blanksRight, 0, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 3);
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(blanksBoth, 0, blanksBoth.length) == 7);
+      StringExpr.rightTrimAndTruncate(outV, i, blanksBoth, 0, blanksBoth.length, 7);
+      expectedResultLen = 5;
+      Assert.assertTrue(vectorEqual(outV, i, blanksBoth, 0, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 5);
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(blankString, 0, blankString.length) == 2);
+      StringExpr.rightTrimAndTruncate(outV, i, blankString, 0, blankString.length, 2);
+      expectedResultLen =  0;
+      Assert.assertTrue(vectorEqual(outV, i, blankString, 0, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 0);
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(blankRanges, 0, blankRanges.length) == 30);
+      StringExpr.rightTrimAndTruncate(outV, i, blankRanges, 0, blankRanges.length, 30);
+      expectedResultLen = blankRanges.length - 4;
+      Assert.assertTrue(vectorEqual(outV, i, blankRanges, 0, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 26);
+      i++;
+
+      // Offset trims.
+      Assert.assertTrue(StringExpr.characterCount(blanksRight, 1, blanksRight.length - 1) == 4);
+       StringExpr.rightTrimAndTruncate(outV, i, blanksRight, 1, blanksRight.length - 1, 4);
+      expectedResultLen = 2;
+      Assert.assertTrue(vectorEqual(outV, i, blanksRight, 1, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 2);
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(blanksBoth, 4, blanksBoth.length - 4) == 3);
+      StringExpr.rightTrimAndTruncate(outV, i, blanksBoth, 4, blanksBoth.length - 4, 3);
+      expectedResultLen = 1;
+      Assert.assertTrue(vectorEqual(outV, i, blanksBoth, 4, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 1);
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(blanksBoth, 5, blanksBoth.length - 5) == 2);
+      StringExpr.rightTrimAndTruncate(outV, i, blanksBoth, 5, blanksBoth.length -5, 2);
+      expectedResultLen = 0;
+      Assert.assertTrue(vectorEqual(outV, i, blanksBoth, 5, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 0);
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(blankString, 1, blankString.length - 1) == 1);
+      StringExpr.rightTrimAndTruncate(outV, i, blankString, 1, blankString.length - 1, 1);
+      expectedResultLen = 0;
+      Assert.assertTrue(vectorEqual(outV, i, blankString, 1, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 0);
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(blankRanges, 4, blankRanges.length - 4) == 26);
+      StringExpr.rightTrimAndTruncate(outV, i, blankRanges, 4, blankRanges.length - 4, 26);
+      expectedResultLen = blankRanges.length - 4 -4;
+      Assert.assertTrue(vectorEqual(outV, i, blankRanges, 4, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 22);
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(blankRanges, 6, blankRanges.length - 6) == 24);
+      StringExpr.rightTrimAndTruncate(outV, i, blankRanges, 6, blankRanges.length- 6, 24);
+      expectedResultLen = blankRanges.length - 6 - 4;
+      Assert.assertTrue(vectorEqual(outV, i, blankRanges, 6, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 20);
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(blankRanges, 7, blankRanges.length - 7) == 23);
+      StringExpr.rightTrimAndTruncate(outV, i, blankRanges, 7, blankRanges.length - 7, 23);
+      expectedResultLen = blankRanges.length - 7 - 4;
+      Assert.assertTrue(vectorEqual(outV, i, blankRanges, 7, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 19);
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(blankRanges, 7, 8 - 7) == 1);
+      StringExpr.rightTrimAndTruncate(outV, i, blankRanges, 7, 8 - 7, 1);
+      expectedResultLen = 0;
+      Assert.assertTrue(vectorEqual(outV, i, blankRanges, 7, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 0);
+      i++;
+
+      // Multi-byte trims.
+      multiByte = new byte[100];
+
+      addMultiByteCharRightPadded1_1(multiByte);
+      Assert.assertTrue(StringExpr.characterCount(multiByte, 0, 4) == 2);
+      StringExpr.rightTrimAndTruncate(outV, i, multiByte, 0, 4, 2);
+      expectedResultLen = 3;
+      Assert.assertTrue(vectorEqual(outV, i, multiByte, 0, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 1);
+      i++;
+      addMultiByteCharRightPadded1_2(multiByte);
+      Assert.assertTrue(StringExpr.characterCount(multiByte, 0, 5) == 3);
+      StringExpr.rightTrimAndTruncate(outV, i, multiByte, 0, 5, 3);
+      expectedResultLen = 4;
+      Assert.assertTrue(vectorEqual(outV, i, multiByte, 0, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 2);
+      i++;
+      addMultiByteCharRightPadded1_3(multiByte);
+      Assert.assertTrue(StringExpr.characterCount(multiByte, 0, 9) == 4);
+      StringExpr.rightTrimAndTruncate(outV, i, multiByte, 0, 9, 4);
+      expectedResultLen = 8;
+      Assert.assertTrue(vectorEqual(outV, i, multiByte, 0, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 3);
+      i++;
+      addMultiByteCharRightPadded1_1(multiByte);
+      Assert.assertTrue(StringExpr.characterCount(multiByte, 3, 1) == 1);
+      StringExpr.rightTrimAndTruncate(outV, i, multiByte, 3, 1, 1);
+      expectedResultLen = 0;
+      Assert.assertTrue(vectorEqual(outV, i, multiByte, 3, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 0);
+      i++;
+      addMultiByteCharRightPadded1_2(multiByte);
+      Assert.assertTrue(StringExpr.characterCount(multiByte, 3, 2) == 2);
+      StringExpr.rightTrimAndTruncate(outV, i, multiByte, 3, 2, 2);
+      expectedResultLen = 1;
+      Assert.assertTrue(vectorEqual(outV, i, multiByte, 3, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 1);
+      i++;
+
+      sentenceOne = new byte[100];
+      sentenceOneLen = addMultiByteCharSentenceOne(sentenceOne, 0);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceOne, 0, sentenceOneLen) == 10);
+      StringExpr.rightTrimAndTruncate(outV, i, sentenceOne, 0, sentenceOneLen, 10);
+      expectedResultLen = sentenceOneLen;
+      Assert.assertTrue(vectorEqual(outV, i, sentenceOne, 0, expectedResultLen));
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(sentenceOne, 0, sentenceOneLen - 3) == 9);
+      StringExpr.rightTrimAndTruncate(outV, i, sentenceOne, 0, sentenceOneLen - 3, 9);
+      expectedResultLen = sentenceOneLen - 3;
+      Assert.assertTrue(vectorEqual(outV, i, sentenceOne, 0, expectedResultLen));
+      i++;
+
+      sentenceTwo = new byte[100];
+      sentenceTwoLen = addMultiByteCharSentenceTwo(sentenceTwo, 0);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceTwo, 0, sentenceTwoLen) == 13);
+      StringExpr.rightTrimAndTruncate(outV, i, sentenceTwo, 0, sentenceTwoLen, 13);
+      expectedResultLen = sentenceTwoLen;
+      Assert.assertTrue(vectorEqual(outV, i, sentenceTwo, 0, expectedResultLen));
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(sentenceTwo, 0, sentenceTwoLen- 5) == 10);
+      StringExpr.rightTrimAndTruncate(outV, i, sentenceTwo, 0, sentenceTwoLen - 5, 10);
+      expectedResultLen = sentenceTwoLen - 5;
+      Assert.assertTrue(vectorEqual(outV, i, sentenceTwo, 0, expectedResultLen));
+      i++;
+
+      // Left pad longer strings with multi-byte characters.
+      sentenceOnePaddedLeft = new byte[100];
+      start = addPads(sentenceOnePaddedLeft, 0, 3);
+      sentenceOnePaddedLeftLen = addMultiByteCharSentenceOne(sentenceOnePaddedLeft, start);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceOnePaddedLeft, 0, sentenceOnePaddedLeftLen) == 3 + 10);
+      StringExpr.rightTrimAndTruncate(outV, i, sentenceOnePaddedLeft, 0, sentenceOnePaddedLeftLen, 3 + 10);
+      expectedResultLen = sentenceOnePaddedLeftLen;
+      Assert.assertTrue(vectorEqual(outV, i, sentenceOnePaddedLeft, 0, expectedResultLen));
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(sentenceOnePaddedLeft, 0, sentenceOnePaddedLeftLen - 3) == 3 + 9);
+      StringExpr.rightTrimAndTruncate(outV, i, sentenceOnePaddedLeft, 0, sentenceOnePaddedLeftLen - 3, 3 + 9);
+      expectedResultLen = sentenceOnePaddedLeftLen - 3;
+      Assert.assertTrue(vectorEqual(outV, i, sentenceOnePaddedLeft, 0, expectedResultLen));
+      i++;
+      sentenceTwoPaddedLeft = new byte[100];
+      start = addPads(sentenceTwoPaddedLeft, 0, 2);
+      sentenceTwoPaddedLeftLen = addMultiByteCharSentenceTwo(sentenceTwoPaddedLeft, start);
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(sentenceTwoPaddedLeft, 0, sentenceTwoPaddedLeftLen) == 2 + 13);
+      StringExpr.rightTrimAndTruncate(outV, i, sentenceTwoPaddedLeft, 0, sentenceTwoPaddedLeftLen, 2 + 13);
+      expectedResultLen = sentenceTwoPaddedLeftLen;
+      Assert.assertTrue(vectorEqual(outV, i, sentenceTwoPaddedLeft, 0, expectedResultLen));
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(sentenceTwoPaddedLeft, 0, sentenceTwoPaddedLeftLen - 5) == 2 + 10);
+      StringExpr.rightTrimAndTruncate(outV, i, sentenceTwoPaddedLeft, 0, sentenceTwoPaddedLeftLen - 5, 2 + 10);
+      expectedResultLen = sentenceTwoPaddedLeftLen - 5;
+      Assert.assertTrue(vectorEqual(outV, i, sentenceTwoPaddedLeft, 0, expectedResultLen));
+      i++;
+
+      // Right pad longer strings with multi-byte characters.
+      sentenceOnePaddedRight = new byte[100];
+      start = addMultiByteCharSentenceOne(sentenceOnePaddedRight, 0);
+      sentenceOnePaddedRightLen = addPads(sentenceOnePaddedRight, start, 4);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceOnePaddedRight, 0, sentenceOnePaddedRightLen) == 10 + 4);
+      StringExpr.rightTrimAndTruncate(outV, i, sentenceOnePaddedRight, 0, sentenceOnePaddedRightLen, 10 + 4);
+      expectedResultLen = sentenceOnePaddedRightLen - 4;
+      Assert.assertTrue(vectorEqual(outV, i, sentenceOnePaddedRight, 0, expectedResultLen));
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(sentenceOnePaddedRight, 0, sentenceOnePaddedRightLen - 3 - 4) == 9);
+      StringExpr.rightTrimAndTruncate(outV, i, sentenceOnePaddedRight, 0, sentenceOnePaddedRightLen - 3 - 4, 9);
+      expectedResultLen = sentenceOnePaddedRightLen - 3 - 4;
+      Assert.assertTrue(vectorEqual(outV, i, sentenceOnePaddedRight, 0, expectedResultLen));
+      i++;
+
+      sentenceTwoPaddedRight = new byte[100];
+      start = addMultiByteCharSentenceTwo(sentenceTwoPaddedRight, 0);
+      sentenceTwoPaddedRightLen = addPads(sentenceTwoPaddedRight, start, 1);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceTwoPaddedRight, 0, sentenceTwoPaddedRightLen) == 13 + 1);
+      StringExpr.rightTrimAndTruncate(outV, i, sentenceTwoPaddedRight, 0, sentenceTwoPaddedRightLen, 13 + 1);
+      expectedResultLen = sentenceTwoPaddedRightLen - 1;
+      Assert.assertTrue(vectorEqual(outV, i, sentenceTwoPaddedRight, 0, expectedResultLen));
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(sentenceTwoPaddedRight, 0, sentenceTwoPaddedRightLen - 5 - 1) == 10);
+      StringExpr.rightTrimAndTruncate(outV, i, sentenceTwoPaddedRight, 0, sentenceTwoPaddedRightLen - 5 - 1, 10);
+      expectedResultLen = sentenceTwoPaddedRightLen - 5 - 1;
+      Assert.assertTrue(vectorEqual(outV, i, sentenceTwoPaddedRight, 0, expectedResultLen));
+      i++;
+
+      // Multi-byte characters with blank ranges.
+      sentenceBlankRanges = new byte[100];
+      sentenceBlankRangesLen = addMultiByteCharSentenceBlankRanges(sentenceBlankRanges, 0);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceBlankRanges, 0, sentenceBlankRangesLen) == 17);
+      StringExpr.rightTrimAndTruncate(outV, i, sentenceBlankRanges, 0, sentenceBlankRangesLen, 17);
+      expectedResultLen = sentenceBlankRangesLen;
+      Assert.assertTrue(vectorEqual(outV, i, sentenceBlankRanges, 0, expectedResultLen));
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(sentenceBlankRanges, 0, sentenceBlankRangesLen - 3) == 16);
+      StringExpr.rightTrimAndTruncate(outV, i, sentenceBlankRanges, 0, sentenceBlankRangesLen - 3, 16);
+      expectedResultLen = sentenceBlankRangesLen - 3;
+      Assert.assertTrue(vectorEqual(outV, i, sentenceBlankRanges, 0, expectedResultLen));
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(sentenceBlankRanges, 7, 17) == 13);
+      StringExpr.rightTrimAndTruncate(outV, i, sentenceBlankRanges, 7, 17, largeMaxLength);
+      expectedResultLen = 12;
+      Assert.assertTrue(vectorEqual(outV, i, sentenceBlankRanges, 7, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 8);
+      i++;
+
+      // This next section repeats the tests of testRightTrimWithOffset with a maxLength parameter that is
+      // less than the number of current characters in the string and thus affects the trim.
+
+      // Nothing to trim (ASCII).
+      Assert.assertTrue(StringExpr.characterCount(blue, 0, blue.length) == 4);
+      StringExpr.rightTrimAndTruncate(outV, i, blue, 0, blue.length, 3);
+      expectedResultLen = 3;
+      Assert.assertTrue(vectorEqual(outV, i, blue, 0, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 3);
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(redgreen, 0, redgreen.length) == 8);
+      StringExpr.rightTrimAndTruncate(outV, i, redgreen, 0, redgreen.length, 6);
+      expectedResultLen = 6;
+      Assert.assertTrue(vectorEqual(outV, i, redgreen, 0, expectedResultLen));
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(ascii_sentence, 0, ascii_sentence.length) == 31);
+      StringExpr.rightTrimAndTruncate(outV, i, ascii_sentence, 0, ascii_sentence.length, 30);
+      expectedResultLen = 30;
+      Assert.assertTrue(vectorEqual(outV, i, ascii_sentence, 0, expectedResultLen));
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(blanksLeft, 0, blanksLeft.length) == 5);
+      StringExpr.rightTrimAndTruncate(outV, i, blanksLeft, 0, blanksLeft.length, 1);
+      expectedResultLen = 0;
+      Assert.assertTrue(vectorEqual(outV, i, blanksLeft, 0, expectedResultLen));
+      i++;
+
+      // Simple trims.
+      Assert.assertTrue(StringExpr.characterCount(blanksRight, 0, blanksRight.length) == 5);
+      StringExpr.rightTrimAndTruncate(outV, i, blanksRight, 0, blanksRight.length, 4);
+      expectedResultLen = 3;
+      Assert.assertTrue(vectorEqual(outV, i, blanksRight, 0, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 3);
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(blanksBoth, 0, blanksBoth.length) == 7);
+      StringExpr.rightTrimAndTruncate(outV, i, blanksBoth, 0, blanksBoth.length, 6);
+      expectedResultLen = 5;
+      Assert.assertTrue(vectorEqual(outV, i, blanksBoth, 0, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 5);
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(blankString, 0, blankString.length) == 2);
+      StringExpr.rightTrimAndTruncate(outV, i, blankString, 0, blankString.length, 1);
+      expectedResultLen = 0;
+      Assert.assertTrue(vectorEqual(outV, i, blankString, 0, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 0);
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(blankRanges, 0, blankRanges.length) == 30);
+      StringExpr.rightTrimAndTruncate(outV, i, blankRanges, 0, blankRanges.length, 19);
+      expectedResultLen = 15;
+      Assert.assertTrue(vectorEqual(outV, i, blankRanges, 0, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 15);
+      i++;
+
+      // Offset trims.
+      Assert.assertTrue(StringExpr.characterCount(blanksRight, 1, blanksRight.length - 1) == 4);
+      StringExpr.rightTrimAndTruncate(outV, i, blanksRight, 1, blanksRight.length - 1, 3);
+      expectedResultLen = 2;
+      Assert.assertTrue(vectorEqual(outV, i, blanksRight, 1, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 2);
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(blanksBoth, 4, blanksBoth.length - 4) == 3);
+      StringExpr.rightTrimAndTruncate(outV, i, blanksBoth, 4, blanksBoth.length - 4, 2);
+      expectedResultLen = 1;
+      Assert.assertTrue(vectorEqual(outV, i, blanksBoth, 4, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 1);
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(blanksBoth, 5, blanksBoth.length - 5) == 2);
+      StringExpr.rightTrimAndTruncate(outV, i, blanksBoth, 5, blanksBoth.length -5, 1);
+      expectedResultLen = 0;
+      Assert.assertTrue(vectorEqual(outV, i, blanksBoth, 5, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 0);
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(blankString, 1, blankString.length - 1) == 1);
+      StringExpr.rightTrimAndTruncate(outV, i, blankString, 1, blankString.length - 1, 1);
+      expectedResultLen = 0;
+      Assert.assertTrue(vectorEqual(outV, i, blankString, 1, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 0);
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(blankRanges, 3, 6) == 6);
+      StringExpr.rightTrimAndTruncate(outV, i, blankRanges, 3, 6, 5);
+      expectedResultLen = 4;
+      Assert.assertTrue(vectorEqual(outV, i, blankRanges, 3, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 4);
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(blankRanges, 6, blankRanges.length - 6) == 24);
+      StringExpr.rightTrimAndTruncate(outV, i, blankRanges, 6, blankRanges.length- 6, 22);
+      expectedResultLen = blankRanges.length - 6 - 4;
+      Assert.assertTrue(vectorEqual(outV, i, blankRanges, 6, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 20);
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(blankRanges, 7, blankRanges.length - 7) == 23);
+      StringExpr.rightTrimAndTruncate(outV, i, blankRanges, 7, blankRanges.length - 7, 10);
+      expectedResultLen = 8;
+      Assert.assertTrue(vectorEqual(outV, i, blankRanges, 7, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 8);
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(blankRanges, 7, 8 - 7) == 1);
+      StringExpr.rightTrimAndTruncate(outV, i, blankRanges, 7, 8 - 7, 1);
+      expectedResultLen = 0;
+      Assert.assertTrue(vectorEqual(outV, i, blankRanges, 7, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 0);
+      i++;
+
+      // Multi-byte trims.
+      multiByte = new byte[100];
+
+      addMultiByteCharRightPadded1_1(multiByte);
+      Assert.assertTrue(StringExpr.characterCount(multiByte, 0, 4) == 2);
+      StringExpr.rightTrimAndTruncate(outV, i, multiByte, 0, 4, 1);
+      expectedResultLen = 3;
+      Assert.assertTrue(vectorEqual(outV, i, multiByte, 0, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 1);
+      i++;
+      addMultiByteCharRightPadded1_2(multiByte);
+      Assert.assertTrue(StringExpr.characterCount(multiByte, 0, 5) == 3);
+      StringExpr.rightTrimAndTruncate(outV, i, multiByte, 0, 5, 2);
+      expectedResultLen = 4;
+      Assert.assertTrue(vectorEqual(outV, i, multiByte, 0, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 2);
+      i++;
+      addMultiByteCharRightPadded1_3(multiByte);
+      Assert.assertTrue(StringExpr.characterCount(multiByte, 0, 9) == 4);
+      StringExpr.rightTrimAndTruncate(outV, i, multiByte, 0, 9, 3);
+      expectedResultLen = 8;
+      Assert.assertTrue(vectorEqual(outV, i, multiByte, 0, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 3);
+      i++;
+      addMultiByteCharRightPadded1_1(multiByte);
+      Assert.assertTrue(StringExpr.characterCount(multiByte, 3, 1) == 1);
+      StringExpr.rightTrimAndTruncate(outV, i, multiByte, 3, 1, 1);
+      expectedResultLen = 0;
+      Assert.assertTrue(vectorEqual(outV, i, multiByte, 3, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 0);
+      i++;
+      addMultiByteCharRightPadded1_2(multiByte);
+      Assert.assertTrue(StringExpr.characterCount(multiByte, 3, 2) == 2);
+      StringExpr.rightTrimAndTruncate(outV, i, multiByte, 3, 2, 1);
+      expectedResultLen = 1;
+      Assert.assertTrue(vectorEqual(outV, i, multiByte, 3, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 1);
+      i++;
+
+      sentenceOne = new byte[100];
+      sentenceOneLen = addMultiByteCharSentenceOne(sentenceOne, 0);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceOne, 0, sentenceOneLen) == 10);
+      StringExpr.rightTrimAndTruncate(outV, i, sentenceOne, 0, sentenceOneLen, 7);
+      expectedResultLen = sentenceOneLen - 9;
+      Assert.assertTrue(vectorEqual(outV, i, sentenceOne, 0, expectedResultLen));
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(sentenceOne, 0, sentenceOneLen - 3) == 9);
+      StringExpr.rightTrimAndTruncate(outV, i, sentenceOne, 0, sentenceOneLen - 3, 6);
+      expectedResultLen = 13;
+      Assert.assertTrue(vectorEqual(outV, i, sentenceOne, 0, expectedResultLen));
+      i++;
+
+      sentenceTwo = new byte[100];
+      sentenceTwoLen = addMultiByteCharSentenceTwo(sentenceTwo, 0);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceTwo, 0, sentenceTwoLen) == 13);
+      StringExpr.rightTrimAndTruncate(outV, i, sentenceTwo, 0, sentenceTwoLen, 13);
+      expectedResultLen = sentenceTwoLen;
+      Assert.assertTrue(vectorEqual(outV, i, sentenceTwo, 0, expectedResultLen));
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(sentenceTwo, 0, sentenceTwoLen- 5) == 10);
+      StringExpr.rightTrimAndTruncate(outV, i, sentenceTwo, 0, sentenceTwoLen - 5, 10);
+      expectedResultLen = sentenceTwoLen - 5;
+      Assert.assertTrue(vectorEqual(outV, i, sentenceTwo, 0, expectedResultLen));
+      i++;
+
+      // Left pad longer strings with multi-byte characters.
+      sentenceOnePaddedLeft = new byte[100];
+      start = addPads(sentenceOnePaddedLeft, 0, 3);
+      sentenceOnePaddedLeftLen = addMultiByteCharSentenceOne(sentenceOnePaddedLeft, start);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceOnePaddedLeft, 0, sentenceOnePaddedLeftLen) == 3 + 10);
+      StringExpr.rightTrimAndTruncate(outV, i, sentenceOnePaddedLeft, 0, sentenceOnePaddedLeftLen, 3 + 8);
+      expectedResultLen = sentenceOnePaddedLeftLen - 6;
+      Assert.assertTrue(vectorEqual(outV, i, sentenceOnePaddedLeft, 0, expectedResultLen));
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(sentenceOnePaddedLeft, 0, sentenceOnePaddedLeftLen - 3) == 3 + 9);
+      StringExpr.rightTrimAndTruncate(outV, i, sentenceOnePaddedLeft, 0, sentenceOnePaddedLeftLen - 3, 3 + 6);
+      expectedResultLen = 16;
+      Assert.assertTrue(vectorEqual(outV, i, sentenceOnePaddedLeft, 0, expectedResultLen));
+      i++;
+
+      sentenceTwoPaddedLeft = new byte[100];
+      start = addPads(sentenceTwoPaddedLeft, 0, 2);
+      sentenceTwoPaddedLeftLen = addMultiByteCharSentenceTwo(sentenceTwoPaddedLeft, start);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceTwoPaddedLeft, 0, sentenceTwoPaddedLeftLen) == 2 + 13);
+      StringExpr.rightTrimAndTruncate(outV, i, sentenceTwoPaddedLeft, 0, sentenceTwoPaddedLeftLen, 7);
+      expectedResultLen = 10;
+      Assert.assertTrue(vectorEqual(outV, i, sentenceTwoPaddedLeft, 0, expectedResultLen));
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(sentenceTwoPaddedLeft, 0, sentenceTwoPaddedLeftLen - 5) == 2 + 10);
+      StringExpr.rightTrimAndTruncate(outV, i, sentenceTwoPaddedLeft, 0, sentenceTwoPaddedLeftLen - 5, 6);
+      expectedResultLen = 10;
+      Assert.assertTrue(vectorEqual(outV, i, sentenceTwoPaddedLeft, 0, expectedResultLen));
+      i++;
+
+      // Right pad longer strings with multi-byte characters.
+      sentenceOnePaddedRight = new byte[100];
+      start = addMultiByteCharSentenceOne(sentenceOnePaddedRight, 0);
+      sentenceOnePaddedRightLen = addPads(sentenceOnePaddedRight, start, 4);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceOnePaddedRight, 0, sentenceOnePaddedRightLen) == 10 + 4);
+      StringExpr.rightTrimAndTruncate(outV, i, sentenceOnePaddedRight, 0, sentenceOnePaddedRightLen, 10);
+      expectedResultLen = sentenceOnePaddedRightLen - 4;
+      Assert.assertTrue(vectorEqual(outV, i, sentenceOnePaddedRight, 0, expectedResultLen));
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(sentenceOnePaddedRight, 0, sentenceOnePaddedRightLen - 3 - 4) == 9);
+      StringExpr.rightTrimAndTruncate(outV, i, sentenceOnePaddedRight, 0, sentenceOnePaddedRightLen - 3 - 4, 7);
+      expectedResultLen = 17;
+      Assert.assertTrue(vectorEqual(outV, i, sentenceOnePaddedRight, 0, expectedResultLen));
+      i++;
+
+      sentenceTwoPaddedRight = new byte[100];
+      start = addMultiByteCharSentenceTwo(sentenceTwoPaddedRight, 0);
+      sentenceTwoPaddedRightLen = addPads(sentenceTwoPaddedRight, start, 1);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceTwoPaddedRight, 0, sentenceTwoPaddedRightLen) == 13 + 1);
+      StringExpr.rightTrimAndTruncate(outV, i, sentenceTwoPaddedRight, 0, sentenceTwoPaddedRightLen, 13);
+      expectedResultLen = sentenceTwoPaddedRightLen - 1;
+      Assert.assertTrue(vectorEqual(outV, i, sentenceTwoPaddedRight, 0, expectedResultLen));
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(sentenceTwoPaddedRight, 0, sentenceTwoPaddedRightLen - 5 - 1) == 10);
+      StringExpr.rightTrimAndTruncate(outV, i, sentenceTwoPaddedRight, 0, sentenceTwoPaddedRightLen - 5 - 1, 4);
+      expectedResultLen = 8;
+      Assert.assertTrue(vectorEqual(outV, i, sentenceTwoPaddedRight, 0, expectedResultLen));
+      i++;
+
+      // Multi-byte characters with blank ranges.
+      sentenceBlankRanges = new byte[100];
+      sentenceBlankRangesLen = addMultiByteCharSentenceBlankRanges(sentenceBlankRanges, 0);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceBlankRanges, 0, sentenceBlankRangesLen) == 17);
+      StringExpr.rightTrimAndTruncate(outV, i, sentenceBlankRanges, 0, sentenceBlankRangesLen, 4);
+      expectedResultLen = 7;
+      Assert.assertTrue(vectorEqual(outV, i, sentenceBlankRanges, 0, expectedResultLen));
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(sentenceBlankRanges, 0, sentenceBlankRangesLen - 3) == 16);
+      StringExpr.rightTrimAndTruncate(outV, i, sentenceBlankRanges, 0, sentenceBlankRangesLen - 3, 6);
+      expectedResultLen = 11;
+      Assert.assertTrue(vectorEqual(outV, i, sentenceBlankRanges, 0, expectedResultLen));
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(sentenceBlankRanges, 4, 12) == 8);
+      StringExpr.rightTrimAndTruncate(outV, i, sentenceBlankRanges, 4, 12, 6);
+      expectedResultLen = 7;
+      Assert.assertTrue(vectorEqual(outV, i, sentenceBlankRanges, 4, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 5);
+      i++;
+      Assert.assertTrue(StringExpr.characterCount(sentenceBlankRanges, 7, 17) == 13);
+      StringExpr.rightTrimAndTruncate(outV, i, sentenceBlankRanges, 7, 17, 11);
+      expectedResultLen = 12;
+      Assert.assertTrue(vectorEqual(outV, i, sentenceBlankRanges, 7, expectedResultLen));
+      Assert.assertTrue(vectorCharacterCount(outV, i) == 8);
+      i++;
+  }
+
+  @Test
+  // Test basic truncate to vector.
+  public void testRightTrimAndTruncateScalar()  {
+      int largeMaxLength = 100;
+
+      byte[] result;
+
+      // No truncate (ASCII) -- maximum length large.
+      Assert.assertTrue(StringExpr.characterCount(blue) == 4);
+      result = StringExpr.rightTrimAndTruncateScalar(blue, largeMaxLength);
+      Assert.assertTrue(Arrays.equals(blue, result));
+
+      Assert.assertTrue(StringExpr.characterCount(redgreen) == 8);
+      result = StringExpr.rightTrimAndTruncateScalar(redgreen, largeMaxLength);
+      Assert.assertTrue(Arrays.equals(redgreen, result));
+
+      Assert.assertTrue(StringExpr.characterCount(ascii_sentence) == 31);
+      result = StringExpr.rightTrimAndTruncateScalar(ascii_sentence, largeMaxLength);
+      Assert.assertTrue(Arrays.equals(ascii_sentence, result));
+
+      Assert.assertTrue(StringExpr.characterCount(blanksLeft) == 5);
+      result = StringExpr.rightTrimAndTruncateScalar(blanksLeft, largeMaxLength);
+      Assert.assertTrue(Arrays.equals(blanksLeft, result));
+
+      // No truncate (ASCII) -- same maximum length.
+      Assert.assertTrue(StringExpr.characterCount(blue) == 4);
+      result = StringExpr.rightTrimAndTruncateScalar(blue, blue.length);
+      Assert.assertTrue(Arrays.equals(blue, result));
+
+      Assert.assertTrue(StringExpr.characterCount(redgreen) == 8);
+      result = StringExpr.rightTrimAndTruncateScalar(redgreen, redgreen.length);
+      Assert.assertTrue(Arrays.equals(redgreen, result));
+
+      Assert.assertTrue(StringExpr.characterCount(ascii_sentence) == 31);
+      result = StringExpr.rightTrimAndTruncateScalar(ascii_sentence, ascii_sentence.length);
+      Assert.assertTrue(Arrays.equals(ascii_sentence, result));
+
+      Assert.assertTrue(StringExpr.characterCount(blanksLeft) == 5);
+      result = StringExpr.rightTrimAndTruncateScalar(blanksLeft, blanksLeft.length);
+      Assert.assertTrue(Arrays.equals(blanksLeft, result));
+
+      // Simple truncation.
+      result = StringExpr.rightTrimAndTruncateScalar(blue, 3);
+      Assert.assertTrue(Arrays.equals(Arrays.copyOf(blue, 3), result));
+
+      result = StringExpr.rightTrimAndTruncateScalar(redgreen, 6);
+      Assert.assertTrue(Arrays.equals(Arrays.copyOf(redgreen, 6), result));
+
+      result = StringExpr.rightTrimAndTruncateScalar(ascii_sentence, 14);
+      Assert.assertTrue(Arrays.equals(Arrays.copyOf(ascii_sentence, 14), result));
+
+      result = StringExpr.rightTrimAndTruncateScalar(blanksLeft, 2);
+      Assert.assertTrue(Arrays.equals(Arrays.copyOf(blanksLeft, 0), result));
+
+      result = StringExpr.rightTrimAndTruncateScalar(blanksRight, 4);
+      Assert.assertTrue(Arrays.equals(Arrays.copyOf(blanksRight, 3), result));
+
+      result = StringExpr.rightTrimAndTruncateScalar(blanksBoth, 2);
+      Assert.assertTrue(Arrays.equals(Arrays.copyOf(blanksBoth, 0), result));
+
+      result = StringExpr.rightTrimAndTruncateScalar(blankString, 1);
+      Assert.assertTrue(Arrays.equals(Arrays.copyOf(blankString, 0), result));
+
+      result = StringExpr.rightTrimAndTruncateScalar(blankRanges, 29);
+      Assert.assertTrue(Arrays.equals(Arrays.copyOf(blankRanges, 26), result));
+
+      // Multi-byte truncation.
+      byte[] scratch = new byte[100];
+      byte[] multiByte;
+
+      addMultiByteCharRightPadded1_1(scratch);
+      multiByte = Arrays.copyOf(scratch, 4);
+      Assert.assertTrue(StringExpr.characterCount(multiByte, 0, 4) == 2);
+      result = StringExpr.rightTrimAndTruncateScalar(multiByte, 1);
+      Assert.assertTrue(Arrays.equals(Arrays.copyOf(multiByte, 3), result));
+
+      addMultiByteCharRightPadded1_2(scratch);
+      multiByte = Arrays.copyOf(scratch, 5);
+      Assert.assertTrue(StringExpr.characterCount(multiByte, 0, 5) == 3);
+      result = StringExpr.rightTrimAndTruncateScalar(multiByte, 2);
+      Assert.assertTrue(Arrays.equals(Arrays.copyOf(multiByte, 4), result));
+
+      addMultiByteCharRightPadded1_3(scratch);
+      multiByte = Arrays.copyOf(scratch, 9);
+      Assert.assertTrue(StringExpr.characterCount(multiByte, 0, 9) == 4);
+      result = StringExpr.rightTrimAndTruncateScalar(multiByte, 2);
+      Assert.assertTrue(Arrays.equals(Arrays.copyOf(multiByte, 5), result));
+
+      addMultiByteCharRightPadded1_2(scratch);
+      multiByte = Arrays.copyOfRange(scratch, 3, 3 + 2);
+      Assert.assertTrue(StringExpr.characterCount(multiByte) == 2);
+      result = StringExpr.rightTrimAndTruncateScalar(multiByte, 1);
+      Assert.assertTrue(Arrays.equals(Arrays.copyOf(multiByte, 1), result));
+
+      int sentenceOneLen = addMultiByteCharSentenceOne(scratch, 0);
+      byte[] sentenceOne = Arrays.copyOf(scratch, sentenceOneLen);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceOne) == 10);
+      result = StringExpr.rightTrimAndTruncateScalar(sentenceOne, 8);
+      Assert.assertTrue(Arrays.equals(Arrays.copyOf(sentenceOne, 20), result));
+
+      byte[] sentenceOnePortion = Arrays.copyOf(sentenceOne, sentenceOneLen - 3);
+      Assert.assertTrue(StringExpr.characterCount(sentenceOnePortion) == 9);
+      result = StringExpr.rightTrimAndTruncateScalar(sentenceOnePortion, 3);
+      Assert.assertTrue(Arrays.equals(Arrays.copyOf(sentenceOnePortion, 9), result));
+
+      int sentenceTwoLen = addMultiByteCharSentenceTwo(scratch, 0);
+      byte[] sentenceTwo = Arrays.copyOf(scratch, sentenceTwoLen);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceTwo) == 13);
+      result = StringExpr.rightTrimAndTruncateScalar(sentenceTwo, 9);
+      Assert.assertTrue(Arrays.equals(Arrays.copyOf(sentenceTwo, 16), result));
+
+      byte[] sentenceTwoPortion = Arrays.copyOf(sentenceTwo, sentenceTwoLen - 5);
+      Assert.assertTrue(StringExpr.characterCount(sentenceTwoPortion) == 10);
+      result = StringExpr.rightTrimAndTruncateScalar(sentenceTwoPortion, 6);
+      Assert.assertTrue(Arrays.equals(Arrays.copyOf(sentenceTwoPortion, 11), result));
+
+      int start;
+
+      // Left pad longer strings with multi-byte characters.
+      start = addPads(scratch, 0, 3);
+      int sentenceOnePaddedLeftLen = addMultiByteCharSentenceOne(scratch, start);
+      byte[] sentenceOnePaddedLeft = Arrays.copyOf(scratch, sentenceOnePaddedLeftLen);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceOnePaddedLeft) == 3 + 10);
+      result = StringExpr.rightTrimAndTruncateScalar(sentenceOnePaddedLeft, 4);
+      Assert.assertTrue(Arrays.equals(Arrays.copyOf(sentenceOnePaddedLeft, 6), result));
+
+      byte[] sentenceOnePaddedLeftPortion = Arrays.copyOf(sentenceOnePaddedLeft, sentenceOnePaddedLeftLen - 3);
+      Assert.assertTrue(StringExpr.characterCount(sentenceOnePaddedLeftPortion) == 3 + 9);
+      result = StringExpr.rightTrimAndTruncateScalar(sentenceOnePaddedLeftPortion, 7);
+      Assert.assertTrue(Arrays.equals(Arrays.copyOf(sentenceOnePaddedLeftPortion, 12), result));
+
+      start = addPads(scratch, 0, 2);
+      int sentenceTwoPaddedLeftLen = addMultiByteCharSentenceTwo(scratch, start);
+      byte[] sentenceTwoPaddedLeft = Arrays.copyOf(scratch, sentenceTwoPaddedLeftLen);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceTwoPaddedLeft) == 2 + 13);
+      result = StringExpr.rightTrimAndTruncateScalar(sentenceTwoPaddedLeft, 14);
+      Assert.assertTrue(Arrays.equals(Arrays.copyOf(sentenceTwoPaddedLeft, 24), result));
+
+      byte[] sentenceTwoPaddedLeftPortion = Arrays.copyOf(sentenceTwoPaddedLeft, sentenceTwoPaddedLeftLen - 5);
+      Assert.assertTrue(StringExpr.characterCount(sentenceTwoPaddedLeftPortion) == 2 + 10);
+      result = StringExpr.rightTrimAndTruncateScalar(sentenceTwoPaddedLeftPortion, 9);
+      Assert.assertTrue(Arrays.equals(Arrays.copyOf(sentenceTwoPaddedLeftPortion, 15), result));
+
+      // Right pad longer strings with multi-byte characters.
+      start = addMultiByteCharSentenceOne(scratch, 0);
+      int sentenceOnePaddedRightLen = addPads(scratch, start, 4);
+      byte[] sentenceOnePaddedRight = Arrays.copyOf(scratch, sentenceOnePaddedRightLen);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceOnePaddedRight) == 10 + 4);
+      result = StringExpr.rightTrimAndTruncateScalar(sentenceOnePaddedRight, 1);
+      Assert.assertTrue(Arrays.equals(Arrays.copyOf(sentenceOnePaddedRight, 3), result));
+
+      byte[] sentenceOnePaddedRightPortion = Arrays.copyOf(sentenceOnePaddedRight, sentenceOnePaddedRightLen - 3 - 4);
+      Assert.assertTrue(StringExpr.characterCount(sentenceOnePaddedRightPortion) == 9);
+      result = StringExpr.rightTrimAndTruncateScalar(sentenceOnePaddedRightPortion, 5);
+      Assert.assertTrue(Arrays.equals(Arrays.copyOf(sentenceOnePaddedRightPortion, 13), result));
+
+      start = addMultiByteCharSentenceTwo(scratch, 0);
+      int sentenceTwoPaddedRightLen = addPads(scratch, start, 1);
+      byte[] sentenceTwoPaddedRight = Arrays.copyOf(scratch, sentenceTwoPaddedRightLen);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceTwoPaddedRight) == 13 + 1);
+      result = StringExpr.rightTrimAndTruncateScalar(sentenceTwoPaddedRight, 6);
+      Assert.assertTrue(Arrays.equals(Arrays.copyOf(sentenceTwoPaddedRight, 11), result));
+
+      byte[] sentenceTwoPaddedRightPortion = Arrays.copyOf(sentenceTwoPaddedRight, sentenceTwoPaddedRightLen - 5 - 1);
+      Assert.assertTrue(StringExpr.characterCount(sentenceTwoPaddedRightPortion) == 10);
+      result = StringExpr.rightTrimAndTruncateScalar(sentenceTwoPaddedRightPortion, 8);
+      Assert.assertTrue(Arrays.equals(Arrays.copyOf(sentenceTwoPaddedRightPortion, 13), result));
+
+      // Multi-byte characters with blank ranges.
+      int sentenceBlankRangesLen = addMultiByteCharSentenceBlankRanges(scratch, 0);
+      byte[] sentenceBlankRanges = Arrays.copyOf(scratch, sentenceBlankRangesLen);
+
+      Assert.assertTrue(StringExpr.characterCount(sentenceBlankRanges) == 17);
+      result = StringExpr.rightTrimAndTruncateScalar(sentenceBlankRanges, 4);
+      Assert.assertTrue(Arrays.equals(Arrays.copyOf(sentenceBlankRanges, 7), result));
+
+      byte[] sentenceBlankRangesPortion = Arrays.copyOf(sentenceBlankRanges, sentenceBlankRangesLen - 3);
+      Assert.assertTrue(StringExpr.characterCount(sentenceBlankRangesPortion) == 16);
+      result = StringExpr.rightTrimAndTruncateScalar(sentenceBlankRangesPortion, 14);
+      Assert.assertTrue(Arrays.equals(Arrays.copyOf(sentenceBlankRangesPortion, 19), result));
+
+      sentenceBlankRangesPortion = Arrays.copyOfRange(sentenceBlankRanges, 7, 7 + 17);
+      Assert.assertTrue(StringExpr.characterCount(sentenceBlankRangesPortion) == 13);
+      result = StringExpr.rightTrimAndTruncateScalar(sentenceBlankRangesPortion, 11);
+      Assert.assertTrue(Arrays.equals(Arrays.copyOf(sentenceBlankRangesPortion, 12), result));
+      Assert.assertTrue(StringExpr.characterCount(result) == 8);
+  }
   @Test
   // Load a BytesColumnVector by copying in large data, enough to force
   // the buffer to expand.
@@ -157,7 +3209,7 @@ public class TestVectorStringExpressions {
   public void testStringColCompareStringScalarFilter() {
     VectorizedRowBatch batch = makeStringBatch();
     VectorExpression expr;
-    expr = new FilterStringColEqualStringScalar(0, red2);
+    expr = new FilterStringGroupColEqualStringScalar(0, red2);
     expr.evaluate(batch);
 
     // only red qualifies, and it's in entry 0
@@ -165,7 +3217,7 @@ public class TestVectorStringExpressions {
     Assert.assertTrue(batch.selected[0] == 0);
 
     batch = makeStringBatch();
-    expr = new FilterStringColLessStringScalar(0, red2);
+    expr = new FilterStringGroupColLessStringScalar(0, red2);
     expr.evaluate(batch);
 
     // only green qualifies, and it's in entry 1
@@ -173,7 +3225,67 @@ public class TestVectorStringExpressions {
     Assert.assertTrue(batch.selected[0] == 1);
 
     batch = makeStringBatch();
-    expr = new FilterStringColGreaterEqualStringScalar(0, green);
+    expr = new FilterStringGroupColGreaterEqualStringScalar(0, green);
+    expr.evaluate(batch);
+
+    // green and red qualify
+    Assert.assertTrue(batch.size == 2);
+    Assert.assertTrue(batch.selected[0] == 0);
+    Assert.assertTrue(batch.selected[1] == 1);
+  }
+
+  @Test
+  // Test string column to CHAR literal comparison
+  public void testStringColCompareCharScalarFilter() {
+    VectorizedRowBatch batch = makeStringBatch();
+    VectorExpression expr;
+    expr = new FilterStringGroupColEqualCharScalar(0, new HiveChar(new String(red2), 10));
+    expr.evaluate(batch);
+
+    // only red qualifies, and it's in entry 0
+    Assert.assertTrue(batch.size == 1);
+    Assert.assertTrue(batch.selected[0] == 0);
+
+    batch = makeStringBatch();
+    expr = new FilterStringGroupColLessCharScalar(0, new HiveChar(new String(red2), 8));
+    expr.evaluate(batch);
+
+    // only green qualifies, and it's in entry 1
+    Assert.assertTrue(batch.size == 1);
+    Assert.assertTrue(batch.selected[0] == 1);
+
+    batch = makeStringBatch();
+    expr = new FilterStringGroupColGreaterEqualCharScalar(0, new HiveChar(new String(green), 12));
+    expr.evaluate(batch);
+
+    // green and red qualify
+    Assert.assertTrue(batch.size == 2);
+    Assert.assertTrue(batch.selected[0] == 0);
+    Assert.assertTrue(batch.selected[1] == 1);
+  }
+
+  @Test
+  // Test string column to VARCHAR literal comparison
+  public void testStringColCompareVarCharScalarFilter() {
+    VectorizedRowBatch batch = makeStringBatch();
+    VectorExpression expr;
+    expr = new FilterStringGroupColEqualVarCharScalar(0, new HiveVarchar(new String(red2), 10));
+    expr.evaluate(batch);
+
+    // only red qualifies, and it's in entry 0
+    Assert.assertTrue(batch.size == 1);
+    Assert.assertTrue(batch.selected[0] == 0);
+
+    batch = makeStringBatch();
+    expr = new FilterStringGroupColLessVarCharScalar(0, new HiveVarchar(new String(red2), 8));
+    expr.evaluate(batch);
+
+    // only green qualifies, and it's in entry 1
+    Assert.assertTrue(batch.size == 1);
+    Assert.assertTrue(batch.selected[0] == 1);
+
+    batch = makeStringBatch();
+    expr = new FilterStringGroupColGreaterEqualVarCharScalar(0, new HiveVarchar(new String(green), 12));
     expr.evaluate(batch);
 
     // green and red qualify
@@ -187,7 +3299,7 @@ public class TestVectorStringExpressions {
     VectorizedRowBatch batch = makeStringBatch();
     VectorExpression expr;
 
-    expr = new StringColEqualStringScalar(0, red2, 2);
+    expr = new StringGroupColEqualStringScalar(0, red2, 2);
     expr.evaluate(batch);
     Assert.assertEquals(3, batch.size);
     LongColumnVector outVector = (LongColumnVector) batch.cols[2];
@@ -196,7 +3308,53 @@ public class TestVectorStringExpressions {
     Assert.assertEquals(0, outVector.vector[2]);
 
     batch = makeStringBatch();
-    expr = new StringColEqualStringScalar(0, green, 2);
+    expr = new StringGroupColEqualStringScalar(0, green, 2);
+    expr.evaluate(batch);
+    Assert.assertEquals(3, batch.size);
+    outVector = (LongColumnVector) batch.cols[2];
+    Assert.assertEquals(0, outVector.vector[0]);
+    Assert.assertEquals(1, outVector.vector[1]);
+    Assert.assertEquals(0, outVector.vector[2]);
+  }
+
+  @Test
+  public void testStringColCompareCharScalarProjection() {
+    VectorizedRowBatch batch = makeStringBatch();
+    VectorExpression expr;
+
+    expr = new StringGroupColEqualCharScalar(0, new HiveChar(new String(red2), 8), 2);
+    expr.evaluate(batch);
+    Assert.assertEquals(3, batch.size);
+    LongColumnVector outVector = (LongColumnVector) batch.cols[2];
+    Assert.assertEquals(1, outVector.vector[0]);
+    Assert.assertEquals(0, outVector.vector[1]);
+    Assert.assertEquals(0, outVector.vector[2]);
+
+    batch = makeStringBatch();
+    expr = new StringGroupColEqualCharScalar(0, new HiveChar(new String(green), 10), 2);
+    expr.evaluate(batch);
+    Assert.assertEquals(3, batch.size);
+    outVector = (LongColumnVector) batch.cols[2];
+    Assert.assertEquals(0, outVector.vector[0]);
+    Assert.assertEquals(1, outVector.vector[1]);
+    Assert.assertEquals(0, outVector.vector[2]);
+  }
+
+  @Test
+  public void testStringColCompareVarCharScalarProjection() {
+    VectorizedRowBatch batch = makeStringBatch();
+    VectorExpression expr;
+
+    expr = new StringGroupColEqualVarCharScalar(0, new HiveVarchar(new String(red2), 8), 2);
+    expr.evaluate(batch);
+    Assert.assertEquals(3, batch.size);
+    LongColumnVector outVector = (LongColumnVector) batch.cols[2];
+    Assert.assertEquals(1, outVector.vector[0]);
+    Assert.assertEquals(0, outVector.vector[1]);
+    Assert.assertEquals(0, outVector.vector[2]);
+
+    batch = makeStringBatch();
+    expr = new StringGroupColEqualVarCharScalar(0, new HiveVarchar(new String(green), 10), 2);
     expr.evaluate(batch);
     Assert.assertEquals(3, batch.size);
     outVector = (LongColumnVector) batch.cols[2];
@@ -210,7 +3368,7 @@ public class TestVectorStringExpressions {
   public void testStringScalarCompareStringCol() {
     VectorizedRowBatch batch = makeStringBatch();
     VectorExpression expr;
-    expr = new FilterStringScalarEqualStringColumn(red2, 0);
+    expr = new FilterStringScalarEqualStringGroupColumn(red2, 0);
     expr.evaluate(batch);
 
     // only red qualifies, and it's in entry 0
@@ -218,7 +3376,7 @@ public class TestVectorStringExpressions {
     Assert.assertTrue(batch.selected[0] == 0);
 
     batch = makeStringBatch();
-    expr = new FilterStringScalarGreaterStringColumn(red2, 0);
+    expr = new FilterStringScalarGreaterStringGroupColumn(red2, 0);
     expr.evaluate(batch);
 
     // only green qualifies, and it's in entry 1
@@ -226,7 +3384,67 @@ public class TestVectorStringExpressions {
     Assert.assertTrue(batch.selected[0] == 1);
 
     batch = makeStringBatch();
-    expr = new FilterStringScalarLessEqualStringColumn(green, 0);
+    expr = new FilterStringScalarLessEqualStringGroupColumn(green, 0);
+    expr.evaluate(batch);
+
+    // green and red qualify
+    Assert.assertTrue(batch.size == 2);
+    Assert.assertTrue(batch.selected[0] == 0);
+    Assert.assertTrue(batch.selected[1] == 1);
+  }
+
+  @Test
+  // Test CHAR literal to string column comparison
+  public void testCharScalarCompareStringCol() {
+    VectorizedRowBatch batch = makeStringBatch();
+    VectorExpression expr;
+    expr = new FilterCharScalarEqualStringGroupColumn(new HiveChar(new String(red2), 8), 0);
+    expr.evaluate(batch);
+
+    // only red qualifies, and it's in entry 0
+    Assert.assertTrue(batch.size == 1);
+    Assert.assertTrue(batch.selected[0] == 0);
+
+    batch = makeStringBatch();
+    expr = new FilterCharScalarGreaterStringGroupColumn(new HiveChar(new String(red2), 8), 0);
+    expr.evaluate(batch);
+
+    // only green qualifies, and it's in entry 1
+    Assert.assertTrue(batch.size == 1);
+    Assert.assertTrue(batch.selected[0] == 1);
+
+    batch = makeStringBatch();
+    expr = new FilterCharScalarLessEqualStringGroupColumn(new HiveChar(new String(green), 10), 0);
+    expr.evaluate(batch);
+
+    // green and red qualify
+    Assert.assertTrue(batch.size == 2);
+    Assert.assertTrue(batch.selected[0] == 0);
+    Assert.assertTrue(batch.selected[1] == 1);
+  }
+
+  @Test
+  // Test VARCHAR literal to string column comparison
+  public void testVarCharScalarCompareStringCol() {
+    VectorizedRowBatch batch = makeStringBatch();
+    VectorExpression expr;
+    expr = new FilterVarCharScalarEqualStringGroupColumn(new HiveVarchar(new String(red2), 8), 0);
+    expr.evaluate(batch);
+
+    // only red qualifies, and it's in entry 0
+    Assert.assertTrue(batch.size == 1);
+    Assert.assertTrue(batch.selected[0] == 0);
+
+    batch = makeStringBatch();
+    expr = new FilterVarCharScalarGreaterStringGroupColumn(new HiveVarchar(new String(red2), 8), 0);
+    expr.evaluate(batch);
+
+    // only green qualifies, and it's in entry 1
+    Assert.assertTrue(batch.size == 1);
+    Assert.assertTrue(batch.selected[0] == 1);
+
+    batch = makeStringBatch();
+    expr = new FilterVarCharScalarLessEqualStringGroupColumn(new HiveVarchar(new String(green), 10), 0);
     expr.evaluate(batch);
 
     // green and red qualify
@@ -240,7 +3458,7 @@ public class TestVectorStringExpressions {
     VectorizedRowBatch batch = makeStringBatch();
     VectorExpression expr;
 
-    expr = new StringScalarEqualStringColumn(red2, 0, 2);
+    expr = new StringScalarEqualStringGroupColumn(red2, 0, 2);
     expr.evaluate(batch);
     Assert.assertEquals(3, batch.size);
     LongColumnVector outVector = (LongColumnVector) batch.cols[2];
@@ -249,7 +3467,7 @@ public class TestVectorStringExpressions {
     Assert.assertEquals(0, outVector.vector[2]);
 
     batch = makeStringBatch();
-    expr = new StringScalarEqualStringColumn(green, 0, 2);
+    expr = new StringScalarEqualStringGroupColumn(green, 0, 2);
     expr.evaluate(batch);
     Assert.assertEquals(3, batch.size);
     outVector = (LongColumnVector) batch.cols[2];
@@ -258,6 +3476,51 @@ public class TestVectorStringExpressions {
     Assert.assertEquals(0, outVector.vector[2]);
   }
 
+  @Test
+  public void testCharScalarCompareStringColProjection() {
+    VectorizedRowBatch batch = makeStringBatch();
+    VectorExpression expr;
+
+    expr = new CharScalarEqualStringGroupColumn(new HiveChar(new String(red2), 8), 0, 2);
+    expr.evaluate(batch);
+    Assert.assertEquals(3, batch.size);
+    LongColumnVector outVector = (LongColumnVector) batch.cols[2];
+    Assert.assertEquals(1, outVector.vector[0]);
+    Assert.assertEquals(0, outVector.vector[1]);
+    Assert.assertEquals(0, outVector.vector[2]);
+
+    batch = makeStringBatch();
+    expr = new CharScalarEqualStringGroupColumn(new HiveChar(new String(green), 10), 0, 2);
+    expr.evaluate(batch);
+    Assert.assertEquals(3, batch.size);
+    outVector = (LongColumnVector) batch.cols[2];
+    Assert.assertEquals(0, outVector.vector[0]);
+    Assert.assertEquals(1, outVector.vector[1]);
+    Assert.assertEquals(0, outVector.vector[2]);
+  }
+
+  @Test
+  public void testVarCharScalarCompareStringColProjection() {
+    VectorizedRowBatch batch = makeStringBatch();
+    VectorExpression expr;
+
+    expr = new VarCharScalarEqualStringGroupColumn(new HiveVarchar(new String(red2), 8), 0, 2);
+    expr.evaluate(batch);
+    Assert.assertEquals(3, batch.size);
+    LongColumnVector outVector = (LongColumnVector) batch.cols[2];
+    Assert.assertEquals(1, outVector.vector[0]);
+    Assert.assertEquals(0, outVector.vector[1]);
+    Assert.assertEquals(0, outVector.vector[2]);
+
+    batch = makeStringBatch();
+    expr = new VarCharScalarEqualStringGroupColumn(new HiveVarchar(new String(green), 10), 0, 2);
+    expr.evaluate(batch);
+    Assert.assertEquals(3, batch.size);
+    outVector = (LongColumnVector) batch.cols[2];
+    Assert.assertEquals(0, outVector.vector[0]);
+    Assert.assertEquals(1, outVector.vector[1]);
+    Assert.assertEquals(0, outVector.vector[2]);
+  }
   @Test
   public void testStringColCompareStringColFilter() {
     VectorizedRowBatch batch;
@@ -275,7 +3538,7 @@ public class TestVectorStringExpressions {
 
     // nulls possible on left, right
     batch = makeStringBatchForColColCompare();
-    expr = new FilterStringColLessStringColumn(0,1);
+    expr = new FilterStringGroupColLessStringGroupColumn(0,1);
     expr.evaluate(batch);
     Assert.assertEquals(1, batch.size);
     Assert.assertEquals(0, batch.selected[0]);
@@ -428,7 +3691,7 @@ public class TestVectorStringExpressions {
 
     // nulls possible on left, right
     batch = makeStringBatchForColColCompare();
-    expr = new StringColLessStringColumn(0, 1, 3);
+    expr = new StringGroupColLessStringGroupColumn(0, 1, 3);
     expr.evaluate(batch);
     Assert.assertEquals(4, batch.size);
     outVector = ((LongColumnVector) batch.cols[3]).vector;
@@ -1021,11 +4284,11 @@ public class TestVectorStringExpressions {
   }
 
   @Test
-  public void testColConcatScalar() {
+  public void testColConcatStringScalar() {
 
     // has nulls, not repeating
     VectorizedRowBatch batch = makeStringBatch();
-    StringConcatColScalar expr = new StringConcatColScalar(0, red, 1);
+    StringGroupColConcatStringScalar expr = new StringGroupColConcatStringScalar(0, red, 1);
     expr.evaluate(batch);
     BytesColumnVector outCol = (BytesColumnVector) batch.cols[1];
 
@@ -1084,11 +4347,263 @@ public class TestVectorStringExpressions {
   }
 
   @Test
-  public void testScalarConcatCol() {
+  public void testColConcatCharScalar() {
 
     // has nulls, not repeating
     VectorizedRowBatch batch = makeStringBatch();
-    StringConcatScalarCol expr = new StringConcatScalarCol(red, 0, 1);
+    StringGroupColConcatCharScalar expr = new StringGroupColConcatCharScalar(0, new HiveChar(new String(red), 6), 1);
+    expr.evaluate(batch);
+    BytesColumnVector outCol = (BytesColumnVector) batch.cols[1];
+
+    int cmp = StringExpr.compare(redred, 0, redred.length, outCol.vector[0],
+        outCol.start[0], outCol.length[0]);
+    Assert.assertEquals(0, cmp);
+    Assert.assertTrue(outCol.isNull[2]);
+    int cmp2 = StringExpr.compare(greenred, 0, greenred.length, outCol.vector[1],
+        outCol.start[1], outCol.length[1]);
+    Assert.assertEquals(0, cmp2);
+    Assert.assertFalse(outCol.noNulls);
+    Assert.assertFalse(outCol.isRepeating);
+
+    // no nulls, not repeating
+    batch = makeStringBatch();
+    batch.cols[0].noNulls = true;
+    expr.evaluate(batch);
+    outCol = (BytesColumnVector) batch.cols[1];
+    cmp = StringExpr.compare(redred, 0, redred.length, outCol.vector[0],
+        outCol.start[0], outCol.length[0]);
+    Assert.assertEquals(0, cmp);
+
+    cmp2 = StringExpr.compare(greenred, 0, greenred.length, outCol.vector[1],
+        outCol.start[1], outCol.length[1]);
+    Assert.assertEquals(0, cmp2);
+
+    int cmp3 = StringExpr.compare(red, 0, red.length, outCol.vector[2],
+        outCol.start[2], outCol.length[2]);
+    Assert.assertEquals(0, cmp3);
+
+    Assert.assertTrue(outCol.noNulls);
+    Assert.assertFalse(outCol.isRepeating);
+
+    // has nulls, is repeating
+    batch = makeStringBatch();
+    batch.cols[0].isRepeating = true;
+    expr.evaluate(batch);
+    outCol = (BytesColumnVector) batch.cols[1];
+    cmp = StringExpr.compare(redred, 0, redred.length, outCol.vector[0],
+        outCol.start[0], outCol.length[0]);
+    Assert.assertEquals(0, cmp);
+    Assert.assertTrue(outCol.isRepeating);
+    Assert.assertFalse(outCol.noNulls);
+
+    // no nulls, is repeating
+    batch = makeStringBatch();
+    batch.cols[0].isRepeating = true;
+    batch.cols[0].noNulls = true;
+    expr.evaluate(batch);
+    outCol = (BytesColumnVector) batch.cols[1];
+    cmp = StringExpr.compare(redred, 0, redred.length, outCol.vector[0],
+        outCol.start[0], outCol.length[0]);
+    Assert.assertEquals(0, cmp);
+    Assert.assertTrue(outCol.isRepeating);
+    Assert.assertTrue(outCol.noNulls);
+  }
+
+  @Test
+  public void testColConcatVarCharScalar() {
+
+    // has nulls, not repeating
+    VectorizedRowBatch batch = makeStringBatch();
+    StringGroupColConcatVarCharScalar expr = new StringGroupColConcatVarCharScalar(0, new HiveVarchar(new String(red), 14), 1);
+    expr.evaluate(batch);
+    BytesColumnVector outCol = (BytesColumnVector) batch.cols[1];
+
+    int cmp = StringExpr.compare(redred, 0, redred.length, outCol.vector[0],
+        outCol.start[0], outCol.length[0]);
+    Assert.assertEquals(0, cmp);
+    Assert.assertTrue(outCol.isNull[2]);
+    int cmp2 = StringExpr.compare(greenred, 0, greenred.length, outCol.vector[1],
+        outCol.start[1], outCol.length[1]);
+    Assert.assertEquals(0, cmp2);
+    Assert.assertFalse(outCol.noNulls);
+    Assert.assertFalse(outCol.isRepeating);
+
+    // no nulls, not repeating
+    batch = makeStringBatch();
+    batch.cols[0].noNulls = true;
+    expr.evaluate(batch);
+    outCol = (BytesColumnVector) batch.cols[1];
+    cmp = StringExpr.compare(redred, 0, redred.length, outCol.vector[0],
+        outCol.start[0], outCol.length[0]);
+    Assert.assertEquals(0, cmp);
+
+    cmp2 = StringExpr.compare(greenred, 0, greenred.length, outCol.vector[1],
+        outCol.start[1], outCol.length[1]);
+    Assert.assertEquals(0, cmp2);
+
+    int cmp3 = StringExpr.compare(red, 0, red.length, outCol.vector[2],
+        outCol.start[2], outCol.length[2]);
+    Assert.assertEquals(0, cmp3);
+
+    Assert.assertTrue(outCol.noNulls);
+    Assert.assertFalse(outCol.isRepeating);
+
+    // has nulls, is repeating
+    batch = makeStringBatch();
+    batch.cols[0].isRepeating = true;
+    expr.evaluate(batch);
+    outCol = (BytesColumnVector) batch.cols[1];
+    cmp = StringExpr.compare(redred, 0, redred.length, outCol.vector[0],
+        outCol.start[0], outCol.length[0]);
+    Assert.assertEquals(0, cmp);
+    Assert.assertTrue(outCol.isRepeating);
+    Assert.assertFalse(outCol.noNulls);
+
+    // no nulls, is repeating
+    batch = makeStringBatch();
+    batch.cols[0].isRepeating = true;
+    batch.cols[0].noNulls = true;
+    expr.evaluate(batch);
+    outCol = (BytesColumnVector) batch.cols[1];
+    cmp = StringExpr.compare(redred, 0, redred.length, outCol.vector[0],
+        outCol.start[0], outCol.length[0]);
+    Assert.assertEquals(0, cmp);
+    Assert.assertTrue(outCol.isRepeating);
+    Assert.assertTrue(outCol.noNulls);
+  }
+
+  @Test
+  public void testStringScalarConcatCol() {
+
+    // has nulls, not repeating
+    VectorizedRowBatch batch = makeStringBatch();
+    StringScalarConcatStringGroupCol expr = new StringScalarConcatStringGroupCol(red, 0, 1);
+    expr.evaluate(batch);
+    BytesColumnVector outCol = (BytesColumnVector) batch.cols[1];
+
+    int cmp = StringExpr.compare(redred, 0, redred.length, outCol.vector[0],
+        outCol.start[0], outCol.length[0]);
+    Assert.assertEquals(0, cmp);
+    Assert.assertTrue(outCol.isNull[2]);
+    int cmp2 = StringExpr.compare(redgreen, 0, redgreen.length, outCol.vector[1],
+        outCol.start[1], outCol.length[1]);
+    Assert.assertEquals(0, cmp2);
+    Assert.assertFalse(outCol.noNulls);
+    Assert.assertFalse(outCol.isRepeating);
+
+    // no nulls, not repeating
+    batch = makeStringBatch();
+    batch.cols[0].noNulls = true;
+    expr.evaluate(batch);
+    outCol = (BytesColumnVector) batch.cols[1];
+    cmp = StringExpr.compare(redred, 0, redred.length, outCol.vector[0],
+        outCol.start[0], outCol.length[0]);
+    Assert.assertEquals(0, cmp);
+
+    cmp2 = StringExpr.compare(redgreen, 0, redgreen.length, outCol.vector[1],
+        outCol.start[1], outCol.length[1]);
+    Assert.assertEquals(0, cmp2);
+
+    int cmp3 = StringExpr.compare(red, 0, red.length, outCol.vector[2],
+        outCol.start[2], outCol.length[2]);
+    Assert.assertEquals(0, cmp3);
+
+    Assert.assertTrue(outCol.noNulls);
+    Assert.assertFalse(outCol.isRepeating);
+
+    // has nulls, is repeating
+    batch = makeStringBatch();
+    batch.cols[0].isRepeating = true;
+    expr.evaluate(batch);
+    outCol = (BytesColumnVector) batch.cols[1];
+    cmp = StringExpr.compare(redred, 0, redred.length, outCol.vector[0],
+        outCol.start[0], outCol.length[0]);
+    Assert.assertEquals(0, cmp);
+    Assert.assertTrue(outCol.isRepeating);
+    Assert.assertFalse(outCol.noNulls);
+
+    // no nulls, is repeating
+    batch = makeStringBatch();
+    batch.cols[0].isRepeating = true;
+    batch.cols[0].noNulls = true;
+    expr.evaluate(batch);
+    outCol = (BytesColumnVector) batch.cols[1];
+    cmp = StringExpr.compare(redred, 0, redred.length, outCol.vector[0],
+        outCol.start[0], outCol.length[0]);
+    Assert.assertEquals(0, cmp);
+    Assert.assertTrue(outCol.isRepeating);
+    Assert.assertTrue(outCol.noNulls);
+  }
+
+  @Test
+  public void testCharScalarConcatCol() {
+
+    // has nulls, not repeating
+    VectorizedRowBatch batch = makeStringBatch();
+    CharScalarConcatStringGroupCol expr = new CharScalarConcatStringGroupCol(new HiveChar(new String(red), 6), 0, 1);
+    expr.evaluate(batch);
+    BytesColumnVector outCol = (BytesColumnVector) batch.cols[1];
+
+    int cmp = StringExpr.compare(redred, 0, redred.length, outCol.vector[0],
+        outCol.start[0], outCol.length[0]);
+    Assert.assertEquals(0, cmp);
+    Assert.assertTrue(outCol.isNull[2]);
+    int cmp2 = StringExpr.compare(redgreen, 0, redgreen.length, outCol.vector[1],
+        outCol.start[1], outCol.length[1]);
+    Assert.assertEquals(0, cmp2);
+    Assert.assertFalse(outCol.noNulls);
+    Assert.assertFalse(outCol.isRepeating);
+
+    // no nulls, not repeating
+    batch = makeStringBatch();
+    batch.cols[0].noNulls = true;
+    expr.evaluate(batch);
+    outCol = (BytesColumnVector) batch.cols[1];
+    cmp = StringExpr.compare(redred, 0, redred.length, outCol.vector[0],
+        outCol.start[0], outCol.length[0]);
+    Assert.assertEquals(0, cmp);
+
+    cmp2 = StringExpr.compare(redgreen, 0, redgreen.length, outCol.vector[1],
+        outCol.start[1], outCol.length[1]);
+    Assert.assertEquals(0, cmp2);
+
+    int cmp3 = StringExpr.compare(red, 0, red.length, outCol.vector[2],
+        outCol.start[2], outCol.length[2]);
+    Assert.assertEquals(0, cmp3);
+
+    Assert.assertTrue(outCol.noNulls);
+    Assert.assertFalse(outCol.isRepeating);
+
+    // has nulls, is repeating
+    batch = makeStringBatch();
+    batch.cols[0].isRepeating = true;
+    expr.evaluate(batch);
+    outCol = (BytesColumnVector) batch.cols[1];
+    cmp = StringExpr.compare(redred, 0, redred.length, outCol.vector[0],
+        outCol.start[0], outCol.length[0]);
+    Assert.assertEquals(0, cmp);
+    Assert.assertTrue(outCol.isRepeating);
+    Assert.assertFalse(outCol.noNulls);
+
+    // no nulls, is repeating
+    batch = makeStringBatch();
+    batch.cols[0].isRepeating = true;
+    batch.cols[0].noNulls = true;
+    expr.evaluate(batch);
+    outCol = (BytesColumnVector) batch.cols[1];
+    cmp = StringExpr.compare(redred, 0, redred.length, outCol.vector[0],
+        outCol.start[0], outCol.length[0]);
+    Assert.assertEquals(0, cmp);
+    Assert.assertTrue(outCol.isRepeating);
+    Assert.assertTrue(outCol.noNulls);
+  }
+
+  @Test
+  public void testVarCharScalarConcatCol() {
+
+    // has nulls, not repeating
+    VectorizedRowBatch batch = makeStringBatch();
+    VarCharScalarConcatStringGroupCol expr = new VarCharScalarConcatStringGroupCol(new HiveVarchar(new String(red), 14), 0, 1);
     expr.evaluate(batch);
     BytesColumnVector outCol = (BytesColumnVector) batch.cols[1];
 
@@ -1151,7 +4666,7 @@ public class TestVectorStringExpressions {
 
     // has nulls, not repeating
     VectorizedRowBatch batch = makeStringBatch2In1Out();
-    StringConcatColCol expr = new StringConcatColCol(0, 1, 2);
+    StringGroupConcatColCol expr = new StringGroupConcatColCol(0, 1, 2);
     expr.evaluate(batch);
     BytesColumnVector outCol = (BytesColumnVector) batch.cols[2];
 

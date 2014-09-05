@@ -28,6 +28,7 @@ import java.util.List;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.common.type.Decimal128;
+import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.ql.exec.vector.*;
@@ -46,6 +47,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableByteObjec
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableDateObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableDoubleObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableFloatObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableHiveCharObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableHiveDecimalObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableHiveVarcharObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableIntObjectInspector;
@@ -403,6 +405,9 @@ public final class VectorExpressionWriterFactory {
           case STRING:
             return genVectorExpressionWritableString(
                 (SettableStringObjectInspector) fieldObjInspector);
+          case CHAR:
+              return genVectorExpressionWritableChar(
+                  (SettableHiveCharObjectInspector) fieldObjInspector);
           case VARCHAR:
             return genVectorExpressionWritableVarchar(
                 (SettableHiveVarcharObjectInspector) fieldObjInspector);
@@ -556,6 +561,46 @@ public final class VectorExpressionWriterFactory {
         return ((SettableTimestampObjectInspector) this.objectInspector).create(new Timestamp(0));
       }
    }.init(fieldObjInspector);
+  }
+
+  private static VectorExpressionWriter genVectorExpressionWritableChar(
+        SettableHiveCharObjectInspector fieldObjInspector) throws HiveException {
+    return new VectorExpressionWriterBytes() {
+      private Object obj;
+      private Text text;
+      
+      public VectorExpressionWriter init(SettableHiveCharObjectInspector objInspector) 
+          throws HiveException {
+        super.init(objInspector);
+        this.text = new Text();
+        this.obj = initValue(null);
+        return this;
+      }
+      
+      @Override
+      public Object writeValue(byte[] value, int start, int length) throws HiveException {
+        text.set(value, start, length);
+        ((SettableHiveCharObjectInspector) this.objectInspector).set(this.obj, text.toString());
+        return this.obj;
+      }
+
+      @Override
+      public Object setValue(Object field, byte[] value, int start, int length) 
+          throws HiveException {
+        if (null == field) {
+          field = initValue(null);
+        }
+        text.set(value, start, length);
+        ((SettableHiveCharObjectInspector) this.objectInspector).set(field, text.toString());
+        return field;
+      }
+      
+      @Override
+      public Object initValue(Object ignored) {
+        return ((SettableHiveCharObjectInspector) this.objectInspector)
+            .create(new HiveChar(StringUtils.EMPTY, -1));
+      }
+    }.init(fieldObjInspector);
   }
 
   private static VectorExpressionWriter genVectorExpressionWritableVarchar(

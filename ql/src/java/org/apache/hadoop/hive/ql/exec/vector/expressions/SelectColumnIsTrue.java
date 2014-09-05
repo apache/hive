@@ -143,7 +143,7 @@ public class SelectColumnIsTrue extends VectorExpression {
     b.setMode(VectorExpressionDescriptor.Mode.FILTER)
         .setNumArguments(1)
         .setArgumentTypes(
-            VectorExpressionDescriptor.ArgumentType.LONG)
+            VectorExpressionDescriptor.ArgumentType.INT_FAMILY)
         .setInputExpressionTypes(
             VectorExpressionDescriptor.InputExpressionType.COLUMN);
     return b.build();
