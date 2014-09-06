@@ -113,6 +113,7 @@ import org.apache.hadoop.hive.ql.optimizer.Optimizer;
 import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcContext;
 import org.apache.hadoop.hive.ql.optimizer.optiq.HiveDefaultRelMetadataProvider;
 import org.apache.hadoop.hive.ql.optimizer.optiq.HiveOptiqUtil;
+import org.apache.hadoop.hive.ql.optimizer.optiq.OptiqSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.optiq.Pair;
 import org.apache.hadoop.hive.ql.optimizer.optiq.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.optiq.TraitsUtil;
@@ -9627,8 +9628,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
          */
       } catch (Exception e) {
         LOG.error("CBO failed, skipping CBO. ", e);
-        if (!conf.getBoolVar(ConfVars.HIVE_IN_TEST) || (optiqPlanner.noColsMissingStats.get() > 0)) {
+        if (!conf.getBoolVar(ConfVars.HIVE_IN_TEST) ||
+            (optiqPlanner.noColsMissingStats.get() > 0) ||
+            e instanceof OptiqSemanticException) {
           reAnalyzeAST = true;
+        } else {
+          throw e instanceof SemanticException ? (SemanticException) e : new SemanticException(e);
         }
       } finally {
         runCBO = false;
@@ -12327,11 +12332,22 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       return genJoinRelNode(leftRel, rightRel, hiveJoinType, joinCond);
     }
 
-    private RelNode genTableLogicalPlan(String tableAlias, QB qb) {
+    private RelNode genTableLogicalPlan(String tableAlias, QB qb) throws SemanticException {
       RowResolver rr = new RowResolver();
       HiveTableScanRel tableRel = null;
 
       try {
+        
+        // 0. If the table has a Sample specified, bail from Optiq path.
+        if ( qb.getParseInfo().getTabSample(tableAlias) != null ||
+            SemanticAnalyzer.this.nameToSplitSample.containsKey(tableAlias)) {
+          String msg = String.format("Table Sample specified for %s." +
+          		" Currently we don't support Table Sample clauses in CBO," +
+          		" turn off cbo for queries on tableSamples.", tableAlias);
+          LOG.debug(msg);
+          throw new OptiqSemanticException(msg);
+        }
+        
         // 1. Get Table Alias
         String alias_id = getAliasId(tableAlias, qb);
 
@@ -12399,7 +12415,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         m_relToHiveRR.put(tableRel, rr);
         m_relToHiveColNameOptiqPosMap.put(tableRel, hiveToOptiqColMap);
       } catch (Exception e) {
-        throw (new RuntimeException(e));
+        if ( e instanceof SemanticException) {
+          throw (SemanticException) e;
+        } else {
+          throw (new RuntimeException(e));
+        }
       }
 
       return tableRel;
@@ -13311,7 +13331,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       int posn = 0;
       boolean hintPresent = (selExprList.getChild(0).getType() == HiveParser.TOK_HINTLIST);
       if (hintPresent) {
-        posn++;
+        String hint = SemanticAnalyzer.this.ctx.getTokenRewriteStream().
+            toString(
+            selExprList.getChild(0).getTokenStartIndex(),
+            selExprList.getChild(0).getTokenStopIndex());
+        String msg = String.format("Hint specified for %s." +
+            " Currently we don't support hints in CBO," +
+            " turn off cbo to use hints.", hint);
+        LOG.debug(msg);
+        throw new OptiqSemanticException(msg);
       }
 
       // 4. Determine if select corresponds to a subquery
