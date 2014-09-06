@@ -27,6 +27,7 @@ import org.eigenbase.rel.UnionRelBase;
 import org.eigenbase.rel.rules.SemiJoinRel;
 import org.eigenbase.reltype.RelDataTypeField;
 import org.eigenbase.rex.RexCall;
+import org.eigenbase.rex.RexFieldAccess;
 import org.eigenbase.rex.RexFieldCollation;
 import org.eigenbase.rex.RexInputRef;
 import org.eigenbase.rex.RexLiteral;
@@ -272,6 +273,13 @@ public class ASTConverter {
     }
 
     @Override
+    public ASTNode visitFieldAccess(RexFieldAccess fieldAccess) {
+      return ASTBuilder
+      .construct(HiveParser.DOT, ".")
+      .add(super.visitFieldAccess(fieldAccess)).add(HiveParser.Identifier, fieldAccess.getField().getName()).node();
+    }
+
+    @Override
     public ASTNode visitInputRef(RexInputRef inputRef) {
       ColumnInfo cI = schema.get(inputRef.getIndex());
       if (cI.agg != null) {
@@ -495,7 +503,7 @@ public class ASTConverter {
      * 1. ProjectRel will always be child of SortRel.<br>
      * 2. In Optiq every projection in ProjectRelBase is uniquely named
      * (unambigous) without using table qualifier (table name).<br>
-     * 
+     *
      * @param order
      *          Hive Sort Rel Node
      * @return Schema
