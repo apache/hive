@@ -18494,8 +18494,8 @@ having b.p_mfgr not in
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
-Manufacturer#1	1173.15
 Manufacturer#2	1690.68
+Manufacturer#1	1173.15
 PREHOOK: query: -- 17. SubQueries In
 -- non agg, non corr
 select * 
