@@ -581,6 +581,11 @@ public class HiveConf extends Configuration {
     HIVEJAR("hive.jar.path", "", ""),
     HIVEAUXJARS("hive.aux.jars.path", "", ""),
 
+    // reloadable jars
+    HIVERELOADABLEJARS("hive.reloadable.aux.jars.path", "",
+        "Jars can be renewed by executing reload command. And these jars can be "
+            + "used as the auxiliary classes like creating a UDF or SerDe."),
+
     // hive added files and jars
     HIVEADDEDFILES("hive.added.files.path", "", ""),
     HIVEADDEDJARS("hive.added.jars.path", "", ""),
@@ -1613,7 +1618,7 @@ public class HiveConf extends Configuration {
     HIVE_SERVER2_SSL_KEYSTORE_PATH("hive.server2.keystore.path", "", ""),
     HIVE_SERVER2_SSL_KEYSTORE_PASSWORD("hive.server2.keystore.password", "", ""),
 
-    HIVE_SECURITY_COMMAND_WHITELIST("hive.security.command.whitelist", "set,reset,dfs,add,list,delete,compile",
+    HIVE_SECURITY_COMMAND_WHITELIST("hive.security.command.whitelist", "set,reset,dfs,add,list,delete,reload,compile",
         "Comma separated list of non-SQL Hive commands users are authorized to execute"),
 
     HIVE_SERVER2_SESSION_CHECK_INTERVAL("hive.server2.session.check.interval", "0ms",

@@ -1975,6 +1975,26 @@ public final class Utilities {
   }
 
   /**
+   * get session specified class loader and get current class loader if fall
+   *
+   * @return
+   */
+  public static ClassLoader getSessionSpecifiedClassLoader() {
+    SessionState state = SessionState.get();
+    if (state == null || state.getConf() == null) {
+      LOG.debug("Hive Conf not found or Session not initiated, use thread based class loader instead");
+      return JavaUtils.getClassLoader();
+    }
+    ClassLoader sessionCL = state.getConf().getClassLoader();
+    if (sessionCL != null){
+      LOG.debug("Use session specified class loader");
+      return sessionCL;
+    }
+    LOG.debug("Session specified class loader not found, use thread based class loader");
+    return JavaUtils.getClassLoader();
+  }
+
+  /**
    * Create a URL from a string representing a path to a local file.
    * The path string can be just a path, or can start with file:/, file:///
    * @param onestr  path string
@@ -1993,6 +2013,33 @@ public final class Utilities {
     }
     return oneurl;
   }
+
+    /**
+     * get the jar files from specified directory or get jar files by several jar names sperated by comma
+     * @param path
+     * @return
+     */
+    public static Set<String> getJarFilesByPath(String path){
+        Set<String> result = new HashSet<String>();
+        if (path == null || path.isEmpty()) {
+            return result;
+        }
+
+        File paths = new File(path);
+        if (paths.exists() && paths.isDirectory()) {
+            // add all jar files under the reloadable auxiliary jar paths
+            Set<File> jarFiles = new HashSet<File>();
+            jarFiles.addAll(org.apache.commons.io.FileUtils.listFiles(
+                    paths, new String[]{"jar"}, true));
+            for (File f : jarFiles) {
+                result.add(f.getAbsolutePath());
+            }
+        } else {
+            String[] files = path.split(",");
+            Collections.addAll(result, files);
+        }
+        return result;
+    }
 
   /**
    * Add new elements to the classpath.
