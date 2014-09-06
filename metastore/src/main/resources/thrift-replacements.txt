@@ -1,0 +1,60 @@
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+###################################################################################################
+#                                                                                                 #
+#  Used for the internalizing of String instance field assignments in the Thrift generated files  #
+#  FieldSchema.java, Partition.java, SerDeInfo.java, and StorageDescriptor.java.                  #
+#                                                                                                 #
+#  Look in hive/metastore/pom.xml for the thriftif profile.                                       #
+#  Usage: thriftif profile automatically refers to this file.                                     #
+#                                                                                                 #
+###################################################################################################
+
+# Fix constructors and setters of String instance fields
+
+this\.name\ \=\ name;=this.name\ \=\ org.apache.hive.common.util.HiveStringUtils.intern(name);
+this\.serializationLib\ \=\ serializationLib;=this.serializationLib\ \=\ org.apache.hive.common.util.HiveStringUtils.intern(serializationLib);
+this\.type\ \=\ type;=this.type\ \=\ org.apache.hive.common.util.HiveStringUtils.intern(type);
+this\.comment\ \=\ comment;=this.comment\ \=\ org.apache.hive.common.util.HiveStringUtils.intern(comment);
+this\.location\ \=\ location;=this.location\ \=\ org.apache.hive.common.util.HiveStringUtils.intern(location);
+this\.inputFormat\ \=\ inputFormat;=this.inputFormat\ \=\ org.apache.hive.common.util.HiveStringUtils.intern(inputFormat);
+this\.outputFormat\ \=\ outputFormat;=this.outputFormat\ \=\ org.apache.hive.common.util.HiveStringUtils.intern(outputFormat);
+this\.dbName\ \=\ dbName;=this.dbName\ \=\ org.apache.hive.common.util.HiveStringUtils.intern(dbName);
+this\.tableName\ \=\ tableName;=this.tableName\ \=\ org.apache.hive.common.util.HiveStringUtils.intern(tableName);
+
+# Fix constructors and setters of List<String> instance fields
+
+this\.bucketCols\ \=\ bucketCols;=this.bucketCols\ \=\ org.apache.hive.common.util.HiveStringUtils.intern(bucketCols);
+
+# Fix constructors and setters of Map<String, String> instance fields
+
+this\.parameters\ \=\ parameters;=this.parameters\ \=\ org.apache.hive.common.util.HiveStringUtils.intern(parameters);
+
+# Fix copy constructors
+
+this\.name\ \=\ other\.name;=this.name\ \=\ org.apache.hive.common.util.HiveStringUtils.intern(other.name);
+this\.serializationLib\ \=\ other\.serializationLib;=this.serializationLib\ \=\ org.apache.hive.common.util.HiveStringUtils.intern(other.serializationLib);
+this\.type\ \=\ other\.type;=this.type\ \=\ org.apache.hive.common.util.HiveStringUtils.intern(other.type);
+this\.comment\ \=\ other\.comment;=this.comment\ \=\ org.apache.hive.common.util.HiveStringUtils.intern(other.comment);
+this\.location\ \=\ other\.location;=this.location\ \=\ org.apache.hive.common.util.HiveStringUtils.intern(other.location);
+this\.inputFormat\ \=\ other\.inputFormat;=this.inputFormat\ \=\ org.apache.hive.common.util.HiveStringUtils.intern(other.inputFormat);
+this\.outputFormat\ \=\ other\.outputFormat;=this.outputFormat\ \=\ org.apache.hive.common.util.HiveStringUtils.intern(other.outputFormat);
+this\.dbName\ \=\ other\.dbName;=this.dbName\ \=\ org.apache.hive.common.util.HiveStringUtils.intern(other.dbName);
+this\.tableName\ \=\ other\.tableName;=this.tableName\ \=\ org.apache.hive.common.util.HiveStringUtils.intern(other.tableName);
+
+__this__parameters_copy_key\ \=\ other_element_key;=__this__parameters_copy_key\ \=\ org.apache.hive.common.util.HiveStringUtils.intern(other_element_key);
+__this__parameters_copy_value\ \=\ other_element_value;=__this__parameters_copy_value\ \=\ org.apache.hive.common.util.HiveStringUtils.intern(other_element_value);
+__this_values\.add(other_element);=__this_values.add(org.apache.hive.common.util.HiveStringUtils.intern(other_element));
