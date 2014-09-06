@@ -41,6 +41,7 @@ import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.io.SequenceFile.CompressionType;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.compress.CompressionCodec;
@@ -249,21 +250,8 @@ public final class HiveFileFormatUtils {
   public static RecordWriter getHiveRecordWriter(JobConf jc,
       TableDesc tableInfo, Class<? extends Writable> outputClass,
       FileSinkDesc conf, Path outPath, Reporter reporter) throws HiveException {
-    boolean storagehandlerofhivepassthru = false;
-    HiveOutputFormat<?, ?> hiveOutputFormat;
+    HiveOutputFormat<?, ?> hiveOutputFormat = getHiveOutputFormat(jc, tableInfo);
     try {
-      if (tableInfo.getJobProperties() != null) {
-        if (tableInfo.getJobProperties().get(HivePassThroughOutputFormat.HIVE_PASSTHROUGH_STORAGEHANDLER_OF_JOBCONFKEY) != null) {
-            jc.set(HivePassThroughOutputFormat.HIVE_PASSTHROUGH_STORAGEHANDLER_OF_JOBCONFKEY,tableInfo.getJobProperties().get(HivePassThroughOutputFormat.HIVE_PASSTHROUGH_STORAGEHANDLER_OF_JOBCONFKEY));
-            storagehandlerofhivepassthru  = true;
-         }
-      }
-      if (storagehandlerofhivepassthru) {
-         hiveOutputFormat = ReflectionUtils.newInstance(tableInfo.getOutputFileFormatClass(),jc);
-      }
-      else {
-         hiveOutputFormat = tableInfo.getOutputFileFormatClass().newInstance();
-      }
       boolean isCompressed = conf.getCompressed();
       JobConf jc_output = jc;
       if (isCompressed) {
@@ -297,6 +285,73 @@ public final class HiveFileFormatUtils {
           isCompressed, tableProp, reporter);
     }
     return null;
+  }
+
+  private static HiveOutputFormat<?, ?> getHiveOutputFormat(JobConf jc, TableDesc tableInfo)
+      throws HiveException {
+    boolean storagehandlerofhivepassthru = false;
+    HiveOutputFormat<?, ?> hiveOutputFormat;
+    try {
+      if (tableInfo.getJobProperties() != null) {
+        if (tableInfo.getJobProperties().get(
+            HivePassThroughOutputFormat.HIVE_PASSTHROUGH_STORAGEHANDLER_OF_JOBCONFKEY) != null) {
+          jc.set(HivePassThroughOutputFormat.HIVE_PASSTHROUGH_STORAGEHANDLER_OF_JOBCONFKEY,
+              tableInfo.getJobProperties()
+                  .get(HivePassThroughOutputFormat.HIVE_PASSTHROUGH_STORAGEHANDLER_OF_JOBCONFKEY));
+          storagehandlerofhivepassthru = true;
+        }
+      }
+      if (storagehandlerofhivepassthru) {
+        return ReflectionUtils.newInstance(tableInfo.getOutputFileFormatClass(), jc);
+      } else {
+        return tableInfo.getOutputFileFormatClass().newInstance();
+      }
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  public static RecordUpdater getAcidRecordUpdater(JobConf jc, TableDesc tableInfo, int bucket,
+                                                   FileSinkDesc conf, Path outPath,
+                                                   ObjectInspector inspector,
+                                                   Reporter reporter, int rowIdColNum)
+      throws HiveException, IOException {
+    HiveOutputFormat<?, ?> hiveOutputFormat = getHiveOutputFormat(jc, tableInfo);
+    AcidOutputFormat<?, ?> acidOutputFormat = null;
+    if (hiveOutputFormat instanceof AcidOutputFormat) {
+      acidOutputFormat = (AcidOutputFormat)hiveOutputFormat;
+    } else {
+      throw new HiveException("Unable to create RecordUpdater for HiveOutputFormat that does not " +
+          "implement AcidOutputFormat");
+    }
+    // TODO not 100% sure about this.  This call doesn't set the compression type in the conf
+    // file the way getHiveRecordWriter does, as ORC appears to read the value for itself.  Not
+    // sure if this is correct or not.
+    return getRecordUpdater(jc, acidOutputFormat, conf.getCompressed(), conf.getTransactionId(),
+        bucket, inspector, tableInfo.getProperties(), outPath, reporter, rowIdColNum);
+  }
+
+
+  private static RecordUpdater getRecordUpdater(JobConf jc,
+                                                AcidOutputFormat<?, ?> acidOutputFormat,
+                                                boolean isCompressed,
+                                                long txnId,
+                                                int bucket,
+                                                ObjectInspector inspector,
+                                                Properties tableProp,
+                                                Path outPath,
+                                                Reporter reporter,
+                                                int rowIdColNum) throws IOException {
+    return acidOutputFormat.getRecordUpdater(outPath, new AcidOutputFormat.Options(jc)
+        .isCompressed(isCompressed)
+        .tableProperties(tableProp)
+        .reporter(reporter)
+        .writingBase(false)
+        .minimumTransactionId(txnId)
+        .maximumTransactionId(txnId)
+        .bucket(bucket)
+        .inspector(inspector)
+        .recordIdColumn(rowIdColNum));
   }
 
   public static PartitionDesc getPartitionDescFromPathRecursively(
