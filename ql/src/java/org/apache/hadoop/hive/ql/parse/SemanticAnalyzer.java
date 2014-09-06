@@ -2534,7 +2534,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       try {
         serdeClass = (Class<? extends Deserializer>) Class.forName(serdeName,
-            true, JavaUtils.getClassLoader());
+            true, Utilities.getSessionSpecifiedClassLoader());
       } catch (ClassNotFoundException e) {
         throw new SemanticException(e);
       }
@@ -2723,7 +2723,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     try {
       serde = (Class<? extends Deserializer>) Class.forName(defaultSerdeName,
-          true, JavaUtils.getClassLoader());
+          true, Utilities.getSessionSpecifiedClassLoader());
     } catch (ClassNotFoundException e) {
       throw new SemanticException(e);
     }
@@ -2790,7 +2790,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     try {
       return (Class<? extends RecordReader>) Class.forName(name, true,
-          JavaUtils.getClassLoader());
+          Utilities.getSessionSpecifiedClassLoader());
     } catch (ClassNotFoundException e) {
       throw new SemanticException(e);
     }
@@ -2804,7 +2804,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     try {
       return (Class<? extends RecordReader>) Class.forName(name, true,
-          JavaUtils.getClassLoader());
+          Utilities.getSessionSpecifiedClassLoader());
     } catch (ClassNotFoundException e) {
       throw new SemanticException(e);
     }
@@ -2822,7 +2822,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     try {
       return (Class<? extends RecordWriter>) Class.forName(name, true,
-          JavaUtils.getClassLoader());
+          Utilities.getSessionSpecifiedClassLoader());
     } catch (ClassNotFoundException e) {
       throw new SemanticException(e);
     }

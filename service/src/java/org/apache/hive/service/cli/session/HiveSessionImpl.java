@@ -120,6 +120,15 @@ public class HiveSessionImpl implements HiveSession {
   public void initialize(Map<String, String> sessionConfMap) throws Exception {
     // Process global init file: .hiverc
     processGlobalInitFile();
+    try {
+      sessionState.reloadAuxJars();
+    } catch (IOException e) {
+      String msg = "fail to load reloadable jar file path" + e;
+      LOG.error(msg, e);
+      throw new Exception(msg, e);
+    }
+    SessionState.setCurrentSessionState(sessionState);
+
     // Set conf properties specified by user from client side
     if (sessionConfMap != null) {
       configureSession(sessionConfMap);

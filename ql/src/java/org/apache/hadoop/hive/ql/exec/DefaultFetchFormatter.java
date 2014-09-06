@@ -53,7 +53,7 @@ public class DefaultFetchFormatter<T> implements FetchFormatter<String> {
   private SerDe initializeSerde(Configuration conf, Properties props) throws Exception {
     String serdeName = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEFETCHOUTPUTSERDE);
     Class<? extends SerDe> serdeClass = Class.forName(serdeName, true,
-        JavaUtils.getClassLoader()).asSubclass(SerDe.class);
+        Utilities.getSessionSpecifiedClassLoader()).asSubclass(SerDe.class);
     // cast only needed for Hadoop 0.17 compatibility
     SerDe serde = ReflectionUtils.newInstance(serdeClass, null);
 
