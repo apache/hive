@@ -587,6 +587,23 @@ public class StatsRulesProcFactory {
       Map<String, ExprNodeDesc> colExprMap = gop.getColumnExprMap();
       RowSchema rs = gop.getSchema();
       Statistics stats = null;
+      boolean mapSide = false;
+      int multiplier = mapSideParallelism;
+      long newNumRows;
+      long newDataSize;
+
+      // map side
+      if (gop.getChildOperators().get(0) instanceof ReduceSinkOperator ||
+          gop.getChildOperators().get(0) instanceof AppMasterEventOperator) {
+
+         mapSide = true;
+
+        // map-side grouping set present. if grouping set is present then
+        // multiply the number of rows by number of elements in grouping set
+        if (gop.getConf().isGroupingSetsPresent()) {
+          multiplier *= gop.getConf().getListGroupingSets().size();
+        }
+      }
 
       try {
         if (satisfyPrecondition(parentStats)) {
@@ -596,7 +613,6 @@ public class StatsRulesProcFactory {
               StatsUtils.getColStatisticsFromExprMap(conf, parentStats, colExprMap, rs);
           stats.setColumnStats(colStats);
           long dvProd = 1;
-          long newNumRows = 0;
 
           // compute product of distinct values of grouping columns
           for (ColStatistics cs : colStats) {
@@ -624,8 +640,7 @@ public class StatsRulesProcFactory {
           }
 
           // map side
-          if (gop.getChildOperators().get(0) instanceof ReduceSinkOperator ||
-              gop.getChildOperators().get(0) instanceof AppMasterEventOperator) {
+          if (mapSide) {
 
             // since we do not know if hash-aggregation will be enabled or disabled
             // at runtime we will assume that map-side group by does not do any
@@ -634,14 +649,10 @@ public class StatsRulesProcFactory {
             // map-side grouping set present. if grouping set is present then
             // multiply the number of rows by number of elements in grouping set
             if (gop.getConf().isGroupingSetsPresent()) {
-              int multiplier = gop.getConf().getListGroupingSets().size();
-
-              // take into account the map-side parallelism as well, default is 1
-              multiplier *= mapSideParallelism;
               newNumRows = setMaxIfInvalid(multiplier * stats.getNumRows());
-              long dataSize = setMaxIfInvalid(multiplier * stats.getDataSize());
+              newDataSize = setMaxIfInvalid(multiplier * stats.getDataSize());
               stats.setNumRows(newNumRows);
-              stats.setDataSize(dataSize);
+              stats.setDataSize(newDataSize);
               for (ColStatistics cs : colStats) {
                 if (cs != null) {
                   long oldNumNulls = cs.getNumNulls();
@@ -652,7 +663,7 @@ public class StatsRulesProcFactory {
             } else {
 
               // map side no grouping set
-              newNumRows = stats.getNumRows() * mapSideParallelism;
+              newNumRows = stats.getNumRows() * multiplier;
               updateStats(stats, newNumRows, true, gop);
             }
           } else {
@@ -664,17 +675,20 @@ public class StatsRulesProcFactory {
         } else {
           if (parentStats != null) {
 
+            stats = parentStats.clone();
+
             // worst case, in the absence of column statistics assume half the rows are emitted
-            if (gop.getChildOperators().get(0) instanceof ReduceSinkOperator
-                || gop.getChildOperators().get(0) instanceof AppMasterEventOperator) {
+            if (mapSide) {
 
               // map side
-              stats = parentStats.clone();
+              newNumRows = multiplier * stats.getNumRows();
+              newDataSize = multiplier * stats.getDataSize();
+              stats.setNumRows(newNumRows);
+              stats.setDataSize(newDataSize);
             } else {
 
               // reduce side
-              stats = parentStats.clone();
-              long newNumRows = parentStats.getNumRows() / 2;
+              newNumRows = parentStats.getNumRows() / 2;
               updateStats(stats, newNumRows, false, gop);
             }
           }

@@ -67,3 +67,33 @@ explain select year from loc_orc group by year;
 -- map-side GBY numRows: 320 reduce-side GBY numRows: 42 Reason: numDistinct of state and locid are 6,7 resp. numRows = min(320/2, 6*7)
 explain select state,locid from loc_orc group by state,locid with cube;
 
+set hive.stats.fetch.column.stats=false;
+set hive.stats.map.parallelism=1;
+
+-- map-side GBY numRows: 32 reduce-side GBY numRows: 16
+explain select state,locid from loc_orc group by state,locid with cube;
+
+-- map-side GBY numRows: 24 reduce-side GBY numRows: 12
+explain select state,locid from loc_orc group by state,locid with rollup;
+
+-- map-side GBY numRows: 8 reduce-side GBY numRows: 4
+explain select state,locid from loc_orc group by state,locid grouping sets((state));
+
+-- map-side GBY numRows: 16 reduce-side GBY numRows: 8
+explain select state,locid from loc_orc group by state,locid grouping sets((state),(locid));
+
+-- map-side GBY numRows: 24 reduce-side GBY numRows: 12
+explain select state,locid from loc_orc group by state,locid grouping sets((state),(locid),());
+
+-- map-side GBY numRows: 32 reduce-side GBY numRows: 16
+explain select state,locid from loc_orc group by state,locid grouping sets((state,locid),(state),(locid),());
+
+set hive.stats.map.parallelism=10;
+
+-- map-side GBY: numRows: 80 (map-side will not do any reduction)
+-- reduce-side GBY: numRows: 2 Reason: numDistinct of year is 2. numRows = min(80/2, 2)
+explain select year from loc_orc group by year;
+
+-- map-side GBY numRows: 320 reduce-side GBY numRows: 42 Reason: numDistinct of state and locid are 6,7 resp. numRows = min(320/2, 6*7)
+explain select state,locid from loc_orc group by state,locid with cube;
+
