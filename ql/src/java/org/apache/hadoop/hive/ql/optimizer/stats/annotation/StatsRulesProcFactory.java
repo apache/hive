@@ -840,6 +840,7 @@ public class StatsRulesProcFactory {
 
           Map<String, ColStatistics> joinedColStats = Maps.newHashMap();
           Map<Integer, List<String>> joinKeys = Maps.newHashMap();
+          List<Long> rowCounts = Lists.newArrayList();
 
           // get the join keys from parent ReduceSink operators
           for (int pos = 0; pos < parents.size(); pos++) {
@@ -859,6 +860,7 @@ public class StatsRulesProcFactory {
             for (String tabAlias : tableAliases) {
               rowCountParents.put(tabAlias, parentStats.getNumRows());
             }
+            rowCounts.add(parentStats.getNumRows());
 
             // multi-attribute join key
             if (keyExprs.size() > 1) {
@@ -959,8 +961,7 @@ public class StatsRulesProcFactory {
 
           // update join statistics
           stats.setColumnStats(outColStats);
-          long newRowCount = computeNewRowCount(
-              Lists.newArrayList(rowCountParents.values()), denom);
+          long newRowCount = computeNewRowCount(rowCounts, denom);
 
           updateStatsForJoinType(stats, newRowCount, jop, rowCountParents,
               outInTabAlias);
