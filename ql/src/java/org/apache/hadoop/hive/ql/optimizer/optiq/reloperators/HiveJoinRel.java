@@ -1,3 +1,20 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.apache.hadoop.hive.ql.optimizer.optiq.reloperators;
 
 import java.util.Collections;
@@ -36,9 +53,10 @@ public class HiveJoinRel extends JoinRelBase implements HiveRel {
 
   public static final JoinFactory HIVE_JOIN_FACTORY = new HiveJoinFactoryImpl();
 
-  private final boolean m_leftSemiJoin;
-  private final JoinAlgorithm      m_joinAlgorithm;
-  private final MapJoinStreamingRelation m_mapJoinStreamingSide = MapJoinStreamingRelation.NONE;
+  private final boolean leftSemiJoin;
+  private final JoinAlgorithm      joinAlgorithm;
+  @SuppressWarnings("unused")
+  private final MapJoinStreamingRelation mapJoinStreamingSide = MapJoinStreamingRelation.NONE;
 
   public static HiveJoinRel getJoin(RelOptCluster cluster, RelNode left, RelNode right,
       RexNode condition, JoinRelType joinType, boolean leftSemiJoin) {
@@ -55,10 +73,10 @@ public class HiveJoinRel extends JoinRelBase implements HiveRel {
       RexNode condition, JoinRelType joinType, Set<String> variablesStopped,
       JoinAlgorithm joinAlgo, MapJoinStreamingRelation streamingSideForMapJoin, boolean leftSemiJoin)
       throws InvalidRelException {
-    super(cluster, TraitsUtil.getJoinTraitSet(cluster, traits), left, right, condition, joinType,
+    super(cluster, TraitsUtil.getDefaultTraitSet(cluster), left, right, condition, joinType,
         variablesStopped);
-    this.m_joinAlgorithm = joinAlgo;
-    m_leftSemiJoin = leftSemiJoin;
+    this.joinAlgorithm = joinAlgo;
+    this.leftSemiJoin = leftSemiJoin;
   }
 
   @Override
@@ -71,7 +89,7 @@ public class HiveJoinRel extends JoinRelBase implements HiveRel {
     try {
       Set<String> variablesStopped = Collections.emptySet();
       return new HiveJoinRel(getCluster(), traitSet, left, right, conditionExpr, joinType,
-          variablesStopped, JoinAlgorithm.NONE, null, m_leftSemiJoin);
+          variablesStopped, JoinAlgorithm.NONE, null, leftSemiJoin);
     } catch (InvalidRelException e) {
       // Semantic error not possible. Must be a bug. Convert to
       // internal error.
@@ -80,11 +98,11 @@ public class HiveJoinRel extends JoinRelBase implements HiveRel {
   }
 
   public JoinAlgorithm getJoinAlgorithm() {
-    return m_joinAlgorithm;
+    return joinAlgorithm;
   }
 
   public boolean isLeftSemiJoin() {
-    return m_leftSemiJoin;
+    return leftSemiJoin;
   }
 
   /**
@@ -102,7 +120,7 @@ public class HiveJoinRel extends JoinRelBase implements HiveRel {
    */
   @Override
   public RelDataType deriveRowType() {
-    if (m_leftSemiJoin) {
+    if (leftSemiJoin) {
       return deriveJoinRowType(left.getRowType(), null, JoinRelType.INNER,
           getCluster().getTypeFactory(), null,
           Collections.<RelDataTypeField> emptyList());

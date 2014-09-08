@@ -5,7 +5,6 @@ import java.util.BitSet;
 import org.apache.hadoop.hive.ql.optimizer.optiq.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.optiq.reloperators.HiveTableScanRel;
 import org.eigenbase.rel.FilterRelBase;
-import org.eigenbase.rel.ProjectRel;
 import org.eigenbase.rel.ProjectRelBase;
 import org.eigenbase.rel.RelNode;
 import org.eigenbase.rel.metadata.RelMetadataQuery;
@@ -14,7 +13,6 @@ import org.eigenbase.relopt.RelOptUtil.InputReferencedVisitor;
 import org.eigenbase.rex.RexCall;
 import org.eigenbase.rex.RexInputRef;
 import org.eigenbase.rex.RexNode;
-import org.eigenbase.rex.RexUtil;
 import org.eigenbase.rex.RexVisitorImpl;
 import org.eigenbase.sql.SqlKind;
 

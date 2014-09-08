@@ -36,7 +36,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -114,7 +113,6 @@ import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcContext;
 import org.apache.hadoop.hive.ql.optimizer.optiq.HiveDefaultRelMetadataProvider;
 import org.apache.hadoop.hive.ql.optimizer.optiq.HiveOptiqUtil;
 import org.apache.hadoop.hive.ql.optimizer.optiq.OptiqSemanticException;
-import org.apache.hadoop.hive.ql.optimizer.optiq.Pair;
 import org.apache.hadoop.hive.ql.optimizer.optiq.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.optiq.TraitsUtil;
 import org.apache.hadoop.hive.ql.optimizer.optiq.cost.HiveVolcanoPlanner;
@@ -276,6 +274,7 @@ import org.eigenbase.sql.SqlNode;
 import org.eigenbase.sql.SqlLiteral;
 import org.eigenbase.util.CompositeList;
 import org.eigenbase.util.ImmutableIntList;
+import org.eigenbase.util.Pair;
 
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
@@ -12137,7 +12136,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       ImmutableList.Builder bldr = new ImmutableList.Builder<RelNode>();
       bldr.add(unionLeftInput);
       bldr.add(unionRightInput);
-      unionRel = new HiveUnionRel(m_cluster, TraitsUtil.getUnionTraitSet(m_cluster, null),
+      unionRel = new HiveUnionRel(m_cluster, TraitsUtil.getDefaultTraitSet(m_cluster),
           bldr.build());
 
       m_relToHiveRR.put(unionRel, unionoutRR);
@@ -13244,11 +13243,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           for (WindowExpressionSpec wExprSpec : windowExpressions) {
             if (out_rwsch.getExpression(wExprSpec.getExpression()) == null) {
               Pair<RexNode, TypeInfo> wtp = genWindowingProj(qb, wExprSpec, srcRel);
-              projsForWindowSelOp.add(wtp.getFirst());
+              projsForWindowSelOp.add(wtp.getKey());
 
               // 6.2.2 Update Output Row Schema
               ColumnInfo oColInfo = new ColumnInfo(
-                  getColumnInternalName(projsForWindowSelOp.size()), wtp.getSecond(), null, false);
+                  getColumnInternalName(projsForWindowSelOp.size()), wtp.getValue(), null, false);
               String colAlias = wExprSpec.getAlias();
               if (false) {
                 out_rwsch.checkColumn(null, wExprSpec.getAlias());

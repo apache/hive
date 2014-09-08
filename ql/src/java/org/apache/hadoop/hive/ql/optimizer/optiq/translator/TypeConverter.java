@@ -1,3 +1,20 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.apache.hadoop.hive.ql.optimizer.optiq.translator;
 
 import java.util.LinkedList;
@@ -22,7 +39,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
 import org.eigenbase.relopt.RelOptCluster;
 import org.eigenbase.reltype.RelDataType;
 import org.eigenbase.reltype.RelDataTypeFactory;
-import org.eigenbase.reltype.RelDataTypeFactoryImpl.JavaType;
 import org.eigenbase.reltype.RelDataTypeField;
 import org.eigenbase.rex.RexBuilder;
 import org.eigenbase.sql.type.SqlTypeName;
@@ -33,7 +49,7 @@ import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.Lists;
 
 public class TypeConverter {
-  private static final Map<String, HiveToken> m_optiqToHiveTypeNameMap;
+  private static final Map<String, HiveToken> optiqToHiveTypeNameMap;
 
   // TODO: Handling of char[], varchar[], string...
   static {
@@ -48,7 +64,7 @@ public class TypeConverter {
     b.put(SqlTypeName.DATE.getName(), new HiveToken(HiveParser.TOK_DATE, "TOK_DATE"));
     b.put(SqlTypeName.TIMESTAMP.getName(), new HiveToken(HiveParser.TOK_TIMESTAMP, "TOK_TIMESTAMP"));
     b.put(SqlTypeName.BINARY.getName(), new HiveToken(HiveParser.TOK_BINARY, "TOK_BINARY"));
-    m_optiqToHiveTypeNameMap = b.build();
+    optiqToHiveTypeNameMap = b.build();
   };
 
   /*********************** Convert Hive Types To Optiq Types ***********************/
@@ -297,7 +313,7 @@ public class TypeConverter {
     }
       break;
     default:
-      ht = m_optiqToHiveTypeNameMap.get(optiqType.getSqlTypeName().getName());
+      ht = optiqToHiveTypeNameMap.get(optiqType.getSqlTypeName().getName());
     }
 
     return ht;

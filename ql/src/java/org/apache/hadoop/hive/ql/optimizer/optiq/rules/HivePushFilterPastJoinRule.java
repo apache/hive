@@ -1,3 +1,20 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.apache.hadoop.hive.ql.optimizer.optiq.rules;
 
 import java.util.ArrayList;
@@ -23,8 +40,6 @@ import org.eigenbase.rex.RexNode;
 import org.eigenbase.rex.RexUtil;
 import org.eigenbase.sql.SqlKind;
 import org.eigenbase.util.Holder;
-
-import com.google.common.collect.ImmutableList;
 
 public abstract class HivePushFilterPastJoinRule extends RelOptRule {
 
@@ -96,7 +111,7 @@ public abstract class HivePushFilterPastJoinRule extends RelOptRule {
     }
 
     final List<RexNode> aboveFilters = filter != null ? RelOptUtil
-        .conjunctions(filter.getCondition()) : ImmutableList.<RexNode> of();
+        .conjunctions(filter.getCondition()) : new ArrayList<RexNode>();
 
     List<RexNode> leftFilters = new ArrayList<RexNode>();
     List<RexNode> rightFilters = new ArrayList<RexNode>();
