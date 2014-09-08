@@ -44,8 +44,8 @@ import org.apache.hadoop.io.Text;
 @Description(name = "decode",
     value = "_FUNC_(bin, str) - Decode the first argument using the second argument character set",
     extended = "Possible options for the character set are 'US_ASCII', 'ISO-8859-1',\n" +
-    		"'UTF-8', 'UTF-16BE', 'UTF-16LE', and 'UTF-16'. If either argument\n" +
-    		"is null, the result will also be null")
+        "'UTF-8', 'UTF-16BE', 'UTF-16LE', and 'UTF-16'. If either argument\n" +
+        "is null, the result will also be null")
 public class GenericUDFDecode extends GenericUDF {
   private transient CharsetDecoder decoder = null;
   private transient BinaryObjectInspector bytesOI = null;

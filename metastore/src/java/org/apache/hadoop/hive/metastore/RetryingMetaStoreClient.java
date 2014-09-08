@@ -24,6 +24,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.UndeclaredThrowableException;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -48,18 +49,18 @@ public class RetryingMetaStoreClient implements InvocationHandler {
 
   private final IMetaStoreClient base;
   private final int retryLimit;
-  private final int retryDelaySeconds;
+  private final long retryDelaySeconds;
 
 
 
   protected RetryingMetaStoreClient(HiveConf hiveConf, HiveMetaHookLoader hookLoader,
       Class<? extends IMetaStoreClient> msClientClass) throws MetaException {
     this.retryLimit = hiveConf.getIntVar(HiveConf.ConfVars.METASTORETHRIFTFAILURERETRIES);
-    this.retryDelaySeconds =
-        hiveConf.getIntVar(HiveConf.ConfVars.METASTORE_CLIENT_CONNECT_RETRY_DELAY);
+    this.retryDelaySeconds = hiveConf.getTimeVar(
+        HiveConf.ConfVars.METASTORE_CLIENT_CONNECT_RETRY_DELAY, TimeUnit.SECONDS);
 
     reloginExpiringKeytabUser();
-    this.base = (IMetaStoreClient) MetaStoreUtils.newInstance(msClientClass, new Class[] {
+    this.base = MetaStoreUtils.newInstance(msClientClass, new Class[] {
         HiveConf.class, HiveMetaHookLoader.class}, new Object[] {hiveConf, hookLoader});
   }
 

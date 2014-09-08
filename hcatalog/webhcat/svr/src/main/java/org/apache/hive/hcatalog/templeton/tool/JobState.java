@@ -169,9 +169,9 @@ public class JobState {
     String childJobIDs = getField("children");
     if (childJobIDs != null) {
       for (String jobid : childJobIDs.split(",")) {
-    	children.add(new JobState(jobid, config));
+        children.add(new JobState(jobid, config));
       }
-    }    
+    }
     return children;
   }
 

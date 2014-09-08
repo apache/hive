@@ -32,7 +32,7 @@ import org.apache.hadoop.io.Writable;
 
 @SuppressWarnings("deprecation")
 public class MapJoinTableContainerSerDe {
-  
+
   private final MapJoinObjectSerDeContext keyContext;
   private final MapJoinObjectSerDeContext valueContext;
   public MapJoinTableContainerSerDe(MapJoinObjectSerDeContext keyContext,
@@ -70,7 +70,7 @@ public class MapJoinTableContainerSerDe {
     }
     try {
       Writable keyContainer = keySerDe.getSerializedClass().newInstance();
-      Writable valueContainer = valueSerDe.getSerializedClass().newInstance();    
+      Writable valueContainer = valueSerDe.getSerializedClass().newInstance();
       int numKeys = in.readInt();
       for (int keyIndex = 0; keyIndex < numKeys; keyIndex++) {
         MapJoinKeyObject key = new MapJoinKeyObject();
@@ -89,7 +89,7 @@ public class MapJoinTableContainerSerDe {
   public void persist(ObjectOutputStream out, MapJoinPersistableTableContainer tableContainer)
       throws HiveException {
     int numKeys = tableContainer.size();
-    try { 
+    try {
       out.writeUTF(tableContainer.getClass().getName());
       out.writeObject(tableContainer.getMetaData());
       out.writeInt(numKeys);
@@ -108,7 +108,7 @@ public class MapJoinTableContainerSerDe {
       throw new ConcurrentModificationException("TableContainer was modified while persisting: " + tableContainer);
     }
   }
-  
+
   public static void persistDummyTable(ObjectOutputStream out) throws IOException {
     MapJoinPersistableTableContainer tableContainer = new HashMapWrapper();
     out.writeUTF(tableContainer.getClass().getName());
@@ -127,7 +127,7 @@ public class MapJoinTableContainerSerDe {
       return constructor.newInstance(metaData);
     } catch (Exception e) {
       String msg = "Error while attemping to create table container" +
-      		" of type: " + name + ", with metaData: " + metaData;
+          " of type: " + name + ", with metaData: " + metaData;
       throw new HiveException(msg, e);
     }
   }

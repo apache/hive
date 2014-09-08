@@ -96,9 +96,6 @@ class WriterImpl implements Writer, MemoryManager.Callback {
   private static final int HDFS_BUFFER_SIZE = 256 * 1024;
   private static final int MIN_ROW_INDEX_STRIDE = 1000;
 
-  // HDFS requires blocks < 2GB and multiples of 512, so pick 1.5GB
-  private static final long MAX_BLOCK_SIZE = 1536 * 1024 * 1024;
-
   // threshold above which buffer size will be automatically resized
   private static final int COLUMN_COUNT_THRESHOLD = 1000;
 
@@ -135,8 +132,6 @@ class WriterImpl implements Writer, MemoryManager.Callback {
     new TreeMap<String, ByteString>();
   private final StreamFactory streamFactory = new StreamFactory();
   private final TreeWriter treeWriter;
-  private final OrcProto.RowIndex.Builder rowIndex =
-      OrcProto.RowIndex.newBuilder();
   private final boolean buildIndex;
   private final MemoryManager memoryManager;
   private final OrcFile.Version version;
@@ -678,7 +673,7 @@ class WriterImpl implements Writer, MemoryManager.Callback {
       if (rowIndexStream != null) {
         if (rowIndex.getEntryCount() != requiredIndexEntries) {
           throw new IllegalArgumentException("Column has wrong number of " +
-               "index entries found: " + rowIndexEntry + " expected: " +
+               "index entries found: " + rowIndex.getEntryCount() + " expected: " +
                requiredIndexEntries);
         }
         rowIndex.build().writeTo(rowIndexStream);
@@ -1005,6 +1000,8 @@ class WriterImpl implements Writer, MemoryManager.Callback {
     private final float dictionaryKeySizeThreshold;
     private boolean useDictionaryEncoding = true;
     private boolean isDirectV2 = true;
+    private boolean doneDictionaryCheck;
+    private final boolean strideDictionaryCheck;
 
     StringTreeWriter(int columnId,
                      ObjectInspector inspector,
@@ -1025,9 +1022,14 @@ class WriterImpl implements Writer, MemoryManager.Callback {
       directLengthOutput = createIntegerWriter(writer.createStream(id,
           OrcProto.Stream.Kind.LENGTH), false, isDirectV2, writer);
       dictionaryKeySizeThreshold = writer.getConfiguration().getFloat(
-        HiveConf.ConfVars.HIVE_ORC_DICTIONARY_KEY_SIZE_THRESHOLD.varname,
-        HiveConf.ConfVars.HIVE_ORC_DICTIONARY_KEY_SIZE_THRESHOLD.
-          defaultFloatVal);
+          HiveConf.ConfVars.HIVE_ORC_DICTIONARY_KEY_SIZE_THRESHOLD.varname,
+          HiveConf.ConfVars.HIVE_ORC_DICTIONARY_KEY_SIZE_THRESHOLD.
+              defaultFloatVal);
+      strideDictionaryCheck = writer.getConfiguration().getBoolean(
+          HiveConf.ConfVars.HIVE_ORC_ROW_INDEX_STRIDE_DICTIONARY_CHECK.varname,
+          HiveConf.ConfVars.HIVE_ORC_ROW_INDEX_STRIDE_DICTIONARY_CHECK.
+            defaultBoolVal);
+      doneDictionaryCheck = false;
     }
 
     /**
@@ -1045,21 +1047,71 @@ class WriterImpl implements Writer, MemoryManager.Callback {
       super.write(obj);
       if (obj != null) {
         Text val = getTextValue(obj);
-        rows.add(dictionary.add(val));
+        if (useDictionaryEncoding || !strideDictionaryCheck) {
+          rows.add(dictionary.add(val));
+        } else {
+          // write data and length
+          directStreamOutput.write(val.getBytes(), 0, val.getLength());
+          directLengthOutput.write(val.getLength());
+        }
         indexStatistics.updateString(val);
       }
+    }
+
+    private boolean checkDictionaryEncoding() {
+      if (!doneDictionaryCheck) {
+        // Set the flag indicating whether or not to use dictionary encoding
+        // based on whether or not the fraction of distinct keys over number of
+        // non-null rows is less than the configured threshold
+        float ratio = rows.size() > 0 ? (float) (dictionary.size()) / rows.size() : 0.0f;
+        useDictionaryEncoding = !isDirectV2 || ratio <= dictionaryKeySizeThreshold;
+        doneDictionaryCheck = true;
+      }
+      return useDictionaryEncoding;
     }
 
     @Override
     void writeStripe(OrcProto.StripeFooter.Builder builder,
                      int requiredIndexEntries) throws IOException {
-      // Set the flag indicating whether or not to use dictionary encoding
-      // based on whether or not the fraction of distinct keys over number of
-      // non-null rows is less than the configured threshold
-      useDictionaryEncoding =
-        (!isDirectV2) || (rows.size() > 0 &&
-                          (float)(dictionary.size()) / rows.size() <=
-                            dictionaryKeySizeThreshold);
+      // if rows in stripe is less than dictionaryCheckAfterRows, dictionary
+      // checking would not have happened. So do it again here.
+      checkDictionaryEncoding();
+
+      if (useDictionaryEncoding) {
+        flushDictionary();
+      } else {
+        // flushout any left over entries from dictionary
+        if (rows.size() > 0) {
+          flushDictionary();
+        }
+
+        // suppress the stream for every stripe if dictionary is disabled
+        stringOutput.suppress();
+      }
+
+      // we need to build the rowindex before calling super, since it
+      // writes it out.
+      super.writeStripe(builder, requiredIndexEntries);
+      stringOutput.flush();
+      lengthOutput.flush();
+      rowOutput.flush();
+      directStreamOutput.flush();
+      directLengthOutput.flush();
+      // reset all of the fields to be ready for the next stripe.
+      dictionary.clear();
+      savedRowIndex.clear();
+      rowIndexValueCount.clear();
+      recordPosition(rowIndexPosition);
+      rowIndexValueCount.add(0L);
+
+      if (!useDictionaryEncoding) {
+        // record the start positions of first index stride of next stripe i.e
+        // beginning of the direct streams when dictionary is disabled
+        recordDirectStreamPosition();
+      }
+    }
+
+    private void flushDictionary() throws IOException {
       final int[] dumpOrder = new int[dictionary.size()];
 
       if (useDictionaryEncoding) {
@@ -1113,21 +1165,7 @@ class WriterImpl implements Writer, MemoryManager.Callback {
           }
         }
       }
-      // we need to build the rowindex before calling super, since it
-      // writes it out.
-      super.writeStripe(builder, requiredIndexEntries);
-      stringOutput.flush();
-      lengthOutput.flush();
-      rowOutput.flush();
-      directStreamOutput.flush();
-      directLengthOutput.flush();
-      // reset all of the fields to be ready for the next stripe.
-      dictionary.clear();
       rows.clear();
-      savedRowIndex.clear();
-      rowIndexValueCount.clear();
-      recordPosition(rowIndexPosition);
-      rowIndexValueCount.add(0L);
     }
 
     @Override
@@ -1165,10 +1203,30 @@ class WriterImpl implements Writer, MemoryManager.Callback {
       OrcProto.RowIndexEntry.Builder rowIndexEntry = getRowIndexEntry();
       rowIndexEntry.setStatistics(indexStatistics.serialize());
       indexStatistics.reset();
-      savedRowIndex.add(rowIndexEntry.build());
+      OrcProto.RowIndexEntry base = rowIndexEntry.build();
+      savedRowIndex.add(base);
       rowIndexEntry.clear();
       recordPosition(rowIndexPosition);
       rowIndexValueCount.add(Long.valueOf(rows.size()));
+      if (strideDictionaryCheck) {
+        checkDictionaryEncoding();
+      }
+      if (!useDictionaryEncoding) {
+        if (rows.size() > 0) {
+          flushDictionary();
+          // just record the start positions of next index stride
+          recordDirectStreamPosition();
+        } else {
+          // record the start positions of next index stride
+          recordDirectStreamPosition();
+          getRowIndex().addEntry(base);
+        }
+      }
+    }
+
+    private void recordDirectStreamPosition() throws IOException {
+      directStreamOutput.getPosition(rowIndexPosition);
+      directLengthOutput.getPosition(rowIndexPosition);
     }
 
     @Override

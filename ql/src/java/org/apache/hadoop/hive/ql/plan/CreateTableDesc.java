@@ -419,7 +419,7 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
     if (this.getStorageHandler() == null) {
       try {
         Class<?> origin = Class.forName(this.getOutputFormat(), true,
-          JavaUtils.getClassLoader());
+          Utilities.getSessionSpecifiedClassLoader());
         Class<? extends HiveOutputFormat> replaced = HiveFileFormatUtils
           .getOutputFormatSubstitute(origin,false);
         if (replaced == null) {

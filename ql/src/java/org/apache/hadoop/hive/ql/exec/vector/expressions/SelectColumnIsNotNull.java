@@ -113,7 +113,7 @@ public class SelectColumnIsNotNull extends VectorExpression {
     b.setMode(VectorExpressionDescriptor.Mode.FILTER)
         .setNumArguments(1)
         .setArgumentTypes(
-            VectorExpressionDescriptor.ArgumentType.ANY)
+            VectorExpressionDescriptor.ArgumentType.ALL_FAMILY)
         .setInputExpressionTypes(
             VectorExpressionDescriptor.InputExpressionType.COLUMN);
     return b.build();

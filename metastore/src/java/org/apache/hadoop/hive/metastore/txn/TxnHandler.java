@@ -40,6 +40,7 @@ import javax.sql.DataSource;
 import java.io.IOException;
 import java.sql.*;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 /**
  * A handler to answer transaction related calls that come into the metastore
@@ -119,7 +120,7 @@ public class TxnHandler {
       throw new RuntimeException(e);
     }
 
-    timeout = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_TXN_TIMEOUT) * 1000;
+    timeout = HiveConf.getTimeVar(conf, HiveConf.ConfVars.HIVE_TXN_TIMEOUT, TimeUnit.MILLISECONDS);
     deadlockCnt = 0;
     buildJumpTable();
   }
@@ -858,6 +859,29 @@ public class TxnHandler {
     }
   }
 
+  /**
+   * Close the ResultSet.
+   * @param rs may be {@code null}
+   */
+  void close(ResultSet rs) {
+    try {
+      if (rs != null && !rs.isClosed()) {
+        rs.close();
+      }
+    }
+    catch(SQLException ex) {
+      LOG.warn("Failed to close statement " + ex.getMessage());
+    }
+  }
+
+  /**
+   * Close all 3 JDBC artifacts in order: {@code rs stmt dbConn}
+   */
+  void close(ResultSet rs, Statement stmt, Connection dbConn) {
+    close(rs);
+    closeStmt(stmt);
+    closeDbConn(dbConn);
+  }
   /**
    * Determine if an exception was a deadlock.  Unfortunately there is no standard way to do
    * this, so we have to inspect the error messages and catch the telltale signs for each

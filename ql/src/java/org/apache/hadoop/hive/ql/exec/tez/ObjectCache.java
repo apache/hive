@@ -20,24 +20,40 @@ package org.apache.hadoop.hive.ql.exec.tez;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.tez.runtime.common.objectregistry.ObjectLifeCycle;
-import org.apache.tez.runtime.common.objectregistry.ObjectRegistry;
-import org.apache.tez.runtime.common.objectregistry.ObjectRegistryFactory;
+import org.apache.tez.runtime.api.ObjectRegistry;
 
+import com.google.common.base.Preconditions;
 
 /**
  * ObjectCache. Tez implementation based on the tez object registry.
  *
  */
 public class ObjectCache implements org.apache.hadoop.hive.ql.exec.ObjectCache {
-
+  
   private static final Log LOG = LogFactory.getLog(ObjectCache.class.getName());
-  private final ObjectRegistry registry = ObjectRegistryFactory.getObjectRegistry();
+  
+  // ObjectRegistry is available via the Input/Output/ProcessorContext.
+  // This is setup as part of the Tez Processor construction, so that it is available whenever an
+  // instance of the ObjectCache is created. The assumption is that Tez will initialize the Processor
+  // before anything else.
+  private volatile static ObjectRegistry staticRegistry;
+ 
+  private final ObjectRegistry registry;
+  
+  public ObjectCache() {
+    Preconditions.checkNotNull(staticRegistry,
+        "Object registry not setup yet. This should have been setup by the TezProcessor");
+    registry = staticRegistry;
+  }
 
+  public static void setupObjectRegistry(ObjectRegistry objectRegistry) {
+    staticRegistry = objectRegistry;
+  }
+  
   @Override
   public void cache(String key, Object value) {
     LOG.info("Adding " + key + " to cache with value " + value);
-    registry.add(ObjectLifeCycle.VERTEX, key, value);
+    registry.cacheForVertex(key, value);
   }
 
   @Override

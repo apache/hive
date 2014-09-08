@@ -507,21 +507,19 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       throw new HiveException("invalid configuration name " + showConf.getConfName());
     }
     String description = conf.getDescription();
-    String defaltValue = conf.getDefaultValue();
+    String defaultValue = conf.getDefaultValue();
     DataOutputStream output = getOutputStream(showConf.getResFile());
     try {
-      if (description != null) {
-        if (defaltValue != null) {
-          output.write(defaltValue.getBytes());
-        }
-        output.write(separator);
-        output.write(conf.typeString().getBytes());
-        output.write(separator);
-        if (description != null) {
-          output.write(description.replaceAll(" *\n *", " ").getBytes());
-        }
-        output.write(terminator);
+      if (defaultValue != null) {
+        output.write(defaultValue.getBytes());
       }
+      output.write(separator);
+      output.write(conf.typeString().getBytes());
+      output.write(separator);
+      if (description != null) {
+        output.write(description.replaceAll(" *\n *", " ").getBytes());
+      }
+      output.write(terminator);
     } finally {
       output.close();
     }
@@ -4018,6 +4016,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
       tbl.setDbName(names[0]);
       tbl.setTableName(names[1]);
+
+      // using old table object, hence reset the owner to current user for new table.
+      tbl.setOwner(SessionState.getUserFromAuthenticator());
 
       if (crtTbl.getLocation() != null) {
         tbl.setDataLocation(new Path(crtTbl.getLocation()));

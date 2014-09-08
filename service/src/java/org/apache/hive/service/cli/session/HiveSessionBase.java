@@ -18,6 +18,8 @@
 
 package org.apache.hive.service.cli.session;
 
+import java.util.Map;
+
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.service.cli.SessionHandle;
@@ -92,4 +94,6 @@ public interface HiveSessionBase {
   String getIpAddress();
 
   void setIpAddress(String ipAddress);
+
+  long getLastAccessTime();
 }

@@ -7,4 +7,4 @@ PREHOOK: query: show conf "hive.stats.retries.wait"
 PREHOOK: type: SHOWCONF
 POSTHOOK: query: show conf "hive.stats.retries.wait"
 POSTHOOK: type: SHOWCONF
-3000	INT	The base waiting window (in milliseconds) before the next retry. The actual wait time is calculated by baseWindow * failures baseWindow * (failure  1) * (random number between [0.0,1.0]).
+3000ms	STRING(TIME)	Expects a time value with unit (d/day, h/hour, m/min, s/sec, ms/msec, us/usec, ns/nsec), which is msec if not specified. The base waiting window before the next retry. The actual wait time is calculated by baseWindow * failures baseWindow * (failure + 1) * (random number between [0.0,1.0]).

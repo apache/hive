@@ -26,6 +26,7 @@ import java.util.Properties;
 
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.io.HivePassThroughOutputFormat;
@@ -65,7 +66,7 @@ public class TableDesc implements Serializable, Cloneable {
   public Class<? extends Deserializer> getDeserializerClass() {
     try {
       return (Class<? extends Deserializer>) Class.forName(
-          getSerdeClassName(), true, JavaUtils.getClassLoader());
+          getSerdeClassName(), true, Utilities.getSessionSpecifiedClassLoader());
     } catch (ClassNotFoundException e) {
       throw new RuntimeException(e);
     }

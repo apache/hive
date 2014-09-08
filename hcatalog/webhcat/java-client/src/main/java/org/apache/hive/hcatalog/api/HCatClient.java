@@ -22,8 +22,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.metastore.api.PartitionEventType;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hive.hcatalog.common.HCatException;
 import org.apache.hive.hcatalog.data.schema.HCatFieldSchema;
 
@@ -49,7 +49,7 @@ public abstract class HCatClient {
       HCatClientHMSImpl.class.getName());
     try {
       Class<? extends HCatClient> clientClass = Class.forName(className,
-        true, JavaUtils.getClassLoader()).asSubclass(
+        true, Utilities.getSessionSpecifiedClassLoader()).asSubclass(
           HCatClient.class);
       client = (HCatClient) clientClass.newInstance();
     } catch (ClassNotFoundException e) {

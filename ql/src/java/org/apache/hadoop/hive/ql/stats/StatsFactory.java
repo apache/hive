@@ -26,6 +26,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst.StatDB;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.util.ReflectionUtils;
 
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVESTATSDBCLASS;
@@ -87,7 +88,7 @@ public final class StatsFactory {
   }
 
   private boolean initialize(String type) {
-    ClassLoader classLoader = JavaUtils.getClassLoader();
+    ClassLoader classLoader = Utilities.getSessionSpecifiedClassLoader();
     try {
       StatDB statDB = type.startsWith("jdbc") ? StatDB.jdbc : StatDB.valueOf(type);
       publisherImplementation = (Class<? extends Serializable>)

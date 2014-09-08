@@ -28,6 +28,7 @@ import java.util.List;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.common.type.Decimal128;
+import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.ql.exec.vector.*;
@@ -46,6 +47,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableByteObjec
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableDateObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableDoubleObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableFloatObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableHiveCharObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableHiveDecimalObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableHiveVarcharObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableIntObjectInspector;
@@ -82,7 +84,7 @@ public final class VectorExpressionWriterFactory {
       this.objectInspector = objectInspector;
       return this;
     }
-    
+
     /**
      * The base implementation must be overridden by the Long specialization
      */
@@ -90,7 +92,7 @@ public final class VectorExpressionWriterFactory {
     public Object writeValue(long value) throws HiveException {
       throw new HiveException("Internal error: should not reach here");
     }
-    
+
     /**
      * The base implementation must be overridden by the Long specialization
      */
@@ -112,7 +114,7 @@ public final class VectorExpressionWriterFactory {
     public Object setValue(Object field, double value) throws HiveException {
       throw new HiveException("Internal error: should not reach here");
     }
-    
+
     /**
      * The base implementation must be overridden by the Bytes specialization
      */
@@ -120,7 +122,7 @@ public final class VectorExpressionWriterFactory {
     public Object writeValue(byte[] value, int start, int length) throws HiveException {
       throw new HiveException("Internal error: should not reach here");
     }
-    
+
     /**
      * The base implementation must be overridden by the Bytes specialization
      */
@@ -171,7 +173,7 @@ public final class VectorExpressionWriterFactory {
           "Incorrect null/repeating: row:%d noNulls:%b isRepeating:%b isNull[row]:%b isNull[0]:%b",
           row, lcv.noNulls, lcv.isRepeating, lcv.isNull[row], lcv.isNull[0]));
     }
-    
+
     @Override
     public Object setValue(Object field, ColumnVector column, int row) throws HiveException {
       LongColumnVector lcv = (LongColumnVector) column;
@@ -192,7 +194,7 @@ public final class VectorExpressionWriterFactory {
         String.format(
           "Incorrect null/repeating: row:%d noNulls:%b isRepeating:%b isNull[row]:%b isNull[0]:%b",
           row, lcv.noNulls, lcv.isRepeating, lcv.isNull[row], lcv.isNull[0]));
-    }    
+    }
   }
 
   /**
@@ -221,7 +223,7 @@ public final class VectorExpressionWriterFactory {
           "Incorrect null/repeating: row:%d noNulls:%b isRepeating:%b isNull[row]:%b isNull[0]:%b",
           row, dcv.noNulls, dcv.isRepeating, dcv.isNull[row], dcv.isNull[0]));
     }
-    
+
     @Override
     public Object setValue(Object field, ColumnVector column, int row) throws HiveException {
       DoubleColumnVector dcv = (DoubleColumnVector) column;
@@ -242,7 +244,7 @@ public final class VectorExpressionWriterFactory {
         String.format(
           "Incorrect null/repeating: row:%d noNulls:%b isRepeating:%b isNull[row]:%b isNull[0]:%b",
           row, dcv.noNulls, dcv.isRepeating, dcv.isNull[row], dcv.isNull[0]));
-    }    
+    }
    }
 
   /**
@@ -292,7 +294,7 @@ public final class VectorExpressionWriterFactory {
         String.format(
           "Incorrect null/repeating: row:%d noNulls:%b isRepeating:%b isNull[row]:%b isNull[0]:%b",
           row, bcv.noNulls, bcv.isRepeating, bcv.isNull[row], bcv.isNull[0]));
-    }    
+    }
   }
 
 
@@ -396,13 +398,16 @@ public final class VectorExpressionWriterFactory {
                 (SettableLongObjectInspector) fieldObjInspector);
           case VOID:
               return genVectorExpressionWritableVoid(
-                  (VoidObjectInspector) fieldObjInspector);        	  
+                  (VoidObjectInspector) fieldObjInspector);
           case BINARY:
             return genVectorExpressionWritableBinary(
                 (SettableBinaryObjectInspector) fieldObjInspector);
           case STRING:
             return genVectorExpressionWritableString(
                 (SettableStringObjectInspector) fieldObjInspector);
+          case CHAR:
+              return genVectorExpressionWritableChar(
+                  (SettableHiveCharObjectInspector) fieldObjInspector);
           case VARCHAR:
             return genVectorExpressionWritableVarchar(
                 (SettableHiveVarcharObjectInspector) fieldObjInspector);
@@ -419,7 +424,7 @@ public final class VectorExpressionWriterFactory {
             throw new IllegalArgumentException("Unknown primitive type: " +
               ((PrimitiveObjectInspector) fieldObjInspector).getPrimitiveCategory());
         }
-        
+
       case STRUCT:
       case UNION:
       case MAP:
@@ -428,7 +433,7 @@ public final class VectorExpressionWriterFactory {
             fieldObjInspector.getCategory());
       default:
         throw new IllegalArgumentException("Unknown type " +
-            fieldObjInspector.getCategory());      
+            fieldObjInspector.getCategory());
       }
   }
 
@@ -526,7 +531,7 @@ public final class VectorExpressionWriterFactory {
       private Object obj;
       private Timestamp ts;
 
-      public VectorExpressionWriter init(SettableTimestampObjectInspector objInspector) 
+      public VectorExpressionWriter init(SettableTimestampObjectInspector objInspector)
           throws HiveException {
         super.init(objInspector);
         ts = new Timestamp(0);
@@ -550,7 +555,7 @@ public final class VectorExpressionWriterFactory {
         ((SettableTimestampObjectInspector) this.objectInspector).set(field, ts);
         return field;
       }
-      
+
       @Override
       public Object initValue(Object ignored) {
         return ((SettableTimestampObjectInspector) this.objectInspector).create(new Timestamp(0));
@@ -558,13 +563,13 @@ public final class VectorExpressionWriterFactory {
    }.init(fieldObjInspector);
   }
 
-  private static VectorExpressionWriter genVectorExpressionWritableVarchar(
-        SettableHiveVarcharObjectInspector fieldObjInspector) throws HiveException {
+  private static VectorExpressionWriter genVectorExpressionWritableChar(
+        SettableHiveCharObjectInspector fieldObjInspector) throws HiveException {
     return new VectorExpressionWriterBytes() {
       private Object obj;
       private Text text;
       
-      public VectorExpressionWriter init(SettableHiveVarcharObjectInspector objInspector) 
+      public VectorExpressionWriter init(SettableHiveCharObjectInspector objInspector) 
           throws HiveException {
         super.init(objInspector);
         this.text = new Text();
@@ -575,7 +580,7 @@ public final class VectorExpressionWriterFactory {
       @Override
       public Object writeValue(byte[] value, int start, int length) throws HiveException {
         text.set(value, start, length);
-        ((SettableHiveVarcharObjectInspector) this.objectInspector).set(this.obj, text.toString());
+        ((SettableHiveCharObjectInspector) this.objectInspector).set(this.obj, text.toString());
         return this.obj;
       }
 
@@ -586,10 +591,50 @@ public final class VectorExpressionWriterFactory {
           field = initValue(null);
         }
         text.set(value, start, length);
-        ((SettableHiveVarcharObjectInspector) this.objectInspector).set(field, text.toString());
+        ((SettableHiveCharObjectInspector) this.objectInspector).set(field, text.toString());
         return field;
       }
       
+      @Override
+      public Object initValue(Object ignored) {
+        return ((SettableHiveCharObjectInspector) this.objectInspector)
+            .create(new HiveChar(StringUtils.EMPTY, -1));
+      }
+    }.init(fieldObjInspector);
+  }
+
+  private static VectorExpressionWriter genVectorExpressionWritableVarchar(
+        SettableHiveVarcharObjectInspector fieldObjInspector) throws HiveException {
+    return new VectorExpressionWriterBytes() {
+      private Object obj;
+      private Text text;
+
+      public VectorExpressionWriter init(SettableHiveVarcharObjectInspector objInspector)
+          throws HiveException {
+        super.init(objInspector);
+        this.text = new Text();
+        this.obj = initValue(null);
+        return this;
+      }
+
+      @Override
+      public Object writeValue(byte[] value, int start, int length) throws HiveException {
+        text.set(value, start, length);
+        ((SettableHiveVarcharObjectInspector) this.objectInspector).set(this.obj, text.toString());
+        return this.obj;
+      }
+
+      @Override
+      public Object setValue(Object field, byte[] value, int start, int length)
+          throws HiveException {
+        if (null == field) {
+          field = initValue(null);
+        }
+        text.set(value, start, length);
+        ((SettableHiveVarcharObjectInspector) this.objectInspector).set(field, text.toString());
+        return field;
+      }
+
       @Override
       public Object initValue(Object ignored) {
         return ((SettableHiveVarcharObjectInspector) this.objectInspector)
@@ -603,24 +648,24 @@ public final class VectorExpressionWriterFactory {
     return new VectorExpressionWriterBytes() {
       private Object obj;
       private Text text;
-      
-      public VectorExpressionWriter init(SettableStringObjectInspector objInspector) 
+
+      public VectorExpressionWriter init(SettableStringObjectInspector objInspector)
           throws HiveException {
         super.init(objInspector);
         this.text = new Text();
         this.obj = initValue(null);
         return this;
       }
-      
+
       @Override
       public Object writeValue(byte[] value, int start, int length) throws HiveException {
         this.text.set(value, start, length);
         ((SettableStringObjectInspector) this.objectInspector).set(this.obj, this.text.toString());
         return this.obj;
       }
-      
+
       @Override
-      public Object setValue(Object field, byte[] value, int start, int length) 
+      public Object setValue(Object field, byte[] value, int start, int length)
           throws HiveException {
         if (null == field) {
           field = initValue(null);
@@ -628,12 +673,12 @@ public final class VectorExpressionWriterFactory {
         this.text.set(value, start, length);
         ((SettableStringObjectInspector) this.objectInspector).set(field, this.text.toString());
         return field;
-      }      
-      
+      }
+
       @Override
       public Object initValue(Object ignored) {
         return ((SettableStringObjectInspector) this.objectInspector).create(StringUtils.EMPTY);
-      }      
+      }
     }.init(fieldObjInspector);
   }
 
@@ -642,22 +687,22 @@ public final class VectorExpressionWriterFactory {
     return new VectorExpressionWriterBytes() {
       private Object obj;
       private byte[] bytes;
-      
-      public VectorExpressionWriter init(SettableBinaryObjectInspector objInspector) 
+
+      public VectorExpressionWriter init(SettableBinaryObjectInspector objInspector)
           throws HiveException {
         super.init(objInspector);
         this.bytes = ArrayUtils.EMPTY_BYTE_ARRAY;
         this.obj = initValue(null);
         return this;
       }
-      
+
       @Override
       public Object writeValue(byte[] value, int start, int length) throws HiveException {
         bytes = Arrays.copyOfRange(value, start, start + length);
         ((SettableBinaryObjectInspector) this.objectInspector).set(this.obj, bytes);
         return this.obj;
       }
-      
+
       @Override
       public Object setValue(Object field, byte[] value, int start, int length) throws HiveException {
         if (null == field) {
@@ -666,7 +711,7 @@ public final class VectorExpressionWriterFactory {
         bytes = Arrays.copyOfRange(value, start, start + length);
         ((SettableBinaryObjectInspector) this.objectInspector).set(field, bytes);
         return field;
-      }      
+      }
 
       @Override
       public Object initValue(Object ignored) {
@@ -680,20 +725,20 @@ public final class VectorExpressionWriterFactory {
       SettableLongObjectInspector fieldObjInspector) throws HiveException {
     return new VectorExpressionWriterLong() {
       private Object obj;
-      
-      public VectorExpressionWriter init(SettableLongObjectInspector objInspector) 
+
+      public VectorExpressionWriter init(SettableLongObjectInspector objInspector)
           throws HiveException {
         super.init(objInspector);
         this.obj = initValue(null);
         return this;
       }
-      
+
       @Override
       public Object writeValue(long value) throws HiveException {
         ((SettableLongObjectInspector) this.objectInspector).set(this.obj, value);
         return this.obj;
       }
-      
+
       @Override
       public Object setValue(Object field, long value) throws HiveException {
         if (null == field) {
@@ -712,56 +757,55 @@ public final class VectorExpressionWriterFactory {
   }
 
   private static VectorExpressionWriter genVectorExpressionWritableVoid(
-	      VoidObjectInspector fieldObjInspector) throws HiveException {
-	    return new VectorExpressionWriterLong() {
-	      private Object obj;
-	      
-	      public VectorExpressionWriter init(VoidObjectInspector objInspector) 
-	          throws HiveException {
-	        super.init(objInspector);
-	        this.obj = initValue(null);
-	        return this;
-	      }
-	      
-	      @Override
-	      public Object writeValue(long value) throws HiveException {
-	        return this.obj;
-	      }
-	      
-	      @Override
-	      public Object setValue(Object field, long value) throws HiveException {
-	        if (null == field) {
-	          field = initValue(null);
-	        }
-	        return field;
-	      }
+    VoidObjectInspector fieldObjInspector) throws HiveException {
+    return new VectorExpressionWriterLong() {
+      private Object obj;
 
-	      @Override
-	      public Object initValue(Object ignored) {
-	        return ((VoidObjectInspector) this.objectInspector).copyObject(null);
-	      }
-	    }.init(fieldObjInspector);
-	  }
-  
-  
+      public VectorExpressionWriter init(VoidObjectInspector objInspector) throws HiveException {
+        super.init(objInspector);
+        this.obj = initValue(null);
+        return this;
+      }
+
+      @Override
+      public Object writeValue(long value) throws HiveException {
+        return this.obj;
+      }
+
+      @Override
+      public Object setValue(Object field, long value) throws HiveException {
+        if (null == field) {
+          field = initValue(null);
+        }
+        return field;
+      }
+
+      @Override
+      public Object initValue(Object ignored) {
+        return ((VoidObjectInspector) this.objectInspector).copyObject(null);
+      }
+    }.init(fieldObjInspector);
+  }
+
+
   private static VectorExpressionWriter genVectorExpressionWritableInt(
       SettableIntObjectInspector fieldObjInspector) throws HiveException {
     return new VectorExpressionWriterLong() {
       private Object obj;
-      
-      public VectorExpressionWriter init(SettableIntObjectInspector objInspector) 
+
+      public VectorExpressionWriter init(SettableIntObjectInspector objInspector)
           throws HiveException {
         super.init(objInspector);
         this.obj = initValue(null);
         return this;
       }
-      
+
       @Override
       public Object writeValue(long value) throws HiveException {
         ((SettableIntObjectInspector) this.objectInspector).set(this.obj, (int) value);
         return this.obj;
       }
-      
+
       @Override
       public Object setValue(Object field, long value) throws HiveException {
         if (null == field) {
@@ -770,7 +814,7 @@ public final class VectorExpressionWriterFactory {
         ((SettableIntObjectInspector) this.objectInspector).set(field, (int) value);
         return field;
       }
-      
+
       @Override
       public Object initValue(Object ignored) {
         return ((SettableIntObjectInspector) this.objectInspector)
@@ -783,20 +827,20 @@ public final class VectorExpressionWriterFactory {
       SettableShortObjectInspector fieldObjInspector) throws HiveException {
     return new VectorExpressionWriterLong() {
       private Object obj;
-      
-      public VectorExpressionWriter init(SettableShortObjectInspector objInspector) 
+
+      public VectorExpressionWriter init(SettableShortObjectInspector objInspector)
           throws HiveException {
         super.init(objInspector);
         this.obj = initValue(null);
         return this;
       }
-      
+
       @Override
       public Object writeValue(long value) throws HiveException {
         ((SettableShortObjectInspector) this.objectInspector).set(this.obj, (short) value);
         return this.obj;
       }
-      
+
       @Override
       public Object setValue(Object field, long value) throws HiveException {
         if (null == field) {
@@ -805,7 +849,7 @@ public final class VectorExpressionWriterFactory {
         ((SettableShortObjectInspector) this.objectInspector).set(field, (short) value);
         return field;
       }
-      
+
       @Override
       public Object initValue(Object ignored) {
         return ((SettableShortObjectInspector) this.objectInspector)
@@ -818,20 +862,20 @@ public final class VectorExpressionWriterFactory {
       SettableByteObjectInspector fieldObjInspector) throws HiveException {
     return new VectorExpressionWriterLong() {
       private Object obj;
-      
-      public VectorExpressionWriter init(SettableByteObjectInspector objInspector) 
+
+      public VectorExpressionWriter init(SettableByteObjectInspector objInspector)
           throws HiveException {
         super.init(objInspector);
         this.obj = initValue(null);
         return this;
       }
-      
+
       @Override
       public Object writeValue(long value) throws HiveException {
         ((SettableByteObjectInspector) this.objectInspector).set(this.obj, (byte) value);
         return this.obj;
       }
-      
+
       @Override
       public Object setValue(Object field, long value) throws HiveException {
         if (null == field) {
@@ -840,7 +884,7 @@ public final class VectorExpressionWriterFactory {
         ((SettableByteObjectInspector) this.objectInspector).set(field, (byte) value);
         return field;
       }
-      
+
       @Override
       public Object initValue(Object ignored) {
         return ((SettableByteObjectInspector) this.objectInspector)
@@ -853,31 +897,31 @@ public final class VectorExpressionWriterFactory {
       SettableBooleanObjectInspector fieldObjInspector) throws HiveException {
     return new VectorExpressionWriterLong() {
       private Object obj;
-      
-      public VectorExpressionWriter init(SettableBooleanObjectInspector objInspector) 
+
+      public VectorExpressionWriter init(SettableBooleanObjectInspector objInspector)
           throws HiveException {
         super.init(objInspector);
         this.obj = initValue(null);
         return this;
       }
-      
+
       @Override
       public Object writeValue(long value) throws HiveException {
-        ((SettableBooleanObjectInspector) this.objectInspector).set(this.obj, 
+        ((SettableBooleanObjectInspector) this.objectInspector).set(this.obj,
             value == 0 ? false : true);
         return this.obj;
       }
-      
+
       @Override
       public Object setValue(Object field, long value) throws HiveException {
         if (null == field) {
           field = initValue(null);
         }
-        ((SettableBooleanObjectInspector) this.objectInspector).set(field, 
+        ((SettableBooleanObjectInspector) this.objectInspector).set(field,
             value == 0 ? false : true);
         return field;
       }
-      
+
       @Override
       public Object initValue(Object ignored) {
         return ((SettableBooleanObjectInspector) this.objectInspector)
@@ -890,20 +934,20 @@ public final class VectorExpressionWriterFactory {
       SettableDoubleObjectInspector fieldObjInspector) throws HiveException {
     return new VectorExpressionWriterDouble() {
       private Object obj;
-      
-      public VectorExpressionWriter init(SettableDoubleObjectInspector objInspector) 
+
+      public VectorExpressionWriter init(SettableDoubleObjectInspector objInspector)
           throws HiveException {
         super.init(objInspector);
         this.obj = initValue(null);
         return this;
       }
-      
+
       @Override
       public Object writeValue(double value) throws HiveException {
         ((SettableDoubleObjectInspector) this.objectInspector).set(this.obj, value);
         return this.obj;
       }
-      
+
       @Override
       public Object setValue(Object field, double value) throws HiveException {
         if (null == field) {
@@ -911,8 +955,8 @@ public final class VectorExpressionWriterFactory {
         }
         ((SettableDoubleObjectInspector) this.objectInspector).set(field, value);
         return field;
-      }      
-      
+      }
+
       @Override
       public Object initValue(Object ignored) {
         return ((SettableDoubleObjectInspector) this.objectInspector)
@@ -925,20 +969,20 @@ public final class VectorExpressionWriterFactory {
       SettableFloatObjectInspector fieldObjInspector) throws HiveException {
     return new VectorExpressionWriterDouble() {
       private Object obj;
-      
-      public VectorExpressionWriter init(SettableFloatObjectInspector objInspector) 
+
+      public VectorExpressionWriter init(SettableFloatObjectInspector objInspector)
           throws HiveException {
         super.init(objInspector);
         this.obj = initValue(null);
         return this;
       }
-      
+
       @Override
       public Object writeValue(double value) throws HiveException {
         ((SettableFloatObjectInspector) this.objectInspector).set(this.obj, (float) value);
         return this.obj;
       }
-      
+
       @Override
       public Object setValue(Object field, double value) throws HiveException {
         if (null == field) {
@@ -947,7 +991,7 @@ public final class VectorExpressionWriterFactory {
         ((SettableFloatObjectInspector) this.objectInspector).set(field, (float) value);
         return field;
       }
-      
+
       @Override
       public Object initValue(Object ignored) {
         return ((SettableFloatObjectInspector) this.objectInspector)
@@ -1027,25 +1071,25 @@ public final class VectorExpressionWriterFactory {
    */
   public static VectorExpressionWriter[] getExpressionWriters(StructObjectInspector objInspector)
       throws HiveException {
-    
+
     if (objInspector.isSettable()) {
       return getSettableExpressionWriters((SettableStructObjectInspector) objInspector);
     }
-    
+
     List<? extends StructField> allFieldRefs = objInspector.getAllStructFieldRefs();
-    
+
     VectorExpressionWriter[] expressionWriters = new VectorExpressionWriter[allFieldRefs.size()];
-    
+
     for(int i=0; i<expressionWriters.length; ++i) {
       expressionWriters[i] = genVectorExpressionWritable(allFieldRefs.get(i).getFieldObjectInspector());
     }
-    
+
     return expressionWriters;
   }
 
   public static VectorExpressionWriter[] getSettableExpressionWriters(
       SettableStructObjectInspector objInspector) throws HiveException {
-    List<? extends StructField> fieldsRef = objInspector.getAllStructFieldRefs(); 
+    List<? extends StructField> fieldsRef = objInspector.getAllStructFieldRefs();
     VectorExpressionWriter[] writers = new VectorExpressionWriter[fieldsRef.size()];
     for(int i=0; i<writers.length; ++i) {
       StructField fieldRef = fieldsRef.get(i);
@@ -1054,19 +1098,19 @@ public final class VectorExpressionWriterFactory {
       writers[i] = genVectorExpressionWritable(objInspector, fieldRef, baseWriter);
     }
     return writers;
-    
+
   }
-  
+
   /**
-   * VectorExpressionWriterSetter helper for vector expression writers that use 
+   * VectorExpressionWriterSetter helper for vector expression writers that use
    * settable ObjectInspector fields to assign the values.
-   * This is used by the OrcStruct serialization (eg. CREATE TABLE ... AS ...) 
+   * This is used by the OrcStruct serialization (eg. CREATE TABLE ... AS ...)
    */
   private static class VectorExpressionWriterSetter extends VectorExpressionWriterBase {
     private SettableStructObjectInspector settableObjInspector;
     private StructField fieldRef;
     private VectorExpressionWriter baseWriter;
-    
+
     public VectorExpressionWriterSetter init(
         SettableStructObjectInspector objInspector,
         StructField fieldRef,
@@ -1087,15 +1131,15 @@ public final class VectorExpressionWriterFactory {
     @Override
     public Object setValue(Object row, ColumnVector column, int columnRow)
         throws HiveException {
-      
+
       // NULLs are handled by each individual base writer setter
       // We could handle NULLs centrally here but that would result in spurious allocs
-      
+
       Object fieldValue = this.settableObjInspector.getStructFieldData(row, fieldRef);
       fieldValue = baseWriter.setValue(fieldValue, column, columnRow);
       return this.settableObjInspector.setStructFieldData(row, fieldRef, fieldValue);
     }
-    
+
     @Override
     public Object initValue(Object struct) throws HiveException {
       Object initValue = this.baseWriter.initValue(null);
@@ -1103,7 +1147,7 @@ public final class VectorExpressionWriterFactory {
       return struct;
     }
   }
-  
+
   private static VectorExpressionWriter genVectorExpressionWritable(
       SettableStructObjectInspector objInspector,
       StructField fieldRef,

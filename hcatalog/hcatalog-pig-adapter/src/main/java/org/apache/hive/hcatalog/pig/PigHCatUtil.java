@@ -142,8 +142,16 @@ class PigHCatUtil {
   }
 
   private static HiveMetaStoreClient getHiveMetaClient(String serverUri,
-                             String serverKerberosPrincipal, Class<?> clazz) throws Exception {
-    HiveConf hiveConf = new HiveConf(clazz);
+                             String serverKerberosPrincipal,
+                             Class<?> clazz,
+                             Job job) throws Exception {
+
+    // The job configuration is passed in so the configuration will be cloned
+    // from the pig job configuration. This is necessary for overriding
+    // metastore configuration arguments like the metastore jdbc connection string
+    // and password, in the case of an embedded metastore, which you get when
+    // hive.metastore.uris = "".
+    HiveConf hiveConf = new HiveConf(job.getConfiguration(), clazz);
 
     if (serverUri != null) {
       hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, serverUri.trim());
@@ -178,7 +186,13 @@ class PigHCatUtil {
     return new HCatSchema(fcols);
   }
 
-  public Table getTable(String location, String hcatServerUri, String hcatServerPrincipal) throws IOException {
+  /*
+  * The job argument is passed so that configuration overrides can be used to initialize
+  * the metastore configuration in the special case of an embedded metastore
+  * (hive.metastore.uris = "").
+  */
+  public Table getTable(String location, String hcatServerUri, String hcatServerPrincipal,
+      Job job) throws IOException {
     Pair<String, String> loc_server = new Pair<String, String>(location, hcatServerUri);
     Table hcatTable = hcatTableCache.get(loc_server);
     if (hcatTable != null) {
@@ -191,7 +205,7 @@ class PigHCatUtil {
     Table table = null;
     HiveMetaStoreClient client = null;
     try {
-      client = getHiveMetaClient(hcatServerUri, hcatServerPrincipal, PigHCatUtil.class);
+      client = getHiveMetaClient(hcatServerUri, hcatServerPrincipal, PigHCatUtil.class, job);
       table = HCatUtil.getTable(client, dbName, tableName);
     } catch (NoSuchObjectException nsoe) {
       throw new PigException("Table not found : " + nsoe.getMessage(), PIG_EXCEPTION_CODE); // prettier error messages to frontend

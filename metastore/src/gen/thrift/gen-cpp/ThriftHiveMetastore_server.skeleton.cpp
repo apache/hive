@@ -162,6 +162,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("add_partitions\n");
   }
 
+  int32_t add_partitions_pspec(const std::vector<PartitionSpec> & new_parts) {
+    // Your implementation goes here
+    printf("add_partitions_pspec\n");
+  }
+
   void append_partition(Partition& _return, const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & part_vals) {
     // Your implementation goes here
     printf("append_partition\n");
@@ -242,6 +247,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("get_partitions_with_auth\n");
   }
 
+  void get_partitions_pspec(std::vector<PartitionSpec> & _return, const std::string& db_name, const std::string& tbl_name, const int32_t max_parts) {
+    // Your implementation goes here
+    printf("get_partitions_pspec\n");
+  }
+
   void get_partition_names(std::vector<std::string> & _return, const std::string& db_name, const std::string& tbl_name, const int16_t max_parts) {
     // Your implementation goes here
     printf("get_partition_names\n");
@@ -265,6 +275,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
   void get_partitions_by_filter(std::vector<Partition> & _return, const std::string& db_name, const std::string& tbl_name, const std::string& filter, const int16_t max_parts) {
     // Your implementation goes here
     printf("get_partitions_by_filter\n");
+  }
+
+  void get_part_specs_by_filter(std::vector<PartitionSpec> & _return, const std::string& db_name, const std::string& tbl_name, const std::string& filter, const int32_t max_parts) {
+    // Your implementation goes here
+    printf("get_part_specs_by_filter\n");
   }
 
   void get_partitions_by_expr(PartitionsByExprResult& _return, const PartitionsByExprRequest& req) {

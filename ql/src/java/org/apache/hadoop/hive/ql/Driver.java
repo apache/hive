@@ -135,7 +135,6 @@ public class Driver implements CommandProcessor {
   private String errorMessage;
   private String SQLState;
   private Throwable downstreamError;
-  private HiveTxnManager txnMgr;
 
   // A limit on the number of threads that can be launched
   private int maxthreads;
@@ -144,16 +143,6 @@ public class Driver implements CommandProcessor {
   private boolean destroyed;
 
   private String userName;
-
-  private void createTxnManager() throws SemanticException {
-    if (txnMgr == null) {
-      try {
-        txnMgr = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
-      } catch (LockException e) {
-        throw new SemanticException(e.getMessage(), e);
-      }
-    }
-  }
 
   private boolean checkConcurrency() throws SemanticException {
     boolean supportConcurrency = conf.getBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY);
@@ -868,7 +857,7 @@ public class Driver implements CommandProcessor {
   // the input format.
   private int recordValidTxns() {
     try {
-      ValidTxnList txns = txnMgr.getValidTxns();
+      ValidTxnList txns = SessionState.get().getTxnMgr().getValidTxns();
       conf.set(ValidTxnList.VALID_TXNS_KEY, txns.toString());
       return 0;
     } catch (LockException e) {
@@ -893,7 +882,7 @@ public class Driver implements CommandProcessor {
 
 
     try {
-      txnMgr.acquireLocks(plan, ctx, userName);
+      SessionState.get().getTxnMgr().acquireLocks(plan, ctx, userName);
       return 0;
     } catch (LockException e) {
       errorMessage = "FAILED: Error in acquiring locks: " + e.getMessage();
@@ -917,7 +906,7 @@ public class Driver implements CommandProcessor {
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.RELEASE_LOCKS);
 
     if (hiveLocks != null) {
-      ctx.getHiveTxnManager().getLockManager().releaseLocks(hiveLocks);
+      SessionState.get().getTxnMgr().getLockManager().releaseLocks(hiveLocks);
     }
     ctx.setHiveLocks(null);
 
@@ -1048,9 +1037,14 @@ public class Driver implements CommandProcessor {
 
     boolean requireLock = false;
     boolean ckLock = false;
+    SessionState ss = SessionState.get();
     try {
       ckLock = checkConcurrency();
-      createTxnManager();
+      try {
+        ss.initTxnMgr(conf);
+      } catch (LockException e) {
+        throw new SemanticException(e.getMessage(), e);
+      }
     } catch (SemanticException e) {
       errorMessage = "FAILED: Error in semantic analysis: " + e.getMessage();
       SQLState = ErrorMsg.findSQLState(e.getMessage());
@@ -1074,7 +1068,7 @@ public class Driver implements CommandProcessor {
     // the reason that we set the txn manager for the cxt here is because each
     // query has its own ctx object. The txn mgr is shared across the
     // same instance of Driver, which can run multiple queries.
-    ctx.setHiveTxnManager(txnMgr);
+    ctx.setHiveTxnManager(ss.getTxnMgr());
 
     if (ckLock) {
       boolean lockOnlyMapred = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_LOCK_MAPRED_ONLY);
@@ -1670,9 +1664,6 @@ public class Driver implements CommandProcessor {
         LOG.warn("Exception when releasing locking in destroy: " +
             e.getMessage());
       }
-    }
-    if (txnMgr != null) {
-      txnMgr.closeTxnManager();
     }
   }
 

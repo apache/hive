@@ -67,6 +67,7 @@ import org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.io.InputFormatChecker;
+import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentFactory;
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.plan.MapWork;
@@ -1586,7 +1587,7 @@ public class TestInputOutputFormat {
     types.add(builder.build());
     types.add(builder.build());
     types.add(builder.build());
-    SearchArgument isNull = SearchArgument.FACTORY.newBuilder()
+    SearchArgument isNull = SearchArgumentFactory.newBuilder()
         .startAnd().isNull("cost").end().build();
     conf.set(OrcInputFormat.SARG_PUSHDOWN, isNull.toKryo());
     conf.set(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR,

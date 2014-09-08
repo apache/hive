@@ -373,6 +373,10 @@ public class MergeTask extends Task<MergeWork> implements Serializable,
       }
     }
 
+    if (format == null || format.trim().equals("")) {
+      printUsage();
+    }
+    
     MergeWork mergeWork = null;
     if (format.equals("rcfile")) {
       mergeWork = new MergeWork(inputPaths, new Path(outputDir), RCFileInputFormat.class);

@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.optimizer;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -27,6 +28,7 @@ import java.util.Stack;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.AppMasterEventOperator;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
@@ -39,6 +41,7 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.parse.OptimizeTezProcContext;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.DynamicPruningEventDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
@@ -363,6 +366,19 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     Operator<? extends OperatorDesc> parentBigTableOp
       = mapJoinOp.getParentOperators().get(bigTablePosition);
     if (parentBigTableOp instanceof ReduceSinkOperator) {
+      for (Operator<?> p : parentBigTableOp.getParentOperators()) {
+        // we might have generated a dynamic partition operator chain. Since
+        // we're removing the reduce sink we need do remove that too.
+        Set<Operator<?>> dynamicPartitionOperators = new HashSet<Operator<?>>();
+        for (Operator<?> c : p.getChildOperators()) {
+          if (hasDynamicPartitionBroadcast(c)) {
+            dynamicPartitionOperators.add(c);
+          }
+        }
+        for (Operator<?> c : dynamicPartitionOperators) {
+          p.removeChild(c);
+        }
+      }
       mapJoinOp.getParentOperators().remove(bigTablePosition);
       if (!(mapJoinOp.getParentOperators().contains(
               parentBigTableOp.getParentOperators().get(0)))) {
@@ -379,5 +395,17 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     }
 
     return mapJoinOp;
+  }
+
+  private boolean hasDynamicPartitionBroadcast(Operator<?> op) {
+    if (op instanceof AppMasterEventOperator && op.getConf() instanceof DynamicPruningEventDesc) {
+      return true;
+    }
+    for (Operator<?> c : op.getChildOperators()) {
+      if (hasDynamicPartitionBroadcast(c)) {
+        return true;
+      }
+    }
+    return false;
   }
 }

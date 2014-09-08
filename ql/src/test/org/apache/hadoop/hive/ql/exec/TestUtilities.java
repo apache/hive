@@ -20,15 +20,22 @@ package org.apache.hadoop.hive.ql.exec;
 
 import static org.apache.hadoop.hive.ql.exec.Utilities.getFileExtension;
 
+import java.io.File;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
+import com.google.common.collect.Sets;
+import com.google.common.io.Files;
+import junit.framework.Assert;
 import junit.framework.TestCase;
 
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.permission.FsPermission;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -39,9 +46,9 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFFromUtcTimestamp;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.mapred.JobConf;
-import org.junit.Test;
 
 public class TestUtilities extends TestCase {
+  public static final Log LOG = LogFactory.getLog(TestUtilities.class);
 
   public void testGetFileExtension() {
     JobConf jc = new JobConf();
@@ -77,9 +84,9 @@ public class TestUtilities extends TestCase {
     List<ExprNodeDesc> children = new ArrayList<ExprNodeDesc>(1);
     children.add(constant);
     ExprNodeGenericFuncDesc desc = new ExprNodeGenericFuncDesc(TypeInfoFactory.timestampTypeInfo,
-      new GenericUDFFromUtcTimestamp(), children);
+        new GenericUDFFromUtcTimestamp(), children);
     assertEquals(desc.getExprString(), Utilities.deserializeExpression(
-      Utilities.serializeExpression(desc)).getExprString());
+        Utilities.serializeExpression(desc)).getExprString());
   }
 
   public void testgetDbTableName() throws HiveException{
@@ -110,22 +117,27 @@ public class TestUtilities extends TestCase {
     }
   }
 
-  @Test
-  public void testFSUmaskReset() throws Exception {
-    // ensure that FS Umask is not reset (HIVE-7001)
-    checkFSUMaskReset(true);
-    checkFSUMaskReset(false);
+  public void testGetJarFilesByPath() {
+    File f = Files.createTempDir();
+    String jarFileName1 = f.getAbsolutePath() + File.separator + "a.jar";
+    String jarFileName2 = f.getAbsolutePath() + File.separator + "b.jar";
+    File jarFile = new File(jarFileName1);
+    try {
+      FileUtils.touch(jarFile);
+      HashSet<String> jars = (HashSet) Utilities.getJarFilesByPath(f.getAbsolutePath());
+      Assert.assertEquals(Sets.newHashSet(jarFile.getAbsolutePath()),jars);
+
+      File jarFile2 = new File(jarFileName2);
+      FileUtils.touch(jarFile2);
+      String newPath = "file://" + jarFileName1 + "," + "file://" + jarFileName2;
+      jars = (HashSet) Utilities.getJarFilesByPath(newPath);
+
+      Assert.assertEquals(Sets.newHashSet("file://" + jarFileName1, "file://" + jarFileName2), jars);
+    } catch (IOException e) {
+      LOG.error("failed to copy file to reloading folder", e);
+      Assert.fail(e.getMessage());
+    } finally {
+      FileUtils.deleteQuietly(f);
+    }
   }
-
-  private void checkFSUMaskReset(boolean recursiveArg) throws IllegalArgumentException, IOException {
-    final String FS_MASK_VAL = "055";
-    HiveConf conf = new HiveConf();
-    String dir = System.getProperty("test.tmp.dir") + "/testUtilitiesUMaskReset";
-    conf.set(FsPermission.UMASK_LABEL, FS_MASK_VAL);
-    Utilities.createDirsWithPermission(conf, new Path(dir), new FsPermission((short) 00777),
-        recursiveArg);
-    assertEquals(conf.get(FsPermission.UMASK_LABEL), FS_MASK_VAL);
-  }
-
-
 }

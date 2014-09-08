@@ -35,9 +35,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.regex.Pattern;
 
 import javax.jdo.JDODataStoreException;
 import javax.jdo.JDOHelper;
@@ -62,6 +64,7 @@ import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
+import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
@@ -89,6 +92,7 @@ import org.apache.hadoop.hive.metastore.api.ResourceType;
 import org.apache.hadoop.hive.metastore.api.ResourceUri;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
+import org.apache.hadoop.hive.metastore.api.SetPartitionsStatsRequest;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -131,6 +135,7 @@ import org.apache.hadoop.hive.metastore.parser.ExpressionTree.Operator;
 import org.apache.hadoop.hive.metastore.parser.FilterLexer;
 import org.apache.hadoop.hive.metastore.parser.FilterParser;
 import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.thrift.TException;
 import org.datanucleus.store.rdbms.exceptions.MissingTableException;
@@ -159,7 +164,7 @@ public class ObjectStore implements RawStore, Configurable {
 
   private static final Map<String, Class> PINCLASSMAP;
   static {
-    Map<String, Class> map = new HashMap();
+    Map<String, Class> map = new HashMap<String, Class>();
     map.put("table", MTable.class);
     map.put("storagedescriptor", MStorageDescriptor.class);
     map.put("serdeinfo", MSerDeInfo.class);
@@ -180,6 +185,8 @@ public class ObjectStore implements RawStore, Configurable {
   private Transaction currentTransaction = null;
   private TXN_STATUS transactionStatus = TXN_STATUS.NO_STATE;
   private final AtomicBoolean isSchemaVerified = new AtomicBoolean(false);
+
+  private Pattern partitionValidationPattern;
 
   public ObjectStore() {
   }
@@ -224,6 +231,14 @@ public class ObjectStore implements RawStore, Configurable {
       transactionStatus = TXN_STATUS.NO_STATE;
 
       initialize(propsFromConf);
+
+      String partitionValidationRegex =
+          hiveConf.get(HiveConf.ConfVars.METASTORE_PARTITION_NAME_WHITELIST_PATTERN.name());
+      if (partitionValidationRegex != null && partitionValidationRegex.equals("")) {
+        partitionValidationPattern = Pattern.compile(partitionValidationRegex);
+      } else {
+        partitionValidationPattern = null;
+      }
 
       if (!isInitialized) {
         throw new RuntimeException(
@@ -1080,14 +1095,14 @@ public class ObjectStore implements RawStore, Configurable {
     return keys;
   }
 
-  private SerDeInfo converToSerDeInfo(MSerDeInfo ms) throws MetaException {
+  private SerDeInfo convertToSerDeInfo(MSerDeInfo ms) throws MetaException {
     if (ms == null) {
       throw new MetaException("Invalid SerDeInfo object");
     }
     return new SerDeInfo(ms.getName(), ms.getSerializationLib(), convertMap(ms.getParameters()));
   }
 
-  private MSerDeInfo converToMSerDeInfo(SerDeInfo ms) throws MetaException {
+  private MSerDeInfo convertToMSerDeInfo(SerDeInfo ms) throws MetaException {
     if (ms == null) {
       throw new MetaException("Invalid SerDeInfo object");
     }
@@ -1119,7 +1134,7 @@ public class ObjectStore implements RawStore, Configurable {
 
     StorageDescriptor sd = new StorageDescriptor(noFS ? null : convertToFieldSchemas(mFieldSchemas),
         msd.getLocation(), msd.getInputFormat(), msd.getOutputFormat(), msd
-        .isCompressed(), msd.getNumBuckets(), converToSerDeInfo(msd
+        .isCompressed(), msd.getNumBuckets(), convertToSerDeInfo(msd
         .getSerDeInfo()), convertList(msd.getBucketCols()), convertToOrders(msd
         .getSortCols()), convertMap(msd.getParameters()));
     SkewedInfo skewedInfo = new SkewedInfo(convertList(msd.getSkewedColNames()),
@@ -1231,7 +1246,7 @@ public class ObjectStore implements RawStore, Configurable {
     }
     return new MStorageDescriptor(mcd, sd
         .getLocation(), sd.getInputFormat(), sd.getOutputFormat(), sd
-        .isCompressed(), sd.getNumBuckets(), converToMSerDeInfo(sd
+        .isCompressed(), sd.getNumBuckets(), convertToMSerDeInfo(sd
         .getSerdeInfo()), sd.getBucketCols(),
         convertToMOrders(sd.getSortCols()), sd.getParameters(),
         (null == sd.getSkewedInfo()) ? null
@@ -1282,6 +1297,76 @@ public class ObjectStore implements RawStore, Configurable {
       }
       if (toPersist.size() > 0) {
         pm.makePersistentAll(toPersist);
+      }
+
+      success = commitTransaction();
+    } finally {
+      if (!success) {
+        rollbackTransaction();
+      }
+    }
+    return success;
+  }
+
+  private boolean isValidPartition(
+      Partition part, boolean ifNotExists) throws MetaException {
+    MetaStoreUtils.validatePartitionNameCharacters(part.getValues(),
+        partitionValidationPattern);
+    boolean doesExist = doesPartitionExist(
+        part.getDbName(), part.getTableName(), part.getValues());
+    if (doesExist && !ifNotExists) {
+      throw new MetaException("Partition already exists: " + part);
+    }
+    return !doesExist;
+  }
+
+
+  @Override
+  public boolean addPartitions(String dbName, String tblName,
+                               PartitionSpecProxy partitionSpec, boolean ifNotExists)
+      throws InvalidObjectException, MetaException {
+    boolean success = false;
+    openTransaction();
+    try {
+      List<MTablePrivilege> tabGrants = null;
+      List<MTableColumnPrivilege> tabColumnGrants = null;
+      MTable table = this.getMTable(dbName, tblName);
+      if ("TRUE".equalsIgnoreCase(table.getParameters().get("PARTITION_LEVEL_PRIVILEGE"))) {
+        tabGrants = this.listAllTableGrants(dbName, tblName);
+        tabColumnGrants = this.listTableAllColumnGrants(dbName, tblName);
+      }
+
+      if (!partitionSpec.getTableName().equals(tblName) || !partitionSpec.getDbName().equals(dbName)) {
+        throw new MetaException("Partition does not belong to target table "
+            + dbName + "." + tblName + ": " + partitionSpec);
+      }
+
+      PartitionSpecProxy.PartitionIterator iterator = partitionSpec.getPartitionIterator();
+
+      int now = (int)(System.currentTimeMillis()/1000);
+
+      while (iterator.hasNext()) {
+        Partition part = iterator.next();
+
+        if (isValidPartition(part, ifNotExists)) {
+          MPartition mpart = convertToMPart(part, true);
+          pm.makePersistent(mpart);
+          if (tabGrants != null) {
+            for (MTablePrivilege tab : tabGrants) {
+              pm.makePersistent(new MPartitionPrivilege(tab.getPrincipalName(),
+                  tab.getPrincipalType(), mpart, tab.getPrivilege(), now,
+                  tab.getGrantor(), tab.getGrantorType(), tab.getGrantOption()));
+            }
+          }
+
+          if (tabColumnGrants != null) {
+            for (MTableColumnPrivilege col : tabColumnGrants) {
+              pm.makePersistent(new MPartitionColumnPrivilege(col.getPrincipalName(),
+                  col.getPrincipalType(), mpart, col.getColumnName(), col.getPrivilege(),
+                  now, col.getGrantor(), col.getGrantorType(), col.getGrantOption()));
+            }
+          }
+        }
       }
 
       success = commitTransaction();
@@ -2394,7 +2479,7 @@ public class ObjectStore implements RawStore, Configurable {
    * Makes a JDO query filter string.
    * Makes a JDO query filter string for tables or partitions.
    * @param dbName Database name.
-   * @param table Table. If null, the query returned is over tables in a database.
+   * @param mtable Table. If null, the query returned is over tables in a database.
    *   If not null, the query returned is over partitions in a table.
    * @param filter The filter from which JDOQL filter will be made.
    * @param params Parameters for the filter. Some parameters may be added here.
@@ -5716,7 +5801,7 @@ public class ObjectStore implements RawStore, Configurable {
       pm.makePersistent(mStatsObj);
     }
   }
-
+  
   @Override
   public boolean updateTableColumnStatistics(ColumnStatistics colStats)
     throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
@@ -6178,7 +6263,7 @@ public class ObjectStore implements RawStore, Configurable {
     boolean commited = false;
     long delCnt;
     LOG.debug("Begin executing cleanupEvents");
-    Long expiryTime = HiveConf.getLongVar(getConf(), ConfVars.METASTORE_EVENT_EXPIRY_DURATION) * 1000L;
+    Long expiryTime = HiveConf.getTimeVar(getConf(), ConfVars.METASTORE_EVENT_EXPIRY_DURATION, TimeUnit.MILLISECONDS);
     Long curTime = System.currentTimeMillis();
     try {
       openTransaction();

@@ -37,7 +37,7 @@ import org.apache.tez.runtime.library.api.KeyValuesReader;
  * Uses a priority queue to pick the KeyValuesReader of the input that is next in
  * sort order.
  */
-public class InputMerger implements KeyValuesReader {
+public class InputMerger extends KeyValuesReader {
 
   public static final Log l4j = LogFactory.getLog(ReduceRecordProcessor.class);
   private PriorityQueue<KeyValuesReader> pQueue = null;

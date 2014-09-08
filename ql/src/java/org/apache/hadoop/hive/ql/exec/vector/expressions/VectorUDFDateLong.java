@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 
 import java.io.UnsupportedEncodingException;
@@ -49,6 +50,8 @@ public class VectorUDFDateLong extends LongToStringUnaryUDF {
       case TIMESTAMP:
         date.setTime(vector[i] / 1000000);
         break;
+      default:
+        throw new Error("Unsupported input type " + inputTypes[0].name());
     }
     try {
       byte[] bytes = formatter.format(date).getBytes("UTF-8");
@@ -57,5 +60,17 @@ public class VectorUDFDateLong extends LongToStringUnaryUDF {
       outV.vector[i] = null;
       outV.isNull[i] = true;
     }
+  }
+
+  @Override
+  public VectorExpressionDescriptor.Descriptor getDescriptor() {
+    VectorExpressionDescriptor.Builder b = new VectorExpressionDescriptor.Builder();
+    b.setMode(VectorExpressionDescriptor.Mode.PROJECTION)
+        .setNumArguments(1)
+        .setArgumentTypes(
+            VectorExpressionDescriptor.ArgumentType.DATETIME_FAMILY)
+        .setInputExpressionTypes(
+            VectorExpressionDescriptor.InputExpressionType.COLUMN);
+    return b.build();
   }
 }

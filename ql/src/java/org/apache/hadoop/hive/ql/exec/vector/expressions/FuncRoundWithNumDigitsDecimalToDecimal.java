@@ -149,7 +149,7 @@ public class FuncRoundWithNumDigitsDecimalToDecimal extends VectorExpression {
         .setNumArguments(2)
         .setArgumentTypes(
             VectorExpressionDescriptor.ArgumentType.DECIMAL,
-            VectorExpressionDescriptor.ArgumentType.LONG)
+            VectorExpressionDescriptor.ArgumentType.INT_FAMILY)
         .setInputExpressionTypes(
             VectorExpressionDescriptor.InputExpressionType.COLUMN,
             VectorExpressionDescriptor.InputExpressionType.SCALAR).build();

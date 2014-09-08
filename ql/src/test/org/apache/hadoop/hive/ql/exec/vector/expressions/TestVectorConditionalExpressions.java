@@ -32,10 +32,10 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.IfExprLongScalarLon
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.IfExprDoubleScalarDoubleScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.IfExprDoubleScalarDoubleColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.IfExprDoubleColumnDoubleScalar;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprStringColumnStringColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprStringColumnStringScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprStringGroupColumnStringGroupColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprStringGroupColumnStringScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprStringScalarStringGroupColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprStringScalarStringScalar;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprStringScalarStringColumn;
 
 import org.junit.Test;
 
@@ -388,7 +388,7 @@ public class TestVectorConditionalExpressions {
   @Test
   public void testIfExprStringColumnStringColumn() {
     VectorizedRowBatch batch = getBatch1Long3BytesVectors();
-    VectorExpression expr = new IfExprStringColumnStringColumn(0, 1, 2, 3);
+    VectorExpression expr = new IfExprStringGroupColumnStringGroupColumn(0, 1, 2, 3);
     BytesColumnVector r = (BytesColumnVector) batch.cols[3];
     expr.evaluate(batch);
     assertTrue(getString(r, 0).equals("arg3_0"));
@@ -474,7 +474,7 @@ public class TestVectorConditionalExpressions {
   public void testIfExprStringColumnStringScalar() {
     VectorizedRowBatch batch = getBatch1Long3BytesVectors();
     byte[] scalar = getUTF8Bytes("scalar");
-    VectorExpression expr = new IfExprStringColumnStringScalar(0, 1, scalar, 3);
+    VectorExpression expr = new IfExprStringGroupColumnStringScalar(0, 1, scalar, 3);
     BytesColumnVector r = (BytesColumnVector) batch.cols[3];
     expr.evaluate(batch);
     assertTrue(getString(r, 0).equals("scalar"));
@@ -498,7 +498,7 @@ public class TestVectorConditionalExpressions {
   public void testIfExprStringScalarStringColumn() {
     VectorizedRowBatch batch = getBatch1Long3BytesVectors();
     byte[] scalar = getUTF8Bytes("scalar");
-    VectorExpression expr = new IfExprStringScalarStringColumn(0,scalar, 2, 3);
+    VectorExpression expr = new IfExprStringScalarStringGroupColumn(0,scalar, 2, 3);
     BytesColumnVector r = (BytesColumnVector) batch.cols[3];
     expr.evaluate(batch);
     assertTrue(getString(r, 0).equals("arg3_0"));

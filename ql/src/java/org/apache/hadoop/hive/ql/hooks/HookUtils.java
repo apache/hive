@@ -24,6 +24,7 @@ import java.util.List;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 
 public class HookUtils {
   /**
@@ -57,7 +58,7 @@ public class HookUtils {
     String[] hookClasses = csHooks.split(",");
     for (String hookClass : hookClasses) {
         T hook = (T) Class.forName(hookClass.trim(), true,
-            JavaUtils.getClassLoader()).newInstance();
+                Utilities.getSessionSpecifiedClassLoader()).newInstance();
         hooks.add(hook);
     }
 

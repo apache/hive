@@ -14,26 +14,27 @@
 
 package org.apache.hive.service.auth;
 
-public class HttpAuthenticationException extends Exception{
-  static final long serialVersionUID = 0;
+public class HttpAuthenticationException extends Exception {
+
+  private static final long serialVersionUID = 0;
 
   /**
-   * @param cause original exception.
+   * @param cause original exception
    */
   public HttpAuthenticationException(Throwable cause) {
     super(cause);
   }
 
   /**
-   * @param msg exception message.
+   * @param msg exception message
    */
   public HttpAuthenticationException(String msg) {
     super(msg);
   }
 
   /**
-   * @param msg exception message.
-   * @param cause original exception.
+   * @param msg   exception message
+   * @param cause original exception
    */
   public HttpAuthenticationException(String msg, Throwable cause) {
     super(msg, cause);

@@ -350,14 +350,14 @@ public class SetPartitionsStatsRequest implements org.apache.thrift.TBase<SetPar
           case 1: // COL_STATS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list252 = iprot.readListBegin();
-                struct.colStats = new ArrayList<ColumnStatistics>(_list252.size);
-                for (int _i253 = 0; _i253 < _list252.size; ++_i253)
+                org.apache.thrift.protocol.TList _list286 = iprot.readListBegin();
+                struct.colStats = new ArrayList<ColumnStatistics>(_list286.size);
+                for (int _i287 = 0; _i287 < _list286.size; ++_i287)
                 {
-                  ColumnStatistics _elem254; // required
-                  _elem254 = new ColumnStatistics();
-                  _elem254.read(iprot);
-                  struct.colStats.add(_elem254);
+                  ColumnStatistics _elem288; // required
+                  _elem288 = new ColumnStatistics();
+                  _elem288.read(iprot);
+                  struct.colStats.add(_elem288);
                 }
                 iprot.readListEnd();
               }
@@ -383,9 +383,9 @@ public class SetPartitionsStatsRequest implements org.apache.thrift.TBase<SetPar
         oprot.writeFieldBegin(COL_STATS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.colStats.size()));
-          for (ColumnStatistics _iter255 : struct.colStats)
+          for (ColumnStatistics _iter289 : struct.colStats)
           {
-            _iter255.write(oprot);
+            _iter289.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -410,9 +410,9 @@ public class SetPartitionsStatsRequest implements org.apache.thrift.TBase<SetPar
       TTupleProtocol oprot = (TTupleProtocol) prot;
       {
         oprot.writeI32(struct.colStats.size());
-        for (ColumnStatistics _iter256 : struct.colStats)
+        for (ColumnStatistics _iter290 : struct.colStats)
         {
-          _iter256.write(oprot);
+          _iter290.write(oprot);
         }
       }
     }
@@ -421,14 +421,14 @@ public class SetPartitionsStatsRequest implements org.apache.thrift.TBase<SetPar
     public void read(org.apache.thrift.protocol.TProtocol prot, SetPartitionsStatsRequest struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       {
-        org.apache.thrift.protocol.TList _list257 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-        struct.colStats = new ArrayList<ColumnStatistics>(_list257.size);
-        for (int _i258 = 0; _i258 < _list257.size; ++_i258)
+        org.apache.thrift.protocol.TList _list291 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+        struct.colStats = new ArrayList<ColumnStatistics>(_list291.size);
+        for (int _i292 = 0; _i292 < _list291.size; ++_i292)
         {
-          ColumnStatistics _elem259; // required
-          _elem259 = new ColumnStatistics();
-          _elem259.read(iprot);
-          struct.colStats.add(_elem259);
+          ColumnStatistics _elem293; // required
+          _elem293 = new ColumnStatistics();
+          _elem293.read(iprot);
+          struct.colStats.add(_elem293);
         }
       }
       struct.setColStatsIsSet(true);

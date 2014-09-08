@@ -19,21 +19,17 @@ package org.apache.hadoop.hive.shims;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.security.AccessControlException;
-import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.BlockLocation;
@@ -302,6 +298,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
 
       mr = new MiniTezCluster("hive", numberOfTaskTrackers);
       conf.set("fs.defaultFS", nameNode);
+      conf.set("tez.am.log.level", "DEBUG");
       conf.set(MRJobConfig.MR_AM_STAGING_DIR, "/apps_staging_dir");
       mr.init(conf);
       mr.start();
@@ -815,5 +812,15 @@ public class Hadoop23Shims extends HadoopShimsSecure {
         throw new IOException(err.getMessage(), err);
       }
     }
+  }
+
+  @Override
+  public boolean supportStickyBit() {
+    return true;
+  }
+
+  @Override
+  public boolean hasStickyBit(FsPermission permission) {
+    return permission.getStickyBit();
   }
 }

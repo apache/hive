@@ -164,6 +164,8 @@ public class AcidUtils {
     return result;
   }
 
+  public enum Operation { NOT_ACID, INSERT, UPDATE, DELETE }
+
   public static interface Directory {
 
     /**
