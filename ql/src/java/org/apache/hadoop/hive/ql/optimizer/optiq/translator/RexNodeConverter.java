@@ -1,3 +1,20 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.apache.hadoop.hive.ql.optimizer.optiq.translator;
 
 import java.math.BigDecimal;
@@ -9,6 +26,8 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+
+import net.hydromatic.avatica.ByteString;
 
 import org.apache.hadoop.hive.common.type.Decimal128;
 import org.apache.hadoop.hive.common.type.HiveChar;
@@ -28,12 +47,10 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseCompare;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseNumeric;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFTimestamp;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToBinary;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToChar;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToDate;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToDecimal;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToUnixTimeStamp;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToVarchar;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
@@ -204,7 +221,7 @@ public class RexNodeConverter {
           || (udf instanceof GenericUDFToBinary) || castExprUsingUDFBridge(udf)) {
         // || (udf instanceof GenericUDFToUnixTimeStamp) || (udf instanceof
         // GenericUDFTimestamp) || castExprUsingUDFBridge(udf)) {
-        castExpr = m_cluster.getRexBuilder().makeCast(
+        castExpr = m_cluster.getRexBuilder().makeAbstractCast(
             TypeConverter.convert(func.getTypeInfo(), m_cluster.getTypeFactory()),
             childRexNodeLst.get(0));
       }
@@ -264,7 +281,9 @@ public class RexNodeConverter {
       optiqLiteral = rexBuilder.makeLiteral(((Boolean) value).booleanValue());
       break;
     case BYTE:
-      optiqLiteral = rexBuilder.makeExactLiteral(new BigDecimal((Short) value));
+      byte[] byteArray = new byte[] { (Byte) value};
+      ByteString bs = new ByteString(byteArray);
+      optiqLiteral = rexBuilder.makeBinaryLiteral(bs);
       break;
     case SHORT:
       optiqLiteral = rexBuilder.makeExactLiteral(new BigDecimal((Short) value));

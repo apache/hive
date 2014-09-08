@@ -1,3 +1,20 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.apache.hadoop.hive.ql.optimizer.optiq.reloperators;
 
 import java.util.ArrayList;
@@ -30,7 +47,7 @@ public class HiveProjectRel extends ProjectRelBase implements HiveRel {
 
   public static final ProjectFactory DEFAULT_PROJECT_FACTORY = new HiveProjectFactoryImpl();
 
-  private final List<Integer>        m_virtualCols;
+  private final List<Integer>        virtualCols;
 
   /**
    * Creates a HiveProjectRel.
@@ -49,7 +66,7 @@ public class HiveProjectRel extends ProjectRelBase implements HiveRel {
   public HiveProjectRel(RelOptCluster cluster, RelTraitSet traitSet, RelNode child,
       List<? extends RexNode> exps, RelDataType rowType, int flags) {
     super(cluster, traitSet, child, exps, rowType, flags);
-    m_virtualCols = ImmutableList.copyOf(HiveOptiqUtil.getVirtualCols(exps));
+    virtualCols = ImmutableList.copyOf(HiveOptiqUtil.getVirtualCols(exps));
   }
 
   /**
@@ -73,7 +90,7 @@ public class HiveProjectRel extends ProjectRelBase implements HiveRel {
    */
   public static HiveProjectRel create(RelOptCluster cluster, RelNode child, List<? extends RexNode> exps,
       RelDataType rowType, final List<RelCollation> collationList) {
-    RelTraitSet traitSet = TraitsUtil.getSelectTraitSet(cluster, child);
+    RelTraitSet traitSet = TraitsUtil.getDefaultTraitSet(cluster);
     return new HiveProjectRel(cluster, traitSet, child, exps, rowType, Flags.BOXED);
   }
 
@@ -145,7 +162,7 @@ public class HiveProjectRel extends ProjectRelBase implements HiveRel {
   }
 
   public List<Integer> getVirtualCols() {
-    return m_virtualCols;
+    return virtualCols;
   }
 
   /**
