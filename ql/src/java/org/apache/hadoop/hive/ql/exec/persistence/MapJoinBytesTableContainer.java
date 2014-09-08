@@ -14,10 +14,10 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorHashKeyWrapper;
 import org.apache.hadoop.hive.ql.exec.vector.VectorHashKeyWrapperBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.serde2.SerDe;
-import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.ByteStream.Output;
 import org.apache.hadoop.hive.serde2.ByteStream.RandomAccessOutput;
+import org.apache.hadoop.hive.serde2.SerDe;
+import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.WriteBuffers;
 import org.apache.hadoop.hive.serde2.binarysortable.BinarySortableSerDe;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
@@ -57,7 +57,7 @@ public class MapJoinBytesTableContainer implements MapJoinTableContainer {
   private boolean[] sortableSortOrders;
   private KeyValueHelper writeHelper;
 
-  private List<Object> EMPTY_LIST = new ArrayList<Object>(0);
+  private final List<Object> EMPTY_LIST = new ArrayList<Object>(0);
 
   public MapJoinBytesTableContainer(Configuration hconf,
       MapJoinObjectSerDeContext valCtx, long keyCount) throws SerDeException {
@@ -476,6 +476,7 @@ public class MapJoinBytesTableContainer implements MapJoinTableContainer {
       return valueStruct.getFieldsAsList(); // TODO: should we unset bytes after that?
     }
 
+    @Override
     public void addRow(List<Object> t) {
       if (dummyRow != null || !refs.isEmpty()) {
         throw new RuntimeException("Cannot add rows when not empty");
@@ -484,9 +485,11 @@ public class MapJoinBytesTableContainer implements MapJoinTableContainer {
     }
 
     // Various unsupported methods.
+    @Override
     public void addRow(Object[] value) {
       throw new RuntimeException(this.getClass().getCanonicalName() + " cannot add arrays");
     }
+    @Override
     public void write(MapJoinObjectSerDeContext valueContext, ObjectOutputStream out) {
       throw new RuntimeException(this.getClass().getCanonicalName() + " cannot be serialized");
     }

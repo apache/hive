@@ -1422,7 +1422,7 @@ sub run
             $testStatuses->{$testName} = $failedStr;
 
           }
-          $msg= "$msg at " . time . "\n";
+          $msg .= "\nEnding test $testName at " . $endTime ."\n";
           #print $msg;
           print $log $msg;
           $duration = $endTime - $beginTime;
@@ -1435,6 +1435,7 @@ sub run
 
         if ($@) {
           $msg= "ERROR $subName at : ".__LINE__." Failed to run test $testName <$@>\n";
+          $msg .= "Ending test $testName at " . time ."\n";
           #print $msg;
           print $log $msg;
           $testStatuses->{$testName} = $abortedStr;

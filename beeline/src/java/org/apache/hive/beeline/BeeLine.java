@@ -57,7 +57,6 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -618,9 +617,9 @@ public class BeeLine implements Closeable {
 
   }
 
-  boolean initArgs(String[] args) {
-    List<String> commands = new LinkedList<String>();
-    List<String> files = new LinkedList<String>();
+  int initArgs(String[] args) {
+    List<String> commands = Collections.emptyList();
+    List<String> files = Collections.emptyList();
 
     CommandLine cl;
     BeelineParser beelineParser;
@@ -630,7 +629,8 @@ public class BeeLine implements Closeable {
       cl = beelineParser.parse(options, args);
     } catch (ParseException e1) {
       output(e1.getMessage());
-      return false;
+      usage();
+      return -1;
     }
 
     String driver = null, user = null, pass = null, url = null;
@@ -638,8 +638,8 @@ public class BeeLine implements Closeable {
 
 
     if (cl.hasOption("help")) {
-      // Return false here, so usage will be printed.
-      return false;
+      usage();
+      return 0;
     }
 
     Properties hiveVars = cl.getOptionProperties("hivevar");
@@ -690,7 +690,8 @@ public class BeeLine implements Closeable {
       dispatch("!properties " + i.next());
     }
 
-    if (commands.size() > 0) {
+    int code = 0;
+    if (!commands.isEmpty()) {
       // for single command execute, disable color
       getOpts().setColor(false);
       getOpts().setHeaderInterval(-1);
@@ -698,11 +699,13 @@ public class BeeLine implements Closeable {
       for (Iterator<String> i = commands.iterator(); i.hasNext();) {
         String command = i.next().toString();
         debug(loc("executing-command", command));
-        dispatch(command);
+        if (!dispatch(command)) {
+          code++;
+        }
       }
       exit = true; // execute and exit
     }
-    return true;
+    return code;
   }
 
 
@@ -720,9 +723,9 @@ public class BeeLine implements Closeable {
     }
 
     try {
-      if (!initArgs(args)) {
-        usage();
-        return ERRNO_ARGS;
+      int code = initArgs(args);
+      if (code != 0) {
+        return code;
       }
 
       if (getOpts().getScriptFile() != null) {

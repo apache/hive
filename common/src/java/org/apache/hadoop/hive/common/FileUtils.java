@@ -649,19 +649,34 @@ public final class FileUtils {
     //   if a user is a super user. Also super users running hive queries is not a common
     //   use case. super users can also do a chown to be able to drop the file
 
-    final FileSystem fs = path.getFileSystem(conf);
-    if (!fs.exists(path)) {
+    if(path == null) {
       // no file/dir to be deleted
       return;
     }
-    Path parPath = path.getParent();
+
+    final FileSystem fs = path.getFileSystem(conf);
     // check user has write permissions on the parent dir
-    FileStatus stat = fs.getFileStatus(path);
+    FileStatus stat = null;
+    try {
+      stat = fs.getFileStatus(path);
+    } catch (FileNotFoundException e) {
+      // ignore
+    }
+    if (stat == null) {
+      // no file/dir to be deleted
+      return;
+    }
     FileUtils.checkFileAccessWithImpersonation(fs, stat, FsAction.WRITE, user);
 
+    HadoopShims shims = ShimLoader.getHadoopShims();
+    if (!shims.supportStickyBit()) {
+      // not supports sticky bit
+      return;
+    }
+
     // check if sticky bit is set on the parent dir
-    FileStatus parStatus = fs.getFileStatus(parPath);
-    if (!parStatus.getPermission().getStickyBit()) {
+    FileStatus parStatus = fs.getFileStatus(path.getParent());
+    if (!shims.hasStickyBit(parStatus.getPermission())) {
       // no sticky bit, so write permission on parent dir is sufficient
       // no further checks needed
       return;

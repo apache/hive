@@ -41,7 +41,6 @@ import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument.TruthValue;
 import org.apache.hadoop.hive.ql.io.sarg.TestSearchArgumentImpl;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
-import org.apache.hadoop.io.DataInputBuffer;
 import org.apache.hadoop.io.DataOutputBuffer;
 import org.junit.Test;
 import org.mockito.MockSettings;

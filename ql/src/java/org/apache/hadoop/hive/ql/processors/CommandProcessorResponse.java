@@ -76,4 +76,9 @@ public class CommandProcessorResponse {
   public String getSQLState() { return SQLState; }
   public Schema getSchema() { return resSchema; }
   public Throwable getException() { return exception; }
+  public String toString() {
+    return "(" + responseCode + "," + errorMessage + "," + SQLState + 
+      (resSchema == null ? "" : ",") +
+      (exception == null ? "" : exception.getMessage()) + ")";
+  }
 }

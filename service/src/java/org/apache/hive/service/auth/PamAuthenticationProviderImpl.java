@@ -20,32 +20,31 @@ package org.apache.hive.service.auth;
 import javax.security.sasl.AuthenticationException;
 
 import net.sf.jpam.Pam;
-
 import org.apache.hadoop.hive.conf.HiveConf;
 
 public class PamAuthenticationProviderImpl implements PasswdAuthenticationProvider {
 
   private final String pamServiceNames;
 
-  PamAuthenticationProviderImpl () {
+  PamAuthenticationProviderImpl() {
     HiveConf conf = new HiveConf();
-    this.pamServiceNames = conf.getVar(HiveConf.ConfVars.HIVE_SERVER2_PAM_SERVICES);
+    pamServiceNames = conf.getVar(HiveConf.ConfVars.HIVE_SERVER2_PAM_SERVICES);
   }
 
   @Override
-  public void Authenticate(String user, String  password)
-      throws AuthenticationException {
+  public void Authenticate(String user, String password) throws AuthenticationException {
 
     if (pamServiceNames == null || pamServiceNames.trim().isEmpty()) {
       throw new AuthenticationException("No PAM services are set.");
     }
 
-    String pamServices[] = pamServiceNames.split(",");
+    String[] pamServices = pamServiceNames.split(",");
     for (String pamService : pamServices) {
       Pam pam = new Pam(pamService);
       boolean isAuthenticated = pam.authenticateSuccessful(user, password);
       if (!isAuthenticated) {
-        throw new AuthenticationException("Error authenticating with the PAM service: " + pamService);
+        throw new AuthenticationException(
+          "Error authenticating with the PAM service: " + pamService);
       }
     }
   }

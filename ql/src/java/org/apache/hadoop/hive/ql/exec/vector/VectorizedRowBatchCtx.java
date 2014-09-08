@@ -278,7 +278,7 @@ public class VectorizedRowBatchCtx {
         case PRIMITIVE: {
           PrimitiveObjectInspector poi = (PrimitiveObjectInspector) foi;
           // Vectorization currently only supports the following data types:
-          // BOOLEAN, BYTE, SHORT, INT, LONG, FLOAT, DOUBLE, BINARY, STRING, TIMESTAMP,
+          // BOOLEAN, BYTE, SHORT, INT, LONG, FLOAT, DOUBLE, BINARY, STRING, CHAR, VARCHAR, TIMESTAMP,
           // DATE and DECIMAL
           switch (poi.getPrimitiveCategory()) {
           case BOOLEAN:
@@ -296,6 +296,8 @@ public class VectorizedRowBatchCtx {
             break;
           case BINARY:
           case STRING:
+          case CHAR:
+          case VARCHAR:
             result.cols[j] = new BytesColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
             break;
           case DECIMAL:
@@ -544,7 +546,9 @@ public class VectorizedRowBatchCtx {
           }
           break;
 
-        case STRING: {
+        case STRING:
+        case CHAR:
+        case VARCHAR: {
           BytesColumnVector bcv = (BytesColumnVector) batch.cols[colIndex];
           String sVal = (String) value;
           if (sVal == null) {
@@ -566,13 +570,17 @@ public class VectorizedRowBatchCtx {
     }
   }
 
-  private void addScratchColumnsToBatch(VectorizedRowBatch vrb) {
+  private void addScratchColumnsToBatch(VectorizedRowBatch vrb) throws HiveException {
     if (columnTypeMap != null && !columnTypeMap.isEmpty()) {
       int origNumCols = vrb.numCols;
       int newNumCols = vrb.cols.length+columnTypeMap.keySet().size();
       vrb.cols = Arrays.copyOf(vrb.cols, newNumCols);
       for (int i = origNumCols; i < newNumCols; i++) {
-        vrb.cols[i] = allocateColumnVector(columnTypeMap.get(i),
+       String typeName = columnTypeMap.get(i);
+       if (typeName == null) {
+         throw new HiveException("No type found for column type entry " + i);
+       }
+        vrb.cols[i] = allocateColumnVector(typeName,
             VectorizedRowBatch.DEFAULT_SIZE);
       }
       vrb.numCols = vrb.cols.length;
@@ -599,13 +607,17 @@ public class VectorizedRowBatchCtx {
   private ColumnVector allocateColumnVector(String type, int defaultSize) {
     if (type.equalsIgnoreCase("double")) {
       return new DoubleColumnVector(defaultSize);
-    } else if (type.equalsIgnoreCase("string")) {
+    } else if (VectorizationContext.isStringFamily(type)) {
       return new BytesColumnVector(defaultSize);
     } else if (VectorizationContext.decimalTypePattern.matcher(type).matches()){
       int [] precisionScale = getScalePrecisionFromDecimalType(type);
       return new DecimalColumnVector(defaultSize, precisionScale[0], precisionScale[1]);
-    } else {
+    } else if (type.equalsIgnoreCase("long") ||
+               type.equalsIgnoreCase("date") ||
+               type.equalsIgnoreCase("timestamp")) {
       return new LongColumnVector(defaultSize);
+    } else {
+      throw new Error("Cannot allocate vector column for " + type);
     }
   }
 

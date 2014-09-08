@@ -27,6 +27,15 @@ SHOW TABLES IN default;
 SHOW TABLES IN test_db "test*";
 SHOW TABLES IN test_db LIKE "nomatch";
 
+-- SHOW TABLE EXTENDED basic syntax tests and wildcard
+SHOW TABLE EXTENDED IN test_db LIKE foo;
+SHOW TABLE EXTENDED IN test_db LIKE "foo";
+SHOW TABLE EXTENDED IN test_db LIKE 'foo';
+SHOW TABLE EXTENDED IN test_db LIKE `foo`;
+SHOW TABLE EXTENDED IN test_db LIKE 'ba*';
+SHOW TABLE EXTENDED IN test_db LIKE "ba*";
+SHOW TABLE EXTENDED IN test_db LIKE `ba*`;
+
 -- SHOW TABLES from a database with a name that requires escaping
 CREATE DATABASE `database`;
 USE `database`;

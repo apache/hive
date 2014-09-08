@@ -369,7 +369,7 @@ public final class ColumnPrunerProcFactory {
         return null;
       }
       cols = cols == null ? new ArrayList<String>() : cols;
-      
+
       cppCtx.getPrunedColLists().put((Operator<? extends OperatorDesc>) nd,
           cols);
       RowResolver inputRR = cppCtx.getOpToParseCtxMap().get(scanOp).getRowResolver();
@@ -479,13 +479,13 @@ public final class ColumnPrunerProcFactory {
           flags[index] = true;
           colLists = Utilities.mergeUniqElems(colLists, valCols.get(index).getCols());
         }
-        
+
         Collections.sort(colLists);
         pruneReduceSinkOperator(flags, op, cppCtx);
         cppCtx.getPrunedColLists().put(op, colLists);
         return null;
       }
-      
+
       // Reduce Sink contains the columns needed - no need to aggregate from
       // children
       for (ExprNodeDesc val : valCols) {
@@ -519,7 +519,7 @@ public final class ColumnPrunerProcFactory {
       if (cols == null) {
         return null;
       }
-      
+
       Map<String, ExprNodeDesc> colExprMap = op.getColumnExprMap();
       // As columns go down the DAG, the LVJ will transform internal column
       // names from something like 'key' to '_col0'. Because of this, we need
@@ -604,8 +604,8 @@ public final class ColumnPrunerProcFactory {
         Object... nodeOutputs) throws SemanticException {
       SelectOperator op = (SelectOperator) nd;
       ColumnPrunerProcCtx cppCtx = (ColumnPrunerProcCtx) ctx;
-      
-      
+
+
       if (op.getChildOperators() != null) {
         for (Operator<? extends OperatorDesc> child : op.getChildOperators()) {
           // UDTF is not handled yet, so the parent SelectOp of UDTF should just assume
@@ -858,11 +858,11 @@ public final class ColumnPrunerProcFactory {
     if (inputSchema != null) {
       ArrayList<ColumnInfo> rs = new ArrayList<ColumnInfo>();
       ArrayList<ColumnInfo> inputCols = inputSchema.getSignature();
-    	for (ColumnInfo i: inputCols) {
+      for (ColumnInfo i: inputCols) {
         if (cols.contains(i.getInternalName())) {
           rs.add(i);
         }
-    	}
+      }
       op.getSchema().setSignature(rs);
     }
   }

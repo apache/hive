@@ -179,6 +179,8 @@ public abstract class VectorUDFTimestampFieldLong extends VectorExpression {
           }
         }
         break;
+      default:
+        throw new Error("Unsupported input type " + inputTypes[0].name());
     }
   }
 
@@ -218,7 +220,7 @@ public abstract class VectorUDFTimestampFieldLong extends VectorExpression {
     b.setMode(VectorExpressionDescriptor.Mode.PROJECTION)
         .setNumArguments(1)
         .setArgumentTypes(
-            VectorExpressionDescriptor.ArgumentType.LONG)
+            VectorExpressionDescriptor.ArgumentType.DATETIME_FAMILY)
         .setInputExpressionTypes(
             VectorExpressionDescriptor.InputExpressionType.COLUMN);
     return b.build();

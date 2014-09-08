@@ -38,7 +38,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.ql.parse.SubQueryDiagnostic.QBSubQueryRewrite;
 
 public class QBSubQuery implements ISubQueryJoinInfo {
-  
+
   public static enum SubQueryType {
     EXISTS,
     NOT_EXISTS,
@@ -149,16 +149,16 @@ public class QBSubQuery implements ISubQueryJoinInfo {
   }
 
   /*
-   * This class captures the information about a 
+   * This class captures the information about a
    * conjunct in the where clause of the SubQuery.
    * For a equality predicate it capture for each side:
    * - the AST
    * - the type of Expression (basically what columns are referenced)
-   * - for Expressions that refer the parent it captures the 
+   * - for Expressions that refer the parent it captures the
    *   parent's ColumnInfo. In case of outer Aggregation expressions
    *   we need this to introduce a new mapping in the OuterQuery
    *   RowResolver. A join condition must use qualified column references,
-   *   so we generate a new name for the aggr expression and use it in the 
+   *   so we generate a new name for the aggr expression and use it in the
    *   joining condition.
    *   For e.g.
    *   having exists ( select x from R2 where y = min(R1.z) )
@@ -174,8 +174,8 @@ public class QBSubQuery implements ISubQueryJoinInfo {
     private final ColumnInfo leftOuterColInfo;
     private final ColumnInfo rightOuterColInfo;
 
-   Conjunct(ASTNode leftExpr, 
-        ASTNode rightExpr, 
+   Conjunct(ASTNode leftExpr,
+        ASTNode rightExpr,
         ExprType leftExprType,
         ExprType rightExprType,
         ColumnInfo leftOuterColInfo,
@@ -239,8 +239,8 @@ public class QBSubQuery implements ISubQueryJoinInfo {
     Stack<Node> stack;
 
     ConjunctAnalyzer(RowResolver parentQueryRR,
-    		boolean forHavingClause,
-    		String parentQueryNewAlias) {
+        boolean forHavingClause,
+        String parentQueryNewAlias) {
       this.parentQueryRR = parentQueryRR;
       defaultExprProcessor = new DefaultExprProcessor();
       this.forHavingClause = forHavingClause;
@@ -260,13 +260,13 @@ public class QBSubQuery implements ISubQueryJoinInfo {
     private ObjectPair<ExprType,ColumnInfo> analyzeExpr(ASTNode expr) {
       ColumnInfo cInfo = null;
       if ( forHavingClause ) {
-      	try {
-      	  cInfo = parentQueryRR.getExpression(expr);
-      		if ( cInfo != null) {
-      		    return ObjectPair.create(ExprType.REFERS_PARENT, cInfo);
-      	    }
-      	} catch(SemanticException se) {
-      	}
+        try {
+          cInfo = parentQueryRR.getExpression(expr);
+          if ( cInfo != null) {
+              return ObjectPair.create(ExprType.REFERS_PARENT, cInfo);
+            }
+        } catch(SemanticException se) {
+        }
       }
       if ( expr.getType() == HiveParser.DOT) {
         ASTNode dot = firstDot(expr);
@@ -308,12 +308,12 @@ public class QBSubQuery implements ISubQueryJoinInfo {
         ObjectPair<ExprType,ColumnInfo> leftInfo = analyzeExpr(left);
         ObjectPair<ExprType,ColumnInfo> rightInfo = analyzeExpr(right);
 
-        return new Conjunct(left, right, 
+        return new Conjunct(left, right,
             leftInfo.getFirst(), rightInfo.getFirst(),
             leftInfo.getSecond(), rightInfo.getSecond());
       } else {
         ObjectPair<ExprType,ColumnInfo> sqExprInfo = analyzeExpr(conjunct);
-        return new Conjunct(conjunct, null, 
+        return new Conjunct(conjunct, null,
             sqExprInfo.getFirst(), null,
             sqExprInfo.getSecond(), sqExprInfo.getSecond());
       }
@@ -354,86 +354,86 @@ public class QBSubQuery implements ISubQueryJoinInfo {
   }
 
   /*
-   * When transforming a Not In SubQuery we need to check for nulls in the 
+   * When transforming a Not In SubQuery we need to check for nulls in the
    * Joining expressions of the SubQuery. If there are nulls then the SubQuery always
-   * return false. For more details see 
+   * return false. For more details see
    * https://issues.apache.org/jira/secure/attachment/12614003/SubQuerySpec.pdf
-   * 
+   *
    * Basically, SQL semantics say that:
    * - R1.A not in (null, 1, 2, ...)
-   *   is always false. 
-   *   A 'not in' operator is equivalent to a '<> all'. Since a not equal check with null 
+   *   is always false.
+   *   A 'not in' operator is equivalent to a '<> all'. Since a not equal check with null
    *   returns false, a not in predicate against aset with a 'null' value always returns false.
-   *   
+   *
    * So for not in SubQuery predicates:
    * - we join in a null count predicate.
    * - And the joining condition is that the 'Null Count' query has a count of 0.
-   *   
+   *
    */
   class NotInCheck implements ISubQueryJoinInfo {
-    
+
     private static final String CNT_ALIAS = "c1";
-    
+
     /*
      * expressions in SubQ that are joined to the Outer Query.
      */
     List<ASTNode> subQryCorrExprs;
-    
+
     /*
      * row resolver of the SubQuery.
      * Set by the SemanticAnalyzer after the Plan for the SubQuery is genned.
      * This is neede in case the SubQuery select list contains a TOK_ALLCOLREF
      */
     RowResolver sqRR;
-    
+
     NotInCheck() {
       subQryCorrExprs = new ArrayList<ASTNode>();
     }
-    
+
     void addCorrExpr(ASTNode corrExpr) {
       subQryCorrExprs.add(corrExpr);
     }
-    
+
     public ASTNode getSubQueryAST() {
       ASTNode ast = SubQueryUtils.buildNotInNullCheckQuery(
-          QBSubQuery.this.getSubQueryAST(), 
-          QBSubQuery.this.getAlias(), 
-          CNT_ALIAS, 
+          QBSubQuery.this.getSubQueryAST(),
+          QBSubQuery.this.getAlias(),
+          CNT_ALIAS,
           subQryCorrExprs,
           sqRR);
       SubQueryUtils.setOriginDeep(ast, QBSubQuery.this.originalSQASTOrigin);
       return ast;
     }
-    
+
     public String getAlias() {
       return QBSubQuery.this.getAlias() + "_notin_nullcheck";
     }
-    
+
     public JoinType getJoinType() {
       return JoinType.LEFTSEMI;
     }
-    
+
     public ASTNode getJoinConditionAST() {
-      ASTNode ast = 
+      ASTNode ast =
           SubQueryUtils.buildNotInNullJoinCond(getAlias(), CNT_ALIAS);
       SubQueryUtils.setOriginDeep(ast, QBSubQuery.this.originalSQASTOrigin);
       return ast;
     }
-    
+
     public QBSubQuery getSubQuery() {
       return QBSubQuery.this;
     }
-    
+
     public String getOuterQueryId() {
       return QBSubQuery.this.getOuterQueryId();
     }
-    
+
     void setSQRR(RowResolver sqRR) {
       this.sqRR = sqRR;
     }
-        
+
   }
-  
+
   private final String outerQueryId;
   private final int sqIdx;
   private final String alias;
@@ -455,11 +455,11 @@ public class QBSubQuery implements ISubQueryJoinInfo {
   private int numOfCorrelationExprsAddedToSQSelect;
 
   private boolean groupbyAddedToSQ;
-  
+
   private int numOuterCorrExprsForHaving;
-  
+
   private NotInCheck notInCheck;
-  
+
   private QBSubQueryRewrite subQueryDiagnostic;
 
   public QBSubQuery(String outerQueryId,
@@ -483,11 +483,11 @@ public class QBSubQuery implements ISubQueryJoinInfo {
     originalSQASTOrigin = new ASTNodeOrigin("SubQuery", alias, s, alias, originalSQAST);
     numOfCorrelationExprsAddedToSQSelect = 0;
     groupbyAddedToSQ = false;
-    
+
     if ( operator.getType() == SubQueryType.NOT_IN ) {
       notInCheck = new NotInCheck();
     }
-    
+
     subQueryDiagnostic = SubQueryDiagnostic.getRewrite(this, ctx.getTokenRewriteStream(), ctx);
   }
 
@@ -500,18 +500,18 @@ public class QBSubQuery implements ISubQueryJoinInfo {
   public SubQueryTypeDef getOperator() {
     return operator;
   }
-  
+
   public ASTNode getOriginalSubQueryASTForRewrite() {
     return (operator.getType() == SubQueryType.NOT_EXISTS
-        || operator.getType() == SubQueryType.NOT_IN ? 
-        (ASTNode) originalSQASTOrigin.getUsageNode().getParent() : 
+        || operator.getType() == SubQueryType.NOT_IN ?
+        (ASTNode) originalSQASTOrigin.getUsageNode().getParent() :
         originalSQASTOrigin.getUsageNode());
   }
 
   void validateAndRewriteAST(RowResolver outerQueryRR,
-		  boolean forHavingClause,
-		  String outerQueryAlias,
-		  Set<String> outerQryAliases) throws SemanticException {
+      boolean forHavingClause,
+      String outerQueryAlias,
+      Set<String> outerQryAliases) throws SemanticException {
 
     ASTNode selectClause = (ASTNode) subQueryAST.getChild(1).getChild(1);
 
@@ -519,12 +519,12 @@ public class QBSubQuery implements ISubQueryJoinInfo {
     if ( selectClause.getChild(0).getType() == HiveParser.TOK_HINTLIST ) {
       selectExprStart = 1;
     }
-    
+
     /*
      * Restriction.16.s :: Correlated Expression in Outer Query must not contain
      * unqualified column references.
      */
-    if ( parentQueryExpression != null && !forHavingClause ) { 
+    if ( parentQueryExpression != null && !forHavingClause ) {
         ASTNode u = SubQueryUtils.hasUnQualifiedColumnReferences(parentQueryExpression);
         if ( u != null ) {
           subQueryAST.setOrigin(originalSQASTOrigin);
@@ -532,7 +532,7 @@ public class QBSubQuery implements ISubQueryJoinInfo {
               u, "Correlating expression cannot contain unqualified column references."));
         }
     }
-    
+
     /*
      * Restriction 17.s :: SubQuery cannot use the same table alias as one used in
      * the Outer Query.
@@ -546,14 +546,14 @@ public class QBSubQuery implements ISubQueryJoinInfo {
     }
     if ( sharedAlias != null) {
       ASTNode whereClause = SubQueryUtils.subQueryWhere(subQueryAST);
-      
+
       if ( whereClause != null ) {
         ASTNode u = SubQueryUtils.hasUnQualifiedColumnReferences(whereClause);
         if ( u != null ) {
           subQueryAST.setOrigin(originalSQASTOrigin);
           throw new SemanticException(ErrorMsg.UNSUPPORTED_SUBQUERY_EXPRESSION.getMsg(
               u, "SubQuery cannot use the table alias: " + sharedAlias + "; " +
-              		"this is also an alias in the Outer Query and SubQuery contains a unqualified column reference"));
+                  "this is also an alias in the Outer Query and SubQuery contains a unqualified column reference"));
         }
       }
     }
@@ -641,25 +641,25 @@ public class QBSubQuery implements ISubQueryJoinInfo {
   }
 
   void buildJoinCondition(RowResolver outerQueryRR, RowResolver sqRR,
-		  boolean forHavingClause,
-		  String outerQueryAlias) throws SemanticException {
+      boolean forHavingClause,
+      String outerQueryAlias) throws SemanticException {
     ASTNode parentQueryJoinCond = null;
 
     if ( parentQueryExpression != null ) {
-      
+
       ColumnInfo outerQueryCol = null;
       try {
         outerQueryCol = outerQueryRR.getExpression(parentQueryExpression);
       } catch(SemanticException se) {
       }
-      
+
       parentQueryJoinCond = SubQueryUtils.buildOuterQryToSQJoinCond(
         getOuterQueryExpression(),
         alias,
         sqRR);
-      
+
       if ( outerQueryCol != null ) {
-        rewriteCorrConjunctForHaving(parentQueryJoinCond, true, 
+        rewriteCorrConjunctForHaving(parentQueryJoinCond, true,
             outerQueryAlias, outerQueryRR, outerQueryCol);
       }
       subQueryDiagnostic.addJoinCondition(parentQueryJoinCond, outerQueryCol != null, true);
@@ -682,10 +682,10 @@ public class QBSubQuery implements ISubQueryJoinInfo {
   ASTNode updateOuterQueryFilter(ASTNode outerQryFilter) {
     if (postJoinConditionAST == null ) {
       return outerQryFilter;
-    }  
-    
+    }
+
     subQueryDiagnostic.addPostJoinCondition(postJoinConditionAST);
-    
+
     if ( outerQryFilter == null ) {
       return postJoinConditionAST;
     }
@@ -738,7 +738,7 @@ public class QBSubQuery implements ISubQueryJoinInfo {
    * Additional things for Having clause:
    * - A correlation predicate may refer to an aggregation expression.
    * - This introduces 2 twists to the rewrite:
-   *   a. When analyzing equality predicates we need to analyze each side 
+   *   a. When analyzing equality predicates we need to analyze each side
    *      to see if it is an aggregation expression from the Outer Query.
    *      So for e.g. this is a valid correlation predicate:
    *         R2.x = min(R1.y)
@@ -748,12 +748,12 @@ public class QBSubQuery implements ISubQueryJoinInfo {
    *      to contain a qualified column references.
    *      We handle this by generating a new name for the aggregation expression,
    *      like R1._gby_sq_col_1 and adding this mapping to the Outer Query's
-   *      Row Resolver. Then we construct a joining predicate using this new 
+   *      Row Resolver. Then we construct a joining predicate using this new
    *      name; so in our e.g. the condition would be: R2.x = R1._gby_sq_col_1
    */
   private void rewrite(RowResolver parentQueryRR,
-		  boolean forHavingClause,
-		  String outerQueryAlias) throws SemanticException {
+      boolean forHavingClause,
+      String outerQueryAlias) throws SemanticException {
     ASTNode selectClause = (ASTNode) subQueryAST.getChild(1).getChild(1);
     ASTNode whereClause = SubQueryUtils.subQueryWhere(subQueryAST);
 
@@ -766,7 +766,7 @@ public class QBSubQuery implements ISubQueryJoinInfo {
     SubQueryUtils.extractConjuncts(searchCond, conjuncts);
 
     ConjunctAnalyzer conjunctAnalyzer = new ConjunctAnalyzer(parentQueryRR,
-    		forHavingClause, outerQueryAlias);
+        forHavingClause, outerQueryAlias);
     ASTNode sqNewSearchCond = null;
 
     for(ASTNode conjunctAST : conjuncts) {
@@ -805,7 +805,7 @@ public class QBSubQuery implements ISubQueryJoinInfo {
           corrCondLeftIsRewritten = true;
           if ( forHavingClause && conjunct.getRightOuterColInfo() != null ) {
             corrCondRightIsRewritten = true;
-            rewriteCorrConjunctForHaving(conjunctAST, false, outerQueryAlias, 
+            rewriteCorrConjunctForHaving(conjunctAST, false, outerQueryAlias,
                 parentQueryRR, conjunct.getRightOuterColInfo());
           }
           ASTNode joinPredciate = SubQueryUtils.alterCorrelatedPredicate(
@@ -829,7 +829,7 @@ public class QBSubQuery implements ISubQueryJoinInfo {
           corrCondRightIsRewritten = true;
           if ( forHavingClause && conjunct.getLeftOuterColInfo() != null ) {
             corrCondLeftIsRewritten = true;
-            rewriteCorrConjunctForHaving(conjunctAST, true, outerQueryAlias, 
+            rewriteCorrConjunctForHaving(conjunctAST, true, outerQueryAlias,
                 parentQueryRR, conjunct.getLeftOuterColInfo());
           }
           ASTNode joinPredciate = SubQueryUtils.alterCorrelatedPredicate(
@@ -901,7 +901,7 @@ public class QBSubQuery implements ISubQueryJoinInfo {
     for(ASTNode child : newChildren ) {
       subQueryAST.addChild(child);
     }
-    
+
     subQueryDiagnostic.setAddGroupByClause();
 
     return groupBy;
@@ -927,26 +927,26 @@ public class QBSubQuery implements ISubQueryJoinInfo {
   public int getNumOfCorrelationExprsAddedToSQSelect() {
     return numOfCorrelationExprsAddedToSQSelect;
   }
-  
-    
+
+
   public QBSubQueryRewrite getDiagnostic() {
     return subQueryDiagnostic;
   }
-  
+
   public QBSubQuery getSubQuery() {
     return this;
   }
-  
+
   NotInCheck getNotInCheck() {
     return notInCheck;
   }
-  
+
   private void rewriteCorrConjunctForHaving(ASTNode conjunctASTNode,
       boolean refersLeft,
       String outerQueryAlias,
       RowResolver outerQueryRR,
       ColumnInfo outerQueryCol) {
-    
+
     String newColAlias = "_gby_sq_col_" + numOuterCorrExprsForHaving++;
     ASTNode outerExprForCorr = SubQueryUtils.createColRefAST(outerQueryAlias, newColAlias);
     if ( refersLeft ) {
@@ -956,5 +956,5 @@ public class QBSubQuery implements ISubQueryJoinInfo {
     }
     outerQueryRR.put(outerQueryAlias, newColAlias, outerQueryCol);
   }
-      
+
 }

@@ -51,6 +51,7 @@ import org.apache.hadoop.hive.ql.io.RecordIdentifier;
 import org.apache.hadoop.hive.ql.io.StatsProvidingRecordReader;
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
+import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentFactory;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument.TruthValue;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
@@ -279,10 +280,10 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     } else {
       SearchArgument sarg;
       if (serializedPushdown != null) {
-        sarg = SearchArgument.FACTORY.create
+        sarg = SearchArgumentFactory.create
             (Utilities.deserializeExpression(serializedPushdown));
       } else {
-        sarg = SearchArgument.FACTORY.create(sargPushdown);
+        sarg = SearchArgumentFactory.create(sargPushdown);
       }
       LOG.info("ORC pushdown predicate: " + sarg);
       String[] neededColumnNames = columnNamesString.split(",");
@@ -910,31 +911,31 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
 
   static List<OrcSplit> generateSplitsInfo(Configuration conf)
       throws IOException {
-	  // use threads to resolve directories into splits
-	  Context context = new Context(conf);
-	  for(Path dir: getInputPaths(conf)) {
-	    FileSystem fs = dir.getFileSystem(conf);
-	    context.schedule(new FileGenerator(context, fs, dir));
-	  }
-	  context.waitForTasks();
-	  // deal with exceptions
-	  if (!context.errors.isEmpty()) {
-	    List<IOException> errors =
-	        new ArrayList<IOException>(context.errors.size());
-	    for(Throwable th: context.errors) {
-	      if (th instanceof IOException) {
-	        errors.add((IOException) th);
-	      } else {
-	        throw new RuntimeException("serious problem", th);
-	      }
-	    }
-	    throw new InvalidInputException(errors);
-	  }
+    // use threads to resolve directories into splits
+    Context context = new Context(conf);
+    for(Path dir: getInputPaths(conf)) {
+      FileSystem fs = dir.getFileSystem(conf);
+      context.schedule(new FileGenerator(context, fs, dir));
+    }
+    context.waitForTasks();
+    // deal with exceptions
+    if (!context.errors.isEmpty()) {
+      List<IOException> errors =
+          new ArrayList<IOException>(context.errors.size());
+      for(Throwable th: context.errors) {
+        if (th instanceof IOException) {
+          errors.add((IOException) th);
+        } else {
+          throw new RuntimeException("serious problem", th);
+        }
+      }
+      throw new InvalidInputException(errors);
+    }
     if (context.cacheStripeDetails) {
       LOG.info("FooterCacheHitRatio: " + context.cacheHitCounter.get() + "/"
           + context.numFilesCounter.get());
     }
-	  return context.splits;
+    return context.splits;
   }
 
   @Override
@@ -998,14 +999,14 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
           ((FileSplit) inputSplit).getPath(),
           OrcFile.readerOptions(conf)), conf, (FileSplit) inputSplit);
     }
-    
+
     OrcSplit split = (OrcSplit) inputSplit;
     reporter.setStatus(inputSplit.toString());
 
     Options options = new Options(conf).reporter(reporter);
     final RowReader<OrcStruct> inner = getReader(inputSplit, options);
-    
-    
+
+
     /*Even though there are no delta files, we still need to produce row ids so that an
     * UPDATE or DELETE statement would work on a table which didn't have any previous updates*/
     if (split.isOriginal() && split.getDeltas().isEmpty()) {

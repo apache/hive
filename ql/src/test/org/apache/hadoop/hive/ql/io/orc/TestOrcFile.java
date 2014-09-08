@@ -42,7 +42,9 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.io.orc.OrcFile.Version;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
+import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentFactory;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
@@ -1684,7 +1686,7 @@ public class TestOrcFile {
   }
 
   @Test
-  public void testMemoryManagement() throws Exception {
+  public void testMemoryManagementV11() throws Exception {
     ObjectInspector inspector;
     synchronized (TestOrcFile.class) {
       inspector = ObjectInspectorFactory.getReflectionObjectInspector
@@ -1699,7 +1701,8 @@ public class TestOrcFile {
                                          .stripeSize(50000)
                                          .bufferSize(100)
                                          .rowIndexStride(0)
-                                         .memory(memory));
+                                         .memory(memory)
+                                         .version(Version.V_0_11));
     assertEquals(testFilePath, memory.path);
     for(int i=0; i < 2500; ++i) {
       writer.addRow(new InnerStruct(i*300, Integer.toHexString(10*i)));
@@ -1715,6 +1718,45 @@ public class TestOrcFile {
           stripe.getDataLength() < 5000);
     }
     assertEquals(25, i);
+    assertEquals(2500, reader.getNumberOfRows());
+  }
+
+  @Test
+  public void testMemoryManagementV12() throws Exception {
+    ObjectInspector inspector;
+    synchronized (TestOrcFile.class) {
+      inspector = ObjectInspectorFactory.getReflectionObjectInspector
+          (InnerStruct.class,
+              ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
+    }
+    MyMemoryManager memory = new MyMemoryManager(conf, 10000, 0.1);
+    Writer writer = OrcFile.createWriter(testFilePath,
+                                         OrcFile.writerOptions(conf)
+                                         .inspector(inspector)
+                                         .compress(CompressionKind.NONE)
+                                         .stripeSize(50000)
+                                         .bufferSize(100)
+                                         .rowIndexStride(0)
+                                         .memory(memory)
+                                         .version(Version.V_0_12));
+    assertEquals(testFilePath, memory.path);
+    for(int i=0; i < 2500; ++i) {
+      writer.addRow(new InnerStruct(i*300, Integer.toHexString(10*i)));
+    }
+    writer.close();
+    assertEquals(null, memory.path);
+    Reader reader = OrcFile.createReader(testFilePath,
+        OrcFile.readerOptions(conf).filesystem(fs));
+    int i = 0;
+    for(StripeInformation stripe: reader.getStripes()) {
+      i += 1;
+      assertTrue("stripe " + i + " is too long at " + stripe.getDataLength(),
+          stripe.getDataLength() < 5000);
+    }
+    // with HIVE-7832, the dictionaries will be disabled after writing the first
+    // stripe as there are too many distinct values. Hence only 3 stripes as
+    // compared to 25 stripes in version 0.11 (above test case)
+    assertEquals(3, i);
     assertEquals(2500, reader.getNumberOfRows());
   }
 
@@ -1736,7 +1778,7 @@ public class TestOrcFile {
         OrcFile.readerOptions(conf).filesystem(fs));
     assertEquals(3500, reader.getNumberOfRows());
 
-    SearchArgument sarg = SearchArgument.FACTORY.newBuilder()
+    SearchArgument sarg = SearchArgumentFactory.newBuilder()
         .startAnd()
           .startNot()
              .lessThan("int1", 300000)
@@ -1760,7 +1802,7 @@ public class TestOrcFile {
     assertEquals(3500, rows.getRowNumber());
 
     // look through the file with no rows selected
-    sarg = SearchArgument.FACTORY.newBuilder()
+    sarg = SearchArgumentFactory.newBuilder()
         .startAnd()
           .lessThan("int1", 0)
         .end()
@@ -1773,7 +1815,7 @@ public class TestOrcFile {
     assertTrue(!rows.hasNext());
 
     // select first 100 and last 100 rows
-    sarg = SearchArgument.FACTORY.newBuilder()
+    sarg = SearchArgumentFactory.newBuilder()
         .startOr()
           .lessThan("int1", 300 * 100)
           .startNot()

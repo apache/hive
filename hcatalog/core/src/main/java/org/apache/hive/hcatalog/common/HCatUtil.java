@@ -44,6 +44,7 @@ import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -425,7 +426,7 @@ public class HCatUtil {
     try {
       Class<? extends HiveStorageHandler> handlerClass =
         (Class<? extends HiveStorageHandler>) Class
-          .forName(storageHandler, true, JavaUtils.getClassLoader());
+          .forName(storageHandler, true, Utilities.getSessionSpecifiedClassLoader());
       return (HiveStorageHandler) ReflectionUtils.newInstance(
         handlerClass, conf);
     } catch (ClassNotFoundException e) {

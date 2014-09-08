@@ -165,13 +165,13 @@ public class RequestPartsSpec extends org.apache.thrift.TUnion<RequestPartsSpec,
           if (field.type == NAMES_FIELD_DESC.type) {
             List<String> names;
             {
-              org.apache.thrift.protocol.TList _list370 = iprot.readListBegin();
-              names = new ArrayList<String>(_list370.size);
-              for (int _i371 = 0; _i371 < _list370.size; ++_i371)
+              org.apache.thrift.protocol.TList _list404 = iprot.readListBegin();
+              names = new ArrayList<String>(_list404.size);
+              for (int _i405 = 0; _i405 < _list404.size; ++_i405)
               {
-                String _elem372; // required
-                _elem372 = iprot.readString();
-                names.add(_elem372);
+                String _elem406; // required
+                _elem406 = iprot.readString();
+                names.add(_elem406);
               }
               iprot.readListEnd();
             }
@@ -184,14 +184,14 @@ public class RequestPartsSpec extends org.apache.thrift.TUnion<RequestPartsSpec,
           if (field.type == EXPRS_FIELD_DESC.type) {
             List<DropPartitionsExpr> exprs;
             {
-              org.apache.thrift.protocol.TList _list373 = iprot.readListBegin();
-              exprs = new ArrayList<DropPartitionsExpr>(_list373.size);
-              for (int _i374 = 0; _i374 < _list373.size; ++_i374)
+              org.apache.thrift.protocol.TList _list407 = iprot.readListBegin();
+              exprs = new ArrayList<DropPartitionsExpr>(_list407.size);
+              for (int _i408 = 0; _i408 < _list407.size; ++_i408)
               {
-                DropPartitionsExpr _elem375; // required
-                _elem375 = new DropPartitionsExpr();
-                _elem375.read(iprot);
-                exprs.add(_elem375);
+                DropPartitionsExpr _elem409; // required
+                _elem409 = new DropPartitionsExpr();
+                _elem409.read(iprot);
+                exprs.add(_elem409);
               }
               iprot.readListEnd();
             }
@@ -215,9 +215,9 @@ public class RequestPartsSpec extends org.apache.thrift.TUnion<RequestPartsSpec,
         List<String> names = (List<String>)value_;
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, names.size()));
-          for (String _iter376 : names)
+          for (String _iter410 : names)
           {
-            oprot.writeString(_iter376);
+            oprot.writeString(_iter410);
           }
           oprot.writeListEnd();
         }
@@ -226,9 +226,9 @@ public class RequestPartsSpec extends org.apache.thrift.TUnion<RequestPartsSpec,
         List<DropPartitionsExpr> exprs = (List<DropPartitionsExpr>)value_;
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, exprs.size()));
-          for (DropPartitionsExpr _iter377 : exprs)
+          for (DropPartitionsExpr _iter411 : exprs)
           {
-            _iter377.write(oprot);
+            _iter411.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -246,13 +246,13 @@ public class RequestPartsSpec extends org.apache.thrift.TUnion<RequestPartsSpec,
         case NAMES:
           List<String> names;
           {
-            org.apache.thrift.protocol.TList _list378 = iprot.readListBegin();
-            names = new ArrayList<String>(_list378.size);
-            for (int _i379 = 0; _i379 < _list378.size; ++_i379)
+            org.apache.thrift.protocol.TList _list412 = iprot.readListBegin();
+            names = new ArrayList<String>(_list412.size);
+            for (int _i413 = 0; _i413 < _list412.size; ++_i413)
             {
-              String _elem380; // required
-              _elem380 = iprot.readString();
-              names.add(_elem380);
+              String _elem414; // required
+              _elem414 = iprot.readString();
+              names.add(_elem414);
             }
             iprot.readListEnd();
           }
@@ -260,14 +260,14 @@ public class RequestPartsSpec extends org.apache.thrift.TUnion<RequestPartsSpec,
         case EXPRS:
           List<DropPartitionsExpr> exprs;
           {
-            org.apache.thrift.protocol.TList _list381 = iprot.readListBegin();
-            exprs = new ArrayList<DropPartitionsExpr>(_list381.size);
-            for (int _i382 = 0; _i382 < _list381.size; ++_i382)
+            org.apache.thrift.protocol.TList _list415 = iprot.readListBegin();
+            exprs = new ArrayList<DropPartitionsExpr>(_list415.size);
+            for (int _i416 = 0; _i416 < _list415.size; ++_i416)
             {
-              DropPartitionsExpr _elem383; // required
-              _elem383 = new DropPartitionsExpr();
-              _elem383.read(iprot);
-              exprs.add(_elem383);
+              DropPartitionsExpr _elem417; // required
+              _elem417 = new DropPartitionsExpr();
+              _elem417.read(iprot);
+              exprs.add(_elem417);
             }
             iprot.readListEnd();
           }
@@ -287,9 +287,9 @@ public class RequestPartsSpec extends org.apache.thrift.TUnion<RequestPartsSpec,
         List<String> names = (List<String>)value_;
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, names.size()));
-          for (String _iter384 : names)
+          for (String _iter418 : names)
           {
-            oprot.writeString(_iter384);
+            oprot.writeString(_iter418);
           }
           oprot.writeListEnd();
         }
@@ -298,9 +298,9 @@ public class RequestPartsSpec extends org.apache.thrift.TUnion<RequestPartsSpec,
         List<DropPartitionsExpr> exprs = (List<DropPartitionsExpr>)value_;
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, exprs.size()));
-          for (DropPartitionsExpr _iter385 : exprs)
+          for (DropPartitionsExpr _iter419 : exprs)
           {
-            _iter385.write(oprot);
+            _iter419.write(oprot);
           }
           oprot.writeListEnd();
         }

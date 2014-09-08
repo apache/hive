@@ -156,6 +156,10 @@ public class Vectorizer implements PhysicalPlanResolver {
     // The regex matches only the "decimal" prefix of the type.
     patternBuilder.append("|decimal.*");
 
+    // CHAR and VARCHAR types can be specified with maximum length.
+    patternBuilder.append("|char.*");
+    patternBuilder.append("|varchar.*");
+
     supportedDataTypesPattern = Pattern.compile(patternBuilder.toString());
 
     supportedGenericUDFs.add(GenericUDFOPPlus.class);
@@ -248,6 +252,8 @@ public class Vectorizer implements PhysicalPlanResolver {
     supportedGenericUDFs.add(GenericUDFTimestamp.class);
     supportedGenericUDFs.add(GenericUDFToDecimal.class);
     supportedGenericUDFs.add(GenericUDFToDate.class);
+    supportedGenericUDFs.add(GenericUDFToChar.class);
+    supportedGenericUDFs.add(GenericUDFToVarchar.class);
 
     // For conditional expressions
     supportedGenericUDFs.add(GenericUDFIf.class);

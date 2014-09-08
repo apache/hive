@@ -92,7 +92,6 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
-import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.common.HiveInterruptCallback;
 import org.apache.hadoop.hive.common.HiveInterruptUtils;
 import org.apache.hadoop.hive.common.HiveStatsUtils;
@@ -329,7 +328,9 @@ public final class Utilities {
       if (!gWorkMap.containsKey(path) ||
           HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("spark")) {
         Path localPath;
-        if (ShimLoader.getHadoopShims().isLocalMode(conf)) {
+        if (conf.getBoolean("mapreduce.task.uberized", false) && name.equals(REDUCE_PLAN_NAME)) {
+          localPath = new Path(name);
+        } else if (ShimLoader.getHadoopShims().isLocalMode(conf)) {
           localPath = path;
         } else {
           LOG.info("***************non-local mode***************");
@@ -827,10 +828,12 @@ public final class Utilities {
     }
   }
 
-  public static Set<Operator<?>> cloneOperatorTree(Configuration conf, Set<Operator<?>> roots) {
+  public static List<Operator<?>> cloneOperatorTree(Configuration conf, List<Operator<?>> roots) {
     ByteArrayOutputStream baos = new ByteArrayOutputStream(4096);
     serializePlan(roots, baos, conf, true);
-    Set<Operator<?>> result = deserializePlan(new ByteArrayInputStream(baos.toByteArray()),
+    @SuppressWarnings("unchecked")
+    List<Operator<?>> result =
+        deserializePlan(new ByteArrayInputStream(baos.toByteArray()),
         roots.getClass(), conf, true);
     return result;
   }
@@ -1371,8 +1374,8 @@ public final class Utilities {
       codecClass = FileOutputFormat.getOutputCompressorClass(jc, DefaultCodec.class);
       codec = (CompressionCodec) ReflectionUtils.newInstance(codecClass, jc);
     }
-    return (SequenceFile.createWriter(fs, jc, file, keyClass, valClass, compressionType, codec,
-	progressable));
+    return SequenceFile.createWriter(fs, jc, file, keyClass, valClass, compressionType, codec,
+      progressable);
 
   }
 
@@ -1980,6 +1983,26 @@ public final class Utilities {
   }
 
   /**
+   * get session specified class loader and get current class loader if fall
+   *
+   * @return
+   */
+  public static ClassLoader getSessionSpecifiedClassLoader() {
+    SessionState state = SessionState.get();
+    if (state == null || state.getConf() == null) {
+      LOG.debug("Hive Conf not found or Session not initiated, use thread based class loader instead");
+      return JavaUtils.getClassLoader();
+    }
+    ClassLoader sessionCL = state.getConf().getClassLoader();
+    if (sessionCL != null){
+      LOG.debug("Use session specified class loader");
+      return sessionCL;
+    }
+    LOG.debug("Session specified class loader not found, use thread based class loader");
+    return JavaUtils.getClassLoader();
+  }
+
+  /**
    * Create a URL from a string representing a path to a local file.
    * The path string can be just a path, or can start with file:/, file:///
    * @param onestr  path string
@@ -1998,6 +2021,33 @@ public final class Utilities {
     }
     return oneurl;
   }
+
+    /**
+     * get the jar files from specified directory or get jar files by several jar names sperated by comma
+     * @param path
+     * @return
+     */
+    public static Set<String> getJarFilesByPath(String path){
+        Set<String> result = new HashSet<String>();
+        if (path == null || path.isEmpty()) {
+            return result;
+        }
+
+        File paths = new File(path);
+        if (paths.exists() && paths.isDirectory()) {
+            // add all jar files under the reloadable auxiliary jar paths
+            Set<File> jarFiles = new HashSet<File>();
+            jarFiles.addAll(org.apache.commons.io.FileUtils.listFiles(
+                    paths, new String[]{"jar"}, true));
+            for (File f : jarFiles) {
+                result.add(f.getAbsolutePath());
+            }
+        } else {
+            String[] files = path.split(",");
+            Collections.addAll(result, files);
+        }
+        return result;
+    }
 
   /**
    * Add new elements to the classpath.
@@ -2771,7 +2821,7 @@ public final class Utilities {
    * first time it is caught, or SQLTransientException when the maxRetries has reached.
    */
   public static <T> T executeWithRetry(SQLCommand<T> cmd, PreparedStatement stmt,
-      int baseWindow, int maxRetries)  throws SQLException {
+      long baseWindow, int maxRetries)  throws SQLException {
 
     Random r = new Random();
     T result = null;
@@ -2813,7 +2863,7 @@ public final class Utilities {
    * first time it is caught, or SQLTransientException when the maxRetries has reached.
    */
   public static Connection connectWithRetry(String connectionString,
-      int waitWindow, int maxRetries) throws SQLException {
+      long waitWindow, int maxRetries) throws SQLException {
 
     Random r = new Random();
 
@@ -2855,7 +2905,7 @@ public final class Utilities {
    * first time it is caught, or SQLTransientException when the maxRetries has reached.
    */
   public static PreparedStatement prepareWithRetry(Connection conn, String stmt,
-      int waitWindow, int maxRetries) throws SQLException {
+      long waitWindow, int maxRetries) throws SQLException {
 
     Random r = new Random();
 
@@ -2895,7 +2945,7 @@ public final class Utilities {
    * @param r a random generator.
    * @return number of milliseconds for the next wait time.
    */
-  public static long getRandomWaitTime(int baseWindow, int failures, Random r) {
+  public static long getRandomWaitTime(long baseWindow, int failures, Random r) {
     return (long) (
           baseWindow * failures +     // grace period for the last round of attempt
           baseWindow * (failures + 1) * r.nextDouble()); // expanding time window for each failure
@@ -3381,7 +3431,6 @@ public final class Utilities {
   private static void createTmpDirs(Configuration conf,
       List<Operator<? extends OperatorDesc>> ops) throws IOException {
 
-    FsPermission fsPermission = new FsPermission((short)00777);
     while (!ops.isEmpty()) {
       Operator<? extends OperatorDesc> op = ops.remove(0);
 
@@ -3391,7 +3440,8 @@ public final class Utilities {
 
         if (tempDir != null) {
           Path tempPath = Utilities.toTempPath(tempDir);
-          createDirsWithPermission(conf, tempPath, fsPermission);
+          FileSystem fs = tempPath.getFileSystem(conf);
+          fs.mkdirs(tempPath);
         }
       }
 
@@ -3404,7 +3454,7 @@ public final class Utilities {
   /**
    * Returns true if a plan is both configured for vectorized execution
    * and vectorization is allowed. The plan may be configured for vectorization
-   * but vectorization dissalowed eg. for FetchOperator execution.
+   * but vectorization disallowed eg. for FetchOperator execution.
    */
   public static boolean isVectorMode(Configuration conf) {
     if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED) &&
@@ -3525,77 +3575,6 @@ public final class Utilities {
     }
     return footerCount;
   }
-
-  /**
-   * @param conf the configuration used to derive the filesystem to create the path
-   * @param mkdir the path to be created
-   * @param fsPermission ignored if it is hive server session and doAs is enabled
-   * @return true if successfully created the directory else false
-   * @throws IOException if hdfs experiences any error conditions
-   */
-  public static boolean createDirsWithPermission(Configuration conf, Path mkdir,
-      FsPermission fsPermission) throws IOException {
-
-    boolean recursive = false;
-    if (SessionState.get() != null) {
-      recursive = SessionState.get().isHiveServerQuery() &&
-          conf.getBoolean(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS.varname,
-              HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS.defaultBoolVal);
-      // we reset the permission in case of hive server and doAs enabled because
-      // currently scratch directory uses /tmp/hive-hive as the scratch directory.
-      // However, with doAs enabled, the first user to create this directory would
-      // own the directory and subsequent users cannot access the scratch directory.
-      // The right fix is to have scratch dir per user.
-      fsPermission = new FsPermission((short)00777);
-    }
-
-    // if we made it so far without exception we are good!
-    return createDirsWithPermission(conf, mkdir, fsPermission, recursive);
-  }
-
-  private static void resetConfAndCloseFS (Configuration conf, boolean unsetUmask, 
-      String origUmask, FileSystem fs) throws IOException {
-    if (unsetUmask) {
-      if (origUmask != null) {
-        conf.set(FsPermission.UMASK_LABEL, origUmask);
-      } else {
-        // TODO HIVE-7831
-        // conf.unset(FsPermission.UMASK_LABEL);
-      }
-    }
-
-    fs.close();
-  }
-
-  public static boolean createDirsWithPermission(Configuration conf, Path mkdirPath,
-      FsPermission fsPermission, boolean recursive) throws IOException {
-    String origUmask = null;
-    LOG.debug("Create dirs " + mkdirPath + " with permission " + fsPermission + " recursive " +
-        recursive);
-
-    if (recursive) {
-      origUmask = conf.get(FsPermission.UMASK_LABEL);
-      // this umask is required because by default the hdfs mask is 022 resulting in
-      // all parents getting the fsPermission & !(022) permission instead of fsPermission
-      conf.set(FsPermission.UMASK_LABEL, "000");
-    }
-
-    FileSystem fs = ShimLoader.getHadoopShims().getNonCachedFileSystem(mkdirPath.toUri(), conf);
-    boolean retval = false;
-    try {
-      retval = fs.mkdirs(mkdirPath, fsPermission);
-      resetConfAndCloseFS(conf, recursive, origUmask, fs);
-    } catch (IOException ioe) {
-      try {
-        resetConfAndCloseFS(conf, recursive, origUmask, fs);
-      }
-      catch (IOException e) {
-        // do nothing - double failure
-      }
-    }
-    return retval;
-  }
-
 
   /**
    * Convert path to qualified path.

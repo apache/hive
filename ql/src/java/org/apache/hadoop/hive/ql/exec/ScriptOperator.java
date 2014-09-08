@@ -31,6 +31,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -158,12 +159,12 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
   }
 
   /**
-   * Maps a relative pathname to an absolute pathname using the PATH enviroment.
+   * Maps a relative pathname to an absolute pathname using the PATH environment.
    */
   public class PathFinder {
     String pathenv; // a string of pathnames
-    String pathSep; // the path seperator
-    String fileSep; // the file seperator in a directory
+    String pathSep; // the path separator
+    String fileSep; // the file separator in a directory
 
     /**
      * Construct a PathFinder object using the path from the specified system
@@ -286,7 +287,7 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
 
   @Override
   public void processOp(Object row, int tag) throws HiveException {
-    // initialize the user's process only when you recieve the first row
+    // initialize the user's process only when you receive the first row
     if (firstRow) {
       firstRow = false;
       try {
@@ -365,7 +366,8 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
             .getBoolVar(hconf, HiveConf.ConfVars.HIVESCRIPTAUTOPROGRESS)) {
           autoProgressor = new AutoProgressor(this.getClass().getName(),
               reporter, Utilities.getDefaultNotificationInterval(hconf),
-              HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVES_AUTO_PROGRESS_TIMEOUT) * 1000);
+              HiveConf.getTimeVar(
+                  hconf, HiveConf.ConfVars.HIVES_AUTO_PROGRESS_TIMEOUT, TimeUnit.MILLISECONDS));
           autoProgressor.go();
         }
 

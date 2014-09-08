@@ -28,10 +28,12 @@ import org.apache.hadoop.hive.metastore.api.LockResponse;
 import org.apache.hadoop.hive.metastore.api.NoSuchLockException;
 import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
 import org.apache.hadoop.hive.metastore.api.OpenTxnsResponse;
+import org.apache.hadoop.hive.metastore.api.PartitionSpec;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
 import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
 import org.apache.hadoop.hive.metastore.api.TxnOpenException;
+import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.thrift.TException;
 
 import java.util.List;
@@ -368,6 +370,9 @@ public interface IMetaStoreClient {
   int add_partitions(List<Partition> partitions)
       throws InvalidObjectException, AlreadyExistsException, MetaException, TException;
 
+  int add_partitions_pspec(PartitionSpecProxy partitionSpec)
+      throws InvalidObjectException, AlreadyExistsException, MetaException, TException;
+
   /**
    * Add partitions to the table.
    *
@@ -448,6 +453,8 @@ public interface IMetaStoreClient {
   List<Partition> listPartitions(String db_name, String tbl_name,
       short max_parts) throws NoSuchObjectException, MetaException, TException;
 
+  public PartitionSpecProxy listPartitionSpecs(String dbName, String tableName, int maxParts)
+    throws TException;
   List<Partition> listPartitions(String db_name, String tbl_name,
       List<String> part_vals, short max_parts) throws NoSuchObjectException, MetaException, TException;
 
@@ -476,6 +483,9 @@ public interface IMetaStoreClient {
       String filter, short max_parts) throws MetaException,
          NoSuchObjectException, TException;
 
+  PartitionSpecProxy listPartitionSpecsByFilter(String db_name, String tbl_name,
+                                                       String filter, int max_parts) throws MetaException,
+         NoSuchObjectException, TException;
 
   /**
    * Get list of partitions matching specified serialized expression

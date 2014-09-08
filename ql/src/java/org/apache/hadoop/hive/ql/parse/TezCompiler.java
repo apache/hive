@@ -21,20 +21,24 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.exec.AppMasterEventOperator;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
+import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -52,20 +56,25 @@ import org.apache.hadoop.hive.ql.lib.ForwardWalker;
 import org.apache.hadoop.hive.ql.lib.GraphWalker;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
-import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.optimizer.ConstantPropagate;
 import org.apache.hadoop.hive.ql.optimizer.ConvertJoinMapJoin;
+import org.apache.hadoop.hive.ql.optimizer.DynamicPartitionPruningOptimization;
 import org.apache.hadoop.hive.ql.optimizer.ReduceSinkMapJoinProc;
+import org.apache.hadoop.hive.ql.optimizer.RemoveDynamicPruningBySize;
 import org.apache.hadoop.hive.ql.optimizer.SetReducerParallelism;
+import org.apache.hadoop.hive.ql.optimizer.metainfo.annotation.AnnotateWithOpTraits;
 import org.apache.hadoop.hive.ql.optimizer.physical.CrossProductCheck;
 import org.apache.hadoop.hive.ql.optimizer.physical.MetadataOnlyOptimizer;
 import org.apache.hadoop.hive.ql.optimizer.physical.NullScanOptimizer;
 import org.apache.hadoop.hive.ql.optimizer.physical.PhysicalContext;
-import org.apache.hadoop.hive.ql.optimizer.physical.Vectorizer;
 import org.apache.hadoop.hive.ql.optimizer.physical.StageIDsRearranger;
+import org.apache.hadoop.hive.ql.optimizer.physical.Vectorizer;
+import org.apache.hadoop.hive.ql.optimizer.stats.annotation.AnnotateWithStatistics;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
+import org.apache.hadoop.hive.ql.plan.DynamicPruningEventDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
@@ -85,7 +94,7 @@ public class TezCompiler extends TaskCompiler {
   @Override
   public void init(HiveConf conf, LogHelper console, Hive db) {
     super.init(conf, console, db);
-    
+
     // Tez requires us to use RPC for the query plan
     HiveConf.setBoolVar(conf, ConfVars.HIVE_RPC_QUERY_PLAN, true);
 
@@ -98,31 +107,203 @@ public class TezCompiler extends TaskCompiler {
   protected void optimizeOperatorPlan(ParseContext pCtx, Set<ReadEntity> inputs,
       Set<WriteEntity> outputs) throws SemanticException {
 
+    // Create the context for the walker
+    OptimizeTezProcContext procCtx = new OptimizeTezProcContext(conf, pCtx, inputs, outputs);
+
+    // setup dynamic partition pruning where possible
+    runDynamicPartitionPruning(procCtx, inputs, outputs);
+
+    // setup stats in the operator plan
+    runStatsAnnotation(procCtx);
+
+    // run the optimizations that use stats for optimization
+    runStatsDependentOptimizations(procCtx, inputs, outputs);
+
+    // after the stats phase we might have some cyclic dependencies that we need
+    // to take care of.
+    runCycleAnalysisForPartitionPruning(procCtx, inputs, outputs);
+
+  }
+
+  private void runCycleAnalysisForPartitionPruning(OptimizeTezProcContext procCtx,
+      Set<ReadEntity> inputs, Set<WriteEntity> outputs) throws SemanticException {
+
+    if (!procCtx.conf.getBoolVar(ConfVars.TEZ_DYNAMIC_PARTITION_PRUNING)) {
+      return;
+    }
+
+    boolean cycleFree = false;
+    while (!cycleFree) {
+      cycleFree = true;
+      Set<Set<Operator<?>>> components = getComponents(procCtx);
+      for (Set<Operator<?>> component : components) {
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Component: ");
+          for (Operator<?> co : component) {
+            LOG.debug("Operator: " + co.getName() + ", " + co.getIdentifier());
+          }
+        }
+        if (component.size() != 1) {
+          LOG.info("Found cycle in operator plan...");
+          cycleFree = false;
+          removeEventOperator(component);
+        }
+      }
+      LOG.info("Cycle free: " + cycleFree);
+    }
+  }
+
+  private void removeEventOperator(Set<Operator<?>> component) {
+    AppMasterEventOperator victim = null;
+    for (Operator<?> o : component) {
+      if (o instanceof AppMasterEventOperator) {
+        if (victim == null
+            || o.getConf().getStatistics().getDataSize() < victim.getConf().getStatistics()
+                .getDataSize()) {
+          victim = (AppMasterEventOperator) o;
+        }
+      }
+    }
+
+    Operator<?> child = victim;
+    Operator<?> curr = victim;
+
+    while (curr.getChildOperators().size() <= 1) {
+      child = curr;
+      curr = curr.getParentOperators().get(0);
+    }
+
+    // at this point we've found the fork in the op pipeline that has the
+    // pruning as a child plan.
+    LOG.info("Disabling dynamic pruning for: "
+        + ((DynamicPruningEventDesc) victim.getConf()).getTableScan().toString()
+        + ". Needed to break cyclic dependency");
+    curr.removeChild(child);
+  }
+
+  // Tarjan's algo
+  private Set<Set<Operator<?>>> getComponents(OptimizeTezProcContext procCtx) {
+    Deque<Operator<?>> deque = new LinkedList<Operator<?>>();
+    deque.addAll(procCtx.parseContext.getTopOps().values());
+
+    AtomicInteger index = new AtomicInteger();
+    Map<Operator<?>, Integer> indexes = new HashMap<Operator<?>, Integer>();
+    Map<Operator<?>, Integer> lowLinks = new HashMap<Operator<?>, Integer>();
+    Stack<Operator<?>> nodes = new Stack<Operator<?>>();
+    Set<Set<Operator<?>>> components = new HashSet<Set<Operator<?>>>();
+
+    for (Operator<?> o : deque) {
+      if (!indexes.containsKey(o)) {
+        connect(o, index, nodes, indexes, lowLinks, components);
+      }
+    }
+
+    return components;
+  }
+
+  private void connect(Operator<?> o, AtomicInteger index, Stack<Operator<?>> nodes,
+      Map<Operator<?>, Integer> indexes, Map<Operator<?>, Integer> lowLinks,
+      Set<Set<Operator<?>>> components) {
+
+    indexes.put(o, index.get());
+    lowLinks.put(o, index.get());
+    index.incrementAndGet();
+    nodes.push(o);
+
+    List<Operator<?>> children;
+    if (o instanceof AppMasterEventOperator) {
+      children = new ArrayList<Operator<?>>();
+      children.addAll(o.getChildOperators());
+      TableScanOperator ts = ((DynamicPruningEventDesc) o.getConf()).getTableScan();
+      LOG.debug("Adding special edge: " + o.getName() + " --> " + ts.toString());
+      children.add(ts);
+    } else {
+      children = o.getChildOperators();
+    }
+
+    for (Operator<?> child : children) {
+      if (!indexes.containsKey(child)) {
+        connect(child, index, nodes, indexes, lowLinks, components);
+        lowLinks.put(child, Math.min(lowLinks.get(o), lowLinks.get(child)));
+      } else if (nodes.contains(child)) {
+        lowLinks.put(o, Math.min(lowLinks.get(o), indexes.get(child)));
+      }
+    }
+
+    if (lowLinks.get(o).equals(indexes.get(o))) {
+      Set<Operator<?>> component = new HashSet<Operator<?>>();
+      components.add(component);
+      Operator<?> current;
+      do {
+        current = nodes.pop();
+        component.add(current);
+      } while (current != o);
+    }
+  }
+
+  private void runStatsAnnotation(OptimizeTezProcContext procCtx) throws SemanticException {
+    new AnnotateWithStatistics().transform(procCtx.parseContext);
+    new AnnotateWithOpTraits().transform(procCtx.parseContext);
+  }
+
+  private void runStatsDependentOptimizations(OptimizeTezProcContext procCtx,
+      Set<ReadEntity> inputs, Set<WriteEntity> outputs) throws SemanticException {
+
     // Sequence of TableScan operators to be walked
     Deque<Operator<?>> deque = new LinkedList<Operator<?>>();
-    deque.addAll(pCtx.getTopOps().values());
-
-    // Create the context for the walker
-    OptimizeTezProcContext procCtx
-      = new OptimizeTezProcContext(conf, pCtx, inputs, outputs, deque);
+    deque.addAll(procCtx.parseContext.getTopOps().values());
 
     // create a walker which walks the tree in a DFS manner while maintaining
     // the operator stack.
     Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
-    opRules.put(new RuleRegExp(new String("Set parallelism - ReduceSink"),
+    opRules.put(new RuleRegExp("Set parallelism - ReduceSink",
         ReduceSinkOperator.getOperatorName() + "%"),
         new SetReducerParallelism());
 
-    opRules.put(new RuleRegExp(new String("Convert Join to Map-join"),
+    opRules.put(new RuleRegExp("Convert Join to Map-join",
         JoinOperator.getOperatorName() + "%"), new ConvertJoinMapJoin());
+
+    opRules.put(
+        new RuleRegExp("Remove dynamic pruning by size",
+        AppMasterEventOperator.getOperatorName() + "%"),
+        new RemoveDynamicPruningBySize());
 
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along
     Dispatcher disp = new DefaultRuleDispatcher(null, opRules, procCtx);
     List<Node> topNodes = new ArrayList<Node>();
-    topNodes.addAll(pCtx.getTopOps().values());
+    topNodes.addAll(procCtx.parseContext.getTopOps().values());
     GraphWalker ogw = new ForwardWalker(disp);
     ogw.startWalking(topNodes, null);
+  }
+
+  private void runDynamicPartitionPruning(OptimizeTezProcContext procCtx, Set<ReadEntity> inputs,
+      Set<WriteEntity> outputs) throws SemanticException {
+
+    if (!procCtx.conf.getBoolVar(ConfVars.TEZ_DYNAMIC_PARTITION_PRUNING)) {
+      return;
+    }
+
+    // Sequence of TableScan operators to be walked
+    Deque<Operator<?>> deque = new LinkedList<Operator<?>>();
+    deque.addAll(procCtx.parseContext.getTopOps().values());
+
+    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+    opRules.put(
+        new RuleRegExp(new String("Dynamic Partition Pruning"), FilterOperator.getOperatorName()
+            + "%"), new DynamicPartitionPruningOptimization());
+
+    // The dispatcher fires the processor corresponding to the closest matching
+    // rule and passes the context along
+    Dispatcher disp = new DefaultRuleDispatcher(null, opRules, procCtx);
+    List<Node> topNodes = new ArrayList<Node>();
+    topNodes.addAll(procCtx.parseContext.getTopOps().values());
+    GraphWalker ogw = new ForwardWalker(disp);
+    ogw.startWalking(topNodes, null);
+
+    // need a new run of the constant folding because we might have created lots
+    // of "and true and true" conditions.
+    new ConstantPropagate().transform(procCtx.parseContext);
   }
 
   @Override
@@ -158,19 +339,12 @@ public class TezCompiler extends TaskCompiler {
         new ProcessAnalyzeTable(GenTezUtils.getUtils()));
 
     opRules.put(new RuleRegExp("Remember union",
-        UnionOperator.getOperatorName() + "%"), new NodeProcessor()
-    {
-      @Override
-      public Object process(Node n, Stack<Node> s,
-          NodeProcessorCtx procCtx, Object... os) throws SemanticException {
-        GenTezProcContext context = (GenTezProcContext) procCtx;
-        UnionOperator union = (UnionOperator) n;
+        UnionOperator.getOperatorName() + "%"),
+        new UnionProcessor());
 
-        // simply need to remember that we've seen a union.
-        context.currentUnionOperators.add(union);
-        return null;
-      }
-    });
+    opRules.put(new RuleRegExp("AppMasterEventOperator",
+        AppMasterEventOperator.getOperatorName() + "%"),
+        new AppMasterEventProcessor());
 
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along
@@ -185,9 +359,16 @@ public class TezCompiler extends TaskCompiler {
       GenTezUtils.getUtils().removeUnionOperators(conf, procCtx, w);
     }
 
-    // finally make sure the file sink operators are set up right
+    // then we make sure the file sink operators are set up right
     for (FileSinkOperator fileSink: procCtx.fileSinkSet) {
       GenTezUtils.getUtils().processFileSink(procCtx, fileSink);
+    }
+
+    // and finally we hook up any events that need to be sent to the tez AM
+    LOG.debug("There are " + procCtx.eventOperatorSet.size() + " app master events.");
+    for (AppMasterEventOperator event : procCtx.eventOperatorSet) {
+      LOG.debug("Handling AppMasterEventOperator: " + event);
+      GenTezUtils.getUtils().processAppMasterEvent(procCtx, event);
     }
   }
 

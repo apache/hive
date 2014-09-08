@@ -47,7 +47,7 @@ import org.apache.tez.mapreduce.input.MRInputLegacy;
 import org.apache.tez.mapreduce.processor.MRTaskReporter;
 import org.apache.tez.runtime.api.LogicalInput;
 import org.apache.tez.runtime.api.LogicalOutput;
-import org.apache.tez.runtime.api.TezProcessorContext;
+import org.apache.tez.runtime.api.ProcessorContext;
 import org.apache.tez.runtime.library.api.KeyValueReader;
 
 /**
@@ -64,8 +64,25 @@ public class MapRecordProcessor extends RecordProcessor {
   protected static final String MAP_PLAN_KEY = "__MAP_PLAN__";
   private MapWork mapWork;
 
+  public MapRecordProcessor(JobConf jconf) {
+    ObjectCache cache = ObjectCacheFactory.getCache(jconf);
+    execContext.setJc(jconf);
+    // create map and fetch operators
+    mapWork = (MapWork) cache.retrieve(MAP_PLAN_KEY);
+    if (mapWork == null) {
+      mapWork = Utilities.getMapWork(jconf);
+      cache.cache(MAP_PLAN_KEY, mapWork);
+      l4j.info("Plan: "+mapWork);
+      for (String s: mapWork.getAliases()) {
+        l4j.info("Alias: "+s);
+      }
+    } else {
+      Utilities.setMapWork(jconf, mapWork);
+    }
+  }
+
   @Override
-  void init(JobConf jconf, TezProcessorContext processorContext, MRTaskReporter mrReporter,
+  void init(JobConf jconf, ProcessorContext processorContext, MRTaskReporter mrReporter,
       Map<String, LogicalInput> inputs, Map<String, LogicalOutput> outputs) throws Exception {
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_INIT_OPERATORS);
     super.init(jconf, processorContext, mrReporter, inputs, outputs);
@@ -87,22 +104,7 @@ public class MapRecordProcessor extends RecordProcessor {
       ((TezKVOutputCollector) outMap.get(outputEntry.getKey())).initialize();
     }
 
-    ObjectCache cache = ObjectCacheFactory.getCache(jconf);
     try {
-
-      execContext.setJc(jconf);
-      // create map and fetch operators
-      mapWork = (MapWork) cache.retrieve(MAP_PLAN_KEY);
-      if (mapWork == null) {
-        mapWork = Utilities.getMapWork(jconf);
-        cache.cache(MAP_PLAN_KEY, mapWork);
-        l4j.info("Plan: "+mapWork);
-        for (String s: mapWork.getAliases()) {
-          l4j.info("Alias: "+s);
-        }
-      } else {
-        Utilities.setMapWork(jconf, mapWork);
-      }
       if (mapWork.getVectorMode()) {
         mapOp = new VectorMapOperator();
       } else {
@@ -115,7 +117,8 @@ public class MapRecordProcessor extends RecordProcessor {
       l4j.info(mapOp.dump(0));
 
       MapredContext.init(true, new JobConf(jconf));
-      ((TezContext)MapredContext.get()).setInputs(inputs);
+      ((TezContext) MapredContext.get()).setInputs(inputs);
+      ((TezContext) MapredContext.get()).setTezProcessorContext(processorContext);
       mapOp.setExecContext(execContext);
       mapOp.initializeLocalWork(jconf);
       mapOp.initialize(jconf, null);

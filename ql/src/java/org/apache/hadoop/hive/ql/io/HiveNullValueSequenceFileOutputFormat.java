@@ -54,7 +54,7 @@ public class HiveNullValueSequenceFileOutputFormat<K,V>
 
     FileSystem fs = finalOutPath.getFileSystem(jc);
     final SequenceFile.Writer outStream = Utilities.createSequenceWriter(jc, fs, finalOutPath,
-	HiveKey.class, NullWritable.class, isCompressed, progress);
+    HiveKey.class, NullWritable.class, isCompressed, progress);
 
     keyWritable = new HiveKey();
     keyIsText = valueClass.equals(Text.class);

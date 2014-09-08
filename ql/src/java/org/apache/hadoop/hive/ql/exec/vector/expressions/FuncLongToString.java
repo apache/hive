@@ -149,6 +149,6 @@ public abstract class FuncLongToString extends VectorExpression {
     return (new VectorExpressionDescriptor.Builder()).setMode(
         VectorExpressionDescriptor.Mode.PROJECTION).setNumArguments(1).setInputExpressionTypes(
             VectorExpressionDescriptor.InputExpressionType.COLUMN).setArgumentTypes(
-                VectorExpressionDescriptor.ArgumentType.LONG).build();
+                VectorExpressionDescriptor.ArgumentType.INT_FAMILY).build();
   }
 }

@@ -56,6 +56,7 @@ enum OperatorType {
   PTF,
   MUX,
   DEMUX,
+  EVENT,
 }
 
 struct Operator {

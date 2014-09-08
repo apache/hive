@@ -485,6 +485,24 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'add_partitions failed: unknown result')
     end
 
+    def add_partitions_pspec(new_parts)
+      send_add_partitions_pspec(new_parts)
+      return recv_add_partitions_pspec()
+    end
+
+    def send_add_partitions_pspec(new_parts)
+      send_message('add_partitions_pspec', Add_partitions_pspec_args, :new_parts => new_parts)
+    end
+
+    def recv_add_partitions_pspec()
+      result = receive_message(Add_partitions_pspec_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise result.o3 unless result.o3.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'add_partitions_pspec failed: unknown result')
+    end
+
     def append_partition(db_name, tbl_name, part_vals)
       send_append_partition(db_name, tbl_name, part_vals)
       return recv_append_partition()
@@ -764,6 +782,23 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_partitions_with_auth failed: unknown result')
     end
 
+    def get_partitions_pspec(db_name, tbl_name, max_parts)
+      send_get_partitions_pspec(db_name, tbl_name, max_parts)
+      return recv_get_partitions_pspec()
+    end
+
+    def send_get_partitions_pspec(db_name, tbl_name, max_parts)
+      send_message('get_partitions_pspec', Get_partitions_pspec_args, :db_name => db_name, :tbl_name => tbl_name, :max_parts => max_parts)
+    end
+
+    def recv_get_partitions_pspec()
+      result = receive_message(Get_partitions_pspec_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_partitions_pspec failed: unknown result')
+    end
+
     def get_partition_names(db_name, tbl_name, max_parts)
       send_get_partition_names(db_name, tbl_name, max_parts)
       return recv_get_partition_names()
@@ -846,6 +881,23 @@ module ThriftHiveMetastore
       raise result.o1 unless result.o1.nil?
       raise result.o2 unless result.o2.nil?
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_partitions_by_filter failed: unknown result')
+    end
+
+    def get_part_specs_by_filter(db_name, tbl_name, filter, max_parts)
+      send_get_part_specs_by_filter(db_name, tbl_name, filter, max_parts)
+      return recv_get_part_specs_by_filter()
+    end
+
+    def send_get_part_specs_by_filter(db_name, tbl_name, filter, max_parts)
+      send_message('get_part_specs_by_filter', Get_part_specs_by_filter_args, :db_name => db_name, :tbl_name => tbl_name, :filter => filter, :max_parts => max_parts)
+    end
+
+    def recv_get_part_specs_by_filter()
+      result = receive_message(Get_part_specs_by_filter_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_part_specs_by_filter failed: unknown result')
     end
 
     def get_partitions_by_expr(req)
@@ -2292,6 +2344,21 @@ module ThriftHiveMetastore
       write_result(result, oprot, 'add_partitions', seqid)
     end
 
+    def process_add_partitions_pspec(seqid, iprot, oprot)
+      args = read_args(iprot, Add_partitions_pspec_args)
+      result = Add_partitions_pspec_result.new()
+      begin
+        result.success = @handler.add_partitions_pspec(args.new_parts)
+      rescue ::InvalidObjectException => o1
+        result.o1 = o1
+      rescue ::AlreadyExistsException => o2
+        result.o2 = o2
+      rescue ::MetaException => o3
+        result.o3 = o3
+      end
+      write_result(result, oprot, 'add_partitions_pspec', seqid)
+    end
+
     def process_append_partition(seqid, iprot, oprot)
       args = read_args(iprot, Append_partition_args)
       result = Append_partition_result.new()
@@ -2514,6 +2581,19 @@ module ThriftHiveMetastore
       write_result(result, oprot, 'get_partitions_with_auth', seqid)
     end
 
+    def process_get_partitions_pspec(seqid, iprot, oprot)
+      args = read_args(iprot, Get_partitions_pspec_args)
+      result = Get_partitions_pspec_result.new()
+      begin
+        result.success = @handler.get_partitions_pspec(args.db_name, args.tbl_name, args.max_parts)
+      rescue ::NoSuchObjectException => o1
+        result.o1 = o1
+      rescue ::MetaException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'get_partitions_pspec', seqid)
+    end
+
     def process_get_partition_names(seqid, iprot, oprot)
       args = read_args(iprot, Get_partition_names_args)
       result = Get_partition_names_result.new()
@@ -2575,6 +2655,19 @@ module ThriftHiveMetastore
         result.o2 = o2
       end
       write_result(result, oprot, 'get_partitions_by_filter', seqid)
+    end
+
+    def process_get_part_specs_by_filter(seqid, iprot, oprot)
+      args = read_args(iprot, Get_part_specs_by_filter_args)
+      result = Get_part_specs_by_filter_result.new()
+      begin
+        result.success = @handler.get_part_specs_by_filter(args.db_name, args.tbl_name, args.filter, args.max_parts)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      rescue ::NoSuchObjectException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'get_part_specs_by_filter', seqid)
     end
 
     def process_get_partitions_by_expr(seqid, iprot, oprot)
@@ -4422,6 +4515,44 @@ module ThriftHiveMetastore
     ::Thrift::Struct.generate_accessors self
   end
 
+  class Add_partitions_pspec_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    NEW_PARTS = 1
+
+    FIELDS = {
+      NEW_PARTS => {:type => ::Thrift::Types::LIST, :name => 'new_parts', :element => {:type => ::Thrift::Types::STRUCT, :class => ::PartitionSpec}}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Add_partitions_pspec_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+    O3 = 3
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::I32, :name => 'success'},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::InvalidObjectException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::AlreadyExistsException},
+      O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
   class Append_partition_args
     include ::Thrift::Struct, ::Thrift::Struct_Union
     DB_NAME = 1
@@ -5096,6 +5227,46 @@ module ThriftHiveMetastore
     ::Thrift::Struct.generate_accessors self
   end
 
+  class Get_partitions_pspec_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    DB_NAME = 1
+    TBL_NAME = 2
+    MAX_PARTS = 3
+
+    FIELDS = {
+      DB_NAME => {:type => ::Thrift::Types::STRING, :name => 'db_name'},
+      TBL_NAME => {:type => ::Thrift::Types::STRING, :name => 'tbl_name'},
+      MAX_PARTS => {:type => ::Thrift::Types::I32, :name => 'max_parts', :default => -1}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_partitions_pspec_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRUCT, :class => ::PartitionSpec}},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
   class Get_partition_names_args
     include ::Thrift::Struct, ::Thrift::Struct_Union
     DB_NAME = 1
@@ -5294,6 +5465,48 @@ module ThriftHiveMetastore
 
     FIELDS = {
       SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Partition}},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::NoSuchObjectException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_part_specs_by_filter_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    DB_NAME = 1
+    TBL_NAME = 2
+    FILTER = 3
+    MAX_PARTS = 4
+
+    FIELDS = {
+      DB_NAME => {:type => ::Thrift::Types::STRING, :name => 'db_name'},
+      TBL_NAME => {:type => ::Thrift::Types::STRING, :name => 'tbl_name'},
+      FILTER => {:type => ::Thrift::Types::STRING, :name => 'filter'},
+      MAX_PARTS => {:type => ::Thrift::Types::I32, :name => 'max_parts', :default => -1}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_part_specs_by_filter_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRUCT, :class => ::PartitionSpec}},
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException},
       O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::NoSuchObjectException}
     }

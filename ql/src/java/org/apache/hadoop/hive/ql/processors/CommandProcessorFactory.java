@@ -80,6 +80,8 @@ public final class CommandProcessorFactory {
         return new DeleteResourceProcessor();
       case COMPILE:
         return new CompileProcessor();
+      case RELOAD:
+        return new ReloadProcessor();
       default:
         throw new AssertionError("Unknown HiveCommand " + hiveCommand);
     }

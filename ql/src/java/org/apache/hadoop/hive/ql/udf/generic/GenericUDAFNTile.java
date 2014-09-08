@@ -38,144 +38,129 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.IntWritable;
 
-@WindowFunctionDescription
-(
-		description = @Description(
-								name = "rank",
-								value = "_FUNC_(x) NTILE allows easy calculation of tertiles, quartiles, deciles and other " +
-									"common summary statistics. This function divides an ordered partition into a specified " +
-									"number of groups called buckets and assigns a bucket number to each row in the partition."
-								),
-		supportsWindow = false,
-		pivotResult = true
+@WindowFunctionDescription(
+  description = @Description(
+    name = "rank",
+    value = "_FUNC_(x) NTILE allows easy calculation of tertiles, quartiles, deciles and other "
+            +"common summary statistics. This function divides an ordered partition into a "
+            + "specified number of groups called buckets and assigns a bucket number to each row "
+            + "in the partition."
+  ),
+  supportsWindow = false,
+  pivotResult = true
 )
-public class GenericUDAFNTile  extends AbstractGenericUDAFResolver
-{
-	static final Log LOG = LogFactory.getLog(GenericUDAFNTile.class.getName());
+public class GenericUDAFNTile extends AbstractGenericUDAFResolver {
 
-	@Override
-	public GenericUDAFEvaluator getEvaluator(TypeInfo[] parameters) throws SemanticException
-	{
-		if (parameters.length != 1)
-		{
-			throw new UDFArgumentTypeException(parameters.length - 1, "Exactly one argument is expected.");
-		}
-		ObjectInspector oi = TypeInfoUtils.getStandardJavaObjectInspectorFromTypeInfo(parameters[0]);
+  static final Log LOG = LogFactory.getLog(GenericUDAFNTile.class.getName());
 
-		boolean c = ObjectInspectorUtils.compareTypes(oi, PrimitiveObjectInspectorFactory.writableIntObjectInspector);
-		if (!c)
-		{
-			throw new UDFArgumentTypeException(0, "Number of tiles must be an int expression");
-		}
+  @Override
+  public GenericUDAFEvaluator getEvaluator(TypeInfo[] parameters) throws SemanticException {
+    if (parameters.length != 1) {
+      throw new UDFArgumentTypeException(parameters.length - 1,
+        "Exactly one argument is expected.");
+    }
+    ObjectInspector oi = TypeInfoUtils.getStandardJavaObjectInspectorFromTypeInfo(parameters[0]);
 
-		return new GenericUDAFNTileEvaluator();
-	}
+    boolean c = ObjectInspectorUtils.compareTypes(oi,
+      PrimitiveObjectInspectorFactory.writableIntObjectInspector);
+    if (!c) {
+      throw new UDFArgumentTypeException(0, "Number of tiles must be an int expression");
+    }
 
-	static class NTileBuffer implements AggregationBuffer
-	{
-		Integer numBuckets;
-		int numRows;
+    return new GenericUDAFNTileEvaluator();
+  }
 
-		void init()
-		{
-			numBuckets = null;
-			numRows = 0;
-		}
+  static class NTileBuffer implements AggregationBuffer {
 
-		NTileBuffer()
-		{
-			init();
-		}
-	}
+    Integer numBuckets;
+    int numRows;
 
-	public static class GenericUDAFNTileEvaluator extends GenericUDAFEvaluator
-	{
-		private transient PrimitiveObjectInspector inputOI;
+    void init() {
+      numBuckets = null;
+      numRows = 0;
+    }
 
-		@Override
-		public ObjectInspector init(Mode m, ObjectInspector[] parameters) throws HiveException
-		{
-			assert (parameters.length == 1);
-			super.init(m, parameters);
-			if (m != Mode.COMPLETE)
-			{
-				throw new HiveException(
-						"Only COMPLETE mode supported for NTile function");
-			}
-			inputOI = (PrimitiveObjectInspector) parameters[0];
-			return ObjectInspectorFactory.getStandardListObjectInspector(PrimitiveObjectInspectorFactory.writableIntObjectInspector);
-		}
+    NTileBuffer() {
+      init();
+    }
+  }
 
-		@Override
-		public AggregationBuffer getNewAggregationBuffer() throws HiveException
-		{
-			return new NTileBuffer();
-		}
+  public static class GenericUDAFNTileEvaluator extends GenericUDAFEvaluator {
 
-		@Override
-		public void reset(AggregationBuffer agg) throws HiveException
-		{
-			((NTileBuffer) agg).init();
-		}
+    private transient PrimitiveObjectInspector inputOI;
 
-		@Override
-		public void iterate(AggregationBuffer agg, Object[] parameters) throws HiveException
-		{
-			NTileBuffer rb = (NTileBuffer) agg;
-			if ( rb.numBuckets == null)
-			{
-				rb.numBuckets = PrimitiveObjectInspectorUtils.getInt(parameters[0], inputOI);
-			}
-			rb.numRows++;
-		}
+    @Override
+    public ObjectInspector init(Mode m, ObjectInspector[] parameters) throws HiveException {
+      assert (parameters.length == 1);
+      super.init(m, parameters);
+      if (m != Mode.COMPLETE) {
+        throw new HiveException("Only COMPLETE mode supported for NTile function");
+      }
+      inputOI = (PrimitiveObjectInspector) parameters[0];
+      return ObjectInspectorFactory.getStandardListObjectInspector(
+        PrimitiveObjectInspectorFactory.writableIntObjectInspector);
+    }
 
-		@Override
-		public Object terminatePartial(AggregationBuffer agg) throws HiveException
-		{
-			throw new HiveException("terminatePartial not supported");
-		}
+    @Override
+    public AggregationBuffer getNewAggregationBuffer() throws HiveException {
+      return new NTileBuffer();
+    }
 
-		@Override
-		public void merge(AggregationBuffer agg, Object partial) throws HiveException
-		{
-			throw new HiveException("merge not supported");
-		}
+    @Override
+    public void reset(AggregationBuffer agg) throws HiveException {
+      ((NTileBuffer) agg).init();
+    }
 
-		@Override
-		public Object terminate(AggregationBuffer agg) throws HiveException
-		{
-			NTileBuffer rb = (NTileBuffer) agg;
-			ArrayList<IntWritable> res = new ArrayList<IntWritable>(rb.numRows);
+    @Override
+    public void iterate(AggregationBuffer agg, Object[] parameters) throws HiveException {
+      NTileBuffer rb = (NTileBuffer) agg;
+      if (rb.numBuckets == null) {
+        rb.numBuckets = PrimitiveObjectInspectorUtils.getInt(parameters[0], inputOI);
+      }
+      rb.numRows++;
+    }
 
-			/*
-			 * if there is a remainder from numRows/numBuckets; then distribute increase the size of the first 'rem' buckets by 1.
-			 */
+    @Override
+    public Object terminatePartial(AggregationBuffer agg) throws HiveException {
+      throw new HiveException("terminatePartial not supported");
+    }
 
-			int bucketsz = rb.numRows / rb.numBuckets;
-			int rem = rb.numRows % rb.numBuckets;
-			int start = 0;
-			int bucket = 1;
-			while ( start < rb.numRows)
-			{
-				int end = start + bucketsz;
-				if (rem > 0)
-				{
-					end++; rem--;
-				}
-				end = Math.min(rb.numRows, end);
-				for(int i = start; i < end; i++)
-				{
-					res.add(new IntWritable(bucket));
-				}
-				start = end;
-				bucket++;
-			}
+    @Override
+    public void merge(AggregationBuffer agg, Object partial) throws HiveException {
+      throw new HiveException("merge not supported");
+    }
 
-			return res;
-		}
+    @Override
+    public Object terminate(AggregationBuffer agg) throws HiveException {
+      NTileBuffer rb = (NTileBuffer) agg;
+      ArrayList<IntWritable> res = new ArrayList<IntWritable>(rb.numRows);
 
-	}
+      /*
+       * if there is a remainder from numRows/numBuckets; then distribute increase the size of the first 'rem' buckets by 1.
+       */
 
+      int bucketsz = rb.numRows / rb.numBuckets;
+      int rem = rb.numRows % rb.numBuckets;
+      int start = 0;
+      int bucket = 1;
+      while (start < rb.numRows) {
+        int end = start + bucketsz;
+        if (rem > 0) {
+          end++;
+          rem--;
+        }
+        end = Math.min(rb.numRows, end);
+        for (int i = start; i < end; i++) {
+          res.add(new IntWritable(bucket));
+        }
+        start = end;
+        bucket++;
+      }
+
+      return res;
+    }
+
+  }
 
 }
 

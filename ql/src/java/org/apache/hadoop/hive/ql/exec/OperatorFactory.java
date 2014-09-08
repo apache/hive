@@ -29,13 +29,15 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorGroupByOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorLimitOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorReduceSinkOperator;
-import org.apache.hadoop.hive.ql.exec.vector.VectorSelectOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorSMBMapJoinOperator;
+import org.apache.hadoop.hive.ql.exec.vector.VectorSelectOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.AppMasterEventDesc;
 import org.apache.hadoop.hive.ql.plan.CollectDesc;
 import org.apache.hadoop.hive.ql.plan.DemuxDesc;
 import org.apache.hadoop.hive.ql.plan.DummyStoreDesc;
+import org.apache.hadoop.hive.ql.plan.DynamicPruningEventDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExtractDesc;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
@@ -64,6 +66,7 @@ import org.apache.hadoop.hive.ql.plan.UnionDesc;
  * OperatorFactory.
  *
  */
+@SuppressWarnings({ "rawtypes", "unchecked" })
 public final class OperatorFactory {
   private static final List<OpTuple> opvec;
   private static final List<OpTuple> vectorOpvec;
@@ -101,6 +104,10 @@ public final class OperatorFactory {
         DemuxOperator.class));
     opvec.add(new OpTuple<MuxDesc>(MuxDesc.class,
         MuxOperator.class));
+    opvec.add(new OpTuple<AppMasterEventDesc>(AppMasterEventDesc.class,
+        AppMasterEventOperator.class));
+    opvec.add(new OpTuple<DynamicPruningEventDesc>(DynamicPruningEventDesc.class,
+        AppMasterEventOperator.class));
   }
 
   static {
@@ -119,9 +126,9 @@ public final class OperatorFactory {
 
   private static final class OpTuple<T extends OperatorDesc> {
     private final Class<T> descClass;
-    private final Class<? extends Operator<T>> opClass;
+    private final Class<? extends Operator<?>> opClass;
 
-    public OpTuple(Class<T> descClass, Class<? extends Operator<T>> opClass) {
+    public OpTuple(Class<T> descClass, Class<? extends Operator<?>> opClass) {
       this.descClass = descClass;
       this.opClass = opClass;
     }

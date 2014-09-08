@@ -48,7 +48,7 @@ public class GenericUDFRpad extends GenericUDFBasePad {
     // Copy the padding
     while (pos < len) {
       for (int i = 0; i < pad.getLength() && i < len - pos; i++) {
-	data[pos + i] = padTxt[i];
+        data[pos + i] = padTxt[i];
       }
       pos += pad.getLength();
     }

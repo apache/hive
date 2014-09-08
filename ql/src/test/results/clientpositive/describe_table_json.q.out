@@ -20,7 +20,7 @@ PREHOOK: query: SHOW TABLE EXTENDED LIKE 'json*'
 PREHOOK: type: SHOW_TABLESTATUS
 POSTHOOK: query: SHOW TABLE EXTENDED LIKE 'json*'
 POSTHOOK: type: SHOW_TABLESTATUS
-{"tables":[]}
+#### A masked pattern was here ####
 PREHOOK: query: ALTER TABLE jsontable SET TBLPROPERTIES ('id' = 'jsontable')
 PREHOOK: type: ALTERTABLE_PROPERTIES
 PREHOOK: Input: default@jsontable

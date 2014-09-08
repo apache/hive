@@ -98,7 +98,7 @@ public class RowResolver implements Serializable{
 
   public void put(String tab_alias, String col_alias, ColumnInfo colInfo) {
     if (!addMappingOnly(tab_alias, col_alias, colInfo)) {
-    	rowSchema.getSignature().add(colInfo);
+      rowSchema.getSignature().add(colInfo);
     }
   }
 
@@ -289,7 +289,7 @@ public class RowResolver implements Serializable{
   public boolean getIsExprResolver() {
     return isExprResolver;
   }
-  
+
   public String[] getAlternateMappings(String internalName) {
     return altInvRslvMap.get(internalName);
   }

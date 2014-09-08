@@ -33,17 +33,17 @@ public class IdentityExpression extends VectorExpression {
   public IdentityExpression() {
   }
 
-	public IdentityExpression(int colNum, String type) {
-		this.colNum = colNum;
+  public IdentityExpression(int colNum, String type) {
+    this.colNum = colNum;
     this.type = type;
-	}
+  }
 
-	@Override
+  @Override
   public void evaluate(VectorizedRowBatch batch) {
     if (childExpressions != null) {
       this.evaluateChildren(batch);
     }
-	}
+  }
 
   @Override
   public int getOutputColumn() {

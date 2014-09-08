@@ -23,6 +23,7 @@ import java.sql.Timestamp;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.vector.*;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.StringExpr;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriterFactory;
@@ -30,8 +31,12 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
+import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.*;
+import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.apache.hadoop.io.Text;
 
 /**
@@ -215,6 +220,35 @@ public class VectorUDFAdaptor extends VectorExpression {
         t = ((WritableStringObjectInspector) outputOI).getPrimitiveWritableObject(value);
       }
       bv.setVal(i, t.getBytes(), 0, t.getLength());
+    } else if (outputOI instanceof WritableHiveCharObjectInspector) {
+      WritableHiveCharObjectInspector writableHiveCharObjectOI = (WritableHiveCharObjectInspector) outputOI;
+      int maxLength = ((CharTypeInfo) writableHiveCharObjectOI.getTypeInfo()).getLength();
+      BytesColumnVector bv = (BytesColumnVector) colVec;
+
+      HiveCharWritable hiveCharWritable;
+      if (value instanceof HiveCharWritable) {
+        hiveCharWritable = ((HiveCharWritable) value);
+      } else {
+        hiveCharWritable = writableHiveCharObjectOI.getPrimitiveWritableObject(value);
+      }
+      Text t = hiveCharWritable.getTextValue();
+
+      // In vector mode, we stored CHAR as unpadded.
+      StringExpr.rightTrimAndTruncate(bv, i, t.getBytes(), 0, t.getLength(), maxLength);
+    } else if (outputOI instanceof WritableHiveVarcharObjectInspector) {
+      WritableHiveVarcharObjectInspector writableHiveVarcharObjectOI = (WritableHiveVarcharObjectInspector) outputOI;
+      int maxLength = ((VarcharTypeInfo) writableHiveVarcharObjectOI.getTypeInfo()).getLength();
+      BytesColumnVector bv = (BytesColumnVector) colVec;
+
+      HiveVarcharWritable hiveVarcharWritable;
+      if (value instanceof HiveVarcharWritable) {
+        hiveVarcharWritable = ((HiveVarcharWritable) value);
+      } else {
+        hiveVarcharWritable = writableHiveVarcharObjectOI.getPrimitiveWritableObject(value);
+      }
+      Text t = hiveVarcharWritable.getTextValue();
+
+      StringExpr.truncate(bv, i, t.getBytes(), 0, t.getLength(), maxLength);
     } else if (outputOI instanceof WritableIntObjectInspector) {
       LongColumnVector lv = (LongColumnVector) colVec;
       if (value instanceof Integer) {

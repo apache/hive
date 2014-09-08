@@ -46,7 +46,7 @@ public class GenericUDFLpad extends GenericUDFBasePad {
     // Copy the padding
     for (int i = 0; i < pos; i += pad.getLength()) {
       for (int j = 0; j < pad.getLength() && j < pos - i; j++) {
-	data[i + j] = padTxt[j];
+        data[i + j] = padTxt[j];
       }
     }
 

@@ -39,7 +39,6 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Function;
@@ -562,7 +561,7 @@ public final class FunctionRegistry {
           return null;
         }
 
-        Class<?> udfClass = Class.forName(func.getClassName(), true, JavaUtils.getClassLoader());
+        Class<?> udfClass = Class.forName(func.getClassName(), true, Utilities.getSessionSpecifiedClassLoader());
         if (registerTemporaryFunction(functionName, udfClass)) {
           ret = mFunctions.get(functionName);
         } else {
@@ -610,7 +609,7 @@ public final class FunctionRegistry {
     // Even if we have a reference to the class (which will be the case for GenericUDFs),
     // the classloader may not be able to resolve the class, which would mean reflection-based
     // methods would fail such as for plan deserialization. Make sure this works too.
-    Class.forName(udfClass.getName(), true, JavaUtils.getClassLoader());
+    Class.forName(udfClass.getName(), true, Utilities.getSessionSpecifiedClassLoader());
   }
 
   private static void loadFunctionResourcesIfNecessary(String functionName, CommonFunctionInfo cfi) {

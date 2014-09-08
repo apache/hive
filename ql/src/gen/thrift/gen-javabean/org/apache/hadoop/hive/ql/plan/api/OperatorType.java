@@ -32,7 +32,8 @@ public enum OperatorType implements org.apache.thrift.TEnum {
   HASHTABLEDUMMY(17),
   PTF(18),
   MUX(19),
-  DEMUX(20);
+  DEMUX(20),
+  EVENT(21);
 
   private final int value;
 
@@ -95,6 +96,8 @@ public enum OperatorType implements org.apache.thrift.TEnum {
         return MUX;
       case 20:
         return DEMUX;
+      case 21:
+        return EVENT;
       default:
         return null;
     }
