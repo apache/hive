@@ -170,6 +170,166 @@ PREHOOK: query: SHOW TABLES IN test_db LIKE "nomatch"
 PREHOOK: type: SHOWTABLES
 POSTHOOK: query: SHOW TABLES IN test_db LIKE "nomatch"
 POSTHOOK: type: SHOWTABLES
+PREHOOK: query: -- SHOW TABLE EXTENDED basic syntax tests and wildcard
+SHOW TABLE EXTENDED IN test_db LIKE foo
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: -- SHOW TABLE EXTENDED basic syntax tests and wildcard
+SHOW TABLE EXTENDED IN test_db LIKE foo
+POSTHOOK: type: SHOW_TABLESTATUS
+tableName:foo
+#### A masked pattern was here ####
+inputformat:org.apache.hadoop.mapred.TextInputFormat
+outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+columns:struct columns { i32 a}
+partitioned:false
+partitionColumns:
+totalNumberFiles:0
+totalFileSize:0
+maxFileSize:0
+minFileSize:0
+#### A masked pattern was here ####
+
+PREHOOK: query: SHOW TABLE EXTENDED IN test_db LIKE "foo"
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: SHOW TABLE EXTENDED IN test_db LIKE "foo"
+POSTHOOK: type: SHOW_TABLESTATUS
+tableName:foo
+#### A masked pattern was here ####
+inputformat:org.apache.hadoop.mapred.TextInputFormat
+outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+columns:struct columns { i32 a}
+partitioned:false
+partitionColumns:
+totalNumberFiles:0
+totalFileSize:0
+maxFileSize:0
+minFileSize:0
+#### A masked pattern was here ####
+
+PREHOOK: query: SHOW TABLE EXTENDED IN test_db LIKE 'foo'
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: SHOW TABLE EXTENDED IN test_db LIKE 'foo'
+POSTHOOK: type: SHOW_TABLESTATUS
+tableName:foo
+#### A masked pattern was here ####
+inputformat:org.apache.hadoop.mapred.TextInputFormat
+outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+columns:struct columns { i32 a}
+partitioned:false
+partitionColumns:
+totalNumberFiles:0
+totalFileSize:0
+maxFileSize:0
+minFileSize:0
+#### A masked pattern was here ####
+
+PREHOOK: query: SHOW TABLE EXTENDED IN test_db LIKE `foo`
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: SHOW TABLE EXTENDED IN test_db LIKE `foo`
+POSTHOOK: type: SHOW_TABLESTATUS
+tableName:foo
+#### A masked pattern was here ####
+inputformat:org.apache.hadoop.mapred.TextInputFormat
+outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+columns:struct columns { i32 a}
+partitioned:false
+partitionColumns:
+totalNumberFiles:0
+totalFileSize:0
+maxFileSize:0
+minFileSize:0
+#### A masked pattern was here ####
+
+PREHOOK: query: SHOW TABLE EXTENDED IN test_db LIKE 'ba*'
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: SHOW TABLE EXTENDED IN test_db LIKE 'ba*'
+POSTHOOK: type: SHOW_TABLESTATUS
+tableName:bar
+#### A masked pattern was here ####
+inputformat:org.apache.hadoop.mapred.TextInputFormat
+outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+columns:struct columns { i32 a}
+partitioned:false
+partitionColumns:
+totalNumberFiles:0
+totalFileSize:0
+maxFileSize:0
+minFileSize:0
+#### A masked pattern was here ####
+
+tableName:baz
+#### A masked pattern was here ####
+inputformat:org.apache.hadoop.mapred.TextInputFormat
+outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+columns:struct columns { i32 a}
+partitioned:false
+partitionColumns:
+totalNumberFiles:0
+totalFileSize:0
+maxFileSize:0
+minFileSize:0
+#### A masked pattern was here ####
+
+PREHOOK: query: SHOW TABLE EXTENDED IN test_db LIKE "ba*"
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: SHOW TABLE EXTENDED IN test_db LIKE "ba*"
+POSTHOOK: type: SHOW_TABLESTATUS
+tableName:bar
+#### A masked pattern was here ####
+inputformat:org.apache.hadoop.mapred.TextInputFormat
+outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+columns:struct columns { i32 a}
+partitioned:false
+partitionColumns:
+totalNumberFiles:0
+totalFileSize:0
+maxFileSize:0
+minFileSize:0
+#### A masked pattern was here ####
+
+tableName:baz
+#### A masked pattern was here ####
+inputformat:org.apache.hadoop.mapred.TextInputFormat
+outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+columns:struct columns { i32 a}
+partitioned:false
+partitionColumns:
+totalNumberFiles:0
+totalFileSize:0
+maxFileSize:0
+minFileSize:0
+#### A masked pattern was here ####
+
+PREHOOK: query: SHOW TABLE EXTENDED IN test_db LIKE `ba*`
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: SHOW TABLE EXTENDED IN test_db LIKE `ba*`
+POSTHOOK: type: SHOW_TABLESTATUS
+tableName:bar
+#### A masked pattern was here ####
+inputformat:org.apache.hadoop.mapred.TextInputFormat
+outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+columns:struct columns { i32 a}
+partitioned:false
+partitionColumns:
+totalNumberFiles:0
+totalFileSize:0
+maxFileSize:0
+minFileSize:0
+#### A masked pattern was here ####
+
+tableName:baz
+#### A masked pattern was here ####
+inputformat:org.apache.hadoop.mapred.TextInputFormat
+outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+columns:struct columns { i32 a}
+partitioned:false
+partitionColumns:
+totalNumberFiles:0
+totalFileSize:0
+maxFileSize:0
+minFileSize:0
+#### A masked pattern was here ####
+
 PREHOOK: query: -- SHOW TABLES from a database with a name that requires escaping
 CREATE DATABASE `database`
 PREHOOK: type: CREATEDATABASE
