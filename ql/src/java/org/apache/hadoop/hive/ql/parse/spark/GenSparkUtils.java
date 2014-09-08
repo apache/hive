@@ -171,13 +171,14 @@ public class GenSparkUtils {
       BaseWork work)
     throws SemanticException {
 
-    Set<Operator<?>> roots = work.getAllRootOperators();
+    List<Operator<?>> roots = new ArrayList<Operator<?>>();
+    roots.addAll(work.getAllRootOperators());
     if (work.getDummyOps() != null) {
       roots.addAll(work.getDummyOps());
     }
 
     // need to clone the plan.
-    Set<Operator<?>> newRoots = Utilities.cloneOperatorTree(conf, roots);
+    List<Operator<?>> newRoots = Utilities.cloneOperatorTree(conf, roots);
 
     // we're cloning the operator plan but we're retaining the original work. That means
     // that root operators have to be replaced with the cloned ops. The replacement map
