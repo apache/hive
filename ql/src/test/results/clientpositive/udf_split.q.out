@@ -36,11 +36,11 @@ STAGE PLANS:
         TableScan
           alias: src
           Row Limit Per Split: 1
-          Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+          Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: split('a b c', ' ') (type: array<string>), split('oneAtwoBthreeC', '[ABC]') (type: array<string>), split('', '.') (type: array<string>), split(50401020, 0) (type: array<string>)
             outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+            Statistics: Num rows: 500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
             ListSink
 
 PREHOOK: query: SELECT 

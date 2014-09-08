@@ -1,3 +1,4 @@
+set hive.stats.dbclass=fs;
 --
 -- Table src
 --
@@ -6,6 +7,10 @@ DROP TABLE IF EXISTS src;
 CREATE TABLE src (key STRING COMMENT 'default', value STRING COMMENT 'default') STORED AS TEXTFILE;
 
 LOAD DATA LOCAL INPATH "${hiveconf:test.data.dir}/kv1.txt" INTO TABLE src;
+
+ANALYZE TABLE src COMPUTE STATISTICS;
+
+ANALYZE TABLE src COMPUTE STATISTICS FOR COLUMNS key,value;
 
 --
 -- Table src1
@@ -16,6 +21,10 @@ CREATE TABLE src1 (key STRING COMMENT 'default', value STRING COMMENT 'default')
 
 LOAD DATA LOCAL INPATH "${hiveconf:test.data.dir}/kv3.txt" INTO TABLE src1;
 
+ANALYZE TABLE src1 COMPUTE STATISTICS;
+
+ANALYZE TABLE src1 COMPUTE STATISTICS FOR COLUMNS key,value;
+
 --
 -- Table src_json
 --
@@ -25,6 +34,9 @@ CREATE TABLE src_json (json STRING COMMENT 'default') STORED AS TEXTFILE;
 
 LOAD DATA LOCAL INPATH "${hiveconf:test.data.dir}/json.txt" INTO TABLE src_json;
 
+ANALYZE TABLE src_json COMPUTE STATISTICS;
+
+ANALYZE TABLE src_json COMPUTE STATISTICS FOR COLUMNS json;
 
 --
 -- Table src_sequencefile
@@ -35,6 +47,9 @@ CREATE TABLE src_sequencefile (key STRING COMMENT 'default', value STRING COMMEN
 
 LOAD DATA LOCAL INPATH "${hiveconf:test.data.dir}/kv1.seq" INTO TABLE src_sequencefile;
 
+ANALYZE TABLE src_sequencefile COMPUTE STATISTICS;
+
+ANALYZE TABLE src_sequencefile COMPUTE STATISTICS FOR COLUMNS key,value;
 
 --
 -- Table src_thrift
@@ -50,6 +65,7 @@ STORED AS SEQUENCEFILE;
 
 LOAD DATA LOCAL INPATH "${hiveconf:test.data.dir}/complex.seq" INTO TABLE src_thrift;
 
+ANALYZE TABLE src_thrift COMPUTE STATISTICS;
 
 --
 -- Table srcbucket
@@ -62,7 +78,10 @@ STORED AS TEXTFILE;
 
 LOAD DATA LOCAL INPATH "${hiveconf:test.data.dir}/srcbucket0.txt" INTO TABLE srcbucket;
 LOAD DATA LOCAL INPATH "${hiveconf:test.data.dir}/srcbucket1.txt" INTO TABLE srcbucket;
+ 
+ANALYZE TABLE srcbucket COMPUTE STATISTICS;
 
+ANALYZE TABLE srcbucket COMPUTE STATISTICS FOR COLUMNS key,value;
 
 --
 -- Table srcbucket2
@@ -78,6 +97,9 @@ LOAD DATA LOCAL INPATH "${hiveconf:test.data.dir}/srcbucket21.txt" INTO TABLE sr
 LOAD DATA LOCAL INPATH "${hiveconf:test.data.dir}/srcbucket22.txt" INTO TABLE srcbucket2;
 LOAD DATA LOCAL INPATH "${hiveconf:test.data.dir}/srcbucket23.txt" INTO TABLE srcbucket2;
 
+ANALYZE TABLE srcbucket2 COMPUTE STATISTICS;
+
+ANALYZE TABLE srcbucket2 COMPUTE STATISTICS FOR COLUMNS key,value;
 
 --
 -- Table srcpart
@@ -100,6 +122,9 @@ OVERWRITE INTO TABLE srcpart PARTITION (ds="2008-04-09", hr="11");
 LOAD DATA LOCAL INPATH "${hiveconf:test.data.dir}/kv1.txt"
 OVERWRITE INTO TABLE srcpart PARTITION (ds="2008-04-09", hr="12");
 
+ANALYZE TABLE srcpart PARTITION(ds, hr) COMPUTE STATISTICS;
+
+ANALYZE TABLE srcpart PARTITION(ds, hr) COMPUTE STATISTICS FOR COLUMNS key,value;
 
 --
 -- Table alltypesorc
@@ -123,6 +148,9 @@ CREATE TABLE alltypesorc(
 LOAD DATA LOCAL INPATH "${hiveconf:test.data.dir}/alltypesorc"
 OVERWRITE INTO  TABLE alltypesorc;
 
+ANALYZE TABLE alltypesorc COMPUTE STATISTICS;
+
+ANALYZE TABLE alltypesorc COMPUTE STATISTICS FOR COLUMNS ctinyint,csmallint,cint,cbigint,cfloat,cdouble,cstring1,cstring2,ctimestamp1,ctimestamp2,cboolean1,cboolean2;
 
 --
 -- Table primitives

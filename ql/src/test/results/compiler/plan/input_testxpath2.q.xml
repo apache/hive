@@ -107,7 +107,7 @@
             </void> 
             <void method="put"> 
              <string>numRows</string> 
-             <string>0</string> 
+             <string>11</string> 
             </void> 
             <void method="put"> 
              <string>numFiles</string> 
@@ -954,7 +954,7 @@
           </void> 
           <void method="put"> 
            <string>numRows</string> 
-           <string>0</string> 
+           <string>11</string> 
           </void> 
           <void method="put"> 
            <string>numFiles</string> 

@@ -255,7 +255,7 @@
             </void> 
             <void method="put"> 
              <string>rawDataSize</string> 
-             <string>0</string> 
+             <string>5312</string> 
             </void> 
             <void method="put"> 
              <string>columns.comments</string> 
@@ -263,7 +263,7 @@
             </void> 
             <void method="put"> 
              <string>numRows</string> 
-             <string>0</string> 
+             <string>500</string> 
             </void> 
             <void method="put"> 
              <string>bucket_count</string> 
@@ -1579,7 +1579,7 @@
           </void> 
           <void method="put"> 
            <string>rawDataSize</string> 
-           <string>0</string> 
+           <string>5312</string> 
           </void> 
           <void method="put"> 
            <string>columns.comments</string> 
@@ -1587,7 +1587,7 @@
           </void> 
           <void method="put"> 
            <string>numRows</string> 
-           <string>0</string> 
+           <string>500</string> 
           </void> 
           <void method="put"> 
            <string>bucket_count</string> 
@@ -1672,9 +1672,6 @@
                 </void> 
                 <void property="lbCtx"> 
                  <object idref="ListBucketingCtx0"/> 
-                </void> 
-                <void property="maxStatsKeyPrefixLength"> 
-                 <int>150</int> 
                 </void> 
                 <void property="numFiles"> 
                  <int>1</int> 
