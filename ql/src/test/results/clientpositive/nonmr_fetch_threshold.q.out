@@ -12,14 +12,14 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: srcpart
-          Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: key (type: string), value (type: string), ds (type: string), hr (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Limit
               Number of rows: 10
-              Statistics: Num rows: 10 Data size: 2000 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 10 Data size: 100 Basic stats: COMPLETE Column stats: NONE
               ListSink
 
 PREHOOK: query: explain select cast(key as int) * 10, upper(value) from src limit 10
@@ -36,14 +36,14 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: src
-          Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: (UDFToInteger(key) * 10) (type: int), upper(value) (type: string)
             outputColumnNames: _col0, _col1
-            Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Limit
               Number of rows: 10
-              Statistics: Num rows: 10 Data size: 2000 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 10 Data size: 100 Basic stats: COMPLETE Column stats: NONE
               ListSink
 
 PREHOOK: query: -- from HIVE-7397, limit + partition pruning filter
@@ -62,14 +62,14 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: srcpart
-          Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: key (type: string), value (type: string), ds (type: string), hr (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Limit
               Number of rows: 10
-              Statistics: Num rows: 10 Data size: 2000 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 10 Data size: 100 Basic stats: COMPLETE Column stats: NONE
               ListSink
 
 PREHOOK: query: explain select cast(key as int) * 10, upper(value) from src limit 10
@@ -86,17 +86,17 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-            Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: (UDFToInteger(key) * 10) (type: int), upper(value) (type: string)
               outputColumnNames: _col0, _col1
-              Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Limit
                 Number of rows: 10
-                Statistics: Num rows: 10 Data size: 2000 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 10 Data size: 100 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 10 Data size: 2000 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 10 Data size: 100 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat

@@ -30,11 +30,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: src1
-          Statistics: Num rows: 1 Data size: 216 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: find_in_set(key, concat(key, ',', value)) (type: int)
             outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 216 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: FROM src1 SELECT find_in_set(src1.key,concat(src1.key,',',src1.value))

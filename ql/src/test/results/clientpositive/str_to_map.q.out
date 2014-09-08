@@ -23,14 +23,14 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: src
-          Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+          Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: str_to_map('a=1,b=2,c=3',',','=')['a'] (type: string)
             outputColumnNames: _col0
-            Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+            Statistics: Num rows: 500 Data size: 92000 Basic stats: COMPLETE Column stats: COMPLETE
             Limit
               Number of rows: 3
-              Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+              Statistics: Num rows: 3 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
               ListSink
 
 PREHOOK: query: select str_to_map('a=1,b=2,c=3',',','=')['a'] from src limit 3
@@ -58,14 +58,14 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: src
-          Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+          Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: str_to_map('a:1,b:2,c:3') (type: map<string,string>)
             outputColumnNames: _col0
-            Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+            Statistics: Num rows: 500 Data size: 377000 Basic stats: COMPLETE Column stats: COMPLETE
             Limit
               Number of rows: 3
-              Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+              Statistics: Num rows: 3 Data size: 2262 Basic stats: COMPLETE Column stats: COMPLETE
               ListSink
 
 PREHOOK: query: select str_to_map('a:1,b:2,c:3') from src limit 3
@@ -93,14 +93,14 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: src
-          Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+          Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: str_to_map('a:1,b:2,c:3',',',':') (type: map<string,string>)
             outputColumnNames: _col0
-            Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+            Statistics: Num rows: 500 Data size: 377000 Basic stats: COMPLETE Column stats: COMPLETE
             Limit
               Number of rows: 3
-              Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+              Statistics: Num rows: 3 Data size: 2262 Basic stats: COMPLETE Column stats: COMPLETE
               ListSink
 
 PREHOOK: query: select str_to_map('a:1,b:2,c:3',',',':') from src limit 3
@@ -132,28 +132,28 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-            Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: 'a:1,b:2,c:3' (type: string)
               outputColumnNames: _col0
-              Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+              Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
               Transform Operator
                 command: cat
                 output info:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+                Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: str_to_map(_col0,',',':')['a'] (type: string)
                   outputColumnNames: _col0
-                  Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+                  Statistics: Num rows: 500 Data size: 92000 Basic stats: COMPLETE Column stats: COMPLETE
                   Limit
                     Number of rows: 3
-                    Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+                    Statistics: Num rows: 3 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+                      Statistics: Num rows: 3 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
