@@ -342,4 +342,13 @@ public class LazyStruct extends LazyNonPrimitive<LazySimpleStructObjectInspector
     }
     return indexes;
   }
+
+  /**
+   * Return the data in bytes corresponding to this given struct. This is useful specifically in
+   * cases where the data is stored in serialized formats like protobufs or thrift and would need
+   * custom deserializers to be deserialized.
+   * */
+  public byte[] getBytes() {
+    return bytes.getData();
+  }
 }

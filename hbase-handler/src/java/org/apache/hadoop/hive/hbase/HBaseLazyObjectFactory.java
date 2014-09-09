@@ -18,32 +18,31 @@
 
 package org.apache.hadoop.hive.hbase;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.hadoop.hive.hbase.struct.HBaseValueFactory;
 import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.lazy.LazyFactory;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.SerDeParameters;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.LazyObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
-
-import java.util.ArrayList;
-import java.util.List;
 
 // Does same thing with LazyFactory#createLazyObjectInspector except that this replaces
 // original keyOI with OI which is create by HBaseKeyFactory provided by serde property for hbase
 public class HBaseLazyObjectFactory {
 
   public static ObjectInspector createLazyHBaseStructInspector(
-      SerDeParameters serdeParams, int index, HBaseKeyFactory factory) throws SerDeException {
+      SerDeParameters serdeParams, int index, HBaseKeyFactory keyFactory, List<HBaseValueFactory> valueFactories) throws SerDeException {
     List<TypeInfo> columnTypes = serdeParams.getColumnTypes();
     ArrayList<ObjectInspector> columnObjectInspectors = new ArrayList<ObjectInspector>(
         columnTypes.size());
     for (int i = 0; i < columnTypes.size(); i++) {
       if (i == index) {
-        columnObjectInspectors.add(factory.createKeyObjectInspector(columnTypes.get(i)));
+        columnObjectInspectors.add(keyFactory.createKeyObjectInspector(columnTypes.get(i)));
       } else {
-        columnObjectInspectors.add(LazyFactory.createLazyObjectInspector(
-            columnTypes.get(i), serdeParams.getSeparators(), 1, serdeParams.getNullSequence(),
-            serdeParams.isEscaped(), serdeParams.getEscapeChar()));
+        columnObjectInspectors.add(valueFactories.get(i).createValueObjectInspector(
+            columnTypes.get(i)));
       }
     }
     return LazyObjectInspectorFactory.getLazySimpleStructObjectInspector(

@@ -18,10 +18,13 @@
 
 package org.apache.hadoop.hive.serde2.lazy.objectinspector;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.hadoop.hive.serde2.BaseStructObjectInspector;
 import org.apache.hadoop.hive.serde2.StructObject;
+import org.apache.hadoop.hive.serde2.avro.AvroLazyObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.io.Text;
@@ -100,6 +103,20 @@ public class LazySimpleStructObjectInspector extends BaseStructObjectInspector {
     int fieldID = f.getFieldID();
     assert (fieldID >= 0 && fieldID < fields.size());
 
+    ObjectInspector oi = f.getFieldObjectInspector();
+
+    if (oi instanceof AvroLazyObjectInspector) {
+      return ((AvroLazyObjectInspector) oi).getStructFieldData(data, fieldRef);
+    }
+
+    if (oi instanceof MapObjectInspector) {
+      ObjectInspector valueOI = ((MapObjectInspector) oi).getMapValueObjectInspector();
+
+      if (valueOI instanceof AvroLazyObjectInspector) {
+        return ((AvroLazyObjectInspector) valueOI).getStructFieldData(data, fieldRef);
+      }
+    }
+
     return struct.getField(fieldID);
   }
 
@@ -108,8 +125,15 @@ public class LazySimpleStructObjectInspector extends BaseStructObjectInspector {
     if (data == null) {
       return null;
     }
-    StructObject struct = (StructObject) data;
-    return struct.getFieldsAsList();
+
+    // Iterate over all the fields picking up the nested structs within them
+    List<Object> result = new ArrayList<Object>(fields.size());
+
+    for (MyField myField : fields) {
+      result.add(getStructFieldData(data, myField));
+    }
+
+    return result;
   }
 
   // For LazyStruct
