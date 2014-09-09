@@ -103,7 +103,6 @@ public class HiveConf extends Configuration {
    * be recreated so that the change will take effect.
    */
   public static final HiveConf.ConfVars[] metaVars = {
-      HiveConf.ConfVars.METASTOREDIRECTORY,
       HiveConf.ConfVars.METASTOREWAREHOUSE,
       HiveConf.ConfVars.METASTOREURIS,
       HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES,
@@ -346,9 +345,7 @@ public class HiveConf extends Configuration {
     MAPREDSETUPCLEANUPNEEDED(ShimLoader.getHadoopShims().getHadoopConfNames().get("MAPREDSETUPCLEANUPNEEDED"), false, "", true),
     MAPREDTASKCLEANUPNEEDED(ShimLoader.getHadoopShims().getHadoopConfNames().get("MAPREDTASKCLEANUPNEEDED"), false, "", true),
 
-    // Metastore stuff. Be sure to update HiveConf.metaVars when you add
-    // something here!
-    METASTOREDIRECTORY("hive.metastore.metadb.dir", "", ""),
+    // Metastore stuff. Be sure to update HiveConf.metaVars when you add something here!
     METASTOREWAREHOUSE("hive.metastore.warehouse.dir", "/user/hive/warehouse",
         "location of default database for the warehouse"),
     METASTOREURIS("hive.metastore.uris", "",
