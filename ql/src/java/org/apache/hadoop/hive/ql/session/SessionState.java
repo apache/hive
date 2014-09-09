@@ -624,10 +624,10 @@ public class SessionState {
         authorizerV2 = authorizerFactory.createHiveAuthorizer(new HiveMetastoreClientFactoryImpl(),
             conf, authenticator, authzContextBuilder.build());
 
-        authorizerV2.applyAuthorizationConfigPolicy(conf);
-        // create the create table grants with new config
-        createTableGrants = CreateTableAutomaticGrant.create(conf);
+        authorizerV2.applyAuthorizationConfigPolicy(conf); 
       }
+      // create the create table grants with new config
+      createTableGrants = CreateTableAutomaticGrant.create(conf);
 
     } catch (HiveException e) {
       throw new RuntimeException(e);
