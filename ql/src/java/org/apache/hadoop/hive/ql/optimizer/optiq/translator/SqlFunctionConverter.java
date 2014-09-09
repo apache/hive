@@ -24,6 +24,7 @@ import java.util.Map;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
+import org.apache.hadoop.hive.ql.optimizer.optiq.OptiqSemanticException;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.ParseDriver;
@@ -67,7 +68,7 @@ public class SqlFunctionConverter {
   }
 
   public static SqlOperator getOptiqOperator(GenericUDF hiveUDF,
-      ImmutableList<RelDataType> optiqArgTypes, RelDataType retType) {
+      ImmutableList<RelDataType> optiqArgTypes, RelDataType retType) throws OptiqSemanticException {
     // handle overloaded methods first
     if (hiveUDF instanceof GenericUDFOPNegative) {
       return SqlStdOperatorTable.UNARY_MINUS;
@@ -290,7 +291,14 @@ public class SqlFunctionConverter {
   }
 
   public static SqlOperator getOptiqFn(String hiveUdfName,
-      ImmutableList<RelDataType> optiqArgTypes, RelDataType optiqRetType) {
+      ImmutableList<RelDataType> optiqArgTypes, RelDataType optiqRetType) throws OptiqSemanticException{
+
+    if (hiveUdfName != null && hiveUdfName.trim().equals("<=>")) {
+      // We can create Optiq IS_DISTINCT_FROM operator for this. But since our
+      // join reordering algo cant handle this anyway there is no advantage of this.
+      // So, bail out for now.
+      throw new OptiqSemanticException("<=> is not yet supported for cbo.");
+    }
     SqlOperator optiqOp = hiveToOptiq.get(hiveUdfName);
     if (optiqOp == null) {
       OptiqUDFInfo uInf = getUDFInfo(hiveUdfName, optiqArgTypes, optiqRetType);
