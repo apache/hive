@@ -1110,6 +1110,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           processSubQuery(qb, frm);
         } else if (frm.getToken().getType() == HiveParser.TOK_LATERAL_VIEW ||
             frm.getToken().getType() == HiveParser.TOK_LATERAL_VIEW_OUTER) {
+          queryProperties.setHasLateralViews(true);
           processLateralView(qb, frm);
         } else if (isJoinToken(frm)) {
           processJoin(qb, frm);
@@ -9577,7 +9578,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           || ast.getToken().getType() == HiveParser.TOK_EXPLAIN;
       if (!tokenTypeIsQuery || createVwDesc != null
           || !HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_CBO_ENABLED)
-          || !canHandleQuery()) {
+          || !canHandleQuery(qb)) {
         runCBO = false;
       }
 
@@ -11847,17 +11848,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   /*
    * Entry point to Optimizations using Optiq.
    */
-
-  // TODO: Extend QP to indicate LV, Multi Insert, Cubes, Rollups...
-  private boolean canHandleQuery() {
+  private boolean canHandleQuery(QB qbToChk) {
     boolean runOptiqPlanner = false;
     // Assumption: If top level QB is query then everything below it must also
     // be Query
-    if (qb.getIsQuery()
+    if (qbToChk.getIsQuery()
         && ((queryProperties.getJoinCount() > 1) || conf.getBoolVar(ConfVars.HIVE_IN_TEST))
         && !queryProperties.hasClusterBy() && !queryProperties.hasDistributeBy()
         && !queryProperties.hasSortBy() && !queryProperties.hasPTF()
-        && !queryProperties.usesScript() && !queryProperties.hasMultiDestQuery()) {
+        && !queryProperties.usesScript() && !queryProperties.hasMultiDestQuery()
+        && !queryProperties.hasLateralViews()) {
       runOptiqPlanner = true;
     } else {
       LOG.info("Can not invoke CBO; query contains operators not supported for CBO.");
@@ -12259,7 +12259,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       JoinType hiveJoinType = null;
 
       if (joinParseTree.getToken().getType() == HiveParser.TOK_UNIQUEJOIN) {
-        throw new RuntimeException("CBO does not support Unique Join");
+        String msg = String.format("UNIQUE JOIN is currently not supported in CBO,"
+            + " turn off cbo to use UNIQUE JOIN.");
+        LOG.debug(msg);
+        throw new OptiqSemanticException(msg);
       }
 
       // 1. Determine Join Type
@@ -13357,9 +13360,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             toString(
             selExprList.getChild(0).getTokenStartIndex(),
             selExprList.getChild(0).getTokenStopIndex());
-        String msg = String.format("Hint specified for %s." +
-            " Currently we don't support hints in CBO," +
-            " turn off cbo to use hints.", hint);
+        String msg = String.format("Hint specified for %s."
+            + " Currently we don't support hints in CBO, turn off cbo to use hints.", hint);
         LOG.debug(msg);
         throw new OptiqSemanticException(msg);
       }
@@ -13370,7 +13372,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // 4. Bailout if select involves Transform
       boolean isInTransform = (selExprList.getChild(posn).getChild(0).getType() == HiveParser.TOK_TRANSFORM);
       if (isInTransform) {
-        throw new RuntimeException("SELECT TRANSFORM not supported");
+        String msg = String.format("SELECT TRANSFORM is currently not supported in CBO,"
+            + " turn off cbo to use TRANSFORM.");
+        LOG.debug(msg);
+        throw new OptiqSemanticException(msg);
       }
 
       // 5. Bailout if select involves UDTF
@@ -13384,7 +13389,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           genericUDTF = fi.getGenericUDTF();
         }
         if (genericUDTF != null) {
-          throw new RuntimeException("SELECT UDTF not supported");
+          String msg = String.format("UDTF " + funcName + " is currently not supported in CBO,"
+              + " turn off cbo to use UDTF " + funcName);
+          LOG.debug(msg);
+          throw new OptiqSemanticException(msg);
         }
       }
 
@@ -13521,6 +13529,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // First generate all the opInfos for the elements in the from clause
       Map<String, RelNode> aliasToRel = new HashMap<String, RelNode>();
 
+      // 0. Check if we can handle the query
+      // This check is needed here because of SubQuery
+      if (!canHandleQuery(qb)) {
+        String msg = String.format("CBO Can not handle Sub Query");
+        LOG.debug(msg);
+        throw new OptiqSemanticException(msg);
+      }
+
       // 1. Build Rel For Src (SubQuery, TS, Join)
       // 1.1. Recurse over the subqueries to fill the subquery part of the plan
       for (String subqAlias : qb.getSubqAliases()) {
@@ -13634,10 +13650,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       return hiveColNameToInputPosMapBuilder.build();
     }
 
-    private QBParseInfo getQBParseInfo(QB qb) {
+    private QBParseInfo getQBParseInfo(QB qb) throws OptiqSemanticException {
       QBParseInfo qbp = qb.getParseInfo();
-      if (qbp.getClauseNames().size() > 1)
-        throw new RuntimeException("Multi Insert is not supported");
+      if (qbp.getClauseNames().size() > 1) {
+        String msg = String.format("Multi Insert is currently not supported in CBO,"
+            + " turn off cbo to use Multi Insert.");
+        LOG.debug(msg);
+        throw new OptiqSemanticException(msg);
+      }
       return qbp;
     }
 

@@ -183,6 +183,11 @@ public class SqlFunctionConverter {
       if (udfAnnotation != null && udfAnnotation instanceof Description) {
         Description udfDescription = (Description) udfAnnotation;
         udfName = udfDescription.name();
+        if (udfName != null) {
+          String[] aliases = udfName.split(",");
+          if (aliases.length > 0)
+            udfName = aliases[0];
+        }
       }
 
       if (udfName == null || udfName.isEmpty()) {
