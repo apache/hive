@@ -18,6 +18,10 @@
 
 package org.apache.hadoop.hive.hbase;
 
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hive.hbase.ColumnMappings.ColumnMapping;
 import org.apache.hadoop.hive.serde2.ByteStream;
@@ -33,10 +37,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.io.Writable;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
 
 public class HBaseRowSerializer {
 
@@ -279,6 +279,10 @@ public class HBaseRowSerializer {
           }
         }
         return true;
+       case UNION: {
+        // union type currently not totally supported. See HIVE-2390
+        return false;
+       }
       default:
         throw new RuntimeException("Unknown category type: " + objInspector.getCategory());
     }

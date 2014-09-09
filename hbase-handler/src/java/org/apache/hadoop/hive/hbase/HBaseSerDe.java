@@ -18,6 +18,10 @@
 
 package org.apache.hadoop.hive.hbase;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -25,6 +29,7 @@ import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.hive.hbase.ColumnMappings.ColumnMapping;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
+import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
@@ -32,10 +37,6 @@ import org.apache.hadoop.hive.serde2.lazy.objectinspector.LazySimpleStructObject
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.JobConf;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
 
 /**
  * HBaseSerDe can be used to serialize object into an HBase table and
@@ -50,15 +51,21 @@ public class HBaseSerDe extends AbstractSerDe {
   public static final String HBASE_KEY_COL = ":key";
   public static final String HBASE_PUT_TIMESTAMP = "hbase.put.timestamp";
   public static final String HBASE_COMPOSITE_KEY_CLASS = "hbase.composite.key.class";
+  public static final String HBASE_COMPOSITE_KEY_TYPES = "hbase.composite.key.types";
   public static final String HBASE_COMPOSITE_KEY_FACTORY = "hbase.composite.key.factory";
   public static final String HBASE_SCAN_CACHE = "hbase.scan.cache";
   public static final String HBASE_SCAN_CACHEBLOCKS = "hbase.scan.cacheblock";
   public static final String HBASE_SCAN_BATCH = "hbase.scan.batch";
+  public static final String HBASE_AUTOGENERATE_STRUCT = "hbase.struct.autogenerate";
   /**
-   *  Determines whether a regex matching should be done on the columns or not. Defaults to true.
-   *  <strong>WARNING: Note that currently this only supports the suffix wildcard .*</strong>
+   * Determines whether a regex matching should be done on the columns or not. Defaults to true.
+   * <strong>WARNING: Note that currently this only supports the suffix wildcard .*</strong>
    */
   public static final String HBASE_COLUMNS_REGEX_MATCHING = "hbase.columns.mapping.regex.matching";
+  /**
+   * Defines the type for a column.
+   **/
+  public static final String SERIALIZATION_TYPE = "serialization.type";
 
   private ObjectInspector cachedObjectInspector;
   private LazyHBaseRow cachedHBaseRow;
@@ -83,8 +90,11 @@ public class HBaseSerDe extends AbstractSerDe {
       throws SerDeException {
     serdeParams = new HBaseSerDeParameters(conf, tbl, getClass().getName());
 
-    cachedObjectInspector = HBaseLazyObjectFactory.createLazyHBaseStructInspector(
-        serdeParams.getSerdeParams(), serdeParams.getKeyIndex(), serdeParams.getKeyFactory());
+    cachedObjectInspector =
+        HBaseLazyObjectFactory
+            .createLazyHBaseStructInspector(serdeParams.getSerdeParams(),
+                serdeParams.getKeyIndex(), serdeParams.getKeyFactory(),
+                serdeParams.getValueFactories());
 
     cachedHBaseRow = new LazyHBaseRow(
         (LazySimpleStructObjectInspector) cachedObjectInspector,

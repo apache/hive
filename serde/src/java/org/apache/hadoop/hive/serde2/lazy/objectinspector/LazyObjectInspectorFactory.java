@@ -22,7 +22,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.hadoop.hive.serde2.avro.AvroLazyObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory.ObjectInspectorOptions;
 import org.apache.hadoop.io.Text;
 
 /**
@@ -48,14 +50,34 @@ public final class LazyObjectInspectorFactory {
       byte escapeChar) {
     return getLazySimpleStructObjectInspector(structFieldNames,
       structFieldObjectInspectors, null, separator, nullSequence,
-      lastColumnTakesRest, escaped, escapeChar);
+      lastColumnTakesRest, escaped, escapeChar, ObjectInspectorOptions.JAVA);
+  }
+  
+  public static LazySimpleStructObjectInspector getLazySimpleStructObjectInspector(
+      List<String> structFieldNames,
+      List<ObjectInspector> structFieldObjectInspectors, byte separator,
+      Text nullSequence, boolean lastColumnTakesRest, boolean escaped,
+      byte escapeChar, ObjectInspectorOptions option) {
+    return getLazySimpleStructObjectInspector(structFieldNames,
+      structFieldObjectInspectors, null, separator, nullSequence,
+      lastColumnTakesRest, escaped, escapeChar, option);
   }
 
   public static LazySimpleStructObjectInspector getLazySimpleStructObjectInspector(
       List<String> structFieldNames,
       List<ObjectInspector> structFieldObjectInspectors, List<String> structFieldComments,
       byte separator, Text nullSequence, boolean lastColumnTakesRest,
-      boolean escaped,byte escapeChar) {
+      boolean escaped, byte escapeChar) {
+    return getLazySimpleStructObjectInspector(structFieldNames, structFieldObjectInspectors,
+      structFieldComments, separator, nullSequence, lastColumnTakesRest, escaped, escapeChar,
+      ObjectInspectorOptions.JAVA);
+  }
+  
+  public static LazySimpleStructObjectInspector getLazySimpleStructObjectInspector(
+      List<String> structFieldNames,
+      List<ObjectInspector> structFieldObjectInspectors, List<String> structFieldComments,
+      byte separator, Text nullSequence, boolean lastColumnTakesRest,
+      boolean escaped,byte escapeChar, ObjectInspectorOptions option) {
     ArrayList<Object> signature = new ArrayList<Object>();
     signature.add(structFieldNames);
     signature.add(structFieldObjectInspectors);
@@ -64,15 +86,30 @@ public final class LazyObjectInspectorFactory {
     signature.add(Boolean.valueOf(lastColumnTakesRest));
     signature.add(Boolean.valueOf(escaped));
     signature.add(Byte.valueOf(escapeChar));
+    signature.add(option);
     if(structFieldComments != null) {
       signature.add(structFieldComments);
     }
     LazySimpleStructObjectInspector result = cachedLazySimpleStructObjectInspector
         .get(signature);
     if (result == null) {
-      result = new LazySimpleStructObjectInspector(structFieldNames,
-          structFieldObjectInspectors, structFieldComments, separator,
-          nullSequence, lastColumnTakesRest, escaped, escapeChar);
+      switch (option) {
+      case JAVA:
+        result =
+            new LazySimpleStructObjectInspector(structFieldNames, structFieldObjectInspectors,
+                structFieldComments, separator, nullSequence, lastColumnTakesRest, escaped,
+                escapeChar);
+        break;
+      case AVRO:
+        result =
+            new AvroLazyObjectInspector(structFieldNames, structFieldObjectInspectors,
+                structFieldComments, separator, nullSequence, lastColumnTakesRest, escaped,
+                escapeChar);
+        break;
+      default:
+        throw new IllegalArgumentException("Illegal ObjectInspector type [" + option + "]");
+      }
+
       cachedLazySimpleStructObjectInspector.put(signature, result);
     }
     return result;
