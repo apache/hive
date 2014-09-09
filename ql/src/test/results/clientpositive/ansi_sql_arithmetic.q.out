@@ -14,17 +14,17 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-            Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: (UDFToInteger(key) / UDFToInteger(key)) (type: decimal(21,11))
               outputColumnNames: _col0
-              Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Limit
                 Number of rows: 1
-                Statistics: Num rows: 1 Data size: 100 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 100 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -61,17 +61,17 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-            Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: (UDFToInteger(key) / UDFToInteger(key)) (type: double)
               outputColumnNames: _col0
-              Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Limit
                 Number of rows: 1
-                Statistics: Num rows: 1 Data size: 100 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 100 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat

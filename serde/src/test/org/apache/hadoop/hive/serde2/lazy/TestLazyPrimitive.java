@@ -388,7 +388,7 @@ public class TestLazyPrimitive extends TestCase {
     initLazyObject(ba, new byte[] {'2', '?', '3'}, 0, 3);
     assertEquals(new BytesWritable(new byte[] {'2', '?', '3'}), ba.getWritableObject());
     initLazyObject(ba, new byte[] {'\n'}, 0, 1);
-    assertEquals(new BytesWritable(new byte[] {}), ba.getWritableObject());
+    assertEquals(new BytesWritable(new byte[] {'\n'}), ba.getWritableObject());
   }
 
   public void testLazyTimestamp() throws Throwable {

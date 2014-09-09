@@ -137,7 +137,7 @@ public abstract class FuncDoubleToDecimal extends VectorExpression {
     b.setMode(VectorExpressionDescriptor.Mode.PROJECTION)
         .setNumArguments(1)
         .setArgumentTypes(
-            VectorExpressionDescriptor.ArgumentType.DOUBLE)
+            VectorExpressionDescriptor.ArgumentType.FLOAT_FAMILY)
         .setInputExpressionTypes(
             VectorExpressionDescriptor.InputExpressionType.COLUMN);
     return b.build();

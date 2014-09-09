@@ -56,11 +56,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: src_json
-          Statistics: Num rows: 6 Data size: 645 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 644 Basic stats: COMPLETE Column stats: NONE
           Select Operator
 #### A masked pattern was here ####
             outputColumnNames: _col0
-            Statistics: Num rows: 6 Data size: 645 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 644 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: SELECT get_json_object(src_json.json, '$') FROM src_json

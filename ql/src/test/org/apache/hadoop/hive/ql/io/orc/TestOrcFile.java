@@ -44,6 +44,7 @@ import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile.Version;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
+import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentFactory;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
@@ -1777,7 +1778,7 @@ public class TestOrcFile {
         OrcFile.readerOptions(conf).filesystem(fs));
     assertEquals(3500, reader.getNumberOfRows());
 
-    SearchArgument sarg = SearchArgument.FACTORY.newBuilder()
+    SearchArgument sarg = SearchArgumentFactory.newBuilder()
         .startAnd()
           .startNot()
              .lessThan("int1", 300000)
@@ -1801,7 +1802,7 @@ public class TestOrcFile {
     assertEquals(3500, rows.getRowNumber());
 
     // look through the file with no rows selected
-    sarg = SearchArgument.FACTORY.newBuilder()
+    sarg = SearchArgumentFactory.newBuilder()
         .startAnd()
           .lessThan("int1", 0)
         .end()
@@ -1814,7 +1815,7 @@ public class TestOrcFile {
     assertTrue(!rows.hasNext());
 
     // select first 100 and last 100 rows
-    sarg = SearchArgument.FACTORY.newBuilder()
+    sarg = SearchArgumentFactory.newBuilder()
         .startOr()
           .lessThan("int1", 300 * 100)
           .startNot()

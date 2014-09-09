@@ -44,6 +44,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.fs.permission.FsAction;
+import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapred.ClusterStatus;
 import org.apache.hadoop.mapred.InputSplit;
@@ -694,4 +695,16 @@ public interface HadoopShims {
    */
   public String getPassword(Configuration conf, String name) throws IOException;
 
+  /**
+   * check whether current hadoop supports sticky bit
+   * @return
+   */
+  boolean supportStickyBit();
+
+  /**
+   * Check stick bit in the permission
+   * @param permission
+   * @return sticky bit
+   */
+  boolean hasStickyBit(FsPermission permission);
 }

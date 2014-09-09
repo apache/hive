@@ -33,12 +33,12 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: srcbucket
-            Statistics: Num rows: 2900 Data size: 11603 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1000 Data size: 10603 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (((hash(key) & 2147483647) % 2) = 0) (type: boolean)
-              Statistics: Num rows: 1450 Data size: 5801 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 500 Data size: 5301 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                Statistics: Num rows: 1450 Data size: 5801 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 500 Data size: 5301 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count(1)
                   mode: hash

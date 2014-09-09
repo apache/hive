@@ -55,6 +55,7 @@ import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.fs.ProxyFileSystem;
 import org.apache.hadoop.fs.Trash;
 import org.apache.hadoop.fs.permission.FsAction;
+import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.io.HiveIOExceptionHandlerUtil;
 import org.apache.hadoop.io.LongWritable;
@@ -894,5 +895,15 @@ public class Hadoop20Shims implements HadoopShims {
   public String getPassword(Configuration conf, String name) {
     // No password API, just retrieve value from conf
     return conf.get(name);
+  }
+
+  @Override
+  public boolean supportStickyBit() {
+    return false;
+  }
+
+  @Override
+  public boolean hasStickyBit(FsPermission permission) {
+    return false;   // not supported
   }
 }

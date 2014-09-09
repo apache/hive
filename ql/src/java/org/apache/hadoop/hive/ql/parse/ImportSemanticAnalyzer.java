@@ -445,7 +445,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
        * substitute OutputFormat name based on HiveFileFormatUtils.outputFormatSubstituteMap
        */
       try {
-        Class<?> origin = Class.forName(importedofc, true, JavaUtils.getClassLoader());
+        Class<?> origin = Class.forName(importedofc, true, Utilities.getSessionSpecifiedClassLoader());
         Class<? extends HiveOutputFormat> replaced = HiveFileFormatUtils
             .getOutputFormatSubstitute(origin,false);
         if (replaced == null) {

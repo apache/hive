@@ -48,6 +48,7 @@ import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.io.HivePassThroughOutputFormat;
@@ -293,7 +294,7 @@ public class Table implements Serializable {
           inputFormatClass = getStorageHandler().getInputFormatClass();
         } else {
           inputFormatClass = (Class<? extends InputFormat>)
-            Class.forName(className, true, JavaUtils.getClassLoader());
+            Class.forName(className, true, Utilities.getSessionSpecifiedClassLoader());
         }
       } catch (ClassNotFoundException e) {
         throw new RuntimeException(e);
@@ -329,7 +330,7 @@ public class Table implements Serializable {
             }
             else {
               c = Class.forName(className, true,
-                  JavaUtils.getClassLoader());
+                  Utilities.getSessionSpecifiedClassLoader());
             }
         }
         if (!HiveOutputFormat.class.isAssignableFrom(c)) {
@@ -677,7 +678,7 @@ public class Table implements Serializable {
     }
     try {
       setInputFormatClass((Class<? extends InputFormat<WritableComparable, Writable>>) Class
-          .forName(name, true, JavaUtils.getClassLoader()));
+          .forName(name, true, Utilities.getSessionSpecifiedClassLoader()));
     } catch (ClassNotFoundException e) {
       throw new HiveException("Class not found: " + name, e);
     }
@@ -690,7 +691,7 @@ public class Table implements Serializable {
       return;
     }
     try {
-      Class<?> origin = Class.forName(name, true, JavaUtils.getClassLoader());
+      Class<?> origin = Class.forName(name, true, Utilities.getSessionSpecifiedClassLoader());
       setOutputFormatClass(HiveFileFormatUtils
           .getOutputFormatSubstitute(origin,false));
     } catch (ClassNotFoundException e) {

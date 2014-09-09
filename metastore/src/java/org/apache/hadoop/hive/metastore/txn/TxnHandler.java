@@ -860,6 +860,29 @@ public class TxnHandler {
   }
 
   /**
+   * Close the ResultSet.
+   * @param rs may be {@code null}
+   */
+  void close(ResultSet rs) {
+    try {
+      if (rs != null && !rs.isClosed()) {
+        rs.close();
+      }
+    }
+    catch(SQLException ex) {
+      LOG.warn("Failed to close statement " + ex.getMessage());
+    }
+  }
+
+  /**
+   * Close all 3 JDBC artifacts in order: {@code rs stmt dbConn}
+   */
+  void close(ResultSet rs, Statement stmt, Connection dbConn) {
+    close(rs);
+    closeStmt(stmt);
+    closeDbConn(dbConn);
+  }
+  /**
    * Determine if an exception was a deadlock.  Unfortunately there is no standard way to do
    * this, so we have to inspect the error messages and catch the telltale signs for each
    * different database.

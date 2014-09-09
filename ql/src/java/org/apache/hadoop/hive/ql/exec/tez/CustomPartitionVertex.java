@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -30,27 +31,30 @@ import java.util.TreeMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.DataOutputBuffer;
 import org.apache.hadoop.io.serializer.SerializationFactory;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.InputSplit;
-import org.apache.hadoop.mapred.split.TezGroupedSplitsInputFormat;
-import org.apache.tez.dag.api.EdgeManagerDescriptor;
+import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapreduce.split.TezMapReduceSplitsGrouper;
+import org.apache.tez.common.TezUtils;
 import org.apache.tez.dag.api.EdgeProperty;
 import org.apache.tez.dag.api.EdgeProperty.DataMovementType;
+import org.apache.tez.dag.api.EdgeManagerPluginDescriptor;
 import org.apache.tez.dag.api.InputDescriptor;
-import org.apache.tez.dag.api.TezConfiguration;
+import org.apache.tez.dag.api.UserPayload;
 import org.apache.tez.dag.api.VertexLocationHint;
 import org.apache.tez.dag.api.VertexManagerPlugin;
 import org.apache.tez.dag.api.VertexManagerPluginContext;
-import org.apache.tez.mapreduce.hadoop.MRHelpers;
+import org.apache.tez.mapreduce.hadoop.MRInputHelpers;
 import org.apache.tez.mapreduce.protos.MRRuntimeProtos.MRInputUserPayloadProto;
 import org.apache.tez.mapreduce.protos.MRRuntimeProtos.MRSplitProto;
 import org.apache.tez.runtime.api.Event;
-import org.apache.tez.runtime.api.events.RootInputConfigureVertexTasksEvent;
-import org.apache.tez.runtime.api.events.RootInputDataInformationEvent;
-import org.apache.tez.runtime.api.events.RootInputUpdatePayloadEvent;
+import org.apache.tez.runtime.api.InputSpecUpdate;
+import org.apache.tez.runtime.api.events.InputConfigureVertexTasksEvent;
+import org.apache.tez.runtime.api.events.InputDataInformationEvent;
+import org.apache.tez.runtime.api.events.InputUpdatePayloadEvent;
 import org.apache.tez.runtime.api.events.VertexManagerEvent;
 
 import com.google.common.base.Preconditions;
@@ -59,40 +63,44 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
+import com.google.protobuf.ByteString;
 
 /*
  * Only works with old mapred API
  * Will only work with a single MRInput for now.
  */
-public class CustomPartitionVertex implements VertexManagerPlugin {
+public class CustomPartitionVertex extends VertexManagerPlugin {
 
   private static final Log LOG = LogFactory.getLog(CustomPartitionVertex.class.getName());
 
   VertexManagerPluginContext context;
 
-  private RootInputConfigureVertexTasksEvent configureVertexTaskEvent;
-  private List<RootInputDataInformationEvent> dataInformationEvents;
+  private InputConfigureVertexTasksEvent configureVertexTaskEvent;
+  private List<InputDataInformationEvent> dataInformationEvents;
   private int numBuckets = -1;
   private Configuration conf = null;
   private boolean rootVertexInitialized = false;
   private final SplitGrouper grouper = new SplitGrouper();
+  private int taskCount = 0;
 
-  public CustomPartitionVertex() {
+  public CustomPartitionVertex(VertexManagerPluginContext context) {
+    super(context);
   }
 
   @Override
-  public void initialize(VertexManagerPluginContext context) {
-    this.context = context;
-    ByteBuffer byteBuf = ByteBuffer.wrap(context.getUserPayload());
+  public void initialize() {
+    this.context = getContext();
+    ByteBuffer byteBuf = context.getUserPayload().getPayload();
     this.numBuckets = byteBuf.getInt();
   }
 
   @Override
   public void onVertexStarted(Map<String, List<Integer>> completions) {
     int numTasks = context.getVertexNumTasks(context.getVertexName());
-    List<Integer> scheduledTasks = new ArrayList<Integer>(numTasks);
+    List<VertexManagerPluginContext.TaskWithLocationHint> scheduledTasks = 
+      new ArrayList<VertexManagerPluginContext.TaskWithLocationHint>(numTasks);
     for (int i = 0; i < numTasks; ++i) {
-      scheduledTasks.add(new Integer(i));
+      scheduledTasks.add(new VertexManagerPluginContext.TaskWithLocationHint(new Integer(i), null));
     }
     context.scheduleVertexTasks(scheduledTasks);
   }
@@ -114,6 +122,7 @@ public class CustomPartitionVertex implements VertexManagerPlugin {
     // ensure this method is called only once. Tez will call it once per Root
     // Input.
     Preconditions.checkState(rootVertexInitialized == false);
+    LOG.info("Root vertex not initialized");
     rootVertexInitialized = true;
     try {
       // This is using the payload from the RootVertexInitializer corresponding
@@ -121,8 +130,8 @@ public class CustomPartitionVertex implements VertexManagerPlugin {
       // but that
       // means serializing another instance.
       MRInputUserPayloadProto protoPayload =
-          MRHelpers.parseMRInputPayload(inputDescriptor.getUserPayload());
-      this.conf = MRHelpers.createConfFromByteString(protoPayload.getConfigurationBytes());
+          MRInputHelpers.parseMRInputPayload(inputDescriptor.getUserPayload());
+      this.conf = TezUtils.createConfFromByteString(protoPayload.getConfigurationBytes());
 
       /*
        * Currently in tez, the flow of events is thus:
@@ -138,30 +147,27 @@ public class CustomPartitionVertex implements VertexManagerPlugin {
        */
 
       // This assumes that Grouping will always be used.
-      // Changing the InputFormat - so that the correct one is initialized in
-      // MRInput.
-      this.conf.set("mapred.input.format.class", TezGroupedSplitsInputFormat.class.getName());
+      // Enabling grouping on the payload.
       MRInputUserPayloadProto updatedPayload =
-          MRInputUserPayloadProto.newBuilder(protoPayload)
-              .setConfigurationBytes(MRHelpers.createByteStringFromConf(conf)).build();
-      inputDescriptor.setUserPayload(updatedPayload.toByteArray());
+          MRInputUserPayloadProto.newBuilder(protoPayload).setGroupingEnabled(true).build();
+      inputDescriptor.setUserPayload(UserPayload.create(updatedPayload.toByteString().asReadOnlyByteBuffer()));
     } catch (IOException e) {
       e.printStackTrace();
       throw new RuntimeException(e);
     }
 
     boolean dataInformationEventSeen = false;
-    Map<Path, List<FileSplit>> pathFileSplitsMap = new TreeMap<Path, List<FileSplit>>();
+    Map<String, List<FileSplit>> pathFileSplitsMap = new TreeMap<String, List<FileSplit>>();
 
     for (Event event : events) {
-      if (event instanceof RootInputConfigureVertexTasksEvent) {
+      if (event instanceof InputConfigureVertexTasksEvent) {
         // No tasks should have been started yet. Checked by initial state
         // check.
         Preconditions.checkState(dataInformationEventSeen == false);
         Preconditions
             .checkState(context.getVertexNumTasks(context.getVertexName()) == -1,
                 "Parallelism for the vertex should be set to -1 if the InputInitializer is setting parallelism");
-        RootInputConfigureVertexTasksEvent cEvent = (RootInputConfigureVertexTasksEvent) event;
+        InputConfigureVertexTasksEvent cEvent = (InputConfigureVertexTasksEvent) event;
 
         // The vertex cannot be configured until all DataEvents are seen - to
         // build the routing table.
@@ -169,12 +175,12 @@ public class CustomPartitionVertex implements VertexManagerPlugin {
         dataInformationEvents =
             Lists.newArrayListWithCapacity(configureVertexTaskEvent.getNumTasks());
       }
-      if (event instanceof RootInputUpdatePayloadEvent) {
+      if (event instanceof InputUpdatePayloadEvent) {
         // this event can never occur. If it does, fail.
         Preconditions.checkState(false);
-      } else if (event instanceof RootInputDataInformationEvent) {
+      } else if (event instanceof InputDataInformationEvent) {
         dataInformationEventSeen = true;
-        RootInputDataInformationEvent diEvent = (RootInputDataInformationEvent) event;
+        InputDataInformationEvent diEvent = (InputDataInformationEvent) event;
         dataInformationEvents.add(diEvent);
         FileSplit fileSplit;
         try {
@@ -182,10 +188,10 @@ public class CustomPartitionVertex implements VertexManagerPlugin {
         } catch (IOException e) {
           throw new RuntimeException("Failed to get file split for event: " + diEvent);
         }
-        List<FileSplit> fsList = pathFileSplitsMap.get(fileSplit.getPath());
+        List<FileSplit> fsList = pathFileSplitsMap.get(fileSplit.getPath().getName());
         if (fsList == null) {
           fsList = new ArrayList<FileSplit>();
-          pathFileSplitsMap.put(fileSplit.getPath(), fsList);
+          pathFileSplitsMap.put(fileSplit.getPath().getName(), fsList);
         }
         fsList.add(fileSplit);
       }
@@ -195,21 +201,32 @@ public class CustomPartitionVertex implements VertexManagerPlugin {
         getBucketSplitMapForPath(pathFileSplitsMap);
 
     try {
-      int totalResource = context.getTotalAVailableResource().getMemory();
+      int totalResource = context.getTotalAvailableResource().getMemory();
       int taskResource = context.getVertexTaskResource().getMemory();
       float waves =
-          conf.getFloat(TezConfiguration.TEZ_AM_GROUPING_SPLIT_WAVES,
-              TezConfiguration.TEZ_AM_GROUPING_SPLIT_WAVES_DEFAULT);
+          conf.getFloat(TezMapReduceSplitsGrouper.TEZ_GROUPING_SPLIT_WAVES,
+              TezMapReduceSplitsGrouper.TEZ_GROUPING_SPLIT_WAVES_DEFAULT);
 
       int availableSlots = totalResource / taskResource;
 
       LOG.info("Grouping splits. " + availableSlots + " available slots, " + waves + " waves.");
+      JobConf jobConf = new JobConf(conf);
+      ShimLoader.getHadoopShims().getMergedCredentials(jobConf);
 
       Multimap<Integer, InputSplit> bucketToGroupedSplitMap =
-          grouper.group(conf, bucketToInitialSplitMap, availableSlots, waves);
+          HashMultimap.<Integer, InputSplit> create();
+      for (Integer key : bucketToInitialSplitMap.keySet()) {
+        InputSplit[] inputSplitArray =
+            (bucketToInitialSplitMap.get(key).toArray(new InputSplit[0]));
+        Multimap<Integer, InputSplit> groupedSplit =
+            HiveSplitGenerator.generateGroupedSplits(jobConf, conf, inputSplitArray, waves,
+            availableSlots);
+        bucketToGroupedSplitMap.putAll(key, groupedSplit.values());
+      }
 
+      LOG.info("We have grouped the splits into " + bucketToGroupedSplitMap.size() + " tasks");
       processAllEvents(inputName, bucketToGroupedSplitMap);
-    } catch (IOException e) {
+    } catch (Exception e) {
       throw new RuntimeException(e);
     }
   }
@@ -219,7 +236,6 @@ public class CustomPartitionVertex implements VertexManagerPlugin {
 
     Multimap<Integer, Integer> bucketToTaskMap = HashMultimap.<Integer, Integer> create();
     List<InputSplit> finalSplits = Lists.newLinkedList();
-    int taskCount = 0;
     for (Entry<Integer, Collection<InputSplit>> entry : bucketToGroupedSplitMap.asMap().entrySet()) {
       int bucketNum = entry.getKey();
       Collection<InputSplit> initialSplits = entry.getValue();
@@ -232,12 +248,12 @@ public class CustomPartitionVertex implements VertexManagerPlugin {
 
     // Construct the EdgeManager descriptor to be used by all edges which need
     // the routing table.
-    EdgeManagerDescriptor hiveEdgeManagerDesc =
-        new EdgeManagerDescriptor(CustomPartitionEdge.class.getName());
-    byte[] payload = getBytePayload(bucketToTaskMap);
+    EdgeManagerPluginDescriptor hiveEdgeManagerDesc =
+        EdgeManagerPluginDescriptor.create(CustomPartitionEdge.class.getName());
+    UserPayload payload = getBytePayload(bucketToTaskMap);
     hiveEdgeManagerDesc.setUserPayload(payload);
 
-    Map<String, EdgeManagerDescriptor> emMap = Maps.newHashMap();
+    Map<String, EdgeManagerPluginDescriptor> emMap = Maps.newHashMap();
 
     // Replace the edge manager for all vertices which have routing type custom.
     for (Entry<String, EdgeProperty> edgeEntry : context.getInputVertexEdgeProperties().entrySet()) {
@@ -250,47 +266,51 @@ public class CustomPartitionVertex implements VertexManagerPlugin {
 
     LOG.info("Task count is " + taskCount);
 
-    List<RootInputDataInformationEvent> taskEvents =
+    List<InputDataInformationEvent> taskEvents =
         Lists.newArrayListWithCapacity(finalSplits.size());
     // Re-serialize the splits after grouping.
     int count = 0;
     for (InputSplit inputSplit : finalSplits) {
-      MRSplitProto serializedSplit = MRHelpers.createSplitProto(inputSplit);
-      RootInputDataInformationEvent diEvent =
-          new RootInputDataInformationEvent(count, serializedSplit.toByteArray());
+      MRSplitProto serializedSplit = MRInputHelpers.createSplitProto(inputSplit);
+      InputDataInformationEvent diEvent = InputDataInformationEvent.createWithSerializedPayload(
+          count, serializedSplit.toByteString().asReadOnlyByteBuffer());
       diEvent.setTargetIndex(count);
       count++;
       taskEvents.add(diEvent);
     }
 
     // Replace the Edge Managers
+    Map<String, InputSpecUpdate> rootInputSpecUpdate =
+      new HashMap<String, InputSpecUpdate>();
+    rootInputSpecUpdate.put(
+        inputName,
+        InputSpecUpdate.getDefaultSinglePhysicalInputSpecUpdate());
     context.setVertexParallelism(
         taskCount,
-        new VertexLocationHint(grouper.createTaskLocationHints(finalSplits
-            .toArray(new InputSplit[finalSplits.size()]))), emMap);
+        VertexLocationHint.create(grouper.createTaskLocationHints(finalSplits
+            .toArray(new InputSplit[finalSplits.size()]))), emMap, rootInputSpecUpdate);
 
     // Set the actual events for the tasks.
     context.addRootInputEvents(inputName, taskEvents);
   }
 
-  private byte[] getBytePayload(Multimap<Integer, Integer> routingTable) throws IOException {
+  UserPayload getBytePayload(Multimap<Integer, Integer> routingTable) throws IOException {
     CustomEdgeConfiguration edgeConf =
         new CustomEdgeConfiguration(routingTable.keySet().size(), routingTable);
     DataOutputBuffer dob = new DataOutputBuffer();
     edgeConf.write(dob);
     byte[] serialized = dob.getData();
-
-    return serialized;
+    return UserPayload.create(ByteBuffer.wrap(serialized));
   }
 
-  private FileSplit getFileSplitFromEvent(RootInputDataInformationEvent event) throws IOException {
+  private FileSplit getFileSplitFromEvent(InputDataInformationEvent event) throws IOException {
     InputSplit inputSplit = null;
     if (event.getDeserializedUserPayload() != null) {
       inputSplit = (InputSplit) event.getDeserializedUserPayload();
     } else {
-      MRSplitProto splitProto = MRSplitProto.parseFrom(event.getUserPayload());
+      MRSplitProto splitProto = MRSplitProto.parseFrom(ByteString.copyFrom(event.getUserPayload()));
       SerializationFactory serializationFactory = new SerializationFactory(new Configuration());
-      inputSplit = MRHelpers.createOldFormatSplitFromUserPayload(splitProto, serializationFactory);
+      inputSplit = MRInputHelpers.createOldFormatSplitFromUserPayload(splitProto, serializationFactory);
     }
 
     if (!(inputSplit instanceof FileSplit)) {
@@ -304,7 +324,7 @@ public class CustomPartitionVertex implements VertexManagerPlugin {
    * This method generates the map of bucket to file splits.
    */
   private Multimap<Integer, InputSplit> getBucketSplitMapForPath(
-      Map<Path, List<FileSplit>> pathFileSplitsMap) {
+      Map<String, List<FileSplit>> pathFileSplitsMap) {
 
     int bucketNum = 0;
     int fsCount = 0;
@@ -312,7 +332,7 @@ public class CustomPartitionVertex implements VertexManagerPlugin {
     Multimap<Integer, InputSplit> bucketToInitialSplitMap =
         ArrayListMultimap.<Integer, InputSplit> create();
 
-    for (Map.Entry<Path, List<FileSplit>> entry : pathFileSplitsMap.entrySet()) {
+    for (Map.Entry<String, List<FileSplit>> entry : pathFileSplitsMap.entrySet()) {
       int bucketId = bucketNum % numBuckets;
       for (FileSplit fsplit : entry.getValue()) {
         fsCount++;

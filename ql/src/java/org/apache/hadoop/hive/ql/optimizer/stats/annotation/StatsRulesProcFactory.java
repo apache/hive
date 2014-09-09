@@ -20,11 +20,11 @@ package org.apache.hadoop.hive.ql.optimizer.stats.annotation;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.exec.AppMasterEventOperator;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.CommonJoinOperator;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
@@ -164,7 +164,7 @@ public class StatsRulesProcFactory {
                   sop.getSchema());
           long dataSize = StatsUtils.getDataSizeFromColumnStats(stats.getNumRows(), colStats);
           stats.setColumnStats(colStats);
-          stats.setDataSize(dataSize);
+          stats.setDataSize(setMaxIfInvalid(dataSize));
           sop.setStatistics(stats);
 
           if (LOG.isDebugEnabled()) {
@@ -250,7 +250,8 @@ public class StatsRulesProcFactory {
           ExprNodeDesc pred = fop.getConf().getPredicate();
 
           // evaluate filter expression and update statistics
-          long newNumRows = evaluateExpression(parentStats, pred, aspCtx, neededCols);
+          long newNumRows = evaluateExpression(parentStats, pred, aspCtx,
+              neededCols, fop);
           Statistics st = parentStats.clone();
 
           if (satisfyPrecondition(parentStats)) {
@@ -260,7 +261,7 @@ public class StatsRulesProcFactory {
             // result in number of rows getting more than the input rows in
             // which case stats need not be updated
             if (newNumRows <= parentStats.getNumRows()) {
-              updateStats(st, newNumRows, true);
+              updateStats(st, newNumRows, true, fop);
             }
 
             if (LOG.isDebugEnabled()) {
@@ -270,7 +271,7 @@ public class StatsRulesProcFactory {
 
             // update only the basic statistics in the absence of column statistics
             if (newNumRows <= parentStats.getNumRows()) {
-              updateStats(st, newNumRows, false);
+              updateStats(st, newNumRows, false, fop);
             }
 
             if (LOG.isDebugEnabled()) {
@@ -287,7 +288,8 @@ public class StatsRulesProcFactory {
     }
 
     private long evaluateExpression(Statistics stats, ExprNodeDesc pred,
-        AnnotateStatsProcCtx aspCtx, List<String> neededCols) throws CloneNotSupportedException {
+        AnnotateStatsProcCtx aspCtx, List<String> neededCols,
+        FilterOperator fop) throws CloneNotSupportedException {
       long newNumRows = 0;
       Statistics andStats = null;
 
@@ -302,24 +304,26 @@ public class StatsRulesProcFactory {
 
           // evaluate children
           for (ExprNodeDesc child : genFunc.getChildren()) {
-            newNumRows = evaluateChildExpr(aspCtx.getAndExprStats(), child, aspCtx, neededCols);
+            newNumRows = evaluateChildExpr(aspCtx.getAndExprStats(), child,
+                aspCtx, neededCols, fop);
             if (satisfyPrecondition(aspCtx.getAndExprStats())) {
-              updateStats(aspCtx.getAndExprStats(), newNumRows, true);
+              updateStats(aspCtx.getAndExprStats(), newNumRows, true, fop);
             } else {
-              updateStats(aspCtx.getAndExprStats(), newNumRows, false);
+              updateStats(aspCtx.getAndExprStats(), newNumRows, false, fop);
             }
           }
         } else if (udf instanceof GenericUDFOPOr) {
           // for OR condition independently compute and update stats
           for (ExprNodeDesc child : genFunc.getChildren()) {
-            newNumRows += evaluateChildExpr(stats, child, aspCtx, neededCols);
+            newNumRows += evaluateChildExpr(stats, child, aspCtx, neededCols,
+                fop);
           }
         } else if (udf instanceof GenericUDFOPNot) {
-          newNumRows = evaluateNotExpr(stats, pred, aspCtx, neededCols);
+          newNumRows = evaluateNotExpr(stats, pred, aspCtx, neededCols, fop);
         } else {
 
           // single predicate condition
-          newNumRows = evaluateChildExpr(stats, pred, aspCtx, neededCols);
+          newNumRows = evaluateChildExpr(stats, pred, aspCtx, neededCols, fop);
         }
       } else if (pred instanceof ExprNodeColumnDesc) {
 
@@ -351,8 +355,9 @@ public class StatsRulesProcFactory {
       return newNumRows;
     }
 
-    private long evaluateNotExpr(Statistics stats, ExprNodeDesc pred, AnnotateStatsProcCtx aspCtx,
-        List<String> neededCols) throws CloneNotSupportedException {
+    private long evaluateNotExpr(Statistics stats, ExprNodeDesc pred,
+        AnnotateStatsProcCtx aspCtx, List<String> neededCols, FilterOperator fop)
+        throws CloneNotSupportedException {
 
       long numRows = stats.getNumRows();
 
@@ -364,8 +369,9 @@ public class StatsRulesProcFactory {
 
             // GenericUDF
             long newNumRows = 0;
-            for (ExprNodeDesc child : ((ExprNodeGenericFuncDesc) pred).getChildren()) {
-              newNumRows = evaluateChildExpr(stats, child, aspCtx, neededCols);
+            for (ExprNodeDesc child : genFunc.getChildren()) {
+              newNumRows = evaluateChildExpr(stats, child, aspCtx, neededCols,
+                  fop);
             }
             return numRows - newNumRows;
           } else if (leaf instanceof ExprNodeConstantDesc) {
@@ -398,8 +404,7 @@ public class StatsRulesProcFactory {
       return numRows / 2;
     }
 
-    private long evaluateColEqualsNullExpr(Statistics stats, ExprNodeDesc pred,
-        AnnotateStatsProcCtx aspCtx) {
+    private long evaluateColEqualsNullExpr(Statistics stats, ExprNodeDesc pred) {
 
       long numRows = stats.getNumRows();
 
@@ -425,7 +430,8 @@ public class StatsRulesProcFactory {
     }
 
     private long evaluateChildExpr(Statistics stats, ExprNodeDesc child,
-        AnnotateStatsProcCtx aspCtx, List<String> neededCols) throws CloneNotSupportedException {
+        AnnotateStatsProcCtx aspCtx, List<String> neededCols,
+        FilterOperator fop) throws CloneNotSupportedException {
 
       long numRows = stats.getNumRows();
 
@@ -434,7 +440,8 @@ public class StatsRulesProcFactory {
         ExprNodeGenericFuncDesc genFunc = (ExprNodeGenericFuncDesc) child;
         GenericUDF udf = genFunc.getGenericUDF();
 
-        if (udf instanceof GenericUDFOPEqual || udf instanceof GenericUDFOPEqualNS) {
+        if (udf instanceof GenericUDFOPEqual ||
+            udf instanceof GenericUDFOPEqualNS) {
           String colName = null;
           String tabAlias = null;
           boolean isConst = false;
@@ -506,13 +513,13 @@ public class StatsRulesProcFactory {
             || udf instanceof GenericUDFOPLessThan) {
           return numRows / 3;
         } else if (udf instanceof GenericUDFOPNotNull) {
-          long newNumRows = evaluateColEqualsNullExpr(stats, genFunc, aspCtx);
+          long newNumRows = evaluateColEqualsNullExpr(stats, genFunc);
           return stats.getNumRows() - newNumRows;
         } else if (udf instanceof GenericUDFOPNull) {
-          return evaluateColEqualsNullExpr(stats, genFunc, aspCtx);
+          return evaluateColEqualsNullExpr(stats, genFunc);
         } else if (udf instanceof GenericUDFOPAnd || udf instanceof GenericUDFOPOr
             || udf instanceof GenericUDFOPNot) {
-          return evaluateExpression(stats, genFunc, aspCtx, neededCols);
+          return evaluateExpression(stats, genFunc, aspCtx, neededCols, fop);
         }
       }
 
@@ -580,6 +587,23 @@ public class StatsRulesProcFactory {
       Map<String, ExprNodeDesc> colExprMap = gop.getColumnExprMap();
       RowSchema rs = gop.getSchema();
       Statistics stats = null;
+      boolean mapSide = false;
+      int multiplier = mapSideParallelism;
+      long newNumRows;
+      long newDataSize;
+
+      // map side
+      if (gop.getChildOperators().get(0) instanceof ReduceSinkOperator ||
+          gop.getChildOperators().get(0) instanceof AppMasterEventOperator) {
+
+         mapSide = true;
+
+        // map-side grouping set present. if grouping set is present then
+        // multiply the number of rows by number of elements in grouping set
+        if (gop.getConf().isGroupingSetsPresent()) {
+          multiplier *= gop.getConf().getListGroupingSets().size();
+        }
+      }
 
       try {
         if (satisfyPrecondition(parentStats)) {
@@ -589,7 +613,6 @@ public class StatsRulesProcFactory {
               StatsUtils.getColStatisticsFromExprMap(conf, parentStats, colExprMap, rs);
           stats.setColumnStats(colStats);
           long dvProd = 1;
-          long newNumRows = 0;
 
           // compute product of distinct values of grouping columns
           for (ColStatistics cs : colStats) {
@@ -617,7 +640,7 @@ public class StatsRulesProcFactory {
           }
 
           // map side
-          if (gop.getChildOperators().get(0) instanceof ReduceSinkOperator) {
+          if (mapSide) {
 
             // since we do not know if hash-aggregation will be enabled or disabled
             // at runtime we will assume that map-side group by does not do any
@@ -626,14 +649,10 @@ public class StatsRulesProcFactory {
             // map-side grouping set present. if grouping set is present then
             // multiply the number of rows by number of elements in grouping set
             if (gop.getConf().isGroupingSetsPresent()) {
-              int multiplier = gop.getConf().getListGroupingSets().size();
-
-              // take into account the map-side parallelism as well, default is 1
-              multiplier *= mapSideParallelism;
-              newNumRows = multiplier * stats.getNumRows();
-              long dataSize = multiplier * stats.getDataSize();
+              newNumRows = setMaxIfInvalid(multiplier * stats.getNumRows());
+              newDataSize = setMaxIfInvalid(multiplier * stats.getDataSize());
               stats.setNumRows(newNumRows);
-              stats.setDataSize(dataSize);
+              stats.setDataSize(newDataSize);
               for (ColStatistics cs : colStats) {
                 if (cs != null) {
                   long oldNumNulls = cs.getNumNulls();
@@ -644,29 +663,33 @@ public class StatsRulesProcFactory {
             } else {
 
               // map side no grouping set
-              newNumRows = stats.getNumRows() * mapSideParallelism;
-              updateStats(stats, newNumRows, true);
+              newNumRows = stats.getNumRows() * multiplier;
+              updateStats(stats, newNumRows, true, gop);
             }
           } else {
 
             // reduce side
             newNumRows = applyGBYRule(stats.getNumRows(), dvProd);
-            updateStats(stats, newNumRows, true);
+            updateStats(stats, newNumRows, true, gop);
           }
         } else {
           if (parentStats != null) {
 
+            stats = parentStats.clone();
+
             // worst case, in the absence of column statistics assume half the rows are emitted
-            if (gop.getChildOperators().get(0) instanceof ReduceSinkOperator) {
+            if (mapSide) {
 
               // map side
-              stats = parentStats.clone();
+              newNumRows = multiplier * stats.getNumRows();
+              newDataSize = multiplier * stats.getDataSize();
+              stats.setNumRows(newNumRows);
+              stats.setDataSize(newDataSize);
             } else {
 
               // reduce side
-              stats = parentStats.clone();
-              long newNumRows = parentStats.getNumRows() / 2;
-              updateStats(stats, newNumRows, false);
+              newNumRows = parentStats.getNumRows() / 2;
+              updateStats(stats, newNumRows, false, gop);
             }
           }
         }
@@ -700,7 +723,7 @@ public class StatsRulesProcFactory {
             // only if the column stats is available, update the data size from
             // the column stats
             if (!stats.getColumnStatsState().equals(Statistics.State.NONE)) {
-              updateStats(stats, stats.getNumRows(), true);
+              updateStats(stats, stats.getNumRows(), true, gop);
             }
           }
 
@@ -709,7 +732,7 @@ public class StatsRulesProcFactory {
           // rows will be 1
           if (colExprMap.isEmpty()) {
             stats.setNumRows(1);
-            updateStats(stats, 1, true);
+            updateStats(stats, 1, true, gop);
           }
         }
 
@@ -817,6 +840,7 @@ public class StatsRulesProcFactory {
 
           Map<String, ColStatistics> joinedColStats = Maps.newHashMap();
           Map<Integer, List<String>> joinKeys = Maps.newHashMap();
+          List<Long> rowCounts = Lists.newArrayList();
 
           // get the join keys from parent ReduceSink operators
           for (int pos = 0; pos < parents.size(); pos++) {
@@ -836,6 +860,7 @@ public class StatsRulesProcFactory {
             for (String tabAlias : tableAliases) {
               rowCountParents.put(tabAlias, parentStats.getNumRows());
             }
+            rowCounts.add(parentStats.getNumRows());
 
             // multi-attribute join key
             if (keyExprs.size() > 1) {
@@ -936,22 +961,14 @@ public class StatsRulesProcFactory {
 
           // update join statistics
           stats.setColumnStats(outColStats);
-          long newRowCount = computeNewRowCount(
-              Lists.newArrayList(rowCountParents.values()), denom);
+          long newRowCount = computeNewRowCount(rowCounts, denom);
 
-          if (newRowCount <= 0 && LOG.isDebugEnabled()) {
-            newRowCount = 0;
-            LOG.debug("[0] STATS-" + jop.toString() + ": Product of #rows might be greater than"
-                + " denominator or overflow might have occurred. Resetting row count to 0."
-                + " #Rows of parents: " + rowCountParents.toString() + ". Denominator: " + denom);
-          }
-
-          updateStatsForJoinType(stats, newRowCount, jop.getConf(),
-              rowCountParents, outInTabAlias);
+          updateStatsForJoinType(stats, newRowCount, jop, rowCountParents,
+              outInTabAlias);
           jop.setStatistics(stats);
 
           if (LOG.isDebugEnabled()) {
-            LOG.debug("[1] STATS-" + jop.toString() + ": " + stats.extendedToString());
+            LOG.debug("[0] STATS-" + jop.toString() + ": " + stats.extendedToString());
           }
         } else {
 
@@ -979,14 +996,13 @@ public class StatsRulesProcFactory {
           long maxDataSize = parentSizes.get(maxRowIdx);
           long newNumRows = (long) (joinFactor * maxRowCount * (numParents - 1));
           long newDataSize = (long) (joinFactor * maxDataSize * (numParents - 1));
-
           Statistics wcStats = new Statistics();
-          wcStats.setNumRows(newNumRows);
-          wcStats.setDataSize(newDataSize);
+          wcStats.setNumRows(setMaxIfInvalid(newNumRows));
+          wcStats.setDataSize(setMaxIfInvalid(newDataSize));
           jop.setStatistics(wcStats);
 
           if (LOG.isDebugEnabled()) {
-            LOG.debug("[2] STATS-" + jop.toString() + ": " + wcStats.extendedToString());
+            LOG.debug("[1] STATS-" + jop.toString() + ": " + wcStats.extendedToString());
           }
         }
       }
@@ -1008,8 +1024,15 @@ public class StatsRulesProcFactory {
     }
 
     private void updateStatsForJoinType(Statistics stats, long newNumRows,
-        JoinDesc conf, Map<String, Long> rowCountParents,
+        CommonJoinOperator<? extends JoinDesc> jop,
+        Map<String, Long> rowCountParents,
         Map<String, String> outInTabAlias) {
+
+      if (newNumRows <= 0) {
+        LOG.info("STATS-" + jop.toString() + ": Overflow in number of rows."
+          + newNumRows + " rows will be set to Long.MAX_VALUE");
+      }
+      newNumRows = setMaxIfInvalid(newNumRows);
       stats.setNumRows(newNumRows);
 
       // scale down/up the column statistics based on the changes in number of
@@ -1040,7 +1063,7 @@ public class StatsRulesProcFactory {
       stats.setColumnStats(colStats);
       long newDataSize = StatsUtils
           .getDataSizeFromColumnStats(newNumRows, colStats);
-      stats.setDataSize(newDataSize);
+      stats.setDataSize(setMaxIfInvalid(newDataSize));
     }
 
     private long computeNewRowCount(List<Long> rowCountParents, long denom) {
@@ -1168,7 +1191,7 @@ public class StatsRulesProcFactory {
           // if limit is greater than available rows then do not update
           // statistics
           if (limit <= parentStats.getNumRows()) {
-            updateStats(stats, limit, true);
+            updateStats(stats, limit, true, lop);
           }
           lop.setStatistics(stats);
 
@@ -1185,8 +1208,8 @@ public class StatsRulesProcFactory {
               long numRows = limit;
               long avgRowSize = parentStats.getAvgRowSize();
               long dataSize = avgRowSize * limit;
-              wcStats.setNumRows(numRows);
-              wcStats.setDataSize(dataSize);
+              wcStats.setNumRows(setMaxIfInvalid(numRows));
+              wcStats.setDataSize(setMaxIfInvalid(dataSize));
             }
             lop.setStatistics(wcStats);
 
@@ -1364,7 +1387,15 @@ public class StatsRulesProcFactory {
    * @param useColStats
    *          - use column statistics to compute data size
    */
-  static void updateStats(Statistics stats, long newNumRows, boolean useColStats) {
+  static void updateStats(Statistics stats, long newNumRows,
+      boolean useColStats, Operator<? extends OperatorDesc> op) {
+
+    if (newNumRows <= 0) {
+      LOG.info("STATS-" + op.toString() + ": Overflow in number of rows."
+          + newNumRows + " rows will be set to Long.MAX_VALUE");
+    }
+
+    newNumRows = setMaxIfInvalid(newNumRows);
     long oldRowCount = stats.getNumRows();
     double ratio = (double) newNumRows / (double) oldRowCount;
     stats.setNumRows(newNumRows);
@@ -1389,10 +1420,10 @@ public class StatsRulesProcFactory {
       }
       stats.setColumnStats(colStats);
       long newDataSize = StatsUtils.getDataSizeFromColumnStats(newNumRows, colStats);
-      stats.setDataSize(newDataSize);
+      stats.setDataSize(setMaxIfInvalid(newDataSize));
     } else {
       long newDataSize = (long) (ratio * stats.getDataSize());
-      stats.setDataSize(newDataSize);
+      stats.setDataSize(setMaxIfInvalid(newDataSize));
     }
   }
 
@@ -1401,4 +1432,13 @@ public class StatsRulesProcFactory {
         && !stats.getColumnStatsState().equals(Statistics.State.NONE);
   }
 
+  /**
+   * negative number of rows or data sizes are invalid. It could be because of
+   * long overflow in which case return Long.MAX_VALUE
+   * @param val - input value
+   * @return Long.MAX_VALUE if val is negative else val
+   */
+  static long setMaxIfInvalid(long val) {
+    return val < 0 ? Long.MAX_VALUE : val;
+  }
 }

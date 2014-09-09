@@ -20,20 +20,28 @@ package org.apache.hadoop.hive.ql.txn.compactor;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.ValidTxnList;
-import org.apache.hadoop.hive.metastore.api.CompactionType;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnHandler;
-import org.apache.hadoop.io.Text;
+import org.apache.hadoop.hive.ql.CommandNeedRetryException;
+import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
 
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.PrivilegedExceptionAction;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 /**
  * A class to do compactions.  This will run in a separate thread.  It will spin on the
@@ -110,7 +118,7 @@ public class Worker extends CompactorThread {
           continue;
         }
 
-        final boolean isMajor = (ci.type == CompactionType.MAJOR);
+        final boolean isMajor = ci.isMajorCompaction();
         final ValidTxnList txns =
             TxnHandler.createValidTxnList(txnHandler.getOpenTxns());
         final StringBuffer jobName = new StringBuffer(name);
@@ -129,17 +137,19 @@ public class Worker extends CompactorThread {
         LOG.info("Starting " + ci.type.toString() + " compaction for " +
             ci.getFullPartitionName());
 
+        final StatsUpdater su = StatsUpdater.init(ci, txnHandler.findColumnsWithStats(ci), conf,
+          runJobAsSelf(runAs) ? runAs : t.getOwner());
         final CompactorMR mr = new CompactorMR();
         try {
           if (runJobAsSelf(runAs)) {
-            mr.run(conf, jobName.toString(), t, sd, txns, isMajor);
+            mr.run(conf, jobName.toString(), t, sd, txns, isMajor, su);
           } else {
             UserGroupInformation ugi = UserGroupInformation.createProxyUser(t.getOwner(),
               UserGroupInformation.getLoginUser());
             ugi.doAs(new PrivilegedExceptionAction<Object>() {
               @Override
               public Object run() throws Exception {
-                mr.run(conf, jobName.toString(), t, sd, txns, isMajor);
+                mr.run(conf, jobName.toString(), t, sd, txns, isMajor, su);
                 return null;
               }
             });
@@ -161,11 +171,95 @@ public class Worker extends CompactorThread {
   public void init(BooleanPointer stop) throws MetaException {
     super.init(stop);
 
-    StringBuffer name = new StringBuffer(hostname());
+    StringBuilder name = new StringBuilder(hostname());
     name.append("-");
     name.append(getId());
     this.name = name.toString();
     setName(name.toString());
   }
 
+  static final class StatsUpdater {
+    static final private Log LOG = LogFactory.getLog(StatsUpdater.class);
+
+    public static StatsUpdater init(CompactionInfo ci, List<String> columnListForStats,
+                                     HiveConf conf, String userName) {
+      return new StatsUpdater(ci, columnListForStats, conf, userName);
+    }
+    /**
+     * list columns for which to compute stats.  This maybe empty which means no stats gathering
+     * is needed.
+     */
+    private final List<String> columnList;
+    private final HiveConf conf;
+    private final String userName;
+    private final CompactionInfo ci;
+      
+    private StatsUpdater(CompactionInfo ci, List<String> columnListForStats,
+                         HiveConf conf, String userName) {
+      this.conf = conf;
+      this.userName = userName;
+      this.ci = ci;
+      if(!ci.isMajorCompaction() || columnListForStats == null || columnListForStats.isEmpty()) {
+        columnList = Collections.emptyList();
+        return;
+      }
+      columnList = columnListForStats;
+    }
+
+    /**
+     * todo: what should this do on failure?  Should it rethrow? Invalidate stats?
+     */
+    void gatherStats() throws IOException {
+      if(!ci.isMajorCompaction()) {
+        return;
+      }
+      if(columnList.isEmpty()) {
+        LOG.debug("No existing stats for " + ci.dbname + "." + ci.tableName + " found.  Will not run analyze.");
+        return;//nothing to do
+      }
+      //e.g. analyze table page_view partition(dt='10/15/2014',country=’US’)
+      // compute statistics for columns viewtime
+      StringBuilder sb = new StringBuilder("analyze table ").append(ci.dbname).append(".").append(ci.tableName);
+      if(ci.partName != null) {
+        try {
+          sb.append(" partition(");
+          Map<String, String> partitionColumnValues = Warehouse.makeEscSpecFromName(ci.partName);
+          for(Map.Entry<String, String> ent : partitionColumnValues.entrySet()) {
+            sb.append(ent.getKey()).append("='").append(ent.getValue()).append("'");
+          }
+          sb.append(")");
+        }
+        catch(MetaException ex) {
+          throw new IOException(ex);
+        }
+      }
+      sb.append(" compute statistics for columns ");
+      for(String colName : columnList) {
+        sb.append(colName).append(",");
+      }
+      sb.setLength(sb.length() - 1);//remove trailing ,
+      LOG.debug("running '" + sb.toString() + "'");
+      Driver d = new Driver(conf, userName);
+      SessionState localSession = null;
+      if(SessionState.get() == null) {
+         localSession = SessionState.start(new SessionState(conf));
+      }
+      try {
+        CommandProcessorResponse cpr = d.run(sb.toString());
+        if (cpr.getResponseCode() != 0) {
+          throw new IOException("Could not update stats for table " + ci.getFullTableName() +
+            (ci.partName == null ? "" : "/" + ci.partName) + " due to: " + cpr);
+        }
+      }
+      catch(CommandNeedRetryException cnre) {
+        throw new IOException("Could not update stats for table " + ci.getFullTableName() +
+          (ci.partName == null ? "" : "/" + ci.partName) + " due to: " + cnre.getMessage());
+      }
+      finally {
+        if(localSession != null) {
+          localSession.close();
+        }
+      }
+    }
+  }
 }

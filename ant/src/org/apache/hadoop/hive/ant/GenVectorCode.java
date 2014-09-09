@@ -232,29 +232,98 @@ public class GenVectorCode extends Task {
       {"FilterScalarCompareColumn", "GreaterEqual", "long", "long", ">="},
       {"FilterScalarCompareColumn", "GreaterEqual", "double", "long", ">="},
 
-      {"FilterStringColumnCompareScalar", "Equal", "=="},
-      {"FilterStringColumnCompareScalar", "NotEqual", "!="},
-      {"FilterStringColumnCompareScalar", "Less", "<"},
-      {"FilterStringColumnCompareScalar", "LessEqual", "<="},
-      {"FilterStringColumnCompareScalar", "Greater", ">"},
-      {"FilterStringColumnCompareScalar", "GreaterEqual", ">="},
+      {"FilterStringGroupColumnCompareStringGroupScalarBase", "Equal", "=="},
+      {"FilterStringGroupColumnCompareStringGroupScalarBase", "NotEqual", "!="},
+      {"FilterStringGroupColumnCompareStringGroupScalarBase", "Less", "<"},
+      {"FilterStringGroupColumnCompareStringGroupScalarBase", "LessEqual", "<="},
+      {"FilterStringGroupColumnCompareStringGroupScalarBase", "Greater", ">"},
+      {"FilterStringGroupColumnCompareStringGroupScalarBase", "GreaterEqual", ">="},
+
+      {"FilterStringGroupColumnCompareStringScalar", "Equal", "=="},
+      {"FilterStringGroupColumnCompareStringScalar", "NotEqual", "!="},
+      {"FilterStringGroupColumnCompareStringScalar", "Less", "<"},
+      {"FilterStringGroupColumnCompareStringScalar", "LessEqual", "<="},
+      {"FilterStringGroupColumnCompareStringScalar", "Greater", ">"},
+      {"FilterStringGroupColumnCompareStringScalar", "GreaterEqual", ">="},
+
+      {"FilterStringGroupColumnCompareTruncStringScalar", "VarChar", "Equal", "=="},
+      {"FilterStringGroupColumnCompareTruncStringScalar", "VarChar", "NotEqual", "!="},
+      {"FilterStringGroupColumnCompareTruncStringScalar", "VarChar", "Less", "<"},
+      {"FilterStringGroupColumnCompareTruncStringScalar", "VarChar", "LessEqual", "<="},
+      {"FilterStringGroupColumnCompareTruncStringScalar", "VarChar", "Greater", ">"},
+      {"FilterStringGroupColumnCompareTruncStringScalar", "VarChar", "GreaterEqual", ">="},
+
+      {"FilterStringGroupColumnCompareTruncStringScalar", "Char", "Equal", "=="},
+      {"FilterStringGroupColumnCompareTruncStringScalar", "Char", "NotEqual", "!="},
+      {"FilterStringGroupColumnCompareTruncStringScalar", "Char", "Less", "<"},
+      {"FilterStringGroupColumnCompareTruncStringScalar", "Char", "LessEqual", "<="},
+      {"FilterStringGroupColumnCompareTruncStringScalar", "Char", "Greater", ">"},
+      {"FilterStringGroupColumnCompareTruncStringScalar", "Char", "GreaterEqual", ">="},
 
       {"FilterStringColumnBetween", ""},
       {"FilterStringColumnBetween", "!"},
 
-      {"StringColumnCompareScalar", "Equal", "=="},
-      {"StringColumnCompareScalar", "NotEqual", "!="},
-      {"StringColumnCompareScalar", "Less", "<"},
-      {"StringColumnCompareScalar", "LessEqual", "<="},
-      {"StringColumnCompareScalar", "Greater", ">"},
-      {"StringColumnCompareScalar", "GreaterEqual", ">="},
+      {"FilterTruncStringColumnBetween", "VarChar", ""},
+      {"FilterTruncStringColumnBetween", "VarChar", "!"},
 
-      {"FilterStringScalarCompareColumn", "Equal", "=="},
-      {"FilterStringScalarCompareColumn", "NotEqual", "!="},
-      {"FilterStringScalarCompareColumn", "Less", "<"},
-      {"FilterStringScalarCompareColumn", "LessEqual", "<="},
-      {"FilterStringScalarCompareColumn", "Greater", ">"},
-      {"FilterStringScalarCompareColumn", "GreaterEqual", ">="},
+      {"FilterTruncStringColumnBetween", "Char", ""},
+      {"FilterTruncStringColumnBetween", "Char", "!"},
+
+      {"StringGroupColumnCompareStringGroupScalarBase", "Equal", "=="},
+      {"StringGroupColumnCompareStringGroupScalarBase", "NotEqual", "!="},
+      {"StringGroupColumnCompareStringGroupScalarBase", "Less", "<"},
+      {"StringGroupColumnCompareStringGroupScalarBase", "LessEqual", "<="},
+      {"StringGroupColumnCompareStringGroupScalarBase", "Greater", ">"},
+      {"StringGroupColumnCompareStringGroupScalarBase", "GreaterEqual", ">="},
+
+      {"StringGroupColumnCompareStringScalar", "Equal", "=="},
+      {"StringGroupColumnCompareStringScalar", "NotEqual", "!="},
+      {"StringGroupColumnCompareStringScalar", "Less", "<"},
+      {"StringGroupColumnCompareStringScalar", "LessEqual", "<="},
+      {"StringGroupColumnCompareStringScalar", "Greater", ">"},
+      {"StringGroupColumnCompareStringScalar", "GreaterEqual", ">="},
+
+      {"StringGroupColumnCompareTruncStringScalar", "VarChar", "Equal", "=="},
+      {"StringGroupColumnCompareTruncStringScalar", "VarChar", "NotEqual", "!="},
+      {"StringGroupColumnCompareTruncStringScalar", "VarChar", "Less", "<"},
+      {"StringGroupColumnCompareTruncStringScalar", "VarChar", "LessEqual", "<="},
+      {"StringGroupColumnCompareTruncStringScalar", "VarChar", "Greater", ">"},
+      {"StringGroupColumnCompareTruncStringScalar", "VarChar", "GreaterEqual", ">="},
+
+      {"StringGroupColumnCompareTruncStringScalar", "Char", "Equal", "=="},
+      {"StringGroupColumnCompareTruncStringScalar", "Char", "NotEqual", "!="},
+      {"StringGroupColumnCompareTruncStringScalar", "Char", "Less", "<"},
+      {"StringGroupColumnCompareTruncStringScalar", "Char", "LessEqual", "<="},
+      {"StringGroupColumnCompareTruncStringScalar", "Char", "Greater", ">"},
+      {"StringGroupColumnCompareTruncStringScalar", "Char", "GreaterEqual", ">="},
+
+      {"FilterStringGroupScalarCompareStringGroupColumnBase", "Equal", "=="},
+      {"FilterStringGroupScalarCompareStringGroupColumnBase", "NotEqual", "!="},
+      {"FilterStringGroupScalarCompareStringGroupColumnBase", "Less", "<"},
+      {"FilterStringGroupScalarCompareStringGroupColumnBase", "LessEqual", "<="},
+      {"FilterStringGroupScalarCompareStringGroupColumnBase", "Greater", ">"},
+      {"FilterStringGroupScalarCompareStringGroupColumnBase", "GreaterEqual", ">="},
+
+      {"FilterStringScalarCompareStringGroupColumn", "Equal", "=="},
+      {"FilterStringScalarCompareStringGroupColumn", "NotEqual", "!="},
+      {"FilterStringScalarCompareStringGroupColumn", "Less", "<"},
+      {"FilterStringScalarCompareStringGroupColumn", "LessEqual", "<="},
+      {"FilterStringScalarCompareStringGroupColumn", "Greater", ">"},
+      {"FilterStringScalarCompareStringGroupColumn", "GreaterEqual", ">="},
+
+      {"FilterTruncStringScalarCompareStringGroupColumn", "VarChar", "Equal", "=="},
+      {"FilterTruncStringScalarCompareStringGroupColumn", "VarChar", "NotEqual", "!="},
+      {"FilterTruncStringScalarCompareStringGroupColumn", "VarChar", "Less", "<"},
+      {"FilterTruncStringScalarCompareStringGroupColumn", "VarChar", "LessEqual", "<="},
+      {"FilterTruncStringScalarCompareStringGroupColumn", "VarChar", "Greater", ">"},
+      {"FilterTruncStringScalarCompareStringGroupColumn", "VarChar", "GreaterEqual", ">="},
+
+      {"FilterTruncStringScalarCompareStringGroupColumn", "Char", "Equal", "=="},
+      {"FilterTruncStringScalarCompareStringGroupColumn", "Char", "NotEqual", "!="},
+      {"FilterTruncStringScalarCompareStringGroupColumn", "Char", "Less", "<"},
+      {"FilterTruncStringScalarCompareStringGroupColumn", "Char", "LessEqual", "<="},
+      {"FilterTruncStringScalarCompareStringGroupColumn", "Char", "Greater", ">"},
+      {"FilterTruncStringScalarCompareStringGroupColumn", "Char", "GreaterEqual", ">="},
 
       {"FilterDecimalColumnCompareScalar", "Equal", "=="},
       {"FilterDecimalColumnCompareScalar", "NotEqual", "!="},
@@ -277,26 +346,47 @@ public class GenVectorCode extends Task {
       {"FilterDecimalColumnCompareColumn", "Greater", ">"},
       {"FilterDecimalColumnCompareColumn", "GreaterEqual", ">="},
 
-      {"StringScalarCompareColumn", "Equal", "=="},
-      {"StringScalarCompareColumn", "NotEqual", "!="},
-      {"StringScalarCompareColumn", "Less", "<"},
-      {"StringScalarCompareColumn", "LessEqual", "<="},
-      {"StringScalarCompareColumn", "Greater", ">"},
-      {"StringScalarCompareColumn", "GreaterEqual", ">="},
+      {"StringGroupScalarCompareStringGroupColumnBase", "Equal", "=="},
+      {"StringGroupScalarCompareStringGroupColumnBase", "NotEqual", "!="},
+      {"StringGroupScalarCompareStringGroupColumnBase", "Less", "<"},
+      {"StringGroupScalarCompareStringGroupColumnBase", "LessEqual", "<="},
+      {"StringGroupScalarCompareStringGroupColumnBase", "Greater", ">"},
+      {"StringGroupScalarCompareStringGroupColumnBase", "GreaterEqual", ">="},
 
-      {"FilterStringColumnCompareColumn", "Equal", "=="},
-      {"FilterStringColumnCompareColumn", "NotEqual", "!="},
-      {"FilterStringColumnCompareColumn", "Less", "<"},
-      {"FilterStringColumnCompareColumn", "LessEqual", "<="},
-      {"FilterStringColumnCompareColumn", "Greater", ">"},
-      {"FilterStringColumnCompareColumn", "GreaterEqual", ">="},
+      {"StringScalarCompareStringGroupColumn", "Equal", "=="},
+      {"StringScalarCompareStringGroupColumn", "NotEqual", "!="},
+      {"StringScalarCompareStringGroupColumn", "Less", "<"},
+      {"StringScalarCompareStringGroupColumn", "LessEqual", "<="},
+      {"StringScalarCompareStringGroupColumn", "Greater", ">"},
+      {"StringScalarCompareStringGroupColumn", "GreaterEqual", ">="},
 
-      {"StringColumnCompareColumn", "Equal", "=="},
-      {"StringColumnCompareColumn", "NotEqual", "!="},
-      {"StringColumnCompareColumn", "Less", "<"},
-      {"StringColumnCompareColumn", "LessEqual", "<="},
-      {"StringColumnCompareColumn", "Greater", ">"},
-      {"StringColumnCompareColumn", "GreaterEqual", ">="},
+      {"TruncStringScalarCompareStringGroupColumn", "VarChar", "Equal", "=="},
+      {"TruncStringScalarCompareStringGroupColumn", "VarChar", "NotEqual", "!="},
+      {"TruncStringScalarCompareStringGroupColumn", "VarChar", "Less", "<"},
+      {"TruncStringScalarCompareStringGroupColumn", "VarChar", "LessEqual", "<="},
+      {"TruncStringScalarCompareStringGroupColumn", "VarChar", "Greater", ">"},
+      {"TruncStringScalarCompareStringGroupColumn", "VarChar", "GreaterEqual", ">="},
+
+      {"TruncStringScalarCompareStringGroupColumn", "Char", "Equal", "=="},
+      {"TruncStringScalarCompareStringGroupColumn", "Char", "NotEqual", "!="},
+      {"TruncStringScalarCompareStringGroupColumn", "Char", "Less", "<"},
+      {"TruncStringScalarCompareStringGroupColumn", "Char", "LessEqual", "<="},
+      {"TruncStringScalarCompareStringGroupColumn", "Char", "Greater", ">"},
+      {"TruncStringScalarCompareStringGroupColumn", "Char", "GreaterEqual", ">="},
+
+      {"FilterStringGroupColumnCompareStringGroupColumn", "Equal", "=="},
+      {"FilterStringGroupColumnCompareStringGroupColumn", "NotEqual", "!="},
+      {"FilterStringGroupColumnCompareStringGroupColumn", "Less", "<"},
+      {"FilterStringGroupColumnCompareStringGroupColumn", "LessEqual", "<="},
+      {"FilterStringGroupColumnCompareStringGroupColumn", "Greater", ">"},
+      {"FilterStringGroupColumnCompareStringGroupColumn", "GreaterEqual", ">="},
+
+      {"StringGroupColumnCompareStringGroupColumn", "Equal", "=="},
+      {"StringGroupColumnCompareStringGroupColumn", "NotEqual", "!="},
+      {"StringGroupColumnCompareStringGroupColumn", "Less", "<"},
+      {"StringGroupColumnCompareStringGroupColumn", "LessEqual", "<="},
+      {"StringGroupColumnCompareStringGroupColumn", "Greater", ">"},
+      {"StringGroupColumnCompareStringGroupColumn", "GreaterEqual", ">="},
 
       {"FilterColumnCompareColumn", "Equal", "long", "double", "=="},
       {"FilterColumnCompareColumn", "Equal", "double", "double", "=="},
@@ -359,58 +449,58 @@ public class GenVectorCode extends Task {
       {"ColumnCompareColumn", "GreaterEqual", "double", "long", ">="},
 
       // template, <ClassNamePrefix>, <ReturnType>, <OperandType>, <FuncName>, <OperandCast>,
-      //   <ResultCast>, <Cleanup>
-      {"ColumnUnaryFunc", "FuncRound", "double", "double", "MathExpr.round", "", "", ""},
+      //   <ResultCast>, <Cleanup> <VectorExprArgType>
+      {"ColumnUnaryFunc", "FuncRound", "double", "double", "MathExpr.round", "", "", "", ""},
       // round(longCol) returns a long and is a no-op. So it will not be implemented here.
       // round(Col, N) is a special case and will be implemented separately from this template
-      {"ColumnUnaryFunc", "FuncFloor", "long", "double", "Math.floor", "", "(long)", ""},
+      {"ColumnUnaryFunc", "FuncFloor", "long", "double", "Math.floor", "", "(long)", "", ""},
       // Floor on an integer argument is a noop, but it is less code to handle it this way.
-      {"ColumnUnaryFunc", "FuncFloor", "long", "long", "Math.floor", "", "(long)", ""},
-      {"ColumnUnaryFunc", "FuncCeil", "long", "double", "Math.ceil", "", "(long)", ""},
+      {"ColumnUnaryFunc", "FuncFloor", "long", "long", "Math.floor", "", "(long)", "", ""},
+      {"ColumnUnaryFunc", "FuncCeil", "long", "double", "Math.ceil", "", "(long)", "", ""},
       // Ceil on an integer argument is a noop, but it is less code to handle it this way.
-      {"ColumnUnaryFunc", "FuncCeil", "long", "long", "Math.ceil", "", "(long)", ""},
-      {"ColumnUnaryFunc", "FuncExp", "double", "double", "Math.exp", "", "", ""},
-      {"ColumnUnaryFunc", "FuncExp", "double", "long", "Math.exp", "(double)", "", ""},
+      {"ColumnUnaryFunc", "FuncCeil", "long", "long", "Math.ceil", "", "(long)", "", ""},
+      {"ColumnUnaryFunc", "FuncExp", "double", "double", "Math.exp", "", "", "", ""},
+      {"ColumnUnaryFunc", "FuncExp", "double", "long", "Math.exp", "(double)", "", "", ""},
       {"ColumnUnaryFunc", "FuncLn", "double", "double", "Math.log", "", "",
-        "MathExpr.NaNToNull(outputColVector, sel, batch.selectedInUse, n, true);"},
+        "MathExpr.NaNToNull(outputColVector, sel, batch.selectedInUse, n, true);", ""},
       {"ColumnUnaryFunc", "FuncLn", "double", "long", "Math.log", "(double)", "",
-        "MathExpr.NaNToNull(outputColVector, sel, batch.selectedInUse, n, true);"},
+        "MathExpr.NaNToNull(outputColVector, sel, batch.selectedInUse, n, true);", ""},
       {"ColumnUnaryFunc", "FuncLog10", "double", "double", "Math.log10", "", "",
-        "MathExpr.NaNToNull(outputColVector, sel, batch.selectedInUse, n, true);"},
+        "MathExpr.NaNToNull(outputColVector, sel, batch.selectedInUse, n, true);", ""},
       {"ColumnUnaryFunc", "FuncLog10", "double", "long", "Math.log10", "(double)", "",
-        "MathExpr.NaNToNull(outputColVector, sel, batch.selectedInUse, n, true);"},
+        "MathExpr.NaNToNull(outputColVector, sel, batch.selectedInUse, n, true);", ""},
       // The MathExpr class contains helper functions for cases when existing library
       // routines can't be used directly.
       {"ColumnUnaryFunc", "FuncLog2", "double", "double", "MathExpr.log2", "", "",
-        "MathExpr.NaNToNull(outputColVector, sel, batch.selectedInUse, n, true);"},
+        "MathExpr.NaNToNull(outputColVector, sel, batch.selectedInUse, n, true);", ""},
       {"ColumnUnaryFunc", "FuncLog2", "double", "long", "MathExpr.log2", "(double)", "",
-        "MathExpr.NaNToNull(outputColVector, sel, batch.selectedInUse, n, true);"},
+        "MathExpr.NaNToNull(outputColVector, sel, batch.selectedInUse, n, true);", ""},
       // Log(base, Col) is a special case and will be implemented separately from this template
       // Pow(col, P) and Power(col, P) are special cases implemented separately from this template
       {"ColumnUnaryFunc", "FuncSqrt", "double", "double", "Math.sqrt", "", "",
-        "MathExpr.NaNToNull(outputColVector, sel, batch.selectedInUse, n);"},
+        "MathExpr.NaNToNull(outputColVector, sel, batch.selectedInUse, n);", ""},
       {"ColumnUnaryFunc", "FuncSqrt", "double", "long", "Math.sqrt", "(double)", "",
-        "MathExpr.NaNToNull(outputColVector, sel, batch.selectedInUse, n);"},
-      {"ColumnUnaryFunc", "FuncAbs", "double", "double", "Math.abs", "", "", ""},
-      {"ColumnUnaryFunc", "FuncAbs", "long", "long", "MathExpr.abs", "", "", ""},
-      {"ColumnUnaryFunc", "FuncSin", "double", "double", "Math.sin", "", "", ""},
-      {"ColumnUnaryFunc", "FuncSin", "double", "long", "Math.sin", "(double)", "", ""},
-      {"ColumnUnaryFunc", "FuncASin", "double", "double", "Math.asin", "", "", ""},
-      {"ColumnUnaryFunc", "FuncASin", "double", "long", "Math.asin", "(double)", "", ""},
-      {"ColumnUnaryFunc", "FuncCos", "double", "double", "Math.cos", "", "", ""},
-      {"ColumnUnaryFunc", "FuncCos", "double", "long", "Math.cos", "(double)", "", ""},
-      {"ColumnUnaryFunc", "FuncACos", "double", "double", "Math.acos", "", "", ""},
-      {"ColumnUnaryFunc", "FuncACos", "double", "long", "Math.acos", "(double)", "", ""},
-      {"ColumnUnaryFunc", "FuncTan", "double", "double", "Math.tan", "", "", ""},
-      {"ColumnUnaryFunc", "FuncTan", "double", "long", "Math.tan", "(double)", "", ""},
-      {"ColumnUnaryFunc", "FuncATan", "double", "double", "Math.atan", "", "", ""},
-      {"ColumnUnaryFunc", "FuncATan", "double", "long", "Math.atan", "(double)", "", ""},
-      {"ColumnUnaryFunc", "FuncDegrees", "double", "double", "Math.toDegrees", "", "", ""},
-      {"ColumnUnaryFunc", "FuncDegrees", "double", "long", "Math.toDegrees", "(double)", "", ""},
-      {"ColumnUnaryFunc", "FuncRadians", "double", "double", "Math.toRadians", "", "", ""},
-      {"ColumnUnaryFunc", "FuncRadians", "double", "long", "Math.toRadians", "(double)", "", ""},
-      {"ColumnUnaryFunc", "FuncSign", "double", "double", "MathExpr.sign", "", "", ""},
-      {"ColumnUnaryFunc", "FuncSign", "double", "long", "MathExpr.sign", "(double)", "", ""},
+        "MathExpr.NaNToNull(outputColVector, sel, batch.selectedInUse, n);", ""},
+      {"ColumnUnaryFunc", "FuncAbs", "double", "double", "Math.abs", "", "", "", ""},
+      {"ColumnUnaryFunc", "FuncAbs", "long", "long", "MathExpr.abs", "", "", "", ""},
+      {"ColumnUnaryFunc", "FuncSin", "double", "double", "Math.sin", "", "", "", ""},
+      {"ColumnUnaryFunc", "FuncSin", "double", "long", "Math.sin", "(double)", "", "", ""},
+      {"ColumnUnaryFunc", "FuncASin", "double", "double", "Math.asin", "", "", "", ""},
+      {"ColumnUnaryFunc", "FuncASin", "double", "long", "Math.asin", "(double)", "", "", ""},
+      {"ColumnUnaryFunc", "FuncCos", "double", "double", "Math.cos", "", "", "", ""},
+      {"ColumnUnaryFunc", "FuncCos", "double", "long", "Math.cos", "(double)", "", "", ""},
+      {"ColumnUnaryFunc", "FuncACos", "double", "double", "Math.acos", "", "", "", ""},
+      {"ColumnUnaryFunc", "FuncACos", "double", "long", "Math.acos", "(double)", "", "", ""},
+      {"ColumnUnaryFunc", "FuncTan", "double", "double", "Math.tan", "", "", "", ""},
+      {"ColumnUnaryFunc", "FuncTan", "double", "long", "Math.tan", "(double)", "", "", ""},
+      {"ColumnUnaryFunc", "FuncATan", "double", "double", "Math.atan", "", "", "", ""},
+      {"ColumnUnaryFunc", "FuncATan", "double", "long", "Math.atan", "(double)", "", "", ""},
+      {"ColumnUnaryFunc", "FuncDegrees", "double", "double", "Math.toDegrees", "", "", "", ""},
+      {"ColumnUnaryFunc", "FuncDegrees", "double", "long", "Math.toDegrees", "(double)", "", "", ""},
+      {"ColumnUnaryFunc", "FuncRadians", "double", "double", "Math.toRadians", "", "", "", ""},
+      {"ColumnUnaryFunc", "FuncRadians", "double", "long", "Math.toRadians", "(double)", "", "", ""},
+      {"ColumnUnaryFunc", "FuncSign", "double", "double", "MathExpr.sign", "", "", "", ""},
+      {"ColumnUnaryFunc", "FuncSign", "double", "long", "MathExpr.sign", "(double)", "", "", ""},
 
       {"DecimalColumnUnaryFunc", "FuncFloor", "decimal", "DecimalUtil.floor"},
       {"DecimalColumnUnaryFunc", "FuncCeil", "decimal", "DecimalUtil.ceiling"},
@@ -420,20 +510,24 @@ public class GenVectorCode extends Task {
       {"DecimalColumnUnaryFunc", "FuncNegate", "decimal", "DecimalUtil.negate"},
 
       // Casts
-      {"ColumnUnaryFunc", "Cast", "long", "double", "", "", "(long)", ""},
-      {"ColumnUnaryFunc", "Cast", "double", "long", "", "", "(double)", ""},
+      {"ColumnUnaryFunc", "Cast", "long", "double", "", "", "(long)", "", ""},
+      {"ColumnUnaryFunc", "Cast", "double", "long", "", "", "(double)", "", ""},
       {"ColumnUnaryFunc", "CastTimestampToLongVia", "long", "long", "MathExpr.fromTimestamp", "",
-        "", ""},
+        "", "", "timestamp"},
       {"ColumnUnaryFunc", "CastTimestampToDoubleVia", "double", "long",
-          "MathExpr.fromTimestampToDouble", "", "", ""},
+          "MathExpr.fromTimestampToDouble", "", "", "", "timestamp"},
       {"ColumnUnaryFunc", "CastDoubleToBooleanVia", "long", "double", "MathExpr.toBool", "",
-        "", ""},
+        "", "", ""},
       {"ColumnUnaryFunc", "CastLongToBooleanVia", "long", "long", "MathExpr.toBool", "",
-        "", ""},
+        "", "", ""},
+      {"ColumnUnaryFunc", "CastDateToBooleanVia", "long", "long", "MathExpr.toBool", "",
+            "", "", "date"},
+      {"ColumnUnaryFunc", "CastTimestampToBooleanVia", "long", "long", "MathExpr.toBool", "",
+            "", "", "timestamp"},
       {"ColumnUnaryFunc", "CastLongToTimestampVia", "long", "long", "MathExpr.longToTimestamp", "",
-          "", ""},
+          "", "", ""},
       {"ColumnUnaryFunc", "CastDoubleToTimestampVia", "long", "double",
-         "MathExpr.doubleToTimestamp", "", "", ""},
+         "MathExpr.doubleToTimestamp", "", "", "", ""},
 
       // Boolean to long is done with an IdentityExpression
       // Boolean to double is done with standard Long to Double cast
@@ -658,22 +752,40 @@ public class GenVectorCode extends Task {
         generateVectorUDAFVar(tdesc);
       } else if (tdesc[0].equals("VectorUDAFVarDecimal")) {
         generateVectorUDAFVarDecimal(tdesc);
-      } else if (tdesc[0].equals("FilterStringColumnCompareScalar")) {
-        generateFilterStringColumnCompareScalar(tdesc);
+      } else if (tdesc[0].equals("FilterStringGroupColumnCompareStringGroupScalarBase")) {
+        generateFilterStringGroupColumnCompareStringGroupScalarBase(tdesc);
+      } else if (tdesc[0].equals("FilterStringGroupColumnCompareStringScalar")) {
+        generateFilterStringGroupColumnCompareStringScalar(tdesc);
+      } else if (tdesc[0].equals("FilterStringGroupColumnCompareTruncStringScalar")) {
+        generateFilterStringGroupColumnCompareTruncStringScalar(tdesc);
       } else if (tdesc[0].equals("FilterStringColumnBetween")) {
         generateFilterStringColumnBetween(tdesc);
+      } else if (tdesc[0].equals("FilterTruncStringColumnBetween")) {
+        generateFilterTruncStringColumnBetween(tdesc);
       } else if (tdesc[0].equals("FilterDecimalColumnBetween")) {
         generateFilterDecimalColumnBetween(tdesc);
-      } else if (tdesc[0].equals("StringColumnCompareScalar")) {
-        generateStringColumnCompareScalar(tdesc);
-      } else if (tdesc[0].equals("FilterStringScalarCompareColumn")) {
-        generateFilterStringScalarCompareColumn(tdesc);
-      } else if (tdesc[0].equals("StringScalarCompareColumn")) {
-        generateStringScalarCompareColumn(tdesc);
-      } else if (tdesc[0].equals("FilterStringColumnCompareColumn")) {
-        generateFilterStringColumnCompareColumn(tdesc);
-      } else if (tdesc[0].equals("StringColumnCompareColumn")) {
-        generateStringColumnCompareColumn(tdesc);
+      } else if (tdesc[0].equals("StringGroupColumnCompareStringGroupScalarBase")) {
+        generateStringGroupColumnCompareStringGroupScalarBase(tdesc);
+      } else if (tdesc[0].equals("StringGroupColumnCompareStringScalar")) {
+        generateStringGroupColumnCompareStringScalar(tdesc);
+      } else if (tdesc[0].equals("StringGroupColumnCompareTruncStringScalar")) {
+        generateStringGroupColumnCompareTruncStringScalar(tdesc);
+      } else if (tdesc[0].equals("FilterStringGroupScalarCompareStringGroupColumnBase")) {
+        generateFilterStringGroupScalarCompareStringGroupColumnBase(tdesc);
+      } else if (tdesc[0].equals("FilterStringScalarCompareStringGroupColumn")) {
+        generateFilterStringScalarCompareStringGroupColumn(tdesc);
+      } else if (tdesc[0].equals("FilterTruncStringScalarCompareStringGroupColumn")) {
+        generateFilterTruncStringScalarCompareStringGroupColumn(tdesc);
+      } else if (tdesc[0].equals("StringGroupScalarCompareStringGroupColumnBase")) {
+        generateStringGroupScalarCompareStringGroupColumnBase(tdesc);
+      } else if (tdesc[0].equals("StringScalarCompareStringGroupColumn")) {
+        generateStringScalarCompareStringGroupColumn(tdesc);
+      } else if (tdesc[0].equals("TruncStringScalarCompareStringGroupColumn")) {
+        generateTruncStringScalarCompareStringGroupColumn(tdesc);
+      } else if (tdesc[0].equals("FilterStringGroupColumnCompareStringGroupColumn")) {
+        generateFilterStringGroupColumnCompareStringGroupColumn(tdesc);
+      } else if (tdesc[0].equals("StringGroupColumnCompareStringGroupColumn")) {
+        generateStringGroupColumnCompareStringGroupColumn(tdesc);
       } else if (tdesc[0].equals("IfExprColumnColumn")) {
         generateIfExprColumnColumn(tdesc);
       } else if (tdesc[0].equals("IfExprColumnScalar")) {
@@ -703,6 +815,35 @@ public class GenVectorCode extends Task {
         // Read the template into a string, expand it, and write it.
     File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
     String templateString = readFile(templateFile);
+    templateString = templateString.replaceAll("<ClassName>", className);
+    templateString = templateString.replaceAll("<OptionalNot>", optionalNot);
+
+    writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
+        className, templateString);
+  }
+
+  private void generateFilterTruncStringColumnBetween(String[] tdesc) throws IOException {
+    String truncStringTypeName = tdesc[1];
+    String truncStringHiveType;
+    String truncStringHiveGetBytes;
+    if (truncStringTypeName == "Char") {
+      truncStringHiveType = "HiveChar";
+      truncStringHiveGetBytes = "getStrippedValue().getBytes()";
+    } else if (truncStringTypeName == "VarChar") {
+      truncStringHiveType = "HiveVarchar";
+      truncStringHiveGetBytes = "getValue().getBytes()";
+    } else {
+      throw new Error("Unsupported string type: " + truncStringTypeName);
+    }
+    String optionalNot = tdesc[2];
+    String className = "Filter" + truncStringTypeName + "Column" + (optionalNot.equals("!") ? "Not" : "")
+        + "Between";
+        // Read the template into a string, expand it, and write it.
+    File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
+    String templateString = readFile(templateFile);
+    templateString = templateString.replaceAll("<TruncStringTypeName>", truncStringTypeName);
+    templateString = templateString.replaceAll("<TruncStringHiveType>", truncStringHiveType);
+    templateString = templateString.replaceAll("<TruncStringHiveGetBytes>", truncStringHiveGetBytes);
     templateString = templateString.replaceAll("<ClassName>", className);
     templateString = templateString.replaceAll("<OptionalNot>", optionalNot);
 
@@ -745,14 +886,12 @@ public class GenVectorCode extends Task {
   }
 
   private void generateColumnCompareColumn(String[] tdesc) throws Exception {
-    //The variables are all same as ColumnCompareScalar except that
-    //this template doesn't need a return type. Pass anything as return type.
     String operatorName = tdesc[1];
     String operandType1 = tdesc[2];
     String operandType2 = tdesc[3];
     String className = getCamelCaseType(operandType1)
         + "Col" + operatorName + getCamelCaseType(operandType2) + "Column";
-    generateColumnBinaryOperatorColumn(tdesc, "long", className);
+    generateColumnCompareOperatorColumn(tdesc, false, className);
   }
 
   private void generateVectorUDAFMinMax(String[] tdesc) throws Exception {
@@ -886,45 +1025,147 @@ public class GenVectorCode extends Task {
       writeFile(templateFile.lastModified(), udafOutputDirectory, udafClassesDirectory,
           className, templateString);
     }
-  
-  
-  private void generateFilterStringScalarCompareColumn(String[] tdesc) throws IOException {
+
+  private void generateFilterStringGroupScalarCompareStringGroupColumnBase(String[] tdesc) throws IOException {
     String operatorName = tdesc[1];
-    String className = "FilterStringScalar" + operatorName + "StringColumn";
+    String className = "FilterStringGroupScalar" + operatorName + "StringGroupColumnBase";
 
     // Template expansion logic is the same for both column-scalar and scalar-column cases.
     generateStringColumnCompareScalar(tdesc, className);
   }
 
-  private void generateStringScalarCompareColumn(String[] tdesc) throws IOException {
+  private void generateFilterStringScalarCompareStringGroupColumn(String[] tdesc) throws IOException {
     String operatorName = tdesc[1];
-    String className = "StringScalar" + operatorName + "StringColumn";
+    String className = "FilterStringScalar" + operatorName + "StringGroupColumn";
+    String baseClassName = "FilterStringGroupScalar" + operatorName + "StringGroupColumnBase";
+    String operatorSymbol = tdesc[2];
+    // Read the template into a string;
+    File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
+    String templateString = readFile(templateFile);
+    // Expand, and write result
+    templateString = templateString.replaceAll("<ClassName>", className);
+    templateString = templateString.replaceAll("<BaseClassName>", baseClassName);
+    templateString = templateString.replaceAll("<OperatorSymbol>", operatorSymbol);
+    writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
+        className, templateString);
+  }
+
+  private void generateFilterTruncStringScalarCompareStringGroupColumn(String[] tdesc) throws IOException {
+    String truncStringTypeName = tdesc[1];
+    String operatorName = tdesc[2];
+    String className = "Filter" + truncStringTypeName + "Scalar" + operatorName + "StringGroupColumn";
+    String baseClassName = "FilterStringGroupScalar" + operatorName + "StringGroupColumnBase";
+    generateStringCompareTruncStringScalar(tdesc, className, baseClassName);
+  }
+
+  private void generateStringGroupScalarCompareStringGroupColumnBase(String[] tdesc) throws IOException {
+    String operatorName = tdesc[1];
+    String className = "StringGroupScalar" + operatorName + "StringGroupColumnBase";
 
     // Template expansion logic is the same for both column-scalar and scalar-column cases.
     generateStringColumnCompareScalar(tdesc, className);
   }
 
-  private void generateFilterStringColumnCompareScalar(String[] tdesc) throws IOException {
+  private void generateStringScalarCompareStringGroupColumn(String[] tdesc) throws IOException {
     String operatorName = tdesc[1];
-    String className = "FilterStringCol" + operatorName + "StringScalar";
+    String className = "StringScalar" + operatorName + "StringGroupColumn";
+    String baseClassName = "StringGroupScalar" + operatorName + "StringGroupColumnBase";
+    String operatorSymbol = tdesc[2];
+    // Read the template into a string;
+    File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
+    String templateString = readFile(templateFile);
+    // Expand, and write result
+    templateString = templateString.replaceAll("<ClassName>", className);
+    templateString = templateString.replaceAll("<BaseClassName>", baseClassName);
+    templateString = templateString.replaceAll("<OperatorSymbol>", operatorSymbol);
+    writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
+        className, templateString);  }
+
+  private void generateTruncStringScalarCompareStringGroupColumn(String[] tdesc) throws IOException {
+    String truncStringTypeName = tdesc[1];
+    String operatorName = tdesc[2];
+    String className = truncStringTypeName + "Scalar" + operatorName + "StringGroupColumn";
+    String baseClassName = "StringGroupScalar" + operatorName + "StringGroupColumnBase";
+    generateStringCompareTruncStringScalar(tdesc, className, baseClassName);
+  }
+
+  private void generateFilterStringGroupColumnCompareStringGroupScalarBase(String[] tdesc) throws IOException {
+    String operatorName = tdesc[1];
+    String className = "FilterStringGroupCol" + operatorName + "StringGroupScalarBase";
     generateStringColumnCompareScalar(tdesc, className);
   }
 
-  private void generateStringColumnCompareScalar(String[] tdesc) throws IOException {
+  private void generateFilterStringGroupColumnCompareStringScalar(String[] tdesc) throws IOException {
     String operatorName = tdesc[1];
-    String className = "StringCol" + operatorName + "StringScalar";
+    String className = "FilterStringGroupCol" + operatorName + "StringScalar";
+    String baseClassName = "FilterStringGroupCol" + operatorName + "StringGroupScalarBase";
+    String operatorSymbol = tdesc[2];
+    // Read the template into a string;
+    File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
+    String templateString = readFile(templateFile);
+    // Expand, and write result
+    templateString = templateString.replaceAll("<ClassName>", className);
+    templateString = templateString.replaceAll("<BaseClassName>", baseClassName);
+    templateString = templateString.replaceAll("<OperatorSymbol>", operatorSymbol);
+    writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
+        className, templateString);
+  }
+
+  private void generateFilterStringGroupColumnCompareTruncStringScalar(String[] tdesc) throws IOException {
+    String truncStringTypeName = tdesc[1];
+    String operatorName = tdesc[2];
+    String className = "FilterStringGroupCol" + operatorName + truncStringTypeName + "Scalar";
+    String baseClassName = "FilterStringGroupCol" + operatorName + "StringGroupScalarBase";
+    generateStringCompareTruncStringScalar(tdesc, className, baseClassName);
+  }
+
+  private void generateStringGroupColumnCompareStringGroupScalarBase(String[] tdesc) throws IOException {
+    String operatorName = tdesc[1];
+    String className = "StringGroupCol" + operatorName + "StringGroupScalarBase";
+    String operatorSymbol = tdesc[2];
+    // Read the template into a string;
+    File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
+    String templateString = readFile(templateFile);
+    // Expand, and write result
+    templateString = templateString.replaceAll("<ClassName>", className);
+    templateString = templateString.replaceAll("<OperatorSymbol>", operatorSymbol);
+    writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
+        className, templateString);
+  }
+
+  private void generateStringGroupColumnCompareStringScalar(String[] tdesc) throws IOException {
+    String operatorName = tdesc[1];
+    String className = "StringGroupCol" + operatorName + "StringScalar";
+    String baseClassName = "StringGroupCol" + operatorName + "StringGroupScalarBase";
+    String operatorSymbol = tdesc[2];
+    // Read the template into a string;
+    File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
+    String templateString = readFile(templateFile);
+    // Expand, and write result
+    templateString = templateString.replaceAll("<ClassName>", className);
+    templateString = templateString.replaceAll("<BaseClassName>", baseClassName);
+    templateString = templateString.replaceAll("<OperatorSymbol>", operatorSymbol);
+    writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
+        className, templateString);
+  }
+
+  private void generateStringGroupColumnCompareTruncStringScalar(String[] tdesc) throws IOException {
+    String truncStringTypeName = tdesc[1];
+    String operatorName = tdesc[2];
+    String className = "StringGroupCol" + operatorName + truncStringTypeName + "Scalar";
+    String baseClassName = "StringGroupCol" + operatorName + "StringGroupScalarBase";
+    generateStringCompareTruncStringScalar(tdesc, className, baseClassName);
+  }
+
+  private void generateFilterStringGroupColumnCompareStringGroupColumn(String[] tdesc) throws IOException {
+    String operatorName = tdesc[1];
+    String className = "FilterStringGroupCol" + operatorName + "StringGroupColumn";
     generateStringColumnCompareScalar(tdesc, className);
   }
 
-  private void generateFilterStringColumnCompareColumn(String[] tdesc) throws IOException {
+  private void generateStringGroupColumnCompareStringGroupColumn(String[] tdesc) throws IOException {
     String operatorName = tdesc[1];
-    String className = "FilterStringCol" + operatorName + "StringColumn";
-    generateStringColumnCompareScalar(tdesc, className);
-  }
-
-  private void generateStringColumnCompareColumn(String[] tdesc) throws IOException {
-    String operatorName = tdesc[1];
-    String className = "StringCol" + operatorName + "StringColumn";
+    String className = "StringGroupCol" + operatorName + "StringGroupColumn";
     generateStringColumnCompareScalar(tdesc, className);
   }
 
@@ -941,15 +1182,42 @@ public class GenVectorCode extends Task {
         className, templateString);
   }
 
+  private void generateStringCompareTruncStringScalar(String[] tdesc, String className, String baseClassName)
+      throws IOException {
+    String truncStringTypeName = tdesc[1];
+    String truncStringHiveType;
+    String truncStringHiveGetBytes;
+    if (truncStringTypeName == "Char") {
+      truncStringHiveType = "HiveChar";
+      truncStringHiveGetBytes = "getStrippedValue().getBytes()";
+    } else if (truncStringTypeName == "VarChar") {
+      truncStringHiveType = "HiveVarchar";
+      truncStringHiveGetBytes = "getValue().getBytes()";
+    } else {
+      throw new Error("Unsupported string type: " + truncStringTypeName);
+    }
+    String operatorSymbol = tdesc[3];
+    // Read the template into a string;
+    File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
+    String templateString = readFile(templateFile);
+    // Expand, and write result
+    templateString = templateString.replaceAll("<ClassName>", className);
+    templateString = templateString.replaceAll("<BaseClassName>", baseClassName);
+    templateString = templateString.replaceAll("<OperatorSymbol>", operatorSymbol);
+    templateString = templateString.replaceAll("<TruncStringTypeName>", truncStringTypeName);
+    templateString = templateString.replaceAll("<TruncStringHiveType>", truncStringHiveType);
+    templateString = templateString.replaceAll("<TruncStringHiveGetBytes>", truncStringHiveGetBytes);
+    writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
+        className, templateString);
+  }
+
   private void generateFilterColumnCompareColumn(String[] tdesc) throws Exception {
-    //The variables are all same as ColumnCompareScalar except that
-    //this template doesn't need a return type. Pass anything as return type.
     String operatorName = tdesc[1];
     String operandType1 = tdesc[2];
     String operandType2 = tdesc[3];
     String className = "Filter" + getCamelCaseType(operandType1)
         + "Col" + operatorName + getCamelCaseType(operandType2) + "Column";
-    generateColumnBinaryOperatorColumn(tdesc, null, className);
+    generateColumnCompareOperatorColumn(tdesc, true, className);
   }
 
   private void generateColumnUnaryMinus(String[] tdesc) throws Exception {
@@ -984,6 +1252,13 @@ public class GenVectorCode extends Task {
     templateString = templateString.replaceAll("<ClassName>", className);
     templateString = templateString.replaceAll("<InputColumnVectorType>", inputColumnVectorType);
     templateString = templateString.replaceAll("<OperandType>", operandType);
+    String vectorExprArgType = operandType;
+    if (operandType.equals("long")) {
+      // Let comparisons occur for DATE and TIMESTAMP, too.
+      vectorExprArgType = "int_datetime_family";
+    }
+    templateString = templateString.replaceAll("<VectorExprArgType>", vectorExprArgType);
+
     writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
         className, templateString);
   }
@@ -1006,6 +1281,15 @@ public class GenVectorCode extends Task {
     templateString = templateString.replaceAll("<OperandType2>", operandType2);
     templateString = templateString.replaceAll("<OperandType3>", operandType3);
     templateString = templateString.replaceAll("<OutputColumnVectorType>", outputColumnVectorType);
+    String vectorExprArgType2 = operandType2;
+    String vectorExprArgType3 = operandType3;
+    if (operandType2.equals("long") && operandType3.equals("long")) {
+      // Let this work occur for DATE and TIMESTAMP, too.
+      vectorExprArgType2 = "int_datetime_family";
+      vectorExprArgType3 = "int_datetime_family";
+    }
+    templateString = templateString.replaceAll("<VectorExprArgType2>", vectorExprArgType2);
+    templateString = templateString.replaceAll("<VectorExprArgType3>", vectorExprArgType3);
     writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
         className, templateString);
   }
@@ -1028,6 +1312,15 @@ public class GenVectorCode extends Task {
     templateString = templateString.replaceAll("<OperandType2>", operandType2);
     templateString = templateString.replaceAll("<OperandType3>", operandType3);
     templateString = templateString.replaceAll("<OutputColumnVectorType>", outputColumnVectorType);
+    String vectorExprArgType2 = operandType2;
+    String vectorExprArgType3 = operandType3;
+    if (operandType2.equals("long") && operandType3.equals("long")) {
+      // Let this work occur for DATE and TIMESTAMP, too.
+      vectorExprArgType2 = "int_datetime_family";
+      vectorExprArgType3 = "int_datetime_family";
+    }
+    templateString = templateString.replaceAll("<VectorExprArgType2>", vectorExprArgType2);
+    templateString = templateString.replaceAll("<VectorExprArgType3>", vectorExprArgType3);
     writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
         className, templateString);
   }
@@ -1049,6 +1342,15 @@ public class GenVectorCode extends Task {
     templateString = templateString.replaceAll("<OperandType2>", operandType2);
     templateString = templateString.replaceAll("<OperandType3>", operandType3);
     templateString = templateString.replaceAll("<OutputColumnVectorType>", outputColumnVectorType);
+    String vectorExprArgType2 = operandType2;
+    String vectorExprArgType3 = operandType3;
+    if (operandType2.equals("long") && operandType3.equals("long")) {
+      // Let this work occur for DATE and TIMESTAMP, too.
+      vectorExprArgType2 = "int_datetime_family";
+      vectorExprArgType3 = "int_datetime_family";
+    }
+    templateString = templateString.replaceAll("<VectorExprArgType2>", vectorExprArgType2);
+    templateString = templateString.replaceAll("<VectorExprArgType3>", vectorExprArgType3);
     writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
         className, templateString);
   }
@@ -1073,6 +1375,7 @@ public class GenVectorCode extends Task {
   }
 
   // template, <ClassNamePrefix>, <ReturnType>, <OperandType>, <FuncName>, <OperandCast>, <ResultCast>
+  //   <Cleanup> <VectorExprArgType>
   private void generateColumnUnaryFunc(String[] tdesc) throws Exception {
     String classNamePrefix = tdesc[1];
     String operandType = tdesc[3];
@@ -1087,6 +1390,8 @@ public class GenVectorCode extends Task {
     String operandCast = tdesc[5];
     String resultCast = tdesc[6];
     String cleanup = tdesc[7];
+    String vectorExprArgType = tdesc[8].isEmpty() ? operandType : tdesc[8];
+
     // Expand, and write result
     templateString = templateString.replaceAll("<ClassName>", className);
     templateString = templateString.replaceAll("<InputColumnVectorType>", inputColumnVectorType);
@@ -1097,6 +1402,7 @@ public class GenVectorCode extends Task {
     templateString = templateString.replaceAll("<OperandCast>", operandCast);
     templateString = templateString.replaceAll("<ResultCast>", resultCast);
     templateString = templateString.replaceAll("<Cleanup>", cleanup);
+    templateString = templateString.replaceAll("<VectorExprArgType>", vectorExprArgType);
     writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
         className, templateString);
   }
@@ -1108,56 +1414,99 @@ public class GenVectorCode extends Task {
     String className = getCamelCaseType(operandType1)
         + "Col" + operatorName + getCamelCaseType(operandType2) + "Column";
     String returnType = getArithmeticReturnType(operandType1, operandType2);
-    generateColumnBinaryOperatorColumn(tdesc, returnType, className);
+    generateColumnArithmeticOperatorColumn(tdesc, returnType, className);
   }
 
   private void generateFilterColumnCompareScalar(String[] tdesc) throws Exception {
-    //The variables are all same as ColumnCompareScalar except that
-    //this template doesn't need a return type. Pass anything as return type.
     String operatorName = tdesc[1];
     String operandType1 = tdesc[2];
     String operandType2 = tdesc[3];
     String className = "Filter" + getCamelCaseType(operandType1)
         + "Col" + operatorName + getCamelCaseType(operandType2) + "Scalar";
-    generateColumnBinaryOperatorScalar(tdesc, null, className);
+    generateColumnCompareOperatorScalar(tdesc, true, className);
   }
 
   private void generateFilterScalarCompareColumn(String[] tdesc) throws Exception {
-    //this template doesn't need a return type. Pass anything as return type.
     String operatorName = tdesc[1];
     String operandType1 = tdesc[2];
     String operandType2 = tdesc[3];
     String className = "Filter" + getCamelCaseType(operandType1)
         + "Scalar" + operatorName + getCamelCaseType(operandType2) + "Column";
-    generateScalarBinaryOperatorColumn(tdesc, null, className);
+    generateScalarCompareOperatorColumn(tdesc, true, className);
   }
 
   private void generateColumnCompareScalar(String[] tdesc) throws Exception {
     String operatorName = tdesc[1];
     String operandType1 = tdesc[2];
     String operandType2 = tdesc[3];
-    String returnType = "long";
     String className = getCamelCaseType(operandType1)
         + "Col" + operatorName + getCamelCaseType(operandType2) + "Scalar";
-    generateColumnBinaryOperatorScalar(tdesc, returnType, className);
+    generateColumnCompareOperatorScalar(tdesc, false, className);
   }
 
   private void generateScalarCompareColumn(String[] tdesc) throws Exception {
     String operatorName = tdesc[1];
     String operandType1 = tdesc[2];
     String operandType2 = tdesc[3];
-    String returnType = "long";
     String className = getCamelCaseType(operandType1)
         + "Scalar" + operatorName + getCamelCaseType(operandType2) + "Column";
-    generateScalarBinaryOperatorColumn(tdesc, returnType, className);
+    generateScalarCompareOperatorColumn(tdesc, false, className);
   }
 
-  private void generateColumnBinaryOperatorColumn(String[] tdesc, String returnType,
+  private void generateColumnCompareOperatorColumn(String[] tdesc, boolean filter,
          String className) throws Exception {
     String operandType1 = tdesc[2];
     String operandType2 = tdesc[3];
-    String outputColumnVectorType = this.getColumnVectorType(
-            returnType == null ? "long" : returnType);
+    String inputColumnVectorType1 = this.getColumnVectorType(operandType1);
+    String inputColumnVectorType2 = this.getColumnVectorType(operandType2);
+    String returnType = "long";
+    String outputColumnVectorType = this.getColumnVectorType(returnType);
+    String operatorSymbol = tdesc[4];
+
+    //Read the template into a string;
+    File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
+    String templateString = readFile(templateFile);
+    templateString = templateString.replaceAll("<ClassName>", className);
+    templateString = templateString.replaceAll("<InputColumnVectorType1>", inputColumnVectorType1);
+    templateString = templateString.replaceAll("<InputColumnVectorType2>", inputColumnVectorType2);
+    templateString = templateString.replaceAll("<OutputColumnVectorType>", outputColumnVectorType);
+    templateString = templateString.replaceAll("<OperatorSymbol>", operatorSymbol);
+    templateString = templateString.replaceAll("<OperandType1>", operandType1);
+    templateString = templateString.replaceAll("<OperandType2>", operandType2);
+    templateString = templateString.replaceAll("<ReturnType>", returnType);
+    templateString = templateString.replaceAll("<CamelReturnType>", getCamelCaseType(returnType));
+    String vectorExprArgType1 = operandType1;
+    String vectorExprArgType2 = operandType2;
+    if (operandType1.equals("long") && operandType2.equals("long")) {
+      // Let comparisons occur for DATE and TIMESTAMP, too.
+      vectorExprArgType1 = "int_datetime_family";
+      vectorExprArgType2 = "int_datetime_family";
+    }
+    templateString = templateString.replaceAll("<VectorExprArgType1>", vectorExprArgType1);
+    templateString = templateString.replaceAll("<VectorExprArgType2>", vectorExprArgType2);
+    writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
+        className, templateString);
+
+    if (filter) {
+      testCodeGen.addColumnColumnFilterTestCases(
+          className,
+          inputColumnVectorType1,
+          inputColumnVectorType2,
+          operatorSymbol);
+    } else {
+      testCodeGen.addColumnColumnOperationTestCases(
+          className,
+          inputColumnVectorType1,
+          inputColumnVectorType2,
+          outputColumnVectorType);
+    }
+  }
+
+  private void generateColumnArithmeticOperatorColumn(String[] tdesc, String returnType,
+         String className) throws Exception {
+    String operandType1 = tdesc[2];
+    String operandType2 = tdesc[3];
+    String outputColumnVectorType = this.getColumnVectorType(returnType);
     String inputColumnVectorType1 = this.getColumnVectorType(operandType1);
     String inputColumnVectorType2 = this.getColumnVectorType(operandType2);
     String operatorSymbol = tdesc[4];
@@ -1177,28 +1526,20 @@ public class GenVectorCode extends Task {
     writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
         className, templateString);
 
-    if(returnType==null){
-      testCodeGen.addColumnColumnFilterTestCases(
-          className,
-          inputColumnVectorType1,
-          inputColumnVectorType2,
-          operatorSymbol);
-    }else{
-      testCodeGen.addColumnColumnOperationTestCases(
+    testCodeGen.addColumnColumnOperationTestCases(
           className,
           inputColumnVectorType1,
           inputColumnVectorType2,
           outputColumnVectorType);
-    }
   }
 
-  private void generateColumnBinaryOperatorScalar(String[] tdesc, String returnType,
+  private void generateColumnCompareOperatorScalar(String[] tdesc, boolean filter,
      String className) throws Exception {
     String operandType1 = tdesc[2];
     String operandType2 = tdesc[3];
-    String outputColumnVectorType = this.getColumnVectorType(
-            returnType == null ? "long" : returnType);
     String inputColumnVectorType = this.getColumnVectorType(operandType1);
+    String returnType = "long";
+    String outputColumnVectorType = this.getColumnVectorType(returnType);
     String operatorSymbol = tdesc[4];
 
     //Read the template into a string;
@@ -1211,10 +1552,20 @@ public class GenVectorCode extends Task {
     templateString = templateString.replaceAll("<OperandType1>", operandType1);
     templateString = templateString.replaceAll("<OperandType2>", operandType2);
     templateString = templateString.replaceAll("<ReturnType>", returnType);
+    templateString = templateString.replaceAll("<CamelReturnType>", getCamelCaseType(returnType));
+    String vectorExprArgType1 = operandType1;
+    String vectorExprArgType2 = operandType2;
+    if (operandType1.equals("long") && operandType2.equals("long")) {
+      // Let comparisons occur for DATE and TIMESTAMP, too.
+      vectorExprArgType1 = "int_datetime_family";
+      vectorExprArgType2 = "int_datetime_family";
+    }
+    templateString = templateString.replaceAll("<VectorExprArgType1>", vectorExprArgType1);
+    templateString = templateString.replaceAll("<VectorExprArgType2>", vectorExprArgType2);
     writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
         className, templateString);
 
-    if(returnType==null) {
+    if (filter) {
       testCodeGen.addColumnScalarFilterTestCases(
           true,
           className,
@@ -1231,7 +1582,85 @@ public class GenVectorCode extends Task {
     }
   }
 
-  private void generateScalarBinaryOperatorColumn(String[] tdesc, String returnType,
+  private void generateColumnArithmeticOperatorScalar(String[] tdesc, String returnType,
+     String className) throws Exception {
+    String operandType1 = tdesc[2];
+    String operandType2 = tdesc[3];
+    String outputColumnVectorType = this.getColumnVectorType(returnType);
+    String inputColumnVectorType = this.getColumnVectorType(operandType1);
+    String operatorSymbol = tdesc[4];
+
+    //Read the template into a string;
+    File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
+    String templateString = readFile(templateFile);
+    templateString = templateString.replaceAll("<ClassName>", className);
+    templateString = templateString.replaceAll("<InputColumnVectorType>", inputColumnVectorType);
+    templateString = templateString.replaceAll("<OutputColumnVectorType>", outputColumnVectorType);
+    templateString = templateString.replaceAll("<OperatorSymbol>", operatorSymbol);
+    templateString = templateString.replaceAll("<OperandType1>", operandType1);
+    templateString = templateString.replaceAll("<OperandType2>", operandType2);
+    templateString = templateString.replaceAll("<ReturnType>", returnType);
+    writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
+        className, templateString);
+
+    testCodeGen.addColumnScalarOperationTestCases(
+          true,
+          className,
+          inputColumnVectorType,
+          outputColumnVectorType,
+          operandType2);
+  }
+
+  private void generateScalarCompareOperatorColumn(String[] tdesc, boolean filter,
+     String className) throws Exception {
+     String operandType1 = tdesc[2];
+     String operandType2 = tdesc[3];
+     String returnType = "long";
+     String inputColumnVectorType = this.getColumnVectorType(operandType2);
+     String outputColumnVectorType = this.getColumnVectorType(returnType);
+     String operatorSymbol = tdesc[4];
+
+     //Read the template into a string;
+     File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
+     String templateString = readFile(templateFile);
+     templateString = templateString.replaceAll("<ClassName>", className);
+     templateString = templateString.replaceAll("<InputColumnVectorType>", inputColumnVectorType);
+     templateString = templateString.replaceAll("<OutputColumnVectorType>", outputColumnVectorType);
+     templateString = templateString.replaceAll("<OperatorSymbol>", operatorSymbol);
+     templateString = templateString.replaceAll("<OperandType1>", operandType1);
+     templateString = templateString.replaceAll("<OperandType2>", operandType2);
+     templateString = templateString.replaceAll("<ReturnType>", returnType);
+     templateString = templateString.replaceAll("<CamelReturnType>", getCamelCaseType(returnType));
+     String vectorExprArgType1 = operandType1;
+     String vectorExprArgType2 = operandType2;
+     if (operandType1.equals("long") && operandType2.equals("long")) {
+       // Let comparisons occur for DATE and TIMESTAMP, too.
+       vectorExprArgType1 = "int_datetime_family";
+       vectorExprArgType2 = "int_datetime_family";
+     }
+     templateString = templateString.replaceAll("<VectorExprArgType1>", vectorExprArgType1);
+     templateString = templateString.replaceAll("<VectorExprArgType2>", vectorExprArgType2);
+     writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
+        className, templateString);
+
+     if (filter) {
+       testCodeGen.addColumnScalarFilterTestCases(
+           false,
+           className,
+           inputColumnVectorType,
+           operandType1,
+           operatorSymbol);
+     } else {
+       testCodeGen.addColumnScalarOperationTestCases(
+           false,
+           className,
+           inputColumnVectorType,
+           outputColumnVectorType,
+           operandType1);
+     }
+  }
+
+  private void generateScalarArithmeticOperatorColumn(String[] tdesc, String returnType,
      String className) throws Exception {
      String operandType1 = tdesc[2];
      String operandType2 = tdesc[3];
@@ -1254,22 +1683,13 @@ public class GenVectorCode extends Task {
      writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
         className, templateString);
 
-     if(returnType==null) {
-       testCodeGen.addColumnScalarFilterTestCases(
-           false,
-           className,
-           inputColumnVectorType,
-           operandType1,
-           operatorSymbol);
-     } else {
-       testCodeGen.addColumnScalarOperationTestCases(
+     testCodeGen.addColumnScalarOperationTestCases(
            false,
            className,
            inputColumnVectorType,
            outputColumnVectorType,
            operandType1);
-     }
-   }
+  }
 
   //Binary arithmetic operator
   private void generateColumnArithmeticScalar(String[] tdesc) throws Exception {
@@ -1279,7 +1699,7 @@ public class GenVectorCode extends Task {
     String className = getCamelCaseType(operandType1)
         + "Col" + operatorName + getCamelCaseType(operandType2) + "Scalar";
     String returnType = getArithmeticReturnType(operandType1, operandType2);
-    generateColumnBinaryOperatorScalar(tdesc, returnType, className);
+    generateColumnArithmeticOperatorScalar(tdesc, returnType, className);
   }
 
   private void generateColumnArithmeticScalarDecimal(String[] tdesc) throws IOException {
@@ -1373,7 +1793,7 @@ public class GenVectorCode extends Task {
     String className = getCamelCaseType(operandType1)
         + "Scalar" + operatorName + getCamelCaseType(operandType2) + "Column";
     String returnType = getArithmeticReturnType(operandType1, operandType2);
-    generateScalarBinaryOperatorColumn(tdesc, returnType, className);
+    generateScalarArithmeticOperatorColumn(tdesc, returnType, className);
   }
 
   private void generateFilterDecimalColumnCompareScalar(String[] tdesc) throws IOException {
