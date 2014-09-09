@@ -159,7 +159,7 @@ public class CastStringToDecimal extends VectorExpression {
     b.setMode(VectorExpressionDescriptor.Mode.PROJECTION)
         .setNumArguments(1)
         .setArgumentTypes(
-            VectorExpressionDescriptor.ArgumentType.STRING)
+            VectorExpressionDescriptor.ArgumentType.STRING_FAMILY)
         .setInputExpressionTypes(
             VectorExpressionDescriptor.InputExpressionType.COLUMN);
     return b.build();

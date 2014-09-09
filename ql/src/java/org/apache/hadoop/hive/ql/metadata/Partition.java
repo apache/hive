@@ -302,7 +302,7 @@ public class Partition implements Serializable {
       }
       try {
         inputFormatClass = ((Class<? extends InputFormat>) Class.forName(clsName, true,
-            JavaUtils.getClassLoader()));
+            Utilities.getSessionSpecifiedClassLoader()));
       } catch (ClassNotFoundException e) {
         throw new HiveException("Class not found: " + clsName, e);
       }
@@ -322,7 +322,7 @@ public class Partition implements Serializable {
       }
       try {
         Class<?> c = (Class.forName(clsName, true,
-            JavaUtils.getClassLoader()));
+            Utilities.getSessionSpecifiedClassLoader()));
         // Replace FileOutputFormat for backward compatibility
         if (!HiveOutputFormat.class.isAssignableFrom(c)) {
           outputFormatClass = HiveFileFormatUtils.getOutputFormatSubstitute(c,false);

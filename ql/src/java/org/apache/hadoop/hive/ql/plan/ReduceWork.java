@@ -20,8 +20,8 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -32,13 +32,9 @@ import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.lib.NodeProcessor;
-import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.serde2.Deserializer;
-import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.mapred.JobConf;
@@ -99,7 +95,7 @@ public class ReduceWork extends BaseWork {
   private ObjectInspector keyObjectInspector = null;
   private ObjectInspector valueObjectInspector = null;
 
-  private Map<String, Integer> reduceColumnNameMap = new LinkedHashMap<String, Integer>();
+  private final Map<String, Integer> reduceColumnNameMap = new LinkedHashMap<String, Integer>();
 
   /**
    * If the plan has a reducer and correspondingly a reduce-sink, then store the TableDesc pointing
@@ -118,7 +114,7 @@ public class ReduceWork extends BaseWork {
   private ObjectInspector getObjectInspector(TableDesc desc) {
     ObjectInspector objectInspector;
     try {
-      Deserializer deserializer = (SerDe) ReflectionUtils.newInstance(desc
+      Deserializer deserializer = ReflectionUtils.newInstance(desc
                 .getDeserializerClass(), null);
       SerDeUtils.initializeSerDe(deserializer, null, desc.getProperties(), null);
       objectInspector = deserializer.getObjectInspector();
@@ -239,7 +235,6 @@ public class ReduceWork extends BaseWork {
 
   @Override
   public void replaceRoots(Map<Operator<?>, Operator<?>> replacementMap) {
-    assert replacementMap.size() == 1;
     setReducer(replacementMap.get(getReducer()));
   }
 

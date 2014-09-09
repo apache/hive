@@ -33,9 +33,13 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.StringTokenizer;
 
+import com.google.common.collect.Interner;
+import com.google.common.collect.Interners;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
@@ -57,10 +61,62 @@ public class HiveStringUtils {
   public static final int SHUTDOWN_HOOK_PRIORITY = 0;
 
   private static final DecimalFormat decimalFormat;
+
+  /**
+   * Maintain a String pool to reduce memory.
+   */
+  private static final Interner<String> STRING_INTERNER;
+
   static {
-          NumberFormat numberFormat = NumberFormat.getNumberInstance(Locale.ENGLISH);
-          decimalFormat = (DecimalFormat) numberFormat;
-          decimalFormat.applyPattern("#.##");
+    NumberFormat numberFormat = NumberFormat.getNumberInstance(Locale.ENGLISH);
+    decimalFormat = (DecimalFormat) numberFormat;
+    decimalFormat.applyPattern("#.##");
+
+    STRING_INTERNER = Interners.newWeakInterner();
+  }
+
+  /**
+   * Return the internalized string, or null if the given string is null.
+   * @param str The string to intern
+   * @return The identical string cached in the string pool.
+   */
+  public static String intern(String str) {
+    if(str == null) {
+      return null;
+    }
+    return STRING_INTERNER.intern(str);
+  }
+
+  /**
+   * Return an interned list with identical contents as the given list.
+   * @param list The list whose strings will be interned
+   * @return An identical list with its strings interned.
+   */
+  public static List<String> intern(List<String> list) {
+    if(list == null) {
+      return null;
+    }
+    List<String> newList = new ArrayList<String>(list.size());
+    for(String str : list) {
+      newList.add(intern(str));
+    }
+    return newList;
+  }
+
+  /**
+   * Return an interned map with identical contents as the given map.
+   * @param map The map whose strings will be interned
+   * @return An identical map with its strings interned.
+   */
+  public static Map<String, String> intern(Map<String, String> map) {
+    if(map == null) {
+      return null;
+    }
+    Map<String, String> newMap = new HashMap<String, String>(map.size());
+    for(Map.Entry<String, String> entry : map.entrySet()) {
+      newMap.put(intern(entry.getKey()), intern(entry.getValue()));
+    }
+    return newMap;
   }
 
   /**

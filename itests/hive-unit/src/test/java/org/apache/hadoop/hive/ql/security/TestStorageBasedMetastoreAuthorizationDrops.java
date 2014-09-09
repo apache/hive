@@ -96,6 +96,7 @@ public class TestStorageBasedMetastoreAuthorizationDrops extends TestCase{
     driver = new Driver(clientHiveConf);
 
     setupFakeUser();
+    InjectableDummyAuthenticator.injectMode(false);
   }
 
 
@@ -159,6 +160,38 @@ public class TestStorageBasedMetastoreAuthorizationDrops extends TestCase{
     assertEquals(expectedRet, resp.getResponseCode());
   }
 
+  /**
+   * Drop view should not be blocked by SBA. View will not have any location to drop.
+   * @throws Exception
+   */
+  public void testDropView() throws Exception {
+    String dbName = getTestDbName();
+    String tblName = getTestTableName();
+    String viewName = "view" + tblName;
+    setPermissions(clientHiveConf.getVar(ConfVars.METASTOREWAREHOUSE), "-rwxrwxrwx");
+
+    CommandProcessorResponse resp = driver.run("create database " + dbName);
+    assertEquals(0, resp.getResponseCode());
+    Database db = msc.getDatabase(dbName);
+    validateCreateDb(db, dbName);
+
+    setPermissions(db.getLocationUri(), "-rwxrwxrwt");
+
+    String dbDotTable = dbName + "." + tblName;
+    resp = driver.run("create table " + dbDotTable + "(i int)");
+    assertEquals(0, resp.getResponseCode());
+
+    String dbDotView = dbName + "." + viewName;
+    resp = driver.run("create view " + dbDotView + " as select * from " +  dbDotTable);
+    assertEquals(0, resp.getResponseCode());
+
+    resp = driver.run("drop view " + dbDotView);
+    assertEquals(0, resp.getResponseCode());
+
+    resp = driver.run("drop table " + dbDotTable);
+    assertEquals(0, resp.getResponseCode());
+  }
+
 
   public void testDropPartition() throws Exception {
     dropPartitionByOtherUser("-rwxrwxrwx", 0);
@@ -202,7 +235,6 @@ public class TestStorageBasedMetastoreAuthorizationDrops extends TestCase{
 
     InjectableDummyAuthenticator.injectUserName(fakeUser);
     InjectableDummyAuthenticator.injectGroupNames(fakeGroupNames);
-    InjectableDummyAuthenticator.injectMode(true);
   }
 
   private String setupUser() {

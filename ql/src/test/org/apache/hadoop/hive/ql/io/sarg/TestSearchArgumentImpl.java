@@ -22,6 +22,8 @@ import com.google.common.collect.Sets;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
+import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
+import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument.TruthValue;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentImpl.ExpressionBuilder;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentImpl.ExpressionTree;
@@ -743,7 +745,7 @@ public class TestSearchArgumentImpl {
         "</java> \n";
 
     SearchArgumentImpl sarg =
-        (SearchArgumentImpl) SearchArgument.FACTORY.create(getFuncDesc(exprStr));
+        (SearchArgumentImpl) SearchArgumentFactory.create(getFuncDesc(exprStr));
     List<PredicateLeaf> leaves = sarg.getLeaves();
     assertEquals(9, leaves.size());
 
@@ -1011,7 +1013,7 @@ public class TestSearchArgumentImpl {
         "</java> \n";
 
     SearchArgumentImpl sarg =
-        (SearchArgumentImpl) SearchArgument.FACTORY.create(getFuncDesc(exprStr));
+        (SearchArgumentImpl) SearchArgumentFactory.create(getFuncDesc(exprStr));
     List<PredicateLeaf> leaves = sarg.getLeaves();
     assertEquals(4, leaves.size());
 
@@ -1430,7 +1432,7 @@ public class TestSearchArgumentImpl {
         "</java> \n";
 
     SearchArgumentImpl sarg =
-        (SearchArgumentImpl) SearchArgument.FACTORY.create(getFuncDesc(exprStr));
+        (SearchArgumentImpl) SearchArgumentFactory.create(getFuncDesc(exprStr));
     List<PredicateLeaf> leaves = sarg.getLeaves();
     assertEquals(3, leaves.size());
 
@@ -1640,7 +1642,7 @@ public class TestSearchArgumentImpl {
         "\n";
 
     SearchArgumentImpl sarg =
-        (SearchArgumentImpl) SearchArgument.FACTORY.create(getFuncDesc(exprStr));
+        (SearchArgumentImpl) SearchArgumentFactory.create(getFuncDesc(exprStr));
     List<PredicateLeaf> leaves = sarg.getLeaves();
     assertEquals(3, leaves.size());
 
@@ -1895,7 +1897,7 @@ public class TestSearchArgumentImpl {
         "</java> \n";
 
     SearchArgumentImpl sarg =
-        (SearchArgumentImpl) SearchArgument.FACTORY.create(getFuncDesc(exprStr));
+        (SearchArgumentImpl) SearchArgumentFactory.create(getFuncDesc(exprStr));
     List<PredicateLeaf> leaves = sarg.getLeaves();
     assertEquals(1, leaves.size());
 
@@ -2372,7 +2374,7 @@ public class TestSearchArgumentImpl {
         "</java>";
 
     SearchArgumentImpl sarg =
-        (SearchArgumentImpl) SearchArgument.FACTORY.create(getFuncDesc(exprStr));
+        (SearchArgumentImpl) SearchArgumentFactory.create(getFuncDesc(exprStr));
     List<PredicateLeaf> leaves = sarg.getLeaves();
     assertEquals(9, leaves.size());
 
@@ -2506,7 +2508,7 @@ public class TestSearchArgumentImpl {
         "</java> ";
 
     SearchArgumentImpl sarg =
-        (SearchArgumentImpl) SearchArgument.FACTORY.create(getFuncDesc(exprStr));
+        (SearchArgumentImpl) SearchArgumentFactory.create(getFuncDesc(exprStr));
     List<PredicateLeaf> leaves = sarg.getLeaves();
     assertEquals(0, leaves.size());
 
@@ -2633,7 +2635,7 @@ public class TestSearchArgumentImpl {
         "</java> ";
 
     SearchArgumentImpl sarg =
-        (SearchArgumentImpl) SearchArgument.FACTORY.create(getFuncDesc(exprStr));
+        (SearchArgumentImpl) SearchArgumentFactory.create(getFuncDesc(exprStr));
     List<PredicateLeaf> leaves = sarg.getLeaves();
     assertEquals(0, leaves.size());
 
@@ -2758,7 +2760,7 @@ public class TestSearchArgumentImpl {
         "</java>";
 
     SearchArgumentImpl sarg =
-        (SearchArgumentImpl) SearchArgument.FACTORY.create(getFuncDesc(exprStr));
+        (SearchArgumentImpl) SearchArgumentFactory.create(getFuncDesc(exprStr));
     List<PredicateLeaf> leaves = sarg.getLeaves();
     assertEquals(1, leaves.size());
 
@@ -2788,7 +2790,7 @@ public class TestSearchArgumentImpl {
   @Test
   public void testBuilder() throws Exception {
     SearchArgument sarg =
-        SearchArgument.FACTORY.newBuilder()
+        SearchArgumentFactory.newBuilder()
             .startAnd()
               .lessThan("x", 10)
               .lessThanEquals("y", "hi")
@@ -2799,7 +2801,7 @@ public class TestSearchArgumentImpl {
         "leaf-1 = (LESS_THAN_EQUALS y hi)\n" +
         "leaf-2 = (EQUALS z 1.0)\n" +
         "expr = (and leaf-0 leaf-1 leaf-2)", sarg.toString());
-    sarg = SearchArgument.FACTORY.newBuilder()
+    sarg = SearchArgumentFactory.newBuilder()
         .startNot()
            .startOr()
              .isNull("x")
@@ -2819,7 +2821,7 @@ public class TestSearchArgumentImpl {
   @Test
   public void testBuilderComplexTypes() throws Exception {
     SearchArgument sarg =
-        SearchArgument.FACTORY.newBuilder()
+        SearchArgumentFactory.newBuilder()
             .startAnd()
               .lessThan("x", new DateWritable(10))
               .lessThanEquals("y", new HiveChar("hi", 10))
@@ -2831,7 +2833,7 @@ public class TestSearchArgumentImpl {
         "leaf-2 = (EQUALS z 1.0)\n" +
         "expr = (and leaf-0 leaf-1 leaf-2)", sarg.toString());
 
-    sarg = SearchArgument.FACTORY.newBuilder()
+    sarg = SearchArgumentFactory.newBuilder()
         .startNot()
            .startOr()
              .isNull("x")
@@ -2851,7 +2853,7 @@ public class TestSearchArgumentImpl {
   @Test
   public void testBuilderComplexTypes2() throws Exception {
     SearchArgument sarg =
-        SearchArgument.FACTORY.newBuilder()
+        SearchArgumentFactory.newBuilder()
             .startAnd()
             .lessThan("x", new DateWritable(10))
             .lessThanEquals("y", new HiveChar("hi", 10))
@@ -2863,7 +2865,7 @@ public class TestSearchArgumentImpl {
         "leaf-2 = (EQUALS z 1.0)\n" +
         "expr = (and leaf-0 leaf-1 leaf-2)", sarg.toString());
 
-    sarg = SearchArgument.FACTORY.newBuilder()
+    sarg = SearchArgumentFactory.newBuilder()
         .startNot()
         .startOr()
         .isNull("x")

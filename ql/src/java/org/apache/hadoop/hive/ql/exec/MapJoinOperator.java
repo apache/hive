@@ -104,6 +104,8 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
     cache = ObjectCacheFactory.getCache(hconf);
     loader = HashTableLoaderFactory.getLoader(hconf);
 
+    hashMapRowGetters = null;
+
     mapJoinTables = (MapJoinTableContainer[]) cache.retrieve(tableKey);
     mapJoinTableSerdes = (MapJoinTableContainerSerDe[]) cache.retrieve(serdeKey);
     hashTblInitedOnce = true;
@@ -186,7 +188,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
        * process different buckets and if the container is reused to join a different bucket,
        * join results can be incorrect. The cache is keyed on operator id and for bucket map join
        * the operator does not change but data needed is different. For a proper fix, this
-       * requires changes in the Tez API with regard to finding bucket id and 
+       * requires changes in the Tez API with regard to finding bucket id and
        * also ability to schedule tasks to re-use containers that have cached the specific bucket.
        */
       LOG.info("This is not bucket map join, so cache");
@@ -237,7 +239,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
         firstRow = false;
       }
 
-      alias = (byte)tag;
+      alias = (byte) tag;
       if (hashMapRowGetters == null) {
         hashMapRowGetters = new ReusableGetAdaptor[mapJoinTables.length];
         MapJoinKey refKey = getRefKey(alias);

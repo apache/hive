@@ -158,7 +158,10 @@ public class VectorizedColumnarSerDe extends ColumnarSerDe implements Vectorized
                 serializeVectorStream.write(bytes, 0, bytes.length);
               }
                 break;
-              case STRING: {
+              case STRING:
+              case CHAR:
+              case VARCHAR: {
+                // Is it correct to escape CHAR and VARCHAR?
                 BytesColumnVector bcv = (BytesColumnVector) batch.cols[k];
                 LazyUtils.writeEscaped(serializeVectorStream, bcv.vector[rowIndex],
                     bcv.start[rowIndex],

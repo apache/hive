@@ -374,7 +374,6 @@ public class HiveConf extends Configuration {
     METASTORECONNECTURLKEY("javax.jdo.option.ConnectionURL",
         "jdbc:derby:;databaseName=metastore_db;create=true",
         "JDBC connect string for a JDBC metastore"),
-
     HMSHANDLERATTEMPTS("hive.hmshandler.retry.attempts", 1,
         "The number of times to retry a HMSHandler call if there were a connection error."),
     HMSHANDLERINTERVAL("hive.hmshandler.retry.interval", "1000ms",
@@ -581,6 +580,11 @@ public class HiveConf extends Configuration {
     // hive jar
     HIVEJAR("hive.jar.path", "", ""),
     HIVEAUXJARS("hive.aux.jars.path", "", ""),
+
+    // reloadable jars
+    HIVERELOADABLEJARS("hive.reloadable.aux.jars.path", "",
+        "Jars can be renewed by executing reload command. And these jars can be "
+            + "used as the auxiliary classes like creating a UDF or SerDe."),
 
     // hive added files and jars
     HIVEADDEDFILES("hive.added.files.path", "", ""),
@@ -1617,7 +1621,7 @@ public class HiveConf extends Configuration {
     HIVE_SERVER2_SSL_KEYSTORE_PATH("hive.server2.keystore.path", "", ""),
     HIVE_SERVER2_SSL_KEYSTORE_PASSWORD("hive.server2.keystore.password", "", ""),
 
-    HIVE_SECURITY_COMMAND_WHITELIST("hive.security.command.whitelist", "set,reset,dfs,add,list,delete,compile",
+    HIVE_SECURITY_COMMAND_WHITELIST("hive.security.command.whitelist", "set,reset,dfs,add,list,delete,reload,compile",
         "Comma separated list of non-SQL Hive commands users are authorized to execute"),
 
     HIVE_SERVER2_SESSION_CHECK_INTERVAL("hive.server2.session.check.interval", "0ms",
@@ -1785,7 +1789,15 @@ public class HiveConf extends Configuration {
         "When auto reducer parallelism is enabled this factor will be used to over-partition data in shuffle edges."),
     TEZ_MIN_PARTITION_FACTOR("hive.tez.min.partition.factor", 0.25f,
         "When auto reducer parallelism is enabled this factor will be used to put a lower limit to the number\n" +
-        "of reducers that tez specifies.")
+        "of reducers that tez specifies."),
+    TEZ_DYNAMIC_PARTITION_PRUNING(
+        "hive.tez.dynamic.partition.pruning", true,
+        "When dynamic pruning is enabled, joins on partition keys will be processed by sending events from the processing " +
+        "vertices to the tez application master. These events will be used to prune unnecessary partitions."),
+    TEZ_DYNAMIC_PARTITION_PRUNING_MAX_EVENT_SIZE("hive.tez.dynamic.partition.pruning.max.event.size", 1*1024*1024L,
+        "Maximum size of events sent by processors in dynamic pruning. If this size is crossed no pruning will take place."),
+    TEZ_DYNAMIC_PARTITION_PRUNING_MAX_DATA_SIZE("hive.tez.dynamic.parition.pruning.max.data.size", 100*1024*1024L,
+        "Maximum total data size of events in dynamic pruning.")
     ;
 
     public final String varname;

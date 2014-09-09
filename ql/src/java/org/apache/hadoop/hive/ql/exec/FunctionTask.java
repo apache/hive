@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.exec;
 import static org.apache.hadoop.util.StringUtils.stringifyException;
 
 import java.io.IOException;
-import java.net.URI;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
@@ -33,10 +32,8 @@ import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.ResourceType;
 import org.apache.hadoop.hive.metastore.api.ResourceUri;
-import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.QueryPlan;
-import org.apache.hadoop.hive.ql.exec.FunctionUtils.FunctionType;
 import org.apache.hadoop.hive.ql.exec.FunctionUtils.UDFClassType;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -47,10 +44,6 @@ import org.apache.hadoop.hive.ql.plan.DropMacroDesc;
 import org.apache.hadoop.hive.ql.plan.FunctionWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFResolver;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
-import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.StringUtils;
 
 /**
@@ -308,9 +301,10 @@ public class FunctionTask extends Task<FunctionWork> {
     }
   }
 
-  @SuppressWarnings("unchecked")
   private Class<?> getUdfClass(CreateFunctionDesc desc) throws ClassNotFoundException {
-    return Class.forName(desc.getClassName(), true, JavaUtils.getClassLoader());
+    // get the session specified class loader from SessionState
+    ClassLoader classLoader = Utilities.getSessionSpecifiedClassLoader();
+    return Class.forName(desc.getClassName(), true, classLoader);
   }
 
   @Override

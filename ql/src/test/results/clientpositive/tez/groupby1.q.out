@@ -30,16 +30,16 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
-                  Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string), value (type: string)
                     outputColumnNames: key, value
-                    Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: key (type: string)
                       sort order: +
                       Map-reduce partition columns: rand() (type: double)
-                      Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                       value expressions: substr(value, 5) (type: string)
         Reducer 2 
             Reduce Operator Tree:
@@ -48,12 +48,12 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: partial1
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: double)
         Reducer 3 
             Reduce Operator Tree:
@@ -62,14 +62,14 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: final
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 14 Data size: 2805 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: UDFToInteger(_col0) (type: int), _col1 (type: double)
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 14 Data size: 2805 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 14 Data size: 2805 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat

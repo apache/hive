@@ -20,37 +20,42 @@ package org.apache.hadoop.hive.ql.parse;
 
 import java.util.ArrayList;
 import java.util.Deque;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.LinkedList;
-import java.util.Map;
+import java.util.List;
 import java.util.Set;
 
-import org.apache.hadoop.fs.Path;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.AppMasterEventOperator;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
-import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.HashTableDummyOperator;
+import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.optimizer.GenMapRedUtils;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
+import org.apache.hadoop.hive.ql.plan.DynamicPruningEventDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TezEdgeProperty;
 import org.apache.hadoop.hive.ql.plan.TezEdgeProperty.EdgeType;
 import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.apache.hadoop.hive.ql.plan.UnionWork;
+
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 
 /**
  * GenTezUtils is a collection of shared helper methods to produce
@@ -119,12 +124,12 @@ public class GenTezUtils {
       int maxReducers = context.conf.getIntVar(HiveConf.ConfVars.MAXREDUCERS);
 
       // min we allow tez to pick
-      int minPartition = Math.max(1, (int) (reduceSink.getConf().getNumReducers() 
+      int minPartition = Math.max(1, (int) (reduceSink.getConf().getNumReducers()
         * minPartitionFactor));
       minPartition = (minPartition > maxReducers) ? maxReducers : minPartition;
 
       // max we allow tez to pick
-      int maxPartition = (int) (reduceSink.getConf().getNumReducers() * maxPartitionFactor); 
+      int maxPartition = (int) (reduceSink.getConf().getNumReducers() * maxPartitionFactor);
       maxPartition = (maxPartition > maxReducers) ? maxReducers : maxPartition;
 
       reduceWork.setMinReduceTasks(minPartition);
@@ -210,18 +215,20 @@ public class GenTezUtils {
       BaseWork work)
     throws SemanticException {
 
-    Set<Operator<?>> roots = work.getAllRootOperators();
+    List<Operator<?>> roots = new ArrayList<Operator<?>>();
+    roots.addAll(work.getAllRootOperators());
     if (work.getDummyOps() != null) {
       roots.addAll(work.getDummyOps());
     }
+    roots.addAll(context.eventOperatorSet);
 
     // need to clone the plan.
-    Set<Operator<?>> newRoots = Utilities.cloneOperatorTree(conf, roots);
+    List<Operator<?>> newRoots = Utilities.cloneOperatorTree(conf, roots);
 
     // we're cloning the operator plan but we're retaining the original work. That means
     // that root operators have to be replaced with the cloned ops. The replacement map
     // tells you what that mapping is.
-    Map<Operator<?>, Operator<?>> replacementMap = new HashMap<Operator<?>, Operator<?>>();
+    BiMap<Operator<?>, Operator<?>> replacementMap = HashBiMap.create();
 
     // there's some special handling for dummyOps required. Mapjoins won't be properly
     // initialized if their dummy parents aren't initialized. Since we cloned the plan
@@ -231,11 +238,35 @@ public class GenTezUtils {
     Iterator<Operator<?>> it = newRoots.iterator();
     for (Operator<?> orig: roots) {
       Operator<?> newRoot = it.next();
+
+      replacementMap.put(orig, newRoot);
+
       if (newRoot instanceof HashTableDummyOperator) {
-        dummyOps.add((HashTableDummyOperator)newRoot);
+        // dummy ops need to be updated to the cloned ones.
+        dummyOps.add((HashTableDummyOperator) newRoot);
+        it.remove();
+      } else if (newRoot instanceof AppMasterEventOperator) {
+        // event operators point to table scan operators. When cloning these we
+        // need to restore the original scan.
+        if (newRoot.getConf() instanceof DynamicPruningEventDesc) {
+          TableScanOperator ts = ((DynamicPruningEventDesc) orig.getConf()).getTableScan();
+          if (ts == null) {
+            throw new AssertionError("No table scan associated with dynamic event pruning. " + orig);
+          }
+          ((DynamicPruningEventDesc) newRoot.getConf()).setTableScan(ts);
+        }
         it.remove();
       } else {
-        replacementMap.put(orig,newRoot);
+        if (newRoot instanceof TableScanOperator) {
+          if (context.tsToEventMap.containsKey(orig)) {
+            // we need to update event operators with the cloned table scan
+            for (AppMasterEventOperator event : context.tsToEventMap.get(orig)) {
+              ((DynamicPruningEventDesc) event.getConf()).setTableScan((TableScanOperator) newRoot);
+            }
+          }
+        }
+        context.rootToWorkMap.remove(orig);
+        context.rootToWorkMap.put(newRoot, work);
       }
     }
 
@@ -270,6 +301,15 @@ public class GenTezUtils {
 
         desc.setDirName(new Path(path, ""+linked.size()));
         desc.setLinkedFileSinkDesc(linked);
+      }
+
+      if (current instanceof AppMasterEventOperator) {
+        // remember for additional processing later
+        context.eventOperatorSet.add((AppMasterEventOperator) current);
+
+        // mark the original as abandoned. Don't need it anymore.
+        context.abandonedEventOperatorSet.add((AppMasterEventOperator) replacementMap.inverse()
+            .get(current));
       }
 
       if (current instanceof UnionOperator) {
@@ -335,6 +375,89 @@ public class GenTezUtils {
       if (fetchTask.isFetchFrom(fileSink.getConf())) {
         context.currentTask.setFetchSource(true);
       }
+    }
+  }
+
+  /**
+   * processAppMasterEvent sets up the event descriptor and the MapWork.
+   *
+   * @param procCtx
+   * @param event
+   */
+  public void processAppMasterEvent(GenTezProcContext procCtx, AppMasterEventOperator event) {
+
+    if (procCtx.abandonedEventOperatorSet.contains(event)) {
+      // don't need this anymore
+      return;
+    }
+
+    DynamicPruningEventDesc eventDesc = (DynamicPruningEventDesc)event.getConf();
+    TableScanOperator ts = eventDesc.getTableScan();
+
+    MapWork work = (MapWork) procCtx.rootToWorkMap.get(ts);
+    if (work == null) {
+      throw new AssertionError("No work found for tablescan " + ts);
+    }
+
+    BaseWork enclosingWork = getEnclosingWork(event, procCtx);
+    if (enclosingWork == null) {
+      throw new AssertionError("Cannot find work for operator" + event);
+    }
+    String sourceName = enclosingWork.getName();
+
+    // store the vertex name in the operator pipeline
+    eventDesc.setVertexName(work.getName());
+    eventDesc.setInputName(work.getAliases().get(0));
+
+    // store table descriptor in map-work
+    if (!work.getEventSourceTableDescMap().containsKey(sourceName)) {
+      work.getEventSourceTableDescMap().put(sourceName, new LinkedList<TableDesc>());
+    }
+    List<TableDesc> tables = work.getEventSourceTableDescMap().get(sourceName);
+    tables.add(event.getConf().getTable());
+
+    // store column name in map-work
+    if (!work.getEventSourceColumnNameMap().containsKey(sourceName)) {
+      work.getEventSourceColumnNameMap().put(sourceName, new LinkedList<String>());
+    }
+    List<String> columns = work.getEventSourceColumnNameMap().get(sourceName);
+    columns.add(eventDesc.getTargetColumnName());
+
+    // store partition key expr in map-work
+    if (!work.getEventSourcePartKeyExprMap().containsKey(sourceName)) {
+      work.getEventSourcePartKeyExprMap().put(sourceName, new LinkedList<ExprNodeDesc>());
+    }
+    List<ExprNodeDesc> keys = work.getEventSourcePartKeyExprMap().get(sourceName);
+    keys.add(eventDesc.getPartKey());
+
+  }
+
+  /**
+   * getEncosingWork finds the BaseWork any given operator belongs to.
+   */
+  public BaseWork getEnclosingWork(Operator<?> op, GenTezProcContext procCtx) {
+    List<Operator<?>> ops = new ArrayList<Operator<?>>();
+    findRoots(op, ops);
+    for (Operator<?> r : ops) {
+      BaseWork work = procCtx.rootToWorkMap.get(r);
+      if (work != null) {
+        return work;
+      }
+    }
+    return null;
+  }
+
+  /*
+   * findRoots returns all root operators (in ops) that result in operator op
+   */
+  private void findRoots(Operator<?> op, List<Operator<?>> ops) {
+    List<Operator<?>> parents = op.getParentOperators();
+    if (parents == null || parents.isEmpty()) {
+      ops.add(op);
+      return;
+    }
+    for (Operator<?> p : parents) {
+      findRoots(p, ops);
     }
   }
 }

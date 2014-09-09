@@ -142,7 +142,7 @@ public class TezJobMonitor {
             if (!running) {
               perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_SUBMIT_TO_RUNNING);
               console.printInfo("Status: Running (application id: "
-                +dagClient.getApplicationId()+")\n");
+                +dagClient.getExecutionContext()+")\n");
               for (String s: progressMap.keySet()) {
                 perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_RUN_VERTEX + s);
               }

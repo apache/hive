@@ -54,25 +54,25 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-            Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
               Limit
                 Number of rows: 1
-                Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                 Reduce Output Operator
                   sort order: 
-                  Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
       Reduce Operator Tree:
         Select Operator
-          Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
           Limit
             Number of rows: 1
-            Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
             Select Operator
               expressions: 4 (type: int)
               outputColumnNames: _col0
-              Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
               File Output Operator
                 compressed: false
                 table:
@@ -85,56 +85,56 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             Union
-              Statistics: Num rows: 0 Data size: 23248 Basic stats: PARTIAL Column stats: COMPLETE
+              Statistics: Num rows: 4 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
               Select Operator
                 expressions: _col0 (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 0 Data size: 23248 Basic stats: PARTIAL Column stats: COMPLETE
+                Statistics: Num rows: 4 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 0 Data size: 23248 Basic stats: PARTIAL Column stats: COMPLETE
+                  Statistics: Num rows: 4 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           TableScan
             Union
-              Statistics: Num rows: 0 Data size: 23248 Basic stats: PARTIAL Column stats: COMPLETE
+              Statistics: Num rows: 4 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
               Select Operator
                 expressions: _col0 (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 0 Data size: 23248 Basic stats: PARTIAL Column stats: COMPLETE
+                Statistics: Num rows: 4 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 0 Data size: 23248 Basic stats: PARTIAL Column stats: COMPLETE
+                  Statistics: Num rows: 4 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           TableScan
             Union
-              Statistics: Num rows: 0 Data size: 23248 Basic stats: PARTIAL Column stats: COMPLETE
+              Statistics: Num rows: 4 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
               Select Operator
                 expressions: _col0 (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 0 Data size: 23248 Basic stats: PARTIAL Column stats: COMPLETE
+                Statistics: Num rows: 4 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 0 Data size: 23248 Basic stats: PARTIAL Column stats: COMPLETE
+                  Statistics: Num rows: 4 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           TableScan
             Union
-              Statistics: Num rows: 0 Data size: 23248 Basic stats: PARTIAL Column stats: COMPLETE
+              Statistics: Num rows: 4 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
               Select Operator
                 expressions: _col0 (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 0 Data size: 23248 Basic stats: PARTIAL Column stats: COMPLETE
+                Statistics: Num rows: 4 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 0 Data size: 23248 Basic stats: PARTIAL Column stats: COMPLETE
+                  Statistics: Num rows: 4 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -145,25 +145,25 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-            Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
               Limit
                 Number of rows: 1
-                Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                 Reduce Output Operator
                   sort order: 
-                  Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
       Reduce Operator Tree:
         Select Operator
-          Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
           Limit
             Number of rows: 1
-            Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
             Select Operator
               expressions: 3 (type: int)
               outputColumnNames: _col0
-              Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
               File Output Operator
                 compressed: false
                 table:
@@ -176,25 +176,25 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-            Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
               Limit
                 Number of rows: 1
-                Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                 Reduce Output Operator
                   sort order: 
-                  Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
       Reduce Operator Tree:
         Select Operator
-          Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
           Limit
             Number of rows: 1
-            Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
             Select Operator
               expressions: 1 (type: int)
               outputColumnNames: _col0
-              Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
               File Output Operator
                 compressed: false
                 table:
@@ -210,12 +210,12 @@ STAGE PLANS:
               key expressions: _col0 (type: int)
               sort order: +
               Map-reduce partition columns: _col0 (type: int)
-              Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int)
           outputColumnNames: _col0
-          Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
           File Output Operator
             compressed: false
             table:
@@ -228,25 +228,25 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-            Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
               Limit
                 Number of rows: 1
-                Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                 Reduce Output Operator
                   sort order: 
-                  Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
       Reduce Operator Tree:
         Select Operator
-          Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
           Limit
             Number of rows: 1
-            Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
             Select Operator
               expressions: 2 (type: int)
               outputColumnNames: _col0
-              Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
               File Output Operator
                 compressed: false
                 table:
@@ -262,12 +262,12 @@ STAGE PLANS:
               key expressions: _col0 (type: int)
               sort order: +
               Map-reduce partition columns: _col0 (type: int)
-              Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int)
           outputColumnNames: _col0
-          Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
           File Output Operator
             compressed: false
             table:

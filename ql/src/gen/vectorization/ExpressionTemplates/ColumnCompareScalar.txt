@@ -155,8 +155,8 @@ public class <ClassName> extends VectorExpression {
             VectorExpressionDescriptor.Mode.PROJECTION)
         .setNumArguments(2)
         .setArgumentTypes(
-            VectorExpressionDescriptor.ArgumentType.getType("<OperandType1>"),
-            VectorExpressionDescriptor.ArgumentType.getType("<OperandType2>"))
+            VectorExpressionDescriptor.ArgumentType.getType("<VectorExprArgType1>"),
+            VectorExpressionDescriptor.ArgumentType.getType("<VectorExprArgType2>"))
         .setInputExpressionTypes(
             VectorExpressionDescriptor.InputExpressionType.COLUMN,
             VectorExpressionDescriptor.InputExpressionType.SCALAR).build();

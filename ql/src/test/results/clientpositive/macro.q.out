@@ -27,14 +27,14 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: src
-          Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+          Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: 0.8807970779778823 (type: double)
             outputColumnNames: _col0
-            Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+            Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
             Limit
               Number of rows: 1
-              Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
               ListSink
 
 PREHOOK: query: EXPLAIN EXTENDED SELECT SIGMOID(2) FROM src LIMIT 1
@@ -71,15 +71,15 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: src
-          Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+          Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
           GatherStats: false
           Select Operator
             expressions: 0.8807970779778823 (type: double)
             outputColumnNames: _col0
-            Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+            Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
             Limit
               Number of rows: 1
-              Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
               ListSink
 
 PREHOOK: query: DROP TEMPORARY MACRO SIGMOID
@@ -117,14 +117,14 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: src
-          Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+          Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: 2 (type: int)
             outputColumnNames: _col0
-            Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+            Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
             Limit
               Number of rows: 1
-              Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+              Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
               ListSink
 
 PREHOOK: query: EXPLAIN EXTENDED SELECT FIXED_NUMBER() + 1 FROM src LIMIT 1
@@ -162,15 +162,15 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: src
-          Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+          Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
           GatherStats: false
           Select Operator
             expressions: 2 (type: int)
             outputColumnNames: _col0
-            Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+            Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
             Limit
               Number of rows: 1
-              Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+              Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
               ListSink
 
 PREHOOK: query: DROP TEMPORARY MACRO FIXED_NUMBER
@@ -235,14 +235,14 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: src
-          Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+          Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: 10 (type: int)
             outputColumnNames: _col0
-            Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+            Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
             Limit
               Number of rows: 1
-              Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+              Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
               ListSink
 
 PREHOOK: query: EXPLAIN EXTENDED SELECT SIMPLE_ADD(1, 9) FROM src LIMIT 1
@@ -280,15 +280,15 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: src
-          Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+          Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
           GatherStats: false
           Select Operator
             expressions: 10 (type: int)
             outputColumnNames: _col0
-            Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+            Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
             Limit
               Number of rows: 1
-              Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+              Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
               ListSink
 
 PREHOOK: query: DROP TEMPORARY MACRO SIMPLE_ADD

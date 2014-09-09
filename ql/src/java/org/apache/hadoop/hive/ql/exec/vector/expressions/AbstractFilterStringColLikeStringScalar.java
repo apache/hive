@@ -420,8 +420,8 @@ public abstract class AbstractFilterStringColLikeStringScalar extends VectorExpr
             VectorExpressionDescriptor.Mode.FILTER)
         .setNumArguments(2)
         .setArgumentTypes(
-            VectorExpressionDescriptor.ArgumentType.getType("string"),
-            VectorExpressionDescriptor.ArgumentType.getType("string"))
+            VectorExpressionDescriptor.ArgumentType.STRING_FAMILY,
+            VectorExpressionDescriptor.ArgumentType.STRING_FAMILY)
         .setInputExpressionTypes(
             VectorExpressionDescriptor.InputExpressionType.COLUMN,
             VectorExpressionDescriptor.InputExpressionType.SCALAR).build();

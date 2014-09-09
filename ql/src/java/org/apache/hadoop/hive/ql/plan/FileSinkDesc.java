@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 
 /**
  * FileSinkDesc.
@@ -84,6 +85,10 @@ public class FileSinkDesc extends AbstractOperatorDesc {
 
   private boolean statsCollectRawDataSize;
 
+  // Record what type of write this is.  Default is non-ACID (ie old style).
+  private AcidUtils.Operation writeType = AcidUtils.Operation.NOT_ACID;
+  private long txnId = 0;  // transaction id for this operation
+
   public FileSinkDesc() {
   }
 
@@ -137,6 +142,8 @@ public class FileSinkDesc extends AbstractOperatorDesc {
     ret.setMaxStatsKeyPrefixLength(maxStatsKeyPrefixLength);
     ret.setStatsCollectRawDataSize(statsCollectRawDataSize);
     ret.setDpSortState(dpSortState);
+    ret.setWriteType(writeType);
+    ret.setTransactionId(txnId);
     return (Object) ret;
   }
 
@@ -397,5 +404,21 @@ public class FileSinkDesc extends AbstractOperatorDesc {
 
   public void setDpSortState(DPSortState dpSortState) {
     this.dpSortState = dpSortState;
+  }
+
+  public void setWriteType(AcidUtils.Operation type) {
+    writeType = type;
+  }
+
+  public AcidUtils.Operation getWriteType() {
+    return writeType;
+  }
+
+  public void setTransactionId(long id) {
+    txnId = id;
+  }
+
+  public long getTransactionId() {
+    return txnId;
   }
 }

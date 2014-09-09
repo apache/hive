@@ -289,7 +289,8 @@ public abstract class BaseSemanticAnalyzer {
   }
 
   public static String getUnescapedName(ASTNode tableOrColumnNode, String currentDatabase) {
-    if (tableOrColumnNode.getToken().getType() == HiveParser.TOK_TABNAME) {
+    int tokenType = tableOrColumnNode.getToken().getType();
+    if (tokenType == HiveParser.TOK_TABNAME) {
       // table node
       if (tableOrColumnNode.getChildCount() == 2) {
         String dbName = unescapeIdentifier(tableOrColumnNode.getChild(0).getText());
@@ -301,6 +302,8 @@ public abstract class BaseSemanticAnalyzer {
         return currentDatabase + "." + tableName;
       }
       return tableName;
+    } else if (tokenType == HiveParser.StringLiteral) {
+      return unescapeSQLString(tableOrColumnNode.getText());
     }
     // column node
     return unescapeIdentifier(tableOrColumnNode.getText());
