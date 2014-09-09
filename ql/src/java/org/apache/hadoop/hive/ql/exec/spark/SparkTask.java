@@ -36,7 +36,6 @@ import org.apache.hadoop.hive.ql.exec.spark.session.SparkSessionManagerImpl;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.MapWork;
-import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
 import org.apache.hadoop.hive.ql.plan.UnionWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
@@ -62,7 +61,7 @@ public class SparkTask extends Task<SparkWork> {
     SparkSession sparkSession = null;
     SparkSessionManager sparkSessionManager = null;
     try {
-      configureNumberOfReducers();
+      printConfigInfo();
       sparkSessionManager = SparkSessionManagerImpl.getInstance();
       sparkSession = SessionState.get().getSparkSession();
       
@@ -158,12 +157,7 @@ public class SparkTask extends Task<SparkWork> {
   /**
    * Set the number of reducers for the spark work.
    */
-  private void configureNumberOfReducers() throws IOException {
-    for (BaseWork baseWork : work.getAllWork()) {
-      if (baseWork instanceof ReduceWork) {
-        configureNumberOfReducers((ReduceWork) baseWork);
-      }
-    }
+  private void printConfigInfo() throws IOException {
 
     console.printInfo("In order to change the average load for a reducer (in bytes):");
     console.printInfo("  set " + HiveConf.ConfVars.BYTESPERREDUCER.varname + "=<number>");
@@ -171,33 +165,5 @@ public class SparkTask extends Task<SparkWork> {
     console.printInfo("  set " + HiveConf.ConfVars.MAXREDUCERS.varname + "=<number>");
     console.printInfo("In order to set a constant number of reducers:");
     console.printInfo("  set " + HiveConf.ConfVars.HADOOPNUMREDUCERS + "=<number>");
-  }
-
-  private void configureNumberOfReducers(ReduceWork rWork) throws IOException {
-    // this is a temporary hack to fix things that are not fixed in the compiler
-    Integer numReducersFromWork = rWork == null ? 0 : rWork.getNumReduceTasks();
-
-    if (rWork == null) {
-      console.printInfo("Number of reduce tasks is set to 0 since there's no reduce operator");
-    } else {
-      if (numReducersFromWork >= 0) {
-        console.printInfo("Number of reduce tasks determined at compile time: "
-          + rWork.getNumReduceTasks());
-      } else if (job.getNumReduceTasks() > 0) {
-        int reducers = job.getNumReduceTasks();
-        rWork.setNumReduceTasks(reducers);
-        console.printInfo("Number of reduce tasks not specified. Defaulting to jobconf value of: "
-            + reducers);
-      } else {
-        if (inputSummary == null) {
-          inputSummary = Utilities.getInputSummary(driverContext.getCtx(), work.getMapWork(), null);
-        }
-        int reducers = Utilities.estimateNumberOfReducers(conf, inputSummary, work.getMapWork(),
-          false);
-        rWork.setNumReduceTasks(reducers);
-        console.printInfo("Number of reduce tasks not specified. Estimated from input data size: "
-            + reducers);
-      }
-    }
   }
 }
