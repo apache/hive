@@ -12837,6 +12837,29 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       RelNode gbRel = null;
       QBParseInfo qbp = getQBParseInfo(qb);
 
+      // 0. for GSets, Cube, Rollup, bail from Optiq path.
+      if (!qbp.getDestRollups().isEmpty()
+          || !qbp.getDestGroupingSets().isEmpty()
+          || !qbp.getDestCubes().isEmpty()) {
+        String gbyClause = null;
+        HashMap<String, ASTNode> gbysMap = qbp.getDestToGroupBy();
+        if (gbysMap.size() == 1) {
+          ASTNode gbyAST = gbysMap.entrySet().iterator().next().getValue();
+          gbyClause = SemanticAnalyzer.this.ctx.getTokenRewriteStream()
+              .toString(gbyAST.getTokenStartIndex(),
+                  gbyAST.getTokenStopIndex());
+          gbyClause = "in '" + gbyClause + "'.";
+        } else {
+          gbyClause = ".";
+        }
+        String msg = String.format("Encountered Grouping Set/Cube/Rollup%s"
+            + " Currently we don't support Grouping Set/Cube/Rollup"
+            + " clauses in CBO," + " turn off cbo for these queries.",
+            gbyClause);
+        LOG.debug(msg);
+        throw new OptiqSemanticException(msg);
+      }
+
       // 1. Gather GB Expressions (AST) (GB + Aggregations)
       // NOTE: Multi Insert is not supported
       String detsClauseName = qbp.getClauseNames().iterator().next();
