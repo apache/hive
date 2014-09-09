@@ -332,6 +332,7 @@ having b.p_mfgr not in
   from (select p_mfgr, min(p_retailprice) l, max(p_retailprice) r, avg(p_retailprice) a from part group by p_mfgr) a 
   where min(p_retailprice) = l and r - l > 600
   )
+  order by b.p_mfgr
 ;
 
 -- agg, non corr, having
@@ -344,6 +345,7 @@ having b.p_mfgr not in
   group by p_mfgr
   having max(p_retailprice) - min(p_retailprice) > 600
   )
+  order by b.p_mfgr  
 ;
 
 -- 17. SubQueries In

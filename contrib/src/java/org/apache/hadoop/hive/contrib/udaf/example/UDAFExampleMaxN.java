@@ -19,11 +19,13 @@
 
 package org.apache.hadoop.hive.contrib.udaf.example;
 
+import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDAF;
 
 /**
  * Returns the max N double values.
  */
+@Description(name = "example_max_n", value = "_FUNC_(expr) - Example UDAF that returns the max N double values")
 public class UDAFExampleMaxN extends UDAF {
 
   /**

@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.contrib.udtf.example;
 
 import java.util.ArrayList;
 
+import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
@@ -34,6 +35,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
  * to test outputting of rows on close with lateral view.
  *
  */
+@Description(name = "udtfCount2",
+value = "_FUNC_(col) - UDF outputs the number of rows seen, twice.")
 public class GenericUDTFCount2 extends GenericUDTF {
 
   private transient Integer count = Integer.valueOf(0);

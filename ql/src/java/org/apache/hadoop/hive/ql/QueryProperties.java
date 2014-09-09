@@ -50,6 +50,7 @@ public class QueryProperties {
 
   private int noOfJoins = 0;
   private int noOfOuterJoins = 0;
+  private boolean hasLateralViews;
   
   private boolean multiDestQuery;
   private boolean filterWithSubQuery;
@@ -70,6 +71,14 @@ public class QueryProperties {
 
   public int getOuterJoinCount() {
     return noOfOuterJoins;
+  }
+
+  public void setHasLateralViews(boolean hasLateralViews) {
+    this.hasLateralViews = hasLateralViews;
+  }
+
+  public boolean hasLateralViews() {
+    return hasLateralViews;
   }
 
   public boolean hasGroupBy() {
