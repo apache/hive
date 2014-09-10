@@ -470,10 +470,7 @@ public class SessionState {
    */
   private void createSessionDirs(String userName) throws IOException {
     HiveConf conf = getConf();
-    // First create the root scratch dir on hdfs (if it doesn't already exist) and make it writable
-    Path rootHDFSDirPath = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCHDIR));
-    String rootHDFSDirPermission = "777";
-    createPath(conf, rootHDFSDirPath, rootHDFSDirPermission, false, false);
+    Path rootHDFSDirPath = createRootHDFSDir(conf);
     // Now create session specific dirs
     String scratchDirPermission = HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCHDIRPERMISSION);
     Path path;
@@ -503,6 +500,30 @@ public class SessionState {
     hdfsTmpTableSpace = new Path(hdfsSessionPath, TMP_PREFIX);
     createPath(conf, hdfsTmpTableSpace, scratchDirPermission, false, true);
     conf.set(TMP_TABLE_SPACE_KEY, hdfsTmpTableSpace.toUri().toString());
+  }
+
+  /**
+   * Create the root scratch dir on hdfs (if it doesn't already exist) and make it writable
+   * @param conf
+   * @return
+   * @throws IOException
+   */
+  private Path createRootHDFSDir(HiveConf conf) throws IOException {
+    Path rootHDFSDirPath = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCHDIR));
+    FsPermission expectedHDFSDirPermission = new FsPermission("777");
+    FileSystem fs = rootHDFSDirPath.getFileSystem(conf);
+    if (!fs.exists(rootHDFSDirPath)) {
+      Utilities.createDirsWithPermission(conf, rootHDFSDirPath, expectedHDFSDirPermission, true);
+    }
+    FsPermission currentHDFSDirPermission = fs.getFileStatus(rootHDFSDirPath).getPermission();
+    LOG.debug("HDFS root scratch dir: " + rootHDFSDirPath + ", permission: "
+        + currentHDFSDirPermission);
+    // If the root HDFS scratch dir already exists, make sure the permissions are 777.
+    if (!expectedHDFSDirPermission.equals(fs.getFileStatus(rootHDFSDirPath).getPermission())) {
+      throw new RuntimeException("The root scratch dir: " + rootHDFSDirPath
+          + " on HDFS should be writable. Current permissions are: " + currentHDFSDirPermission);
+    }
+    return rootHDFSDirPath;
   }
 
   /**
