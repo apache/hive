@@ -1,6 +1,8 @@
 set hive.limit.pushdown.memory.usage=0.3f;
 set hive.optimize.reducededuplication.min.reducer=1;
 
+-- SORT_QUERY_RESULTS
+
 -- HIVE-3562 Some limit can be pushed down to map stage
 
 explain

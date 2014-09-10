@@ -1,6 +1,8 @@
-PREHOOK: query: EXPLAIN SELECT count(value) AS c FROM src GROUP BY key HAVING c > 3
+PREHOOK: query: -- SORT_QUERY_RESULTS
+EXPLAIN SELECT count(value) AS c FROM src GROUP BY key HAVING c > 3
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT count(value) AS c FROM src GROUP BY key HAVING c > 3
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+EXPLAIN SELECT count(value) AS c FROM src GROUP BY key HAVING c > 3
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -73,14 +75,14 @@ POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 4
 4
-5
 4
-5
-5
+4
 4
 4
 5
-4
+5
+5
+5
 PREHOOK: query: EXPLAIN SELECT key, max(value) AS c FROM src GROUP BY key HAVING key != 302
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN SELECT key, max(value) AS c FROM src GROUP BY key HAVING key != 302

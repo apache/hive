@@ -16,6 +16,8 @@ set mapred.input.dir.recursive=true;
 -- Since this test creates sub-directories for the output table outputTbl1, it might be easier
 -- to run the test only on hadoop 23
 
+-- SORT_QUERY_RESULTS
+
 create table inputTbl1(key string, val string) stored as textfile;
 create table outputTbl1(key string, values bigint) stored as textfile;
 
