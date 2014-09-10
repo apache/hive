@@ -150,7 +150,9 @@ insert overwrite table over1k_part_buck_sort2_orc partition(t) select si,i,b,f,t
 desc formatted over1k_part_buck_sort2_orc partition(t=27);
 desc formatted over1k_part_buck_sort2_orc partition(t="__HIVE_DEFAULT_PARTITION__");
 
+explain select * from over1k_part_buck_sort2_orc;
 select * from over1k_part_buck_sort2_orc;
+explain select count(*) from over1k_part_buck_sort2_orc;
 select count(*) from over1k_part_buck_sort2_orc;
 
 set hive.optimize.sort.dynamic.partition=true;
@@ -159,5 +161,7 @@ insert overwrite table over1k_part_buck_sort2_orc partition(t) select si,i,b,f,t
 desc formatted over1k_part_buck_sort2_orc partition(t=27);
 desc formatted over1k_part_buck_sort2_orc partition(t="__HIVE_DEFAULT_PARTITION__");
 
+explain select * from over1k_part_buck_sort2_orc;
 select * from over1k_part_buck_sort2_orc;
+explain select count(*) from over1k_part_buck_sort2_orc;
 select count(*) from over1k_part_buck_sort2_orc;

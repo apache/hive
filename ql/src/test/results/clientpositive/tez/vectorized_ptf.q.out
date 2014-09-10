@@ -1779,6 +1779,7 @@ STAGE PLANS:
                   tag: -1
                   value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: int)
                   auto parallelism: true
+            Execution mode: vectorized
         Reducer 4 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -4579,6 +4580,7 @@ STAGE PLANS:
                     TotalFiles: 1
                     GatherStats: false
                     MultiFileSpray: false
+            Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -4826,6 +4828,7 @@ STAGE PLANS:
                     tag: -1
                     value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: double)
                     auto parallelism: true
+            Execution mode: vectorized
         Reducer 3 
             Needs Tagging: false
             Reduce Operator Tree:
