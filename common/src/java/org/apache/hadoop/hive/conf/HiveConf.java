@@ -1710,6 +1710,9 @@ public class HiveConf extends Configuration {
     HIVE_VECTORIZATION_ENABLED("hive.vectorized.execution.enabled", false,
         "This flag should be set to true to enable vectorized mode of query execution.\n" +
         "The default value is false."),
+    HIVE_VECTORIZATION_REDUCE_ENABLED("hive.vectorized.execution.reduce.enabled", true,
+            "This flag should be set to true to enable vectorized mode of the reduce-side of query execution.\n" +
+            "The default value is true."),
     HIVE_VECTORIZATION_GROUPBY_CHECKINTERVAL("hive.vectorized.groupby.checkinterval", 100000,
         "Number of entries added to the group by aggregation hash before a recomputation of average entry size is performed."),
     HIVE_VECTORIZATION_GROUPBY_MAXENTRIES("hive.vectorized.groupby.maxentries", 1000000,
