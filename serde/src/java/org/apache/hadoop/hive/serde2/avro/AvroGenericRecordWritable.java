@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.serde2.avro;
 
+import java.io.ByteArrayInputStream;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.DataOutputStream;
@@ -25,6 +26,7 @@ import java.io.InputStream;
 import java.rmi.server.UID;
 
 import org.apache.avro.Schema;
+import org.apache.avro.file.DataFileStream;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericDatumReader;
 import org.apache.avro.generic.GenericDatumWriter;
@@ -101,6 +103,28 @@ public class AvroGenericRecordWritable implements Writable{
     GenericDatumReader<GenericRecord> gdr = new GenericDatumReader<GenericRecord>(schema);
     record = gdr.read(record, binaryDecoder);
   }
+  
+  public void readFields(byte[] bytes, int offset, int length, Schema writerSchema, Schema readerSchema) throws IOException {
+    fileSchema = writerSchema;
+    record = new GenericData.Record(writerSchema);
+    binaryDecoder =
+        DecoderFactory.get().binaryDecoder(bytes, offset, length - offset,
+	          binaryDecoder);
+    GenericDatumReader<GenericRecord> gdr =
+        new GenericDatumReader<GenericRecord>(writerSchema, readerSchema);
+    record = gdr.read(null, binaryDecoder);
+  }
+
+  public void readFields(byte[] bytes, Schema writerSchema, Schema readerSchema) throws IOException {
+    fileSchema = writerSchema;
+    record = new GenericData.Record(writerSchema);
+    GenericDatumReader<GenericRecord> gdr = new GenericDatumReader<GenericRecord>();
+    gdr.setExpected(readerSchema);
+    ByteArrayInputStream is = new ByteArrayInputStream(bytes);
+    DataFileStream<GenericRecord> dfr = new DataFileStream<GenericRecord>(is, gdr);
+    record = dfr.next(record);
+    dfr.close();
+  }
 
   public UID getRecordReaderID() {
     return recordReaderID;
@@ -117,5 +141,4 @@ public class AvroGenericRecordWritable implements Writable{
   public void setFileSchema(Schema originalSchema) {
     this.fileSchema = originalSchema;
   }
-
 }

@@ -92,6 +92,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
+import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.common.HiveInterruptCallback;
 import org.apache.hadoop.hive.common.HiveInterruptUtils;
 import org.apache.hadoop.hive.common.HiveStatsUtils;
@@ -160,6 +161,7 @@ import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.Serializer;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.io.SequenceFile.CompressionType;
 import org.apache.hadoop.io.Text;
@@ -3419,6 +3421,41 @@ public final class Utilities {
 
       if (op.getChildOperators() != null) {
         ops.addAll(op.getChildOperators());
+      }
+    }
+  }
+
+  public static boolean createDirsWithPermission(Configuration conf, Path mkdirPath,
+      FsPermission fsPermission, boolean recursive) throws IOException {
+    String origUmask = null;
+    LOG.debug("Create dirs " + mkdirPath + " with permission " + fsPermission + " recursive "
+        + recursive);
+    if (recursive) {
+      origUmask = conf.get(FsPermission.UMASK_LABEL);
+      // this umask is required because by default the hdfs mask is 022 resulting in
+      // all parents getting the fsPermission & !(022) permission instead of fsPermission
+      conf.set(FsPermission.UMASK_LABEL, "000");
+    }
+    FileSystem fs = ShimLoader.getHadoopShims().getNonCachedFileSystem(mkdirPath.toUri(), conf);
+    boolean retval = false;
+    try {
+      retval = fs.mkdirs(mkdirPath, fsPermission);
+      resetUmaskInConf(conf, recursive, origUmask);
+    } catch (IOException ioe) {
+      resetUmaskInConf(conf, recursive, origUmask);
+      throw ioe;
+    } finally {
+      IOUtils.closeStream(fs);
+    }
+    return retval;
+  }
+
+  private static void resetUmaskInConf(Configuration conf, boolean unsetUmask, String origUmask) {
+    if (unsetUmask) {
+      if (origUmask != null) {
+        conf.set(FsPermission.UMASK_LABEL, origUmask);
+      } else {
+        conf.unset(FsPermission.UMASK_LABEL);
       }
     }
   }

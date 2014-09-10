@@ -1,0 +1,144 @@
+{
+"protocol": "EmployeeAvro",
+"namespace": "org.apache.hadoop.hive.hbase.avro",
+"types": [
+{
+"type": "enum",
+"name": "Gender",
+"symbols": [
+"MALE",
+"FEMALE"
+]
+},
+{
+"type": "record",
+"name": "HomePhone",
+"fields": [
+{
+"name": "areaCode",
+"type": "long"
+},
+{
+"name": "number",
+"type": "long"
+}
+]
+},
+{
+"type": "record",
+"name": "OfficePhone",
+"fields": [
+{
+"name": "areaCode",
+"type": "long"
+},
+{
+"name": "number",
+"type": "long"
+}
+]
+},
+{
+"type": "record",
+"name": "Address",
+"fields": [
+{
+"name": "address1",
+"type": "string"
+},
+{
+"name": "address2",
+"type": "string"
+},
+{
+"name": "city",
+"type": "string"
+},
+{
+"name": "zipcode",
+"type": "long"
+},
+{
+"name": "county",
+"type": [
+"HomePhone",
+"OfficePhone",
+"string",
+"null"
+]
+},
+{
+"name": "aliases",
+"type": [
+{
+"type": "array",
+"items": "string"
+},
+"null"
+]
+},
+{
+"name": "metadata",
+"type": [
+"null",
+{
+"type": "map",
+"values": "string"
+}
+]
+}
+]
+},
+{
+"type": "record",
+"name": "ContactInfo",
+"fields": [
+{
+"name": "address",
+"type": [
+{
+"type": "array",
+"items": "Address"
+},
+"null"
+]
+},
+{
+"name": "homePhone",
+"type": "HomePhone"
+},
+{
+"name": "officePhone",
+"type": "OfficePhone"
+}
+]
+},
+{
+"type": "record",
+"name": "Employee",
+"fields": [
+{
+"name": "employeeName",
+"type": "string"
+},
+{
+"name": "employeeID",
+"type": "long"
+},
+{
+"name": "age",
+"type": "long"
+},
+{
+"name": "gender",
+"type": "Gender"
+},
+{
+"name": "contactInfo",
+"type": "ContactInfo"
+}
+]
+}
+],
+"messages": { }
+}

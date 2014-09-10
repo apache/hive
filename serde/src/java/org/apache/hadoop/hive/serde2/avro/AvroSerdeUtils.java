@@ -57,6 +57,7 @@ public class AvroSerdeUtils {
   public static final String EXCEPTION_MESSAGE = "Neither " + SCHEMA_LITERAL + " nor "
           + SCHEMA_URL + " specified, can't determine table schema";
   public static final String AVRO_SERDE_SCHEMA = "avro.serde.schema";
+  public static final String SCHEMA_RETRIEVER = "avro.schema.retriever";
 
   /**
    * Determine the schema to that's been provided for Avro serde work.

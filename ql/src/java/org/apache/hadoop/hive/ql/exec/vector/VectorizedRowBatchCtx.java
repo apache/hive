@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.IOPrepareCache;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.Deserializer;
@@ -124,15 +125,20 @@ public class VectorizedRowBatchCtx {
    * Used by non-tablescan operators when they change the vectorization context 
    * @param hiveConf
    * @param fileKey 
-   *          The key on which to retrieve the extra column mapping from the map scratch
+   *          The key on which to retrieve the extra column mapping from the map/reduce scratch
    * @param rowOI
    *          Object inspector that shapes the column types
    */
   public void init(Configuration hiveConf, String fileKey,
       StructObjectInspector rowOI) {
-    columnTypeMap = Utilities
-        .getMapRedWork(hiveConf).getMapWork().getScratchColumnVectorTypes()
-        .get(fileKey);
+    MapredWork mapredWork = Utilities.getMapRedWork(hiveConf);
+    Map<String, Map<Integer, String>> scratchColumnVectorTypes;
+    if (mapredWork.getMapWork() != null) {
+      scratchColumnVectorTypes = mapredWork.getMapWork().getScratchColumnVectorTypes();
+    } else {
+      scratchColumnVectorTypes = mapredWork.getReduceWork().getScratchColumnVectorTypes();
+    }
+    columnTypeMap = scratchColumnVectorTypes.get(fileKey);
     this.rowOI= rowOI;
     this.rawRowOI = rowOI;
   }

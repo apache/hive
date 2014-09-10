@@ -46,6 +46,7 @@ import org.junit.Test;
 public class TestJdbcWithMiniHS2 {
   private static MiniHS2 miniHS2 = null;
   private static Path dataFilePath;
+  private static final String tmpDir = System.getProperty("test.tmp.dir");
 
   private Connection hs2Conn = null;
 
@@ -303,7 +304,7 @@ public class TestJdbcWithMiniHS2 {
    * @throws Exception
    */
   @Test
-  public void testScratchDirs() throws Exception {
+  public void testSessionScratchDirs() throws Exception {
     // Stop HiveServer2
     if (miniHS2.isStarted()) {
       miniHS2.stop();
@@ -314,7 +315,7 @@ public class TestJdbcWithMiniHS2 {
     // 1. Test with doAs=false
     conf.setBoolean("hive.server2.enable.doAs", false);
     // Set a custom prefix for hdfs scratch dir path
-    conf.set("hive.exec.scratchdir", "/tmp/hs2");
+    conf.set("hive.exec.scratchdir", tmpDir + "/hs2");
     // Set a scratch dir permission
     String fsPermissionStr = "700";
     conf.set("hive.scratch.dir.permission", fsPermissionStr);
@@ -326,19 +327,21 @@ public class TestJdbcWithMiniHS2 {
     hs2Conn = getConnection(miniHS2.getJdbcURL(), userName, "password");
     // FS
     FileSystem fs = miniHS2.getLocalFS();
+    FsPermission expectedFSPermission = new FsPermission(HiveConf.getVar(conf,
+        HiveConf.ConfVars.SCRATCHDIRPERMISSION));
 
     // Verify scratch dir paths and permission
     // HDFS scratch dir
     scratchDirPath = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCHDIR) + "/" + userName);
-    verifyScratchDir(conf, fs, scratchDirPath, userName, false);
+    verifyScratchDir(conf, fs, scratchDirPath, expectedFSPermission, userName, false);
 
     // Local scratch dir
     scratchDirPath = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.LOCALSCRATCHDIR));
-    verifyScratchDir(conf, fs, scratchDirPath, userName, true);
+    verifyScratchDir(conf, fs, scratchDirPath, expectedFSPermission, userName, true);
 
     // Downloaded resources dir
     scratchDirPath = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.DOWNLOADED_RESOURCES_DIR));
-    verifyScratchDir(conf, fs, scratchDirPath, userName, true);
+    verifyScratchDir(conf, fs, scratchDirPath, expectedFSPermission, userName, true);
 
     // 2. Test with doAs=true
     // Restart HiveServer2 with doAs=true
@@ -356,15 +359,15 @@ public class TestJdbcWithMiniHS2 {
     // Verify scratch dir paths and permission
     // HDFS scratch dir
     scratchDirPath = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCHDIR) + "/" + userName);
-    verifyScratchDir(conf, fs, scratchDirPath, userName, false);
+    verifyScratchDir(conf, fs, scratchDirPath, expectedFSPermission, userName, false);
 
     // Local scratch dir
     scratchDirPath = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.LOCALSCRATCHDIR));
-    verifyScratchDir(conf, fs, scratchDirPath, userName, true);
+    verifyScratchDir(conf, fs, scratchDirPath, expectedFSPermission, userName, true);
 
     // Downloaded resources dir
     scratchDirPath = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.DOWNLOADED_RESOURCES_DIR));
-    verifyScratchDir(conf, fs, scratchDirPath, userName, true);
+    verifyScratchDir(conf, fs, scratchDirPath, expectedFSPermission, userName, true);
 
     // Test for user "trinity"
     userName = "trinity";
@@ -373,22 +376,61 @@ public class TestJdbcWithMiniHS2 {
     // Verify scratch dir paths and permission
     // HDFS scratch dir
     scratchDirPath = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCHDIR) + "/" + userName);
-    verifyScratchDir(conf, fs, scratchDirPath, userName, false);
+    verifyScratchDir(conf, fs, scratchDirPath, expectedFSPermission, userName, false);
 
     // Local scratch dir
     scratchDirPath = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.LOCALSCRATCHDIR));
-    verifyScratchDir(conf, fs, scratchDirPath, userName, true);
+    verifyScratchDir(conf, fs, scratchDirPath, expectedFSPermission, userName, true);
 
     // Downloaded resources dir
     scratchDirPath = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.DOWNLOADED_RESOURCES_DIR));
-    verifyScratchDir(conf, fs, scratchDirPath, userName, true);
+    verifyScratchDir(conf, fs, scratchDirPath, expectedFSPermission, userName, true);
+  }
+
+  /**
+   * Tests the creation of the root hdfs scratch dir, which should be writable by all (777).
+   *
+   * @throws Exception
+   */
+  @Test
+  public void testRootScratchDir() throws Exception {
+    // Stop HiveServer2
+    if (miniHS2.isStarted()) {
+      miniHS2.stop();
+    }
+    HiveConf conf = new HiveConf();
+    String userName;
+    Path scratchDirPath;
+    conf.set("hive.exec.scratchdir", tmpDir + "/hs2");
+    // Start an instance of HiveServer2 which uses miniMR
+    miniHS2 = new MiniHS2(conf);
+    Map<String, String> confOverlay = new HashMap<String, String>();
+    miniHS2.start(confOverlay);
+    userName = System.getProperty("user.name");
+    hs2Conn = getConnection(miniHS2.getJdbcURL(), userName, "password");
+    // FS
+    FileSystem fs = miniHS2.getLocalFS();
+    FsPermission expectedFSPermission = new FsPermission("777");
+    // Verify scratch dir paths and permission
+    // HDFS scratch dir
+    scratchDirPath = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCHDIR));
+    verifyScratchDir(conf, fs, scratchDirPath, expectedFSPermission, userName, false);
+    // Test with multi-level scratch dir path
+    // Stop HiveServer2
+    if (miniHS2.isStarted()) {
+      miniHS2.stop();
+    }
+    conf.set("hive.exec.scratchdir", tmpDir + "/level1/level2/level3");
+    miniHS2 = new MiniHS2(conf);
+    miniHS2.start(confOverlay);
+    hs2Conn = getConnection(miniHS2.getJdbcURL(), userName, "password");
+    scratchDirPath = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCHDIR));
+    verifyScratchDir(conf, fs, scratchDirPath, expectedFSPermission, userName, false);
   }
 
   private void verifyScratchDir(HiveConf conf, FileSystem fs, Path scratchDirPath,
-      String userName, boolean isLocal) throws Exception {
+      FsPermission expectedFSPermission, String userName, boolean isLocal) throws Exception {
     String dirType = isLocal ? "Local" : "DFS";
-    FsPermission expectedFSPermission = new FsPermission(HiveConf.getVar(conf,
-        HiveConf.ConfVars.SCRATCHDIRPERMISSION));
     assertTrue("The expected " + dirType + " scratch dir does not exist for the user: " +
         userName, fs.exists(scratchDirPath));
     if (fs.exists(scratchDirPath) && !isLocal) {

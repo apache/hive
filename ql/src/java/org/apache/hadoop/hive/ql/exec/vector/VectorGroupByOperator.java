@@ -32,8 +32,11 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
+import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluatorFactory;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.KeyWrapper;
+import org.apache.hadoop.hive.ql.exec.KeyWrapperFactory;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriterFactory;
@@ -47,13 +50,17 @@ import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
+import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.io.DataOutputBuffer;
 
 /**
  * Vectorized GROUP BY operator implementation. Consumes the vectorized input and
  * stores the aggregate operators' intermediate states. Emits row mode output.
  *
  */
-public class VectorGroupByOperator extends GroupByOperator {
+public class VectorGroupByOperator extends GroupByOperator implements VectorizationContextRegion {
 
   private static final Log LOG = LogFactory.getLog(
       VectorGroupByOperator.class.getName());
@@ -70,6 +77,17 @@ public class VectorGroupByOperator extends GroupByOperator {
    */
   private VectorExpression[] keyExpressions;
 
+  private boolean isVectorOutput;
+
+  // Create a new outgoing vectorization context because column name map will change.
+  private VectorizationContext vOutContext = null;
+
+  private String fileKey;
+
+  // The above members are initialized by the constructor and must not be
+  // transient.
+  //---------------------------------------------------------------------------
+
   private transient VectorExpressionWriter[] keyOutputWriters;
 
   /**
@@ -85,11 +103,18 @@ public class VectorGroupByOperator extends GroupByOperator {
 
   private transient Object[] forwardCache;
 
+  private transient VectorizedRowBatch outputBatch;
+  private transient VectorizedRowBatchCtx vrbCtx;
+
+  private transient VectorColumnAssign[] vectorColumnAssign;
+  
   /**
-   * Interface for processing mode: global, hash or streaming
+   * Interface for processing mode: global, hash, unsorted streaming, or group batch
    */
   private static interface IProcessingMode {
     public void initialize(Configuration hconf) throws HiveException;
+    public void startGroup() throws HiveException;
+    public void endGroup() throws HiveException;
     public void processBatch(VectorizedRowBatch batch) throws HiveException;
     public void close(boolean aborted) throws HiveException;
   }
@@ -98,6 +123,15 @@ public class VectorGroupByOperator extends GroupByOperator {
    * Base class for all processing modes
    */
   private abstract class ProcessingModeBase implements IProcessingMode {
+
+    // Overridden and used in sorted reduce group batch processing mode.
+    public void startGroup() throws HiveException {
+      // Do nothing.
+    }
+    public void endGroup() throws HiveException {
+      // Do nothing.
+    }
+
     /**
      * Evaluates the aggregators on the current batch.
      * The aggregationBatchInfo must have been prepared
@@ -170,7 +204,7 @@ public class VectorGroupByOperator extends GroupByOperator {
     @Override
     public void close(boolean aborted) throws HiveException {
       if (!aborted) {
-        flushSingleRow(null, aggregationBuffers);
+        writeSingleRow(null, aggregationBuffers);
       }
     }
   }
@@ -426,7 +460,7 @@ public class VectorGroupByOperator extends GroupByOperator {
       while(iter.hasNext()) {
         Map.Entry<KeyWrapper, VectorAggregationBufferRow> pair = iter.next();
 
-        flushSingleRow((VectorHashKeyWrapper) pair.getKey(), pair.getValue());
+        writeSingleRow((VectorHashKeyWrapper) pair.getKey(), pair.getValue());
 
         if (!all) {
           iter.remove();
@@ -501,20 +535,21 @@ public class VectorGroupByOperator extends GroupByOperator {
         if (numEntriesHashTable > sumBatchSize * minReductionHashAggr) {
           flush(true);
 
-          changeToStreamingMode();
+          changeToUnsortedStreamingMode();
         }
       }
     }
   }
 
   /**
-   * Streaming processing mode. Intermediate values are flushed each time key changes.
-   * In this mode we're relying on the MR shuffle and merge the intermediates in the reduce.
+   * Unsorted streaming processing mode. Each input VectorizedRowBatch may have
+   * a mix of different keys (hence unsorted).  Intermediate values are flushed
+   * each time key changes.
    */
-  private class ProcessingModeStreaming extends ProcessingModeBase {
+  private class ProcessingModeUnsortedStreaming extends ProcessingModeBase {
 
     /** 
-     * The aggreagation buffers used in streaming mode
+     * The aggregation buffers used in streaming mode
      */
     private VectorAggregationBufferRow currentStreamingAggregators;
 
@@ -557,7 +592,7 @@ public class VectorGroupByOperator extends GroupByOperator {
               // Nothing to do
             }
           });
-      LOG.info("using streaming aggregation processing mode");
+      LOG.info("using unsorted streaming aggregation processing mode");
     }
 
     @Override
@@ -601,7 +636,7 @@ public class VectorGroupByOperator extends GroupByOperator {
 
       // Now flush/forward all keys/rows, except the last (current) one
       for (int i = 0; i < flushMark; ++i) {
-        flushSingleRow(keysToFlush[i], rowsToFlush[i]);
+        writeSingleRow(keysToFlush[i], rowsToFlush[i]);
         rowsToFlush[i].reset();
         streamAggregationBufferRowPool.putInPool(rowsToFlush[i]);
       }
@@ -610,7 +645,79 @@ public class VectorGroupByOperator extends GroupByOperator {
     @Override
     public void close(boolean aborted) throws HiveException {
       if (!aborted && null != streamingKey) {
-        flushSingleRow(streamingKey, currentStreamingAggregators);
+        writeSingleRow(streamingKey, currentStreamingAggregators);
+      }
+    }
+  }
+
+  /**
+   * Sorted reduce group batch processing mode. Each input VectorizedRowBatch will have the
+   * same key.  On endGroup (or close), the intermediate values are flushed.
+   */
+  private class ProcessingModeGroupBatches extends ProcessingModeBase {
+
+    private boolean inGroup;
+    private boolean first;
+
+    /**
+     * The group vector key helper.
+     */
+    VectorGroupKeyHelper groupKeyHelper;
+
+    /** 
+     * The group vector aggregation buffers.
+     */
+    private VectorAggregationBufferRow groupAggregators;
+
+    /**
+     * Buffer to hold string values.
+     */
+    private DataOutputBuffer buffer;
+
+    @Override
+    public void initialize(Configuration hconf) throws HiveException {
+      inGroup = false;
+      groupKeyHelper = new VectorGroupKeyHelper(keyExpressions.length);
+      groupKeyHelper.init(keyExpressions);
+      groupAggregators = allocateAggregationBuffer();
+      buffer = new DataOutputBuffer();
+      LOG.info("using sorted group batch aggregation processing mode");
+    }
+
+    @Override
+    public void startGroup() throws HiveException {
+      inGroup = true;
+      first = true;
+    }
+
+    @Override
+    public void endGroup() throws HiveException {
+      if (inGroup && !first) {
+        writeGroupRow(groupAggregators, buffer);
+        groupAggregators.reset();
+      }
+      inGroup = false;
+    }
+
+    @Override
+    public void processBatch(VectorizedRowBatch batch) throws HiveException {
+      assert(inGroup);
+      if (first) {
+        // Copy the group key to output batch now.  We'll copy in the aggregates at the end of the group.
+        first = false;
+        groupKeyHelper.copyGroupKey(batch, outputBatch, buffer);
+      }
+
+      // Aggregate this batch.
+      for (int i = 0; i < aggregators.length; ++i) {
+        aggregators[i].aggregateInput(groupAggregators.getAggregationBuffer(i), batch);
+      }
+    }
+
+    @Override
+    public void close(boolean aborted) throws HiveException {
+      if (!aborted && inGroup && !first) {
+        writeGroupRow(groupAggregators, buffer);
       }
     }
   }
@@ -633,8 +740,20 @@ public class VectorGroupByOperator extends GroupByOperator {
     aggregators = new VectorAggregateExpression[aggrDesc.size()];
     for (int i = 0; i < aggrDesc.size(); ++i) {
       AggregationDesc aggDesc = aggrDesc.get(i);
-      aggregators[i] = vContext.getAggregatorExpression(aggDesc);
+      aggregators[i] = vContext.getAggregatorExpression(aggDesc, desc.getVectorDesc().isReduce());
     }
+    
+    isVectorOutput = desc.getVectorDesc().isVectorOutput();
+
+    List<String> outColNames = desc.getOutputColumnNames();
+    Map<String, Integer> mapOutCols = new HashMap<String, Integer>(outColNames.size());
+    int outColIndex = 0;
+    for(String outCol: outColNames) {
+      mapOutCols.put(outCol,  outColIndex++);
+    }
+    vOutContext = new VectorizationContext(mapOutCols, outColIndex);
+    vOutContext.setFileKey(vContext.getFileKey() + "/_GROUPBY_");
+    fileKey = vOutContext.getFileKey();
   }
 
   public VectorGroupByOperator() {
@@ -662,13 +781,23 @@ public class VectorGroupByOperator extends GroupByOperator {
         objectInspectors.add(aggregators[i].getOutputObjectInspector());
       }
 
-      keyWrappersBatch = VectorHashKeyWrapperBatch.compileKeyWrapperBatch(keyExpressions);
-      aggregationBatchInfo = new VectorAggregationBufferBatch();
-      aggregationBatchInfo.compileAggregationBatchInfo(aggregators);
-
+      if (!conf.getVectorDesc().isVectorGroupBatches()) {
+        // These data structures are only used by the map-side processing modes.
+        keyWrappersBatch = VectorHashKeyWrapperBatch.compileKeyWrapperBatch(keyExpressions);
+        aggregationBatchInfo = new VectorAggregationBufferBatch();
+        aggregationBatchInfo.compileAggregationBatchInfo(aggregators);
+      }
+      LOG.warn("VectorGroupByOperator is vector output " + isVectorOutput);
       List<String> outputFieldNames = conf.getOutputColumnNames();
       outputObjInspector = ObjectInspectorFactory.getStandardStructObjectInspector(
           outputFieldNames, objectInspectors);
+      if (isVectorOutput) {
+          vrbCtx = new VectorizedRowBatchCtx();
+          vrbCtx.init(hconf, fileKey, (StructObjectInspector) outputObjInspector);
+          outputBatch = vrbCtx.createVectorizedRowBatch();
+          vectorColumnAssign = VectorColumnAssignFactory.buildAssigners(
+              outputBatch, outputObjInspector, vOutContext.getColumnMap(), conf.getOutputColumnNames());
+      }
 
     } catch (HiveException he) {
       throw he;
@@ -678,29 +807,40 @@ public class VectorGroupByOperator extends GroupByOperator {
 
     initializeChildren(hconf);
 
-    forwardCache =new Object[keyExpressions.length + aggregators.length];
+    forwardCache = new Object[keyExpressions.length + aggregators.length];
 
     if (keyExpressions.length == 0) {
-      processingMode = this.new ProcessingModeGlobalAggregate();
-    }
-    else {
-      //TODO: consider if parent can offer order guarantees
-      // If input is sorted, is more efficient to use the streaming mode
+        processingMode = this.new ProcessingModeGlobalAggregate();
+    } else if (conf.getVectorDesc().isVectorGroupBatches()) {
+      // Sorted GroupBy of vector batches where an individual batch has the same group key (e.g. reduce).
+      processingMode = this.new ProcessingModeGroupBatches();
+    } else {
+      // We start in hash mode and may dynamically switch to unsorted stream mode.
       processingMode = this.new ProcessingModeHashAggregate();
     }
     processingMode.initialize(hconf);
   }
 
   /**
-   * changes the processing mode to streaming
+   * changes the processing mode to unsorted streaming
    * This is done at the request of the hash agg mode, if the number of keys 
    * exceeds the minReductionHashAggr factor
    * @throws HiveException 
    */
-  private void changeToStreamingMode() throws HiveException {
-    processingMode = this.new ProcessingModeStreaming();
+  private void changeToUnsortedStreamingMode() throws HiveException {
+    processingMode = this.new ProcessingModeUnsortedStreaming();
     processingMode.initialize(null);
     LOG.trace("switched to streaming mode");
+  }
+
+  @Override
+  public void startGroup() throws HiveException {
+    processingMode.startGroup();
+  }
+
+  @Override
+  public void endGroup() throws HiveException {
+    processingMode.endGroup();
   }
 
   @Override
@@ -719,26 +859,72 @@ public class VectorGroupByOperator extends GroupByOperator {
    * @param agg
    * @throws HiveException
    */
-  private void flushSingleRow(VectorHashKeyWrapper kw, VectorAggregationBufferRow agg)
+  private void writeSingleRow(VectorHashKeyWrapper kw, VectorAggregationBufferRow agg)
       throws HiveException {
     int fi = 0;
-    for (int i = 0; i < keyExpressions.length; ++i) {
-      forwardCache[fi++] = keyWrappersBatch.getWritableKeyValue (
-          kw, i, keyOutputWriters[i]);
+    if (!isVectorOutput) {
+      // Output row.
+      for (int i = 0; i < keyExpressions.length; ++i) {
+        forwardCache[fi++] = keyWrappersBatch.getWritableKeyValue (
+            kw, i, keyOutputWriters[i]);
+      }
+      for (int i = 0; i < aggregators.length; ++i) {
+        forwardCache[fi++] = aggregators[i].evaluateOutput(agg.getAggregationBuffer(i));
+      }
+      if (LOG.isDebugEnabled()) {
+        LOG.debug(String.format("forwarding keys: %s: %s",
+            kw, Arrays.toString(forwardCache)));
+      }
+      forward(forwardCache, outputObjInspector);
+    } else {
+      // Output keys and aggregates into the output batch.
+      for (int i = 0; i < keyExpressions.length; ++i) {
+        vectorColumnAssign[fi++].assignObjectValue(keyWrappersBatch.getWritableKeyValue (
+                  kw, i, keyOutputWriters[i]), outputBatch.size);
+      }
+      for (int i = 0; i < aggregators.length; ++i) {
+        vectorColumnAssign[fi++].assignObjectValue(aggregators[i].evaluateOutput(
+                  agg.getAggregationBuffer(i)), outputBatch.size);
+      }
+      ++outputBatch.size;
+      if (outputBatch.size == VectorizedRowBatch.DEFAULT_SIZE) {
+        flushOutput();
+      }
     }
+  }
+
+  /**
+   * Emits a (reduce) group row, made from the key (copied in at the beginning of the group) and
+   * the row aggregation buffers values
+   * @param agg
+   * @param buffer
+   * @throws HiveException
+   */
+  private void writeGroupRow(VectorAggregationBufferRow agg, DataOutputBuffer buffer)
+      throws HiveException {
+    int fi = keyExpressions.length;   // Start after group keys.
     for (int i = 0; i < aggregators.length; ++i) {
-      forwardCache[fi++] = aggregators[i].evaluateOutput(agg.getAggregationBuffer(i));
+      vectorColumnAssign[fi++].assignObjectValue(aggregators[i].evaluateOutput(
+                agg.getAggregationBuffer(i)), outputBatch.size);
     }
-    if (LOG.isDebugEnabled()) {
-      LOG.debug(String.format("forwarding keys: %s: %s",
-          kw, Arrays.toString(forwardCache)));
+    ++outputBatch.size;
+    if (outputBatch.size == VectorizedRowBatch.DEFAULT_SIZE) {
+      flushOutput();
+      buffer.reset();
     }
-    forward(forwardCache, outputObjInspector);
+  }
+
+  private void flushOutput() throws HiveException {
+    forward(outputBatch, null);
+    outputBatch.reset();
   }
 
   @Override
   public void closeOp(boolean aborted) throws HiveException {
     processingMode.close(aborted);
+    if (!aborted && isVectorOutput && outputBatch.size > 0) {
+      flushOutput();
+    }
   }
 
   static public String getOperatorName() {
@@ -761,4 +947,8 @@ public class VectorGroupByOperator extends GroupByOperator {
     this.aggregators = aggregators;
   }
 
+  @Override
+  public VectorizationContext getOuputVectorizationContext() {
+    return vOutContext;
+  }
 }

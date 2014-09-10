@@ -185,7 +185,6 @@ public class QueryProperties {
     return this.filterWithSubQuery;
   }
 
-
   public void clear() {
     hasJoin = false;
     hasGroupBy = false;

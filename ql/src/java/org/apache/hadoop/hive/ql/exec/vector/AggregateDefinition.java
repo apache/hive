@@ -19,16 +19,20 @@
 package org.apache.hadoop.hive.ql.exec.vector;
 
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggregateExpression;
+import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 
 class AggregateDefinition {
+
   private String name;
   private VectorExpressionDescriptor.ArgumentType type;
+  private GroupByDesc.Mode mode;
   private Class<? extends VectorAggregateExpression> aggClass;
 
   AggregateDefinition(String name, VectorExpressionDescriptor.ArgumentType type, 
-            Class<? extends VectorAggregateExpression> aggClass) {
+		  GroupByDesc.Mode mode, Class<? extends VectorAggregateExpression> aggClass) {
     this.name = name;
     this.type = type;
+    this.mode = mode;
     this.aggClass = aggClass;
   }
 
@@ -37,6 +41,9 @@ class AggregateDefinition {
   }
   VectorExpressionDescriptor.ArgumentType getType() {
     return type;
+  }
+  GroupByDesc.Mode getMode() {
+	return mode;
   }
   Class<? extends VectorAggregateExpression> getAggClass() {
     return aggClass;
