@@ -331,6 +331,8 @@ final class SearchArgumentImpl implements SearchArgument {
             return PredicateLeaf.Type.TIMESTAMP;
           case DECIMAL:
             return PredicateLeaf.Type.DECIMAL;
+          case BOOLEAN:
+        	return PredicateLeaf.Type.BOOLEAN;
           default:
         }
       }
@@ -368,6 +370,7 @@ final class SearchArgumentImpl implements SearchArgument {
         case DATE:
         case TIMESTAMP:
         case DECIMAL:
+        case BOOLEAN:
           return lit;
         default:
           throw new IllegalArgumentException("Unknown literal " + getType(lit));
@@ -963,7 +966,8 @@ final class SearchArgumentImpl implements SearchArgument {
           literal instanceof DateWritable ||
           literal instanceof Timestamp ||
           literal instanceof HiveDecimal ||
-          literal instanceof BigDecimal) {
+          literal instanceof BigDecimal ||
+          literal instanceof Boolean) {
         return literal;
       } else if (literal instanceof HiveChar ||
           literal instanceof HiveVarchar) {
@@ -1000,6 +1004,8 @@ final class SearchArgumentImpl implements SearchArgument {
       }else if (literal instanceof HiveDecimal ||
           literal instanceof BigDecimal) {
         return PredicateLeaf.Type.DECIMAL;
+      } else if (literal instanceof Boolean) {
+    	return PredicateLeaf.Type.BOOLEAN;
       }
       throw new IllegalArgumentException("Unknown type for literal " + literal);
     }

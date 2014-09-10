@@ -1351,9 +1351,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         if(harPartitionDir.getUserInfo() != null) {
           authority.append(harPartitionDir.getUserInfo()).append("@");
         }
-        authority.append(harPartitionDir.getHost()).append(":");
+        authority.append(harPartitionDir.getHost());
         if(harPartitionDir.getPort() != -1) {
-          authority.append(harPartitionDir.getPort());
+          authority.append(":").append(harPartitionDir.getPort());
         }
         Path harPath = new Path(harPartitionDir.getScheme(),
             authority.toString(),

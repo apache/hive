@@ -210,14 +210,6 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
       } catch (Exception e) {
         MetaStoreUtils.logAndThrowMetaException(e);
       }
-    } else if (conf.getVar(HiveConf.ConfVars.METASTOREDIRECTORY) != null) {
-      metastoreUris = new URI[1];
-      try {
-        metastoreUris[0] = new URI(conf
-            .getVar(HiveConf.ConfVars.METASTOREDIRECTORY));
-      } catch (URISyntaxException e) {
-        MetaStoreUtils.logAndThrowMetaException(e);
-      }
     } else {
       LOG.error("NOT getting uris from conf");
       throw new MetaException("MetaStoreURIs not found in conf file");
@@ -1289,7 +1281,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     InvalidInputException{
     return client.update_partition_column_statistics(statsObj);
   }
-  
+
   /** {@inheritDoc} */
   public boolean setPartitionColumnStatistics(SetPartitionsStatsRequest request)
     throws NoSuchObjectException, InvalidObjectException, MetaException, TException,
