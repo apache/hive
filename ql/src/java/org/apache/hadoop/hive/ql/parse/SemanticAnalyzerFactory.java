@@ -263,7 +263,7 @@ public final class SemanticAnalyzerFactory {
         return new FunctionSemanticAnalyzer(conf);
 
       case HiveParser.TOK_ANALYZE:
-        return new ColumnStatsSemanticAnalyzer(conf, tree);
+        return new ColumnStatsSemanticAnalyzer(conf);
 
       case HiveParser.TOK_CREATEMACRO:
       case HiveParser.TOK_DROPMACRO:
