@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
+import org.apache.hadoop.hive.ql.optimizer.optiq.OptiqSemanticException;
 import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -211,7 +212,8 @@ public class RexNodeConverter {
     return castExpr;
   }
 
-  private RexNode handleExplicitCast(ExprNodeGenericFuncDesc func, List<RexNode> childRexNodeLst) {
+  private RexNode handleExplicitCast(ExprNodeGenericFuncDesc func,
+    List<RexNode> childRexNodeLst) throws OptiqSemanticException {
     RexNode castExpr = null;
 
     if (childRexNodeLst != null && childRexNodeLst.size() == 1) {
