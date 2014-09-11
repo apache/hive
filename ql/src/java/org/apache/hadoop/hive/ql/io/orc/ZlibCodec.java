@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.io.orc;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.EnumSet;
 import java.util.zip.DataFormatException;
 import java.util.zip.Deflater;
 import java.util.zip.Inflater;
@@ -32,10 +33,24 @@ class ZlibCodec implements CompressionCodec, DirectDecompressionCodec {
 
   private Boolean direct = null;
 
+  private final int level;
+  private final int strategy;
+
+  public ZlibCodec() {
+    level = Deflater.DEFAULT_COMPRESSION;
+    strategy = Deflater.DEFAULT_STRATEGY;
+  }
+
+  private ZlibCodec(int level, int strategy) {
+    this.level = level;
+    this.strategy = strategy;
+  }
+
   @Override
   public boolean compress(ByteBuffer in, ByteBuffer out,
                           ByteBuffer overflow) throws IOException {
-    Deflater deflater = new Deflater(Deflater.DEFAULT_COMPRESSION, true);
+    Deflater deflater = new Deflater(level, true);
+    deflater.setStrategy(strategy);
     int length = in.remaining();
     deflater.setInput(in.array(), in.arrayOffset() + in.position(), length);
     deflater.finish();
@@ -112,5 +127,38 @@ class ZlibCodec implements CompressionCodec, DirectDecompressionCodec {
         .getDirectDecompressor(DirectCompressionType.ZLIB_NOHEADER);
     decompressShim.decompress(in, out);
     out.flip(); // flip for read
+  }
+
+  @Override
+  public CompressionCodec modify(EnumSet<Modifier> modifiers) {
+    int l = this.level;
+    int s = this.strategy;
+
+    for (Modifier m : modifiers) {
+      switch (m) {
+      case BINARY:
+        /* filtered == less LZ77, more huffman */
+        s = Deflater.FILTERED;
+        break;
+      case TEXT:
+        s = Deflater.DEFAULT_STRATEGY;
+        break;
+      case FASTEST:
+        // deflate_fast looking for 8 byte patterns
+        l = Deflater.BEST_SPEED;
+        break;
+      case FAST:
+        // deflate_fast looking for 16 byte patterns
+        l = Deflater.BEST_SPEED + 1;
+        break;
+      case DEFAULT:
+        // deflate_slow looking for 128 byte patterns
+        l = Deflater.DEFAULT_COMPRESSION;
+        break;
+      default:
+        break;
+      }
+    }
+    return new ZlibCodec(l, s);
   }
 }
