@@ -5,6 +5,8 @@ set mapred.min.split.size.per.node=256;
 set mapred.min.split.size.per.rack=256;
 set mapred.max.split.size=256;
 
+-- SORT_QUERY_RESULTS
+
 create table test1(key int, val int);
 
 explain

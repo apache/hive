@@ -39,3 +39,12 @@ and
 d1.label in ('foo', 'bar')
 GROUP BY d1.label
 ORDER BY d1.label;
+
+EXPLAIN 
+SELECT amount FROM agg_01, dim_shops WHERE dim_shops_id = id AND label = 'foo'
+UNION ALL
+SELECT amount FROM agg_01, dim_shops WHERE dim_shops_id = id AND label = 'bar';
+
+SELECT amount FROM agg_01, dim_shops WHERE dim_shops_id = id AND label = 'foo'
+UNION ALL
+SELECT amount FROM agg_01, dim_shops WHERE dim_shops_id = id AND label = 'bar';
