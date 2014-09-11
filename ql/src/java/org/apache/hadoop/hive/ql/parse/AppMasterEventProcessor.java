@@ -56,6 +56,7 @@ public class AppMasterEventProcessor implements NodeProcessor {
     } else {
       events = new ArrayList<AppMasterEventOperator>();
     }
+    events.add(event);
     context.tsToEventMap.put(desc.getTableScan(), events);
     return true;
   }
