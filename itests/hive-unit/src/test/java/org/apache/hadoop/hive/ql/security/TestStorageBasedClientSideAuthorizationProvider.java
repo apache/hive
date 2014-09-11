@@ -85,7 +85,7 @@ public class TestStorageBasedClientSideAuthorizationProvider extends
   protected void assertNoPrivileges(CommandProcessorResponse ret){
     assertNotNull(ret);
     assertFalse(0 == ret.getResponseCode());
-    assertTrue(ret.getErrorMessage().indexOf("not permitted") != -1);
+    assertTrue(ret.getErrorMessage().indexOf("AccessControlException") != -1);
   }
 
 
