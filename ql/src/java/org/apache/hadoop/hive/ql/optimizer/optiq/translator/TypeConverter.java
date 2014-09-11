@@ -17,12 +17,14 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.optiq.translator;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
+import org.apache.hadoop.hive.ql.optimizer.optiq.OptiqSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.optiq.translator.SqlFunctionConverter.HiveToken;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
@@ -68,7 +70,8 @@ public class TypeConverter {
   };
 
   /*********************** Convert Hive Types To Optiq Types ***********************/
-  public static RelDataType getType(RelOptCluster cluster, List<ColumnInfo> cInfoLst) {
+  public static RelDataType getType(RelOptCluster cluster,
+    List<ColumnInfo> cInfoLst) throws OptiqSemanticException {
     RexBuilder rexBuilder = cluster.getRexBuilder();
     RelDataTypeFactory dtFactory = rexBuilder.getTypeFactory();
     List<RelDataType> fieldTypes = new LinkedList<RelDataType>();
@@ -81,7 +84,8 @@ public class TypeConverter {
     return dtFactory.createStructType(fieldTypes, fieldNames);
   }
 
-  public static RelDataType getType(RelOptCluster cluster, RowResolver rr, List<String> neededCols) {
+  public static RelDataType getType(RelOptCluster cluster, RowResolver rr,
+    List<String> neededCols) throws OptiqSemanticException {
     RexBuilder rexBuilder = cluster.getRexBuilder();
     RelDataTypeFactory dtFactory = rexBuilder.getTypeFactory();
     RowSchema rs = rr.getRowSchema();
@@ -97,7 +101,8 @@ public class TypeConverter {
     return dtFactory.createStructType(fieldTypes, fieldNames);
   }
 
-  public static RelDataType convert(TypeInfo type, RelDataTypeFactory dtFactory) {
+  public static RelDataType convert(TypeInfo type, RelDataTypeFactory dtFactory)
+    throws OptiqSemanticException{
     RelDataType convertedType = null;
 
     switch (type.getCategory()) {
@@ -185,31 +190,32 @@ public class TypeConverter {
     return convertedType;
   }
 
-  public static RelDataType convert(ListTypeInfo lstType, RelDataTypeFactory dtFactory) {
+  public static RelDataType convert(ListTypeInfo lstType,
+    RelDataTypeFactory dtFactory) throws OptiqSemanticException {
     RelDataType elemType = convert(lstType.getListElementTypeInfo(), dtFactory);
     return dtFactory.createArrayType(elemType, -1);
   }
 
-  public static RelDataType convert(MapTypeInfo mapType, RelDataTypeFactory dtFactory) {
+  public static RelDataType convert(MapTypeInfo mapType, RelDataTypeFactory dtFactory)
+    throws OptiqSemanticException {
     RelDataType keyType = convert(mapType.getMapKeyTypeInfo(), dtFactory);
     RelDataType valueType = convert(mapType.getMapValueTypeInfo(), dtFactory);
     return dtFactory.createMapType(keyType, valueType);
   }
 
-  public static RelDataType convert(StructTypeInfo structType, final RelDataTypeFactory dtFactory) {
-    List<RelDataType> fTypes = Lists.transform(structType.getAllStructFieldTypeInfos(),
-        new Function<TypeInfo, RelDataType>() {
-          @Override
-          public RelDataType apply(TypeInfo tI) {
-            return convert(tI, dtFactory);
-          }
-        });
+  public static RelDataType convert(StructTypeInfo structType,
+    final RelDataTypeFactory dtFactory) throws OptiqSemanticException {
+    List<RelDataType> fTypes = new ArrayList<RelDataType>(structType.getAllStructFieldTypeInfos().size());
+    for (TypeInfo ti : structType.getAllStructFieldTypeInfos()) {
+      fTypes.add(convert(ti,dtFactory));
+    }
     return dtFactory.createStructType(fTypes, structType.getAllStructFieldNames());
   }
 
-  public static RelDataType convert(UnionTypeInfo unionType, RelDataTypeFactory dtFactory) {
-    // @todo what do we about unions?
-    throw new UnsupportedOperationException();
+  public static RelDataType convert(UnionTypeInfo unionType, RelDataTypeFactory dtFactory)
+    throws OptiqSemanticException{
+    // Union type is not supported in Optiq.
+    throw new OptiqSemanticException("Union type is not supported");
   }
 
   public static TypeInfo convert(RelDataType rType) {
