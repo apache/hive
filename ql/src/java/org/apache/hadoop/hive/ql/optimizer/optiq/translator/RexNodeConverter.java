@@ -129,8 +129,17 @@ public class RexNodeConverter {
   }
 
   private RexNode convert(final ExprNodeFieldDesc fieldDesc) throws SemanticException {
-    return m_cluster.getRexBuilder().makeFieldAccess(convert(fieldDesc.getDesc()),
-      fieldDesc.getFieldName(), true);
+    RexNode rexNode = convert(fieldDesc.getDesc());
+    if (rexNode instanceof RexCall) {
+      // regular case of accessing nested field in a column
+      return m_cluster.getRexBuilder().makeFieldAccess(rexNode,
+          fieldDesc.getFieldName(), true);
+    } else {
+      // This may happen for schema-less tables, where columns are dynamically
+      // supplied by serdes.
+      throw new OptiqSemanticException("Unexpected rexnode : " +
+        rexNode.getClass().getCanonicalName());
+    }
   }
 
   private RexNode convert(final ExprNodeGenericFuncDesc func) throws SemanticException {
