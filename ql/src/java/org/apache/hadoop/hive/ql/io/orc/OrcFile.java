@@ -101,6 +101,10 @@ public final class OrcFile {
     SPEED, COMPRESSION;
   }
 
+  public static enum CompressionStrategy {
+    SPEED, COMPRESSION;
+  }
+
   // Note : these string definitions for table properties are deprecated,
   // and retained only for backward compatibility, please do not add to
   // them, add to OrcTableProperties below instead
@@ -230,6 +234,7 @@ public final class OrcFile {
     private Version versionValue;
     private WriterCallback callback;
     private EncodingStrategy encodingStrategy;
+    private CompressionStrategy compressionStrategy;
     private float paddingTolerance;
 
     WriterOptions(Configuration conf) {
@@ -254,6 +259,15 @@ public final class OrcFile {
       } else {
         encodingStrategy = EncodingStrategy.valueOf(enString);
       }
+
+      String compString = conf
+          .get(HiveConf.ConfVars.HIVE_ORC_COMPRESSION_STRATEGY.varname);
+      if (compString == null) {
+        compressionStrategy = CompressionStrategy.SPEED;
+      } else {
+        compressionStrategy = CompressionStrategy.valueOf(compString);
+      }
+
       paddingTolerance =
           conf.getFloat(HiveConf.ConfVars.HIVE_ORC_BLOCK_PADDING_TOLERANCE.varname,
               HiveConf.ConfVars.HIVE_ORC_BLOCK_PADDING_TOLERANCE.defaultFloatVal);
@@ -403,7 +417,8 @@ public final class OrcFile {
                           opts.bufferSizeValue, opts.rowIndexStrideValue,
                           opts.memoryManagerValue, opts.blockPaddingValue,
                           opts.versionValue, opts.callback,
-                          opts.encodingStrategy, opts.paddingTolerance,
+                          opts.encodingStrategy, opts.compressionStrategy,
+                          opts.paddingTolerance,
                           opts.blockSizeValue);
   }
 
