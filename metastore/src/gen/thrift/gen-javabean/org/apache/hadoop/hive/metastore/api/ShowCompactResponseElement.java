@@ -51,12 +51,12 @@ public class ShowCompactResponseElement implements org.apache.thrift.TBase<ShowC
 
   private String dbname; // required
   private String tablename; // required
-  private String partitionname; // required
+  private String partitionname; // optional
   private CompactionType type; // required
   private String state; // required
-  private String workerid; // required
-  private long start; // required
-  private String runAs; // required
+  private String workerid; // optional
+  private long start; // optional
+  private String runAs; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -144,6 +144,7 @@ public class ShowCompactResponseElement implements org.apache.thrift.TBase<ShowC
   // isset id assignments
   private static final int __START_ISSET_ID = 0;
   private byte __isset_bitfield = 0;
+  private _Fields optionals[] = {_Fields.PARTITIONNAME,_Fields.WORKERID,_Fields.START,_Fields.RUN_AS};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -151,17 +152,17 @@ public class ShowCompactResponseElement implements org.apache.thrift.TBase<ShowC
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.TABLENAME, new org.apache.thrift.meta_data.FieldMetaData("tablename", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.PARTITIONNAME, new org.apache.thrift.meta_data.FieldMetaData("partitionname", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+    tmpMap.put(_Fields.PARTITIONNAME, new org.apache.thrift.meta_data.FieldMetaData("partitionname", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.TYPE, new org.apache.thrift.meta_data.FieldMetaData("type", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, CompactionType.class)));
     tmpMap.put(_Fields.STATE, new org.apache.thrift.meta_data.FieldMetaData("state", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.WORKERID, new org.apache.thrift.meta_data.FieldMetaData("workerid", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+    tmpMap.put(_Fields.WORKERID, new org.apache.thrift.meta_data.FieldMetaData("workerid", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.START, new org.apache.thrift.meta_data.FieldMetaData("start", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+    tmpMap.put(_Fields.START, new org.apache.thrift.meta_data.FieldMetaData("start", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
-    tmpMap.put(_Fields.RUN_AS, new org.apache.thrift.meta_data.FieldMetaData("runAs", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+    tmpMap.put(_Fields.RUN_AS, new org.apache.thrift.meta_data.FieldMetaData("runAs", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(ShowCompactResponseElement.class, metaDataMap);
@@ -173,23 +174,14 @@ public class ShowCompactResponseElement implements org.apache.thrift.TBase<ShowC
   public ShowCompactResponseElement(
     String dbname,
     String tablename,
-    String partitionname,
     CompactionType type,
-    String state,
-    String workerid,
-    long start,
-    String runAs)
+    String state)
   {
     this();
     this.dbname = dbname;
     this.tablename = tablename;
-    this.partitionname = partitionname;
     this.type = type;
     this.state = state;
-    this.workerid = workerid;
-    this.start = start;
-    setStartIsSet(true);
-    this.runAs = runAs;
   }
 
   /**
@@ -622,8 +614,8 @@ public class ShowCompactResponseElement implements org.apache.thrift.TBase<ShowC
         return false;
     }
 
-    boolean this_present_start = true;
-    boolean that_present_start = true;
+    boolean this_present_start = true && this.isSetStart();
+    boolean that_present_start = true && that.isSetStart();
     if (this_present_start || that_present_start) {
       if (!(this_present_start && that_present_start))
         return false;
@@ -677,7 +669,7 @@ public class ShowCompactResponseElement implements org.apache.thrift.TBase<ShowC
     if (present_workerid)
       builder.append(workerid);
 
-    boolean present_start = true;
+    boolean present_start = true && (isSetStart());
     builder.append(present_start);
     if (present_start)
       builder.append(start);
@@ -813,14 +805,16 @@ public class ShowCompactResponseElement implements org.apache.thrift.TBase<ShowC
       sb.append(this.tablename);
     }
     first = false;
-    if (!first) sb.append(", ");
-    sb.append("partitionname:");
-    if (this.partitionname == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.partitionname);
+    if (isSetPartitionname()) {
+      if (!first) sb.append(", ");
+      sb.append("partitionname:");
+      if (this.partitionname == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.partitionname);
+      }
+      first = false;
     }
-    first = false;
     if (!first) sb.append(", ");
     sb.append("type:");
     if (this.type == null) {
@@ -837,26 +831,32 @@ public class ShowCompactResponseElement implements org.apache.thrift.TBase<ShowC
       sb.append(this.state);
     }
     first = false;
-    if (!first) sb.append(", ");
-    sb.append("workerid:");
-    if (this.workerid == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.workerid);
+    if (isSetWorkerid()) {
+      if (!first) sb.append(", ");
+      sb.append("workerid:");
+      if (this.workerid == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.workerid);
+      }
+      first = false;
     }
-    first = false;
-    if (!first) sb.append(", ");
-    sb.append("start:");
-    sb.append(this.start);
-    first = false;
-    if (!first) sb.append(", ");
-    sb.append("runAs:");
-    if (this.runAs == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.runAs);
+    if (isSetStart()) {
+      if (!first) sb.append(", ");
+      sb.append("start:");
+      sb.append(this.start);
+      first = false;
     }
-    first = false;
+    if (isSetRunAs()) {
+      if (!first) sb.append(", ");
+      sb.append("runAs:");
+      if (this.runAs == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.runAs);
+      }
+      first = false;
+    }
     sb.append(")");
     return sb.toString();
   }
@@ -871,28 +871,12 @@ public class ShowCompactResponseElement implements org.apache.thrift.TBase<ShowC
       throw new org.apache.thrift.protocol.TProtocolException("Required field 'tablename' is unset! Struct:" + toString());
     }
 
-    if (!isSetPartitionname()) {
-      throw new org.apache.thrift.protocol.TProtocolException("Required field 'partitionname' is unset! Struct:" + toString());
-    }
-
     if (!isSetType()) {
       throw new org.apache.thrift.protocol.TProtocolException("Required field 'type' is unset! Struct:" + toString());
     }
 
     if (!isSetState()) {
       throw new org.apache.thrift.protocol.TProtocolException("Required field 'state' is unset! Struct:" + toString());
-    }
-
-    if (!isSetWorkerid()) {
-      throw new org.apache.thrift.protocol.TProtocolException("Required field 'workerid' is unset! Struct:" + toString());
-    }
-
-    if (!isSetStart()) {
-      throw new org.apache.thrift.protocol.TProtocolException("Required field 'start' is unset! Struct:" + toString());
-    }
-
-    if (!isSetRunAs()) {
-      throw new org.apache.thrift.protocol.TProtocolException("Required field 'runAs' is unset! Struct:" + toString());
     }
 
     // check for sub-struct validity
@@ -1022,9 +1006,11 @@ public class ShowCompactResponseElement implements org.apache.thrift.TBase<ShowC
         oprot.writeFieldEnd();
       }
       if (struct.partitionname != null) {
-        oprot.writeFieldBegin(PARTITIONNAME_FIELD_DESC);
-        oprot.writeString(struct.partitionname);
-        oprot.writeFieldEnd();
+        if (struct.isSetPartitionname()) {
+          oprot.writeFieldBegin(PARTITIONNAME_FIELD_DESC);
+          oprot.writeString(struct.partitionname);
+          oprot.writeFieldEnd();
+        }
       }
       if (struct.type != null) {
         oprot.writeFieldBegin(TYPE_FIELD_DESC);
@@ -1037,17 +1023,23 @@ public class ShowCompactResponseElement implements org.apache.thrift.TBase<ShowC
         oprot.writeFieldEnd();
       }
       if (struct.workerid != null) {
-        oprot.writeFieldBegin(WORKERID_FIELD_DESC);
-        oprot.writeString(struct.workerid);
+        if (struct.isSetWorkerid()) {
+          oprot.writeFieldBegin(WORKERID_FIELD_DESC);
+          oprot.writeString(struct.workerid);
+          oprot.writeFieldEnd();
+        }
+      }
+      if (struct.isSetStart()) {
+        oprot.writeFieldBegin(START_FIELD_DESC);
+        oprot.writeI64(struct.start);
         oprot.writeFieldEnd();
       }
-      oprot.writeFieldBegin(START_FIELD_DESC);
-      oprot.writeI64(struct.start);
-      oprot.writeFieldEnd();
       if (struct.runAs != null) {
-        oprot.writeFieldBegin(RUN_AS_FIELD_DESC);
-        oprot.writeString(struct.runAs);
-        oprot.writeFieldEnd();
+        if (struct.isSetRunAs()) {
+          oprot.writeFieldBegin(RUN_AS_FIELD_DESC);
+          oprot.writeString(struct.runAs);
+          oprot.writeFieldEnd();
+        }
       }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
@@ -1068,12 +1060,34 @@ public class ShowCompactResponseElement implements org.apache.thrift.TBase<ShowC
       TTupleProtocol oprot = (TTupleProtocol) prot;
       oprot.writeString(struct.dbname);
       oprot.writeString(struct.tablename);
-      oprot.writeString(struct.partitionname);
       oprot.writeI32(struct.type.getValue());
       oprot.writeString(struct.state);
-      oprot.writeString(struct.workerid);
-      oprot.writeI64(struct.start);
-      oprot.writeString(struct.runAs);
+      BitSet optionals = new BitSet();
+      if (struct.isSetPartitionname()) {
+        optionals.set(0);
+      }
+      if (struct.isSetWorkerid()) {
+        optionals.set(1);
+      }
+      if (struct.isSetStart()) {
+        optionals.set(2);
+      }
+      if (struct.isSetRunAs()) {
+        optionals.set(3);
+      }
+      oprot.writeBitSet(optionals, 4);
+      if (struct.isSetPartitionname()) {
+        oprot.writeString(struct.partitionname);
+      }
+      if (struct.isSetWorkerid()) {
+        oprot.writeString(struct.workerid);
+      }
+      if (struct.isSetStart()) {
+        oprot.writeI64(struct.start);
+      }
+      if (struct.isSetRunAs()) {
+        oprot.writeString(struct.runAs);
+      }
     }
 
     @Override
@@ -1083,18 +1097,27 @@ public class ShowCompactResponseElement implements org.apache.thrift.TBase<ShowC
       struct.setDbnameIsSet(true);
       struct.tablename = iprot.readString();
       struct.setTablenameIsSet(true);
-      struct.partitionname = iprot.readString();
-      struct.setPartitionnameIsSet(true);
       struct.type = CompactionType.findByValue(iprot.readI32());
       struct.setTypeIsSet(true);
       struct.state = iprot.readString();
       struct.setStateIsSet(true);
-      struct.workerid = iprot.readString();
-      struct.setWorkeridIsSet(true);
-      struct.start = iprot.readI64();
-      struct.setStartIsSet(true);
-      struct.runAs = iprot.readString();
-      struct.setRunAsIsSet(true);
+      BitSet incoming = iprot.readBitSet(4);
+      if (incoming.get(0)) {
+        struct.partitionname = iprot.readString();
+        struct.setPartitionnameIsSet(true);
+      }
+      if (incoming.get(1)) {
+        struct.workerid = iprot.readString();
+        struct.setWorkeridIsSet(true);
+      }
+      if (incoming.get(2)) {
+        struct.start = iprot.readI64();
+        struct.setStartIsSet(true);
+      }
+      if (incoming.get(3)) {
+        struct.runAs = iprot.readString();
+        struct.setRunAsIsSet(true);
+      }
     }
   }
 

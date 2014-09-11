@@ -1,9 +1,13 @@
-PREHOOK: query: -- HIVE-3562 Some limit can be pushed down to map stage
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+-- HIVE-3562 Some limit can be pushed down to map stage
 
 explain
 select key,value from src order by key limit 20
 PREHOOK: type: QUERY
-POSTHOOK: query: -- HIVE-3562 Some limit can be pushed down to map stage
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+-- HIVE-3562 Some limit can be pushed down to map stage
 
 explain
 select key,value from src order by key limit 20
@@ -136,26 +140,26 @@ POSTHOOK: query: select key,value from src order by key desc limit 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-98	val_98
-98	val_98
-97	val_97
-97	val_97
-96	val_96
-95	val_95
-95	val_95
-92	val_92
-90	val_90
-90	val_90
-90	val_90
-9	val_9
-87	val_87
-86	val_86
-85	val_85
-84	val_84
-84	val_84
-83	val_83
-83	val_83
 82	val_82
+83	val_83
+83	val_83
+84	val_84
+84	val_84
+85	val_85
+86	val_86
+87	val_87
+9	val_9
+90	val_90
+90	val_90
+90	val_90
+92	val_92
+95	val_95
+95	val_95
+96	val_96
+97	val_97
+97	val_97
+98	val_98
+98	val_98
 PREHOOK: query: explain
 select value, sum(key + 1) as sum from src group by value limit 20
 PREHOOK: type: QUERY
@@ -407,26 +411,26 @@ POSTHOOK: query: select distinct(cdouble) from alltypesorc limit 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
-NULL
--16379.0
--16373.0
--16372.0
--16369.0
--16355.0
--16339.0
--16324.0
--16311.0
--16310.0
--16309.0
--16307.0
--16306.0
--16305.0
--16300.0
--16296.0
--16280.0
--16277.0
--16274.0
 -16269.0
+-16274.0
+-16277.0
+-16280.0
+-16296.0
+-16300.0
+-16305.0
+-16306.0
+-16307.0
+-16309.0
+-16310.0
+-16311.0
+-16324.0
+-16339.0
+-16355.0
+-16369.0
+-16372.0
+-16373.0
+-16379.0
+NULL
 PREHOOK: query: explain
 select ctinyint, count(distinct(cdouble)) from alltypesorc group by ctinyint limit 20
 PREHOOK: type: QUERY
@@ -496,26 +500,26 @@ POSTHOOK: query: select ctinyint, count(distinct(cdouble)) from alltypesorc grou
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
-NULL	2932
--64	24
--63	19
--62	27
--61	25
--60	27
--59	31
--58	23
--57	35
--56	36
--55	29
--54	26
--53	22
--52	33
--51	21
--50	30
--49	26
--48	29
--47	22
 -46	24
+-47	22
+-48	29
+-49	26
+-50	30
+-51	21
+-52	33
+-53	22
+-54	26
+-55	29
+-56	36
+-57	35
+-58	23
+-59	31
+-60	27
+-61	25
+-62	27
+-63	19
+-64	24
+NULL	2932
 PREHOOK: query: -- multi distinct
 explain
 select ctinyint, count(distinct(cstring1)), count(distinct(cstring2)) from alltypesorc group by ctinyint limit 20
@@ -587,26 +591,26 @@ POSTHOOK: query: select ctinyint, count(distinct(cstring1)), count(distinct(cstr
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
-NULL	3065	3
--64	3	13
--63	3	16
--62	3	23
--61	3	25
--60	3	25
--59	3	27
--58	3	24
--57	3	23
--56	3	22
--55	3	21
--54	3	21
--53	3	17
--52	3	21
--51	1012	1045
--50	3	25
--49	3	24
--48	3	27
--47	3	23
 -46	3	19
+-47	3	23
+-48	3	27
+-49	3	24
+-50	3	25
+-51	1012	1045
+-52	3	21
+-53	3	17
+-54	3	21
+-55	3	21
+-56	3	22
+-57	3	23
+-58	3	24
+-59	3	27
+-60	3	25
+-61	3	25
+-62	3	23
+-63	3	16
+-64	3	13
+NULL	3065	3
 PREHOOK: query: -- limit zero
 explain
 select key,value from src order by key limit 0
@@ -726,25 +730,25 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 val_0	0.0
-val_2	2.0
-val_4	4.0
-val_8	8.0
-val_9	9.0
 val_10	10.0
 val_11	11.0
-val_5	15.0
-val_17	17.0
-val_19	19.0
-val_20	20.0
 val_12	24.0
+val_15	30.0
+val_17	17.0
+val_18	36.0
+val_19	19.0
+val_2	2.0
+val_20	20.0
 val_27	27.0
 val_28	28.0
 val_30	30.0
-val_15	30.0
 val_33	33.0
 val_34	34.0
-val_18	36.0
+val_4	4.0
 val_41	41.0
+val_5	15.0
+val_8	8.0
+val_9	9.0
 PREHOOK: query: -- subqueries
 explain
 select * from
@@ -1246,102 +1250,102 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 0.0
-200.0
-206.0
-208.0
-105.0
 10.0
-111.0
-226.0
-114.0
-116.0
-236.0
-357.0
+105.0
 11.0
-240.0
-250.0
+111.0
+114.0
+1150.0
+116.0
 126.0
-384.0
-258.0
-24.0
 131.0
 133.0
-268.0
 136.0
-274.0
-552.0
 143.0
 145.0
-292.0
-298.0
 150.0
-304.0
 153.0
 155.0
 156.0
 157.0
 158.0
-30.0
 160.0
 162.0
 163.0
-328.0
-330.0
 166.0
-501.0
 168.0
-676.0
+17.0
 170.0
-344.0
-348.0
-350.0
-352.0
 177.0
 178.0
-358.0
-17.0
 180.0
 181.0
 183.0
 186.0
-561.0
 189.0
-36.0
-190.0
-382.0
-192.0
-579.0
-194.0
-390.0
-196.0
-394.0
-597.0
 19.0
-400.0
+190.0
+192.0
+194.0
+196.0
+20.0
+200.0
 201.0
 202.0
+206.0
+208.0
+214.0
+218.0
+222.0
+226.0
+226.0
+228.0
+235.0
+236.0
+24.0
+240.0
+250.0
+258.0
+268.0
+274.0
+292.0
+298.0
+30.0
+304.0
+328.0
+330.0
+344.0
+348.0
+350.0
+352.0
+357.0
+358.0
+36.0
+382.0
+384.0
+390.0
+394.0
+400.0
 406.0
 410.0
 414.0
-624.0
 418.0
-20.0
 426.0
-214.0
 432.0
 434.0
-218.0
 438.0
 442.0
-222.0
 446.0
 448.0
-226.0
-228.0
 458.0
-1150.0
 466.0
-235.0
 474.0
 476.0
 478.0
+501.0
+552.0
+561.0
+579.0
+597.0
+624.0
+676.0

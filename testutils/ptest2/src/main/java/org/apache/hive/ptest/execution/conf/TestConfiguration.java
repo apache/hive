@@ -55,6 +55,7 @@ public class TestConfiguration {
   private static final String JIRA_USER = "jiraUser";
   private static final String JIRA_PASSWORD = "jiraPassword";
   private static final String JENKINS_URL = "jenkinsURL";
+  private static final String SSH_OPTS = "sshOpts";
   private static final String LOGS_URL = "logsURL";
   private static final String TEST_CASE_PROPERTY_NAME = "testCasePropertyName";
   private static final String BUILD_TOOL = "buildTool";
@@ -75,6 +76,7 @@ public class TestConfiguration {
   private String javaHome;
   private String javaHomeForTests;
   private String branch;
+  private String sshOpts;
   private final String jenkinsURL;
   private final String logsURL;
   private final String jiraUrl;
@@ -122,9 +124,13 @@ public class TestConfiguration {
     jenkinsURL = context.getString(JENKINS_URL, "https://builds.apache.org/job").trim();
     logsURL = context.getString(LOGS_URL, "").trim();
     testCasePropertyName = context.getString(TEST_CASE_PROPERTY_NAME, "testcase").trim();
+    sshOpts = context.getString(SSH_OPTS, "").trim();
   }
   public Context getContext() {
     return context;
+  }
+  public String getSshOpts() {
+    return sshOpts;
   }
   public String getJenkinsURL() {
     return jenkinsURL;

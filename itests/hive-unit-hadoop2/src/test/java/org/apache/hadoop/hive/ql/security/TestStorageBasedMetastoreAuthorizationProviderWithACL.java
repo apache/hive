@@ -154,11 +154,6 @@ public class TestStorageBasedMetastoreAuthorizationProviderWithACL
     allowWriteAccessViaAcl(userName, warehouseDir.toString());
   }
 
-  protected void disallowCreateDatabase(String userName)
-      throws Exception {
-    disallowWriteAccessViaAcl(userName, warehouseDir.toString());
-  }
-
   @Override
   protected void allowCreateInDb(String dbName, String userName, String location)
       throws Exception {
