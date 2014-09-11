@@ -18,9 +18,9 @@
 
 package org.apache.hive.jdbc.miniHS2;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,7 +31,7 @@ import org.apache.hive.service.cli.OperationHandle;
 import org.apache.hive.service.cli.RowSet;
 import org.apache.hive.service.cli.SessionHandle;
 import org.junit.After;
-import org.junit.Assert;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -39,44 +39,60 @@ import org.junit.Test;
 public class TestHiveServer2 {
 
   private static MiniHS2 miniHS2 = null;
-  private Map<String, String> confOverlay;
+  private static Map<String, String> confOverlay;
 
   @BeforeClass
   public static void beforeTest() throws Exception {
     miniHS2 = new MiniHS2(new HiveConf());
-  }
-
-  @Before
-  public void setUp() throws Exception {
     confOverlay = new HashMap<String, String>();
     confOverlay.put(ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
     miniHS2.start(confOverlay);
   }
 
-  @After
-  public void tearDown() throws Exception {
+  @AfterClass
+  public static void afterTest() throws Exception {
     miniHS2.stop();
   }
 
+  @Before
+  public void setUp() throws Exception {
+  }
+
+  @After
+  public void tearDown() throws Exception {
+  }
+
+  /**
+   * Open a new session and run a test query
+   * @throws Exception
+   */
   @Test
   public void testConnection() throws Exception {
-    String tabName = "testTab1";
+    String tableName = "TestHiveServer2TestConnection";
     CLIServiceClient serviceClient = miniHS2.getServiceClient();
     SessionHandle sessHandle = serviceClient.openSession("foo", "bar");
-    serviceClient.executeStatement(sessHandle, "DROP TABLE IF EXISTS tab", confOverlay);
-    serviceClient.executeStatement(sessHandle, "CREATE TABLE " + tabName + " (id INT)", confOverlay);
+    serviceClient.executeStatement(sessHandle, "DROP TABLE IF EXISTS " + tableName, confOverlay);
+    serviceClient.executeStatement(sessHandle, "CREATE TABLE " + tableName + " (id INT)", confOverlay);
     OperationHandle opHandle = serviceClient.executeStatement(sessHandle, "SHOW TABLES", confOverlay);
     RowSet rowSet = serviceClient.fetchResults(opHandle);
     assertFalse(rowSet.numRows() == 0);
+    serviceClient.executeStatement(sessHandle, "DROP TABLE IF EXISTS " + tableName, confOverlay);
+    serviceClient.closeSession(sessHandle);
   }
 
+
+  /**
+   * Open a new session and execute a set command
+   * @throws Exception
+   */
   @Test
   public void testGetVariableValue() throws Exception {
     CLIServiceClient serviceClient = miniHS2.getServiceClient();
     SessionHandle sessHandle = serviceClient.openSession("foo", "bar");
     OperationHandle opHandle = serviceClient.executeStatement(sessHandle, "set system:os.name", confOverlay);
     RowSet rowSet = serviceClient.fetchResults(opHandle);
-    Assert.assertEquals(1, rowSet.numRows());
+    assertEquals(1, rowSet.numRows());
+    serviceClient.closeSession(sessHandle);
   }
 
 }
