@@ -630,12 +630,12 @@ struct ShowCompactRequest {
 struct ShowCompactResponseElement {
     1: required string dbname,
     2: required string tablename,
-    3: required string partitionname,
+    3: optional string partitionname,
     4: required CompactionType type,
     5: required string state,
-    6: required string workerid,
-    7: required i64 start,
-    8: required string runAs,
+    6: optional string workerid,
+    7: optional i64 start,
+    8: optional string runAs,
 }
 
 struct ShowCompactResponse {
