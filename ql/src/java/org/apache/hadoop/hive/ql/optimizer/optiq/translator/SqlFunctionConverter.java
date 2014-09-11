@@ -143,6 +143,12 @@ public class SqlFunctionConverter {
         } else if (op.kind == SqlKind.PLUS_PREFIX) {
           node = (ASTNode) ParseDriver.adaptor.create(HiveParser.PLUS, "PLUS");
         } else {
+          if (op.getName().toUpperCase()
+              .equals(SqlStdOperatorTable.COUNT.getName())
+              && children.size() == 0) {
+            node = (ASTNode) ParseDriver.adaptor.create(
+                HiveParser.TOK_FUNCTIONSTAR, "TOK_FUNCTIONSTAR");
+          }
           node.addChild((ASTNode) ParseDriver.adaptor.create(HiveParser.Identifier, op.getName()));
         }
       }

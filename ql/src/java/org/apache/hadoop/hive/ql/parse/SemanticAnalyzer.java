@@ -216,6 +216,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
@@ -12805,13 +12806,26 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
           // 3.3.1 Get UDAF Evaluator
           Mode amode = groupByDescModeToUDAFMode(GroupByDesc.Mode.COMPLETE, isDistinct);
-          GenericUDAFEvaluator genericUDAFEvaluator = getGenericUDAFEvaluator(aggName,
-              aggParameters, aggAst, isDistinct, isAllColumns);
-          assert (genericUDAFEvaluator != null);
 
-          // 3.3.2 Get UDAF Info using UDAF Evaluator
-          GenericUDAFInfo udaf = getGenericUDAFInfo(genericUDAFEvaluator, amode, aggParameters);
-          udafRetType = udaf.returnType;
+          GenericUDAFEvaluator genericUDAFEvaluator = null;
+          if (aggName.toLowerCase().equals(FunctionRegistry.LEAD_FUNC_NAME)
+              || aggName.toLowerCase().equals(FunctionRegistry.LAG_FUNC_NAME)) {
+            ArrayList<ObjectInspector> originalParameterTypeInfos =
+                getWritableObjectInspector(aggParameters);
+            genericUDAFEvaluator =
+                FunctionRegistry.getGenericWindowingEvaluator(aggName,
+                    originalParameterTypeInfos, isDistinct, isAllColumns);
+            GenericUDAFInfo udaf = getGenericUDAFInfo(genericUDAFEvaluator, amode, aggParameters);
+            udafRetType = ((ListTypeInfo)udaf.returnType).getListElementTypeInfo();
+          } else {
+            genericUDAFEvaluator = getGenericUDAFEvaluator(aggName,
+              aggParameters, aggAst, isDistinct, isAllColumns);
+            assert (genericUDAFEvaluator != null);
+
+            // 3.3.2 Get UDAF Info using UDAF Evaluator
+            GenericUDAFInfo udaf = getGenericUDAFInfo(genericUDAFEvaluator, amode, aggParameters);
+            udafRetType = udaf.returnType;
+          }
         } catch (Exception e) {
           LOG.debug("CBO: Couldn't Obtain UDAF evaluators for " + aggName
               + ", trying to translate to GenericUDF");
