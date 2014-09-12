@@ -27,6 +27,8 @@ import java.util.Set;
 import java.util.Map.Entry;
 
 import org.apache.hadoop.hive.ql.optimizer.optiq.reloperators.HiveJoinRel;
+import org.apache.hadoop.hive.ql.parse.ASTNode;
+import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.eigenbase.rel.RelFactories.ProjectFactory;
 import org.eigenbase.rel.RelNode;
 import org.eigenbase.relopt.RelOptUtil;
@@ -55,7 +57,7 @@ public class HiveOptiqUtil {
   /**
    * Get list of virtual columns from the given list of projections.
    * <p>
-   * 
+   *
    * @param exps
    *          list of rex nodes representing projections
    * @return List of Virtual Columns, will not be null.
@@ -70,6 +72,17 @@ public class HiveOptiqUtil {
     }
 
     return vCols;
+  }
+
+  public static boolean validateASTForCBO (ASTNode ast) {
+    String astTree = ast.toStringTree();
+    String [] tokens = {"TOK_CHARSETLITERAL"};
+    for (String token : tokens) {
+      if (astTree.contains(token)) {
+         return false;
+      }
+    }
+    return true;
   }
 
   public static List<RexNode> getProjsFromBelowAsInputRef(final RelNode rel) {
@@ -98,7 +111,7 @@ public class HiveOptiqUtil {
   /**
    * Push any equi join conditions that are not column references as Projections
    * on top of the children.
-   * 
+   *
    * @param factory
    *          Project factory to use.
    * @param inputRels
@@ -232,7 +245,7 @@ public class HiveOptiqUtil {
    * of equi join keys; the indexes are both in child and Join node schema.<br>
    * 3. Keeps a map of projection indexes that are part of join keys to list of
    * conjuctive elements(JoinLeafPredicateInfo) that uses them.
-   * 
+   *
    */
   public static class JoinPredicateInfo {
     private final ImmutableList<JoinLeafPredicateInfo>                        nonEquiJoinPredicateElements;
