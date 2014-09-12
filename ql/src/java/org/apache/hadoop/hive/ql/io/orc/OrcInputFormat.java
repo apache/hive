@@ -46,6 +46,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
 import org.apache.hadoop.hive.ql.io.AcidInputFormat;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
 import org.apache.hadoop.hive.ql.io.InputFormatChecker;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
 import org.apache.hadoop.hive.ql.io.StatsProvidingRecordReader;
@@ -99,7 +100,8 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
  */
 public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
   InputFormatChecker, VectorizedInputFormatInterface,
-    AcidInputFormat<NullWritable, OrcStruct> {
+    AcidInputFormat<NullWritable, OrcStruct>, 
+    CombineHiveInputFormat.AvoidSplitCombination {
 
   private static final Log LOG = LogFactory.getLog(OrcInputFormat.class);
   static final HadoopShims SHIMS = ShimLoader.getHadoopShims();
@@ -124,6 +126,12 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
    * with 50% will be dropped.
    */
   private static final double MIN_INCLUDED_LOCATION = 0.80;
+
+  @Override
+  public boolean shouldSkipCombine(Path path,
+                                   Configuration conf) throws IOException {
+    return AcidUtils.isAcid(path, conf);
+  }
 
   private static class OrcRecordReader
       implements org.apache.hadoop.mapred.RecordReader<NullWritable, OrcStruct>,
