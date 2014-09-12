@@ -446,12 +446,26 @@ public final class FileUtils {
   public static boolean isLocalFile(HiveConf conf, String fileName) {
     try {
       // do best effor to determine if this is a local file
-      FileSystem fsForFile = FileSystem.get(new URI(fileName), conf);
-      return LocalFileSystem.class.isInstance(fsForFile);
+      return isLocalFile(conf, new URI(fileName));
     } catch (URISyntaxException e) {
       LOG.warn("Unable to create URI from " + fileName, e);
+    }
+    return false;
+  }
+
+  /**
+   * A best effort attempt to determine if if the file is a local file
+   * @param conf
+   * @param fileUri
+   * @return true if it was successfully able to determine that it is a local file
+   */
+  public static boolean isLocalFile(HiveConf conf, URI fileUri) {
+    try {
+      // do best effor to determine if this is a local file
+      FileSystem fsForFile = FileSystem.get(fileUri, conf);
+      return LocalFileSystem.class.isInstance(fsForFile);
     } catch (IOException e) {
-      LOG.warn("Unable to get FileSystem for " + fileName, e);
+      LOG.warn("Unable to get FileSystem for " + fileUri, e);
     }
     return false;
   }
