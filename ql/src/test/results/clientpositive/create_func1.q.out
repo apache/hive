@@ -9,6 +9,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 true	false
+PREHOOK: query: describe function extended qtest_get_java_boolean
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: describe function extended qtest_get_java_boolean
+POSTHOOK: type: DESCFUNCTION
+qtest_get_java_boolean(str) - GenericUDF to return native Java's boolean type
+Synonyms: default.qtest_get_java_boolean
 PREHOOK: query: create database mydb
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:mydb
@@ -28,6 +34,15 @@ PREHOOK: type: SHOWFUNCTIONS
 POSTHOOK: query: show functions mydb.func1
 POSTHOOK: type: SHOWFUNCTIONS
 mydb.func1
+PREHOOK: query: describe function extended mydb.func1
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: describe function extended mydb.func1
+POSTHOOK: type: DESCFUNCTION
+mydb.func1(str) - Returns str with all characters changed to uppercase
+Synonyms: upper, ucase
+Example:
+  > SELECT mydb.func1('Facebook') FROM src LIMIT 1;
+  'FACEBOOK'
 PREHOOK: query: select mydb.func1('abc') from src limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
