@@ -18,23 +18,24 @@
 
 package org.apache.hadoop.hive.ql.exec.spark;
 
+import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.spark.api.java.JavaPairRDD;
 
-public class UnionTran implements SparkTran {
-  JavaPairRDD<BytesWritable, BytesWritable> otherInput;
+public class UnionTran implements SparkTran<HiveKey, HiveKey> {
+  JavaPairRDD<HiveKey, BytesWritable> otherInput;
 
   @Override
-  public JavaPairRDD<BytesWritable, BytesWritable> transform(
-      JavaPairRDD<BytesWritable, BytesWritable> input) {
+  public JavaPairRDD<HiveKey, BytesWritable> transform(
+      JavaPairRDD<HiveKey, BytesWritable> input) {
     return input.union(otherInput);
   }
 
-  public void setOtherInput(JavaPairRDD<BytesWritable, BytesWritable> otherInput) {
+  public void setOtherInput(JavaPairRDD<HiveKey, BytesWritable> otherInput) {
     this.otherInput = otherInput;
   }
 
-  public JavaPairRDD<BytesWritable, BytesWritable> getOtherInput() {
+  public JavaPairRDD<HiveKey, BytesWritable> getOtherInput() {
     return this.otherInput;
   }
 }

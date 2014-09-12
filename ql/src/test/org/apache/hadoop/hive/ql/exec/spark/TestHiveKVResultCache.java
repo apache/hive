@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.exec.spark;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.io.BytesWritable;
 import org.junit.Test;
 import scala.Tuple2;
@@ -31,13 +32,13 @@ public class TestHiveKVResultCache {
     HiveConf conf = new HiveConf();
     HiveKVResultCache cache = new HiveKVResultCache(conf);
 
-    BytesWritable key = new BytesWritable("key".getBytes());
+    HiveKey key = new HiveKey("key".getBytes(), "key".hashCode());
     BytesWritable value = new BytesWritable("value".getBytes());
     cache.add(key, value);
 
     assertTrue("KV result cache should have at least one element", cache.hasNext());
 
-    Tuple2<BytesWritable, BytesWritable> row = cache.next();
+    Tuple2<HiveKey, BytesWritable> row = cache.next();
     assertTrue("Incorrect key", row._1().equals(key));
     assertTrue("Incorrect value", row._2().equals(value));
 
@@ -64,7 +65,7 @@ public class TestHiveKVResultCache {
     for(int i=0; i<numRecords; i++) {
       String key = "key_" + i;
       String value = "value_" + i;
-      cache.add(new BytesWritable(key.getBytes()), new BytesWritable(value.getBytes()));
+      cache.add(new HiveKey(key.getBytes(), key.hashCode()), new BytesWritable(value.getBytes()));
     }
 
     int recordsSeen = 0;
@@ -72,7 +73,7 @@ public class TestHiveKVResultCache {
       String key = "key_" + recordsSeen;
       String value = "value_" + recordsSeen;
 
-      Tuple2<BytesWritable, BytesWritable> row = cache.next();
+      Tuple2<HiveKey, BytesWritable> row = cache.next();
       assertTrue("Unexpected key at position: " + recordsSeen,
           new String(row._1().getBytes()).equals(key));
       assertTrue("Unexpected value at position: " + recordsSeen,

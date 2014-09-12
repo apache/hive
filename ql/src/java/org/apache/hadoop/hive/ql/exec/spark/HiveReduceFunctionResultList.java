@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.exec.spark;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.io.BytesWritable;
 import scala.Tuple2;
 
@@ -25,7 +26,7 @@ import java.io.IOException;
 import java.util.Iterator;
 
 public class HiveReduceFunctionResultList extends
-    HiveBaseFunctionResultList<Tuple2<BytesWritable, Iterable<BytesWritable>>> {
+    HiveBaseFunctionResultList<Tuple2<HiveKey, Iterable<BytesWritable>>> {
   private final SparkReduceRecordHandler reduceRecordHandler;
 
   /**
@@ -35,14 +36,14 @@ public class HiveReduceFunctionResultList extends
    * @param reducer Initialized {@link org.apache.hadoop.hive.ql.exec.mr.ExecReducer} instance.
    */
   public HiveReduceFunctionResultList(Configuration conf,
-      Iterator<Tuple2<BytesWritable, Iterable<BytesWritable>>> inputIterator,
+      Iterator<Tuple2<HiveKey, Iterable<BytesWritable>>> inputIterator,
     SparkReduceRecordHandler reducer) {
     super(conf, inputIterator);
     this.reduceRecordHandler = reducer;
   }
 
   @Override
-  protected void processNextRecord(Tuple2<BytesWritable, Iterable<BytesWritable>> inputRecord)
+  protected void processNextRecord(Tuple2<HiveKey, Iterable<BytesWritable>> inputRecord)
       throws IOException {
     reduceRecordHandler.processRow(inputRecord._1(), inputRecord._2().iterator());
   }

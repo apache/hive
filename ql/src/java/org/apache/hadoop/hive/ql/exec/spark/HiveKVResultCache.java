@@ -21,6 +21,7 @@ import com.google.common.base.Preconditions;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.persistence.RowContainer;
+import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
@@ -72,14 +73,16 @@ public class HiveKVResultCache {
     }
   }
 
-  public void add(BytesWritable key, BytesWritable value) {
+  public void add(HiveKey key, BytesWritable value) {
+    byte[] hiveKeyBytes = KryoSerializer.serialize(key);
+    BytesWritable wrappedHiveKey = new BytesWritable(hiveKeyBytes);
     List<BytesWritable> row = new ArrayList<BytesWritable>(2);
-    row.add(key);
+    row.add(wrappedHiveKey);
     row.add(value);
 
     try {
       container.addRow(row);
-    } catch(HiveException ex) {
+    } catch (HiveException ex) {
       throw new RuntimeException("Failed to add KV pair to RowContainer", ex);
     }
   }
@@ -97,7 +100,7 @@ public class HiveKVResultCache {
     return container.rowCount() > 0 && cursor < container.rowCount();
   }
 
-  public Tuple2<BytesWritable, BytesWritable> next() {
+  public Tuple2<HiveKey, BytesWritable> next() {
     Preconditions.checkState(hasNext());
 
     try {
@@ -108,8 +111,9 @@ public class HiveKVResultCache {
         row = container.next();
       }
       cursor++;
-      return new Tuple2<BytesWritable, BytesWritable>(row.get(0), row.get(1));
-    } catch(HiveException ex) {
+      HiveKey key = KryoSerializer.deserialize(row.get(0).getBytes(), HiveKey.class);
+      return new Tuple2<HiveKey, BytesWritable>(key, row.get(1));
+    } catch (HiveException ex) {
       throw new RuntimeException("Failed to get row from RowContainer", ex);
     }
   }

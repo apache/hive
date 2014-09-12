@@ -18,14 +18,15 @@
 
 package org.apache.hadoop.hive.ql.exec.spark;
 
+import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.spark.api.java.JavaPairRDD;
 
-public class MapTran implements SparkTran {
+public class MapTran implements SparkTran<BytesWritable,HiveKey> {
   private HiveMapFunction mapFunc;
 
   @Override
-  public JavaPairRDD<BytesWritable, BytesWritable> transform(
+  public JavaPairRDD<HiveKey, BytesWritable> transform(
       JavaPairRDD<BytesWritable, BytesWritable> input) {
     return input.mapPartitionsToPair(mapFunc);
   }

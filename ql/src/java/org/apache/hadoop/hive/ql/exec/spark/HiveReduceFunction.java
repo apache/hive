@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.exec.spark;
 import java.util.Iterator;
 
 import org.apache.hadoop.hive.ql.exec.mr.ExecReducer;
+import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.Reporter;
@@ -28,8 +29,8 @@ import org.apache.spark.api.java.function.PairFlatMapFunction;
 
 import scala.Tuple2;
 
-public class HiveReduceFunction implements PairFlatMapFunction<Iterator<Tuple2<BytesWritable,Iterable<BytesWritable>>>,
-BytesWritable, BytesWritable> {
+public class HiveReduceFunction implements PairFlatMapFunction<
+    Iterator<Tuple2<HiveKey, Iterable<BytesWritable>>>, HiveKey, BytesWritable> {
   private static final long serialVersionUID = 1L;
 
   private transient JobConf jobConf;
@@ -41,14 +42,15 @@ BytesWritable, BytesWritable> {
   }
 
   @Override
-  public Iterable<Tuple2<BytesWritable, BytesWritable>>
-  call(Iterator<Tuple2<BytesWritable,Iterable<BytesWritable>>> it) throws Exception {
+  public Iterable<Tuple2<HiveKey, BytesWritable>>
+  call(Iterator<Tuple2<HiveKey, Iterable<BytesWritable>>> it) throws Exception {
     if (jobConf == null) {
       jobConf = KryoSerializer.deserializeJobConf(this.buffer);
     }
 
     SparkReduceRecordHandler reducerRecordhandler = new SparkReduceRecordHandler();
-    HiveReduceFunctionResultList result = new HiveReduceFunctionResultList(jobConf, it, reducerRecordhandler);
+    HiveReduceFunctionResultList result =
+        new HiveReduceFunctionResultList(jobConf, it, reducerRecordhandler);
     reducerRecordhandler.init(jobConf, result, Reporter.NULL);
 
     return result;

@@ -18,12 +18,13 @@
 
 package org.apache.hadoop.hive.ql.exec.spark;
 
+import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.spark.api.java.JavaPairRDD;
 
 public interface SparkShuffler {
 
-  JavaPairRDD<BytesWritable, Iterable<BytesWritable>> shuffle(
-      JavaPairRDD<BytesWritable, BytesWritable> input, int numPartitions);
+  JavaPairRDD<HiveKey, Iterable<BytesWritable>> shuffle(
+      JavaPairRDD<HiveKey, BytesWritable> input, int numPartitions);
 
 }
