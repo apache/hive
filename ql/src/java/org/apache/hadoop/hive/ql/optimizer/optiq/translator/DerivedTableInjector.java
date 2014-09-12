@@ -47,11 +47,7 @@ import org.eigenbase.rex.RexNode;
 public class DerivedTableInjector {
 
   public static RelNode convertOpTree(RelNode rel, List<FieldSchema> resultSchema) {
-    // Disable introducing top level select since Hive seems to have bugs with
-    // OB, Limit in sub query.
-    // RelNode newTopSelect = introduceTopLevelSelectInResultSchema(rel,
-    // resultSchema);
-    RelNode newTopNode = rel;
+    RelNode newTopNode = introduceTopLevelSelectInResultSchema(rel, resultSchema);
 
     // NOTE: Hive requires Union to buried in Project (TOK_QUERY,
     // TOK_SUBQUERY, TOK_UNION)
