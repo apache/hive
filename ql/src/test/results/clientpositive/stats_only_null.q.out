@@ -334,6 +334,60 @@ POSTHOOK: query: select count(*), count(a), count(b), count(c), count(d) from st
 POSTHOOK: type: QUERY
 #### A masked pattern was here ####
 10	8	8	10	10
+PREHOOK: query: drop table stats_null_part
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@stats_null_part
+PREHOOK: Output: default@stats_null_part
+POSTHOOK: query: drop table stats_null_part
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@stats_null_part
+POSTHOOK: Output: default@stats_null_part
+PREHOOK: query: CREATE TABLE stats_null_part(a double, b int, c STRING, d smallint) partitioned by (dt int) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@stats_null_part
+POSTHOOK: query: CREATE TABLE stats_null_part(a double, b int, c STRING, d smallint) partitioned by (dt int) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@stats_null_part
+PREHOOK: query: insert into table stats_null_part partition(dt) select a,b,c,d,b from temps_null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@temps_null
+PREHOOK: Output: default@stats_null_part
+POSTHOOK: query: insert into table stats_null_part partition(dt) select a,b,c,d,b from temps_null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@temps_null
+POSTHOOK: Output: default@stats_null_part@dt=1
+POSTHOOK: Output: default@stats_null_part@dt=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Lineage: stats_null_part PARTITION(dt=1).a SIMPLE [(temps_null)temps_null.FieldSchema(name:a, type:double, comment:null), ]
+POSTHOOK: Lineage: stats_null_part PARTITION(dt=1).b SIMPLE [(temps_null)temps_null.FieldSchema(name:b, type:int, comment:null), ]
+POSTHOOK: Lineage: stats_null_part PARTITION(dt=1).c SIMPLE [(temps_null)temps_null.FieldSchema(name:c, type:string, comment:null), ]
+POSTHOOK: Lineage: stats_null_part PARTITION(dt=1).d SIMPLE [(temps_null)temps_null.FieldSchema(name:d, type:smallint, comment:null), ]
+POSTHOOK: Lineage: stats_null_part PARTITION(dt=__HIVE_DEFAULT_PARTITION__).a SIMPLE [(temps_null)temps_null.FieldSchema(name:a, type:double, comment:null), ]
+POSTHOOK: Lineage: stats_null_part PARTITION(dt=__HIVE_DEFAULT_PARTITION__).b SIMPLE [(temps_null)temps_null.FieldSchema(name:b, type:int, comment:null), ]
+POSTHOOK: Lineage: stats_null_part PARTITION(dt=__HIVE_DEFAULT_PARTITION__).c SIMPLE [(temps_null)temps_null.FieldSchema(name:c, type:string, comment:null), ]
+POSTHOOK: Lineage: stats_null_part PARTITION(dt=__HIVE_DEFAULT_PARTITION__).d SIMPLE [(temps_null)temps_null.FieldSchema(name:d, type:smallint, comment:null), ]
+PREHOOK: query: analyze table stats_null_part compute statistics for columns
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_null_part
+PREHOOK: Input: default@stats_null_part@dt=1
+PREHOOK: Input: default@stats_null_part@dt=__HIVE_DEFAULT_PARTITION__
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table stats_null_part compute statistics for columns
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_null_part
+POSTHOOK: Input: default@stats_null_part@dt=1
+POSTHOOK: Input: default@stats_null_part@dt=__HIVE_DEFAULT_PARTITION__
+#### A masked pattern was here ####
+PREHOOK: query: describe formatted stats_null_part.a partition(dt = 1)
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats_null_part
+POSTHOOK: query: describe formatted stats_null_part.a partition(dt = 1)
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stats_null_part
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+a                   	double              	1.0                 	1.0                 	1                   	1                   	                    	                    	                    	                    	from deserializer   
 PREHOOK: query: drop table stats_null
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@stats_null
