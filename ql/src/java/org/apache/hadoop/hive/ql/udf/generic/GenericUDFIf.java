@@ -77,7 +77,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprVarCharScalarStri
   IfExprCharScalarStringGroupColumn.class, IfExprVarCharScalarStringGroupColumn.class,
   IfExprStringScalarStringScalar.class,
   IfExprStringScalarCharScalar.class, IfExprStringScalarVarCharScalar.class,
-  IfExprCharScalarStringScalar.class, IfExprVarCharScalarStringScalar.class,
+  IfExprCharScalarStringScalar.class, IfExprVarCharScalarStringScalar.class
 })
 public class GenericUDFIf extends GenericUDF {
   private transient ObjectInspector[] argumentOIs;
