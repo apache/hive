@@ -33,7 +33,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 
 public abstract class SparkRecordHandler {
-  private static final Log LOG = LogFactory.getLog(SparkRecordHandler.class);
+  private final Log LOG = LogFactory.getLog(this.getClass());
 
   // used to log memory usage periodically
   protected final MemoryMXBean memoryMXBean = ManagementFactory.getMemoryMXBean();
@@ -83,7 +83,7 @@ public abstract class SparkRecordHandler {
     rowNumber++;
     if (rowNumber == nextLogThreshold) {
       long used_memory = memoryMXBean.getHeapMemoryUsage().getUsed();
-      LOG.info("ExecReducer: processing " + rowNumber
+      LOG.info("processing " + rowNumber
         + " rows: used memory = " + used_memory);
       nextLogThreshold = getNextLogThreshold(rowNumber);
     }
@@ -96,7 +96,7 @@ public abstract class SparkRecordHandler {
    */
   protected void logCloseInfo() {
     long used_memory = memoryMXBean.getHeapMemoryUsage().getUsed();
-    LOG.info("ExecMapper: processed " + rowNumber + " rows: used memory = "
+    LOG.info("processed " + rowNumber + " rows: used memory = "
       + used_memory);
   }
 

@@ -35,25 +35,21 @@ import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 
 public class KryoSerializer {
-  private static final Log LOG = LogFactory.getLog("KryoSerializer");
-  private static final Kryo kryo = Utilities.runtimeSerializationKryo.get();
-
-  static {
-    kryo.register(ExecMapper.class);
-  }
+  private static final Log LOG = LogFactory.getLog(KryoSerializer.class);
 
   public static byte[] serialize(Object object) {
     ByteArrayOutputStream stream = new ByteArrayOutputStream();
     Output output = new Output(stream);
 
-    kryo.writeObject(output, object);
+    Utilities.runtimeSerializationKryo.get().writeObject(output, object);
 
     output.close(); // close() also calls flush()
     return stream.toByteArray();
   }
 
-  public static <T> T deserialize(byte[] buffer,Class<T> clazz)  {
-    return kryo.readObject(new Input(new ByteArrayInputStream(buffer)), clazz);
+  public static <T> T deserialize(byte[] buffer, Class<T> clazz) {
+    return Utilities.runtimeSerializationKryo.get().readObject(
+        new Input(new ByteArrayInputStream(buffer)), clazz);
   }
 
   public static byte[] serializeJobConf(JobConf jobConf) {

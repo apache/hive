@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.spark.api.java.JavaPairRDD;
 
@@ -34,7 +35,8 @@ public class GraphTran {
   private final Set<SparkTran> leafTrans = new HashSet<SparkTran>();
   private final Map<SparkTran, List<SparkTran>> transGraph = new HashMap<SparkTran, List<SparkTran>>();
   private final Map<SparkTran, List<SparkTran>> invertedTransGraph = new HashMap<SparkTran, List<SparkTran>>();
-  private final Map<SparkTran, List<JavaPairRDD<BytesWritable, BytesWritable>>> unionInputs = new HashMap<SparkTran, List<JavaPairRDD<BytesWritable, BytesWritable>>>();
+  private final Map<SparkTran, List<JavaPairRDD<HiveKey, BytesWritable>>> unionInputs =
+      new HashMap<SparkTran, List<JavaPairRDD<HiveKey, BytesWritable>>>();
   private final Map<SparkTran, JavaPairRDD<BytesWritable, BytesWritable>> mapInputs = new HashMap<SparkTran, JavaPairRDD<BytesWritable, BytesWritable>>();
 
   public void addRootTranWithInput(SparkTran tran, JavaPairRDD<BytesWritable, BytesWritable> input) {
@@ -50,7 +52,8 @@ public class GraphTran {
   }
 
   public void execute() throws IllegalStateException {
-    Map<SparkTran, JavaPairRDD<BytesWritable, BytesWritable>> resultRDDs = new HashMap<SparkTran, JavaPairRDD<BytesWritable, BytesWritable>>();
+    Map<SparkTran, JavaPairRDD<HiveKey, BytesWritable>> resultRDDs =
+        new HashMap<SparkTran, JavaPairRDD<HiveKey, BytesWritable>>();
     for (SparkTran tran : rootTrans) {
       // make sure all the root trans are MapTran
       if (!(tran instanceof MapTran)) {
@@ -60,16 +63,16 @@ public class GraphTran {
       if (input == null) {
         throw new IllegalStateException("input is missing for transformation!");
       }
-      JavaPairRDD<BytesWritable, BytesWritable> rdd = tran.transform(input);
+      JavaPairRDD<HiveKey, BytesWritable> rdd = tran.transform(input);
 
       while (getChildren(tran).size() > 0) {
         SparkTran childTran = getChildren(tran).get(0);
         if (childTran instanceof UnionTran) {
-          List<JavaPairRDD<BytesWritable, BytesWritable>> unionInputList = unionInputs
+          List<JavaPairRDD<HiveKey, BytesWritable>> unionInputList = unionInputs
               .get(childTran);
           if (unionInputList == null) {
             // process the first union input RDD, cache it in the hash map
-            unionInputList = new LinkedList<JavaPairRDD<BytesWritable, BytesWritable>>();
+            unionInputList = new LinkedList<JavaPairRDD<HiveKey, BytesWritable>>();
             unionInputList.add(rdd);
             unionInputs.put(childTran, unionInputList);
             break;
@@ -79,7 +82,7 @@ public class GraphTran {
             break;
           } else if (unionInputList.size() == this.getParents(childTran).size() - 1) { // process
             // process the last input RDD
-            for (JavaPairRDD<BytesWritable, BytesWritable> inputRDD : unionInputList) {
+            for (JavaPairRDD<HiveKey, BytesWritable> inputRDD : unionInputList) {
               ((UnionTran) childTran).setOtherInput(inputRDD);
               rdd = childTran.transform(rdd);
             }
@@ -94,7 +97,7 @@ public class GraphTran {
         resultRDDs.put(tran, rdd);
       }
     }
-    for (JavaPairRDD<BytesWritable, BytesWritable> resultRDD : resultRDDs.values()) {
+    for (JavaPairRDD<HiveKey, BytesWritable> resultRDD : resultRDDs.values()) {
       resultRDD.foreach(HiveVoidFunction.getInstance());
     }
   }

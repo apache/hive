@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.exec.spark;
 
 import com.google.common.base.Preconditions;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.mapred.OutputCollector;
 import scala.Tuple2;
@@ -38,7 +39,7 @@ import java.util.NoSuchElementException;
  *     through Iterator interface.
  */
 public abstract class HiveBaseFunctionResultList<T> implements
-    Iterable, OutputCollector<BytesWritable, BytesWritable>, Serializable {
+    Iterable, OutputCollector<HiveKey, BytesWritable>, Serializable {
 
   private final Iterator<T> inputIterator;
   private boolean isClosed = false;
@@ -60,8 +61,16 @@ public abstract class HiveBaseFunctionResultList<T> implements
   }
 
   @Override
-  public void collect(BytesWritable key, BytesWritable value) throws IOException {
-    lastRecordOutput.add(copyBytesWritable(key), copyBytesWritable(value));
+  public void collect(HiveKey key, BytesWritable value) throws IOException {
+    lastRecordOutput.add(copyHiveKey(key), copyBytesWritable(value));
+  }
+
+  private static HiveKey copyHiveKey(HiveKey key) {
+    HiveKey copy = new HiveKey();
+    copy.setDistKeyLength(key.getDistKeyLength());
+    copy.setHashCode(key.hashCode());
+    copy.set(key);
+    return copy;
   }
 
   private static BytesWritable copyBytesWritable(BytesWritable bw) {
@@ -125,7 +134,7 @@ public abstract class HiveBaseFunctionResultList<T> implements
     }
 
     @Override
-    public Tuple2<BytesWritable, BytesWritable> next() {
+    public Tuple2<HiveKey, BytesWritable> next() {
       if (hasNext()) {
         return lastRecordOutput.next();
       }

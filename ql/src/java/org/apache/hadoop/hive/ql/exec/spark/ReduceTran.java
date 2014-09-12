@@ -18,17 +18,18 @@
 
 package org.apache.hadoop.hive.ql.exec.spark;
 
+import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.spark.api.java.JavaPairRDD;
 
-public class ReduceTran implements SparkTran {
+public class ReduceTran implements SparkTran<HiveKey, HiveKey> {
   private SparkShuffler shuffler;
   private HiveReduceFunction reduceFunc;
   private int numPartitions;
 
   @Override
-  public JavaPairRDD<BytesWritable, BytesWritable> transform(
-      JavaPairRDD<BytesWritable, BytesWritable> input) {
+  public JavaPairRDD<HiveKey, BytesWritable> transform(
+      JavaPairRDD<HiveKey, BytesWritable> input) {
     return shuffler.shuffle(input, numPartitions).mapPartitionsToPair(reduceFunc);
   }
 
