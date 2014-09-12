@@ -608,7 +608,7 @@ public class SessionState {
       hdfsSessionPath.getFileSystem(conf).delete(hdfsSessionPath, true);
     }
     if (localSessionPath != null) {
-      localSessionPath.getFileSystem(conf).delete(localSessionPath, true);
+      FileSystem.getLocal(conf).delete(localSessionPath, true);
     }
   }
 
