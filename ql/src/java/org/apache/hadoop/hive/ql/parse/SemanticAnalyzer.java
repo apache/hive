@@ -12496,6 +12496,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         List<ASTNode> subQueries = SubQueryUtils.findSubQueries(clonedSearchCond);
 
         RowResolver inputRR = relToHiveRR.get(srcRel);
+        RowResolver outerQBRR = inputRR;
+        ImmutableMap<String, Integer> outerQBPosMap =
+            relToHiveColNameOptiqPosMap.get(srcRel);
 
         for (int i = 0; i < subQueries.size(); i++) {
           ASTNode subQueryAST = subQueries.get(i);
@@ -12586,6 +12589,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             srcRel = projectLeftOuterSide(srcRel, numSrcColumns);
           }
         }
+        relToHiveRR.put(srcRel, outerQBRR);
+        relToHiveColNameOptiqPosMap.put(srcRel, outerQBPosMap);
         return srcRel;
       }
 
