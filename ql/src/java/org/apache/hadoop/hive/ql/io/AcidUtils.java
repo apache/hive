@@ -311,7 +311,7 @@ public class AcidUtils {
       String filename = file.getPath().getName();
       if (filename.startsWith(BASE_PREFIX) ||
           filename.startsWith(DELTA_PREFIX)) {
-        if (file.isDirectory()) {
+        if (file.isDir()) {
           return true;
         }
       }
