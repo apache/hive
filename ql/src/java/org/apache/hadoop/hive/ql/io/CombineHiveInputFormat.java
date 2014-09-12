@@ -33,6 +33,7 @@ import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -264,8 +265,8 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
   /**
    * Create Hive splits based on CombineFileSplit.
    */
-  @Override
-  public InputSplit[] getSplits(JobConf job, int numSplits) throws IOException {
+  private InputSplit[] getCombineSplits(JobConf job,
+                                        int numSplits) throws IOException {
     PerfLogger perfLogger = PerfLogger.getPerfLogger();
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.GET_SPLITS);
     init(job);
@@ -274,17 +275,6 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
       mrwork.getAliasToWork();
     CombineFileInputFormatShim combine = ShimLoader.getHadoopShims()
         .getCombineFileInputFormat();
-    
-    // on tez we're avoiding duplicating path info since the info will go over
-    // rpc
-    if (HiveConf.getVar(job, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) {
-      try {
-        List<Path> dirs = Utilities.getInputPathsTez(job, mrwork);
-        Utilities.setInputPaths(job, dirs);
-      } catch (Exception e) {
-        throw new IOException("Could not create input paths", e);
-      }
-    }
 
     InputSplit[] splits = null;
     if (combine == null) {
@@ -327,13 +317,6 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
         // ignore
       }
       FileSystem inpFs = path.getFileSystem(job);
-      if (inputFormatClass.isAssignableFrom(OrcInputFormat.class)) {
-        if (inpFs.exists(new Path(path, OrcRecordUpdater.ACID_FORMAT))) {
-          throw new IOException("CombineHiveInputFormat is incompatible " +
-            " with ACID tables. Please set hive.input.format=" +
-              "org.apache.hadoop.hive.ql.io.HiveInputFormat");
-        }
-      }
 
       // Since there is no easy way of knowing whether MAPREDUCE-1597 is present in the tree or not,
       // we use a configuration variable for the same
@@ -459,6 +442,82 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
     LOG.info("number of splits " + result.size());
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.GET_SPLITS);
     return result.toArray(new CombineHiveInputSplit[result.size()]);
+  }
+
+  /**
+   * Create Hive splits based on CombineFileSplit.
+   */
+  @Override
+  public InputSplit[] getSplits(JobConf job, int numSplits) throws IOException {
+    init(job);
+    Map<String, ArrayList<String>> pathToAliases = mrwork.getPathToAliases();
+    Map<String, Operator<? extends OperatorDesc>> aliasToWork =
+        mrwork.getAliasToWork();
+
+    ArrayList<InputSplit> result = new ArrayList<InputSplit>();
+
+    Path[] paths = getInputPaths(job);
+
+    List<Path> nonCombinablePaths = new ArrayList<Path>(paths.length / 2);
+    List<Path> combinablePaths = new ArrayList<Path>(paths.length / 2);
+
+    for (Path path : paths) {
+
+      PartitionDesc part =
+          HiveFileFormatUtils.getPartitionDescFromPathRecursively(
+              pathToPartitionInfo, path,
+              IOPrepareCache.get().allocatePartitionDescMap());
+
+      // Use HiveInputFormat if any of the paths is not splittable
+      Class inputFormatClass = part.getInputFileFormatClass();
+      String inputFormatClassName = inputFormatClass.getName();
+      InputFormat inputFormat = getInputFormatFromCache(inputFormatClass, job);
+      if (inputFormat instanceof AvoidSplitCombination &&
+          ((AvoidSplitCombination) inputFormat).shouldSkipCombine(path, job)) {
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("The split [" + path +
+              "] is being parked for HiveInputFormat.getSplits");
+        }
+        nonCombinablePaths.add(path);
+      } else {
+        combinablePaths.add(path);
+      }
+    }
+
+    // Store the previous value for the path specification
+    String oldPaths = job.get(HiveConf.ConfVars.HADOOPMAPREDINPUTDIR.varname);
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("The received input paths are: [" + oldPaths +
+          "] against the property "
+          + HiveConf.ConfVars.HADOOPMAPREDINPUTDIR.varname);
+    }
+
+    // Process the normal splits
+    if (nonCombinablePaths.size() > 0) {
+      FileInputFormat.setInputPaths(job, nonCombinablePaths.toArray
+          (new Path[nonCombinablePaths.size()]));
+      InputSplit[] splits = super.getSplits(job, numSplits);
+      for (InputSplit split : splits) {
+        result.add(split);
+      }
+    }
+
+    // Process the combine splits
+    if (combinablePaths.size() > 0) {
+      FileInputFormat.setInputPaths(job, combinablePaths.toArray
+          (new Path[combinablePaths.size()]));
+      InputSplit[] splits = getCombineSplits(job, numSplits);
+      for (InputSplit split : splits) {
+        result.add(split);
+      }
+    }
+
+    // Restore the old path information back
+    // This is just to prevent incompatibilities with previous versions Hive
+    // if some application depends on the original value being set.
+    job.set(HiveConf.ConfVars.HADOOPMAPREDINPUTDIR.varname, oldPaths);
+    LOG.info("Number of all splits " + result.size());
+    return result.toArray(new InputSplit[result.size()]);
   }
 
   private void processPaths(JobConf job, CombineFileInputFormatShim combine,
@@ -634,5 +693,13 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
       }
       return s.toString();
     }
+  }
+
+    /**
+     * This is a marker interface that is used to identify the formats where
+     * combine split generation is not applicable
+     */
+  public interface AvoidSplitCombination {
+    boolean shouldSkipCombine(Path path, Configuration conf) throws IOException;
   }
 }
