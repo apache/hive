@@ -9581,7 +9581,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           || ast.getToken().getType() == HiveParser.TOK_EXPLAIN;
       if (!tokenTypeIsQuery || createVwDesc != null
           || !HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_CBO_ENABLED)
-          || !canHandleQuery(qb, true)) {
+          || !canHandleQuery(qb, true) || !HiveOptiqUtil.validateASTForCBO(ast)) {
         runCBO = false;
       }
 
@@ -12351,7 +12351,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       HiveTableScanRel tableRel = null;
 
       try {
-        
+
         // 0. If the table has a Sample specified, bail from Optiq path.
         if ( qb.getParseInfo().getTabSample(tableAlias) != null ||
             SemanticAnalyzer.this.nameToSplitSample.containsKey(tableAlias)) {
@@ -12361,7 +12361,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           LOG.debug(msg);
           throw new OptiqSemanticException(msg);
         }
-        
+
         // 1. Get Table Alias
         String alias_id = getAliasId(tableAlias, qb);
 
