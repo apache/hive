@@ -152,7 +152,9 @@ public class RexNodeConverter {
     List<RexNode> childRexNodeLst = new LinkedList<RexNode>();
     Builder<RelDataType> argTypeBldr = ImmutableList.<RelDataType> builder();
 
-    // TODO: 1) Expand to other functions as needed 2) What about types other than primitive.
+    // TODO: 1) Expand to other functions as needed 2) What about types
+    // other
+    // than primitive
     if (func.getGenericUDF() instanceof GenericUDFBaseNumeric) {
       tgtDT = func.getTypeInfo();
     } else if (func.getGenericUDF() instanceof GenericUDFBaseCompare) {
@@ -181,8 +183,8 @@ public class RexNodeConverter {
     if (expr == null) {
       retType = (expr != null) ? expr.getType() : TypeConverter.convert(func.getTypeInfo(),
           m_cluster.getTypeFactory());
-      SqlOperator optiqOp = SqlFunctionConverter.getOptiqOperator(
-          func.getFuncText(), func.getGenericUDF(), argTypeBldr.build(), retType);
+      SqlOperator optiqOp = SqlFunctionConverter.getOptiqOperator(func.getGenericUDF(),
+          argTypeBldr.build(), retType);
       expr = m_cluster.getRexBuilder().makeCall(optiqOp, childRexNodeLst);
     } else {
       retType = expr.getType();
