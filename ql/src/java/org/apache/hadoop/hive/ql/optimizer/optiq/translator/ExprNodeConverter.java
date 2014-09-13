@@ -17,7 +17,9 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.optiq.translator;
 
+import java.sql.Date;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -70,7 +72,7 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
   @Override
   public ExprNodeDesc visitCall(RexCall call) {
     ExprNodeGenericFuncDesc gfDesc = null;
-    
+
     if (!deep) {
       return null;
     }
@@ -130,7 +132,8 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
       return new ExprNodeConstantDesc(TypeInfoFactory.doubleTypeInfo,
           Double.valueOf(((Number) literal.getValue3()).doubleValue()));
     case DATE:
-      return new ExprNodeConstantDesc(TypeInfoFactory.dateTypeInfo, literal.getValue3());
+      return new ExprNodeConstantDesc(TypeInfoFactory.dateTypeInfo,
+        new Date(((Calendar)literal.getValue()).getTimeInMillis()));
     case TIMESTAMP:
       return new ExprNodeConstantDesc(TypeInfoFactory.timestampTypeInfo, literal.getValue3());
     case BINARY:
