@@ -147,10 +147,10 @@ public class TestCompactor {
     execSelectAndDumpData("select * from " + tblNameStg, driver, "Dumping data for " +
       tblNameStg + " after load:");
     executeStatementOnDriver("FROM " + tblNameStg +
-      " INSERT OVERWRITE TABLE " + tblName + " PARTITION(bkt=0) " +
+      " INSERT INTO TABLE " + tblName + " PARTITION(bkt=0) " +
       "SELECT a, b where a < 2", driver);
     executeStatementOnDriver("FROM " + tblNameStg +
-      " INSERT OVERWRITE TABLE " + tblName + " PARTITION(bkt=1) " +
+      " INSERT INTO TABLE " + tblName + " PARTITION(bkt=1) " +
       "SELECT a, b where a >= 2", driver);
     execSelectAndDumpData("select * from " + tblName, driver, "Dumping data for " +
       tblName + " after load:");

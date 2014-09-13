@@ -27,6 +27,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.HiveStatsUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.ql.Context;
@@ -35,6 +36,7 @@ import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
 import org.apache.hadoop.hive.ql.exec.mr.MapredLocalTask;
 import org.apache.hadoop.hive.ql.hooks.LineageInfo.DataContainer;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.merge.MergeFileTask;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLock;
@@ -285,7 +287,8 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
           dc = new DataContainer(table.getTTable());
           db.loadTable(tbd.getSourcePath(), tbd.getTable()
               .getTableName(), tbd.getReplace(), tbd.getHoldDDLTime(), work.isSrcLocal(),
-              isSkewedStoredAsDirs(tbd));
+              isSkewedStoredAsDirs(tbd),
+              work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID);
           if (work.getOutputs() != null) {
             work.getOutputs().add(new WriteEntity(table,
                 (tbd.getReplace() ? WriteEntity.WriteType.INSERT_OVERWRITE :
@@ -365,7 +368,8 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
                 tbd.getReplace(),
                 dpCtx.getNumDPCols(),
                 tbd.getHoldDDLTime(),
-                isSkewedStoredAsDirs(tbd));
+                isSkewedStoredAsDirs(tbd),
+                work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID);
 
             if (dp.size() == 0 && conf.getBoolVar(HiveConf.ConfVars.HIVE_ERROR_ON_EMPTY_PARTITION)) {
               throw new HiveException("This query creates no partitions." +
@@ -400,7 +404,10 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
               // update columnar lineage for each partition
               dc = new DataContainer(table.getTTable(), partn.getTPartition());
 
-              if (SessionState.get() != null) {
+              // Don't set lineage on delete as we don't have all the columns
+              if (SessionState.get() != null &&
+                  work.getLoadTableWork().getWriteType() != AcidUtils.Operation.DELETE &&
+                  work.getLoadTableWork().getWriteType() != AcidUtils.Operation.UPDATE) {
                 SessionState.get().getLineageState().setLineage(tbd.getSourcePath(), dc,
                     table.getCols());
               }
@@ -414,7 +421,8 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
             db.validatePartitionNameCharacters(partVals);
             db.loadPartition(tbd.getSourcePath(), tbd.getTable().getTableName(),
                 tbd.getPartitionSpec(), tbd.getReplace(), tbd.getHoldDDLTime(),
-                tbd.getInheritTableSpecs(), isSkewedStoredAsDirs(tbd), work.isSrcLocal());
+                tbd.getInheritTableSpecs(), isSkewedStoredAsDirs(tbd), work.isSrcLocal(),
+                work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID);
             Partition partn = db.getPartition(table, tbd.getPartitionSpec(),
                 false);
 
@@ -433,8 +441,24 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
          }
         }
         if (SessionState.get() != null && dc != null) {
-          SessionState.get().getLineageState().setLineage(tbd.getSourcePath(), dc,
-              table.getCols());
+          // If we are doing an update or a delete the number of columns in the table will not
+          // match the number of columns in the file sink.  For update there will be one too many
+          // (because of the ROW__ID), and in the case of the delete there will be just the
+          // ROW__ID, which we don't need to worry about from a lineage perspective.
+          List<FieldSchema> tableCols = null;
+          switch (work.getLoadTableWork().getWriteType()) {
+            case DELETE:
+            case UPDATE:
+              // Pass an empty list as no columns will be written to the file.
+              // TODO I should be able to make this work for update
+              tableCols = new ArrayList<FieldSchema>();
+              break;
+
+            default:
+              tableCols = table.getCols();
+              break;
+          }
+          SessionState.get().getLineageState().setLineage(tbd.getSourcePath(), dc, tableCols);
         }
         releaseLocks(tbd);
       }

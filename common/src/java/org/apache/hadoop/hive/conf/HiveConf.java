@@ -301,6 +301,9 @@ public class HiveConf extends Configuration {
 
     HIVE_IN_TEST("hive.in.test", false, "internal usage only, true in test mode", true),
 
+    HIVE_IN_TEZ_TEST("hive.in.tez.test", false, "internal use only, true when in testing tez",
+        true),
+
     LOCALMODEAUTO("hive.exec.mode.local.auto", false,
         "Let Hive determine whether to run in local mode automatically"),
     LOCALMODEMAXBYTES("hive.exec.mode.local.auto.inputbytes.max", 134217728L,

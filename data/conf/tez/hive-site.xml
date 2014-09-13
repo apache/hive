@@ -245,4 +245,13 @@
   </description>
 </property>
 
+<property>
+  <name>hive.in.tez.test</name>
+  <value>true</value>
+  <description>
+    Indicates that we are in tez testing mode.
+  </description>
+</property>
+
+
 </configuration>

@@ -80,7 +80,7 @@ public class StorageFormat {
     return true;
   }
 
-  private void processStorageFormat(String name) throws SemanticException {
+  protected void processStorageFormat(String name) throws SemanticException {
     if (name.isEmpty()) {
       throw new SemanticException("File format in STORED AS clause cannot be empty");
     }
