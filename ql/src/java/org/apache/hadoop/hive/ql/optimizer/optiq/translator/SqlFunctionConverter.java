@@ -21,7 +21,6 @@ import java.lang.annotation.Annotation;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
@@ -67,22 +66,21 @@ public class SqlFunctionConverter {
   static final Map<SqlOperator, String>    reverseOperatorMap;
 
   static {
-    StaticBlockBuilder builder = new StaticBlockBuilder();
+    Builder builder = new Builder();
     hiveToOptiq = ImmutableMap.copyOf(builder.hiveToOptiq);
     optiqToHiveToken = ImmutableMap.copyOf(builder.optiqToHiveToken);
     reverseOperatorMap = ImmutableMap.copyOf(builder.reverseOperatorMap);
   }
 
-  public static SqlOperator getOptiqOperator(String funcTextName, GenericUDF hiveUDF,
+  public static SqlOperator getOptiqOperator(GenericUDF hiveUDF,
       ImmutableList<RelDataType> optiqArgTypes, RelDataType retType) throws OptiqSemanticException {
     // handle overloaded methods first
     if (hiveUDF instanceof GenericUDFOPNegative) {
       return SqlStdOperatorTable.UNARY_MINUS;
     } else if (hiveUDF instanceof GenericUDFOPPositive) {
       return SqlStdOperatorTable.UNARY_PLUS;
-    } // do generic lookup
-    String name = StringUtils.isEmpty(funcTextName) ? getName(hiveUDF) : funcTextName;
-    return getOptiqFn(name, optiqArgTypes, retType);
+    } // do genric lookup
+    return getOptiqFn(getName(hiveUDF), optiqArgTypes, retType);
   }
 
   public static GenericUDF getHiveUDF(SqlOperator op, RelDataType dt) {
@@ -199,9 +197,6 @@ public class SqlFunctionConverter {
 
   }
 
-  // TODO: this is not valid. Function names for built-in UDFs are specified in FunctionRegistry,
-  //       and only happen to match annotations. For user UDFs, the name is what user specifies at
-  //       creation time (annotation can be absent, different, or duplicate some other function).
   private static String getName(GenericUDF hiveUDF) {
     String udfName = null;
     if (hiveUDF instanceof GenericUDFBridge) {
@@ -233,13 +228,12 @@ public class SqlFunctionConverter {
     return udfName;
   }
 
-  /** This class is used to build immutable hashmaps in the static block above. */
-  private static class StaticBlockBuilder {
+  private static class Builder {
     final Map<String, SqlOperator>    hiveToOptiq        = Maps.newHashMap();
     final Map<SqlOperator, HiveToken> optiqToHiveToken   = Maps.newHashMap();
     final Map<SqlOperator, String>    reverseOperatorMap = Maps.newHashMap();
 
-    StaticBlockBuilder() {
+    Builder() {
       registerFunction("+", SqlStdOperatorTable.PLUS, hToken(HiveParser.PLUS, "+"));
       registerFunction("-", SqlStdOperatorTable.MINUS, hToken(HiveParser.MINUS, "-"));
       registerFunction("*", SqlStdOperatorTable.MULTIPLY, hToken(HiveParser.STAR, "*"));
