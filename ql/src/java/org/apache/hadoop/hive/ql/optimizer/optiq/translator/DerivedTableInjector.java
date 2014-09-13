@@ -34,28 +34,26 @@ import org.eigenbase.rel.ProjectRelBase;
 import org.eigenbase.rel.RelNode;
 import org.eigenbase.rel.SetOpRel;
 import org.eigenbase.rel.SingleRel;
+import org.eigenbase.rel.SortRel;
 import org.eigenbase.rel.TableAccessRelBase;
 import org.eigenbase.rel.TableFunctionRelBase;
-import org.eigenbase.rel.UnionRelBase;
 import org.eigenbase.rel.ValuesRelBase;
 import org.eigenbase.rel.rules.MultiJoinRel;
 import org.eigenbase.relopt.hep.HepRelVertex;
 import org.eigenbase.relopt.volcano.RelSubset;
-import org.eigenbase.rex.RexInputRef;
 import org.eigenbase.rex.RexNode;
 
 public class DerivedTableInjector {
 
   public static RelNode convertOpTree(RelNode rel, List<FieldSchema> resultSchema) {
-    RelNode newTopNode = introduceTopLevelSelectInResultSchema(rel, resultSchema);
+    RelNode newTopNode = rel;
 
-    // NOTE: Hive requires Union to buried in Project (TOK_QUERY,
-    // TOK_SUBQUERY, TOK_UNION)
-    if (newTopNode instanceof UnionRelBase) {
+    if (!(newTopNode instanceof ProjectRelBase) && !(newTopNode instanceof SortRel)) {
       newTopNode = introduceDerivedTable(newTopNode);
     }
 
     convertOpTree(newTopNode, (RelNode) null);
+    newTopNode = renameTopLevelSelectInResultSchema(newTopNode, resultSchema);
 
     return newTopNode;
   }
@@ -120,32 +118,42 @@ public class DerivedTableInjector {
     }
   }
 
-  private static HiveProjectRel introduceTopLevelSelectInResultSchema(final RelNode rootRel,
+  private static RelNode renameTopLevelSelectInResultSchema(final RelNode rootRel,
       List<FieldSchema> resultSchema) {
-    RelNode curNode = rootRel;
-    HiveProjectRel rootProjRel = null;
-    while (curNode != null) {
-      if (curNode instanceof HiveProjectRel) {
-        rootProjRel = (HiveProjectRel) curNode;
+    RelNode tmpRel = rootRel;
+    RelNode parentOforiginalProjRel = rootRel;
+    HiveProjectRel originalProjRel = null;
+
+    while (tmpRel != null) {
+      if (tmpRel instanceof HiveProjectRel) {
+        originalProjRel = (HiveProjectRel) tmpRel;
         break;
       }
-      curNode = curNode.getInput(0);
+      parentOforiginalProjRel = tmpRel;
+      tmpRel = tmpRel.getInput(0);
     }
 
-    // Assumption: tree could only be (limit)?(OB)?(ProjectRelBase)....
-    List<RexNode> rootChildExps = rootProjRel.getChildExps();
+    // Assumption: top portion of tree could only be
+    // (limit)?(OB)?(ProjectRelBase)....
+    List<RexNode> rootChildExps = originalProjRel.getChildExps();
     if (resultSchema.size() != rootChildExps.size()) {
       throw new RuntimeException("Result Schema didn't match Optiq Optimized Op Tree Schema");
     }
 
-    List<RexNode> newSelExps = new ArrayList<RexNode>();
     List<String> newSelAliases = new ArrayList<String>();
     for (int i = 0; i < rootChildExps.size(); i++) {
-      newSelExps.add(new RexInputRef(i, rootChildExps.get(i).getType()));
       newSelAliases.add(resultSchema.get(i).getName());
     }
 
-    return HiveProjectRel.create(rootRel, newSelExps, newSelAliases);
+    HiveProjectRel replacementProjectRel = HiveProjectRel.create(originalProjRel.getChild(),
+        originalProjRel.getChildExps(), newSelAliases);
+
+    if (rootRel == originalProjRel) {
+      return replacementProjectRel;
+    } else {
+      parentOforiginalProjRel.replaceInput(0, replacementProjectRel);
+      return rootRel;
+    }
   }
 
   private static RelNode introduceDerivedTable(final RelNode rel) {

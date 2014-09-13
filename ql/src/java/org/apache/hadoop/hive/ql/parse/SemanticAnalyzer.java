@@ -11982,7 +11982,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       basePlan = hepPlan(basePlan, false, mdProvider, new TransitivePredicatesOnJoinRule(
           JoinRelBase.class, HiveFilterRel.DEFAULT_FILTER_FACTORY),
-          RemoveTrivialProjectRule.INSTANCE,
+          // TODO: Enable it after OPTIQ-407 is fixed
+          //RemoveTrivialProjectRule.INSTANCE,
           new HivePartitionPrunerRule(SemanticAnalyzer.this.conf));
 
       RelFieldTrimmer fieldTrimmer = new RelFieldTrimmer(null, HiveProjectRel.DEFAULT_PROJECT_FACTORY,
