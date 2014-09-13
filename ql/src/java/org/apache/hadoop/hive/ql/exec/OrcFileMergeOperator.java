@@ -15,34 +15,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.apache.hadoop.hive.ql.io.orc;
+package org.apache.hadoop.hive.ql.exec;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.io.merge.MergeMapper;
+import org.apache.hadoop.hive.ql.io.orc.CompressionKind;
+import org.apache.hadoop.hive.ql.io.orc.OrcFile;
+import org.apache.hadoop.hive.ql.io.orc.OrcFileKeyWrapper;
+import org.apache.hadoop.hive.ql.io.orc.OrcFileValueWrapper;
+import org.apache.hadoop.hive.ql.io.orc.Reader;
+import org.apache.hadoop.hive.ql.io.orc.Writer;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.OrcFileMergeDesc;
+import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.shims.CombineHiveKey;
-import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.mapred.Mapper;
-import org.apache.hadoop.mapred.OutputCollector;
-import org.apache.hadoop.mapred.Reporter;
 
 import java.io.IOException;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
- * Map task fast merging of ORC files.
+ * Fast file merge operator for ORC files.
  */
-public class OrcFileMergeMapper extends MergeMapper implements
-    Mapper<Object, OrcFileValueWrapper, Object, Object> {
+public class OrcFileMergeOperator extends
+    AbstractFileMergeOperator<OrcFileMergeDesc> {
+  public final static Log LOG = LogFactory.getLog("OrcFileMergeOperator");
 
-  // These parameters must match for all orc files involved in merging
+  // These parameters must match for all orc files involved in merging. If it
+  // does not merge, the file will be put into incompatible file set and will
+  // not be merged.
   CompressionKind compression = null;
   long compressBuffSize = 0;
   List<Integer> version;
@@ -50,44 +52,39 @@ public class OrcFileMergeMapper extends MergeMapper implements
   int rowIndexStride = 0;
 
   Writer outWriter;
-  private byte[] buffer;
   Path prevPath;
   private Reader reader;
   private FSDataInputStream fdis;
-  public final static Log LOG = LogFactory.getLog("OrcFileMergeMapper");
 
   @Override
-  public void configure(JobConf job) {
-    super.configure(job);
-
-    outWriter = null;
-    buffer = null;
-    prevPath = null;
-    reader = null;
-    fdis = null;
+  public void processOp(Object row, int tag) throws HiveException {
+    Object[] keyValue = (Object[]) row;
+    processKeyValuePairs(keyValue[0], keyValue[1]);
   }
 
-  @Override
-  public void map(Object key, OrcFileValueWrapper value, OutputCollector<Object, Object> output,
-      Reporter reporter) throws IOException {
+  private void processKeyValuePairs(Object key, Object value)
+      throws HiveException {
     try {
-
-      OrcFileKeyWrapper k = null;
+      OrcFileValueWrapper v;
+      OrcFileKeyWrapper k;
       if (key instanceof CombineHiveKey) {
         k = (OrcFileKeyWrapper) ((CombineHiveKey) key).getKey();
       } else {
         k = (OrcFileKeyWrapper) key;
       }
 
-      fixTmpPathAlterTable(k.getInputPath().getParent());
+      fixTmpPath(k.getInputPath().getParent());
+
+      v = (OrcFileValueWrapper) value;
 
       if (prevPath == null) {
         prevPath = k.getInputPath();
-        reader = OrcFile.createReader(fs, k.inputPath);
+        reader = OrcFile.createReader(fs, k.getInputPath());
+        LOG.info("ORC merge file input path: " + k.getInputPath());
       }
 
       // store the orc configuration from the first file. All other files should
-      // match this configuration before merging
+      // match this configuration before merging else will not be merged
       if (outWriter == null) {
         compression = k.getCompression();
         compressBuffSize = k.getCompressBufferSize();
@@ -96,47 +93,48 @@ public class OrcFileMergeMapper extends MergeMapper implements
         rowIndexStride = k.getRowIndexStride();
 
         // block size and stripe size will be from config
-        outWriter = OrcFile.createWriter(outPath, OrcFile.writerOptions(jc).compress(compression)
-            .inspector(reader.getObjectInspector()));
+        outWriter = OrcFile.createWriter(outPath,
+            OrcFile.writerOptions(jc).compress(compression)
+                .inspector(reader.getObjectInspector()));
+        LOG.info("ORC merge file output path: " + outPath);
       }
 
-      if (!checkCompatibility(k, value)) {
+      if (!checkCompatibility(k)) {
         incompatFileSet.add(k.getInputPath());
         return;
       }
 
       // next file in the path
       if (!k.getInputPath().equals(prevPath)) {
-        reader = OrcFile.createReader(fs, k.inputPath);
+        reader = OrcFile.createReader(fs, k.getInputPath());
       }
 
       // initialize buffer to read the entire stripe
-      buffer = new byte[(int) value.stripeInformation.getLength()];
-      fdis = fs.open(k.inputPath);
-      fdis.readFully(value.stripeInformation.getOffset(), buffer, 0,
-          (int) value.stripeInformation.getLength());
+      byte[] buffer = new byte[(int) v.getStripeInformation().getLength()];
+      fdis = fs.open(k.getInputPath());
+      fdis.readFully(v.getStripeInformation().getOffset(), buffer, 0,
+          (int) v.getStripeInformation().getLength());
 
       // append the stripe buffer to the new ORC file
-      ((WriterImpl) outWriter).appendStripe(buffer, value.getStripeInformation(),
-          value.getStripeStatistics());
+      outWriter.appendStripe(buffer, 0, buffer.length, v.getStripeInformation(),
+          v.getStripeStatistics());
 
-      LOG.info("Merged stripe from file " + k.inputPath + " [ offset : "
-          + value.getStripeInformation().getOffset() + " length: "
-          + value.getStripeInformation().getLength() + " ]");
+      LOG.info("Merged stripe from file " + k.getInputPath() + " [ offset : "
+          + v.getStripeInformation().getOffset() + " length: "
+          + v.getStripeInformation().getLength() + " ]");
 
       // add user metadata to footer in case of any
-      if (value.isLastStripeInFile()) {
-        ((WriterImpl) outWriter).appendUserMetadata(value.getUserMetadata());
+      if (v.isLastStripeInFile()) {
+        outWriter.appendUserMetadata(v.getUserMetadata());
       }
     } catch (Throwable e) {
       this.exception = true;
-      close();
-      throw new IOException(e);
+      closeOp(true);
+      throw new HiveException(e);
     }
   }
 
-  private boolean checkCompatibility(OrcFileKeyWrapper k,
-      OrcFileValueWrapper value) {
+  private boolean checkCompatibility(OrcFileKeyWrapper k) {
     // check compatibility with subsequent files
     if ((k.getTypes().get(0).getSubtypesCount() != columnCount)) {
       LOG.info("Incompatible ORC file merge! Column counts does not match for "
@@ -144,26 +142,26 @@ public class OrcFileMergeMapper extends MergeMapper implements
       return false;
     }
 
-    if (!k.compression.equals(compression)) {
+    if (!k.getCompression().equals(compression)) {
       LOG.info("Incompatible ORC file merge! Compression codec does not match" +
           " for " + k.getInputPath());
       return false;
     }
 
-    if (k.compressBufferSize != compressBuffSize) {
+    if (k.getCompressBufferSize() != compressBuffSize) {
       LOG.info("Incompatible ORC file merge! Compression buffer size does not" +
           " match for " + k.getInputPath());
       return false;
 
     }
 
-    if (!k.versionList.equals(version)) {
+    if (!k.getVersionList().equals(version)) {
       LOG.info("Incompatible ORC file merge! Version does not match for "
           + k.getInputPath());
       return false;
     }
 
-    if (k.rowIndexStride != rowIndexStride) {
+    if (k.getRowIndexStride() != rowIndexStride) {
       LOG.info("Incompatible ORC file merge! Row index stride does not match" +
           " for " + k.getInputPath());
       return false;
@@ -173,20 +171,40 @@ public class OrcFileMergeMapper extends MergeMapper implements
   }
 
   @Override
-  public void close() throws IOException {
+  public OperatorType getType() {
+    return OperatorType.ORCFILEMERGE;
+  }
+
+  /**
+   * @return the name of the operator
+   */
+  @Override
+  public String getName() {
+    return getOperatorName();
+  }
+
+  static public String getOperatorName() {
+    return "OFM";
+  }
+
+  @Override
+  public void closeOp(boolean abort) throws HiveException {
     // close writer
     if (outWriter == null) {
       return;
     }
 
-    if (fdis != null) {
-      fdis.close();
-      fdis = null;
+    try {
+      if (fdis != null) {
+        fdis.close();
+        fdis = null;
+      }
+
+      outWriter.close();
+      outWriter = null;
+    } catch (IOException e) {
+      throw new HiveException("Unable to close OrcFileMergeOperator", e);
     }
-
-    outWriter.close();
-    outWriter = null;
-
-    super.close();
+    super.closeOp(abort);
   }
 }
