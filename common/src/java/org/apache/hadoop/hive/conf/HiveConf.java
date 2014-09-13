@@ -803,18 +803,11 @@ public class HiveConf extends Configuration {
         "map-reduce job to merge the output files into bigger files. This is only done for map-only jobs \n" +
         "if hive.merge.mapfiles is true, and for map-reduce jobs if hive.merge.mapredfiles is true."),
     HIVEMERGERCFILEBLOCKLEVEL("hive.merge.rcfile.block.level", true, ""),
-    HIVEMERGEINPUTFORMATBLOCKLEVEL("hive.merge.input.format.block.level",
-        "org.apache.hadoop.hive.ql.io.rcfile.merge.RCFileBlockMergeInputFormat", ""),
     HIVEMERGEORCFILESTRIPELEVEL("hive.merge.orcfile.stripe.level", true,
         "When hive.merge.mapfiles or hive.merge.mapredfiles is enabled while writing a\n" +
         " table with ORC file format, enabling this config will do stripe level fast merge\n" +
         " for small ORC files. Note that enabling this config will not honor padding tolerance\n" +
         " config (hive.exec.orc.block.padding.tolerance)."),
-    HIVEMERGEINPUTFORMATSTRIPELEVEL("hive.merge.input.format.stripe.level",
-        "org.apache.hadoop.hive.ql.io.orc.OrcFileStripeMergeInputFormat",
-        "Input file format to use for ORC stripe level merging (for internal use only)"),
-    HIVEMERGECURRENTJOBHASDYNAMICPARTITIONS(
-        "hive.merge.current.job.has.dynamic.partitions", false, ""),
 
     HIVEUSEEXPLICITRCFILEHEADER("hive.exec.rcfile.use.explicit.header", true,
         "If this is set the header for RCFiles will simply be RCF.  If this is not\n" +
@@ -1676,17 +1669,6 @@ public class HiveConf extends Configuration {
         "               it will now take 512 reducers, similarly if the max number of reducers is 511,\n" +
         "               and a job was going to use this many, it will now use 256 reducers."),
 
-    /* The following section contains all configurations used for list bucketing feature.*/
-    /* This is not for clients. but only for block merge task. */
-    /* This is used by BlockMergeTask to send out flag to RCFileMergeMapper */
-    /* about alter table...concatenate and list bucketing case. */
-    HIVEMERGECURRENTJOBCONCATENATELISTBUCKETING(
-        "hive.merge.current.job.concatenate.list.bucketing", true, ""),
-    /* This is not for clients. but only for block merge task. */
-    /* This is used by BlockMergeTask to send out flag to RCFileMergeMapper */
-    /* about depth of list bucketing. */
-    HIVEMERGECURRENTJOBCONCATENATELISTBUCKETINGDEPTH(
-            "hive.merge.current.job.concatenate.list.bucketing.depth", 0, ""),
     HIVEOPTLISTBUCKETING("hive.optimize.listbucketing", false,
         "Enable list bucketing optimizer. Default value is false so that we disable it by default."),
 

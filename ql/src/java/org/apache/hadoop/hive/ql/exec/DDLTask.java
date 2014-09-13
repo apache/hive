@@ -18,32 +18,6 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-import static org.apache.commons.lang.StringUtils.join;
-import static org.apache.hadoop.util.StringUtils.stringifyException;
-
-import java.io.BufferedWriter;
-import java.io.DataOutputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Serializable;
-import java.io.Writer;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeMap;
-import java.util.TreeSet;
-
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -88,8 +62,9 @@ import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.exec.ArchiveUtils.PartSpecInfo;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
-import org.apache.hadoop.hive.ql.io.merge.MergeTask;
-import org.apache.hadoop.hive.ql.io.merge.MergeWork;
+import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
+import org.apache.hadoop.hive.ql.io.merge.MergeFileTask;
+import org.apache.hadoop.hive.ql.io.merge.MergeFileWork;
 import org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe;
 import org.apache.hadoop.hive.ql.io.rcfile.truncate.ColumnTruncateTask;
 import org.apache.hadoop.hive.ql.io.rcfile.truncate.ColumnTruncateWork;
@@ -133,14 +108,19 @@ import org.apache.hadoop.hive.ql.plan.DescTableDesc;
 import org.apache.hadoop.hive.ql.plan.DropDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.DropIndexDesc;
 import org.apache.hadoop.hive.ql.plan.DropTableDesc;
+import org.apache.hadoop.hive.ql.plan.FileMergeDesc;
 import org.apache.hadoop.hive.ql.plan.GrantDesc;
 import org.apache.hadoop.hive.ql.plan.GrantRevokeRoleDDL;
+import org.apache.hadoop.hive.ql.plan.ListBucketingCtx;
 import org.apache.hadoop.hive.ql.plan.LockDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.LockTableDesc;
 import org.apache.hadoop.hive.ql.plan.MsckDesc;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hadoop.hive.ql.plan.OrcFileMergeDesc;
 import org.apache.hadoop.hive.ql.plan.PrincipalDesc;
 import org.apache.hadoop.hive.ql.plan.PrivilegeDesc;
 import org.apache.hadoop.hive.ql.plan.PrivilegeObjectDesc;
+import org.apache.hadoop.hive.ql.plan.RCFileMergeDesc;
 import org.apache.hadoop.hive.ql.plan.RenamePartitionDesc;
 import org.apache.hadoop.hive.ql.plan.RevokeDesc;
 import org.apache.hadoop.hive.ql.plan.RoleDDLDesc;
@@ -193,6 +173,33 @@ import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.hive.common.util.AnnotationUtils;
 import org.stringtemplate.v4.ST;
+
+import java.io.BufferedWriter;
+import java.io.DataOutputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Serializable;
+import java.io.Writer;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeMap;
+import java.util.TreeSet;
+
+import static org.apache.commons.lang.StringUtils.join;
+import static org.apache.hadoop.util.StringUtils.stringifyException;
 
 /**
  * DDLTask implementation.
@@ -546,15 +553,39 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    */
   private int mergeFiles(Hive db, AlterTablePartMergeFilesDesc mergeFilesDesc)
       throws HiveException {
+    ListBucketingCtx lbCtx = mergeFilesDesc.getLbCtx();
+    boolean lbatc = lbCtx == null ? false : lbCtx.isSkewedStoredAsDir();
+    int lbd = lbCtx == null ? 0 : lbCtx.calculateListBucketingLevel();
+
     // merge work only needs input and output.
-    MergeWork mergeWork = new MergeWork(mergeFilesDesc.getInputDir(),
-        mergeFilesDesc.getOutputDir(), mergeFilesDesc.getInputFormatClass());
+    MergeFileWork mergeWork = new MergeFileWork(mergeFilesDesc.getInputDir(),
+        mergeFilesDesc.getOutputDir(), mergeFilesDesc.getInputFormatClass().getName());
     mergeWork.setListBucketingCtx(mergeFilesDesc.getLbCtx());
     mergeWork.resolveConcatenateMerge(db.getConf());
     mergeWork.setMapperCannotSpanPartns(true);
-    mergeWork.setSourceTableInputFormat(mergeFilesDesc.getInputFormatClass());
+    mergeWork.setSourceTableInputFormat(mergeFilesDesc.getInputFormatClass().getName());
+    final FileMergeDesc fmd;
+    if (mergeFilesDesc.getInputFormatClass().equals(RCFileInputFormat.class)) {
+      fmd = new RCFileMergeDesc();
+    } else {
+      // safe to assume else is ORC as semantic analyzer will check for RC/ORC
+      fmd = new OrcFileMergeDesc();
+    }
+
+    fmd.setDpCtx(null);
+    fmd.setHasDynamicPartitions(false);
+    fmd.setListBucketingAlterTableConcatenate(lbatc);
+    fmd.setListBucketingDepth(lbd);
+    fmd.setOutputPath(mergeFilesDesc.getOutputDir());
+
+    Operator<? extends OperatorDesc> mergeOp = OperatorFactory.get(fmd);
+
+    LinkedHashMap<String, Operator<? extends  OperatorDesc>> aliasToWork =
+        new LinkedHashMap<String, Operator<? extends OperatorDesc>>();
+    aliasToWork.put(mergeFilesDesc.getInputDir().toString(), mergeOp);
+    mergeWork.setAliasToWork(aliasToWork);
     DriverContext driverCxt = new DriverContext();
-    MergeTask taskExec = new MergeTask();
+    MergeFileTask taskExec = new MergeFileTask();
     taskExec.initialize(db.getConf(), null, driverCxt);
     taskExec.setWork(mergeWork);
     taskExec.setQueryPlan(this.getQueryPlan());

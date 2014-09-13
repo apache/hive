@@ -16,26 +16,31 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.io.rcfile.merge;
+package org.apache.hadoop.hive.ql.io.merge;
+
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.mapred.FileOutputFormat;
+import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.RecordWriter;
+import org.apache.hadoop.mapred.Reporter;
+import org.apache.hadoop.util.Progressable;
 
 import java.io.IOException;
 
-import org.apache.hadoop.hive.ql.io.merge.MergeFileInputFormat;
-import org.apache.hadoop.mapred.FileSplit;
-import org.apache.hadoop.mapred.InputSplit;
-import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.mapred.RecordReader;
-import org.apache.hadoop.mapred.Reporter;
-
-public class RCFileBlockMergeInputFormat extends MergeFileInputFormat {
+public class MergeFileOutputFormat extends
+    FileOutputFormat<Object, Object> {
 
   @Override
-  public RecordReader<RCFileKeyBufferWrapper, RCFileValueBufferWrapper>
-    getRecordReader(InputSplit split, JobConf job, Reporter reporter)
-    throws IOException {
+  public RecordWriter<Object, Object> getRecordWriter(FileSystem ignored, JobConf job, String name,
+      Progressable progress) throws IOException {
+    return new RecordWriter<Object, Object>() {
+      public void write(Object key, Object value) {
+        throw new RuntimeException("Should not be called");
+      }
 
-    reporter.setStatus(split.toString());
-    return new RCFileBlockMergeRecordReader(job, (FileSplit) split);
+      public void close(Reporter reporter) {
+      }
+    };
   }
 
 }
