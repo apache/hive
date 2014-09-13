@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 
 
 /**
@@ -91,6 +92,9 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
   private boolean skipTag; // Skip writing tags when feeding into mapjoin hashtable
   private Boolean autoParallel = null; // Is reducer auto-parallelism enabled, disabled or unset
 
+  // Write type, since this needs to calculate buckets differently for updates and deletes
+  private AcidUtils.Operation writeType;
+
   private static transient Log LOG = LogFactory.getLog(ReduceSinkDesc.class);
   public ReduceSinkDesc() {
   }
@@ -102,7 +106,8 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
       List<List<Integer>> distinctColumnIndices,
       ArrayList<String> outputValueColumnNames, int tag,
       ArrayList<ExprNodeDesc> partitionCols, int numReducers,
-      final TableDesc keySerializeInfo, final TableDesc valueSerializeInfo) {
+      final TableDesc keySerializeInfo, final TableDesc valueSerializeInfo,
+      AcidUtils.Operation writeType) {
     this.keyCols = keyCols;
     this.numDistributionKeys = numDistributionKeys;
     this.valueCols = valueCols;
@@ -116,6 +121,7 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
     this.distinctColumnIndices = distinctColumnIndices;
     this.setNumBuckets(-1);
     this.setBucketCols(null);
+    this.writeType = writeType;
   }
 
   @Override
@@ -366,5 +372,9 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
     if (this.autoParallel == null || this.autoParallel == true) {
       this.autoParallel = autoParallel;
     }
+  }
+
+  public AcidUtils.Operation getWriteType() {
+    return writeType;
   }
 }

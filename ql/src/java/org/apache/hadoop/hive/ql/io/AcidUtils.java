@@ -26,14 +26,12 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.common.ValidTxnList;
-import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -42,35 +40,44 @@ import java.util.regex.Pattern;
  * are used by the compactor and cleaner and thus must be format agnostic.
  */
 public class AcidUtils {
+  public static final String BASE_PREFIX = "base_";
+  public static final String DELTA_PREFIX = "delta_";
+  public static final PathFilter deltaFileFilter = new PathFilter() {
+    @Override
+    public boolean accept(Path path) {
+      return path.getName().startsWith(DELTA_PREFIX);
+    }
+  };
+  public static final String BUCKET_PREFIX = "bucket_";
+  public static final PathFilter bucketFileFilter = new PathFilter() {
+    @Override
+    public boolean accept(Path path) {
+      return path.getName().startsWith(BUCKET_PREFIX);
+    }
+  };
+  public static final String BUCKET_DIGITS = "%05d";
+  public static final String DELTA_DIGITS = "%07d";
+  public static final Pattern BUCKET_DIGIT_PATTERN = Pattern.compile("[0-9]{5}$");
+  public static final Pattern LEGACY_BUCKET_DIGIT_PATTERN = Pattern.compile("^[0-9]{5}");
+  public static final PathFilter originalBucketFilter = new PathFilter() {
+    @Override
+    public boolean accept(Path path) {
+      return ORIGINAL_PATTERN.matcher(path.getName()).matches();
+    }
+  };
+
   private AcidUtils() {
     // NOT USED
   }
   private static final Log LOG = LogFactory.getLog(AcidUtils.class.getName());
 
-  public static final String BASE_PREFIX = "base_";
-  public static final String DELTA_PREFIX = "delta_";
-  public static final String BUCKET_PREFIX = "bucket_";
-
-  public static final String BUCKET_DIGITS = "%05d";
-  public static final String DELTA_DIGITS = "%07d";
-
   private static final Pattern ORIGINAL_PATTERN =
       Pattern.compile("[0-9]+_[0-9]+");
-
-  public static final Pattern BUCKET_DIGIT_PATTERN = Pattern.compile("[0-9]{5}$");
-  public static final Pattern LEGACY_BUCKET_DIGIT_PATTERN = Pattern.compile("^[0-9]{5}");
 
   public static final PathFilter hiddenFileFilter = new PathFilter(){
     public boolean accept(Path p){
       String name = p.getName();
       return !name.startsWith("_") && !name.startsWith(".");
-    }
-  };
-
-  public static final PathFilter bucketFileFilter = new PathFilter() {
-    @Override
-    public boolean accept(Path path) {
-      return path.getName().startsWith(BUCKET_PREFIX);
     }
   };
 
@@ -149,7 +156,7 @@ public class AcidUtils {
           .minimumTransactionId(0)
           .maximumTransactionId(0)
           .bucket(bucket);
-    } else if (filename.startsWith(AcidUtils.BUCKET_PREFIX)) {
+    } else if (filename.startsWith(BUCKET_PREFIX)) {
       int bucket =
           Integer.parseInt(filename.substring(filename.indexOf('_') + 1));
       result
@@ -394,7 +401,8 @@ public class AcidUtils {
     }
 
     final Path base = bestBase == null ? null : bestBase.getPath();
-    LOG.debug("base = " + base + " deltas = " + deltas.size());
+    LOG.debug("in directory " + directory.toUri().toString() + " base = " + base + " deltas = " +
+        deltas.size());
 
     return new Directory(){
 

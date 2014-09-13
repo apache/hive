@@ -268,6 +268,11 @@ public final class SemanticAnalyzerFactory {
       case HiveParser.TOK_CREATEMACRO:
       case HiveParser.TOK_DROPMACRO:
         return new MacroSemanticAnalyzer(conf);
+
+      case HiveParser.TOK_UPDATE_TABLE:
+      case HiveParser.TOK_DELETE_FROM:
+        return new UpdateDeleteSemanticAnalyzer(conf);
+
       default:
         return new SemanticAnalyzer(conf);
       }
