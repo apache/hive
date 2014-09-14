@@ -305,28 +305,6 @@ public class AcidUtils {
   }
 
   /**
-   * Is the given directory in ACID format?
-   * @param directory the partition directory to check
-   * @param conf the query configuration
-   * @return true, if it is an ACID directory
-   * @throws IOException
-   */
-  public static boolean isAcid(Path directory,
-                               Configuration conf) throws IOException {
-    FileSystem fs = directory.getFileSystem(conf);
-    for(FileStatus file: fs.listStatus(directory)) {
-      String filename = file.getPath().getName();
-      if (filename.startsWith(BASE_PREFIX) ||
-          filename.startsWith(DELTA_PREFIX)) {
-        if (file.isDir()) {
-          return true;
-        }
-      }
-    }
-    return false;
-  }
-
-  /**
    * Get the ACID state of the given directory. It finds the minimal set of
    * base and diff directories. Note that because major compactions don't
    * preserve the history, we can't use a base directory that includes a
