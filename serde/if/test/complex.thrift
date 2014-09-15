@@ -32,3 +32,8 @@ struct Complex {
   5: list<IntString> lintString;
   6: map<string, string> mStringString;
 }
+
+struct SetIntString {
+  1: set<IntString> sIntString;
+  2: string aString;
+}
