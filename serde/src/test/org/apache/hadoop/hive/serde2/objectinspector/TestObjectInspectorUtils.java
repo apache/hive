@@ -46,7 +46,7 @@ public class TestObjectInspectorUtils extends TestCase {
       StructObjectInspector soi = (StructObjectInspector) ObjectInspectorUtils
           .getStandardObjectInspector(oi1);
       List<? extends StructField> fields = soi.getAllStructFieldRefs();
-      assertEquals(6, fields.size());
+      assertEquals(10, fields.size());
       assertEquals(fields.get(0), soi.getStructFieldRef("aint"));
 
       // null
@@ -75,7 +75,7 @@ public class TestObjectInspectorUtils extends TestCase {
       assertEquals(c4, soi.getStructFieldData(c, fields.get(4)));
       assertNull(soi.getStructFieldData(c, fields.get(5)));
       ArrayList<Object> cfields = new ArrayList<Object>();
-      for (int i = 0; i < 6; i++) {
+      for (int i = 0; i < 10; i++) {
         cfields.add(soi.getStructFieldData(c, fields.get(i)));
       }
       assertEquals(cfields, soi.getStructFieldsDataAsList(c));

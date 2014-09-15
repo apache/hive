@@ -16,6 +16,112 @@
 
 
 
+typedef struct _PropValueUnion__isset {
+  _PropValueUnion__isset() : intValue(false), longValue(false), stringValue(false), doubleValue(false), flag(false), lString(false), unionMStringString(false) {}
+  bool intValue;
+  bool longValue;
+  bool stringValue;
+  bool doubleValue;
+  bool flag;
+  bool lString;
+  bool unionMStringString;
+} _PropValueUnion__isset;
+
+class PropValueUnion {
+ public:
+
+  static const char* ascii_fingerprint; // = "123CD9D82D5B5054B5054EFD63FC8590";
+  static const uint8_t binary_fingerprint[16]; // = {0x12,0x3C,0xD9,0xD8,0x2D,0x5B,0x50,0x54,0xB5,0x05,0x4E,0xFD,0x63,0xFC,0x85,0x90};
+
+  PropValueUnion() : intValue(0), longValue(0), stringValue(), doubleValue(0), flag(0) {
+  }
+
+  virtual ~PropValueUnion() throw() {}
+
+  int32_t intValue;
+  int64_t longValue;
+  std::string stringValue;
+  double doubleValue;
+  bool flag;
+  std::vector<std::string>  lString;
+  std::map<std::string, std::string>  unionMStringString;
+
+  _PropValueUnion__isset __isset;
+
+  void __set_intValue(const int32_t val) {
+    intValue = val;
+    __isset.intValue = true;
+  }
+
+  void __set_longValue(const int64_t val) {
+    longValue = val;
+    __isset.longValue = true;
+  }
+
+  void __set_stringValue(const std::string& val) {
+    stringValue = val;
+    __isset.stringValue = true;
+  }
+
+  void __set_doubleValue(const double val) {
+    doubleValue = val;
+    __isset.doubleValue = true;
+  }
+
+  void __set_flag(const bool val) {
+    flag = val;
+    __isset.flag = true;
+  }
+
+  void __set_lString(const std::vector<std::string> & val) {
+    lString = val;
+  }
+
+  void __set_unionMStringString(const std::map<std::string, std::string> & val) {
+    unionMStringString = val;
+  }
+
+  bool operator == (const PropValueUnion & rhs) const
+  {
+    if (__isset.intValue != rhs.__isset.intValue)
+      return false;
+    else if (__isset.intValue && !(intValue == rhs.intValue))
+      return false;
+    if (__isset.longValue != rhs.__isset.longValue)
+      return false;
+    else if (__isset.longValue && !(longValue == rhs.longValue))
+      return false;
+    if (__isset.stringValue != rhs.__isset.stringValue)
+      return false;
+    else if (__isset.stringValue && !(stringValue == rhs.stringValue))
+      return false;
+    if (__isset.doubleValue != rhs.__isset.doubleValue)
+      return false;
+    else if (__isset.doubleValue && !(doubleValue == rhs.doubleValue))
+      return false;
+    if (__isset.flag != rhs.__isset.flag)
+      return false;
+    else if (__isset.flag && !(flag == rhs.flag))
+      return false;
+    if (!(lString == rhs.lString))
+      return false;
+    if (!(unionMStringString == rhs.unionMStringString))
+      return false;
+    return true;
+  }
+  bool operator != (const PropValueUnion &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const PropValueUnion & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(PropValueUnion &a, PropValueUnion &b);
+
 typedef struct _IntString__isset {
   _IntString__isset() : myint(false), myString(false), underscore_int(false) {}
   bool myint;
@@ -76,20 +182,24 @@ class IntString {
 void swap(IntString &a, IntString &b);
 
 typedef struct _Complex__isset {
-  _Complex__isset() : aint(false), aString(false), lint(false), lString(false), lintString(false), mStringString(false) {}
+  _Complex__isset() : aint(false), aString(false), lint(false), lString(false), lintString(false), mStringString(false), attributes(false), unionField1(false), unionField2(false), unionField3(false) {}
   bool aint;
   bool aString;
   bool lint;
   bool lString;
   bool lintString;
   bool mStringString;
+  bool attributes;
+  bool unionField1;
+  bool unionField2;
+  bool unionField3;
 } _Complex__isset;
 
 class Complex {
  public:
 
-  static const char* ascii_fingerprint; // = "B6556501F2F746F0BF83D55B0A9824DE";
-  static const uint8_t binary_fingerprint[16]; // = {0xB6,0x55,0x65,0x01,0xF2,0xF7,0x46,0xF0,0xBF,0x83,0xD5,0x5B,0x0A,0x98,0x24,0xDE};
+  static const char* ascii_fingerprint; // = "FFA84FEA7037F5858F2BFEDA73AD679A";
+  static const uint8_t binary_fingerprint[16]; // = {0xFF,0xA8,0x4F,0xEA,0x70,0x37,0xF5,0x85,0x8F,0x2B,0xFE,0xDA,0x73,0xAD,0x67,0x9A};
 
   Complex() : aint(0), aString() {
   }
@@ -102,6 +212,10 @@ class Complex {
   std::vector<std::string>  lString;
   std::vector<IntString>  lintString;
   std::map<std::string, std::string>  mStringString;
+  std::map<std::string, std::map<std::string, std::map<std::string, PropValueUnion> > >  attributes;
+  PropValueUnion unionField1;
+  PropValueUnion unionField2;
+  PropValueUnion unionField3;
 
   _Complex__isset __isset;
 
@@ -129,6 +243,22 @@ class Complex {
     mStringString = val;
   }
 
+  void __set_attributes(const std::map<std::string, std::map<std::string, std::map<std::string, PropValueUnion> > > & val) {
+    attributes = val;
+  }
+
+  void __set_unionField1(const PropValueUnion& val) {
+    unionField1 = val;
+  }
+
+  void __set_unionField2(const PropValueUnion& val) {
+    unionField2 = val;
+  }
+
+  void __set_unionField3(const PropValueUnion& val) {
+    unionField3 = val;
+  }
+
   bool operator == (const Complex & rhs) const
   {
     if (!(aint == rhs.aint))
@@ -142,6 +272,14 @@ class Complex {
     if (!(lintString == rhs.lintString))
       return false;
     if (!(mStringString == rhs.mStringString))
+      return false;
+    if (!(attributes == rhs.attributes))
+      return false;
+    if (!(unionField1 == rhs.unionField1))
+      return false;
+    if (!(unionField2 == rhs.unionField2))
+      return false;
+    if (!(unionField3 == rhs.unionField3))
       return false;
     return true;
   }
