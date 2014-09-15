@@ -49,7 +49,7 @@ public class RowResolver implements Serializable{
    * The primary(first) mapping is still only held in
    * invRslvMap.
    */
-  private Map<String, String[]> altInvRslvMap;
+  private final Map<String, String[]> altInvRslvMap;
   private  Map<String, ASTNode> expressionMap;
 
   // TODO: Refactor this and do in a more object oriented manner
@@ -377,10 +377,11 @@ public class RowResolver implements Serializable{
 
       outputColPos++;
 
-      if (rrToAddTo.get(tabAlias, colAlias) != null)
-        throw new RuntimeException("Ambigous Column Names");
-
-      rrToAddTo.put(tabAlias, colAlias, newCI);
+      if (rrToAddTo.get(tabAlias, colAlias) != null) {
+        LOG.debug("Found duplicate column alias in RR: " + rrToAddTo.get(tabAlias, colAlias));
+      } else {
+        rrToAddTo.put(tabAlias, colAlias, newCI);
+      }
 
       qualifiedColName = rrToAddFrom.getAlternateMappings(cInfoFrmInput
           .getInternalName());
@@ -403,7 +404,7 @@ public class RowResolver implements Serializable{
 	/**
 	 * Return a new row resolver that is combination of left RR and right RR.
 	 * The schema will be schema of left, schema of right
-	 * 
+	 *
 	 * @param leftRR
 	 * @param rightRR
 	 * @return
