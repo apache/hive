@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
@@ -111,7 +112,8 @@ public final class ObjectInspectorFactory {
     if (t instanceof ParameterizedType) {
       ParameterizedType pt = (ParameterizedType) t;
       // List?
-      if (List.class.isAssignableFrom((Class<?>) pt.getRawType())) {
+      if (List.class.isAssignableFrom((Class<?>) pt.getRawType()) ||
+          Set.class.isAssignableFrom((Class<?>) pt.getRawType())) {
         return getStandardListObjectInspector(getReflectionObjectInspector(pt
             .getActualTypeArguments()[0], options));
       }
