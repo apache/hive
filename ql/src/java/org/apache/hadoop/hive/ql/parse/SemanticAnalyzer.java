@@ -13862,6 +13862,22 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         aliasToRel.put(tableAlias, op);
       }
 
+
+      if (aliasToRel.isEmpty()) {
+        //// This may happen for queries like select 1; (no source table)
+        // We can do following which is same, as what Hive does.
+        // With this, we will be able to generate Optiq plan.
+        //        qb.getMetaData().setSrcForAlias(DUMMY_TABLE, getDummyTable());
+        //        RelNode op =  genTableLogicalPlan(DUMMY_TABLE, qb);
+        //        qb.addAlias(DUMMY_TABLE);
+        //        qb.setTabAlias(DUMMY_TABLE, DUMMY_TABLE);
+        //        aliasToRel.put(DUMMY_TABLE, op);
+        // However, Hive trips later while trying to get Metadata for this dummy table
+        // So, for now lets just disable this. Anyway there is nothing much to
+        // optimize in such cases.
+        throw new OptiqSemanticException("Unsupported");
+
+      }
       // 1.3 process join
       if (qb.getParseInfo().getJoinExpr() != null) {
         srcRel = genJoinLogicalPlan(qb.getParseInfo().getJoinExpr(), aliasToRel);
