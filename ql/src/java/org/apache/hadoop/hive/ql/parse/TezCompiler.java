@@ -404,6 +404,9 @@ public class TezCompiler extends TaskCompiler {
   }
 
   private void setInputFormat(MapWork work, Operator<? extends OperatorDesc> op) {
+    if (op == null) {
+      return;
+    }
     if (op.isUseBucketizedHiveInputFormat()) {
       work.setUseBucketizedHiveInputFormat(true);
       return;

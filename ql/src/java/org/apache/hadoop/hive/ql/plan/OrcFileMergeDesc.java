@@ -15,31 +15,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.hadoop.hive.ql.plan;
 
-package org.apache.hadoop.hive.ql.io.merge;
-
-import java.io.IOException;
-
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.mapred.FileOutputFormat;
-import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.mapred.RecordWriter;
-import org.apache.hadoop.util.Progressable;
 
-public abstract class MergeOutputFormat extends
-    FileOutputFormat<Object, Object> {
-
-  public static void setMergeOutputPath(JobConf job, Path path) {
-    job.set("hive.merge.output.dir", path.toString());
+/**
+ * ORC fast file merge operator descriptor.
+ */
+@Explain(displayName = "ORC File Merge Operator")
+public class OrcFileMergeDesc extends FileMergeDesc {
+  
+  public OrcFileMergeDesc() {
+    this(null, null);
   }
-
-  public static Path getMergeOutputPath(JobConf conf) {
-    String name = conf.get("hive.merge.output.dir");
-    return name == null ? null: new Path(name);
+  
+  public OrcFileMergeDesc(DynamicPartitionCtx dpCtx, Path outPath) {
+    super(dpCtx, outPath);
   }
-
-  public abstract RecordWriter<Object, Object> getRecordWriter(
-      FileSystem ignored, JobConf job, String name, Progressable progress)
-      throws IOException;
 }

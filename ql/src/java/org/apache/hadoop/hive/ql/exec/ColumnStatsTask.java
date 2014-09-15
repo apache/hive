@@ -28,6 +28,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.BinaryColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.BooleanColumnStatsData;
@@ -305,8 +306,10 @@ public class ColumnStatsTask extends Task<ColumnStatsWork> implements Serializab
         List<String> partVals = new ArrayList<String>();
         // Iterate over partition columns to figure out partition name
         for (int i = fields.size() - partColSchema.size(); i < fields.size(); i++) {
-          partVals.add(((PrimitiveObjectInspector)fields.get(i).getFieldObjectInspector()).
-            getPrimitiveJavaObject(list.get(i)).toString());
+          Object partVal = ((PrimitiveObjectInspector)fields.get(i).getFieldObjectInspector()).
+              getPrimitiveJavaObject(list.get(i));
+          partVals.add(partVal == null ? // could be null for default partition
+            this.conf.getVar(ConfVars.DEFAULTPARTITIONNAME) : partVal.toString());
         }
         partName = Warehouse.makePartName(partColSchema, partVals);
       }

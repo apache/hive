@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.SMBMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
@@ -368,6 +369,12 @@ public class BucketingSortingReduceSinkOptimizer implements Transform {
           .getReduceSinkOperatorsAddedByEnforceBucketingSorting();
       // nothing to do
       if ((rsOps != null) && (!rsOps.contains(rsOp))) {
+        return null;
+      }
+
+      // Don't do this optimization with updates or deletes
+      if (pGraphContext.getContext().getAcidOperation() == AcidUtils.Operation.UPDATE ||
+          pGraphContext.getContext().getAcidOperation() == AcidUtils.Operation.DELETE){
         return null;
       }
 

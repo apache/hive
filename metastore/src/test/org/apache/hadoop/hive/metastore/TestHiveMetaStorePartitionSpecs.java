@@ -11,7 +11,6 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.partition.spec.CompositePartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe;
-import org.apache.hadoop.util.ExitUtil;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -52,7 +51,7 @@ public class TestHiveMetaStorePartitionSpecs {
     public void checkExit(int status) {
 
       super.checkExit(status);
-      throw new ExitUtil.ExitException(status, "System.exit() was called. Raising exception. ");
+      throw new RuntimeException("System.exit() was called. Raising exception. ");
     }
   }
 

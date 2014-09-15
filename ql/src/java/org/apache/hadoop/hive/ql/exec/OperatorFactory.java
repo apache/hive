@@ -18,10 +18,6 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
 import org.apache.hadoop.hive.ql.exec.vector.VectorExtractOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorFileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorFilterOperator;
@@ -53,7 +49,9 @@ import org.apache.hadoop.hive.ql.plan.LimitDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.MuxDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hadoop.hive.ql.plan.OrcFileMergeDesc;
 import org.apache.hadoop.hive.ql.plan.PTFDesc;
+import org.apache.hadoop.hive.ql.plan.RCFileMergeDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.SMBJoinDesc;
 import org.apache.hadoop.hive.ql.plan.ScriptDesc;
@@ -61,6 +59,10 @@ import org.apache.hadoop.hive.ql.plan.SelectDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.plan.UDTFDesc;
 import org.apache.hadoop.hive.ql.plan.UnionDesc;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * OperatorFactory.
@@ -108,6 +110,10 @@ public final class OperatorFactory {
         AppMasterEventOperator.class));
     opvec.add(new OpTuple<DynamicPruningEventDesc>(DynamicPruningEventDesc.class,
         AppMasterEventOperator.class));
+    opvec.add(new OpTuple<RCFileMergeDesc>(RCFileMergeDesc.class,
+        RCFileMergeOperator.class));
+    opvec.add(new OpTuple<OrcFileMergeDesc>(OrcFileMergeDesc.class,
+        OrcFileMergeOperator.class));
   }
 
   static {

@@ -96,6 +96,7 @@ import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.index.HiveIndexHandler;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.optimizer.listbucketingpruner.ListBucketingPrunerUtils;
 import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
 import org.apache.hadoop.hive.ql.plan.DropTableDesc;
@@ -1227,7 +1228,7 @@ public class Hive {
   public void loadPartition(Path loadPath, String tableName,
       Map<String, String> partSpec, boolean replace, boolean holdDDLTime,
       boolean inheritTableSpecs, boolean isSkewedStoreAsSubdir,
-      boolean isSrcLocal) throws HiveException {
+      boolean isSrcLocal, boolean isAcid) throws HiveException {
     Table tbl = getTable(tableName);
     Path tblDataLocationPath =  tbl.getDataLocation();
     try {
@@ -1275,7 +1276,7 @@ public class Hive {
             isSrcLocal);
       } else {
         FileSystem fs = tbl.getDataLocation().getFileSystem(conf);
-        Hive.copyFiles(conf, loadPath, newPartPath, fs, isSrcLocal);
+        Hive.copyFiles(conf, loadPath, newPartPath, fs, isSrcLocal, isAcid);
       }
 
       // recreate the partition if it existed before
@@ -1407,7 +1408,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    */
   public ArrayList<LinkedHashMap<String, String>> loadDynamicPartitions(Path loadPath,
       String tableName, Map<String, String> partSpec, boolean replace,
-      int numDP, boolean holdDDLTime, boolean listBucketingEnabled)
+      int numDP, boolean holdDDLTime, boolean listBucketingEnabled, boolean isAcid)
       throws HiveException {
 
     Set<Path> validPartitions = new HashSet<Path>();
@@ -1463,7 +1464,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
         // finally load the partition -- move the file to the final table address
         loadPartition(partPath, tableName, fullPartSpec, replace, holdDDLTime, true,
-            listBucketingEnabled, false);
+            listBucketingEnabled, false, isAcid);
         LOG.info("New loading path = " + partPath + " with partSpec " + fullPartSpec);
       }
       return fullPartSpecs;
@@ -1489,14 +1490,16 @@ private void constructOneLBLocationMap(FileStatus fSta,
    *          If the source directory is LOCAL
    * @param isSkewedStoreAsSubdir
    *          if list bucketing enabled
+   * @param isAcid true if this is an ACID based write
    */
   public void loadTable(Path loadPath, String tableName, boolean replace,
-      boolean holdDDLTime, boolean isSrcLocal, boolean isSkewedStoreAsSubdir) throws HiveException {
+      boolean holdDDLTime, boolean isSrcLocal, boolean isSkewedStoreAsSubdir, boolean isAcid)
+      throws HiveException {
     Table tbl = getTable(tableName);
     if (replace) {
       tbl.replaceFiles(loadPath, isSrcLocal);
     } else {
-      tbl.copyFiles(loadPath, isSrcLocal);
+      tbl.copyFiles(loadPath, isSrcLocal, isAcid);
     }
 
     try {
@@ -2313,8 +2316,19 @@ private void constructOneLBLocationMap(FileStatus fSta,
     return success;
   }
 
+  /**
+   * Copy files.  This handles building the mapping for buckets and such between the source and
+   * destination
+   * @param conf Configuration object
+   * @param srcf source directory, if bucketed should contain bucket files
+   * @param destf directory to move files into
+   * @param fs Filesystem
+   * @param isSrcLocal true if source is on local file system
+   * @param isAcid true if this is an ACID based write
+   * @throws HiveException
+   */
   static protected void copyFiles(HiveConf conf, Path srcf, Path destf,
-      FileSystem fs, boolean isSrcLocal) throws HiveException {
+      FileSystem fs, boolean isSrcLocal, boolean isAcid) throws HiveException {
     boolean inheritPerms = HiveConf.getBoolVar(conf,
         HiveConf.ConfVars.HIVE_WAREHOUSE_SUBDIR_INHERIT_PERMS);
     try {
@@ -2342,22 +2356,104 @@ private void constructOneLBLocationMap(FileStatus fSta,
       return;
       // srcs = new FileStatus[0]; Why is this needed?
     }
+
+    // If we're moving files around for an ACID write then the rules and paths are all different.
+    // You can blame this on Owen.
+    if (isAcid) {
+      moveAcidFiles(srcFs, srcs, destf);
+    } else {
     // check that source and target paths exist
-    List<List<Path[]>> result = checkPaths(conf, fs, srcs, srcFs, destf, false);
-    // move it, move it
-    try {
-      for (List<Path[]> sdpairs : result) {
-        for (Path[] sdpair : sdpairs) {
-          if (!renameFile(conf, sdpair[0], sdpair[1], fs, false, isSrcLocal)) {
-            throw new IOException("Cannot move " + sdpair[0] + " to "
-                + sdpair[1]);
+      List<List<Path[]>> result = checkPaths(conf, fs, srcs, srcFs, destf, false);
+      // move it, move it
+      try {
+        for (List<Path[]> sdpairs : result) {
+          for (Path[] sdpair : sdpairs) {
+            if (!renameFile(conf, sdpair[0], sdpair[1], fs, false, isSrcLocal)) {
+              throw new IOException("Cannot move " + sdpair[0] + " to "
+                  + sdpair[1]);
+            }
+          }
+        }
+      } catch (IOException e) {
+        throw new HiveException("copyFiles: error while moving files!!!", e);
+      }
+    }
+  }
+
+  private static void moveAcidFiles(FileSystem fs, FileStatus[] stats, Path dst)
+      throws HiveException {
+    // The layout for ACID files is table|partname/base|delta/bucket
+    // We will always only be writing delta files.  In the buckets created by FileSinkOperator
+    // it will look like bucket/delta/bucket.  So we need to move that into the above structure.
+    // For the first mover there will be no delta directory, so we can move the whole directory.
+    // For everyone else we will need to just move the buckets under the existing delta
+    // directory.
+
+    Set<Path> createdDeltaDirs = new HashSet<Path>();
+    // Open the original path we've been given and find the list of original buckets
+    for (FileStatus stat : stats) {
+      Path srcPath = stat.getPath();
+
+      LOG.debug("Acid move Looking for original buckets in " + srcPath);
+
+      FileStatus[] origBucketStats = null;
+      try {
+        origBucketStats = fs.listStatus(srcPath, AcidUtils.originalBucketFilter);
+      } catch (IOException e) {
+        String msg = "Unable to look for bucket files in src path " + srcPath.toUri().toString();
+        LOG.error(msg);
+        throw new HiveException(msg, e);
+      }
+      LOG.debug("Acid move found " + origBucketStats.length + " original buckets");
+
+      for (FileStatus origBucketStat : origBucketStats) {
+        Path origBucketPath = origBucketStat.getPath();
+        LOG.debug("Acid move looking for delta files in bucket " + origBucketPath);
+
+        FileStatus[] deltaStats = null;
+        try {
+          deltaStats = fs.listStatus(origBucketPath, AcidUtils.deltaFileFilter);
+        } catch (IOException e) {
+          throw new HiveException("Unable to look for delta files in original bucket " +
+              origBucketPath.toUri().toString(), e);
+        }
+        LOG.debug("Acid move found " + deltaStats.length + " delta files");
+
+        for (FileStatus deltaStat : deltaStats) {
+          Path deltaPath = deltaStat.getPath();
+          // Create the delta directory.  Don't worry if it already exists,
+          // as that likely means another task got to it first.  Then move each of the buckets.
+          // it would be more efficient to try to move the delta with it's buckets but that is
+          // harder to make race condition proof.
+          Path deltaDest = new Path(dst, deltaPath.getName());
+          try {
+            if (!createdDeltaDirs.contains(deltaDest)) {
+              try {
+                fs.mkdirs(deltaDest);
+                createdDeltaDirs.add(deltaDest);
+              } catch (IOException swallowIt) {
+                // Don't worry about this, as it likely just means it's already been created.
+                LOG.info("Unable to create delta directory " + deltaDest +
+                    ", assuming it already exists: " + swallowIt.getMessage());
+              }
+            }
+            FileStatus[] bucketStats = fs.listStatus(deltaPath, AcidUtils.bucketFileFilter);
+            LOG.debug("Acid move found " + bucketStats.length + " bucket files");
+            for (FileStatus bucketStat : bucketStats) {
+              Path bucketSrc = bucketStat.getPath();
+              Path bucketDest = new Path(deltaDest, bucketSrc.getName());
+              LOG.info("Moving bucket " + bucketSrc.toUri().toString() + " to " +
+                  bucketDest.toUri().toString());
+              fs.rename(bucketSrc, bucketDest);
+            }
+          } catch (IOException e) {
+            throw new HiveException("Error moving acid files", e);
           }
         }
       }
-    } catch (IOException e) {
-      throw new HiveException("copyFiles: error while moving files!!!", e);
     }
   }
+
 
   /**
    * Replaces files in the partition with new data set specified by srcf. Works

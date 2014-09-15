@@ -404,6 +404,19 @@ public enum ErrorMsg {
       "time."),
   DISTINCT_NOT_SUPPORTED(10285, "Distinct keyword is not support in current context"),
 
+  UPDATEDELETE_PARSE_ERROR(10290, "Encountered parse error while parsing rewritten update or " +
+      "delete query"),
+  UPDATEDELETE_IO_ERROR(10291, "Encountered I/O error while parsing rewritten update or " +
+      "delete query"),
+  UPDATE_CANNOT_UPDATE_PART_VALUE(10292, "Updating values of partition columns is not supported"),
+  INSERT_CANNOT_CREATE_TEMP_FILE(10293, "Unable to create temp file for insert values "),
+  ACID_OP_ON_NONACID_TXNMGR(10294, "Attempt to do update or delete using transaction manager that" +
+      " does not support these operations."),
+  NO_INSERT_OVERWRITE_WITH_ACID(10295, "INSERT OVERWRITE not allowed on table with OutputFormat " +
+      "that implements AcidOutputFormat while transaction manager that supports ACID is in use"),
+  VALUES_TABLE_CONSTRUCTOR_NOT_SUPPORTED(10296,
+      "Values clause with table constructor not yet supported"),
+
   //========================== 20000 range starts here ========================//
   SCRIPT_INIT_ERROR(20000, "Unable to initialize custom script."),
   SCRIPT_IO_ERROR(20001, "An error occurred while reading or writing to your custom script. "
@@ -460,7 +473,10 @@ public enum ErrorMsg {
       "to fail because of this, set hive.stats.atomic=false", true),
   STATS_SKIPPING_BY_ERROR(30017, "Skipping stats aggregation by error {0}", true),
   ORC_CORRUPTED_READ(30018, "Corruption in ORC data encountered. To skip reading corrupted "
-      + "data, set " + HiveConf.ConfVars.HIVE_ORC_SKIP_CORRUPT_DATA + " to true");
+      + "data, set " + HiveConf.ConfVars.HIVE_ORC_SKIP_CORRUPT_DATA + " to true"),
+
+
+
   ;
 
   private int errorCode;

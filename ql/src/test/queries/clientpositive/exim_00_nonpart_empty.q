@@ -1,3 +1,6 @@
+set hive.security.authorization.manager=org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactoryForTest;
+set hive.security.authenticator.manager=org.apache.hadoop.hive.ql.security.SessionStateConfigUserAuthenticator;
+
 set hive.test.mode=true;
 set hive.test.mode.prefix=;
 set hive.test.mode.nosamplelist=exim_department,exim_employee;
