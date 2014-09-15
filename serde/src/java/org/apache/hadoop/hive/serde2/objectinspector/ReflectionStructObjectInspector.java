@@ -44,6 +44,7 @@ public class ReflectionStructObjectInspector extends
   public static class MyField implements StructField {
     protected int fieldID;
     protected Field field;
+
     protected ObjectInspector fieldObjectInspector;
 
     protected MyField() {
@@ -116,12 +117,13 @@ public class ReflectionStructObjectInspector extends
    * The reason that this method is not recursive by itself is because we want
    * to allow recursive types.
    */
-  void init(Class<?> objectClass,
-      List<ObjectInspector> structFieldObjectInspectors) {
-    assert (!List.class.isAssignableFrom(objectClass));
-    assert (!Map.class.isAssignableFrom(objectClass));
+  protected void init(Class<?> objectClass,
+      ObjectInspectorFactory.ObjectInspectorOptions options) {
 
+    verifyObjectClassType(objectClass);
     this.objectClass = objectClass;
+    final List<? extends ObjectInspector> structFieldObjectInspectors = extractFieldObjectInspectors(objectClass, options);
+
     Field[] reflectionFields = ObjectInspectorUtils
         .getDeclaredNonStaticFields(objectClass);
     fields = new ArrayList<MyField>(structFieldObjectInspectors.size());
@@ -205,4 +207,23 @@ public class ReflectionStructObjectInspector extends
     return struct;
   }
 
+  protected List<? extends ObjectInspector> extractFieldObjectInspectors(Class<?> clazz,
+    ObjectInspectorFactory.ObjectInspectorOptions options) {
+    Field[] fields = ObjectInspectorUtils.getDeclaredNonStaticFields(clazz);
+    ArrayList<ObjectInspector> structFieldObjectInspectors = new ArrayList<ObjectInspector>(
+      fields.length);
+    for (int i = 0; i < fields.length; i++) {
+      if (!shouldIgnoreField(fields[i].getName())) {
+        structFieldObjectInspectors.add(ObjectInspectorFactory.getReflectionObjectInspector(fields[i]
+          .getGenericType(), options));
+      }
+    }
+    return structFieldObjectInspectors;
+  }
+
+
+  protected void verifyObjectClassType(Class<?> objectClass) {
+    assert (!List.class.isAssignableFrom(objectClass));
+    assert (!Map.class.isAssignableFrom(objectClass));
+  }
 }

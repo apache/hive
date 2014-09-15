@@ -52,7 +52,7 @@ public class TestThriftObjectInspectors extends TestCase {
       assertEquals(Category.STRUCT, oi1.getCategory());
       StructObjectInspector soi = (StructObjectInspector) oi1;
       List<? extends StructField> fields = soi.getAllStructFieldRefs();
-      assertEquals(6, fields.size());
+      assertEquals(10, fields.size());
       assertEquals(fields.get(0), soi.getStructFieldRef("aint"));
 
       // null
@@ -71,6 +71,10 @@ public class TestThriftObjectInspectors extends TestCase {
       List<IntString> c4 = new ArrayList<IntString>();
       c.setLintString(c4);
       c.setMStringString(null);
+      c.setAttributes(null);
+      c.setUnionField1(null);
+      c.setUnionField2(null);
+      c.setUnionField3(null);
 
       assertEquals(1, soi.getStructFieldData(c, fields.get(0)));
       assertEquals("test", soi.getStructFieldData(c, fields.get(1)));
@@ -78,8 +82,13 @@ public class TestThriftObjectInspectors extends TestCase {
       assertEquals(c3, soi.getStructFieldData(c, fields.get(3)));
       assertEquals(c4, soi.getStructFieldData(c, fields.get(4)));
       assertNull(soi.getStructFieldData(c, fields.get(5)));
+      assertNull(soi.getStructFieldData(c, fields.get(6)));
+      assertNull(soi.getStructFieldData(c, fields.get(7)));
+      assertNull(soi.getStructFieldData(c, fields.get(8)));
+      assertNull(soi.getStructFieldData(c, fields.get(9)));
+
       ArrayList<Object> cfields = new ArrayList<Object>();
-      for (int i = 0; i < 6; i++) {
+      for (int i = 0; i < 10; i++) {
         cfields.add(soi.getStructFieldData(c, fields.get(i)));
       }
       assertEquals(cfields, soi.getStructFieldsDataAsList(c));
