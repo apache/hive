@@ -30,6 +30,10 @@ lint                	array<int>          	from deserializer
 lstring             	array<string>       	from deserializer   
 lintstring          	array<struct<myint:int,mystring:string,underscore_int:int>>	from deserializer   
 mstringstring       	map<string,string>  	from deserializer   
+attributes          	map<string,map<string,map<string,uniontype<int,bigint,string,double,boolean,array<string>,map<string,string>>>>>	from deserializer   
+unionfield1         	uniontype<int,bigint,string,double,boolean,array<string>,map<string,string>>	from deserializer   
+unionfield2         	uniontype<int,bigint,string,double,boolean,array<string>,map<string,string>>	from deserializer   
+unionfield3         	uniontype<int,bigint,string,double,boolean,array<string>,map<string,string>>	from deserializer   
 ds                  	string              	                    
 country             	string              	                    
 	 	 

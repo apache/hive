@@ -40,6 +40,10 @@ public class Complex implements org.apache.thrift.TBase<Complex, Complex._Fields
   private static final org.apache.thrift.protocol.TField L_STRING_FIELD_DESC = new org.apache.thrift.protocol.TField("lString", org.apache.thrift.protocol.TType.LIST, (short)4);
   private static final org.apache.thrift.protocol.TField LINT_STRING_FIELD_DESC = new org.apache.thrift.protocol.TField("lintString", org.apache.thrift.protocol.TType.LIST, (short)5);
   private static final org.apache.thrift.protocol.TField M_STRING_STRING_FIELD_DESC = new org.apache.thrift.protocol.TField("mStringString", org.apache.thrift.protocol.TType.MAP, (short)6);
+  private static final org.apache.thrift.protocol.TField ATTRIBUTES_FIELD_DESC = new org.apache.thrift.protocol.TField("attributes", org.apache.thrift.protocol.TType.MAP, (short)7);
+  private static final org.apache.thrift.protocol.TField UNION_FIELD1_FIELD_DESC = new org.apache.thrift.protocol.TField("unionField1", org.apache.thrift.protocol.TType.STRUCT, (short)8);
+  private static final org.apache.thrift.protocol.TField UNION_FIELD2_FIELD_DESC = new org.apache.thrift.protocol.TField("unionField2", org.apache.thrift.protocol.TType.STRUCT, (short)9);
+  private static final org.apache.thrift.protocol.TField UNION_FIELD3_FIELD_DESC = new org.apache.thrift.protocol.TField("unionField3", org.apache.thrift.protocol.TType.STRUCT, (short)10);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -53,6 +57,10 @@ public class Complex implements org.apache.thrift.TBase<Complex, Complex._Fields
   private List<String> lString; // required
   private List<IntString> lintString; // required
   private Map<String,String> mStringString; // required
+  private Map<String,Map<String,Map<String,PropValueUnion>>> attributes; // required
+  private PropValueUnion unionField1; // required
+  private PropValueUnion unionField2; // required
+  private PropValueUnion unionField3; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -61,7 +69,11 @@ public class Complex implements org.apache.thrift.TBase<Complex, Complex._Fields
     LINT((short)3, "lint"),
     L_STRING((short)4, "lString"),
     LINT_STRING((short)5, "lintString"),
-    M_STRING_STRING((short)6, "mStringString");
+    M_STRING_STRING((short)6, "mStringString"),
+    ATTRIBUTES((short)7, "attributes"),
+    UNION_FIELD1((short)8, "unionField1"),
+    UNION_FIELD2((short)9, "unionField2"),
+    UNION_FIELD3((short)10, "unionField3");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -88,6 +100,14 @@ public class Complex implements org.apache.thrift.TBase<Complex, Complex._Fields
           return LINT_STRING;
         case 6: // M_STRING_STRING
           return M_STRING_STRING;
+        case 7: // ATTRIBUTES
+          return ATTRIBUTES;
+        case 8: // UNION_FIELD1
+          return UNION_FIELD1;
+        case 9: // UNION_FIELD2
+          return UNION_FIELD2;
+        case 10: // UNION_FIELD3
+          return UNION_FIELD3;
         default:
           return null;
       }
@@ -150,6 +170,20 @@ public class Complex implements org.apache.thrift.TBase<Complex, Complex._Fields
         new org.apache.thrift.meta_data.MapMetaData(org.apache.thrift.protocol.TType.MAP, 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING), 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
+    tmpMap.put(_Fields.ATTRIBUTES, new org.apache.thrift.meta_data.FieldMetaData("attributes", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.MapMetaData(org.apache.thrift.protocol.TType.MAP, 
+            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING), 
+            new org.apache.thrift.meta_data.MapMetaData(org.apache.thrift.protocol.TType.MAP, 
+                new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING), 
+                new org.apache.thrift.meta_data.MapMetaData(org.apache.thrift.protocol.TType.MAP, 
+                    new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING), 
+                    new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, PropValueUnion.class))))));
+    tmpMap.put(_Fields.UNION_FIELD1, new org.apache.thrift.meta_data.FieldMetaData("unionField1", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, PropValueUnion.class)));
+    tmpMap.put(_Fields.UNION_FIELD2, new org.apache.thrift.meta_data.FieldMetaData("unionField2", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, PropValueUnion.class)));
+    tmpMap.put(_Fields.UNION_FIELD3, new org.apache.thrift.meta_data.FieldMetaData("unionField3", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, PropValueUnion.class)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(Complex.class, metaDataMap);
   }
@@ -163,7 +197,11 @@ public class Complex implements org.apache.thrift.TBase<Complex, Complex._Fields
     List<Integer> lint,
     List<String> lString,
     List<IntString> lintString,
-    Map<String,String> mStringString)
+    Map<String,String> mStringString,
+    Map<String,Map<String,Map<String,PropValueUnion>>> attributes,
+    PropValueUnion unionField1,
+    PropValueUnion unionField2,
+    PropValueUnion unionField3)
   {
     this();
     this.aint = aint;
@@ -173,6 +211,10 @@ public class Complex implements org.apache.thrift.TBase<Complex, Complex._Fields
     this.lString = lString;
     this.lintString = lintString;
     this.mStringString = mStringString;
+    this.attributes = attributes;
+    this.unionField1 = unionField1;
+    this.unionField2 = unionField2;
+    this.unionField3 = unionField3;
   }
 
   /**
@@ -220,6 +262,52 @@ public class Complex implements org.apache.thrift.TBase<Complex, Complex._Fields
       }
       this.mStringString = __this__mStringString;
     }
+    if (other.isSetAttributes()) {
+      Map<String,Map<String,Map<String,PropValueUnion>>> __this__attributes = new HashMap<String,Map<String,Map<String,PropValueUnion>>>();
+      for (Map.Entry<String, Map<String,Map<String,PropValueUnion>>> other_element : other.attributes.entrySet()) {
+
+        String other_element_key = other_element.getKey();
+        Map<String,Map<String,PropValueUnion>> other_element_value = other_element.getValue();
+
+        String __this__attributes_copy_key = other_element_key;
+
+        Map<String,Map<String,PropValueUnion>> __this__attributes_copy_value = new HashMap<String,Map<String,PropValueUnion>>();
+        for (Map.Entry<String, Map<String,PropValueUnion>> other_element_value_element : other_element_value.entrySet()) {
+
+          String other_element_value_element_key = other_element_value_element.getKey();
+          Map<String,PropValueUnion> other_element_value_element_value = other_element_value_element.getValue();
+
+          String __this__attributes_copy_value_copy_key = other_element_value_element_key;
+
+          Map<String,PropValueUnion> __this__attributes_copy_value_copy_value = new HashMap<String,PropValueUnion>();
+          for (Map.Entry<String, PropValueUnion> other_element_value_element_value_element : other_element_value_element_value.entrySet()) {
+
+            String other_element_value_element_value_element_key = other_element_value_element_value_element.getKey();
+            PropValueUnion other_element_value_element_value_element_value = other_element_value_element_value_element.getValue();
+
+            String __this__attributes_copy_value_copy_value_copy_key = other_element_value_element_value_element_key;
+
+            PropValueUnion __this__attributes_copy_value_copy_value_copy_value = new PropValueUnion(other_element_value_element_value_element_value);
+
+            __this__attributes_copy_value_copy_value.put(__this__attributes_copy_value_copy_value_copy_key, __this__attributes_copy_value_copy_value_copy_value);
+          }
+
+          __this__attributes_copy_value.put(__this__attributes_copy_value_copy_key, __this__attributes_copy_value_copy_value);
+        }
+
+        __this__attributes.put(__this__attributes_copy_key, __this__attributes_copy_value);
+      }
+      this.attributes = __this__attributes;
+    }
+    if (other.isSetUnionField1()) {
+      this.unionField1 = new PropValueUnion(other.unionField1);
+    }
+    if (other.isSetUnionField2()) {
+      this.unionField2 = new PropValueUnion(other.unionField2);
+    }
+    if (other.isSetUnionField3()) {
+      this.unionField3 = new PropValueUnion(other.unionField3);
+    }
   }
 
   public Complex deepCopy() {
@@ -235,6 +323,10 @@ public class Complex implements org.apache.thrift.TBase<Complex, Complex._Fields
     this.lString = null;
     this.lintString = null;
     this.mStringString = null;
+    this.attributes = null;
+    this.unionField1 = null;
+    this.unionField2 = null;
+    this.unionField3 = null;
   }
 
   public int getAint() {
@@ -430,6 +522,109 @@ public class Complex implements org.apache.thrift.TBase<Complex, Complex._Fields
     }
   }
 
+  public int getAttributesSize() {
+    return (this.attributes == null) ? 0 : this.attributes.size();
+  }
+
+  public void putToAttributes(String key, Map<String,Map<String,PropValueUnion>> val) {
+    if (this.attributes == null) {
+      this.attributes = new HashMap<String,Map<String,Map<String,PropValueUnion>>>();
+    }
+    this.attributes.put(key, val);
+  }
+
+  public Map<String,Map<String,Map<String,PropValueUnion>>> getAttributes() {
+    return this.attributes;
+  }
+
+  public void setAttributes(Map<String,Map<String,Map<String,PropValueUnion>>> attributes) {
+    this.attributes = attributes;
+  }
+
+  public void unsetAttributes() {
+    this.attributes = null;
+  }
+
+  /** Returns true if field attributes is set (has been assigned a value) and false otherwise */
+  public boolean isSetAttributes() {
+    return this.attributes != null;
+  }
+
+  public void setAttributesIsSet(boolean value) {
+    if (!value) {
+      this.attributes = null;
+    }
+  }
+
+  public PropValueUnion getUnionField1() {
+    return this.unionField1;
+  }
+
+  public void setUnionField1(PropValueUnion unionField1) {
+    this.unionField1 = unionField1;
+  }
+
+  public void unsetUnionField1() {
+    this.unionField1 = null;
+  }
+
+  /** Returns true if field unionField1 is set (has been assigned a value) and false otherwise */
+  public boolean isSetUnionField1() {
+    return this.unionField1 != null;
+  }
+
+  public void setUnionField1IsSet(boolean value) {
+    if (!value) {
+      this.unionField1 = null;
+    }
+  }
+
+  public PropValueUnion getUnionField2() {
+    return this.unionField2;
+  }
+
+  public void setUnionField2(PropValueUnion unionField2) {
+    this.unionField2 = unionField2;
+  }
+
+  public void unsetUnionField2() {
+    this.unionField2 = null;
+  }
+
+  /** Returns true if field unionField2 is set (has been assigned a value) and false otherwise */
+  public boolean isSetUnionField2() {
+    return this.unionField2 != null;
+  }
+
+  public void setUnionField2IsSet(boolean value) {
+    if (!value) {
+      this.unionField2 = null;
+    }
+  }
+
+  public PropValueUnion getUnionField3() {
+    return this.unionField3;
+  }
+
+  public void setUnionField3(PropValueUnion unionField3) {
+    this.unionField3 = unionField3;
+  }
+
+  public void unsetUnionField3() {
+    this.unionField3 = null;
+  }
+
+  /** Returns true if field unionField3 is set (has been assigned a value) and false otherwise */
+  public boolean isSetUnionField3() {
+    return this.unionField3 != null;
+  }
+
+  public void setUnionField3IsSet(boolean value) {
+    if (!value) {
+      this.unionField3 = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case AINT:
@@ -480,6 +675,38 @@ public class Complex implements org.apache.thrift.TBase<Complex, Complex._Fields
       }
       break;
 
+    case ATTRIBUTES:
+      if (value == null) {
+        unsetAttributes();
+      } else {
+        setAttributes((Map<String,Map<String,Map<String,PropValueUnion>>>)value);
+      }
+      break;
+
+    case UNION_FIELD1:
+      if (value == null) {
+        unsetUnionField1();
+      } else {
+        setUnionField1((PropValueUnion)value);
+      }
+      break;
+
+    case UNION_FIELD2:
+      if (value == null) {
+        unsetUnionField2();
+      } else {
+        setUnionField2((PropValueUnion)value);
+      }
+      break;
+
+    case UNION_FIELD3:
+      if (value == null) {
+        unsetUnionField3();
+      } else {
+        setUnionField3((PropValueUnion)value);
+      }
+      break;
+
     }
   }
 
@@ -502,6 +729,18 @@ public class Complex implements org.apache.thrift.TBase<Complex, Complex._Fields
 
     case M_STRING_STRING:
       return getMStringString();
+
+    case ATTRIBUTES:
+      return getAttributes();
+
+    case UNION_FIELD1:
+      return getUnionField1();
+
+    case UNION_FIELD2:
+      return getUnionField2();
+
+    case UNION_FIELD3:
+      return getUnionField3();
 
     }
     throw new IllegalStateException();
@@ -526,6 +765,14 @@ public class Complex implements org.apache.thrift.TBase<Complex, Complex._Fields
       return isSetLintString();
     case M_STRING_STRING:
       return isSetMStringString();
+    case ATTRIBUTES:
+      return isSetAttributes();
+    case UNION_FIELD1:
+      return isSetUnionField1();
+    case UNION_FIELD2:
+      return isSetUnionField2();
+    case UNION_FIELD3:
+      return isSetUnionField3();
     }
     throw new IllegalStateException();
   }
@@ -597,6 +844,42 @@ public class Complex implements org.apache.thrift.TBase<Complex, Complex._Fields
         return false;
     }
 
+    boolean this_present_attributes = true && this.isSetAttributes();
+    boolean that_present_attributes = true && that.isSetAttributes();
+    if (this_present_attributes || that_present_attributes) {
+      if (!(this_present_attributes && that_present_attributes))
+        return false;
+      if (!this.attributes.equals(that.attributes))
+        return false;
+    }
+
+    boolean this_present_unionField1 = true && this.isSetUnionField1();
+    boolean that_present_unionField1 = true && that.isSetUnionField1();
+    if (this_present_unionField1 || that_present_unionField1) {
+      if (!(this_present_unionField1 && that_present_unionField1))
+        return false;
+      if (!this.unionField1.equals(that.unionField1))
+        return false;
+    }
+
+    boolean this_present_unionField2 = true && this.isSetUnionField2();
+    boolean that_present_unionField2 = true && that.isSetUnionField2();
+    if (this_present_unionField2 || that_present_unionField2) {
+      if (!(this_present_unionField2 && that_present_unionField2))
+        return false;
+      if (!this.unionField2.equals(that.unionField2))
+        return false;
+    }
+
+    boolean this_present_unionField3 = true && this.isSetUnionField3();
+    boolean that_present_unionField3 = true && that.isSetUnionField3();
+    if (this_present_unionField3 || that_present_unionField3) {
+      if (!(this_present_unionField3 && that_present_unionField3))
+        return false;
+      if (!this.unionField3.equals(that.unionField3))
+        return false;
+    }
+
     return true;
   }
 
@@ -633,6 +916,26 @@ public class Complex implements org.apache.thrift.TBase<Complex, Complex._Fields
     builder.append(present_mStringString);
     if (present_mStringString)
       builder.append(mStringString);
+
+    boolean present_attributes = true && (isSetAttributes());
+    builder.append(present_attributes);
+    if (present_attributes)
+      builder.append(attributes);
+
+    boolean present_unionField1 = true && (isSetUnionField1());
+    builder.append(present_unionField1);
+    if (present_unionField1)
+      builder.append(unionField1);
+
+    boolean present_unionField2 = true && (isSetUnionField2());
+    builder.append(present_unionField2);
+    if (present_unionField2)
+      builder.append(unionField2);
+
+    boolean present_unionField3 = true && (isSetUnionField3());
+    builder.append(present_unionField3);
+    if (present_unionField3)
+      builder.append(unionField3);
 
     return builder.toHashCode();
   }
@@ -705,6 +1008,46 @@ public class Complex implements org.apache.thrift.TBase<Complex, Complex._Fields
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetAttributes()).compareTo(typedOther.isSetAttributes());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetAttributes()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.attributes, typedOther.attributes);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetUnionField1()).compareTo(typedOther.isSetUnionField1());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetUnionField1()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.unionField1, typedOther.unionField1);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetUnionField2()).compareTo(typedOther.isSetUnionField2());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetUnionField2()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.unionField2, typedOther.unionField2);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetUnionField3()).compareTo(typedOther.isSetUnionField3());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetUnionField3()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.unionField3, typedOther.unionField3);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -766,6 +1109,38 @@ public class Complex implements org.apache.thrift.TBase<Complex, Complex._Fields
       sb.append("null");
     } else {
       sb.append(this.mStringString);
+    }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("attributes:");
+    if (this.attributes == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.attributes);
+    }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("unionField1:");
+    if (this.unionField1 == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.unionField1);
+    }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("unionField2:");
+    if (this.unionField2 == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.unionField2);
+    }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("unionField3:");
+    if (this.unionField3 == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.unionField3);
     }
     first = false;
     sb.append(")");
@@ -832,13 +1207,13 @@ public class Complex implements org.apache.thrift.TBase<Complex, Complex._Fields
           case 3: // LINT
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list0 = iprot.readListBegin();
-                struct.lint = new ArrayList<Integer>(_list0.size);
-                for (int _i1 = 0; _i1 < _list0.size; ++_i1)
+                org.apache.thrift.protocol.TList _list18 = iprot.readListBegin();
+                struct.lint = new ArrayList<Integer>(_list18.size);
+                for (int _i19 = 0; _i19 < _list18.size; ++_i19)
                 {
-                  int _elem2; // required
-                  _elem2 = iprot.readI32();
-                  struct.lint.add(_elem2);
+                  int _elem20; // required
+                  _elem20 = iprot.readI32();
+                  struct.lint.add(_elem20);
                 }
                 iprot.readListEnd();
               }
@@ -850,13 +1225,13 @@ public class Complex implements org.apache.thrift.TBase<Complex, Complex._Fields
           case 4: // L_STRING
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list3 = iprot.readListBegin();
-                struct.lString = new ArrayList<String>(_list3.size);
-                for (int _i4 = 0; _i4 < _list3.size; ++_i4)
+                org.apache.thrift.protocol.TList _list21 = iprot.readListBegin();
+                struct.lString = new ArrayList<String>(_list21.size);
+                for (int _i22 = 0; _i22 < _list21.size; ++_i22)
                 {
-                  String _elem5; // required
-                  _elem5 = iprot.readString();
-                  struct.lString.add(_elem5);
+                  String _elem23; // required
+                  _elem23 = iprot.readString();
+                  struct.lString.add(_elem23);
                 }
                 iprot.readListEnd();
               }
@@ -868,14 +1243,14 @@ public class Complex implements org.apache.thrift.TBase<Complex, Complex._Fields
           case 5: // LINT_STRING
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list6 = iprot.readListBegin();
-                struct.lintString = new ArrayList<IntString>(_list6.size);
-                for (int _i7 = 0; _i7 < _list6.size; ++_i7)
+                org.apache.thrift.protocol.TList _list24 = iprot.readListBegin();
+                struct.lintString = new ArrayList<IntString>(_list24.size);
+                for (int _i25 = 0; _i25 < _list24.size; ++_i25)
                 {
-                  IntString _elem8; // required
-                  _elem8 = new IntString();
-                  _elem8.read(iprot);
-                  struct.lintString.add(_elem8);
+                  IntString _elem26; // required
+                  _elem26 = new IntString();
+                  _elem26.read(iprot);
+                  struct.lintString.add(_elem26);
                 }
                 iprot.readListEnd();
               }
@@ -887,19 +1262,91 @@ public class Complex implements org.apache.thrift.TBase<Complex, Complex._Fields
           case 6: // M_STRING_STRING
             if (schemeField.type == org.apache.thrift.protocol.TType.MAP) {
               {
-                org.apache.thrift.protocol.TMap _map9 = iprot.readMapBegin();
-                struct.mStringString = new HashMap<String,String>(2*_map9.size);
-                for (int _i10 = 0; _i10 < _map9.size; ++_i10)
+                org.apache.thrift.protocol.TMap _map27 = iprot.readMapBegin();
+                struct.mStringString = new HashMap<String,String>(2*_map27.size);
+                for (int _i28 = 0; _i28 < _map27.size; ++_i28)
                 {
-                  String _key11; // required
-                  String _val12; // required
-                  _key11 = iprot.readString();
-                  _val12 = iprot.readString();
-                  struct.mStringString.put(_key11, _val12);
+                  String _key29; // required
+                  String _val30; // optional
+                  _key29 = iprot.readString();
+                  _val30 = iprot.readString();
+                  struct.mStringString.put(_key29, _val30);
                 }
                 iprot.readMapEnd();
               }
               struct.setMStringStringIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 7: // ATTRIBUTES
+            if (schemeField.type == org.apache.thrift.protocol.TType.MAP) {
+              {
+                org.apache.thrift.protocol.TMap _map31 = iprot.readMapBegin();
+                struct.attributes = new HashMap<String,Map<String,Map<String,PropValueUnion>>>(2*_map31.size);
+                for (int _i32 = 0; _i32 < _map31.size; ++_i32)
+                {
+                  String _key33; // required
+                  Map<String,Map<String,PropValueUnion>> _val34; // optional
+                  _key33 = iprot.readString();
+                  {
+                    org.apache.thrift.protocol.TMap _map35 = iprot.readMapBegin();
+                    _val34 = new HashMap<String,Map<String,PropValueUnion>>(2*_map35.size);
+                    for (int _i36 = 0; _i36 < _map35.size; ++_i36)
+                    {
+                      String _key37; // required
+                      Map<String,PropValueUnion> _val38; // optional
+                      _key37 = iprot.readString();
+                      {
+                        org.apache.thrift.protocol.TMap _map39 = iprot.readMapBegin();
+                        _val38 = new HashMap<String,PropValueUnion>(2*_map39.size);
+                        for (int _i40 = 0; _i40 < _map39.size; ++_i40)
+                        {
+                          String _key41; // required
+                          PropValueUnion _val42; // optional
+                          _key41 = iprot.readString();
+                          _val42 = new PropValueUnion();
+                          _val42.read(iprot);
+                          _val38.put(_key41, _val42);
+                        }
+                        iprot.readMapEnd();
+                      }
+                      _val34.put(_key37, _val38);
+                    }
+                    iprot.readMapEnd();
+                  }
+                  struct.attributes.put(_key33, _val34);
+                }
+                iprot.readMapEnd();
+              }
+              struct.setAttributesIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 8: // UNION_FIELD1
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+              struct.unionField1 = new PropValueUnion();
+              struct.unionField1.read(iprot);
+              struct.setUnionField1IsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 9: // UNION_FIELD2
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+              struct.unionField2 = new PropValueUnion();
+              struct.unionField2.read(iprot);
+              struct.setUnionField2IsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 10: // UNION_FIELD3
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+              struct.unionField3 = new PropValueUnion();
+              struct.unionField3.read(iprot);
+              struct.setUnionField3IsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -929,9 +1376,9 @@ public class Complex implements org.apache.thrift.TBase<Complex, Complex._Fields
         oprot.writeFieldBegin(LINT_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I32, struct.lint.size()));
-          for (int _iter13 : struct.lint)
+          for (int _iter43 : struct.lint)
           {
-            oprot.writeI32(_iter13);
+            oprot.writeI32(_iter43);
           }
           oprot.writeListEnd();
         }
@@ -941,9 +1388,9 @@ public class Complex implements org.apache.thrift.TBase<Complex, Complex._Fields
         oprot.writeFieldBegin(L_STRING_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.lString.size()));
-          for (String _iter14 : struct.lString)
+          for (String _iter44 : struct.lString)
           {
-            oprot.writeString(_iter14);
+            oprot.writeString(_iter44);
           }
           oprot.writeListEnd();
         }
@@ -953,9 +1400,9 @@ public class Complex implements org.apache.thrift.TBase<Complex, Complex._Fields
         oprot.writeFieldBegin(LINT_STRING_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.lintString.size()));
-          for (IntString _iter15 : struct.lintString)
+          for (IntString _iter45 : struct.lintString)
           {
-            _iter15.write(oprot);
+            _iter45.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -965,13 +1412,57 @@ public class Complex implements org.apache.thrift.TBase<Complex, Complex._Fields
         oprot.writeFieldBegin(M_STRING_STRING_FIELD_DESC);
         {
           oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, struct.mStringString.size()));
-          for (Map.Entry<String, String> _iter16 : struct.mStringString.entrySet())
+          for (Map.Entry<String, String> _iter46 : struct.mStringString.entrySet())
           {
-            oprot.writeString(_iter16.getKey());
-            oprot.writeString(_iter16.getValue());
+            oprot.writeString(_iter46.getKey());
+            oprot.writeString(_iter46.getValue());
           }
           oprot.writeMapEnd();
         }
+        oprot.writeFieldEnd();
+      }
+      if (struct.attributes != null) {
+        oprot.writeFieldBegin(ATTRIBUTES_FIELD_DESC);
+        {
+          oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.MAP, struct.attributes.size()));
+          for (Map.Entry<String, Map<String,Map<String,PropValueUnion>>> _iter47 : struct.attributes.entrySet())
+          {
+            oprot.writeString(_iter47.getKey());
+            {
+              oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.MAP, _iter47.getValue().size()));
+              for (Map.Entry<String, Map<String,PropValueUnion>> _iter48 : _iter47.getValue().entrySet())
+              {
+                oprot.writeString(_iter48.getKey());
+                {
+                  oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRUCT, _iter48.getValue().size()));
+                  for (Map.Entry<String, PropValueUnion> _iter49 : _iter48.getValue().entrySet())
+                  {
+                    oprot.writeString(_iter49.getKey());
+                    _iter49.getValue().write(oprot);
+                  }
+                  oprot.writeMapEnd();
+                }
+              }
+              oprot.writeMapEnd();
+            }
+          }
+          oprot.writeMapEnd();
+        }
+        oprot.writeFieldEnd();
+      }
+      if (struct.unionField1 != null) {
+        oprot.writeFieldBegin(UNION_FIELD1_FIELD_DESC);
+        struct.unionField1.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      if (struct.unionField2 != null) {
+        oprot.writeFieldBegin(UNION_FIELD2_FIELD_DESC);
+        struct.unionField2.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      if (struct.unionField3 != null) {
+        oprot.writeFieldBegin(UNION_FIELD3_FIELD_DESC);
+        struct.unionField3.write(oprot);
         oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
@@ -1010,7 +1501,19 @@ public class Complex implements org.apache.thrift.TBase<Complex, Complex._Fields
       if (struct.isSetMStringString()) {
         optionals.set(5);
       }
-      oprot.writeBitSet(optionals, 6);
+      if (struct.isSetAttributes()) {
+        optionals.set(6);
+      }
+      if (struct.isSetUnionField1()) {
+        optionals.set(7);
+      }
+      if (struct.isSetUnionField2()) {
+        optionals.set(8);
+      }
+      if (struct.isSetUnionField3()) {
+        optionals.set(9);
+      }
+      oprot.writeBitSet(optionals, 10);
       if (struct.isSetAint()) {
         oprot.writeI32(struct.aint);
       }
@@ -1020,46 +1523,79 @@ public class Complex implements org.apache.thrift.TBase<Complex, Complex._Fields
       if (struct.isSetLint()) {
         {
           oprot.writeI32(struct.lint.size());
-          for (int _iter17 : struct.lint)
+          for (int _iter50 : struct.lint)
           {
-            oprot.writeI32(_iter17);
+            oprot.writeI32(_iter50);
           }
         }
       }
       if (struct.isSetLString()) {
         {
           oprot.writeI32(struct.lString.size());
-          for (String _iter18 : struct.lString)
+          for (String _iter51 : struct.lString)
           {
-            oprot.writeString(_iter18);
+            oprot.writeString(_iter51);
           }
         }
       }
       if (struct.isSetLintString()) {
         {
           oprot.writeI32(struct.lintString.size());
-          for (IntString _iter19 : struct.lintString)
+          for (IntString _iter52 : struct.lintString)
           {
-            _iter19.write(oprot);
+            _iter52.write(oprot);
           }
         }
       }
       if (struct.isSetMStringString()) {
         {
           oprot.writeI32(struct.mStringString.size());
-          for (Map.Entry<String, String> _iter20 : struct.mStringString.entrySet())
+          for (Map.Entry<String, String> _iter53 : struct.mStringString.entrySet())
           {
-            oprot.writeString(_iter20.getKey());
-            oprot.writeString(_iter20.getValue());
+            oprot.writeString(_iter53.getKey());
+            oprot.writeString(_iter53.getValue());
           }
         }
+      }
+      if (struct.isSetAttributes()) {
+        {
+          oprot.writeI32(struct.attributes.size());
+          for (Map.Entry<String, Map<String,Map<String,PropValueUnion>>> _iter54 : struct.attributes.entrySet())
+          {
+            oprot.writeString(_iter54.getKey());
+            {
+              oprot.writeI32(_iter54.getValue().size());
+              for (Map.Entry<String, Map<String,PropValueUnion>> _iter55 : _iter54.getValue().entrySet())
+              {
+                oprot.writeString(_iter55.getKey());
+                {
+                  oprot.writeI32(_iter55.getValue().size());
+                  for (Map.Entry<String, PropValueUnion> _iter56 : _iter55.getValue().entrySet())
+                  {
+                    oprot.writeString(_iter56.getKey());
+                    _iter56.getValue().write(oprot);
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      if (struct.isSetUnionField1()) {
+        struct.unionField1.write(oprot);
+      }
+      if (struct.isSetUnionField2()) {
+        struct.unionField2.write(oprot);
+      }
+      if (struct.isSetUnionField3()) {
+        struct.unionField3.write(oprot);
       }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, Complex struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(6);
+      BitSet incoming = iprot.readBitSet(10);
       if (incoming.get(0)) {
         struct.aint = iprot.readI32();
         struct.setAintIsSet(true);
@@ -1070,58 +1606,111 @@ public class Complex implements org.apache.thrift.TBase<Complex, Complex._Fields
       }
       if (incoming.get(2)) {
         {
-          org.apache.thrift.protocol.TList _list21 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I32, iprot.readI32());
-          struct.lint = new ArrayList<Integer>(_list21.size);
-          for (int _i22 = 0; _i22 < _list21.size; ++_i22)
+          org.apache.thrift.protocol.TList _list57 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I32, iprot.readI32());
+          struct.lint = new ArrayList<Integer>(_list57.size);
+          for (int _i58 = 0; _i58 < _list57.size; ++_i58)
           {
-            int _elem23; // required
-            _elem23 = iprot.readI32();
-            struct.lint.add(_elem23);
+            int _elem59; // required
+            _elem59 = iprot.readI32();
+            struct.lint.add(_elem59);
           }
         }
         struct.setLintIsSet(true);
       }
       if (incoming.get(3)) {
         {
-          org.apache.thrift.protocol.TList _list24 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-          struct.lString = new ArrayList<String>(_list24.size);
-          for (int _i25 = 0; _i25 < _list24.size; ++_i25)
+          org.apache.thrift.protocol.TList _list60 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+          struct.lString = new ArrayList<String>(_list60.size);
+          for (int _i61 = 0; _i61 < _list60.size; ++_i61)
           {
-            String _elem26; // required
-            _elem26 = iprot.readString();
-            struct.lString.add(_elem26);
+            String _elem62; // required
+            _elem62 = iprot.readString();
+            struct.lString.add(_elem62);
           }
         }
         struct.setLStringIsSet(true);
       }
       if (incoming.get(4)) {
         {
-          org.apache.thrift.protocol.TList _list27 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-          struct.lintString = new ArrayList<IntString>(_list27.size);
-          for (int _i28 = 0; _i28 < _list27.size; ++_i28)
+          org.apache.thrift.protocol.TList _list63 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+          struct.lintString = new ArrayList<IntString>(_list63.size);
+          for (int _i64 = 0; _i64 < _list63.size; ++_i64)
           {
-            IntString _elem29; // required
-            _elem29 = new IntString();
-            _elem29.read(iprot);
-            struct.lintString.add(_elem29);
+            IntString _elem65; // required
+            _elem65 = new IntString();
+            _elem65.read(iprot);
+            struct.lintString.add(_elem65);
           }
         }
         struct.setLintStringIsSet(true);
       }
       if (incoming.get(5)) {
         {
-          org.apache.thrift.protocol.TMap _map30 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-          struct.mStringString = new HashMap<String,String>(2*_map30.size);
-          for (int _i31 = 0; _i31 < _map30.size; ++_i31)
+          org.apache.thrift.protocol.TMap _map66 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+          struct.mStringString = new HashMap<String,String>(2*_map66.size);
+          for (int _i67 = 0; _i67 < _map66.size; ++_i67)
           {
-            String _key32; // required
-            String _val33; // required
-            _key32 = iprot.readString();
-            _val33 = iprot.readString();
-            struct.mStringString.put(_key32, _val33);
+            String _key68; // required
+            String _val69; // optional
+            _key68 = iprot.readString();
+            _val69 = iprot.readString();
+            struct.mStringString.put(_key68, _val69);
           }
         }
         struct.setMStringStringIsSet(true);
+      }
+      if (incoming.get(6)) {
+        {
+          org.apache.thrift.protocol.TMap _map70 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.MAP, iprot.readI32());
+          struct.attributes = new HashMap<String,Map<String,Map<String,PropValueUnion>>>(2*_map70.size);
+          for (int _i71 = 0; _i71 < _map70.size; ++_i71)
+          {
+            String _key72; // required
+            Map<String,Map<String,PropValueUnion>> _val73; // optional
+            _key72 = iprot.readString();
+            {
+              org.apache.thrift.protocol.TMap _map74 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.MAP, iprot.readI32());
+              _val73 = new HashMap<String,Map<String,PropValueUnion>>(2*_map74.size);
+              for (int _i75 = 0; _i75 < _map74.size; ++_i75)
+              {
+                String _key76; // required
+                Map<String,PropValueUnion> _val77; // optional
+                _key76 = iprot.readString();
+                {
+                  org.apache.thrift.protocol.TMap _map78 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+                  _val77 = new HashMap<String,PropValueUnion>(2*_map78.size);
+                  for (int _i79 = 0; _i79 < _map78.size; ++_i79)
+                  {
+                    String _key80; // required
+                    PropValueUnion _val81; // optional
+                    _key80 = iprot.readString();
+                    _val81 = new PropValueUnion();
+                    _val81.read(iprot);
+                    _val77.put(_key80, _val81);
+                  }
+                }
+                _val73.put(_key76, _val77);
+              }
+            }
+            struct.attributes.put(_key72, _val73);
+          }
+        }
+        struct.setAttributesIsSet(true);
+      }
+      if (incoming.get(7)) {
+        struct.unionField1 = new PropValueUnion();
+        struct.unionField1.read(iprot);
+        struct.setUnionField1IsSet(true);
+      }
+      if (incoming.get(8)) {
+        struct.unionField2 = new PropValueUnion();
+        struct.unionField2.read(iprot);
+        struct.setUnionField2IsSet(true);
+      }
+      if (incoming.get(9)) {
+        struct.unionField3 = new PropValueUnion();
+        struct.unionField3.read(iprot);
+        struct.setUnionField3IsSet(true);
       }
     }
   }

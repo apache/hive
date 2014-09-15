@@ -53,11 +53,12 @@ public class DbTxnManager extends HiveTxnManagerImpl {
   }
 
   @Override
-  public void openTxn(String user) throws LockException {
+  public long openTxn(String user) throws LockException {
     init();
     try {
       txnId = client.openTxn(user);
       LOG.debug("Opened txn " + txnId);
+      return txnId;
     } catch (TException e) {
       throw new LockException(ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg(),
           e);
@@ -88,7 +89,11 @@ public class DbTxnManager extends HiveTxnManagerImpl {
 
     // For each source to read, get a shared lock
     for (ReadEntity input : plan.getInputs()) {
-      if (!input.needsLock()) continue;
+      if (!input.needsLock() || input.isUpdateOrDelete()) {
+        // We don't want to acquire readlocks during update or delete as we'll be acquiring write
+        // locks instead.
+        continue;
+      }
       LockComponentBuilder compBuilder = new LockComponentBuilder();
       compBuilder.setShared();
 
@@ -293,6 +298,11 @@ public class DbTxnManager extends HiveTxnManagerImpl {
 
   @Override
   public boolean useNewShowLocksFormat() {
+    return true;
+  }
+
+  @Override
+  public boolean supportsAcid() {
     return true;
   }
 

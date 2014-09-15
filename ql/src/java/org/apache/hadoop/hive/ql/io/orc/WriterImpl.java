@@ -29,6 +29,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Lists;
+import com.google.protobuf.ByteString;
+import com.google.protobuf.CodedOutputStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -74,10 +78,17 @@ import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.Lists;
-import com.google.protobuf.ByteString;
-import com.google.protobuf.CodedOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.lang.management.ManagementFactory;
+import java.nio.ByteBuffer;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+
+import static com.google.common.base.Preconditions.checkArgument;
 
 /**
  * An ORC file writer. The file is divided into stripes, which is the natural
@@ -2316,17 +2327,19 @@ class WriterImpl implements Writer, MemoryManager.Callback {
     return rawWriter.getPos();
   }
 
-  void appendStripe(byte[] stripe, StripeInformation stripeInfo,
-      OrcProto.StripeStatistics stripeStatistics) throws IOException {
-    appendStripe(stripe, 0, stripe.length, stripeInfo, stripeStatistics);
-  }
-
-  void appendStripe(byte[] stripe, int offset, int length,
+  @Override
+  public void appendStripe(byte[] stripe, int offset, int length,
       StripeInformation stripeInfo,
       OrcProto.StripeStatistics stripeStatistics) throws IOException {
+    checkArgument(stripe != null, "Stripe must not be null");
+    checkArgument(length <= stripe.length,
+        "Specified length must not be greater specified array length");
+    checkArgument(stripeInfo != null, "Stripe information must not be null");
+    checkArgument(stripeStatistics != null,
+        "Stripe statistics must not be null");
+
     getStream();
     long start = rawWriter.getPos();
-
     long stripeLen = length;
     long availBlockSpace = blockSize - (start % blockSize);
 
@@ -2382,7 +2395,8 @@ class WriterImpl implements Writer, MemoryManager.Callback {
     }
   }
 
-  void appendUserMetadata(List<UserMetadataItem> userMetadata) {
+  @Override
+  public void appendUserMetadata(List<UserMetadataItem> userMetadata) {
     if (userMetadata != null) {
       for (UserMetadataItem item : userMetadata) {
         this.userMetadata.put(item.getName(), item.getValue());

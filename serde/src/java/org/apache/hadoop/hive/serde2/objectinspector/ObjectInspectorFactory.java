@@ -26,10 +26,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
+import org.apache.thrift.TUnion;
 
 /**
  * ObjectInspectorFactory is the primary way to create new ObjectInspector
@@ -111,7 +113,8 @@ public final class ObjectInspectorFactory {
     if (t instanceof ParameterizedType) {
       ParameterizedType pt = (ParameterizedType) t;
       // List?
-      if (List.class.isAssignableFrom((Class<?>) pt.getRawType())) {
+      if (List.class.isAssignableFrom((Class<?>) pt.getRawType()) ||
+          Set.class.isAssignableFrom((Class<?>) pt.getRawType())) {
         return getStandardListObjectInspector(getReflectionObjectInspector(pt
             .getActualTypeArguments()[0], options));
       }
@@ -172,7 +175,7 @@ public final class ObjectInspectorFactory {
       oi = new ReflectionStructObjectInspector();
       break;
     case THRIFT:
-      oi = new ThriftStructObjectInspector();
+      oi = TUnion.class.isAssignableFrom(c) ? new ThriftUnionObjectInspector() : new ThriftStructObjectInspector();
       break;
     case PROTOCOL_BUFFERS:
       oi = new ProtocolBuffersStructObjectInspector();
@@ -181,20 +184,13 @@ public final class ObjectInspectorFactory {
       throw new RuntimeException(ObjectInspectorFactory.class.getName()
           + ": internal error.");
     }
+
     // put it into the cache BEFORE it is initialized to make sure we can catch
     // recursive types.
     objectInspectorCache.put(t, oi);
-    Field[] fields = ObjectInspectorUtils.getDeclaredNonStaticFields(c);
-    ArrayList<ObjectInspector> structFieldObjectInspectors = new ArrayList<ObjectInspector>(
-        fields.length);
-    for (int i = 0; i < fields.length; i++) {
-      if (!oi.shouldIgnoreField(fields[i].getName())) {
-        structFieldObjectInspectors.add(getReflectionObjectInspector(fields[i]
-            .getGenericType(), options));
-      }
-    }
-    oi.init(c, structFieldObjectInspectors);
+    oi.init(c, options);
     return oi;
+
   }
 
   static ConcurrentHashMap<ObjectInspector, StandardListObjectInspector> cachedStandardListObjectInspector =

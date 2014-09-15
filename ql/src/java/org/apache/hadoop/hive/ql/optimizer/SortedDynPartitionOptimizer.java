@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.optimizer;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,6 +43,7 @@ import org.apache.hadoop.hive.ql.exec.OperatorUtils;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
@@ -173,8 +175,22 @@ public class SortedDynPartitionOptimizer implements Transform {
           destTable.getCols());
       ObjectPair<List<Integer>, List<Integer>> sortOrderPositions = getSortPositionsOrder(
           destTable.getSortCols(), destTable.getCols());
-      List<Integer> sortPositions = sortOrderPositions.getFirst();
-      List<Integer> sortOrder = sortOrderPositions.getSecond();
+      List<Integer> sortPositions = null;
+      List<Integer> sortOrder = null;
+      if (fsOp.getConf().getWriteType() == AcidUtils.Operation.UPDATE ||
+          fsOp.getConf().getWriteType() == AcidUtils.Operation.DELETE) {
+        // When doing updates and deletes we always want to sort on the rowid because the ACID
+        // reader will expect this sort order when doing reads.  So
+        // ignore whatever comes from the table and enforce this sort order instead.
+        sortPositions = Arrays.asList(0);
+        sortOrder = Arrays.asList(1); // 1 means asc, could really use enum here in the thrift if
+      } else {
+        sortPositions = sortOrderPositions.getFirst();
+        sortOrder = sortOrderPositions.getSecond();
+      }
+      LOG.debug("Got sort order");
+      for (int i : sortPositions) LOG.debug("sort position " + i);
+      for (int i : sortOrder) LOG.debug("sort order " + i);
       List<Integer> partitionPositions = getPartitionPositions(dpCtx, fsParent.getSchema());
       List<ColumnInfo> colInfos = parseCtx.getOpParseCtx().get(fsParent).getRowResolver()
           .getColumnInfos();
@@ -198,7 +214,7 @@ public class SortedDynPartitionOptimizer implements Transform {
         colExprMap.put(ci.getInternalName(), newValueCols.get(newValueCols.size() - 1));
       }
       ReduceSinkDesc rsConf = getReduceSinkDesc(partitionPositions, sortPositions, sortOrder,
-          newValueCols, bucketColumns, numBuckets, fsParent);
+          newValueCols, bucketColumns, numBuckets, fsParent, fsOp.getConf().getWriteType());
 
       // Create ReduceSink operator
       ReduceSinkOperator rsOp = (ReduceSinkOperator) putOpInsertMap(
@@ -319,7 +335,7 @@ public class SortedDynPartitionOptimizer implements Transform {
     public ReduceSinkDesc getReduceSinkDesc(List<Integer> partitionPositions,
         List<Integer> sortPositions, List<Integer> sortOrder, ArrayList<ExprNodeDesc> newValueCols,
         ArrayList<ExprNodeDesc> bucketColumns, int numBuckets,
-        Operator<? extends OperatorDesc> parent) {
+        Operator<? extends OperatorDesc> parent, AcidUtils.Operation writeType) {
 
       // Order of KEY columns
       // 1) Partition columns
@@ -409,7 +425,7 @@ public class SortedDynPartitionOptimizer implements Transform {
       // Number of reducers is set to default (-1)
       ReduceSinkDesc rsConf = new ReduceSinkDesc(newKeyCols, newKeyCols.size(), newValueCols,
           outputKeyCols, distinctColumnIndices, outValColNames, -1, newPartCols, -1, keyTable,
-          valueTable);
+          valueTable, writeType);
       rsConf.setBucketCols(bucketColumns);
       rsConf.setNumBuckets(numBuckets);
 

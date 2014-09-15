@@ -208,6 +208,11 @@ public class SessionState {
   private String hdfsScratchDirURIString;
 
   /**
+   * Next value to use in naming a temporary table created by an insert...values statement
+   */
+  private int nextValueTempTableSuffix = 1;
+
+  /**
    * Transaction manager to use for this session.  This is instantiated lazily by
    * {@link #initTxnMgr(org.apache.hadoop.hive.conf.HiveConf)}
    */
@@ -608,7 +613,7 @@ public class SessionState {
       hdfsSessionPath.getFileSystem(conf).delete(hdfsSessionPath, true);
     }
     if (localSessionPath != null) {
-      localSessionPath.getFileSystem(conf).delete(localSessionPath, true);
+      FileSystem.getLocal(conf).delete(localSessionPath, true);
     }
   }
 
@@ -1339,6 +1344,14 @@ public class SessionState {
    */
   public void setUserIpAddress(String userIpAddress) {
     this.userIpAddress = userIpAddress;
+  }
+
+  /**
+   * Get the next suffix to use in naming a temporary table created by insert...values
+   * @return suffix
+   */
+  public String getNextValuesTempTableSuffix() {
+    return Integer.toString(nextValueTempTableSuffix++);
   }
 
 }

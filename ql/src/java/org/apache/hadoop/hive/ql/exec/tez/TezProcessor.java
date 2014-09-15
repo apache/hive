@@ -17,12 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.exec.tez;
 
-import java.io.IOException;
-import java.text.NumberFormat;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -40,6 +34,11 @@ import org.apache.tez.runtime.api.LogicalOutput;
 import org.apache.tez.runtime.api.ProcessorContext;
 import org.apache.tez.runtime.library.api.KeyValueWriter;
 
+import java.io.IOException;
+import java.text.NumberFormat;
+import java.util.List;
+import java.util.Map;
+
 /**
  * Hive processor for Tez that forms the vertices in Tez and processes the data.
  * Does what ExecMapper and ExecReducer does for hive in MR framework.
@@ -51,12 +50,14 @@ public class TezProcessor extends AbstractLogicalIOProcessor {
   private static final Log LOG = LogFactory.getLog(TezProcessor.class);
   protected boolean isMap = false;
 
-  RecordProcessor rproc = null;
+  protected RecordProcessor rproc = null;
 
-  private JobConf jobConf;
+  protected JobConf jobConf;
 
   private static final String CLASS_NAME = TezProcessor.class.getName();
   private final PerfLogger perfLogger = PerfLogger.getPerfLogger();
+
+  protected ProcessorContext processorContext;
 
   protected static final NumberFormat taskIdFormat = NumberFormat.getInstance();
   protected static final NumberFormat jobIdFormat = NumberFormat.getInstance();
@@ -121,9 +122,6 @@ public class TezProcessor extends AbstractLogicalIOProcessor {
   public void run(Map<String, LogicalInput> inputs, Map<String, LogicalOutput> outputs)
       throws Exception {
 
-    Throwable originalThrowable = null;
-
-    try{
       perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_RUN_PROCESSOR);
       // in case of broadcast-join read the broadcast edge inputs
       // (possibly asynchronously)
@@ -142,14 +140,23 @@ public class TezProcessor extends AbstractLogicalIOProcessor {
         rproc = new ReduceRecordProcessor();
       }
 
+      initializeAndRunProcessor(inputs, outputs);
+  }
+
+  protected void initializeAndRunProcessor(Map<String, LogicalInput> inputs,
+      Map<String, LogicalOutput> outputs)
+      throws Exception {
+    Throwable originalThrowable = null;
+    try {
       TezCacheAccess cacheAccess = TezCacheAccess.createInstance(jobConf);
       // Start the actual Inputs. After MRInput initialization.
-      for (Entry<String, LogicalInput> inputEntry : inputs.entrySet()) {
+      for (Map.Entry<String, LogicalInput> inputEntry : inputs.entrySet()) {
         if (!cacheAccess.isInputCached(inputEntry.getKey())) {
           LOG.info("Input: " + inputEntry.getKey() + " is not cached");
           inputEntry.getValue().start();
         } else {
-          LOG.info("Input: " + inputEntry.getKey() + " is already cached. Skipping start");
+          LOG.info("Input: " + inputEntry.getKey() +
+              " is already cached. Skipping start");
         }
       }
 
@@ -170,7 +177,7 @@ public class TezProcessor extends AbstractLogicalIOProcessor {
       }
 
       try {
-        if(rproc != null){
+        if (rproc != null) {
           rproc.close();
         }
       } catch (Throwable t) {

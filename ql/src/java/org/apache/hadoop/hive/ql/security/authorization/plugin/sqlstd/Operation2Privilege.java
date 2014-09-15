@@ -267,9 +267,9 @@ public class Operation2Privilege {
 
     // select with grant for exporting contents
     op2Priv.put(HiveOperationType.EXPORT, PrivRequirement.newIOPrivRequirement
-(SEL_GRANT_AR, null));
+(SEL_GRANT_AR, OWNER_INS_SEL_DEL_NOGRANT_AR));
     op2Priv.put(HiveOperationType.IMPORT, PrivRequirement.newIOPrivRequirement
-(INS_NOGRANT_AR, null));
+(OWNER_INS_SEL_DEL_NOGRANT_AR, INS_NOGRANT_AR));
 
     // operations require select priv
     op2Priv.put(HiveOperationType.SHOWCOLUMNS, PrivRequirement.newIOPrivRequirement

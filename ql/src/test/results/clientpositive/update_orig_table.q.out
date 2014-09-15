@@ -1,0 +1,59 @@
+PREHOOK: query: create table acid_uot(
+    ctinyint TINYINT,
+    csmallint SMALLINT,
+    cint INT,
+    cbigint BIGINT,
+    cfloat FLOAT,
+    cdouble DOUBLE,
+    cstring1 STRING,
+    cstring2 STRING,
+    ctimestamp1 TIMESTAMP,
+    ctimestamp2 TIMESTAMP,
+    cboolean1 BOOLEAN,
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@acid_uot
+POSTHOOK: query: create table acid_uot(
+    ctinyint TINYINT,
+    csmallint SMALLINT,
+    cint INT,
+    cbigint BIGINT,
+    cfloat FLOAT,
+    cdouble DOUBLE,
+    cstring1 STRING,
+    cstring2 STRING,
+    ctimestamp1 TIMESTAMP,
+    ctimestamp2 TIMESTAMP,
+    cboolean1 BOOLEAN,
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@acid_uot
+PREHOOK: query: update acid_uot set cstring1 = 'fred' where cint < -1070551679
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acid_uot
+PREHOOK: Output: default@acid_uot
+POSTHOOK: query: update acid_uot set cstring1 = 'fred' where cint < -1070551679
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid_uot
+POSTHOOK: Output: default@acid_uot
+PREHOOK: query: select * from acid_uot where cstring1 = 'fred'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acid_uot
+#### A masked pattern was here ####
+POSTHOOK: query: select * from acid_uot where cstring1 = 'fred'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid_uot
+#### A masked pattern was here ####
+-51	NULL	-1071480828	-1401575336	-51.0	NULL	fred	4uE7l74tESBiKfu7c8wM7GA	1969-12-31 16:00:08.451	NULL	true	true
+NULL	-5470	-1072076362	1864027286	NULL	-5470.0	fred	4KWs6gw7lv2WYd66P	NULL	1969-12-31 16:00:01.836	true	true
+NULL	8373	-1072081801	1864027286	NULL	8373.0	fred	4KWs6gw7lv2WYd66P	NULL	1969-12-31 15:59:56.465	true	true
+8	NULL	-1071363017	1349676361	8.0	NULL	fred	IwE1G7Qb0B1NEfV030g	1969-12-31 16:00:15.892	NULL	true	true
+NULL	-7382	-1073051226	-1887561756	NULL	-7382.0	fred	4hA4KQj2vD3fI6gX82220d	NULL	1969-12-31 16:00:10.331	false	false
+11	NULL	-1073279343	-1595604468	11.0	NULL	fred	P76636jJ6qM17d7DIy	1969-12-31 16:00:02.351	NULL	true	true
+11	NULL	-1072910839	2048385991	11.0	NULL	fred	KbaDXiN85adbHRx58v	1969-12-31 16:00:02.351	NULL	false	false
+NULL	-741	-1070883071	-1645852809	NULL	-741.0	fred	xH7445Rals48VOulSyR5F	NULL	1969-12-31 15:59:51.293	false	false
+#### A masked pattern was here ####
