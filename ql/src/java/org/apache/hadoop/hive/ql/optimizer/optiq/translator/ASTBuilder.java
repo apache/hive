@@ -153,9 +153,15 @@ class ASTBuilder {
       val = literal.getValue3();
       type = HiveParser.BigintLiteral;
       break;
-    case DECIMAL:
-    case FLOAT:
     case DOUBLE:
+      val = literal.getValue3()+"D";
+      type = HiveParser.Number;
+      break;
+    case DECIMAL:
+      val = literal.getValue3()+"BD";
+      type = HiveParser.DecimalLiteral;
+      break;
+    case FLOAT:
     case REAL:
       val = literal.getValue3();
       type = HiveParser.Number;
