@@ -44,6 +44,7 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
+import org.apache.hadoop.hive.ql.exec.MoveTask;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -95,6 +96,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzerFactory;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.VariableSubstitution;
+import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
@@ -135,6 +137,9 @@ public class Driver implements CommandProcessor {
   private String errorMessage;
   private String SQLState;
   private Throwable downstreamError;
+
+  // A list of FileSinkOperators writing in an ACID compliant manner
+  private Set<FileSinkDesc> acidSinks;
 
   // A limit on the number of threads that can be launched
   private int maxthreads;
@@ -407,6 +412,9 @@ public class Driver implements CommandProcessor {
       } else {
         sem.analyze(tree, ctx);
       }
+      // Record any ACID compliant FileSinkOperators we saw so we can add our transaction ID to
+      // them later.
+      acidSinks = sem.getAcidFileSinks();
 
       LOG.info("Semantic Analysis Completed");
 
@@ -722,6 +730,11 @@ public class Driver implements CommandProcessor {
         //do not authorize temporary uris
         continue;
       }
+      if (privObject instanceof ReadEntity && ((ReadEntity)privObject).isUpdateOrDelete()) {
+        // Skip this one, as we don't want to check select privileges for the table we're reading
+        // for an update or delete.
+        continue;
+      }
 
       //support for authorization on partitions needs to be added
       String dbname = null;
@@ -858,7 +871,9 @@ public class Driver implements CommandProcessor {
   private int recordValidTxns() {
     try {
       ValidTxnList txns = SessionState.get().getTxnMgr().getValidTxns();
-      conf.set(ValidTxnList.VALID_TXNS_KEY, txns.toString());
+      String txnStr = txns.toString();
+      conf.set(ValidTxnList.VALID_TXNS_KEY, txnStr);
+      LOG.debug("Encoding valid txns info " + txnStr);
       return 0;
     } catch (LockException e) {
       errorMessage = "FAILED: Error in determing valid transactions: " + e.getMessage();
@@ -876,13 +891,44 @@ public class Driver implements CommandProcessor {
    * pretty simple. If all the locks cannot be obtained, error out. Deadlock is avoided by making
    * sure that the locks are lexicographically sorted.
    **/
-  private int acquireReadWriteLocks() {
+  private int acquireLocksAndOpenTxn() {
     PerfLogger perfLogger = PerfLogger.getPerfLogger();
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.ACQUIRE_READ_WRITE_LOCKS);
 
+    SessionState ss = SessionState.get();
+    HiveTxnManager txnMgr = ss.getTxnMgr();
 
     try {
-      SessionState.get().getTxnMgr().acquireLocks(plan, ctx, userName);
+      // Don't use the userName member, as it may or may not have been set.  Get the value from
+      // conf, which calls into getUGI to figure out who the process is running as.
+      String userFromUGI;
+      try {
+        userFromUGI = conf.getUser();
+      } catch (IOException e) {
+        errorMessage = "FAILED: Error in determining user while acquiring locks: " + e.getMessage();
+        SQLState = ErrorMsg.findSQLState(e.getMessage());
+        downstreamError = e;
+        console.printError(errorMessage,
+            "\n" + org.apache.hadoop.util.StringUtils.stringifyException(e));
+        return 10;
+      }
+      if (acidSinks != null && acidSinks.size() > 0) {
+        // We are writing to tables in an ACID compliant way, so we need to open a transaction
+        long txnId = ss.getCurrentTxn();
+        if (txnId == SessionState.NO_CURRENT_TXN) {
+          txnId = txnMgr.openTxn(userFromUGI);
+          ss.setCurrentTxn(txnId);
+        }
+        // Set the transaction id in all of the acid file sinks
+        if (acidSinks != null) {
+          for (FileSinkDesc desc : acidSinks) {
+            desc.setTransactionId(txnId);
+          }
+        }
+      }
+
+      txnMgr.acquireLocks(plan, ctx, userFromUGI);
+
       return 0;
     } catch (LockException e) {
       errorMessage = "FAILED: Error in acquiring locks: " + e.getMessage();
@@ -900,13 +946,33 @@ public class Driver implements CommandProcessor {
    * @param hiveLocks
    *          list of hive locks to be released Release all the locks specified. If some of the
    *          locks have already been released, ignore them
+   * @param commit if there is an open transaction and if true, commit,
+   *               if false rollback.  If there is no open transaction this parameter is ignored.
+   *
    **/
-  private void releaseLocks(List<HiveLock> hiveLocks) throws LockException {
+  private void releaseLocksAndCommitOrRollback(List<HiveLock> hiveLocks, boolean commit)
+      throws LockException {
     PerfLogger perfLogger = PerfLogger.getPerfLogger();
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.RELEASE_LOCKS);
 
-    if (hiveLocks != null) {
-      SessionState.get().getTxnMgr().getLockManager().releaseLocks(hiveLocks);
+    SessionState ss = SessionState.get();
+    HiveTxnManager txnMgr = ss.getTxnMgr();
+    // If we've opened a transaction we need to commit or rollback rather than explicitly
+    // releasing the locks.
+    if (ss.getCurrentTxn() != SessionState.NO_CURRENT_TXN && ss.isAutoCommit()) {
+      try {
+        if (commit) {
+          txnMgr.commitTxn();
+        } else {
+          txnMgr.rollbackTxn();
+        }
+      } finally {
+        ss.setCurrentTxn(SessionState.NO_CURRENT_TXN);
+      }
+    } else {
+      if (hiveLocks != null) {
+        txnMgr.getLockManager().releaseLocks(hiveLocks);
+      }
     }
     ctx.setHiveLocks(null);
 
@@ -993,7 +1059,7 @@ public class Driver implements CommandProcessor {
     }
     if (ret != 0) {
       try {
-        releaseLocks(ctx.getHiveLocks());
+        releaseLocksAndCommitOrRollback(ctx.getHiveLocks(), false);
       } catch (LockException e) {
         LOG.warn("Exception in releasing locks. "
             + org.apache.hadoop.util.StringUtils.stringifyException(e));
@@ -1096,10 +1162,10 @@ public class Driver implements CommandProcessor {
     }
 
     if (requireLock) {
-      ret = acquireReadWriteLocks();
+      ret = acquireLocksAndOpenTxn();
       if (ret != 0) {
         try {
-          releaseLocks(ctx.getHiveLocks());
+          releaseLocksAndCommitOrRollback(ctx.getHiveLocks(), false);
         } catch (LockException e) {
           // Not much to do here
         }
@@ -1111,7 +1177,7 @@ public class Driver implements CommandProcessor {
     if (ret != 0) {
       //if needRequireLock is false, the release here will do nothing because there is no lock
       try {
-        releaseLocks(ctx.getHiveLocks());
+        releaseLocksAndCommitOrRollback(ctx.getHiveLocks(), false);
       } catch (LockException e) {
         // Nothing to do here
       }
@@ -1120,7 +1186,7 @@ public class Driver implements CommandProcessor {
 
     //if needRequireLock is false, the release here will do nothing because there is no lock
     try {
-      releaseLocks(ctx.getHiveLocks());
+      releaseLocksAndCommitOrRollback(ctx.getHiveLocks(), true);
     } catch (LockException e) {
       errorMessage = "FAILED: Hive Internal Error: " + Utilities.getNameMessage(e);
       SQLState = ErrorMsg.findSQLState(e.getMessage());
@@ -1523,10 +1589,17 @@ public class Driver implements CommandProcessor {
 
     cxt.launching(tskRun);
     // Launch Task
-    if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.EXECPARALLEL) && tsk.isMapRedTask()) {
+    if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.EXECPARALLEL)
+        && (tsk.isMapRedTask() || (tsk instanceof MoveTask))) {
       // Launch it in the parallel mode, as a separate thread only for MR tasks
+      if (LOG.isInfoEnabled()){
+        LOG.info("Starting task [" + tsk + "] in parallel");
+      }
       tskRun.start();
     } else {
+      if (LOG.isInfoEnabled()){
+        LOG.info("Starting task [" + tsk + "] in serial mode");
+      }
       tskRun.runSequential();
     }
     return tskRun;
@@ -1658,7 +1731,7 @@ public class Driver implements CommandProcessor {
     destroyed = true;
     if (ctx != null) {
       try {
-        releaseLocks(ctx.getHiveLocks());
+        releaseLocksAndCommitOrRollback(ctx.getHiveLocks(), false);
       } catch (LockException e) {
         LOG.warn("Exception when releasing locking in destroy: " +
             e.getMessage());

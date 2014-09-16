@@ -18,6 +18,16 @@
 
 namespace java org.apache.hadoop.hive.serde2.thrift.test
 
+union PropValueUnion {
+	1: optional i32 intValue;
+	2: optional i64 longValue;
+	3: optional string stringValue;
+	4: optional double doubleValue;
+	5: optional bool flag;
+	6: list<string> lString;
+	7: map<string, string> unionMStringString;
+}
+
 struct IntString {
   1: i32  myint;
   2: string myString;
@@ -31,4 +41,13 @@ struct Complex {
   4: list<string> lString;
   5: list<IntString> lintString;
   6: map<string, string> mStringString;
+  7: map<string,map<string,map<string,PropValueUnion>>> attributes;
+  8: PropValueUnion unionField1;
+  9: PropValueUnion unionField2;
+  10: PropValueUnion unionField3;
+}
+
+struct SetIntString {
+  1: set<IntString> sIntString;
+  2: string aString;
 }

@@ -107,12 +107,16 @@ STAGE PLANS:
     Stats-Aggr Operator
 
   Stage: Stage-3
-    Merge Work
+    Merge File Operator
+      Map Operator Tree:
+          ORC File Merge Operator
       merge level: stripe
       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
 
   Stage: Stage-5
-    Merge Work
+    Merge File Operator
+      Map Operator Tree:
+          ORC File Merge Operator
       merge level: stripe
       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
 
@@ -161,7 +165,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	1000                
 	rawDataSize         	94000               
-	totalSize           	4762                
+	totalSize           	4834                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

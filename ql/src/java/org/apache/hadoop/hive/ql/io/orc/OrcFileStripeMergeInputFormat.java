@@ -18,16 +18,16 @@
 
 package org.apache.hadoop.hive.ql.io.orc;
 
-import java.io.IOException;
-
-import org.apache.hadoop.hive.ql.io.merge.MergeInputFormat;
+import org.apache.hadoop.hive.ql.io.merge.MergeFileInputFormat;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 
-public class OrcFileStripeMergeInputFormat extends MergeInputFormat {
+import java.io.IOException;
+
+public class OrcFileStripeMergeInputFormat extends MergeFileInputFormat {
 
   @Override
   public RecordReader<OrcFileKeyWrapper, OrcFileValueWrapper> getRecordReader(

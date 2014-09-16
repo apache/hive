@@ -48,9 +48,9 @@ columns:struct columns { i32 key, string value}
 partitioned:false
 partitionColumns:
 totalNumberFiles:3
-totalFileSize:7380
-maxFileSize:2460
-minFileSize:2460
+totalFileSize:7488
+maxFileSize:2496
+minFileSize:2496
 #### A masked pattern was here ####
 
 PREHOOK: query: desc extended src_orc_merge_test_stat
@@ -92,7 +92,7 @@ Table Parameters:
 	numFiles            	3                   
 	numRows             	1500                
 	rawDataSize         	141000              
-	totalSize           	7380                
+	totalSize           	7488                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -142,7 +142,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	1500                
 	rawDataSize         	141000              
-	totalSize           	7059                
+	totalSize           	7167                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -212,9 +212,9 @@ columns:struct columns { i32 key, string value}
 partitioned:true
 partitionColumns:struct partition_columns { string ds}
 totalNumberFiles:3
-totalFileSize:7380
-maxFileSize:2460
-minFileSize:2460
+totalFileSize:7488
+maxFileSize:2496
+minFileSize:2496
 #### A masked pattern was here ####
 
 PREHOOK: query: desc formatted src_orc_merge_test_part_stat partition (ds='2011')
@@ -245,7 +245,7 @@ Partition Parameters:
 	numFiles            	3                   
 	numRows             	500                 
 	rawDataSize         	47000               
-	totalSize           	7380                
+	totalSize           	7488                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -294,7 +294,7 @@ Partition Parameters:
 	numFiles            	3                   
 	numRows             	1500                
 	rawDataSize         	141000              
-	totalSize           	7380                
+	totalSize           	7488                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -351,7 +351,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	1500                
 	rawDataSize         	141000              
-	totalSize           	7059                
+	totalSize           	7167                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

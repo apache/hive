@@ -23,6 +23,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.CastDecimalToLong;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.CastDoubleToLong;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.CastTimestampToLongViaLongToLong;
+import org.apache.hadoop.hive.ql.io.RecordIdentifier;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
@@ -200,6 +201,21 @@ public class UDFToInteger extends UDF {
       return null;
     } else {
       intWritable.set(i.getHiveDecimal().intValue());
+      return intWritable;
+    }
+  }
+
+  /**
+   * Convert a RecordIdentifier.  This is done so that we can use the RecordIdentifier in place
+   * of the bucketing column.
+   * @param i RecordIdentifier to convert
+   * @return value of the bucket identifier
+   */
+  public IntWritable evaluate(RecordIdentifier i) {
+    if (i == null) {
+      return null;
+    } else {
+      intWritable.set(i.getBucketId());
       return intWritable;
     }
   }

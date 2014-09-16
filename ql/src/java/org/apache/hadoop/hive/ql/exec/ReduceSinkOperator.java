@@ -29,6 +29,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -43,8 +44,10 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardUnionObjectInspector.StandardUnion;
+import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.UnionObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspector;
 import org.apache.hadoop.io.BinaryComparable;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.IntWritable;
@@ -131,10 +134,18 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
   // TODO: we only ever use one row of these at a time. Why do we need to cache multiple?
   protected transient Object[][] cachedKeys;
 
+  private StructField recIdField; // field to look for record identifier in
+  private StructField bucketField; // field to look for bucket in record identifier
+  private StructObjectInspector acidRowInspector; // row inspector used by acid options
+  private StructObjectInspector recIdInspector; // OI for the record identifier
+  private IntObjectInspector bucketInspector; // OI for the bucket field in the record id
+
   @Override
   protected void initializeOp(Configuration hconf) throws HiveException {
     try {
       List<ExprNodeDesc> keys = conf.getKeyCols();
+      LOG.debug("keys size is " + keys.size());
+      for (ExprNodeDesc k : keys) LOG.debug("Key exprNodeDesc " + k.getExprString());
       keyEval = new ExprNodeEvaluator[keys.size()];
       int i = 0;
       for (ExprNodeDesc e : keys) {
@@ -259,6 +270,20 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
         // TODO: this is fishy - we init object inspectors based on first tag. We
         //       should either init for each tag, or if rowInspector doesn't really
         //       matter, then we can create this in ctor and get rid of firstRow.
+        if (conf.getWriteType() == AcidUtils.Operation.UPDATE ||
+            conf.getWriteType() == AcidUtils.Operation.DELETE) {
+          assert rowInspector instanceof StructObjectInspector :
+              "Exptected rowInspector to be instance of StructObjectInspector but it is a " +
+                  rowInspector.getClass().getName();
+          acidRowInspector = (StructObjectInspector)rowInspector;
+          // The record identifier is always in the first column
+          recIdField = acidRowInspector.getAllStructFieldRefs().get(0);
+          recIdInspector = (StructObjectInspector)recIdField.getFieldObjectInspector();
+          // The bucket field is in the second position
+          bucketField = recIdInspector.getAllStructFieldRefs().get(1);
+          bucketInspector = (IntObjectInspector)bucketField.getFieldObjectInspector();
+        }
+
         LOG.info("keys are " + conf.getOutputKeyColumnNames() + " num distributions: " + conf.getNumDistributionKeys());
         keyObjectInspector = initEvaluatorsAndReturnStruct(keyEval,
             distinctColIndices,
@@ -283,6 +308,11 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
       if (bucketEval != null) {
         buckNum = computeBucketNumber(row, conf.getNumBuckets());
         cachedKeys[0][buckColIdxInKey] = new IntWritable(buckNum);
+      } else if (conf.getWriteType() == AcidUtils.Operation.UPDATE ||
+          conf.getWriteType() == AcidUtils.Operation.DELETE) {
+        // In the non-partitioned case we still want to compute the bucket number for updates and
+        // deletes.
+        buckNum = computeBucketNumber(row, conf.getNumBuckets());
       }
 
       HiveKey firstKey = toHiveKey(cachedKeys[0], tag, null);
@@ -339,9 +369,20 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
 
   private int computeBucketNumber(Object row, int numBuckets) throws HiveException {
     int buckNum = 0;
-    for (int i = 0; i < bucketEval.length; i++) {
-      Object o = bucketEval[i].evaluate(row);
-      buckNum = buckNum * 31 + ObjectInspectorUtils.hashCode(o, bucketObjectInspectors[i]);
+
+    if (conf.getWriteType() == AcidUtils.Operation.UPDATE ||
+        conf.getWriteType() == AcidUtils.Operation.DELETE) {
+      // We don't need to evalute the hash code.  Instead read the bucket number directly from
+      // the row.  I don't need to evaluate any expressions as I know I am reading the ROW__ID
+      // column directly.
+      Object recIdValue = acidRowInspector.getStructFieldData(row, recIdField);
+      buckNum = bucketInspector.get(recIdInspector.getStructFieldData(recIdValue, bucketField));
+      LOG.debug("Acid choosing bucket number " + buckNum);
+    } else {
+      for (int i = 0; i < bucketEval.length; i++) {
+        Object o = bucketEval[i].evaluate(row);
+        buckNum = buckNum * 31 + ObjectInspectorUtils.hashCode(o, bucketObjectInspectors[i]);
+      }
     }
 
     if (buckNum < 0) {
@@ -385,14 +426,19 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
     // Evaluate the HashCode
     int keyHashCode = 0;
     if (partitionEval.length == 0) {
-      // If no partition cols, just distribute the data uniformly to provide better
-      // load balance. If the requirement is to have a single reducer, we should set
-      // the number of reducers to 1.
-      // Use a constant seed to make the code deterministic.
-      if (random == null) {
-        random = new Random(12345);
+      // If no partition cols and not doing an update or delete, just distribute the data uniformly
+      // to provide better load balance. If the requirement is to have a single reducer, we should
+      // set the number of reducers to 1. Use a constant seed to make the code deterministic.
+      // For acid operations make sure to send all records with the same key to the same
+      // FileSinkOperator, as the RecordUpdater interface can't manage multiple writers for a file.
+      if (conf.getWriteType() == AcidUtils.Operation.NOT_ACID) {
+        if (random == null) {
+          random = new Random(12345);
+        }
+        keyHashCode = random.nextInt();
+      } else {
+        keyHashCode = 1;
       }
-      keyHashCode = random.nextInt();
     } else {
       for (int i = 0; i < partitionEval.length; i++) {
         Object o = partitionEval[i].evaluate(row);
@@ -400,6 +446,7 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
             + ObjectInspectorUtils.hashCode(o, partitionObjectInspectors[i]);
       }
     }
+    LOG.debug("Going to return hash code " + (keyHashCode * 31 + buckNum));
     return buckNum < 0  ? keyHashCode : keyHashCode * 31 + buckNum;
   }
 

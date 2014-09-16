@@ -7,10 +7,6 @@
 package org.apache.hadoop.hive.ql.plan.api;
 
 
-import java.util.Map;
-import java.util.HashMap;
-import org.apache.thrift.TEnum;
-
 public enum OperatorType implements org.apache.thrift.TEnum {
   JOIN(0),
   MAPJOIN(1),
@@ -33,7 +29,9 @@ public enum OperatorType implements org.apache.thrift.TEnum {
   PTF(18),
   MUX(19),
   DEMUX(20),
-  EVENT(21);
+  EVENT(21),
+  ORCFILEMERGE(22),
+  RCFILEMERGE(23);
 
   private final int value;
 
@@ -98,6 +96,10 @@ public enum OperatorType implements org.apache.thrift.TEnum {
         return DEMUX;
       case 21:
         return EVENT;
+      case 22:
+        return ORCFILEMERGE;
+      case 23:
+        return RCFILEMERGE;
       default:
         return null;
     }

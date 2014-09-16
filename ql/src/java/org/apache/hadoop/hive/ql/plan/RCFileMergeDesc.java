@@ -15,21 +15,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.hadoop.hive.ql.plan;
 
-package org.apache.hadoop.hive.ql.io.merge;
+import org.apache.hadoop.fs.Path;
 
-import java.io.IOException;
+/**
+ * Descriptor for Fast file merge RC file operator.
+ */
+@Explain(displayName = "RCFile Merge Operator")
+public class RCFileMergeDesc extends FileMergeDesc {
 
-import org.apache.hadoop.mapred.FileInputFormat;
-import org.apache.hadoop.mapred.InputSplit;
-import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.mapred.RecordReader;
-import org.apache.hadoop.mapred.Reporter;
-
-public abstract class MergeInputFormat extends FileInputFormat {
-
-  @Override
-  public abstract RecordReader getRecordReader(InputSplit split, JobConf job,
-      Reporter reporter) throws IOException;
+  public RCFileMergeDesc() {
+    this(null, null);
+  }
+  
+  public RCFileMergeDesc(DynamicPartitionCtx dpCtx, Path outPath) {
+    super(dpCtx, outPath);
+  }
 
 }
