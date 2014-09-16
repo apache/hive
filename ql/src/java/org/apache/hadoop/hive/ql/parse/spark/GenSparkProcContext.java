@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.DependencyCollectionTask;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
@@ -45,7 +44,6 @@ import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.DependencyCollectionWork;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
-import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.SparkEdgeProperty;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
 
@@ -125,8 +123,6 @@ public class GenSparkProcContext implements NodeProcessorCtx{
   public final Set<BaseWork> workWithUnionOperators;
   public final Set<ReduceSinkOperator> clonedReduceSinks;
 
-  // we link filesink that will write to the same final location
-  public final Map<Path, List<FileSinkDesc>> linkedFileSinks;
   public final Set<FileSinkOperator> fileSinkSet;
 
   // remember which reducesinks we've already connected
@@ -159,7 +155,6 @@ public class GenSparkProcContext implements NodeProcessorCtx{
     this.currentUnionOperators = new LinkedList<UnionOperator>();
     this.workWithUnionOperators = new LinkedHashSet<BaseWork>();
     this.clonedReduceSinks = new LinkedHashSet<ReduceSinkOperator>();
-    this.linkedFileSinks = new LinkedHashMap<Path, List<FileSinkDesc>>();
     this.fileSinkSet = new LinkedHashSet<FileSinkOperator>();
     this.connectedReduceSinks = new LinkedHashSet<ReduceSinkOperator>();
 

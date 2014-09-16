@@ -213,22 +213,6 @@ public class GenSparkUtils {
       Operator<?> current = operators.pop();
       seen.add(current);
 
-      if (current instanceof FileSinkOperator) {
-        FileSinkOperator fileSink = (FileSinkOperator)current;
-
-        FileSinkDesc desc = fileSink.getConf();
-        Path path = desc.getDirName();
-        List<FileSinkDesc> linked;
-
-        if (!context.linkedFileSinks.containsKey(path)) {
-          linked = new ArrayList<FileSinkDesc>();
-          context.linkedFileSinks.put(path, linked);
-        }
-        linked = context.linkedFileSinks.get(path);
-        linked.add(desc);
-        desc.setLinkedFileSinkDesc(linked);
-      }
-
       if (current instanceof UnionOperator) {
         Operator<?> parent = null;
         int count = 0;
