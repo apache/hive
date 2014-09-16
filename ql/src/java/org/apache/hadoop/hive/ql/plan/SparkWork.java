@@ -239,7 +239,7 @@ public class SparkWork extends AbstractOperatorDesc {
   /**
    * connect adds an edge between a and b. Both nodes have
    * to be added prior to calling connect.
-   * @param  
+   * @param
    */
   public void connect(BaseWork a, BaseWork b, SparkEdgeProperty edgeProp) {
     workGraph.get(a).add(b);
@@ -252,7 +252,7 @@ public class SparkWork extends AbstractOperatorDesc {
 
   /*
    * Dependency is a class used for explain
-   */ 
+   */
   public class Dependency implements Serializable, Comparable<Dependency> {
     public BaseWork w;
     public SparkEdgeProperty prop;
@@ -261,12 +261,12 @@ public class SparkWork extends AbstractOperatorDesc {
     public String getName() {
       return w.getName();
     }
-    
+
     @Explain(displayName = "Shuffle Type")
     public String getShuffleType() {
       return prop.getShuffleType();
     }
-    
+
     @Override
     public int compareTo(Dependency o) {
       int compare = getName().compareTo(o.getName());
@@ -295,29 +295,5 @@ public class SparkWork extends AbstractOperatorDesc {
     }
     return result;
   }
-
-  public MapWork getMapWork() {
-    Iterator<BaseWork> it = roots.iterator();
-    if (it.hasNext())
-      return (MapWork)roots.iterator().next();
-    return null;
-  }
-
-  public void setMapWork(MapWork mapWork) {
-    roots.add(mapWork);
-  }
-
-  public void setReduceWork(ReduceWork redWork) {
-    leaves.add(redWork);
-  }
   
-  public ReduceWork getReduceWork() {
-    Iterator<BaseWork> it = leaves.iterator();
-    if (it.hasNext()) {
-      BaseWork work = leaves.iterator().next();
-      return (work instanceof ReduceWork) ? (ReduceWork)work : null;
-    }
-    return null;
-  }
-
 }
