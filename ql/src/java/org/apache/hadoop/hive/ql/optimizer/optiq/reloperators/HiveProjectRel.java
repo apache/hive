@@ -95,6 +95,14 @@ public class HiveProjectRel extends ProjectRelBase implements HiveRel {
   }
 
   /**
+   * Creates a HiveProjectRel.
+   */
+  public static HiveProjectRel create(RelOptCluster cluster, RelNode child, List<? extends RexNode> exps,
+      RelDataType rowType, RelTraitSet traitSet, final List<RelCollation> collationList) {
+    return new HiveProjectRel(cluster, traitSet, child, exps, rowType, Flags.BOXED);
+  }
+
+  /**
    * Creates a relational expression which projects the output fields of a
    * relational expression according to a partial mapping.
    *
@@ -175,10 +183,12 @@ public class HiveProjectRel extends ProjectRelBase implements HiveRel {
     @Override
     public RelNode createProject(RelNode child,
         List<? extends RexNode> childExprs, List<String> fieldNames) {
-      RelNode project = HiveProjectRel.create(child, childExprs, fieldNames);
+      RelOptCluster cluster = child.getCluster();
+      RelDataType rowType = RexUtil.createStructType(cluster.getTypeFactory(), childExprs, fieldNames);
+      RelNode project = HiveProjectRel.create(cluster, child,
+          childExprs, rowType,
+          child.getTraitSet(), Collections.<RelCollation> emptyList());
 
-      // Make sure extra traits are carried over from the original rel
-      project = RelOptRule.convert(project, child.getTraitSet());
       return project;
     }
   }
