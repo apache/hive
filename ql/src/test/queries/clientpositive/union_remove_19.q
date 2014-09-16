@@ -2,6 +2,7 @@ set hive.stats.autogather=false;
 set hive.optimize.union.remove=true;
 set hive.mapred.supports.subdirectories=true;
 
+set hive.merge.sparkfiles=false;
 set hive.merge.mapfiles=false;
 set hive.merge.mapredfiles=false;
 set mapred.input.dir.recursive=true;

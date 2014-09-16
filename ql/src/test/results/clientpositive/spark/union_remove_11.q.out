@@ -78,8 +78,13 @@ select * FROM (
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1
+  Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
+  Stage-4
+  Stage-2 depends on stages: Stage-4, Stage-3, Stage-6
   Stage-0 depends on stages: Stage-2
+  Stage-3
+  Stage-5
+  Stage-6 depends on stages: Stage-5
 
 STAGE PLANS:
   Stage: Stage-1
@@ -148,6 +153,15 @@ STAGE PLANS:
         Union 2 
             Vertex: Union 2
 
+  Stage: Stage-7
+    Conditional Operator
+
+  Stage: Stage-4
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
   Stage: Stage-2
     Dependency Collection
 
@@ -160,6 +174,22 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
               serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
               name: default.outputtbl1
+
+  Stage: Stage-3
+    Merge Work
+      merge level: block
+      input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
+
+  Stage: Stage-5
+    Merge Work
+      merge level: block
+      input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
+
+  Stage: Stage-6
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
 
 PREHOOK: query: insert overwrite table outputTbl1
 SELECT * FROM
