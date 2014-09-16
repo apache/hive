@@ -66,7 +66,7 @@ public class CLIService extends CompositeService implements ICLIService {
   private UserGroupInformation httpUGI;
 
   public CLIService() {
-    super("CLIService");
+    super(CLIService.class.getSimpleName());
   }
 
   @Override
@@ -201,8 +201,7 @@ public class CLIService extends CompositeService implements ICLIService {
    * @see org.apache.hive.service.cli.ICLIService#closeSession(org.apache.hive.service.cli.SessionHandle)
    */
   @Override
-  public void closeSession(SessionHandle sessionHandle)
-      throws HiveSQLException {
+  public void closeSession(SessionHandle sessionHandle) throws HiveSQLException {
     sessionManager.closeSession(sessionHandle);
     LOG.debug(sessionHandle + ": closeSession()");
   }
@@ -469,5 +468,9 @@ public class CLIService extends CompositeService implements ICLIService {
       String tokenStr) throws HiveSQLException {
     sessionManager.getSession(sessionHandle).renewDelegationToken(authFactory, tokenStr);
     LOG.info(sessionHandle  + ": renewDelegationToken()");
+  }
+
+  public SessionManager getSessionManager() {
+    return sessionManager;
   }
 }

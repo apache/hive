@@ -205,7 +205,7 @@ public class HiveConf extends Configuration {
     PLAN_SERIALIZATION("hive.plan.serialization.format", "kryo",
         "Query plan format serialization between client and task nodes. \n" +
         "Two supported values are : kryo and javaXML. Kryo is default."),
-    SCRATCHDIR("hive.exec.scratchdir", "/tmp/hive", 
+    SCRATCHDIR("hive.exec.scratchdir", "/tmp/hive",
         "HDFS root scratch dir for Hive jobs which gets created with 777 permission. " +
         "For each connecting user, an HDFS scratch dir: ${hive.exec.scratchdir}/<username> is created, " +
         "with ${hive.scratch.dir.permission}."),
@@ -215,7 +215,7 @@ public class HiveConf extends Configuration {
     DOWNLOADED_RESOURCES_DIR("hive.downloaded.resources.dir",
         "${system:java.io.tmpdir}" + File.separator + "${hive.session.id}_resources",
         "Temporary local directory for added resources in the remote file system."),
-    SCRATCHDIRPERMISSION("hive.scratch.dir.permission", "700", 
+    SCRATCHDIRPERMISSION("hive.scratch.dir.permission", "700",
         "The permission for the user specific scratch directories that get created."),
     SUBMITVIACHILD("hive.exec.submitviachild", false, ""),
     SUBMITLOCALTASKVIACHILD("hive.exec.submit.local.task.via.child", true,
@@ -1243,10 +1243,16 @@ public class HiveConf extends Configuration {
         "This param is to control whether or not only do lock on queries\n" +
         "that need to execute at least one mapred job."),
 
+     // Zookeeper related configs
     HIVE_ZOOKEEPER_QUORUM("hive.zookeeper.quorum", "",
-        "The list of ZooKeeper servers to talk to. This is only needed for read/write locks."),
+        "List of ZooKeeper servers to talk to. This is needed for: " +
+        "1. Read/write locks - when hive.lock.manager is set to " +
+        "org.apache.hadoop.hive.ql.lockmgr.zookeeper.ZooKeeperHiveLockManager, " +
+        "2. When HiveServer2 supports service discovery via Zookeeper."),
     HIVE_ZOOKEEPER_CLIENT_PORT("hive.zookeeper.client.port", "2181",
-        "The port of ZooKeeper servers to talk to. This is only needed for read/write locks."),
+        "The port of ZooKeeper servers to talk to. " +
+        "If the list of Zookeeper servers specified in hive.zookeeper.quorum," +
+        "does not contain port numbers, this value is used."),
     HIVE_ZOOKEEPER_SESSION_TIMEOUT("hive.zookeeper.session.timeout", 600*1000,
         "ZooKeeper client's session timeout. The client is disconnected, and as a result, all locks released, \n" +
         "if a heartbeat is not sent in the timeout."),
@@ -1446,11 +1452,6 @@ public class HiveConf extends Configuration {
         "If the property is set, the value must be a valid URI (java.net.URI, e.g. \"file:///tmp/my-logging.properties\"), \n" +
         "which you can then extract a URL from and pass to PropertyConfigurator.configure(URL)."),
 
-    // Hive global init file location
-    HIVE_GLOBAL_INIT_FILE_LOCATION("hive.server2.global.init.file.location", "${env:HIVE_CONF_DIR}",
-        "The location of HS2 global init file (.hiverc).\n" +
-        "If the property is reset, the value must be a valid path where the init file is located."),
-
     // prefix used to auto generated column aliases (this should be started with '_')
     HIVE_AUTOGEN_COLUMNALIAS_PREFIX_LABEL("hive.autogen.columnalias.prefix.label", "_c",
         "String used as a prefix when auto generating column alias.\n" +
@@ -1489,16 +1490,29 @@ public class HiveConf extends Configuration {
         "table. From 0.12 onwards, they are displayed separately. This flag will let you\n" +
         "get old behavior, if desired. See, test-case in patch for HIVE-6689."),
 
+     // HiveServer2 specific configs
     HIVE_SERVER2_MAX_START_ATTEMPTS("hive.server2.max.start.attempts", 30L, new RangeValidator(0L, null),
-        "This number of times HiveServer2 will attempt to start before exiting, sleeping 60 seconds between retries. \n" +
-        "The default of 30 will keep trying for 30 minutes."),
-
+        "Number of times HiveServer2 will attempt to start before exiting, sleeping 60 seconds " +
+        "between retries. \n The default of 30 will keep trying for 30 minutes."),
+    HIVE_SERVER2_SUPPORT_DYNAMIC_SERVICE_DISCOVERY("hive.server2.support.dynamic.service.discovery", false,
+        "Whether HiveServer2 supports dynamic service discovery for its clients. " +
+        "To support this, each instance of HiveServer2 currently uses ZooKeeper to register itself, " +
+        "when it is brought up. JDBC/ODBC clients should use the ZooKeeper ensemble: " +
+        "hive.zookeeper.quorum in their connection string."),
+    HIVE_SERVER2_ZOOKEEPER_NAMESPACE("hive.server2.zookeeper.namespace", "hiveserver2",
+        "The parent node in ZooKeeper used by HiveServer2 when supporting dynamic service discovery."),
+    // HiveServer2 global init file location
+    HIVE_SERVER2_GLOBAL_INIT_FILE_LOCATION("hive.server2.global.init.file.location", "${env:HIVE_CONF_DIR}",
+        "The location of HS2 global init file (.hiverc).\n" +
+        "If the property is reset, the value must be a valid path where the init file is located."),
     HIVE_SERVER2_TRANSPORT_MODE("hive.server2.transport.mode", "binary", new StringSet("binary", "http"),
         "Transport mode of HiveServer2."),
+    HIVE_SERVER2_THRIFT_BIND_HOST("hive.server2.thrift.bind.host", "",
+        "Bind host on which to run the HiveServer2 Thrift service."),
 
     // http (over thrift) transport settings
     HIVE_SERVER2_THRIFT_HTTP_PORT("hive.server2.thrift.http.port", 10001,
-        "Port number when in HTTP mode."),
+        "Port number of HiveServer2 Thrift interface when hive.server2.transport.mode is 'http'."),
     HIVE_SERVER2_THRIFT_HTTP_PATH("hive.server2.thrift.http.path", "cliservice",
         "Path component of URL endpoint when in HTTP mode."),
     HIVE_SERVER2_THRIFT_HTTP_MIN_WORKER_THREADS("hive.server2.thrift.http.min.worker.threads", 5,
@@ -1515,11 +1529,7 @@ public class HiveConf extends Configuration {
 
     // binary transport settings
     HIVE_SERVER2_THRIFT_PORT("hive.server2.thrift.port", 10000,
-        "Port number of HiveServer2 Thrift interface.\n" +
-        "Can be overridden by setting $HIVE_SERVER2_THRIFT_PORT"),
-    HIVE_SERVER2_THRIFT_BIND_HOST("hive.server2.thrift.bind.host", "",
-        "Bind host on which to run the HiveServer2 Thrift interface.\n" +
-        "Can be overridden by setting $HIVE_SERVER2_THRIFT_BIND_HOST"),
+        "Port number of HiveServer2 Thrift interface when hive.server2.transport.mode is 'binary'."),
     // hadoop.rpc.protection being set to a higher level than HiveServer2
     // does not make sense in most situations.
     // HiveServer2 ignores hadoop.rpc.protection in favor of hive.server2.thrift.sasl.qop.
