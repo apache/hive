@@ -159,14 +159,14 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string), KEY._col1 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 43 Data size: 5745 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 279 Data size: 5562 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: _col2 (type: bigint), _col0 (type: string), _col1 (type: string)
                   outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 43 Data size: 5745 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 279 Data size: 5562 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 43 Data size: 5745 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 279 Data size: 5562 Basic stats: COMPLETE Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
