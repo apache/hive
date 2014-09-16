@@ -62,9 +62,6 @@ public class TypeCheckCtx implements NodeProcessorCtx {
 
   private final boolean allowWindowing;
 
-  // "." : FIELD Expression
-  private final boolean allowFieldExpr;
-
   // "[]" : LSQUARE/INDEX Expression
   private final boolean allowIndexExpr;
 
@@ -77,12 +74,12 @@ public class TypeCheckCtx implements NodeProcessorCtx {
    *          The input row resolver of the previous operator.
    */
   public TypeCheckCtx(RowResolver inputRR) {
-    this(inputRR, false, true, true, true, true, true, true, true, true);
+    this(inputRR, false, true, true, true, true, true, true, true);
   }
 
   public TypeCheckCtx(RowResolver inputRR, boolean allowStatefulFunctions,
       boolean allowDistinctFunctions, boolean allowGBExprElimination, boolean allowAllColRef,
-      boolean allowFunctionStar, boolean allowWindowing, boolean allowFieldExpr,
+      boolean allowFunctionStar, boolean allowWindowing,
       boolean allowIndexExpr, boolean allowSubQueryExpr) {
     setInputRR(inputRR);
     error = null;
@@ -92,7 +89,6 @@ public class TypeCheckCtx implements NodeProcessorCtx {
     this.allowAllColRef = allowAllColRef;
     this.allowFunctionStar = allowFunctionStar;
     this.allowWindowing = allowWindowing;
-    this.allowFieldExpr = allowFieldExpr;
     this.allowIndexExpr = allowIndexExpr;
     this.allowSubQueryExpr = allowSubQueryExpr;
   }
@@ -145,7 +141,7 @@ public class TypeCheckCtx implements NodeProcessorCtx {
   /**
    * @param error
    *          the error to set
-   * 
+   *
    */
   public void setError(String error, ASTNode errorSrcNode) {
     this.error = error;
@@ -185,10 +181,6 @@ public class TypeCheckCtx implements NodeProcessorCtx {
 
   public boolean getallowWindowing() {
     return allowWindowing;
-  }
-
-  public boolean getallowFieldExpr() {
-    return allowFieldExpr;
   }
 
   public boolean getallowIndexExpr() {
