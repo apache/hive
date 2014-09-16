@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.exec;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -80,7 +79,7 @@ public class TestFunctionRegistry extends TestCase {
   }
 
   private void implicit(TypeInfo a, TypeInfo b, boolean convertible) {
-    assertEquals(convertible, FunctionRegistry.implicitConvertable(a,b));
+    assertEquals(convertible, FunctionRegistry.implicitConvertible(a, b));
   }
 
   public void testImplicitConversion() {
