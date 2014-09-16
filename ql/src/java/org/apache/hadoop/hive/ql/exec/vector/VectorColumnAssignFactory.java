@@ -428,8 +428,12 @@ public class VectorColumnAssignFactory {
                 assignNull(destIndex);
               }
               else {
-                HiveDecimalWritable hdw = (HiveDecimalWritable) val;
-                assignDecimal(hdw, destIndex);
+                if (val instanceof HiveDecimal) {
+                  assignDecimal((HiveDecimal) val, destIndex); 
+                } else {
+                  assignDecimal((HiveDecimalWritable) val, destIndex);
+                }
+                
               }
             }
           }.init(outputBatch, (DecimalColumnVector) destCol);

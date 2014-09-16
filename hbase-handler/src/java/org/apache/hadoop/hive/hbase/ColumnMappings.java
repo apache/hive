@@ -23,16 +23,21 @@
 
 package org.apache.hadoop.hive.hbase;
 
-import com.google.common.collect.Iterators;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import com.google.common.collect.Iterators;
 
 public class ColumnMappings implements Iterable<ColumnMappings.ColumnMapping> {
 
@@ -53,24 +58,41 @@ public class ColumnMappings implements Iterable<ColumnMappings.ColumnMapping> {
     return columnsMapping.length;
   }
 
-  String toTypesString() {
+  String toNamesString(Properties tbl, String autogenerate) {
+    if (autogenerate != null && autogenerate.equals("true")) {
+      StringBuilder sb = new StringBuilder();
+      HBaseSerDeHelper.generateColumns(tbl, Arrays.asList(columnsMapping), sb);
+      return sb.toString();
+    }
+
+    return StringUtils.EMPTY; // return empty string
+  }
+
+  String toTypesString(Properties tbl, Configuration conf, String autogenerate)
+      throws SerDeException {
     StringBuilder sb = new StringBuilder();
-    for (ColumnMapping colMap : columnsMapping) {
-      if (sb.length() > 0) {
-        sb.append(":");
-      }
-      if (colMap.hbaseRowKey) {
-        // the row key column becomes a STRING
-        sb.append(serdeConstants.STRING_TYPE_NAME);
-      } else if (colMap.qualifierName == null) {
-        // a column family become a MAP
-        sb.append(serdeConstants.MAP_TYPE_NAME + "<" + serdeConstants.STRING_TYPE_NAME + ","
-            + serdeConstants.STRING_TYPE_NAME + ">");
-      } else {
-        // an individual column becomes a STRING
-        sb.append(serdeConstants.STRING_TYPE_NAME);
+
+    if (autogenerate != null && autogenerate.equals("true")) {
+      HBaseSerDeHelper.generateColumnTypes(tbl, Arrays.asList(columnsMapping), sb, conf);
+    } else {
+      for (ColumnMapping colMap : columnsMapping) {
+        if (sb.length() > 0) {
+          sb.append(":");
+        }
+        if (colMap.hbaseRowKey) {
+          // the row key column becomes a STRING
+          sb.append(serdeConstants.STRING_TYPE_NAME);
+        } else if (colMap.qualifierName == null) {
+          // a column family become a MAP
+          sb.append(serdeConstants.MAP_TYPE_NAME + "<" + serdeConstants.STRING_TYPE_NAME + ","
+              + serdeConstants.STRING_TYPE_NAME + ">");
+        } else {
+          // an individual column becomes a STRING
+          sb.append(serdeConstants.STRING_TYPE_NAME);
+        }
       }
     }
+
     return sb.toString();
   }
 

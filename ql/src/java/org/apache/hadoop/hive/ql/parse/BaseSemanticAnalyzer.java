@@ -31,6 +31,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.antlr.runtime.tree.CommonTree;
 import org.antlr.runtime.tree.Tree;
@@ -60,6 +61,7 @@ import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.listbucketingpruner.ListBucketingPrunerUtils;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.ListBucketingCtx;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
@@ -88,6 +90,13 @@ public abstract class BaseSemanticAnalyzer {
   protected Context ctx;
   protected HashMap<String, String> idToTableNameMap;
   protected QueryProperties queryProperties;
+
+  /**
+   * A set of FileSinkOperators being written to in an ACID compliant way.  We need to remember
+   * them here because when we build them we don't yet know the transaction id.  We need to go
+   * back and set it once we actually start running the query.
+   */
+  protected Set<FileSinkDesc> acidFileSinks = new HashSet<FileSinkDesc>();
 
   public static int HIVE_COLUMN_ORDER_ASC = 1;
   public static int HIVE_COLUMN_ORDER_DESC = 0;
@@ -941,6 +950,10 @@ public abstract class BaseSemanticAnalyzer {
 
   public QueryProperties getQueryProperties() {
     return queryProperties;
+  }
+
+  public Set<FileSinkDesc> getAcidFileSinks() {
+    return acidFileSinks;
   }
 
   /**

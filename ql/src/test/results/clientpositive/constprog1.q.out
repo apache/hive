@@ -17,11 +17,11 @@ STAGE PLANS:
         TableScan
           alias: src
           Row Limit Per Split: 1
-          Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+          Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: 'F1' (type: string)
             outputColumnNames: _col0
-            Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+            Statistics: Num rows: 500 Data size: 43000 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
 PREHOOK: query: SELECT IF(INSTR(CONCAT('foo', 'bar'), 'foob') > 0, "F1", "B1")

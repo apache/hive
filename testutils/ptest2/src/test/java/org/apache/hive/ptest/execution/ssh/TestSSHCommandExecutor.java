@@ -50,7 +50,8 @@ public class TestSSHCommandExecutor {
   public void testShutdownBeforeWaitFor() throws Exception {
     LocalCommand localCommand = mock(LocalCommand.class);
     localCommandFactory.setInstance(localCommand);
-    SSHCommandExecutor executor = new SSHCommandExecutor(LOG, localCommandFactory);
+    SSHCommandExecutor executor = new SSHCommandExecutor(LOG, localCommandFactory,
+      "-o StrictHostKeyChecking=no");
     Assert.assertFalse(executor.isShutdown());
     executor.shutdownNow();
     SSHCommand command = new SSHCommand(executor, "privateKey", "user", "host", 1, "whoami");
@@ -66,7 +67,8 @@ public class TestSSHCommandExecutor {
   public void testShutdownDuringWaitFor() throws Exception {
     LocalCommand localCommand = mock(LocalCommand.class);
     localCommandFactory.setInstance(localCommand);
-    final SSHCommandExecutor executor = new SSHCommandExecutor(LOG, localCommandFactory);
+    final SSHCommandExecutor executor = new SSHCommandExecutor(LOG, localCommandFactory,
+      "-o StrictHostKeyChecking=no");
     Assert.assertFalse(executor.isShutdown());
     when(localCommand.getExitCode()).thenAnswer(new Answer<Integer>() {
       @Override

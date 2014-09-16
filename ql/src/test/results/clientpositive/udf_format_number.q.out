@@ -42,11 +42,11 @@ STAGE PLANS:
         TableScan
           alias: src
           Row Limit Per Split: 1
-          Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+          Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: '12,332.1235' (type: string), '12,332.1000' (type: string), '12,332' (type: string)
             outputColumnNames: _col0, _col1, _col2
-            Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+            Statistics: Num rows: 500 Data size: 140000 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
 PREHOOK: query: SELECT format_number(12332.123456, 4),

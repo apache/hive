@@ -40,14 +40,14 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-            Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: UDFToInteger(key) (type: int), value (type: string), (hash(key) pmod 10) (type: int), (hash(value) pmod 10) (type: int)
               outputColumnNames: _col0, _col1, _col2, _col3
-              Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                 table:
                     input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
@@ -81,12 +81,16 @@ STAGE PLANS:
     Stats-Aggr Operator
 
   Stage: Stage-3
-    Merge Work
+    Merge File Operator
+      Map Operator Tree:
+          RCFile Merge Operator
       merge level: block
       input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
 
   Stage: Stage-5
-    Merge Work
+    Merge File Operator
+      Map Operator Tree:
+          RCFile Merge Operator
       merge level: block
       input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
 

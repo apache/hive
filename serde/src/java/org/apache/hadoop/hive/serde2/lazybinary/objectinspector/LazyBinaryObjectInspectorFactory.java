@@ -40,6 +40,9 @@ public final class LazyBinaryObjectInspectorFactory {
   static ConcurrentHashMap<ArrayList<Object>, LazyBinaryStructObjectInspector> cachedLazyBinaryStructObjectInspector =
       new ConcurrentHashMap<ArrayList<Object>, LazyBinaryStructObjectInspector>();
 
+  static ConcurrentHashMap<ArrayList<Object>, LazyBinaryUnionObjectInspector> cachedLazyBinaryUnionObjectInspector =
+          new ConcurrentHashMap<ArrayList<Object>, LazyBinaryUnionObjectInspector>();
+
   public static LazyBinaryStructObjectInspector getLazyBinaryStructObjectInspector(
       List<String> structFieldNames,
       List<ObjectInspector> structFieldObjectInspectors) {
@@ -62,6 +65,20 @@ public final class LazyBinaryObjectInspectorFactory {
       result = new LazyBinaryStructObjectInspector(structFieldNames,
           structFieldObjectInspectors, structFieldComments);
       cachedLazyBinaryStructObjectInspector.put(signature, result);
+    }
+    return result;
+  }
+
+  public static LazyBinaryUnionObjectInspector getLazyBinaryUnionObjectInspector(
+          List<ObjectInspector> unionFieldObjectInspectors) {
+    ArrayList<Object> signature = new ArrayList<Object>(1);
+    signature.add(unionFieldObjectInspectors);
+
+    LazyBinaryUnionObjectInspector result = cachedLazyBinaryUnionObjectInspector
+            .get(signature);
+    if (result == null) {
+      result = new LazyBinaryUnionObjectInspector(unionFieldObjectInspectors);
+      cachedLazyBinaryUnionObjectInspector.put(signature, result);
     }
     return result;
   }

@@ -24,11 +24,11 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-            Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: value (type: string)
               outputColumnNames: value
-              Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: example_min_n(substr(value, 5), 10), example_min_n(if((substr(value, 5) < 250), null, substr(value, 5)), 10)
                 mode: hash

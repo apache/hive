@@ -69,7 +69,6 @@ show partitions list_bucketing_dynamic_part;
 desc formatted list_bucketing_dynamic_part partition (ds='2008-04-08', hr='a1');	
 desc formatted list_bucketing_dynamic_part partition (ds='2008-04-08', hr='b1');
 
-set hive.merge.current.job.concatenate.list.bucketing=true;
 -- concatenate the partition and it will merge files
 alter table list_bucketing_dynamic_part partition (ds='2008-04-08', hr='b1') concatenate;
 

@@ -40,7 +40,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
  *   * A list of those fields equivalent types in Hive
  *   * An ObjectInspector capable of working with an instance of that datum.
  */
-class AvroObjectInspectorGenerator {
+public class AvroObjectInspectorGenerator {
   final private List<String> columnNames;
   final private List<TypeInfo> columnTypes;
   final private ObjectInspector oi;

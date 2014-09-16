@@ -22,23 +22,45 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import junit.framework.TestCase;
 
+import org.apache.avro.Schema;
+import org.apache.avro.file.DataFileWriter;
+import org.apache.avro.generic.GenericData;
+import org.apache.avro.generic.GenericDatumWriter;
+import org.apache.avro.generic.GenericRecord;
+import org.apache.avro.io.DatumWriter;
+import org.apache.avro.io.Encoder;
+import org.apache.avro.io.EncoderFactory;
+import org.apache.avro.specific.SpecificDatumWriter;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FSDataOutputStream;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.KeyValue;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.util.Bytes;
+import org.apache.hadoop.hdfs.MiniDFSCluster;
+import org.apache.hadoop.hive.hbase.avro.Address;
+import org.apache.hadoop.hive.hbase.avro.ContactInfo;
+import org.apache.hadoop.hive.hbase.avro.Employee;
+import org.apache.hadoop.hive.hbase.avro.Gender;
+import org.apache.hadoop.hive.hbase.avro.HomePhone;
+import org.apache.hadoop.hive.hbase.avro.OfficePhone;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
+import org.apache.hadoop.hive.serde2.avro.AvroSerdeUtils;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.lazy.LazyPrimitive;
+import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.BooleanWritable;
@@ -52,6 +74,66 @@ import org.apache.thrift.TException;
  * Tests the HBaseSerDe class.
  */
 public class TestHBaseSerDe extends TestCase {
+
+  static final byte[] TEST_BYTE_ARRAY = Bytes.toBytes("test");
+
+  private static final String RECORD_SCHEMA = "{\n" +
+      "  \"namespace\": \"testing.test.mctesty\",\n" +
+      "  \"name\": \"oneRecord\",\n" +
+      "  \"type\": \"record\",\n" +
+      "  \"fields\": [\n" +
+      "    {\n" +
+      "      \"name\":\"aRecord\",\n" +
+      "      \"type\":{\"type\":\"record\",\n" +
+      "              \"name\":\"recordWithinARecord\",\n" +
+      "              \"fields\": [\n" +
+      "                 {\n" +
+      "                  \"name\":\"int1\",\n" +
+      "                  \"type\":\"int\"\n" +
+      "                },\n" +
+      "                {\n" +
+      "                  \"name\":\"boolean1\",\n" +
+      "                  \"type\":\"boolean\"\n" +
+      "                },\n" +
+      "                {\n" +
+      "                  \"name\":\"long1\",\n" +
+      "                  \"type\":\"long\"\n" +
+      "                }\n" +
+      "      ]}\n" +
+      "    }\n" +
+      "  ]\n" +
+      "}";
+
+  private static final String RECORD_SCHEMA_EVOLVED = "{\n" +
+      "  \"namespace\": \"testing.test.mctesty\",\n" +
+      "  \"name\": \"oneRecord\",\n" +
+      "  \"type\": \"record\",\n" +
+      "  \"fields\": [\n" +
+      "    {\n" +
+      "      \"name\":\"aRecord\",\n" +
+      "      \"type\":{\"type\":\"record\",\n" +
+      "              \"name\":\"recordWithinARecord\",\n" +
+      "              \"fields\": [\n" +
+      "                 {\n" +
+      "                  \"name\":\"int1\",\n" +
+      "                  \"type\":\"int\"\n" +
+      "                },\n" +
+      "                {\n" +
+      "                  \"name\":\"string1\",\n" +
+      "                  \"type\":\"string\", \"default\": \"test\"\n" +
+      "                },\n" +
+      "                {\n" +
+      "                  \"name\":\"boolean1\",\n" +
+      "                  \"type\":\"boolean\"\n" +
+      "                },\n" +
+      "                {\n" +
+      "                  \"name\":\"long1\",\n" +
+      "                  \"type\":\"long\"\n" +
+      "                }\n" +
+      "      ]}\n" +
+      "    }\n" +
+      "  ]\n" +
+      "}";
 
   /**
    * Test the default behavior of the Lazy family of objects and object inspectors.
@@ -551,7 +633,7 @@ public class TestHBaseSerDe extends TestCase {
         "key,valint,valbyte,valshort,vallong,valfloat,valdouble,valbool");
     tbl.setProperty(serdeConstants.LIST_COLUMN_TYPES,
         "string:map<int,int>:map<tinyint,tinyint>:map<smallint,smallint>:map<bigint,bigint>:"
-        + "map<float,float>:map<double,double>:map<boolean,boolean>");
+            + "map<float,float>:map<double,double>:map<boolean,boolean>");
     tbl.setProperty(HBaseSerDe.HBASE_COLUMNS_MAPPING,
         ":key#-,cf-int:#b:b,cf-byte:#b:b,cf-short:#b:b,cf-long:#b:b,cf-float:#b:b,cf-double:#b:b," +
         "cf-bool:#b:b");
@@ -565,7 +647,7 @@ public class TestHBaseSerDe extends TestCase {
         "key,valint,valbyte,valshort,vallong,valfloat,valdouble,valbool");
     tbl.setProperty(serdeConstants.LIST_COLUMN_TYPES,
         "string:map<int,int>:map<tinyint,tinyint>:map<smallint,smallint>:map<bigint,bigint>:"
-        + "map<float,float>:map<double,double>:map<boolean,boolean>");
+            + "map<float,float>:map<double,double>:map<boolean,boolean>");
     tbl.setProperty(HBaseSerDe.HBASE_COLUMNS_MAPPING,
         ":key#-,cf-int:#-:-,cf-byte:#-:-,cf-short:#-:-,cf-long:#-:-,cf-float:#-:-,cf-double:#-:-," +
         "cf-bool:#-:-");
@@ -636,7 +718,7 @@ public class TestHBaseSerDe extends TestCase {
         "key,valbyte,valshort,valint,vallong,valfloat,valdouble,valstring,valbool");
     tbl.setProperty(serdeConstants.LIST_COLUMN_TYPES,
         "string:map<tinyint,tinyint>:map<smallint,smallint>:map<int,int>:map<bigint,bigint>:"
-        + "map<float,float>:map<double,double>:map<string,string>:map<boolean,boolean>");
+            + "map<float,float>:map<double,double>:map<string,string>:map<boolean,boolean>");
     tbl.setProperty(HBaseSerDe.HBASE_COLUMNS_MAPPING,
         ":key#s,cf-byte:#-:s,cf-short:#s:-,cf-int:#s:s,cf-long:#-:-,cf-float:#s:-,cf-double:#-:s," +
         "cf-string:#s:s,cf-bool:#-:-");
@@ -650,7 +732,7 @@ public class TestHBaseSerDe extends TestCase {
         "key,valbyte,valshort,valint,vallong,valfloat,valdouble,valstring,valbool");
     tbl.setProperty(serdeConstants.LIST_COLUMN_TYPES,
         "string:map<tinyint,tinyint>:map<smallint,smallint>:map<int,int>:map<bigint,bigint>:"
-        + "map<float,float>:map<double,double>:map<string,string>:map<boolean,boolean>");
+            + "map<float,float>:map<double,double>:map<string,string>:map<boolean,boolean>");
     tbl.setProperty(HBaseSerDe.HBASE_COLUMNS_MAPPING,
         ":key#s,cf-byte:#s:s,cf-short:#s:s,cf-int:#s:s,cf-long:#s:s,cf-float:#s:s,cf-double:#s:s," +
         "cf-string:#s:s,cf-bool:#s:s");
@@ -932,6 +1014,592 @@ public class TestHBaseSerDe extends TestCase {
     Put put = ((PutWritable) serDe.serialize(row, soi)).getPut();
 
     assertEquals("Serialized put:", p.toString(), put.toString());
+  }
+
+  public void testHBaseSerDeWithAvroSchemaInline() throws SerDeException, IOException {
+    byte[] cfa = "cola".getBytes();
+
+    byte[] qualAvro = "avro".getBytes();
+
+    byte[] rowKey = Bytes.toBytes("test-row1");
+
+    // Data
+    List<KeyValue> kvs = new ArrayList<KeyValue>();
+
+    byte[] avroData = getTestAvroBytesFromSchema(RECORD_SCHEMA);
+
+    kvs.add(new KeyValue(rowKey, cfa, qualAvro, avroData));
+
+    Result r = new Result(kvs);
+
+    Put p = new Put(rowKey);
+
+    // Post serialization, separators are automatically inserted between different fields in the
+    // struct. Currently there is not way to disable that. So the work around here is to pad the
+    // data with the separator bytes before creating a "Put" object
+    p.add(new KeyValue(rowKey, cfa, qualAvro, avroData));
+
+    Object[] expectedFieldsData = {new String("test-row1"), new String("[[42, true, 42432234234]]")};
+
+    // Create, initialize, and test the SerDe
+    HBaseSerDe serDe = new HBaseSerDe();
+    Configuration conf = new Configuration();
+    Properties tbl = createPropertiesForHiveAvroSchemaInline();
+    serDe.initialize(conf, tbl);
+
+    deserializeAndSerializeHiveAvro(serDe, r, p, expectedFieldsData);
+  }
+
+  private Properties createPropertiesForHiveAvroSchemaInline() {
+    Properties tbl = new Properties();
+    tbl.setProperty("cola.avro.serialization.type", "avro");
+    tbl.setProperty("cola.avro." + AvroSerdeUtils.SCHEMA_LITERAL, RECORD_SCHEMA);
+    tbl.setProperty(HBaseSerDe.HBASE_COLUMNS_MAPPING, ":key,cola:avro");
+    tbl.setProperty(HBaseSerDe.HBASE_AUTOGENERATE_STRUCT, "true");
+
+    return tbl;
+  }
+
+  public void testHBaseSerDeWithForwardEvolvedSchema() throws SerDeException, IOException {
+    byte[] cfa = "cola".getBytes();
+
+    byte[] qualAvro = "avro".getBytes();
+
+    byte[] rowKey = Bytes.toBytes("test-row1");
+
+    // Data
+    List<KeyValue> kvs = new ArrayList<KeyValue>();
+
+    byte[] avroData = getTestAvroBytesFromSchema(RECORD_SCHEMA);
+
+    kvs.add(new KeyValue(rowKey, cfa, qualAvro, avroData));
+
+    Result r = new Result(kvs);
+
+    Put p = new Put(rowKey);
+
+    // Post serialization, separators are automatically inserted between different fields in the
+    // struct. Currently there is not way to disable that. So the work around here is to pad the
+    // data with the separator bytes before creating a "Put" object
+    p.add(new KeyValue(rowKey, cfa, qualAvro, avroData));
+
+    Object[] expectedFieldsData = {new String("test-row1"),
+        new String("[[42, test, true, 42432234234]]")};
+
+    // Create, initialize, and test the SerDe
+    HBaseSerDe serDe = new HBaseSerDe();
+    Configuration conf = new Configuration();
+    Properties tbl = createPropertiesForHiveAvroForwardEvolvedSchema();
+    serDe.initialize(conf, tbl);
+
+    deserializeAndSerializeHiveAvro(serDe, r, p, expectedFieldsData);
+  }
+
+  private Properties createPropertiesForHiveAvroForwardEvolvedSchema() {
+    Properties tbl = new Properties();
+    tbl.setProperty("cola.avro.serialization.type", "avro");
+    tbl.setProperty("cola.avro." + AvroSerdeUtils.SCHEMA_LITERAL, RECORD_SCHEMA_EVOLVED);
+    tbl.setProperty(HBaseSerDe.HBASE_COLUMNS_MAPPING, ":key,cola:avro");
+    tbl.setProperty(HBaseSerDe.HBASE_AUTOGENERATE_STRUCT, "true");
+
+    return tbl;
+  }
+
+  public void testHBaseSerDeWithBackwardEvolvedSchema() throws SerDeException, IOException {
+    byte[] cfa = "cola".getBytes();
+
+    byte[] qualAvro = "avro".getBytes();
+
+    byte[] rowKey = Bytes.toBytes("test-row1");
+
+    // Data
+    List<KeyValue> kvs = new ArrayList<KeyValue>();
+
+    byte[] avroData = getTestAvroBytesFromSchema(RECORD_SCHEMA_EVOLVED);
+
+    kvs.add(new KeyValue(rowKey, cfa, qualAvro, avroData));
+
+    Result r = new Result(kvs);
+
+    Put p = new Put(rowKey);
+
+    // Post serialization, separators are automatically inserted between different fields in the
+    // struct. Currently there is not way to disable that. So the work around here is to pad the
+    // data with the separator bytes before creating a "Put" object
+    p.add(new KeyValue(rowKey, cfa, qualAvro, avroData));
+
+    Object[] expectedFieldsData = {new String("test-row1"), new String("[[42, true, 42432234234]]")};
+
+    // Create, initialize, and test the SerDe
+    HBaseSerDe serDe = new HBaseSerDe();
+    Configuration conf = new Configuration();
+    Properties tbl = createPropertiesForHiveAvroBackwardEvolvedSchema();
+    serDe.initialize(conf, tbl);
+
+    deserializeAndSerializeHiveAvro(serDe, r, p, expectedFieldsData);
+  }
+
+  private Properties createPropertiesForHiveAvroBackwardEvolvedSchema() {
+    Properties tbl = new Properties();
+    tbl.setProperty("cola.avro.serialization.type", "avro");
+    tbl.setProperty("cola.avro." + AvroSerdeUtils.SCHEMA_LITERAL, RECORD_SCHEMA);
+    tbl.setProperty(HBaseSerDe.HBASE_COLUMNS_MAPPING, ":key,cola:avro");
+    tbl.setProperty(HBaseSerDe.HBASE_AUTOGENERATE_STRUCT, "true");
+
+    return tbl;
+  }
+
+  public void testHBaseSerDeWithAvroSerClass() throws SerDeException, IOException {
+    byte[] cfa = "cola".getBytes();
+
+    byte[] qualAvro = "avro".getBytes();
+
+    byte[] rowKey = Bytes.toBytes("test-row1");
+
+    // Data
+    List<KeyValue> kvs = new ArrayList<KeyValue>();
+
+    byte[] avroData = getTestAvroBytesFromClass1(1);
+
+    kvs.add(new KeyValue(rowKey, cfa, qualAvro, avroData));
+
+    Result r = new Result(kvs);
+
+    Put p = new Put(rowKey);
+
+    // Post serialization, separators are automatically inserted between different fields in the
+    // struct. Currently there is not way to disable that. So the work around here is to pad the
+    // data with the separator bytes before creating a "Put" object
+    p.add(new KeyValue(rowKey, cfa, qualAvro, avroData));
+
+    Object[] expectedFieldsData = {
+        new String("test-row1"),
+        new String(
+            "[Avro Employee1, 11111, 25, FEMALE, [[[Avro First Address1, Avro Second Address1, Avro City1, 123456, 0:[999, 1234567890], null, {testkey=testvalue}], "
+                + "[Avro First Address1, Avro Second Address1, Avro City1, 123456, 0:[999, 1234567890], null, {testkey=testvalue}]], "
+                + "[999, 1234567890], [999, 1234455555]]]")};
+
+    // Create, initialize, and test the SerDe
+    HBaseSerDe serDe = new HBaseSerDe();
+    Configuration conf = new Configuration();
+    Properties tbl = createPropertiesForHiveAvroSerClass();
+    serDe.initialize(conf, tbl);
+
+    deserializeAndSerializeHiveAvro(serDe, r, p, expectedFieldsData);
+  }
+
+  private Properties createPropertiesForHiveAvroSerClass() {
+    Properties tbl = new Properties();
+    tbl.setProperty("cola.avro.serialization.type", "avro");
+    tbl.setProperty("cola.avro." + serdeConstants.SERIALIZATION_CLASS,
+        "org.apache.hadoop.hive.hbase.avro.Employee");
+    tbl.setProperty(HBaseSerDe.HBASE_COLUMNS_MAPPING, ":key,cola:avro");
+    tbl.setProperty(HBaseSerDe.HBASE_AUTOGENERATE_STRUCT, "true");
+
+    return tbl;
+  }
+
+  public void testHBaseSerDeWithAvroSchemaUrl() throws SerDeException, IOException {
+    byte[] cfa = "cola".getBytes();
+
+    byte[] qualAvro = "avro".getBytes();
+
+    byte[] rowKey = Bytes.toBytes("test-row1");
+
+    // Data
+    List<KeyValue> kvs = new ArrayList<KeyValue>();
+
+    byte[] avroData = getTestAvroBytesFromSchema(RECORD_SCHEMA);
+
+    kvs.add(new KeyValue(rowKey, cfa, qualAvro, avroData));
+
+    Result r = new Result(kvs);
+
+    Put p = new Put(rowKey);
+
+    // Post serialization, separators are automatically inserted between different fields in the
+    // struct. Currently there is not way to disable that. So the work around here is to pad the
+    // data with the separator bytes before creating a "Put" object
+    p.add(new KeyValue(rowKey, cfa, qualAvro, avroData));
+
+    Object[] expectedFieldsData = {new String("test-row1"), new String("[[42, true, 42432234234]]")};
+
+    MiniDFSCluster miniDfs = null;
+
+    try {
+      // MiniDFSCluster litters files and folders all over the place.
+      miniDfs = new MiniDFSCluster(new Configuration(), 1, true, null);
+
+      miniDfs.getFileSystem().mkdirs(new Path("/path/to/schema"));
+      FSDataOutputStream out = miniDfs.getFileSystem().create(
+          new Path("/path/to/schema/schema.avsc"));
+      out.writeBytes(RECORD_SCHEMA);
+      out.close();
+      String onHDFS = miniDfs.getFileSystem().getUri() + "/path/to/schema/schema.avsc";
+
+      // Create, initialize, and test the SerDe
+      HBaseSerDe serDe = new HBaseSerDe();
+      Configuration conf = new Configuration();
+      Properties tbl = createPropertiesForHiveAvroSchemaUrl(onHDFS);
+      serDe.initialize(conf, tbl);
+
+      deserializeAndSerializeHiveAvro(serDe, r, p, expectedFieldsData);
+    } finally {
+      // Teardown the cluster
+      if (miniDfs != null) {
+        miniDfs.shutdown();
+      }
+    }
+  }
+
+  private Properties createPropertiesForHiveAvroSchemaUrl(String schemaUrl) {
+    Properties tbl = new Properties();
+    tbl.setProperty("cola.avro.serialization.type", "avro");
+    tbl.setProperty("cola.avro." + AvroSerdeUtils.SCHEMA_URL, schemaUrl);
+    tbl.setProperty(HBaseSerDe.HBASE_COLUMNS_MAPPING, ":key,cola:avro");
+    tbl.setProperty(HBaseSerDe.HBASE_AUTOGENERATE_STRUCT, "true");
+
+    return tbl;
+  }
+
+  public void testHBaseSerDeWithAvroExternalSchema() throws SerDeException, IOException {
+    byte[] cfa = "cola".getBytes();
+
+    byte[] qualAvro = "avro".getBytes();
+
+    byte[] rowKey = Bytes.toBytes("test-row1");
+
+    // Data
+    List<KeyValue> kvs = new ArrayList<KeyValue>();
+
+    byte[] avroData = getTestAvroBytesFromClass2(1);
+
+    kvs.add(new KeyValue(rowKey, cfa, qualAvro, avroData));
+
+    Result r = new Result(kvs);
+
+    Put p = new Put(rowKey);
+
+    // Post serialization, separators are automatically inserted between different fields in the
+    // struct. Currently there is not way to disable that. So the work around here is to pad the
+    // data with the separator bytes before creating a "Put" object
+    p.add(new KeyValue(rowKey, cfa, qualAvro, avroData));
+
+    Object[] expectedFieldsData = {
+        new String("test-row1"),
+        new String(
+            "[Avro Employee1, 11111, 25, FEMALE, [[[Avro First Address1, Avro Second Address1, Avro City1, 123456, 0:[999, 1234567890], null, {testkey=testvalue}], [Avro First Address1, Avro Second Address1, Avro City1, 123456, 0:[999, 1234567890], null, {testkey=testvalue}]], "
+                + "[999, 1234567890], [999, 1234455555]]]")};
+
+    // Create, initialize, and test the SerDe
+    HBaseSerDe serDe = new HBaseSerDe();
+    Configuration conf = new Configuration();
+
+    Properties tbl = createPropertiesForHiveAvroExternalSchema();
+    serDe.initialize(conf, tbl);
+
+    deserializeAndSerializeHiveAvro(serDe, r, p, expectedFieldsData);
+  }
+
+  private Properties createPropertiesForHiveAvroExternalSchema() {
+    Properties tbl = new Properties();
+    tbl.setProperty("cola.avro.serialization.type", "avro");
+    tbl.setProperty(AvroSerdeUtils.SCHEMA_RETRIEVER,
+        "org.apache.hadoop.hive.hbase.HBaseTestAvroSchemaRetriever");
+    tbl.setProperty("cola.avro." + serdeConstants.SERIALIZATION_CLASS,
+        "org.apache.hadoop.hive.hbase.avro.Employee");
+    tbl.setProperty(HBaseSerDe.HBASE_COLUMNS_MAPPING, ":key,cola:avro");
+    tbl.setProperty(HBaseSerDe.HBASE_AUTOGENERATE_STRUCT, "true");
+
+    return tbl;
+  }
+
+  public void testHBaseSerDeWithHiveMapToHBaseAvroColumnFamily() throws Exception {
+    byte[] cfa = "cola".getBytes();
+
+    byte[] qualAvroA = "prefixA_avro1".getBytes();
+    byte[] qualAvroB = "prefixB_avro2".getBytes();
+    byte[] qualAvroC = "prefixB_avro3".getBytes();
+
+    List<Object> qualifiers = new ArrayList<Object>();
+    qualifiers.add(new Text("prefixA_avro1"));
+    qualifiers.add(new Text("prefixB_avro2"));
+    qualifiers.add(new Text("prefixB_avro3"));
+
+    List<Object> expectedQualifiers = new ArrayList<Object>();
+    expectedQualifiers.add(new Text("prefixB_avro2"));
+    expectedQualifiers.add(new Text("prefixB_avro3"));
+
+    byte[] rowKey = Bytes.toBytes("test-row1");
+
+    // Data
+    List<KeyValue> kvs = new ArrayList<KeyValue>();
+
+    byte[] avroDataA = getTestAvroBytesFromSchema(RECORD_SCHEMA);
+    byte[] avroDataB = getTestAvroBytesFromClass1(1);
+    byte[] avroDataC = getTestAvroBytesFromClass1(2);
+
+    kvs.add(new KeyValue(rowKey, cfa, qualAvroA, avroDataA));
+    kvs.add(new KeyValue(rowKey, cfa, qualAvroB, avroDataB));
+    kvs.add(new KeyValue(rowKey, cfa, qualAvroC, avroDataC));
+
+    Result r = new Result(kvs);
+
+    Put p = new Put(rowKey);
+
+    // Post serialization, separators are automatically inserted between different fields in the
+    // struct. Currently there is not way to disable that. So the work around here is to pad the
+    // data with the separator bytes before creating a "Put" object
+    p.add(new KeyValue(rowKey, cfa, qualAvroB, Bytes.padTail(avroDataB, 11)));
+    p.add(new KeyValue(rowKey, cfa, qualAvroC, Bytes.padTail(avroDataC, 11)));
+
+    Object[] expectedFieldsData = {
+        new Text("test-row1"),
+        new String(
+            "[Avro Employee1, 11111, 25, FEMALE, [[[Avro First Address1, Avro Second Address1, Avro City1, 123456, 0:[999, 1234567890], null, {testkey=testvalue}], [Avro First Address1, Avro Second Address1, Avro City1, 123456, 0:[999, 1234567890], null, {testkey=testvalue}]], "
+                + "[999, 1234567890], [999, 1234455555]]]"),
+        new String(
+            "[Avro Employee2, 11111, 25, FEMALE, [[[Avro First Address2, Avro Second Address2, Avro City2, 123456, 0:[999, 1234567890], null, {testkey=testvalue}], [Avro First Address2, Avro Second Address2, Avro City2, 123456, 0:[999, 1234567890], null, {testkey=testvalue}]], "
+                + "[999, 1234567890], [999, 1234455555]]]")};
+
+    int[] expectedMapSize = new int[] {2};
+
+    // Create, initialize, and test the SerDe
+    HBaseSerDe serDe = new HBaseSerDe();
+    Configuration conf = new Configuration();
+    Properties tbl = createPropertiesForHiveAvroColumnFamilyMap();
+    serDe.initialize(conf, tbl);
+
+    Object notPresentKey = new Text("prefixA_avro1");
+
+    deserializeAndSerializeHiveStructColumnFamily(serDe, r, p, expectedFieldsData, expectedMapSize,
+        expectedQualifiers,
+        notPresentKey);
+  }
+
+  private Properties createPropertiesForHiveAvroColumnFamilyMap() {
+    Properties tbl = new Properties();
+    tbl.setProperty("cola.prefixB_.serialization.type", "avro");
+    tbl.setProperty("cola.prefixB_." + serdeConstants.SERIALIZATION_CLASS,
+        "org.apache.hadoop.hive.hbase.avro.Employee");
+    tbl.setProperty(HBaseSerDe.HBASE_COLUMNS_MAPPING, "cola:prefixB_.*");
+    tbl.setProperty(HBaseSerDe.HBASE_AUTOGENERATE_STRUCT, "true");
+    tbl.setProperty(LazySimpleSerDe.SERIALIZATION_EXTEND_NESTING_LEVELS, "true");
+
+    return tbl;
+  }
+
+  private void deserializeAndSerializeHiveAvro(HBaseSerDe serDe, Result r, Put p,
+      Object[] expectedFieldsData)
+      throws SerDeException, IOException {
+    StructObjectInspector soi = (StructObjectInspector) serDe.getObjectInspector();
+
+    List<? extends StructField> fieldRefs = soi.getAllStructFieldRefs();
+
+    Object row = serDe.deserialize(new ResultWritable(r));
+
+    for (int j = 0; j < fieldRefs.size(); j++) {
+      Object fieldData = soi.getStructFieldData(row, fieldRefs.get(j));
+      assertNotNull(fieldData);
+      assertEquals(expectedFieldsData[j], fieldData.toString().trim());
+    }
+
+    // Now serialize
+    Put put = ((PutWritable) serDe.serialize(row, soi)).getPut();
+
+    assertNotNull(put);
+    assertEquals(p.getFamilyCellMap(), put.getFamilyCellMap());
+  }
+
+  private void deserializeAndSerializeHiveStructColumnFamily(HBaseSerDe serDe, Result r, Put p,
+      Object[] expectedFieldsData,
+      int[] expectedMapSize, List<Object> expectedQualifiers, Object notPresentKey)
+      throws SerDeException, IOException {
+    StructObjectInspector soi = (StructObjectInspector) serDe.getObjectInspector();
+
+    List<? extends StructField> fieldRefs = soi.getAllStructFieldRefs();
+
+    Object row = serDe.deserialize(new ResultWritable(r));
+
+    int k = 0;
+
+    for (int i = 0; i < fieldRefs.size(); i++) {
+      Object fieldData = soi.getStructFieldData(row, fieldRefs.get(i));
+      assertNotNull(fieldData);
+
+      if (fieldData instanceof LazyPrimitive<?, ?>) {
+        assertEquals(expectedFieldsData[i], ((LazyPrimitive<?, ?>) fieldData).getWritableObject());
+      } else if (fieldData instanceof LazyHBaseCellMap) {
+
+        for (int j = 0; j < ((LazyHBaseCellMap) fieldData).getMapSize(); j++) {
+          assertEquals(expectedFieldsData[k + 1],
+              ((LazyHBaseCellMap) fieldData).getMapValueElement(expectedQualifiers.get(k))
+                  .toString().trim());
+          k++;
+        }
+
+        assertEquals(expectedMapSize[i - 1], ((LazyHBaseCellMap) fieldData).getMapSize());
+
+        // Make sure that the unwanted key is not present in the map
+        assertNull(((LazyHBaseCellMap) fieldData).getMapValueElement(notPresentKey));
+
+      } else {
+        fail("Error: field data not an instance of LazyPrimitive<?, ?> or LazyHBaseCellMap");
+      }
+    }
+
+    SerDeUtils.getJSONString(row, soi);
+
+    // Now serialize
+    Put put = ((PutWritable) serDe.serialize(row, soi)).getPut();
+
+    assertNotNull(put);
+  }
+
+  private byte[] getTestAvroBytesFromSchema(String schemaToUse) throws IOException {
+    Schema s = Schema.parse(schemaToUse);
+    GenericData.Record record = new GenericData.Record(s);
+    GenericData.Record innerRecord = new GenericData.Record(s.getField("aRecord").schema());
+    innerRecord.put("int1", 42);
+    innerRecord.put("boolean1", true);
+    innerRecord.put("long1", 42432234234l);
+
+    if (schemaToUse.equals(RECORD_SCHEMA_EVOLVED)) {
+      innerRecord.put("string1", "new value");
+    }
+
+    record.put("aRecord", innerRecord);
+
+    DatumWriter<GenericRecord> datumWriter = new GenericDatumWriter<GenericRecord>(s);
+    ByteArrayOutputStream out = new ByteArrayOutputStream();
+
+    DataFileWriter<GenericRecord> dataFileWriter = new DataFileWriter<GenericRecord>(datumWriter);
+    dataFileWriter.create(s, out);
+    dataFileWriter.append(record);
+    dataFileWriter.close();
+
+    byte[] data = out.toByteArray();
+
+    out.close();
+    return data;
+  }
+
+  private byte[] getTestAvroBytesFromClass1(int i) throws IOException {
+    Employee employee = new Employee();
+
+    employee.setEmployeeName("Avro Employee" + i);
+    employee.setEmployeeID(11111L);
+    employee.setGender(Gender.FEMALE);
+    employee.setAge(25L);
+
+    Address address = new Address();
+
+    address.setAddress1("Avro First Address" + i);
+    address.setAddress2("Avro Second Address" + i);
+    address.setCity("Avro City" + i);
+    address.setZipcode(123456L);
+
+    Map<CharSequence, CharSequence> metadata = new HashMap<CharSequence, CharSequence>();
+
+    metadata.put("testkey", "testvalue");
+
+    address.setMetadata(metadata);
+
+    HomePhone hPhone = new HomePhone();
+
+    hPhone.setAreaCode(999L);
+    hPhone.setNumber(1234567890L);
+
+    OfficePhone oPhone = new OfficePhone();
+
+    oPhone.setAreaCode(999L);
+    oPhone.setNumber(1234455555L);
+
+    ContactInfo contact = new ContactInfo();
+
+    List<Address> addresses = new ArrayList<Address>();
+    address.setCounty(hPhone); // set value for the union type
+    addresses.add(address);
+    addresses.add(address);
+
+    contact.setAddress(addresses);
+
+    contact.setHomePhone(hPhone);
+    contact.setOfficePhone(oPhone);
+
+    employee.setContactInfo(contact);
+
+    DatumWriter<Employee> datumWriter = new SpecificDatumWriter<Employee>(Employee.class);
+    DataFileWriter<Employee> dataFileWriter = new DataFileWriter<Employee>(datumWriter);
+
+    ByteArrayOutputStream out = new ByteArrayOutputStream();
+
+    dataFileWriter.create(employee.getSchema(), out);
+    dataFileWriter.append(employee);
+    dataFileWriter.close();
+
+    return out.toByteArray();
+  }
+
+  private byte[] getTestAvroBytesFromClass2(int i) throws IOException {
+    Employee employee = new Employee();
+
+    employee.setEmployeeName("Avro Employee" + i);
+    employee.setEmployeeID(11111L);
+    employee.setGender(Gender.FEMALE);
+    employee.setAge(25L);
+
+    Address address = new Address();
+
+    address.setAddress1("Avro First Address" + i);
+    address.setAddress2("Avro Second Address" + i);
+    address.setCity("Avro City" + i);
+    address.setZipcode(123456L);
+
+    Map<CharSequence, CharSequence> metadata = new HashMap<CharSequence, CharSequence>();
+
+    metadata.put("testkey", "testvalue");
+
+    address.setMetadata(metadata);
+
+    HomePhone hPhone = new HomePhone();
+
+    hPhone.setAreaCode(999L);
+    hPhone.setNumber(1234567890L);
+
+    OfficePhone oPhone = new OfficePhone();
+
+    oPhone.setAreaCode(999L);
+    oPhone.setNumber(1234455555L);
+
+    ContactInfo contact = new ContactInfo();
+
+    List<Address> addresses = new ArrayList<Address>();
+    address.setCounty(hPhone); // set value for the union type
+    addresses.add(address);
+    addresses.add(address);
+
+    contact.setAddress(addresses);
+
+    contact.setHomePhone(hPhone);
+    contact.setOfficePhone(oPhone);
+
+    employee.setContactInfo(contact);
+
+    DatumWriter<Employee> employeeWriter = new SpecificDatumWriter<Employee>(Employee.class);
+
+    ByteArrayOutputStream out = new ByteArrayOutputStream();
+
+    Encoder encoder = EncoderFactory.get().binaryEncoder(out, null);
+
+    // write out a header for the payload
+    out.write(TEST_BYTE_ARRAY);
+
+    employeeWriter.write(employee, encoder);
+
+    encoder.flush();
+
+    return out.toByteArray();
   }
 
   class TestStruct {

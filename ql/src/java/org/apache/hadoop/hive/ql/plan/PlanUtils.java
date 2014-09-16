@@ -41,6 +41,7 @@ import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.io.HivePassThroughOutputFormat;
@@ -597,19 +598,22 @@ public final class PlanUtils {
    * @param numReducers
    *          The number of reducers, set to -1 for automatic inference based on
    *          input data size.
+   * @param writeType Whether this is an Acid write, and if so whether it is insert, update,
+   *                  or delete.
    * @return The reduceSinkDesc object.
    */
   public static ReduceSinkDesc getReduceSinkDesc(
       ArrayList<ExprNodeDesc> keyCols, ArrayList<ExprNodeDesc> valueCols,
       List<String> outputColumnNames, boolean includeKeyCols, int tag,
-      ArrayList<ExprNodeDesc> partitionCols, String order, int numReducers) {
+      ArrayList<ExprNodeDesc> partitionCols, String order, int numReducers,
+      AcidUtils.Operation writeType) {
     return getReduceSinkDesc(keyCols, keyCols.size(), valueCols,
         new ArrayList<List<Integer>>(),
         includeKeyCols ? outputColumnNames.subList(0, keyCols.size()) :
           new ArrayList<String>(),
         includeKeyCols ? outputColumnNames.subList(keyCols.size(),
             outputColumnNames.size()) : outputColumnNames,
-        includeKeyCols, tag, partitionCols, order, numReducers);
+        includeKeyCols, tag, partitionCols, order, numReducers, writeType);
   }
 
   /**
@@ -635,6 +639,8 @@ public final class PlanUtils {
    * @param numReducers
    *          The number of reducers, set to -1 for automatic inference based on
    *          input data size.
+   * @param writeType Whether this is an Acid write, and if so whether it is insert, update,
+   *                  or delete.
    * @return The reduceSinkDesc object.
    */
   public static ReduceSinkDesc getReduceSinkDesc(
@@ -644,7 +650,8 @@ public final class PlanUtils {
       List<String> outputKeyColumnNames,
       List<String> outputValueColumnNames,
       boolean includeKeyCols, int tag,
-      ArrayList<ExprNodeDesc> partitionCols, String order, int numReducers) {
+      ArrayList<ExprNodeDesc> partitionCols, String order, int numReducers,
+      AcidUtils.Operation writeType) {
     TableDesc keyTable = null;
     TableDesc valueTable = null;
     ArrayList<String> outputKeyCols = new ArrayList<String>();
@@ -670,7 +677,7 @@ public final class PlanUtils {
     return new ReduceSinkDesc(keyCols, numKeys, valueCols, outputKeyCols,
         distinctColIndices, outputValCols,
         tag, partitionCols, numReducers, keyTable,
-        valueTable);
+        valueTable, writeType);
   }
 
   /**
@@ -690,12 +697,15 @@ public final class PlanUtils {
    * @param numReducers
    *          The number of reducers, set to -1 for automatic inference based on
    *          input data size.
+   * @param writeType Whether this is an Acid write, and if so whether it is insert, update,
+   *                  or delete.
    * @return The reduceSinkDesc object.
    */
   public static ReduceSinkDesc getReduceSinkDesc(
       ArrayList<ExprNodeDesc> keyCols, ArrayList<ExprNodeDesc> valueCols,
       List<String> outputColumnNames, boolean includeKey, int tag,
-      int numPartitionFields, int numReducers) throws SemanticException {
+      int numPartitionFields, int numReducers, AcidUtils.Operation writeType)
+      throws SemanticException {
     return getReduceSinkDesc(keyCols, keyCols.size(), valueCols,
         new ArrayList<List<Integer>>(),
         includeKey ? outputColumnNames.subList(0, keyCols.size()) :
@@ -703,7 +713,7 @@ public final class PlanUtils {
         includeKey ?
             outputColumnNames.subList(keyCols.size(), outputColumnNames.size())
             : outputColumnNames,
-        includeKey, tag, numPartitionFields, numReducers);
+        includeKey, tag, numPartitionFields, numReducers, writeType);
   }
 
   /**
@@ -729,6 +739,8 @@ public final class PlanUtils {
    * @param numReducers
    *          The number of reducers, set to -1 for automatic inference based on
    *          input data size.
+   * @param writeType Whether this is an Acid write, and if so whether it is insert, update,
+   *                  or delete.
    * @return The reduceSinkDesc object.
    */
   public static ReduceSinkDesc getReduceSinkDesc(
@@ -737,7 +749,8 @@ public final class PlanUtils {
       List<List<Integer>> distinctColIndices,
       List<String> outputKeyColumnNames, List<String> outputValueColumnNames,
       boolean includeKey, int tag,
-      int numPartitionFields, int numReducers) throws SemanticException {
+      int numPartitionFields, int numReducers, AcidUtils.Operation writeType)
+      throws SemanticException {
 
     ArrayList<ExprNodeDesc> partitionCols = new ArrayList<ExprNodeDesc>();
     if (numPartitionFields >= keyCols.size()) {
@@ -755,7 +768,7 @@ public final class PlanUtils {
     }
     return getReduceSinkDesc(keyCols, numKeys, valueCols, distinctColIndices,
         outputKeyColumnNames, outputValueColumnNames, includeKey, tag,
-        partitionCols, order.toString(), numReducers);
+        partitionCols, order.toString(), numReducers, writeType);
   }
 
   /**

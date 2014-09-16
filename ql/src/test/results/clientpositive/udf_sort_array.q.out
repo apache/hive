@@ -40,11 +40,11 @@ STAGE PLANS:
         TableScan
           alias: src
           Row Limit Per Split: 1
-          Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+          Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: sort_array(array('b','d','c','a')) (type: array<string>)
             outputColumnNames: _col0
-            Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+            Statistics: Num rows: 500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
             ListSink
 
 PREHOOK: query: SELECT sort_array(array("f", "a", "g", "c", "b", "d", "e")) FROM src tablesample (1 rows)

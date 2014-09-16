@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
+import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
@@ -65,6 +66,7 @@ import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFCount;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFMax;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFMin;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFResolver;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFSum;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -230,8 +232,10 @@ public class StatsOptimizer implements Transform {
             // our stats for NDV is approx, not accurate.
             return null;
           }
-          if (aggr.getGenericUDAFName().equals(AnnotationUtils.getAnnotation(GenericUDAFSum.class,
-              Description.class).name())) {
+          // Get the aggregate function matching the name in the query.
+          GenericUDAFResolver udaf =
+              FunctionRegistry.getGenericUDAFResolver(aggr.getGenericUDAFName());
+          if (udaf instanceof GenericUDAFSum) {
             if(!(aggr.getParameters().get(0) instanceof ExprNodeConstantDesc)){
               return null;
             }
@@ -244,8 +248,7 @@ public class StatsOptimizer implements Transform {
             ois.add(PrimitiveObjectInspectorFactory.getPrimitiveJavaObjectInspector(
                 PrimitiveCategory.DECIMAL));
           }
-          else if (aggr.getGenericUDAFName().equals(AnnotationUtils.getAnnotation(GenericUDAFCount.class,
-              Description.class).name())) {
+          else if (udaf instanceof GenericUDAFCount) {
             Long rowCnt = 0L;
             if ((aggr.getParameters().isEmpty() || aggr.getParameters().get(0) instanceof
                 ExprNodeConstantDesc)) {
@@ -326,8 +329,7 @@ public class StatsOptimizer implements Transform {
             oneRow.add(rowCnt);
             ois.add(PrimitiveObjectInspectorFactory.
                 getPrimitiveJavaObjectInspector(PrimitiveCategory.LONG));
-          } else if (aggr.getGenericUDAFName().equals(GenericUDAFMax.class.getAnnotation(
-              Description.class).name())) {
+          } else if (udaf instanceof GenericUDAFMax) {
             ExprNodeColumnDesc colDesc = (ExprNodeColumnDesc)aggr.getParameters().get(0);
             String colName = colDesc.getColumn();
             StatType type = getType(colDesc.getTypeString());
@@ -416,8 +418,7 @@ public class StatsOptimizer implements Transform {
                   return null;
               }
             }
-          }  else if (aggr.getGenericUDAFName().equals(GenericUDAFMin.class.getAnnotation(
-              Description.class).name())) {
+          }  else if (udaf instanceof GenericUDAFMin) {
             ExprNodeColumnDesc colDesc = (ExprNodeColumnDesc)aggr.getParameters().get(0);
             String colName = colDesc.getColumn();
             StatType type = getType(colDesc.getTypeString());

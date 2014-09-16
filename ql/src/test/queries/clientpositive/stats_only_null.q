@@ -34,6 +34,17 @@ select count(*), count(a), count(b), count(c), count(d) from stats_null_part;
 
 select count(*), count(a), count(b), count(c), count(d) from stats_null;
 select count(*), count(a), count(b), count(c), count(d) from stats_null_part;
+
+drop table stats_null_part;
+set hive.exec.dynamic.partition.mode=nonstrict;
+CREATE TABLE stats_null_part(a double, b int, c STRING, d smallint) partitioned by (dt int) STORED AS TEXTFILE; 
+
+insert into table stats_null_part partition(dt) select a,b,c,d,b from temps_null ;
+analyze table stats_null_part compute statistics for columns;
+
+describe formatted stats_null_part.a partition(dt = 1);
+
+reset hive.exec.dynamic.partition.mode;
 drop table stats_null;
 drop table stats_null_part;
 drop table temps_null;

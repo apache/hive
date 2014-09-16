@@ -364,8 +364,10 @@ abstract public class AbstractSMBJoinProc extends AbstractBucketJoinProc impleme
     for (int pos = 0; pos < sortCols.size(); pos++) {
       Order o = sortCols.get(pos);
 
-      if (o.getOrder() != sortColumnsFirstPartition.get(pos).getOrder()) {
-        return false;
+      if (pos < sortColumnsFirstPartition.size()) {
+        if (o.getOrder() != sortColumnsFirstPartition.get(pos).getOrder()) {
+          return false;
+        }
       }
       sortColNames.add(o.getCol());
     }

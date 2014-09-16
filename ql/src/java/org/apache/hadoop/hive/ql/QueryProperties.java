@@ -143,4 +143,22 @@ public class QueryProperties {
   public void setHasMapGroupBy(boolean hasMapGroupBy) {
     this.hasMapGroupBy = hasMapGroupBy;
   }
+
+  public void clear() {
+    hasJoin = false;
+    hasGroupBy = false;
+    hasOrderBy = false;
+    hasSortBy = false;
+    hasJoinFollowedByGroupBy = false;
+    hasPTF = false;
+    hasWindowing = false;
+
+    // does the query have a using clause
+    usesScript = false;
+
+    hasDistributeBy = false;
+    hasClusterBy = false;
+    mapJoinRemoved = false;
+    hasMapGroupBy = false;
+  }
 }

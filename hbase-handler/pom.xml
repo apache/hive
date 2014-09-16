@@ -57,6 +57,11 @@
       <version>${junit.version}</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.apache.avro</groupId>
+      <artifactId>avro</artifactId>
+      <version>1.7.6</version>
+	</dependency>
   </dependencies>
 
   <profiles>
@@ -101,6 +106,12 @@
           <version>${hbase.hadoop1.version}</version>
         </dependency>
         <dependency>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-test</artifactId>
+          <version>${hadoop-20S.version}</version>
+          <scope>test</scope>
+        </dependency>
+        <dependency>
           <groupId>org.apache.hbase</groupId>
           <artifactId>hbase-common</artifactId>
           <version>${hbase.hadoop1.version}</version>
@@ -134,9 +145,23 @@
         </dependency>
         <dependency>
           <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-common</artifactId>
+          <version>${hadoop-23.version}</version>
+          <classifier>tests</classifier>
+          <scope>test</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.hadoop</groupId>
           <artifactId>hadoop-mapreduce-client-core</artifactId>
           <version>${hadoop-23.version}</version>
           <optional>true</optional>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-hdfs</artifactId>
+          <version>${hadoop-23.version}</version>
+          <classifier>tests</classifier>
+          <scope>test</scope>
         </dependency>
         <dependency>
           <groupId>org.apache.hbase</groupId>
@@ -190,6 +215,12 @@
           <type>test-jar</type>
           <scope>test</scope>
         </dependency>
+        <dependency>
+          <groupId>com.sun.jersey</groupId>
+          <artifactId>jersey-servlet</artifactId>
+          <version>${jersey.version}</version>
+          <scope>test</scope>
+       </dependency>
       </dependencies>
     </profile>
   </profiles>
@@ -207,6 +238,42 @@
               <goal>test-jar</goal>
             </goals>
           </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.avro</groupId>
+        <artifactId>avro-maven-plugin</artifactId>
+        <version>1.7.6</version>
+        <executions>
+           <execution>
+               <phase>generate-test-sources</phase>
+               <goals>
+                  <goal>protocol</goal>
+               </goals>
+               <configuration>
+                  <testSourceDirectory>${project.basedir}/if/test</testSourceDirectory>
+                  <testOutputDirectory>${project.basedir}/src/test</testOutputDirectory>
+               </configuration>
+           </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <version>1.7</version>
+        <executions>
+           <execution>
+               <id>add-test-sources</id>
+               <phase>generate-test-sources</phase>
+               <goals>
+                  <goal>add-test-source</goal>
+               </goals>
+               <configuration>
+                  <sources>
+                     <source>${project.basedir}/src/gen/avro/gen-java</source>
+                  </sources>
+               </configuration>
+           </execution>
         </executions>
       </plugin>
     </plugins>

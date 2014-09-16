@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.io.orc;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.List;
 
 /**
  * The interface for writing ORC files.
@@ -72,4 +73,30 @@ public interface Writer {
    * @return the offset that would be a valid end location for an ORC file
    */
   long writeIntermediateFooter() throws IOException;
+
+  /**
+   * Fast stripe append to ORC file. This interface is used for fast ORC file
+   * merge with other ORC files. When merging, the file to be merged should pass
+   * stripe in binary form along with stripe information and stripe statistics.
+   * After appending last stripe of a file, use appendUserMetadata() to append
+   * any user metadata.
+   * @param stripe - stripe as byte array
+   * @param offset - offset within byte array
+   * @param length - length of stripe within byte array
+   * @param stripeInfo - stripe information
+   * @param stripeStatistics - stripe statistics (Protobuf objects can be
+   *                         merged directly)
+   * @throws IOException
+   */
+  public void appendStripe(byte[] stripe, int offset, int length,
+      StripeInformation stripeInfo,
+      OrcProto.StripeStatistics stripeStatistics) throws IOException;
+
+  /**
+   * When fast stripe append is used for merging ORC stripes, after appending
+   * the last stripe from a file, this interface must be used to merge any
+   * user metadata.
+   * @param userMetadata - user metadata
+   */
+  public void appendUserMetadata(List<OrcProto.UserMetadataItem> userMetadata);
 }

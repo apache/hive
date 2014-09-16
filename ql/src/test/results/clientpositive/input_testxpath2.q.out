@@ -30,17 +30,17 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src_thrift
-            Statistics: Num rows: 0 Data size: 1606 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 11 Data size: 3070 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (lint is not null and (not mstringstring is null)) (type: boolean)
-              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+              Statistics: Num rows: 3 Data size: 837 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: size(lint) (type: int), size(lintstring) (type: int), size(mstringstring) (type: int)
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                Statistics: Num rows: 3 Data size: 837 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  Statistics: Num rows: 3 Data size: 837 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat

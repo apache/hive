@@ -17,6 +17,156 @@ except:
 
 
 
+class PropValueUnion:
+  """
+  Attributes:
+   - intValue
+   - longValue
+   - stringValue
+   - doubleValue
+   - flag
+   - lString
+   - unionMStringString
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.I32, 'intValue', None, None, ), # 1
+    (2, TType.I64, 'longValue', None, None, ), # 2
+    (3, TType.STRING, 'stringValue', None, None, ), # 3
+    (4, TType.DOUBLE, 'doubleValue', None, None, ), # 4
+    (5, TType.BOOL, 'flag', None, None, ), # 5
+    (6, TType.LIST, 'lString', (TType.STRING,None), None, ), # 6
+    (7, TType.MAP, 'unionMStringString', (TType.STRING,None,TType.STRING,None), None, ), # 7
+  )
+
+  def __init__(self, intValue=None, longValue=None, stringValue=None, doubleValue=None, flag=None, lString=None, unionMStringString=None,):
+    self.intValue = intValue
+    self.longValue = longValue
+    self.stringValue = stringValue
+    self.doubleValue = doubleValue
+    self.flag = flag
+    self.lString = lString
+    self.unionMStringString = unionMStringString
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.I32:
+          self.intValue = iprot.readI32();
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.I64:
+          self.longValue = iprot.readI64();
+        else:
+          iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.STRING:
+          self.stringValue = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 4:
+        if ftype == TType.DOUBLE:
+          self.doubleValue = iprot.readDouble();
+        else:
+          iprot.skip(ftype)
+      elif fid == 5:
+        if ftype == TType.BOOL:
+          self.flag = iprot.readBool();
+        else:
+          iprot.skip(ftype)
+      elif fid == 6:
+        if ftype == TType.LIST:
+          self.lString = []
+          (_etype3, _size0) = iprot.readListBegin()
+          for _i4 in xrange(_size0):
+            _elem5 = iprot.readString();
+            self.lString.append(_elem5)
+          iprot.readListEnd()
+        else:
+          iprot.skip(ftype)
+      elif fid == 7:
+        if ftype == TType.MAP:
+          self.unionMStringString = {}
+          (_ktype7, _vtype8, _size6 ) = iprot.readMapBegin() 
+          for _i10 in xrange(_size6):
+            _key11 = iprot.readString();
+            _val12 = iprot.readString();
+            self.unionMStringString[_key11] = _val12
+          iprot.readMapEnd()
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('PropValueUnion')
+    if self.intValue is not None:
+      oprot.writeFieldBegin('intValue', TType.I32, 1)
+      oprot.writeI32(self.intValue)
+      oprot.writeFieldEnd()
+    if self.longValue is not None:
+      oprot.writeFieldBegin('longValue', TType.I64, 2)
+      oprot.writeI64(self.longValue)
+      oprot.writeFieldEnd()
+    if self.stringValue is not None:
+      oprot.writeFieldBegin('stringValue', TType.STRING, 3)
+      oprot.writeString(self.stringValue)
+      oprot.writeFieldEnd()
+    if self.doubleValue is not None:
+      oprot.writeFieldBegin('doubleValue', TType.DOUBLE, 4)
+      oprot.writeDouble(self.doubleValue)
+      oprot.writeFieldEnd()
+    if self.flag is not None:
+      oprot.writeFieldBegin('flag', TType.BOOL, 5)
+      oprot.writeBool(self.flag)
+      oprot.writeFieldEnd()
+    if self.lString is not None:
+      oprot.writeFieldBegin('lString', TType.LIST, 6)
+      oprot.writeListBegin(TType.STRING, len(self.lString))
+      for iter13 in self.lString:
+        oprot.writeString(iter13)
+      oprot.writeListEnd()
+      oprot.writeFieldEnd()
+    if self.unionMStringString is not None:
+      oprot.writeFieldBegin('unionMStringString', TType.MAP, 7)
+      oprot.writeMapBegin(TType.STRING, TType.STRING, len(self.unionMStringString))
+      for kiter14,viter15 in self.unionMStringString.items():
+        oprot.writeString(kiter14)
+        oprot.writeString(viter15)
+      oprot.writeMapEnd()
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
 class IntString:
   """
   Attributes:
@@ -110,6 +260,10 @@ class Complex:
    - lString
    - lintString
    - mStringString
+   - attributes
+   - unionField1
+   - unionField2
+   - unionField3
   """
 
   thrift_spec = (
@@ -120,15 +274,23 @@ class Complex:
     (4, TType.LIST, 'lString', (TType.STRING,None), None, ), # 4
     (5, TType.LIST, 'lintString', (TType.STRUCT,(IntString, IntString.thrift_spec)), None, ), # 5
     (6, TType.MAP, 'mStringString', (TType.STRING,None,TType.STRING,None), None, ), # 6
+    (7, TType.MAP, 'attributes', (TType.STRING,None,TType.MAP,(TType.STRING,None,TType.MAP,(TType.STRING,None,TType.STRUCT,(PropValueUnion, PropValueUnion.thrift_spec)))), None, ), # 7
+    (8, TType.STRUCT, 'unionField1', (PropValueUnion, PropValueUnion.thrift_spec), None, ), # 8
+    (9, TType.STRUCT, 'unionField2', (PropValueUnion, PropValueUnion.thrift_spec), None, ), # 9
+    (10, TType.STRUCT, 'unionField3', (PropValueUnion, PropValueUnion.thrift_spec), None, ), # 10
   )
 
-  def __init__(self, aint=None, aString=None, lint=None, lString=None, lintString=None, mStringString=None,):
+  def __init__(self, aint=None, aString=None, lint=None, lString=None, lintString=None, mStringString=None, attributes=None, unionField1=None, unionField2=None, unionField3=None,):
     self.aint = aint
     self.aString = aString
     self.lint = lint
     self.lString = lString
     self.lintString = lintString
     self.mStringString = mStringString
+    self.attributes = attributes
+    self.unionField1 = unionField1
+    self.unionField2 = unionField2
+    self.unionField3 = unionField3
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -152,43 +314,85 @@ class Complex:
       elif fid == 3:
         if ftype == TType.LIST:
           self.lint = []
-          (_etype3, _size0) = iprot.readListBegin()
-          for _i4 in xrange(_size0):
-            _elem5 = iprot.readI32();
-            self.lint.append(_elem5)
+          (_etype19, _size16) = iprot.readListBegin()
+          for _i20 in xrange(_size16):
+            _elem21 = iprot.readI32();
+            self.lint.append(_elem21)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
       elif fid == 4:
         if ftype == TType.LIST:
           self.lString = []
-          (_etype9, _size6) = iprot.readListBegin()
-          for _i10 in xrange(_size6):
-            _elem11 = iprot.readString();
-            self.lString.append(_elem11)
+          (_etype25, _size22) = iprot.readListBegin()
+          for _i26 in xrange(_size22):
+            _elem27 = iprot.readString();
+            self.lString.append(_elem27)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
       elif fid == 5:
         if ftype == TType.LIST:
           self.lintString = []
-          (_etype15, _size12) = iprot.readListBegin()
-          for _i16 in xrange(_size12):
-            _elem17 = IntString()
-            _elem17.read(iprot)
-            self.lintString.append(_elem17)
+          (_etype31, _size28) = iprot.readListBegin()
+          for _i32 in xrange(_size28):
+            _elem33 = IntString()
+            _elem33.read(iprot)
+            self.lintString.append(_elem33)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
       elif fid == 6:
         if ftype == TType.MAP:
           self.mStringString = {}
-          (_ktype19, _vtype20, _size18 ) = iprot.readMapBegin() 
-          for _i22 in xrange(_size18):
-            _key23 = iprot.readString();
-            _val24 = iprot.readString();
-            self.mStringString[_key23] = _val24
+          (_ktype35, _vtype36, _size34 ) = iprot.readMapBegin() 
+          for _i38 in xrange(_size34):
+            _key39 = iprot.readString();
+            _val40 = iprot.readString();
+            self.mStringString[_key39] = _val40
           iprot.readMapEnd()
+        else:
+          iprot.skip(ftype)
+      elif fid == 7:
+        if ftype == TType.MAP:
+          self.attributes = {}
+          (_ktype42, _vtype43, _size41 ) = iprot.readMapBegin() 
+          for _i45 in xrange(_size41):
+            _key46 = iprot.readString();
+            _val47 = {}
+            (_ktype49, _vtype50, _size48 ) = iprot.readMapBegin() 
+            for _i52 in xrange(_size48):
+              _key53 = iprot.readString();
+              _val54 = {}
+              (_ktype56, _vtype57, _size55 ) = iprot.readMapBegin() 
+              for _i59 in xrange(_size55):
+                _key60 = iprot.readString();
+                _val61 = PropValueUnion()
+                _val61.read(iprot)
+                _val54[_key60] = _val61
+              iprot.readMapEnd()
+              _val47[_key53] = _val54
+            iprot.readMapEnd()
+            self.attributes[_key46] = _val47
+          iprot.readMapEnd()
+        else:
+          iprot.skip(ftype)
+      elif fid == 8:
+        if ftype == TType.STRUCT:
+          self.unionField1 = PropValueUnion()
+          self.unionField1.read(iprot)
+        else:
+          iprot.skip(ftype)
+      elif fid == 9:
+        if ftype == TType.STRUCT:
+          self.unionField2 = PropValueUnion()
+          self.unionField2.read(iprot)
+        else:
+          iprot.skip(ftype)
+      elif fid == 10:
+        if ftype == TType.STRUCT:
+          self.unionField3 = PropValueUnion()
+          self.unionField3.read(iprot)
         else:
           iprot.skip(ftype)
       else:
@@ -212,31 +416,59 @@ class Complex:
     if self.lint is not None:
       oprot.writeFieldBegin('lint', TType.LIST, 3)
       oprot.writeListBegin(TType.I32, len(self.lint))
-      for iter25 in self.lint:
-        oprot.writeI32(iter25)
+      for iter62 in self.lint:
+        oprot.writeI32(iter62)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.lString is not None:
       oprot.writeFieldBegin('lString', TType.LIST, 4)
       oprot.writeListBegin(TType.STRING, len(self.lString))
-      for iter26 in self.lString:
-        oprot.writeString(iter26)
+      for iter63 in self.lString:
+        oprot.writeString(iter63)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.lintString is not None:
       oprot.writeFieldBegin('lintString', TType.LIST, 5)
       oprot.writeListBegin(TType.STRUCT, len(self.lintString))
-      for iter27 in self.lintString:
-        iter27.write(oprot)
+      for iter64 in self.lintString:
+        iter64.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.mStringString is not None:
       oprot.writeFieldBegin('mStringString', TType.MAP, 6)
       oprot.writeMapBegin(TType.STRING, TType.STRING, len(self.mStringString))
-      for kiter28,viter29 in self.mStringString.items():
-        oprot.writeString(kiter28)
-        oprot.writeString(viter29)
+      for kiter65,viter66 in self.mStringString.items():
+        oprot.writeString(kiter65)
+        oprot.writeString(viter66)
       oprot.writeMapEnd()
+      oprot.writeFieldEnd()
+    if self.attributes is not None:
+      oprot.writeFieldBegin('attributes', TType.MAP, 7)
+      oprot.writeMapBegin(TType.STRING, TType.MAP, len(self.attributes))
+      for kiter67,viter68 in self.attributes.items():
+        oprot.writeString(kiter67)
+        oprot.writeMapBegin(TType.STRING, TType.MAP, len(viter68))
+        for kiter69,viter70 in viter68.items():
+          oprot.writeString(kiter69)
+          oprot.writeMapBegin(TType.STRING, TType.STRUCT, len(viter70))
+          for kiter71,viter72 in viter70.items():
+            oprot.writeString(kiter71)
+            viter72.write(oprot)
+          oprot.writeMapEnd()
+        oprot.writeMapEnd()
+      oprot.writeMapEnd()
+      oprot.writeFieldEnd()
+    if self.unionField1 is not None:
+      oprot.writeFieldBegin('unionField1', TType.STRUCT, 8)
+      self.unionField1.write(oprot)
+      oprot.writeFieldEnd()
+    if self.unionField2 is not None:
+      oprot.writeFieldBegin('unionField2', TType.STRUCT, 9)
+      self.unionField2.write(oprot)
+      oprot.writeFieldEnd()
+    if self.unionField3 is not None:
+      oprot.writeFieldBegin('unionField3', TType.STRUCT, 10)
+      self.unionField3.write(oprot)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()

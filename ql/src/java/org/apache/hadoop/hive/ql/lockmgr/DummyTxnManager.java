@@ -48,8 +48,9 @@ class DummyTxnManager extends HiveTxnManagerImpl {
   private HiveLockManager lockMgr;
 
   @Override
-  public void openTxn(String user) throws LockException {
+  public long openTxn(String user) throws LockException {
     // No-op
+    return 0L;
   }
 
   @Override
@@ -205,6 +206,11 @@ class DummyTxnManager extends HiveTxnManagerImpl {
 
   @Override
   public boolean useNewShowLocksFormat() {
+    return false;
+  }
+
+  @Override
+  public boolean supportsAcid() {
     return false;
   }
 

@@ -43,8 +43,8 @@ import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.UnionObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
@@ -279,6 +279,13 @@ public class LazyBinarySerDe extends AbstractSerDe {
         nullByte = 0;
       }
     }
+  }
+
+  private static void serializeUnion(RandomAccessOutput byteStream, Object obj,
+    UnionObjectInspector uoi, BooleanRef warnedOnceNullMapKey) throws SerDeException {
+    byte tag = uoi.getTag(obj);
+    byteStream.write(tag);
+    serialize(byteStream, uoi.getField(obj), uoi.getObjectInspectors().get(tag), false, warnedOnceNullMapKey);
   }
 
   private static void serializeText(
@@ -544,24 +551,31 @@ public class LazyBinarySerDe extends AbstractSerDe {
       }
       return;
     }
-    case STRUCT: {
+    case STRUCT:
+    case UNION:{
       int byteSizeStart = 0;
-      int structStart = 0;
+      int typeStart = 0;
       if (!skipLengthPrefix) {
         // 1/ reserve spaces for the byte size of the struct
         // which is a integer and takes four bytes
         byteSizeStart = byteStream.getLength();
         byteStream.reserve(4);
-        structStart = byteStream.getLength();
+        typeStart = byteStream.getLength();
       }
-      // 2/ serialize the struct
-      serializeStruct(byteStream, obj, (StructObjectInspector) objInspector, warnedOnceNullMapKey);
+
+      if (ObjectInspector.Category.STRUCT.equals(objInspector.getCategory()) ) {
+        // 2/ serialize the struct
+        serializeStruct(byteStream, obj, (StructObjectInspector) objInspector, warnedOnceNullMapKey);
+      } else {
+        // 2/ serialize the union
+        serializeUnion(byteStream, obj, (UnionObjectInspector) objInspector, warnedOnceNullMapKey);
+      }
 
       if (!skipLengthPrefix) {
         // 3/ update the byte size of the struct
-        int structEnd = byteStream.getLength();
-        int structSize = structEnd - structStart;
-        writeSizeAtOffset(byteStream, byteSizeStart, structSize);
+        int typeEnd = byteStream.getLength();
+        int typeSize = typeEnd - typeStart;
+        writeSizeAtOffset(byteStream, byteSizeStart, typeSize);
       }
       return;
     }

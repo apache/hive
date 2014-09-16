@@ -48,6 +48,11 @@ public class ReadEntity extends Entity implements Serializable {
   // is marked as being read.  Defaults to true as that is the most common case.
   private boolean needsLock = true;
 
+  // When true indicates that this object is being read as part of an update or delete.  This is
+  // important because in that case we shouldn't acquire a lock for it or authorize the read.
+  // These will be handled by the output to the table instead.
+  private boolean isUpdateOrDelete = false;
+
   // For views, the entities can be nested - by default, entities are at the top level
   private final Set<ReadEntity> parents = new HashSet<ReadEntity>();
 
@@ -165,5 +170,13 @@ public class ReadEntity extends Entity implements Serializable {
 
   public List<String> getAccessedColumns() {
     return accessedColumns;
+  }
+
+  public void setUpdateOrDelete(boolean isUpdateOrDelete) {
+    this.isUpdateOrDelete = isUpdateOrDelete;
+  }
+
+  public boolean isUpdateOrDelete() {
+    return isUpdateOrDelete;
   }
 }

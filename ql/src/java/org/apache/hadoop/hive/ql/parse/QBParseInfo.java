@@ -172,6 +172,15 @@ public class QBParseInfo {
     return insertIntoTables.contains(fullName.toLowerCase());
   }
 
+  /**
+   * Check if a table is in the list to be inserted into
+   * @param fullTableName table name in dbname.tablename format
+   * @return
+   */
+  public boolean isInsertIntoTable(String fullTableName) {
+    return insertIntoTables.contains(fullTableName.toLowerCase());
+  }
+
   public HashMap<String, ASTNode> getAggregationExprsForClause(String clause) {
     return destToAggregationExprs.get(clause);
   }

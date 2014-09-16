@@ -2336,6 +2336,12 @@ class RecordReaderImpl implements RecordReader {
       return ((DecimalColumnStatistics) index).getMaximum();
     } else if (index instanceof TimestampColumnStatistics) {
       return ((TimestampColumnStatistics) index).getMaximum();
+    } else if (index instanceof BooleanColumnStatistics) {
+      if (((BooleanColumnStatistics)index).getTrueCount()!=0) {
+        return "true";
+      } else {
+        return "false";
+      }
     } else {
       return null;
     }
@@ -2360,6 +2366,12 @@ class RecordReaderImpl implements RecordReader {
       return ((DecimalColumnStatistics) index).getMinimum();
     } else if (index instanceof TimestampColumnStatistics) {
       return ((TimestampColumnStatistics) index).getMinimum();
+    } else if (index instanceof BooleanColumnStatistics) {
+      if (((BooleanColumnStatistics)index).getFalseCount()!=0) {
+        return "false";
+      } else {
+        return "true";
+      }
     } else {
       return null;
     }
