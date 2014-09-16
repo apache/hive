@@ -390,6 +390,22 @@ public final class Utilities {
     }
   }
 
+  public static Map<String, Map<Integer, String>> getScratchColumnVectorTypes(Configuration hiveConf) {
+    BaseWork baseWork = getMapWork(hiveConf);
+    if (baseWork == null) {
+      baseWork = getReduceWork(hiveConf);
+    }
+    return baseWork.getScratchColumnVectorTypes();
+  }
+
+  public static Map<String, Map<String, Integer>> getScratchColumnMap(Configuration hiveConf) {
+    BaseWork baseWork = getMapWork(hiveConf);
+    if (baseWork == null) {
+      baseWork = getReduceWork(hiveConf);
+    }
+    return baseWork.getScratchColumnMap();
+  }
+
   public static void setWorkflowAdjacencies(Configuration conf, QueryPlan plan) {
     try {
       Graph stageGraph = plan.getQueryPlan().getStageGraph();
