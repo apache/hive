@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.ql.lockmgr.*;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockObject.HiveLockObjectData;
 import org.apache.hadoop.hive.ql.metadata.*;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
+import org.apache.hadoop.hive.ql.util.ZooKeeperHiveHelper;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.data.Stat;
 import org.apache.zookeeper.KeeperException;
@@ -73,31 +74,6 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
   }
 
   /**
-   * @param conf  The hive configuration
-   * Get the quorum server address from the configuration. The format is:
-   * host1:port, host2:port..
-   **/
-  @VisibleForTesting
-  static String getQuorumServers(HiveConf conf) {
-    String[] hosts = conf.getVar(HiveConf.ConfVars.HIVE_ZOOKEEPER_QUORUM).split(",");
-    String port = conf.getVar(HiveConf.ConfVars.HIVE_ZOOKEEPER_CLIENT_PORT);
-    StringBuilder quorum = new StringBuilder();
-    for(int i=0; i<hosts.length; i++) {
-      quorum.append(hosts[i].trim());
-      if (!hosts[i].contains(":")) {
-        // if the hostname doesn't contain a port, add the configured port to hostname
-        quorum.append(":");
-        quorum.append(port);
-      }
-
-      if (i != hosts.length-1)
-        quorum.append(",");
-    }
-
-    return quorum.toString();
-  }
-
-  /**
    * @param ctx  The lock manager context (containing the Hive configuration file)
    * Start the ZooKeeper client based on the zookeeper cluster specified in the conf.
    **/
@@ -105,7 +81,7 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
     this.ctx = ctx;
     HiveConf conf = ctx.getConf();
     sessionTimeout = conf.getIntVar(HiveConf.ConfVars.HIVE_ZOOKEEPER_SESSION_TIMEOUT);
-    quorumServers = ZooKeeperHiveLockManager.getQuorumServers(conf);
+    quorumServers = ZooKeeperHiveHelper.getQuorumServers(conf);
 
     sleepTime = conf.getTimeVar(
         HiveConf.ConfVars.HIVE_LOCK_SLEEP_BETWEEN_RETRIES, TimeUnit.MILLISECONDS);
@@ -146,7 +122,7 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
       return;
     }
 
-    zooKeeper = new ZooKeeper(quorumServers, sessionTimeout, new DummyWatcher());
+    zooKeeper = new ZooKeeper(quorumServers, sessionTimeout, new ZooKeeperHiveHelper.DummyWatcher());
   }
 
   /**
@@ -517,8 +493,8 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
     ZooKeeper zkpClient = null;
     try {
       int sessionTimeout = conf.getIntVar(HiveConf.ConfVars.HIVE_ZOOKEEPER_SESSION_TIMEOUT);
-      String quorumServers = getQuorumServers(conf);
-      Watcher dummyWatcher = new DummyWatcher();
+      String quorumServers = ZooKeeperHiveHelper.getQuorumServers(conf);
+      Watcher dummyWatcher = new ZooKeeperHiveHelper.DummyWatcher();
       zkpClient = new ZooKeeper(quorumServers, sessionTimeout, dummyWatcher);
       String parent = conf.getVar(HiveConf.ConfVars.HIVE_ZOOKEEPER_NAMESPACE);
       List<HiveLock> locks = getLocks(conf, zkpClient, null, parent, false, false);
@@ -629,7 +605,8 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
 
         if (fetchData) {
           try {
-            data = new HiveLockObjectData(new String(zkpClient.getData(curChild, new DummyWatcher(), null)));
+            data = new HiveLockObjectData(new String(zkpClient.getData(curChild,
+                new ZooKeeperHiveHelper.DummyWatcher(), null)));
             data.setClientIp(clientIp);
           } catch (Exception e) {
             LOG.error("Error in getting data for " + curChild, e);
@@ -787,11 +764,6 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
     }
 
     return null;
-  }
-
-  public static class DummyWatcher implements Watcher {
-    public void process(org.apache.zookeeper.WatchedEvent event)  {
-    }
   }
 
   @Override

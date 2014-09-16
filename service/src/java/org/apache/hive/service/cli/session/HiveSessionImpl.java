@@ -166,8 +166,8 @@ public class HiveSessionImpl implements HiveSession {
     IHiveFileProcessor processor = new GlobalHivercFileProcessor();
 
     try {
-      if (hiveConf.getVar(ConfVars.HIVE_GLOBAL_INIT_FILE_LOCATION) != null) {
-        String hiverc = hiveConf.getVar(ConfVars.HIVE_GLOBAL_INIT_FILE_LOCATION)
+      if (hiveConf.getVar(ConfVars.HIVE_SERVER2_GLOBAL_INIT_FILE_LOCATION) != null) {
+        String hiverc = hiveConf.getVar(ConfVars.HIVE_SERVER2_GLOBAL_INIT_FILE_LOCATION)
             + File.separator + SessionManager.HIVERCFILE;
         if (new File(hiverc).exists()) {
           LOG.info("Running global init file: " + hiverc);

@@ -262,10 +262,9 @@ public class TestJdbcDriver2 {
   private void checkBadUrl(String url) throws SQLException {
     try{
       DriverManager.getConnection(url, "", "");
-      fail("should have thrown IllegalArgumentException but did not ");
-    } catch(SQLException i) {
-      assertTrue(i.getMessage().contains("Bad URL format. Hostname not found "
-          + " in authority part of the url"));
+      fail("Should have thrown JdbcUriParseException but did not ");
+    } catch(JdbcUriParseException e) {
+      assertTrue(e.getMessage().contains("Bad URL format"));
     }
   }
 
@@ -1618,6 +1617,10 @@ public class TestJdbcDriver2 {
   // [url] [host] [port] [db]
   private static final String[][] URL_PROPERTIES = new String[][] {
     // binary mode
+    // For embedded mode, the JDBC uri is of the form:
+    // jdbc:hive2:///dbName;sess_var_list?hive_conf_list#hive_var_list
+    // and does not contain host:port string.
+    // As a result port is parsed to '-1' per the Java URI conventions
     {"jdbc:hive2://", "", "", "default"},
     {"jdbc:hive2://localhost:10001/default", "localhost", "10001", "default"},
     {"jdbc:hive2://localhost/notdefault", "localhost", "10000", "notdefault"},
@@ -1654,7 +1657,8 @@ public class TestJdbcDriver2 {
   };
 
   @Test
-  public void testParseUrlHttpMode() throws SQLException {
+  public void testParseUrlHttpMode() throws SQLException, JdbcUriParseException,
+      ZooKeeperHiveClientException {
     new HiveDriver();
     for (String[] testValues : HTTP_URL_PROPERTIES) {
       JdbcConnectionParams params = Utils.parseURL(testValues[0]);

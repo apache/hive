@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import javax.security.auth.login.LoginException;
 
@@ -34,6 +35,7 @@ import org.apache.hive.service.auth.HiveAuthFactory;
 import org.apache.hive.service.auth.TSetIpAddressProcessor;
 import org.apache.hive.service.cli.*;
 import org.apache.hive.service.cli.session.SessionManager;
+import org.apache.hive.service.server.HiveServer2;
 import org.apache.thrift.TException;
 import org.apache.thrift.server.TServer;
 
@@ -48,9 +50,11 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
   protected CLIService cliService;
   private static final TStatus OK_STATUS = new TStatus(TStatusCode.SUCCESS_STATUS);
   private static final TStatus ERROR_STATUS = new TStatus(TStatusCode.ERROR_STATUS);
+  protected static HiveAuthFactory hiveAuthFactory;
 
   protected int portNum;
   protected InetSocketAddress serverAddress;
+  protected String hiveHost;
   protected TServer server;
   protected org.eclipse.jetty.server.Server httpServer;
 
@@ -62,8 +66,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
   protected int minWorkerThreads;
   protected int maxWorkerThreads;
   protected long workerKeepAliveTime;
-
-  protected static HiveAuthFactory hiveAuthFactory;
+  private HiveServer2 hiveServer2;
 
   public ThriftCLIService(CLIService cliService, String serviceName) {
     super(serviceName);
@@ -73,6 +76,43 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
   @Override
   public synchronized void init(HiveConf hiveConf) {
     this.hiveConf = hiveConf;
+
+    // Initialize common server configs needed in both binary & http modes
+    String portString;
+    hiveHost = System.getenv("HIVE_SERVER2_THRIFT_BIND_HOST");
+    if (hiveHost == null) {
+      hiveHost = hiveConf.getVar(ConfVars.HIVE_SERVER2_THRIFT_BIND_HOST);
+    }
+    // HTTP mode
+    if (HiveServer2.isHTTPTransportMode(hiveConf)) {
+      workerKeepAliveTime =
+          hiveConf.getTimeVar(ConfVars.HIVE_SERVER2_THRIFT_HTTP_WORKER_KEEPALIVE_TIME,
+              TimeUnit.SECONDS);
+      portString = System.getenv("HIVE_SERVER2_THRIFT_HTTP_PORT");
+      if (portString != null) {
+        portNum = Integer.valueOf(portString);
+      } else {
+        portNum = hiveConf.getIntVar(ConfVars.HIVE_SERVER2_THRIFT_HTTP_PORT);
+      }
+    }
+    // Binary mode
+    else {
+      workerKeepAliveTime =
+          hiveConf.getTimeVar(ConfVars.HIVE_SERVER2_THRIFT_WORKER_KEEPALIVE_TIME, TimeUnit.SECONDS);
+      portString = System.getenv("HIVE_SERVER2_THRIFT_PORT");
+      if (portString != null) {
+        portNum = Integer.valueOf(portString);
+      } else {
+        portNum = hiveConf.getIntVar(ConfVars.HIVE_SERVER2_THRIFT_PORT);
+      }
+    }
+    if (hiveHost != null && !hiveHost.isEmpty()) {
+      serverAddress = new InetSocketAddress(hiveHost, portNum);
+    } else {
+      serverAddress = new InetSocketAddress(portNum);
+    }
+    minWorkerThreads = hiveConf.getIntVar(ConfVars.HIVE_SERVER2_THRIFT_MIN_WORKER_THREADS);
+    maxWorkerThreads = hiveConf.getIntVar(ConfVars.HIVE_SERVER2_THRIFT_MAX_WORKER_THREADS);
     super.init(hiveConf);
   }
 
@@ -103,6 +143,14 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       isStarted = false;
     }
     super.stop();
+  }
+
+  public int getPortNumber() {
+    return portNum;
+  }
+
+  public InetSocketAddress getServerAddress() {
+    return serverAddress;
   }
 
   @Override
@@ -308,6 +356,24 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
     } catch (Exception e) {
       LOG.warn("Error closing session: ", e);
       resp.setStatus(HiveSQLException.toTStatus(e));
+    } finally {
+      if (!(isEmbedded) && (hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_SUPPORT_DYNAMIC_SERVICE_DISCOVERY))
+          && (!hiveServer2.isRegisteredWithZooKeeper())) {
+        // Asynchronously shutdown this instance of HiveServer2,
+        // if there are no active client sessions
+        if (cliService.getSessionManager().getOpenSessionCount() == 0) {
+          LOG.info("This instance of HiveServer2 has been removed from the list of server "
+              + "instances available for dynamic service discovery. "
+              + "The last client session has ended - will shutdown now.");
+          Thread shutdownThread = new Thread() {
+            @Override
+            public void run() {
+              hiveServer2.stop();
+            }
+          };
+          shutdownThread.start();
+        }
+      }
     }
     return resp;
   }
@@ -589,6 +655,10 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
   private boolean isKerberosAuthMode() {
     return cliService.getHiveConf().getVar(ConfVars.HIVE_SERVER2_AUTHENTICATION)
         .equalsIgnoreCase(HiveAuthFactory.AuthTypes.KERBEROS.toString());
+  }
+
+  public void setHiveServer2(HiveServer2 hiveServer2) {
+    this.hiveServer2 = hiveServer2;
   }
 
 }
