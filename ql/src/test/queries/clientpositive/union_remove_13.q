@@ -3,6 +3,7 @@ set hive.optimize.union.remove=true;
 set hive.mapred.supports.subdirectories=true;
 set hive.auto.convert.join=true;
 
+set hive.merge.sparkfiles=true;
 set hive.merge.mapfiles=true;
 set hive.merge.mapredfiles=true;
 set hive.merge.smallfiles.avgsize=1;

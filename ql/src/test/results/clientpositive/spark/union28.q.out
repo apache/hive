@@ -37,9 +37,6 @@ STAGE DEPENDENCIES:
   Stage-2 depends on stages: Stage-1
   Stage-0 depends on stages: Stage-2
   Stage-3 depends on stages: Stage-0
-  Stage-4 depends on stages: Stage-0
-  Stage-5 depends on stages: Stage-0
-  Stage-6 depends on stages: Stage-0
 
 STAGE PLANS:
   Stage: Stage-1
@@ -174,15 +171,6 @@ STAGE PLANS:
   Stage: Stage-3
     Stats-Aggr Operator
 
-  Stage: Stage-4
-    Stats-Aggr Operator
-
-  Stage: Stage-5
-    Stats-Aggr Operator
-
-  Stage: Stage-6
-    Stats-Aggr Operator
-
 PREHOOK: query: insert overwrite table union_subq_union 
 select * from (
   select key, value from src 
@@ -197,9 +185,6 @@ select * from (
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@union_subq_union
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 [Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: insert overwrite table union_subq_union 
 select * from (

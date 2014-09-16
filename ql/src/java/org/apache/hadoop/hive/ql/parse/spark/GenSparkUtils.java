@@ -216,9 +216,6 @@ public class GenSparkUtils {
       if (current instanceof FileSinkOperator) {
         FileSinkOperator fileSink = (FileSinkOperator)current;
 
-        // remember it for additional processing later
-        context.fileSinkSet.add(fileSink);
-
         FileSinkDesc desc = fileSink.getConf();
         Path path = desc.getDirName();
         List<FileSinkDesc> linked;

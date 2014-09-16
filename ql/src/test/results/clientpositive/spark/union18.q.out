@@ -37,12 +37,8 @@ STAGE DEPENDENCIES:
   Stage-3 depends on stages: Stage-2
   Stage-0 depends on stages: Stage-3
   Stage-4 depends on stages: Stage-0
-  Stage-6 depends on stages: Stage-0
-  Stage-8 depends on stages: Stage-0
   Stage-1 depends on stages: Stage-3
   Stage-5 depends on stages: Stage-1
-  Stage-7 depends on stages: Stage-1
-  Stage-9 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-2
@@ -143,12 +139,6 @@ STAGE PLANS:
   Stage: Stage-4
     Stats-Aggr Operator
 
-  Stage: Stage-6
-    Stats-Aggr Operator
-
-  Stage: Stage-8
-    Stats-Aggr Operator
-
   Stage: Stage-1
     Move Operator
       tables:
@@ -162,12 +152,6 @@ STAGE PLANS:
   Stage: Stage-5
     Stats-Aggr Operator
 
-  Stage: Stage-7
-    Stats-Aggr Operator
-
-  Stage: Stage-9
-    Stats-Aggr Operator
-
 PREHOOK: query: FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
                          UNION  ALL  
       select s2.key as key, s2.value as value from src s2) unionsrc
@@ -177,10 +161,6 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@dest1
 PREHOOK: Output: default@dest2
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 [Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 [Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
