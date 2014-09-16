@@ -281,6 +281,7 @@ import org.eigenbase.sql.SqlLiteral;
 import org.eigenbase.util.CompositeList;
 import org.eigenbase.util.ImmutableIntList;
 import org.eigenbase.util.Pair;
+import org.eigenbase.util.Util;
 
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
@@ -13603,12 +13604,21 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     private RelNode genSelectRelNode(List<RexNode> optiqColLst, RowResolver out_rwsch,
-        RelNode srcRel) {
+        RelNode srcRel) throws OptiqSemanticException {
       // 1. Build Column Names
       // TODO: Should this be external names
       ArrayList<String> columnNames = new ArrayList<String>();
       for (int i = 0; i < optiqColLst.size(); i++) {
         columnNames.add(getColumnInternalName(i));
+      }
+
+      // 1.1 Ensure columnNames are unique
+      if (!Util.isDistinct(columnNames)) {
+        String msg = String.format(
+            "Select list contains multiple expressions with the same name %s."
+                + columnNames);
+        LOG.debug(msg);
+        throw new OptiqSemanticException(msg);
       }
 
       // 2. Prepend column names with '_o_'
