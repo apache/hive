@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.vector;
 
+import java.io.IOException;
 import java.util.Arrays;
 
 import org.apache.hadoop.io.Writable;
@@ -156,5 +157,7 @@ public abstract class ColumnVector {
     public void init() {
       // Do nothing by default
     }
+
+    public abstract void visit(ColumnVectorVisitor v) throws IOException;
   }
 

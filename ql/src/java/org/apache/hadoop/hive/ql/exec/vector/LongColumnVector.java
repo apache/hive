@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.exec.vector;
 
+import java.io.IOException;
 import java.util.Arrays;
 
 import org.apache.hadoop.io.LongWritable;
@@ -165,6 +166,14 @@ public class LongColumnVector extends ColumnVector {
     vector[0] = value;
   }
 
+  // Fill the column vector with nulls
+  public void fillWithNulls() {
+    noNulls = false;
+    isRepeating = true;
+    vector[0] = NULL_VALUE;
+    isNull[0] = true;
+  }
+
   // Simplify vector by brute-force flattening noNulls and isRepeating
   // This can be used to reduce combinatorial explosion of code paths in VectorExpressions
   // with many arguments.
@@ -189,5 +198,10 @@ public class LongColumnVector extends ColumnVector {
   @Override
   public void setElement(int outElementNum, int inputElementNum, ColumnVector inputVector) {
     vector[outElementNum] = ((LongColumnVector) inputVector).vector[inputElementNum];
+  }
+
+  @Override
+  public void visit(ColumnVectorVisitor v) throws IOException {
+    v.visit(this);
   }
 }

@@ -42,6 +42,8 @@
     <module>hwi</module>
     <module>jdbc</module>
     <module>metastore</module>
+    <module>llap-client</module>
+    <module>llap</module>
     <module>odbc</module>
     <module>ql</module>
     <module>serde</module>

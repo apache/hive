@@ -268,8 +268,7 @@ public class VectorizedRowBatchCtx {
    * @return VectorizedRowBatch
    * @throws HiveException
    */
-  public VectorizedRowBatch createVectorizedRowBatch() throws HiveException
-  {
+  public VectorizedRowBatch createVectorizedRowBatch() throws HiveException {
     List<? extends StructField> fieldRefs = rowOI.getAllStructFieldRefs();
     VectorizedRowBatch result = new VectorizedRowBatch(fieldRefs.size());
     for (int j = 0; j < fieldRefs.size(); j++) {
@@ -394,8 +393,7 @@ public class VectorizedRowBatchCtx {
    * @param batch
    * @throws HiveException
    */
-  public void addPartitionColsToBatch(VectorizedRowBatch batch) throws HiveException
-  {
+  public void addPartitionColsToBatch(VectorizedRowBatch batch) throws HiveException {
     int colIndex;
     Object value;
     PrimitiveCategory pCategory;
@@ -639,5 +637,22 @@ public class VectorizedRowBatchCtx {
                 outputBatch, i, fieldOI);
     }
     return assigners;
+  }
+
+  public int[] getIncludedColumnIndexes() {
+    int colCount = (colsToInclude == null)
+        ? rowOI.getAllStructFieldRefs().size() : colsToInclude.size();
+    int[] result = new int[colCount];
+    if (colsToInclude == null) {
+      for (int i = 0; i < result.length; ++i) {
+        result[i] = i;
+      }
+    } else {
+      int i = -1;
+      for (int colIx : colsToInclude) {
+        result[++i] = colIx;
+      }
+    }
+    return result;
   }
 }

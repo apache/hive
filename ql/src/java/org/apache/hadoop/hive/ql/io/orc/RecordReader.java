@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.io.orc;
 
 import java.io.IOException;
 
+import org.apache.hadoop.hive.llap.chunk.ChunkWriter;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 
 /**
@@ -75,4 +76,19 @@ public interface RecordReader {
    * Seek to a particular row number.
    */
   void seekToRow(long rowCount) throws IOException;
+
+  /**
+   * TODO: change to interface rather than ctx obj?
+   * TODO: write javadoc.
+   * @return
+   */
+  Object prepareColumnRead();
+
+  /**
+   * TODO: write javadoc.
+   * @param writer
+   * @return
+   */
+  boolean readNextColumnStripe(Object ctxObj, ChunkWriter writer)
+      throws IOException;
 }

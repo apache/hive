@@ -251,4 +251,14 @@
   <value>hive_admin_user</value>
 </property>
 
+<property>
+  <name>hive.llap.cache.size</name>
+  <value>67108864</value>
+</property>
+
+<property>
+  <name>hive.llap.buffer.size</name>
+  <value>4194304</value>
+</property>
+
 </configuration>

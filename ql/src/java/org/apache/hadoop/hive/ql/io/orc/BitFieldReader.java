@@ -20,10 +20,15 @@ package org.apache.hadoop.hive.ql.io.orc;
 import java.io.EOFException;
 import java.io.IOException;
 
+import org.apache.hadoop.hive.llap.api.Vector.Type;
+import org.apache.hadoop.hive.llap.chunk.ChunkWriter;
+import org.apache.hadoop.hive.llap.chunk.ChunkWriter.NullsState;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
+import org.apache.hadoop.hive.ql.io.orc.LlapUtils.PresentStreamReadResult;
 
 class BitFieldReader {
   private final RunLengthByteReader input;
+  /** The number of bits in one item. Non-test code always uses 1. */
   private final int bitSize;
   private int current;
   private int bitsLeft;
@@ -62,9 +67,112 @@ class BitFieldReader {
     return result & mask;
   }
 
-  void nextVector(LongColumnVector previous, long previousLen)
-      throws IOException {
+  /**
+   * Unlike integer readers, where runs are encoded explicitly, in this one we have to read ahead
+   * to figure out whether we have a run. Given that runs in booleans are likely it's worth it.
+   * However it means we'd need to keep track of how many bytes we read, and next/nextVector won't
+   * work anymore once this is called. These is trivial to fix, but these are never interspersed.
+   */
+  private boolean lastRunValue;
+  private int lastRunLength = -1;
+  private void readNextRun(int maxRunLength) throws IOException {
+    assert bitSize == 1;
+    if (lastRunLength > 0) return; // last run is not exhausted yet
+    if (bitsLeft == 0) {
+      readByte();
+    }
+    // First take care of the partial bits.
+    boolean hasVal = false;
+    int runLength = 0;
+    if (bitsLeft != 8) {
+      int partialBitsMask = (1 << bitsLeft) - 1;
+      int partialBits = current & partialBitsMask;
+      if (partialBits == partialBitsMask || partialBits == 0) {
+        lastRunValue = (partialBits == partialBitsMask);
+        if (maxRunLength <= bitsLeft) {
+          lastRunLength = maxRunLength;
+          return;
+        }
+        maxRunLength -= bitsLeft;
+        hasVal = true;
+        runLength = bitsLeft;
+        bitsLeft = 0;
+      } else {
+        // There's no run in partial bits. Return whatever we have.
+        int prefixBitsCount = 32 - bitsLeft;
+        runLength = Integer.numberOfLeadingZeros(partialBits) - prefixBitsCount;
+        lastRunValue = (runLength > 0);
+        lastRunLength = Math.min(maxRunLength, lastRunValue ? runLength :
+          (Integer.numberOfLeadingZeros(~(partialBits | ~partialBitsMask)) - prefixBitsCount));
+        return;
+      }
+      assert bitsLeft == 0;
+      readByte();
+    }
+    if (!hasVal) {
+      lastRunValue = ((current >> 7) == 1);
+      hasVal = true;
+    }
+    // Read full bytes until the run ends.
+    assert bitsLeft == 8;
+    while (maxRunLength >= 8
+        && ((lastRunValue && (current == 0xff)) || (!lastRunValue && (current == 0)))) {
+      runLength += 8;
+      maxRunLength -= 8;
+      readByte();
+    }
+    if (maxRunLength > 0) {
+      int extraBits = Integer.numberOfLeadingZeros(
+          lastRunValue ? (~(current | ~255)) : current) - 24;
+      bitsLeft -= extraBits;
+      runLength += extraBits;
+    }
+    lastRunLength = runLength;
+  }
 
+  private final PresentStreamReadResult presentHelper = new PresentStreamReadResult();
+  int nextChunk(
+      ChunkWriter writer, BitFieldReader present, long rowsLeftToRead) throws IOException {
+    if (bitSize != 1) {
+      throw new AssertionError("Bit size should always be 1");
+    }
+    boolean mayHaveNulls = present != null;
+    NullsState nullState = mayHaveNulls ? NullsState.HAS_NULLS : NullsState.NO_NULLS;
+    int rowsLeftToWrite = writer.estimateValueCountThatFits(Type.LONG, mayHaveNulls);
+    if (rowsLeftToWrite == 0) {
+      return 0; // Cannot write any rows into this writer.
+    }
+    long originalRowsLeft = rowsLeftToRead;
+    // Start the big loop to read rows until we run out of either input or space.
+    while (rowsLeftToRead > 0 && rowsLeftToWrite > 0) {
+      int rowsToTransfer = (int)Math.min(rowsLeftToRead, rowsLeftToWrite);
+      readNextRun(rowsToTransfer);
+      presentHelper.availLength = lastRunLength;
+      if (mayHaveNulls) {
+        LlapUtils.readPresentStream(presentHelper, present, rowsToTransfer);
+        if (!presentHelper.isNullsRun) {
+          assert lastRunLength >= presentHelper.availLength;
+          lastRunLength -= presentHelper.availLength;
+        }
+      } else {
+        lastRunLength = 0;
+      }
+
+      assert rowsLeftToRead >= presentHelper.availLength;
+      if (presentHelper.isNullsRun) {
+        writer.writeNulls(presentHelper.availLength, presentHelper.isFollowedByOther);
+      } else {
+        writer.writeRepeatedLongs(lastRunValue ? 1 : 0, presentHelper.availLength,
+            presentHelper.isFollowedByOther ? NullsState.NEXT_NULL : nullState);
+      }
+      rowsLeftToWrite = writer.estimateValueCountThatFits(Type.LONG, mayHaveNulls);
+      rowsLeftToRead -= presentHelper.availLength;
+    } // End of big loop.
+    writer.finishCurrentSegment();
+    return (int)(originalRowsLeft - rowsLeftToRead);
+  }
+
+  void nextVector(LongColumnVector previous, long previousLen) throws IOException {
     previous.isRepeating = true;
     for (int i = 0; i < previousLen; i++) {
       if (!previous.isNull[i]) {
@@ -116,5 +224,31 @@ class BitFieldReader {
   public String toString() {
     return "bit reader current: " + current + " bits left: " + bitsLeft +
         " bit size: " + bitSize + " from " + input;
+  }
+
+  boolean hasFullByte() {
+    return bitsLeft == 8 || bitsLeft == 0;
+  }
+
+  int peekOneBit() throws IOException {
+    assert bitSize == 1;
+    if (bitsLeft == 0) {
+      readByte();
+    }
+    return (current >>> (bitsLeft - 1)) & 1;
+  }
+
+  int peekFullByte() throws IOException {
+    assert bitSize == 1;
+    assert bitsLeft == 8 || bitsLeft == 0;
+    if (bitsLeft == 0) {
+      readByte();
+    }
+    return current;
+  }
+
+  void skipInCurrentByte(int bits) throws IOException {
+    assert bitsLeft >= bits;
+    bitsLeft -= bits;
   }
 }

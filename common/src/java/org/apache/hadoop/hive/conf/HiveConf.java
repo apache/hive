@@ -1690,7 +1690,7 @@ public class HiveConf extends Configuration {
     HIVE_JAR_DIRECTORY("hive.jar.directory", null,
         "This is the location hive in tez mode will look for to find a site wide \n" +
         "installed hive instance."),
-    HIVE_USER_INSTALL_DIR("hive.user.install.directory", "hdfs:///user/",
+    HIVE_USER_INSTALL_DIR("hive.user.install.directory", "/user/",
         "If hive (in tez mode only) cannot find a usable hive jar in \"hive.jar.directory\", \n" +
         "it will upload the hive jar to \"hive.user.install.directory/user.name\"\n" +
         "and use it to run queries."),
@@ -1782,8 +1782,16 @@ public class HiveConf extends Configuration {
         "vertices to the tez application master. These events will be used to prune unnecessary partitions."),
     TEZ_DYNAMIC_PARTITION_PRUNING_MAX_EVENT_SIZE("hive.tez.dynamic.partition.pruning.max.event.size", 1*1024*1024L,
         "Maximum size of events sent by processors in dynamic pruning. If this size is crossed no pruning will take place."),
-    TEZ_DYNAMIC_PARTITION_PRUNING_MAX_DATA_SIZE("hive.tez.dynamic.partition.pruning.max.data.size", 100*1024*1024L,
-        "Maximum total data size of events in dynamic pruning.")
+    TEZ_DYNAMIC_PARTITION_PRUNING_MAX_DATA_SIZE("hive.tez.dynamic.parition.pruning.max.data.size", 100*1024*1024L,
+        "Maximum total data size of events in dynamic pruning."),
+
+
+    LLAP_ENABLED("hive.llap.enabled", true, ""),
+    LLAP_CACHE_SIZE("hive.llap.cache.size", 1024L * 1024 * 1024, ""),
+    LLAP_BUFFER_SIZE("hive.llap.buffer.size", 16 * 1024 * 1024, ""),
+    LLAP_REQUEST_THREAD_COUNT("hive.llap.request.thread.count", 16, ""),
+    LLAP_USE_LRFU("hive.llap.use.lrfu", true, ""),
+    LLAP_LRFU_LAMBDA("hive.llap.lrfu.lambda", 0.01f, ""),
     ;
 
     public final String varname;

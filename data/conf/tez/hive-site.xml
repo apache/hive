@@ -246,12 +246,21 @@
 </property>
 
 <property>
+  <name>hive.llap.cache.size</name>
+  <value>67108864</value>
+</property>
+
+<property>
+  <name>hive.llap.buffer.size</name>
+  <value>4194304</value>
+</property>
+
+<property>
   <name>hive.in.tez.test</name>
   <value>true</value>
   <description>
     Indicates that we are in tez testing mode.
   </description>
 </property>
-
 
 </configuration>

@@ -36,6 +36,7 @@ import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.io.HiveIOExceptionHandlerUtil;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
@@ -50,6 +51,7 @@ import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapred.FileInputFormat;
@@ -194,6 +196,30 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     this.job = job;
   }
 
+  public static InputFormat<WritableComparable, Writable> wrapForLlap(
+      InputFormat<WritableComparable, Writable> inputFormat, Configuration conf) {
+    if (!HiveConf.getBoolVar(conf, ConfVars.LLAP_ENABLED)) return inputFormat;
+    boolean isSupported = inputFormat instanceof LlapWrappableInputFormatInterface,
+        isVector = Utilities.isVectorMode(conf);
+    if (!isSupported || !isVector) {
+      LOG.info("Not using llap for " + inputFormat + ": " + isSupported + ", " + isVector);
+      return inputFormat;
+    }
+    LOG.info("Wrapping " + inputFormat);
+    // TODO: we'd actually need a more specific template parameter for non-vectorized one...
+    //       no idea how this is going to work at this point.
+    InputFormat<NullWritable, Writable> inputToWrap = castInputFormat(inputFormat);
+    return castInputFormat(new LlapInputFormat<Writable>(inputToWrap, conf));
+  }
+
+  @SuppressWarnings("unchecked")
+  private static <T, U, V> InputFormat<T, V> castInputFormat(InputFormat<U, V> from) {
+    // We assume that LlapWrappableInputFormatInterface has NullWritable as first parameter.
+    // Since we are using Java and not, say, a programming language, there's no way to check.
+    return (InputFormat<T, V>)from;
+  }
+
+
   public static InputFormat<WritableComparable, Writable> getInputFormatFromCache(
     Class inputFormatClass, JobConf job) throws IOException {
 
@@ -207,7 +233,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
             + inputFormatClass.getName() + " as specified in mapredWork!", e);
       }
     }
-    return inputFormats.get(inputFormatClass);
+    return wrapForLlap(inputFormats.get(inputFormatClass), job);
   }
 
   public RecordReader getRecordReader(InputSplit split, JobConf job,

@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.vector;
 
+import java.io.IOException;
 import java.util.Arrays;
 
 import org.apache.hadoop.io.NullWritable;
@@ -311,6 +312,14 @@ public class BytesColumnVector extends ColumnVector {
     setRef(0, value, 0, value.length);
   }
 
+  // Fill the column vector with nulls
+  public void fillWithNulls() {
+    noNulls = false;
+    isRepeating = true;
+    vector[0] = null;
+    isNull[0] = true;
+  }
+
   @Override
   public void setElement(int outElementNum, int inputElementNum, ColumnVector inputVector) {
     BytesColumnVector in = (BytesColumnVector) inputVector;
@@ -320,5 +329,10 @@ public class BytesColumnVector extends ColumnVector {
   @Override
   public void init() {
     initBuffer(0);
+  }
+
+  @Override
+  public void visit(ColumnVectorVisitor v) throws IOException {
+    v.visit(this);
   }
 }

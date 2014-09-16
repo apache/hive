@@ -19,12 +19,19 @@ package org.apache.hadoop.hive.ql.io.orc;
 
 import java.io.EOFException;
 import java.io.IOException;
+import java.util.Arrays;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.llap.api.Vector.Type;
+import org.apache.hadoop.hive.llap.chunk.ChunkWriter;
+import org.apache.hadoop.hive.llap.chunk.ChunkWriter.NullsState;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
+import org.apache.hadoop.hive.ql.io.orc.LlapUtils.PresentStreamReadResult;
 import org.apache.hadoop.hive.ql.io.orc.RunLengthIntegerWriterV2.EncodingType;
 
 /**
@@ -33,13 +40,17 @@ import org.apache.hadoop.hive.ql.io.orc.RunLengthIntegerWriterV2.EncodingType;
  * compression techniques.
  */
 class RunLengthIntegerReaderV2 implements IntegerReader {
+  public static final Log LOG = LogFactory.getLog(RunLengthIntegerReaderV2.class);
+
   private final InStream input;
   private final boolean signed;
   private final long[] literals = new long[RunLengthIntegerWriterV2.MAX_SCOPE];
+  private boolean isRepeating = false;
   private int numLiterals = 0;
   private int used = 0;
   private final boolean skipCorrupt;
   private final SerializationUtils utils;
+  private EncodingType currentEncoding;
 
   RunLengthIntegerReaderV2(InStream input, boolean signed,
       Configuration conf) throws IOException {
@@ -49,22 +60,25 @@ class RunLengthIntegerReaderV2 implements IntegerReader {
     this.utils = new SerializationUtils();
   }
 
-  private void readValues() throws IOException {
+  private final static EncodingType[] encodings = EncodingType.values();
+  private void readValues(boolean ignoreEof) throws IOException {
     // read the first 2 bits and determine the encoding type
+    isRepeating = false;
     int firstByte = input.read();
     if (firstByte < 0) {
-      throw new EOFException("Read past end of RLE integer from " + input);
-    } else {
-      int enc = (firstByte >>> 6) & 0x03;
-      if (EncodingType.SHORT_REPEAT.ordinal() == enc) {
-        readShortRepeatValues(firstByte);
-      } else if (EncodingType.DIRECT.ordinal() == enc) {
-        readDirectValues(firstByte);
-      } else if (EncodingType.PATCHED_BASE.ordinal() == enc) {
-        readPatchedBaseValues(firstByte);
-      } else {
-        readDeltaValues(firstByte);
+      if (!ignoreEof) {
+        throw new EOFException("Read past end of RLE integer from " + input);
       }
+      used = numLiterals = 0;
+      return;
+    }
+    currentEncoding = encodings[(firstByte >>> 6) & 0x03];
+    switch (currentEncoding) {
+    case SHORT_REPEAT: readShortRepeatValues(firstByte); break;
+    case DIRECT: readDirectValues(firstByte); break;
+    case PATCHED_BASE: readPatchedBaseValues(firstByte); break;
+    case DELTA: readDeltaValues(firstByte); break;
+    default: throw new IOException("Unknown encoding " + currentEncoding);
     }
   }
 
@@ -97,10 +111,16 @@ class RunLengthIntegerReaderV2 implements IntegerReader {
       // read the fixed delta value stored as vint (deltas can be negative even
       // if all number are positive)
       long fd = utils.readVslong(input);
-
-      // add fixed deltas to adjacent values
-      for(int i = 0; i < len; i++) {
-        literals[numLiterals++] = literals[numLiterals - 2] + fd;
+      if (fd == 0) {
+        isRepeating = true;
+        assert numLiterals == 1;
+        Arrays.fill(literals, numLiterals, numLiterals + len, literals[0]);
+        numLiterals += len;
+      } else {
+        // add fixed deltas to adjacent values
+        for(int i = 0; i < len; i++) {
+          literals[numLiterals++] = literals[numLiterals - 2] + fd;
+        }
       }
     } else {
       long deltaBase = utils.readVslong(input);
@@ -282,10 +302,18 @@ class RunLengthIntegerReaderV2 implements IntegerReader {
       val = utils.zigzagDecode(val);
     }
 
-    // repeat the value for length times
-    for(int i = 0; i < len; i++) {
-      literals[numLiterals++] = val;
+    if (numLiterals != 0) {
+      // Currently this always holds, which makes peekNextAvailLength simpler.
+      // If this changes, peekNextAvailLength should be adjusted accordingly.
+      throw new AssertionError("readValues called with existing values present");
     }
+    // repeat the value for length times
+    isRepeating = true;
+    // TODO: this is not so useful and V1 reader doesn't do that. Fix? Same if delta == 0
+    for(int i = 0; i < len; i++) {
+      literals[i] = val;
+    }
+    numLiterals = len;
   }
 
   @Override
@@ -299,7 +327,7 @@ class RunLengthIntegerReaderV2 implements IntegerReader {
     if (used == numLiterals) {
       numLiterals = 0;
       used = 0;
-      readValues();
+      readValues(false);
     }
     result = literals[used++];
     return result;
@@ -314,7 +342,7 @@ class RunLengthIntegerReaderV2 implements IntegerReader {
       // parts
       while (consumed > 0) {
         numLiterals = 0;
-        readValues();
+        readValues(false);
         used = consumed;
         consumed -= numLiterals;
       }
@@ -330,12 +358,64 @@ class RunLengthIntegerReaderV2 implements IntegerReader {
       if (used == numLiterals) {
         numLiterals = 0;
         used = 0;
-        readValues();
+        readValues(false);
       }
       long consume = Math.min(numValues, numLiterals - used);
       used += consume;
       numValues -= consume;
     }
+  }
+
+  private final PresentStreamReadResult presentHelper = new PresentStreamReadResult();
+  @Override
+  public int nextChunk(
+      ChunkWriter writer, BitFieldReader present, long rowsLeftToRead) throws IOException {
+    boolean mayHaveNulls = present != null;
+    int rowsLeftToWrite = writer.estimateValueCountThatFits(Type.LONG, mayHaveNulls);
+    if (rowsLeftToWrite == 0) {
+      return 0; // Cannot write any rows into this writer.
+    }
+    long originalRowsLeft = rowsLeftToRead;
+    // Start the big loop to read rows until we run out of either input or space.
+    while (rowsLeftToRead > 0 && rowsLeftToWrite > 0) {
+      int rowsToTransfer = (int)Math.min(rowsLeftToRead, rowsLeftToWrite);
+      presentHelper.availLength = Math.min(peekNextAvailLength(), rowsToTransfer);
+      if (mayHaveNulls) {
+        LlapUtils.readPresentStream(presentHelper, present, rowsToTransfer);
+      }
+      assert presentHelper.availLength > 0;
+      assert rowsLeftToRead >= presentHelper.availLength;
+      if (presentHelper.isNullsRun) {
+        writer.writeNulls(presentHelper.availLength, presentHelper.isFollowedByOther);
+      } else {
+        NullsState nullsState = !mayHaveNulls ? NullsState.NO_NULLS :
+              (presentHelper.isFollowedByOther ? NullsState.NEXT_NULL : NullsState.HAS_NULLS);
+        if (isRepeating) {
+          writer.writeRepeatedLongs(literals[0], presentHelper.availLength, nullsState);
+        } else {
+          writer.writeLongs(literals, used, presentHelper.availLength, nullsState);
+        }
+        skipCurrentLiterals(presentHelper.availLength);
+      }
+      rowsLeftToWrite = writer.estimateValueCountThatFits(Type.LONG, mayHaveNulls);
+      rowsLeftToRead -= presentHelper.availLength;
+    } // End of big loop.
+    writer.finishCurrentSegment();
+    return (int)(originalRowsLeft - rowsLeftToRead);
+  }
+
+  private void skipCurrentLiterals(int valuesToSkip) {
+    assert (used + valuesToSkip) <= numLiterals;
+    used += valuesToSkip;
+  }
+
+  private int peekNextAvailLength() throws IOException {
+    if (used == numLiterals) {
+      numLiterals = 0;
+      used = 0;
+      readValues(true);
+    }
+    return numLiterals - used;
   }
 
   @Override

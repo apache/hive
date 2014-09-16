@@ -42,6 +42,9 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.llap.api.Vector.Type;
+import org.apache.hadoop.hive.llap.chunk.ChunkWriter;
+import org.apache.hadoop.hive.llap.chunk.ChunkWriter.NullsState;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
@@ -49,6 +52,7 @@ import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.StringExpr;
+import org.apache.hadoop.hive.ql.io.orc.LlapUtils.PresentStreamReadResult;
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument.TruthValue;
@@ -283,7 +287,7 @@ class RecordReaderImpl implements RecordReader {
     reader = createTreeReader(path, 0, types, included, conf);
     indexes = new OrcProto.RowIndex[types.size()];
     rowIndexStride = strideRate;
-    advanceToNextRow(0L);
+    advanceToNextRow(reader, 0L, true);
   }
 
   private static final class PositionProviderImpl implements PositionProvider {
@@ -303,7 +307,7 @@ class RecordReaderImpl implements RecordReader {
   private abstract static class TreeReader {
     protected final Path path;
     protected final int columnId;
-    private BitFieldReader present = null;
+    protected BitFieldReader present = null;
     protected boolean valuePresent = false;
     protected final Configuration conf;
 
@@ -392,7 +396,6 @@ class RecordReaderImpl implements RecordReader {
      * @throws IOException
      */
     Object nextVector(Object previousVector, long batchSize) throws IOException {
-
       ColumnVector result = (ColumnVector) previousVector;
       if (present != null) {
         // Set noNulls and isNull vector of the ColumnVector based on
@@ -414,9 +417,11 @@ class RecordReaderImpl implements RecordReader {
       }
       return previousVector;
     }
+
+    public abstract long nextChunk(ChunkWriter writer, long rowsLeft) throws IOException;
   }
 
-  private static class BooleanTreeReader extends TreeReader{
+  private static class BooleanTreeReader extends TreeReader {
     private BitFieldReader reader = null;
 
     BooleanTreeReader(Path path, int columnId, Configuration conf) {
@@ -473,6 +478,11 @@ class RecordReaderImpl implements RecordReader {
       // Read value entries based on isNull entries
       reader.nextVector(result, batchSize);
       return result;
+    }
+
+    @Override
+    public long nextChunk(ChunkWriter writer, long rowsLeft) throws IOException {
+      return reader.nextChunk(writer, present, rowsLeft);
     }
   }
 
@@ -533,6 +543,11 @@ class RecordReaderImpl implements RecordReader {
     @Override
     void skipRows(long items) throws IOException {
       reader.skip(countNonNulls(items));
+    }
+
+    @Override
+    public long nextChunk(ChunkWriter writer, long rowsLeft) throws IOException {
+      return reader.nextChunk(writer, present, rowsLeft);
     }
   }
 
@@ -604,6 +619,11 @@ class RecordReaderImpl implements RecordReader {
     void skipRows(long items) throws IOException {
       reader.skip(countNonNulls(items));
     }
+
+    @Override
+    public long nextChunk(ChunkWriter writer, long rowsLeft) throws IOException {
+      return reader.nextChunk(writer, present, rowsLeft);
+    }
   }
 
   private static class IntTreeReader extends TreeReader{
@@ -674,6 +694,11 @@ class RecordReaderImpl implements RecordReader {
     void skipRows(long items) throws IOException {
       reader.skip(countNonNulls(items));
     }
+
+    @Override
+    public long nextChunk(ChunkWriter writer, long rowsLeft) throws IOException {
+      return reader.nextChunk(writer, present, rowsLeft);
+    }
   }
 
   private static class LongTreeReader extends TreeReader{
@@ -743,6 +768,11 @@ class RecordReaderImpl implements RecordReader {
     @Override
     void skipRows(long items) throws IOException {
       reader.skip(countNonNulls(items));
+    }
+
+    @Override
+    public long nextChunk(ChunkWriter writer, long rowsLeft) throws IOException {
+      return reader.nextChunk(writer, present, rowsLeft);
     }
   }
 
@@ -826,6 +856,45 @@ class RecordReaderImpl implements RecordReader {
         utils.readFloat(stream);
       }
     }
+
+    private double[] values;
+    private final PresentStreamReadResult presentHelper = new PresentStreamReadResult();
+    @Override
+    public long nextChunk(ChunkWriter writer, long rowsLeftToRead) throws IOException {
+      boolean mayHaveNulls = present != null;
+      NullsState nullState = mayHaveNulls ? NullsState.HAS_NULLS : NullsState.NO_NULLS;
+      int rowsLeftToWrite = writer.estimateValueCountThatFits(Type.DOUBLE, mayHaveNulls);
+      if (rowsLeftToWrite == 0) {
+        return 0; // Cannot write any rows into this writer.
+      }
+      // If we send values to llap one by one, it will be hard for it to decide how to
+      // store them wrt nulls. Therefore, we'll group values together and send in groups.
+      if (values == null) {
+        values = new double[LlapUtils.DOUBLE_GROUP_SIZE];
+      }
+      long originalRowsLeft = rowsLeftToRead;
+      // Start the big loop to read rows until we run out of either input or space.
+      while (rowsLeftToRead > 0 && rowsLeftToWrite > 0) {
+        int rowsToTransfer = (int)Math.min(rowsLeftToRead, rowsLeftToWrite);
+        presentHelper.availLength = Math.min(values.length, rowsToTransfer);
+        if (mayHaveNulls) {
+          LlapUtils.readPresentStream(presentHelper, present, rowsToTransfer);
+        }
+        if (presentHelper.isNullsRun) {
+          writer.writeNulls(presentHelper.availLength, presentHelper.isFollowedByOther);
+        } else {
+          for (int i = 0; i < presentHelper.availLength; ++i) {
+            values[i] = utils.readFloat(stream);
+          }
+          writer.writeDoubles(values, 0, presentHelper.availLength,
+              presentHelper.isFollowedByOther ? NullsState.NEXT_NULL : nullState);
+        }
+        rowsLeftToWrite = writer.estimateValueCountThatFits(Type.DOUBLE, mayHaveNulls);
+        rowsLeftToRead -= presentHelper.availLength;
+      }
+      writer.finishCurrentSegment();
+      return (int)(originalRowsLeft - rowsLeftToRead);
+    }
   }
 
   private static class DoubleTreeReader extends TreeReader{
@@ -905,6 +974,46 @@ class RecordReaderImpl implements RecordReader {
     void skipRows(long items) throws IOException {
       items = countNonNulls(items);
       stream.skip(items * 8);
+    }
+
+
+    private double[] values;
+    private final PresentStreamReadResult presentHelper = new PresentStreamReadResult();
+    @Override
+    public long nextChunk(ChunkWriter writer, long rowsLeftToRead) throws IOException {
+      boolean mayHaveNulls = present != null;
+      NullsState nullState = mayHaveNulls ? NullsState.HAS_NULLS : NullsState.NO_NULLS;
+      int rowsLeftToWrite = writer.estimateValueCountThatFits(Type.DOUBLE, mayHaveNulls);
+      if (rowsLeftToWrite == 0) {
+        return 0; // Cannot write any rows into this writer.
+      }
+      // If we send values to llap one by one, it will be hard for it to decide how to
+      // store them wrt nulls. Therefore, we'll group values together and send in groups.
+      if (values == null) {
+        values = new double[LlapUtils.DOUBLE_GROUP_SIZE];
+      }
+      long originalRowsLeft = rowsLeftToRead;
+      // Start the big loop to read rows until we run out of either input or space.
+      while (rowsLeftToRead > 0 && rowsLeftToWrite > 0) {
+        int rowsToTransfer = (int)Math.min(rowsLeftToRead, rowsLeftToWrite);
+        presentHelper.availLength = Math.min(values.length, rowsToTransfer);
+        if (mayHaveNulls) {
+          LlapUtils.readPresentStream(presentHelper, present, rowsToTransfer);
+        }
+        if (presentHelper.isNullsRun) {
+          writer.writeNulls(presentHelper.availLength, presentHelper.isFollowedByOther);
+        } else {
+          for (int i = 0; i < presentHelper.availLength; ++i) {
+            values[i] = utils.readDouble(stream);
+          }
+          writer.writeDoubles(values, 0, presentHelper.availLength,
+              presentHelper.isFollowedByOther ? NullsState.NEXT_NULL : nullState);
+        }
+        rowsLeftToWrite = writer.estimateValueCountThatFits(Type.DOUBLE, mayHaveNulls);
+        rowsLeftToRead -= presentHelper.availLength;
+      }
+      writer.finishCurrentSegment();
+      return (int)(originalRowsLeft - rowsLeftToRead);
     }
   }
 
@@ -997,9 +1106,15 @@ class RecordReaderImpl implements RecordReader {
       }
       stream.skip(lengthToSkip);
     }
+
+    @Override
+    public long nextChunk(ChunkWriter writer, long rowsLeft) {
+      // TODO: string support would be here
+      throw new UnsupportedOperationException();
+    }
   }
 
-  private static class TimestampTreeReader extends TreeReader{
+  private static class TimestampTreeReader extends TreeReader {
     private IntegerReader data = null;
     private IntegerReader nanos = null;
     private final LongColumnVector nanoVector = new LongColumnVector();
@@ -1128,6 +1243,12 @@ class RecordReaderImpl implements RecordReader {
       data.skip(items);
       nanos.skip(items);
     }
+
+    @Override
+    public long nextChunk(ChunkWriter writer, long rowsLeft) {
+      // TODO: timestamp support would be here
+      throw new UnsupportedOperationException();
+    }
   }
 
   private static class DateTreeReader extends TreeReader{
@@ -1197,6 +1318,11 @@ class RecordReaderImpl implements RecordReader {
     @Override
     void skipRows(long items) throws IOException {
       reader.skip(countNonNulls(items));
+    }
+
+    @Override
+    public long nextChunk(ChunkWriter writer, long rowsLeft) throws IOException {
+      return reader.nextChunk(writer, present, rowsLeft);
     }
   }
 
@@ -1315,6 +1441,12 @@ class RecordReaderImpl implements RecordReader {
       }
       scaleStream.skip(items);
     }
+
+    @Override
+    public long nextChunk(ChunkWriter writer, long rowsLeft) {
+      // TODO: decimal support would be here
+      throw new UnsupportedOperationException();
+    }
   }
 
   /**
@@ -1374,6 +1506,12 @@ class RecordReaderImpl implements RecordReader {
     @Override
     void skipRows(long items) throws IOException {
       reader.skipRows(items);
+    }
+
+    @Override
+    public long nextChunk(ChunkWriter writer, long rowsLeft) {
+      // TODO: string support would be here
+      throw new UnsupportedOperationException();
     }
   }
 
@@ -1541,6 +1679,12 @@ class RecordReaderImpl implements RecordReader {
         lengthToSkip += lengths.next();
       }
       stream.skip(lengthToSkip);
+    }
+
+    @Override
+    public long nextChunk(ChunkWriter writer, long rowsLeft) {
+      // TODO: string support would be here
+      throw new UnsupportedOperationException();
     }
   }
 
@@ -1717,6 +1861,12 @@ class RecordReaderImpl implements RecordReader {
     void skipRows(long items) throws IOException {
       reader.skip(countNonNulls(items));
     }
+
+    @Override
+    public long nextChunk(ChunkWriter writer, long rowsLeft) {
+      // TODO: string support would be here
+      throw new UnsupportedOperationException();
+    }
   }
 
   private static class CharTreeReader extends StringTreeReader {
@@ -1850,6 +2000,7 @@ class RecordReaderImpl implements RecordReader {
   private static class StructTreeReader extends TreeReader {
     private final TreeReader[] fields;
     private final String[] fieldNames;
+    private final List<TreeReader> readers;
 
     StructTreeReader(Path path, int columnId,
                      List<OrcProto.Type> types,
@@ -1859,10 +2010,12 @@ class RecordReaderImpl implements RecordReader {
       int fieldCount = type.getFieldNamesCount();
       this.fields = new TreeReader[fieldCount];
       this.fieldNames = new String[fieldCount];
+      this.readers = new ArrayList<TreeReader>();
       for(int i=0; i < fieldCount; ++i) {
         int subtype = type.getSubtypes(i);
         if (included == null || included[subtype]) {
           this.fields[i] = createTreeReader(path, subtype, types, included, conf);
+          readers.add(this.fields[i]);
         }
         this.fieldNames[i] = type.getFieldNames(i);
       }
@@ -1902,6 +2055,21 @@ class RecordReaderImpl implements RecordReader {
         }
       }
       return result;
+    }
+
+    /**
+     * @return Total count of <b>non-null</b> field readers.
+     */
+    int getReaderCount() {
+      return readers.size();
+    }
+
+    /**
+     * @param readerIndex Index among <b>non-null</b> readers. Not a column index!
+     * @return The readerIndex-s <b>non-null</b> field reader.
+     */
+    TreeReader getColumnReader(int readerIndex) {
+      return readers.get(readerIndex);
     }
 
     @Override
@@ -1946,6 +2114,11 @@ class RecordReaderImpl implements RecordReader {
           field.skipRows(items);
         }
       }
+    }
+
+    @Override
+    public long nextChunk(ChunkWriter writer, long rowsLeft) {
+      throw new UnsupportedOperationException("Non-primitives are not supported");
     }
   }
 
@@ -2025,6 +2198,11 @@ class RecordReaderImpl implements RecordReader {
       for(int i=0; i < counts.length; ++i) {
         fields[i].skipRows(counts[i]);
       }
+    }
+
+    @Override
+    public long nextChunk(ChunkWriter writer, long rowsLeft) {
+      throw new UnsupportedOperationException("Non-primitives are not supported");
     }
   }
 
@@ -2114,6 +2292,11 @@ class RecordReaderImpl implements RecordReader {
         childSkip += lengths.next();
       }
       elementReader.skipRows(childSkip);
+    }
+
+    @Override
+    public long nextChunk(ChunkWriter writer, long rowsLeft) {
+      throw new UnsupportedOperationException("Non-primitives are not supported");
     }
   }
 
@@ -2212,6 +2395,11 @@ class RecordReaderImpl implements RecordReader {
       }
       keyReader.skipRows(childSkip);
       valueReader.skipRows(childSkip);
+    }
+
+    @Override
+    public long nextChunk(ChunkWriter writer, long rowsLeft) {
+      throw new UnsupportedOperationException("Non-primitives are not supported");
     }
   }
 
@@ -2669,7 +2857,7 @@ class RecordReaderImpl implements RecordReader {
       reader.startStripe(streams, stripeFooter.getColumnsList());
       // if we skipped the first row group, move the pointers forward
       if (rowInStripe != 0) {
-        seekToRowEntry((int) (rowInStripe / rowIndexStride));
+        seekToRowEntry(reader, (int) (rowInStripe / rowIndexStride));
       }
     }
   }
@@ -2680,7 +2868,7 @@ class RecordReaderImpl implements RecordReader {
     long end = start + stripe.getDataLength();
     // explicitly trigger 1 big read
     DiskRange[] ranges = new DiskRange[]{new DiskRange(start, end)};
-    bufferChunks = readDiskRanges(file, stripe.getOffset(), Arrays.asList(ranges));
+    bufferChunks = readDiskRanges(file, zcr, stripe.getOffset(), Arrays.asList(ranges));
     List<OrcProto.Stream> streamDescriptions = stripeFooter.getStreamsList();
     createStreams(streamDescriptions, bufferChunks, null, codec, bufferSize, streams);
   }
@@ -2936,7 +3124,8 @@ class RecordReaderImpl implements RecordReader {
    *    ranges
    * @throws IOException
    */
-  List<BufferChunk> readDiskRanges(FSDataInputStream file,
+  static List<BufferChunk> readDiskRanges(FSDataInputStream file,
+                                 ZeroCopyReaderShim zcr,
                                  long base,
                                  List<DiskRange> ranges) throws IOException {
     ArrayList<BufferChunk> result = new ArrayList<RecordReaderImpl.BufferChunk>(ranges.size());
@@ -3062,7 +3251,7 @@ class RecordReaderImpl implements RecordReader {
     if (LOG.isDebugEnabled()) {
       LOG.debug("merge = " + stringifyDiskRanges(chunks));
     }
-    bufferChunks = readDiskRanges(file, stripe.getOffset(), chunks);
+    bufferChunks = readDiskRanges(file, zcr, stripe.getOffset(), chunks);
     createStreams(streamList, bufferChunks, included, codec, bufferSize,
         streams);
   }
@@ -3091,7 +3280,8 @@ class RecordReaderImpl implements RecordReader {
    * @param nextRow the row we want to go to
    * @throws IOException
    */
-  private void advanceToNextRow(long nextRow) throws IOException {
+  private boolean advanceToNextRow(
+      TreeReader reader, long nextRow, boolean canAdvanceStripe) throws IOException {
     long nextRowInStripe = nextRow - rowBaseInStripe;
     // check for row skipping
     if (rowIndexStride != 0 &&
@@ -3099,32 +3289,35 @@ class RecordReaderImpl implements RecordReader {
         nextRowInStripe < rowCountInStripe) {
       int rowGroup = (int) (nextRowInStripe / rowIndexStride);
       if (!includedRowGroups[rowGroup]) {
-        while (rowGroup < includedRowGroups.length &&
-               !includedRowGroups[rowGroup]) {
+        while (rowGroup < includedRowGroups.length && !includedRowGroups[rowGroup]) {
           rowGroup += 1;
         }
-        // if we are off the end of the stripe, just move stripes
         if (rowGroup >= includedRowGroups.length) {
-          advanceStripe();
-          return;
+          if (canAdvanceStripe) {
+            advanceStripe();
+          }
+          return canAdvanceStripe;
         }
         nextRowInStripe = Math.min(rowCountInStripe, rowGroup * rowIndexStride);
       }
     }
-    if (nextRowInStripe < rowCountInStripe) {
-      if (nextRowInStripe != rowInStripe) {
-        if (rowIndexStride != 0) {
-          int rowGroup = (int) (nextRowInStripe / rowIndexStride);
-          seekToRowEntry(rowGroup);
-          reader.skipRows(nextRowInStripe - rowGroup * rowIndexStride);
-        } else {
-          reader.skipRows(nextRowInStripe - rowInStripe);
-        }
-        rowInStripe = nextRowInStripe;
+    if (nextRowInStripe >= rowCountInStripe) {
+      if (canAdvanceStripe) {
+        advanceStripe();
       }
-    } else {
-      advanceStripe();
+      return canAdvanceStripe;
     }
+    if (nextRowInStripe != rowInStripe) {
+      if (rowIndexStride != 0) {
+        int rowGroup = (int) (nextRowInStripe / rowIndexStride);
+        seekToRowEntry(reader, rowGroup);
+        reader.skipRows(nextRowInStripe - rowGroup * rowIndexStride);
+      } else {
+        reader.skipRows(nextRowInStripe - rowInStripe);
+      }
+      rowInStripe = nextRowInStripe;
+    }
+    return true;
   }
 
   @Override
@@ -3132,7 +3325,7 @@ class RecordReaderImpl implements RecordReader {
     Object result = reader.next(previous);
     // find the next row
     rowInStripe += 1;
-    advanceToNextRow(rowInStripe + rowBaseInStripe);
+    advanceToNextRow(reader, rowInStripe + rowBaseInStripe, true);
     if (LOG.isDebugEnabled()) {
       LOG.debug("row from " + reader.path);
       LOG.debug("orc row = " + result);
@@ -3148,8 +3341,26 @@ class RecordReaderImpl implements RecordReader {
       readStripe();
     }
 
-    long batchSize = 0;
+    long batchSize = computeBatchSize(VectorizedRowBatch.DEFAULT_SIZE);
 
+    rowInStripe += batchSize;
+    if (previous == null) {
+      ColumnVector[] cols = (ColumnVector[]) reader.nextVector(null, (int) batchSize);
+      result = new VectorizedRowBatch(cols.length);
+      result.cols = cols;
+    } else {
+      result = (VectorizedRowBatch) previous;
+      result.selectedInUse = false;
+      reader.nextVector(result.cols, (int) batchSize);
+    }
+
+    result.size = (int) batchSize;
+    advanceToNextRow(reader, rowInStripe + rowBaseInStripe, true);
+    return result;
+  }
+
+  private long computeBatchSize(long targetBatchSize) {
+    long batchSize = 0;
     // In case of PPD, batch size should be aware of row group boundaries. If only a subset of row
     // groups are selected then marker position is set to the end of range (subset of row groups
     // within strip). Batch size computed out of marker position makes sure that batch size is
@@ -3170,29 +3381,15 @@ class RecordReaderImpl implements RecordReader {
 
       final long markerPosition = (endRowGroup * rowIndexStride) < rowCountInStripe ? (endRowGroup * rowIndexStride)
           : rowCountInStripe;
-      batchSize = Math.min(VectorizedRowBatch.DEFAULT_SIZE, (markerPosition - rowInStripe));
+      batchSize = Math.min(targetBatchSize, (markerPosition - rowInStripe));
 
-      if (LOG.isDebugEnabled() && batchSize < VectorizedRowBatch.DEFAULT_SIZE) {
+      if (LOG.isDebugEnabled() && batchSize < targetBatchSize) {
         LOG.debug("markerPosition: " + markerPosition + " batchSize: " + batchSize);
       }
     } else {
-      batchSize = Math.min(VectorizedRowBatch.DEFAULT_SIZE, (rowCountInStripe - rowInStripe));
+      batchSize = Math.min(targetBatchSize, (rowCountInStripe - rowInStripe));
     }
-
-    rowInStripe += batchSize;
-    if (previous == null) {
-      ColumnVector[] cols = (ColumnVector[]) reader.nextVector(null, (int) batchSize);
-      result = new VectorizedRowBatch(cols.length);
-      result.cols = cols;
-    } else {
-      result = (VectorizedRowBatch) previous;
-      result.selectedInUse = false;
-      reader.nextVector(result.cols, (int) batchSize);
-    }
-
-    result.size = (int) batchSize;
-    advanceToNextRow(rowInStripe + rowBaseInStripe);
-    return result;
+    return batchSize;
   }
 
   @Override
@@ -3257,12 +3454,11 @@ class RecordReaderImpl implements RecordReader {
     return indexes;
   }
 
-  private void seekToRowEntry(int rowEntry) throws IOException {
+  private void seekToRowEntry(TreeReader reader, int rowEntry) throws IOException {
     PositionProvider[] index = new PositionProvider[indexes.length];
-    for(int i=0; i < indexes.length; ++i) {
+    for (int i = 0; i < indexes.length; ++i) {
       if (indexes[i] != null) {
-        index[i]=
-            new PositionProviderImpl(indexes[i].getEntry(rowEntry));
+        index[i] = new PositionProviderImpl(indexes[i].getEntry(rowEntry));
       }
     }
     reader.seek(index);
@@ -3289,6 +3485,89 @@ class RecordReaderImpl implements RecordReader {
     readRowIndex(currentStripe);
 
     // if we aren't to the right row yet, advanance in the stripe.
-    advanceToNextRow(rowNumber);
+    advanceToNextRow(reader, rowNumber, true);
+  }
+
+  /**
+   * Iterator-like context to read ORC as a sequence of column x stripe "cells".
+   * TODO: for this to actually be an iterator-like thing, we need to clone nested reader state.
+   *       As of now, we advance parent's shared column readers separately, which would cause
+   *       other calls (e.g. nextBatch) to break once nextColumnStripe is called. Currently,
+   *       it is always called alone, so this is ok; context is merely a convenience class.
+   */
+  private static class ColumnReadContext {
+    public ColumnReadContext(StructTreeReader reader) {
+      StructTreeReader structReader = (StructTreeReader)reader;
+      readers = new TreeReader[structReader.getReaderCount()];
+      for (int i = 0; i < readers.length; ++i) {
+        readers[i] = structReader.getColumnReader(i);
+      }
+    }
+    /** Readers for each separate column; no nulls, just the columns being read. */
+    private final TreeReader[] readers;
+    /** Remembered row offset after a partial read of one column from stripe. */
+    private long rowInStripe = 0;
+    /** Next column to be read (index into readers). */
+    private int columnIx = 0;
+    /** Remaining row count for current stripe; same for every column, so don't recompute. */
+    private long remainingToReadFromStart = -1;
+    /** Whether the next call will be the first for this column x stripe. TODO: derive? */
+    private boolean firstCall = true;
+  }
+
+  @Override
+  public Object prepareColumnRead() {
+    return new ColumnReadContext((StructTreeReader)this.reader);
+  }
+
+  @Override
+  public boolean readNextColumnStripe(
+      Object ctxObj, ChunkWriter writer) throws IOException {
+    ColumnReadContext ctx = (ColumnReadContext)ctxObj;
+    if (rowInStripe >= rowCountInStripe) {
+      assert ctx.columnIx == 0;
+      currentStripe += 1;
+      readStripe();
+    }
+    long rowInStripeGlobal = rowInStripe; // Remember the global state.
+    rowInStripe = ctx.rowInStripe;
+    if (ctx.columnIx == 0 && ctx.firstCall) {
+      // We are starting a new stripe - remember the number of rows to read (same for all cols).
+      // Doesn't take into account space remaining in ChunkWriter.
+      ctx.remainingToReadFromStart = computeBatchSize(Long.MAX_VALUE);
+    }
+    long remainingToRead =
+        ctx.firstCall ? ctx.remainingToReadFromStart : computeBatchSize(Long.MAX_VALUE);
+    TreeReader columnReader = ctx.readers[ctx.columnIx];
+    if (LOG.isTraceEnabled()) {
+      LOG.trace("Calling nextChunk for " + remainingToRead);
+    }
+    long rowsRead = columnReader.nextChunk(writer, remainingToRead);
+    assert rowsRead <= remainingToRead;
+    rowInStripe += rowsRead;
+    boolean doneWithColumnStripe = (rowsRead == remainingToRead);
+    ctx.firstCall = doneWithColumnStripe; // If we are not done, there will be more calls.
+    if (!doneWithColumnStripe) {
+      // Note that we are only advancing the reader for the current column.
+      boolean hasRows = advanceToNextRow(columnReader, rowInStripe + rowBaseInStripe, false);
+      ctx.rowInStripe = rowInStripe; // Remember the current value for next call.
+      if (!hasRows) {
+        throw new AssertionError("No rows after advance; read "
+            + rowsRead + " out of " + remainingToRead);
+      }
+    } else {
+      // Done with some column + stripe.
+      ++ctx.columnIx;
+      if (ctx.columnIx == ctx.readers.length) {
+        // Done with the last column in this stripe; advance the global rowInStripe.
+        ctx.columnIx = 0;
+        ctx.rowInStripe = rowInStripeGlobal = rowInStripe;
+      } else {
+        // Revert the state back to start of stripe.
+        ctx.rowInStripe = rowInStripeGlobal;
+      }
+    }
+    rowInStripe = rowInStripeGlobal; // Restore global state.
+    return !doneWithColumnStripe;
   }
 }

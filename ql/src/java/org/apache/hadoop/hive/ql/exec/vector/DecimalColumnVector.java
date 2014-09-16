@@ -17,6 +17,8 @@
  */
 
 package org.apache.hadoop.hive.ql.exec.vector;
+import java.io.IOException;
+
 import org.apache.hadoop.hive.common.type.Decimal128;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
@@ -71,6 +73,21 @@ public class DecimalColumnVector extends ColumnVector {
     }
   }
 
+  // Fill the all the vector entries with provided value
+  public void fill(Decimal128 value) {
+    noNulls = true;
+    isRepeating = true;
+    vector[0] = value;
+  }
+
+  // Fill the column vector with nulls
+  public void fillWithNulls() {
+    noNulls = false;
+    isRepeating = true;
+    vector[0] = null;
+    isNull[0] = true;
+  }
+
   @Override
   public void flatten(boolean selectedInUse, int[] sel, int size) {
     // TODO Auto-generated method stub
@@ -95,5 +112,10 @@ public class DecimalColumnVector extends ColumnVector {
       noNulls = false;
       isNull[i] = true;
     }
+  }
+
+  @Override
+  public void visit(ColumnVectorVisitor v) throws IOException {
+    v.visit(this);
   }
 }

@@ -132,6 +132,8 @@ public class TezProcessor extends AbstractLogicalIOProcessor {
         rproc = new MapRecordProcessor(jobConf);
         MRInputLegacy mrInput = getMRInput(inputs);
         try {
+          // TODO: This might create oldInputFormat in MRInput.
+          //       We are assuming we don't need to wrap it for Llap.
           mrInput.init();
         } catch (IOException e) {
           throw new RuntimeException("Failed while initializing MRInput", e);

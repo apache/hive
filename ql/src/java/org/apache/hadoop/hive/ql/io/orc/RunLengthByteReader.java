@@ -20,7 +20,12 @@ package org.apache.hadoop.hive.ql.io.orc;
 import java.io.EOFException;
 import java.io.IOException;
 
+import org.apache.hadoop.hive.llap.api.Vector.Type;
+import org.apache.hadoop.hive.llap.chunk.ChunkWriter;
+import org.apache.hadoop.hive.llap.chunk.ChunkWriter.NullsState;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
+import org.apache.hadoop.hive.ql.io.orc.LlapUtils.PresentStreamReadResult;
+import org.apache.hadoop.hive.ql.io.orc.RunLengthIntegerWriterV2.EncodingType;
 
 /**
  * A reader that reads a sequence of bytes. A control byte is read before
@@ -39,11 +44,15 @@ class RunLengthByteReader {
     this.input = input;
   }
 
-  private void readValues() throws IOException {
+  private void readValues(boolean ignoreEof) throws IOException {
     int control = input.read();
     used = 0;
     if (control == -1) {
-      throw new EOFException("Read past end of buffer RLE byte from " + input);
+      if (!ignoreEof) {
+        throw new EOFException("Read past end of buffer RLE byte from " + input);
+      }
+      used = numLiterals = 0;
+      return;
     } else if (control < 0x80) {
       repeat = true;
       numLiterals = control + RunLengthByteWriter.MIN_REPEAT_SIZE;
@@ -73,15 +82,68 @@ class RunLengthByteReader {
   byte next() throws IOException {
     byte result;
     if (used == numLiterals) {
-      readValues();
+      readValues(false);
     }
     if (repeat) {
-      used += 1;
       result = literals[0];
     } else {
-      result = literals[used++];
+      result = literals[used];
     }
+    ++used;
     return result;
+  }
+
+
+  private final PresentStreamReadResult presentHelper = new PresentStreamReadResult();
+  public int nextChunk(
+      ChunkWriter writer, BitFieldReader present, long rowsLeftToRead) throws IOException {
+    boolean mayHaveNulls = present != null;
+    int rowsLeftToWrite = writer.estimateValueCountThatFits(Type.LONG, mayHaveNulls);
+    if (rowsLeftToWrite == 0) {
+      return 0; // Cannot write any rows into this writer.
+    }
+    long originalRowsLeft = rowsLeftToRead;
+    // Start the big loop to read rows until we run out of either input or space.
+    while (rowsLeftToRead > 0 && rowsLeftToWrite > 0) {
+      int rowsToTransfer = (int)Math.min(rowsLeftToRead, rowsLeftToWrite);
+      presentHelper.availLength = Math.min(peekNextAvailLength(), rowsToTransfer);
+      if (mayHaveNulls) {
+        LlapUtils.readPresentStream(presentHelper, present, rowsToTransfer);
+      }
+      assert presentHelper.availLength > 0;
+      assert rowsLeftToRead >= presentHelper.availLength;
+
+      if (presentHelper.isNullsRun) {
+        writer.writeNulls(presentHelper.availLength, presentHelper.isFollowedByOther);
+      } else {
+        NullsState nullsState = !mayHaveNulls ? NullsState.NO_NULLS :
+              (presentHelper.isFollowedByOther ? NullsState.NEXT_NULL : NullsState.HAS_NULLS);
+        if (repeat) {
+          writer.writeRepeatedLongs(literals[0], presentHelper.availLength, nullsState);
+        } else {
+          writer.writeLongs(literals, used, presentHelper.availLength, nullsState);
+        }
+        skipCurrentLiterals(presentHelper.availLength);
+      }
+      rowsLeftToWrite = writer.estimateValueCountThatFits(Type.LONG, mayHaveNulls);
+      rowsLeftToRead -= presentHelper.availLength;
+    } // End of big loop.
+    writer.finishCurrentSegment();
+    return (int)(originalRowsLeft - rowsLeftToRead);
+  }
+
+  private int peekNextAvailLength() throws IOException {
+    if (used == numLiterals) {
+      readValues(true);
+    }
+    return numLiterals - used;
+  }
+
+  private void skipCurrentLiterals(int valuesToSkip) {
+    if ((used + valuesToSkip) > numLiterals) {
+      throw new AssertionError("Skipping " + valuesToSkip + "; used " + used + "/" + numLiterals);
+    }
+    used += valuesToSkip;
   }
 
   void nextVector(LongColumnVector previous, long previousLen)
@@ -113,7 +175,7 @@ class RunLengthByteReader {
     if (consumed != 0) {
       // a loop is required for cases where we break the run into two parts
       while (consumed > 0) {
-        readValues();
+        readValues(false);
         used = consumed;
         consumed -= numLiterals;
       }
@@ -126,7 +188,7 @@ class RunLengthByteReader {
   void skip(long items) throws IOException {
     while (items > 0) {
       if (used == numLiterals) {
-        readValues();
+        readValues(false);
       }
       long consume = Math.min(items, numLiterals - used);
       used += consume;

@@ -225,6 +225,7 @@ public class FetchOperator implements Serializable {
   @SuppressWarnings("unchecked")
   static InputFormat<WritableComparable, Writable> getInputFormatFromCache(Class inputFormatClass,
       Configuration conf) throws IOException {
+    // TODO: why is this copy-pasted from HiveInputFormat?
     if (!inputFormats.containsKey(inputFormatClass)) {
       try {
         InputFormat<WritableComparable, Writable> newInstance = (InputFormat<WritableComparable, Writable>) ReflectionUtils
@@ -235,7 +236,7 @@ public class FetchOperator implements Serializable {
             + inputFormatClass.getName() + " as specified in mapredWork!", e);
       }
     }
-    return inputFormats.get(inputFormatClass);
+    return HiveInputFormat.wrapForLlap(inputFormats.get(inputFormatClass), conf);
   }
 
   private StructObjectInspector getRowInspectorFromTable(TableDesc table) throws Exception {

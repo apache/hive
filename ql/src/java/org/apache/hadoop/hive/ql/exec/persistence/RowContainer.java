@@ -213,6 +213,7 @@ public class RowContainer<ROW extends List<Object>>
         JobConf localJc = getLocalFSJobConfClone(jc);
         if (inputSplits == null) {
           if (this.inputFormat == null) {
+            // TODO: do we need to wrap here?
             inputFormat = ReflectionUtils.newInstance(
                 tblDesc.getInputFileFormatClass(), localJc);
           }
