@@ -741,8 +741,6 @@ public class TypeCheckProcFactory {
       ExprNodeDesc desc;
       if (funcText.equals(".")) {
         // "." : FIELD Expression
-        if (!ctx.getallowFieldExpr())
-          throw new SemanticException(ErrorMsg.INVALID_FUNCTION.getMsg(expr));
 
         assert (children.size() == 2);
         // Only allow constant field name for now
