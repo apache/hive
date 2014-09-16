@@ -60,6 +60,7 @@ public class VectorHashKeyWrapper extends KeyWrapper {
     byteStarts = new int[byteValuesCount];
     byteLengths = new int[byteValuesCount];
     isNull = new boolean[longValuesCount + doubleValuesCount + byteValuesCount + decimalValuesCount];
+    hashcode = 0;
   }
 
   private VectorHashKeyWrapper() {

@@ -43,6 +43,7 @@ import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.TaskRunner;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLock;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockManager;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockObj;
@@ -97,6 +98,11 @@ public class Context {
 
   // Transaction manager for this query
   protected HiveTxnManager hiveTxnManager;
+
+  // Used to track what type of acid operation (insert, update, or delete) we are doing.  Useful
+  // since we want to change where bucket columns are accessed in some operators and
+  // optimizations when doing updates and deletes.
+  private AcidUtils.Operation acidOperation = AcidUtils.Operation.NOT_ACID;
 
   private boolean needLockMgr;
 
@@ -616,5 +622,13 @@ public class Context {
 
   public void setTryCount(int tryCount) {
     this.tryCount = tryCount;
+  }
+
+  public void setAcidOperation(AcidUtils.Operation op) {
+    acidOperation = op;
+  }
+
+  public AcidUtils.Operation getAcidOperation() {
+    return acidOperation;
   }
 }

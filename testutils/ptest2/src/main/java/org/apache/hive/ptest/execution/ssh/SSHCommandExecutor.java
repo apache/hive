@@ -30,15 +30,17 @@ public class SSHCommandExecutor {
 
   private final Logger mLogger;
   private final LocalCommandFactory mLocalCommandFactory;
+  private final String mSshOpts;
   private volatile boolean mShutdown;
-  
-  public SSHCommandExecutor(Logger logger, LocalCommandFactory localCommandFactory) {
+
+  public SSHCommandExecutor(Logger logger, LocalCommandFactory localCommandFactory, String sshOpts) {
     mLogger = logger;
-    mShutdown = false;
     mLocalCommandFactory = localCommandFactory;
+    mSshOpts = sshOpts;
+    mShutdown = false;
   }
   public SSHCommandExecutor(Logger logger) {
-    this(logger, new LocalCommandFactory(logger));
+    this(logger, new LocalCommandFactory(logger), "");
   }
   /**
    * Execute the given command via the ssh command line tool. If the command
@@ -47,8 +49,8 @@ public class SSHCommandExecutor {
   public void execute(SSHCommand command) {
     CollectPolicy collector = new CollectPolicy();
     try {
-      String commandText = String.format("ssh -v -i %s -l %s %s '%s'", command.getPrivateKey(),
-          command.getUser(), command.getHost(), command.getCommand());
+      String commandText = String.format("ssh -v -i %s %s -l %s %s '%s'", command.getPrivateKey(),
+          mSshOpts, command.getUser(), command.getHost(), command.getCommand());
       int attempts = 0;
       boolean retry;
       LocalCommand cmd;

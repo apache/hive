@@ -17,22 +17,9 @@
  */
 package org.apache.hadoop.hive.ql.exec.tez;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-
-import javax.security.auth.login.LoginException;
-
+import com.google.common.base.Function;
+import com.google.common.collect.Iterators;
+import com.google.common.collect.Lists;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -54,6 +41,9 @@ import org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormatImpl;
+import org.apache.hadoop.hive.ql.io.merge.MergeFileMapper;
+import org.apache.hadoop.hive.ql.io.merge.MergeFileOutputFormat;
+import org.apache.hadoop.hive.ql.io.merge.MergeFileWork;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.MapWork;
@@ -68,6 +58,7 @@ import org.apache.hadoop.hive.shims.HadoopShimsSecure.NullOutputCommitter;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.DataOutputBuffer;
+import org.apache.hadoop.mapred.FileOutputFormat;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputFormat;
@@ -113,9 +104,20 @@ import org.apache.tez.runtime.library.conf.UnorderedKVEdgeConfig;
 import org.apache.tez.runtime.library.conf.UnorderedPartitionedKVEdgeConfig;
 import org.apache.tez.runtime.library.input.ConcatenatedMergedKeyValueInput;
 
-import com.google.common.base.Function;
-import com.google.common.collect.Iterators;
-import com.google.common.collect.Lists;
+import javax.security.auth.login.LoginException;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 /**
  * DagUtils. DagUtils is a collection of helper methods to convert
@@ -211,6 +213,16 @@ public class DagUtils {
     conf.set(TEZ_TMP_DIR_KEY, context.getMRTmpPath().toUri().toString());
     conf.set("mapred.mapper.class", ExecMapper.class.getName());
     conf.set("mapred.input.format.class", inpFormat);
+
+    if (mapWork instanceof MergeFileWork) {
+      MergeFileWork mfWork = (MergeFileWork) mapWork;
+      // This mapper class is used for serializaiton/deserializaiton of merge
+      // file work.
+      conf.set("mapred.mapper.class", MergeFileMapper.class.getName());
+      conf.set("mapred.input.format.class", mfWork.getInputformat());
+      conf.setClass("mapred.output.format.class", MergeFileOutputFormat.class,
+          FileOutputFormat.class);
+    }
 
     return conf;
   }
@@ -486,6 +498,21 @@ public class DagUtils {
       }
     }
 
+    if (mapWork instanceof MergeFileWork) {
+      Path outputPath = ((MergeFileWork) mapWork).getOutputDir();
+      // prepare the tmp output directory. The output tmp directory should
+      // exist before jobClose (before renaming after job completion)
+      Path tempOutPath = Utilities.toTempPath(outputPath);
+      try {
+        if (!fs.exists(tempOutPath)) {
+          fs.mkdirs(tempOutPath);
+        }
+      } catch (IOException e) {
+        throw new RuntimeException(
+            "Can't make path " + outputPath + " : " + e.getMessage());
+      }
+    }
+
     if (HiveConf.getBoolVar(conf, ConfVars.HIVE_AM_SPLIT_GENERATION)
         && !mapWork.isUseOneNullRowInputFormat()) {
 
@@ -515,9 +542,13 @@ public class DagUtils {
     }
 
     UserPayload serializedConf = TezUtils.createUserPayloadFromConf(conf);
-    map = Vertex.create(mapWork.getName(),
-        ProcessorDescriptor.create(MapTezProcessor.class.getName()).
-        setUserPayload(serializedConf), numTasks, getContainerResource(conf));
+    String procClassName = MapTezProcessor.class.getName();
+    if (mapWork instanceof MergeFileWork) {
+      procClassName = MergeFileTezProcessor.class.getName();
+    }
+    map = Vertex.create(mapWork.getName(), ProcessorDescriptor.create(procClassName)
+        .setUserPayload(serializedConf), numTasks, getContainerResource(conf));
+
     map.setTaskEnvironment(getContainerEnvironment(conf, true));
     map.setTaskLaunchCmdOpts(getContainerJavaOpts(conf));
 
@@ -784,7 +815,7 @@ public class DagUtils {
   }
 
   /**
-   * @param path - the path from which we try to determine the resource base name
+   * @param path - the string from which we try to determine the resource base name
    * @return the name of the resource from a given path string.
    */
   public String getResourceBaseName(Path path) {
@@ -831,7 +862,8 @@ public class DagUtils {
             conf.getInt(HiveConf.ConfVars.HIVE_LOCALIZE_RESOURCE_NUM_WAIT_ATTEMPTS.varname,
                 HiveConf.ConfVars.HIVE_LOCALIZE_RESOURCE_NUM_WAIT_ATTEMPTS.defaultIntVal);
         long sleepInterval = HiveConf.getTimeVar(
-            conf, HiveConf.ConfVars.HIVE_LOCALIZE_RESOURCE_WAIT_INTERVAL, TimeUnit.MILLISECONDS);
+            conf, HiveConf.ConfVars.HIVE_LOCALIZE_RESOURCE_WAIT_INTERVAL,
+            TimeUnit.MILLISECONDS);
         LOG.info("Number of wait attempts: " + waitAttempts + ". Wait interval: "
             + sleepInterval);
         boolean found = false;

@@ -24,10 +24,15 @@ import java.lang.management.ManagementFactory;
 import java.nio.ByteBuffer;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Lists;
+import com.google.protobuf.ByteString;
+import com.google.protobuf.CodedOutputStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -37,6 +42,8 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.IOConstants;
+import org.apache.hadoop.hive.ql.io.orc.CompressionCodec.Modifier;
+import org.apache.hadoop.hive.ql.io.orc.OrcFile.CompressionStrategy;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile.EncodingStrategy;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndexEntry;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeStatistics;
@@ -71,10 +78,17 @@ import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.Lists;
-import com.google.protobuf.ByteString;
-import com.google.protobuf.CodedOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.lang.management.ManagementFactory;
+import java.nio.ByteBuffer;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+
+import static com.google.common.base.Preconditions.checkArgument;
 
 /**
  * An ORC file writer. The file is divided into stripes, which is the natural
@@ -139,6 +153,7 @@ class WriterImpl implements Writer, MemoryManager.Callback {
   private final OrcFile.WriterCallback callback;
   private final OrcFile.WriterContext callbackContext;
   private final OrcFile.EncodingStrategy encodingStrategy;
+  private final OrcFile.CompressionStrategy compressionStrategy;
 
   WriterImpl(FileSystem fs,
              Path path,
@@ -153,6 +168,7 @@ class WriterImpl implements Writer, MemoryManager.Callback {
              OrcFile.Version version,
              OrcFile.WriterCallback callback,
              OrcFile.EncodingStrategy encodingStrategy,
+             CompressionStrategy compressionStrategy,
              float paddingTolerance,
              long blockSizeValue) throws IOException {
     this.fs = fs;
@@ -174,6 +190,7 @@ class WriterImpl implements Writer, MemoryManager.Callback {
     this.defaultStripeSize = stripeSize;
     this.version = version;
     this.encodingStrategy = encodingStrategy;
+    this.compressionStrategy = compressionStrategy;
     this.addBlockPadding = addBlockPadding;
     this.blockSize = blockSizeValue;
     this.paddingTolerance = paddingTolerance;
@@ -447,10 +464,35 @@ class WriterImpl implements Writer, MemoryManager.Callback {
     public OutStream createStream(int column,
                                   OrcProto.Stream.Kind kind
                                   ) throws IOException {
-      StreamName name = new StreamName(column, kind);
+      final StreamName name = new StreamName(column, kind);
+      final EnumSet<CompressionCodec.Modifier> modifiers;
+
+      switch (kind) {
+      case DATA:
+      case DICTIONARY_DATA:
+        if (getCompressionStrategy() == CompressionStrategy.SPEED) {
+          modifiers = EnumSet.of(Modifier.FAST, Modifier.TEXT);
+        } else {
+          modifiers = EnumSet.of(Modifier.DEFAULT, Modifier.TEXT);
+        }
+        break;
+      case LENGTH:
+      case DICTIONARY_COUNT:
+      case PRESENT:
+      case ROW_INDEX:
+      case SECONDARY:
+        // easily compressed using the fastest modes
+        modifiers = EnumSet.of(Modifier.FASTEST, Modifier.BINARY);
+        break;
+      default:
+        modifiers = null;
+        break;
+      }
+
       BufferedStream result = streams.get(name);
       if (result == null) {
-        result = new BufferedStream(name.toString(), bufferSize, codec);
+        result = new BufferedStream(name.toString(), bufferSize,
+            codec == null ? codec : codec.modify(modifiers));
         streams.put(name, result);
       }
       return result.outStream;
@@ -493,6 +535,14 @@ class WriterImpl implements Writer, MemoryManager.Callback {
      */
     public EncodingStrategy getEncodingStrategy() {
       return encodingStrategy;
+    }
+
+    /**
+     * Get the compression strategy to use.
+     * @return compression strategy
+     */
+    public CompressionStrategy getCompressionStrategy() {
+      return compressionStrategy;
     }
 
     /**
@@ -2277,17 +2327,19 @@ class WriterImpl implements Writer, MemoryManager.Callback {
     return rawWriter.getPos();
   }
 
-  void appendStripe(byte[] stripe, StripeInformation stripeInfo,
-      OrcProto.StripeStatistics stripeStatistics) throws IOException {
-    appendStripe(stripe, 0, stripe.length, stripeInfo, stripeStatistics);
-  }
-
-  void appendStripe(byte[] stripe, int offset, int length,
+  @Override
+  public void appendStripe(byte[] stripe, int offset, int length,
       StripeInformation stripeInfo,
       OrcProto.StripeStatistics stripeStatistics) throws IOException {
+    checkArgument(stripe != null, "Stripe must not be null");
+    checkArgument(length <= stripe.length,
+        "Specified length must not be greater specified array length");
+    checkArgument(stripeInfo != null, "Stripe information must not be null");
+    checkArgument(stripeStatistics != null,
+        "Stripe statistics must not be null");
+
     getStream();
     long start = rawWriter.getPos();
-
     long stripeLen = length;
     long availBlockSpace = blockSize - (start % blockSize);
 
@@ -2343,7 +2395,8 @@ class WriterImpl implements Writer, MemoryManager.Callback {
     }
   }
 
-  void appendUserMetadata(List<UserMetadataItem> userMetadata) {
+  @Override
+  public void appendUserMetadata(List<UserMetadataItem> userMetadata) {
     if (userMetadata != null) {
       for (UserMetadataItem item : userMetadata) {
         this.userMetadata.put(item.getName(), item.getValue());

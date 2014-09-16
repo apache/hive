@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.serde2.objectinspector;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * DefaultListObjectInspector works on list data that is stored as a Java List
@@ -53,52 +54,64 @@ public class StandardListObjectInspector implements SettableListObjectInspector 
   }
 
   // with data
+  @SuppressWarnings({ "rawtypes", "unchecked" })
   public Object getListElement(Object data, int index) {
     if (data == null) {
       return null;
     }
-    // We support both List<Object> and Object[]
+    // We support List<Object>, Set<Object> and Object[]
     // so we have to do differently.
-    boolean isArray = ! (data instanceof List);
-    if (isArray) {
-      Object[] list = (Object[]) data;
-      if (index < 0 || index >= list.length) {
-        return null;
+    if (! (data instanceof List)) {
+      if (! (data instanceof Set)) {
+        Object[] list = (Object[]) data;
+        if (index < 0 || index >= list.length) {
+          return null;
+        }
+        return list[index];
+      } else {
+        data = new ArrayList((Set<?>) data);
       }
-      return list[index];
-    } else {
-      List<?> list = (List<?>) data;
-      if (index < 0 || index >= list.size()) {
-        return null;
-      }
-      return list.get(index);
     }
+    List<?> list = (List<?>) data;
+    if (index < 0 || index >= list.size()) {
+      return null;
+    }
+    return list.get(index);
   }
 
   public int getListLength(Object data) {
     if (data == null) {
       return -1;
     }
-    // We support both List<Object> and Object[]
+    // We support List<Object>, Set<Object> and Object[]
     // so we have to do differently.
-    boolean isArray = ! (data instanceof List);
-    if (isArray) {
-      Object[] list = (Object[]) data;
-      return list.length;
+    if (! (data instanceof List)) {
+      if (! (data instanceof Set)) {
+        Object[] list = (Object[]) data;
+        return list.length;
+      } else {
+        Set<?> set = (Set<?>) data;
+        return set.size();
+      }
     } else {
       List<?> list = (List<?>) data;
       return list.size();
     }
   }
 
+  @SuppressWarnings({ "rawtypes", "unchecked" })
   public List<?> getList(Object data) {
     if (data == null) {
       return null;
     }
-    // We support both List<Object> and Object[]
+    // We support List<Object>, Set<Object> and Object[]
     // so we have to do differently.
     if (! (data instanceof List)) {
-      data = java.util.Arrays.asList((Object[]) data);
+      if (! (data instanceof Set)) {
+        data = java.util.Arrays.asList((Object[]) data);
+      } else {
+        data = new ArrayList((Set<?>) data);
+      }
     }
     List<?> list = (List<?>) data;
     return list;

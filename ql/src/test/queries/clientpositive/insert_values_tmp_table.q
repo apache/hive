@@ -1,0 +1,12 @@
+set hive.support.concurrency=true;
+set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
+set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
+set hive.enforce.bucketing=true;
+
+create temporary table acid_ivtt(i int, de decimal(5,2), vc varchar(128)) clustered by (vc) into 2 buckets stored as orc;
+
+insert into table acid_ivtt values 
+    (1, 109.23, 'mary had a little lamb'),
+    (429496729, 0.14, 'its fleece was white as snow');
+
+select i, de, vc from acid_ivtt order by i;

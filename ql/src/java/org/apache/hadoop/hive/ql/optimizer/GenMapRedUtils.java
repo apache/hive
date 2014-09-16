@@ -18,20 +18,6 @@
 
 package org.apache.hadoop.hive.ql.optimizer;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.Set;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.Path;
@@ -53,6 +39,8 @@ import org.apache.hadoop.hive.ql.exec.NodeUtils;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.exec.OperatorUtils;
+import org.apache.hadoop.hive.ql.exec.OrcFileMergeOperator;
+import org.apache.hadoop.hive.ql.exec.RCFileMergeOperator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.SMBMapJoinOperator;
@@ -66,8 +54,10 @@ import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
 import org.apache.hadoop.hive.ql.exec.spark.SparkTask;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
-import org.apache.hadoop.hive.ql.io.merge.MergeWork;
+import org.apache.hadoop.hive.ql.io.merge.MergeFileWork;
+import org.apache.hadoop.hive.ql.io.orc.OrcFileStripeMergeInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
+import org.apache.hadoop.hive.ql.io.rcfile.merge.RCFileBlockMergeInputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMRUnionCtx;
@@ -89,6 +79,7 @@ import org.apache.hadoop.hive.ql.plan.ConditionalWork;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
+import org.apache.hadoop.hive.ql.plan.FileMergeDesc;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.FilterDesc.sampleDesc;
 import org.apache.hadoop.hive.ql.plan.LoadFileDesc;
@@ -97,8 +88,10 @@ import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hadoop.hive.ql.plan.OrcFileMergeDesc;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
+import org.apache.hadoop.hive.ql.plan.RCFileMergeDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
@@ -108,6 +101,22 @@ import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.apache.hadoop.hive.ql.stats.StatsFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.mapred.FileInputFormat;
+import org.apache.hadoop.mapred.InputFormat;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.Set;
 
 /**
  * General utility common functions for the Processor to convert operator into
@@ -1259,33 +1268,20 @@ public final class GenMapRedUtils {
         (conf.getBoolVar(ConfVars.HIVEMERGEORCFILESTRIPELEVEL) &&
             fsInputDesc.getTableInfo().getInputFileFormatClass().equals(OrcInputFormat.class))) {
 
-      // Check if InputFormatClass is valid
-      final String inputFormatClass;
-      if (fsInputDesc.getTableInfo().getInputFileFormatClass().equals(RCFileInputFormat.class)) {
-        inputFormatClass = conf.getVar(ConfVars.HIVEMERGEINPUTFORMATBLOCKLEVEL);
+      cplan = GenMapRedUtils.createMergeTask(fsInputDesc, finalName,
+          dpCtx != null && dpCtx.getNumDPCols() > 0);
+      if (conf.getVar(ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) {
+        work = new TezWork(conf.getVar(HiveConf.ConfVars.HIVEQUERYID));
+        cplan.setName("Tez Merge File Work");
+        ((TezWork) work).add(cplan);
       } else {
-        inputFormatClass = conf.getVar(ConfVars.HIVEMERGEINPUTFORMATSTRIPELEVEL);
-      }
-      try {
-        Class c = Class.forName(inputFormatClass);
-
-        if(fsInputDesc.getTableInfo().getInputFileFormatClass().equals(OrcInputFormat.class)) {
-          LOG.info("OrcFile format - Using stripe level merge");
-        } else {
-          LOG.info("RCFile format- Using block level merge");
-        }
-        cplan = GenMapRedUtils.createMergeTask(fsInputDesc, finalName,
-            dpCtx != null && dpCtx.getNumDPCols() > 0);
         work = cplan;
-      } catch (ClassNotFoundException e) {
-        String msg = "Illegal input format class: " + inputFormatClass;
-        throw new SemanticException(msg);
       }
     } else {
       cplan = createMRWorkForMergingFiles(conf, tsMerge, fsInputDesc);
       if (conf.getVar(ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) {
         work = new TezWork(conf.getVar(HiveConf.ConfVars.HIVEQUERYID));
-        cplan.setName("Merge");
+        cplan.setName("Tez Merge File Work");
         ((TezWork)work).add(cplan);
       } else if (conf.getVar(ConfVars.HIVE_EXECUTION_ENGINE).equals("spark")) {
         work = new SparkWork(conf.getVar(HiveConf.ConfVars.HIVEQUERYID));
@@ -1507,6 +1503,7 @@ public final class GenMapRedUtils {
    *
    * @param fsInputDesc
    * @param finalName
+   * @param inputFormatClass 
    * @return MergeWork if table is stored as RCFile or ORCFile,
    *         null otherwise
    */
@@ -1516,38 +1513,62 @@ public final class GenMapRedUtils {
     Path inputDir = fsInputDesc.getFinalDirName();
     TableDesc tblDesc = fsInputDesc.getTableInfo();
 
-    if (tblDesc.getInputFileFormatClass().equals(RCFileInputFormat.class) ||
-        tblDesc.getInputFileFormatClass().equals(OrcInputFormat.class)) {
-      ArrayList<Path> inputDirs = new ArrayList<Path>(1);
-      ArrayList<String> inputDirstr = new ArrayList<String>(1);
-      if (!hasDynamicPartitions
-          && !GenMapRedUtils.isSkewedStoredAsDirs(fsInputDesc)) {
-        inputDirs.add(inputDir);
-        inputDirstr.add(inputDir.toString());
-      }
+    List<Path> inputDirs = new ArrayList<Path>(1);
+    ArrayList<String> inputDirstr = new ArrayList<String>(1);
+    // this will be populated by MergeFileWork.resolveDynamicPartitionStoredAsSubDirsMerge
+    // in case of dynamic partitioning and list bucketing
+    if (!hasDynamicPartitions &&
+        !GenMapRedUtils.isSkewedStoredAsDirs(fsInputDesc)) {
+      inputDirs.add(inputDir);
+    }
+    inputDirstr.add(inputDir.toString());
 
-      MergeWork work = new MergeWork(inputDirs, finalName,
-          hasDynamicPartitions, fsInputDesc.getDynPartCtx(),
-          tblDesc.getInputFileFormatClass());
-      LinkedHashMap<String, ArrayList<String>> pathToAliases =
-          new LinkedHashMap<String, ArrayList<String>>();
-      pathToAliases.put(inputDir.toString(), (ArrayList<String>) inputDirstr.clone());
-      work.setMapperCannotSpanPartns(true);
-      work.setPathToAliases(pathToAliases);
-      work.setAliasToWork(
-          new LinkedHashMap<String, Operator<? extends OperatorDesc>>());
-      if (hasDynamicPartitions
-          || GenMapRedUtils.isSkewedStoredAsDirs(fsInputDesc)) {
-        work.getPathToPartitionInfo().put(inputDir.toString(),
-            new PartitionDesc(tblDesc, null));
-      }
-      work.setListBucketingCtx(fsInputDesc.getLbCtx());
-
-      return work;
+    // internal input format class for CombineHiveInputFormat
+    final Class<? extends InputFormat> internalIFClass;
+    if (tblDesc.getInputFileFormatClass().equals(RCFileInputFormat.class)) {
+      internalIFClass = RCFileBlockMergeInputFormat.class;
+    } else if (tblDesc.getInputFileFormatClass().equals(OrcInputFormat.class)) {
+      internalIFClass = OrcFileStripeMergeInputFormat.class;
+    } else {
+      throw new SemanticException("createMergeTask called on a table with file"
+          + " format other than RCFile or ORCFile");
     }
 
-    throw new SemanticException("createMergeTask called on a table with file"
-        + " format other than RCFile or ORCFile");
+    // create the merge file work
+    MergeFileWork work = new MergeFileWork(inputDirs, finalName,
+        hasDynamicPartitions, tblDesc.getInputFileFormatClass().getName());
+    LinkedHashMap<String, ArrayList<String>> pathToAliases =
+        new LinkedHashMap<String, ArrayList<String>>();
+    pathToAliases.put(inputDir.toString(), inputDirstr);
+    work.setMapperCannotSpanPartns(true);
+    work.setPathToAliases(pathToAliases);
+    PartitionDesc pDesc = new PartitionDesc(tblDesc, null);
+    pDesc.setInputFileFormatClass(internalIFClass);
+    work.getPathToPartitionInfo().put(inputDir.toString(), pDesc);
+    work.setListBucketingCtx(fsInputDesc.getLbCtx());
+
+    // create alias to work which contains the merge operator
+    LinkedHashMap<String, Operator<? extends OperatorDesc>> aliasToWork =
+        new LinkedHashMap<String, Operator<? extends OperatorDesc>>();
+    Operator<? extends OperatorDesc> mergeOp = null;
+    final FileMergeDesc fmd;
+    if (tblDesc.getInputFileFormatClass().equals(RCFileInputFormat.class)) {
+      fmd = new RCFileMergeDesc();
+    } else {
+      fmd = new OrcFileMergeDesc();
+    }
+    fmd.setDpCtx(fsInputDesc.getDynPartCtx());
+    fmd.setOutputPath(finalName);
+    fmd.setHasDynamicPartitions(work.hasDynamicPartitions());
+    fmd.setListBucketingAlterTableConcatenate(work.isListBucketingAlterTableConcatenate());
+    int lbLevel = work.getListBucketingCtx() == null ? 0 :
+      work.getListBucketingCtx().calculateListBucketingLevel();
+    fmd.setListBucketingDepth(lbLevel);
+    mergeOp = OperatorFactory.get(fmd);
+    aliasToWork.put(inputDir.toString(), mergeOp);
+    work.setAliasToWork(aliasToWork);
+
+    return work;
   }
 
   /**

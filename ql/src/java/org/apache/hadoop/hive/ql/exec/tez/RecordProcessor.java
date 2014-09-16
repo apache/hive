@@ -16,13 +16,8 @@
  * limitations under the License.
  */
 package org.apache.hadoop.hive.ql.exec.tez;
-import java.lang.management.ManagementFactory;
-import java.lang.management.MemoryMXBean;
-import java.net.URLClassLoader;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.Map.Entry;
-
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Maps;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.tez.TezProcessor.TezKVOutputCollector;
@@ -34,8 +29,12 @@ import org.apache.tez.runtime.api.LogicalInput;
 import org.apache.tez.runtime.api.LogicalOutput;
 import org.apache.tez.runtime.api.ProcessorContext;
 
-import com.google.common.base.Preconditions;
-import com.google.common.collect.Maps;
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryMXBean;
+import java.net.URLClassLoader;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * Process input from tez LogicalInput and write output
@@ -66,7 +65,7 @@ public abstract class RecordProcessor  {
   /**
    * Common initialization code for RecordProcessors
    * @param jconf
-   * @param processorContext the {@link TezProcessorContext}
+   * @param processorContext the {@link ProcessorContext}
    * @param mrReporter
    * @param inputs map of Input names to {@link LogicalInput}s
    * @param outputs map of Output names to {@link LogicalOutput}s

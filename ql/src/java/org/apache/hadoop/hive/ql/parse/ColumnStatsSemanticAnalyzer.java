@@ -346,48 +346,6 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
     return rewrittenTree;
   }
 
-  public ColumnStatsSemanticAnalyzer(HiveConf conf, ASTNode tree) throws SemanticException {
-    super(conf);
-    // check if it is no scan. grammar prevents coexit noscan/columns
-    super.processNoScanCommand(tree);
-    // check if it is partial scan. grammar prevents coexit partialscan/columns
-    super.processPartialScanCommand(tree);
-    /* Rewrite only analyze table <> column <> compute statistics; Don't rewrite analyze table
-     * command - table stats are collected by the table scan operator and is not rewritten to
-     * an aggregation.
-     */
-    if (shouldRewrite(tree)) {
-      tbl = getTable(tree);
-      colNames = getColumnName(tree);
-      // Save away the original AST
-      originalTree = tree;
-      boolean isPartitionStats = isPartitionLevelStats(tree);
-      Map<String,String> partSpec = null;
-      checkForPartitionColumns(colNames, Utilities.getColumnNamesFromFieldSchema(tbl.getPartitionKeys()));
-      validateSpecifiedColumnNames(colNames);
-      if (conf.getBoolVar(ConfVars.HIVE_STATS_COLLECT_PART_LEVEL_STATS) && tbl.isPartitioned()) {
-        isPartitionStats = true;
-      }
-
-      if (isPartitionStats) {
-        isTableLevel = false;
-        partSpec = getPartKeyValuePairsFromAST(tree);
-        handlePartialPartitionSpec(partSpec);
-      } else {
-        isTableLevel = true;
-      }
-      colType = getColumnTypes(colNames);
-      int numBitVectors = getNumBitVectorsForNDVEstimation(conf);
-      rewrittenQuery = genRewrittenQuery(colNames, numBitVectors, partSpec, isPartitionStats);
-      rewrittenTree = genRewrittenTree(rewrittenQuery);
-    } else {
-      // Not an analyze table column compute statistics statement - don't do any rewrites
-      originalTree = rewrittenTree = tree;
-      rewrittenQuery = null;
-      isRewritten = false;
-    }
-  }
-
   // fail early if the columns specified for column statistics are not valid
   private void validateSpecifiedColumnNames(List<String> specifiedCols)
       throws SemanticException {
@@ -420,6 +378,46 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
 
     // initialize QB
     init();
+
+    // check if it is no scan. grammar prevents coexit noscan/columns
+    super.processNoScanCommand(ast);
+    // check if it is partial scan. grammar prevents coexit partialscan/columns
+    super.processPartialScanCommand(ast);
+    /* Rewrite only analyze table <> column <> compute statistics; Don't rewrite analyze table
+     * command - table stats are collected by the table scan operator and is not rewritten to
+     * an aggregation.
+     */
+    if (shouldRewrite(ast)) {
+      tbl = getTable(ast);
+      colNames = getColumnName(ast);
+      // Save away the original AST
+      originalTree = ast;
+      boolean isPartitionStats = isPartitionLevelStats(ast);
+      Map<String,String> partSpec = null;
+      checkForPartitionColumns(
+          colNames, Utilities.getColumnNamesFromFieldSchema(tbl.getPartitionKeys()));
+      validateSpecifiedColumnNames(colNames);
+      if (conf.getBoolVar(ConfVars.HIVE_STATS_COLLECT_PART_LEVEL_STATS) && tbl.isPartitioned()) {
+        isPartitionStats = true;
+      }
+
+      if (isPartitionStats) {
+        isTableLevel = false;
+        partSpec = getPartKeyValuePairsFromAST(ast);
+        handlePartialPartitionSpec(partSpec);
+      } else {
+        isTableLevel = true;
+      }
+      colType = getColumnTypes(colNames);
+      int numBitVectors = getNumBitVectorsForNDVEstimation(conf);
+      rewrittenQuery = genRewrittenQuery(colNames, numBitVectors, partSpec, isPartitionStats);
+      rewrittenTree = genRewrittenTree(rewrittenQuery);
+    } else {
+      // Not an analyze table column compute statistics statement - don't do any rewrites
+      originalTree = rewrittenTree = ast;
+      rewrittenQuery = null;
+      isRewritten = false;
+    }
 
     // Setup the necessary metadata if originating from analyze rewrite
     if (isRewritten) {

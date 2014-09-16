@@ -1,0 +1,15 @@
+PREHOOK: query: create table default_auth_table_creator_priv_test(i int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@default_auth_table_creator_priv_test
+POSTHOOK: query: create table default_auth_table_creator_priv_test(i int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@default_auth_table_creator_priv_test
+#### A masked pattern was here ####
+show grant on table default_auth_table_creator_priv_test
+PREHOOK: type: SHOW_GRANT
+#### A masked pattern was here ####
+show grant on table default_auth_table_creator_priv_test
+POSTHOOK: type: SHOW_GRANT
+default	default_auth_table_creator_priv_test			hive_test_user	USER	ALL	true	-1	hive_test_user

@@ -264,7 +264,7 @@ STAGE PLANS:
                     serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2571
+                    totalSize 2597
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -284,7 +284,7 @@ STAGE PLANS:
                       serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2571
+                      totalSize 2597
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.part
@@ -554,7 +554,7 @@ STAGE PLANS:
                     serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2571
+                    totalSize 2597
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -574,7 +574,7 @@ STAGE PLANS:
                       serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2571
+                      totalSize 2597
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.part
@@ -621,7 +621,7 @@ STAGE PLANS:
                     serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2571
+                    totalSize 2597
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -641,7 +641,7 @@ STAGE PLANS:
                       serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2571
+                      totalSize 2597
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.part
@@ -870,7 +870,7 @@ STAGE PLANS:
                     serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2571
+                    totalSize 2597
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -890,7 +890,7 @@ STAGE PLANS:
                       serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2571
+                      totalSize 2597
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.part
@@ -1127,7 +1127,7 @@ STAGE PLANS:
                     serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2571
+                    totalSize 2597
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -1147,7 +1147,7 @@ STAGE PLANS:
                       serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2571
+                      totalSize 2597
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.part
@@ -1415,7 +1415,7 @@ STAGE PLANS:
                     serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2571
+                    totalSize 2597
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -1435,7 +1435,7 @@ STAGE PLANS:
                       serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2571
+                      totalSize 2597
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.part
@@ -1713,7 +1713,7 @@ STAGE PLANS:
                     serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2571
+                    totalSize 2597
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -1733,7 +1733,7 @@ STAGE PLANS:
                       serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2571
+                      totalSize 2597
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.part
@@ -1779,6 +1779,7 @@ STAGE PLANS:
                   tag: -1
                   value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: int)
                   auto parallelism: true
+            Execution mode: vectorized
         Reducer 4 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -1979,7 +1980,7 @@ STAGE PLANS:
                     serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2571
+                    totalSize 2597
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -1999,7 +2000,7 @@ STAGE PLANS:
                       serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2571
+                      totalSize 2597
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.part
@@ -2043,7 +2044,7 @@ STAGE PLANS:
                     serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2571
+                    totalSize 2597
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -2063,7 +2064,7 @@ STAGE PLANS:
                       serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2571
+                      totalSize 2597
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.part
@@ -2292,7 +2293,7 @@ STAGE PLANS:
                     serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2571
+                    totalSize 2597
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -2312,7 +2313,7 @@ STAGE PLANS:
                       serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2571
+                      totalSize 2597
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.part
@@ -2356,7 +2357,7 @@ STAGE PLANS:
                     serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2571
+                    totalSize 2597
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -2376,7 +2377,7 @@ STAGE PLANS:
                       serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2571
+                      totalSize 2597
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.part
@@ -2613,7 +2614,7 @@ STAGE PLANS:
                     serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2571
+                    totalSize 2597
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -2633,7 +2634,7 @@ STAGE PLANS:
                       serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2571
+                      totalSize 2597
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.part
@@ -2890,7 +2891,7 @@ STAGE PLANS:
                     serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2571
+                    totalSize 2597
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -2910,7 +2911,7 @@ STAGE PLANS:
                       serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2571
+                      totalSize 2597
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.part
@@ -3169,7 +3170,7 @@ STAGE PLANS:
                     serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2571
+                    totalSize 2597
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -3189,7 +3190,7 @@ STAGE PLANS:
                       serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2571
+                      totalSize 2597
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.part
@@ -3458,7 +3459,7 @@ STAGE PLANS:
                     serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2571
+                    totalSize 2597
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -3478,7 +3479,7 @@ STAGE PLANS:
                       serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2571
+                      totalSize 2597
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.part
@@ -3784,7 +3785,7 @@ STAGE PLANS:
                     serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2571
+                    totalSize 2597
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -3804,7 +3805,7 @@ STAGE PLANS:
                       serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2571
+                      totalSize 2597
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.part
@@ -4173,7 +4174,7 @@ STAGE PLANS:
                     serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2571
+                    totalSize 2597
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -4193,7 +4194,7 @@ STAGE PLANS:
                       serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2571
+                      totalSize 2597
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.part
@@ -4237,7 +4238,7 @@ STAGE PLANS:
                     serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2571
+                    totalSize 2597
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -4257,7 +4258,7 @@ STAGE PLANS:
                       serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2571
+                      totalSize 2597
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.part
@@ -4496,7 +4497,7 @@ STAGE PLANS:
                     serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2571
+                    totalSize 2597
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -4516,7 +4517,7 @@ STAGE PLANS:
                       serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2571
+                      totalSize 2597
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.part
@@ -4579,6 +4580,7 @@ STAGE PLANS:
                     TotalFiles: 1
                     GatherStats: false
                     MultiFileSpray: false
+            Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -4777,7 +4779,7 @@ STAGE PLANS:
                     serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2571
+                    totalSize 2597
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -4797,7 +4799,7 @@ STAGE PLANS:
                       serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2571
+                      totalSize 2597
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.part
@@ -4826,6 +4828,7 @@ STAGE PLANS:
                     tag: -1
                     value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: double)
                     auto parallelism: true
+            Execution mode: vectorized
         Reducer 3 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -5241,7 +5244,7 @@ STAGE PLANS:
                     serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2571
+                    totalSize 2597
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -5261,7 +5264,7 @@ STAGE PLANS:
                       serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2571
+                      totalSize 2597
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.part
@@ -5749,7 +5752,7 @@ STAGE PLANS:
                     serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2571
+                    totalSize 2597
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -5769,7 +5772,7 @@ STAGE PLANS:
                       serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2571
+                      totalSize 2597
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.part
@@ -6106,7 +6109,7 @@ STAGE PLANS:
                     serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2571
+                    totalSize 2597
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -6126,7 +6129,7 @@ STAGE PLANS:
                       serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2571
+                      totalSize 2597
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.part
@@ -6459,7 +6462,7 @@ STAGE PLANS:
                     serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2571
+                    totalSize 2597
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -6479,7 +6482,7 @@ STAGE PLANS:
                       serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2571
+                      totalSize 2597
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.part
@@ -6809,7 +6812,7 @@ STAGE PLANS:
                     serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2571
+                    totalSize 2597
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -6829,7 +6832,7 @@ STAGE PLANS:
                       serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2571
+                      totalSize 2597
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.part
@@ -7207,7 +7210,7 @@ STAGE PLANS:
                     serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2571
+                    totalSize 2597
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -7227,7 +7230,7 @@ STAGE PLANS:
                       serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2571
+                      totalSize 2597
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.part
@@ -7556,7 +7559,7 @@ STAGE PLANS:
                     serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2571
+                    totalSize 2597
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -7576,7 +7579,7 @@ STAGE PLANS:
                       serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2571
+                      totalSize 2597
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.part

@@ -2,6 +2,7 @@
 PREHOOK: type: IMPORT
 #### A masked pattern was here ####
 POSTHOOK: type: IMPORT
+#### A masked pattern was here ####
 POSTHOOK: Output: default@j1_41
 PREHOOK: query: DESCRIBE j1_41
 PREHOOK: type: DESCTABLE

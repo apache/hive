@@ -25,6 +25,7 @@ import org.iq80.snappy.Snappy;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.EnumSet;
 
 class SnappyCodec implements CompressionCodec, DirectDecompressionCodec {
 
@@ -98,5 +99,11 @@ class SnappyCodec implements CompressionCodec, DirectDecompressionCodec {
         .getDirectDecompressor(DirectCompressionType.SNAPPY);
     decompressShim.decompress(in, out);
     out.flip(); // flip for read
+  }
+
+  @Override
+  public CompressionCodec modify(EnumSet<Modifier> modifiers) {
+    // snappy allows no modifications
+    return this;
   }
 }

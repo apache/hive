@@ -659,12 +659,14 @@ public class Table implements Serializable {
    *          Files to be moved. Leaf directories or globbed file paths
    * @param isSrcLocal
    *          If the source directory is LOCAL
+   * @param isAcid
+   *          True if this is an ACID based insert, update, or delete
    */
-  protected void copyFiles(Path srcf, boolean isSrcLocal) throws HiveException {
+  protected void copyFiles(Path srcf, boolean isSrcLocal, boolean isAcid) throws HiveException {
     FileSystem fs;
     try {
       fs = getDataLocation().getFileSystem(Hive.get().getConf());
-      Hive.copyFiles(Hive.get().getConf(), srcf, getPath(), fs, isSrcLocal);
+      Hive.copyFiles(Hive.get().getConf(), srcf, getPath(), fs, isSrcLocal, isAcid);
     } catch (IOException e) {
       throw new HiveException("addFiles: filesystem error in check phase", e);
     }

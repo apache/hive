@@ -22,10 +22,10 @@ STAGE PLANS:
         t1 
           TableScan
             alias: t1
-            Statistics: Num rows: 94309 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: cint is not null (type: boolean)
-              Statistics: Num rows: 47155 Data size: 188620 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 6144 Data size: 188618 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
                 condition expressions:
                   0 
@@ -39,10 +39,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t2
-            Statistics: Num rows: 94309 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: cint is not null (type: boolean)
-              Statistics: Num rows: 47155 Data size: 188620 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 6144 Data size: 188618 Basic stats: COMPLETE Column stats: NONE
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -53,11 +53,11 @@ STAGE PLANS:
                   0 cint (type: int)
                   1 cint (type: int)
                 outputColumnNames: _col2, _col17
-                Statistics: Num rows: 51870 Data size: 207482 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 6758 Data size: 207479 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: _col2 (type: int), _col17 (type: int)
                   outputColumnNames: _col2, _col17
-                  Statistics: Num rows: 51870 Data size: 207482 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 6758 Data size: 207479 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     aggregations: count(_col2), max(_col17), min(_col2), avg((_col2 + _col17))
                     mode: hash

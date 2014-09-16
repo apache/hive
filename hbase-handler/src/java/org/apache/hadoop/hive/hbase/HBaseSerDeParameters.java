@@ -18,13 +18,20 @@
 
 package org.apache.hadoop.hive.hbase;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.avro.Schema;
+import org.apache.avro.reflect.ReflectData;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.hbase.ColumnMappings.ColumnMapping;
+import org.apache.hadoop.hive.hbase.struct.AvroHBaseValueFactory;
+import org.apache.hadoop.hive.hbase.struct.DefaultHBaseValueFactory;
+import org.apache.hadoop.hive.hbase.struct.HBaseValueFactory;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.avro.AvroSerdeUtils;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.SerDeParameters;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -37,10 +44,12 @@ import org.apache.hadoop.util.ReflectionUtils;
  */
 public class HBaseSerDeParameters {
 
+  public static final String AVRO_SERIALIZATION_TYPE = "avro";
+  public static final String STRUCT_SERIALIZATION_TYPE = "struct";
+
   private final SerDeParameters serdeParams;
 
   private final Configuration job;
-  private final Properties tbl;
 
   private final String columnMappingString;
   private final ColumnMappings columnMappings;
@@ -48,57 +57,50 @@ public class HBaseSerDeParameters {
 
   private final long putTimestamp;
   private final HBaseKeyFactory keyFactory;
+  private final List<HBaseValueFactory> valueFactories;
 
   HBaseSerDeParameters(Configuration job, Properties tbl, String serdeName) throws SerDeException {
     this.job = job;
-    this.tbl = tbl;
-    this.serdeParams = LazySimpleSerDe.initSerdeParams(job, tbl, serdeName);
-    this.putTimestamp = Long.valueOf(tbl.getProperty(HBaseSerDe.HBASE_PUT_TIMESTAMP, "-1"));
 
     // Read configuration parameters
     columnMappingString = tbl.getProperty(HBaseSerDe.HBASE_COLUMNS_MAPPING);
-    doColumnRegexMatching = Boolean.valueOf(tbl.getProperty(HBaseSerDe.HBASE_COLUMNS_REGEX_MATCHING, "true"));
+    doColumnRegexMatching =
+        Boolean.valueOf(tbl.getProperty(HBaseSerDe.HBASE_COLUMNS_REGEX_MATCHING, "true"));
     // Parse and initialize the HBase columns mapping
     columnMappings = HBaseSerDe.parseColumnsMapping(columnMappingString, doColumnRegexMatching);
-    columnMappings.setHiveColumnDescription(serdeName, serdeParams.getColumnNames(), serdeParams.getColumnTypes());
+
+    // Build the type property string if not supplied
+    String columnTypeProperty = tbl.getProperty(serdeConstants.LIST_COLUMN_TYPES);
+    String autogenerate = tbl.getProperty(HBaseSerDe.HBASE_AUTOGENERATE_STRUCT);
+
+    if (columnTypeProperty == null || columnTypeProperty.isEmpty()) {
+      String columnNameProperty = tbl.getProperty(serdeConstants.LIST_COLUMNS);
+      if (columnNameProperty == null || columnNameProperty.isEmpty()) {
+        if (autogenerate == null || autogenerate.isEmpty()) {
+          throw new IllegalArgumentException("Either the columns must be specified or the "
+              + HBaseSerDe.HBASE_AUTOGENERATE_STRUCT + " property must be set to true.");
+        }
+
+        tbl.setProperty(serdeConstants.LIST_COLUMNS,
+            columnMappings.toNamesString(tbl, autogenerate));
+      }
+
+      tbl.setProperty(serdeConstants.LIST_COLUMN_TYPES,
+          columnMappings.toTypesString(tbl, job, autogenerate));
+    }
+
+    this.serdeParams = LazySimpleSerDe.initSerdeParams(job, tbl, serdeName);
+    this.putTimestamp = Long.valueOf(tbl.getProperty(HBaseSerDe.HBASE_PUT_TIMESTAMP, "-1"));
+
+    columnMappings.setHiveColumnDescription(serdeName, serdeParams.getColumnNames(),
+        serdeParams.getColumnTypes());
 
     // Precondition: make sure this is done after the rest of the SerDe initialization is done.
     String hbaseTableStorageType = tbl.getProperty(HBaseSerDe.HBASE_TABLE_DEFAULT_STORAGE_TYPE);
     columnMappings.parseColumnStorageTypes(hbaseTableStorageType);
 
-    // Build the type property string if not supplied
-    String columnTypeProperty = tbl.getProperty(serdeConstants.LIST_COLUMN_TYPES);
-    if (columnTypeProperty == null) {
-      tbl.setProperty(serdeConstants.LIST_COLUMN_TYPES, columnMappings.toTypesString());
-    }
-
     this.keyFactory = initKeyFactory(job, tbl);
-  }
-
-  private HBaseKeyFactory initKeyFactory(Configuration conf, Properties tbl) throws SerDeException {
-    try {
-      HBaseKeyFactory keyFactory = createKeyFactory(conf, tbl);
-      if (keyFactory != null) {
-        keyFactory.init(this, tbl);
-      }
-      return keyFactory;
-    } catch (Exception e) {
-      throw new SerDeException(e);
-    }
-  }
-
-  private static HBaseKeyFactory createKeyFactory(Configuration job, Properties tbl) throws Exception {
-    String factoryClassName = tbl.getProperty(HBaseSerDe.HBASE_COMPOSITE_KEY_FACTORY);
-    if (factoryClassName != null) {
-      Class<?> factoryClazz = Class.forName(factoryClassName);
-      return (HBaseKeyFactory) ReflectionUtils.newInstance(factoryClazz, job);
-    }
-    String keyClassName = tbl.getProperty(HBaseSerDe.HBASE_COMPOSITE_KEY_CLASS);
-    if (keyClassName != null) {
-      Class<?> keyClass = Class.forName(keyClassName);
-      return new CompositeHBaseKeyFactory(keyClass);
-    }
-    return new DefaultHBaseKeyFactory();
+    this.valueFactories = initValueFactories(job, tbl);
   }
 
   public List<String> getColumnNames() {
@@ -133,6 +135,10 @@ public class HBaseSerDeParameters {
     return keyFactory;
   }
 
+  public List<HBaseValueFactory> getValueFactories() {
+    return valueFactories;
+  }
+
   public Configuration getBaseConfiguration() {
     return job;
   }
@@ -150,5 +156,191 @@ public class HBaseSerDeParameters {
 
   public String toString() {
     return "[" + columnMappingString + ":" + getColumnNames() + ":" + getColumnTypes() + "]";
+  }
+
+  private HBaseKeyFactory initKeyFactory(Configuration conf, Properties tbl) throws SerDeException {
+    try {
+      HBaseKeyFactory keyFactory = createKeyFactory(conf, tbl);
+      if (keyFactory != null) {
+        keyFactory.init(this, tbl);
+      }
+      return keyFactory;
+    } catch (Exception e) {
+      throw new SerDeException(e);
+    }
+  }
+
+  private static HBaseKeyFactory createKeyFactory(Configuration job, Properties tbl)
+      throws Exception {
+    String factoryClassName = tbl.getProperty(HBaseSerDe.HBASE_COMPOSITE_KEY_FACTORY);
+    if (factoryClassName != null) {
+      Class<?> factoryClazz = Class.forName(factoryClassName);
+      return (HBaseKeyFactory) ReflectionUtils.newInstance(factoryClazz, job);
+    }
+    String keyClassName = tbl.getProperty(HBaseSerDe.HBASE_COMPOSITE_KEY_CLASS);
+    if (keyClassName != null) {
+      Class<?> keyClass = Class.forName(keyClassName);
+      return new CompositeHBaseKeyFactory(keyClass);
+    }
+    return new DefaultHBaseKeyFactory();
+  }
+
+  private List<HBaseValueFactory> initValueFactories(Configuration conf, Properties tbl)
+      throws SerDeException {
+    List<HBaseValueFactory> valueFactories = createValueFactories(conf, tbl);
+
+    for (HBaseValueFactory valueFactory : valueFactories) {
+      valueFactory.init(this, conf, tbl);
+    }
+
+    return valueFactories;
+  }
+
+  private List<HBaseValueFactory> createValueFactories(Configuration conf, Properties tbl)
+      throws SerDeException {
+    List<HBaseValueFactory> valueFactories = new ArrayList<HBaseValueFactory>();
+
+    try {
+      for (int i = 0; i < columnMappings.size(); i++) {
+        String serType = getSerializationType(conf, tbl, columnMappings.getColumnsMapping()[i]);
+
+        if (serType != null && serType.equals(AVRO_SERIALIZATION_TYPE)) {
+          Schema schema = getSchema(conf, tbl, columnMappings.getColumnsMapping()[i]);
+          valueFactories.add(new AvroHBaseValueFactory(schema));
+        } else {
+          valueFactories.add(new DefaultHBaseValueFactory());
+        }
+      }
+    } catch (Exception e) {
+      throw new SerDeException(e);
+    }
+
+    return valueFactories;
+  }
+
+  /**
+   * Get the type for the given {@link ColumnMapping colMap}
+   * */
+  private String getSerializationType(Configuration conf, Properties tbl,
+      ColumnMapping colMap) throws Exception {
+    String serType = null;
+
+    if (colMap.qualifierName == null) {
+      // only a column family
+
+      if (colMap.qualifierPrefix != null) {
+        serType = tbl.getProperty(colMap.familyName + "." + colMap.qualifierPrefix + "."
+            + HBaseSerDe.SERIALIZATION_TYPE);
+      } else {
+        serType = tbl.getProperty(colMap.familyName + "." + HBaseSerDe.SERIALIZATION_TYPE);
+      }
+    } else if (!colMap.hbaseRowKey) {
+      // not an hbase row key. This should either be a prefix or an individual qualifier
+      String qualifierName = colMap.qualifierName;
+
+      if (colMap.qualifierName.endsWith("*")) {
+        qualifierName = colMap.qualifierName.substring(0, colMap.qualifierName.length() - 1);
+      }
+
+      serType =
+          tbl.getProperty(colMap.familyName + "." + qualifierName + "."
+              + HBaseSerDe.SERIALIZATION_TYPE);
+    }
+
+    return serType;
+  }
+
+  private Schema getSchema(Configuration conf, Properties tbl, ColumnMapping colMap)
+      throws Exception {
+    String serType = null;
+    String serClassName = null;
+    String schemaLiteral = null;
+    String schemaUrl = null;
+
+    if (colMap.qualifierName == null) {
+      // only a column family
+
+      if (colMap.qualifierPrefix != null) {
+        serType =
+            tbl.getProperty(colMap.familyName + "." + colMap.qualifierPrefix + "."
+                + HBaseSerDe.SERIALIZATION_TYPE);
+
+        serClassName =
+            tbl.getProperty(colMap.familyName + "." + colMap.qualifierPrefix + "."
+                + serdeConstants.SERIALIZATION_CLASS);
+
+        schemaLiteral =
+            tbl.getProperty(colMap.familyName + "." + colMap.qualifierPrefix + "."
+                + AvroSerdeUtils.SCHEMA_LITERAL);
+
+        schemaUrl =
+            tbl.getProperty(colMap.familyName + "." + colMap.qualifierPrefix + "."
+                + AvroSerdeUtils.SCHEMA_URL);
+      } else {
+        serType = tbl.getProperty(colMap.familyName + "." + HBaseSerDe.SERIALIZATION_TYPE);
+
+        serClassName =
+            tbl.getProperty(colMap.familyName + "." + serdeConstants.SERIALIZATION_CLASS);
+
+        schemaLiteral = tbl.getProperty(colMap.familyName + "." + AvroSerdeUtils.SCHEMA_LITERAL);
+
+        schemaUrl = tbl.getProperty(colMap.familyName + "." + AvroSerdeUtils.SCHEMA_URL);
+      }
+    } else if (!colMap.hbaseRowKey) {
+      // not an hbase row key. This should either be a prefix or an individual qualifier
+      String qualifierName = colMap.qualifierName;
+
+      if (colMap.qualifierName.endsWith("*")) {
+        qualifierName = colMap.qualifierName.substring(0, colMap.qualifierName.length() - 1);
+      }
+
+      serType =
+          tbl.getProperty(colMap.familyName + "." + qualifierName + "."
+              + HBaseSerDe.SERIALIZATION_TYPE);
+
+      serClassName =
+          tbl.getProperty(colMap.familyName + "." + qualifierName + "."
+              + serdeConstants.SERIALIZATION_CLASS);
+
+      schemaLiteral =
+          tbl.getProperty(colMap.familyName + "." + qualifierName + "."
+              + AvroSerdeUtils.SCHEMA_LITERAL);
+
+      schemaUrl =
+          tbl.getProperty(colMap.familyName + "." + qualifierName + "." + AvroSerdeUtils.SCHEMA_URL);
+    }
+
+    String avroSchemaRetClass = tbl.getProperty(AvroSerdeUtils.SCHEMA_RETRIEVER);
+
+    if (schemaLiteral == null && serClassName == null && schemaUrl == null
+        && avroSchemaRetClass == null) {
+      throw new IllegalArgumentException("serialization.type was set to [" + serType
+          + "] but neither " + AvroSerdeUtils.SCHEMA_LITERAL + ", " + AvroSerdeUtils.SCHEMA_URL
+          + ", serialization.class or " + AvroSerdeUtils.SCHEMA_RETRIEVER + " property was set");
+    }
+
+    Class<?> deserializerClass = null;
+
+    if (serClassName != null) {
+      deserializerClass = conf.getClassByName(serClassName);
+    }
+
+    Schema schema = null;
+
+    // only worry about getting schema if we are dealing with Avro
+    if (serType.equalsIgnoreCase(AVRO_SERIALIZATION_TYPE)) {
+      if (avroSchemaRetClass == null) {
+        // bother about generating a schema only if a schema retriever class wasn't provided
+        if (schemaLiteral != null) {
+          schema = Schema.parse(schemaLiteral);
+        } else if (schemaUrl != null) {
+          schema = HBaseSerDeHelper.getSchemaFromFS(schemaUrl, conf);
+        } else if (deserializerClass != null) {
+          schema = ReflectData.get().getSchema(deserializerClass);
+        }
+      }
+    }
+
+    return schema;
   }
 }

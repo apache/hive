@@ -53,6 +53,7 @@ import org.apache.hadoop.hive.serde2.lazydio.LazyDioShort;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory.ObjectInspectorOptions;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
@@ -217,11 +218,11 @@ public final class LazyFactory {
    */
   public static ObjectInspector createLazyObjectInspector(TypeInfo typeInfo,
       byte[] separator, int separatorIndex, Text nullSequence, boolean escaped,
-      byte escapeChar) throws SerDeException {
+      byte escapeChar, ObjectInspectorOptions option) throws SerDeException {
     return createLazyObjectInspector(typeInfo, separator, separatorIndex, nullSequence,
-        escaped, escapeChar, false);
+        escaped, escapeChar, false, option);
   }
-
+  
   /**
    * Create a hierarchical ObjectInspector for LazyObject with the given
    * typeInfo.
@@ -236,13 +237,54 @@ public final class LazyFactory {
    *          delimiting entries, the second one for delimiting key and values.
    * @param nullSequence
    *          The sequence of bytes representing NULL.
+   * @return The ObjectInspector
+   * @throws SerDeException
+   */
+  public static ObjectInspector createLazyObjectInspector(TypeInfo typeInfo,
+      byte[] separator, int separatorIndex, Text nullSequence, boolean escaped,
+      byte escapeChar) throws SerDeException {
+    return createLazyObjectInspector(typeInfo, separator, separatorIndex, nullSequence,
+        escaped, escapeChar, false, ObjectInspectorOptions.JAVA);
+  }
+
+  /**
+   * Create a hierarchical ObjectInspector for LazyObject with the given typeInfo.
+   *
+   * @param typeInfo The type information for the LazyObject
+   * @param separator The array of separators for delimiting each level
+   * @param separatorIndex The current level (for separators). List(array), struct uses 1 level of
+   *          separator, and map uses 2 levels: the first one for delimiting entries, the second one
+   *          for delimiting key and values.
+   * @param nullSequence The sequence of bytes representing NULL.
    * @param extendedBooleanLiteral whether extended boolean literal set is legal
+   * @param option the {@link ObjectInspectorOption}
    * @return The ObjectInspector
    * @throws SerDeException
    */
   public static ObjectInspector createLazyObjectInspector(TypeInfo typeInfo,
       byte[] separator, int separatorIndex, Text nullSequence, boolean escaped,
       byte escapeChar, boolean extendedBooleanLiteral) throws SerDeException {
+    return createLazyObjectInspector(typeInfo, separator, separatorIndex, nullSequence, escaped,
+        escapeChar, extendedBooleanLiteral, ObjectInspectorOptions.JAVA);
+  }
+  
+  /**
+   * Create a hierarchical ObjectInspector for LazyObject with the given typeInfo.
+   *
+   * @param typeInfo The type information for the LazyObject
+   * @param separator The array of separators for delimiting each level
+   * @param separatorIndex The current level (for separators). List(array), struct uses 1 level of
+   *          separator, and map uses 2 levels: the first one for delimiting entries, the second one
+   *          for delimiting key and values.
+   * @param nullSequence The sequence of bytes representing NULL.
+   * @param extendedBooleanLiteral whether extended boolean literal set is legal
+   * @param option the {@link ObjectInspectorOption}
+   * @return The ObjectInspector
+   * @throws SerDeException
+   */
+  public static ObjectInspector createLazyObjectInspector(TypeInfo typeInfo,
+      byte[] separator, int separatorIndex, Text nullSequence, boolean escaped,
+      byte escapeChar, boolean extendedBooleanLiteral, ObjectInspectorOptions option) throws SerDeException {
     ObjectInspector.Category c = typeInfo.getCategory();
     switch (c) {
     case PRIMITIVE:
@@ -252,9 +294,9 @@ public final class LazyFactory {
       return LazyObjectInspectorFactory.getLazySimpleMapObjectInspector(
           createLazyObjectInspector(((MapTypeInfo) typeInfo)
           .getMapKeyTypeInfo(), separator, separatorIndex + 2,
-          nullSequence, escaped, escapeChar, extendedBooleanLiteral), createLazyObjectInspector(
+          nullSequence, escaped, escapeChar, extendedBooleanLiteral, option), createLazyObjectInspector(
           ((MapTypeInfo) typeInfo).getMapValueTypeInfo(), separator,
-          separatorIndex + 2, nullSequence, escaped, escapeChar, extendedBooleanLiteral),
+          separatorIndex + 2, nullSequence, escaped, escapeChar, extendedBooleanLiteral, option),
           LazyUtils.getSeparator(separator, separatorIndex),
           LazyUtils.getSeparator(separator, separatorIndex+1),
           nullSequence, escaped, escapeChar);
@@ -262,7 +304,7 @@ public final class LazyFactory {
       return LazyObjectInspectorFactory.getLazySimpleListObjectInspector(
           createLazyObjectInspector(((ListTypeInfo) typeInfo)
           .getListElementTypeInfo(), separator, separatorIndex + 1,
-          nullSequence, escaped, escapeChar, extendedBooleanLiteral), LazyUtils.getSeparator(separator, separatorIndex),
+          nullSequence, escaped, escapeChar, extendedBooleanLiteral, option), LazyUtils.getSeparator(separator, separatorIndex),
           nullSequence, escaped, escapeChar);
     case STRUCT:
       StructTypeInfo structTypeInfo = (StructTypeInfo) typeInfo;
@@ -274,19 +316,20 @@ public final class LazyFactory {
       for (int i = 0; i < fieldTypeInfos.size(); i++) {
         fieldObjectInspectors.add(createLazyObjectInspector(fieldTypeInfos
             .get(i), separator, separatorIndex + 1, nullSequence, escaped,
-            escapeChar, extendedBooleanLiteral));
+            escapeChar, extendedBooleanLiteral, option));
       }
       return LazyObjectInspectorFactory.getLazySimpleStructObjectInspector(
           fieldNames, fieldObjectInspectors,
           LazyUtils.getSeparator(separator, separatorIndex),
-          nullSequence, false, escaped, escapeChar);
+ nullSequence,
+          false, escaped, escapeChar, option);
     case UNION:
       UnionTypeInfo unionTypeInfo = (UnionTypeInfo) typeInfo;
       List<ObjectInspector> lazyOIs = new ArrayList<ObjectInspector>();
       for (TypeInfo uti : unionTypeInfo.getAllUnionObjectTypeInfos()) {
         lazyOIs.add(createLazyObjectInspector(uti, separator,
             separatorIndex + 1, nullSequence, escaped,
-            escapeChar, extendedBooleanLiteral));
+            escapeChar, extendedBooleanLiteral, option));
       }
       return LazyObjectInspectorFactory.getLazyUnionObjectInspector(lazyOIs,
           LazyUtils.getSeparator(separator, separatorIndex),

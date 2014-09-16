@@ -32,41 +32,10 @@ import org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe;
  * This class stores additional information about keys needed to evaluate and output the key values.
  *
  */
-public class VectorHashKeyWrapperBatch {
+public class VectorHashKeyWrapperBatch extends VectorColumnSetInfo {
 
-  /**
-   * Helper class for looking up a key value based on key index.
-   */
-  private static class KeyLookupHelper {
-    private int longIndex;
-    private int doubleIndex;
-    private int stringIndex;
-    private int decimalIndex;
-
-    private static final int INDEX_UNUSED = -1;
-
-    private void resetIndices() {
-        this.longIndex = this.doubleIndex = this.stringIndex = this.decimalIndex = INDEX_UNUSED;
-    }
-    public void setLong(int index) {
-        resetIndices();
-        this.longIndex= index;
-    }
-
-    public void setDouble(int index) {
-        resetIndices();
-        this.doubleIndex = index;
-    }
-
-    public void setString(int index) {
-        resetIndices();
-        this.stringIndex = index;
-    }
-
-    public void setDecimal(int index) {
-        resetIndices();
-        this.decimalIndex = index;
-    }
+  public VectorHashKeyWrapperBatch(int keyCount) {
+    super(keyCount);
   }
 
   /**
@@ -80,37 +49,12 @@ public class VectorHashKeyWrapperBatch {
   private VectorExpression[] keyExpressions;
 
   /**
-   * indices of LONG primitive keys.
-   */
-  private int[] longIndices;
-
-  /**
-   * indices of DOUBLE primitive keys.
-   */
-  private int[] doubleIndices;
-
-  /**
-   * indices of string (byte[]) primitive keys.
-   */
-  private int[] stringIndices;
-
-  /**
-   * indices of decimal primitive keys.
-   */
-  private int[] decimalIndices;
-
-  /**
    * Pre-allocated batch size vector of keys wrappers.
    * N.B. these keys are **mutable** and should never be used in a HashMap.
    * Always clone the key wrapper to obtain an immutable keywrapper suitable
    * to use a key in a HashMap.
    */
   private VectorHashKeyWrapper[] vectorHashKeyWrappers;
-
-  /**
-   * Lookup vector to map from key index to primitive type index.
-   */
-  private KeyLookupHelper[] indexLookup;
 
   /**
    * The fixed size of the key wrappers.
@@ -567,53 +511,17 @@ public class VectorHashKeyWrapperBatch {
    */
   public static VectorHashKeyWrapperBatch compileKeyWrapperBatch(VectorExpression[] keyExpressions)
     throws HiveException {
-    VectorHashKeyWrapperBatch compiledKeyWrapperBatch = new VectorHashKeyWrapperBatch();
+    VectorHashKeyWrapperBatch compiledKeyWrapperBatch = new VectorHashKeyWrapperBatch(keyExpressions.length);
     compiledKeyWrapperBatch.keyExpressions = keyExpressions;
 
     compiledKeyWrapperBatch.keysFixedSize = 0;
 
-    // We'll overallocate and then shrink the array for each type
-    int[] longIndices = new int[keyExpressions.length];
-    int longIndicesIndex = 0;
-    int[] doubleIndices = new int[keyExpressions.length];
-    int doubleIndicesIndex  = 0;
-    int[] stringIndices = new int[keyExpressions.length];
-    int stringIndicesIndex = 0;
-    int[] decimalIndices = new int[keyExpressions.length];
-    int decimalIndicesIndex = 0;
-    KeyLookupHelper[] indexLookup = new KeyLookupHelper[keyExpressions.length];
-
     // Inspect the output type of each key expression.
     for(int i=0; i < keyExpressions.length; ++i) {
-      indexLookup[i] = new KeyLookupHelper();
-      String outputType = keyExpressions[i].getOutputType();
-      if (VectorizationContext.isIntFamily(outputType) ||
-          VectorizationContext.isDatetimeFamily(outputType)) {
-        longIndices[longIndicesIndex] = i;
-        indexLookup[i].setLong(longIndicesIndex);
-        ++longIndicesIndex;
-      } else if (VectorizationContext.isFloatFamily(outputType)) {
-        doubleIndices[doubleIndicesIndex] = i;
-        indexLookup[i].setDouble(doubleIndicesIndex);
-        ++doubleIndicesIndex;
-      } else if (VectorizationContext.isStringFamily(outputType)) {
-        stringIndices[stringIndicesIndex]= i;
-        indexLookup[i].setString(stringIndicesIndex);
-        ++stringIndicesIndex;
-      } else if (VectorizationContext.isDecimalFamily(outputType)) {
-          decimalIndices[decimalIndicesIndex]= i;
-          indexLookup[i].setDecimal(decimalIndicesIndex);
-          ++decimalIndicesIndex;
-      }
-      else {
-        throw new HiveException("Unsuported vector output type: " + outputType);
-      }
+      compiledKeyWrapperBatch.addKey(keyExpressions[i].getOutputType());
     }
-    compiledKeyWrapperBatch.indexLookup = indexLookup;
-    compiledKeyWrapperBatch.longIndices = Arrays.copyOf(longIndices, longIndicesIndex);
-    compiledKeyWrapperBatch.doubleIndices = Arrays.copyOf(doubleIndices, doubleIndicesIndex);
-    compiledKeyWrapperBatch.stringIndices = Arrays.copyOf(stringIndices, stringIndicesIndex);
-    compiledKeyWrapperBatch.decimalIndices = Arrays.copyOf(decimalIndices, decimalIndicesIndex);
+    compiledKeyWrapperBatch.finishAdding();
+
     compiledKeyWrapperBatch.vectorHashKeyWrappers =
         new VectorHashKeyWrapper[VectorizedRowBatch.DEFAULT_SIZE];
     for(int i=0;i<VectorizedRowBatch.DEFAULT_SIZE; ++i) {
@@ -632,11 +540,11 @@ public class VectorHashKeyWrapperBatch {
         model.memoryAlign());
 
     // Now add the key wrapper arrays
-    compiledKeyWrapperBatch.keysFixedSize += model.lengthForLongArrayOfSize(longIndicesIndex);
-    compiledKeyWrapperBatch.keysFixedSize += model.lengthForDoubleArrayOfSize(doubleIndicesIndex);
-    compiledKeyWrapperBatch.keysFixedSize += model.lengthForObjectArrayOfSize(stringIndicesIndex);
-    compiledKeyWrapperBatch.keysFixedSize += model.lengthForObjectArrayOfSize(decimalIndicesIndex);
-    compiledKeyWrapperBatch.keysFixedSize += model.lengthForIntArrayOfSize(longIndicesIndex) * 2;
+    compiledKeyWrapperBatch.keysFixedSize += model.lengthForLongArrayOfSize(compiledKeyWrapperBatch.longIndices.length);
+    compiledKeyWrapperBatch.keysFixedSize += model.lengthForDoubleArrayOfSize(compiledKeyWrapperBatch.doubleIndices.length);
+    compiledKeyWrapperBatch.keysFixedSize += model.lengthForObjectArrayOfSize(compiledKeyWrapperBatch.stringIndices.length);
+    compiledKeyWrapperBatch.keysFixedSize += model.lengthForObjectArrayOfSize(compiledKeyWrapperBatch.decimalIndices.length);
+    compiledKeyWrapperBatch.keysFixedSize += model.lengthForIntArrayOfSize(compiledKeyWrapperBatch.longIndices.length) * 2;
     compiledKeyWrapperBatch.keysFixedSize +=
         model.lengthForBooleanArrayOfSize(keyExpressions.length);
 

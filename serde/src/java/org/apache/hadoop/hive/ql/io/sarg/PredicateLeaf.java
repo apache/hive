@@ -48,7 +48,8 @@ public interface PredicateLeaf {
     STRING,  // string, char, varchar
     DATE,
     DECIMAL,
-    TIMESTAMP
+    TIMESTAMP,
+    BOOLEAN
   }
 
   /**

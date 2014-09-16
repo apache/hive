@@ -69,14 +69,14 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-            Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: string), value (type: string)
               outputColumnNames: _col0, _col1
-              Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                 table:
                     input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                     output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
@@ -111,12 +111,16 @@ STAGE PLANS:
     Stats-Aggr Operator
 
   Stage: Stage-3
-    Merge Work
+    Merge File Operator
+      Map Operator Tree:
+          ORC File Merge Operator
       merge level: stripe
       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
 
   Stage: Stage-5
-    Merge Work
+    Merge File Operator
+      Map Operator Tree:
+          ORC File Merge Operator
       merge level: stripe
       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
 
@@ -270,12 +274,16 @@ STAGE PLANS:
     Stats-Aggr Operator
 
   Stage: Stage-3
-    Merge Work
+    Merge File Operator
+      Map Operator Tree:
+          ORC File Merge Operator
       merge level: stripe
       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
 
   Stage: Stage-5
-    Merge Work
+    Merge File Operator
+      Map Operator Tree:
+          ORC File Merge Operator
       merge level: stripe
       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
 

@@ -212,6 +212,11 @@ public class SessionState {
   private String hdfsScratchDirURIString;
 
   /**
+   * Next value to use in naming a temporary table created by an insert...values statement
+   */
+  private int nextValueTempTableSuffix = 1;
+
+  /**
    * Transaction manager to use for this session.  This is instantiated lazily by
    * {@link #initTxnMgr(org.apache.hadoop.hive.conf.HiveConf)}
    */
@@ -474,10 +479,7 @@ public class SessionState {
    */
   private void createSessionDirs(String userName) throws IOException {
     HiveConf conf = getConf();
-    // First create the root scratch dir on hdfs (if it doesn't already exist) and make it writable
-    Path rootHDFSDirPath = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCHDIR));
-    String rootHDFSDirPermission = "777";
-    createPath(conf, rootHDFSDirPath, rootHDFSDirPermission, false, false);
+    Path rootHDFSDirPath = createRootHDFSDir(conf);
     // Now create session specific dirs
     String scratchDirPermission = HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCHDIRPERMISSION);
     Path path;
@@ -507,6 +509,30 @@ public class SessionState {
     hdfsTmpTableSpace = new Path(hdfsSessionPath, TMP_PREFIX);
     createPath(conf, hdfsTmpTableSpace, scratchDirPermission, false, true);
     conf.set(TMP_TABLE_SPACE_KEY, hdfsTmpTableSpace.toUri().toString());
+  }
+
+  /**
+   * Create the root scratch dir on hdfs (if it doesn't already exist) and make it writable
+   * @param conf
+   * @return
+   * @throws IOException
+   */
+  private Path createRootHDFSDir(HiveConf conf) throws IOException {
+    Path rootHDFSDirPath = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCHDIR));
+    FsPermission expectedHDFSDirPermission = new FsPermission("777");
+    FileSystem fs = rootHDFSDirPath.getFileSystem(conf);
+    if (!fs.exists(rootHDFSDirPath)) {
+      Utilities.createDirsWithPermission(conf, rootHDFSDirPath, expectedHDFSDirPermission, true);
+    }
+    FsPermission currentHDFSDirPermission = fs.getFileStatus(rootHDFSDirPath).getPermission();
+    LOG.debug("HDFS root scratch dir: " + rootHDFSDirPath + ", permission: "
+        + currentHDFSDirPermission);
+    // If the root HDFS scratch dir already exists, make sure the permissions are 777.
+    if (!expectedHDFSDirPermission.equals(fs.getFileStatus(rootHDFSDirPath).getPermission())) {
+      throw new RuntimeException("The root scratch dir: " + rootHDFSDirPath
+          + " on HDFS should be writable. Current permissions are: " + currentHDFSDirPermission);
+    }
+    return rootHDFSDirPath;
   }
 
   /**
@@ -591,7 +617,7 @@ public class SessionState {
       hdfsSessionPath.getFileSystem(conf).delete(hdfsSessionPath, true);
     }
     if (localSessionPath != null) {
-      localSessionPath.getFileSystem(conf).delete(localSessionPath, true);
+      FileSystem.getLocal(conf).delete(localSessionPath, true);
     }
   }
 
@@ -628,10 +654,10 @@ public class SessionState {
         authorizerV2 = authorizerFactory.createHiveAuthorizer(new HiveMetastoreClientFactoryImpl(),
             conf, authenticator, authzContextBuilder.build());
 
-        authorizerV2.applyAuthorizationConfigPolicy(conf);
-        // create the create table grants with new config
-        createTableGrants = CreateTableAutomaticGrant.create(conf);
+        authorizerV2.applyAuthorizationConfigPolicy(conf); 
       }
+      // create the create table grants with new config
+      createTableGrants = CreateTableAutomaticGrant.create(conf);
 
     } catch (HiveException e) {
       throw new RuntimeException(e);
@@ -1334,7 +1360,6 @@ public class SessionState {
     this.userIpAddress = userIpAddress;
   }
 
-
   public SparkSession getSparkSession() {
     return sparkSession;
   }
@@ -1342,4 +1367,13 @@ public class SessionState {
   public void setSparkSession(SparkSession sparkSession) {
     this.sparkSession = sparkSession;
   }
+
+  /**
+   * Get the next suffix to use in naming a temporary table created by insert...values
+   * @return suffix
+   */
+  public String getNextValuesTempTableSuffix() {
+    return Integer.toString(nextValueTempTableSuffix++);
+  }
+
 }
