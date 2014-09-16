@@ -211,6 +211,11 @@
       <artifactId>stax-api</artifactId>
       <version>${stax.version}</version>
     </dependency>
+    <dependency>
+      <groupId>net.sf.opencsv</groupId>
+      <artifactId>opencsv</artifactId>
+      <version>${opencsv.version}</version>
+    </dependency>
     <!-- test intra-project -->
     <!-- test inter-project -->
     <dependency>
@@ -587,6 +592,7 @@
                   <include>org.codehaus.jackson:jackson-core-asl</include>
                   <include>org.codehaus.jackson:jackson-mapper-asl</include>
                   <include>com.google.guava:guava</include>
+                  <include>net.sf.opencsv:opencsv</include>
                 </includes>
               </artifactSet>
               <relocations>
