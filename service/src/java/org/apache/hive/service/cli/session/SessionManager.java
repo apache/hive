@@ -67,7 +67,7 @@ public class SessionManager extends CompositeService {
   private volatile boolean shutdown;
 
   public SessionManager() {
-    super("SessionManager");
+    super(SessionManager.class.getSimpleName());
   }
 
   @Override
@@ -354,6 +354,10 @@ public class SessionManager extends CompositeService {
 
   public Future<?> submitBackgroundOperation(Runnable r) {
     return backgroundOperationPool.submit(r);
+  }
+
+  public int getOpenSessionCount() {
+    return handleToSession.size();
   }
 
 }

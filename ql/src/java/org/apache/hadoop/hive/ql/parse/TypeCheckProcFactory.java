@@ -779,25 +779,20 @@ public class TypeCheckProcFactory {
 
         if (myt.getCategory() == Category.LIST) {
           // Only allow integer index for now
-          if (!(children.get(1) instanceof ExprNodeConstantDesc)
-              || !(((ExprNodeConstantDesc) children.get(1)).getTypeInfo()
-                  .equals(TypeInfoFactory.intTypeInfo))) {
-            throw new SemanticException(SemanticAnalyzer.generateErrorMessage(expr,
-                ErrorMsg.INVALID_ARRAYINDEX_CONSTANT.getMsg()));
+          if (!FunctionRegistry.implicitConvertible(children.get(1).getTypeInfo(),
+              TypeInfoFactory.intTypeInfo)) {
+            throw new SemanticException(SemanticAnalyzer.generateErrorMessage(
+                  expr, ErrorMsg.INVALID_ARRAYINDEX_TYPE.getMsg()));
           }
 
           // Calculate TypeInfo
           TypeInfo t = ((ListTypeInfo) myt).getListElementTypeInfo();
           desc = new ExprNodeGenericFuncDesc(t, FunctionRegistry.getGenericUDFForIndex(), children);
         } else if (myt.getCategory() == Category.MAP) {
-          // Only allow constant map key for now
-          if (!(children.get(1) instanceof ExprNodeConstantDesc)) {
-            throw new SemanticException(SemanticAnalyzer.generateErrorMessage(expr,
-                ErrorMsg.INVALID_MAPINDEX_CONSTANT.getMsg()));
-          }
-          if (!(((ExprNodeConstantDesc) children.get(1)).getTypeInfo().equals(((MapTypeInfo) myt)
-              .getMapKeyTypeInfo()))) {
-            throw new SemanticException(ErrorMsg.INVALID_MAPINDEX_TYPE.getMsg(expr));
+          if (!FunctionRegistry.implicitConvertible(children.get(1).getTypeInfo(),
+              ((MapTypeInfo) myt).getMapKeyTypeInfo())) {
+            throw new SemanticException(ErrorMsg.INVALID_MAPINDEX_TYPE
+                .getMsg(expr));
           }
           // Calculate TypeInfo
           TypeInfo t = ((MapTypeInfo) myt).getMapValueTypeInfo();
