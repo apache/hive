@@ -12139,6 +12139,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // 1. If top level QB is query then everything below it must also be Query
     // 2. Nested Subquery will return false for qbToChk.getIsQuery()
     if ((!topLevelQB || qbToChk.getIsQuery())
+        && (!conf.getBoolVar(ConfVars.HIVE_IN_TEST) || conf.getVar(ConfVars.HIVEMAPREDMODE).equalsIgnoreCase("nonstrict"))
         && (!topLevelQB || (queryProperties.getJoinCount() > 1) || conf.getBoolVar(ConfVars.HIVE_IN_TEST))
         && !queryProperties.hasClusterBy() && !queryProperties.hasDistributeBy()
         && !queryProperties.hasSortBy() && !queryProperties.hasPTF()
@@ -13870,7 +13871,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         aliasToRel.put(tableAlias, op);
       }
 
-
       if (aliasToRel.isEmpty()) {
         //// This may happen for queries like select 1; (no source table)
         // We can do following which is same, as what Hive does.
@@ -13910,7 +13910,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       selectRel = genSelectLogicalPlan(qb, srcRel);
       srcRel = (selectRel == null) ? srcRel : selectRel;
 
-      // 6. Incase this QB corresponds to subquery then modify its RR to point
+      // 6. Build Rel for OB Clause
+      obRel = genOBLogicalPlan(qb, srcRel);
+      srcRel = (obRel == null) ? srcRel : obRel;
+
+      // 7. Build Rel for Limit Clause
+      limitRel = genLimitLogicalPlan(qb, srcRel);
+      srcRel = (limitRel == null) ? srcRel : limitRel;
+
+      // 8. Incase this QB corresponds to subquery then modify its RR to point
       // to subquery alias
       // TODO: cleanup this
       if (qb.getParseInfo().getAlias() != null) {
@@ -13931,14 +13939,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         relToHiveRR.put(srcRel, newRR);
         relToHiveColNameOptiqPosMap.put(srcRel, buildHiveToOptiqColumnMap(newRR, srcRel));
       }
-
-      // 7. Build Rel for OB Clause
-      obRel = genOBLogicalPlan(qb, srcRel);
-      srcRel = (obRel == null) ? srcRel : obRel;
-
-      // 8. Build Rel for Limit Clause
-      limitRel = genLimitLogicalPlan(qb, srcRel);
-      srcRel = (limitRel == null) ? srcRel : limitRel;
 
       if (LOG.isDebugEnabled()) {
         LOG.debug("Created Plan for Query Block " + qb.getId());
