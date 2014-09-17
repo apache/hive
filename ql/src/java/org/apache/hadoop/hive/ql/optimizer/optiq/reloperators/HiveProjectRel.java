@@ -24,6 +24,7 @@ import java.util.List;
 import com.google.common.collect.ImmutableList;
 
 import org.apache.hadoop.hive.ql.optimizer.optiq.HiveOptiqUtil;
+import org.apache.hadoop.hive.ql.optimizer.optiq.OptiqSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.optiq.TraitsUtil;
 import org.apache.hadoop.hive.ql.optimizer.optiq.cost.HiveCost;
 import org.eigenbase.rel.ProjectRelBase;
@@ -40,6 +41,7 @@ import org.eigenbase.reltype.RelDataTypeField;
 import org.eigenbase.rex.RexBuilder;
 import org.eigenbase.rex.RexNode;
 import org.eigenbase.rex.RexUtil;
+import org.eigenbase.util.Util;
 import org.eigenbase.util.mapping.Mapping;
 import org.eigenbase.util.mapping.MappingType;
 
@@ -79,8 +81,15 @@ public class HiveProjectRel extends ProjectRelBase implements HiveRel {
    * @param fieldNames
    *          aliases of the expressions
    */
-  public static HiveProjectRel create(RelNode child, List<? extends RexNode> exps, List<String> fieldNames) {
+  public static HiveProjectRel create(RelNode child, List<? extends RexNode> exps,
+    List<String> fieldNames) throws OptiqSemanticException{
     RelOptCluster cluster = child.getCluster();
+
+    // 1 Ensure columnNames are unique - OPTIQ-411
+    if (!Util.isDistinct(fieldNames)) {
+      String msg = "Select list contains multiple expressions with the same name." + fieldNames;
+      throw new OptiqSemanticException(msg);
+    }
     RelDataType rowType = RexUtil.createStructType(cluster.getTypeFactory(), exps, fieldNames);
     return create(cluster, child, exps, rowType, Collections.<RelCollation> emptyList());
   }
@@ -127,8 +136,9 @@ public class HiveProjectRel extends ProjectRelBase implements HiveRel {
    *          Field names; if null, or if a particular entry is null, the name
    *          of the permuted field is used
    * @return relational expression which projects a subset of the input fields
+   * @throws OptiqSemanticException
    */
-  public static RelNode projectMapping(RelNode rel, Mapping mapping, List<String> fieldNames) {
+  public static RelNode projectMapping(RelNode rel, Mapping mapping, List<String> fieldNames) throws OptiqSemanticException {
     assert mapping.getMappingType().isSingleSource();
     assert mapping.getMappingType().isMandatorySource();
 
