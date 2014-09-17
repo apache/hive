@@ -12393,6 +12393,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           tmpDTLst.add(rightFieldDT);
           unionFieldDT = cluster.getTypeFactory().leastRestrictive(tmpDTLst);
 
+          if (null == unionFieldDT) {
+            //TODO : union32.q results in this, but it seems Optiq is too
+            // restrictive here. Follow-up with Optiq.
+            throw new OptiqSemanticException("Can't find common type for: "
+              + tmpDTLst);
+          }
+
           if (!unionFieldDT.equals(leftFieldDT))
             leftNeedsTypeCast = true;
           leftProjs.add(cluster.getRexBuilder().ensureType(unionFieldDT,
