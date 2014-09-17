@@ -67,29 +67,12 @@ public class GraphTran {
 
       while (getChildren(tran).size() > 0) {
         SparkTran childTran = getChildren(tran).get(0);
-        if (childTran instanceof UnionTran) {
-          List<JavaPairRDD<HiveKey, BytesWritable>> unionInputList = unionInputs
-              .get(childTran);
-          if (unionInputList == null) {
-            // process the first union input RDD, cache it in the hash map
-            unionInputList = new LinkedList<JavaPairRDD<HiveKey, BytesWritable>>();
-            unionInputList.add(rdd);
-            unionInputs.put(childTran, unionInputList);
-            break;
-          } else if (unionInputList.size() < this.getParents(childTran).size() - 1) {
-            // not the last input RDD yet, continue caching it in the hash map
-            unionInputList.add(rdd);
-            break;
-          } else if (unionInputList.size() == this.getParents(childTran).size() - 1) { // process
-            // process the last input RDD
-            for (JavaPairRDD<HiveKey, BytesWritable> inputRDD : unionInputList) {
-              ((UnionTran) childTran).setOtherInput(inputRDD);
-              rdd = childTran.transform(rdd);
-            }
-          }
-        } else {
-          rdd = childTran.transform(rdd);
+        if (childTran instanceof UnionTran &&
+            this.getParents(childTran).size() > ((UnionTran)childTran).getOtherInputList().size() + 1) {
+          ((UnionTran) childTran).addOtherInput(rdd);
+          break;
         }
+        rdd = childTran.transform(rdd);
         tran = childTran;
       }
       // if the current transformation is a leaf tran and it has not got processed yet, cache its corresponding RDD 
