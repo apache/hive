@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
 import org.apache.hadoop.hive.ql.exec.FooterBuffer;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.HiveContextAwareRecordReader;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveRecordReader;
@@ -748,7 +749,8 @@ public class FetchOperator implements Serializable {
    */
   private FileStatus[] listStatusUnderPath(FileSystem fs, Path p) throws IOException {
     boolean recursive = HiveConf.getBoolVar(job, HiveConf.ConfVars.HADOOPMAPREDINPUTDIRRECURSIVE);
-    if (!recursive) {
+    // If this is in acid format always read it recursively regardless of what the jobconf says.
+    if (!recursive && !AcidUtils.isAcid(p, job)) {
       return fs.listStatus(p);
     }
     List<FileStatus> results = new ArrayList<FileStatus>();
