@@ -131,6 +131,9 @@ public class RelOptHiveTable extends RelOptAbstractTable {
       }
     }
 
+    if (rowCount == -1)
+      noColsMissingStats.getAndIncrement();
+
     return rowCount;
   }
 

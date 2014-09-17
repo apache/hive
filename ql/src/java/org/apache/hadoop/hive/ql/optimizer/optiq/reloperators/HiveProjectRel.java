@@ -86,7 +86,7 @@ public class HiveProjectRel extends ProjectRelBase implements HiveRel {
     RelOptCluster cluster = child.getCluster();
 
     // 1 Ensure columnNames are unique - OPTIQ-411
-    if (!Util.isDistinct(fieldNames)) {
+    if (fieldNames != null && !Util.isDistinct(fieldNames)) {
       String msg = "Select list contains multiple expressions with the same name." + fieldNames;
       throw new OptiqSemanticException(msg);
     }
