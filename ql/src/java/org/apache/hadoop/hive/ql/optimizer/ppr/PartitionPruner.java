@@ -165,6 +165,13 @@ public class PartitionPruner implements Transform {
     LOG.trace("tabname = " + tab.getTableName());
     LOG.trace("prune Expression = " + prunerExpr == null ? "" : prunerExpr);
 
+    String key = tab.getDbName() + "." + tab.getTableName() + ";";
+
+    if (!tab.isPartitioned()) {
+      // If the table is not partitioned, return empty list.
+      return getAllPartsFromCacheOrServer(tab, key, false, prunedPartitionsMap);
+    }
+
     if ("strict".equalsIgnoreCase(HiveConf.getVar(conf, HiveConf.ConfVars.HIVEMAPREDMODE))
         && !hasColumnExpr(prunerExpr)) {
       // If the "strict" mode is on, we have to provide partition pruner for each table.
@@ -172,11 +179,8 @@ public class PartitionPruner implements Transform {
           .getMsg("for Alias \"" + alias + "\" Table \"" + tab.getTableName() + "\""));
     }
 
-    String key = tab.getDbName() + "." + tab.getTableName() + ";";
-
-    if (!tab.isPartitioned() || prunerExpr == null) {
-      // If the table is not partitioned, return everything.
-      // Or, Non-strict mode, and there is no predicates at all - get everything.
+    if (prunerExpr == null) {
+      // In non-strict mode and there is no predicates at all - get everything.
       return getAllPartsFromCacheOrServer(tab, key, false, prunedPartitionsMap);
     }
 
