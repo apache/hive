@@ -1,0 +1,104 @@
+PREHOOK: query: EXPLAIN
+CREATE TABLE serde_opencsv(
+                          words STRING,
+                          int1 INT,
+                          tinyint1 TINYINT,
+                          smallint1 SMALLINT,
+                          bigint1 BIGINT,
+                          boolean1 BOOLEAN,
+                          float1 FLOAT,
+                          double1 DOUBLE)
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'
+WITH SERDEPROPERTIES(
+  "separatorChar" = ",",
+  "quoteChar"     = "'",
+  "escapeChar"    = "\\"
+) stored as textfile
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: EXPLAIN
+CREATE TABLE serde_opencsv(
+                          words STRING,
+                          int1 INT,
+                          tinyint1 TINYINT,
+                          smallint1 SMALLINT,
+                          bigint1 BIGINT,
+                          boolean1 BOOLEAN,
+                          float1 FLOAT,
+                          double1 DOUBLE)
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'
+WITH SERDEPROPERTIES(
+  "separatorChar" = ",",
+  "quoteChar"     = "'",
+  "escapeChar"    = "\\"
+) stored as textfile
+POSTHOOK: type: CREATETABLE
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+      Create Table Operator:
+        Create Table
+          columns: words string, int1 int, tinyint1 tinyint, smallint1 smallint, bigint1 bigint, boolean1 boolean, float1 float, double1 double
+          input format: org.apache.hadoop.mapred.TextInputFormat
+          output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+          serde name: org.apache.hadoop.hive.serde2.OpenCSVSerde
+          serde properties:
+            escapeChar \
+            quoteChar '
+            separatorChar ,
+          name: default.serde_opencsv
+
+PREHOOK: query: CREATE TABLE serde_opencsv(
+                          words STRING,
+                          int1 INT,
+                          tinyint1 TINYINT,
+                          smallint1 SMALLINT,
+                          bigint1 BIGINT,
+                          boolean1 BOOLEAN,
+                          float1 FLOAT,
+                          double1 DOUBLE)
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'
+WITH SERDEPROPERTIES(
+  "separatorChar" = ",",
+  "quoteChar"     = "'",
+  "escapeChar"    = "\\"
+) stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@serde_opencsv
+POSTHOOK: query: CREATE TABLE serde_opencsv(
+                          words STRING,
+                          int1 INT,
+                          tinyint1 TINYINT,
+                          smallint1 SMALLINT,
+                          bigint1 BIGINT,
+                          boolean1 BOOLEAN,
+                          float1 FLOAT,
+                          double1 DOUBLE)
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'
+WITH SERDEPROPERTIES(
+  "separatorChar" = ",",
+  "quoteChar"     = "'",
+  "escapeChar"    = "\\"
+) stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@serde_opencsv
+PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/opencsv-data.txt" INTO TABLE serde_opencsv
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@serde_opencsv
+POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/opencsv-data.txt" INTO TABLE serde_opencsv
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@serde_opencsv
+PREHOOK: query: SELECT count(*) FROM serde_opencsv
+PREHOOK: type: QUERY
+PREHOOK: Input: default@serde_opencsv
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT count(*) FROM serde_opencsv
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@serde_opencsv
+#### A masked pattern was here ####
+3

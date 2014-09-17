@@ -1,0 +1,106 @@
+PREHOOK: query: create table array_table (array array<string>, index int )
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@array_table
+POSTHOOK: query: create table array_table (array array<string>, index int )
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@array_table
+PREHOOK: query: insert into table array_table select array('first', 'second', 'third'), key%3 from src tablesample (4 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@array_table
+POSTHOOK: query: insert into table array_table select array('first', 'second', 'third'), key%3 from src tablesample (4 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@array_table
+POSTHOOK: Lineage: array_table.array EXPRESSION []
+POSTHOOK: Lineage: array_table.index EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: explain
+select index, array[index] from array_table
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select index, array[index] from array_table
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: array_table
+          Statistics: Num rows: 4 Data size: 80 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: index (type: int), array[index] (type: string)
+            outputColumnNames: _col0, _col1
+            Statistics: Num rows: 4 Data size: 80 Basic stats: COMPLETE Column stats: NONE
+            ListSink
+
+PREHOOK: query: select index, array[index] from array_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@array_table
+#### A masked pattern was here ####
+POSTHOOK: query: select index, array[index] from array_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@array_table
+#### A masked pattern was here ####
+1	second
+2	third
+2	third
+0	first
+PREHOOK: query: create table map_table (data map<string,string>, key int )
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@map_table
+POSTHOOK: query: create table map_table (data map<string,string>, key int )
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@map_table
+PREHOOK: query: insert into table map_table select map('1','one','2','two','3','three'), cast((key%3+1) as int) from src tablesample (4 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@map_table
+POSTHOOK: query: insert into table map_table select map('1','one','2','two','3','three'), cast((key%3+1) as int) from src tablesample (4 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@map_table
+POSTHOOK: Lineage: map_table.data EXPRESSION []
+POSTHOOK: Lineage: map_table.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: explain
+select key, data[key] from map_table
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select key, data[key] from map_table
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: map_table
+          Statistics: Num rows: 4 Data size: 84 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: key (type: int), data[key] (type: string)
+            outputColumnNames: _col0, _col1
+            Statistics: Num rows: 4 Data size: 84 Basic stats: COMPLETE Column stats: NONE
+            ListSink
+
+PREHOOK: query: select key, data[key] from map_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@map_table
+#### A masked pattern was here ####
+POSTHOOK: query: select key, data[key] from map_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@map_table
+#### A masked pattern was here ####
+2	two
+3	three
+3	three
+1	one
