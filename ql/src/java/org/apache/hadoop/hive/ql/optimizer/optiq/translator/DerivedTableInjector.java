@@ -22,6 +22,7 @@ import java.util.List;
 
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.optimizer.optiq.HiveOptiqUtil;
+import org.apache.hadoop.hive.ql.optimizer.optiq.OptiqSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.optiq.reloperators.HiveAggregateRel;
 import org.apache.hadoop.hive.ql.optimizer.optiq.reloperators.HiveProjectRel;
 import org.apache.hadoop.hive.ql.optimizer.optiq.reloperators.HiveSortRel;
@@ -45,7 +46,7 @@ import org.eigenbase.rex.RexNode;
 
 public class DerivedTableInjector {
 
-  public static RelNode convertOpTree(RelNode rel, List<FieldSchema> resultSchema) {
+  public static RelNode convertOpTree(RelNode rel, List<FieldSchema> resultSchema) throws OptiqSemanticException {
     RelNode newTopNode = rel;
 
     if (!(newTopNode instanceof ProjectRelBase) && !(newTopNode instanceof SortRel)) {
@@ -119,7 +120,7 @@ public class DerivedTableInjector {
   }
 
   private static RelNode renameTopLevelSelectInResultSchema(final RelNode rootRel,
-      List<FieldSchema> resultSchema) {
+      List<FieldSchema> resultSchema) throws OptiqSemanticException {
     RelNode tmpRel = rootRel;
     RelNode parentOforiginalProjRel = rootRel;
     HiveProjectRel originalProjRel = null;

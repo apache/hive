@@ -13619,15 +13619,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         columnNames.add(getColumnInternalName(i));
       }
 
-      // 1.1 Ensure columnNames are unique
-      if (!Util.isDistinct(columnNames)) {
-        String msg = String.format(
-            "Select list contains multiple expressions with the same name %s."
-                + columnNames);
-        LOG.debug(msg);
-        throw new OptiqSemanticException(msg);
-      }
-
       // 2. Prepend column names with '_o_'
       /*
        * Hive treats names that start with '_c' as internalNames; so change the
