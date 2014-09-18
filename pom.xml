@@ -152,7 +152,7 @@
     <ST4.version>4.0.4</ST4.version>
     <tez.version>0.5.0</tez.version>
     <super-csv.version>2.2.0</super-csv.version>
-    <spark.version>1.1.0-SNAPSHOT</spark.version>
+    <spark.version>1.2.0-SNAPSHOT</spark.version>
     <scala.binary.version>2.10</scala.binary.version>
     <scala.version>2.10.4</scala.version>
     <tempus-fugit.version>1.1</tempus-fugit.version>
@@ -211,7 +211,7 @@
      </repository>
      <repository>
        <id>spark-snapshot</id>
-       <url>http://ec2-50-18-79-139.us-west-1.compute.amazonaws.com/data/spark_2.10-1.1-SNAPSHOT/</url>
+       <url>http://ec2-50-18-79-139.us-west-1.compute.amazonaws.com/data/spark_2.10-1.2-SNAPSHOT/</url>
        <releases>
          <enabled>false</enabled>
        </releases>
