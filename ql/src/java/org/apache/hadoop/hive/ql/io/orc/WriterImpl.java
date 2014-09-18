@@ -485,6 +485,7 @@ class WriterImpl implements Writer, MemoryManager.Callback {
         modifiers = EnumSet.of(Modifier.FASTEST, Modifier.BINARY);
         break;
       default:
+        LOG.warn("Missing ORC compression modifiers for " + kind);
         modifiers = null;
         break;
       }
