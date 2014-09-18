@@ -622,4 +622,100 @@ void swap(Complex &a, Complex &b) {
   swap(a.__isset, b.__isset);
 }
 
+const char* SetIntString::ascii_fingerprint = "842B41C940D05DFB16183142A90DFC54";
+const uint8_t SetIntString::binary_fingerprint[16] = {0x84,0x2B,0x41,0xC9,0x40,0xD0,0x5D,0xFB,0x16,0x18,0x31,0x42,0xA9,0x0D,0xFC,0x54};
+
+uint32_t SetIntString::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_SET) {
+          {
+            this->sIntString.clear();
+            uint32_t _size64;
+            ::apache::thrift::protocol::TType _etype67;
+            xfer += iprot->readSetBegin(_etype67, _size64);
+            uint32_t _i68;
+            for (_i68 = 0; _i68 < _size64; ++_i68)
+            {
+              IntString _elem69;
+              xfer += _elem69.read(iprot);
+              this->sIntString.insert(_elem69);
+            }
+            xfer += iprot->readSetEnd();
+          }
+          this->__isset.sIntString = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->aString);
+          this->__isset.aString = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t SetIntString::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  xfer += oprot->writeStructBegin("SetIntString");
+
+  xfer += oprot->writeFieldBegin("sIntString", ::apache::thrift::protocol::T_SET, 1);
+  {
+    xfer += oprot->writeSetBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->sIntString.size()));
+    std::set<IntString> ::const_iterator _iter70;
+    for (_iter70 = this->sIntString.begin(); _iter70 != this->sIntString.end(); ++_iter70)
+    {
+      xfer += (*_iter70).write(oprot);
+    }
+    xfer += oprot->writeSetEnd();
+  }
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("aString", ::apache::thrift::protocol::T_STRING, 2);
+  xfer += oprot->writeString(this->aString);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(SetIntString &a, SetIntString &b) {
+  using ::std::swap;
+  swap(a.sIntString, b.sIntString);
+  swap(a.aString, b.aString);
+  swap(a.__isset, b.__isset);
+}
+
 
