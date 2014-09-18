@@ -191,6 +191,7 @@ public class RelOptHiveTable extends RelOptAbstractTable {
           partColNamesThatRqrStats.add(tmp.getInternalName());
           partColIndxsThatRqrStats.add(pi);
         } else {
+          noColsMissingStats.getAndIncrement();
           String logMsg = "Unable to find Column Index: " + pi + ", in "
               + hiveTblMetadata.getCompleteName();
           LOG.error(logMsg);
