@@ -25,20 +25,26 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import junit.framework.TestCase;
-
 import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.session.SessionState;
+
 import org.apache.hive.hcatalog.common.HCatUtil;
 import org.apache.hive.hcatalog.data.Pair;
+
 import org.apache.pig.ExecType;
 import org.apache.pig.PigServer;
 
-public class TestHCatStorerMulti extends TestCase {
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+
+public class TestHCatStorerMulti {
   public static final String TEST_DATA_DIR = HCatUtil.makePathASafeFileName(
           System.getProperty("user.dir") + "/build/test/data/" +
                   TestHCatStorerMulti.class.getCanonicalName() + "-" + System.currentTimeMillis());
@@ -77,8 +83,8 @@ public class TestHCatStorerMulti extends TestCase {
     createTable(tablename, schema, null);
   }
 
-  @Override
-  protected void setUp() throws Exception {
+  @Before
+  public void setUp() throws Exception {
     if (driver == null) {
       HiveConf hiveConf = new HiveConf(this.getClass());
       hiveConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
@@ -92,14 +98,13 @@ public class TestHCatStorerMulti extends TestCase {
     cleanup();
   }
 
-  @Override
-  protected void tearDown() throws Exception {
+  @After
+  public void tearDown() throws Exception {
     cleanup();
   }
 
+  @Test
   public void testStoreBasicTable() throws Exception {
-
-
     createTable(BASIC_TABLE, "a int, b string");
 
     populateBasicFile();
@@ -117,6 +122,7 @@ public class TestHCatStorerMulti extends TestCase {
     assertEquals(basicInputData.size(), unpartitionedTableValuesReadFromHiveDriver.size());
   }
 
+  @Test
   public void testStorePartitionedTable() throws Exception {
     createTable(PARTITIONED_TABLE, "a int, b string", "bkt string");
 
@@ -139,9 +145,8 @@ public class TestHCatStorerMulti extends TestCase {
     assertEquals(basicInputData.size(), partitionedTableValuesReadFromHiveDriver.size());
   }
 
+  @Test
   public void testStoreTableMulti() throws Exception {
-
-
     createTable(BASIC_TABLE, "a int, b string");
     createTable(PARTITIONED_TABLE, "a int, b string", "bkt string");
 

@@ -20,14 +20,18 @@
 package org.apache.hive.hcatalog.pig;
 
 import com.google.common.collect.Lists;
+
 import junit.framework.Assert;
+
 import org.apache.hive.hcatalog.common.HCatConstants;
 import org.apache.hive.hcatalog.data.schema.HCatFieldSchema;
 import org.apache.hive.hcatalog.data.schema.HCatSchema;
+
 import org.apache.pig.ResourceSchema;
 import org.apache.pig.ResourceSchema.ResourceFieldSchema;
 import org.apache.pig.data.DataType;
 import org.apache.pig.impl.util.UDFContext;
+
 import org.junit.Test;
 
 public class TestPigHCatUtil {

@@ -1,11 +1,3 @@
-package org.apache.hive.hcatalog.pig;
-
-import org.apache.hadoop.hive.ql.CommandNeedRetryException;
-import org.junit.Ignore;
-import org.junit.Test;
-
-import java.io.IOException;
-
 /**
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -24,8 +16,13 @@ import java.io.IOException;
  * specific language governing permissions and limitations
  * under the License.
  */
-public class TestOrcHCatPigStorer extends TestHCatStorer {
-  @Override String getStorageFormat() {
-    return "ORC";
+package org.apache.hive.hcatalog.pig;
+
+public class TestOrcHCatStorerMulti extends TestHCatStorerMulti {
+
+  @Override
+  protected String storageFormat() {
+    return "orc";
   }
 }
+
