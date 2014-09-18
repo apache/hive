@@ -23,9 +23,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 
-import junit.framework.TestCase;
-
 import org.apache.commons.io.FileUtils;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.hive.cli.CliSessionState;
@@ -42,6 +41,7 @@ import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.RecordWriter;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.TaskAttemptID;
+
 import org.apache.hive.hcatalog.HcatTestUtils;
 import org.apache.hive.hcatalog.common.HCatConstants;
 import org.apache.hive.hcatalog.common.HCatContext;
@@ -51,12 +51,16 @@ import org.apache.hive.hcatalog.mapreduce.HCatInputFormat;
 import org.apache.hive.hcatalog.mapreduce.HCatOutputFormat;
 import org.apache.hive.hcatalog.mapreduce.OutputJobInfo;
 import org.apache.hive.hcatalog.mapreduce.HCatMapRedUtil;
+
 import org.apache.pig.ExecType;
 import org.apache.pig.PigServer;
 import org.apache.pig.data.Tuple;
 
-public class TestE2EScenarios extends TestCase {
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
+public class TestE2EScenarios {
   private static final String TEST_DATA_DIR = System.getProperty("java.io.tmpdir") + File.separator
       + TestHCatLoader.class.getCanonicalName() + "-" + System.currentTimeMillis();
   private static final String TEST_WAREHOUSE_DIR = TEST_DATA_DIR + "/warehouse";
@@ -69,9 +73,8 @@ public class TestE2EScenarios extends TestCase {
     return "orc";
   }
 
-  @Override
-  protected void setUp() throws Exception {
-
+  @Before
+  public void setUp() throws Exception {
     File f = new File(TEST_WAREHOUSE_DIR);
     if (f.exists()) {
       FileUtil.fullyDelete(f);
@@ -90,8 +93,8 @@ public class TestE2EScenarios extends TestCase {
 
   }
 
-  @Override
-  protected void tearDown() throws Exception {
+  @After
+  public void tearDown() throws Exception {
     try {
       dropTable("inpy");
       dropTable("rc5318");
@@ -146,16 +149,13 @@ public class TestE2EScenarios extends TestCase {
     System.err.println("===");
   }
 
-
   private void copyTable(String in, String out) throws IOException, InterruptedException {
     Job ijob = new Job();
     Job ojob = new Job();
     HCatInputFormat inpy = new HCatInputFormat();
     inpy.setInput(ijob , null, in);
     HCatOutputFormat oupy = new HCatOutputFormat();
-    oupy.setOutput(ojob,
-      OutputJobInfo.create(null, out, new HashMap<String,String>()
-      ));
+    oupy.setOutput(ojob, OutputJobInfo.create(null, out, new HashMap<String,String>()));
 
     // Test HCatContext
 
@@ -207,6 +207,7 @@ public class TestE2EScenarios extends TestCase {
   }
 
 
+  @Test
   public void testReadOrcAndRCFromPig() throws Exception {
     String tableSchema = "ti tinyint, si smallint,i int, bi bigint, f float, d double, b boolean";
 
@@ -224,15 +225,14 @@ public class TestE2EScenarios extends TestCase {
     driverRun("LOAD DATA LOCAL INPATH '"+TEXTFILE_LOCN+"' OVERWRITE INTO TABLE inpy");
 
     // write it out from hive to an rcfile table, and to an orc table
-//        driverRun("insert overwrite table rc5318 select * from inpy");
+    //driverRun("insert overwrite table rc5318 select * from inpy");
     copyTable("inpy","rc5318");
-//        driverRun("insert overwrite table orc5318 select * from inpy");
+    //driverRun("insert overwrite table orc5318 select * from inpy");
     copyTable("inpy","orc5318");
 
     pigDump("inpy");
     pigDump("rc5318");
     pigDump("orc5318");
-
   }
 
 }
