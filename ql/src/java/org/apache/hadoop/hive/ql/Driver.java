@@ -503,9 +503,11 @@ public class Driver implements CommandProcessor {
       // get mapping of tables to columns used
       ColumnAccessInfo colAccessInfo = sem.getColumnAccessInfo();
       // colAccessInfo is set only in case of SemanticAnalyzer
-      Map<String, List<String>> tab2Cols = colAccessInfo != null ? colAccessInfo
+      Map<String, List<String>> selectTab2Cols = colAccessInfo != null ? colAccessInfo
           .getTableToColumnAccessMap() : null;
-      doAuthorizationV2(ss, op, inputs, outputs, command, tab2Cols);
+      Map<String, List<String>> updateTab2Cols = sem.getUpdateColumnAccessInfo() != null ?
+          sem.getUpdateColumnAccessInfo().getTableToColumnAccessMap() : null;
+      doAuthorizationV2(ss, op, inputs, outputs, command, selectTab2Cols, updateTab2Cols);
      return;
     }
     if (op == null) {
@@ -696,7 +698,13 @@ public class Driver implements CommandProcessor {
   }
 
   private static void doAuthorizationV2(SessionState ss, HiveOperation op, HashSet<ReadEntity> inputs,
-      HashSet<WriteEntity> outputs, String command, Map<String, List<String>> tab2cols) throws HiveException {
+      HashSet<WriteEntity> outputs, String command, Map<String, List<String>> tab2cols,
+      Map<String, List<String>> updateTab2Cols) throws HiveException {
+
+    /* comment for reviewers -> updateTab2Cols needed to be separate from tab2cols because if I
+    pass tab2cols to getHivePrivObjects for the output case it will trip up insert/selects,
+    since the insert will get passed the columns from the select.
+     */
 
     HiveAuthzContext.Builder authzContextBuilder = new HiveAuthzContext.Builder();
     authzContextBuilder.setUserIpAddress(ss.getUserIpAddress());
@@ -704,7 +712,7 @@ public class Driver implements CommandProcessor {
 
     HiveOperationType hiveOpType = getHiveOperationType(op);
     List<HivePrivilegeObject> inputsHObjs = getHivePrivObjects(inputs, tab2cols);
-    List<HivePrivilegeObject> outputHObjs = getHivePrivObjects(outputs, null);
+    List<HivePrivilegeObject> outputHObjs = getHivePrivObjects(outputs, updateTab2Cols);
 
     ss.getAuthorizerV2().checkPrivileges(hiveOpType, inputsHObjs, outputHObjs, authzContextBuilder.build());
   }
@@ -730,12 +738,6 @@ public class Driver implements CommandProcessor {
         //do not authorize temporary uris
         continue;
       }
-      if (privObject instanceof ReadEntity && ((ReadEntity)privObject).isUpdateOrDelete()) {
-        // Skip this one, as we don't want to check select privileges for the table we're reading
-        // for an update or delete.
-        continue;
-      }
-
       //support for authorization on partitions needs to be added
       String dbname = null;
       String objName = null;

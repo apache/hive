@@ -118,6 +118,7 @@ public class Operation2Privilege {
   private static SQLPrivTypeGrant[] ADMIN_PRIV_AR = arr(SQLPrivTypeGrant.ADMIN_PRIV);
   private static SQLPrivTypeGrant[] INS_NOGRANT_AR = arr(SQLPrivTypeGrant.INSERT_NOGRANT);
   private static SQLPrivTypeGrant[] DEL_NOGRANT_AR = arr(SQLPrivTypeGrant.DELETE_NOGRANT);
+  private static SQLPrivTypeGrant[] UPD_NOGRANT_AR = arr(SQLPrivTypeGrant.UPDATE_NOGRANT);
   private static SQLPrivTypeGrant[] OWNER_INS_SEL_DEL_NOGRANT_AR =
       arr(SQLPrivTypeGrant.OWNER_PRIV,
           SQLPrivTypeGrant.INSERT_NOGRANT,
@@ -287,8 +288,14 @@ public class Operation2Privilege {
     op2Priv.put(HiveOperationType.QUERY,
         arr(
             new PrivRequirement(SEL_NOGRANT_AR, IOType.INPUT),
-            new PrivRequirement(INS_NOGRANT_AR, IOType.OUTPUT, null),
-            new PrivRequirement(DEL_NOGRANT_AR, IOType.OUTPUT, HivePrivObjectActionType.INSERT_OVERWRITE)
+            new PrivRequirement(INS_NOGRANT_AR, IOType.OUTPUT, HivePrivObjectActionType.INSERT),
+            new PrivRequirement(
+                arr(SQLPrivTypeGrant.INSERT_NOGRANT, SQLPrivTypeGrant.DELETE_NOGRANT),
+                IOType.OUTPUT,
+                HivePrivObjectActionType.INSERT_OVERWRITE),
+            new PrivRequirement(DEL_NOGRANT_AR, IOType.OUTPUT, HivePrivObjectActionType.DELETE),
+            new PrivRequirement(UPD_NOGRANT_AR, IOType.OUTPUT, HivePrivObjectActionType.UPDATE),
+            new PrivRequirement(INS_NOGRANT_AR, IOType.OUTPUT, HivePrivObjectActionType.OTHER)
             )
         );
 
