@@ -32,6 +32,7 @@ import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.shims.HadoopShims.MiniDFSShim;
 import org.apache.hadoop.hive.shims.HadoopShims.MiniMrShim;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -50,6 +51,7 @@ public class MiniHS2 extends AbstractHiveService {
   public static final String HS2_HTTP_MODE = "http";
   private static final String driverName = "org.apache.hive.jdbc.HiveDriver";
   private static final FsPermission FULL_PERM = new FsPermission((short)00777);
+  private static final FsPermission WRITE_ALL_PERM = new FsPermission((short)00733);
   private HiveServer2 hiveServer2 = null;
   private final File baseDir;
   private final Path baseDfsDir;
@@ -200,9 +202,8 @@ public class MiniHS2 extends AbstractHiveService {
     hiveConf.setIntVar(ConfVars.HIVE_SERVER2_THRIFT_HTTP_PORT, getHttpPort());
 
     Path scratchDir = new Path(baseDfsDir, "scratch");
-
-    // Create scratchdir with 777, so that user impersonation has no issues.
-    FileSystem.mkdirs(fs, scratchDir, FULL_PERM);
+    // Create root scratchdir with write all, so that user impersonation has no issues.
+    Utilities.createDirsWithPermission(hiveConf, scratchDir, WRITE_ALL_PERM, true);
     System.setProperty(HiveConf.ConfVars.SCRATCHDIR.varname, scratchDir.toString());
     hiveConf.setVar(ConfVars.SCRATCHDIR, scratchDir.toString());
 
