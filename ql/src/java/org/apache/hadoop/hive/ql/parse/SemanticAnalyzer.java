@@ -47,7 +47,6 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
-import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.StatsSetupConst.StatDB;
@@ -5866,7 +5865,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if (!isNonNativeTable) {
         AcidUtils.Operation acidOp = getAcidType(table_desc.getOutputFileFormatClass());
         if (acidOp != AcidUtils.Operation.NOT_ACID) {
-          checkIfAcidAndOverwriting(qb, table_desc);
+          checkAcidConstraints(qb, table_desc);
         }
         ltd = new LoadTableDesc(queryTmpdir,table_desc, dpCtx, acidOp);
         ltd.setReplace(!qb.getParseInfo().isInsertIntoTable(dest_tab.getDbName(),
@@ -5973,7 +5972,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           dest_part.isStoredAsSubDirectories(), conf);
       AcidUtils.Operation acidOp = getAcidType(table_desc.getOutputFileFormatClass());
       if (acidOp != AcidUtils.Operation.NOT_ACID) {
-        checkIfAcidAndOverwriting(qb, table_desc);
+        checkAcidConstraints(qb, table_desc);
       }
       ltd = new LoadTableDesc(queryTmpdir, table_desc, dest_part.getSpec(), acidOp);
       ltd.setReplace(!qb.getParseInfo().isInsertIntoTable(dest_tab.getDbName(),
@@ -6233,15 +6232,19 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return output;
   }
 
-  // Check if we are overwriting any tables.  If so, throw an exception as that is not allowed
-  // when using an Acid compliant txn manager and operating on an acid table.
-  private void checkIfAcidAndOverwriting(QB qb, TableDesc tableDesc) throws SemanticException {
+  // Check constraints on acid tables.  This includes
+  // * no insert overwrites
+  // * no use of vectorization
+  private void checkAcidConstraints(QB qb, TableDesc tableDesc) throws SemanticException {
     String tableName = tableDesc.getTableName();
     if (!qb.getParseInfo().isInsertIntoTable(tableName)) {
       LOG.debug("Couldn't find table " + tableName + " in insertIntoTable");
       throw new SemanticException(ErrorMsg.NO_INSERT_OVERWRITE_WITH_ACID.getMsg());
     }
-
+    if (conf.getBoolVar(ConfVars.HIVE_VECTORIZATION_ENABLED)) {
+      LOG.info("Turning off vectorization for acid write operation");
+      conf.setBoolVar(ConfVars.HIVE_VECTORIZATION_ENABLED, false);
+    }
   }
 
   /**
