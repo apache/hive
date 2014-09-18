@@ -77,6 +77,7 @@ import com.google.common.collect.ComparisonChain;
 class RecordReaderImpl implements RecordReader {
 
   private static final Log LOG = LogFactory.getLog(RecordReaderImpl.class);
+  private static final boolean isLogTraceEnabled = LOG.isTraceEnabled();
 
   private final FSDataInputStream file;
   private final long firstRow;
@@ -3133,9 +3134,9 @@ class RecordReaderImpl implements RecordReader {
     // find the next row
     rowInStripe += 1;
     advanceToNextRow(rowInStripe + rowBaseInStripe);
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("row from " + reader.path);
-      LOG.debug("orc row = " + result);
+    if (isLogTraceEnabled) {
+      LOG.trace("row from " + reader.path);
+      LOG.trace("orc row = " + result);
     }
     return result;
   }
