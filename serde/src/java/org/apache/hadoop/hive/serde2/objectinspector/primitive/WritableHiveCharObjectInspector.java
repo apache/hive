@@ -91,6 +91,9 @@ public class WritableHiveCharObjectInspector extends AbstractPrimitiveWritableOb
 
   @Override
   public Object set(Object o, HiveChar value) {
+    if (value == null) {
+      return null;
+    }
     HiveCharWritable writable = (HiveCharWritable) o;
     writable.set(value, getMaxLength());
     return o;
@@ -98,6 +101,9 @@ public class WritableHiveCharObjectInspector extends AbstractPrimitiveWritableOb
 
   @Override
   public Object set(Object o, String value) {
+    if (value == null) {
+      return null;
+    }
     HiveCharWritable writable = (HiveCharWritable) o;
     writable.set(value, getMaxLength());
     return o;
