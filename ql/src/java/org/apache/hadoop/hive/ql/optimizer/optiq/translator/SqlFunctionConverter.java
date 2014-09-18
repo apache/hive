@@ -21,6 +21,9 @@ import java.lang.annotation.Annotation;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
@@ -61,26 +64,36 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
 public class SqlFunctionConverter {
+  private static final Log LOG = LogFactory.getLog(SqlFunctionConverter.class);
+
   static final Map<String, SqlOperator>    hiveToOptiq;
   static final Map<SqlOperator, HiveToken> optiqToHiveToken;
   static final Map<SqlOperator, String>    reverseOperatorMap;
 
   static {
-    Builder builder = new Builder();
+    StaticBlockBuilder builder = new StaticBlockBuilder();
     hiveToOptiq = ImmutableMap.copyOf(builder.hiveToOptiq);
     optiqToHiveToken = ImmutableMap.copyOf(builder.optiqToHiveToken);
     reverseOperatorMap = ImmutableMap.copyOf(builder.reverseOperatorMap);
   }
 
-  public static SqlOperator getOptiqOperator(GenericUDF hiveUDF,
+  public static SqlOperator getOptiqOperator(String funcTextName, GenericUDF hiveUDF,
       ImmutableList<RelDataType> optiqArgTypes, RelDataType retType) throws OptiqSemanticException {
     // handle overloaded methods first
     if (hiveUDF instanceof GenericUDFOPNegative) {
       return SqlStdOperatorTable.UNARY_MINUS;
     } else if (hiveUDF instanceof GenericUDFOPPositive) {
       return SqlStdOperatorTable.UNARY_PLUS;
-    } // do genric lookup
-    return getOptiqFn(getName(hiveUDF), optiqArgTypes, retType);
+    } // do generic lookup
+    String name = null;
+    if (StringUtils.isEmpty(funcTextName)) {
+      name = getName(hiveUDF); // this should probably never happen, see getName comment
+      LOG.warn("The function text was empty, name from annotation is " + name);
+    } else {
+      // We could just do toLowerCase here and let SA qualify it, but let's be proper...
+      name = FunctionRegistry.getNormalizedFunctionName(funcTextName);
+    }
+    return getOptiqFn(name, optiqArgTypes, retType);
   }
 
   public static GenericUDF getHiveUDF(SqlOperator op, RelDataType dt) {
@@ -197,6 +210,9 @@ public class SqlFunctionConverter {
 
   }
 
+  // TODO: this is not valid. Function names for built-in UDFs are specified in FunctionRegistry,
+  //       and only happen to match annotations. For user UDFs, the name is what user specifies at
+  //       creation time (annotation can be absent, different, or duplicate some other function).
   private static String getName(GenericUDF hiveUDF) {
     String udfName = null;
     if (hiveUDF instanceof GenericUDFBridge) {
@@ -228,12 +244,13 @@ public class SqlFunctionConverter {
     return udfName;
   }
 
-  private static class Builder {
+  /** This class is used to build immutable hashmaps in the static block above. */
+  private static class StaticBlockBuilder {
     final Map<String, SqlOperator>    hiveToOptiq        = Maps.newHashMap();
     final Map<SqlOperator, HiveToken> optiqToHiveToken   = Maps.newHashMap();
     final Map<SqlOperator, String>    reverseOperatorMap = Maps.newHashMap();
 
-    Builder() {
+    StaticBlockBuilder() {
       registerFunction("+", SqlStdOperatorTable.PLUS, hToken(HiveParser.PLUS, "+"));
       registerFunction("-", SqlStdOperatorTable.MINUS, hToken(HiveParser.MINUS, "-"));
       registerFunction("*", SqlStdOperatorTable.MULTIPLY, hToken(HiveParser.STAR, "*"));
