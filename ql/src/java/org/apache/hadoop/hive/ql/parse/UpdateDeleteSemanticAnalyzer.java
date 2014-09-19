@@ -129,7 +129,9 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
     try {
       mTable = db.getTable(tableName[0], tableName[1]);
     } catch (HiveException e) {
-      throw new SemanticException(ErrorMsg.UPDATEDELETE_PARSE_ERROR.getMsg(), e);
+      LOG.error("Failed to find table " + getDotName(tableName) + " got exception " +
+          e.getMessage());
+      throw new SemanticException(ErrorMsg.INVALID_TABLE, getDotName(tableName));
     }
     List<FieldSchema> partCols = mTable.getPartCols();
 
