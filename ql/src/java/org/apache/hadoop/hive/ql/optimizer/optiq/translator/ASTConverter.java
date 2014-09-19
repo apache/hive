@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.optiq.translator;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -56,7 +57,6 @@ import org.eigenbase.rex.RexWindow;
 import org.eigenbase.rex.RexWindowBound;
 import org.eigenbase.sql.SqlKind;
 import org.eigenbase.sql.SqlOperator;
-import org.eigenbase.sql.type.BasicSqlType;
 import org.eigenbase.sql.type.SqlTypeName;
 
 import com.google.common.collect.Iterables;
@@ -79,7 +79,8 @@ public class ASTConverter {
     hiveAST = new HiveAST();
   }
 
-  public static ASTNode convert(final RelNode relNode, List<FieldSchema> resultSchema) throws OptiqSemanticException {
+  public static ASTNode convert(final RelNode relNode, List<FieldSchema> resultSchema)
+      throws OptiqSemanticException {
     SortRel sortrel = null;
     RelNode root = DerivedTableInjector.convertOpTree(relNode, resultSchema);
 
@@ -121,7 +122,8 @@ public class ASTConverter {
     if (groupBy != null) {
       ASTBuilder b = ASTBuilder.construct(HiveParser.TOK_GROUPBY, "TOK_GROUPBY");
       for (int i : BitSets.toIter(groupBy.getGroupSet())) {
-        RexInputRef iRef = new RexInputRef(i, new BasicSqlType(SqlTypeName.ANY));
+        RexInputRef iRef = new RexInputRef(i, groupBy.getCluster().getTypeFactory()
+            .createSqlType(SqlTypeName.ANY));
         b.add(iRef.accept(new RexVisitor(schema)));
       }
 
@@ -142,12 +144,19 @@ public class ASTConverter {
      * 6. Project
      */
     ASTBuilder b = ASTBuilder.construct(HiveParser.TOK_SELECT, "TOK_SELECT");
-    int i = 0;
 
-    for (RexNode r : select.getChildExps()) {
-      ASTNode selectExpr = ASTBuilder.selectExpr(r.accept(new RexVisitor(schema)), select
-          .getRowType().getFieldNames().get(i++));
+    if (select.getChildExps().isEmpty()) {
+      RexLiteral r = select.getCluster().getRexBuilder().makeExactLiteral(new BigDecimal(1));
+      ASTNode selectExpr = ASTBuilder.selectExpr(ASTBuilder.literal(r), "1");
       b.add(selectExpr);
+    } else {
+      int i = 0;
+
+      for (RexNode r : select.getChildExps()) {
+        ASTNode selectExpr = ASTBuilder.selectExpr(r.accept(new RexVisitor(schema)), select
+            .getRowType().getFieldNames().get(i++));
+        b.add(selectExpr);
+      }
     }
     hiveAST.select = b.node();
 
@@ -292,9 +301,8 @@ public class ASTConverter {
 
     @Override
     public ASTNode visitFieldAccess(RexFieldAccess fieldAccess) {
-      return ASTBuilder
-      .construct(HiveParser.DOT, ".")
-      .add(super.visitFieldAccess(fieldAccess)).add(HiveParser.Identifier, fieldAccess.getField().getName()).node();
+      return ASTBuilder.construct(HiveParser.DOT, ".").add(super.visitFieldAccess(fieldAccess))
+          .add(HiveParser.Identifier, fieldAccess.getField().getName()).node();
     }
 
     @Override
@@ -509,7 +517,8 @@ public class ASTConverter {
             "TOK_FUNCTIONSTAR") : ASTBuilder.construct(HiveParser.TOK_FUNCTION, "TOK_FUNCTION");
         b.add(HiveParser.Identifier, agg.getAggregation().getName());
         for (int i : agg.getArgList()) {
-          RexInputRef iRef = new RexInputRef(i, new BasicSqlType(SqlTypeName.ANY));
+          RexInputRef iRef = new RexInputRef(i, gBy.getCluster().getTypeFactory()
+              .createSqlType(SqlTypeName.ANY));
           b.add(iRef.accept(new RexVisitor(src)));
         }
         add(new ColumnInfo(null, b.node()));
@@ -521,7 +530,7 @@ public class ASTConverter {
      * 1. ProjectRel will always be child of SortRel.<br>
      * 2. In Optiq every projection in ProjectRelBase is uniquely named
      * (unambigous) without using table qualifier (table name).<br>
-     *
+     * 
      * @param order
      *          Hive Sort Rel Node
      * @return Schema

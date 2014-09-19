@@ -115,6 +115,7 @@ import org.apache.hadoop.hive.ql.optimizer.Optimizer;
 import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcContext;
 import org.apache.hadoop.hive.ql.optimizer.optiq.HiveDefaultRelMetadataProvider;
 import org.apache.hadoop.hive.ql.optimizer.optiq.HiveOptiqUtil;
+import org.apache.hadoop.hive.ql.optimizer.optiq.HiveTypeSystemImpl;
 import org.apache.hadoop.hive.ql.optimizer.optiq.OptiqSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.optiq.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.optiq.TraitsUtil;
@@ -12177,7 +12178,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       this.partitionCache = partitionCache;
 
       try {
-        optimizedOptiqPlan = Frameworks.withPlanner(this);
+        optimizedOptiqPlan = Frameworks.withPlanner(this,
+            Frameworks.newConfigBuilder().typeSystem(new HiveTypeSystemImpl()).build());
       } catch (Exception e) {
         if (semanticException != null)
           throw semanticException;
