@@ -18,17 +18,24 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import junit.framework.TestCase;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.io.IOContext;
 import org.apache.hadoop.hive.ql.parse.TypeCheckProcFactory;
 import org.apache.hadoop.hive.ql.plan.CollectDesc;
@@ -42,6 +49,10 @@ import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.ScriptDesc;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.hadoop.hive.ql.processors.CommandProcessor;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorFactory;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
@@ -49,8 +60,14 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.RecordReader;
+import org.apache.hadoop.mapred.Reporter;
+import org.apache.hadoop.mapred.TextInputFormat;
+import org.junit.Test;
 
 /**
  * TestOperators.
@@ -274,7 +291,7 @@ public class TestOperators extends TestCase {
           cd, sop);
 
       op.initialize(new JobConf(TestOperators.class),
-          new ObjectInspector[] {r[0].oi});
+          new ObjectInspector[]{r[0].oi});
 
       // evaluate on row
       for (int i = 0; i < 5; i++) {
@@ -378,5 +395,83 @@ public class TestOperators extends TestCase {
       e.printStackTrace();
       throw (e);
     }
+  }
+
+  @Test
+  public void testFetchOperatorContextQuoting() throws Exception {
+    JobConf conf = new JobConf();
+    ArrayList<Path> list = new ArrayList<Path>();
+    list.add(new Path("hdfs://nn.example.com/fi\tl\\e\t1"));
+    list.add(new Path("hdfs://nn.example.com/file\t2"));
+    list.add(new Path("file:/file3"));
+    FetchOperator.setFetchOperatorContext(conf, list);
+    String[] parts =
+        conf.get(FetchOperator.FETCH_OPERATOR_DIRECTORY_LIST).split("\t");
+    assertEquals(3, parts.length);
+    assertEquals("hdfs://nn.example.com/fi\\tl\\\\e\\t1", parts[0]);
+    assertEquals("hdfs://nn.example.com/file\\t2", parts[1]);
+    assertEquals("file:/file3", parts[2]);
+  }
+
+  /**
+   * A custom input format that checks to make sure that the fetch operator
+   * sets the required attributes.
+   */
+  public static class CustomInFmt extends TextInputFormat {
+
+    @Override
+    public InputSplit[] getSplits(JobConf job, int splits) throws IOException {
+
+      // ensure that the table properties were copied
+      assertEquals("val1", job.get("myprop1"));
+      assertEquals("val2", job.get("myprop2"));
+
+      // ensure that both of the partitions are in the complete list.
+      String[] dirs = job.get("hive.complete.dir.list").split("\t");
+      assertEquals(2, dirs.length);
+      assertEquals(true, dirs[0].endsWith("/state=CA"));
+      assertEquals(true, dirs[1].endsWith("/state=OR"));
+      return super.getSplits(job, splits);
+    }
+  }
+
+  @Test
+  public void testFetchOperatorContext() throws Exception {
+    HiveConf conf = new HiveConf();
+    conf.set("hive.support.concurrency", "false");
+    SessionState.start(conf);
+    String cmd = "create table fetchOp (id int, name string) " +
+        "partitioned by (state string) " +
+        "row format delimited fields terminated by '|' " +
+        "stored as " +
+        "inputformat 'org.apache.hadoop.hive.ql.exec.TestOperators$CustomInFmt' " +
+        "outputformat 'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat' " +
+        "tblproperties ('myprop1'='val1', 'myprop2' = 'val2')";
+    Driver driver = new Driver();
+    driver.init();
+    CommandProcessorResponse response = driver.run(cmd);
+    assertEquals(0, response.getResponseCode());
+    List<Object> result = new ArrayList<Object>();
+
+    cmd = "load data local inpath '../data/files/employee.dat' " +
+        "overwrite into table fetchOp partition (state='CA')";
+    driver.init();
+    response = driver.run(cmd);
+    assertEquals(0, response.getResponseCode());
+
+    cmd = "load data local inpath '../data/files/employee2.dat' " +
+        "overwrite into table fetchOp partition (state='OR')";
+    driver.init();
+    response = driver.run(cmd);
+    assertEquals(0, response.getResponseCode());
+
+    cmd = "select * from fetchOp";
+    driver.init();
+    driver.setMaxRows(500);
+    response = driver.run(cmd);
+    assertEquals(0, response.getResponseCode());
+    driver.getResults(result);
+    assertEquals(20, result.size());
+    driver.close();
   }
 }

@@ -27,17 +27,23 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzPluginEx
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzSessionContext;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveMetastoreClientFactory;
 
+/**
+ * Authorization class that can be used from hive cli, so that configuration
+ * in cli mode is set appropriately for SQL standards authorization.
+ * This ensures that new tables and views have proper privileges for the table/view owner.
+ *
+ * Uses DummyHiveAuthorizationValidator for no-op authorization checks. Authorization using
+ * sql standards based authorization mode can't be done securely with hive-cli, as hive-cli
+ * users have direct access to the file system.
+ */
 @Private
-public class SQLStdHiveAuthorizerFactoryForTest implements HiveAuthorizerFactory{
+public class SQLStdConfOnlyAuthorizerFactory implements HiveAuthorizerFactory {
   @Override
   public HiveAuthorizer createHiveAuthorizer(HiveMetastoreClientFactory metastoreClientFactory,
       HiveConf conf, HiveAuthenticationProvider authenticator, HiveAuthzSessionContext ctx) throws HiveAuthzPluginException {
+
     SQLStdHiveAccessControllerWrapper privilegeManager =
-        new SQLStdHiveAccessControllerForTest(metastoreClientFactory, conf, authenticator, ctx);
-    return new HiveAuthorizerImpl(
-        privilegeManager,
-        new SQLStdHiveAuthorizationValidatorForTest(metastoreClientFactory, conf, authenticator,
-            privilegeManager, ctx)
-        );
+        new SQLStdHiveAccessControllerWrapper(metastoreClientFactory, conf, authenticator, ctx);
+    return new HiveAuthorizerImpl(privilegeManager, new DummyHiveAuthorizationValidator());
   }
 }

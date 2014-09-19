@@ -37,6 +37,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import javax.security.auth.Subject;
 import javax.security.auth.login.LoginException;
@@ -649,6 +650,17 @@ public class Hadoop20Shims implements HadoopShims {
   public BlockLocation[] getLocations(FileSystem fs,
                                       FileStatus status) throws IOException {
     return fs.getFileBlockLocations(status, 0, status.getLen());
+  }
+
+  @Override
+  public TreeMap<Long, BlockLocation> getLocationsWithOffset(FileSystem fs,
+                                                             FileStatus status) throws IOException {
+    TreeMap<Long, BlockLocation> offsetBlockMap = new TreeMap<Long, BlockLocation>();
+    BlockLocation[] locations = getLocations(fs, status);
+    for (BlockLocation location : locations) {
+      offsetBlockMap.put(location.getOffset(), location);
+    }
+    return offsetBlockMap;
   }
 
   @Override

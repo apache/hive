@@ -25,6 +25,8 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.security.HadoopDefaultAuthenticator;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.DisallowTransformHook;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizer;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizerFactory;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzPluginException;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzSessionContext;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzSessionContext.Builder;
@@ -77,8 +79,9 @@ public class TestSQLStdHiveAccessControllerCLI {
     HiveConf processedConf = new HiveConf();
     processedConf.setBoolVar(ConfVars.HIVE_AUTHORIZATION_ENABLED, true);
     try {
-      SQLStdHiveAccessController accessController = new SQLStdHiveAccessController(null,
-          processedConf, new HadoopDefaultAuthenticator(), getCLISessionCtx());
+      HiveAuthorizerFactory authorizerFactory = new SQLStdHiveAuthorizerFactory();
+      HiveAuthorizer authorizer = authorizerFactory.createHiveAuthorizer(null, processedConf,
+          new HadoopDefaultAuthenticator(), getCLISessionCtx());
       fail("Exception expected");
     } catch (HiveAuthzPluginException e) {
       assertTrue(e.getMessage().contains(
