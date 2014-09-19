@@ -99,9 +99,6 @@ public class AccumuloRowSerializer {
     // The ObjectInspector for the row ID
     ObjectInspector fieldObjectInspector = field.getFieldObjectInspector();
 
-    log.info("Serializing rowId with " + value + " in " + field + " using "
-        + rowIdFactory.getClass());
-
     // Serialize the row component using the RowIdFactory. In the normal case, this will just
     // delegate back to the "local" serializeRowId method
     byte[] data = rowIdFactory.serializeRowId(value, field, output);
