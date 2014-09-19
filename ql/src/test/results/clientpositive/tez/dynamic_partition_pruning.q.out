@@ -3521,6 +3521,8 @@ STAGE PLANS:
                     keys:
                       0 ds (type: string)
                       1 ds (type: string)
+                    input vertices:
+                      1 Map 3
                     Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
@@ -3654,6 +3656,8 @@ STAGE PLANS:
                       0 ds (type: string)
                       1 ds (type: string)
                     outputColumnNames: _col3
+                    input vertices:
+                      1 Map 4
                     Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
@@ -3664,6 +3668,8 @@ STAGE PLANS:
                       keys:
                         0 _col3 (type: string)
                         1 hr (type: string)
+                      input vertices:
+                        1 Map 3
                       Statistics: Num rows: 2420 Data size: 25709 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
                         Statistics: Num rows: 2420 Data size: 25709 Basic stats: COMPLETE Column stats: NONE
@@ -3825,6 +3831,8 @@ STAGE PLANS:
                     keys:
                       0 ds (type: string), hr (type: string)
                       1 ds (type: string), hr (type: string)
+                    input vertices:
+                      1 Map 3
                     Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
@@ -3969,6 +3977,8 @@ STAGE PLANS:
                     keys:
                       0 ds (type: string)
                       1 ds (type: string)
+                    input vertices:
+                      1 Map 3
                     Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
@@ -4077,6 +4087,8 @@ STAGE PLANS:
                       keys:
                         0 UDFToDouble(hr) (type: double)
                         1 UDFToDouble(UDFToInteger((hr / 2))) (type: double)
+                      input vertices:
+                        1 Map 3
                       Statistics: Num rows: 1100 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                       Select Operator
                         Statistics: Num rows: 1100 Data size: 0 Basic stats: PARTIAL Column stats: NONE
@@ -4196,6 +4208,8 @@ STAGE PLANS:
                       keys:
                         0 (hr * 2) (type: double)
                         1 hr (type: double)
+                      input vertices:
+                        1 Map 3
                       Statistics: Num rows: 1100 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                       Select Operator
                         Statistics: Num rows: 1100 Data size: 0 Basic stats: PARTIAL Column stats: NONE
@@ -4378,6 +4392,8 @@ STAGE PLANS:
                     keys:
                       0 ds (type: string)
                       1 _col0 (type: string)
+                    input vertices:
+                      0 Map 1
                     Statistics: Num rows: 500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                     Select Operator
                       Statistics: Num rows: 500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
@@ -4478,6 +4494,8 @@ STAGE PLANS:
                       0 ds (type: string)
                       1 ds (type: string)
                     outputColumnNames: _col8
+                    input vertices:
+                      1 Map 3
                     Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                     Filter Operator
                       predicate: (_col8 = '2008-04-08') (type: boolean)
@@ -4573,6 +4591,8 @@ STAGE PLANS:
                       keys:
                         0 ds (type: string)
                         1 ds (type: string)
+                      input vertices:
+                        1 Map 1
                       Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
                         Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
@@ -4734,6 +4754,8 @@ STAGE PLANS:
                       0 ds (type: string)
                       1 ds (type: string)
                     outputColumnNames: _col3
+                    input vertices:
+                      1 Map 4
                     Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
@@ -4744,6 +4766,8 @@ STAGE PLANS:
                       keys:
                         0 _col3 (type: string)
                         1 '11' (type: string)
+                      input vertices:
+                        1 Map 3
                       Statistics: Num rows: 1210 Data size: 12854 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
                         Statistics: Num rows: 1210 Data size: 12854 Basic stats: COMPLETE Column stats: NONE
@@ -4990,6 +5014,8 @@ STAGE PLANS:
                       0 ds (type: string)
                       1 _col0 (type: string)
                     outputColumnNames: _col2
+                    input vertices:
+                      1 Union 3
                     Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: _col2 (type: string)
@@ -5207,6 +5233,8 @@ STAGE PLANS:
                       keys:
                         0 ds (type: string), UDFToDouble(hr) (type: double)
                         1 ds (type: string), UDFToDouble(hr) (type: double)
+                      input vertices:
+                        1 Map 3
                       Statistics: Num rows: 1100 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                       Select Operator
                         Statistics: Num rows: 1100 Data size: 0 Basic stats: PARTIAL Column stats: NONE

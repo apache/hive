@@ -178,6 +178,8 @@ STAGE PLANS:
                       0 dim_shops_id (type: int)
                       1 id (type: int)
                     outputColumnNames: _col0, _col1, _col5, _col6
+                    input vertices:
+                      1 Map 1
                     Statistics: Num rows: 0 Data size: 39 Basic stats: PARTIAL Column stats: NONE
                     Filter Operator
                       predicate: ((_col1 = _col5) and (_col6) IN ('foo', 'bar')) (type: boolean)
@@ -362,6 +364,8 @@ STAGE PLANS:
                       0 dim_shops_id (type: int)
                       1 id (type: int)
                     outputColumnNames: _col0, _col1, _col5
+                    input vertices:
+                      1 Map 1
                     Filter Operator
                       predicate: (_col1 = _col5) (type: boolean)
                       Select Operator
@@ -391,6 +395,8 @@ STAGE PLANS:
                       0 dim_shops_id (type: int)
                       1 id (type: int)
                     outputColumnNames: _col0, _col1, _col5
+                    input vertices:
+                      1 Map 2
                     Filter Operator
                       predicate: (_col1 = _col5) (type: boolean)
                       Select Operator
