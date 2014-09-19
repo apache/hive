@@ -850,7 +850,7 @@ public class DagUtils {
     throws IOException {
     FileSystem destFS = dest.getFileSystem(conf);
 
-    if (src != null) {
+    if (src != null && checkPreExisting(src, dest, conf) == false) {
       // copy the src to the destination and create local resource.
       // do not overwrite.
       LOG.info("Localizing resource because it does not exist: " + src + " to dest: " + dest);
