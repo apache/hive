@@ -2279,8 +2279,10 @@ public final class Utilities {
     Properties tblProperties = tbl.getProperties();
     for(String name: tblProperties.stringPropertyNames()) {
       if (job.get(name) == null) {
-        job.set(name,
-            StringEscapeUtils.escapeJava((String) tblProperties.get(name)));
+        String val = (String) tblProperties.get(name);
+        if (val != null) {
+          job.set(name, StringEscapeUtils.escapeJava(val));
+        }
       }
     }
     Map<String, String> jobProperties = tbl.getJobProperties();
