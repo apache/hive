@@ -735,7 +735,7 @@ public class TestJdbcDriver2 {
     assertTrue(res.next());
     // skip the last (partitioning) column since it is always non-null
     for (int i = 1; i < meta.getColumnCount(); i++) {
-      assertNull(res.getObject(i));
+      assertNull("Column " + i + " should be null", res.getObject(i));
     }
     // getXXX returns 0 for numeric types, false for boolean and null for other
     assertEquals(0, res.getInt(1));

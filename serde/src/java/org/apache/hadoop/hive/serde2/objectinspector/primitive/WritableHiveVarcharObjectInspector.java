@@ -96,6 +96,9 @@ implements SettableHiveVarcharObjectInspector {
 
   @Override
   public Object set(Object o, HiveVarchar value) {
+    if (value == null) {
+      return null;
+    }
     HiveVarcharWritable writable = (HiveVarcharWritable)o;
     writable.set(value, getMaxLength());
     return o;
@@ -103,6 +106,9 @@ implements SettableHiveVarcharObjectInspector {
 
   @Override
   public Object set(Object o, String value) {
+    if (value == null) {
+      return null;
+    }
     HiveVarcharWritable writable = (HiveVarcharWritable)o;
     writable.set(value, getMaxLength());
     return o;
