@@ -295,11 +295,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     }
   }
 
-  public InputSplit[] getSplits(JobConf job, int numSplits) throws IOException {
-    PerfLogger perfLogger = PerfLogger.getPerfLogger();
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.GET_SPLITS);
-    init(job);
-
+  Path[] getInputPaths(JobConf job) throws IOException {
     Path[] dirs = FileInputFormat.getInputPaths(job);
     if (dirs.length == 0) {
       // on tez we're avoiding to duplicate the file info in FileInputFormat.
@@ -314,6 +310,14 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
         throw new IOException("No input paths specified in job");
       }
     }
+    return dirs;
+  }
+
+  public InputSplit[] getSplits(JobConf job, int numSplits) throws IOException {
+    PerfLogger perfLogger = PerfLogger.getPerfLogger();
+    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.GET_SPLITS);
+    init(job);
+    Path[] dirs = getInputPaths(job);
     JobConf newjob = new JobConf(job);
     List<InputSplit> result = new ArrayList<InputSplit>();
 
