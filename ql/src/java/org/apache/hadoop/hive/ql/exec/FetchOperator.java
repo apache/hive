@@ -27,6 +27,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -34,10 +35,8 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
-import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
-import org.apache.hadoop.hive.ql.exec.FooterBuffer;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.HiveContextAwareRecordReader;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
@@ -49,7 +48,6 @@ import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
-import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
@@ -61,11 +59,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.C
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveTypeEntry;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapred.InputFormat;
@@ -82,6 +77,9 @@ public class FetchOperator implements Serializable {
 
   static Log LOG = LogFactory.getLog(FetchOperator.class.getName());
   static LogHelper console = new LogHelper(LOG);
+
+  public static final String FETCH_OPERATOR_DIRECTORY_LIST =
+      "hive.complete.dir.list";
 
   private boolean isNativeTable;
   private FetchWork work;
@@ -353,6 +351,7 @@ public class FetchOperator implements Serializable {
         }
         return;
       } else {
+        setFetchOperatorContext(job, work.getPartDir());
         iterPath = work.getPartDir().iterator();
         iterPartDesc = work.getPartDesc().iterator();
       }
@@ -377,6 +376,30 @@ public class FetchOperator implements Serializable {
           }
         }
       }
+    }
+  }
+
+  /**
+   * Set context for this fetch operator in to the jobconf.
+   * This helps InputFormats make decisions based on the scope of the complete
+   * operation.
+   * @param conf the configuration to modify
+   * @param partDirs the list of partition directories
+   */
+  static void setFetchOperatorContext(JobConf conf,
+                                      ArrayList<Path> partDirs) {
+    if (partDirs != null) {
+      StringBuilder buff = new StringBuilder();
+      boolean first = true;
+      for(Path p: partDirs) {
+        if (first) {
+          first = false;
+        } else {
+          buff.append('\t');
+        }
+        buff.append(StringEscapeUtils.escapeJava(p.toString()));
+      }
+      conf.set(FETCH_OPERATOR_DIRECTORY_LIST, buff.toString());
     }
   }
 

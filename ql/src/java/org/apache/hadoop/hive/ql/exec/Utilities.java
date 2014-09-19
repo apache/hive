@@ -27,6 +27,7 @@ import org.antlr.runtime.CommonToken;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.WordUtils;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -2275,13 +2276,13 @@ public final class Utilities {
    *          configuration which receives configured properties
    */
   public static void copyTableJobPropertiesToConf(TableDesc tbl, JobConf job) {
-    String bucketString = tbl.getProperties()
-        .getProperty(hive_metastoreConstants.BUCKET_COUNT);
-    // copy the bucket count
-    if (bucketString != null) {
-      job.set(hive_metastoreConstants.BUCKET_COUNT, bucketString);
+    Properties tblProperties = tbl.getProperties();
+    for(String name: tblProperties.stringPropertyNames()) {
+      if (job.get(name) == null) {
+        job.set(name,
+            StringEscapeUtils.escapeJava((String) tblProperties.get(name)));
+      }
     }
-
     Map<String, String> jobProperties = tbl.getJobProperties();
     if (jobProperties == null) {
       return;
