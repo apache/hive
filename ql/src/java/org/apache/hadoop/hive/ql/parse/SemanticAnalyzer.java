@@ -46,6 +46,8 @@ import net.hydromatic.optiq.tools.Frameworks;
 import org.antlr.runtime.ClassicToken;
 import org.antlr.runtime.Token;
 import org.antlr.runtime.tree.Tree;
+import org.antlr.runtime.tree.TreeVisitor;
+import org.antlr.runtime.tree.TreeVisitorAction;
 import org.antlr.runtime.tree.TreeWizard;
 import org.antlr.runtime.tree.TreeWizard.ContextVisitor;
 import org.apache.commons.lang.StringUtils;
@@ -2423,7 +2425,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     output = putOpInsertMap(output, inputRR);
     return output;
   }
-
+  
   private Operator genPlanForSubQueryPredicate(
       QB qbSQ,
       ISubQueryJoinInfo subQueryPredicate) throws SemanticException {
@@ -13950,11 +13952,78 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       QBParseInfo qbp = getQBParseInfo(qb);
       ASTNode havingClause = qbp.getHavingForClause(qbp.getClauseNames().iterator().next());
 
-      if (havingClause != null)
+      if (havingClause != null) {
+        validateNoHavingReferenceToAlias(qb,  (ASTNode) havingClause.getChild(0));
         gbFilter = genFilterRelNode(qb, (ASTNode) havingClause.getChild(0), srcRel, aliasToRel,
             true);
+      }
 
       return gbFilter;
+    }
+
+    /*
+     * Bail if having clause uses Select Expression aliases for Aggregation
+     * expressions. We could do what Hive does. But this is non standard
+     * behavior. Making sure this doesn't cause issues when translating through
+     * Optiq is not worth it.
+     */
+    private void validateNoHavingReferenceToAlias(QB qb, ASTNode havingExpr)
+        throws OptiqSemanticException {
+
+      QBParseInfo qbPI = qb.getParseInfo();
+      Map<ASTNode, String> exprToAlias = qbPI.getAllExprToColumnAlias();
+      /*
+       * a mouthful, but safe:
+       * - a QB is guaranteed to have atleast 1 destination
+       * - we  don't support multi insert, so picking the first dest.
+       */
+      Set<String> aggExprs = qbPI.getDestToAggregationExprs().values()
+          .iterator().next().keySet();
+
+      for (Map.Entry<ASTNode, String> selExpr : exprToAlias.entrySet()) {
+        ASTNode selAST = selExpr.getKey();
+        if (!aggExprs.contains(selAST.toStringTree().toLowerCase())) {
+          continue;
+        }
+        final String aliasToCheck = selExpr.getValue();
+        final Set<Object> aliasReferences = new HashSet<Object>();
+        TreeVisitorAction action = new TreeVisitorAction() {
+
+          @Override
+          public Object pre(Object t) {
+            if (ParseDriver.adaptor.getType(t) == HiveParser.TOK_TABLE_OR_COL) {
+              Object c = ParseDriver.adaptor.getChild(t, 0);
+              if (c != null
+                  && ParseDriver.adaptor.getType(c) == HiveParser.Identifier
+                  && ParseDriver.adaptor.getText(c).equals(aliasToCheck)) {
+                aliasReferences.add(t);
+              }
+            }
+            return t;
+          }
+
+          @Override
+          public Object post(Object t) {
+            return t;
+          }
+        };
+        new TreeVisitor(ParseDriver.adaptor).visit(havingExpr, action);
+
+        if (aliasReferences.size() > 0) {
+          String havingClause = SemanticAnalyzer.this.ctx
+              .getTokenRewriteStream().toString(
+                  havingExpr.getTokenStartIndex(),
+                  havingExpr.getTokenStopIndex());
+          String msg = String.format(
+              "Encountered Select alias '%s' in having clause '%s'"
+                  + " This non standard behavior is not supported with cbo on."
+                  + " Turn off cbo for these queries.", aliasToCheck,
+              havingClause);
+          LOG.debug(msg);
+          throw new OptiqSemanticException(msg);
+        }
+      }
+
     }
 
     private ImmutableMap<String, Integer> buildHiveToOptiqColumnMap(RowResolver rr, RelNode rNode) {
