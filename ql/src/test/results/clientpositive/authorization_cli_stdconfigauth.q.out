@@ -1,0 +1,21 @@
+PREHOOK: query: -- verify that SQLStdConfOnlyAuthorizerFactory as the authorizer factory with hive cli, with hive.security.authorization.enabled=true
+-- authorization verification would be just no-op
+
+create table t_cli(i int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t_cli
+POSTHOOK: query: -- verify that SQLStdConfOnlyAuthorizerFactory as the authorizer factory with hive cli, with hive.security.authorization.enabled=true
+-- authorization verification would be just no-op
+
+create table t_cli(i int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t_cli
+PREHOOK: query: describe t_cli
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@t_cli
+POSTHOOK: query: describe t_cli
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@t_cli
+i                   	int                 	                    

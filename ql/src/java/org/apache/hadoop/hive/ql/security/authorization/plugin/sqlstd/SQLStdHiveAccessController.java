@@ -90,39 +90,8 @@ public class SQLStdHiveAccessController implements HiveAccessController {
       HiveAuthenticationProvider authenticator, HiveAuthzSessionContext ctx) throws HiveAuthzPluginException {
     this.metastoreClientFactory = metastoreClientFactory;
     this.authenticator = authenticator;
-    this.sessionCtx = applyTestSettings(ctx, conf);
-
-    assertHiveCliAuthDisabled(conf);
-    initUserRoles();
+    this.sessionCtx = SQLAuthorizationUtils.applyTestSettings(ctx, conf);
     LOG.info("Created SQLStdHiveAccessController for session context : " + sessionCtx);
-  }
-
-  /**
-   * Change the session context based on configuration to aid in testing of sql std auth
-   * @param ctx
-   * @param conf
-   * @return
-   */
-  private HiveAuthzSessionContext applyTestSettings(HiveAuthzSessionContext ctx, HiveConf conf) {
-    if(conf.getBoolVar(ConfVars.HIVE_TEST_AUTHORIZATION_SQLSTD_HS2_MODE) &&
-        ctx.getClientType() == CLIENT_TYPE.HIVECLI
-        ){
-      // create new session ctx object with HS2 as client type
-      HiveAuthzSessionContext.Builder ctxBuilder = new HiveAuthzSessionContext.Builder(ctx);
-      ctxBuilder.setClientType(CLIENT_TYPE.HIVESERVER2);
-      return ctxBuilder.build();
-    }
-    return ctx;
-  }
-
-  private void assertHiveCliAuthDisabled(HiveConf conf) throws HiveAuthzPluginException {
-    if (sessionCtx.getClientType() == CLIENT_TYPE.HIVECLI
-        && conf.getBoolVar(ConfVars.HIVE_AUTHORIZATION_ENABLED)) {
-      throw new HiveAuthzPluginException(
-          "SQL standards based authorization should not be enabled from hive cli"
-              + "Instead the use of storage based authorization in hive metastore is reccomended. Set "
-              + ConfVars.HIVE_AUTHORIZATION_ENABLED.varname + "=false to disable authz within cli");
-    }
   }
 
   /**

@@ -19,44 +19,27 @@ package org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd;
 
 import java.util.List;
 
-import org.apache.hadoop.classification.InterfaceAudience.Private;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAccessControlException;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizationValidator;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzContext;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzPluginException;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzSessionContext;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveMetastoreClientFactory;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 
 /**
- * Extends SQLStdHiveAuthorizationValidator to relax the restriction of not
- * being able to run dfs,set commands. To be used for testing purposes only!
+ * A no-op HiveAuthorizationValidator for use from hive cli.
  */
-@Private
-public class SQLStdHiveAuthorizationValidatorForTest extends SQLStdHiveAuthorizationValidator {
+public class DummyHiveAuthorizationValidator implements HiveAuthorizationValidator {
 
-  public SQLStdHiveAuthorizationValidatorForTest(HiveMetastoreClientFactory metastoreClientFactory,
-      HiveConf conf, HiveAuthenticationProvider authenticator,
-      SQLStdHiveAccessControllerWrapper privController, HiveAuthzSessionContext ctx)
-      throws HiveAuthzPluginException {
-    super(metastoreClientFactory, conf, authenticator, privController, ctx);
-  }
+  public static final Log LOG = LogFactory.getLog(DummyHiveAuthorizationValidator.class);
 
   @Override
   public void checkPrivileges(HiveOperationType hiveOpType, List<HivePrivilegeObject> inputHObjs,
-      List<HivePrivilegeObject> outputHObjs, HiveAuthzContext context) throws HiveAuthzPluginException,
-      HiveAccessControlException {
-    switch (hiveOpType) {
-    case DFS:
-    case SET:
-      // allow SET and DFS commands to be used during testing
-      return;
-    default:
-      super.checkPrivileges(hiveOpType, inputHObjs, outputHObjs, context);
-    }
-
+      List<HivePrivilegeObject> outputHObjs, HiveAuthzContext context)
+      throws HiveAuthzPluginException, HiveAccessControlException {
+    // no-op
   }
 
 }
