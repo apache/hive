@@ -24,6 +24,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
+import java.util.NavigableMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -610,7 +612,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     private final FileSystem fs;
     private final FileStatus file;
     private final long blockSize;
-    private final BlockLocation[] locations;
+    private final TreeMap<Long, BlockLocation> locations;
     private final FileInfo fileInfo;
     private List<StripeInformation> stripes;
     private ReaderImpl.FileMetaInfo fileMetaInfo;
@@ -630,7 +632,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
       this.file = file;
       this.blockSize = file.getBlockSize();
       this.fileInfo = fileInfo;
-      locations = SHIMS.getLocations(fs, file);
+      locations = SHIMS.getLocationsWithOffset(fs, file);
       this.isOriginal = isOriginal;
       this.deltas = deltas;
       this.hasBase = hasBase;
@@ -641,8 +643,8 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     }
 
     void schedule() throws IOException {
-      if(locations.length == 1 && file.getLen() < context.maxSize) {
-        String[] hosts = locations[0].getHosts();
+      if(locations.size() == 1 && file.getLen() < context.maxSize) {
+        String[] hosts = locations.firstEntry().getValue().getHosts();
         synchronized (context.splits) {
           context.splits.add(new OrcSplit(file.getPath(), 0, file.getLen(),
                 hosts, fileMetaInfo, isOriginal, hasBase, deltas));
@@ -690,15 +692,22 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     void createSplit(long offset, long length,
                      ReaderImpl.FileMetaInfo fileMetaInfo) throws IOException {
       String[] hosts;
-      if ((offset % blockSize) + length <= blockSize) {
+      Map.Entry<Long, BlockLocation> startEntry = locations.floorEntry(offset);
+      BlockLocation start = startEntry.getValue();
+      if (offset + length <= start.getOffset() + start.getLength()) {
         // handle the single block case
-        hosts = locations[(int) (offset / blockSize)].getHosts();
+        hosts = start.getHosts();
       } else {
+        Map.Entry<Long, BlockLocation> endEntry = locations.floorEntry(offset + length);
+        BlockLocation end = endEntry.getValue();
+        //get the submap
+        NavigableMap<Long, BlockLocation> navigableMap = locations.subMap(startEntry.getKey(),
+                  true, endEntry.getKey(), true);
         // Calculate the number of bytes in the split that are local to each
         // host.
         Map<String, LongWritable> sizes = new HashMap<String, LongWritable>();
         long maxSize = 0;
-        for(BlockLocation block: locations) {
+        for (BlockLocation block : navigableMap.values()) {
           long overlap = getOverlap(offset, length, block.getOffset(),
               block.getLength());
           if (overlap > 0) {
@@ -711,6 +720,9 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
               val.set(val.get() + overlap);
               maxSize = Math.max(maxSize, val.get());
             }
+          } else {
+            throw new IOException("File " + file.getPath().toString() +
+                    " should have had overlap on block starting at " + block.getOffset());
           }
         }
         // filter the list of locations to those that have at least 80% of the
@@ -718,7 +730,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
         long threshold = (long) (maxSize * MIN_INCLUDED_LOCATION);
         List<String> hostList = new ArrayList<String>();
         // build the locations in a predictable order to simplify testing
-        for(BlockLocation block: locations) {
+        for(BlockLocation block: navigableMap.values()) {
           for(String host: block.getHosts()) {
             if (sizes.containsKey(host)) {
               if (sizes.get(host).get() >= threshold) {
