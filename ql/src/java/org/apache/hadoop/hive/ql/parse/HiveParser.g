@@ -1530,8 +1530,8 @@ principalSpecification
 principalName
 @init {pushMsg("user|group|role name", state);}
 @after {popMsg(state);}
-    : KW_USER identifier -> ^(TOK_USER identifier)
-    | KW_GROUP identifier -> ^(TOK_GROUP identifier)
+    : KW_USER principalIdentifier -> ^(TOK_USER principalIdentifier)
+    | KW_GROUP principalIdentifier -> ^(TOK_GROUP principalIdentifier)
     | KW_ROLE identifier -> ^(TOK_ROLE identifier)
     ;
 
