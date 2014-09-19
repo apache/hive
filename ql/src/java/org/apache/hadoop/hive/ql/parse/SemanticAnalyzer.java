@@ -12390,30 +12390,21 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       RelDataType leftFieldDT;
       RelDataType rightFieldDT;
       RelDataType unionFieldDT;
-      List<RelDataType> tmpDTLst = new ArrayList<RelDataType>();
       for (int i = 0; i < leftRowDT.size(); i++) {
         leftFieldDT = leftRowDT.get(i).getType();
         rightFieldDT = rightRowDT.get(i).getType();
         if (!leftFieldDT.equals(rightFieldDT)) {
-          tmpDTLst.clear();
-          tmpDTLst.add(leftFieldDT);
-          tmpDTLst.add(rightFieldDT);
-          unionFieldDT = cluster.getTypeFactory().leastRestrictive(tmpDTLst);
-
-          if (null == unionFieldDT) {
-            //TODO : union32.q results in this, but it seems Optiq is too
-            // restrictive here. Follow-up with Optiq.
-            throw new OptiqSemanticException("Can't find common type for: "
-              + tmpDTLst);
-          }
-
-          if (!unionFieldDT.equals(leftFieldDT))
+          unionFieldDT = TypeConverter.convert(unionoutRR.getColumnInfos().get(i).getType(),
+          cluster.getTypeFactory());
+          if (!unionFieldDT.equals(leftFieldDT)) {
             leftNeedsTypeCast = true;
+          }
           leftProjs.add(cluster.getRexBuilder().ensureType(unionFieldDT,
               cluster.getRexBuilder().makeInputRef(leftFieldDT, i), true));
 
-          if (!unionFieldDT.equals(rightFieldDT))
+          if (!unionFieldDT.equals(rightFieldDT)) {
             rightNeedsTypeCast = true;
+          }
           rightProjs.add(cluster.getRexBuilder().ensureType(unionFieldDT,
               cluster.getRexBuilder().makeInputRef(rightFieldDT, i), true));
         } else {
