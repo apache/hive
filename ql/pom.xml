@@ -575,6 +575,7 @@
                   <include>com.twitter:parquet-hadoop-bundle</include>
                   <include>org.apache.thrift:libthrift</include>
                   <include>commons-lang:commons-lang</include>
+                  <include>org.apache.commons:commons-lang3</include>
                   <include>org.jodd:jodd-core</include>
                   <include>org.json:json</include>
                   <include>org.apache.avro:avro</include>
