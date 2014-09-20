@@ -77,8 +77,12 @@ public class SparkProcessAnalyzeTable implements NodeProcessor {
   public Object process(Node nd, Stack<Node> stack,
       NodeProcessorCtx procContext, Object... nodeOutputs) throws SemanticException {
     GenSparkProcContext context = (GenSparkProcContext) procContext;
-    
+
     TableScanOperator tableScan = (TableScanOperator) nd;
+    // If this tableScan is a generated one for multi-insertion, ignore it
+    if (context.tempTS.contains(tableScan)) {
+      return null;
+    }
 
     ParseContext parseContext = context.parseContext;
     Class<? extends InputFormat> inputFormat = parseContext.getTopToTable().get(tableScan)
@@ -167,14 +171,14 @@ public class SparkProcessAnalyzeTable implements NodeProcessor {
    *
    * It is composed of PartialScanTask followed by StatsTask.
    */
-  private void handlePartialScanCommand(TableScanOperator tableScan, ParseContext parseContext, 
+  private void handlePartialScanCommand(TableScanOperator tableScan, ParseContext parseContext,
       QBParseInfo parseInfo, StatsWork statsWork, GenSparkProcContext context,
       Task<StatsWork> statsTask) throws SemanticException {
     String aggregationKey = tableScan.getConf().getStatsAggPrefix();
     StringBuffer aggregationKeyBuffer = new StringBuffer(aggregationKey);
     List<Path> inputPaths = GenMapRedUtils.getInputPathsForPartialScan(parseInfo, aggregationKeyBuffer);
     aggregationKey = aggregationKeyBuffer.toString();
-    
+
     // scan work
     PartialScanWork scanWork = new PartialScanWork(inputPaths);
     scanWork.setMapperCannotSpanPartns(true);

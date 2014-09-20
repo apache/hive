@@ -31,10 +31,11 @@ import org.apache.hadoop.hive.ql.exec.DependencyCollectionTask;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
-import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
+import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
+import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.exec.spark.SparkTask;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
@@ -48,9 +49,9 @@ import org.apache.hadoop.hive.ql.plan.SparkEdgeProperty;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
 
 /**
- * GenSparkProcContext maintains information about the tasks and operators 
+ * GenSparkProcContext maintains information about the tasks and operators
  * as we walk the operator tree to break them into SparkTasks.
- * 
+ *
  * Cloned from GenTezProcContext.
  *
  */
@@ -76,12 +77,30 @@ public class GenSparkProcContext implements NodeProcessorCtx{
   // walk.
   public Operator<? extends OperatorDesc> parentOfRoot;
 
+  // Default task is the task we use for those operators that are not connected
+  // to the newly generated TS
+  public SparkTask defaultTask;
+
   // Spark task we're currently processing
   public SparkTask currentTask;
 
   // last work we've processed (in order to hook it up to the current
   // one.
   public BaseWork preceedingWork;
+
+  // All operators that we should unlink with their parents, for multi-table insertion
+  // It's a mapping from operator to its ONLY parent.
+  public Map<Operator<?>, Operator<?>> opToParentMap;
+
+  // A mapping from operators to their corresponding tasks.
+  // The key for this map could only be:
+  //  1. TableScanOperators (so we know which task for the tree rooted at this TS)
+  //  2. FileSinkOperators (need this info in GenSparkUtils::processFileSinks)
+  //  3. UnionOperator/JoinOperator (need for merging tasks)
+  public final Map<Operator<?>, SparkTask> opToTaskMap;
+
+  // temporary TS generated for multi-table insertion
+  public final Set<TableScanOperator> tempTS;
 
   // map that keeps track of the last operator of a task to the work
   // that follows it. This is used for connecting them later.
@@ -138,8 +157,10 @@ public class GenSparkProcContext implements NodeProcessorCtx{
     this.rootTasks = rootTasks;
     this.inputs = inputs;
     this.outputs = outputs;
-    this.currentTask = (SparkTask) TaskFactory.get(
-         new SparkWork(conf.getVar(HiveConf.ConfVars.HIVEQUERYID)), conf);
+    this.defaultTask = (SparkTask) TaskFactory.get(
+        new SparkWork(conf.getVar(HiveConf.ConfVars.HIVEQUERYID)), conf);
+    this.rootTasks.add(defaultTask);
+    this.currentTask = null;
     this.leafOperatorToFollowingWork = new LinkedHashMap<Operator<?>, BaseWork>();
     this.linkOpWithWorkMap = new LinkedHashMap<Operator<?>, Map<BaseWork, SparkEdgeProperty>>();
     this.linkWorkWithReduceSinkMap = new LinkedHashMap<BaseWork, List<ReduceSinkOperator>>();
@@ -157,8 +178,8 @@ public class GenSparkProcContext implements NodeProcessorCtx{
     this.clonedReduceSinks = new LinkedHashSet<ReduceSinkOperator>();
     this.fileSinkSet = new LinkedHashSet<FileSinkOperator>();
     this.connectedReduceSinks = new LinkedHashSet<ReduceSinkOperator>();
-
-    rootTasks.add(currentTask);
+    this.opToParentMap = new LinkedHashMap<Operator<?>, Operator<?>>();
+    this.opToTaskMap = new LinkedHashMap<Operator<?>, SparkTask>();
+    this.tempTS = new LinkedHashSet<TableScanOperator>();
   }
-
 }
