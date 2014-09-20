@@ -33,10 +33,13 @@ import java.util.List;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
 import org.apache.hadoop.hive.ql.security.SessionStateUserAuthenticator;
@@ -52,10 +55,12 @@ import org.mockito.Mockito;
  * Test HiveAuthorizer api invocation
  */
 public class TestHiveAuthorizerCheckInvocation {
+  private final Log LOG = LogFactory.getLog(this.getClass().getName());;
   protected static HiveConf conf;
   protected static Driver driver;
   private static final String tableName = TestHiveAuthorizerCheckInvocation.class.getSimpleName()
       + "Table";
+  private static final String acidTableName = tableName + "_acid";
   private static final String dbName = TestHiveAuthorizerCheckInvocation.class.getSimpleName()
       + "Db";
   static HiveAuthorizer mockedAuthorizer;
@@ -82,14 +87,18 @@ public class TestHiveAuthorizerCheckInvocation {
     conf.setVar(ConfVars.HIVE_AUTHORIZATION_MANAGER, MockedHiveAuthorizerFactory.class.getName());
     conf.setVar(ConfVars.HIVE_AUTHENTICATOR_MANAGER, SessionStateUserAuthenticator.class.getName());
     conf.setBoolVar(ConfVars.HIVE_AUTHORIZATION_ENABLED, true);
-    conf.setBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     conf.setBoolVar(ConfVars.HIVE_SERVER2_ENABLE_DOAS, false);
+    conf.setBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY, true);
+    conf.setVar(ConfVars.HIVE_TXN_MANAGER, DbTxnManager.class.getName());
 
     SessionState.start(conf);
     driver = new Driver(conf);
     runCmd("create table " + tableName
         + " (i int, j int, k string) partitioned by (city string, date string) ");
     runCmd("create database " + dbName);
+    // Need a separate table for ACID testing since it has to be bucketed and it has to be Acid
+    runCmd("create table " + acidTableName + " (i int, j int) clustered by (i) into 2 buckets " +
+        "stored as orc");
   }
 
   private static void runCmd(String cmd) throws CommandNeedRetryException {
@@ -99,6 +108,10 @@ public class TestHiveAuthorizerCheckInvocation {
 
   @AfterClass
   public static void afterTests() throws Exception {
+    // Drop the tables when we're done.  This makes the test work inside an IDE
+    runCmd("drop table if exists " + acidTableName);
+    runCmd("drop table if exists " + tableName);
+    runCmd("drop database if exists " + dbName);
     driver.close();
   }
 
@@ -242,6 +255,63 @@ public class TestHiveAuthorizerCheckInvocation {
     assertEquals("input type", HivePrivilegeObjectType.FUNCTION, funcObj.getType());
     assertTrue("function name", funcName.equalsIgnoreCase(funcObj.getObjectName()));
     assertEquals("db name", null, funcObj.getDbname());
+  }
+
+  @Test
+  public void testUpdateSomeColumnsUsed() throws HiveAuthzPluginException,
+      HiveAccessControlException, CommandNeedRetryException {
+    reset(mockedAuthorizer);
+    int status = driver.compile("update " + acidTableName + " set i = 5 where j = 3");
+    assertEquals(0, status);
+
+    Pair<List<HivePrivilegeObject>, List<HivePrivilegeObject>> io = getHivePrivilegeObjectInputs();
+    List<HivePrivilegeObject> outputs = io.getRight();
+    HivePrivilegeObject tableObj = outputs.get(0);
+    LOG.debug("Got privilege object " + tableObj);
+    assertEquals("no of columns used", 1, tableObj.getColumns().size());
+    assertEquals("Column used", "i", tableObj.getColumns().get(0));
+    List<HivePrivilegeObject> inputs = io.getLeft();
+    assertEquals(1, inputs.size());
+    tableObj = inputs.get(0);
+    assertEquals(1, tableObj.getColumns().size());
+    assertEquals("j", tableObj.getColumns().get(0));
+  }
+
+  @Test
+  public void testUpdateSomeColumnsUsedExprInSet() throws HiveAuthzPluginException,
+      HiveAccessControlException, CommandNeedRetryException {
+    reset(mockedAuthorizer);
+    int status = driver.compile("update " + acidTableName + " set i = 5, l = k where j = 3");
+    assertEquals(0, status);
+
+    Pair<List<HivePrivilegeObject>, List<HivePrivilegeObject>> io = getHivePrivilegeObjectInputs();
+    List<HivePrivilegeObject> outputs = io.getRight();
+    HivePrivilegeObject tableObj = outputs.get(0);
+    LOG.debug("Got privilege object " + tableObj);
+    assertEquals("no of columns used", 2, tableObj.getColumns().size());
+    assertEquals("Columns used", Arrays.asList("i", "l"),
+        getSortedList(tableObj.getColumns()));
+    List<HivePrivilegeObject> inputs = io.getLeft();
+    assertEquals(1, inputs.size());
+    tableObj = inputs.get(0);
+    assertEquals(2, tableObj.getColumns().size());
+    assertEquals("Columns used", Arrays.asList("j", "k"),
+        getSortedList(tableObj.getColumns()));
+  }
+
+  @Test
+  public void testDelete() throws HiveAuthzPluginException,
+      HiveAccessControlException, CommandNeedRetryException {
+    reset(mockedAuthorizer);
+    int status = driver.compile("delete from " + acidTableName + " where j = 3");
+    assertEquals(0, status);
+
+    Pair<List<HivePrivilegeObject>, List<HivePrivilegeObject>> io = getHivePrivilegeObjectInputs();
+    List<HivePrivilegeObject> inputs = io.getLeft();
+    assertEquals(1, inputs.size());
+    HivePrivilegeObject tableObj = inputs.get(0);
+    assertEquals(1, tableObj.getColumns().size());
+    assertEquals("j", tableObj.getColumns().get(0));
   }
 
   private void checkSingleTableInput(List<HivePrivilegeObject> inputs) {

@@ -1145,7 +1145,10 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
 
-    inputs.add(new ReadEntity(getTable(tableName)));
+    Table tbl = getTable(tableName, false);
+    if (tbl != null) {
+      inputs.add(new ReadEntity(getTable(tableName)));
+    }
 
     DropIndexDesc dropIdxDesc = new DropIndexDesc(indexName, tableName);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),

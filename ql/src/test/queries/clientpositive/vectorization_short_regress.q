@@ -850,3 +850,52 @@ WHERE    (((cboolean1 IS NOT NULL))
 GROUP BY cboolean1
 ORDER BY cboolean1;
 
+-- These tests verify COUNT on empty or null colulmns work correctly.
+create table test_count(i int) stored as orc;
+
+explain
+select count(*) from test_count;
+
+select count(*) from test_count;
+
+explain
+select count(i) from test_count;
+
+select count(i) from test_count;
+
+create table alltypesnull like alltypesorc;
+alter table alltypesnull set fileformat textfile;
+
+insert into table alltypesnull select null, null, null, null, null, null, null, null, null, null, null, null from alltypesorc;
+
+create table alltypesnullorc stored as orc as select * from alltypesnull;
+
+explain
+select count(*) from alltypesnullorc;
+
+select count(*) from alltypesnullorc;
+
+explain
+select count(ctinyint) from alltypesnullorc;
+
+select count(ctinyint) from alltypesnullorc;
+
+explain
+select count(cint) from alltypesnullorc;
+
+select count(cint) from alltypesnullorc;
+
+explain
+select count(cfloat) from alltypesnullorc;
+
+select count(cfloat) from alltypesnullorc;
+
+explain
+select count(cstring1) from alltypesnullorc;
+
+select count(cstring1) from alltypesnullorc;
+
+explain
+select count(cboolean1) from alltypesnullorc;
+
+select count(cboolean1) from alltypesnullorc;

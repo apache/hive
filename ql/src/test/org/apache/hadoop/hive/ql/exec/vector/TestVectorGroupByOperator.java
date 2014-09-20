@@ -50,6 +50,7 @@ import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
+import org.apache.hadoop.hive.ql.plan.VectorGroupByDesc;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
@@ -598,6 +599,30 @@ public class TestVectorGroupByOperator {
         2,
         Arrays.asList(new Long[]{13L,null,7L,19L}),
         4L);
+  }
+
+  @Test
+  public void testCountReduce() throws HiveException {
+    testAggregateCountReduce(
+            2,
+            Arrays.asList(new Long[]{}),
+            0L);
+    testAggregateCountReduce(
+            2,
+            Arrays.asList(new Long[]{0L}),
+            0L);
+    testAggregateCountReduce(
+            2,
+            Arrays.asList(new Long[]{0L,0L}),
+            0L);
+    testAggregateCountReduce(
+            2,
+            Arrays.asList(new Long[]{0L,1L,0L}),
+            1L);
+    testAggregateCountReduce(
+        2,
+        Arrays.asList(new Long[]{13L,0L,7L,19L}),
+        39L);
   }
 
   @Test
@@ -1210,7 +1235,7 @@ public class TestVectorGroupByOperator {
         "count",
         2,
         Arrays.asList(new Long[]{}),
-        null);
+        0L);
   }
 
   @Test
@@ -2027,6 +2052,17 @@ public class TestVectorGroupByOperator {
     testAggregateCountStarIterable (fdr, expected);
   }
 
+  public void testAggregateCountReduce (
+      int batchSize,
+      Iterable<Long> values,
+      Object expected) throws HiveException {
+
+    @SuppressWarnings("unchecked")
+    FakeVectorRowBatchFromLongIterables fdr = new FakeVectorRowBatchFromLongIterables(batchSize,
+        values);
+    testAggregateCountReduceIterable (fdr, expected);
+  }
+
 
   public static interface Validator {
     void validate (String key, Object expected, Object result);
@@ -2202,6 +2238,37 @@ public class TestVectorGroupByOperator {
     VectorizationContext ctx = new VectorizationContext(mapColumnNames, 1);
 
     GroupByDesc desc = buildGroupByDescCountStar (ctx);
+
+    VectorGroupByOperator vgo = new VectorGroupByOperator(ctx, desc);
+
+    FakeCaptureOutputOperator out = FakeCaptureOutputOperator.addCaptureOutputChild(vgo);
+    vgo.initialize(null, null);
+
+    for (VectorizedRowBatch unit: data) {
+      vgo.processOp(unit,  0);
+    }
+    vgo.close(false);
+
+    List<Object> outBatchList = out.getCapturedRows();
+    assertNotNull(outBatchList);
+    assertEquals(1, outBatchList.size());
+
+    Object result = outBatchList.get(0);
+
+    Validator validator = getValidator("count");
+    validator.validate("_total", expected, result);
+  }
+
+  public void testAggregateCountReduceIterable (
+      Iterable<VectorizedRowBatch> data,
+      Object expected) throws HiveException {
+    Map<String, Integer> mapColumnNames = new HashMap<String, Integer>();
+    mapColumnNames.put("A", 0);
+    VectorizationContext ctx = new VectorizationContext(mapColumnNames, 1);
+
+    GroupByDesc desc = buildGroupByDescType(ctx, "count", "A", TypeInfoFactory.longTypeInfo);
+    VectorGroupByDesc vectorDesc = desc.getVectorDesc();
+    vectorDesc.setIsReduce(true);
 
     VectorGroupByOperator vgo = new VectorGroupByOperator(ctx, desc);
 

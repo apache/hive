@@ -216,17 +216,17 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
   {
     this();
     this.cols = cols;
-    this.location = location;
-    this.inputFormat = inputFormat;
-    this.outputFormat = outputFormat;
+    this.location = org.apache.hive.common.util.HiveStringUtils.intern(location);
+    this.inputFormat = org.apache.hive.common.util.HiveStringUtils.intern(inputFormat);
+    this.outputFormat = org.apache.hive.common.util.HiveStringUtils.intern(outputFormat);
     this.compressed = compressed;
     setCompressedIsSet(true);
     this.numBuckets = numBuckets;
     setNumBucketsIsSet(true);
     this.serdeInfo = serdeInfo;
-    this.bucketCols = bucketCols;
+    this.bucketCols = org.apache.hive.common.util.HiveStringUtils.intern(bucketCols);
     this.sortCols = sortCols;
-    this.parameters = parameters;
+    this.parameters = org.apache.hive.common.util.HiveStringUtils.intern(parameters);
   }
 
   /**
@@ -242,13 +242,13 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
       this.cols = __this__cols;
     }
     if (other.isSetLocation()) {
-      this.location = other.location;
+      this.location = org.apache.hive.common.util.HiveStringUtils.intern(other.location);
     }
     if (other.isSetInputFormat()) {
-      this.inputFormat = other.inputFormat;
+      this.inputFormat = org.apache.hive.common.util.HiveStringUtils.intern(other.inputFormat);
     }
     if (other.isSetOutputFormat()) {
-      this.outputFormat = other.outputFormat;
+      this.outputFormat = org.apache.hive.common.util.HiveStringUtils.intern(other.outputFormat);
     }
     this.compressed = other.compressed;
     this.numBuckets = other.numBuckets;
@@ -276,9 +276,9 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
         String other_element_key = other_element.getKey();
         String other_element_value = other_element.getValue();
 
-        String __this__parameters_copy_key = other_element_key;
+        String __this__parameters_copy_key = org.apache.hive.common.util.HiveStringUtils.intern(other_element_key);
 
-        String __this__parameters_copy_value = other_element_value;
+        String __this__parameters_copy_value = org.apache.hive.common.util.HiveStringUtils.intern(other_element_value);
 
         __this__parameters.put(__this__parameters_copy_key, __this__parameters_copy_value);
       }
@@ -356,7 +356,7 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
   }
 
   public void setLocation(String location) {
-    this.location = location;
+    this.location = org.apache.hive.common.util.HiveStringUtils.intern(location);
   }
 
   public void unsetLocation() {
@@ -379,7 +379,7 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
   }
 
   public void setInputFormat(String inputFormat) {
-    this.inputFormat = inputFormat;
+    this.inputFormat = org.apache.hive.common.util.HiveStringUtils.intern(inputFormat);
   }
 
   public void unsetInputFormat() {
@@ -402,7 +402,7 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
   }
 
   public void setOutputFormat(String outputFormat) {
-    this.outputFormat = outputFormat;
+    this.outputFormat = org.apache.hive.common.util.HiveStringUtils.intern(outputFormat);
   }
 
   public void unsetOutputFormat() {
@@ -507,7 +507,7 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
   }
 
   public void setBucketCols(List<String> bucketCols) {
-    this.bucketCols = bucketCols;
+    this.bucketCols = org.apache.hive.common.util.HiveStringUtils.intern(bucketCols);
   }
 
   public void unsetBucketCols() {
@@ -579,7 +579,7 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
   }
 
   public void setParameters(Map<String,String> parameters) {
-    this.parameters = parameters;
+    this.parameters = org.apache.hive.common.util.HiveStringUtils.intern(parameters);
   }
 
   public void unsetParameters() {

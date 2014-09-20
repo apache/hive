@@ -198,7 +198,7 @@ public class TestUpdateDeleteSemanticAnalyzer {
   @Test
   public void testInsertValues() throws Exception {
     try {
-      ReturnInfo rc = parseAndAnalyze("insert into table T values ('abc', 3), ('ghi', 5)",
+      ReturnInfo rc = parseAndAnalyze("insert into table T values ('abc', 3), ('ghi', null)",
           "testInsertValues");
 
       LOG.info(explain((SemanticAnalyzer)rc.sem, rc.plan, rc.ast.dump()));

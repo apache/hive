@@ -193,11 +193,12 @@ public class StatsOptimizer implements Transform {
         }
         SelectOperator selOp = (SelectOperator)tsOp.getChildren().get(0);
         for(ExprNodeDesc desc : selOp.getConf().getColList()) {
-          if (!(desc instanceof ExprNodeColumnDesc)) {
+          if (!((desc instanceof ExprNodeColumnDesc) || (desc instanceof ExprNodeConstantDesc))) {
             // Probably an expression, cant handle that
             return null;
           }
         }
+        Map<String, ExprNodeDesc> exprMap = selOp.getColumnExprMap();
         // Since we have done an exact match on TS-SEL-GBY-RS-GBY-SEL-FS
         // we need not to do any instanceof checks for following.
         GroupByOperator gbyOp = (GroupByOperator)selOp.getChildren().get(0);
@@ -214,6 +215,12 @@ public class StatsOptimizer implements Transform {
           // all select columns must be aggregations
           return null;
 
+        }
+        for(ExprNodeDesc desc : selOp.getConf().getColList()) {
+          if (!(desc instanceof ExprNodeColumnDesc)) {
+            // Probably an expression, cant handle that
+            return null;
+          }
         }
         FileSinkOperator fsOp = (FileSinkOperator)(selOp.getChildren().get(0));
         if (fsOp.getChildOperators() != null && fsOp.getChildOperators().size() > 0) {
@@ -236,22 +243,28 @@ public class StatsOptimizer implements Transform {
           GenericUDAFResolver udaf =
               FunctionRegistry.getGenericUDAFResolver(aggr.getGenericUDAFName());
           if (udaf instanceof GenericUDAFSum) {
-            if(!(aggr.getParameters().get(0) instanceof ExprNodeConstantDesc)){
+            ExprNodeDesc desc = aggr.getParameters().get(0);
+            String constant;
+            if (desc instanceof ExprNodeConstantDesc) {
+              constant = ((ExprNodeConstantDesc) desc).getValue().toString();
+            } else if (desc instanceof ExprNodeColumnDesc && exprMap.get(((ExprNodeColumnDesc)desc).getColumn()) instanceof ExprNodeConstantDesc) {
+              constant = ((ExprNodeConstantDesc)exprMap.get(((ExprNodeColumnDesc)desc).getColumn())).getValue().toString();
+            } else {
               return null;
             }
             Long rowCnt = getRowCnt(pctx, tsOp, tbl);
             if(rowCnt == null) {
               return null;
             }
-            oneRow.add(HiveDecimal.create(((ExprNodeConstantDesc) aggr.getParameters().get(0))
-                .getValue().toString()).multiply(HiveDecimal.create(rowCnt)));
+            oneRow.add(HiveDecimal.create(constant).multiply(HiveDecimal.create(rowCnt)));
             ois.add(PrimitiveObjectInspectorFactory.getPrimitiveJavaObjectInspector(
                 PrimitiveCategory.DECIMAL));
           }
           else if (udaf instanceof GenericUDAFCount) {
             Long rowCnt = 0L;
-            if ((aggr.getParameters().isEmpty() || aggr.getParameters().get(0) instanceof
-                ExprNodeConstantDesc)) {
+            if (aggr.getParameters().isEmpty() || aggr.getParameters().get(0) instanceof
+                ExprNodeConstantDesc || ((aggr.getParameters().get(0) instanceof ExprNodeColumnDesc) &&
+                    exprMap.get(((ExprNodeColumnDesc)aggr.getParameters().get(0)).getColumn()) instanceof ExprNodeConstantDesc)) {
               // Its either count (*) or count(1) case
               rowCnt = getRowCnt(pctx, tsOp, tbl);
               if(rowCnt == null) {
@@ -259,12 +272,7 @@ public class StatsOptimizer implements Transform {
               }
             } else {
               // Its count(col) case
-              if (!(aggr.getParameters().get(0) instanceof ExprNodeColumnDesc)) {
-                // this is weird, we got expr or something in there, bail out
-                Log.debug("Unexpected expression : " + aggr.getParameters().get(0));
-                return null;
-              }
-              ExprNodeColumnDesc desc = (ExprNodeColumnDesc)aggr.getParameters().get(0);
+              ExprNodeColumnDesc desc = (ExprNodeColumnDesc)exprMap.get(((ExprNodeColumnDesc)aggr.getParameters().get(0)).getColumn());
               String colName = desc.getColumn();
               StatType type = getType(desc.getTypeString());
               if(!tbl.isPartitioned()) {
@@ -330,7 +338,7 @@ public class StatsOptimizer implements Transform {
             ois.add(PrimitiveObjectInspectorFactory.
                 getPrimitiveJavaObjectInspector(PrimitiveCategory.LONG));
           } else if (udaf instanceof GenericUDAFMax) {
-            ExprNodeColumnDesc colDesc = (ExprNodeColumnDesc)aggr.getParameters().get(0);
+            ExprNodeColumnDesc colDesc = (ExprNodeColumnDesc)exprMap.get(((ExprNodeColumnDesc)aggr.getParameters().get(0)).getColumn());
             String colName = colDesc.getColumn();
             StatType type = getType(colDesc.getTypeString());
             if(!tbl.isPartitioned()) {
@@ -419,7 +427,7 @@ public class StatsOptimizer implements Transform {
               }
             }
           }  else if (udaf instanceof GenericUDAFMin) {
-            ExprNodeColumnDesc colDesc = (ExprNodeColumnDesc)aggr.getParameters().get(0);
+            ExprNodeColumnDesc colDesc = (ExprNodeColumnDesc)exprMap.get(((ExprNodeColumnDesc)aggr.getParameters().get(0)).getColumn());
             String colName = colDesc.getColumn();
             StatType type = getType(colDesc.getTypeString());
             if (!tbl.isPartitioned()) {

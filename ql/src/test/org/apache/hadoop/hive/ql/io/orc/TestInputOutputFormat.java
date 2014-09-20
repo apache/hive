@@ -118,7 +118,6 @@ public class TestInputOutputFormat {
     TimeZone gmt = TimeZone.getTimeZone("GMT+0");
     DATE_FORMAT.setTimeZone(gmt);
     TIME_FORMAT.setTimeZone(gmt);
-    TimeZone local = TimeZone.getDefault();
   }
 
   public static class BigRow implements Writable {
@@ -560,6 +559,12 @@ public class TestInputOutputFormat {
       this.file = file;
     }
 
+    /**
+     * Set the blocks and their location for the file.
+     * Must be called after the stream is closed or the block length will be
+     * wrong.
+     * @param blocks the list of blocks
+     */
     public void setBlocks(MockBlock... blocks) {
       file.blocks = blocks;
       int offset = 0;
@@ -580,12 +585,18 @@ public class TestInputOutputFormat {
       file.content = new byte[file.length];
       System.arraycopy(buf.getData(), 0, file.content, 0, file.length);
     }
+
+    @Override
+    public String toString() {
+      return "Out stream to " + file.toString();
+    }
   }
 
   public static class MockFileSystem extends FileSystem {
     final List<MockFile> files = new ArrayList<MockFile>();
     Path workingDir = new Path("/");
 
+    @SuppressWarnings("unused")
     public MockFileSystem() {
       // empty
     }
@@ -620,7 +631,7 @@ public class TestInputOutputFormat {
           return new FSDataInputStream(new MockInputStream(file));
         }
       }
-      return null;
+      throw new IOException("File not found: " + path);
     }
 
     @Override
@@ -743,8 +754,12 @@ public class TestInputOutputFormat {
           for(MockBlock block: file.blocks) {
             if (OrcInputFormat.SplitGenerator.getOverlap(block.offset,
                 block.length, start, len) > 0) {
+              String[] topology = new String[block.hosts.length];
+              for(int i=0; i < topology.length; ++i) {
+                topology[i] = "/rack/ " + block.hosts[i];
+              }
               result.add(new BlockLocation(block.hosts, block.hosts,
-                  block.offset, block.length));
+                  topology, block.offset, block.length));
             }
           }
           return result.toArray(new BlockLocation[result.size()]);
@@ -1209,7 +1224,8 @@ public class TestInputOutputFormat {
                                          Path warehouseDir,
                                          String tableName,
                                          ObjectInspector objectInspector,
-                                         boolean isVectorized
+                                         boolean isVectorized,
+                                         int partitions
                                          ) throws IOException {
     Utilities.clearWorkMap();
     JobConf conf = new JobConf();
@@ -1218,9 +1234,20 @@ public class TestInputOutputFormat {
     conf.set("hive.vectorized.execution.enabled", Boolean.toString(isVectorized));
     conf.set("fs.mock.impl", MockFileSystem.class.getName());
     conf.set("mapred.mapper.class", ExecMapper.class.getName());
-    Path root = new Path(warehouseDir, tableName + "/p=0");
+    Path root = new Path(warehouseDir, tableName);
+    // clean out previous contents
     ((MockFileSystem) root.getFileSystem(conf)).clear();
-    conf.set("mapred.input.dir", root.toString());
+    // build partition strings
+    String[] partPath = new String[partitions];
+    StringBuilder buffer = new StringBuilder();
+    for(int p=0; p < partitions; ++p) {
+      partPath[p] = new Path(root, "p=" + p).toString();
+      if (p != 0) {
+        buffer.append(',');
+      }
+      buffer.append(partPath[p]);
+    }
+    conf.set("mapred.input.dir", buffer.toString());
     StringBuilder columnIds = new StringBuilder();
     StringBuilder columnNames = new StringBuilder();
     StringBuilder columnTypes = new StringBuilder();
@@ -1249,9 +1276,6 @@ public class TestInputOutputFormat {
     tblProps.put("columns.types", columnTypes.toString());
     TableDesc tbl = new TableDesc(OrcInputFormat.class, OrcOutputFormat.class,
         tblProps);
-    LinkedHashMap<String, String> partSpec =
-        new LinkedHashMap<String, String>();
-    PartitionDesc part = new PartitionDesc(tbl, partSpec);
 
     MapWork mapWork = new MapWork();
     mapWork.setVectorMode(isVectorized);
@@ -1260,11 +1284,16 @@ public class TestInputOutputFormat {
         new LinkedHashMap<String, ArrayList<String>>();
     ArrayList<String> aliases = new ArrayList<String>();
     aliases.add(tableName);
-    aliasMap.put(root.toString(), aliases);
-    mapWork.setPathToAliases(aliasMap);
     LinkedHashMap<String, PartitionDesc> partMap =
         new LinkedHashMap<String, PartitionDesc>();
-    partMap.put(root.toString(), part);
+    for(int p=0; p < partitions; ++p) {
+      aliasMap.put(partPath[p], aliases);
+      LinkedHashMap<String, String> partSpec =
+          new LinkedHashMap<String, String>();
+      PartitionDesc part = new PartitionDesc(tbl, partSpec);
+      partMap.put(partPath[p], part);
+    }
+    mapWork.setPathToAliases(aliasMap);
     mapWork.setPathToPartitionInfo(partMap);
     mapWork.setScratchColumnMap(new HashMap<String, Map<String, Integer>>());
     mapWork.setScratchColumnVectorTypes(new HashMap<String,
@@ -1285,6 +1314,7 @@ public class TestInputOutputFormat {
    * @throws Exception
    */
   @Test
+  @SuppressWarnings("unchecked")
   public void testVectorization() throws Exception {
     // get the object inspector for MyRow
     StructObjectInspector inspector;
@@ -1294,7 +1324,7 @@ public class TestInputOutputFormat {
               ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
     }
     JobConf conf = createMockExecutionEnvironment(workDir, new Path("mock:///"),
-        "vectorization", inspector, true);
+        "vectorization", inspector, true, 1);
 
     // write the orc file to the mock file system
     Writer writer =
@@ -1332,6 +1362,7 @@ public class TestInputOutputFormat {
    * @throws Exception
    */
   @Test
+  @SuppressWarnings("unchecked")
   public void testVectorizationWithBuckets() throws Exception {
     // get the object inspector for MyRow
     StructObjectInspector inspector;
@@ -1341,7 +1372,7 @@ public class TestInputOutputFormat {
               ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
     }
     JobConf conf = createMockExecutionEnvironment(workDir, new Path("mock:///"),
-        "vectorBuckets", inspector, true);
+        "vectorBuckets", inspector, true, 1);
 
     // write the orc file to the mock file system
     Writer writer =
@@ -1377,10 +1408,11 @@ public class TestInputOutputFormat {
 
   // test acid with vectorization, no combine
   @Test
+  @SuppressWarnings("unchecked")
   public void testVectorizationWithAcid() throws Exception {
     StructObjectInspector inspector = new BigRowInspector();
     JobConf conf = createMockExecutionEnvironment(workDir, new Path("mock:///"),
-        "vectorizationAcid", inspector, true);
+        "vectorizationAcid", inspector, true, 1);
 
     // write the orc file to the mock file system
     Path partDir = new Path(conf.get("mapred.input.dir"));
@@ -1444,6 +1476,7 @@ public class TestInputOutputFormat {
 
   // test non-vectorized, non-acid, combine
   @Test
+  @SuppressWarnings("unchecked")
   public void testCombinationInputFormat() throws Exception {
     // get the object inspector for MyRow
     StructObjectInspector inspector;
@@ -1453,7 +1486,7 @@ public class TestInputOutputFormat {
               ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
     }
     JobConf conf = createMockExecutionEnvironment(workDir, new Path("mock:///"),
-        "combination", inspector, false);
+        "combination", inspector, false, 1);
 
     // write the orc file to the mock file system
     Path partDir = new Path(conf.get("mapred.input.dir"));
@@ -1516,17 +1549,25 @@ public class TestInputOutputFormat {
   public void testCombinationInputFormatWithAcid() throws Exception {
     // get the object inspector for MyRow
     StructObjectInspector inspector;
+    final int PARTITIONS = 2;
+    final int BUCKETS = 3;
     synchronized (TestOrcFile.class) {
       inspector = (StructObjectInspector)
           ObjectInspectorFactory.getReflectionObjectInspector(MyRow.class,
               ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
     }
     JobConf conf = createMockExecutionEnvironment(workDir, new Path("mock:///"),
-        "combinationAcid", inspector, false);
+        "combinationAcid", inspector, false, PARTITIONS);
 
     // write the orc file to the mock file system
-    Path partDir = new Path(conf.get("mapred.input.dir"));
-    OrcRecordUpdater writer = new OrcRecordUpdater(partDir,
+    Path[] partDir = new Path[PARTITIONS];
+    String[] paths = conf.getStrings("mapred.input.dir");
+    for(int p=0; p < PARTITIONS; ++p) {
+      partDir[p] = new Path(paths[p]);
+    }
+
+    // write a base file in partition 0
+    OrcRecordUpdater writer = new OrcRecordUpdater(partDir[0],
         new AcidOutputFormat.Options(conf).maximumTransactionId(10)
             .writingBase(true).bucket(0).inspector(inspector));
     for(int i=0; i < 10; ++i) {
@@ -1534,31 +1575,68 @@ public class TestInputOutputFormat {
     }
     WriterImpl baseWriter = (WriterImpl) writer.getWriter();
     writer.close(false);
+
     MockOutputStream outputStream = (MockOutputStream) baseWriter.getStream();
-    int length0 = outputStream.file.length;
-    writer = new OrcRecordUpdater(partDir,
+    outputStream.setBlocks(new MockBlock("host1", "host2"));
+
+    // write a delta file in partition 0
+    writer = new OrcRecordUpdater(partDir[0],
         new AcidOutputFormat.Options(conf).maximumTransactionId(10)
             .writingBase(true).bucket(1).inspector(inspector));
     for(int i=10; i < 20; ++i) {
       writer.insert(10, new MyRow(i, 2*i));
     }
-    baseWriter = (WriterImpl) writer.getWriter();
+    WriterImpl deltaWriter = (WriterImpl) writer.getWriter();
+    outputStream = (MockOutputStream) deltaWriter.getStream();
     writer.close(false);
-    outputStream = (MockOutputStream) baseWriter.getStream();
     outputStream.setBlocks(new MockBlock("host1", "host2"));
 
+    // write three files in partition 1
+    for(int bucket=0; bucket < BUCKETS; ++bucket) {
+      Writer orc = OrcFile.createWriter(
+          new Path(partDir[1], "00000" + bucket + "_0"),
+          OrcFile.writerOptions(conf)
+              .blockPadding(false)
+              .bufferSize(1024)
+              .inspector(inspector));
+      orc.addRow(new MyRow(1, 2));
+      outputStream = (MockOutputStream) ((WriterImpl) orc).getStream();
+      orc.close();
+      outputStream.setBlocks(new MockBlock("host3", "host4"));
+    }
+
     // call getsplits
+    conf.setInt(hive_metastoreConstants.BUCKET_COUNT, BUCKETS);
     HiveInputFormat<?,?> inputFormat =
         new CombineHiveInputFormat<WritableComparable, Writable>();
-    try {
-      InputSplit[] splits = inputFormat.getSplits(conf, 1);
-      assertTrue("shouldn't reach here", false);
-    } catch (IOException ioe) {
-      assertEquals("CombineHiveInputFormat is incompatible"
-          + "  with ACID tables. Please set hive.input.format=org.apache.hadoop"
-          + ".hive.ql.io.HiveInputFormat",
-          ioe.getMessage());
+    InputSplit[] splits = inputFormat.getSplits(conf, 1);
+    assertEquals(3, splits.length);
+    HiveInputFormat.HiveInputSplit split =
+        (HiveInputFormat.HiveInputSplit) splits[0];
+    assertEquals("org.apache.hadoop.hive.ql.io.orc.OrcInputFormat",
+        split.inputFormatClassName());
+    assertEquals("mock:/combinationAcid/p=0/base_0000010/bucket_00000",
+        split.getPath().toString());
+    assertEquals(0, split.getStart());
+    assertEquals(580, split.getLength());
+    split = (HiveInputFormat.HiveInputSplit) splits[1];
+    assertEquals("org.apache.hadoop.hive.ql.io.orc.OrcInputFormat",
+        split.inputFormatClassName());
+    assertEquals("mock:/combinationAcid/p=0/base_0000010/bucket_00001",
+        split.getPath().toString());
+    assertEquals(0, split.getStart());
+    assertEquals(601, split.getLength());
+    CombineHiveInputFormat.CombineHiveInputSplit combineSplit =
+        (CombineHiveInputFormat.CombineHiveInputSplit) splits[2];
+    assertEquals(BUCKETS, combineSplit.getNumPaths());
+    for(int bucket=0; bucket < BUCKETS; ++bucket) {
+      assertEquals("mock:/combinationAcid/p=1/00000" + bucket + "_0",
+          combineSplit.getPath(bucket).toString());
+      assertEquals(0, combineSplit.getOffset(bucket));
+      assertEquals(227, combineSplit.getLength(bucket));
     }
+    String[] hosts = combineSplit.getLocations();
+    assertEquals(2, hosts.length);
   }
 
   @Test

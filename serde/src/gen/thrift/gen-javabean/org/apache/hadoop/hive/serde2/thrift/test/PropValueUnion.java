@@ -320,7 +320,7 @@ public class PropValueUnion extends org.apache.thrift.TUnion<PropValueUnion, Pro
               for (int _i4 = 0; _i4 < _map3.size; ++_i4)
               {
                 String _key5; // required
-                String _val6; // optional
+                String _val6; // required
                 _key5 = iprot.readString();
                 _val6 = iprot.readString();
                 unionMStringString.put(_key5, _val6);
@@ -438,7 +438,7 @@ public class PropValueUnion extends org.apache.thrift.TUnion<PropValueUnion, Pro
             for (int _i13 = 0; _i13 < _map12.size; ++_i13)
             {
               String _key14; // required
-              String _val15; // optional
+              String _val15; // required
               _key14 = iprot.readString();
               _val15 = iprot.readString();
               unionMStringString.put(_key14, _val15);

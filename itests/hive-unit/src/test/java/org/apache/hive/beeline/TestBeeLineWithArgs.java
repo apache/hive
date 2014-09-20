@@ -210,7 +210,7 @@ public class TestBeeLineWithArgs {
     }
     scriptFile.delete();
   }
-  
+
   /**
    * Test that BeeLine will read comment lines that start with whitespace
    * @throws Throwable

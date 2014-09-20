@@ -6,6 +6,7 @@
  */
 package org.apache.hadoop.hive.serde2.thrift.test;
 
+import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.thrift.scheme.IScheme;
 import org.apache.thrift.scheme.SchemeFactory;
 import org.apache.thrift.scheme.StandardScheme;
@@ -42,8 +43,8 @@ public class SetIntString implements org.apache.thrift.TBase<SetIntString, SetIn
     schemes.put(TupleScheme.class, new SetIntStringTupleSchemeFactory());
   }
 
-  public Set<IntString> sIntString; // required
-  public String aString; // required
+  private Set<IntString> sIntString; // required
+  private String aString; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -176,9 +177,8 @@ public class SetIntString implements org.apache.thrift.TBase<SetIntString, SetIn
     return this.sIntString;
   }
 
-  public SetIntString setSIntString(Set<IntString> sIntString) {
+  public void setSIntString(Set<IntString> sIntString) {
     this.sIntString = sIntString;
-    return this;
   }
 
   public void unsetSIntString() {
@@ -200,9 +200,8 @@ public class SetIntString implements org.apache.thrift.TBase<SetIntString, SetIn
     return this.aString;
   }
 
-  public SetIntString setAString(String aString) {
+  public void setAString(String aString) {
     this.aString = aString;
-    return this;
   }
 
   public void unsetAString() {
@@ -304,7 +303,19 @@ public class SetIntString implements org.apache.thrift.TBase<SetIntString, SetIn
 
   @Override
   public int hashCode() {
-    return 0;
+    HashCodeBuilder builder = new HashCodeBuilder();
+
+    boolean present_sIntString = true && (isSetSIntString());
+    builder.append(present_sIntString);
+    if (present_sIntString)
+      builder.append(sIntString);
+
+    boolean present_aString = true && (isSetAString());
+    builder.append(present_aString);
+    if (present_aString)
+      builder.append(aString);
+
+    return builder.toHashCode();
   }
 
   public int compareTo(SetIntString other) {
@@ -416,14 +427,14 @@ public class SetIntString implements org.apache.thrift.TBase<SetIntString, SetIn
           case 1: // S_INT_STRING
             if (schemeField.type == org.apache.thrift.protocol.TType.SET) {
               {
-                org.apache.thrift.protocol.TSet _set34 = iprot.readSetBegin();
-                struct.sIntString = new HashSet<IntString>(2*_set34.size);
-                for (int _i35 = 0; _i35 < _set34.size; ++_i35)
+                org.apache.thrift.protocol.TSet _set82 = iprot.readSetBegin();
+                struct.sIntString = new HashSet<IntString>(2*_set82.size);
+                for (int _i83 = 0; _i83 < _set82.size; ++_i83)
                 {
-                  IntString _elem36; // required
-                  _elem36 = new IntString();
-                  _elem36.read(iprot);
-                  struct.sIntString.add(_elem36);
+                  IntString _elem84; // required
+                  _elem84 = new IntString();
+                  _elem84.read(iprot);
+                  struct.sIntString.add(_elem84);
                 }
                 iprot.readSetEnd();
               }
@@ -446,8 +457,6 @@ public class SetIntString implements org.apache.thrift.TBase<SetIntString, SetIn
         iprot.readFieldEnd();
       }
       iprot.readStructEnd();
-
-      // check for required fields of primitive type, which can't be checked in the validate method
       struct.validate();
     }
 
@@ -459,9 +468,9 @@ public class SetIntString implements org.apache.thrift.TBase<SetIntString, SetIn
         oprot.writeFieldBegin(S_INT_STRING_FIELD_DESC);
         {
           oprot.writeSetBegin(new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRUCT, struct.sIntString.size()));
-          for (IntString _iter37 : struct.sIntString)
+          for (IntString _iter85 : struct.sIntString)
           {
-            _iter37.write(oprot);
+            _iter85.write(oprot);
           }
           oprot.writeSetEnd();
         }
@@ -500,9 +509,9 @@ public class SetIntString implements org.apache.thrift.TBase<SetIntString, SetIn
       if (struct.isSetSIntString()) {
         {
           oprot.writeI32(struct.sIntString.size());
-          for (IntString _iter38 : struct.sIntString)
+          for (IntString _iter86 : struct.sIntString)
           {
-            _iter38.write(oprot);
+            _iter86.write(oprot);
           }
         }
       }
@@ -517,14 +526,14 @@ public class SetIntString implements org.apache.thrift.TBase<SetIntString, SetIn
       BitSet incoming = iprot.readBitSet(2);
       if (incoming.get(0)) {
         {
-          org.apache.thrift.protocol.TSet _set39 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-          struct.sIntString = new HashSet<IntString>(2*_set39.size);
-          for (int _i40 = 0; _i40 < _set39.size; ++_i40)
+          org.apache.thrift.protocol.TSet _set87 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+          struct.sIntString = new HashSet<IntString>(2*_set87.size);
+          for (int _i88 = 0; _i88 < _set87.size; ++_i88)
           {
-            IntString _elem41; // required
-            _elem41 = new IntString();
-            _elem41.read(iprot);
-            struct.sIntString.add(_elem41);
+            IntString _elem89; // required
+            _elem89 = new IntString();
+            _elem89.read(iprot);
+            struct.sIntString.add(_elem89);
           }
         }
         struct.setSIntStringIsSet(true);

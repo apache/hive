@@ -37,7 +37,7 @@ public class SQLStdHiveAuthorizerFactoryForTest implements HiveAuthorizerFactory
     return new HiveAuthorizerImpl(
         privilegeManager,
         new SQLStdHiveAuthorizationValidatorForTest(metastoreClientFactory, conf, authenticator,
-            privilegeManager)
+            privilegeManager, ctx)
         );
   }
 }

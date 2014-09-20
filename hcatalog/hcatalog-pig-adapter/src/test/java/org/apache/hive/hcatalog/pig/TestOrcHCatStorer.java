@@ -18,11 +18,15 @@
  */
 package org.apache.hive.hcatalog.pig;
 
-public class TestOrcHCatStorer extends TestHCatStorerMulti {
+import java.io.IOException;
 
-  @Override
-  protected String storageFormat() {
-    return "orc";
+import org.apache.hadoop.hive.ql.CommandNeedRetryException;
+
+import org.junit.Ignore;
+import org.junit.Test;
+
+public class TestOrcHCatStorer extends TestHCatStorer {
+  @Override String getStorageFormat() {
+    return "ORC";
   }
 }
-
