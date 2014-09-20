@@ -6240,6 +6240,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   // Check constraints on acid tables.  This includes
   // * no insert overwrites
   // * no use of vectorization
+  // * turns off reduce deduplication optimization, as that sometimes breaks acid
+  // This method assumes you have already decided that this is an Acid write.  Don't call it if
+  // that isn't true.
   private void checkAcidConstraints(QB qb, TableDesc tableDesc) throws SemanticException {
     String tableName = tableDesc.getTableName();
     if (!qb.getParseInfo().isInsertIntoTable(tableName)) {
@@ -6250,6 +6253,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       LOG.info("Turning off vectorization for acid write operation");
       conf.setBoolVar(ConfVars.HIVE_VECTORIZATION_ENABLED, false);
     }
+    LOG.info("Modifying config values for ACID write");
+    conf.setBoolVar(ConfVars.HIVEOPTREDUCEDEDUPLICATION, false);
+    conf.setBoolVar(ConfVars.HIVE_HADOOP_SUPPORTS_SUBDIRECTORIES, true);
   }
 
   /**
