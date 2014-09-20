@@ -50,7 +50,7 @@ import com.google.common.base.Preconditions;
  * and break the operators into work and tasks along the way.
  *
  * Cloned from GenTezWork.
- * 
+ *
  * TODO: need to go thru this to make it fit completely to Spark.
  */
 public class GenSparkWork implements NodeProcessor {
@@ -93,6 +93,10 @@ public class GenSparkWork implements NodeProcessor {
       // if we're visiting a terminal we've created ourselves,
       // just skip and keep going
       return null;
+    }
+
+    if (operator instanceof FileSinkOperator) {
+      context.opToTaskMap.put(operator, context.currentTask);
     }
 
     SparkWork sparkWork = context.currentTask.getWork();

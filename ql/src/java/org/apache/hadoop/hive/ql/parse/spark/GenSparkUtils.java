@@ -34,14 +34,30 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.exec.*;
+import org.apache.hadoop.hive.ql.exec.FetchTask;
+import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
+import org.apache.hadoop.hive.ql.exec.GroupByOperator;
+import org.apache.hadoop.hive.ql.exec.HashTableDummyOperator;
+import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
+import org.apache.hadoop.hive.ql.exec.TableScanOperator;
+import org.apache.hadoop.hive.ql.exec.UnionOperator;
+import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.spark.SparkTask;
 import org.apache.hadoop.hive.ql.optimizer.GenMapRedUtils;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.*;
 
 import com.google.common.base.Preconditions;
+import org.apache.hadoop.hive.ql.plan.BaseWork;
+import org.apache.hadoop.hive.ql.plan.MapWork;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hadoop.hive.ql.plan.ReduceWork;
+import org.apache.hadoop.hive.ql.plan.SparkEdgeProperty;
+import org.apache.hadoop.hive.ql.plan.SparkWork;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.hadoop.hive.ql.plan.UnionWork;
 
 /**
  * GenSparkUtils is a collection of shared helper methods to produce SparkWork
@@ -157,6 +173,16 @@ public class GenSparkUtils {
     return mapWork;
   }
 
+  // Create a MapWork for a temporary TableScanOperator
+  // Basically a thin wrapper on GenMapRedUtils.setTaskPlan.
+  public MapWork createMapWork(TableScanOperator root,
+                               SparkWork sparkWork, String path, TableDesc tt_desc) throws SemanticException {
+    MapWork mapWork = new MapWork("Map " + (++sequenceNumber));
+    GenMapRedUtils.setTaskPlan(path, path, root, mapWork, false, tt_desc);
+    sparkWork.add(mapWork);
+    return mapWork;
+  }
+
   // this method's main use is to help unit testing this class
   protected void setupMapWork(MapWork mapWork, GenSparkProcContext context,
       PrunedPartitionList partitions, Operator<? extends OperatorDesc> root,
@@ -251,15 +277,19 @@ public class GenSparkUtils {
       throws SemanticException {
 
     ParseContext parseContext = context.parseContext;
+    Preconditions.checkArgument(context.opToTaskMap.containsKey(fileSink),
+        "AssertionError: the fileSink " + fileSink.getName() + " should be in the context");
+
+    SparkTask currentTask = context.opToTaskMap.get(fileSink);
 
     boolean isInsertTable = // is INSERT OVERWRITE TABLE
         GenMapRedUtils.isInsertInto(parseContext, fileSink);
     HiveConf hconf = parseContext.getConf();
 
     boolean chDir = GenMapRedUtils.isMergeRequired(context.moveTask,
-        hconf, fileSink, context.currentTask, isInsertTable);
+        hconf, fileSink, currentTask, isInsertTable);
 
-    Path finalName = GenMapRedUtils.createMoveTask(context.currentTask,
+    Path finalName = GenMapRedUtils.createMoveTask(currentTask,
         chDir, fileSink, parseContext, context.moveTask, hconf, context.dependencyTask);
 
     if (chDir) {
@@ -268,13 +298,13 @@ public class GenSparkUtils {
       logger.info("using CombineHiveInputformat for the merge job");
       GenMapRedUtils.createMRWorkForMergingFiles(fileSink, finalName,
           context.dependencyTask, context.moveTask,
-          hconf, context.currentTask);
+          hconf, currentTask);
     }
 
     FetchTask fetchTask = parseContext.getFetchTask();
-    if (fetchTask != null && context.currentTask.getNumChild() == 0) {
+    if (fetchTask != null && currentTask.getNumChild() == 0) {
       if (fetchTask.isFetchFrom(fileSink.getConf())) {
-        context.currentTask.setFetchSource(true);
+        currentTask.setFetchSource(true);
       }
     }
   }

@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
+import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
@@ -72,9 +73,9 @@ import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 
 /**
  * SparkCompiler translates the operator plan into SparkTasks.
- * 
+ *
  * Pretty much cloned from TezCompiler.
- * 
+ *
  * TODO: need to complete and make it fit to Spark.
  */
 public class SparkCompiler extends TaskCompiler {
@@ -86,7 +87,7 @@ public class SparkCompiler extends TaskCompiler {
   @Override
   public void init(HiveConf conf, LogHelper console, Hive db) {
     super.init(conf, console, db);
-    
+
 //    TODO: Need to check if we require the use of recursive input dirs for union processing
 //    conf.setBoolean("mapred.input.dir.recursive", true);
 //    HiveConf.setBoolVar(conf, ConfVars.HIVE_HADOOP_SUPPORTS_SUBDIRECTORIES, true);
@@ -103,7 +104,6 @@ public class SparkCompiler extends TaskCompiler {
     // Create the context for the walker
     OptimizeSparkProcContext procCtx
       = new OptimizeSparkProcContext(conf, pCtx, inputs, outputs, deque);
-
     // create a walker which walks the tree in a DFS manner while maintaining
     // the operator stack.
     Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
@@ -139,9 +139,39 @@ public class SparkCompiler extends TaskCompiler {
     GenSparkProcContext procCtx = new GenSparkProcContext(
         conf, tempParseContext, mvTask, rootTasks, inputs, outputs);
 
+    // -------------------- First Pass ---------------------
+
+    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+    opRules.put(new RuleRegExp("TS", TableScanOperator.getOperatorName() + "%"),
+        new SparkTableScanProcessor());
+
+    Dispatcher disp = new DefaultRuleDispatcher(new SparkMultiInsertionProcessor(), opRules, procCtx);
+    ArrayList<Node> topNodes = new ArrayList<Node>();
+    topNodes.addAll(pCtx.getTopOps().values());
+    GraphWalker ogw = new GenSparkWorkWalker(disp, procCtx);
+    ogw.startWalking(topNodes, null);
+
+    // ------------------- Second Pass ----------------------
+
+    // Merge tasks upon Join/Union if possible
+    opRules.clear();
+    opRules.put(new RuleRegExp("Join", JoinOperator.getOperatorName() + "%"),
+        new SparkMergeTaskProcessor());
+    opRules.put(new RuleRegExp("Union", UnionOperator.getOperatorName() + "%"),
+        new SparkMergeTaskProcessor());
+    disp = new DefaultRuleDispatcher(null, opRules, procCtx);
+    topNodes = new ArrayList<Node>();
+    topNodes.addAll(procCtx.tempTS); // First process temp TS
+    topNodes.addAll(pCtx.getTopOps().values());
+    ogw = new GenSparkWorkWalker(disp, procCtx);
+    ogw.startWalking(topNodes, null);
+
+
+    // ------------------- Third Pass -----------------------
+
     // create a walker which walks the tree in a DFS manner while maintaining
     // the operator stack. The dispatcher generates the plan from the operator tree
-    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+    opRules.clear();
     opRules.put(new RuleRegExp("Split Work - ReduceSink",
         ReduceSinkOperator.getOperatorName() + "%"), genSparkWork);
 
@@ -154,28 +184,40 @@ public class SparkCompiler extends TaskCompiler {
 
     opRules.put(new RuleRegExp("Handle Analyze Command",
         TableScanOperator.getOperatorName() + "%"),
-        new SparkProcessAnalyzeTable(GenSparkUtils.getUtils()));
+        new CompositeProcessor(
+            new NodeProcessor() {
+              @Override
+              public Object process(Node nd, Stack<Node> s,
+                                    NodeProcessorCtx procCtx, Object... no) throws SemanticException {
+                GenSparkProcContext context = (GenSparkProcContext) procCtx;
+                context.currentTask = context.opToTaskMap.get(nd);
+                return null;
+              }
+            },
+            new SparkProcessAnalyzeTable(GenSparkUtils.getUtils())));
 
-      opRules.put(new RuleRegExp("Remember union", UnionOperator.getOperatorName() + "%"),
-          new NodeProcessor() {
-        @Override
-        public Object process(Node n, Stack<Node> s,
-          NodeProcessorCtx procCtx, Object... os) throws SemanticException {
-          GenSparkProcContext context = (GenSparkProcContext) procCtx;
-          UnionOperator union = (UnionOperator) n;
+    opRules.put(new RuleRegExp("Remember union", UnionOperator.getOperatorName() + "%"),
+        new NodeProcessor() {
+          @Override
+          public Object process(Node n, Stack<Node> s,
+                                NodeProcessorCtx procCtx, Object... os) throws SemanticException {
+            GenSparkProcContext context = (GenSparkProcContext) procCtx;
+            UnionOperator union = (UnionOperator) n;
 
-          // simply need to remember that we've seen a union.
-          context.currentUnionOperators.add(union);
-          return null;
+            // simply need to remember that we've seen a union.
+            context.currentUnionOperators.add(union);
+            return null;
+          }
         }
-      });
+    );
 
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along
-    Dispatcher disp = new DefaultRuleDispatcher(null, opRules, procCtx);
-    List<Node> topNodes = new ArrayList<Node>();
+    disp = new DefaultRuleDispatcher(null, opRules, procCtx);
+    topNodes = new ArrayList<Node>();
     topNodes.addAll(pCtx.getTopOps().values());
-    GraphWalker ogw = new GenSparkWorkWalker(disp, procCtx);
+    topNodes.addAll(procCtx.tempTS);
+    ogw = new GenSparkWorkWalker(disp, procCtx);
     ogw.startWalking(topNodes, null);
 
     // we need to clone some operator plans and remove union operators still
