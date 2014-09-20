@@ -138,7 +138,12 @@ public class DerivedTableInjector {
     // (limit)?(OB)?(ProjectRelBase)....
     List<RexNode> rootChildExps = originalProjRel.getChildExps();
     if (resultSchema.size() != rootChildExps.size()) {
-      throw new RuntimeException("Result Schema didn't match Optiq Optimized Op Tree Schema");
+      // this is a bug in Hive where for queries like select key,value,value
+      // convertRowSchemaToResultSetSchema() only returns schema containing key,value
+      // Underlying issue is much deeper because it seems like RowResolver itself doesnt have
+      // those mappings. see limit_pushdown.q & limit_pushdown_negative.q
+      // Till Hive issue is fixed, disable CBO for such queries.
+      throw new OptiqSemanticException("Result Schema didn't match Optiq Optimized Op Tree Schema");
     }
 
     List<String> newSelAliases = new ArrayList<String>();
