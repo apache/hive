@@ -31,8 +31,10 @@ import java.util.Properties;
 
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
+
 import org.apache.hive.hcatalog.HcatTestUtils;
 import org.apache.hive.hcatalog.mapreduce.HCatBaseTest;
+
 import org.apache.pig.EvalFunc;
 import org.apache.pig.ExecType;
 import org.apache.pig.PigException;
@@ -41,10 +43,13 @@ import org.apache.pig.data.DataByteArray;
 import org.apache.pig.data.Tuple;
 import org.apache.pig.impl.logicalLayer.FrontendException;
 import org.apache.pig.impl.util.LogUtils;
+
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
+
 import org.junit.Assert;
 import org.junit.Test;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,6 +68,7 @@ public class TestHCatStorer extends HCatBaseTest {
     pigValueRangeTestOverflow("junitTypeTest3", "tinyint", "int", HCatBaseStorer.OOR_VALUE_OPT_VALUES.Throw,
       Integer.toString(300));
   }
+
   @Test
   public void testWriteSmallint() throws Exception {
     pigValueRangeTest("junitTypeTest1", "smallint", "int", null, Integer.toString(Short.MIN_VALUE),
@@ -72,6 +78,7 @@ public class TestHCatStorer extends HCatBaseTest {
     pigValueRangeTestOverflow("junitTypeTest3", "smallint", "int", HCatBaseStorer.OOR_VALUE_OPT_VALUES.Throw,
       Integer.toString(Short.MAX_VALUE + 1));
   }
+
   @Test
   public void testWriteChar() throws Exception {
     pigValueRangeTest("junitTypeTest1", "char(5)", "chararray", null, "xxx", "xxx  ");
@@ -81,6 +88,7 @@ public class TestHCatStorer extends HCatBaseTest {
     pigValueRangeTestOverflow("junitTypeTest3", "char(5)", "chararray", HCatBaseStorer.OOR_VALUE_OPT_VALUES.Throw,
       "too_long2");
   }
+
   @Test
   public void testWriteVarchar() throws Exception {
     pigValueRangeTest("junitTypeTest1", "varchar(5)", "chararray", null, "xxx", "xxx");
@@ -90,6 +98,7 @@ public class TestHCatStorer extends HCatBaseTest {
     pigValueRangeTestOverflow("junitTypeTest3", "varchar(5)", "chararray", HCatBaseStorer.OOR_VALUE_OPT_VALUES.Throw,
       "too_long2");
   }
+
   @Test
   public void testWriteDecimalXY() throws Exception {
     pigValueRangeTest("junitTypeTest1", "decimal(5,2)", "bigdecimal", null, BigDecimal.valueOf(1.2).toString(),
@@ -100,6 +109,7 @@ public class TestHCatStorer extends HCatBaseTest {
     pigValueRangeTestOverflow("junitTypeTest3", "decimal(5,2)", "bigdecimal", HCatBaseStorer.OOR_VALUE_OPT_VALUES.Throw,
       BigDecimal.valueOf(500.123).toString());
   }
+
   @Test
   public void testWriteDecimalX() throws Exception {
     //interestingly decimal(2) means decimal(2,0)
@@ -110,6 +120,7 @@ public class TestHCatStorer extends HCatBaseTest {
     pigValueRangeTestOverflow("junitTypeTest3", "decimal(2)", "bigdecimal", HCatBaseStorer.OOR_VALUE_OPT_VALUES.Throw,
       BigDecimal.valueOf(50.123).toString());
   }
+
   @Test
   public void testWriteDecimal() throws Exception {
     //decimal means decimal(10,0)
@@ -120,9 +131,10 @@ public class TestHCatStorer extends HCatBaseTest {
     pigValueRangeTestOverflow("junitTypeTest3", "decimal", "bigdecimal", HCatBaseStorer.OOR_VALUE_OPT_VALUES.Throw,
       BigDecimal.valueOf(12345678900L).toString());
   }
+
   /**
    * because we want to ignore TZ which is included in toString()
-   * include time to make sure it's 0 
+   * include time to make sure it's 0
    */
   private static final String FORMAT_4_DATE = "yyyy-MM-dd HH:mm:ss";
   @Test
@@ -142,6 +154,7 @@ public class TestHCatStorer extends HCatBaseTest {
     pigValueRangeTestOverflow("junitTypeTest6", "date", "datetime", HCatBaseStorer.OOR_VALUE_OPT_VALUES.Throw,
       d.plusMinutes(1).toString(), FORMAT_4_DATE);//date out of range due to time!=0
   }
+
   @Test
   public void testWriteDate3() throws Exception {
     DateTime d = new DateTime(1991,10,11,23,10,DateTimeZone.forOffsetHours(-11));
@@ -154,6 +167,7 @@ public class TestHCatStorer extends HCatBaseTest {
     pigValueRangeTestOverflow("junitTypeTest6", "date", "datetime", HCatBaseStorer.OOR_VALUE_OPT_VALUES.Throw,
       d.plusMinutes(1).toString(), FORMAT_4_DATE);
   }
+
   @Test
   public void testWriteDate2() throws Exception {
     DateTime d = new DateTime(1991,11,12,0,0, DateTimeZone.forID("US/Eastern"));
@@ -168,46 +182,48 @@ public class TestHCatStorer extends HCatBaseTest {
     pigValueRangeTestOverflow("junitTypeTest3", "date", "datetime", HCatBaseStorer.OOR_VALUE_OPT_VALUES.Throw,
       d.plusMinutes(1).toString(), FORMAT_4_DATE);
   }
+
   /**
-   * Note that the value that comes back from Hive will have local TZ on it.  Using local is 
+   * Note that the value that comes back from Hive will have local TZ on it.  Using local is
    * arbitrary but DateTime needs TZ (or will assume default) and Hive does not have TZ.
    * So if you start with Pig value in TZ=x and write to Hive, when you read it back the TZ may
    * be different.  The millis value should match, of course.
-   * 
+   *
    * @throws Exception
    */
   @Test
   public void testWriteTimestamp() throws Exception {
     DateTime d = new DateTime(1991,10,11,14,23,30, 10);//uses default TZ
-    pigValueRangeTest("junitTypeTest1", "timestamp", "datetime", null, d.toString(), 
+    pigValueRangeTest("junitTypeTest1", "timestamp", "datetime", null, d.toString(),
       d.toDateTime(DateTimeZone.getDefault()).toString());
     d = d.plusHours(2);
     pigValueRangeTest("junitTypeTest2", "timestamp", "datetime", HCatBaseStorer.OOR_VALUE_OPT_VALUES.Null,
       d.toString(), d.toDateTime(DateTimeZone.getDefault()).toString());
     d = d.toDateTime(DateTimeZone.UTC);
-    pigValueRangeTest("junitTypeTest3", "timestamp", "datetime", null, d.toString(), 
+    pigValueRangeTest("junitTypeTest3", "timestamp", "datetime", null, d.toString(),
       d.toDateTime(DateTimeZone.getDefault()).toString());
 
     d = new DateTime(1991,10,11,23,24,25, 26);
-    pigValueRangeTest("junitTypeTest1", "timestamp", "datetime", null, d.toString(), 
+    pigValueRangeTest("junitTypeTest1", "timestamp", "datetime", null, d.toString(),
       d.toDateTime(DateTimeZone.getDefault()).toString());
     d = d.toDateTime(DateTimeZone.UTC);
-    pigValueRangeTest("junitTypeTest3", "timestamp", "datetime", null, d.toString(), 
+    pigValueRangeTest("junitTypeTest3", "timestamp", "datetime", null, d.toString(),
       d.toDateTime(DateTimeZone.getDefault()).toString());
   }
   //End: tests that check values from Pig that are out of range for target column
-
 
   private void pigValueRangeTestOverflow(String tblName, String hiveType, String pigType,
     HCatBaseStorer.OOR_VALUE_OPT_VALUES goal, String inputValue, String format) throws Exception {
     pigValueRangeTest(tblName, hiveType, pigType, goal, inputValue, null, format);
   }
+
   private void pigValueRangeTestOverflow(String tblName, String hiveType, String pigType,
                                  HCatBaseStorer.OOR_VALUE_OPT_VALUES goal, String inputValue) throws Exception {
     pigValueRangeTest(tblName, hiveType, pigType, goal, inputValue, null, null);
   }
+
   private void pigValueRangeTest(String tblName, String hiveType, String pigType,
-                                 HCatBaseStorer.OOR_VALUE_OPT_VALUES goal, String inputValue, 
+                                 HCatBaseStorer.OOR_VALUE_OPT_VALUES goal, String inputValue,
                                  String expectedValue) throws Exception {
     pigValueRangeTest(tblName, hiveType, pigType, goal, inputValue, expectedValue, null);
   }
@@ -218,6 +234,7 @@ public class TestHCatStorer extends HCatBaseTest {
   String getStorageFormat() {
     return "RCFILE";
   }
+
   /**
    * This is used to test how Pig values of various data types which are out of range for Hive target
    * column are handled.  Currently the options are to raise an error or write NULL.
@@ -236,7 +253,7 @@ public class TestHCatStorer extends HCatBaseTest {
    * @param format date format to use for comparison of values since default DateTime.toString()
    *               includes TZ which is meaningless for Hive DATE type
    */
-  private void pigValueRangeTest(String tblName, String hiveType, String pigType, 
+  private void pigValueRangeTest(String tblName, String hiveType, String pigType,
                                  HCatBaseStorer.OOR_VALUE_OPT_VALUES goal, String inputValue, String expectedValue, String format)
     throws Exception {
     TestHCatLoader.dropTable(tblName, driver);
@@ -309,6 +326,7 @@ public class TestHCatStorer extends HCatBaseTest {
     Unfortunately Timestamp.toString() adjusts the value for local TZ and 't' is a String
     thus the timestamp in 't' doesn't match rawData*/
   }
+
   /**
    * Create a data file with datatypes added in 0.13.  Read it with Pig and use
    * Pig + HCatStorer to write to a Hive table.  Then read it using Pig and Hive
@@ -365,6 +383,7 @@ public class TestHCatStorer extends HCatBaseTest {
     }
     Assert.assertEquals("Expected " + NUM_ROWS + " rows; got " + numRowsRead + " file=" + INPUT_FILE_NAME, NUM_ROWS, numRowsRead);
   }
+
   static void dumpFile(String fileName) throws Exception {
     File file = new File(fileName);
     BufferedReader reader = new BufferedReader(new FileReader(file));
@@ -375,6 +394,7 @@ public class TestHCatStorer extends HCatBaseTest {
     }
     reader.close();
   }
+
   @Test
   public void testPartColsInData() throws IOException, CommandNeedRetryException {
 

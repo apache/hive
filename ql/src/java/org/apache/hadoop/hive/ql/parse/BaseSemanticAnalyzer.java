@@ -115,6 +115,10 @@ public abstract class BaseSemanticAnalyzer {
   protected LineageInfo linfo;
   protected TableAccessInfo tableAccessInfo;
   protected ColumnAccessInfo columnAccessInfo;
+  /**
+   * Columns accessed by updates
+   */
+  protected ColumnAccessInfo updateColumnAccessInfo;
 
 
   public boolean skipAuthorization() {
@@ -864,6 +868,14 @@ public abstract class BaseSemanticAnalyzer {
    */
   public void setColumnAccessInfo(ColumnAccessInfo columnAccessInfo) {
     this.columnAccessInfo = columnAccessInfo;
+  }
+
+  public ColumnAccessInfo getUpdateColumnAccessInfo() {
+    return updateColumnAccessInfo;
+  }
+
+  public void setUpdateColumnAccessInfo(ColumnAccessInfo updateColumnAccessInfo) {
+    this.updateColumnAccessInfo = updateColumnAccessInfo;
   }
 
   protected LinkedHashMap<String, String> extractPartitionSpecs(Tree partspec)

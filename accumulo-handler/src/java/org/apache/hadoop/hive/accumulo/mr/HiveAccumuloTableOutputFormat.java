@@ -22,10 +22,14 @@ import org.apache.accumulo.core.client.AccumuloSecurityException;
 import org.apache.accumulo.core.client.mapred.AccumuloOutputFormat;
 import org.apache.accumulo.core.client.security.tokens.AuthenticationToken;
 import org.apache.accumulo.core.client.security.tokens.PasswordToken;
+import org.apache.accumulo.core.data.Mutation;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.accumulo.AccumuloConnectionParameters;
 import org.apache.hadoop.hive.accumulo.serde.AccumuloSerDeParameters;
+import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.RecordWriter;
+import org.apache.hadoop.util.Progressable;
 
 import com.google.common.base.Preconditions;
 
@@ -39,6 +43,13 @@ public class HiveAccumuloTableOutputFormat extends AccumuloOutputFormat {
     configureAccumuloOutputFormat(job);
 
     super.checkOutputSpecs(ignored, job);
+  }
+
+  @Override
+  public RecordWriter<Text,Mutation> getRecordWriter(FileSystem ignored, JobConf job, String name, Progressable progress) throws IOException {
+    configureAccumuloOutputFormat(job);
+
+    return super.getRecordWriter(ignored, job, name, progress);
   }
 
   protected void configureAccumuloOutputFormat(JobConf job) throws IOException {
@@ -76,16 +87,32 @@ public class HiveAccumuloTableOutputFormat extends AccumuloOutputFormat {
 
   protected void setAccumuloConnectorInfo(JobConf conf, String username, AuthenticationToken token)
       throws AccumuloSecurityException {
-    AccumuloOutputFormat.setConnectorInfo(conf, username, token);
+    try {
+      AccumuloOutputFormat.setConnectorInfo(conf, username, token);
+    } catch (IllegalStateException e) {
+      // AccumuloOutputFormat complains if you re-set an already set value. We just don't care.
+      log.debug("Ignoring exception setting Accumulo Connector instance for user " + username, e);
+    }
   }
 
   @SuppressWarnings("deprecation")
   protected void setAccumuloZooKeeperInstance(JobConf conf, String instanceName, String zookeepers) {
-    AccumuloOutputFormat.setZooKeeperInstance(conf, instanceName, zookeepers);
+    try {
+      AccumuloOutputFormat.setZooKeeperInstance(conf, instanceName, zookeepers);
+    } catch (IllegalStateException ise) {
+      // AccumuloOutputFormat complains if you re-set an already set value. We just don't care.
+      log.debug("Ignoring exception setting ZooKeeper instance of " + instanceName + " at "
+          + zookeepers, ise);
+    }
   }
 
   protected void setAccumuloMockInstance(JobConf conf, String instanceName) {
-    AccumuloOutputFormat.setMockInstance(conf, instanceName);
+    try {
+      AccumuloOutputFormat.setMockInstance(conf, instanceName);
+    } catch (IllegalStateException e) {
+      // AccumuloOutputFormat complains if you re-set an already set value. We just don't care.
+      log.debug("Ignoring exception setting mock instance of " + instanceName, e);
+    }
   }
 
   protected void setDefaultAccumuloTableName(JobConf conf, String tableName) {

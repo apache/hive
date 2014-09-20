@@ -487,3 +487,84 @@ class Complex:
 
   def __ne__(self, other):
     return not (self == other)
+
+class SetIntString:
+  """
+  Attributes:
+   - sIntString
+   - aString
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.SET, 'sIntString', (TType.STRUCT,(IntString, IntString.thrift_spec)), None, ), # 1
+    (2, TType.STRING, 'aString', None, None, ), # 2
+  )
+
+  def __init__(self, sIntString=None, aString=None,):
+    self.sIntString = sIntString
+    self.aString = aString
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.SET:
+          self.sIntString = set()
+          (_etype76, _size73) = iprot.readSetBegin()
+          for _i77 in xrange(_size73):
+            _elem78 = IntString()
+            _elem78.read(iprot)
+            self.sIntString.add(_elem78)
+          iprot.readSetEnd()
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRING:
+          self.aString = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('SetIntString')
+    if self.sIntString is not None:
+      oprot.writeFieldBegin('sIntString', TType.SET, 1)
+      oprot.writeSetBegin(TType.STRUCT, len(self.sIntString))
+      for iter79 in self.sIntString:
+        iter79.write(oprot)
+      oprot.writeSetEnd()
+      oprot.writeFieldEnd()
+    if self.aString is not None:
+      oprot.writeFieldBegin('aString', TType.STRING, 2)
+      oprot.writeString(self.aString)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)

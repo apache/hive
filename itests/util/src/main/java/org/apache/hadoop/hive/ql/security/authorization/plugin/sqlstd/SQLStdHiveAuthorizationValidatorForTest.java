@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAccessControlException;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzContext;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzPluginException;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzSessionContext;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveMetastoreClientFactory;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
@@ -38,8 +39,9 @@ public class SQLStdHiveAuthorizationValidatorForTest extends SQLStdHiveAuthoriza
 
   public SQLStdHiveAuthorizationValidatorForTest(HiveMetastoreClientFactory metastoreClientFactory,
       HiveConf conf, HiveAuthenticationProvider authenticator,
-      SQLStdHiveAccessControllerWrapper privController) {
-    super(metastoreClientFactory, conf, authenticator, privController);
+      SQLStdHiveAccessControllerWrapper privController, HiveAuthzSessionContext ctx)
+      throws HiveAuthzPluginException {
+    super(metastoreClientFactory, conf, authenticator, privController, ctx);
   }
 
   @Override

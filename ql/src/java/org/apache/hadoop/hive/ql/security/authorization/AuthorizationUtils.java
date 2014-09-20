@@ -310,9 +310,12 @@ public class AuthorizationUtils {
         return HivePrivObjectActionType.INSERT;
       case INSERT_OVERWRITE:
         return HivePrivObjectActionType.INSERT_OVERWRITE;
+      case UPDATE:
+        return HivePrivObjectActionType.UPDATE;
+      case DELETE:
+        return HivePrivObjectActionType.DELETE;
       default:
-        // Ignore other types for purposes of authorization, we are interested only
-        // in INSERT vs INSERT_OVERWRITE as of now
+        // Ignore other types for purposes of authorization
         break;
       }
     }

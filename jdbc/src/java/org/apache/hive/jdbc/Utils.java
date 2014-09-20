@@ -19,17 +19,23 @@
 package org.apache.hive.jdbc;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.thrift.TStatus;
 import org.apache.hive.service.cli.thrift.TStatusCode;
 
 public class Utils {
+  public static final Log LOG = LogFactory.getLog(Utils.class.getName());
   /**
     * The required prefix for the connection URL.
     */
@@ -47,14 +53,58 @@ public class Utils {
 
   private static final String URI_JDBC_PREFIX = "jdbc:";
 
+  private static final String URI_HIVE_PREFIX = "hive2:";
+
   public static class JdbcConnectionParams {
+    // Note on client side parameter naming convention:
+    // Prefer using a shorter camelCase param name instead of using the same name as the
+    // corresponding
+    // HiveServer2 config.
+    // For a jdbc url: jdbc:hive2://<host>:<port>/dbName;sess_var_list?hive_conf_list#hive_var_list,
+    // client side params are specified in sess_var_list
+
+    // Client param names:
+    static final String AUTH_TYPE = "auth";
+    static final String AUTH_QOP = "sasl.qop";
+    static final String AUTH_SIMPLE = "noSasl";
+    static final String AUTH_TOKEN = "delegationToken";
+    static final String AUTH_USER = "user";
+    static final String AUTH_PRINCIPAL = "principal";
+    static final String AUTH_PASSWD = "password";
+    static final String AUTH_KERBEROS_AUTH_TYPE = "kerberosAuthType";
+    static final String AUTH_KERBEROS_AUTH_TYPE_FROM_SUBJECT = "fromSubject";
+    static final String ANONYMOUS_USER = "anonymous";
+    static final String ANONYMOUS_PASSWD = "anonymous";
+    static final String USE_SSL = "ssl";
+    static final String SSL_TRUST_STORE = "sslTrustStore";
+    static final String SSL_TRUST_STORE_PASSWORD = "trustStorePassword";
+    static final String TRANSPORT_MODE = "hive.server2.transport.mode";
+    static final String HTTP_PATH = "hive.server2.thrift.http.path";
+    static final String SERVICE_DISCOVERY_MODE = "serviceDiscoveryMode";
+    // Don't use dynamic serice discovery
+    static final String SERVICE_DISCOVERY_MODE_NONE = "none";
+    // Use ZooKeeper for indirection while using dynamic service discovery
+    static final String SERVICE_DISCOVERY_MODE_ZOOKEEPER = "zooKeeper";
+    static final String ZOOKEEPER_NAMESPACE = "zooKeeperNamespace";
+
+    // Non-configurable params:
+    // ZOOKEEPER_SESSION_TIMEOUT is not exposed as client configurable
+    static final int ZOOKEEPER_SESSION_TIMEOUT = 600 * 1000;
+    // Currently supports JKS keystore format
+    static final String SSL_TRUST_STORE_TYPE = "JKS";
+
     private String host = null;
     private int port;
+    private String jdbcUriString;
     private String dbName = DEFAULT_DATABASE;
     private Map<String,String> hiveConfs = new LinkedHashMap<String,String>();
     private Map<String,String> hiveVars = new LinkedHashMap<String,String>();
     private Map<String,String> sessionVars = new LinkedHashMap<String,String>();
     private boolean isEmbeddedMode = false;
+    private String[] authorityList;
+    private String zooKeeperEnsemble = null;
+    private String currentHostZnodePath;
+    private List<String> rejectedHostZnodePaths = new ArrayList<String>();
 
     public JdbcConnectionParams() {
     }
@@ -62,45 +112,93 @@ public class Utils {
     public String getHost() {
       return host;
     }
+
     public int getPort() {
       return port;
     }
+
+    public String getJdbcUriString() {
+      return jdbcUriString;
+    }
+
     public String getDbName() {
       return dbName;
     }
+
     public Map<String, String> getHiveConfs() {
       return hiveConfs;
     }
-    public Map<String,String> getHiveVars() {
+
+    public Map<String, String> getHiveVars() {
       return hiveVars;
     }
+
     public boolean isEmbeddedMode() {
       return isEmbeddedMode;
     }
+
     public Map<String, String> getSessionVars() {
       return sessionVars;
+    }
+
+    public String[] getAuthorityList() {
+      return authorityList;
+    }
+
+    public String getZooKeeperEnsemble() {
+      return zooKeeperEnsemble;
+    }
+
+    public List<String> getRejectedHostZnodePaths() {
+      return rejectedHostZnodePaths;
+    }
+
+    public String getCurrentHostZnodePath() {
+      return currentHostZnodePath;
     }
 
     public void setHost(String host) {
       this.host = host;
     }
+
     public void setPort(int port) {
       this.port = port;
     }
+
+    public void setJdbcUriString(String jdbcUriString) {
+      this.jdbcUriString = jdbcUriString;
+    }
+
     public void setDbName(String dbName) {
       this.dbName = dbName;
     }
+
     public void setHiveConfs(Map<String, String> hiveConfs) {
       this.hiveConfs = hiveConfs;
     }
-    public void setHiveVars(Map<String,String> hiveVars) {
+
+    public void setHiveVars(Map<String, String> hiveVars) {
       this.hiveVars = hiveVars;
     }
+
     public void setEmbeddedMode(boolean embeddedMode) {
       this.isEmbeddedMode = embeddedMode;
     }
+
     public void setSessionVars(Map<String, String> sessionVars) {
       this.sessionVars = sessionVars;
+    }
+
+    public void setSuppliedAuthorityList(String[] authorityList) {
+      this.authorityList = authorityList;
+    }
+
+    public void setZooKeeperEnsemble(String zooKeeperEnsemble) {
+      this.zooKeeperEnsemble = zooKeeperEnsemble;
+    }
+
+    public void setCurrentHostZnodePath(String currentHostZnodePath) {
+      this.currentHostZnodePath = currentHostZnodePath;
     }
   }
 
@@ -124,27 +222,33 @@ public class Utils {
 
   /**
    * Parse JDBC connection URL
-   * The new format of the URL is jdbc:hive2://<host>:<port>/dbName;sess_var_list?hive_conf_list#hive_var_list
-   * where the optional sess, conf and var lists are semicolon separated <key>=<val> pairs. As before, if the
-   * host/port is not specified, it the driver runs an embedded hive.
+   * The new format of the URL is:
+   * jdbc:hive2://<host1>:<port1>,<host2>:<port2>/dbName;sess_var_list?hive_conf_list#hive_var_list
+   * where the optional sess, conf and var lists are semicolon separated <key>=<val> pairs.
+   * For utilizing dynamic service discovery with HiveServer2 multiple comma separated host:port pairs can
+   * be specified as shown above.
+   * The JDBC driver resolves the list of uris and picks a specific server instance to connect to.
+   * Currently, dynamic service discovery using ZooKeeper is supported, in which case the host:port pairs represent a ZooKeeper ensemble.
+   *
+   * As before, if the host/port is not specified, it the driver runs an embedded hive.
    * examples -
    *  jdbc:hive2://ubuntu:11000/db2?hive.cli.conf.printheader=true;hive.exec.mode.local.auto.inputbytes.max=9999#stab=salesTable;icol=customerID
    *  jdbc:hive2://?hive.cli.conf.printheader=true;hive.exec.mode.local.auto.inputbytes.max=9999#stab=salesTable;icol=customerID
    *  jdbc:hive2://ubuntu:11000/db2;user=foo;password=bar
    *
    *  Connect to http://server:10001/hs2, with specified basicAuth credentials and initial database:
-   *     jdbc:hive2://server:10001/db;user=foo;password=bar?hive.server2.transport.mode=http;hive.server2.thrift.http.path=hs2
-   *
-   * Note that currently the session properties are not used.
+   *  jdbc:hive2://server:10001/db;user=foo;password=bar?hive.server2.transport.mode=http;hive.server2.thrift.http.path=hs2
    *
    * @param uri
    * @return
+   * @throws SQLException
    */
-  public static JdbcConnectionParams parseURL(String uri) throws IllegalArgumentException {
+  public static JdbcConnectionParams parseURL(String uri) throws JdbcUriParseException,
+      SQLException, ZooKeeperHiveClientException {
     JdbcConnectionParams connParams = new JdbcConnectionParams();
 
     if (!uri.startsWith(URL_PREFIX)) {
-      throw new IllegalArgumentException("Bad URL format: Missing prefix " + URL_PREFIX);
+      throw new JdbcUriParseException("Bad URL format: Missing prefix " + URL_PREFIX);
     }
 
     // For URLs with no other configuration
@@ -154,28 +258,27 @@ public class Utils {
       return connParams;
     }
 
-    URI jdbcURI = URI.create(uri.substring(URI_JDBC_PREFIX.length()));
-
-    // Check to prevent unintentional use of embedded mode. A missing "/"
-    // to separate the 'path' portion of URI can result in this.
-    // The missing "/" common typo while using secure mode, eg of such url -
-    // jdbc:hive2://localhost:10000;principal=hive/HiveServer2Host@YOUR-REALM.COM
-    if((jdbcURI.getAuthority() != null) && (jdbcURI.getHost()==null)) {
-       throw new IllegalArgumentException("Bad URL format. Hostname not found "
-           + " in authority part of the url: " + jdbcURI.getAuthority()
-           + ". Are you missing a '/' after the hostname ?");
-    }
-
-    connParams.setHost(jdbcURI.getHost());
-    if (connParams.getHost() == null) {
+    // The JDBC URI now supports specifying multiple host:port if dynamic service discovery is
+    // configured on HiveServer2 (like: host1:port1,host2:port2,host3:port3)
+    // We'll extract the authorities (host:port combo) from the URI, extract session vars, hive
+    // confs & hive vars by parsing it as a Java URI.
+    // To parse the intermediate URI as a Java URI, we'll give a dummy authority(dummy:00000).
+    // Later, we'll substitute the dummy authority for a resolved authority.
+    String dummyAuthorityString = "dummyhost:00000";
+    String suppliedAuthorities = getAuthorities(uri, connParams);
+    if ((suppliedAuthorities == null) || (suppliedAuthorities.isEmpty())) {
+      // Given uri of the form:
+      // jdbc:hive2:///dbName;sess_var_list?hive_conf_list#hive_var_list
       connParams.setEmbeddedMode(true);
     } else {
-      int port = jdbcURI.getPort();
-      if (port == -1) {
-        port = Integer.valueOf(DEFAULT_PORT);
-      }
-      connParams.setPort(port);
+      LOG.info("Supplied authorities: " + suppliedAuthorities);
+      String[] authorityList = suppliedAuthorities.split(",");
+      connParams.setSuppliedAuthorityList(authorityList);
+      uri = uri.replace(suppliedAuthorities, dummyAuthorityString);
     }
+
+    // Now parse the connection uri with dummy authority
+    URI jdbcURI = URI.create(uri.substring(URI_JDBC_PREFIX.length()));
 
     // key=value pattern
     Pattern pattern = Pattern.compile("([^;]*)=([^;]*)[;]?");
@@ -192,12 +295,13 @@ public class Utils {
       } else {
         // we have dbname followed by session parameters
         dbName = sessVars.substring(0, sessVars.indexOf(';'));
-        sessVars = sessVars.substring(sessVars.indexOf(';')+1);
+        sessVars = sessVars.substring(sessVars.indexOf(';') + 1);
         if (sessVars != null) {
           Matcher sessMatcher = pattern.matcher(sessVars);
           while (sessMatcher.find()) {
             if (connParams.getSessionVars().put(sessMatcher.group(1), sessMatcher.group(2)) != null) {
-              throw new IllegalArgumentException("Bad URL format: Multiple values for property " + sessMatcher.group(1));
+              throw new JdbcUriParseException("Bad URL format: Multiple values for property "
+                  + sessMatcher.group(1));
             }
           }
         }
@@ -225,7 +329,143 @@ public class Utils {
       }
     }
 
+    // Extract host, port
+    if (connParams.isEmbeddedMode()) {
+      // In case of embedded mode we were supplied with an empty authority.
+      // So we never substituted the authority with a dummy one.
+      connParams.setHost(jdbcURI.getHost());
+      connParams.setPort(jdbcURI.getPort());
+    } else {
+      // Else substitute the dummy authority with a resolved one.
+      // In case of dynamic service discovery using ZooKeeper, it picks a server uri from ZooKeeper
+      String resolvedAuthorityString = resolveAuthority(connParams);
+      uri = uri.replace(dummyAuthorityString, resolvedAuthorityString);
+      connParams.setJdbcUriString(uri);
+      // Create a Java URI from the resolved URI for extracting the host/port
+      URI resolvedAuthorityURI = null;
+      try {
+        resolvedAuthorityURI = new URI(null, resolvedAuthorityString, null, null, null);
+      } catch (URISyntaxException e) {
+        throw new JdbcUriParseException("Bad URL format: ", e);
+      }
+      connParams.setHost(resolvedAuthorityURI.getHost());
+      connParams.setPort(resolvedAuthorityURI.getPort());
+    }
+
     return connParams;
+  }
+
+  /**
+   * Get the authority string from the supplied uri, which could potentially contain multiple
+   * host:port pairs.
+   *
+   * @param uri
+   * @param connParams
+   * @return
+   * @throws JdbcUriParseException
+   */
+  private static String getAuthorities(String uri, JdbcConnectionParams connParams)
+      throws JdbcUriParseException {
+    String authorities;
+    // For a jdbc uri like: jdbc:hive2://host1:port1,host2:port2,host3:port3/
+    // Extract the uri host:port list starting after "jdbc:hive2://", till the 1st "/" or EOL
+    int fromIndex = Utils.URL_PREFIX.length();
+    int toIndex = uri.indexOf("/", fromIndex);
+    if (toIndex < 0) {
+      authorities = uri.substring(fromIndex);
+    } else {
+      authorities = uri.substring(fromIndex, uri.indexOf("/", fromIndex));
+    }
+    return authorities;
+  }
+
+  /**
+   * Get a string representing a specific host:port
+   * @param connParams
+   * @return
+   * @throws JdbcUriParseException
+   * @throws ZooKeeperHiveClientException
+   */
+  private static String resolveAuthority(JdbcConnectionParams connParams)
+      throws JdbcUriParseException, ZooKeeperHiveClientException {
+    String serviceDiscoveryMode =
+        connParams.getSessionVars().get(JdbcConnectionParams.SERVICE_DISCOVERY_MODE);
+    if ((serviceDiscoveryMode != null)
+        && (JdbcConnectionParams.SERVICE_DISCOVERY_MODE_ZOOKEEPER
+            .equalsIgnoreCase(serviceDiscoveryMode))) {
+      // Resolve using ZooKeeper
+      return resolveAuthorityUsingZooKeeper(connParams);
+    } else {
+      String authority = connParams.getAuthorityList()[0];
+      URI jdbcURI = URI.create(URI_HIVE_PREFIX + "//" + authority);
+      // Check to prevent unintentional use of embedded mode. A missing "/"
+      // to separate the 'path' portion of URI can result in this.
+      // The missing "/" common typo while using secure mode, eg of such url -
+      // jdbc:hive2://localhost:10000;principal=hive/HiveServer2Host@YOUR-REALM.COM
+      if ((jdbcURI.getAuthority() != null) && (jdbcURI.getHost() == null)) {
+        throw new JdbcUriParseException("Bad URL format. Hostname not found "
+            + " in authority part of the url: " + jdbcURI.getAuthority()
+            + ". Are you missing a '/' after the hostname ?");
+      }
+      // Return the 1st element of the array
+      return jdbcURI.getAuthority();
+    }
+  }
+
+  /**
+   * Read a specific host:port from ZooKeeper
+   * @param connParams
+   * @return
+   * @throws ZooKeeperHiveClientException
+   */
+  private static String resolveAuthorityUsingZooKeeper(JdbcConnectionParams connParams)
+      throws ZooKeeperHiveClientException {
+    // Set ZooKeeper ensemble in connParams for later use
+    connParams.setZooKeeperEnsemble(joinStringArray(connParams.getAuthorityList(), ","));
+    return ZooKeeperHiveClientHelper.getNextServerUriFromZooKeeper(connParams);
+  }
+
+  /**
+   * Read the next server coordinates (host:port combo) from ZooKeeper. Ignore the znodes already
+   * explored. Also update the host, port, jdbcUriString fields of connParams.
+   *
+   * @param connParams
+   * @throws ZooKeeperHiveClientException
+   */
+  static void updateConnParamsFromZooKeeper(JdbcConnectionParams connParams)
+      throws ZooKeeperHiveClientException {
+    // Add current host to the rejected list
+    connParams.getRejectedHostZnodePaths().add(connParams.getCurrentHostZnodePath());
+    // Get another HiveServer2 uri from ZooKeeper
+    String serverUriString = ZooKeeperHiveClientHelper.getNextServerUriFromZooKeeper(connParams);
+    // Parse serverUri to a java URI and extract host, port
+    URI serverUri = null;
+    try {
+      // Note URL_PREFIX is not a valid scheme format, therefore leaving it null in the constructor
+      // to construct a valid URI
+      serverUri = new URI(null, serverUriString, null, null, null);
+    } catch (URISyntaxException e) {
+      throw new ZooKeeperHiveClientException(e);
+    }
+    String oldServerHost = connParams.getHost();
+    int oldServerPort = connParams.getPort();
+    String newServerHost = serverUri.getHost();
+    int newServerPort = serverUri.getPort();
+    connParams.setHost(newServerHost);
+    connParams.setPort(newServerPort);
+    connParams.setJdbcUriString(connParams.getJdbcUriString().replace(
+        oldServerHost + ":" + oldServerPort, newServerHost + ":" + newServerPort));
+  }
+
+  private static String joinStringArray(String[] stringArray, String seperator) {
+    StringBuilder stringBuilder = new StringBuilder();
+    for (int cur = 0, end = stringArray.length; cur < end; cur++) {
+      if (cur > 0) {
+        stringBuilder.append(seperator);
+      }
+      stringBuilder.append(stringArray[cur]);
+    }
+    return stringBuilder.toString();
   }
 
   /**

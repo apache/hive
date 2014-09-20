@@ -188,6 +188,26 @@ POSTHOOK: query: select count(*), count(1), sum(1), sum(2), count(s), count(bo),
 POSTHOOK: type: QUERY
 #### A masked pattern was here ####
 2219	2219	2219	4438	2219	2219	2219	2219	65791	4294967296	99.95999908447266	0.04
+PREHOOK: query: select count(*) from stats_tbl_part
+PREHOOK: type: QUERY
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from stats_tbl_part
+POSTHOOK: type: QUERY
+#### A masked pattern was here ####
+4541
+PREHOOK: query: select count(*)/2 from stats_tbl_part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_tbl_part
+PREHOOK: Input: default@stats_tbl_part@dt=2010
+PREHOOK: Input: default@stats_tbl_part@dt=2014
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*)/2 from stats_tbl_part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_tbl_part
+POSTHOOK: Input: default@stats_tbl_part@dt=2010
+POSTHOOK: Input: default@stats_tbl_part@dt=2014
+#### A masked pattern was here ####
+2270.5
 PREHOOK: query: drop table stats_tbl_part
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@stats_tbl_part

@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
+
 import org.apache.pig.ExecType;
 import org.apache.pig.PigServer;
 import org.apache.pig.backend.executionengine.ExecException;
@@ -44,8 +45,10 @@ import org.apache.pig.data.TupleFactory;
 import org.apache.pig.impl.logicalLayer.FrontendException;
 import org.apache.pig.impl.logicalLayer.schema.Schema;
 import org.apache.pig.impl.logicalLayer.schema.Schema.FieldSchema;
+
 import org.junit.BeforeClass;
 import org.junit.Test;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -225,7 +228,7 @@ public class TestHCatLoaderComplexSchema {
       dropTable(tablename);
     }
   }
-  
+
   private void compareTuples(Tuple t1, Tuple t2) throws ExecException {
     Assert.assertEquals("Tuple Sizes don't match", t1.size(), t2.size());
     for (int i = 0; i < t1.size(); i++) {
@@ -237,7 +240,7 @@ public class TestHCatLoaderComplexSchema {
       Assert.assertEquals(msg, noOrder(f1.toString()), noOrder(f2.toString()));
     }
   }
-  
+
   private String noOrder(String s) {
     char[] chars = s.toCharArray();
     Arrays.sort(chars);

@@ -660,7 +660,7 @@ public final class VectorExpressionWriterFactory {
       @Override
       public Object writeValue(byte[] value, int start, int length) throws HiveException {
         this.text.set(value, start, length);
-        ((SettableStringObjectInspector) this.objectInspector).set(this.obj, this.text.toString());
+        ((SettableStringObjectInspector) this.objectInspector).set(this.obj, this.text);
         return this.obj;
       }
 
@@ -671,7 +671,7 @@ public final class VectorExpressionWriterFactory {
           field = initValue(null);
         }
         this.text.set(value, start, length);
-        ((SettableStringObjectInspector) this.objectInspector).set(field, this.text.toString());
+        ((SettableStringObjectInspector) this.objectInspector).set(field, this.text);
         return field;
       }
 

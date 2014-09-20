@@ -47,7 +47,6 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
-import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.StatsSetupConst.StatDB;
@@ -805,13 +804,18 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         return PlanUtils.stripQuotes(expr.getText());
 
       case HiveParser.KW_FALSE:
-        return "FALSE";
+        // UDFToBoolean casts any non-empty string to true, so set this to false
+        return "";
 
       case HiveParser.KW_TRUE:
         return "TRUE";
 
       case HiveParser.MINUS:
         return "-" + unparseExprForValuesClause((ASTNode)expr.getChildren().get(0));
+
+      case HiveParser.TOK_NULL:
+        // Hive's text input will translate this as a null
+        return "\\N";
 
       default:
         throw new SemanticException("Expression of type " + expr.getText() +
@@ -5866,7 +5870,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if (!isNonNativeTable) {
         AcidUtils.Operation acidOp = getAcidType(table_desc.getOutputFileFormatClass());
         if (acidOp != AcidUtils.Operation.NOT_ACID) {
-          checkIfAcidAndOverwriting(qb, table_desc);
+          checkAcidConstraints(qb, table_desc);
         }
         ltd = new LoadTableDesc(queryTmpdir,table_desc, dpCtx, acidOp);
         ltd.setReplace(!qb.getParseInfo().isInsertIntoTable(dest_tab.getDbName(),
@@ -5973,7 +5977,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           dest_part.isStoredAsSubDirectories(), conf);
       AcidUtils.Operation acidOp = getAcidType(table_desc.getOutputFileFormatClass());
       if (acidOp != AcidUtils.Operation.NOT_ACID) {
-        checkIfAcidAndOverwriting(qb, table_desc);
+        checkAcidConstraints(qb, table_desc);
       }
       ltd = new LoadTableDesc(queryTmpdir, table_desc, dest_part.getSpec(), acidOp);
       ltd.setReplace(!qb.getParseInfo().isInsertIntoTable(dest_tab.getDbName(),
@@ -6233,15 +6237,25 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return output;
   }
 
-  // Check if we are overwriting any tables.  If so, throw an exception as that is not allowed
-  // when using an Acid compliant txn manager and operating on an acid table.
-  private void checkIfAcidAndOverwriting(QB qb, TableDesc tableDesc) throws SemanticException {
+  // Check constraints on acid tables.  This includes
+  // * no insert overwrites
+  // * no use of vectorization
+  // * turns off reduce deduplication optimization, as that sometimes breaks acid
+  // This method assumes you have already decided that this is an Acid write.  Don't call it if
+  // that isn't true.
+  private void checkAcidConstraints(QB qb, TableDesc tableDesc) throws SemanticException {
     String tableName = tableDesc.getTableName();
     if (!qb.getParseInfo().isInsertIntoTable(tableName)) {
       LOG.debug("Couldn't find table " + tableName + " in insertIntoTable");
       throw new SemanticException(ErrorMsg.NO_INSERT_OVERWRITE_WITH_ACID.getMsg());
     }
-
+    if (conf.getBoolVar(ConfVars.HIVE_VECTORIZATION_ENABLED)) {
+      LOG.info("Turning off vectorization for acid write operation");
+      conf.setBoolVar(ConfVars.HIVE_VECTORIZATION_ENABLED, false);
+    }
+    LOG.info("Modifying config values for ACID write");
+    conf.setBoolVar(ConfVars.HIVEOPTREDUCEDEDUPLICATION, false);
+    conf.setBoolVar(ConfVars.HIVE_HADOOP_SUPPORTS_SUBDIRECTORIES, true);
   }
 
   /**

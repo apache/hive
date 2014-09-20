@@ -7,6 +7,10 @@
 package org.apache.hadoop.hive.ql.plan.api;
 
 
+import java.util.Map;
+import java.util.HashMap;
+import org.apache.thrift.TEnum;
+
 public enum OperatorType implements org.apache.thrift.TEnum {
   JOIN(0),
   MAPJOIN(1),
