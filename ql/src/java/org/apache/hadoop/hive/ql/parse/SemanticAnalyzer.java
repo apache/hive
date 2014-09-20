@@ -804,13 +804,18 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         return PlanUtils.stripQuotes(expr.getText());
 
       case HiveParser.KW_FALSE:
-        return "FALSE";
+        // UDFToBoolean casts any non-empty string to true, so set this to false
+        return "";
 
       case HiveParser.KW_TRUE:
         return "TRUE";
 
       case HiveParser.MINUS:
         return "-" + unparseExprForValuesClause((ASTNode)expr.getChildren().get(0));
+
+      case HiveParser.TOK_NULL:
+        // Hive's text input will translate this as a null
+        return "\\N";
 
       default:
         throw new SemanticException("Expression of type " + expr.getText() +
