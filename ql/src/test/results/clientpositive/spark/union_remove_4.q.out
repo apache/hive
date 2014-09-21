@@ -190,7 +190,7 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Merge 
+        Spark Merge File Work 
             Map Operator Tree:
                 TableScan
                   File Output Operator
@@ -205,7 +205,7 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Merge 
+        Spark Merge File Work 
             Map Operator Tree:
                 TableScan
                   File Output Operator

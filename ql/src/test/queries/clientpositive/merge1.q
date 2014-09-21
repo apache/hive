@@ -1,4 +1,5 @@
 set hive.merge.mapredfiles=true;
+set hive.merge.sparkfiles=true;
 
 -- SORT_QUERY_RESULTS
 

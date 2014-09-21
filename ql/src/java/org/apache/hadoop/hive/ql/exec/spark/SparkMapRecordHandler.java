@@ -54,7 +54,7 @@ import java.util.List;
  * - Catch and handle errors during execution of the operators.
  *
  */
-public class SparkMapRecordHandler extends SparkRecordHandler{
+public class SparkMapRecordHandler extends SparkRecordHandler {
 
   private static final String PLAN_KEY = "__MAP_PLAN__";
   private MapOperator mo;
@@ -130,7 +130,7 @@ public class SparkMapRecordHandler extends SparkRecordHandler{
   }
 
   @Override
-  public void processRow(Object value) throws IOException {
+  public void processRow(Object key, Object value) throws IOException {
     // reset the execContext for each new row
     execContext.resetRow();
 
@@ -158,6 +158,7 @@ public class SparkMapRecordHandler extends SparkRecordHandler{
     throw new UnsupportedOperationException("Do not support this method in SparkMapRecordHandler.");
   }
 
+  @Override
   public void close() {
     // No row was processed
     if (oc == null) {
@@ -202,6 +203,7 @@ public class SparkMapRecordHandler extends SparkRecordHandler{
     }
   }
 
+  @Override
   public  boolean getDone() {
     return mo.getDone();
   }
