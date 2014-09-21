@@ -27,7 +27,7 @@ import java.util.Iterator;
 
 public class HiveMapFunctionResultList extends
     HiveBaseFunctionResultList<Tuple2<BytesWritable, BytesWritable>> {
-  private final SparkMapRecordHandler recordHandler;
+  private final SparkRecordHandler recordHandler;
 
   /**
    * Instantiate result set Iterable for Map function output.
@@ -36,7 +36,7 @@ public class HiveMapFunctionResultList extends
    * @param handler Initialized {@link SparkMapRecordHandler} instance.
    */
   public HiveMapFunctionResultList(Configuration conf,
-      Iterator<Tuple2<BytesWritable, BytesWritable>> inputIterator, SparkMapRecordHandler handler) {
+      Iterator<Tuple2<BytesWritable, BytesWritable>> inputIterator, SparkRecordHandler handler) {
     super(conf, inputIterator);
     recordHandler = handler;
   }
@@ -44,7 +44,7 @@ public class HiveMapFunctionResultList extends
   @Override
   protected void processNextRecord(Tuple2<BytesWritable, BytesWritable> inputRecord)
       throws IOException {
-    recordHandler.processRow(inputRecord._2());
+    recordHandler.processRow(inputRecord._1(), inputRecord._2());
   }
 
   @Override

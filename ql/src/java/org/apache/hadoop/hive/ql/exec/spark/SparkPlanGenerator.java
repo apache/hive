@@ -28,7 +28,12 @@ import com.google.common.base.Preconditions;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.io.merge.MergeFileMapper;
+import org.apache.hadoop.hive.ql.io.merge.MergeFileOutputFormat;
+import org.apache.hadoop.hive.ql.io.merge.MergeFileWork;
+import org.apache.hadoop.mapred.FileOutputFormat;
 import org.apache.hadoop.mapred.Partitioner;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
@@ -84,8 +89,8 @@ public class SparkPlanGenerator {
       }
       MapWork mapWork = (MapWork) w;
       JobConf newJobConf = cloneJobConf(mapWork);
-      SparkTran tran = generate(newJobConf, mapWork);
       JavaPairRDD<BytesWritable, BytesWritable> input = generateRDD(newJobConf, mapWork);
+      SparkTran tran = generate(newJobConf, mapWork);
       trans.addRootTranWithInput(tran, input);
 
       while (sparkWork.getChildren(w).size() > 0) {
@@ -155,13 +160,14 @@ public class SparkPlanGenerator {
 
   private JavaPairRDD<BytesWritable, BytesWritable> generateRDD(JobConf jobConf, MapWork mapWork)
       throws Exception {
-    Class ifClass = getInputFormat(mapWork);
+    Class ifClass = getInputFormat(jobConf, mapWork);
 
     return sc.hadoopRDD(jobConf, ifClass, WritableComparable.class,
         Writable.class);
   }
 
-  private Class getInputFormat(MapWork mWork) throws HiveException {
+  private Class getInputFormat(JobConf jobConf, MapWork mWork) throws HiveException {
+    // MergeFileWork is sub-class of MapWork, we don't need to distinguish here
     if (mWork.getInputformat() != null) {
       HiveConf.setVar(jobConf, HiveConf.ConfVars.HIVEINPUTFORMAT,
           mWork.getInputformat());
@@ -190,6 +196,20 @@ public class SparkPlanGenerator {
   }
 
   private MapTran generate(JobConf jobConf, MapWork mw) throws Exception {
+    // Create tmp dir for MergeFileWork
+    if (mw instanceof MergeFileWork) {
+      Path outputPath = ((MergeFileWork) mw).getOutputDir();
+      Path tempOutPath = Utilities.toTempPath(outputPath);
+      FileSystem fs = outputPath.getFileSystem(jobConf);
+      try {
+        if (!fs.exists(tempOutPath)) {
+          fs.mkdirs(tempOutPath);
+        }
+      } catch (IOException e) {
+        throw new RuntimeException(
+            "Can't make path " + outputPath + " : " + e.getMessage());
+      }
+    }
     initStatsPublisher(mw);
     MapTran result = new MapTran();
     byte[] confBytes = KryoSerializer.serializeJobConf(jobConf);
@@ -238,11 +258,18 @@ public class SparkPlanGenerator {
       Utilities.setInputPaths(cloned, inputPaths);
       Utilities.setMapWork(cloned, (MapWork) work, scratchDir, false);
       Utilities.createTmpDirs(cloned, (MapWork) work);
-      cloned.set("mapred.mapper.class", ExecMapper.class.getName());
+      if (work instanceof MergeFileWork) {
+        MergeFileWork mergeFileWork = (MergeFileWork) work;
+        cloned.set(Utilities.MAPRED_MAPPER_CLASS, MergeFileMapper.class.getName());
+        cloned.set("mapred.input.format.class", mergeFileWork.getInputformat());
+        cloned.setClass("mapred.output.format.class", MergeFileOutputFormat.class, FileOutputFormat.class);
+      } else {
+        cloned.set(Utilities.MAPRED_MAPPER_CLASS, ExecMapper.class.getName());
+      }
     } else if (work instanceof ReduceWork) {
       Utilities.setReduceWork(cloned, (ReduceWork) work, scratchDir, false);
       Utilities.createTmpDirs(cloned, (ReduceWork) work);
-      cloned.set("mapred.reducer.class", ExecReducer.class.getName());
+      cloned.set(Utilities.MAPRED_REDUCER_CLASS, ExecReducer.class.getName());
     }
     return cloned;
   }

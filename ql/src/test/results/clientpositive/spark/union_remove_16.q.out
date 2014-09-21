@@ -202,18 +202,26 @@ STAGE PLANS:
               name: default.outputtbl1
 
   Stage: Stage-3
-    Merge File Operator
-      Map Operator Tree:
-          RCFile Merge Operator
-      merge level: block
-      input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Spark Merge File Work 
+          Merge File Operator
+            Map Operator Tree:
+                RCFile Merge Operator
+            merge level: block
+            input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
 
   Stage: Stage-5
-    Merge File Operator
-      Map Operator Tree:
-          RCFile Merge Operator
-      merge level: block
-      input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Spark Merge File Work 
+          Merge File Operator
+            Map Operator Tree:
+                RCFile Merge Operator
+            merge level: block
+            input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
 
   Stage: Stage-6
     Move Operator

@@ -20,7 +20,9 @@ package org.apache.hadoop.hive.ql.exec.spark;
 
 import java.util.Iterator;
 
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.HiveKey;
+import org.apache.hadoop.hive.ql.io.merge.MergeFileMapper;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.Reporter;
@@ -47,7 +49,15 @@ public class HiveMapFunction implements PairFlatMapFunction<Iterator<Tuple2<Byte
       jobConf = KryoSerializer.deserializeJobConf(this.buffer);
     }
 
-    SparkMapRecordHandler mapRecordHandler = new SparkMapRecordHandler();
+    SparkRecordHandler mapRecordHandler;
+
+    // need different record handler for MergeFileWork
+    if (MergeFileMapper.class.getName().equals(jobConf.get(Utilities.MAPRED_MAPPER_CLASS))) {
+      mapRecordHandler = new SparkMergeFileRecordHandler();
+    } else {
+      mapRecordHandler = new SparkMapRecordHandler();
+    }
+
     HiveMapFunctionResultList result = new HiveMapFunctionResultList(jobConf, it, mapRecordHandler);
     //TODO we need to implement a Spark specified Reporter to collect stats, refer to HIVE-7709.
     mapRecordHandler.init(jobConf, result, Reporter.NULL);

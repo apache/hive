@@ -67,9 +67,9 @@ public abstract class SparkRecordHandler {
   }
 
   /**
-   * Process row with single value.
+   * Process row with key and single value.
    */
-  public abstract void processRow(Object value) throws IOException;
+  public abstract void processRow(Object key, Object value) throws IOException;
 
   /**
    * Process row with key and value collection.
@@ -89,7 +89,8 @@ public abstract class SparkRecordHandler {
     }
   }
 
-  abstract void close();
+  public abstract void close();
+  public abstract boolean getDone();
 
   /**
    * Log information to be logged at the end

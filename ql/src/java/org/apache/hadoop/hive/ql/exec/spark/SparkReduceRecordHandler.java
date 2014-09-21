@@ -151,7 +151,7 @@ public class SparkReduceRecordHandler extends SparkRecordHandler{
   }
 
   @Override
-  public void processRow(Object value) throws IOException {
+  public void processRow(Object key, Object value) throws IOException {
     throw new UnsupportedOperationException("Do not support this method in SparkReduceRecordHandler.");
   }
 
@@ -277,5 +277,10 @@ public class SparkReduceRecordHandler extends SparkRecordHandler{
       MapredContext.close();
       Utilities.clearWorkMap();
     }
+  }
+
+  @Override
+  public boolean getDone() {
+    return reducer.getDone();
   }
 }

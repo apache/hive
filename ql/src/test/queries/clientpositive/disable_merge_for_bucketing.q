@@ -2,6 +2,7 @@ set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
 set hive.enforce.bucketing = true;
 set hive.exec.reducers.max = 1;
 set hive.merge.mapredfiles=true;
+set hive.merge.sparkfiles=true;
 
 
 CREATE TABLE bucket2_1(key int, value string) CLUSTERED BY (key) INTO 2 BUCKETS;
