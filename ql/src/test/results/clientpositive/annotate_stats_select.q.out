@@ -690,10 +690,10 @@ STAGE PLANS:
             Select Operator
               expressions: null (type: void)
               outputColumnNames: _col0
-              Statistics: Num rows: 2 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 2 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 2 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 2 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
