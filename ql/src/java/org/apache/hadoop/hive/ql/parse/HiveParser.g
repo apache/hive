@@ -479,8 +479,9 @@ import java.util.HashMap;
     xlateMap.put("KW_SUBQUERY", "SUBQUERY");
     xlateMap.put("KW_REWRITE", "REWRITE");
     xlateMap.put("KW_UPDATE", "UPDATE");
-
     xlateMap.put("KW_VALUES", "VALUES");
+    xlateMap.put("KW_PURGE", "PURGE");
+
 
     // Operators
     xlateMap.put("DOT", ".");
@@ -929,7 +930,7 @@ dropIndexStatement
 dropTableStatement
 @init { pushMsg("drop statement", state); }
 @after { popMsg(state); }
-    : KW_DROP KW_TABLE ifExists? tableName -> ^(TOK_DROPTABLE tableName ifExists?)
+    : KW_DROP KW_TABLE ifExists? tableName KW_PURGE? -> ^(TOK_DROPTABLE tableName ifExists? KW_PURGE?)
     ;
 
 alterStatement

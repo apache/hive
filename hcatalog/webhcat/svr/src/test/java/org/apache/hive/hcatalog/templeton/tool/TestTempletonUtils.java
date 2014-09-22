@@ -320,6 +320,6 @@ public class TestTempletonUtils {
     result = TempletonUtils.findContainingJar(FileSystem.class, ".*hadoop.*\\.jar.*");
     Assert.assertNotNull(result);
     result = TempletonUtils.findContainingJar(HadoopShimsSecure.class, ".*unknownjar.*");
-    Assert.assertNull(result);
+    Assert.assertNull("unexpectedly found jar for HadoopShimsSecure class: " + result, result);
   }
 }
