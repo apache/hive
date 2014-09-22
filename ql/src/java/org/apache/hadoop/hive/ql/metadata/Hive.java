@@ -878,6 +878,23 @@ public class Hive {
 
   /**
    * Drops table along with the data in it. If the table doesn't exist then it
+   * is a no-op. If ifPurge option is specified it is passed to the
+   * hdfs command that removes table data from warehouse to make it skip trash.
+   *
+   * @param tableName
+   *          table to drop
+   * @param ifPurge
+   *          completely purge the table (skipping trash) while removing data from warehouse
+   * @throws HiveException
+   *           thrown if the drop fails
+   */
+  public void dropTable(String tableName, boolean ifPurge) throws HiveException {
+    String[] names = Utilities.getDbTableName(tableName);
+    dropTable(names[0], names[1], true, true, ifPurge);
+  }
+
+  /**
+   * Drops table along with the data in it. If the table doesn't exist then it
    * is a no-op
    *
    * @param tableName
@@ -886,8 +903,7 @@ public class Hive {
    *           thrown if the drop fails
    */
   public void dropTable(String tableName) throws HiveException {
-    String[] names = Utilities.getDbTableName(tableName);
-    dropTable(names[0], names[1], true, true);
+    dropTable(tableName, false);
   }
 
   /**
@@ -902,7 +918,7 @@ public class Hive {
    *           thrown if the drop fails
    */
   public void dropTable(String dbName, String tableName) throws HiveException {
-    dropTable(dbName, tableName, true, true);
+    dropTable(dbName, tableName, true, true, false);
   }
 
   /**
@@ -913,14 +929,31 @@ public class Hive {
    * @param deleteData
    *          deletes the underlying data along with metadata
    * @param ignoreUnknownTab
-   *          an exception if thrown if this is falser and table doesn't exist
+   *          an exception is thrown if this is false and the table doesn't exist
    * @throws HiveException
    */
   public void dropTable(String dbName, String tableName, boolean deleteData,
       boolean ignoreUnknownTab) throws HiveException {
+    dropTable(dbName, tableName, deleteData, ignoreUnknownTab, false);
+  }
 
+  /**
+   * Drops the table.
+   *
+   * @param dbName
+   * @param tableName
+   * @param deleteData
+   *          deletes the underlying data along with metadata
+   * @param ignoreUnknownTab
+   *          an exception is thrown if this is false and the table doesn't exist
+   * @param ifPurge
+   *          completely purge the table skipping trash while removing data from warehouse
+   * @throws HiveException
+   */
+  public void dropTable(String dbName, String tableName, boolean deleteData,
+      boolean ignoreUnknownTab, boolean ifPurge) throws HiveException {
     try {
-      getMSC().dropTable(dbName, tableName, deleteData, ignoreUnknownTab);
+      getMSC().dropTable(dbName, tableName, deleteData, ignoreUnknownTab, ifPurge);
     } catch (NoSuchObjectException e) {
       if (!ignoreUnknownTab) {
         throw new HiveException(e);
@@ -1736,6 +1769,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
   public List<Partition> dropPartitions(String dbName, String tblName,
       List<DropTableDesc.PartSpec> partSpecs,  boolean deleteData, boolean ignoreProtection,
       boolean ifExists) throws HiveException {
+    //TODO: add support for ifPurge
     try {
       Table tbl = getTable(dbName, tblName);
       List<ObjectPair<Integer, byte[]>> partExprs =
