@@ -217,7 +217,7 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
       expr = RelOptUtil.pushFilterPastProject(expr, (ProjectRelBase) r);
       return isPartitionPredicate(expr, ((ProjectRelBase) r).getChild());
     } else if ( r instanceof FilterRelBase ) {
-      isPartitionPredicate(expr, ((ProjectRelBase) r).getChild());
+      return isPartitionPredicate(expr, ((FilterRelBase) r).getChild());
     } else if ( r instanceof HiveTableScanRel ) {
       RelOptHiveTable table = (RelOptHiveTable)
           ((HiveTableScanRel)r).getTable();

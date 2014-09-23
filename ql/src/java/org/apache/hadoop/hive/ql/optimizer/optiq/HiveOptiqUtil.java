@@ -28,7 +28,6 @@ import java.util.Map.Entry;
 
 import org.apache.hadoop.hive.ql.optimizer.optiq.reloperators.HiveJoinRel;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
-import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.eigenbase.rel.RelFactories.ProjectFactory;
 import org.eigenbase.rel.RelNode;
 import org.eigenbase.relopt.RelOptUtil;
@@ -74,12 +73,12 @@ public class HiveOptiqUtil {
     return vCols;
   }
 
-  public static boolean validateASTForCBO (ASTNode ast) {
+  public static boolean validateASTForCBO(ASTNode ast) {
     String astTree = ast.toStringTree();
-    String [] tokens = {"TOK_CHARSETLITERAL"};
+    String[] tokens = { "TOK_CHARSETLITERAL" };
     for (String token : tokens) {
       if (astTree.contains(token)) {
-         return false;
+        return false;
       }
     }
     return true;
@@ -459,9 +458,8 @@ public class HiveOptiqUtil {
       int rightOffSet = j.getLeft().getRowType().getFieldCount();
 
       // 1. Split leaf join predicate to expressions from left, right
-      @SuppressWarnings("unused")
-      RexNode nonEquiPredicate = RelOptUtil.splitJoinCondition(j.getSystemFieldList(), j.getLeft(),
-          j.getRight(), pe, joinKeyExprsFromLeft, joinKeyExprsFromRight, filterNulls, null);
+      RelOptUtil.splitJoinCondition(j.getSystemFieldList(), j.getLeft(), j.getRight(), pe,
+          joinKeyExprsFromLeft, joinKeyExprsFromRight, filterNulls, null);
 
       // 2. For left expressions, collect child projection indexes used
       InputReferencedVisitor irvLeft = new InputReferencedVisitor();

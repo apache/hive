@@ -249,7 +249,6 @@ import org.eigenbase.rel.rules.LoptOptimizeJoinRule;
 import org.eigenbase.rel.rules.MergeFilterRule;
 import org.eigenbase.rel.rules.PushFilterPastProjectRule;
 import org.eigenbase.rel.rules.PushFilterPastSetOpRule;
-import org.eigenbase.rel.rules.RemoveTrivialProjectRule;
 import org.eigenbase.rel.rules.SemiJoinRel;
 import org.eigenbase.rel.rules.TransitivePredicatesOnJoinRule;
 import org.eigenbase.relopt.RelOptCluster;
@@ -284,7 +283,6 @@ import org.eigenbase.sql.SqlLiteral;
 import org.eigenbase.util.CompositeList;
 import org.eigenbase.util.ImmutableIntList;
 import org.eigenbase.util.Pair;
-import org.eigenbase.util.Util;
 
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
@@ -12642,7 +12640,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       try {
 
-        // 0. If the table has a Sample specified, bail from Optiq path.
+        // 1. If the table has a Sample specified, bail from Optiq path.
         if ( qb.getParseInfo().getTabSample(tableAlias) != null ||
             SemanticAnalyzer.this.nameToSplitSample.containsKey(tableAlias)) {
           String msg = String.format("Table Sample specified for %s." +
@@ -12651,9 +12649,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           LOG.debug(msg);
           throw new OptiqSemanticException(msg);
         }
-
-        // 1. Get Table Alias
-        String alias_id = getAliasId(tableAlias, qb);
 
         // 2. Get Table Metadata
         Table tab = qb.getMetaData().getSrcForAlias(tableAlias);
@@ -12984,7 +12979,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     private RelNode genGBRelNode(List<ExprNodeDesc> gbExprs, List<AggInfo> aggInfoLst,
         RelNode srcRel) throws SemanticException {
       RowResolver gbInputRR = this.relToHiveRR.get(srcRel);
-      ArrayList<ColumnInfo> signature = gbInputRR.getRowSchema().getSignature();
       ImmutableMap<String, Integer> posMap = this.relToHiveColNameOptiqPosMap.get(srcRel);
       RexNodeConverter converter = new RexNodeConverter(this.cluster, srcRel.getRowType(),
           posMap, 0, false);
@@ -13194,7 +13188,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if (hasGrpByAstExprs || hasAggregationTrees) {
         ArrayList<ExprNodeDesc> gbExprNDescLst = new ArrayList<ExprNodeDesc>();
         ArrayList<String> outputColumnNames = new ArrayList<String>();
-        int numDistinctUDFs = 0;
 
         // 2. Input, Output Row Resolvers
         RowResolver groupByInputRowResolver = this.relToHiveRR.get(srcRel);
@@ -13226,9 +13219,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             String aggName = unescapeIdentifier(value.getChild(0).getText());
             boolean isDistinct = value.getType() == HiveParser.TOK_FUNCTIONDI;
             boolean isAllColumns = value.getType() == HiveParser.TOK_FUNCTIONSTAR;
-            if (isDistinct) {
-              numDistinctUDFs++;
-            }
 
             // 4.2 Convert UDAF Params to ExprNodeDesc
             ArrayList<ExprNodeDesc> aggParameters = new ArrayList<ExprNodeDesc>();
@@ -13593,7 +13583,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
               // 6.2.2 Update Output Row Schema
               ColumnInfo oColInfo = new ColumnInfo(
                   getColumnInternalName(projsForWindowSelOp.size()), wtp.getValue(), null, false);
-              String colAlias = wExprSpec.getAlias();
               if (false) {
                 out_rwsch.checkColumn(null, wExprSpec.getAlias());
                 out_rwsch.put(null, wExprSpec.getAlias(), oColInfo);

@@ -103,12 +103,6 @@ public class DerivedTableInjector {
           introduceDerivedTable(rel, parent);
         }
       }
-    } else if (rel instanceof TableAccessRelBase) {
-
-    } else if (rel instanceof TableFunctionRelBase) {
-
-    } else if (rel instanceof ValuesRelBase) {
-
     }
 
     List<RelNode> childNodes = rel.getInputs();
