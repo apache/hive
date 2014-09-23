@@ -791,6 +791,7 @@ public class Vectorizer implements PhysicalPlanResolver {
 
   boolean validateMapWorkOperator(Operator<? extends OperatorDesc> op, boolean isTez) {
     boolean ret = false;
+    LOG.info("Validating MapWork operator " + op.getType().name());
     switch (op.getType()) {
       case MAPJOIN:
         if (op instanceof MapJoinOperator) {
@@ -827,6 +828,7 @@ public class Vectorizer implements PhysicalPlanResolver {
 
   boolean validateReduceWorkOperator(Operator<? extends OperatorDesc> op) {
     boolean ret = false;
+    LOG.info("Validating ReduceWork operator " + op.getType().name());
     switch (op.getType()) {
       case EXTRACT:
         ret = validateExtractOperator((ExtractOperator) op);
@@ -840,7 +842,12 @@ public class Vectorizer implements PhysicalPlanResolver {
         }
         break;
       case GROUPBY:
-        ret = validateGroupByOperator((GroupByOperator) op, true, true);
+        if (HiveConf.getBoolVar(physicalContext.getConf(),
+                  HiveConf.ConfVars.HIVE_VECTORIZATION_REDUCE_GROUPBY_ENABLED)) {
+          ret = validateGroupByOperator((GroupByOperator) op, true, true);
+        } else {
+          ret = false;
+        }
         break;
       case FILTER:
         ret = validateFilterOperator((FilterOperator) op);
@@ -1071,11 +1078,11 @@ public class Vectorizer implements PhysicalPlanResolver {
       VectorizationContext vc = new ValidatorVectorizationContext();
       if (vc.getVectorExpression(desc, mode) == null) {
         // TODO: this cannot happen - VectorizationContext throws in such cases.
-        LOG.info("getVectorExpression returned null");
+        LOG.debug("getVectorExpression returned null");
         return false;
       }
     } catch (Exception e) {
-      LOG.info("Failed to vectorize", e);
+      LOG.debug("Failed to vectorize", e);
       return false;
     }
     return true;
@@ -1098,19 +1105,19 @@ public class Vectorizer implements PhysicalPlanResolver {
     if (!supportedAggregationUdfs.contains(aggDesc.getGenericUDAFName().toLowerCase())) {
       return false;
     }
-    if (aggDesc.getParameters() != null) {
-      return validateExprNodeDesc(aggDesc.getParameters());
+    if (aggDesc.getParameters() != null && !validateExprNodeDesc(aggDesc.getParameters())) {
+      return false;
     }
     // See if we can vectorize the aggregation.
     try {
       VectorizationContext vc = new ValidatorVectorizationContext();
       if (vc.getAggregatorExpression(aggDesc, isReduce) == null) {
         // TODO: this cannot happen - VectorizationContext throws in such cases.
-        LOG.info("getAggregatorExpression returned null");
+        LOG.debug("getAggregatorExpression returned null");
         return false;
       }
     } catch (Exception e) {
-      LOG.info("Failed to vectorize", e);
+      LOG.debug("Failed to vectorize", e);
       return false;
     }
     return true;
