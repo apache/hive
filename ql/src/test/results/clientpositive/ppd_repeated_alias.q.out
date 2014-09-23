@@ -145,7 +145,7 @@ STAGE PLANS:
             predicate: (_col7 = 3) (type: boolean)
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             Select Operator
-              expressions: _col0 (type: int), _col6 (type: int), _col7 (type: int)
+              expressions: _col0 (type: int), _col6 (type: int), 3 (type: int)
               outputColumnNames: _col0, _col1, _col2
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               File Output Operator

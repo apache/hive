@@ -437,6 +437,7 @@ public class ReduceRecordProcessor  extends RecordProcessor{
   private boolean processVectors(Iterable<Object> values, byte tag) throws HiveException {
     VectorizedRowBatch batch = batches[tag];
     batch.reset();
+    buffer.reset();
 
     /* deserialize key into columns */
     VectorizedBatchUtil.addRowToBatchFrom(keyObject, keyStructInspector,
@@ -459,6 +460,7 @@ public class ReduceRecordProcessor  extends RecordProcessor{
           VectorizedBatchUtil.setBatchSize(batch, rowIdx);
           reducer.processOp(batch, tag);
           rowIdx = 0;
+          buffer.reset();
           if (isLogInfoEnabled) {
             logProgress();
           }
@@ -467,6 +469,7 @@ public class ReduceRecordProcessor  extends RecordProcessor{
       if (rowIdx > 0) {
         VectorizedBatchUtil.setBatchSize(batch, rowIdx);
         reducer.processOp(batch, tag);
+        buffer.reset();
       }
       if (isLogInfoEnabled) {
         logProgress();

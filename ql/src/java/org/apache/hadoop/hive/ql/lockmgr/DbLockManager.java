@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.lockmgr;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
+import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.thrift.TException;
@@ -42,10 +43,10 @@ public class DbLockManager implements HiveLockManager{
   private static final long MAX_SLEEP = 15000;
   private HiveLockManagerCtx context;
   private Set<DbHiveLock> locks;
-  private HiveMetaStoreClient client;
+  private IMetaStoreClient client;
   private long nextSleep = 50;
 
-  DbLockManager(HiveMetaStoreClient client) {
+  DbLockManager(IMetaStoreClient client) {
     locks = new HashSet<DbHiveLock>();
     this.client = client;
   }
@@ -210,8 +211,8 @@ public class DbLockManager implements HiveLockManager{
   /**
    * Clear the memory of the locks in this object.  This won't clear the locks from the database.
    * It is for use with
-   * {@link #DbLockManager(org.apache.hadoop.hive.metastore.HiveMetaStoreClient).commitTxn} and
-   * {@link #DbLockManager(org.apache.hadoop.hive.metastore.HiveMetaStoreClient).rollbackTxn}.
+   * {@link #DbLockManager(org.apache.hadoop.hive.metastore.IMetaStoreClient).commitTxn} and
+   * {@link #DbLockManager(org.apache.hadoop.hive.metastore.IMetaStoreClient).rollbackTxn}.
    */
   void clearLocalLockRecords() {
     locks.clear();

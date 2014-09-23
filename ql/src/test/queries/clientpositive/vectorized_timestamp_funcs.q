@@ -1,6 +1,7 @@
-SET hive.vectorized.execution.enabled = true;
-
 -- Test timestamp functions in vectorized mode to verify they run correctly end-to-end.
+-- Turning on vectorization has been temporarily moved after filling the test table
+-- due to bug HIVE-8197.
+
 
 CREATE TABLE alltypesorc_string(ctimestamp1 timestamp, stimestamp1 string) STORED AS ORC;
 
@@ -10,6 +11,8 @@ SELECT
   CAST(to_utc_timestamp(ctimestamp1, 'America/Los_Angeles') AS STRING)
 FROM alltypesorc
 LIMIT 40;
+
+SET hive.vectorized.execution.enabled = true;
 
 CREATE TABLE alltypesorc_wrong(stimestamp1 string) STORED AS ORC;
 
@@ -122,3 +125,48 @@ SELECT
   second(stimestamp1)
 FROM alltypesorc_wrong
 ORDER BY c1;
+
+EXPLAIN SELECT
+  min(ctimestamp1),
+  max(ctimestamp1),
+  count(ctimestamp1),
+  count(*)
+FROM alltypesorc_string;
+
+SELECT
+  min(ctimestamp1),
+  max(ctimestamp1),
+  count(ctimestamp1),
+  count(*)
+FROM alltypesorc_string;
+
+-- SUM of timestamps are not vectorized reduce-side because they produce a double instead of a long (HIVE-8211)...
+EXPLAIN SELECT
+  sum(ctimestamp1)
+FROM alltypesorc_string;
+
+SELECT
+ sum(ctimestamp1)
+FROM alltypesorc_string;
+
+EXPLAIN SELECT
+  avg(ctimestamp1),
+  variance(ctimestamp1),
+  var_pop(ctimestamp1),
+  var_samp(ctimestamp1),
+  std(ctimestamp1),
+  stddev(ctimestamp1),
+  stddev_pop(ctimestamp1),
+  stddev_samp(ctimestamp1)
+FROM alltypesorc_string;
+
+SELECT
+  avg(ctimestamp1),
+  variance(ctimestamp1),
+  var_pop(ctimestamp1),
+  var_samp(ctimestamp1),
+  std(ctimestamp1),
+  stddev(ctimestamp1),
+  stddev_pop(ctimestamp1),
+  stddev_samp(ctimestamp1)
+FROM alltypesorc_string;

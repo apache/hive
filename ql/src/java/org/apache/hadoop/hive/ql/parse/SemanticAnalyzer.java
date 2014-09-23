@@ -903,13 +903,18 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         return PlanUtils.stripQuotes(expr.getText());
 
       case HiveParser.KW_FALSE:
-        return "FALSE";
+        // UDFToBoolean casts any non-empty string to true, so set this to false
+        return "";
 
       case HiveParser.KW_TRUE:
         return "TRUE";
 
       case HiveParser.MINUS:
         return "-" + unparseExprForValuesClause((ASTNode)expr.getChildren().get(0));
+
+      case HiveParser.TOK_NULL:
+        // Hive's text input will translate this as a null
+        return "\\N";
 
       default:
         throw new SemanticException("Expression of type " + expr.getText() +
@@ -6353,6 +6358,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   // Check constraints on acid tables.  This includes
   // * no insert overwrites
   // * no use of vectorization
+  // * turns off reduce deduplication optimization, as that sometimes breaks acid
+  // This method assumes you have already decided that this is an Acid write.  Don't call it if
+  // that isn't true.
   private void checkAcidConstraints(QB qb, TableDesc tableDesc) throws SemanticException {
     String tableName = tableDesc.getTableName();
     if (!qb.getParseInfo().isInsertIntoTable(tableName)) {
@@ -6363,6 +6371,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       LOG.info("Turning off vectorization for acid write operation");
       conf.setBoolVar(ConfVars.HIVE_VECTORIZATION_ENABLED, false);
     }
+    LOG.info("Modifying config values for ACID write");
+    conf.setBoolVar(ConfVars.HIVEOPTREDUCEDEDUPLICATION, false);
+    conf.setBoolVar(ConfVars.HIVE_HADOOP_SUPPORTS_SUBDIRECTORIES, true);
   }
 
   /**

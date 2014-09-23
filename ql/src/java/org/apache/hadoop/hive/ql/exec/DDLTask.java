@@ -3689,7 +3689,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
 
     // drop the table
-    db.dropTable(dropTbl.getTableName());
+    db.dropTable(dropTbl.getTableName(), dropTbl.getIfPurge());
     if (tbl != null) {
       // We have already locked the table in DDLSemanticAnalyzer, don't do it again here
       work.getOutputs().add(new WriteEntity(tbl, WriteEntity.WriteType.DDL_NO_LOCK));

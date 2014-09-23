@@ -3,7 +3,6 @@ set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
 set hive.enforce.bucketing=true;
-set hive.mapred.supports.subdirectories=true;
 
 create table acid_uami(i int,
                  de decimal(5,2),

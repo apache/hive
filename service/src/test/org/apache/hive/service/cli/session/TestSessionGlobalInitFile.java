@@ -44,6 +44,7 @@ public class TestSessionGlobalInitFile extends TestCase {
   private ThriftCLIServiceClient client;
   private File initFile;
   private String tmpDir;
+  private HiveConf hiveConf;
 
   /**
    * This class is almost the same as EmbeddedThriftBinaryCLIService,
@@ -86,7 +87,7 @@ public class TestSessionGlobalInitFile extends TestCase {
     FileUtils.writeLines(initFile, Arrays.asList(fileContent));
 
     // set up service and client
-    HiveConf hiveConf = new HiveConf();
+    hiveConf = new HiveConf();
     hiveConf.setVar(HiveConf.ConfVars.HIVE_SERVER2_GLOBAL_INIT_FILE_LOCATION,
         initFile.getParentFile().getAbsolutePath());
     service = new FakeEmbeddedThriftBinaryCLIService(hiveConf);
@@ -102,11 +103,26 @@ public class TestSessionGlobalInitFile extends TestCase {
 
   @Test
   public void testSessionGlobalInitFile() throws Exception {
-    /**
-     * create session, and fetch the property set in global init file. Test if
-     * the global init file .hiverc is loaded correctly by checking the expected
-     * setting property.
-     */
+    File tmpInitFile = new File(initFile.getParent(), "hiverc");
+    Assert.assertTrue("Failed to rename " + initFile + " to " + tmpInitFile,
+      initFile.renameTo(tmpInitFile));
+    initFile = tmpInitFile;
+    hiveConf.setVar(HiveConf.ConfVars.HIVE_SERVER2_GLOBAL_INIT_FILE_LOCATION,
+        initFile.getAbsolutePath());
+    doTestSessionGlobalInitFile();
+  }
+
+  @Test
+  public void testSessionGlobalInitDir() throws Exception {
+    doTestSessionGlobalInitFile();
+  }
+
+  /**
+   * create session, and fetch the property set in global init file. Test if
+   * the global init file .hiverc is loaded correctly by checking the expected
+   * setting property.
+   */
+  private void doTestSessionGlobalInitFile() throws Exception {
     SessionHandle sessionHandle = client.openSession(null, null, null);
 
     verifyInitProperty("a", "1", sessionHandle);
