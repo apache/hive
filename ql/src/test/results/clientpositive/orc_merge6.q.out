@@ -155,7 +155,7 @@ Partition Parameters:
 	numFiles            	3                   
 	numRows             	3                   
 	rawDataSize         	765                 
-	totalSize           	1141                
+	totalSize           	1133                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -200,7 +200,7 @@ Partition Parameters:
 	numFiles            	3                   
 	numRows             	3                   
 	rawDataSize         	765                 
-	totalSize           	1141                
+	totalSize           	1133                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -400,7 +400,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	3                   
 	rawDataSize         	765                 
-	totalSize           	907                 
+	totalSize           	899                 
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -445,7 +445,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	3                   
 	rawDataSize         	765                 
-	totalSize           	907                 
+	totalSize           	899                 
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -558,7 +558,7 @@ Partition Parameters:
 	numFiles            	3                   
 	numRows             	3                   
 	rawDataSize         	765                 
-	totalSize           	1141                
+	totalSize           	1133                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -603,7 +603,7 @@ Partition Parameters:
 	numFiles            	3                   
 	numRows             	3                   
 	rawDataSize         	765                 
-	totalSize           	1141                
+	totalSize           	1133                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -736,7 +736,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	3                   
 	rawDataSize         	765                 
-	totalSize           	907                 
+	totalSize           	899                 
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -781,7 +781,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	3                   
 	rawDataSize         	765                 
-	totalSize           	907                 
+	totalSize           	899                 
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
