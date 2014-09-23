@@ -343,8 +343,10 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
 
       // Add the setRCols to the input list
       for (String colName : setRCols) {
-        columnAccessInfo.add(Table.getCompleteName(mTable.getDbName(), mTable.getTableName()),
+        if(columnAccessInfo != null) {//assuming this means we are not doing Auth
+          columnAccessInfo.add(Table.getCompleteName(mTable.getDbName(), mTable.getTableName()),
             colName);
+        }
       }
     }
 
@@ -386,7 +388,7 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
       setRCols.add(colName.getText());
     } else if (node.getChildren() != null) {
       for (Node n : node.getChildren()) {
-        addSetRCols(node, setRCols);
+        addSetRCols((ASTNode)n, setRCols);
       }
     }
   }

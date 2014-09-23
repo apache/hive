@@ -2238,7 +2238,7 @@ deleteStatement
 /*SET <columName> = (3 + col2)*/
 columnAssignmentClause
    :
-   tableOrColumn EQUAL^ atomExpression
+   tableOrColumn EQUAL^ precedencePlusExpression
    ;
 
 /*SET col1 = 5, col2 = (4 + col4), ...*/
