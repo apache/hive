@@ -31,6 +31,8 @@ import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.hooks.Entity;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.thrift.TException;
 
@@ -46,7 +48,7 @@ public class DbTxnManager extends HiveTxnManagerImpl {
   static final private Log LOG = LogFactory.getLog(CLASS_NAME);
 
   private DbLockManager lockMgr = null;
-  private HiveMetaStoreClient client = null;
+  private IMetaStoreClient client = null;
   private long txnId = 0;
 
   DbTxnManager() {
@@ -311,7 +313,6 @@ public class DbTxnManager extends HiveTxnManagerImpl {
     try {
       if (txnId > 0) rollbackTxn();
       if (lockMgr != null) lockMgr.close();
-      if (client != null) client.close();
     } catch (Exception e) {
       LOG.error("Caught exception " + e.getClass().getName() + " with message <" + e.getMessage()
       + ">, swallowing as there is nothing we can do with it.");
@@ -326,10 +327,12 @@ public class DbTxnManager extends HiveTxnManagerImpl {
             "methods.");
       }
       try {
-        client = new HiveMetaStoreClient(conf);
+        Hive db = Hive.get(conf);
+        client = db.getMSC();
       } catch (MetaException e) {
-        throw new LockException(ErrorMsg.METASTORE_COULD_NOT_INITIATE.getMsg(),
-            e);
+        throw new LockException(ErrorMsg.METASTORE_COULD_NOT_INITIATE.getMsg(), e);
+      } catch (HiveException e) {
+        throw new LockException(ErrorMsg.METASTORE_COULD_NOT_INITIATE.getMsg(), e);
       }
     }
   }
