@@ -207,7 +207,7 @@ public abstract class BaseSemanticAnalyzer {
   }
 
   public abstract void analyzeInternal(ASTNode ast) throws SemanticException;
-  public void init() {
+  public void init(boolean clearPartsCache) {
     //no-op
   }
 
@@ -217,7 +217,7 @@ public abstract class BaseSemanticAnalyzer {
 
   public void analyze(ASTNode ast, Context ctx) throws SemanticException {
     initCtx(ctx);
-    init();
+    init(true);
     analyzeInternal(ast);
   }
 
@@ -244,7 +244,7 @@ public abstract class BaseSemanticAnalyzer {
     this.fetchTask = fetchTask;
   }
 
-  protected void reset() {
+  protected void reset(boolean clearPartsCache) {
     rootTasks = new ArrayList<Task<? extends Serializable>>();
   }
 

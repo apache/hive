@@ -49,7 +49,7 @@ public class RowResolver implements Serializable{
    * The primary(first) mapping is still only held in
    * invRslvMap.
    */
-  private Map<String, String[]> altInvRslvMap;
+  private final Map<String, String[]> altInvRslvMap;
   private  Map<String, ASTNode> expressionMap;
 
   // TODO: Refactor this and do in a more object oriented manner
@@ -351,4 +351,73 @@ public class RowResolver implements Serializable{
     this.expressionMap = expressionMap;
   }
 
+
+  // TODO: 1) How to handle collisions? 2) Should we be cloning ColumnInfo or
+  // not?
+  public static int add(RowResolver rrToAddTo, RowResolver rrToAddFrom,
+      int outputColPos, int numColumns) throws SemanticException {
+    String tabAlias;
+    String colAlias;
+    String[] qualifiedColName;
+    int i = 0;
+
+    for (ColumnInfo cInfoFrmInput : rrToAddFrom.getRowSchema().getSignature()) {
+      if ( numColumns >= 0 && i == numColumns ) {
+        break;
+      }
+      ColumnInfo newCI = null;
+      qualifiedColName = rrToAddFrom.getInvRslvMap().get(
+          cInfoFrmInput.getInternalName());
+      tabAlias = qualifiedColName[0];
+      colAlias = qualifiedColName[1];
+
+      newCI = new ColumnInfo(cInfoFrmInput);
+      newCI.setInternalName(SemanticAnalyzer
+          .getColumnInternalName(outputColPos));
+
+      outputColPos++;
+
+      if (rrToAddTo.get(tabAlias, colAlias) != null) {
+        LOG.debug("Found duplicate column alias in RR: " + rrToAddTo.get(tabAlias, colAlias));
+      } else {
+        rrToAddTo.put(tabAlias, colAlias, newCI);
+      }
+
+      qualifiedColName = rrToAddFrom.getAlternateMappings(cInfoFrmInput
+          .getInternalName());
+      if (qualifiedColName != null) {
+        tabAlias = qualifiedColName[0];
+        colAlias = qualifiedColName[1];
+        rrToAddTo.put(tabAlias, colAlias, newCI);
+      }
+      i++;
+    }
+
+    return outputColPos;
+	}
+
+  public static int add(RowResolver rrToAddTo, RowResolver rrToAddFrom,
+      int outputColPos) throws SemanticException {
+    return add(rrToAddTo, rrToAddFrom, outputColPos, -1);
+  }
+
+	/**
+	 * Return a new row resolver that is combination of left RR and right RR.
+	 * The schema will be schema of left, schema of right
+	 *
+	 * @param leftRR
+	 * @param rightRR
+	 * @return
+	 * @throws SemanticException
+	 */
+	public static RowResolver getCombinedRR(RowResolver leftRR,
+			RowResolver rightRR) throws SemanticException {
+		int outputColPos = 0;
+
+		RowResolver combinedRR = new RowResolver();
+		outputColPos = add(combinedRR, leftRR, outputColPos);
+		outputColPos = add(combinedRR, rightRR, outputColPos);
+
+		return combinedRR;
+	}
 }

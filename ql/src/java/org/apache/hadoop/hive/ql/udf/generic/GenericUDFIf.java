@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
+import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
@@ -62,6 +63,11 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprVarCharScalarStri
  * otherwise it returns expr3. IF() returns a numeric or string value, depending
  * on the context in which it is used.
  */
+@Description(
+    name = "if",
+    value = "IF(expr1,expr2,expr3) - If expr1 is TRUE (expr1 <> 0 and expr1 <> NULL) then"
+    + " IF() returns expr2; otherwise it returns expr3. IF() returns a numeric or string value,"
+    + " depending on the context in which it is used.")
 @VectorizedExpressions({
   IfExprLongColumnLongColumn.class, IfExprDoubleColumnDoubleColumn.class,
   IfExprLongColumnLongScalar.class, IfExprDoubleColumnDoubleScalar.class,

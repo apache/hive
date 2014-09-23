@@ -93,6 +93,7 @@ public class StatsUtils {
 
   private static final Log LOG = LogFactory.getLog(StatsUtils.class.getName());
 
+
   /**
    * Collect table, partition and column level statistics
    * @param conf
@@ -109,15 +110,30 @@ public class StatsUtils {
   public static Statistics collectStatistics(HiveConf conf, PrunedPartitionList partList,
       Table table, TableScanOperator tableScanOperator) throws HiveException {
 
-    Statistics stats = new Statistics();
-
     // column level statistics are required only for the columns that are needed
     List<ColumnInfo> schema = tableScanOperator.getSchema().getSignature();
     List<String> neededColumns = tableScanOperator.getNeededColumns();
+
+    return collectStatistics(conf, partList, table, schema, neededColumns);
+  }
+
+  private static Statistics collectStatistics(HiveConf conf, PrunedPartitionList partList,
+      Table table, List<ColumnInfo> schema, List<String> neededColumns) throws HiveException {
+
     boolean fetchColStats =
         HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_STATS_FETCH_COLUMN_STATS);
     boolean fetchPartStats =
         HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_STATS_FETCH_PARTITION_STATS);
+
+    return collectStatistics(conf, partList, table, schema, neededColumns, fetchColStats, fetchPartStats);
+  }
+
+  public static Statistics collectStatistics(HiveConf conf, PrunedPartitionList partList,
+      Table table, List<ColumnInfo> schema, List<String> neededColumns,
+      boolean fetchColStats, boolean fetchPartStats) throws HiveException {
+
+    Statistics stats = new Statistics();
+
     float deserFactor =
         HiveConf.getFloatVar(conf, HiveConf.ConfVars.HIVE_STATS_DESERIALIZATION_FACTOR);
 

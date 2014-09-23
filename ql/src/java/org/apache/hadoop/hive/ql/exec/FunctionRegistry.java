@@ -639,6 +639,14 @@ public final class FunctionRegistry {
     }
   }
 
+  public static String getNormalizedFunctionName(String fn) {
+    // Does the same thing as getFunctionInfo, except for getting the function info.
+    fn = fn.toLowerCase();
+    return (FunctionUtils.isQualifiedFunctionName(fn) || mFunctions.get(fn) != null) ? fn
+        : FunctionUtils.qualifyFunctionName(
+            fn, SessionState.get().getCurrentDatabase().toLowerCase());
+  }
+
   private static <T extends CommonFunctionInfo> T getFunctionInfo(
       Map<String, T> mFunctions, String functionName) {
     functionName = functionName.toLowerCase();

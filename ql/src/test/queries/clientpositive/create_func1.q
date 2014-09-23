@@ -2,10 +2,15 @@
 -- qtest_get_java_boolean should already be created during test initialization
 select qtest_get_java_boolean('true'), qtest_get_java_boolean('false') from src limit 1;
 
+describe function extended qtest_get_java_boolean;
+
 create database mydb;
 create function mydb.func1 as 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFUpper';
 
 show functions mydb.func1;
+
+describe function extended mydb.func1;
+
 
 select mydb.func1('abc') from src limit 1;
 

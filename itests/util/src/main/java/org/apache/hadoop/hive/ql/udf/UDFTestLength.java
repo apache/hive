@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.udf;
 
+import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
@@ -25,6 +26,8 @@ import org.apache.hadoop.io.Text;
 /**
  * A UDF for testing, which evaluates the length of a string.
  */
+@Description(name = "testlength",
+value = "_FUNC_(col) - UDF evaluates the length of the string")
 public class UDFTestLength extends UDF {
 
   IntWritable result = new IntWritable();

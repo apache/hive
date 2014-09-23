@@ -352,6 +352,8 @@ STAGE PLANS:
                         0 key (type: string)
                         1 key (type: string)
                       outputColumnNames: _col0
+                      input vertices:
+                        0 Map 1
                       Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
                         expressions: _col0 (type: string)
