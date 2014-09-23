@@ -80,12 +80,12 @@ import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
  * expression Node Descriptor trees. They also introduce the correct conversion
  * functions to do proper implicit conversion.
  */
-public final class TypeCheckProcFactory {
+public class TypeCheckProcFactory {
 
   protected static final Log LOG = LogFactory.getLog(TypeCheckProcFactory.class
       .getName());
 
-  private TypeCheckProcFactory() {
+  protected TypeCheckProcFactory() {
     // prevent instantiation
   }
 
@@ -118,7 +118,7 @@ public final class TypeCheckProcFactory {
     RowResolver input = ctx.getInputRR();
     ExprNodeDesc desc = null;
 
-    if ((ctx == null) || (input == null)) {
+    if ((ctx == null) || (input == null) || (!ctx.getAllowGBExprElimination())) {
       return null;
     }
 
@@ -137,8 +137,13 @@ public final class TypeCheckProcFactory {
     return desc;
   }
 
-  public static Map<ASTNode, ExprNodeDesc> genExprNode(ASTNode expr,
-      TypeCheckCtx tcCtx) throws SemanticException {
+  public static Map<ASTNode, ExprNodeDesc> genExprNode(ASTNode expr, TypeCheckCtx tcCtx)
+      throws SemanticException {
+    return genExprNode(expr, tcCtx, new TypeCheckProcFactory());
+  }
+
+  protected static Map<ASTNode, ExprNodeDesc> genExprNode(ASTNode expr,
+      TypeCheckCtx tcCtx, TypeCheckProcFactory tf) throws SemanticException {
     // Create the walker, the rules dispatcher and the context.
     // create a walker which walks the tree in a DFS manner while maintaining
     // the operator stack. The dispatcher
@@ -146,13 +151,13 @@ public final class TypeCheckProcFactory {
     Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
 
     opRules.put(new RuleRegExp("R1", HiveParser.TOK_NULL + "%"),
-        getNullExprProcessor());
+        tf.getNullExprProcessor());
     opRules.put(new RuleRegExp("R2", HiveParser.Number + "%|" +
         HiveParser.TinyintLiteral + "%|" +
         HiveParser.SmallintLiteral + "%|" +
         HiveParser.BigintLiteral + "%|" +
         HiveParser.DecimalLiteral + "%"),
-        getNumExprProcessor());
+        tf.getNumExprProcessor());
     opRules
         .put(new RuleRegExp("R3", HiveParser.Identifier + "%|"
         + HiveParser.StringLiteral + "%|" + HiveParser.TOK_CHARSETLITERAL + "%|"
@@ -162,18 +167,18 @@ public final class TypeCheckProcFactory {
         + HiveParser.KW_ARRAY + "%|" + HiveParser.KW_MAP + "%|"
         + HiveParser.KW_STRUCT + "%|" + HiveParser.KW_EXISTS + "%|"
         + HiveParser.TOK_SUBQUERY_OP_NOTIN + "%"),
-        getStrExprProcessor());
+        tf.getStrExprProcessor());
     opRules.put(new RuleRegExp("R4", HiveParser.KW_TRUE + "%|"
-        + HiveParser.KW_FALSE + "%"), getBoolExprProcessor());
-    opRules.put(new RuleRegExp("R5", HiveParser.TOK_DATELITERAL + "%"), getDateExprProcessor());
+        + HiveParser.KW_FALSE + "%"), tf.getBoolExprProcessor());
+    opRules.put(new RuleRegExp("R5", HiveParser.TOK_DATELITERAL + "%"), tf.getDateExprProcessor());
     opRules.put(new RuleRegExp("R6", HiveParser.TOK_TABLE_OR_COL + "%"),
-        getColumnExprProcessor());
+        tf.getColumnExprProcessor());
     opRules.put(new RuleRegExp("R7", HiveParser.TOK_SUBQUERY_OP + "%"),
-        getSubQueryExprProcessor());
+        tf.getSubQueryExprProcessor());
 
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along
-    Dispatcher disp = new DefaultRuleDispatcher(getDefaultExprProcessor(),
+    Dispatcher disp = new DefaultRuleDispatcher(tf.getDefaultExprProcessor(),
         opRules, tcCtx);
     GraphWalker ogw = new DefaultGraphWalker(disp);
 
@@ -229,7 +234,7 @@ public final class TypeCheckProcFactory {
    *
    * @return NullExprProcessor.
    */
-  public static NullExprProcessor getNullExprProcessor() {
+  public NullExprProcessor getNullExprProcessor() {
     return new NullExprProcessor();
   }
 
@@ -304,7 +309,7 @@ public final class TypeCheckProcFactory {
    *
    * @return NumExprProcessor.
    */
-  public static NumExprProcessor getNumExprProcessor() {
+  public NumExprProcessor getNumExprProcessor() {
     return new NumExprProcessor();
   }
 
@@ -362,7 +367,7 @@ public final class TypeCheckProcFactory {
    *
    * @return StrExprProcessor.
    */
-  public static StrExprProcessor getStrExprProcessor() {
+  public StrExprProcessor getStrExprProcessor() {
     return new StrExprProcessor();
   }
 
@@ -408,7 +413,7 @@ public final class TypeCheckProcFactory {
    *
    * @return BoolExprProcessor.
    */
-  public static BoolExprProcessor getBoolExprProcessor() {
+  public BoolExprProcessor getBoolExprProcessor() {
     return new BoolExprProcessor();
   }
 
@@ -449,7 +454,7 @@ public final class TypeCheckProcFactory {
    *
    * @return DateExprProcessor.
    */
-  public static DateExprProcessor getDateExprProcessor() {
+  public DateExprProcessor getDateExprProcessor() {
     return new DateExprProcessor();
   }
 
@@ -546,7 +551,7 @@ public final class TypeCheckProcFactory {
    *
    * @return ColumnExprProcessor.
    */
-  public static ColumnExprProcessor getColumnExprProcessor() {
+  public ColumnExprProcessor getColumnExprProcessor() {
     return new ColumnExprProcessor();
   }
 
@@ -613,7 +618,7 @@ public final class TypeCheckProcFactory {
       windowingTokens.add(HiveParser.TOK_TABSORTCOLNAMEDESC);
     }
 
-    private static boolean isRedundantConversionFunction(ASTNode expr,
+    protected static boolean isRedundantConversionFunction(ASTNode expr,
         boolean isFunction, ArrayList<ExprNodeDesc> children) {
       if (!isFunction) {
         return false;
@@ -700,7 +705,30 @@ public final class TypeCheckProcFactory {
       return getFuncExprNodeDescWithUdfData(udfName, null, children);
     }
 
-    static ExprNodeDesc getXpathOrFuncExprNodeDesc(ASTNode expr,
+    protected void validateUDF(ASTNode expr, boolean isFunction, TypeCheckCtx ctx, FunctionInfo fi,
+        List<ExprNodeDesc> children, GenericUDF genericUDF) throws SemanticException {
+      // Detect UDTF's in nested SELECT, GROUP BY, etc as they aren't
+      // supported
+      if (fi.getGenericUDTF() != null) {
+        throw new SemanticException(ErrorMsg.UDTF_INVALID_LOCATION.getMsg());
+      }
+      // UDAF in filter condition, group-by caluse, param of funtion, etc.
+      if (fi.getGenericUDAFResolver() != null) {
+        if (isFunction) {
+          throw new SemanticException(ErrorMsg.UDAF_INVALID_LOCATION.getMsg((ASTNode) expr
+              .getChild(0)));
+        } else {
+          throw new SemanticException(ErrorMsg.UDAF_INVALID_LOCATION.getMsg(expr));
+        }
+      }
+      if (!ctx.getAllowStatefulFunctions() && (genericUDF != null)) {
+        if (FunctionRegistry.isStateful(genericUDF)) {
+          throw new SemanticException(ErrorMsg.UDF_STATEFUL_INVALID_LOCATION.getMsg());
+        }
+      }
+    }
+
+    protected ExprNodeDesc getXpathOrFuncExprNodeDesc(ASTNode expr,
         boolean isFunction, ArrayList<ExprNodeDesc> children, TypeCheckCtx ctx)
         throws SemanticException, UDFArgumentException {
       // return the child directly if the conversion is redundant.
@@ -713,6 +741,7 @@ public final class TypeCheckProcFactory {
       ExprNodeDesc desc;
       if (funcText.equals(".")) {
         // "." : FIELD Expression
+
         assert (children.size() == 2);
         // Only allow constant field name for now
         assert (children.get(1) instanceof ExprNodeConstantDesc);
@@ -727,23 +756,22 @@ public final class TypeCheckProcFactory {
         // Allow accessing a field of list element structs directly from a list
         boolean isList = (object.getTypeInfo().getCategory() == ObjectInspector.Category.LIST);
         if (isList) {
-          objectTypeInfo = ((ListTypeInfo) objectTypeInfo)
-              .getListElementTypeInfo();
+          objectTypeInfo = ((ListTypeInfo) objectTypeInfo).getListElementTypeInfo();
         }
         if (objectTypeInfo.getCategory() != Category.STRUCT) {
           throw new SemanticException(ErrorMsg.INVALID_DOT.getMsg(expr));
         }
-        TypeInfo t = ((StructTypeInfo) objectTypeInfo)
-            .getStructFieldTypeInfo(fieldNameString);
+        TypeInfo t = ((StructTypeInfo) objectTypeInfo).getStructFieldTypeInfo(fieldNameString);
         if (isList) {
           t = TypeInfoFactory.getListTypeInfo(t);
         }
 
-        desc = new ExprNodeFieldDesc(t, children.get(0), fieldNameString,
-            isList);
-
+        desc = new ExprNodeFieldDesc(t, children.get(0), fieldNameString, isList);
       } else if (funcText.equals("[")) {
         // "[]" : LSQUARE/INDEX Expression
+        if (!ctx.getallowIndexExpr())
+          throw new SemanticException(ErrorMsg.INVALID_FUNCTION.getMsg(expr));
+
         assert (children.size() == 2);
 
         // Check whether this is a list or a map
@@ -759,8 +787,7 @@ public final class TypeCheckProcFactory {
 
           // Calculate TypeInfo
           TypeInfo t = ((ListTypeInfo) myt).getListElementTypeInfo();
-          desc = new ExprNodeGenericFuncDesc(t, FunctionRegistry
-              .getGenericUDFForIndex(), children);
+          desc = new ExprNodeGenericFuncDesc(t, FunctionRegistry.getGenericUDFForIndex(), children);
         } else if (myt.getCategory() == Category.MAP) {
           if (!FunctionRegistry.implicitConvertible(children.get(1).getTypeInfo(),
               ((MapTypeInfo) myt).getMapKeyTypeInfo())) {
@@ -769,11 +796,9 @@ public final class TypeCheckProcFactory {
           }
           // Calculate TypeInfo
           TypeInfo t = ((MapTypeInfo) myt).getMapValueTypeInfo();
-          desc = new ExprNodeGenericFuncDesc(t, FunctionRegistry
-              .getGenericUDFForIndex(), children);
+          desc = new ExprNodeGenericFuncDesc(t, FunctionRegistry.getGenericUDFForIndex(), children);
         } else {
-          throw new SemanticException(ErrorMsg.NON_COLLECTION_TYPE.getMsg(expr,
-              myt.getTypeName()));
+          throw new SemanticException(ErrorMsg.NON_COLLECTION_TYPE.getMsg(expr, myt.getTypeName()));
         }
       } else {
         // other operators or functions
@@ -825,26 +850,7 @@ public final class TypeCheckProcFactory {
           }
         }
 
-        // Detect UDTF's in nested SELECT, GROUP BY, etc as they aren't
-        // supported
-        if (fi.getGenericUDTF() != null) {
-          throw new SemanticException(ErrorMsg.UDTF_INVALID_LOCATION.getMsg());
-        }
-        // UDAF in filter condition, group-by caluse, param of funtion, etc.
-        if (fi.getGenericUDAFResolver() != null) {
-          if (isFunction) {
-            throw new SemanticException(ErrorMsg.UDAF_INVALID_LOCATION.
-                getMsg((ASTNode) expr.getChild(0)));
-          } else {
-            throw new SemanticException(ErrorMsg.UDAF_INVALID_LOCATION.getMsg(expr));
-          }
-        }
-        if (!ctx.getAllowStatefulFunctions() && (genericUDF != null)) {
-          if (FunctionRegistry.isStateful(genericUDF)) {
-            throw new SemanticException(
-              ErrorMsg.UDF_STATEFUL_INVALID_LOCATION.getMsg());
-          }
-        }
+        validateUDF(expr, isFunction, ctx, fi, children, genericUDF);
 
         // Try to infer the type of the constant only if there are two
         // nodes, one of them is column and the other is numeric const
@@ -955,6 +961,24 @@ public final class TypeCheckProcFactory {
       return false;
     }
 
+    protected ExprNodeColumnDesc processQualifiedColRef(TypeCheckCtx ctx, ASTNode expr,
+        Object... nodeOutputs) throws SemanticException {
+      RowResolver input = ctx.getInputRR();
+      String tableAlias = BaseSemanticAnalyzer.unescapeIdentifier(expr.getChild(0).getChild(0)
+          .getText());
+      // NOTE: tableAlias must be a valid non-ambiguous table alias,
+      // because we've checked that in TOK_TABLE_OR_COL's process method.
+      ColumnInfo colInfo = input.get(tableAlias, ((ExprNodeConstantDesc) nodeOutputs[1]).getValue()
+          .toString());
+
+      if (colInfo == null) {
+        ctx.setError(ErrorMsg.INVALID_COLUMN.getMsg(expr.getChild(1)), expr);
+        return null;
+      }
+      return new ExprNodeColumnDesc(colInfo.getType(), colInfo.getInternalName(),
+          colInfo.getTabAlias(), colInfo.getIsVirtualCol());
+    }
+
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
@@ -1004,7 +1028,11 @@ public final class TypeCheckProcFactory {
        * The difference is that there is translation for Window related tokens, so we just
        * return null;
        */
-      if ( windowingTokens.contains(expr.getType())) {
+      if (windowingTokens.contains(expr.getType())) {
+        if (!ctx.getallowWindowing())
+          throw new SemanticException(SemanticAnalyzer.generateErrorMessage(expr,
+              ErrorMsg.INVALID_FUNCTION.getMsg("Windowing is not supported in the context")));
+
         return null;
       }
 
@@ -1013,6 +1041,11 @@ public final class TypeCheckProcFactory {
       }
 
       if (expr.getType() == HiveParser.TOK_ALLCOLREF) {
+        if (!ctx.getallowAllColRef())
+          throw new SemanticException(SemanticAnalyzer.generateErrorMessage(expr,
+              ErrorMsg.INVALID_COLUMN
+                  .getMsg("All column reference is not supported in the context")));
+
         RowResolver input = ctx.getInputRR();
         ExprNodeColumnListDesc columnList = new ExprNodeColumnListDesc();
         assert expr.getChildCount() <= 1;
@@ -1050,22 +1083,7 @@ public final class TypeCheckProcFactory {
       if (expr.getType() == HiveParser.DOT
           && expr.getChild(0).getType() == HiveParser.TOK_TABLE_OR_COL
           && nodeOutputs[0] == null) {
-
-        RowResolver input = ctx.getInputRR();
-        String tableAlias = BaseSemanticAnalyzer.unescapeIdentifier(expr
-            .getChild(0).getChild(0).getText());
-        // NOTE: tableAlias must be a valid non-ambiguous table alias,
-        // because we've checked that in TOK_TABLE_OR_COL's process method.
-        ColumnInfo colInfo = input.get(tableAlias,
-            ((ExprNodeConstantDesc) nodeOutputs[1]).getValue().toString());
-
-        if (colInfo == null) {
-          ctx.setError(ErrorMsg.INVALID_COLUMN.getMsg(expr.getChild(1)), expr);
-          return null;
-        }
-        return new ExprNodeColumnDesc(colInfo.getType(), colInfo
-            .getInternalName(), colInfo.getTabAlias(), colInfo
-            .getIsVirtualCol());
+        return processQualifiedColRef(ctx, expr, nodeOutputs);
       }
 
       // Return nulls for conversion operators
@@ -1080,7 +1098,7 @@ public final class TypeCheckProcFactory {
           expr.getType() == HiveParser.TOK_FUNCTIONSTAR ||
           expr.getType() == HiveParser.TOK_FUNCTIONDI);
 
-      if (!ctx.isAllowDistinctFunctions() && expr.getType() == HiveParser.TOK_FUNCTIONDI) {
+      if (!ctx.getAllowDistinctFunctions() && expr.getType() == HiveParser.TOK_FUNCTIONDI) {
         throw new SemanticException(
             SemanticAnalyzer.generateErrorMessage(expr, ErrorMsg.DISTINCT_NOT_SUPPORTED.getMsg()));
       }
@@ -1099,6 +1117,11 @@ public final class TypeCheckProcFactory {
       }
 
       if (expr.getType() == HiveParser.TOK_FUNCTIONSTAR) {
+        if (!ctx.getallowFunctionStar())
+        throw new SemanticException(SemanticAnalyzer.generateErrorMessage(expr,
+            ErrorMsg.INVALID_COLUMN
+                .getMsg(".* reference is not supported in the context")));
+
         RowResolver input = ctx.getInputRR();
         for (ColumnInfo colInfo : input.getColumnInfos()) {
           if (!colInfo.getIsVirtualCol()) {
@@ -1111,8 +1134,7 @@ public final class TypeCheckProcFactory {
       // If any of the children contains null, then return a null
       // this is a hack for now to handle the group by case
       if (children.contains(null)) {
-        RowResolver input = ctx.getInputRR();
-        List<String> possibleColumnNames = input.getReferenceableColumnAliases(null, -1);
+        List<String> possibleColumnNames = getReferenceableColumnAliases(ctx);
         String reason = String.format("(possible column names are: %s)",
             StringUtils.join(possibleColumnNames, ", "));
         ctx.setError(ErrorMsg.INVALID_COLUMN.getMsg(expr.getChild(0), reason),
@@ -1135,6 +1157,9 @@ public final class TypeCheckProcFactory {
       }
     }
 
+    protected List<String> getReferenceableColumnAliases(TypeCheckCtx ctx) {
+      return ctx.getInputRR().getReferenceableColumnAliases(null, -1);
+    }
   }
 
   /**
@@ -1142,7 +1167,7 @@ public final class TypeCheckProcFactory {
    *
    * @return DefaultExprProcessor.
    */
-  public static DefaultExprProcessor getDefaultExprProcessor() {
+  public DefaultExprProcessor getDefaultExprProcessor() {
     return new DefaultExprProcessor();
   }
 
@@ -1160,13 +1185,18 @@ public final class TypeCheckProcFactory {
         return null;
       }
 
+      ASTNode expr = (ASTNode) nd;
+      ASTNode sqNode = (ASTNode) expr.getParent().getChild(1);
+
+      if (!ctx.getallowSubQueryExpr())
+        throw new SemanticException(SemanticAnalyzer.generateErrorMessage(sqNode,
+            ErrorMsg.UNSUPPORTED_SUBQUERY_EXPRESSION.getMsg()));
+
       ExprNodeDesc desc = TypeCheckProcFactory.processGByExpr(nd, procCtx);
       if (desc != null) {
         return desc;
       }
 
-      ASTNode expr = (ASTNode) nd;
-      ASTNode sqNode = (ASTNode) expr.getParent().getChild(1);
       /*
        * Restriction.1.h :: SubQueries only supported in the SQL Where Clause.
        */
@@ -1182,7 +1212,7 @@ public final class TypeCheckProcFactory {
    *
    * @return DateExprProcessor.
    */
-  public static SubQueryExprProcessor getSubQueryExprProcessor() {
+  public SubQueryExprProcessor getSubQueryExprProcessor() {
     return new SubQueryExprProcessor();
   }
 }
