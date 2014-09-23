@@ -134,13 +134,12 @@ public class RexNodeConverter {
     RexNode rexNode = convert(fieldDesc.getDesc());
     if (rexNode instanceof RexCall) {
       // regular case of accessing nested field in a column
-      return m_cluster.getRexBuilder().makeFieldAccess(rexNode,
-          fieldDesc.getFieldName(), true);
+      return m_cluster.getRexBuilder().makeFieldAccess(rexNode, fieldDesc.getFieldName(), true);
     } else {
       // This may happen for schema-less tables, where columns are dynamically
       // supplied by serdes.
-      throw new OptiqSemanticException("Unexpected rexnode : " +
-        rexNode.getClass().getCanonicalName());
+      throw new OptiqSemanticException("Unexpected rexnode : "
+          + rexNode.getClass().getCanonicalName());
     }
   }
 
@@ -152,7 +151,8 @@ public class RexNodeConverter {
     List<RexNode> childRexNodeLst = new LinkedList<RexNode>();
     Builder<RelDataType> argTypeBldr = ImmutableList.<RelDataType> builder();
 
-    // TODO: 1) Expand to other functions as needed 2) What about types other than primitive.
+    // TODO: 1) Expand to other functions as needed 2) What about types other
+    // than primitive.
     if (func.getGenericUDF() instanceof GenericUDFBaseNumeric) {
       tgtDT = func.getTypeInfo();
     } else if (func.getGenericUDF() instanceof GenericUDFBaseCompare) {
@@ -179,10 +179,9 @@ public class RexNodeConverter {
     expr = handleExplicitCast(func, childRexNodeLst);
 
     if (expr == null) {
-      retType = (expr != null) ? expr.getType() : TypeConverter.convert(func.getTypeInfo(),
-          m_cluster.getTypeFactory());
-      SqlOperator optiqOp = SqlFunctionConverter.getOptiqOperator(
-          func.getFuncText(), func.getGenericUDF(), argTypeBldr.build(), retType);
+      retType = TypeConverter.convert(func.getTypeInfo(), m_cluster.getTypeFactory());
+      SqlOperator optiqOp = SqlFunctionConverter.getOptiqOperator(func.getFuncText(),
+          func.getGenericUDF(), argTypeBldr.build(), retType);
       expr = m_cluster.getRexBuilder().makeCall(optiqOp, childRexNodeLst);
     } else {
       retType = expr.getType();
@@ -221,8 +220,8 @@ public class RexNodeConverter {
     return castExpr;
   }
 
-  private RexNode handleExplicitCast(ExprNodeGenericFuncDesc func,
-    List<RexNode> childRexNodeLst) throws OptiqSemanticException {
+  private RexNode handleExplicitCast(ExprNodeGenericFuncDesc func, List<RexNode> childRexNodeLst)
+      throws OptiqSemanticException {
     RexNode castExpr = null;
 
     if (childRexNodeLst != null && childRexNodeLst.size() == 1) {
@@ -230,8 +229,6 @@ public class RexNodeConverter {
       if ((udf instanceof GenericUDFToChar) || (udf instanceof GenericUDFToVarchar)
           || (udf instanceof GenericUDFToDecimal) || (udf instanceof GenericUDFToDate)
           || (udf instanceof GenericUDFToBinary) || castExprUsingUDFBridge(udf)) {
-        // || (udf instanceof GenericUDFToUnixTimeStamp) || (udf instanceof
-        // GenericUDFTimestamp) || castExprUsingUDFBridge(udf)) {
         castExpr = m_cluster.getRexBuilder().makeAbstractCast(
             TypeConverter.convert(func.getTypeInfo(), m_cluster.getTypeFactory()),
             childRexNodeLst.get(0));
@@ -285,8 +282,8 @@ public class RexNodeConverter {
     PrimitiveCategory hiveTypeCategory = hiveType.getPrimitiveCategory();
 
     ConstantObjectInspector coi = literal.getWritableObjectInspector();
-    Object value = ObjectInspectorUtils.copyToStandardJavaObject(
-        coi.getWritableConstantValue(), coi);
+    Object value = ObjectInspectorUtils.copyToStandardJavaObject(coi.getWritableConstantValue(),
+        coi);
 
     RexNode optiqLiteral = null;
     // TODO: Verify if we need to use ConstantObjectInspector to unwrap data
@@ -295,7 +292,7 @@ public class RexNodeConverter {
       optiqLiteral = rexBuilder.makeLiteral(((Boolean) value).booleanValue());
       break;
     case BYTE:
-      byte[] byteArray = new byte[] { (Byte) value};
+      byte[] byteArray = new byte[] { (Byte) value };
       ByteString bs = new ByteString(byteArray);
       optiqLiteral = rexBuilder.makeBinaryLiteral(bs);
       break;
@@ -316,24 +313,31 @@ public class RexNodeConverter {
         value = ((Decimal128) value).toBigDecimal();
       }
       if (value == null) {
-        // We have found an invalid decimal value while enforcing precision and scale. Ideally,
-        // we would replace it with null here, which is what Hive does. However, we need to plumb
-        // this thru up somehow, because otherwise having different expression type in AST causes
-        // the plan generation to fail after CBO, probably due to some residual state in SA/QB.
-        // For now, we will not run CBO in the presence of invalid decimal literals.
-        throw new OptiqSemanticException("Expression "
-          + literal.getExprString() + " is not a valid decimal");
+        // We have found an invalid decimal value while enforcing precision and
+        // scale. Ideally,
+        // we would replace it with null here, which is what Hive does. However,
+        // we need to plumb
+        // this thru up somehow, because otherwise having different expression
+        // type in AST causes
+        // the plan generation to fail after CBO, probably due to some residual
+        // state in SA/QB.
+        // For now, we will not run CBO in the presence of invalid decimal
+        // literals.
+        throw new OptiqSemanticException("Expression " + literal.getExprString()
+            + " is not a valid decimal");
         // TODO: return createNullLiteral(literal);
       }
-      BigDecimal bd = (BigDecimal)value;
+      BigDecimal bd = (BigDecimal) value;
       BigInteger unscaled = bd.unscaledValue();
       if (unscaled.compareTo(MIN_LONG_BI) >= 0 && unscaled.compareTo(MAX_LONG_BI) <= 0) {
         optiqLiteral = rexBuilder.makeExactLiteral(bd);
       } else {
-        // CBO doesn't support unlimited precision decimals. In practice, this will work...
-        // An alternative would be to throw CboSemanticException and fall back to no CBO.
-        RelDataType relType = m_cluster.getTypeFactory().createSqlType(
-                SqlTypeName.DECIMAL, bd.scale(), unscaled.toString().length());
+        // CBO doesn't support unlimited precision decimals. In practice, this
+        // will work...
+        // An alternative would be to throw CboSemanticException and fall back
+        // to no CBO.
+        RelDataType relType = m_cluster.getTypeFactory().createSqlType(SqlTypeName.DECIMAL,
+            bd.scale(), unscaled.toString().length());
         optiqLiteral = rexBuilder.makeExactLiteral(bd, relType);
       }
       break;
@@ -376,8 +380,8 @@ public class RexNodeConverter {
   }
 
   private RexNode createNullLiteral(ExprNodeDesc expr) throws OptiqSemanticException {
-    return m_cluster.getRexBuilder().makeNullLiteral(TypeConverter.convert(
-        expr.getTypeInfo(), m_cluster.getTypeFactory()).getSqlTypeName());
+    return m_cluster.getRexBuilder().makeNullLiteral(
+        TypeConverter.convert(expr.getTypeInfo(), m_cluster.getTypeFactory()).getSqlTypeName());
   }
 
   public static RexNode convert(RelOptCluster cluster, ExprNodeDesc joinCondnExprNode,

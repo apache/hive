@@ -52,9 +52,6 @@ public class HivePartitionPrunerRule extends RelOptRule {
     Pair<RexNode, RexNode> predicates = PartitionPruner
         .extractPartitionPredicates(filter.getCluster(), hiveTable, predicate);
     RexNode partColExpr = predicates.left;
-    RexNode remainingExpr = predicates.right;
-    remainingExpr = remainingExpr == null ? filter.getCluster().getRexBuilder()
-        .makeLiteral(true) : remainingExpr;
     hiveTable.computePartitionList(conf, partColExpr);
   }
 }

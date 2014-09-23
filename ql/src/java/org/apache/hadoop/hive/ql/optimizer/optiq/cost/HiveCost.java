@@ -123,6 +123,7 @@ public class HiveCost implements RelOptCost {
 
   public boolean isEqWithEpsilon(RelOptCost other) {
     return (this == other) || (Math.abs((this.rowCount) - (other.getRows())) < RelOptUtil.EPSILON);
+    // Turn this one once we do the Algorithm selection in CBO
     /*
      * return (this == other) || (Math.abs((this.dCpu + this.dIo) -
      * (other.getCpu() + other.getIo())) < RelOptUtil.EPSILON);

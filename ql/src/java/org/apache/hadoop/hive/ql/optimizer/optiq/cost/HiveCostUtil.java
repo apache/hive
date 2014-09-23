@@ -21,6 +21,7 @@ import org.apache.hadoop.hive.ql.optimizer.optiq.reloperators.HiveRel;
 import org.apache.hadoop.hive.ql.optimizer.optiq.reloperators.HiveTableScanRel;
 import org.eigenbase.relopt.RelOptCost;
 
+// Use this once we have Join Algorithm selection
 public class HiveCostUtil {
   private static final double cpuCostInNanoSec          = 1.0;
   private static final double netCostInNanoSec          = 150 * cpuCostInNanoSec;
@@ -28,6 +29,7 @@ public class HiveCostUtil {
   private static final double localFSReadCostInNanoSec  = 4 * netCostInNanoSec;
   private static final double hDFSWriteCostInNanoSec    = 10 * localFSWriteCostInNanoSec;
   @SuppressWarnings("unused")
+//Use this once we have Join Algorithm selection
   private static final double hDFSReadCostInNanoSec     = 1.5 * localFSReadCostInNanoSec;
 
   public static RelOptCost computCardinalityBasedCost(HiveRel hr) {

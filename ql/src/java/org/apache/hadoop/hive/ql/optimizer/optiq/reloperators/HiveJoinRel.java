@@ -55,6 +55,7 @@ public class HiveJoinRel extends JoinRelBase implements HiveRel {
 
   private final boolean leftSemiJoin;
   private final JoinAlgorithm      joinAlgorithm;
+  //This will be used once we do Join Algorithm selection
   @SuppressWarnings("unused")
   private final MapJoinStreamingRelation mapJoinStreamingSide = MapJoinStreamingRelation.NONE;
 
