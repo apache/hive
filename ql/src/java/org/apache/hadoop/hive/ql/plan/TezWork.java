@@ -19,12 +19,13 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -305,15 +306,23 @@ public class TezWork extends AbstractOperatorDesc {
       work.configureJobConf(jobConf);
     }
     String[] newTmpJars = jobConf.getStrings(MR_JAR_PROPERTY);
-    if (oldTmpJars != null && (oldTmpJars.length != 0)) {
-      if (newTmpJars != null && (newTmpJars.length != 0)) {
-        String[] combinedTmpJars = new String[newTmpJars.length + oldTmpJars.length];
-        System.arraycopy(oldTmpJars, 0, combinedTmpJars, 0, oldTmpJars.length);
-        System.arraycopy(newTmpJars, 0, combinedTmpJars, oldTmpJars.length, newTmpJars.length);
-        jobConf.setStrings(MR_JAR_PROPERTY, combinedTmpJars);
+    if (oldTmpJars != null || newTmpJars != null) {
+      String[] finalTmpJars;
+      if (oldTmpJars == null || oldTmpJars.length == 0) {
+        // Avoid a copy when oldTmpJars is null or empty
+        finalTmpJars = newTmpJars;
+      } else if (newTmpJars == null || newTmpJars.length == 0) {
+        // Avoid a copy when newTmpJars is null or empty
+        finalTmpJars = oldTmpJars;
       } else {
-        jobConf.setStrings(MR_JAR_PROPERTY, oldTmpJars);
+        // Both are non-empty, only copy now
+        finalTmpJars = new String[oldTmpJars.length + newTmpJars.length];
+        System.arraycopy(oldTmpJars, 0, finalTmpJars, 0, oldTmpJars.length);
+        System.arraycopy(newTmpJars, 0, finalTmpJars, oldTmpJars.length, newTmpJars.length);
       }
+
+      jobConf.setStrings(MR_JAR_PROPERTY, finalTmpJars);
+      return finalTmpJars;
     }
     return newTmpJars;
    }

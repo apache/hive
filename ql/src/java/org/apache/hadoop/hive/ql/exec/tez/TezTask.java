@@ -55,6 +55,7 @@ import org.apache.tez.dag.api.DAG;
 import org.apache.tez.dag.api.Edge;
 import org.apache.tez.dag.api.GroupInputEdge;
 import org.apache.tez.dag.api.SessionNotRunning;
+import org.apache.tez.dag.api.TezUncheckedException;
 import org.apache.tez.dag.api.Vertex;
 import org.apache.tez.dag.api.VertexGroup;
 import org.apache.tez.dag.api.client.DAGClient;
@@ -124,14 +125,11 @@ public class TezTask extends Task<TezWork> {
       // create the tez tmp dir
       scratchDir = utils.createTezDir(scratchDir, conf);
 
-      if (!session.isOpen()) {
-        // can happen if the user sets the tez flag after the session was
-        // established
-        LOG.info("Tez session hasn't been created yet. Opening session");
-        session.open(conf, inputOutputJars);
-      } else {
-        session.refreshLocalResourcesFromConf(conf);
-      }
+      Map<String,LocalResource> inputOutputLocalResources =
+          getExtraLocalResources(jobConf, scratchDir, inputOutputJars);
+
+      // Ensure the session is open and has the necessary local resources
+      updateSession(session, jobConf, scratchDir, inputOutputJars, inputOutputLocalResources);
 
       List<LocalResource> additionalLr = session.getLocalizedResources();
 
@@ -153,8 +151,12 @@ public class TezTask extends Task<TezWork> {
       // next we translate the TezWork to a Tez DAG
       DAG dag = build(jobConf, work, scratchDir, appJarLr, additionalLr, ctx);
 
+      // Add the extra resources to the dag
+      addExtraResourcesToDag(session, dag, inputOutputJars, inputOutputLocalResources);
+
       // submit will send the job to the cluster and start executing
-      client = submit(jobConf, dag, scratchDir, appJarLr, session, additionalLr);
+      client = submit(jobConf, dag, scratchDir, appJarLr, session,
+          additionalLr, inputOutputJars, inputOutputLocalResources);
 
       // finally monitor will print progress until the job is done
       TezJobMonitor monitor = new TezJobMonitor();
@@ -193,6 +195,63 @@ public class TezTask extends Task<TezWork> {
       }
     }
     return rc;
+  }
+
+  /**
+   * Converted the list of jars into local resources
+   */
+  Map<String,LocalResource> getExtraLocalResources(JobConf jobConf, Path scratchDir,
+      String[] inputOutputJars) throws Exception {
+    final Map<String,LocalResource> resources = new HashMap<String,LocalResource>();
+    final List<LocalResource> localResources = utils.localizeTempFiles(
+        scratchDir.toString(), jobConf, inputOutputJars);
+    if (null != localResources) {
+      for (LocalResource lr : localResources) {
+        resources.put(utils.getBaseName(lr), lr);
+      }
+    }
+    return resources;
+  }
+
+  /**
+   * Ensures that the Tez Session is open and the AM has all necessary jars configured.
+   */
+  void updateSession(TezSessionState session,
+      JobConf jobConf, Path scratchDir, String[] inputOutputJars,
+      Map<String,LocalResource> extraResources) throws Exception {
+    final boolean missingLocalResources = !session
+        .hasResources(inputOutputJars);
+
+    if (!session.isOpen()) {
+      // can happen if the user sets the tez flag after the session was
+      // established
+      LOG.info("Tez session hasn't been created yet. Opening session");
+      session.open(conf, inputOutputJars);
+    } else {
+      LOG.info("Session is already open");
+
+      // Ensure the open session has the necessary resources (StorageHandler)
+      if (missingLocalResources) {
+        LOG.info("Tez session missing resources," +
+            " adding additional necessary resources");
+        session.getSession().addAppMasterLocalFiles(extraResources);
+      }
+
+      session.refreshLocalResourcesFromConf(conf);
+    }
+  }
+
+  /**
+   * Adds any necessary resources that must be localized in each vertex to the DAG.
+   */
+  void addExtraResourcesToDag(TezSessionState session, DAG dag,
+      String[] inputOutputJars,
+      Map<String,LocalResource> inputOutputLocalResources) throws Exception {
+    if (!session.hasResources(inputOutputJars)) {
+      if (null != inputOutputLocalResources) {
+        dag.addTaskLocalFiles(inputOutputLocalResources);
+      }
+    }
   }
 
   DAG build(JobConf conf, TezWork work, Path scratchDir,
@@ -287,7 +346,8 @@ public class TezTask extends Task<TezWork> {
 
   DAGClient submit(JobConf conf, DAG dag, Path scratchDir,
       LocalResource appJarLr, TezSessionState sessionState,
-      List<LocalResource> additionalLr)
+      List<LocalResource> additionalLr, String[] inputOutputJars,
+      Map<String,LocalResource> inputOutputLocalResources)
       throws Exception {
 
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_SUBMIT_DAG);
@@ -308,7 +368,7 @@ public class TezTask extends Task<TezWork> {
       console.printInfo("Tez session was closed. Reopening...");
 
       // close the old one, but keep the tmp files around
-      TezSessionPoolManager.getInstance().closeAndOpen(sessionState, this.conf);
+      TezSessionPoolManager.getInstance().closeAndOpen(sessionState, this.conf, inputOutputJars);
       console.printInfo("Session re-established.");
 
       dagClient = sessionState.getSession().submitDAG(dag);

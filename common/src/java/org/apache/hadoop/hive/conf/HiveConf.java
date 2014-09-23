@@ -1506,8 +1506,8 @@ public class HiveConf extends Configuration {
         "The parent node in ZooKeeper used by HiveServer2 when supporting dynamic service discovery."),
     // HiveServer2 global init file location
     HIVE_SERVER2_GLOBAL_INIT_FILE_LOCATION("hive.server2.global.init.file.location", "${env:HIVE_CONF_DIR}",
-        "The location of HS2 global init file (.hiverc).\n" +
-        "If the property is reset, the value must be a valid path where the init file is located."),
+        "Either the location of a HS2 global init file or a directory containing a .hiverc file. If the \n" +
+        "property is set, the value must be a valid path to an init file or directory where the init file is located."),
     HIVE_SERVER2_TRANSPORT_MODE("hive.server2.transport.mode", "binary", new StringSet("binary", "http"),
         "Transport mode of HiveServer2."),
     HIVE_SERVER2_THRIFT_BIND_HOST("hive.server2.thrift.bind.host", "",
@@ -1714,6 +1714,9 @@ public class HiveConf extends Configuration {
         "The default value is false."),
     HIVE_VECTORIZATION_REDUCE_ENABLED("hive.vectorized.execution.reduce.enabled", true,
             "This flag should be set to true to enable vectorized mode of the reduce-side of query execution.\n" +
+            "The default value is true."),
+    HIVE_VECTORIZATION_REDUCE_GROUPBY_ENABLED("hive.vectorized.execution.reduce.groupby.enabled", true,
+            "This flag should be set to true to enable vectorized mode of the reduce-side GROUP BY query execution.\n" +
             "The default value is true."),
     HIVE_VECTORIZATION_GROUPBY_CHECKINTERVAL("hive.vectorized.groupby.checkinterval", 100000,
         "Number of entries added to the group by aggregation hash before a recomputation of average entry size is performed."),

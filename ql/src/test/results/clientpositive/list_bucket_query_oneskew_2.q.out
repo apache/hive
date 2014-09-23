@@ -409,7 +409,7 @@ STAGE PLANS:
               predicate: (x = 484) (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Select Operator
-                expressions: x (type: int), y (type: string)
+                expressions: 484 (type: int), y (type: string)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 File Output Operator
