@@ -53,4 +53,11 @@ update acid_uat set
 
 select * from acid_uat order by i;
 
+update acid_uat set
+  ti = ti * 2,
+  si = cast(f as int),
+  d = floor(de)
+  where s = 'aw724t8c5558x2xneC624';
 
+
+select * from acid_uat order by i;
