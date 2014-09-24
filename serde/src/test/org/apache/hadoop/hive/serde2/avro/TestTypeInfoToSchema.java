@@ -205,6 +205,30 @@ public class TestTypeInfoToSchema {
   }
 
   @Test
+  public void createAvroCharSchema() {
+    final String specificSchema = "{" +
+        "\"type\":\"string\"," +
+        "\"logicalType\":\"char\"," +
+        "\"maxLength\":" + CHAR_LEN + "}";
+    String expectedSchema = genSchema(specificSchema);
+
+    Assert.assertEquals("Test for char's avro schema failed",
+        expectedSchema, getAvroSchemaString(CHAR));
+  }
+
+  @Test
+  public void createAvroVarcharSchema() {
+    final String specificSchema = "{" +
+        "\"type\":\"string\"," +
+        "\"logicalType\":\"varchar\"," +
+        "\"maxLength\":" + CHAR_LEN + "}";
+    String expectedSchema = genSchema(specificSchema);
+
+    Assert.assertEquals("Test for varchar's avro schema failed",
+        expectedSchema, getAvroSchemaString(VARCHAR));
+  }
+
+  @Test
   public void createAvroListSchema() {
     ListTypeInfo listTypeInfo = new ListTypeInfo();
     listTypeInfo.setListElementTypeInfo(STRING);
