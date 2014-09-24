@@ -150,7 +150,7 @@ public abstract class CLIServiceTest {
     client.closeOperation(opHandle);
 
     // Blocking execute
-    queryString = "SELECT ID FROM TEST_EXEC";
+    queryString = "SELECT ID+1 FROM TEST_EXEC";
     opHandle = client.executeStatement(sessionHandle, queryString, confOverlay);
     // Expect query to be completed now
     assertEquals("Query should be finished",
@@ -225,27 +225,27 @@ public abstract class CLIServiceTest {
     /**
      * Execute an async query with default config
      */
-    queryString = "SELECT ID FROM " + tableName;
+    queryString = "SELECT ID+1 FROM " + tableName;
     runQueryAsync(sessionHandle, queryString, confOverlay, OperationState.FINISHED, longPollingTimeout);
 
     /**
      * Execute an async query with long polling timeout set to 0
      */
     longPollingTimeout = 0;
-    queryString = "SELECT ID FROM " + tableName;
+    queryString = "SELECT ID+1 FROM " + tableName;
     runQueryAsync(sessionHandle, queryString, confOverlay, OperationState.FINISHED, longPollingTimeout);
 
     /**
      * Execute an async query with long polling timeout set to 500 millis
      */
     longPollingTimeout = 500;
-    queryString = "SELECT ID FROM " + tableName;
+    queryString = "SELECT ID+1 FROM " + tableName;
     runQueryAsync(sessionHandle, queryString, confOverlay, OperationState.FINISHED, longPollingTimeout);
 
     /**
      * Cancellation test
      */
-    queryString = "SELECT ID FROM " + tableName;
+    queryString = "SELECT ID+1 FROM " + tableName;
     opHandle = client.executeStatementAsync(sessionHandle, queryString, confOverlay);
     System.out.println("Cancelling " + opHandle);
     client.cancelOperation(opHandle);

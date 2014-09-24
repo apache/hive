@@ -177,7 +177,7 @@ public abstract class ThriftCLIServiceTest {
     client.executeStatement(sessHandle, queryString, opConf);
 
     // Execute another query
-    queryString = "SELECT ID FROM TEST_EXEC_THRIFT";
+    queryString = "SELECT ID+1 FROM TEST_EXEC_THRIFT";
     OperationHandle opHandle = client.executeStatement(sessHandle,
         queryString, opConf);
     assertNotNull(opHandle);
@@ -227,7 +227,7 @@ public abstract class ThriftCLIServiceTest {
     client.executeStatement(sessHandle, queryString, opConf);
 
     // Execute another query
-    queryString = "SELECT ID FROM TEST_EXEC_ASYNC_THRIFT";
+    queryString = "SELECT ID+1 FROM TEST_EXEC_ASYNC_THRIFT";
     System.out.println("Will attempt to execute: " + queryString);
     opHandle = client.executeStatementAsync(sessHandle,
         queryString, opConf);
