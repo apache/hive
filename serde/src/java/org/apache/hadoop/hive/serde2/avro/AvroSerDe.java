@@ -41,9 +41,13 @@ public class AvroSerDe extends AbstractSerDe {
   private static final Log LOG = LogFactory.getLog(AvroSerDe.class);
 
   public static final String DECIMAL_TYPE_NAME = "decimal";
+  public static final String CHAR_TYPE_NAME = "char";
+  public static final String VARCHAR_TYPE_NAME = "varchar";
   public static final String AVRO_PROP_LOGICAL_TYPE = "logicalType";
   public static final String AVRO_PROP_PRECISION = "precision";
   public static final String AVRO_PROP_SCALE = "scale";
+  public static final String AVRO_PROP_MAX_LENGTH = "maxLength";
+  public static final String AVRO_STRING_TYPE_NAME = "string";
 
   private ObjectInspector oi;
   private List<String> columnNames;
