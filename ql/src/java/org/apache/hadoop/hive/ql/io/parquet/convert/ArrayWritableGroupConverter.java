@@ -13,9 +13,6 @@
  */
 package org.apache.hadoop.hive.ql.io.parquet.convert;
 
-import java.util.List;
-
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.io.ArrayWritable;
 import org.apache.hadoop.io.Writable;
 
@@ -33,7 +30,7 @@ public class ArrayWritableGroupConverter extends HiveGroupConverter {
   private Writable[] mapPairContainer;
 
   public ArrayWritableGroupConverter(final GroupType groupType, final HiveGroupConverter parent,
-      final int index, List<TypeInfo> hiveSchemaTypeInfos) {
+      final int index) {
     this.parent = parent;
     this.index = index;
     int count = groupType.getFieldCount();
@@ -43,8 +40,7 @@ public class ArrayWritableGroupConverter extends HiveGroupConverter {
     isMap = count == 2;
     converters = new Converter[count];
     for (int i = 0; i < count; i++) {
-      converters[i] = getConverterFromDescription(groupType.getType(i), i, this,
-          hiveSchemaTypeInfos);
+      converters[i] = getConverterFromDescription(groupType.getType(i), i, this);
     }
   }
 
