@@ -41,6 +41,7 @@ public abstract class BaseWork extends AbstractOperatorDesc {
   // Their function is mainly as root ops to give the mapjoin the correct
   // schema info.
   List<HashTableDummyOperator> dummyOps;
+  int tag;
 
   public BaseWork() {}
 
@@ -100,7 +101,7 @@ public abstract class BaseWork extends AbstractOperatorDesc {
 
     // add all children
     opStack.addAll(opSet);
-    
+
     while(!opStack.empty()) {
       Operator<?> op = opStack.pop();
       returnSet.add(op);
@@ -139,4 +140,12 @@ public abstract class BaseWork extends AbstractOperatorDesc {
   }
 
   public abstract void configureJobConf(JobConf job);
+
+  public void setTag(int tag) {
+    this.tag = tag;
+  }
+
+  public int getTag() {
+    return tag;
+  }
 }

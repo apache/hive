@@ -244,7 +244,7 @@ STAGE PLANS:
                           Target Vertex: Map 1
         Reducer 2 
             Reduce Operator Tree:
-              Join Operator
+              Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
                 condition expressions:
@@ -349,7 +349,7 @@ STAGE PLANS:
                       Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
-              Join Operator
+              Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
                 condition expressions:
@@ -516,7 +516,7 @@ STAGE PLANS:
                           Target Vertex: Map 1
         Reducer 2 
             Reduce Operator Tree:
-              Join Operator
+              Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
                 condition expressions:
@@ -531,7 +531,7 @@ STAGE PLANS:
                   Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
         Reducer 3 
             Reduce Operator Tree:
-              Join Operator
+              Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
                 condition expressions:
@@ -658,7 +658,7 @@ STAGE PLANS:
                       Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
-              Join Operator
+              Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
                 condition expressions:
@@ -673,7 +673,7 @@ STAGE PLANS:
                   Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
         Reducer 3 
             Reduce Operator Tree:
-              Join Operator
+              Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
                 condition expressions:
@@ -824,7 +824,7 @@ STAGE PLANS:
                           Target Vertex: Map 1
         Reducer 2 
             Reduce Operator Tree:
-              Join Operator
+              Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
                 condition expressions:
@@ -929,7 +929,7 @@ STAGE PLANS:
                       Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
-              Join Operator
+              Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
                 condition expressions:
@@ -1062,7 +1062,7 @@ STAGE PLANS:
                           Target Vertex: Map 1
         Reducer 2 
             Reduce Operator Tree:
-              Join Operator
+              Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
                 condition expressions:
@@ -1167,7 +1167,7 @@ STAGE PLANS:
                       Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
-              Join Operator
+              Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
                 condition expressions:
@@ -1301,7 +1301,7 @@ STAGE PLANS:
                           Target Vertex: Map 1
         Reducer 2 
             Reduce Operator Tree:
-              Join Operator
+              Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
                 condition expressions:
@@ -1424,7 +1424,7 @@ STAGE PLANS:
                           Target Vertex: Map 1
         Reducer 2 
             Reduce Operator Tree:
-              Join Operator
+              Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
                 condition expressions:
@@ -1532,7 +1532,7 @@ STAGE PLANS:
                       Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
-              Join Operator
+              Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
                 condition expressions:
@@ -1640,7 +1640,7 @@ STAGE PLANS:
                       Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
-              Join Operator
+              Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
                 condition expressions:
@@ -1776,7 +1776,7 @@ STAGE PLANS:
                           Target Vertex: Map 1
         Reducer 2 
             Reduce Operator Tree:
-              Join Operator
+              Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
                 condition expressions:
@@ -1918,7 +1918,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1000 Data size: 184000 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 2 
             Reduce Operator Tree:
-              Join Operator
+              Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
                 condition expressions:
@@ -2007,7 +2007,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
 1000
-Warning: Shuffle Join JOIN[4][tables = [srcpart, srcpart_date_hour]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[13][tables = [srcpart, srcpart_date_hour]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: -- non-equi join
 EXPLAIN select count(*) from srcpart, srcpart_date_hour where (srcpart_date_hour.date = '2008-04-08' and srcpart_date_hour.hour = 11) and (srcpart.ds = srcpart_date_hour.ds or srcpart.hr = srcpart_date_hour.hr)
 PREHOOK: type: QUERY
@@ -2050,7 +2050,7 @@ STAGE PLANS:
                       value expressions: ds (type: string), hr (type: string)
         Reducer 2 
             Reduce Operator Tree:
-              Join Operator
+              Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
                 condition expressions:
@@ -2097,7 +2097,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join JOIN[4][tables = [srcpart, srcpart_date_hour]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[13][tables = [srcpart, srcpart_date_hour]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: select count(*) from srcpart, srcpart_date_hour where (srcpart_date_hour.date = '2008-04-08' and srcpart_date_hour.hour = 11) and (srcpart.ds = srcpart_date_hour.ds or srcpart.hr = srcpart_date_hour.hr)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
@@ -2191,7 +2191,7 @@ STAGE PLANS:
                           Target Vertex: Map 1
         Reducer 2 
             Reduce Operator Tree:
-              Join Operator
+              Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
                 condition expressions:
@@ -2298,7 +2298,7 @@ STAGE PLANS:
                     value expressions: date (type: string)
         Reducer 2 
             Reduce Operator Tree:
-              Join Operator
+              Merge Join Operator
                 condition map:
                      Left Outer Join0 to 1
                 condition expressions:
@@ -2402,7 +2402,7 @@ STAGE PLANS:
                           Target Vertex: Map 1
         Reducer 2 
             Reduce Operator Tree:
-              Join Operator
+              Merge Join Operator
                 condition map:
                      Left Outer Join0 to 1
                 condition expressions:
@@ -2486,7 +2486,7 @@ STAGE PLANS:
                     value expressions: date (type: string)
         Reducer 2 
             Reduce Operator Tree:
-              Join Operator
+              Merge Join Operator
                 condition map:
                      Outer Join 0 to 1
                 condition expressions:
@@ -2625,7 +2625,7 @@ STAGE PLANS:
                           Target Vertex: Map 1
         Reducer 2 
             Reduce Operator Tree:
-              Join Operator
+              Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
                 condition expressions:
@@ -2640,7 +2640,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
         Reducer 3 
             Reduce Operator Tree:
-              Join Operator
+              Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
                 condition expressions:
@@ -2751,7 +2751,7 @@ STAGE PLANS:
                       Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
-              Join Operator
+              Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
                 condition expressions:
@@ -2764,7 +2764,7 @@ STAGE PLANS:
                   Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
         Reducer 3 
             Reduce Operator Tree:
-              Join Operator
+              Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
                 condition expressions:
@@ -2925,7 +2925,7 @@ STAGE PLANS:
                               Target Vertex: Map 6
         Reducer 4 
             Reduce Operator Tree:
-              Join Operator
+              Merge Join Operator
                 condition map:
                      Left Semi Join 0 to 1
                 condition expressions:
@@ -3122,7 +3122,7 @@ STAGE PLANS:
                               Target Vertex: Map 6
         Reducer 4 
             Reduce Operator Tree:
-              Join Operator
+              Merge Join Operator
                 condition map:
                      Left Semi Join 0 to 1
                 condition expressions:
@@ -3412,7 +3412,7 @@ STAGE PLANS:
                               Target Vertex: Map 8
         Reducer 4 
             Reduce Operator Tree:
-              Join Operator
+              Merge Join Operator
                 condition map:
                      Left Semi Join 0 to 1
                 condition expressions:
@@ -4671,7 +4671,7 @@ STAGE PLANS:
                     value expressions: date (type: string)
         Reducer 2 
             Reduce Operator Tree:
-              Join Operator
+              Merge Join Operator
                 condition map:
                      Outer Join 0 to 1
                 condition expressions:

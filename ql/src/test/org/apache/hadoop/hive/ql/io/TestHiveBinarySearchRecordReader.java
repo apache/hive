@@ -115,7 +115,8 @@ public class TestHiveBinarySearchRecordReader extends TestCase {
   }
 
   private void resetIOContext() {
-    ioContext = IOContext.get();
+    conf.set(Utilities.INPUT_NAME, "TestHiveBinarySearchRecordReader");
+    ioContext = IOContext.get(conf.get(Utilities.INPUT_NAME));
     ioContext.setUseSorted(false);
     ioContext.setIsBinarySearching(false);
     ioContext.setEndBinarySearch(false);
@@ -124,6 +125,7 @@ public class TestHiveBinarySearchRecordReader extends TestCase {
   }
 
   private void init() throws IOException {
+    conf = new JobConf();
     resetIOContext();
     rcfReader = mock(RCFileRecordReader.class);
     when(rcfReader.next((LongWritable)anyObject(),
@@ -131,7 +133,6 @@ public class TestHiveBinarySearchRecordReader extends TestCase {
     // Since the start is 0, and the length is 100, the first call to sync should be with the value
     // 50 so return that for getPos()
     when(rcfReader.getPos()).thenReturn(50L);
-    conf = new JobConf();
     conf.setBoolean("hive.input.format.sorted", true);
 
     TableDesc tblDesc = Utilities.defaultTd;

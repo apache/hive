@@ -439,7 +439,7 @@ STAGE PLANS:
                       Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
-              Join Operator
+              Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
                 condition expressions:
@@ -1426,7 +1426,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: bigint)
         Reducer 4 
             Reduce Operator Tree:
-              Join Operator
+              Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
                      Inner Join 0 to 2

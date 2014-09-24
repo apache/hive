@@ -24,11 +24,8 @@ import java.util.PriorityQueue;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.ql.exec.tez.ReduceRecordProcessor;
 import org.apache.hadoop.io.BinaryComparable;
-import org.apache.tez.runtime.api.Input;
-import org.apache.tez.runtime.api.LogicalInput;
-import org.apache.tez.runtime.library.api.KeyValuesReader;
+import org.apache.tez.runtime.library.api.KeyValueReader;
 
 /**
  * A KeyValuesReader implementation that returns a sorted stream of key-values
@@ -37,29 +34,31 @@ import org.apache.tez.runtime.library.api.KeyValuesReader;
  * Uses a priority queue to pick the KeyValuesReader of the input that is next in
  * sort order.
  */
-public class InputMerger extends KeyValuesReader {
+public class KeyValueInputMerger extends KeyValueReader {
 
-  public static final Log l4j = LogFactory.getLog(ReduceRecordProcessor.class);
-  private PriorityQueue<KeyValuesReader> pQueue = null;
-  private KeyValuesReader nextKVReader = null;
+  public static final Log l4j = LogFactory.getLog(KeyValueInputMerger.class);
+  private PriorityQueue<KeyValueReader> pQueue = null;
+  private KeyValueReader nextKVReader = null;
 
-  public InputMerger(List<? extends Input> shuffleInputs) throws Exception {
+  public KeyValueInputMerger(List<KeyValueReader> multiMRInputs) throws Exception {
     //get KeyValuesReaders from the LogicalInput and add them to priority queue
-    int initialCapacity = shuffleInputs.size();
-    pQueue = new PriorityQueue<KeyValuesReader>(initialCapacity, new KVReaderComparator());
-    for(Input input : shuffleInputs){
-      addToQueue((KeyValuesReader)input.getReader());
+    int initialCapacity = multiMRInputs.size();
+    pQueue = new PriorityQueue<KeyValueReader>(initialCapacity, new KVReaderComparator());
+    l4j.info("Initialized the priority queue with multi mr inputs: " + multiMRInputs.size());
+    for (KeyValueReader input : multiMRInputs) {
+      addToQueue(input);
     }
   }
 
   /**
-   * Add KeyValuesReader to queue if it has more key-values
-   * @param kvsReadr
+   * Add KeyValueReader to queue if it has more key-value
+   *
+   * @param kvReader
    * @throws IOException
    */
-  private void addToQueue(KeyValuesReader kvsReadr) throws IOException{
-    if(kvsReadr.next()){
-      pQueue.add(kvsReadr);
+  private void addToQueue(KeyValueReader kvReader) throws IOException {
+    if (kvReader.next()) {
+      pQueue.add(kvReader);
     }
   }
 
@@ -67,6 +66,7 @@ public class InputMerger extends KeyValuesReader {
    * @return true if there are more key-values and advances to next key-values
    * @throws IOException
    */
+  @Override
   public boolean next() throws IOException {
     //add the previous nextKVReader back to queue
     if(nextKVReader != null){
@@ -78,24 +78,26 @@ public class InputMerger extends KeyValuesReader {
     return nextKVReader != null;
   }
 
+  @Override
   public Object getCurrentKey() throws IOException {
     return nextKVReader.getCurrentKey();
   }
 
-  public Iterable<Object> getCurrentValues() throws IOException {
-    return nextKVReader.getCurrentValues();
+  @Override
+  public Object getCurrentValue() throws IOException {
+    return nextKVReader.getCurrentValue();
   }
 
   /**
    * Comparator that compares KeyValuesReader on their current key
    */
-  class KVReaderComparator implements Comparator<KeyValuesReader> {
+  class KVReaderComparator implements Comparator<KeyValueReader> {
 
     @Override
-    public int compare(KeyValuesReader kvReadr1, KeyValuesReader kvReadr2) {
+    public int compare(KeyValueReader kvReadr1, KeyValueReader kvReadr2) {
       try {
-        BinaryComparable key1 = (BinaryComparable) kvReadr1.getCurrentKey();
-        BinaryComparable key2 = (BinaryComparable) kvReadr2.getCurrentKey();
+        BinaryComparable key1 = (BinaryComparable) kvReadr1.getCurrentValue();
+        BinaryComparable key2 = (BinaryComparable) kvReadr2.getCurrentValue();
         return key1.compareTo(key2);
       } catch (IOException e) {
         l4j.error("Caught exception while reading shuffle input", e);
@@ -104,6 +106,4 @@ public class InputMerger extends KeyValuesReader {
       }
     }
   }
-
-
 }
