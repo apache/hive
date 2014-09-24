@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.MapWork;
+import org.apache.hadoop.hive.ql.plan.MergeJoinWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.TezEdgeProperty;
@@ -313,15 +314,16 @@ public class TezTask extends Task<TezWork> {
         for (BaseWork v: children) {
           // finally we can create the grouped edge
           GroupInputEdge e = utils.createEdge(group, parentConf,
-               workToVertex.get(v), work.getEdgeProperty(w, v));
+               workToVertex.get(v), work.getEdgeProperty(w, v), work.getVertexType(v));
 
           dag.addEdge(e);
         }
       } else {
         // Regular vertices
         JobConf wxConf = utils.initializeVertexConf(conf, ctx, w);
-        Vertex wx = utils.createVertex(wxConf, w, scratchDir, appJarLr,
-          additionalLr, fs, ctx, !isFinal, work);
+        Vertex wx =
+            utils.createVertex(wxConf, w, scratchDir, appJarLr, additionalLr, fs, ctx, !isFinal,
+                work, work.getVertexType(w));
         dag.addVertex(wx);
         utils.addCredentials(w, dag);
         perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_CREATE_VERTEX + w.getName());
@@ -335,7 +337,7 @@ public class TezTask extends Task<TezWork> {
 
           TezEdgeProperty edgeProp = work.getEdgeProperty(w, v);
 
-          e = utils.createEdge(wxConf, wx, workToVertex.get(v), edgeProp);
+          e = utils.createEdge(wxConf, wx, workToVertex.get(v), edgeProp, work.getVertexType(v));
           dag.addEdge(e);
         }
       }
@@ -386,6 +388,9 @@ public class TezTask extends Task<TezWork> {
     try {
       List<BaseWork> ws = work.getAllWork();
       for (BaseWork w: ws) {
+        if (w instanceof MergeJoinWork) {
+          w = ((MergeJoinWork) w).getMainWork();
+        }
         for (Operator<?> op: w.getAllOperators()) {
           op.jobClose(conf, rc == 0);
         }

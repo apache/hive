@@ -323,7 +323,6 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
 
   @Override
   public void startGroup() throws HiveException {
-    LOG.trace("Join: Starting new group");
     newGroupStarted = true;
     for (AbstractRowContainer<List<Object>> alw : storage) {
       alw.clearRows();
@@ -632,8 +631,6 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
    */
   @Override
   public void endGroup() throws HiveException {
-    LOG.trace("Join Op: endGroup called: numValues=" + numAliases);
-
     checkAndGenObject();
   }
 
@@ -719,7 +716,6 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
 
         if (noOuterJoin) {
           if (alw.rowCount() == 0) {
-            LOG.trace("No data for alias=" + i);
             return;
           } else if (alw.rowCount() > 1) {
             mayHasMoreThanOne = true;
@@ -776,7 +772,6 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
    */
   @Override
   public void closeOp(boolean abort) throws HiveException {
-    LOG.trace("Join Op close");
     for (AbstractRowContainer<List<Object>> alw : storage) {
       if (alw != null) {
         alw.clearRows(); // clean up the temp files

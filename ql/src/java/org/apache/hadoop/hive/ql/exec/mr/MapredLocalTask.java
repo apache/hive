@@ -91,7 +91,7 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
 
   // not sure we need this exec context; but all the operators in the work
   // will pass this context throught
-  private ExecMapperContext execContext = new ExecMapperContext();
+  private ExecMapperContext execContext = null;
 
   private Process executor;
 
@@ -113,6 +113,7 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
   public void initialize(HiveConf conf, QueryPlan queryPlan, DriverContext driverContext) {
     super.initialize(conf, queryPlan, driverContext);
     job = new JobConf(conf, ExecDriver.class);
+    execContext = new ExecMapperContext(job);
     //we don't use the HadoopJobExecHooks for local tasks
     this.jobExecHelper = new HadoopJobExecHelper(job, console, this, null);
   }

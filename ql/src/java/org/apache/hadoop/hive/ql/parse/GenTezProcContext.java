@@ -29,6 +29,7 @@ import java.util.Set;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.AppMasterEventOperator;
+import org.apache.hadoop.hive.ql.exec.CommonMergeJoinOperator;
 import org.apache.hadoop.hive.ql.exec.DependencyCollectionTask;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
@@ -45,6 +46,7 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.DependencyCollectionWork;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
+import org.apache.hadoop.hive.ql.plan.MergeJoinWork;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.TezEdgeProperty;
@@ -132,6 +134,8 @@ public class GenTezProcContext implements NodeProcessorCtx{
 
   // remember which reducesinks we've already connected
   public final Set<ReduceSinkOperator> connectedReduceSinks;
+  public final Map<Operator<?>, MergeJoinWork> opMergeJoinWorkMap;
+  public CommonMergeJoinOperator currentMergeJoinOperator;
 
   // remember the event operators we've seen
   public final Set<AppMasterEventOperator> eventOperatorSet;
@@ -176,6 +180,8 @@ public class GenTezProcContext implements NodeProcessorCtx{
     this.eventOperatorSet = new LinkedHashSet<AppMasterEventOperator>();
     this.abandonedEventOperatorSet = new LinkedHashSet<AppMasterEventOperator>();
     this.tsToEventMap = new LinkedHashMap<TableScanOperator, List<AppMasterEventOperator>>();
+    this.opMergeJoinWorkMap = new LinkedHashMap<Operator<?>, MergeJoinWork>();
+    this.currentMergeJoinOperator = null;
 
     rootTasks.add(currentTask);
   }

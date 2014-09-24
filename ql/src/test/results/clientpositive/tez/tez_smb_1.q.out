@@ -1,0 +1,689 @@
+PREHOOK: query: CREATE TABLE srcbucket_mapjoin(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@srcbucket_mapjoin
+POSTHOOK: query: CREATE TABLE srcbucket_mapjoin(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@srcbucket_mapjoin
+PREHOOK: query: CREATE TABLE tab_part (key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tab_part
+POSTHOOK: query: CREATE TABLE tab_part (key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tab_part
+PREHOOK: query: CREATE TABLE srcbucket_mapjoin_part (key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@srcbucket_mapjoin_part
+POSTHOOK: query: CREATE TABLE srcbucket_mapjoin_part (key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@srcbucket_mapjoin_part
+PREHOOK: query: load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE srcbucket_mapjoin partition(ds='2008-04-08')
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@srcbucket_mapjoin
+POSTHOOK: query: load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE srcbucket_mapjoin partition(ds='2008-04-08')
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@srcbucket_mapjoin
+POSTHOOK: Output: default@srcbucket_mapjoin@ds=2008-04-08
+PREHOOK: query: load data local inpath '../../data/files/srcbucket22.txt' INTO TABLE srcbucket_mapjoin partition(ds='2008-04-08')
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@srcbucket_mapjoin@ds=2008-04-08
+POSTHOOK: query: load data local inpath '../../data/files/srcbucket22.txt' INTO TABLE srcbucket_mapjoin partition(ds='2008-04-08')
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@srcbucket_mapjoin@ds=2008-04-08
+PREHOOK: query: load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@srcbucket_mapjoin_part
+POSTHOOK: query: load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@srcbucket_mapjoin_part
+POSTHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
+PREHOOK: query: load data local inpath '../../data/files/srcbucket21.txt' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
+POSTHOOK: query: load data local inpath '../../data/files/srcbucket21.txt' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
+PREHOOK: query: load data local inpath '../../data/files/srcbucket22.txt' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
+POSTHOOK: query: load data local inpath '../../data/files/srcbucket22.txt' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
+PREHOOK: query: load data local inpath '../../data/files/srcbucket23.txt' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
+POSTHOOK: query: load data local inpath '../../data/files/srcbucket23.txt' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
+PREHOOK: query: insert overwrite table tab_part partition (ds='2008-04-08')
+select key,value from srcbucket_mapjoin_part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_mapjoin_part
+PREHOOK: Input: default@srcbucket_mapjoin_part@ds=2008-04-08
+PREHOOK: Output: default@tab_part@ds=2008-04-08
+POSTHOOK: query: insert overwrite table tab_part partition (ds='2008-04-08')
+select key,value from srcbucket_mapjoin_part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_mapjoin_part
+POSTHOOK: Input: default@srcbucket_mapjoin_part@ds=2008-04-08
+POSTHOOK: Output: default@tab_part@ds=2008-04-08
+POSTHOOK: Lineage: tab_part PARTITION(ds=2008-04-08).key SIMPLE [(srcbucket_mapjoin_part)srcbucket_mapjoin_part.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: tab_part PARTITION(ds=2008-04-08).value SIMPLE [(srcbucket_mapjoin_part)srcbucket_mapjoin_part.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: CREATE TABLE tab(key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tab
+POSTHOOK: query: CREATE TABLE tab(key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tab
+PREHOOK: query: insert overwrite table tab partition (ds='2008-04-08')
+select key,value from srcbucket_mapjoin
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_mapjoin
+PREHOOK: Input: default@srcbucket_mapjoin@ds=2008-04-08
+PREHOOK: Output: default@tab@ds=2008-04-08
+POSTHOOK: query: insert overwrite table tab partition (ds='2008-04-08')
+select key,value from srcbucket_mapjoin
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_mapjoin
+POSTHOOK: Input: default@srcbucket_mapjoin@ds=2008-04-08
+POSTHOOK: Output: default@tab@ds=2008-04-08
+POSTHOOK: Lineage: tab PARTITION(ds=2008-04-08).key SIMPLE [(srcbucket_mapjoin)srcbucket_mapjoin.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: tab PARTITION(ds=2008-04-08).value SIMPLE [(srcbucket_mapjoin)srcbucket_mapjoin.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: explain
+select count(*) from tab s1 join tab s3 on s1.key=s3.key
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select count(*) from tab s1 join tab s3 on s1.key=s3.key
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: s3
+                  Statistics: Num rows: 242 Data size: 2566 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 121 Data size: 1283 Basic stats: COMPLETE Column stats: NONE
+            Map Operator Tree:
+                TableScan
+                  alias: s1
+                  Statistics: Num rows: 242 Data size: 2566 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 121 Data size: 1283 Basic stats: COMPLETE Column stats: NONE
+                    Merge Join Operator
+                      condition map:
+                           Inner Join 0 to 1
+                      condition expressions:
+                        0 
+                        1 
+                      keys:
+                        0 key (type: int)
+                        1 key (type: int)
+                      Statistics: Num rows: 133 Data size: 1411 Basic stats: COMPLETE Column stats: NONE
+                      Select Operator
+                        Statistics: Num rows: 133 Data size: 1411 Basic stats: COMPLETE Column stats: NONE
+                        Group By Operator
+                          aggregations: count()
+                          mode: hash
+                          outputColumnNames: _col0
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                          Reduce Output Operator
+                            sort order: 
+                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                            value expressions: _col0 (type: bigint)
+        Reducer 2 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: bigint)
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select s1.key, s1.value, s3.value from tab s1 join tab s3 on s1.key=s3.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tab
+PREHOOK: Input: default@tab@ds=2008-04-08
+#### A masked pattern was here ####
+POSTHOOK: query: select s1.key, s1.value, s3.value from tab s1 join tab s3 on s1.key=s3.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab
+POSTHOOK: Input: default@tab@ds=2008-04-08
+#### A masked pattern was here ####
+0	val_0	val_0
+0	val_0	val_0
+0	val_0	val_0
+0	val_0	val_0
+0	val_0	val_0
+0	val_0	val_0
+0	val_0	val_0
+0	val_0	val_0
+0	val_0	val_0
+2	val_2	val_2
+4	val_4	val_4
+8	val_8	val_8
+20	val_20	val_20
+24	val_24	val_24
+24	val_24	val_24
+24	val_24	val_24
+24	val_24	val_24
+26	val_26	val_26
+26	val_26	val_26
+26	val_26	val_26
+26	val_26	val_26
+28	val_28	val_28
+42	val_42	val_42
+42	val_42	val_42
+42	val_42	val_42
+42	val_42	val_42
+44	val_44	val_44
+64	val_64	val_64
+66	val_66	val_66
+80	val_80	val_80
+82	val_82	val_82
+84	val_84	val_84
+84	val_84	val_84
+84	val_84	val_84
+84	val_84	val_84
+86	val_86	val_86
+114	val_114	val_114
+116	val_116	val_116
+118	val_118	val_118
+118	val_118	val_118
+118	val_118	val_118
+118	val_118	val_118
+134	val_134	val_134
+134	val_134	val_134
+134	val_134	val_134
+134	val_134	val_134
+136	val_136	val_136
+138	val_138	val_138
+138	val_138	val_138
+138	val_138	val_138
+138	val_138	val_138
+138	val_138	val_138
+138	val_138	val_138
+138	val_138	val_138
+138	val_138	val_138
+138	val_138	val_138
+138	val_138	val_138
+138	val_138	val_138
+138	val_138	val_138
+138	val_138	val_138
+138	val_138	val_138
+138	val_138	val_138
+138	val_138	val_138
+150	val_150	val_150
+152	val_152	val_152
+152	val_152	val_152
+152	val_152	val_152
+152	val_152	val_152
+156	val_156	val_156
+158	val_158	val_158
+170	val_170	val_170
+172	val_172	val_172
+172	val_172	val_172
+172	val_172	val_172
+172	val_172	val_172
+174	val_174	val_174
+174	val_174	val_174
+174	val_174	val_174
+174	val_174	val_174
+176	val_176	val_176
+176	val_176	val_176
+176	val_176	val_176
+176	val_176	val_176
+178	val_178	val_178
+190	val_190	val_190
+192	val_192	val_192
+194	val_194	val_194
+196	val_196	val_196
+200	val_200	val_200
+200	val_200	val_200
+200	val_200	val_200
+200	val_200	val_200
+202	val_202	val_202
+208	val_208	val_208
+208	val_208	val_208
+208	val_208	val_208
+208	val_208	val_208
+208	val_208	val_208
+208	val_208	val_208
+208	val_208	val_208
+208	val_208	val_208
+208	val_208	val_208
+222	val_222	val_222
+224	val_224	val_224
+224	val_224	val_224
+224	val_224	val_224
+224	val_224	val_224
+226	val_226	val_226
+228	val_228	val_228
+242	val_242	val_242
+242	val_242	val_242
+242	val_242	val_242
+242	val_242	val_242
+244	val_244	val_244
+248	val_248	val_248
+260	val_260	val_260
+262	val_262	val_262
+266	val_266	val_266
+280	val_280	val_280
+280	val_280	val_280
+280	val_280	val_280
+280	val_280	val_280
+282	val_282	val_282
+282	val_282	val_282
+282	val_282	val_282
+282	val_282	val_282
+284	val_284	val_284
+286	val_286	val_286
+288	val_288	val_288
+288	val_288	val_288
+288	val_288	val_288
+288	val_288	val_288
+310	val_310	val_310
+316	val_316	val_316
+316	val_316	val_316
+316	val_316	val_316
+316	val_316	val_316
+316	val_316	val_316
+316	val_316	val_316
+316	val_316	val_316
+316	val_316	val_316
+316	val_316	val_316
+318	val_318	val_318
+318	val_318	val_318
+318	val_318	val_318
+318	val_318	val_318
+318	val_318	val_318
+318	val_318	val_318
+318	val_318	val_318
+318	val_318	val_318
+318	val_318	val_318
+332	val_332	val_332
+336	val_336	val_336
+338	val_338	val_338
+356	val_356	val_356
+374	val_374	val_374
+378	val_378	val_378
+392	val_392	val_392
+394	val_394	val_394
+396	val_396	val_396
+396	val_396	val_396
+396	val_396	val_396
+396	val_396	val_396
+396	val_396	val_396
+396	val_396	val_396
+396	val_396	val_396
+396	val_396	val_396
+396	val_396	val_396
+400	val_400	val_400
+402	val_402	val_402
+404	val_404	val_404
+404	val_404	val_404
+404	val_404	val_404
+404	val_404	val_404
+406	val_406	val_406
+406	val_406	val_406
+406	val_406	val_406
+406	val_406	val_406
+406	val_406	val_406
+406	val_406	val_406
+406	val_406	val_406
+406	val_406	val_406
+406	val_406	val_406
+406	val_406	val_406
+406	val_406	val_406
+406	val_406	val_406
+406	val_406	val_406
+406	val_406	val_406
+406	val_406	val_406
+406	val_406	val_406
+424	val_424	val_424
+424	val_424	val_424
+424	val_424	val_424
+424	val_424	val_424
+444	val_444	val_444
+446	val_446	val_446
+448	val_448	val_448
+460	val_460	val_460
+462	val_462	val_462
+462	val_462	val_462
+462	val_462	val_462
+462	val_462	val_462
+466	val_466	val_466
+466	val_466	val_466
+466	val_466	val_466
+466	val_466	val_466
+466	val_466	val_466
+466	val_466	val_466
+466	val_466	val_466
+466	val_466	val_466
+466	val_466	val_466
+468	val_468	val_468
+468	val_468	val_468
+468	val_468	val_468
+468	val_468	val_468
+468	val_468	val_468
+468	val_468	val_468
+468	val_468	val_468
+468	val_468	val_468
+468	val_468	val_468
+468	val_468	val_468
+468	val_468	val_468
+468	val_468	val_468
+468	val_468	val_468
+468	val_468	val_468
+468	val_468	val_468
+468	val_468	val_468
+480	val_480	val_480
+480	val_480	val_480
+480	val_480	val_480
+480	val_480	val_480
+480	val_480	val_480
+480	val_480	val_480
+480	val_480	val_480
+480	val_480	val_480
+480	val_480	val_480
+482	val_482	val_482
+484	val_484	val_484
+11	val_11	val_11
+15	val_15	val_15
+15	val_15	val_15
+15	val_15	val_15
+15	val_15	val_15
+17	val_17	val_17
+19	val_19	val_19
+33	val_33	val_33
+35	val_35	val_35
+35	val_35	val_35
+35	val_35	val_35
+35	val_35	val_35
+35	val_35	val_35
+35	val_35	val_35
+35	val_35	val_35
+35	val_35	val_35
+35	val_35	val_35
+37	val_37	val_37
+37	val_37	val_37
+37	val_37	val_37
+37	val_37	val_37
+51	val_51	val_51
+51	val_51	val_51
+51	val_51	val_51
+51	val_51	val_51
+53	val_53	val_53
+57	val_57	val_57
+77	val_77	val_77
+95	val_95	val_95
+95	val_95	val_95
+95	val_95	val_95
+95	val_95	val_95
+97	val_97	val_97
+97	val_97	val_97
+97	val_97	val_97
+97	val_97	val_97
+103	val_103	val_103
+103	val_103	val_103
+103	val_103	val_103
+103	val_103	val_103
+105	val_105	val_105
+125	val_125	val_125
+125	val_125	val_125
+125	val_125	val_125
+125	val_125	val_125
+129	val_129	val_129
+129	val_129	val_129
+129	val_129	val_129
+129	val_129	val_129
+143	val_143	val_143
+145	val_145	val_145
+149	val_149	val_149
+149	val_149	val_149
+149	val_149	val_149
+149	val_149	val_149
+163	val_163	val_163
+165	val_165	val_165
+165	val_165	val_165
+165	val_165	val_165
+165	val_165	val_165
+167	val_167	val_167
+167	val_167	val_167
+167	val_167	val_167
+167	val_167	val_167
+167	val_167	val_167
+167	val_167	val_167
+167	val_167	val_167
+167	val_167	val_167
+167	val_167	val_167
+169	val_169	val_169
+169	val_169	val_169
+169	val_169	val_169
+169	val_169	val_169
+169	val_169	val_169
+169	val_169	val_169
+169	val_169	val_169
+169	val_169	val_169
+169	val_169	val_169
+169	val_169	val_169
+169	val_169	val_169
+169	val_169	val_169
+169	val_169	val_169
+169	val_169	val_169
+169	val_169	val_169
+169	val_169	val_169
+181	val_181	val_181
+183	val_183	val_183
+187	val_187	val_187
+187	val_187	val_187
+187	val_187	val_187
+187	val_187	val_187
+187	val_187	val_187
+187	val_187	val_187
+187	val_187	val_187
+187	val_187	val_187
+187	val_187	val_187
+189	val_189	val_189
+213	val_213	val_213
+213	val_213	val_213
+213	val_213	val_213
+213	val_213	val_213
+217	val_217	val_217
+217	val_217	val_217
+217	val_217	val_217
+217	val_217	val_217
+219	val_219	val_219
+219	val_219	val_219
+219	val_219	val_219
+219	val_219	val_219
+233	val_233	val_233
+233	val_233	val_233
+233	val_233	val_233
+233	val_233	val_233
+235	val_235	val_235
+237	val_237	val_237
+237	val_237	val_237
+237	val_237	val_237
+237	val_237	val_237
+239	val_239	val_239
+239	val_239	val_239
+239	val_239	val_239
+239	val_239	val_239
+255	val_255	val_255
+255	val_255	val_255
+255	val_255	val_255
+255	val_255	val_255
+257	val_257	val_257
+273	val_273	val_273
+273	val_273	val_273
+273	val_273	val_273
+273	val_273	val_273
+273	val_273	val_273
+273	val_273	val_273
+273	val_273	val_273
+273	val_273	val_273
+273	val_273	val_273
+275	val_275	val_275
+277	val_277	val_277
+277	val_277	val_277
+277	val_277	val_277
+277	val_277	val_277
+277	val_277	val_277
+277	val_277	val_277
+277	val_277	val_277
+277	val_277	val_277
+277	val_277	val_277
+277	val_277	val_277
+277	val_277	val_277
+277	val_277	val_277
+277	val_277	val_277
+277	val_277	val_277
+277	val_277	val_277
+277	val_277	val_277
+291	val_291	val_291
+305	val_305	val_305
+307	val_307	val_307
+307	val_307	val_307
+307	val_307	val_307
+307	val_307	val_307
+309	val_309	val_309
+309	val_309	val_309
+309	val_309	val_309
+309	val_309	val_309
+321	val_321	val_321
+321	val_321	val_321
+321	val_321	val_321
+321	val_321	val_321
+323	val_323	val_323
+325	val_325	val_325
+325	val_325	val_325
+325	val_325	val_325
+325	val_325	val_325
+327	val_327	val_327
+327	val_327	val_327
+327	val_327	val_327
+327	val_327	val_327
+327	val_327	val_327
+327	val_327	val_327
+327	val_327	val_327
+327	val_327	val_327
+327	val_327	val_327
+341	val_341	val_341
+345	val_345	val_345
+365	val_365	val_365
+367	val_367	val_367
+367	val_367	val_367
+367	val_367	val_367
+367	val_367	val_367
+369	val_369	val_369
+369	val_369	val_369
+369	val_369	val_369
+369	val_369	val_369
+369	val_369	val_369
+369	val_369	val_369
+369	val_369	val_369
+369	val_369	val_369
+369	val_369	val_369
+389	val_389	val_389
+411	val_411	val_411
+413	val_413	val_413
+413	val_413	val_413
+413	val_413	val_413
+413	val_413	val_413
+417	val_417	val_417
+417	val_417	val_417
+417	val_417	val_417
+417	val_417	val_417
+417	val_417	val_417
+417	val_417	val_417
+417	val_417	val_417
+417	val_417	val_417
+417	val_417	val_417
+419	val_419	val_419
+431	val_431	val_431
+431	val_431	val_431
+431	val_431	val_431
+431	val_431	val_431
+431	val_431	val_431
+431	val_431	val_431
+431	val_431	val_431
+431	val_431	val_431
+431	val_431	val_431
+435	val_435	val_435
+437	val_437	val_437
+439	val_439	val_439
+439	val_439	val_439
+439	val_439	val_439
+439	val_439	val_439
+453	val_453	val_453
+455	val_455	val_455
+457	val_457	val_457
+459	val_459	val_459
+459	val_459	val_459
+459	val_459	val_459
+459	val_459	val_459
+475	val_475	val_475
+477	val_477	val_477
+479	val_479	val_479
+491	val_491	val_491
+493	val_493	val_493
+495	val_495	val_495
+497	val_497	val_497
+PREHOOK: query: select count(*) from tab s2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tab
+PREHOOK: Input: default@tab@ds=2008-04-08
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from tab s2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab
+POSTHOOK: Input: default@tab@ds=2008-04-08
+#### A masked pattern was here ####
+242

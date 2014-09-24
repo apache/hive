@@ -20,17 +20,16 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.util.List;
 
-import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
-
 public class OpTraits {
-  
+
   List<List<String>> bucketColNames;
+  List<List<String>> sortColNames;
   int numBuckets;
-  
-  public OpTraits(List<List<String>> bucketColNames, int numBuckets) {
+
+  public OpTraits(List<List<String>> bucketColNames, int numBuckets, List<List<String>> sortColNames) {
     this.bucketColNames = bucketColNames;
     this.numBuckets = numBuckets;
+    this.sortColNames = sortColNames;
   }
 
   public List<List<String>> getBucketColNames() {
@@ -42,10 +41,18 @@ public class OpTraits {
   }
 
   public void setBucketColNames(List<List<String>> bucketColNames) {
-    this.bucketColNames = bucketColNames;    
+    this.bucketColNames = bucketColNames;
   }
 
   public void setNumBuckets(int numBuckets) {
     this.numBuckets = numBuckets;
+  }
+
+  public void setSortColNames(List<List<String>> sortColNames) {
+    this.sortColNames = sortColNames;
+  }
+
+  public List<List<String>> getSortCols() {
+    return sortColNames;
   }
 }

@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec.tez;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.MapredContext;
 import org.apache.hadoop.hive.ql.exec.ObjectCacheFactory;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -40,7 +41,9 @@ import org.apache.tez.runtime.api.LogicalOutput;
 import org.apache.tez.runtime.api.ProcessorContext;
 import org.apache.tez.runtime.library.api.KeyValueReader;
 
+import java.io.IOException;
 import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * Record processor for fast merging of files.
@@ -51,11 +54,12 @@ public class MergeFileRecordProcessor extends RecordProcessor {
       .getLog(MergeFileRecordProcessor.class);
 
   protected Operator<? extends OperatorDesc> mergeOp;
-  private final ExecMapperContext execContext = new ExecMapperContext();
+  private ExecMapperContext execContext = null;
   protected static final String MAP_PLAN_KEY = "__MAP_PLAN__";
   private MergeFileWork mfWork;
+  MRInputLegacy mrInput = null;
   private boolean abort = false;
-  private Object[] row = new Object[2];
+  private final Object[] row = new Object[2];
 
   @Override
   void init(JobConf jconf, ProcessorContext processorContext,
@@ -63,16 +67,16 @@ public class MergeFileRecordProcessor extends RecordProcessor {
       Map<String, LogicalOutput> outputs) throws Exception {
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_INIT_OPERATORS);
     super.init(jconf, processorContext, mrReporter, inputs, outputs);
+    execContext = new ExecMapperContext(jconf);
 
     //Update JobConf using MRInput, info like filename comes via this
-    MRInputLegacy mrInput = TezProcessor.getMRInput(inputs);
+    mrInput = getMRInput(inputs);
     Configuration updatedConf = mrInput.getConfigUpdates();
     if (updatedConf != null) {
       for (Map.Entry<String, String> entry : updatedConf) {
         jconf.set(entry.getKey(), entry.getValue());
       }
     }
-
     createOutputMap();
     // Start all the Outputs.
     for (Map.Entry<String, LogicalOutput> outputEntry : outputs.entrySet()) {
@@ -127,8 +131,7 @@ public class MergeFileRecordProcessor extends RecordProcessor {
 
   @Override
   void run() throws Exception {
-    MRInputLegacy in = TezProcessor.getMRInput(inputs);
-    KeyValueReader reader = in.getReader();
+    KeyValueReader reader = mrInput.getReader();
 
     //process records until done
     while (reader.next()) {
@@ -205,4 +208,23 @@ public class MergeFileRecordProcessor extends RecordProcessor {
     return true; //give me more
   }
 
+  private MRInputLegacy getMRInput(Map<String, LogicalInput> inputs) throws Exception {
+    // there should be only one MRInput
+    MRInputLegacy theMRInput = null;
+    for (Entry<String, LogicalInput> inp : inputs.entrySet()) {
+      if (inp.getValue() instanceof MRInputLegacy) {
+        if (theMRInput != null) {
+          throw new IllegalArgumentException("Only one MRInput is expected");
+        }
+        // a better logic would be to find the alias
+        theMRInput = (MRInputLegacy) inp.getValue();
+      } else {
+        throw new IOException("Expecting only one input of type MRInputLegacy. Found type: "
+            + inp.getClass().getCanonicalName());
+      }
+    }
+    theMRInput.init();
+
+    return theMRInput;
+  }
 }

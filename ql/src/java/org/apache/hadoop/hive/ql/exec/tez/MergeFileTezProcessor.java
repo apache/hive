@@ -39,12 +39,6 @@ public class MergeFileTezProcessor extends TezProcessor {
   public void run(Map<String, LogicalInput> inputs,
       Map<String, LogicalOutput> outputs) throws Exception {
     rproc = new MergeFileRecordProcessor();
-    MRInputLegacy mrInput = getMRInput(inputs);
-    try {
-      mrInput.init();
-    } catch (IOException e) {
-      throw new RuntimeException("Failed while initializing MRInput", e);
-    }
     initializeAndRunProcessor(inputs, outputs);
   }
 }

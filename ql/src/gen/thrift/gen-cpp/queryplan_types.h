@@ -59,7 +59,8 @@ struct OperatorType {
     DEMUX = 20,
     EVENT = 21,
     ORCFILEMERGE = 22,
-    RCFILEMERGE = 23
+    RCFILEMERGE = 23,
+    MERGEJOIN = 24
   };
 };
 

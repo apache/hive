@@ -47,6 +47,22 @@ import org.apache.hadoop.mapred.JobConf;
 @Explain(displayName = "Tez")
 public class TezWork extends AbstractOperatorDesc {
 
+  public enum VertexType {
+    AUTO_INITIALIZED_EDGES, // no custom vertex or edge
+    INITIALIZED_EDGES, // custom vertex and custom edge but single MR Input
+    MULTI_INPUT_INITIALIZED_EDGES, // custom vertex, custom edge and multi MR Input
+    MULTI_INPUT_UNINITIALIZED_EDGES // custom vertex, no custom edge, multi MR Input
+    ;
+
+    public static boolean isCustomInputType(VertexType vertex) {
+      if ((vertex == null) || (vertex == AUTO_INITIALIZED_EDGES)) {
+        return false;
+      } else {
+        return true;
+      }
+    }
+  }
+
   private static transient final Log LOG = LogFactory.getLog(TezWork.class);
 
   private static int counter;
@@ -57,6 +73,7 @@ public class TezWork extends AbstractOperatorDesc {
   private final Map<BaseWork, List<BaseWork>> invertedWorkGraph = new HashMap<BaseWork, List<BaseWork>>();
   private final Map<Pair<BaseWork, BaseWork>, TezEdgeProperty> edgeProperties =
       new HashMap<Pair<BaseWork, BaseWork>, TezEdgeProperty>();
+  private final Map<BaseWork, VertexType> workVertexTypeMap = new HashMap<BaseWork, VertexType>();
 
   public TezWork(String name) {
     this.name = name + ":" + (++counter);
@@ -340,5 +357,41 @@ public class TezWork extends AbstractOperatorDesc {
     leaves.remove(a);
     ImmutablePair workPair = new ImmutablePair(a, b);
     edgeProperties.put(workPair, edgeProp);
+  }
+
+  public void setVertexType(BaseWork w, VertexType incomingVertexType) {
+    VertexType vertexType = workVertexTypeMap.get(w);
+    if (vertexType == null) {
+      vertexType = VertexType.AUTO_INITIALIZED_EDGES;
+    }
+    switch (vertexType) {
+    case INITIALIZED_EDGES:
+      if (incomingVertexType == VertexType.MULTI_INPUT_UNINITIALIZED_EDGES) {
+        vertexType = VertexType.MULTI_INPUT_INITIALIZED_EDGES;
+      }
+      break;
+
+    case MULTI_INPUT_INITIALIZED_EDGES:
+      // nothing to do
+      break;
+
+    case MULTI_INPUT_UNINITIALIZED_EDGES:
+      if (incomingVertexType == VertexType.INITIALIZED_EDGES) {
+        vertexType = VertexType.MULTI_INPUT_INITIALIZED_EDGES;
+      }
+      break;
+
+    case AUTO_INITIALIZED_EDGES:
+      vertexType = incomingVertexType;
+      break;
+
+    default:
+      break;
+    }
+    workVertexTypeMap.put(w, vertexType);
+  }
+
+  public VertexType getVertexType(BaseWork w) {
+    return workVertexTypeMap.get(w);
   }
 }

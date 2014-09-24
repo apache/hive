@@ -96,6 +96,7 @@ public class MapWork extends BaseWork {
   private Long minSplitSize;
   private Long minSplitSizePerNode;
   private Long minSplitSizePerRack;
+  private final int tag = 0;
 
   //use sampled partitioning
   private int samplingType;
@@ -125,6 +126,8 @@ public class MapWork extends BaseWork {
       new LinkedHashMap<String, List<String>>();
   private Map<String, List<ExprNodeDesc>> eventSourcePartKeyExprMap =
       new LinkedHashMap<String, List<ExprNodeDesc>>();
+
+  private boolean doSplitsGrouping = true;
 
   public MapWork() {}
 
@@ -566,5 +569,13 @@ public class MapWork extends BaseWork {
 
   public void setEventSourcePartKeyExprMap(Map<String, List<ExprNodeDesc>> map) {
     this.eventSourcePartKeyExprMap = map;
+  }
+
+  public void setDoSplitsGrouping(boolean doSplitsGrouping) {
+    this.doSplitsGrouping = doSplitsGrouping;
+  }
+
+  public boolean getDoSplitsGrouping() {
+    return this.doSplitsGrouping;
   }
 }

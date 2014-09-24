@@ -887,7 +887,7 @@ STAGE PLANS:
                         value expressions: _col1 (type: bigint)
         Reducer 3 
             Reduce Operator Tree:
-              Join Operator
+              Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
                 condition expressions:
