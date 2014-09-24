@@ -48,6 +48,6 @@ POSTHOOK: Input: default@dynpart
 POSTHOOK: Input: default@dynpart@value=0/value2=clusterA
 POSTHOOK: Input: default@dynpart@value=0/value2=clusterB
 #### A masked pattern was here ####
-clusterB	20
 clusterA	10
+clusterB	20
 #### A masked pattern was here ####

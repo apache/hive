@@ -21,33 +21,21 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain select user from test_user
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
+  Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-1
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            alias: test_user
-            Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-            Select Operator
-              expressions: user (type: string)
-              outputColumnNames: _col0
-              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-              File Output Operator
-                compressed: false
-                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
   Stage: Stage-0
     Fetch Operator
       limit: -1
       Processor Tree:
-        ListSink
+        TableScan
+          alias: test_user
+          Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+          Select Operator
+            expressions: user (type: string)
+            outputColumnNames: _col0
+            Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+            ListSink
 
 PREHOOK: query: show grant user hive_test on table test_user
 PREHOOK: type: SHOW_GRANT
@@ -81,33 +69,21 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain select role from test_user
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
+  Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-1
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            alias: test_user
-            Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-            Select Operator
-              expressions: role (type: string)
-              outputColumnNames: _col0
-              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-              File Output Operator
-                compressed: false
-                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
   Stage: Stage-0
     Fetch Operator
       limit: -1
       Processor Tree:
-        ListSink
+        TableScan
+          alias: test_user
+          Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+          Select Operator
+            expressions: role (type: string)
+            outputColumnNames: _col0
+            Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+            ListSink
 
 PREHOOK: query: show grant user hive_test on table test_user
 PREHOOK: type: SHOW_GRANT
