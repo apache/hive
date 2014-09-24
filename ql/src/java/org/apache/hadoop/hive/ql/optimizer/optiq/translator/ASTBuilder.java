@@ -54,13 +54,18 @@ class ASTBuilder {
 
   static ASTNode table(TableAccessRelBase scan) {
     RelOptHiveTable hTbl = (RelOptHiveTable) scan.getTable();
-    ASTBuilder b = ASTBuilder
-        .construct(HiveParser.TOK_TABREF, "TOK_TABREF")
-        .add(
-            ASTBuilder.construct(HiveParser.TOK_TABNAME, "TOK_TABNAME")
-                .add(HiveParser.Identifier, hTbl.getHiveTableMD().getDbName())
-                .add(HiveParser.Identifier, hTbl.getHiveTableMD().getTableName()))
-        .add(HiveParser.Identifier, hTbl.getName());
+    ASTBuilder b = ASTBuilder.construct(HiveParser.TOK_TABREF, "TOK_TABREF").add(
+        ASTBuilder.construct(HiveParser.TOK_TABNAME, "TOK_TABNAME")
+            .add(HiveParser.Identifier, hTbl.getHiveTableMD().getDbName())
+            .add(HiveParser.Identifier, hTbl.getHiveTableMD().getTableName()));
+
+    // NOTE: Optiq considers tbls to be equal if their names are the same. Hence
+    // we need to provide Optiq the fully qualified table name (dbname.tblname)
+    // and not the user provided aliases.
+    // However in HIVE DB name can not appear in select list; in case of join
+    // where table names differ only in DB name, Hive would require user
+    // introducing explicit aliases for tbl.
+    b.add(HiveParser.Identifier, hTbl.getTableAlias());
     return b.node();
   }
 
@@ -154,11 +159,11 @@ class ASTBuilder {
       type = HiveParser.BigintLiteral;
       break;
     case DOUBLE:
-      val = literal.getValue3()+"D";
+      val = literal.getValue3() + "D";
       type = HiveParser.Number;
       break;
     case DECIMAL:
-      val = literal.getValue3()+"BD";
+      val = literal.getValue3() + "BD";
       type = HiveParser.DecimalLiteral;
       break;
     case FLOAT:
