@@ -27,6 +27,7 @@ import net.hydromatic.optiq.util.BitSets;
 
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.optimizer.optiq.OptiqSemanticException;
+import org.apache.hadoop.hive.ql.optimizer.optiq.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.optiq.reloperators.HiveSortRel;
 import org.apache.hadoop.hive.ql.optimizer.optiq.translator.SqlFunctionConverter.HiveToken;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
@@ -479,7 +480,7 @@ public class ASTConverter {
     private static final long serialVersionUID = 1L;
 
     Schema(TableAccessRelBase scan) {
-      String tabName = scan.getTable().getQualifiedName().get(0);
+      String tabName = ((RelOptHiveTable)scan.getTable()).getTableAlias();
       for (RelDataTypeField field : scan.getRowType().getFieldList()) {
         add(new ColumnInfo(tabName, field.getName()));
       }

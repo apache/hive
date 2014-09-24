@@ -55,6 +55,7 @@ import com.google.common.collect.ImmutableMap.Builder;
 
 public class RelOptHiveTable extends RelOptAbstractTable {
   private final Table                             hiveTblMetadata;
+  private final String                            tblAlias;
   private final ImmutableList<ColumnInfo>         hiveNonPartitionCols;
   private final ImmutableMap<Integer, ColumnInfo> hiveNonPartitionColsMap;
   private final ImmutableMap<Integer, ColumnInfo> hivePartitionColsMap;
@@ -71,11 +72,12 @@ public class RelOptHiveTable extends RelOptAbstractTable {
                                                                         .getLog(RelOptHiveTable.class
                                                                             .getName());
 
-  public RelOptHiveTable(RelOptSchema optiqSchema, String name, RelDataType rowType,
+  public RelOptHiveTable(RelOptSchema optiqSchema, String qualifiedTblName, String tblAlias, RelDataType rowType,
       Table hiveTblMetadata, List<ColumnInfo> hiveNonPartitionCols,
       List<ColumnInfo> hivePartitionCols, HiveConf hconf, Map<String, PrunedPartitionList> partitionCache, AtomicInteger noColsMissingStats) {
-    super(optiqSchema, name, rowType);
+    super(optiqSchema, qualifiedTblName, rowType);
     this.hiveTblMetadata = hiveTblMetadata;
+    this.tblAlias = tblAlias;
     this.hiveNonPartitionCols = ImmutableList.copyOf(hiveNonPartitionCols);
     this.hiveNonPartitionColsMap = getColInfoMap(hiveNonPartitionCols, 0);
     this.hivePartitionColsMap = getColInfoMap(hivePartitionCols, hiveNonPartitionColsMap.size());
@@ -139,6 +141,19 @@ public class RelOptHiveTable extends RelOptAbstractTable {
 
   public Table getHiveTableMD() {
     return hiveTblMetadata;
+  }
+
+  public String getTableAlias() {
+    // NOTE: Optiq considers tbls to be equal if their names are the same. Hence
+    // we need to provide Optiq the fully qualified table name (dbname.tblname)
+    // and not the user provided aliases.
+    // However in HIVE DB name can not appear in select list; in case of join
+    // where table names differ only in DB name, Hive would require user
+    // introducing explicit aliases for tbl.
+    if (tblAlias == null)
+      return hiveTblMetadata.getTableName();
+    else
+      return tblAlias;
   }
 
   private String getColNamesForLogging(Set<String> colLst) {

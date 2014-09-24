@@ -12713,19 +12713,25 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         RelDataType rowType = TypeConverter.getType(cluster, rr, null);
 
         // 4. Build RelOptAbstractTable
-        RelOptHiveTable optTable = new RelOptHiveTable(relOptSchema, tableAlias, rowType, tab,
-            nonPartitionColumns, partitionColumns, conf, partitionCache, noColsMissingStats);
+        String fullyQualifiedTabName = tab.getDbName();
+        if (fullyQualifiedTabName != null && !fullyQualifiedTabName.isEmpty())
+          fullyQualifiedTabName = fullyQualifiedTabName + "." + tab.getTableName();
+        else
+          fullyQualifiedTabName = tab.getTableName();
+        RelOptHiveTable optTable = new RelOptHiveTable(relOptSchema, fullyQualifiedTabName,
+            tableAlias, rowType, tab, nonPartitionColumns, partitionColumns, conf, partitionCache,
+            noColsMissingStats);
 
         // 5. Build Hive Table Scan Rel
-        tableRel = new HiveTableScanRel(cluster, cluster.traitSetOf(HiveRel.CONVENTION),
-            optTable, rowType);
+        tableRel = new HiveTableScanRel(cluster, cluster.traitSetOf(HiveRel.CONVENTION), optTable,
+            rowType);
 
         // 6. Add Schema(RR) to RelNode-Schema map
         ImmutableMap<String, Integer> hiveToOptiqColMap = buildHiveToOptiqColumnMap(rr, tableRel);
         relToHiveRR.put(tableRel, rr);
         relToHiveColNameOptiqPosMap.put(tableRel, hiveToOptiqColMap);
       } catch (Exception e) {
-        if ( e instanceof SemanticException) {
+        if (e instanceof SemanticException) {
           throw (SemanticException) e;
         } else {
           throw (new RuntimeException(e));
