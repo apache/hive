@@ -18,30 +18,15 @@
 
 package org.apache.hadoop.hive.ql.exec.spark;
 
-import java.util.LinkedList;
-import java.util.List;
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.spark.api.java.JavaPairRDD;
 
-public class UnionTran implements SparkTran<HiveKey, HiveKey> {
-  List<JavaPairRDD<HiveKey, BytesWritable>> otherInputsList = new LinkedList<JavaPairRDD<HiveKey, BytesWritable>>();
+public class IdentityTran implements SparkTran<HiveKey, HiveKey> {
 
   @Override
   public JavaPairRDD<HiveKey, BytesWritable> transform(
       JavaPairRDD<HiveKey, BytesWritable> input) {
-    JavaPairRDD<HiveKey, BytesWritable> result = input;
-    for (JavaPairRDD<HiveKey, BytesWritable> otherInput : otherInputsList) {
-      result = result.union(otherInput);
-    }
-    return result;
-  }
-
-  public void addOtherInput(JavaPairRDD<HiveKey, BytesWritable> input) {
-    otherInputsList.add(input);
-  }
-
-  public List<JavaPairRDD<HiveKey, BytesWritable>> getOtherInputList() {
-    return this.otherInputsList;
+    return input;
   }
 }

@@ -18,19 +18,30 @@
 
 package org.apache.hadoop.hive.ql.exec.spark;
 
+import org.apache.hadoop.hive.ql.io.HiveKey;
+import org.apache.hadoop.io.BytesWritable;
+import org.apache.spark.api.java.JavaPairRDD;
+
+import java.util.List;
+
 public class SparkPlan {
 
-  private GraphTran tran;
+  List<JavaPairRDD<HiveKey, BytesWritable>> rdds;
+
+  public SparkPlan(List<JavaPairRDD<HiveKey, BytesWritable>> rs) {
+    rdds = rs;
+  }
 
   public void execute() throws Exception {
-    tran.execute();
+    JavaPairRDD<HiveKey, BytesWritable> finalRDD = null;
+    for (JavaPairRDD<HiveKey, BytesWritable> rdd : rdds) {
+      if (finalRDD == null) {
+        finalRDD = rdd;
+      } else {
+        finalRDD = finalRDD.union(rdd);
+      }
+      finalRDD.foreach(HiveVoidFunction.getInstance());
+    }
   }
 
-  public void setTran(GraphTran tran) {
-    this.tran = tran;
-  }
-
-  public GraphTran getTran() {
-    return tran;
-  }
 }
