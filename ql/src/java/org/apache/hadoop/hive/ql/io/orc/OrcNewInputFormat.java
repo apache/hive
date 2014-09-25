@@ -118,13 +118,11 @@ public class OrcNewInputFormat extends InputFormat<NullWritable, OrcStruct>{
   public List<InputSplit> getSplits(JobContext jobContext)
       throws IOException, InterruptedException {
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.ORC_GET_SPLITS);
-    Configuration conf =
-        ShimLoader.getHadoopShims().getConfiguration(jobContext);
     List<OrcSplit> splits =
         OrcInputFormat.generateSplitsInfo(ShimLoader.getHadoopShims()
         .getConfiguration(jobContext));
-    List<InputSplit> result = new ArrayList<InputSplit>();
-    for(OrcSplit split: OrcInputFormat.generateSplitsInfo(conf)) {
+    List<InputSplit> result = new ArrayList<InputSplit>(splits.size());
+    for(OrcSplit split: splits) {
       result.add(new OrcNewSplit(split));
     }
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.ORC_GET_SPLITS);
