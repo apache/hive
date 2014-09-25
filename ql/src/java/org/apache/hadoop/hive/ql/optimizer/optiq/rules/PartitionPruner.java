@@ -24,7 +24,10 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.optimizer.optiq.RelOptHiveTable;
+import org.apache.hadoop.hive.ql.optimizer.optiq.translator.SqlFunctionConverter;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.eigenbase.relopt.RelOptCluster;
 import org.eigenbase.reltype.RelDataType;
 import org.eigenbase.reltype.RelDataTypeField;
@@ -103,6 +106,13 @@ public class PartitionPruner {
 
       List<RexNode> args = new LinkedList<RexNode>();
       boolean argsPruned = false;
+
+      GenericUDF hiveUDF = SqlFunctionConverter.getHiveUDF(call.getOperator(),
+          call.getType());
+      if (hiveUDF != null &&
+          !FunctionRegistry.isDeterministic(hiveUDF)) {
+        return null;
+      }
 
       for (RexNode operand : call.operands) {
         RexNode n = operand.accept(this);

@@ -12292,6 +12292,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           HiveSortRel.HIVE_SORT_REL_FACTORY, HiveAggregateRel.HIVE_AGGR_REL_FACTORY, HiveUnionRel.UNION_REL_FACTORY);
       basePlan = fieldTrimmer.trim(basePlan);
 
+      basePlan = hepPlan(basePlan, true, mdProvider,
+          new PushFilterPastProjectRule(FilterRelBase.class,
+              HiveFilterRel.DEFAULT_FILTER_FACTORY, HiveProjectRel.class,
+              HiveProjectRel.DEFAULT_PROJECT_FACTORY));
+
       return basePlan;
     }
 
