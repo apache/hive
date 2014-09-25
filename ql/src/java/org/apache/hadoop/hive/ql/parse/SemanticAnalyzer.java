@@ -642,6 +642,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   public static String generateErrorMessage(ASTNode ast, String message) {
     StringBuilder sb = new StringBuilder();
+    if (ast == null) {
+      sb.append("The abstract syntax tree is null");
+      return sb.toString();
+    }
     sb.append(ast.getLine());
     sb.append(":");
     sb.append(ast.getCharPositionInLine());
