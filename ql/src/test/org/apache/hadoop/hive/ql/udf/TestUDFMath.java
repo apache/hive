@@ -98,14 +98,6 @@ public class TestUDFMath {
     input = createDecimal("7.38905609893065");
     DoubleWritable res = udf.evaluate(input);
     Assert.assertEquals(2.0, res.get(), 0.000001);
-    
-    DoubleWritable input = new DoubleWritable(9.0);
-    res = udf.evaluate(createDecimal("3.0"), input);
-    Assert.assertEquals(2.0, res.get(), 0.000001);
-
-    DoubleWritable base = new DoubleWritable(3.0);
-    res = udf.evaluate(base, createDecimal("9.0"));
-    Assert.assertEquals(2.0, res.get(), 0.000001);
 
     res = udf.evaluate(createDecimal("3.0"), createDecimal("9.0"));
     Assert.assertEquals(2.0, res.get(), 0.000001);
