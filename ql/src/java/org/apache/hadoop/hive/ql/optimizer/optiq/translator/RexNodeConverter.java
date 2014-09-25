@@ -146,39 +146,56 @@ public class RexNodeConverter {
   private RexNode convert(final ExprNodeGenericFuncDesc func) throws SemanticException {
     ExprNodeDesc tmpExprNode;
     RexNode tmpRN;
-    TypeInfo tgtDT = null;
 
     List<RexNode> childRexNodeLst = new LinkedList<RexNode>();
     Builder<RelDataType> argTypeBldr = ImmutableList.<RelDataType> builder();
 
-    // TODO: 1) Expand to other functions as needed 2) What about types other
-    // than primitive.
-    if (func.getGenericUDF() instanceof GenericUDFBaseNumeric) {
+    // TODO: 1) Expand to other functions as needed 2) What about types other than primitive.
+    TypeInfo tgtDT = null;
+    GenericUDF tgtUdf = func.getGenericUDF();
+    boolean isNumeric = tgtUdf instanceof GenericUDFBaseNumeric,
+        isCompare = !isNumeric && tgtUdf instanceof GenericUDFBaseCompare;
+    if (isNumeric) {
       tgtDT = func.getTypeInfo();
-    } else if (func.getGenericUDF() instanceof GenericUDFBaseCompare) {
-      if (func.getChildren().size() == 2) {
-        tgtDT = FunctionRegistry.getCommonClassForComparison(func.getChildren().get(0)
+
+      assert func.getChildren().size() == 2;
+      // TODO: checking 2 children is useless, compare already does that.
+    } else if (isCompare && (func.getChildren().size() == 2)) {
+      tgtDT = FunctionRegistry.getCommonClassForComparison(func.getChildren().get(0)
             .getTypeInfo(), func.getChildren().get(1).getTypeInfo());
-      }
     }
+
 
     for (ExprNodeDesc childExpr : func.getChildren()) {
       tmpExprNode = childExpr;
       if (tgtDT != null
           && TypeInfoUtils.isConversionRequiredForComparison(tgtDT, childExpr.getTypeInfo())) {
-        tmpExprNode = ParseUtils.createConversionCast(childExpr, (PrimitiveTypeInfo) tgtDT);
+        if (isCompare) {
+          // For compare, we will convert requisite children
+          tmpExprNode = ParseUtils.createConversionCast(childExpr, (PrimitiveTypeInfo) tgtDT);
+        } else if (isNumeric) {
+          // For numeric, we'll do minimum necessary cast - if we cast to the type
+          // of expression, bad things will happen.
+          GenericUDFBaseNumeric numericUdf = (GenericUDFBaseNumeric)tgtUdf;
+          PrimitiveTypeInfo minArgType = numericUdf.deriveMinArgumentCast(childExpr, tgtDT);
+          tmpExprNode = ParseUtils.createConversionCast(childExpr, minArgType);
+        } else {
+          throw new AssertionError("Unexpected " + tgtDT + " - not a numeric op or compare");
+        }
+
       }
       argTypeBldr.add(TypeConverter.convert(tmpExprNode.getTypeInfo(), m_cluster.getTypeFactory()));
       tmpRN = convert(tmpExprNode);
       childRexNodeLst.add(tmpRN);
     }
 
-    // This is an explicit cast
+    // See if this is an explicit cast.
     RexNode expr = null;
     RelDataType retType = null;
     expr = handleExplicitCast(func, childRexNodeLst);
 
     if (expr == null) {
+      // This is not a cast; process the function.
       retType = TypeConverter.convert(func.getTypeInfo(), m_cluster.getTypeFactory());
       SqlOperator optiqOp = SqlFunctionConverter.getOptiqOperator(func.getFuncText(),
           func.getGenericUDF(), argTypeBldr.build(), retType);
