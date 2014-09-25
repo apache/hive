@@ -77,6 +77,7 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
 
   private static final Log LOG = LogFactory.getLog(GroupByOperator.class
       .getName());
+  private static final boolean isTraceEnabled = LOG.isTraceEnabled();
   private static final long serialVersionUID = 1L;
   private static final int NUMROWSESTIMATESIZE = 1000;
 
@@ -101,6 +102,7 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
   transient ExprNodeEvaluator unionExprEval = null;
 
   transient GenericUDAFEvaluator[] aggregationEvaluators;
+  transient boolean[] estimableAggregationEvaluators;
 
   protected transient ArrayList<ObjectInspector> objectInspectors;
   transient ArrayList<String> fieldNames;
@@ -557,11 +559,13 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
     // Go over all the aggregation classes and and get the size of the fields of
     // fixed length. Keep track of the variable length
     // fields in these aggregation classes.
+    estimableAggregationEvaluators = new boolean[aggregationEvaluators.length];
     for (int i = 0; i < aggregationEvaluators.length; i++) {
 
       fixedRowSize += javaObjectOverHead;
       AggregationBuffer agg = aggregationEvaluators[i].getNewAggregationBuffer();
       if (GenericUDAFEvaluator.isEstimable(agg)) {
+        estimableAggregationEvaluators[i] = true;
         continue;
       }
       Field[] fArr = ObjectInspectorUtils.getDeclaredNonStaticFields(agg.getClass());
@@ -765,10 +769,12 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
           flushHashTable(true);
           hashAggr = false;
         } else {
-          LOG.trace("Hash Aggr Enabled: #hash table = " + numRowsHashTbl
-              + " #total = " + numRowsInput + " reduction = " + 1.0
-              * (numRowsHashTbl / numRowsInput) + " minReduction = "
-              + minReductionHashAggr);
+          if (isTraceEnabled) {
+            LOG.trace("Hash Aggr Enabled: #hash table = " + numRowsHashTbl
+                + " #total = " + numRowsInput + " reduction = " + 1.0
+                * (numRowsHashTbl / numRowsInput) + " minReduction = "
+                + minReductionHashAggr);
+          }
         }
       }
     }
@@ -952,7 +958,7 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
       AggregationBuffer[] aggs = hashAggregations.get(newKeys);
       for (int i = 0; i < aggs.length; i++) {
         AggregationBuffer agg = aggs[i];
-        if (GenericUDAFEvaluator.isEstimable(agg)) {
+        if (estimableAggregationEvaluators[i]) {
           totalVariableSize += ((GenericUDAFEvaluator.AbstractAggregationBuffer)agg).estimate();
           continue;
         }
@@ -966,8 +972,10 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
       // Update the number of entries that can fit in the hash table
       numEntriesHashTable =
           (int) (maxHashTblMemory / (fixedRowSize + (totalVariableSize / numEntriesVarSize)));
-      LOG.trace("Hash Aggr: #hash table = " + numEntries
-          + " #max in hash table = " + numEntriesHashTable);
+      if (isTraceEnabled) {
+        LOG.trace("Hash Aggr: #hash table = " + numEntries
+            + " #max in hash table = " + numEntriesHashTable);
+      }
     }
 
     // flush if necessary
