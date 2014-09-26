@@ -22,8 +22,9 @@ package org.apache.hadoop.hive.ql.plan;
 @Explain(displayName = "Edge Property")
 public class SparkEdgeProperty {
   public static long SHUFFLE_NONE = 0; // No shuffle is needed. For union only.
-  public static long SHUFFLE_GROUP = 1; // Shuffle, keys are coming together
-  public static long SHUFFLE_SORT = 2;  // Shuffle, keys are sorted
+  public static long SHUFFLE_GROUP = 1; // HashPartition shuffle, keys are not sorted in any way.
+  public static long SHUFFLE_SORT = 2;  // RangePartition shuffle, keys are total sorted.
+  public static long MR_SHUFFLE_SORT = 4; // HashPartition shuffle, keys are sorted by partition.
 
   private long edgeType;
 
@@ -49,19 +50,27 @@ public class SparkEdgeProperty {
   public boolean isShuffleGroup() {
     return (edgeType & SHUFFLE_GROUP) != 0;
   }
-  
+
   public void setShuffleGroup() {
     edgeType |= SHUFFLE_GROUP;
   }
-  
-  public boolean isShuffleSort() {
-    return (edgeType & SHUFFLE_SORT) != 0;
+
+  public void setMRShuffle() {
+    edgeType |= MR_SHUFFLE_SORT;
+  }
+
+  public boolean isMRShuffle() {
+    return (edgeType & MR_SHUFFLE_SORT) != 0;
   }
 
   public void setShuffleSort() {
     edgeType |= SHUFFLE_SORT;
   }
-  
+
+  public boolean isShuffleSort() {
+    return (edgeType & SHUFFLE_SORT) != 0;
+  }
+
   public long getEdgeType() {
     return edgeType;
   }
@@ -77,11 +86,20 @@ public class SparkEdgeProperty {
       sb.append("GROUP");
     }
 
+    if (isMRShuffle()) {
+      if (sb.length() != 0) {
+        sb.append(" ");
+      }
+      sb.append("PARTITION-LEVEL SORT");
+      return sb.toString();
+    }
+
     if (isShuffleSort()) {
       if (sb.length() != 0) {
         sb.append(" ");
       }
       sb.append("SORT");
+      return sb.toString();
     }
 
     return sb.toString();

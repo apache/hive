@@ -176,8 +176,10 @@ public class SparkPlanGenerator {
   private SparkShuffler generate(SparkEdgeProperty edge) {
     Preconditions.checkArgument(!edge.isShuffleNone(),
         "AssertionError: SHUFFLE_NONE should only be used for UnionWork.");
-    if (edge.isShuffleSort()) {
-      return new SortByShuffler();
+    if (edge.isMRShuffle()) {
+      return new SortByShuffler(false);
+    } else if (edge.isShuffleSort()) {
+      return new SortByShuffler(true);
     }
     return new GroupByShuffler();
   }
