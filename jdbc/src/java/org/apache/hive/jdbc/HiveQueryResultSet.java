@@ -28,6 +28,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -75,6 +76,7 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
   private boolean fetchFirst = false;
 
   private final TProtocolVersion protocol;
+  private ReentrantLock transportLock;
 
 
   public static class Builder {
@@ -98,6 +100,7 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
     private int fetchSize = 50;
     private boolean emptyResultSet = false;
     private boolean isScrollable = false;
+    private ReentrantLock transportLock = null;
 
     public Builder(Statement statement) throws SQLException {
       this.statement = statement;
@@ -166,6 +169,11 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
       return this;
     }
 
+    public Builder setTransportLock(ReentrantLock transportLock) {
+      this.transportLock = transportLock;
+      return this;
+    }
+
     public HiveQueryResultSet build() throws SQLException {
       return new HiveQueryResultSet(this);
     }
@@ -181,6 +189,7 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
     this.stmtHandle = builder.stmtHandle;
     this.sessHandle = builder.sessHandle;
     this.fetchSize = builder.fetchSize;
+    this.transportLock = builder.transportLock;
     columnNames = new ArrayList<String>();
     columnTypes = new ArrayList<String>();
     columnAttributes = new ArrayList<JdbcColumnAttributes>();
@@ -239,7 +248,17 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
     try {
       TGetResultSetMetadataReq metadataReq = new TGetResultSetMetadataReq(stmtHandle);
       // TODO need session handle
-      TGetResultSetMetadataResp  metadataResp = client.GetResultSetMetadata(metadataReq);
+      TGetResultSetMetadataResp  metadataResp;
+      if (transportLock == null) {
+        metadataResp = client.GetResultSetMetadata(metadataReq);
+      } else {
+        transportLock.lock();
+        try {
+          metadataResp = client.GetResultSetMetadata(metadataReq);
+        } finally {
+          transportLock.unlock();
+        }
+      }
       Utils.verifySuccess(metadataResp.getStatus());
 
       StringBuilder namesSb = new StringBuilder();
@@ -326,7 +345,17 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
       if (fetchedRows == null || !fetchedRowsItr.hasNext()) {
         TFetchResultsReq fetchReq = new TFetchResultsReq(stmtHandle,
             orientation, fetchSize);
-        TFetchResultsResp fetchResp = client.FetchResults(fetchReq);
+        TFetchResultsResp fetchResp;
+        if (transportLock == null) {
+          fetchResp = client.FetchResults(fetchReq);
+        } else {
+          transportLock.lock();
+          try {
+            fetchResp = client.FetchResults(fetchReq);
+          } finally {
+            transportLock.unlock();
+          }
+        }
         Utils.verifySuccessWithInfo(fetchResp.getStatus());
 
         TRowSet results = fetchResp.getResults();
