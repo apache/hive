@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import com.google.common.collect.Interner;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.Path;
@@ -195,6 +196,22 @@ public class MapWork extends BaseWork {
     }
     if (mapLocalWork != null) {
       mapLocalWork.deriveExplainAttributes();
+    }
+  }
+
+  public void internTable(Interner<TableDesc> interner) {
+    if (aliasToPartnInfo != null) {
+      for (PartitionDesc part : aliasToPartnInfo.values()) {
+        if (part == null) {
+          continue;
+        }
+        part.intern(interner);
+      }
+    }
+    if (pathToPartitionInfo != null) {
+      for (PartitionDesc part : pathToPartitionInfo.values()) {
+        part.intern(interner);
+      }
     }
   }
 
