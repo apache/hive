@@ -17,6 +17,9 @@
  */
 package org.apache.hadoop.hive.serde2.io;
 
+import com.google.code.tempusfugit.concurrency.annotations.*;
+import com.google.code.tempusfugit.concurrency.*;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
@@ -32,15 +35,25 @@ import java.util.List;
 import java.util.Random;
 import java.util.TimeZone;
 
-import junit.framework.TestCase;
+import org.junit.*;
+import static org.junit.Assert.*;
 
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableUtils;
 
-public class TestTimestampWritable extends TestCase {
+public class TestTimestampWritable {
 
-  private static DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+  @Rule public ConcurrentRule concurrentRule = new ConcurrentRule();
+  @Rule public RepeatingRule repeatingRule = new RepeatingRule();
+
+  private static ThreadLocal<DateFormat> DATE_FORMAT =
+      new ThreadLocal<DateFormat>() {
+        @Override
+        protected synchronized DateFormat initialValue() {
+          return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        }
+      };
 
   private static final int HAS_DECIMAL_MASK = 0x80000000;
 
@@ -64,14 +77,14 @@ public class TestTimestampWritable extends TestCase {
 
   private static long parseToMillis(String s) {
     try {
-      return DATE_FORMAT.parse(s).getTime();
+      return DATE_FORMAT.get().parse(s).getTime();
     } catch (ParseException ex) {
       throw new RuntimeException(ex);
     }
   }
 
-  @Override
-  protected void setUp() {
+  @Before
+  public void setUp() {
     TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
   }
 
@@ -252,6 +265,9 @@ public class TestTimestampWritable extends TestCase {
     return tsw;
   }
 
+  @Test
+  @Concurrent(count=4)
+  @Repeating(repetition=100)
   public void testReverseNanos() {
     assertEquals(0, reverseNanos(0));
     assertEquals(120000000, reverseNanos(21));
@@ -265,6 +281,8 @@ public class TestTimestampWritable extends TestCase {
    * Test serializing and deserializing timestamps that can be represented by a number of seconds
    * from 0 to 2147483647 since the UNIX epoch.
    */
+  @Test
+  @Concurrent(count=4)
   public void testTimestampsWithinPositiveIntRange() throws IOException {
     Random rand = new Random(294722773L);
     for (int i = 0; i < 10000; ++i) {
@@ -281,6 +299,8 @@ public class TestTimestampWritable extends TestCase {
    * Test timestamps that don't necessarily fit between 1970 and 2038. This depends on HIVE-4525
    * being fixed.
    */
+  @Test
+  @Concurrent(count=4)
   public void testTimestampsOutsidePositiveIntRange() throws IOException {
     Random rand = new Random(789149717L);
     for (int i = 0; i < 10000; ++i) {
@@ -289,6 +309,8 @@ public class TestTimestampWritable extends TestCase {
     }
   }
 
+  @Test
+  @Concurrent(count=4)
   public void testTimestampsInFullRange() throws IOException {
     Random rand = new Random(2904974913L);
     for (int i = 0; i < 10000; ++i) {
@@ -296,6 +318,8 @@ public class TestTimestampWritable extends TestCase {
     }
   }
 
+  @Test
+  @Concurrent(count=4)
   public void testToFromDouble() {
     Random rand = new Random(294729777L);
     for (int nanosPrecision = 0; nanosPrecision <= 4; ++nanosPrecision) {
@@ -326,6 +350,8 @@ public class TestTimestampWritable extends TestCase {
     return HiveDecimal.create(d);
   }
 
+  @Test
+  @Concurrent(count=4)
   public void testDecimalToTimestampRandomly() {
     Random rand = new Random(294729777L);
     for (int i = 0; i < 10000; ++i) {
@@ -336,6 +362,9 @@ public class TestTimestampWritable extends TestCase {
     }
   }
 
+  @Test
+  @Concurrent(count=4)
+  @Repeating(repetition=100)
   public void testDecimalToTimestampCornerCases() {
     Timestamp ts = new Timestamp(parseToMillis("1969-03-04 05:44:33"));
     assertEquals(0, ts.getTime() % 1000);
@@ -347,6 +376,9 @@ public class TestTimestampWritable extends TestCase {
     }
   }
 
+  @Test
+  @Concurrent(count=4)
+  @Repeating(repetition=100)
   public void testSerializationFormatDirectly() throws IOException {
     assertEquals("1970-01-01 00:00:00", fromIntAndVInts(0).toString());
     assertEquals("1970-01-01 00:00:01", fromIntAndVInts(1).toString());
@@ -374,6 +406,9 @@ public class TestTimestampWritable extends TestCase {
                       -3210 - 1, seconds >> 31).toString());
   }
 
+  @Test
+  @Concurrent(count=4)
+  @Repeating(repetition=100)
   public void testMaxSize() {
     // This many bytes are necessary to store the reversed nanoseconds.
     assertEquals(5, WritableUtils.getVIntSize(999999999));
@@ -396,6 +431,9 @@ public class TestTimestampWritable extends TestCase {
     // Therefore, the maximum total size of a serialized timestamp is 4 + 5 + 4 = 13.
   }
 
+  @Test
+  @Concurrent(count=4)
+  @Repeating(repetition=100)
   public void testMillisToSeconds() {
     assertEquals(0, TimestampWritable.millisToSeconds(0));
     assertEquals(-1, TimestampWritable.millisToSeconds(-1));
@@ -427,6 +465,9 @@ public class TestTimestampWritable extends TestCase {
     return result < 0 ? -1 : (result > 0 ? 1 : 0);
   }
 
+  @Test
+  @Concurrent(count=4)
+  @Repeating(repetition=100)
   public void testBinarySortable() {
     Random rand = new Random(5972977L);
     List<TimestampWritable> tswList = new ArrayList<TimestampWritable>();
