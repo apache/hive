@@ -19,15 +19,13 @@ package org.apache.hadoop.hive.ql.security.authorization.plugin;
 
 import java.util.List;
 
-import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
-import org.apache.hadoop.hive.common.classification.InterfaceStability.Evolving;
+import org.apache.hadoop.classification.InterfaceAudience.Private;
 
 /**
  * Interface used to check if user has privileges to perform certain action.
  * Methods here have corresponding methods in HiveAuthorizer, check method documentation there.
  */
-@LimitedPrivate(value = { "" })
-@Evolving
+@Private
 public interface HiveAuthorizationValidator {
 
   /**
