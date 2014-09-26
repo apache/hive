@@ -1,0 +1,154 @@
+PREHOOK: query: --create hive hbase table 1
+drop table if exists hive1_tbl_data_hbase1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: --create hive hbase table 1
+drop table if exists hive1_tbl_data_hbase1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table if exists hive1_tbl_data_hbase2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists hive1_tbl_data_hbase2
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop view if exists hive1_view_data_hbase1
+PREHOOK: type: DROPVIEW
+POSTHOOK: query: drop view if exists hive1_view_data_hbase1
+POSTHOOK: type: DROPVIEW
+PREHOOK: query: drop view if exists hive1_view_data_hbase2
+PREHOOK: type: DROPVIEW
+POSTHOOK: query: drop view if exists hive1_view_data_hbase2
+POSTHOOK: type: DROPVIEW
+PREHOOK: query: CREATE TABLE hive1_tbl_data_hbase1 (COLUMID string,COLUMN_FN string,COLUMN_LN string,EMAIL string,COL_UPDATED_DATE timestamp, PK_COLUM string) 
+STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler' 
+WITH SERDEPROPERTIES("hbase.columns.mapping" = "default:COLUMID,default:COLUMN_FN,default:COLUMN_LN,default:EMAIL,default:COL_UPDATED_DATE,:key" 
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@hive1_tbl_data_hbase1
+POSTHOOK: query: CREATE TABLE hive1_tbl_data_hbase1 (COLUMID string,COLUMN_FN string,COLUMN_LN string,EMAIL string,COL_UPDATED_DATE timestamp, PK_COLUM string) 
+STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler' 
+WITH SERDEPROPERTIES("hbase.columns.mapping" = "default:COLUMID,default:COLUMN_FN,default:COLUMN_LN,default:EMAIL,default:COL_UPDATED_DATE,:key" 
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@hive1_tbl_data_hbase1
+PREHOOK: query: --create hive view for the above hive table 1
+CREATE VIEW hive1_view_data_hbase1 
+AS 
+SELECT * 
+FROM hive1_tbl_data_hbase1
+WHERE PK_COLUM >='4000-00000'
+and PK_COLUM <='4000-99999'
+AND COL_UPDATED_DATE IS NOT NULL
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@hive1_tbl_data_hbase1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@hive1_view_data_hbase1
+POSTHOOK: query: --create hive view for the above hive table 1
+CREATE VIEW hive1_view_data_hbase1 
+AS 
+SELECT * 
+FROM hive1_tbl_data_hbase1
+WHERE PK_COLUM >='4000-00000'
+and PK_COLUM <='4000-99999'
+AND COL_UPDATED_DATE IS NOT NULL
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@hive1_tbl_data_hbase1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@hive1_view_data_hbase1
+PREHOOK: query: --load data to hive table 1
+insert into table hive1_tbl_data_hbase1 select '00001','john','doe','john@hotmail.com','2014-01-01 12:01:02','4000-10000' from src where key = 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@hive1_tbl_data_hbase1
+POSTHOOK: query: --load data to hive table 1
+insert into table hive1_tbl_data_hbase1 select '00001','john','doe','john@hotmail.com','2014-01-01 12:01:02','4000-10000' from src where key = 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@hive1_tbl_data_hbase1
+PREHOOK: query: --create hive hbase table 2
+CREATE TABLE hive1_tbl_data_hbase2 (COLUMID string,COLUMN_FN string,COLUMN_LN string,EMAIL string,COL_UPDATED_DATE timestamp, PK_COLUM string) 
+STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler' 
+WITH SERDEPROPERTIES("hbase.columns.mapping" = "default:COLUMID,default:COLUMN_FN,default:COLUMN_LN,default:EMAIL,default:COL_UPDATED_DATE,:key" 
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@hive1_tbl_data_hbase2
+POSTHOOK: query: --create hive hbase table 2
+CREATE TABLE hive1_tbl_data_hbase2 (COLUMID string,COLUMN_FN string,COLUMN_LN string,EMAIL string,COL_UPDATED_DATE timestamp, PK_COLUM string) 
+STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler' 
+WITH SERDEPROPERTIES("hbase.columns.mapping" = "default:COLUMID,default:COLUMN_FN,default:COLUMN_LN,default:EMAIL,default:COL_UPDATED_DATE,:key" 
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@hive1_tbl_data_hbase2
+PREHOOK: query: --create hive view for the above hive hbase table 2
+CREATE VIEW hive1_view_data_hbase2 
+AS 
+SELECT * 
+FROM hive1_tbl_data_hbase2 
+where COL_UPDATED_DATE IS NOT NULL
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@hive1_tbl_data_hbase2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@hive1_view_data_hbase2
+POSTHOOK: query: --create hive view for the above hive hbase table 2
+CREATE VIEW hive1_view_data_hbase2 
+AS 
+SELECT * 
+FROM hive1_tbl_data_hbase2 
+where COL_UPDATED_DATE IS NOT NULL
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@hive1_tbl_data_hbase2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@hive1_view_data_hbase2
+PREHOOK: query: --load data to hive hbase table 2
+insert into table hive1_tbl_data_hbase2 select '00001','john','doe','john@hotmail.com','2014-01-01 12:01:02','00001' from src where key = 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@hive1_tbl_data_hbase2
+POSTHOOK: query: --load data to hive hbase table 2
+insert into table hive1_tbl_data_hbase2 select '00001','john','doe','john@hotmail.com','2014-01-01 12:01:02','00001' from src where key = 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@hive1_tbl_data_hbase2
+PREHOOK: query: -- do not return value without fix 
+
+select x.FIRST_NAME1, x.EMAIL1 from (
+select p.COLUMN_FN as first_name1, a.EMAIL as email1 from hive1_view_data_hbase2 p inner join hive1_view_data_hbase1 a on p.COLUMID =a.COLUMID) x
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hive1_tbl_data_hbase1
+PREHOOK: Input: default@hive1_tbl_data_hbase2
+PREHOOK: Input: default@hive1_view_data_hbase1
+PREHOOK: Input: default@hive1_view_data_hbase2
+#### A masked pattern was here ####
+POSTHOOK: query: -- do not return value without fix 
+
+select x.FIRST_NAME1, x.EMAIL1 from (
+select p.COLUMN_FN as first_name1, a.EMAIL as email1 from hive1_view_data_hbase2 p inner join hive1_view_data_hbase1 a on p.COLUMID =a.COLUMID) x
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hive1_tbl_data_hbase1
+POSTHOOK: Input: default@hive1_tbl_data_hbase2
+POSTHOOK: Input: default@hive1_view_data_hbase1
+POSTHOOK: Input: default@hive1_view_data_hbase2
+#### A masked pattern was here ####
+john	john@hotmail.com
+PREHOOK: query: -- return value with/without fix
+
+select x.FIRST_NAME1, x.EMAIL1 from (
+select p.COLUMN_FN as first_name1, a.EMAIL as email1 from hive1_view_data_hbase2 p inner join hive1_view_data_hbase1 a on p.COLUMID =a.COLUMID) x
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hive1_tbl_data_hbase1
+PREHOOK: Input: default@hive1_tbl_data_hbase2
+PREHOOK: Input: default@hive1_view_data_hbase1
+PREHOOK: Input: default@hive1_view_data_hbase2
+#### A masked pattern was here ####
+POSTHOOK: query: -- return value with/without fix
+
+select x.FIRST_NAME1, x.EMAIL1 from (
+select p.COLUMN_FN as first_name1, a.EMAIL as email1 from hive1_view_data_hbase2 p inner join hive1_view_data_hbase1 a on p.COLUMID =a.COLUMID) x
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hive1_tbl_data_hbase1
+POSTHOOK: Input: default@hive1_tbl_data_hbase2
+POSTHOOK: Input: default@hive1_view_data_hbase1
+POSTHOOK: Input: default@hive1_view_data_hbase2
+#### A masked pattern was here ####
+john	john@hotmail.com
