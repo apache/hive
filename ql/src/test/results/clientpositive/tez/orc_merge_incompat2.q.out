@@ -207,18 +207,22 @@ POSTHOOK: Lineage: orc_merge5a PARTITION(st=80.0).ts SIMPLE [(orc_merge5)orc_mer
 POSTHOOK: Lineage: orc_merge5a PARTITION(st=80.0).userid SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:userid, type:bigint, comment:null), ]
 PREHOOK: query: analyze table orc_merge5a partition(st=80.0) compute statistics noscan
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_merge5a
 PREHOOK: Output: default@orc_merge5a
 PREHOOK: Output: default@orc_merge5a@st=80.0
 POSTHOOK: query: analyze table orc_merge5a partition(st=80.0) compute statistics noscan
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_merge5a
 POSTHOOK: Output: default@orc_merge5a
 POSTHOOK: Output: default@orc_merge5a@st=80.0
 PREHOOK: query: analyze table orc_merge5a partition(st=0.8) compute statistics noscan
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_merge5a
 PREHOOK: Output: default@orc_merge5a
 PREHOOK: Output: default@orc_merge5a@st=0.8
 POSTHOOK: query: analyze table orc_merge5a partition(st=0.8) compute statistics noscan
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_merge5a
 POSTHOOK: Output: default@orc_merge5a
 POSTHOOK: Output: default@orc_merge5a@st=0.8
 PREHOOK: query: desc formatted orc_merge5a partition(st=80.0)
@@ -392,18 +396,22 @@ POSTHOOK: Input: default@orc_merge5a
 POSTHOOK: Output: default@orc_merge5a@st=0.8
 PREHOOK: query: analyze table orc_merge5a partition(st=80.0) compute statistics noscan
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_merge5a
 PREHOOK: Output: default@orc_merge5a
 PREHOOK: Output: default@orc_merge5a@st=80.0
 POSTHOOK: query: analyze table orc_merge5a partition(st=80.0) compute statistics noscan
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_merge5a
 POSTHOOK: Output: default@orc_merge5a
 POSTHOOK: Output: default@orc_merge5a@st=80.0
 PREHOOK: query: analyze table orc_merge5a partition(st=0.8) compute statistics noscan
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_merge5a
 PREHOOK: Output: default@orc_merge5a
 PREHOOK: Output: default@orc_merge5a@st=0.8
 POSTHOOK: query: analyze table orc_merge5a partition(st=0.8) compute statistics noscan
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_merge5a
 POSTHOOK: Output: default@orc_merge5a
 POSTHOOK: Output: default@orc_merge5a@st=0.8
 PREHOOK: query: desc formatted orc_merge5a partition(st=80.0)

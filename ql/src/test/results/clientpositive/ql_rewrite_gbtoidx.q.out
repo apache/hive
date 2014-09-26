@@ -306,6 +306,7 @@ group by l_shipdate
 order by l_shipdate
 PREHOOK: type: QUERY
 PREHOOK: Input: default@default__lineitem_lineitem_lshipdate_idx__
+PREHOOK: Input: default@lineitem
 #### A masked pattern was here ####
 POSTHOOK: query: select l_shipdate, count(l_shipdate)
 from lineitem
@@ -313,6 +314,7 @@ group by l_shipdate
 order by l_shipdate
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@default__lineitem_lineitem_lshipdate_idx__
+POSTHOOK: Input: default@lineitem
 #### A masked pattern was here ####
 1992-04-27	1
 1992-07-02	1
@@ -654,6 +656,7 @@ group by year(l_shipdate), month(l_shipdate)
 order by year, month
 PREHOOK: type: QUERY
 PREHOOK: Input: default@default__lineitem_lineitem_lshipdate_idx__
+PREHOOK: Input: default@lineitem
 #### A masked pattern was here ####
 POSTHOOK: query: select year(l_shipdate) as year,
         month(l_shipdate) as month,
@@ -663,6 +666,7 @@ group by year(l_shipdate), month(l_shipdate)
 order by year, month
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@default__lineitem_lineitem_lshipdate_idx__
+POSTHOOK: Input: default@lineitem
 #### A masked pattern was here ####
 1992	4	1
 1992	7	3
@@ -2628,10 +2632,12 @@ STAGE PLANS:
 PREHOOK: query: select key, count(key) from tbl group by key order by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@default__tbl_tbl_key_idx__
+PREHOOK: Input: default@tbl
 #### A masked pattern was here ####
 POSTHOOK: query: select key, count(key) from tbl group by key order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@default__tbl_tbl_key_idx__
+POSTHOOK: Input: default@tbl
 #### A masked pattern was here ####
 1	1
 2	3
