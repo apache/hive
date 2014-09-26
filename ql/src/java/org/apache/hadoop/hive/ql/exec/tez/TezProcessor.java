@@ -148,6 +148,16 @@ public class TezProcessor extends AbstractLogicalIOProcessor {
     Throwable originalThrowable = null;
     try {
       // Outputs will be started later by the individual Processors.
+      TezCacheAccess cacheAccess = TezCacheAccess.createInstance(jobConf);
+      // Start the actual Inputs. After MRInput initialization.
+      for (Map.Entry<String, LogicalInput> inputEntry : inputs.entrySet()) {
+        if (!cacheAccess.isInputCached(inputEntry.getKey())) {
+          LOG.info("Input: " + inputEntry.getKey() + " is not cached");
+          inputEntry.getValue().start();
+        } else {
+          LOG.info("Input: " + inputEntry.getKey() + " is already cached. Skipping start");
+        }
+      }
 
       MRTaskReporter mrReporter = new MRTaskReporter(getContext());
       rproc.init(jobConf, getContext(), mrReporter, inputs, outputs);
