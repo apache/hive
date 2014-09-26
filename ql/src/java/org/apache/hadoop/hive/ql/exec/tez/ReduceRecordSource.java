@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec.tez;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -28,6 +29,7 @@ import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedBatchUtil;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriterFactory;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
@@ -85,6 +87,7 @@ public class ReduceRecordSource implements RecordSource {
   List<Object> row = new ArrayList<Object>(Utilities.reduceFieldNameList.size());
 
   private DataOutputBuffer buffer;
+  private VectorizedRowBatchCtx batchContext;
   private VectorizedRowBatch batch;
 
   // number of columns pertaining to keys in a vectorized row batch
@@ -110,7 +113,8 @@ public class ReduceRecordSource implements RecordSource {
   private final boolean grouped = true;
 
   void init(JobConf jconf, Operator<?> reducer, boolean vectorized, TableDesc keyTableDesc,
-      TableDesc valueTableDesc, KeyValuesReader reader, boolean handleGroupKey, byte tag)
+      TableDesc valueTableDesc, KeyValuesReader reader, boolean handleGroupKey, byte tag,
+      Map<String, Map<Integer, String>> scratchColumnVectorTypes)
       throws Exception {
 
     ObjectInspector keyObjectInspector;
@@ -149,9 +153,6 @@ public class ReduceRecordSource implements RecordSource {
         /* vectorization only works with struct object inspectors */
         valueStructInspectors = (StructObjectInspector) valueObjectInspector;
 
-        batch = VectorizedBatchUtil.constructVectorizedRowBatch(keyStructInspector,
-            valueStructInspectors);
-
         final int totalColumns = keysColumnOffset +
             valueStructInspectors.getAllStructFieldRefs().size();
         valueStringWriters = new ArrayList<VectorExpressionWriter>(totalColumns);
@@ -178,6 +179,12 @@ public class ReduceRecordSource implements RecordSource {
           ois.add(field.getFieldObjectInspector());
         }
         rowObjectInspector = ObjectInspectorFactory.getStandardStructObjectInspector(colNames, ois);
+
+        Map<Integer, String> reduceShuffleScratchColumnTypeMap = 
+                scratchColumnVectorTypes.get("_REDUCE_SHUFFLE_");
+        batchContext = new VectorizedRowBatchCtx();
+        batchContext.init(reduceShuffleScratchColumnTypeMap, (StructObjectInspector) rowObjectInspector);
+        batch = batchContext.createVectorizedRowBatch();
       } else {
         ois.add(keyObjectInspector);
         ois.add(valueObjectInspector);

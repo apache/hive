@@ -100,7 +100,8 @@ public class ReduceRecordProcessor  extends RecordProcessor{
 
       sources[tag] = new ReduceRecordSource();
       sources[tag].init(jconf, reducer, redWork.getVectorMode(), keyTableDesc, valueTableDesc,
-          reader, tag == position, (byte) tag);
+          reader, tag == position, (byte) tag,
+          redWork.getScratchColumnVectorTypes());
       ois[tag] = sources[tag].getObjectInspector();
     }
 
