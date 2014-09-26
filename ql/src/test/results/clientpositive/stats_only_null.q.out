@@ -322,16 +322,20 @@ STAGE PLANS:
 
 PREHOOK: query: select count(*), count(a), count(b), count(c), count(d) from stats_null
 PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_null
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*), count(a), count(b), count(c), count(d) from stats_null
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_null
 #### A masked pattern was here ####
 10	8	8	10	10
 PREHOOK: query: select count(*), count(a), count(b), count(c), count(d) from stats_null_part
 PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_null_part
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*), count(a), count(b), count(c), count(d) from stats_null_part
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_null_part
 #### A masked pattern was here ####
 10	8	8	10	10
 PREHOOK: query: drop table stats_null_part

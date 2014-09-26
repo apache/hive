@@ -73,9 +73,11 @@ POSTHOOK: Lineage: orc_create_people.start_date SIMPLE [(orc_create_people_stagi
 POSTHOOK: Lineage: orc_create_people.state SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:state, type:string, comment:null), ]
 PREHOOK: query: analyze table orc_create_people compute statistics partialscan
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_create_people
 PREHOOK: Output: default@orc_create_people
 POSTHOOK: query: analyze table orc_create_people compute statistics partialscan
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_create_people
 POSTHOOK: Output: default@orc_create_people
 PREHOOK: query: desc formatted orc_create_people
 PREHOOK: type: DESCTABLE
@@ -269,11 +271,13 @@ POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).salary SIMPLE [(orc_cre
 POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).start_date SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:start_date, type:timestamp, comment:null), ]
 PREHOOK: query: analyze table orc_create_people partition(state) compute statistics partialscan
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_create_people
 PREHOOK: Output: default@orc_create_people
 PREHOOK: Output: default@orc_create_people@state=Ca
 PREHOOK: Output: default@orc_create_people@state=Or
 POSTHOOK: query: analyze table orc_create_people partition(state) compute statistics partialscan
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_create_people
 POSTHOOK: Output: default@orc_create_people
 POSTHOOK: Output: default@orc_create_people@state=Ca
 POSTHOOK: Output: default@orc_create_people@state=Or
@@ -581,11 +585,13 @@ POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).salary SIMPLE [(orc_cre
 POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).start_date SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:start_date, type:timestamp, comment:null), ]
 PREHOOK: query: analyze table orc_create_people partition(state) compute statistics partialscan
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_create_people
 PREHOOK: Output: default@orc_create_people
 PREHOOK: Output: default@orc_create_people@state=Ca
 PREHOOK: Output: default@orc_create_people@state=Or
 POSTHOOK: query: analyze table orc_create_people partition(state) compute statistics partialscan
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_create_people
 POSTHOOK: Output: default@orc_create_people
 POSTHOOK: Output: default@orc_create_people@state=Ca
 POSTHOOK: Output: default@orc_create_people@state=Or
@@ -942,12 +948,14 @@ POSTHOOK: Input: default@orc_create_people
 POSTHOOK: Output: default@orc_create_people
 PREHOOK: query: analyze table orc_create_people partition(state) compute statistics noscan
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_create_people
 PREHOOK: Output: default@orc_create_people
 PREHOOK: Output: default@orc_create_people@state=Ca
 PREHOOK: Output: default@orc_create_people@state=OH
 PREHOOK: Output: default@orc_create_people@state=Or
 POSTHOOK: query: analyze table orc_create_people partition(state) compute statistics noscan
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_create_people
 POSTHOOK: Output: default@orc_create_people
 POSTHOOK: Output: default@orc_create_people@state=Ca
 POSTHOOK: Output: default@orc_create_people@state=OH

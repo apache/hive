@@ -1628,6 +1628,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
           qb.getParseInfo().addTableSpec(alias, ts);
         }
+
+        ReadEntity parentViewInfo = PlanUtils.getParentViewInfo(getAliasId(alias, qb), viewAliasToInput);
+        PlanUtils.addInput(inputs,
+            new ReadEntity(tab, parentViewInfo, parentViewInfo == null));
       }
 
       LOG.info("Get metadata for subqueries");
@@ -2432,7 +2436,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     output = putOpInsertMap(output, inputRR);
     return output;
   }
-  
+
   private Operator genPlanForSubQueryPredicate(
       QB qbSQ,
       ISubQueryJoinInfo subQueryPredicate) throws SemanticException {
