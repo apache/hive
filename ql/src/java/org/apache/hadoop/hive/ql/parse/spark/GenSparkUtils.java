@@ -34,15 +34,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.exec.FetchTask;
-import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
-import org.apache.hadoop.hive.ql.exec.GroupByOperator;
-import org.apache.hadoop.hive.ql.exec.HashTableDummyOperator;
-import org.apache.hadoop.hive.ql.exec.Operator;
-import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
-import org.apache.hadoop.hive.ql.exec.TableScanOperator;
-import org.apache.hadoop.hive.ql.exec.UnionOperator;
-import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.*;
 import org.apache.hadoop.hive.ql.exec.spark.SparkTask;
 import org.apache.hadoop.hive.ql.optimizer.GenMapRedUtils;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
@@ -125,6 +117,11 @@ public class GenSparkUtils {
     String sortOrder = Strings.nullToEmpty(reduceSink.getConf().getOrder()).trim();
     if (!sortOrder.isEmpty() && isSortNecessary(reduceSink)) {
       edgeProp.setShuffleSort();
+    }
+
+    if (reduceWork.getReducer() instanceof JoinOperator) {
+      //reduce-side join
+      edgeProp.setMRShuffle();
     }
 
     sparkWork.connect(

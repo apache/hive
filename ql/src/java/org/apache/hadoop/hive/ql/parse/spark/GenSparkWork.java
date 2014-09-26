@@ -35,12 +35,7 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.optimizer.GenMapRedUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.BaseWork;
-import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
-import org.apache.hadoop.hive.ql.plan.ReduceWork;
-import org.apache.hadoop.hive.ql.plan.SparkEdgeProperty;
-import org.apache.hadoop.hive.ql.plan.SparkWork;
-import org.apache.hadoop.hive.ql.plan.UnionWork;
+import org.apache.hadoop.hive.ql.plan.*;
 
 import com.google.common.base.Preconditions;
 
@@ -281,6 +276,10 @@ public class GenSparkWork implements NodeProcessor {
         String sortOrder = Strings.nullToEmpty(rs.getConf().getOrder()).trim();
         if (!sortOrder.isEmpty() && GenSparkUtils.isSortNecessary(rs)) {
           edgeProp.setShuffleSort();
+        }
+        if (rWork.getReducer() instanceof JoinOperator) {
+          //reduce-side join
+          edgeProp.setMRShuffle();
         }
         sparkWork.connect(work, rWork, edgeProp);
         context.connectedReduceSinks.add(rs);
