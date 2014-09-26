@@ -428,6 +428,9 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
 
   public static void pushFilters(JobConf jobConf, TableScanOperator tableScan) {
 
+    // ensure filters are not set from previous pushFilters
+    jobConf.unset(TableScanDesc.FILTER_TEXT_CONF_STR);
+    jobConf.unset(TableScanDesc.FILTER_EXPR_CONF_STR);
     TableScanDesc scanDesc = tableScan.getConf();
     if (scanDesc == null) {
       return;
