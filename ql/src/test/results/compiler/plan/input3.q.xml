@@ -334,7 +334,7 @@
                          </object> 
                         </void> 
                         <void property="tableDesc"> 
-                         <object class="org.apache.hadoop.hive.ql.plan.TableDesc"> 
+                         <object id="TableDesc0" class="org.apache.hadoop.hive.ql.plan.TableDesc"> 
                           <void property="inputFileFormatClass"> 
                            <class>org.apache.hadoop.mapred.TextInputFormat</class> 
                           </void> 
@@ -432,66 +432,7 @@
                    <boolean>true</boolean> 
                   </void> 
                   <void property="table"> 
-                   <object id="TableDesc0" class="org.apache.hadoop.hive.ql.plan.TableDesc"> 
-                    <void property="inputFileFormatClass"> 
-                     <class>org.apache.hadoop.mapred.TextInputFormat</class> 
-                    </void> 
-                    <void property="outputFileFormatClass"> 
-                     <class>org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat</class> 
-                    </void> 
-                    <void property="properties"> 
-                     <object class="java.util.Properties"> 
-                      <void method="put"> 
-                       <string>name</string> 
-                       <string>default.dest1</string> 
-                      </void> 
-                      <void method="put"> 
-                       <string>columns.types</string> 
-                       <string>string:string</string> 
-                      </void> 
-                      <void method="put"> 
-                       <string>serialization.ddl</string> 
-                       <string>struct dest1 { string key, string value}</string> 
-                      </void> 
-                      <void method="put"> 
-                       <string>serialization.format</string> 
-                       <string>1</string> 
-                      </void> 
-                      <void method="put"> 
-                       <string>columns</string> 
-                       <string>key,value</string> 
-                      </void> 
-                      <void method="put"> 
-                       <string>columns.comments</string> 
-                       <string>default<char code="#0"/>default</string> 
-                      </void> 
-                      <void method="put"> 
-                       <string>bucket_count</string> 
-                       <string>-1</string> 
-                      </void> 
-                      <void method="put"> 
-                       <string>serialization.lib</string> 
-                       <string>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</string> 
-                      </void> 
-                      <void method="put"> 
-                       <string>file.inputformat</string> 
-                       <string>org.apache.hadoop.mapred.TextInputFormat</string> 
-                      </void> 
-                      <void method="put"> 
-                       <string>file.outputformat</string> 
-                       <string>org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat</string> 
-                      </void> 
-                      <void method="put"> 
-                       <string>location</string> 
-                       #### A masked pattern was here #### 
-                      </void> 
-                      <void method="put"> 
-                       <string>transient_lastDdlTime</string> 
-                       #### A masked pattern was here #### 
-                      </void> 
-                     </object> 
-                    </void> 
-                   </object> 
+                   <object idref="TableDesc0"/> 
                   </void> 
                  </object> 
                 </void> 
@@ -881,7 +822,7 @@
                          </object> 
                         </void> 
                         <void property="tableDesc"> 
-                         <object class="org.apache.hadoop.hive.ql.plan.TableDesc"> 
+                         <object id="TableDesc1" class="org.apache.hadoop.hive.ql.plan.TableDesc"> 
                           <void property="inputFileFormatClass"> 
                            <class>org.apache.hadoop.mapred.TextInputFormat</class> 
                           </void> 
@@ -979,66 +920,7 @@
                    <boolean>true</boolean> 
                   </void> 
                   <void property="table"> 
-                   <object id="TableDesc1" class="org.apache.hadoop.hive.ql.plan.TableDesc"> 
-                    <void property="inputFileFormatClass"> 
-                     <class>org.apache.hadoop.mapred.TextInputFormat</class> 
-                    </void> 
-                    <void property="outputFileFormatClass"> 
-                     <class>org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat</class> 
-                    </void> 
-                    <void property="properties"> 
-                     <object class="java.util.Properties"> 
-                      <void method="put"> 
-                       <string>name</string> 
-                       <string>default.dest2</string> 
-                      </void> 
-                      <void method="put"> 
-                       <string>columns.types</string> 
-                       <string>string:string</string> 
-                      </void> 
-                      <void method="put"> 
-                       <string>serialization.ddl</string> 
-                       <string>struct dest2 { string key, string value}</string> 
-                      </void> 
-                      <void method="put"> 
-                       <string>serialization.format</string> 
-                       <string>1</string> 
-                      </void> 
-                      <void method="put"> 
-                       <string>columns</string> 
-                       <string>key,value</string> 
-                      </void> 
-                      <void method="put"> 
-                       <string>columns.comments</string> 
-                       <string>default<char code="#0"/>default</string> 
-                      </void> 
-                      <void method="put"> 
-                       <string>bucket_count</string> 
-                       <string>-1</string> 
-                      </void> 
-                      <void method="put"> 
-                       <string>serialization.lib</string> 
-                       <string>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</string> 
-                      </void> 
-                      <void method="put"> 
-                       <string>file.inputformat</string> 
-                       <string>org.apache.hadoop.mapred.TextInputFormat</string> 
-                      </void> 
-                      <void method="put"> 
-                       <string>file.outputformat</string> 
-                       <string>org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat</string> 
-                      </void> 
-                      <void method="put"> 
-                       <string>location</string> 
-                       #### A masked pattern was here #### 
-                      </void> 
-                      <void method="put"> 
-                       <string>transient_lastDdlTime</string> 
-                       #### A masked pattern was here #### 
-                      </void> 
-                     </object> 
-                    </void> 
-                   </object> 
+                   <object idref="TableDesc1"/> 
                   </void> 
                  </object> 
                 </void> 
@@ -1440,7 +1322,7 @@
                          </object> 
                         </void> 
                         <void property="tableDesc"> 
-                         <object class="org.apache.hadoop.hive.ql.plan.TableDesc"> 
+                         <object id="TableDesc2" class="org.apache.hadoop.hive.ql.plan.TableDesc"> 
                           <void property="inputFileFormatClass"> 
                            <class>org.apache.hadoop.mapred.TextInputFormat</class> 
                           </void> 
@@ -1547,70 +1429,7 @@
                    <boolean>true</boolean> 
                   </void> 
                   <void property="table"> 
-                   <object id="TableDesc2" class="org.apache.hadoop.hive.ql.plan.TableDesc"> 
-                    <void property="inputFileFormatClass"> 
-                     <class>org.apache.hadoop.mapred.TextInputFormat</class> 
-                    </void> 
-                    <void property="outputFileFormatClass"> 
-                     <class>org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat</class> 
-                    </void> 
-                    <void property="properties"> 
-                     <object class="java.util.Properties"> 
-                      <void method="put"> 
-                       <string>name</string> 
-                       <string>default.dest3</string> 
-                      </void> 
-                      <void method="put"> 
-                       <string>columns.types</string> 
-                       <string>string:string</string> 
-                      </void> 
-                      <void method="put"> 
-                       <string>serialization.ddl</string> 
-                       <string>struct dest3 { string key, string value}</string> 
-                      </void> 
-                      <void method="put"> 
-                       <string>serialization.format</string> 
-                       <string>1</string> 
-                      </void> 
-                      <void method="put"> 
-                       <string>columns</string> 
-                       <string>key,value</string> 
-                      </void> 
-                      <void method="put"> 
-                       <string>partition_columns.types</string> 
-                       <string>string:string</string> 
-                      </void> 
-                      <void method="put"> 
-                       <string>columns.comments</string> 
-                       <string>default<char code="#0"/>default</string> 
-                      </void> 
-                      <void method="put"> 
-                       <string>bucket_count</string> 
-                       <string>-1</string> 
-                      </void> 
-                      <void method="put"> 
-                       <string>serialization.lib</string> 
-                       <string>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</string> 
-                      </void> 
-                      <void method="put"> 
-                       <string>file.inputformat</string> 
-                       <string>org.apache.hadoop.mapred.TextInputFormat</string> 
-                      </void> 
-                      <void method="put"> 
-                       <string>file.outputformat</string> 
-                       <string>org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat</string> 
-                      </void> 
-                      <void method="put"> 
-                       <string>location</string> 
-                       #### A masked pattern was here #### 
-                      </void> 
-                      <void method="put"> 
-                       <string>transient_lastDdlTime</string> 
-                       #### A masked pattern was here #### 
-                      </void> 
-                     </object> 
-                    </void> 
-                   </object> 
+                   <object idref="TableDesc2"/> 
                   </void> 
                  </object> 
                 </void> 

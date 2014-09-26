@@ -26,6 +26,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.google.common.collect.Interner;
+import com.google.common.collect.Interners;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.Path;
@@ -277,6 +279,11 @@ public abstract class TaskCompiler {
       for (ExecDriver tsk : mrTasks) {
         tsk.setRetryCmdWhenFail(true);
       }
+    }
+
+    Interner<TableDesc> interner = Interners.newStrongInterner();
+    for (Task<? extends Serializable> rootTask : rootTasks) {
+      GenMapRedUtils.internTableDesc(rootTask, interner);
     }
   }
 
