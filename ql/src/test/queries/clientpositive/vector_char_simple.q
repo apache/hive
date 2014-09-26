@@ -41,3 +41,16 @@ order by key desc
 limit 5;
 
 drop table char_2;
+
+
+-- Implicit conversion.  Occurs in reduce-side under Tez.
+create table char_3 (
+  field char(12)
+) stored as orc;
+
+explain
+insert into table char_3 select cint from alltypesorc limit 10;
+
+insert into table char_3 select cint from alltypesorc limit 10;
+
+drop table char_3;
