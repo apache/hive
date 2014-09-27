@@ -1086,6 +1086,15 @@ public interface IMetaStoreClient {
   ValidTxnList getValidTxns() throws TException;
 
   /**
+   * Get a structure that details valid transactions.
+   * @param currentTxn The current transaction of the caller.  This will be removed from the
+   *                   exceptions list so that the caller sees records from his own transaction.
+   * @return list of valid transactions
+   * @throws TException
+   */
+  ValidTxnList getValidTxns(long currentTxn) throws TException;
+
+  /**
    * Initiate a transaction.
    * @param user User who is opening this transaction.  This is the Hive user,
    *             not necessarily the OS user.  It is assumed that this user has already been
