@@ -286,7 +286,7 @@ public class DbTxnManager extends HiveTxnManagerImpl {
   public ValidTxnList getValidTxns() throws LockException {
     init();
     try {
-      return client.getValidTxns();
+      return client.getValidTxns(txnId);
     } catch (TException e) {
       throw new LockException(ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg(),
           e);
