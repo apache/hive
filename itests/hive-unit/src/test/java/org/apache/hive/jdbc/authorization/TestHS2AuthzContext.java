@@ -120,9 +120,10 @@ public class TestHS2AuthzContext {
     HiveAuthzContext context = contextCapturer.getValue();
 
     assertEquals("Command ", ctxCmd, context.getCommandString());
-    assertTrue("ip address pattern check", context.getIpAddress().contains("."));
+    assertTrue("ip address pattern check", context.getIpAddress().matches("[.:a-fA-F0-9]+"));
     // ip address size check - check for something better than non zero
     assertTrue("ip address size check", context.getIpAddress().length() > 7);
+
   }
 
   private Connection getConnection(String userName) throws SQLException {
