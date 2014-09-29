@@ -1237,6 +1237,15 @@ public class Hive {
     return getDatabase(currentDb);
   }
 
+  public void loadPartition(Path loadPath, String tableName,
+      Map<String, String> partSpec, boolean replace, boolean holdDDLTime,
+      boolean inheritTableSpecs, boolean isSkewedStoreAsSubdir,
+      boolean isSrcLocal, boolean isAcid) throws HiveException {
+    Table tbl = getTable(tableName);
+    loadPartition(loadPath, tbl, partSpec, replace, holdDDLTime, inheritTableSpecs,
+        isSkewedStoreAsSubdir, isSrcLocal, isAcid);
+  }
+
   /**
    * Load a directory into a Hive Table Partition - Alters existing content of
    * the partition with the contents of loadPath. - If the partition does not
@@ -1245,7 +1254,7 @@ public class Hive {
    *
    * @param loadPath
    *          Directory containing files to load into Table
-   * @param tableName
+   * @param  tbl
    *          name of table to be loaded.
    * @param partSpec
    *          defines which partition needs to be loaded
@@ -1258,12 +1267,12 @@ public class Hive {
    * @param isSrcLocal
    *          If the source directory is LOCAL
    */
-  public void loadPartition(Path loadPath, String tableName,
+  public Partition loadPartition(Path loadPath, Table tbl,
       Map<String, String> partSpec, boolean replace, boolean holdDDLTime,
       boolean inheritTableSpecs, boolean isSkewedStoreAsSubdir,
       boolean isSrcLocal, boolean isAcid) throws HiveException {
-    Table tbl = getTable(tableName);
     Path tblDataLocationPath =  tbl.getDataLocation();
+    Partition newTPart = null;
     try {
       /**
        * Move files before creating the partition since down stream processes
@@ -1312,10 +1321,10 @@ public class Hive {
         Hive.copyFiles(conf, loadPath, newPartPath, fs, isSrcLocal, isAcid);
       }
 
+      boolean forceCreate = (!holdDDLTime) ? true : false;
+      newTPart = getPartition(tbl, partSpec, forceCreate, newPartPath.toString(), inheritTableSpecs);
       // recreate the partition if it existed before
       if (!holdDDLTime) {
-        Partition newTPart = getPartition(tbl, partSpec, true, newPartPath.toString(),
-            inheritTableSpecs);
         if (isSkewedStoreAsSubdir) {
           org.apache.hadoop.hive.metastore.api.Partition newCreatedTpart = newTPart.getTPartition();
           SkewedInfo skewedInfo = newCreatedTpart.getSd().getSkewedInfo();
@@ -1325,9 +1334,9 @@ public class Hive {
           /* Add list bucketing location mappings. */
           skewedInfo.setSkewedColValueLocationMaps(skewedColValueLocationMaps);
           newCreatedTpart.getSd().setSkewedInfo(skewedInfo);
-          alterPartition(tbl.getTableName(), new Partition(tbl, newCreatedTpart));
+          alterPartition(tbl.getDbName(), tbl.getTableName(), new Partition(tbl, newCreatedTpart));
           newTPart = getPartition(tbl, partSpec, true, newPartPath.toString(), inheritTableSpecs);
-          newCreatedTpart = newTPart.getTPartition();
+          return new Partition(tbl, newCreatedTpart);
         }
       }
     } catch (IOException e) {
@@ -1340,7 +1349,7 @@ public class Hive {
       LOG.error(StringUtils.stringifyException(e));
       throw new HiveException(e);
     }
-
+    return newTPart;
   }
 
   /**
@@ -1436,18 +1445,18 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @param replace
    * @param numDP number of dynamic partitions
    * @param holdDDLTime
-   * @return a list of strings with the dynamic partition paths
+   * @return partition map details (PartitionSpec and Partition)
    * @throws HiveException
    */
-  public ArrayList<LinkedHashMap<String, String>> loadDynamicPartitions(Path loadPath,
+  public Map<Map<String, String>, Partition> loadDynamicPartitions(Path loadPath,
       String tableName, Map<String, String> partSpec, boolean replace,
       int numDP, boolean holdDDLTime, boolean listBucketingEnabled, boolean isAcid)
       throws HiveException {
 
     Set<Path> validPartitions = new HashSet<Path>();
     try {
-      ArrayList<LinkedHashMap<String, String>> fullPartSpecs =
-        new ArrayList<LinkedHashMap<String, String>>();
+      Map<Map<String, String>, Partition> partitionsMap = new
+          LinkedHashMap<Map<String, String>, Partition>();
 
       FileSystem fs = loadPath.getFileSystem(conf);
       FileStatus[] leafStatus = HiveStatsUtils.getFileStatusRecurse(loadPath, numDP+1, fs);
@@ -1481,6 +1490,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
             + " to at least " + validPartitions.size() + '.');
       }
 
+      Table tbl = getTable(tableName);
       // for each dynamically created DP directory, construct a full partition spec
       // and load the partition based on that
       Iterator<Path> iter = validPartitions.iterator();
@@ -1493,14 +1503,12 @@ private void constructOneLBLocationMap(FileStatus fSta,
         // generate a full partition specification
         LinkedHashMap<String, String> fullPartSpec = new LinkedHashMap<String, String>(partSpec);
         Warehouse.makeSpecFromName(fullPartSpec, partPath);
-        fullPartSpecs.add(fullPartSpec);
-
-        // finally load the partition -- move the file to the final table address
-        loadPartition(partPath, tableName, fullPartSpec, replace, holdDDLTime, true,
-            listBucketingEnabled, false, isAcid);
+        Partition newPartition = loadPartition(partPath, tbl, fullPartSpec, replace,
+            holdDDLTime, true, listBucketingEnabled, false, isAcid);
+        partitionsMap.put(fullPartSpec, newPartition);
         LOG.info("New loading path = " + partPath + " with partSpec " + fullPartSpec);
       }
-      return fullPartSpecs;
+      return partitionsMap;
     } catch (IOException e) {
       throw new HiveException(e);
     }
