@@ -18,22 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-import java.io.Serializable;
-import java.lang.management.ManagementFactory;
-import java.lang.management.MemoryMXBean;
-import java.lang.reflect.Field;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import javolution.util.FastBitSet;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -68,6 +53,20 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
+
+import java.io.Serializable;
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryMXBean;
+import java.lang.reflect.Field;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * GroupBy operator implementation.
@@ -444,10 +443,10 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
     estimateRowSize();
   }
 
-  private static final int javaObjectOverHead = 64;
-  private static final int javaHashEntryOverHead = 64;
-  private static final int javaSizePrimitiveType = 16;
-  private static final int javaSizeUnknownType = 256;
+  public static final int javaObjectOverHead = 64;
+  public static final int javaHashEntryOverHead = 64;
+  public static final int javaSizePrimitiveType = 16;
+  public static final int javaSizeUnknownType = 256;
 
   /**
    * The size of the element at position 'pos' is returned, if possible. If the
