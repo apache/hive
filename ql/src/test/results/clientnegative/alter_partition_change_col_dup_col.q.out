@@ -1,0 +1,21 @@
+PREHOOK: query: create table alter_partition_change_col_dup_col (c1 string, c2 decimal(10,0)) partitioned by (p1 string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@alter_partition_change_col_dup_col
+POSTHOOK: query: create table alter_partition_change_col_dup_col (c1 string, c2 decimal(10,0)) partitioned by (p1 string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@alter_partition_change_col_dup_col
+PREHOOK: query: alter table alter_partition_change_col_dup_col add partition (p1='abc')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@alter_partition_change_col_dup_col
+POSTHOOK: query: alter table alter_partition_change_col_dup_col add partition (p1='abc')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@alter_partition_change_col_dup_col
+POSTHOOK: Output: default@alter_partition_change_col_dup_col@p1=abc
+PREHOOK: query: -- should fail because of duplicate name c1
+alter table alter_partition_change_col_dup_col change c2 c1 decimal(14,4)
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@alter_partition_change_col_dup_col
+PREHOOK: Output: default@alter_partition_change_col_dup_col
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Duplicate column name: c1

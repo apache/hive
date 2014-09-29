@@ -3275,19 +3275,21 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
 
     Table oldTbl = tbl.copy();
+    List<FieldSchema> oldCols = (part == null ? tbl.getCols() : part.getCols());
+    StorageDescriptor sd = (part == null ? tbl.getTTable().getSd() : part.getTPartition().getSd());
 
     if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.RENAME) {
       tbl.setDbName(Utilities.getDatabaseName(alterTbl.getNewName()));
       tbl.setTableName(Utilities.getTableName(alterTbl.getNewName()));
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ADDCOLS) {
       List<FieldSchema> newCols = alterTbl.getNewCols();
-      List<FieldSchema> oldCols = tbl.getCols();
-      if (tbl.getSerializationLib().equals(
+      String serializationLib = sd.getSerdeInfo().getSerializationLib();
+      if (serializationLib.equals(
           "org.apache.hadoop.hive.serde.thrift.columnsetSerDe")) {
         console
         .printInfo("Replacing columns for columnsetSerDe and changing to LazySimpleSerDe");
-        tbl.setSerializationLib(LazySimpleSerDe.class.getName());
-        tbl.getTTable().getSd().setCols(newCols);
+        sd.getSerdeInfo().setSerializationLib(LazySimpleSerDe.class.getName());
+        sd.setCols(newCols);
       } else {
         // make sure the columns does not already exist
         Iterator<FieldSchema> iterNewCols = newCols.iterator();
@@ -3303,10 +3305,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
           }
           oldCols.add(newCol);
         }
-        tbl.getTTable().getSd().setCols(oldCols);
+        sd.setCols(oldCols);
       }
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.RENAMECOLUMN) {
-      List<FieldSchema> oldCols = tbl.getCols();
       List<FieldSchema> newCols = new ArrayList<FieldSchema>();
       Iterator<FieldSchema> iterOldCols = oldCols.iterator();
       String oldName = alterTbl.getOldColName();
@@ -3367,24 +3368,24 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         newCols.add(position, column);
       }
 
-      tbl.getTTable().getSd().setCols(newCols);
-
+      sd.setCols(newCols);
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.REPLACECOLS) {
       // change SerDe to LazySimpleSerDe if it is columnsetSerDe
-      if (tbl.getSerializationLib().equals(
+      String serializationLib = sd.getSerdeInfo().getSerializationLib();
+      if (serializationLib.equals(
           "org.apache.hadoop.hive.serde.thrift.columnsetSerDe")) {
         console
         .printInfo("Replacing columns for columnsetSerDe and changing to LazySimpleSerDe");
-        tbl.setSerializationLib(LazySimpleSerDe.class.getName());
-      } else if (!tbl.getSerializationLib().equals(
+        sd.getSerdeInfo().setSerializationLib(LazySimpleSerDe.class.getName());
+      } else if (!serializationLib.equals(
           MetadataTypedColumnsetSerDe.class.getName())
-          && !tbl.getSerializationLib().equals(LazySimpleSerDe.class.getName())
-          && !tbl.getSerializationLib().equals(ColumnarSerDe.class.getName())
-          && !tbl.getSerializationLib().equals(DynamicSerDe.class.getName())
-          && !tbl.getSerializationLib().equals(ParquetHiveSerDe.class.getName())) {
+          && !serializationLib.equals(LazySimpleSerDe.class.getName())
+          && !serializationLib.equals(ColumnarSerDe.class.getName())
+          && !serializationLib.equals(DynamicSerDe.class.getName())
+          && !serializationLib.equals(ParquetHiveSerDe.class.getName())) {
         throw new HiveException(ErrorMsg.CANNOT_REPLACE_COLUMNS, alterTbl.getOldName());
       }
-      tbl.getTTable().getSd().setCols(alterTbl.getNewCols());
+      sd.setCols(alterTbl.getNewCols());
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ADDPROPS) {
       tbl.getTTable().getParameters().putAll(alterTbl.getProps());
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.DROPPROPS) {
@@ -3393,47 +3394,26 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         tbl.getTTable().getParameters().remove(keyItr.next());
       }
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ADDSERDEPROPS) {
-      if (part != null) {
-        part.getTPartition().getSd().getSerdeInfo().getParameters().putAll(
-            alterTbl.getProps());
-      } else {
-        tbl.getTTable().getSd().getSerdeInfo().getParameters().putAll(
-            alterTbl.getProps());
-      }
+      sd.getSerdeInfo().getParameters().putAll(alterTbl.getProps());
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ADDSERDE) {
       String serdeName = alterTbl.getSerdeName();
+      sd.getSerdeInfo().setSerializationLib(serdeName);
+      if ((alterTbl.getProps() != null) && (alterTbl.getProps().size() > 0)) {
+        sd.getSerdeInfo().getParameters().putAll(alterTbl.getProps());
+      }
       if (part != null) {
-        part.getTPartition().getSd().getSerdeInfo().setSerializationLib(serdeName);
-        if ((alterTbl.getProps() != null) && (alterTbl.getProps().size() > 0)) {
-          part.getTPartition().getSd().getSerdeInfo().getParameters().putAll(
-              alterTbl.getProps());
-        }
         part.getTPartition().getSd().setCols(part.getTPartition().getSd().getCols());
       } else {
-        tbl.setSerializationLib(alterTbl.getSerdeName());
-        if ((alterTbl.getProps() != null) && (alterTbl.getProps().size() > 0)) {
-          tbl.getTTable().getSd().getSerdeInfo().getParameters().putAll(
-              alterTbl.getProps());
-        }
         if (!Table.hasMetastoreBasedSchema(conf, serdeName)) {
           tbl.setFields(Hive.getFieldsFromDeserializer(tbl.getTableName(), tbl.
               getDeserializer()));
         }
       }
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ADDFILEFORMAT) {
-      if(part != null) {
-        part.getTPartition().getSd().setInputFormat(alterTbl.getInputFormat());
-        part.getTPartition().getSd().setOutputFormat(alterTbl.getOutputFormat());
-        if (alterTbl.getSerdeName() != null) {
-          part.getTPartition().getSd().getSerdeInfo().setSerializationLib(
-              alterTbl.getSerdeName());
-        }
-      } else {
-        tbl.getTTable().getSd().setInputFormat(alterTbl.getInputFormat());
-        tbl.getTTable().getSd().setOutputFormat(alterTbl.getOutputFormat());
-        if (alterTbl.getSerdeName() != null) {
-          tbl.setSerializationLib(alterTbl.getSerdeName());
-        }
+      sd.setInputFormat(alterTbl.getInputFormat());
+      sd.setOutputFormat(alterTbl.getOutputFormat());
+      if (alterTbl.getSerdeName() != null) {
+        sd.getSerdeInfo().setSerializationLib(alterTbl.getSerdeName());
       }
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ALTERPROTECTMODE) {
       boolean protectModeEnable = alterTbl.isProtectModeEnable();
@@ -3463,8 +3443,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
             .getColumnNamesFromSortCols(alterTbl.getSortColumns()));
       }
 
-      StorageDescriptor sd = part == null ? tbl.getTTable().getSd() : part.getTPartition().getSd();
-
       if (alterTbl.isTurnOffSorting()) {
         sd.setSortCols(new ArrayList<Order>());
       } else if (alterTbl.getNumberBuckets() == -1) {
@@ -3485,11 +3463,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
             || locUri.getScheme().trim().equals("")) {
           throw new HiveException(ErrorMsg.BAD_LOCATION_VALUE, newLocation);
         }
-        if (part != null) {
-          part.setLocation(newLocation);
-        } else {
-          tbl.setDataLocation(new Path(locUri));
-        }
+        sd.setLocation(newLocation);
       } catch (URISyntaxException e) {
         throw new HiveException(e);
       }
