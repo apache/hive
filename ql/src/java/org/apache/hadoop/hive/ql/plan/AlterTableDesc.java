@@ -110,10 +110,12 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
    * @param newComment
    * @param newType
    */
-  public AlterTableDesc(String tblName, String oldColName, String newColName,
+  public AlterTableDesc(String tblName, HashMap<String, String> partSpec,
+      String oldColName, String newColName,
       String newType, String newComment, boolean first, String afterCol) {
     super();
     oldName = tblName;
+    this.partSpec = partSpec;
     this.oldColName = oldColName;
     this.newColName = newColName;
     newColType = newType;
@@ -142,11 +144,12 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
    * @param newCols
    *          new columns to be added
    */
-  public AlterTableDesc(String name, List<FieldSchema> newCols,
+  public AlterTableDesc(String name, HashMap<String, String> partSpec, List<FieldSchema> newCols,
       AlterTableTypes alterType) {
     op = alterType;
     oldName = name;
     this.newCols = new ArrayList<FieldSchema>(newCols);
+    this.partSpec = partSpec;
   }
 
   /**
