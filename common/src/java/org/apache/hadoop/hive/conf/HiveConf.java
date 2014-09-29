@@ -1189,13 +1189,6 @@ public class HiveConf extends Configuration {
         "Average row size is computed from average column size of all columns in the row. In the absence\n" +
         "of column statistics and for variable length complex columns like map, the average number of\n" +
         "entries/values can be specified using this config."),
-    // to accurately compute statistics for GROUPBY map side parallelism needs to be known
-    HIVE_STATS_MAP_SIDE_PARALLELISM("hive.stats.map.parallelism", 1,
-        "Hive/Tez optimizer estimates the data size flowing through each of the operators.\n" +
-        "For GROUPBY operator, to accurately compute the data size map-side parallelism needs to\n" +
-        "be known. By default, this value is set to 1 since optimizer is not aware of the number of\n" +
-        "mappers during compile-time. This Hive config can be used to specify the number of mappers\n" +
-        "to be used for data size computation of GROUPBY operator."),
     // statistics annotation fetches stats for each partition, which can be expensive. turning
     // this off will result in basic sizes being fetched from namenode instead
     HIVE_STATS_FETCH_PARTITION_STATS("hive.stats.fetch.partition.stats", true,
