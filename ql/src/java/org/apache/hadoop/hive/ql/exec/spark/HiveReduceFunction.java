@@ -47,8 +47,7 @@ public class HiveReduceFunction implements PairFlatMapFunction<
   call(Iterator<Tuple2<HiveKey, Iterable<BytesWritable>>> it) throws Exception {
     if (jobConf == null) {
       jobConf = KryoSerializer.deserializeJobConf(this.buffer);
-      // set mapred.task.partition in executor side.
-      jobConf.setInt("mapred.task.partition", TaskContext.get().getPartitionId());
+      SparkUtilities.setTaskInfoInJobConf(jobConf, TaskContext.get());
     }
 
     SparkReduceRecordHandler reducerRecordhandler = new SparkReduceRecordHandler();
