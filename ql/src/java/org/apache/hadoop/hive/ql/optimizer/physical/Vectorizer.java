@@ -1062,11 +1062,6 @@ public class Vectorizer implements PhysicalPlanResolver {
   }
 
   private boolean validateFileSinkOperator(FileSinkOperator op) {
-    // HIVE-7557: For now, turn off dynamic partitioning to give more time to 
-    // figure out how to make VectorFileSink work correctly with it...
-   if (op.getConf().getDynPartCtx() != null) {
-     return false;
-   }
    return true;
   }
 
