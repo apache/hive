@@ -427,7 +427,7 @@ public class DagUtils {
    * from yarn. Falls back to Map-reduce's map size if tez
    * container size isn't set.
    */
-  private Resource getContainerResource(Configuration conf) {
+  public static Resource getContainerResource(Configuration conf) {
     int memory = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVETEZCONTAINERSIZE) > 0 ?
       HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVETEZCONTAINERSIZE) :
       conf.getInt(MRJobConfig.MAP_MEMORY_MB, MRJobConfig.DEFAULT_MAP_MEMORY_MB);

@@ -767,7 +767,8 @@ public class StatsUtils {
         || colType.equalsIgnoreCase(serdeConstants.FLOAT_TYPE_NAME)) {
       return JavaDataModel.get().primitive1();
     } else if (colType.equalsIgnoreCase(serdeConstants.DOUBLE_TYPE_NAME)
-        || colType.equalsIgnoreCase(serdeConstants.BIGINT_TYPE_NAME)) {
+        || colType.equalsIgnoreCase(serdeConstants.BIGINT_TYPE_NAME)
+        || colType.equalsIgnoreCase("long")) {
       return JavaDataModel.get().primitive2();
     } else if (colType.equalsIgnoreCase(serdeConstants.TIMESTAMP_TYPE_NAME)) {
       return JavaDataModel.get().lengthOfTimestamp();
@@ -796,7 +797,8 @@ public class StatsUtils {
       return JavaDataModel.get().lengthForIntArrayOfSize(length);
     } else if (colType.equalsIgnoreCase(serdeConstants.DOUBLE_TYPE_NAME)) {
       return JavaDataModel.get().lengthForDoubleArrayOfSize(length);
-    } else if (colType.equalsIgnoreCase(serdeConstants.BIGINT_TYPE_NAME)) {
+    } else if (colType.equalsIgnoreCase(serdeConstants.BIGINT_TYPE_NAME)
+        || colType.equalsIgnoreCase("long")) {
       return JavaDataModel.get().lengthForLongArrayOfSize(length);
     } else if (colType.equalsIgnoreCase(serdeConstants.BINARY_TYPE_NAME)) {
       return JavaDataModel.get().lengthForByteArrayOfSize(length);
@@ -892,7 +894,7 @@ public class StatsUtils {
       Statistics parentStats, Map<String, ExprNodeDesc> colExprMap, RowSchema rowSchema) {
 
     List<ColStatistics> cs = Lists.newArrayList();
-    if (colExprMap != null) {
+    if (colExprMap != null  && rowSchema != null) {
       for (ColumnInfo ci : rowSchema.getSignature()) {
         String outColName = ci.getInternalName();
         outColName = StatsUtils.stripPrefixFromColumnName(outColName);
