@@ -115,19 +115,23 @@ POSTHOOK: Lineage: orc_merge5a PARTITION(year=2001,hour=24).userid SIMPLE [(orc_
 PREHOOK: query: -- 3 files total
 analyze table orc_merge5a partition(year="2000",hour=24) compute statistics noscan
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_merge5a
 PREHOOK: Output: default@orc_merge5a
 PREHOOK: Output: default@orc_merge5a@year=2000/hour=24
 POSTHOOK: query: -- 3 files total
 analyze table orc_merge5a partition(year="2000",hour=24) compute statistics noscan
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_merge5a
 POSTHOOK: Output: default@orc_merge5a
 POSTHOOK: Output: default@orc_merge5a@year=2000/hour=24
 PREHOOK: query: analyze table orc_merge5a partition(year="2001",hour=24) compute statistics noscan
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_merge5a
 PREHOOK: Output: default@orc_merge5a
 PREHOOK: Output: default@orc_merge5a@year=2001/hour=24
 POSTHOOK: query: analyze table orc_merge5a partition(year="2001",hour=24) compute statistics noscan
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_merge5a
 POSTHOOK: Output: default@orc_merge5a
 POSTHOOK: Output: default@orc_merge5a@year=2001/hour=24
 PREHOOK: query: desc formatted orc_merge5a partition(year="2000",hour=24)
@@ -375,19 +379,23 @@ POSTHOOK: Lineage: orc_merge5a PARTITION(year=2001,hour=24).userid SIMPLE [(orc_
 PREHOOK: query: -- 1 file after merging
 analyze table orc_merge5a partition(year="2000",hour=24) compute statistics noscan
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_merge5a
 PREHOOK: Output: default@orc_merge5a
 PREHOOK: Output: default@orc_merge5a@year=2000/hour=24
 POSTHOOK: query: -- 1 file after merging
 analyze table orc_merge5a partition(year="2000",hour=24) compute statistics noscan
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_merge5a
 POSTHOOK: Output: default@orc_merge5a
 POSTHOOK: Output: default@orc_merge5a@year=2000/hour=24
 PREHOOK: query: analyze table orc_merge5a partition(year="2001",hour=24) compute statistics noscan
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_merge5a
 PREHOOK: Output: default@orc_merge5a
 PREHOOK: Output: default@orc_merge5a@year=2001/hour=24
 POSTHOOK: query: analyze table orc_merge5a partition(year="2001",hour=24) compute statistics noscan
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_merge5a
 POSTHOOK: Output: default@orc_merge5a
 POSTHOOK: Output: default@orc_merge5a@year=2001/hour=24
 PREHOOK: query: desc formatted orc_merge5a partition(year="2000",hour=24)
@@ -534,18 +542,22 @@ POSTHOOK: Lineage: orc_merge5a PARTITION(year=2001,hour=24).ts SIMPLE [(orc_merg
 POSTHOOK: Lineage: orc_merge5a PARTITION(year=2001,hour=24).userid SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:userid, type:bigint, comment:null), ]
 PREHOOK: query: analyze table orc_merge5a partition(year="2000",hour=24) compute statistics noscan
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_merge5a
 PREHOOK: Output: default@orc_merge5a
 PREHOOK: Output: default@orc_merge5a@year=2000/hour=24
 POSTHOOK: query: analyze table orc_merge5a partition(year="2000",hour=24) compute statistics noscan
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_merge5a
 POSTHOOK: Output: default@orc_merge5a
 POSTHOOK: Output: default@orc_merge5a@year=2000/hour=24
 PREHOOK: query: analyze table orc_merge5a partition(year="2001",hour=24) compute statistics noscan
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_merge5a
 PREHOOK: Output: default@orc_merge5a
 PREHOOK: Output: default@orc_merge5a@year=2001/hour=24
 POSTHOOK: query: analyze table orc_merge5a partition(year="2001",hour=24) compute statistics noscan
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_merge5a
 POSTHOOK: Output: default@orc_merge5a
 POSTHOOK: Output: default@orc_merge5a@year=2001/hour=24
 PREHOOK: query: desc formatted orc_merge5a partition(year="2000",hour=24)
@@ -711,19 +723,23 @@ POSTHOOK: Output: default@orc_merge5a@year=2001/hour=24
 PREHOOK: query: -- 1 file after merging
 analyze table orc_merge5a partition(year="2000",hour=24) compute statistics noscan
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_merge5a
 PREHOOK: Output: default@orc_merge5a
 PREHOOK: Output: default@orc_merge5a@year=2000/hour=24
 POSTHOOK: query: -- 1 file after merging
 analyze table orc_merge5a partition(year="2000",hour=24) compute statistics noscan
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_merge5a
 POSTHOOK: Output: default@orc_merge5a
 POSTHOOK: Output: default@orc_merge5a@year=2000/hour=24
 PREHOOK: query: analyze table orc_merge5a partition(year="2001",hour=24) compute statistics noscan
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_merge5a
 PREHOOK: Output: default@orc_merge5a
 PREHOOK: Output: default@orc_merge5a@year=2001/hour=24
 POSTHOOK: query: analyze table orc_merge5a partition(year="2001",hour=24) compute statistics noscan
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_merge5a
 POSTHOOK: Output: default@orc_merge5a
 POSTHOOK: Output: default@orc_merge5a@year=2001/hour=24
 PREHOOK: query: desc formatted orc_merge5a partition(year="2000",hour=24)

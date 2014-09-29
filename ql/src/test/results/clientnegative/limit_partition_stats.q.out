@@ -43,9 +43,11 @@ STAGE PLANS:
 
 PREHOOK: query: select count(*) from part
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from part
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 2000
 PREHOOK: query: explain select count(*) from part
