@@ -946,8 +946,6 @@ alterTableStatementSuffix
 @init { pushMsg("alter table statement", state); }
 @after { popMsg(state); }
     : alterStatementSuffixRename[true]
-    | alterStatementSuffixAddCol
-    | alterStatementSuffixRenameCol
     | alterStatementSuffixUpdateStatsCol
     | alterStatementSuffixDropPartitions[true]
     | alterStatementSuffixAddPartitions[true]
@@ -975,6 +973,8 @@ alterTblPartitionStatementSuffix
   | alterStatementSuffixClusterbySortby
   | alterStatementSuffixCompact
   | alterStatementSuffixUpdateStatsCol
+  | alterStatementSuffixRenameCol
+  | alterStatementSuffixAddCol
   ;
 
 alterStatementPartitionKeyType
