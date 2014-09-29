@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.Reporter;
+import org.apache.spark.TaskContext;
 import org.apache.spark.api.java.function.PairFlatMapFunction;
 
 import scala.Tuple2;
@@ -46,6 +47,8 @@ public class HiveReduceFunction implements PairFlatMapFunction<
   call(Iterator<Tuple2<HiveKey, Iterable<BytesWritable>>> it) throws Exception {
     if (jobConf == null) {
       jobConf = KryoSerializer.deserializeJobConf(this.buffer);
+      // set mapred.task.partition in executor side.
+      jobConf.setInt("mapred.task.partition", TaskContext.get().getPartitionId());
     }
 
     SparkReduceRecordHandler reducerRecordhandler = new SparkReduceRecordHandler();
