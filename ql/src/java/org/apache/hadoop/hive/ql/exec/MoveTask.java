@@ -353,6 +353,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
               pushFeed(FeedType.DYNAMIC_PARTITIONS, dps);
             }
 
+            long startTime = System.currentTimeMillis();
             // load the list of DP partitions and return the list of partition specs
             // TODO: In a follow-up to HIVE-1361, we should refactor loadDynamicPartitions
             // to use Utilities.getFullDPSpecs() to get the list of full partSpecs.
@@ -360,7 +361,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
             // iterate over it and call loadPartition() here.
             // The reason we don't do inside HIVE-1361 is the latter is large and we
             // want to isolate any potential issue it may introduce.
-            ArrayList<LinkedHashMap<String, String>> dp =
+            Map<Map<String, String>, Partition> dp =
               db.loadDynamicPartitions(
                 tbd.getSourcePath(),
                 tbd.getTable().getTableName(),
@@ -370,16 +371,19 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
                 tbd.getHoldDDLTime(),
                 isSkewedStoredAsDirs(tbd),
                 work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID);
+            console.printInfo("\t Time taken for load dynamic partitions : "  +
+                (System.currentTimeMillis() - startTime));
 
             if (dp.size() == 0 && conf.getBoolVar(HiveConf.ConfVars.HIVE_ERROR_ON_EMPTY_PARTITION)) {
               throw new HiveException("This query creates no partitions." +
                   " To turn off this error, set hive.error.on.empty.partition=false.");
             }
 
+            startTime = System.currentTimeMillis();
             // for each partition spec, get the partition
             // and put it to WriteEntity for post-exec hook
-            for (LinkedHashMap<String, String> partSpec: dp) {
-              Partition partn = db.getPartition(table, partSpec, false);
+            for(Map.Entry<Map<String, String>, Partition> entry : dp.entrySet()) {
+              Partition partn = entry.getValue();
 
               if (bucketCols != null || sortCols != null) {
                 updatePartitionBucketSortColumns(table, partn, bucketCols, numBuckets, sortCols);
@@ -412,8 +416,10 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
                     table.getCols());
               }
 
-              console.printInfo("\tLoading partition " + partSpec);
+              console.printInfo("\tLoading partition " + entry.getKey());
             }
+            console.printInfo("\t Time taken for adding to write entity : " +
+                (System.currentTimeMillis() - startTime));
             dc = null; // reset data container to prevent it being added again.
           } else { // static partitions
             List<String> partVals = MetaStoreUtils.getPvals(table.getPartCols(),
