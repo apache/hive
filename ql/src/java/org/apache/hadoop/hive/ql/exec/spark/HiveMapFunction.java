@@ -48,8 +48,7 @@ public class HiveMapFunction implements PairFlatMapFunction<Iterator<Tuple2<Byte
   call(Iterator<Tuple2<BytesWritable, BytesWritable>> it) throws Exception {
     if (jobConf == null) {
       jobConf = KryoSerializer.deserializeJobConf(this.buffer);
-      // set mapred.task.partition in executor side.
-      jobConf.setInt("mapred.task.partition", TaskContext.get().getPartitionId());
+      SparkUtilities.setTaskInfoInJobConf(jobConf, TaskContext.get());
     }
 
     SparkRecordHandler mapRecordHandler;
