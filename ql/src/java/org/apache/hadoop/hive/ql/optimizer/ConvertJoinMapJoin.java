@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.AppMasterEventOperator;
 import org.apache.hadoop.hive.ql.exec.CommonMergeJoinOperator;
 import org.apache.hadoop.hive.ql.exec.DummyStoreOperator;
+import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
@@ -619,15 +620,31 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     return mapJoinOp;
   }
 
-  private boolean hasDynamicPartitionBroadcast(Operator<?> op) {
-    if (op instanceof AppMasterEventOperator && op.getConf() instanceof DynamicPruningEventDesc) {
-      return true;
-    }
-    for (Operator<?> c : op.getChildOperators()) {
-      if (hasDynamicPartitionBroadcast(c)) {
-        return true;
+  private boolean hasDynamicPartitionBroadcast(Operator<?> parent) {
+    boolean hasDynamicPartitionPruning = false;
+
+    for (Operator<?> op: parent.getChildOperators()) {
+      while (op != null) {
+        if (op instanceof AppMasterEventOperator && op.getConf() instanceof DynamicPruningEventDesc) {
+          // found dynamic partition pruning operator
+          hasDynamicPartitionPruning = true;
+          break;
+        }
+      
+        if (op instanceof ReduceSinkOperator || op instanceof FileSinkOperator) {
+          // crossing reduce sink or file sink means the pruning isn't for this parent.
+          break;
+        }
+
+        if (op.getChildOperators().size() != 1) {
+          // dynamic partition pruning pipeline doesn't have multiple children
+          break;
+        }
+
+        op = op.getChildOperators().get(0);
       }
     }
-    return false;
+
+    return hasDynamicPartitionPruning;
   }
 }
