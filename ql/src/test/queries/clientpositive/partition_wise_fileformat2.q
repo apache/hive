@@ -1,4 +1,4 @@
-
+-- SORT_BEFORE_DIFF
 
 create table partition_test_partitioned(key string, value string) partitioned by (dt string);
 
