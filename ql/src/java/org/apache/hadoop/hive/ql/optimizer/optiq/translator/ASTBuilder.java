@@ -25,6 +25,7 @@ import net.hydromatic.avatica.ByteString;
 
 import org.apache.hadoop.hive.ql.optimizer.optiq.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
+import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.ParseDriver;
 import org.eigenbase.rel.JoinRelType;
@@ -174,8 +175,9 @@ class ASTBuilder {
     case VARCHAR:
     case CHAR:
       val = literal.getValue3();
+      String escapedVal = BaseSemanticAnalyzer.escapeSQLString(String.valueOf(val));
       type = HiveParser.StringLiteral;
-      val = "'" + String.valueOf(val) + "'";
+      val = "'" + escapedVal + "'";
       break;
     case BOOLEAN:
       val = literal.getValue3();
