@@ -19,49 +19,24 @@
 package org.apache.hadoop.hive.metastore.events;
 
 import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler;
-
+import org.apache.hadoop.hive.metastore.api.Database;
 
 /**
- * Base class for all the events which are defined for metastore.
+ * Database read event
  */
+public class PreReadDatabaseEvent extends PreEventContext {
+  private final Database db;
 
-public abstract class PreEventContext {
-
-  public static enum PreEventType {
-    CREATE_TABLE,
-    DROP_TABLE,
-    ALTER_TABLE,
-    ADD_PARTITION,
-    DROP_PARTITION,
-    ALTER_PARTITION,
-    CREATE_DATABASE,
-    DROP_DATABASE,
-    LOAD_PARTITION_DONE,
-    AUTHORIZATION_API_CALL,
-    READ_TABLE,
-    READ_DATABASE
-  }
-
-  private final PreEventType eventType;
-  private final HMSHandler handler;
-
-  public PreEventContext(PreEventType eventType, HMSHandler  handler) {
-    this.eventType = eventType;
-    this.handler = handler;
+  public PreReadDatabaseEvent(Database db, HMSHandler handler) {
+    super(PreEventType.READ_DATABASE, handler);
+    this.db = db;
   }
 
   /**
-   * @return the event type
+   * @return the db
    */
-  public PreEventType getEventType() {
-    return eventType;
-  }
-
-  /**
-   * @return the handler
-   */
-  public HMSHandler getHandler() {
-    return handler;
+  public Database getDatabase() {
+    return db;
   }
 
 }
