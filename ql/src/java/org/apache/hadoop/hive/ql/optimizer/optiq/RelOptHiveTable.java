@@ -257,18 +257,19 @@ public class RelOptHiveTable extends RelOptAbstractTable {
             }
             colNamesFailedStats.clear();
           } else {
-          Statistics stats = StatsUtils.collectStatistics(hiveConf, partitionList,
-              hiveTblMetadata, hiveNonPartitionCols, nonPartColNamesThatRqrStats, true, true);
-          rowCount = stats.getNumRows();
-          hiveColStats = new ArrayList<ColStatistics>();
-          for (String c : nonPartColNamesThatRqrStats) {
-            ColStatistics cs = stats.getColumnStatisticsFromColName(c);
-            if (cs != null) {
-              hiveColStats.add(cs);
-            } else {
-              colNamesFailedStats.add(c);
+            Statistics stats = StatsUtils.collectStatistics(hiveConf, partitionList,
+                hiveTblMetadata, hiveNonPartitionCols, nonPartColNamesThatRqrStats,
+                nonPartColNamesThatRqrStats, true, true);
+            rowCount = stats.getNumRows();
+            hiveColStats = new ArrayList<ColStatistics>();
+            for (String c : nonPartColNamesThatRqrStats) {
+              ColStatistics cs = stats.getColumnStatisticsFromColName(c);
+              if (cs != null) {
+                hiveColStats.add(cs);
+              } else {
+                colNamesFailedStats.add(c);
+              }
             }
-          }
           }
         } catch (HiveException e) {
           String logMsg = "Collecting stats failed.";
