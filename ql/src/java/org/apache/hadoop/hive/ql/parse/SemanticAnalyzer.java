@@ -8028,7 +8028,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       List<ASTNode> nodeConds = node.getExpressions().get(i + 1);
       ArrayList<ASTNode> reordereNodeConds = new ArrayList<ASTNode>();
       for(int k=0; k < tgtToNodeExprMap.length; k++) {
-        reordereNodeConds.add(nodeConds.get(k));
+        reordereNodeConds.add(nodeConds.get(tgtToNodeExprMap[k]));
       }
       expr.add(reordereNodeConds);
     }
