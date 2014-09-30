@@ -22,6 +22,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.rmi.server.UID;
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -45,6 +46,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
+import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardUnionObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaHiveDecimalObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
@@ -280,6 +282,12 @@ class AvroDeserializer {
       str = datum.toString();
       HiveVarchar hvc = new HiveVarchar(str, maxLength);
       return hvc;
+    case DATE:
+      if (recordSchema.getType() != Type.INT) {
+        throw new AvroSerdeException("Unexpected Avro schema for Date TypeInfo: " + recordSchema.getType());
+      }
+
+      return new Date(DateWritable.daysToMillis((Integer)datum));
     default:
       return datum;
     }

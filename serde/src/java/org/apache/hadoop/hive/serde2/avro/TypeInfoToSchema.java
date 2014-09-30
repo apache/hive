@@ -152,6 +152,11 @@ public class TypeInfoToSchema {
             "\"precision\":" + precision + "," +
             "\"scale\":" + scale + "}");
         break;
+      case DATE:
+        schema = AvroSerdeUtils.getSchemaFor("{" +
+            "\"type\":\"" + AvroSerDe.AVRO_INT_TYPE_NAME + "\"," +
+            "\"logicalType\":\"" + AvroSerDe.DATE_TYPE_NAME + "\"}");
+        break;
       case VOID:
         schema = Schema.create(Schema.Type.NULL);
         break;

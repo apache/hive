@@ -150,6 +150,11 @@ class SchemaToTypeInfo {
       return TypeInfoFactory.getVarcharTypeInfo(maxLength);
     }
 
+    if (type == Schema.Type.INT &&
+        AvroSerDe.DATE_TYPE_NAME.equals(schema.getProp(AvroSerDe.AVRO_PROP_LOGICAL_TYPE))) {
+      return TypeInfoFactory.dateTypeInfo;
+    }
+
     return typeInfoCache.retrieve(schema);
   }
 
