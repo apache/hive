@@ -79,6 +79,7 @@ import org.apache.hadoop.hive.ql.lockmgr.TxnManagerFactory;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
+import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.authorization.AuthorizationParseUtils;
@@ -1718,7 +1719,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // assume the first component of DOT delimited name is tableName
     // get the attemptTableName
-    static public String getAttemptTableName(Hive db, String qualifiedName, boolean isColumn) {
+    static public String getAttemptTableName(Hive db, String qualifiedName, boolean isColumn)
+        throws SemanticException {
       // check whether the name starts with table
       // DESCRIBE table
       // DESCRIBE table.column
@@ -1739,11 +1741,13 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
             return tableName;
           }
         }
-      } catch (HiveException e) {
+      } catch (InvalidTableException e) {
         // assume the first DOT delimited component is tableName
         // OK if it is not
         // do nothing when having exception
         return null;
+      } catch (HiveException e) {
+        throw new SemanticException(e.getMessage(), e);
       }
       return null;
     }
@@ -1824,7 +1828,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       ASTNode parentAst,
       ASTNode ast,
       String tableName,
-      Map<String, String> partSpec) {
+      Map<String, String> partSpec) throws SemanticException {
 
       // if parent has two children
       // it could be DESCRIBE table key
@@ -1880,10 +1884,12 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         Table tab = null;
         try {
           tab = db.getTable(tableName);
-        } catch (HiveException e) {
-          // if table not valid
-          // throw semantic exception
+        }
+        catch (InvalidTableException e) {
           throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(tableName), e);
+        }
+        catch (HiveException e) {
+          throw new SemanticException(e.getMessage(), e);
         }
 
         if (partSpec != null) {

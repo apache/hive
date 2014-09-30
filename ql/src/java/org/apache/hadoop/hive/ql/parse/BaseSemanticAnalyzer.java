@@ -1285,7 +1285,7 @@ public abstract class BaseSemanticAnalyzer {
     try {
       database = db.getDatabase(dbName);
     } catch (Exception e) {
-      throw new SemanticException(ErrorMsg.DATABASE_NOT_EXISTS.getMsg(dbName), e);
+      throw new SemanticException(e.getMessage(), e);
     }
     if (database == null && throwException) {
       throw new SemanticException(ErrorMsg.DATABASE_NOT_EXISTS.getMsg(dbName));
@@ -1315,8 +1315,12 @@ public abstract class BaseSemanticAnalyzer {
     try {
       tab = database == null ? db.getTable(tblName, false)
           : db.getTable(database, tblName, false);
-    } catch (Exception e) {
+    }
+    catch (InvalidTableException e) {
       throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(tblName), e);
+    }
+    catch (Exception e) {
+      throw new SemanticException(e.getMessage(), e);
     }
     if (tab == null && throwException) {
       throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(tblName));
