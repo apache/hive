@@ -41,6 +41,10 @@ import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.avro.AvroObjectInspectorGenerator;
 import org.apache.hadoop.hive.serde2.avro.AvroSerdeUtils;
+import org.apache.hadoop.hive.serde2.lazy.LazyFactory;
+import org.apache.hadoop.hive.serde2.lazy.LazyObjectBase;
+import org.apache.hadoop.hive.serde2.lazy.objectinspector.LazyMapObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.util.StringUtils;
 
@@ -368,6 +372,19 @@ public class HBaseSerDeHelper {
     } finally {
       IOUtils.closeQuietly(in);
     }
+  }
+
+  /**
+   * Create the {@link LazyObjectBase lazy field}
+   * */
+  public static LazyObjectBase createLazyField(ColumnMapping[] columnMappings, int fieldID,
+      ObjectInspector inspector) {
+    ColumnMapping colMap = columnMappings[fieldID];
+    if (colMap.getQualifierName() == null && !colMap.isHbaseRowKey()) {
+      // a column family
+      return new LazyHBaseCellMap((LazyMapObjectInspector) inspector);
+    }
+    return LazyFactory.createLazyObject(inspector, colMap.getBinaryStorage().get(0));
   }
 
   /**

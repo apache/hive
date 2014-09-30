@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import junit.framework.Assert;
 import junit.framework.TestCase;
 
 import org.apache.avro.Schema;
@@ -61,6 +62,7 @@ import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.lazy.LazyPrimitive;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
+import org.apache.hadoop.hive.serde2.lazy.LazyStruct;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.BooleanWritable;
@@ -134,6 +136,27 @@ public class TestHBaseSerDe extends TestCase {
       "    }\n" +
       "  ]\n" +
       "}";
+
+  private static final String EXPECTED_DESERIALIZED_AVRO_STRING =
+      "{\"key\":\"test-row1\",\"cola_avro\":{\"arecord\":{\"int1\":42,\"boolean1\":true,"
+          + "\"long1\":42432234234}}}";
+
+  private static final String EXPECTED_DESERIALIZED_AVRO_STRING_2 =
+ "{\"key\":\"test-row1\","
+      + "\"cola_avro\":{\"employeename\":\"Avro Employee1\","
+      + "\"employeeid\":11111,\"age\":25,\"gender\":\"FEMALE\","
+      + "\"contactinfo\":{\"address\":[{\"address1\":\"Avro First Address1\",\"address2\":"
+      + "\"Avro Second Address1\",\"city\":\"Avro City1\",\"zipcode\":123456,\"county\":"
+      + "{0:{\"areacode\":999,\"number\":1234567890}},\"aliases\":null,\"metadata\":"
+      + "{\"testkey\":\"testvalue\"}},{\"address1\":\"Avro First Address1\",\"address2\":"
+      + "\"Avro Second Address1\",\"city\":\"Avro City1\",\"zipcode\":123456,\"county\":"
+      + "{0:{\"areacode\":999,\"number\":1234567890}},\"aliases\":null,\"metadata\":"
+      + "{\"testkey\":\"testvalue\"}}],\"homephone\":{\"areacode\":999,\"number\":1234567890},"
+      + "\"officephone\":{\"areacode\":999,\"number\":1234455555}}}}";
+
+  private static final String EXPECTED_DESERIALIZED_AVRO_STRING_3 =
+      "{\"key\":\"test-row1\",\"cola_avro\":{\"arecord\":{\"int1\":42,\"string1\":\"test\","
+          + "\"boolean1\":true,\"long1\":42432234234}}}";
 
   /**
    * Test the default behavior of the Lazy family of objects and object inspectors.
@@ -1047,7 +1070,8 @@ public class TestHBaseSerDe extends TestCase {
     Properties tbl = createPropertiesForHiveAvroSchemaInline();
     serDe.initialize(conf, tbl);
 
-    deserializeAndSerializeHiveAvro(serDe, r, p, expectedFieldsData);
+    deserializeAndSerializeHiveAvro(serDe, r, p, expectedFieldsData,
+        EXPECTED_DESERIALIZED_AVRO_STRING);
   }
 
   private Properties createPropertiesForHiveAvroSchemaInline() {
@@ -1092,7 +1116,8 @@ public class TestHBaseSerDe extends TestCase {
     Properties tbl = createPropertiesForHiveAvroForwardEvolvedSchema();
     serDe.initialize(conf, tbl);
 
-    deserializeAndSerializeHiveAvro(serDe, r, p, expectedFieldsData);
+    deserializeAndSerializeHiveAvro(serDe, r, p, expectedFieldsData,
+        EXPECTED_DESERIALIZED_AVRO_STRING_3);
   }
 
   private Properties createPropertiesForHiveAvroForwardEvolvedSchema() {
@@ -1136,7 +1161,8 @@ public class TestHBaseSerDe extends TestCase {
     Properties tbl = createPropertiesForHiveAvroBackwardEvolvedSchema();
     serDe.initialize(conf, tbl);
 
-    deserializeAndSerializeHiveAvro(serDe, r, p, expectedFieldsData);
+    deserializeAndSerializeHiveAvro(serDe, r, p, expectedFieldsData,
+        EXPECTED_DESERIALIZED_AVRO_STRING);
   }
 
   private Properties createPropertiesForHiveAvroBackwardEvolvedSchema() {
@@ -1185,7 +1211,8 @@ public class TestHBaseSerDe extends TestCase {
     Properties tbl = createPropertiesForHiveAvroSerClass();
     serDe.initialize(conf, tbl);
 
-    deserializeAndSerializeHiveAvro(serDe, r, p, expectedFieldsData);
+    deserializeAndSerializeHiveAvro(serDe, r, p, expectedFieldsData,
+        EXPECTED_DESERIALIZED_AVRO_STRING_2);
   }
 
   private Properties createPropertiesForHiveAvroSerClass() {
@@ -1243,7 +1270,8 @@ public class TestHBaseSerDe extends TestCase {
       Properties tbl = createPropertiesForHiveAvroSchemaUrl(onHDFS);
       serDe.initialize(conf, tbl);
 
-      deserializeAndSerializeHiveAvro(serDe, r, p, expectedFieldsData);
+      deserializeAndSerializeHiveAvro(serDe, r, p, expectedFieldsData,
+          EXPECTED_DESERIALIZED_AVRO_STRING);
     } finally {
       // Teardown the cluster
       if (miniDfs != null) {
@@ -1298,7 +1326,8 @@ public class TestHBaseSerDe extends TestCase {
     Properties tbl = createPropertiesForHiveAvroExternalSchema();
     serDe.initialize(conf, tbl);
 
-    deserializeAndSerializeHiveAvro(serDe, r, p, expectedFieldsData);
+    deserializeAndSerializeHiveAvro(serDe, r, p, expectedFieldsData,
+        EXPECTED_DESERIALIZED_AVRO_STRING_2);
   }
 
   private Properties createPropertiesForHiveAvroExternalSchema() {
@@ -1389,8 +1418,87 @@ public class TestHBaseSerDe extends TestCase {
     return tbl;
   }
 
+  public void testHBaseSerDeCustomStructValue() throws IOException, SerDeException {
+
+    byte[] cfa = "cola".getBytes();
+    byte[] qualStruct = "struct".getBytes();
+
+    TestStruct testStruct = new TestStruct("A", "B", "C", false, (byte) 0);
+    byte[] key = testStruct.getBytes();
+    // Data
+    List<KeyValue> kvs = new ArrayList<KeyValue>();
+
+    byte[] testData = testStruct.getBytes();
+    kvs.add(new KeyValue(key, cfa, qualStruct, testData));
+
+    Result r = new Result(kvs);
+    byte[] putKey = testStruct.getBytesWithDelimiters();
+
+    Put p = new Put(putKey);
+
+    // Post serialization, separators are automatically inserted between different fields in the
+    // struct. Currently there is not way to disable that. So the work around here is to pad the
+    // data with the separator bytes before creating a "Put" object
+    p.add(new KeyValue(putKey, cfa, qualStruct, Bytes.padTail(testData, 2)));
+
+    // Create, initialize, and test the SerDe
+    HBaseSerDe serDe = new HBaseSerDe();
+    Configuration conf = new Configuration();
+    Properties tbl = createPropertiesForValueStruct();
+    serDe.initialize(conf, tbl);
+
+    deserializeAndSerializeHBaseValueStruct(serDe, r, p);
+
+  }
+
+  private Properties createPropertiesForValueStruct() {
+    Properties tbl = new Properties();
+    tbl.setProperty("cola.struct.serialization.type", "struct");
+    tbl.setProperty("cola.struct.test.value", "test value");
+    tbl.setProperty(HBaseSerDe.HBASE_STRUCT_SERIALIZER_CLASS,
+        "org.apache.hadoop.hive.hbase.HBaseTestStructSerializer");
+    tbl.setProperty(serdeConstants.LIST_COLUMNS, "key,astring");
+    tbl.setProperty(serdeConstants.LIST_COLUMN_TYPES,
+        "struct<col1:string,col2:string,col3:string>,struct<col1:string,col2:string,col3:string>");
+    tbl.setProperty(HBaseSerDe.HBASE_COLUMNS_MAPPING, ":key,cola:struct");
+    tbl.setProperty(HBaseSerDe.HBASE_COMPOSITE_KEY_CLASS,
+        "org.apache.hadoop.hive.hbase.HBaseTestCompositeKey");
+    return tbl;
+  }
+
+  private void deserializeAndSerializeHBaseValueStruct(HBaseSerDe serDe, Result r, Put p)
+      throws SerDeException, IOException {
+    StructObjectInspector soi = (StructObjectInspector) serDe.getObjectInspector();
+
+    List<? extends StructField> fieldRefs = soi.getAllStructFieldRefs();
+
+    Object row = serDe.deserialize(new ResultWritable(r));
+
+    Object fieldData = null;
+    for (int j = 0; j < fieldRefs.size(); j++) {
+      fieldData = soi.getStructFieldData(row, fieldRefs.get(j));
+      assertNotNull(fieldData);
+      if (fieldData instanceof LazyStruct) {
+        assertEquals(((LazyStruct) fieldData).getField(0).toString(), "A");
+        assertEquals(((LazyStruct) fieldData).getField(1).toString(), "B");
+        assertEquals(((LazyStruct) fieldData).getField(2).toString(), "C");
+      } else {
+        Assert.fail("fieldData should be an instance of LazyStruct");
+      }
+    }
+
+    assertEquals(
+        "{\"key\":{\"col1\":\"A\",\"col2\":\"B\",\"col3\":\"C\"},\"astring\":{\"col1\":\"A\",\"col2\":\"B\",\"col3\":\"C\"}}",
+        SerDeUtils.getJSONString(row, soi));
+
+    // Now serialize
+    Put put = ((PutWritable) serDe.serialize(row, soi)).getPut();
+
+    assertEquals("Serialized put:", p.toString(), put.toString());
+  }
+
   private void deserializeAndSerializeHiveAvro(HBaseSerDe serDe, Result r, Put p,
-      Object[] expectedFieldsData)
+      Object[] expectedFieldsData, String expectedDeserializedAvroString)
       throws SerDeException, IOException {
     StructObjectInspector soi = (StructObjectInspector) serDe.getObjectInspector();
 
@@ -1403,6 +1511,8 @@ public class TestHBaseSerDe extends TestCase {
       assertNotNull(fieldData);
       assertEquals(expectedFieldsData[j], fieldData.toString().trim());
     }
+    
+    assertEquals(expectedDeserializedAvroString, SerDeUtils.getJSONString(row, soi));
 
     // Now serialize
     Put put = ((PutWritable) serDe.serialize(row, soi)).getPut();

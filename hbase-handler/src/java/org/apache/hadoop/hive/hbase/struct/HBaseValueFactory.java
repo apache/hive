@@ -22,8 +22,10 @@ import java.io.IOException;
 import java.util.Properties;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.hbase.HBaseKeyFactory;
 import org.apache.hadoop.hive.hbase.HBaseSerDeParameters;
 import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.lazy.LazyObjectBase;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -51,6 +53,13 @@ public interface HBaseValueFactory {
    * @throws SerDeException if there was an issue creating the {@link ObjectInspector object inspector}
    */
   ObjectInspector createValueObjectInspector(TypeInfo type) throws SerDeException;
+
+  /**
+   * create custom object for hbase value
+   *
+   * @param inspector OI create by {@link HBaseKeyFactory#createKeyObjectInspector}
+   */
+  LazyObjectBase createValueObject(ObjectInspector inspector) throws SerDeException;
 
   /**
    * Serialize the given hive object
