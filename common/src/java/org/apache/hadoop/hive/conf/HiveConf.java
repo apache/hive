@@ -1370,6 +1370,8 @@ public class HiveConf extends Configuration {
         "authorization manager class name to be used in the metastore for authorization.\n" +
         "The user defined authorization class should implement interface \n" +
         "org.apache.hadoop.hive.ql.security.authorization.HiveMetastoreAuthorizationProvider. "),
+    HIVE_METASTORE_AUTHORIZATION_AUTH_READS("hive.security.metastore.authorization.auth.reads", true,
+        "If this is true, metastore authorizer authorizes read actions on database, table"),
     HIVE_METASTORE_AUTHENTICATOR_MANAGER("hive.security.metastore.authenticator.manager",
         "org.apache.hadoop.hive.ql.security.HadoopDefaultMetastoreAuthenticator",
         "authenticator manager class name to be used in the metastore for authentication. \n" +
