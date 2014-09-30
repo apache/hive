@@ -31,6 +31,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.*;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapper.ReportStats;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedBatchUtil;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriterFactory;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
@@ -40,7 +44,10 @@ import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.StructField;
+import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.BytesWritable;
+import org.apache.hadoop.io.DataOutputBuffer;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.MapReduceBase;
 import org.apache.hadoop.mapred.OutputCollector;
@@ -78,10 +85,21 @@ public class SparkReduceRecordHandler extends SparkRecordHandler{
   private TableDesc keyTableDesc;
   private TableDesc[] valueTableDesc;
   private ObjectInspector[] rowObjectInspector;
+  private boolean vectorized = false;
 
   // runtime objects
   private transient Object keyObject;
   private transient BytesWritable groupKey;
+
+  private DataOutputBuffer buffer;
+  private VectorizedRowBatch[] batches;
+  // number of columns pertaining to keys in a vectorized row batch
+  private int keysColumnOffset;
+  private final int BATCH_SIZE = VectorizedRowBatch.DEFAULT_SIZE;
+  private StructObjectInspector keyStructInspector;
+  private StructObjectInspector[] valueStructInspectors;
+  /* this is only used in the error code path */
+  private List<VectorExpressionWriter>[] valueStringWriters;
 
   public void init(JobConf job, OutputCollector output, Reporter reporter) {
     super.init(job, output, reporter);
@@ -100,6 +118,7 @@ public class SparkReduceRecordHandler extends SparkRecordHandler{
     }
 
     reducer = gWork.getReducer();
+    vectorized = gWork.getVectorMode();
     reducer.setParentOperators(null); // clear out any parents as reducer is the
     // root
     isTagged = gWork.getNeedsTagging();
@@ -110,22 +129,67 @@ public class SparkReduceRecordHandler extends SparkRecordHandler{
       SerDeUtils.initializeSerDe(inputKeyDeserializer, null, keyTableDesc.getProperties(), null);
       keyObjectInspector = inputKeyDeserializer.getObjectInspector();
       valueTableDesc = new TableDesc[gWork.getTagToValueDesc().size()];
-      for (int tag = 0; tag < gWork.getTagToValueDesc().size(); tag++) {
-        // We should initialize the SerDe with the TypeInfo when available.
-        valueTableDesc[tag] = gWork.getTagToValueDesc().get(tag);
-        inputValueDeserializer[tag] = ReflectionUtils.newInstance(
-          valueTableDesc[tag].getDeserializerClass(), null);
-        SerDeUtils.initializeSerDe(inputValueDeserializer[tag], null,
-          valueTableDesc[tag].getProperties(), null);
-        valueObjectInspector[tag] = inputValueDeserializer[tag]
-          .getObjectInspector();
 
-        ArrayList<ObjectInspector> ois = new ArrayList<ObjectInspector>();
-        ois.add(keyObjectInspector);
-        ois.add(valueObjectInspector[tag]);
-        reducer.setGroupKeyObjectInspector(keyObjectInspector);
-        rowObjectInspector[tag] = ObjectInspectorFactory
-          .getStandardStructObjectInspector(Utilities.reduceFieldNameList, ois);
+      if (vectorized) {
+	final int maxTags = gWork.getTagToValueDesc().size();
+	keyStructInspector = (StructObjectInspector) keyObjectInspector;
+	batches = new VectorizedRowBatch[maxTags];
+	valueStructInspectors = new StructObjectInspector[maxTags];
+	valueStringWriters = (List<VectorExpressionWriter>[]) new List[maxTags];
+	keysColumnOffset = keyStructInspector.getAllStructFieldRefs().size();
+	buffer = new DataOutputBuffer();
+      }
+
+      for (int tag = 0; tag < gWork.getTagToValueDesc().size(); tag++) {
+	// We should initialize the SerDe with the TypeInfo when available.
+	valueTableDesc[tag] = gWork.getTagToValueDesc().get(tag);
+	inputValueDeserializer[tag] = ReflectionUtils.newInstance(
+	    valueTableDesc[tag].getDeserializerClass(), null);
+	SerDeUtils.initializeSerDe(inputValueDeserializer[tag], null,
+	    valueTableDesc[tag].getProperties(), null);
+	valueObjectInspector[tag] = inputValueDeserializer[tag].getObjectInspector();
+
+	ArrayList<ObjectInspector> ois = new ArrayList<ObjectInspector>();
+
+	if (vectorized) {
+	  /* vectorization only works with struct object inspectors */
+	  valueStructInspectors[tag] = (StructObjectInspector) valueObjectInspector[tag];
+
+	  batches[tag] = VectorizedBatchUtil.constructVectorizedRowBatch(keyStructInspector,
+	      valueStructInspectors[tag]);
+	  final int totalColumns = keysColumnOffset
+	      + valueStructInspectors[tag].getAllStructFieldRefs().size();
+	  valueStringWriters[tag] = new ArrayList<VectorExpressionWriter>(totalColumns);
+	  valueStringWriters[tag].addAll(Arrays.asList(VectorExpressionWriterFactory
+	      .genVectorStructExpressionWritables(keyStructInspector)));
+	  valueStringWriters[tag].addAll(Arrays.asList(VectorExpressionWriterFactory
+	      .genVectorStructExpressionWritables(valueStructInspectors[tag])));
+
+	  /*
+	   * The row object inspector used by ReduceWork needs to be a
+	   * **standard** struct object inspector, not just any struct object
+	   * inspector.
+	   */
+	  ArrayList<String> colNames = new ArrayList<String>();
+	  List<? extends StructField> fields = keyStructInspector.getAllStructFieldRefs();
+	  for (StructField field : fields) {
+	    colNames.add(Utilities.ReduceField.KEY.toString() + "." + field.getFieldName());
+	    ois.add(field.getFieldObjectInspector());
+	  }
+	  fields = valueStructInspectors[tag].getAllStructFieldRefs();
+	  for (StructField field : fields) {
+	    colNames.add(Utilities.ReduceField.VALUE.toString() + "." + field.getFieldName());
+	    ois.add(field.getFieldObjectInspector());
+	  }
+	  rowObjectInspector[tag] = ObjectInspectorFactory.getStandardStructObjectInspector(
+	      colNames, ois);
+	} else {
+	  ois.add(keyObjectInspector);
+	  ois.add(valueObjectInspector[tag]);
+	  reducer.setGroupKeyObjectInspector(keyObjectInspector);
+	  rowObjectInspector[tag] = ObjectInspectorFactory.getStandardStructObjectInspector(
+	      Utilities.reduceFieldNameList, ois);
+	}
       }
     } catch (Exception e) {
       throw new RuntimeException(e);
@@ -197,7 +261,32 @@ public class SparkReduceRecordHandler extends SparkRecordHandler{
         reducer.setGroupKeyObject(keyObject);
         reducer.startGroup();
       }
-      // System.err.print(keyObject.toString());
+      /* this.keyObject passed via reference */
+      if (vectorized) {
+	processVectors(values, tag);
+      } else {
+	processKeyValues(values, tag);
+      }
+
+    } catch (Throwable e) {
+      abort = true;
+      if (e instanceof OutOfMemoryError) {
+	// Don't create a new object if we are already out of memory
+	throw (OutOfMemoryError) e;
+      } else {
+	LOG.fatal(StringUtils.stringifyException(e));
+	throw new RuntimeException(e);
+      }
+    }
+  }
+
+  /**
+   * @param values
+   * @return true if it is not done and can take more inputs
+   */
+  private boolean processKeyValues(Iterator values, byte tag) throws HiveException {
+
+	// System.err.print(keyObject.toString());
       while (values.hasNext()) {
         BytesWritable valueWritable = (BytesWritable) values.next();
         // System.err.print(who.getHo().toString());
@@ -233,15 +322,73 @@ public class SparkReduceRecordHandler extends SparkRecordHandler{
         }
       }
 
-    } catch (Throwable e) {
-      abort = true;
-      if (e instanceof OutOfMemoryError) {
-        // Don't create a new object if we are already out of memory
-        throw (OutOfMemoryError) e;
-      } else {
-        LOG.fatal(StringUtils.stringifyException(e));
-        throw new RuntimeException(e);
+    return true; // give me more
+  }
+
+  /**
+   * @param values
+   * @return true if it is not done and can take more inputs
+   */
+  private boolean processVectors(Iterator values, byte tag) throws HiveException {
+    VectorizedRowBatch batch = batches[tag];
+    batch.reset();
+
+    /* deserialize key into columns */
+    VectorizedBatchUtil.addRowToBatchFrom(keyObject, keyStructInspector, 0, 0, batch, buffer);
+    for (int i = 0; i < keysColumnOffset; i++) {
+      VectorizedBatchUtil.setRepeatingColumn(batch, i);
+    }
+
+    int rowIdx = 0;
+    try {
+      while (values.hasNext()) {
+	/* deserialize value into columns */
+	BytesWritable valueWritable = (BytesWritable) values.next();
+	Object valueObj = deserializeValue(valueWritable, tag);
+
+	VectorizedBatchUtil.addRowToBatchFrom(valueObj, valueStructInspectors[tag], rowIdx,
+	    keysColumnOffset, batch, buffer);
+	rowIdx++;
+	if (rowIdx >= BATCH_SIZE) {
+	  VectorizedBatchUtil.setBatchSize(batch, rowIdx);
+	  reducer.processOp(batch, tag);
+	  rowIdx = 0;
+	  if (isLogInfoEnabled) {
+	    logMemoryInfo();
+	  }
+	}
       }
+      if (rowIdx > 0) {
+	VectorizedBatchUtil.setBatchSize(batch, rowIdx);
+	reducer.processOp(batch, tag);
+      }
+      if (isLogInfoEnabled) {
+	logMemoryInfo();
+      }
+    } catch (Exception e) {
+      String rowString = null;
+      try {
+	/* batch.toString depends on this */
+	batch.setValueWriters(valueStringWriters[tag].toArray(new VectorExpressionWriter[0]));
+	rowString = batch.toString();
+      } catch (Exception e2) {
+	rowString = "[Error getting row data with exception " + StringUtils.stringifyException(e2)
+	    + " ]";
+      }
+      throw new HiveException("Hive Runtime Error while processing vector batch (tag=" + tag + ") "
+	  + rowString, e);
+    }
+    return true; // give me more
+  }
+
+  private Object deserializeValue(BytesWritable valueWritable, byte tag) throws HiveException {
+    try {
+      return inputValueDeserializer[tag].deserialize(valueWritable);
+    } catch (SerDeException e) {
+      throw new HiveException("Hive Runtime Error: Unable to deserialize reduce input value (tag="
+	  + tag + ") from "
+	  + Utilities.formatBinaryString(valueWritable.getBytes(), 0, valueWritable.getLength())
+	  + " with properties " + valueTableDesc[tag].getProperties(), e);
     }
   }
 
