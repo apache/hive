@@ -165,7 +165,7 @@ public class TestTezSessionPool {
     TezSessionState session = Mockito.mock(TezSessionState.class);
     Mockito.when(session.isDefault()).thenReturn(false);
 
-    poolManager.closeAndOpen(session, conf);
+    poolManager.closeAndOpen(session, conf, false);
 
     Mockito.verify(session).close(false);
     Mockito.verify(session).open(conf, null);
@@ -178,7 +178,7 @@ public class TestTezSessionPool {
     Mockito.when(session.isDefault()).thenReturn(false);
     String[] extraResources = new String[] { "file:///tmp/foo.jar" };
 
-    poolManager.closeAndOpen(session, conf, extraResources);
+    poolManager.closeAndOpen(session, conf, extraResources, false);
 
     Mockito.verify(session).close(false);
     Mockito.verify(session).open(conf, extraResources);
