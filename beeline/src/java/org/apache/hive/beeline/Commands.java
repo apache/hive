@@ -732,7 +732,7 @@ public class Commands {
       beeLine.handleException(e);
     }
 
-
+    line = line.trim();
     if (line.endsWith(";")) {
       line = line.substring(0, line.length() - 1);
     }
