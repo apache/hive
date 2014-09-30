@@ -18,4 +18,4 @@ PREHOOK: query: alter table tmp2 rename to tmp1
 PREHOOK: type: ALTERTABLE_RENAME
 PREHOOK: Input: default@tmp2
 PREHOOK: Output: default@tmp2
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Unable to alter table.
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Unable to alter table. Cannot rename temporary table to tmp1 - temporary table already exists with the same name

@@ -110,6 +110,7 @@ import org.apache.hadoop.hive.ql.metadata.DummyPartition;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
+import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
@@ -11054,9 +11055,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     Table tbl;
     try {
       tbl = db.getTable(tableName);
-    } catch (HiveException e) {
-      throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(tableName));
+    } catch (InvalidTableException e) {
+      throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(tableName), e);
     }
+    catch (HiveException e) {
+      throw new SemanticException(e.getMessage(), e);
+    }
+
     /* noscan uses hdfs apis to retrieve such information from Namenode.      */
     /* But that will be specific to hdfs. Through storagehandler mechanism,   */
     /* storage of table could be on any storage system: hbase, cassandra etc. */
@@ -11079,8 +11084,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     Table tbl;
     try {
       tbl = db.getTable(tableName);
+    } catch (InvalidTableException e) {
+      throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(tableName), e);
     } catch (HiveException e) {
-      throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(tableName));
+      throw new SemanticException(e.getMessage(), e);
     }
     /* partialscan uses hdfs apis to retrieve such information from Namenode.      */
     /* But that will be specific to hdfs. Through storagehandler mechanism,   */
