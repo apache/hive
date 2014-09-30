@@ -47,7 +47,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: analyze_srcpart
-            Statistics: Num rows: 0 Data size: 23248 Basic stats: PARTIAL Column stats: COMPLETE
+            Statistics: Num rows: 0 Data size: 23248 Basic stats: PARTIAL Column stats: NONE
 
   Stage: Stage-1
     Stats-Aggr Operator
@@ -157,7 +157,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: analyze_srcpart
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: PARTIAL Column stats: COMPLETE
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: PARTIAL Column stats: NONE
 
   Stage: Stage-1
     Stats-Aggr Operator
@@ -230,7 +230,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: analyze_srcpart
-            Statistics: Num rows: 1000 Data size: 10624 Basic stats: PARTIAL Column stats: COMPLETE
+            Statistics: Num rows: 1000 Data size: 10624 Basic stats: PARTIAL Column stats: NONE
 
   Stage: Stage-1
     Stats-Aggr Operator
@@ -303,7 +303,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: analyze_srcpart
-            Statistics: Num rows: 1500 Data size: 15936 Basic stats: PARTIAL Column stats: COMPLETE
+            Statistics: Num rows: 1500 Data size: 15936 Basic stats: PARTIAL Column stats: NONE
 
   Stage: Stage-1
     Stats-Aggr Operator
@@ -376,7 +376,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: analyze_srcpart
-            Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
 
   Stage: Stage-1
     Stats-Aggr Operator
