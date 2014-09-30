@@ -41,8 +41,14 @@
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
-      <artifactId>hive-metastore</artifactId>
+      <artifactId>hive-service</artifactId>
       <version>${project.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.hive</groupId>
+            <artifactId>hive-exec</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
@@ -51,12 +57,12 @@
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
-      <artifactId>hive-service</artifactId>
+      <artifactId>hive-metastore</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
-      <artifactId>hive-exec</artifactId>
+      <artifactId>hive-shims</artifactId>
       <version>${project.version}</version>
     </dependency>
     <!-- inter-project -->
@@ -135,8 +141,39 @@
               <minimizeJar>true</minimizeJar>
               <shadedArtifactAttached>true</shadedArtifactAttached>
               <shadedClassifierName>${hive.jdbc.driver.classifier}</shadedClassifierName>
+              <filters>
+                <filter>
+                  <artifact>org.apache.hive.shims:hive-shims-common</artifact>
+                  <includes>
+                    <include>org/apache/hadoop/hive/shims/*</include>
+                    <include>org/apache/hadoop/hive/thrift/*</include>
+                  </includes>
+                </filter>
+                <filter>
+                  <artifact>org.apache.hive.shims:hive-shims-common-secure</artifact>
+                  <includes>
+                    <include>org/apache/hadoop/hive/thrift/*</include>
+                    <include>org/apache/hadoop/hive/thrift/client/*</include>
+                  </includes>
+                </filter>
+                <filter>
+                  <artifact>org.apache.hive.shims:hive-shims-0.23</artifact>
+                  <includes>
+                    <include>org/apache/hadoop/hive/thrift/*</include>
+                  </includes>
+                </filter>
+                <filter>
+                  <artifact>*:*</artifact>
+                  <excludes>
+                    <exclude>META-INF/*.SF</exclude>
+                    <exclude>META-INF/*.DSA</exclude>
+                    <exclude>META-INF/*.RSA</exclude>
+                  </excludes>
+                </filter>
+              </filters>
               <artifactSet>
                 <excludes>
+                  <exclude>org.apache.commons:commons-compress</exclude>
                   <exclude>org.apache.hadoop:*</exclude>
                   <exclude>org.apache.hive:hive-ant</exclude>
                   <exclude>org.apache.ant:*</exclude>
@@ -150,23 +187,16 @@
                   <exclude>org.tukaani:*</exclude>
                   <exclude>org.iq80.snappy:*</exclude>
                   <exclude>org.apache.velocity:*</exclude>
+                  <exclude>net.sf.jpam:*</exclude>
+                  <exclude>org.apache.avro:*</exclude>
+                  <exclude>net.sf.opencsv:*</exclude>
+                  <exclude>org.antlr:*</exclude>
                 </excludes>
-              </artifactSet>
-              <filters>
-                <filter>
-                  <artifact>*:*</artifact>
-                  <excludes>
-                    <exclude>META-INF/*.SF</exclude>
-                    <exclude>META-INF/*.DSA</exclude>
-                    <exclude>META-INF/*.RSA</exclude>
-                  </excludes>
-                </filter>
-              </filters>
+              </artifactSet>       
             </configuration>
           </execution>
         </executions>
       </plugin>
     </plugins>
   </build>
-
 </project>
