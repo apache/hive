@@ -322,6 +322,10 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     }
 
     MapJoinOperator mapJoinOp = convertJoinMapJoin(joinOp, context, bigTablePosition, true);
+    if (mapJoinOp == null) {
+      LOG.debug("Conversion to bucket map join failed.");
+      return false;
+    }
     MapJoinDesc joinDesc = mapJoinOp.getConf();
     joinDesc.setBucketMapJoin(true);
 
