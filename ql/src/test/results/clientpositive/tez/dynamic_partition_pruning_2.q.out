@@ -491,7 +491,7 @@ STAGE PLANS:
                 TableScan
                   alias: agg
                   filterExpr: dim_shops_id is not null (type: boolean)
-                  Statistics: Num rows: 9 Data size: 27 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 9 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                   Map Join Operator
                     condition map:
                          Inner Join 0 to 1

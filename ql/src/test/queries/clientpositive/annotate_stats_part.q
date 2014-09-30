@@ -65,6 +65,9 @@ explain select zip from loc_orc;
 -- basicStatState: COMPLETE colStatState: PARTIAL
 explain select state from loc_orc;
 
+-- basicStatState: COMPLETE colStatState: COMPLETE
+explain select year from loc_orc;
+
 -- column statistics for __HIVE_DEFAULT_PARTITION__ is not supported yet. Hence colStatState reports PARTIAL
 -- basicStatState: COMPLETE colStatState: PARTIAL
 explain select state,locid from loc_orc;
