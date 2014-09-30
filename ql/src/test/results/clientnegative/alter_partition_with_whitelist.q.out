@@ -27,4 +27,4 @@ PREHOOK: query: ALTER TABLE part_whitelist_test PARTITION (ds='1') rename to par
 PREHOOK: type: ALTERTABLE_RENAMEPART
 PREHOOK: Input: default@part_whitelist_test
 PREHOOK: Output: default@part_whitelist_test@ds=1
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Unable to rename partition.
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Unable to rename partition. Partition value '1,2,3' contains a character not matched by whitelist pattern '[\\x20-\\x7E&&[^,]]*'.  (configure with hive.metastore.partition.name.whitelist.pattern)
