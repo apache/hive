@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.exec.spark;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -65,7 +64,6 @@ public class SparkPlanGenerator {
   private final JobConf jobConf;
   private Context context;
   private Path scratchDir;
-  private Map<BaseWork, JavaPairRDD<HiveKey, BytesWritable>> workToRDDMap;
 
   public SparkPlanGenerator(JavaSparkContext sc, Context context,
       JobConf jobConf, Path scratchDir) {
@@ -73,48 +71,30 @@ public class SparkPlanGenerator {
     this.context = context;
     this.jobConf = jobConf;
     this.scratchDir = scratchDir;
-    this.workToRDDMap = new HashMap<BaseWork, JavaPairRDD<HiveKey, BytesWritable>>();
   }
 
   public SparkPlan generate(SparkWork sparkWork) throws Exception {
-    List<JavaPairRDD<HiveKey, BytesWritable>> resultRDDs = new ArrayList<JavaPairRDD<HiveKey, BytesWritable>>();
-    for (BaseWork bw : sparkWork.getLeaves()) {
-      resultRDDs.add(generate(sparkWork, bw));
-    }
+    SparkPlan result = new SparkPlan();
+    Map<BaseWork, SparkTran> createdTransMap = new HashMap<BaseWork, SparkTran>();
 
-    return new SparkPlan(resultRDDs);
-  }
-
-  private JavaPairRDD<HiveKey, BytesWritable> generate(SparkWork sparkWork, BaseWork work) throws Exception {
-    // TODO: we should cache this RDD, because it's used by more than one child
-    if (workToRDDMap.containsKey(work)) {
-      return workToRDDMap.get(work);
-    }
-    List<BaseWork> parentWorks = sparkWork.getParents(work);
-    JavaPairRDD<HiveKey, BytesWritable> rdd;
-    SparkEdgeProperty edge = null;
-    if (parentWorks.size() == 0) {
-      Preconditions.checkArgument(work instanceof MapWork,
-          "AssertionError: a work with no parent should be a MapWork.");
-      MapWork mapWork = (MapWork) work;
-      rdd = generateRDD(mapWork);
-    } else {
-      rdd = null;
-      edge = sparkWork.getEdgeProperty(parentWorks.get(0), work);
-      for (BaseWork parentWork : parentWorks) {
-        JavaPairRDD<HiveKey, BytesWritable> parentRDD = generate(sparkWork, parentWork);
-        if (rdd == null) {
-           rdd = parentRDD;
-        } else {
-          rdd = rdd.union(parentRDD);
+    for (BaseWork work : sparkWork.getAllWork()) {
+      SparkTran tran;
+      if (work instanceof MapWork) {
+        JavaPairRDD<HiveKey, BytesWritable> inputRDD = generateRDD((MapWork)work);
+        tran = generate(work, null);
+        result.addInput(tran, inputRDD);
+      } else {
+        List<BaseWork> parentWorks = sparkWork.getParents(work);
+        tran = generate(work, sparkWork.getEdgeProperty(parentWorks.get(0), work));
+        for (BaseWork parentWork : parentWorks) {
+          SparkTran parentTran = createdTransMap.get(parentWork);
+          result.connect(parentTran, tran);
         }
       }
-      workToRDDMap.put(work, rdd);
+      createdTransMap.put(work, tran);
     }
-    SparkTran tran = generate(work, edge);
-    rdd = tran.transform(rdd);
 
-    return rdd;
+    return result;
   }
 
   private Class getInputFormat(JobConf jobConf, MapWork mWork) throws HiveException {
