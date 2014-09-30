@@ -23,6 +23,7 @@ import java.net.URI;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.security.authorization.StorageBasedAuthorizationProvider;
 
@@ -100,6 +101,12 @@ public class TestStorageBasedMetastoreAuthorizationProvider extends
   @Override
   protected String getTestTableName(){
     return super.getTestTableName() + "_SBAP";
+  }
+
+  @Override
+  protected void setupMetaStoreReadAuthorization() {
+    // enable read authorization in metastore
+    System.setProperty(HiveConf.ConfVars.HIVE_METASTORE_AUTHORIZATION_AUTH_READS.varname, "true");
   }
 
 }
