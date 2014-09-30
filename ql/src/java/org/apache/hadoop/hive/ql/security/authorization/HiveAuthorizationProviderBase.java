@@ -85,7 +85,7 @@ public abstract class HiveAuthorizationProviderBase implements
         return hiveClient.getDatabase(dbName);
       } else {
         try {
-          return handler.get_database(dbName);
+          return handler.get_database_core(dbName);
         } catch (NoSuchObjectException e) {
           throw new HiveException(e);
         } catch (MetaException e) {

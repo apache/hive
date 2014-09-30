@@ -23,7 +23,9 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.classification.InterfaceAudience.Private;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.MetaStorePreEventListener;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.TableType;
@@ -40,6 +42,8 @@ import org.apache.hadoop.hive.metastore.events.PreDropDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.PreDropPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.PreDropTableEvent;
 import org.apache.hadoop.hive.metastore.events.PreEventContext;
+import org.apache.hadoop.hive.metastore.events.PreReadDatabaseEvent;
+import org.apache.hadoop.hive.metastore.events.PreReadTableEvent;
 import org.apache.hadoop.hive.ql.metadata.AuthorizationException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
@@ -54,6 +58,7 @@ import org.apache.hadoop.hive.ql.security.HiveMetastoreAuthenticationProvider;
  * metastore PreEventContexts, such as the adding/dropping and altering
  * of databases, tables and partitions.
  */
+@Private
 public class AuthorizationPreEventListener extends MetaStorePreEventListener {
 
   public static final Log LOG = LogFactory.getLog(
@@ -136,6 +141,12 @@ public class AuthorizationPreEventListener extends MetaStorePreEventListener {
     case ALTER_TABLE:
       authorizeAlterTable((PreAlterTableEvent)context);
       break;
+    case READ_TABLE:
+      authorizeReadTable((PreReadTableEvent)context);
+      break;
+    case READ_DATABASE:
+      authorizeReadDatabase((PreReadDatabaseEvent)context);
+      break;
     case ADD_PARTITION:
       authorizeAddPartition((PreAddPartitionEvent)context);
       break;
@@ -160,6 +171,44 @@ public class AuthorizationPreEventListener extends MetaStorePreEventListener {
       break;
     }
 
+  }
+
+  private void authorizeReadTable(PreReadTableEvent context) throws InvalidOperationException,
+      MetaException {
+    if (!isReadAuthzEnabled()) {
+      return;
+    }
+    try {
+      org.apache.hadoop.hive.ql.metadata.Table wrappedTable = new TableWrapper(context.getTable());
+      for (HiveMetastoreAuthorizationProvider authorizer : tAuthorizers.get()) {
+        authorizer.authorize(wrappedTable, new Privilege[] { Privilege.SELECT }, null);
+      }
+    } catch (AuthorizationException e) {
+      throw invalidOperationException(e);
+    } catch (HiveException e) {
+      throw metaException(e);
+    }
+  }
+
+  private void authorizeReadDatabase(PreReadDatabaseEvent context)
+      throws InvalidOperationException, MetaException {
+    if (!isReadAuthzEnabled()) {
+      return;
+    }
+    try {
+      for (HiveMetastoreAuthorizationProvider authorizer : tAuthorizers.get()) {
+        authorizer.authorize(new Database(context.getDatabase()),
+            new Privilege[] { Privilege.SELECT }, null);
+      }
+    } catch (AuthorizationException e) {
+      throw invalidOperationException(e);
+    } catch (HiveException e) {
+      throw metaException(e);
+    }
+  }
+
+  private boolean isReadAuthzEnabled() {
+    return tConfig.get().getBoolean(ConfVars.HIVE_METASTORE_AUTHORIZATION_AUTH_READS.varname, true);
   }
 
   private void authorizeAuthorizationAPICall() throws InvalidOperationException, MetaException {
@@ -358,7 +407,7 @@ public class AuthorizationPreEventListener extends MetaStorePreEventListener {
     public PartitionWrapper(org.apache.hadoop.hive.metastore.api.Partition mapiPart,
         PreEventContext context) throws HiveException, NoSuchObjectException, MetaException {
       org.apache.hadoop.hive.metastore.api.Partition wrapperApiPart = mapiPart.deepCopy();
-      org.apache.hadoop.hive.metastore.api.Table t = context.getHandler().get_table(
+      org.apache.hadoop.hive.metastore.api.Table t = context.getHandler().get_table_core(
           mapiPart.getDbName(), mapiPart.getTableName());
       if (wrapperApiPart.getSd() == null){
         // In the cases of create partition, by the time this event fires, the partition
