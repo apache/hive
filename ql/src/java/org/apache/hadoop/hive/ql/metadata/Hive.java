@@ -109,8 +109,8 @@ import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.mapred.InputFormat;
-import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.util.StringUtils;
 import org.apache.thrift.TException;
 
 import com.google.common.collect.Sets;
@@ -427,9 +427,9 @@ public class Hive {
       newTbl.checkValidity();
       getMSC().alter_table(names[0], names[1], newTbl.getTTable());
     } catch (MetaException e) {
-      throw new HiveException("Unable to alter table.", e);
+      throw new HiveException("Unable to alter table. " + e.getMessage(), e);
     } catch (TException e) {
-      throw new HiveException("Unable to alter table.", e);
+      throw new HiveException("Unable to alter table. " + e.getMessage(), e);
     }
   }
 
@@ -455,9 +455,9 @@ public class Hive {
     try {
       getMSC().alter_index(dbName, baseTblName, idxName, newIdx);
     } catch (MetaException e) {
-      throw new HiveException("Unable to alter index.", e);
+      throw new HiveException("Unable to alter index. " + e.getMessage(), e);
     } catch (TException e) {
-      throw new HiveException("Unable to alter index.", e);
+      throw new HiveException("Unable to alter index. " + e.getMessage(), e);
     }
   }
 
@@ -502,9 +502,9 @@ public class Hive {
       getMSC().alter_partition(dbName, tblName, newPart.getTPartition());
 
     } catch (MetaException e) {
-      throw new HiveException("Unable to alter partition.", e);
+      throw new HiveException("Unable to alter partition. " + e.getMessage(), e);
     } catch (TException e) {
-      throw new HiveException("Unable to alter partition.", e);
+      throw new HiveException("Unable to alter partition. " + e.getMessage(), e);
     }
   }
 
@@ -534,9 +534,9 @@ public class Hive {
       }
       getMSC().alter_partitions(names[0], names[1], newTParts);
     } catch (MetaException e) {
-      throw new HiveException("Unable to alter partition.", e);
+      throw new HiveException("Unable to alter partition. " + e.getMessage(), e);
     } catch (TException e) {
-      throw new HiveException("Unable to alter partition.", e);
+      throw new HiveException("Unable to alter partition. " + e.getMessage(), e);
     }
   }
   /**
@@ -578,11 +578,11 @@ public class Hive {
           newPart.getTPartition());
 
     } catch (InvalidOperationException e){
-      throw new HiveException("Unable to rename partition.", e);
+      throw new HiveException("Unable to rename partition. " + e.getMessage(), e);
     } catch (MetaException e) {
-      throw new HiveException("Unable to rename partition.", e);
+      throw new HiveException("Unable to rename partition. " + e.getMessage(), e);
     } catch (TException e) {
-      throw new HiveException("Unable to rename partition.", e);
+      throw new HiveException("Unable to rename partition. " + e.getMessage(), e);
     }
   }
 
@@ -591,11 +591,11 @@ public class Hive {
     try {
       getMSC().alterDatabase(dbName, db);
     } catch (MetaException e) {
-      throw new HiveException("Unable to alter database " + dbName, e);
+      throw new HiveException("Unable to alter database " + dbName + ". " + e.getMessage(), e);
     } catch (NoSuchObjectException e) {
       throw new HiveException("Database " + dbName + " does not exists.", e);
     } catch (TException e) {
-      throw new HiveException("Unable to alter database " + dbName, e);
+      throw new HiveException("Unable to alter database " + dbName + ". " + e.getMessage(), e);
     }
   }
   /**
@@ -870,9 +870,9 @@ public class Hive {
     try {
       return getMSC().dropIndex(db_name, tbl_name, index_name, deleteData);
     } catch (NoSuchObjectException e) {
-      throw new HiveException("Partition or table doesn't exist.", e);
+      throw new HiveException("Partition or table doesn't exist. " + e.getMessage(), e);
     } catch (Exception e) {
-      throw new HiveException("Unknown error. Please check logs.", e);
+      throw new HiveException(e.getMessage(), e);
     }
   }
 
@@ -1041,7 +1041,7 @@ public class Hive {
       }
       return null;
     } catch (Exception e) {
-      throw new HiveException("Unable to fetch table " + tableName, e);
+      throw new HiveException("Unable to fetch table " + tableName + ". " + e.getMessage(), e);
     }
 
     // For non-views, we need to do some extra fixes
@@ -1763,7 +1763,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     } catch (NoSuchObjectException e) {
       throw new HiveException("Partition or table doesn't exist.", e);
     } catch (Exception e) {
-      throw new HiveException("Unknown error. Please check logs.", e);
+      throw new HiveException(e.getMessage(), e);
     }
   }
 
@@ -1792,7 +1792,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     } catch (NoSuchObjectException e) {
       throw new HiveException("Partition or table doesn't exist.", e);
     } catch (Exception e) {
-      throw new HiveException("Unknown error. Please check logs.", e);
+      throw new HiveException(e.getMessage(), e);
     }
   }
 
@@ -2285,7 +2285,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
         result.add(srcToDest);
       }
     } catch (IOException e) {
-      throw new HiveException("checkPaths: filesystem error in check phase", e);
+      throw new HiveException("checkPaths: filesystem error in check phase. " + e.getMessage(), e);
     }
     return result;
   }
@@ -2352,7 +2352,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       try {
         ShimLoader.getHadoopShims().setFullFileStatus(conf, destStatus, fs, destf);
       } catch (IOException e) {
-        LOG.warn("Error setting permission of file " + destf + ": "+ StringUtils.stringifyException(e));
+        LOG.warn("Error setting permission of file " + destf + ": "+ e.getMessage(), e);
       }
     }
     return success;
@@ -2391,7 +2391,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       srcs = srcFs.globStatus(srcf);
     } catch (IOException e) {
       LOG.error(StringUtils.stringifyException(e));
-      throw new HiveException("addFiles: filesystem error in check phase", e);
+      throw new HiveException("addFiles: filesystem error in check phase. " + e.getMessage(), e);
     }
     if (srcs == null) {
       LOG.info("No sources specified to move: " + srcf);
@@ -2417,7 +2417,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
           }
         }
       } catch (IOException e) {
-        throw new HiveException("copyFiles: error while moving files!!!", e);
+        throw new HiveException("copyFiles: error while moving files!!! " + e.getMessage(), e);
       }
     }
   }
@@ -2489,7 +2489,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
               fs.rename(bucketSrc, bucketDest);
             }
           } catch (IOException e) {
-            throw new HiveException("Error moving acid files", e);
+            throw new HiveException("Error moving acid files " + e.getMessage(), e);
           }
         }
       }
@@ -2721,7 +2721,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       throw new HiveException(e);
     }
   }
-  
+
   public boolean setPartitionColumnStatistics(SetPartitionsStatsRequest request) throws HiveException {
     try {
       return getMSC().setPartitionColumnStatistics(request);

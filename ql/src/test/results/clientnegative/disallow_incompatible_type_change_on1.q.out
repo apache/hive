@@ -107,4 +107,5 @@ ALTER TABLE test_table123 REPLACE COLUMNS (a INT, b STRING)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@test_table123
 PREHOOK: Output: default@test_table123
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Unable to alter table.
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Unable to alter table. The following columns have types incompatible with the existing columns in their respective positions :
+b
