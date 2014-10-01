@@ -168,7 +168,7 @@ public class HCatTable {
       newTable.setTableType(TableType.MANAGED_TABLE.toString());
     }
 
-    if (this.comment != null) {
+    if (StringUtils.isNotBlank(this.comment)) {
       newTable.putToParameters("comment", comment);
     }
 
