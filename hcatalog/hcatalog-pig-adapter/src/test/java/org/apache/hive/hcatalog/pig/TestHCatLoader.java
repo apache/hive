@@ -642,7 +642,11 @@ public class TestHCatLoader {
      * Test that value from Hive table are read properly in Pig
      */
     private static void testReadDataPrimitiveTypes() throws Exception {
-      PigServer server = new PigServer(ExecType.LOCAL);
+      // testConvertBooleanToInt() sets HCatConstants.HCAT_DATA_CONVERT_BOOLEAN_TO_INTEGER=true, and
+      // might be the last one to call HCatContext.INSTANCE.setConf(). Make sure setting is false.
+      Properties properties = new Properties();
+      properties.setProperty(HCatConstants.HCAT_DATA_CONVERT_BOOLEAN_TO_INTEGER, "false");
+      PigServer server = new PigServer(ExecType.LOCAL, properties);
       server.registerQuery("X = load '" + ALL_PRIMITIVE_TYPES_TABLE + "' using " + HCatLoader.class.getName() + "();");
       Iterator<Tuple> XIter = server.openIterator("X");
       int numTuplesRead = 0;
