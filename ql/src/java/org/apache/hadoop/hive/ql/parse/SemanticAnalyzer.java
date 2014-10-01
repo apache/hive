@@ -37,6 +37,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -12197,12 +12198,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private class OptiqBasedPlanner implements Frameworks.PlannerAction<RelNode> {
-    RelOptCluster                                         cluster;
-    RelOptSchema                                          relOptSchema;
-    SemanticException                                     semanticException;
-    Map<String, PrunedPartitionList>                      partitionCache;
-    AtomicInteger                                         noColsMissingStats = new AtomicInteger(0);
-    List<FieldSchema> topLevelFieldSchema;
+    private RelOptCluster                                 cluster;
+    private RelOptSchema                                  relOptSchema;
+    private SemanticException                             semanticException;
+    private Map<String, PrunedPartitionList>              partitionCache;
+    private AtomicInteger                                 noColsMissingStats = new AtomicInteger(0);
+    List<FieldSchema>                                     topLevelFieldSchema;
 
     // TODO: Do we need to keep track of RR, ColNameToPosMap for every op or
     // just last one.
@@ -12247,7 +12248,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       this.relOptSchema = relOptSchema;
 
       try {
-        optiqGenPlan = genLogicalPlan(qb);
+        optiqGenPlan = genLogicalPlan(qb, true);
         topLevelFieldSchema = convertRowSchemaToResultSetSchema(relToHiveRR.get(optiqGenPlan),
             HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_RESULTSET_USE_UNIQUE_COLUMN_NAMES));
       } catch (SemanticException e) {
@@ -12868,7 +12869,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           Phase1Ctx ctx_1 = initPhase1Ctx();
           doPhase1(subQuery.getSubQueryAST(), qbSQ, ctx_1);
           getMetaData(qbSQ);
-          RelNode subQueryRelNode = genLogicalPlan(qbSQ);
+          RelNode subQueryRelNode = genLogicalPlan(qbSQ, false);
           aliasToRel.put(subQuery.getAlias(), subQueryRelNode);
           RowResolver sqRR = relToHiveRR.get(subQueryRelNode);
 
@@ -12896,7 +12897,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             ctx_1 = initPhase1Ctx();
             doPhase1(notInCheck.getSubQueryAST(), qbSQ_nic, ctx_1);
             getMetaData(qbSQ_nic);
-            RelNode subQueryNICRelNode = genLogicalPlan(qbSQ_nic);
+            RelNode subQueryNICRelNode = genLogicalPlan(qbSQ_nic, false);
             aliasToRel.put(notInCheck.getAlias(), subQueryNICRelNode);
             srcRel = genJoinRelNode(srcRel, subQueryNICRelNode,
             // set explicitly to inner until we figure out SemiJoin use
@@ -13304,8 +13305,22 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       return gbRel;
     }
 
-    private RelNode genOBLogicalPlan(QB qb, RelNode srcRel) throws SemanticException {
-      RelNode relToRet = null;
+    /**
+     * Generate OB RelNode and input Select RelNode that should be used to
+     * introduce top constraining Project. If Input select RelNode is not
+     * present then don't introduce top constraining select.
+     *
+     * @param qb
+     * @param srcRel
+     * @param outermostOB
+     * @return Pair<RelNode, RelNode> Key- OB RelNode, Value - Input Select for
+     *         top constraining Select
+     * @throws SemanticException
+     */
+    private Pair<RelNode, RelNode> genOBLogicalPlan(QB qb, RelNode srcRel, boolean outermostOB)
+        throws SemanticException {
+      RelNode sortRel = null;
+      RelNode originalOBChild = null;
 
       QBParseInfo qbp = getQBParseInfo(qb);
       String dest = qbp.getClauseNames().iterator().next();
@@ -13372,7 +13387,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           fieldCollations.add(new RelFieldCollation(fieldIndex, order));
         }
 
-        // 3. Add Child Project Rel if needed
+        // 3. Add Child Project Rel if needed, Generate Output RR, input Sel Rel
+        // for top constraining Sel
         RelNode obInputRel = srcRel;
         if (!newVCLst.isEmpty()) {
           List<RexNode> originalInputRefs = Lists.transform(srcRel.getRowType().getFieldList(),
@@ -13382,53 +13398,46 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                   return new RexInputRef(input.getIndex(), input.getType());
                 }
               });
+          RowResolver obSyntheticProjectRR = new RowResolver();
+          RowResolver.add(obSyntheticProjectRR, inputRR, 0);
+          int vcolPos = inputRR.getRowSchema().getSignature().size();
+          for (Pair<ASTNode, TypeInfo> astTypePair : vcASTTypePairs) {
+            obSyntheticProjectRR.putExpression(astTypePair.getKey(), new ColumnInfo(
+                getColumnInternalName(vcolPos), astTypePair.getValue(), null, false));
+            vcolPos++;
+          }
+          obInputRel = genSelectRelNode(CompositeList.of(originalInputRefs, newVCLst),
+              obSyntheticProjectRR, srcRel);
 
-          obInputRel = HiveProjectRel.create(srcRel, CompositeList.of(originalInputRefs, newVCLst),
-              null);
+          if (outermostOB) {
+            RowResolver.add(outputRR, inputRR, 0);
+
+          } else {
+            RowResolver.add(outputRR, obSyntheticProjectRR, 0);
+            originalOBChild = srcRel;
+          }
+        } else {
+          RowResolver.add(outputRR, inputRR, 0);
         }
 
         // 4. Construct SortRel
         RelTraitSet traitSet = cluster.traitSetOf(HiveRel.CONVENTION);
         RelCollation canonizedCollation = traitSet.canonize(RelCollationImpl.of(fieldCollations));
-        // TODO: Is it better to introduce a
-        // project on top to restrict VC from showing up in sortRel type
-        RelNode sortRel = new HiveSortRel(cluster, traitSet, obInputRel, canonizedCollation,
-            null, null);
+        sortRel = new HiveSortRel(cluster, traitSet, obInputRel, canonizedCollation, null, null);
 
-        // 5. Construct OB Parent Rel If needed
-        // Construct a parent Project if OB has virtual columns(vc) otherwise
-        // vc would show up in the result
-        // TODO: If OB is part of sub query & Parent Query select is not of the
-        // type "select */.*..." then parent project is not needed
-        relToRet = sortRel;
-        if (!newVCLst.isEmpty()) {
-          List<RexNode> obParentRelProjs = Lists.transform(srcRel.getRowType().getFieldList(),
-              new Function<RelDataTypeField, RexNode>() {
-                @Override
-                public RexNode apply(RelDataTypeField input) {
-                  return new RexInputRef(input.getIndex(), input.getType());
-                }
-              });
-
-          relToRet = HiveProjectRel.create(sortRel, obParentRelProjs, null);
-        }
-
-        // 6. Construct output RR
-        RowResolver.add(outputRR, inputRR, 0);
-
-        // 7. Update the maps
+        // 5. Update the maps
         // NOTE: Output RR for SortRel is considered same as its input; we may
         // end up not using VC that is present in sort rel. Also note that
         // rowtype of sortrel is the type of it child; if child happens to be
         // synthetic project that we introduced then that projectrel would
         // contain the vc.
         ImmutableMap<String, Integer> hiveColNameOptiqPosMap = buildHiveToOptiqColumnMap(outputRR,
-            relToRet);
-        relToHiveRR.put(relToRet, outputRR);
-        relToHiveColNameOptiqPosMap.put(relToRet, hiveColNameOptiqPosMap);
+            sortRel);
+        relToHiveRR.put(sortRel, outputRR);
+        relToHiveColNameOptiqPosMap.put(sortRel, hiveColNameOptiqPosMap);
       }
 
-      return relToRet;
+      return (new Pair(sortRel, originalOBChild));
     }
 
     private RelNode genLimitLogicalPlan(QB qb, RelNode srcRel) throws SemanticException {
@@ -13655,6 +13664,53 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     private RelNode genSelectRelNode(List<RexNode> optiqColLst, RowResolver out_rwsch,
         RelNode srcRel) throws OptiqSemanticException {
       // 1. Build Column Names
+      Set<String> colNamesSet = new HashSet<String>();
+      List<ColumnInfo> cInfoLst = out_rwsch.getRowSchema().getSignature();
+      ArrayList<String> columnNames = new ArrayList<String>();
+      String[] qualifiedColNames;
+      String tmpColAlias;
+      for (int i = 0; i < optiqColLst.size(); i++) {
+        ColumnInfo cInfo = cInfoLst.get(i);
+        qualifiedColNames = out_rwsch.reverseLookup(cInfo.getInternalName());
+        /*
+        if (qualifiedColNames[0] != null && !qualifiedColNames[0].isEmpty())
+          tmpColAlias = qualifiedColNames[0] + "." + qualifiedColNames[1];
+        else
+        */
+          tmpColAlias = qualifiedColNames[1];
+
+        // Prepend column names with '_o_' if it starts with '_c'
+        /*
+         * Hive treats names that start with '_c' as internalNames; so change
+         * the names so we don't run into this issue when converting back to
+         * Hive AST.
+         */
+        if (tmpColAlias.startsWith("_c"))
+          tmpColAlias = "_o_" + tmpColAlias;
+        int suffix = 1;
+        while (colNamesSet.contains(tmpColAlias)) {
+          tmpColAlias = qualifiedColNames[1] + suffix;
+          suffix++;
+        }
+
+        colNamesSet.add(tmpColAlias);
+        columnNames.add(tmpColAlias);
+      }
+
+      // 3 Build Optiq Rel Node for project using converted projections & col
+      // names
+      HiveRel selRel = HiveProjectRel.create(srcRel, optiqColLst, columnNames);
+
+      // 4. Keep track of colname-to-posmap && RR for new select
+      this.relToHiveColNameOptiqPosMap.put(selRel, buildHiveToOptiqColumnMap(out_rwsch, selRel));
+      this.relToHiveRR.put(selRel, out_rwsch);
+
+      return selRel;
+    }
+
+    private RelNode genSelectRelNode(List<RexNode> optiqColLst, RowResolver out_rwsch,
+        RelNode srcRel, boolean removethismethod) throws OptiqSemanticException {
+      // 1. Build Column Names
       // TODO: Should this be external names
       ArrayList<String> columnNames = new ArrayList<String>();
       for (int i = 0; i < optiqColLst.size(); i++) {
@@ -13864,7 +13920,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     private RelNode genLogicalPlan(QBExpr qbexpr) throws SemanticException {
       if (qbexpr.getOpcode() == QBExpr.Opcode.NULLOP) {
-        return genLogicalPlan(qbexpr.getQB());
+        return genLogicalPlan(qbexpr.getQB(), false);
       }
       if (qbexpr.getOpcode() == QBExpr.Opcode.UNION) {
         RelNode qbexpr1Ops = genLogicalPlan(qbexpr.getQBExpr1());
@@ -13876,7 +13932,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       return null;
     }
 
-    private RelNode genLogicalPlan(QB qb) throws SemanticException {
+    private RelNode genLogicalPlan(QB qb, boolean outerMostQB) throws SemanticException {
       RelNode srcRel = null;
       RelNode filterRel = null;
       RelNode gbRel = null;
@@ -13913,15 +13969,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
 
       if (aliasToRel.isEmpty()) {
-        //// This may happen for queries like select 1; (no source table)
+        // // This may happen for queries like select 1; (no source table)
         // We can do following which is same, as what Hive does.
         // With this, we will be able to generate Optiq plan.
-        //        qb.getMetaData().setSrcForAlias(DUMMY_TABLE, getDummyTable());
-        //        RelNode op =  genTableLogicalPlan(DUMMY_TABLE, qb);
-        //        qb.addAlias(DUMMY_TABLE);
-        //        qb.setTabAlias(DUMMY_TABLE, DUMMY_TABLE);
-        //        aliasToRel.put(DUMMY_TABLE, op);
-        // However, Hive trips later while trying to get Metadata for this dummy table
+        // qb.getMetaData().setSrcForAlias(DUMMY_TABLE, getDummyTable());
+        // RelNode op = genTableLogicalPlan(DUMMY_TABLE, qb);
+        // qb.addAlias(DUMMY_TABLE);
+        // qb.setTabAlias(DUMMY_TABLE, DUMMY_TABLE);
+        // aliasToRel.put(DUMMY_TABLE, op);
+        // However, Hive trips later while trying to get Metadata for this dummy
+        // table
         // So, for now lets just disable this. Anyway there is nothing much to
         // optimize in such cases.
         throw new OptiqSemanticException("Unsupported");
@@ -13952,14 +14009,44 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       srcRel = (selectRel == null) ? srcRel : selectRel;
 
       // 6. Build Rel for OB Clause
-      obRel = genOBLogicalPlan(qb, srcRel);
+      Pair<RelNode, RelNode> obTopProjPair = genOBLogicalPlan(qb, srcRel, outerMostQB);
+      obRel = obTopProjPair.getKey();
+      RelNode topConstrainingProjArgsRel = obTopProjPair.getValue();
       srcRel = (obRel == null) ? srcRel : obRel;
 
       // 7. Build Rel for Limit Clause
       limitRel = genLimitLogicalPlan(qb, srcRel);
       srcRel = (limitRel == null) ? srcRel : limitRel;
 
-      // 8. Incase this QB corresponds to subquery then modify its RR to point
+      // 8. Introduce top constraining select if needed.
+      // NOTES:
+      // 1. Optiq can not take an expr in OB; hence it needs to be added as VC
+      // in the input select; In such cases we need to introduce a select on top
+      // to ensure VC is not visible beyond Limit, OB.
+      // 2. Hive can not preserve order across select. In subqueries OB is used
+      // to get a deterministic set of tuples from following limit. Hence we
+      // introduce the constraining select above Limit (if present) instead of
+      // OB.
+      // 3. The top level OB will not introduce constraining select due to Hive
+      // limitation(#2) stated above. The RR for OB will not include VC. Thus
+      // Result Schema will not include exprs used by top OB. During AST Conv,
+      // in the PlanModifierForASTConv we would modify the top level OB to
+      // migrate exprs from input sel to SortRel (Note that Optiq doesn't
+      // support this; but since we are done with Optiq at this point its OK).
+      if (topConstrainingProjArgsRel != null) {
+        List<RexNode> originalInputRefs = Lists.transform(topConstrainingProjArgsRel.getRowType()
+            .getFieldList(), new Function<RelDataTypeField, RexNode>() {
+          @Override
+          public RexNode apply(RelDataTypeField input) {
+            return new RexInputRef(input.getIndex(), input.getType());
+          }
+        });
+        RowResolver topConstrainingProjRR = new RowResolver();
+        RowResolver.add(topConstrainingProjRR, this.relToHiveRR.get(topConstrainingProjArgsRel), 0);
+        srcRel = genSelectRelNode(originalInputRefs, topConstrainingProjRR, srcRel);
+      }
+
+      // 9. Incase this QB corresponds to subquery then modify its RR to point
       // to subquery alias
       // TODO: cleanup this
       if (qb.getParseInfo().getAlias() != null) {
