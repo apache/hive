@@ -10,7 +10,7 @@ PREHOOK: query: create table acid_uat(ti tinyint,
                  s string,
                  vc varchar(128),
                  ch char(36),
-                 b boolean) clustered by (i) into 2 buckets stored as orc
+                 b boolean) clustered by (i) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@acid_uat
@@ -26,7 +26,7 @@ POSTHOOK: query: create table acid_uat(ti tinyint,
                  s string,
                  vc varchar(128),
                  ch char(36),
-                 b boolean) clustered by (i) into 2 buckets stored as orc
+                 b boolean) clustered by (i) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@acid_uat

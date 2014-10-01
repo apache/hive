@@ -1,8 +1,8 @@
-PREHOOK: query: create table acid_utt(a int, b varchar(128)) clustered by (b) into 2 buckets stored as orc
+PREHOOK: query: create table acid_utt(a int, b varchar(128)) clustered by (b) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@acid_utt
-POSTHOOK: query: create table acid_utt(a int, b varchar(128)) clustered by (b) into 2 buckets stored as orc
+POSTHOOK: query: create table acid_utt(a int, b varchar(128)) clustered by (b) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@acid_utt

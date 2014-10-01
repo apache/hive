@@ -9,7 +9,7 @@ set hive.enforce.bucketing=true;
 
 
 set user.name=user1;
-create table auth_noupd(i int) clustered by (i) into 2 buckets stored as orc;;
+create table auth_noupd(i int) clustered by (i) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true');
 delete from auth_noupd where i > 0;
 
 set user.name=hive_admin_user;
