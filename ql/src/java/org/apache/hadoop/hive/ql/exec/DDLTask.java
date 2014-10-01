@@ -4207,7 +4207,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       String statVal = props.get(stat);
       if (statVal != null && Long.parseLong(statVal) > 0) {
         statsPresent = true;
-        props.put(statVal, "0");
+        props.put(stat, "0");
         props.put(StatsSetupConst.COLUMN_STATS_ACCURATE, "false");
       }
     }
