@@ -18,7 +18,9 @@
 package org.apache.hadoop.hive.ql.optimizer.optiq.translator;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.optimizer.optiq.HiveOptiqUtil;
@@ -32,21 +34,24 @@ import org.eigenbase.rel.FilterRelBase;
 import org.eigenbase.rel.JoinRelBase;
 import org.eigenbase.rel.OneRowRelBase;
 import org.eigenbase.rel.ProjectRelBase;
+import org.eigenbase.rel.RelCollationImpl;
 import org.eigenbase.rel.RelNode;
 import org.eigenbase.rel.SetOpRel;
 import org.eigenbase.rel.SingleRel;
 import org.eigenbase.rel.SortRel;
-import org.eigenbase.rel.TableAccessRelBase;
-import org.eigenbase.rel.TableFunctionRelBase;
-import org.eigenbase.rel.ValuesRelBase;
 import org.eigenbase.rel.rules.MultiJoinRel;
 import org.eigenbase.relopt.hep.HepRelVertex;
 import org.eigenbase.relopt.volcano.RelSubset;
+import org.eigenbase.reltype.RelDataType;
 import org.eigenbase.rex.RexNode;
+import org.eigenbase.util.Pair;
 
-public class DerivedTableInjector {
+import com.google.common.collect.ImmutableMap;
 
-  public static RelNode convertOpTree(RelNode rel, List<FieldSchema> resultSchema) throws OptiqSemanticException {
+public class PlanModifierForASTConv {
+
+  public static RelNode convertOpTree(RelNode rel, List<FieldSchema> resultSchema)
+      throws OptiqSemanticException {
     RelNode newTopNode = rel;
 
     if (!(newTopNode instanceof ProjectRelBase) && !(newTopNode instanceof SortRel)) {
@@ -54,7 +59,11 @@ public class DerivedTableInjector {
     }
 
     convertOpTree(newTopNode, (RelNode) null);
-    newTopNode = renameTopLevelSelectInResultSchema(newTopNode, resultSchema);
+
+    Pair<RelNode, RelNode> topSelparentPair = HiveOptiqUtil.getTopLevelSelect(newTopNode);
+    fixTopOBSchema(newTopNode, topSelparentPair, resultSchema);
+    topSelparentPair = HiveOptiqUtil.getTopLevelSelect(newTopNode);
+    newTopNode = renameTopLevelSelectInResultSchema(newTopNode, topSelparentPair, resultSchema);
 
     return newTopNode;
   }
@@ -113,36 +122,68 @@ public class DerivedTableInjector {
     }
   }
 
-  private static RelNode renameTopLevelSelectInResultSchema(final RelNode rootRel,
-      List<FieldSchema> resultSchema) throws OptiqSemanticException {
-    RelNode tmpRel = rootRel;
-    RelNode parentOforiginalProjRel = rootRel;
-    HiveProjectRel originalProjRel = null;
+  private static void fixTopOBSchema(final RelNode rootRel,
+      Pair<RelNode, RelNode> topSelparentPair, List<FieldSchema> resultSchema)
+      throws OptiqSemanticException {
+    if (topSelparentPair.getKey() instanceof SortRel
+        && HiveOptiqUtil.orderRelNode(topSelparentPair.getKey())) {
+      HiveSortRel obRel = (HiveSortRel) topSelparentPair.getKey();
+      ProjectRelBase obChild = (ProjectRelBase) topSelparentPair.getValue();
 
-    while (tmpRel != null) {
-      if (tmpRel instanceof HiveProjectRel) {
-        originalProjRel = (HiveProjectRel) tmpRel;
-        break;
+      if (obChild.getRowType().getFieldCount() > resultSchema.size()) {
+        RelDataType rt = obChild.getRowType();
+        Set<Integer> collationInputRefs = new HashSet(RelCollationImpl.ordinals(obRel
+            .getCollation()));
+        ImmutableMap.Builder<Integer, RexNode> inputRefToCallMapBldr = ImmutableMap.builder();
+        for (int i = resultSchema.size(); i < rt.getFieldCount(); i++) {
+          if (collationInputRefs.contains(i)) {
+            inputRefToCallMapBldr.put(i, obChild.getChildExps().get(i));
+          }
+        }
+
+        ImmutableMap<Integer, RexNode> inputRefToCallMap = inputRefToCallMapBldr.build();
+        if ((obChild.getRowType().getFieldCount() - inputRefToCallMap.size()) == resultSchema
+            .size()) {
+          HiveProjectRel replacementProjectRel = HiveProjectRel.create(obChild.getChild(), obChild
+              .getChildExps().subList(0, resultSchema.size()), obChild.getRowType().getFieldNames()
+              .subList(0, resultSchema.size()));
+          obRel.replaceInput(0, replacementProjectRel);
+          obRel.setInputRefToCallMap(inputRefToCallMap);
+        } else {
+          throw new OptiqSemanticException(
+              "Result Schema didn't match Optiq Optimized Op Tree Schema");
+        }
       }
-      parentOforiginalProjRel = tmpRel;
-      tmpRel = tmpRel.getInput(0);
     }
+  }
+
+  private static RelNode renameTopLevelSelectInResultSchema(final RelNode rootRel,
+      Pair<RelNode, RelNode> topSelparentPair, List<FieldSchema> resultSchema)
+      throws OptiqSemanticException {
+    RelNode parentOforiginalProjRel = topSelparentPair.getKey();
+    HiveProjectRel originalProjRel = (HiveProjectRel) topSelparentPair.getValue();
 
     // Assumption: top portion of tree could only be
     // (limit)?(OB)?(ProjectRelBase)....
     List<RexNode> rootChildExps = originalProjRel.getChildExps();
     if (resultSchema.size() != rootChildExps.size()) {
       // this is a bug in Hive where for queries like select key,value,value
-      // convertRowSchemaToResultSetSchema() only returns schema containing key,value
-      // Underlying issue is much deeper because it seems like RowResolver itself doesnt have
+      // convertRowSchemaToResultSetSchema() only returns schema containing
+      // key,value
+      // Underlying issue is much deeper because it seems like RowResolver
+      // itself doesnt have
       // those mappings. see limit_pushdown.q & limit_pushdown_negative.q
       // Till Hive issue is fixed, disable CBO for such queries.
       throw new OptiqSemanticException("Result Schema didn't match Optiq Optimized Op Tree Schema");
     }
 
     List<String> newSelAliases = new ArrayList<String>();
+    String colAlias;
     for (int i = 0; i < rootChildExps.size(); i++) {
-      newSelAliases.add(resultSchema.get(i).getName());
+      colAlias = resultSchema.get(i).getName();
+      if (colAlias.startsWith("_"))
+        colAlias = colAlias.substring(1);
+      newSelAliases.add(colAlias);
     }
 
     HiveProjectRel replacementProjectRel = HiveProjectRel.create(originalProjRel.getChild(),
@@ -231,9 +272,9 @@ public class DerivedTableInjector {
   private static boolean validSortParent(RelNode sortNode, RelNode parent) {
     boolean validParent = true;
 
-    if (parent != null && !(parent instanceof ProjectRelBase)) {
+    if (parent != null && !(parent instanceof ProjectRelBase)
+        && !((parent instanceof SortRel) || HiveOptiqUtil.orderRelNode(parent)))
       validParent = false;
-    }
 
     return validParent;
   }
@@ -242,7 +283,8 @@ public class DerivedTableInjector {
     boolean validChild = true;
     RelNode child = sortNode.getChild();
 
-    if (!(child instanceof ProjectRelBase)) {
+    if (!(HiveOptiqUtil.limitRelNode(sortNode) && HiveOptiqUtil.orderRelNode(child))
+        && !(child instanceof ProjectRelBase)) {
       validChild = false;
     }
 

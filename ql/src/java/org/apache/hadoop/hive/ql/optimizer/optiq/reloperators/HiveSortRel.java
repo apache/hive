@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.optiq.reloperators;
 
+import java.util.Map;
+
 import org.apache.hadoop.hive.ql.optimizer.optiq.TraitsUtil;
 import org.eigenbase.rel.RelCollation;
 import org.eigenbase.rel.RelFactories;
@@ -26,9 +28,20 @@ import org.eigenbase.relopt.RelOptCluster;
 import org.eigenbase.relopt.RelTraitSet;
 import org.eigenbase.rex.RexNode;
 
+import com.google.common.collect.ImmutableMap;
+
 public class HiveSortRel extends SortRel implements HiveRel {
 
   public static final HiveSortRelFactory HIVE_SORT_REL_FACTORY = new HiveSortRelFactory();
+
+  // NOTE: this is to work around Hive Optiq Limitations w.r.t OB.
+  // 1. Optiq can not accept expressions in OB; instead it needs to be expressed
+  // as VC in input Select.
+  // 2. Hive can not preserve ordering through select boundaries.
+  // 3. This map is used for outermost OB to migrate the VC corresponding OB
+  // expressions from input select.
+  // 4. This is used by ASTConverter after we are done with Optiq Planning
+  private ImmutableMap<Integer, RexNode> mapOfInputRefToRexCall;
 
   public HiveSortRel(RelOptCluster cluster, RelTraitSet traitSet, RelNode child,
       RelCollation collation, RexNode offset, RexNode fetch) {
@@ -49,6 +62,14 @@ public class HiveSortRel extends SortRel implements HiveRel {
     return fetch;
   }
 
+  public void setInputRefToCallMap(ImmutableMap<Integer, RexNode> refToCall) {
+    this.mapOfInputRefToRexCall = refToCall;
+  }
+
+  public Map<Integer, RexNode> getInputRefToCallMap() {
+    return this.mapOfInputRefToRexCall;
+  }
+
   @Override
   public void implement(Implementor implementor) {
   }
@@ -56,8 +77,8 @@ public class HiveSortRel extends SortRel implements HiveRel {
   private static class HiveSortRelFactory implements RelFactories.SortFactory {
 
     @Override
-    public RelNode createSort(RelTraitSet traits, RelNode child,
-        RelCollation collation, RexNode offset, RexNode fetch) {
+    public RelNode createSort(RelTraitSet traits, RelNode child, RelCollation collation,
+        RexNode offset, RexNode fetch) {
       return new HiveSortRel(child.getCluster(), traits, child, collation, offset, fetch);
     }
   }
