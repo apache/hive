@@ -22,17 +22,10 @@ import java.io.IOException;
 import java.security.PrivilegedExceptionAction;
 
 import org.apache.commons.codec.binary.Base64;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.security.UserGroupInformation;
-import org.apache.hive.service.cli.thrift.TCLIService;
-import org.apache.hive.service.cli.thrift.TCLIService.Iface;
-import org.apache.hive.service.cli.thrift.ThriftCLIService;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
-import org.apache.thrift.TProcessor;
-import org.apache.thrift.TProcessorFactory;
-import org.apache.thrift.transport.TTransport;
 import org.ietf.jgss.GSSContext;
 import org.ietf.jgss.GSSCredential;
 import org.ietf.jgss.GSSManager;
@@ -48,11 +41,7 @@ public final class HttpAuthUtils {
   public static final String AUTHORIZATION = "Authorization";
   public static final String BASIC = "Basic";
   public static final String NEGOTIATE = "Negotiate";
-
-  public static TProcessorFactory getAuthProcFactory(ThriftCLIService service) {
-    return new HttpCLIServiceProcessorFactory(service);
-  }
-
+  
   /**
    * @return Stringified Base64 encoded kerberosAuthHeader on success
    */
@@ -85,26 +74,6 @@ public final class HttpAuthUtils {
 
   private HttpAuthUtils() {
     throw new UnsupportedOperationException("Can't initialize class");
-  }
-
-  public static class HttpCLIServiceProcessorFactory extends TProcessorFactory {
-
-    private final ThriftCLIService service;
-    private final HiveConf hiveConf;
-    private final boolean isDoAsEnabled;
-
-    public HttpCLIServiceProcessorFactory(ThriftCLIService service) {
-      super(null);
-      this.service = service;
-      hiveConf = service.getHiveConf();
-      isDoAsEnabled = hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS);
-    }
-
-    @Override
-    public TProcessor getProcessor(TTransport trans) {
-      TProcessor baseProcessor = new TCLIService.Processor<Iface>(service);
-      return isDoAsEnabled ? new HttpCLIServiceUGIProcessor(baseProcessor) : baseProcessor;
-    }
   }
 
   public static class HttpKerberosClientAction implements PrivilegedExceptionAction<String> {

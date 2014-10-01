@@ -229,6 +229,23 @@ public class SessionManager extends CompositeService {
     return openSession(protocol, username, password, ipAddress, sessionConf, false, null);
   }
 
+  /**
+   * Opens a new session and creates a session handle.
+   * The username passed to this method is the effective username.
+   * If withImpersonation is true (==doAs true) we wrap all the calls in HiveSession 
+   * within a UGI.doAs, where UGI corresponds to the effective user.
+   * @see org.apache.hive.service.cli.thrift.ThriftCLIService#getUserName() 
+   * 
+   * @param protocol
+   * @param username
+   * @param password
+   * @param ipAddress
+   * @param sessionConf
+   * @param withImpersonation
+   * @param delegationToken
+   * @return
+   * @throws HiveSQLException
+   */
   public SessionHandle openSession(TProtocolVersion protocol, String username, String password, String ipAddress,
       Map<String, String> sessionConf, boolean withImpersonation, String delegationToken)
           throws HiveSQLException {
