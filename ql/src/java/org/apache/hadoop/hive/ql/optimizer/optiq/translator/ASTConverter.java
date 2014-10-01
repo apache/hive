@@ -21,7 +21,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.Map;
 
 import net.hydromatic.optiq.util.BitSets;
 
@@ -64,39 +64,34 @@ import com.google.common.collect.Iterables;
 
 public class ASTConverter {
 
-  RelNode          root;
-  HiveAST          hiveAST;
-  RelNode          from;
-  FilterRelBase    where;
-  AggregateRelBase groupBy;
-  FilterRelBase    having;
-  ProjectRelBase   select;
-  SortRel          order;
+  private RelNode          root;
+  private HiveAST          hiveAST;
+  private RelNode          from;
+  private FilterRelBase    where;
+  private AggregateRelBase groupBy;
+  private FilterRelBase    having;
+  private ProjectRelBase   select;
+  private SortRel          order;
+  private SortRel          limit;
 
-  Schema           schema;
+  private Schema           schema;
 
-  ASTConverter(RelNode root) {
+  private long             derivedTableCount;
+
+  ASTConverter(RelNode root, long dtCounterInitVal) {
     this.root = root;
     hiveAST = new HiveAST();
+    this.derivedTableCount = dtCounterInitVal;
   }
 
   public static ASTNode convert(final RelNode relNode, List<FieldSchema> resultSchema)
       throws OptiqSemanticException {
-    SortRel sortrel = null;
-    RelNode root = DerivedTableInjector.convertOpTree(relNode, resultSchema);
-
-    if (root instanceof SortRel) {
-      sortrel = (SortRel) root;
-      root = sortrel.getChild();
-      if (!(root instanceof ProjectRelBase))
-        throw new RuntimeException("Child of root sort node is not a project");
-    }
-
-    ASTConverter c = new ASTConverter(root);
-    return c.convert(sortrel);
+    RelNode root = PlanModifierForASTConv.convertOpTree(relNode, resultSchema);
+    ASTConverter c = new ASTConverter(root, 0);
+    return c.convert();
   }
 
-  public ASTNode convert(SortRel sortrel) {
+  private ASTNode convert() {
     /*
      * 1. Walk RelNode Graph; note from, where, gBy.. nodes.
      */
@@ -167,35 +162,67 @@ public class ASTConverter {
      * to its src/from. Hence the need to pass in sortRel for each block from
      * its parent.
      */
-    if (sortrel != null) {
-      HiveSortRel hiveSort = (HiveSortRel) sortrel;
-      if (!hiveSort.getCollation().getFieldCollations().isEmpty()) {
-        ASTNode orderAst = ASTBuilder.createAST(HiveParser.TOK_ORDERBY, "TOK_ORDERBY");
-        schema = new Schema((HiveSortRel) sortrel);
-        for (RelFieldCollation c : hiveSort.getCollation().getFieldCollations()) {
-          ColumnInfo cI = schema.get(c.getFieldIndex());
-          /*
-           * The RowResolver setup for Select drops Table associations. So setup
-           * ASTNode on unqualified name.
-           */
-          ASTNode astCol = ASTBuilder.unqualifiedName(cI.column);
-          ASTNode astNode = c.getDirection() == RelFieldCollation.Direction.ASCENDING ? ASTBuilder
-              .createAST(HiveParser.TOK_TABSORTCOLNAMEASC, "TOK_TABSORTCOLNAMEASC") : ASTBuilder
-              .createAST(HiveParser.TOK_TABSORTCOLNAMEDESC, "TOK_TABSORTCOLNAMEDESC");
-          astNode.addChild(astCol);
-          orderAst.addChild(astNode);
-        }
-        hiveAST.order = orderAst;
-      }
-      RexNode limitExpr = hiveSort.getFetchExpr();
+    convertOBToASTNode((HiveSortRel) order);
+
+    // 8. Limit
+    convertLimitToASTNode((HiveSortRel) limit);
+
+    return hiveAST.getAST();
+  }
+
+  private void convertLimitToASTNode(HiveSortRel limit) {
+    if (limit != null) {
+      HiveSortRel hiveLimit = (HiveSortRel) limit;
+      RexNode limitExpr = hiveLimit.getFetchExpr();
       if (limitExpr != null) {
         Object val = ((RexLiteral) limitExpr).getValue2();
         hiveAST.limit = ASTBuilder.limit(val);
       }
-
     }
+  }
 
-    return hiveAST.getAST();
+  private void convertOBToASTNode(HiveSortRel order) {
+    if (order != null) {
+      HiveSortRel hiveSort = (HiveSortRel) order;
+      if (!hiveSort.getCollation().getFieldCollations().isEmpty()) {
+        // 1 Add order by token
+        ASTNode orderAst = ASTBuilder.createAST(HiveParser.TOK_ORDERBY, "TOK_ORDERBY");
+
+        schema = new Schema((HiveSortRel) hiveSort);
+        Map<Integer, RexNode> obRefToCallMap = hiveSort.getInputRefToCallMap();
+        RexNode obExpr;
+        ASTNode astCol;
+        for (RelFieldCollation c : hiveSort.getCollation().getFieldCollations()) {
+
+          // 2 Add Direction token
+          ASTNode directionAST = c.getDirection() == RelFieldCollation.Direction.ASCENDING ? ASTBuilder
+              .createAST(HiveParser.TOK_TABSORTCOLNAMEASC, "TOK_TABSORTCOLNAMEASC") : ASTBuilder
+              .createAST(HiveParser.TOK_TABSORTCOLNAMEDESC, "TOK_TABSORTCOLNAMEDESC");
+
+          // 3 Convert OB expr (OB Expr is usually an input ref except for top
+          // level OB; top level OB will have RexCall kept in a map.)
+          obExpr = null;
+          if (obRefToCallMap != null)
+            obExpr = obRefToCallMap.get(c.getFieldIndex());
+
+          if (obExpr != null) {
+            astCol = obExpr.accept(new RexVisitor(schema));
+          } else {
+            ColumnInfo cI = schema.get(c.getFieldIndex());
+            /*
+             * The RowResolver setup for Select drops Table associations. So
+             * setup ASTNode on unqualified name.
+             */
+            astCol = ASTBuilder.unqualifiedName(cI.column);
+          }
+
+          // 4 buildup the ob expr AST
+          directionAST.addChild(astCol);
+          orderAst.addChild(directionAST);
+        }
+        hiveAST.order = orderAst;
+      }
+    }
   }
 
   private Schema getRowSchema(String tblAlias) {
@@ -224,20 +251,20 @@ public class ASTConverter {
       RelNode leftInput = ((UnionRelBase) r).getInput(0);
       RelNode rightInput = ((UnionRelBase) r).getInput(1);
 
-      ASTConverter leftConv = new ASTConverter(leftInput);
-      ASTConverter rightConv = new ASTConverter(rightInput);
-      ASTNode leftAST = leftConv.convert((SortRel) null);
-      ASTNode rightAST = rightConv.convert((SortRel) null);
+      ASTConverter leftConv = new ASTConverter(leftInput, this.derivedTableCount);
+      ASTConverter rightConv = new ASTConverter(rightInput, this.derivedTableCount);
+      ASTNode leftAST = leftConv.convert();
+      ASTNode rightAST = rightConv.convert();
 
       ASTNode unionAST = getUnionAllAST(leftAST, rightAST);
 
-      String sqAlias = ASTConverter.nextAlias();
+      String sqAlias = nextAlias();
       ast = ASTBuilder.subQuery(unionAST, sqAlias);
       s = new Schema((UnionRelBase) r, sqAlias);
     } else {
-      ASTConverter src = new ASTConverter(r);
-      ASTNode srcAST = src.convert(order);
-      String sqAlias = ASTConverter.nextAlias();
+      ASTConverter src = new ASTConverter(r, this.derivedTableCount);
+      ASTNode srcAST = src.convert();
+      String sqAlias = nextAlias();
       s = src.getRowSchema(sqAlias);
       ast = ASTBuilder.subQuery(srcAST, sqAlias);
     }
@@ -279,7 +306,15 @@ public class ASTConverter {
       } else if (node instanceof AggregateRelBase) {
         ASTConverter.this.groupBy = (AggregateRelBase) node;
       } else if (node instanceof SortRel) {
-        ASTConverter.this.order = (SortRel) node;
+        if (ASTConverter.this.select != null) {
+          ASTConverter.this.from = node;
+        } else {
+          SortRel hiveSortRel = (SortRel) node;
+          if (hiveSortRel.getCollation().getFieldCollations().isEmpty())
+            ASTConverter.this.limit = hiveSortRel;
+          else
+            ASTConverter.this.order = hiveSortRel;
+        }
       }
       /*
        * once the source node is reached; stop traversal for this QB
@@ -312,7 +347,12 @@ public class ASTConverter {
       if (cI.agg != null) {
         return (ASTNode) ParseDriver.adaptor.dupTree(cI.agg);
       }
-      return ASTBuilder.qualifiedName(cI.table, cI.column);
+
+      if (cI.table == null || cI.table.isEmpty())
+        return ASTBuilder.unqualifiedName(cI.column);
+      else
+        return ASTBuilder.qualifiedName(cI.table, cI.column);
+
     }
 
     @Override
@@ -480,7 +520,7 @@ public class ASTConverter {
     private static final long serialVersionUID = 1L;
 
     Schema(TableAccessRelBase scan) {
-      String tabName = ((RelOptHiveTable)scan.getTable()).getTableAlias();
+      String tabName = ((RelOptHiveTable) scan.getTable()).getTableAlias();
       for (RelDataTypeField field : scan.getRowType().getFieldList()) {
         add(new ColumnInfo(tabName, field.getName()));
       }
@@ -571,11 +611,11 @@ public class ASTConverter {
     }
   }
 
-  static String nextAlias() {
-    return String.format("$hdt$_%d", derivedTableCounter.getAndIncrement());
+  private String nextAlias() {
+    String tabAlias = String.format("$hdt$_%d", derivedTableCount);
+    derivedTableCount++;
+    return tabAlias;
   }
-
-  private static AtomicLong derivedTableCounter = new AtomicLong(0);
 
   static class HiveAST {
 
