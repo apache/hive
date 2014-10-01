@@ -27,9 +27,11 @@ import java.util.Set;
 import java.util.Map.Entry;
 
 import org.apache.hadoop.hive.ql.optimizer.optiq.reloperators.HiveJoinRel;
+import org.apache.hadoop.hive.ql.optimizer.optiq.reloperators.HiveProjectRel;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.eigenbase.rel.RelFactories.ProjectFactory;
 import org.eigenbase.rel.RelNode;
+import org.eigenbase.rel.SortRel;
 import org.eigenbase.relopt.RelOptUtil;
 import org.eigenbase.relopt.RelOptUtil.InputReferencedVisitor;
 import org.eigenbase.reltype.RelDataTypeField;
@@ -484,5 +486,44 @@ public class HiveOptiqUtil {
 
       return jlpi;
     }
+  }
+
+  public static boolean limitRelNode(RelNode rel) {
+    if ((rel instanceof SortRel) && ((SortRel) rel).getCollation().getFieldCollations().isEmpty())
+      return true;
+
+    return false;
+  }
+
+  public static boolean orderRelNode(RelNode rel) {
+    if ((rel instanceof SortRel) && !((SortRel) rel).getCollation().getFieldCollations().isEmpty())
+      return true;
+
+    return false;
+  }
+
+  /**
+   * Get top level select starting from root. Assumption here is root can only
+   * be SortRel & ProjectRel. Also the top project should be at most 2 levels
+   * below Sortrel; i.e SortRel(Limit)-SortRel(OB)-Select
+   *
+   * @param rootRel
+   * @return
+   */
+  public static Pair<RelNode, RelNode> getTopLevelSelect(final RelNode rootRel) {
+    RelNode tmpRel = rootRel;
+    RelNode parentOforiginalProjRel = rootRel;
+    HiveProjectRel originalProjRel = null;
+
+    while (tmpRel != null) {
+      if (tmpRel instanceof HiveProjectRel) {
+        originalProjRel = (HiveProjectRel) tmpRel;
+        break;
+      }
+      parentOforiginalProjRel = tmpRel;
+      tmpRel = tmpRel.getInput(0);
+    }
+
+    return (new Pair<RelNode, RelNode>(parentOforiginalProjRel, originalProjRel));
   }
 }
