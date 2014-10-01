@@ -2,7 +2,7 @@ set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 set hive.enforce.bucketing=true;
 
-create table acid_utc(a int, b varchar(128), c float) clustered by (a) into 2 buckets stored as orc;
+create table acid_utc(a int, b varchar(128), c float) clustered by (a) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true');
 
 insert into table acid_utc select cint, cast(cstring1 as varchar(128)), cfloat from alltypesorc where cint < 0 order by cint limit 10;
 

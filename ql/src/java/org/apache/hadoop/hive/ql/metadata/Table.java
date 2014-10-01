@@ -385,6 +385,10 @@ public class Table implements Serializable {
     tTable.getParameters().put(name, value);
   }
 
+  public void setParamters(Map<String, String> params) {
+    tTable.setParameters(params);
+  }
+
   public String getProperty(String name) {
     return tTable.getParameters().get(name);
   }

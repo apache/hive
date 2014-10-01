@@ -9,7 +9,7 @@ set hive.enforce.bucketing=true;
 
 
 -- check update without update priv
-create table auth_nodel(i int) clustered by (i) into 2 buckets stored as orc;;
+create table auth_nodel(i int) clustered by (i) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true');
 
 set user.name=user1;
 delete from auth_nodel where i > 0;
