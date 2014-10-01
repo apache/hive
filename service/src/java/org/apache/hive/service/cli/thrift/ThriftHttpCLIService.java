@@ -31,6 +31,7 @@ import org.apache.hadoop.util.Shell;
 import org.apache.hive.service.auth.HiveAuthFactory;
 import org.apache.hive.service.auth.HiveAuthFactory.AuthTypes;
 import org.apache.hive.service.cli.CLIService;
+import org.apache.hive.service.cli.thrift.TCLIService.Iface;
 import org.apache.hive.service.server.ThreadFactoryWithGarbageCleanup;
 import org.apache.thrift.TProcessor;
 import org.apache.thrift.TProcessorFactory;
@@ -102,8 +103,7 @@ public class ThriftHttpCLIService extends ThriftCLIService {
 
       // Thrift configs
       hiveAuthFactory = new HiveAuthFactory(hiveConf);
-      TProcessorFactory processorFactory = hiveAuthFactory.getAuthProcFactory(this);
-      TProcessor processor = processorFactory.getProcessor(null);
+      TProcessor processor = new TCLIService.Processor<Iface>(this);
       TProtocolFactory protocolFactory = new TBinaryProtocol.Factory();
       // Set during the init phase of HiveServer2 if auth mode is kerberos
       // UGI for the hive/_HOST (kerberos) principal

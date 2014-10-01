@@ -136,15 +136,17 @@ public class HiveAuthFactory {
     return transportFactory;
   }
 
+  /**
+   * Returns the thrift processor factory for HiveServer2 running in binary mode
+   * @param service
+   * @return
+   * @throws LoginException
+   */
   public TProcessorFactory getAuthProcFactory(ThriftCLIService service) throws LoginException {
-    if ("http".equalsIgnoreCase(transportMode)) {
-      return HttpAuthUtils.getAuthProcFactory(service);
+    if (authTypeStr.equalsIgnoreCase(AuthTypes.KERBEROS.getAuthName())) {
+      return KerberosSaslHelper.getKerberosProcessorFactory(saslServer, service);
     } else {
-      if (authTypeStr.equalsIgnoreCase(AuthTypes.KERBEROS.getAuthName())) {
-        return KerberosSaslHelper.getKerberosProcessorFactory(saslServer, service);
-      } else {
-        return PlainSaslHelper.getPlainProcessorFactory(service);
-      }
+      return PlainSaslHelper.getPlainProcessorFactory(service);
     }
   }
 
