@@ -1,12 +1,12 @@
 PREHOOK: query: -- current user has been set (comment line before the set cmd is resulting in parse error!!)
 
-CREATE TABLE t_auth_up(i int) clustered by (i) into 2 buckets stored as orc
+CREATE TABLE t_auth_up(i int) clustered by (i) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@t_auth_up
 POSTHOOK: query: -- current user has been set (comment line before the set cmd is resulting in parse error!!)
 
-CREATE TABLE t_auth_up(i int) clustered by (i) into 2 buckets stored as orc
+CREATE TABLE t_auth_up(i int) clustered by (i) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t_auth_up

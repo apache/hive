@@ -41,6 +41,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import com.google.common.annotations.VisibleForTesting;
 import net.hydromatic.optiq.SchemaPlus;
 import net.hydromatic.optiq.tools.Frameworks;
 
@@ -68,6 +69,7 @@ import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Order;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryProperties;
 import org.apache.hadoop.hive.ql.exec.AbstractMapJoinOperator;
@@ -306,6 +308,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private static final int AUTOGEN_COLALIAS_PRFX_MAXLENGTH = 20;
 
   private static final String VALUES_TMP_TABLE_NAME_PREFIX = "Values__Tmp__Table__";
+
+  @VisibleForTesting
+  static final String ACID_TABLE_PROPERTY = "transactional";
 
   private HashMap<TableScanOperator, ExprNodeDesc> opToPartPruner;
   private HashMap<TableScanOperator, PrunedPartitionList> opToPartList;
@@ -5894,6 +5899,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     Integer dest_type = qbm.getDestTypeForAlias(dest);
 
     Table dest_tab = null; // destination table if any
+    boolean destTableIsAcid = false; // should the destination table be written to using ACID
     Partition dest_part = null;// destination partition if any
     Path queryTmpdir = null; // the intermediate destination directory
     Path dest_path = null; // the final destination directory
@@ -5910,6 +5916,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     case QBMetaData.DEST_TABLE: {
 
       dest_tab = qbm.getDestTableForAlias(dest);
+      destTableIsAcid = isAcidTable(dest_tab);
 
       // Is the user trying to insert into a external tables
       if ((!conf.getBoolVar(HiveConf.ConfVars.HIVE_INSERT_INTO_EXTERNAL_TABLES)) &&
@@ -6005,9 +6012,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // Create the work for moving the table
       // NOTE: specify Dynamic partitions in dest_tab for WriteEntity
       if (!isNonNativeTable) {
-        AcidUtils.Operation acidOp = getAcidType(table_desc.getOutputFileFormatClass());
-        if (acidOp != AcidUtils.Operation.NOT_ACID) {
-          checkAcidConstraints(qb, table_desc);
+        AcidUtils.Operation acidOp = AcidUtils.Operation.NOT_ACID;
+        if (destTableIsAcid) {
+          acidOp = getAcidType(table_desc.getOutputFileFormatClass());
+          checkAcidConstraints(qb, table_desc, dest_tab);
         }
         ltd = new LoadTableDesc(queryTmpdir,table_desc, dpCtx, acidOp);
         ltd.setReplace(!qb.getParseInfo().isInsertIntoTable(dest_tab.getDbName(),
@@ -6065,6 +6073,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       dest_part = qbm.getDestPartitionForAlias(dest);
       dest_tab = dest_part.getTable();
+      destTableIsAcid = isAcidTable(dest_tab);
       if ((!conf.getBoolVar(HiveConf.ConfVars.HIVE_INSERT_INTO_EXTERNAL_TABLES)) &&
           dest_tab.getTableType().equals(TableType.EXTERNAL_TABLE)) {
         throw new SemanticException(
@@ -6112,9 +6121,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       lbCtx = constructListBucketingCtx(dest_part.getSkewedColNames(),
           dest_part.getSkewedColValues(), dest_part.getSkewedColValueLocationMaps(),
           dest_part.isStoredAsSubDirectories(), conf);
-      AcidUtils.Operation acidOp = getAcidType(table_desc.getOutputFileFormatClass());
-      if (acidOp != AcidUtils.Operation.NOT_ACID) {
-        checkAcidConstraints(qb, table_desc);
+      AcidUtils.Operation acidOp = AcidUtils.Operation.NOT_ACID;
+      if (destTableIsAcid) {
+        acidOp = getAcidType(table_desc.getOutputFileFormatClass());
+        checkAcidConstraints(qb, table_desc, dest_tab);
       }
       ltd = new LoadTableDesc(queryTmpdir, table_desc, dest_part.getSpec(), acidOp);
       ltd.setReplace(!qb.getParseInfo().isInsertIntoTable(dest_tab.getDbName(),
@@ -6269,9 +6279,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     ArrayList<ColumnInfo> vecCol = new ArrayList<ColumnInfo>();
 
     if (updating() || deleting()) {
-      vecCol.add(new ColumnInfo(VirtualColumn.ROWID.getName(),
-          //TypeInfoUtils.getTypeInfoFromObjectInspector(VirtualColumn.ROWID.getObjectInspector()),
-          VirtualColumn.ROWID.getTypeInfo(),
+      vecCol.add(new ColumnInfo(VirtualColumn.ROWID.getName(), VirtualColumn.ROWID.getTypeInfo(),
           "", true));
     } else {
       try {
@@ -6300,8 +6308,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         conf.getBoolVar(HiveConf.ConfVars.HIVEENFORCESORTING))));
 
     // If this table is working with ACID semantics, turn off merging
-    boolean acidTable = isAcidTable(dest_tab);
-    canBeMerged &= !acidTable;
+    canBeMerged &= !destTableIsAcid;
 
     FileSinkDesc fileSinkDesc = new FileSinkDesc(
       queryTmpdir,
@@ -6317,7 +6324,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // If this is an insert, update, or delete on an ACID table then mark that so the
     // FileSinkOperator knows how to properly write to it.
-    if (acidTable) {
+    if (destTableIsAcid) {
       AcidUtils.Operation wt = updating() ? AcidUtils.Operation.UPDATE :
           (deleting() ? AcidUtils.Operation.DELETE : AcidUtils.Operation.INSERT);
       fileSinkDesc.setWriteType(wt);
@@ -6378,9 +6385,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   // * no insert overwrites
   // * no use of vectorization
   // * turns off reduce deduplication optimization, as that sometimes breaks acid
+  // * Check that the table is bucketed
+  // * Check that the table is not sorted
   // This method assumes you have already decided that this is an Acid write.  Don't call it if
   // that isn't true.
-  private void checkAcidConstraints(QB qb, TableDesc tableDesc) throws SemanticException {
+  private void checkAcidConstraints(QB qb, TableDesc tableDesc,
+                                    Table table) throws SemanticException {
     String tableName = tableDesc.getTableName();
     if (!qb.getParseInfo().isInsertIntoTable(tableName)) {
       LOG.debug("Couldn't find table " + tableName + " in insertIntoTable");
@@ -6394,6 +6404,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     conf.setBoolVar(ConfVars.HIVEOPTREDUCEDEDUPLICATION, false);
     conf.setBoolVar(ConfVars.HIVE_HADOOP_SUPPORTS_SUBDIRECTORIES, true);
     conf.set(AcidUtils.CONF_ACID_KEY, "true");
+
+    if (table.getNumBuckets() < 1) {
+      throw new SemanticException(ErrorMsg.ACID_OP_ON_NONACID_TABLE, table.getTableName());
+    }
+    if (table.getSortCols() != null && table.getSortCols().size() > 0) {
+      throw new SemanticException(ErrorMsg.ACID_NO_SORTED_BUCKETS, table.getTableName());
+    }
+
+
+
   }
 
   /**
@@ -12129,9 +12149,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   // Even if the table is of Acid type, if we aren't working with an Acid compliant TxnManager
   // then return false.
   private boolean isAcidTable(Table tab) {
-    if (tab == null || tab.getOutputFormatClass() == null) return false;
+    if (tab == null) return false;
     if (!SessionState.get().getTxnMgr().supportsAcid()) return false;
-    return isAcidOutputFormat(tab.getOutputFormatClass());
+    return tab.getProperty(ACID_TABLE_PROPERTY) != null;
   }
 
   private boolean isAcidOutputFormat(Class<? extends HiveOutputFormat> of) {
