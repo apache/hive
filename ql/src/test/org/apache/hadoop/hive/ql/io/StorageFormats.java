@@ -90,7 +90,9 @@ public class StorageFormats {
    * includes both native Hive storage formats as well as those enumerated in the
    * ADDITIONAL_STORAGE_FORMATS table.
    *
-   * @return List of storage format as paramters.
+   * @return List of storage format as a Collection of Object arrays, each containing (in order):
+   *         Storage format name, SerDe class name, InputFormat class name, OutputFormat class name.
+   *         This list is used as the parameters to JUnit parameterized tests.
    */
   public static Collection<Object[]> asParameters() {
     List<Object[]> parameters = new ArrayList<Object[]>();
@@ -129,6 +131,22 @@ public class StorageFormats {
     }
 
     return parameters;
+  }
+
+  /**
+   * Returns a list of the names of storage formats.
+   *
+   * @return List of names of storage formats.
+   */
+  public static Collection<Object[]> names() {
+    List<Object[]> names = new ArrayList<Object[]>();
+    for (StorageFormatDescriptor descriptor : ServiceLoader.load(StorageFormatDescriptor.class)) {
+      String[] formatNames = new String[descriptor.getNames().size()];
+      formatNames = descriptor.getNames().toArray(formatNames);
+      String[] params = { formatNames[0] };
+      names.add(params);
+    }
+    return names;
   }
 }
 
