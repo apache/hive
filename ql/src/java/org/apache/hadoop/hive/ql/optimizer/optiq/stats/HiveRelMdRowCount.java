@@ -222,10 +222,8 @@ public class HiveRelMdRowCount extends RelMdRowCount {
       return null;
     }
 
-    double leftRowCount = RelMetadataQuery.getRowCount(left)
-        * RelMetadataQuery.getSelectivity(left, leftPred);
-    double rightRowCount = RelMetadataQuery.getRowCount(right)
-        * RelMetadataQuery.getSelectivity(right, rightPred);
+    double leftRowCount = RelMetadataQuery.getRowCount(left);
+    double rightRowCount = RelMetadataQuery.getRowCount(right);
 
     if (leftIsKey && rightIsKey) {
       if (rightRowCount < leftRowCount) {
@@ -275,7 +273,7 @@ public class HiveRelMdRowCount extends RelMdRowCount {
       PKSideInfo pkInfo = new PKSideInfo(leftRowCount,
           leftNDV,
           joinRel.getJoinType().generatesNullsOnRight() ? 1.0 :
-            RelMetadataQuery.getSelectivity(left, leftPred));
+            isPKSideSimpleTree ? RelMetadataQuery.getSelectivity(left, leftPred) : 1.0);
 
       return new PKFKRelationInfo(1, fkInfo, pkInfo, ndvScalingFactor, isPKSideSimpleTree);
     }
@@ -286,7 +284,7 @@ public class HiveRelMdRowCount extends RelMdRowCount {
       PKSideInfo pkInfo = new PKSideInfo(rightRowCount,
           rightNDV,
           joinRel.getJoinType().generatesNullsOnLeft() ? 1.0 :
-            RelMetadataQuery.getSelectivity(right, rightPred));
+            isPKSideSimpleTree ?  RelMetadataQuery.getSelectivity(right, rightPred) : 1.0);
 
       return new PKFKRelationInfo(1, fkInfo, pkInfo, ndvScalingFactor, isPKSideSimpleTree);
     }
