@@ -17,7 +17,7 @@ create table acid_dot(
     ctimestamp1 TIMESTAMP,
     ctimestamp2 TIMESTAMP,
     cboolean1 BOOLEAN,
-    cboolean2 BOOLEAN) clustered by (cint) into 1 buckets stored as orc location '${system:test.tmp.dir}/delete_orig_table';
+    cboolean2 BOOLEAN) clustered by (cint) into 1 buckets stored as orc location '${system:test.tmp.dir}/delete_orig_table' TBLPROPERTIES ('transactional'='true');
 
 select count(*) from acid_dot;
 

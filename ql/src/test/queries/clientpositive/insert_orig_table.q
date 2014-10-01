@@ -14,7 +14,7 @@ create table acid_iot(
     ctimestamp1 TIMESTAMP,
     ctimestamp2 TIMESTAMP,
     cboolean1 BOOLEAN,
-    cboolean2 BOOLEAN) clustered by (cint) into 1 buckets stored as orc;
+    cboolean2 BOOLEAN) clustered by (cint) into 1 buckets stored as orc TBLPROPERTIES ('transactional'='true');
 
 LOAD DATA LOCAL INPATH "../../data/files/alltypesorc" into table acid_iot;
 
