@@ -721,4 +721,14 @@ public interface HadoopShims {
    * @return sticky bit
    */
   boolean hasStickyBit(FsPermission permission);
+
+  /**
+   * @return True if the current hadoop supports trash feature.
+   */
+  boolean supportTrashFeature();
+
+  /**
+   * @return Path to HDFS trash, if current hadoop supports trash feature.  Null otherwise.
+   */
+  Path getCurrentTrashPath(Configuration conf, FileSystem fs);
 }
