@@ -258,7 +258,7 @@ public class MetaStoreUtils {
         if (oldPart.getParameters().containsKey(stat)) {
           Long oldStat = Long.parseLong(oldPart.getParameters().get(stat));
           Long newStat = Long.parseLong(newPart.getParameters().get(stat));
-          if (oldStat != newStat) {
+          if (!oldStat.equals(newStat)) {
             return true;
           }
         }
@@ -993,7 +993,7 @@ public class MetaStoreUtils {
       partString = partString.concat(partStringSep);
       partString = partString.concat(partKey.getName());
       partTypesString = partTypesString.concat(partTypesStringSep);
-      partTypesString = partTypesString.concat(partKey.getType());      
+      partTypesString = partTypesString.concat(partKey.getType());
       if (partStringSep.length() == 0) {
         partStringSep = "/";
         partTypesStringSep = ":";
@@ -1007,7 +1007,7 @@ public class MetaStoreUtils {
       schema
       .setProperty(
           org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_PARTITION_COLUMN_TYPES,
-          partTypesString);      
+          partTypesString);
     }
 
     if (parameters != null) {
