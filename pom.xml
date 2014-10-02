@@ -982,6 +982,11 @@
         <dependencies>
           <dependency>
             <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-client</artifactId>
+            <version>${hadoop-20S.version}</version>
+          </dependency>
+          <dependency>
+            <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-core</artifactId>
             <version>${hadoop-20S.version}</version>
           </dependency>
@@ -1022,6 +1027,11 @@
       <id>hadoop-2</id>
       <dependencyManagement>
         <dependencies>
+          <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-client</artifactId>
+            <version>${hadoop-23.version}</version>
+          </dependency>
           <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-common</artifactId>

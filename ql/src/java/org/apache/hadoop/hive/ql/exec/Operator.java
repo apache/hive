@@ -146,6 +146,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   /**
    * Implements the getChildren function for the Node Interface.
    */
+  @Override
   public ArrayList<Node> getChildren() {
 
     if (getChildOperators() == null) {
@@ -851,6 +852,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
    *
    * @return the name of the operator
    */
+  @Override
   public String getName() {
     return getOperatorName();
   }
@@ -1061,7 +1063,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
 
     if (parents != null) {
       for (Operator<? extends OperatorDesc> parent : parents) {
-        parentClones.add((Operator<? extends OperatorDesc>)(parent.clone()));
+        parentClones.add((parent.clone()));
       }
     }
 
@@ -1082,8 +1084,8 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   public Operator<? extends OperatorDesc> cloneOp() throws CloneNotSupportedException {
     T descClone = (T) conf.clone();
     Operator<? extends OperatorDesc> ret =
-        (Operator<? extends OperatorDesc>) OperatorFactory.getAndMakeChild(
-            descClone, getSchema());
+        OperatorFactory.getAndMakeChild(
+        descClone, getSchema());
     return ret;
   }
 
@@ -1254,15 +1256,15 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     }
     return null;
   }
-  
+
   public OpTraits getOpTraits() {
     if (conf != null) {
       return conf.getOpTraits();
     }
-    
+
     return null;
   }
-  
+
   public void setOpTraits(OpTraits metaInfo) {
     if (LOG.isDebugEnabled()) {
       LOG.debug("Setting traits ("+metaInfo+") on "+this);
@@ -1299,7 +1301,17 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
 
   private static class DummyOperator extends Operator {
     public DummyOperator() { super("dummy"); }
+    @Override
     public void processOp(Object row, int tag) { }
+    @Override
     public OperatorType getType() { return null; }
+  }
+
+  public Map<Integer, DummyStoreOperator> getTagToOperatorTree() {
+    if ((parentOperators == null) || (parentOperators.size() == 0)) {
+      return null;
+    }
+    Map<Integer, DummyStoreOperator> dummyOps = parentOperators.get(0).getTagToOperatorTree();
+    return dummyOps;
   }
 }

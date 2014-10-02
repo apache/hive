@@ -197,6 +197,7 @@ public class SparkPlanGenerator {
     }
     if (work instanceof MapWork) {
       List<Path> inputPaths = Utilities.getInputPaths(cloned, (MapWork) work, scratchDir, context, false);
+      cloned.set(Utilities.INPUT_NAME, work.getName());
       Utilities.setInputPaths(cloned, inputPaths);
       Utilities.setMapWork(cloned, (MapWork) work, scratchDir, false);
       Utilities.createTmpDirs(cloned, (MapWork) work);

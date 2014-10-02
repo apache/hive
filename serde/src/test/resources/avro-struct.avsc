@@ -7,8 +7,8 @@ field6:smallint,field7:int,field8:bigint,field9:float,field10:double,field11:boo
 field12:decimal(4,2),field13:void>",
 "fields":[
 {"name":"field1","type":["null","string"],"doc":"string","default":null},
-{"name":"field2","type":["null","string"],"doc":"char(5)","default":null},
-{"name":"field3","type":["null","string"],"doc":"varchar(5)","default":null},
+{"name":"field2","type":["null",{"type":"string","logicalType":"char","maxLength":5}],"doc":"char(5)","default":null},
+{"name":"field3","type":["null",{"type":"string","logicalType":"varchar","maxLength":5}],"doc":"varchar(5)","default":null},
 {"name":"field4","type":["null","bytes"],"doc":"binary","default":null},
 {"name":"field5","type":["null","int"],"doc":"tinyint","default":null},
 {"name":"field6","type":["null","int"],"doc":"smallint","default":null},

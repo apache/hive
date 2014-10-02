@@ -39,6 +39,9 @@ SELECT key - '1.0' FROM DECIMAL_UDF;
 EXPLAIN SELECT key * key FROM DECIMAL_UDF;
 SELECT key * key FROM DECIMAL_UDF;
 
+EXPLAIN SELECT key, value FROM DECIMAL_UDF where key * value > 0;
+SELECT key, value FROM DECIMAL_UDF where key * value > 0;
+
 EXPLAIN SELECT key * value FROM DECIMAL_UDF;
 SELECT key * value FROM DECIMAL_UDF;
 

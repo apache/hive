@@ -18,8 +18,15 @@
 
 package org.apache.hadoop.hive.ql.stats;
 
-import com.google.common.base.Joiner;
-import com.google.common.collect.Lists;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileSystem;
@@ -80,18 +87,13 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableStringObj
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableTimestampObjectInspector;
 import org.apache.hadoop.io.BytesWritable;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import com.google.common.base.Joiner;
+import com.google.common.collect.Lists;
 
 public class StatsUtils {
 
   private static final Log LOG = LogFactory.getLog(StatsUtils.class.getName());
+
 
   /**
    * Collect table, partition and column level statistics
@@ -109,15 +111,34 @@ public class StatsUtils {
   public static Statistics collectStatistics(HiveConf conf, PrunedPartitionList partList,
       Table table, TableScanOperator tableScanOperator) throws HiveException {
 
-    Statistics stats = new Statistics();
-
     // column level statistics are required only for the columns that are needed
     List<ColumnInfo> schema = tableScanOperator.getSchema().getSignature();
     List<String> neededColumns = tableScanOperator.getNeededColumns();
+    List<String> referencedColumns = tableScanOperator.getReferencedColumns();
+
+    return collectStatistics(conf, partList, table, schema, neededColumns, referencedColumns);
+  }
+
+  private static Statistics collectStatistics(HiveConf conf, PrunedPartitionList partList,
+      Table table, List<ColumnInfo> schema, List<String> neededColumns,
+      List<String> referencedColumns) throws HiveException {
+
     boolean fetchColStats =
         HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_STATS_FETCH_COLUMN_STATS);
     boolean fetchPartStats =
         HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_STATS_FETCH_PARTITION_STATS);
+
+    return collectStatistics(conf, partList, table, schema, neededColumns, referencedColumns,
+        fetchColStats, fetchPartStats);
+  }
+
+  public static Statistics collectStatistics(HiveConf conf, PrunedPartitionList partList,
+      Table table, List<ColumnInfo> schema, List<String> neededColumns,
+      List<String> referencedColumns, boolean fetchColStats, boolean fetchPartStats)
+      throws HiveException {
+
+    Statistics stats = new Statistics();
+
     float deserFactor =
         HiveConf.getFloatVar(conf, HiveConf.ConfVars.HIVE_STATS_DESERIALIZATION_FACTOR);
 
@@ -207,7 +228,6 @@ public class StatsUtils {
           stats.getBasicStatsState().equals(State.COMPLETE)) {
         stats.setBasicStatsState(State.PARTIAL);
       }
-      boolean haveFullStats = fetchColStats;
       if (fetchColStats) {
         List<String> partNames = new ArrayList<String>(partList.getNotDeniedPartns().size());
         for (Partition part : partList.getNotDeniedPartns()) {
@@ -215,35 +235,82 @@ public class StatsUtils {
         }
         Map<String, String> colToTabAlias = new HashMap<String, String>();
         neededColumns = processNeededColumns(schema, neededColumns, colToTabAlias);
-        AggrStats aggrStats = Hive.get().getAggrColStatsFor(table.getDbName(), table.getTableName(), neededColumns, partNames);
+        AggrStats aggrStats = Hive.get().getAggrColStatsFor(table.getDbName(), table.getTableName(),
+            neededColumns, partNames);
         if (null == aggrStats) {
-          haveFullStats = false;
+          // There are some partitions with no state (or we didn't fetch any state).
+          // Update the stats with empty list to reflect that in the
+          // state/initialize structures.
+          List<ColStatistics> emptyStats = Lists.newArrayList();
+
+          // add partition column stats
+          addParitionColumnStats(neededColumns, referencedColumns, schema, table, partList,
+              emptyStats);
+
+          stats.addToColumnStats(emptyStats);
+          stats.updateColumnStatsState(deriveStatType(emptyStats, referencedColumns));
         } else {
           List<ColumnStatisticsObj> colStats = aggrStats.getColStats();
           if (colStats.size() != neededColumns.size()) {
-            LOG.debug("Column stats requested for : " + neededColumns.size() + " columns. Able to retrieve"
-                + " for " + colStats.size() + " columns");
+            LOG.debug("Column stats requested for : " + neededColumns.size() + " columns. Able to" +
+                " retrieve for " + colStats.size() + " columns");
           }
-          List<ColStatistics> columnStats = convertColStats(colStats, table.getTableName(), colToTabAlias);
+          List<ColStatistics> columnStats = convertColStats(colStats, table.getTableName(),
+              colToTabAlias);
+
+          addParitionColumnStats(neededColumns, referencedColumns, schema, table, partList,
+              columnStats);
+
           stats.addToColumnStats(columnStats);
-          State colState = deriveStatType(columnStats, neededColumns);
+          State colState = deriveStatType(columnStats, referencedColumns);
           if (aggrStats.getPartsFound() != partNames.size() && colState != State.NONE) {
-            LOG.debug("Column stats requested for : " + partNames.size() +" partitions. "
-              + "Able to retrieve for " + aggrStats.getPartsFound() + " partitions");
+            LOG.debug("Column stats requested for : " + partNames.size() + " partitions. "
+                + "Able to retrieve for " + aggrStats.getPartsFound() + " partitions");
             colState = State.PARTIAL;
           }
           stats.setColumnStatsState(colState);
         }
       }
-      // There are some partitions with no state (or we didn't fetch any state).
-      // Update the stats with empty list to reflect that in the state/initialize structures.
-      if (!haveFullStats) {
-        List<ColStatistics> emptyStats = Lists.<ColStatistics>newArrayList();
-        stats.addToColumnStats(emptyStats);
-        stats.updateColumnStatsState(deriveStatType(emptyStats, neededColumns));
-      }
     }
     return stats;
+  }
+
+  private static void addParitionColumnStats(List<String> neededColumns,
+      List<String> referencedColumns, List<ColumnInfo> schema, Table table,
+      PrunedPartitionList partList, List<ColStatistics> colStats)
+      throws HiveException {
+
+    // extra columns is difference between referenced columns vs needed
+    // columns. The difference could be partition columns.
+    List<String> extraCols = Lists.newArrayList(referencedColumns);
+    if (referencedColumns.size() > neededColumns.size()) {
+      extraCols.removeAll(neededColumns);
+      for (String col : extraCols) {
+        for (ColumnInfo ci : schema) {
+          // conditions for being partition column
+          if (col.equals(ci.getInternalName()) && ci.getIsVirtualCol() &&
+              !ci.isHiddenVirtualCol()) {
+            // currently metastore does not store column stats for
+            // partition column, so we calculate the NDV from pruned
+            // partition list
+            ColStatistics partCS = new ColStatistics(table.getTableName(),
+                ci.getInternalName(), ci.getType().getTypeName());
+            long numPartitions = getNDVPartitionColumn(partList.getPartitions(),
+                ci.getInternalName());
+            partCS.setCountDistint(numPartitions);
+            colStats.add(partCS);
+          }
+        }
+      }
+    }
+  }
+
+  public static int getNDVPartitionColumn(Set<Partition> partitions, String partColName) {
+    Set<String> distinctVals = new HashSet<String>(partitions.size());
+    for (Partition partition : partitions) {
+      distinctVals.add(partition.getSpec().get(partColName));
+    }
+    return distinctVals.size();
   }
 
   private static void setUnknownRcDsToAverage(
@@ -751,7 +818,8 @@ public class StatsUtils {
         || colType.equalsIgnoreCase(serdeConstants.FLOAT_TYPE_NAME)) {
       return JavaDataModel.get().primitive1();
     } else if (colType.equalsIgnoreCase(serdeConstants.DOUBLE_TYPE_NAME)
-        || colType.equalsIgnoreCase(serdeConstants.BIGINT_TYPE_NAME)) {
+        || colType.equalsIgnoreCase(serdeConstants.BIGINT_TYPE_NAME)
+        || colType.equalsIgnoreCase("long")) {
       return JavaDataModel.get().primitive2();
     } else if (colType.equalsIgnoreCase(serdeConstants.TIMESTAMP_TYPE_NAME)) {
       return JavaDataModel.get().lengthOfTimestamp();
@@ -780,7 +848,8 @@ public class StatsUtils {
       return JavaDataModel.get().lengthForIntArrayOfSize(length);
     } else if (colType.equalsIgnoreCase(serdeConstants.DOUBLE_TYPE_NAME)) {
       return JavaDataModel.get().lengthForDoubleArrayOfSize(length);
-    } else if (colType.equalsIgnoreCase(serdeConstants.BIGINT_TYPE_NAME)) {
+    } else if (colType.equalsIgnoreCase(serdeConstants.BIGINT_TYPE_NAME)
+        || colType.equalsIgnoreCase("long")) {
       return JavaDataModel.get().lengthForLongArrayOfSize(length);
     } else if (colType.equalsIgnoreCase(serdeConstants.BINARY_TYPE_NAME)) {
       return JavaDataModel.get().lengthForByteArrayOfSize(length);
@@ -876,7 +945,7 @@ public class StatsUtils {
       Statistics parentStats, Map<String, ExprNodeDesc> colExprMap, RowSchema rowSchema) {
 
     List<ColStatistics> cs = Lists.newArrayList();
-    if (colExprMap != null) {
+    if (colExprMap != null  && rowSchema != null) {
       for (ColumnInfo ci : rowSchema.getSignature()) {
         String outColName = ci.getInternalName();
         outColName = StatsUtils.stripPrefixFromColumnName(outColName);
@@ -1042,10 +1111,8 @@ public class StatsUtils {
 
   /**
    * Get basic stats of table
-   * @param dbName
-   *          - database name
-   * @param tabName
-   *          - table name
+   * @param table
+   *          - table
    * @param statType
    *          - type of stats
    * @return value of stats

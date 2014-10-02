@@ -14,7 +14,6 @@
 package org.apache.hadoop.hive.ql.io.parquet.read;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,8 +23,6 @@ import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.io.parquet.convert.DataWritableRecordConverter;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.ArrayWritable;
 import org.apache.hadoop.util.StringUtils;
 
@@ -56,33 +53,12 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
    * From a string which columns names (including hive column), return a list
    * of string columns
    *
-   * @param comma separated list of columns
+   * @param columns comma separated list of columns
    * @return list with virtual columns removed
    */
   private static List<String> getColumns(final String columns) {
     return (List<String>) VirtualColumn.
         removeVirtualColumns(StringUtils.getStringCollection(columns));
-  }
-
-  private static List<TypeInfo> getColumnTypes(Configuration configuration) {
-
-    List<String> columnNames;
-    String columnNamesProperty = configuration.get(IOConstants.COLUMNS);
-    if (columnNamesProperty.length() == 0) {
-      columnNames = new ArrayList<String>();
-    } else {
-      columnNames = Arrays.asList(columnNamesProperty.split(","));
-    }
-    List<TypeInfo> columnTypes;
-    String columnTypesProperty = configuration.get(IOConstants.COLUMNS_TYPES);
-    if (columnTypesProperty.length() == 0) {
-      columnTypes = new ArrayList<TypeInfo>();
-    } else {
-      columnTypes = TypeInfoUtils.getTypeInfosFromTypeString(columnTypesProperty);
-    }
-
-    columnTypes = VirtualColumn.removeVirtualColumnTypes(columnNames, columnTypes);
-    return columnTypes;
   }
 
   /**
@@ -173,8 +149,7 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
     }
     final MessageType tableSchema = resolveSchemaAccess(MessageTypeParser.
         parseMessageType(metadata.get(HIVE_SCHEMA_KEY)), fileSchema, configuration);
-    return new DataWritableRecordConverter(readContext.getRequestedSchema(), tableSchema,
-        getColumnTypes(configuration));
+    return new DataWritableRecordConverter(readContext.getRequestedSchema(), tableSchema);
   }
 
   /**

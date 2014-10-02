@@ -28,7 +28,7 @@ import org.apache.hadoop.hive.metastore.IMetaStoreClient;
  * But Hive class is not a public interface, so this factory helps in hiding Hive
  * class from the authorization interface users.
  */
-@LimitedPrivate(value = { "" })
+@LimitedPrivate(value = { "Apache Argus (incubating)" })
 @Evolving
 public interface HiveMetastoreClientFactory {
   IMetaStoreClient getHiveMetastoreClient() throws HiveAuthzPluginException;

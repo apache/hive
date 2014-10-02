@@ -2130,4 +2130,82 @@ public class TestJdbcDriver2 {
     }
     stmt.close();
   }
+
+  /**
+   * Test getting query log method in Jdbc
+   * @throws Exception
+   */
+  @Test
+  public void testGetQueryLog() throws Exception {
+    // Prepare
+    String[] expectedLogs = {
+        "Parsing command",
+        "Parse Completed",
+        "Starting Semantic Analysis",
+        "Semantic Analysis Completed",
+        "Starting command"
+    };
+    String sql = "select count(*) from " + tableName;
+
+    // Verify the fetched log (from the beginning of log file)
+    HiveStatement stmt = (HiveStatement)con.createStatement();
+    assertNotNull("Statement is null", stmt);
+    stmt.executeQuery(sql);
+    List<String> logs = stmt.getQueryLog(false, 10000);
+    stmt.close();
+    verifyFetchedLog(logs, expectedLogs);
+
+    // Verify the fetched log (incrementally)
+    final HiveStatement statement = (HiveStatement)con.createStatement();
+    assertNotNull("Statement is null", statement);
+    statement.setFetchSize(10000);
+    final List<String> incrementalLogs = new ArrayList<String>();
+
+    Runnable logThread = new Runnable() {
+      @Override
+      public void run() {
+        while (statement.hasMoreLogs()) {
+          try {
+            incrementalLogs.addAll(statement.getQueryLog());
+            Thread.sleep(500);
+          } catch (SQLException e) {
+            LOG.error("Failed getQueryLog. Error message: " + e.getMessage());
+            fail("error in getting log thread");
+          } catch (InterruptedException e) {
+            LOG.error("Getting log thread is interrupted. Error message: " + e.getMessage());
+            fail("error in getting log thread");
+          }
+        }
+      }
+    };
+
+    Thread thread = new Thread(logThread);
+    thread.setDaemon(true);
+    thread.start();
+    statement.executeQuery(sql);
+    thread.interrupt();
+    thread.join(10000);
+    // fetch remaining logs
+    List<String> remainingLogs;
+    do {
+      remainingLogs = statement.getQueryLog();
+      incrementalLogs.addAll(remainingLogs);
+    } while (remainingLogs.size() > 0);
+    statement.close();
+
+    verifyFetchedLog(incrementalLogs, expectedLogs);
+  }
+
+  private void verifyFetchedLog(List<String> logs, String[] expectedLogs) {
+    StringBuilder stringBuilder = new StringBuilder();
+
+    for (String log : logs) {
+      stringBuilder.append(log);
+    }
+
+    String accumulatedLogs = stringBuilder.toString();
+    for (String expectedLog : expectedLogs) {
+      assertTrue(accumulatedLogs.contains(expectedLog));
+    }
+  }
 }

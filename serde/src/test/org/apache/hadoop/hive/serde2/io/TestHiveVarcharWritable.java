@@ -17,11 +17,21 @@
  */
 package org.apache.hadoop.hive.serde2.io;
 
-import junit.framework.TestCase;
+import com.google.code.tempusfugit.concurrency.annotations.*;
+import com.google.code.tempusfugit.concurrency.*;
+import org.junit.*;
+import static org.junit.Assert.*;
+
 import org.apache.hadoop.hive.common.type.HiveVarchar;
 import java.io.*;
 
-public class TestHiveVarcharWritable extends TestCase {
+public class TestHiveVarcharWritable {
+  @Rule public ConcurrentRule concurrentRule = new ConcurrentRule();
+  @Rule public RepeatingRule repeatingRule = new RepeatingRule();
+
+  @Test
+  @Concurrent(count=4)
+  @Repeating(repetition=100)
   public void testStringLength() throws Exception {
     HiveVarcharWritable vc1 = new HiveVarcharWritable(new HiveVarchar("0123456789", 10));
     assertEquals(10, vc1.getCharacterLength());
@@ -54,6 +64,9 @@ public class TestHiveVarcharWritable extends TestCase {
     assertEquals(6, vc1.getCharacterLength());
   }
 
+  @Test
+  @Concurrent(count=4)
+  @Repeating(repetition=100)
   public void testEnforceLength() throws Exception {
     HiveVarcharWritable vc1 = new HiveVarcharWritable(new HiveVarchar("0123456789", 10));
     assertEquals(10, vc1.getCharacterLength());
@@ -66,8 +79,11 @@ public class TestHiveVarcharWritable extends TestCase {
 
     vc1.enforceMaxLength(8);
     assertEquals(8, vc1.getCharacterLength());
-}
+  }
 
+  @Test
+  @Concurrent(count=4)
+  @Repeating(repetition=100)
   public void testComparison() throws Exception {
     HiveVarcharWritable hc1 = new HiveVarcharWritable(new HiveVarchar("abcd", 20));
     HiveVarcharWritable hc2 = new HiveVarcharWritable(new HiveVarchar("abcd", 20));
@@ -101,6 +117,9 @@ public class TestHiveVarcharWritable extends TestCase {
     assertFalse(0 == hc2.compareTo(hc1));
   }
 
+  @Test
+  @Concurrent(count=4)
+  @Repeating(repetition=100)
   public void testStringValue() throws Exception {
     HiveVarcharWritable vc1 = new HiveVarcharWritable(new HiveVarchar("abcde", 20));
     assertEquals("abcde", vc1.toString());
