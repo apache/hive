@@ -6476,6 +6476,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     int columnNumber = tableFields.size();
     ArrayList<ExprNodeDesc> expressions = new ArrayList<ExprNodeDesc>(
         columnNumber);
+
     // MetadataTypedColumnsetSerDe does not need type conversions because it
     // does the conversion to String by itself.
     boolean isMetaDataSerDe = table_desc.getDeserializerClass().equals(
@@ -6543,17 +6544,19 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if (converted) {
       // add the select operator
       RowResolver rowResolver = new RowResolver();
-      ArrayList<String> colName = new ArrayList<String>();
+      ArrayList<String> colNames = new ArrayList<String>();
+      Map<String, ExprNodeDesc> colExprMap = new HashMap<String, ExprNodeDesc>();
       for (int i = 0; i < expressions.size(); i++) {
         String name = getColumnInternalName(i);
         rowResolver.put("", name, new ColumnInfo(name, expressions.get(i)
             .getTypeInfo(), "", false));
-        colName.add(name);
+        colNames.add(name);
+        colExprMap.put(name, expressions.get(i));
       }
       Operator output = putOpInsertMap(OperatorFactory.getAndMakeChild(
-          new SelectDesc(expressions, colName), new RowSchema(rowResolver
+          new SelectDesc(expressions, colNames), new RowSchema(rowResolver
               .getColumnInfos()), input), rowResolver);
-
+      output.setColumnExprMap(colExprMap);
       return output;
     } else {
       // not converted

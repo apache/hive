@@ -1,6 +1,8 @@
 SET hive.exec.dynamic.partition = true;
 SET hive.exec.dynamic.partition.mode = nonstrict;
 
+-- SORT_QUERY_RESULTS
+
 create table alter_partition_change_col0 (c1 string, c2 string);
 load data local inpath '../../data/files/dec.txt' overwrite into table alter_partition_change_col0;
 
