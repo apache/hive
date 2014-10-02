@@ -1,8 +1,12 @@
-PREHOOK: query: create table alter_partition_change_col0 (c1 string, c2 string)
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+create table alter_partition_change_col0 (c1 string, c2 string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@alter_partition_change_col0
-POSTHOOK: query: create table alter_partition_change_col0 (c1 string, c2 string)
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+create table alter_partition_change_col0 (c1 string, c2 string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@alter_partition_change_col0
@@ -61,26 +65,26 @@ POSTHOOK: Input: default@alter_partition_change_col1
 POSTHOOK: Input: default@alter_partition_change_col1@p1=__HIVE_DEFAULT_PARTITION__
 POSTHOOK: Input: default@alter_partition_change_col1@p1=abc
 #### A masked pattern was here ####
-Tom	234.79	__HIVE_DEFAULT_PARTITION__
-Cluck	5.96	__HIVE_DEFAULT_PARTITION__
-Tom	19.00	__HIVE_DEFAULT_PARTITION__
-Mary	4.329	__HIVE_DEFAULT_PARTITION__
 Beck	0.0	__HIVE_DEFAULT_PARTITION__
-Snow	55.71	__HIVE_DEFAULT_PARTITION__
-Mary	33.33	__HIVE_DEFAULT_PARTITION__
-Beck	77.341	__HIVE_DEFAULT_PARTITION__
-Beck	79.9	__HIVE_DEFAULT_PARTITION__
-Tom	-12.25	__HIVE_DEFAULT_PARTITION__
-Beck	79.9	abc
 Beck	0.0	abc
-Tom	19.00	abc
-Mary	33.33	abc
-Tom	-12.25	abc
-Mary	4.329	abc
-Snow	55.71	abc
+Beck	77.341	__HIVE_DEFAULT_PARTITION__
 Beck	77.341	abc
-Tom	234.79	abc
+Beck	79.9	__HIVE_DEFAULT_PARTITION__
+Beck	79.9	abc
+Cluck	5.96	__HIVE_DEFAULT_PARTITION__
 Cluck	5.96	abc
+Mary	33.33	__HIVE_DEFAULT_PARTITION__
+Mary	33.33	abc
+Mary	4.329	__HIVE_DEFAULT_PARTITION__
+Mary	4.329	abc
+Snow	55.71	__HIVE_DEFAULT_PARTITION__
+Snow	55.71	abc
+Tom	-12.25	__HIVE_DEFAULT_PARTITION__
+Tom	-12.25	abc
+Tom	19.00	__HIVE_DEFAULT_PARTITION__
+Tom	19.00	abc
+Tom	234.79	__HIVE_DEFAULT_PARTITION__
+Tom	234.79	abc
 PREHOOK: query: -- Change c2 to decimal(10,0)
 alter table alter_partition_change_col1 change c2 c2 decimal(10,0)
 PREHOOK: type: ALTERTABLE_RENAMECOL
@@ -121,26 +125,26 @@ POSTHOOK: Input: default@alter_partition_change_col1
 POSTHOOK: Input: default@alter_partition_change_col1@p1=__HIVE_DEFAULT_PARTITION__
 POSTHOOK: Input: default@alter_partition_change_col1@p1=abc
 #### A masked pattern was here ####
-Tom	235	__HIVE_DEFAULT_PARTITION__
-Cluck	6	__HIVE_DEFAULT_PARTITION__
-Tom	19	__HIVE_DEFAULT_PARTITION__
-Mary	4	__HIVE_DEFAULT_PARTITION__
 Beck	0	__HIVE_DEFAULT_PARTITION__
-Snow	56	__HIVE_DEFAULT_PARTITION__
-Mary	33	__HIVE_DEFAULT_PARTITION__
-Beck	77	__HIVE_DEFAULT_PARTITION__
-Beck	80	__HIVE_DEFAULT_PARTITION__
-Tom	-12	__HIVE_DEFAULT_PARTITION__
-Beck	80	abc
 Beck	0	abc
-Tom	19	abc
-Mary	33	abc
-Tom	-12	abc
-Mary	4	abc
-Snow	56	abc
+Beck	77	__HIVE_DEFAULT_PARTITION__
 Beck	77	abc
-Tom	235	abc
+Beck	80	__HIVE_DEFAULT_PARTITION__
+Beck	80	abc
+Cluck	6	__HIVE_DEFAULT_PARTITION__
 Cluck	6	abc
+Mary	33	__HIVE_DEFAULT_PARTITION__
+Mary	33	abc
+Mary	4	__HIVE_DEFAULT_PARTITION__
+Mary	4	abc
+Snow	56	__HIVE_DEFAULT_PARTITION__
+Snow	56	abc
+Tom	-12	__HIVE_DEFAULT_PARTITION__
+Tom	-12	abc
+Tom	19	__HIVE_DEFAULT_PARTITION__
+Tom	19	abc
+Tom	235	__HIVE_DEFAULT_PARTITION__
+Tom	235	abc
 PREHOOK: query: -- Change the column type at the table level. Table-level describe shows the new type, but the existing partition does not.
 alter table alter_partition_change_col1 change c2 c2 decimal(14,4)
 PREHOOK: type: ALTERTABLE_RENAMECOL
@@ -191,26 +195,26 @@ POSTHOOK: Input: default@alter_partition_change_col1
 POSTHOOK: Input: default@alter_partition_change_col1@p1=__HIVE_DEFAULT_PARTITION__
 POSTHOOK: Input: default@alter_partition_change_col1@p1=abc
 #### A masked pattern was here ####
-Tom	235	__HIVE_DEFAULT_PARTITION__
-Cluck	6	__HIVE_DEFAULT_PARTITION__
-Tom	19	__HIVE_DEFAULT_PARTITION__
-Mary	4	__HIVE_DEFAULT_PARTITION__
 Beck	0	__HIVE_DEFAULT_PARTITION__
-Snow	56	__HIVE_DEFAULT_PARTITION__
-Mary	33	__HIVE_DEFAULT_PARTITION__
-Beck	77	__HIVE_DEFAULT_PARTITION__
-Beck	80	__HIVE_DEFAULT_PARTITION__
-Tom	-12	__HIVE_DEFAULT_PARTITION__
-Beck	80	abc
 Beck	0	abc
-Tom	19	abc
-Mary	33	abc
-Tom	-12	abc
-Mary	4	abc
-Snow	56	abc
+Beck	77	__HIVE_DEFAULT_PARTITION__
 Beck	77	abc
-Tom	235	abc
+Beck	80	__HIVE_DEFAULT_PARTITION__
+Beck	80	abc
+Cluck	6	__HIVE_DEFAULT_PARTITION__
 Cluck	6	abc
+Mary	33	__HIVE_DEFAULT_PARTITION__
+Mary	33	abc
+Mary	4	__HIVE_DEFAULT_PARTITION__
+Mary	4	abc
+Snow	56	__HIVE_DEFAULT_PARTITION__
+Snow	56	abc
+Tom	-12	__HIVE_DEFAULT_PARTITION__
+Tom	-12	abc
+Tom	19	__HIVE_DEFAULT_PARTITION__
+Tom	19	abc
+Tom	235	__HIVE_DEFAULT_PARTITION__
+Tom	235	abc
 PREHOOK: query: -- now change the column type of the existing partition
 alter table alter_partition_change_col1 partition (p1='abc') change c2 c2 decimal(14,4)
 PREHOOK: type: ALTERTABLE_RENAMECOL
@@ -248,26 +252,26 @@ POSTHOOK: Input: default@alter_partition_change_col1
 POSTHOOK: Input: default@alter_partition_change_col1@p1=__HIVE_DEFAULT_PARTITION__
 POSTHOOK: Input: default@alter_partition_change_col1@p1=abc
 #### A masked pattern was here ####
-Tom	235	__HIVE_DEFAULT_PARTITION__
-Cluck	6	__HIVE_DEFAULT_PARTITION__
-Tom	19	__HIVE_DEFAULT_PARTITION__
-Mary	4	__HIVE_DEFAULT_PARTITION__
 Beck	0	__HIVE_DEFAULT_PARTITION__
-Snow	56	__HIVE_DEFAULT_PARTITION__
-Mary	33	__HIVE_DEFAULT_PARTITION__
-Beck	77	__HIVE_DEFAULT_PARTITION__
-Beck	80	__HIVE_DEFAULT_PARTITION__
-Tom	-12	__HIVE_DEFAULT_PARTITION__
-Beck	79.9	abc
 Beck	0.0	abc
-Tom	19.00	abc
+Beck	77	__HIVE_DEFAULT_PARTITION__
+Beck	77.341	abc
+Beck	79.9	abc
+Beck	80	__HIVE_DEFAULT_PARTITION__
+Cluck	5.96	abc
+Cluck	6	__HIVE_DEFAULT_PARTITION__
+Mary	33	__HIVE_DEFAULT_PARTITION__
 Mary	33.33	abc
-Tom	-12.25	abc
+Mary	4	__HIVE_DEFAULT_PARTITION__
 Mary	4.329	abc
 Snow	55.71	abc
-Beck	77.341	abc
+Snow	56	__HIVE_DEFAULT_PARTITION__
+Tom	-12	__HIVE_DEFAULT_PARTITION__
+Tom	-12.25	abc
+Tom	19	__HIVE_DEFAULT_PARTITION__
+Tom	19.00	abc
 Tom	234.79	abc
-Cluck	5.96	abc
+Tom	235	__HIVE_DEFAULT_PARTITION__
 PREHOOK: query: -- change column for default partition value
 alter table alter_partition_change_col1 partition (p1='__HIVE_DEFAULT_PARTITION__') change c2 c2 decimal(14,4)
 PREHOOK: type: ALTERTABLE_RENAMECOL
@@ -305,26 +309,26 @@ POSTHOOK: Input: default@alter_partition_change_col1
 POSTHOOK: Input: default@alter_partition_change_col1@p1=__HIVE_DEFAULT_PARTITION__
 POSTHOOK: Input: default@alter_partition_change_col1@p1=abc
 #### A masked pattern was here ####
-Tom	234.79	__HIVE_DEFAULT_PARTITION__
-Cluck	5.96	__HIVE_DEFAULT_PARTITION__
-Tom	19.00	__HIVE_DEFAULT_PARTITION__
-Mary	4.329	__HIVE_DEFAULT_PARTITION__
 Beck	0.0	__HIVE_DEFAULT_PARTITION__
-Snow	55.71	__HIVE_DEFAULT_PARTITION__
-Mary	33.33	__HIVE_DEFAULT_PARTITION__
-Beck	77.341	__HIVE_DEFAULT_PARTITION__
-Beck	79.9	__HIVE_DEFAULT_PARTITION__
-Tom	-12.25	__HIVE_DEFAULT_PARTITION__
-Beck	79.9	abc
 Beck	0.0	abc
-Tom	19.00	abc
-Mary	33.33	abc
-Tom	-12.25	abc
-Mary	4.329	abc
-Snow	55.71	abc
+Beck	77.341	__HIVE_DEFAULT_PARTITION__
 Beck	77.341	abc
-Tom	234.79	abc
+Beck	79.9	__HIVE_DEFAULT_PARTITION__
+Beck	79.9	abc
+Cluck	5.96	__HIVE_DEFAULT_PARTITION__
 Cluck	5.96	abc
+Mary	33.33	__HIVE_DEFAULT_PARTITION__
+Mary	33.33	abc
+Mary	4.329	__HIVE_DEFAULT_PARTITION__
+Mary	4.329	abc
+Snow	55.71	__HIVE_DEFAULT_PARTITION__
+Snow	55.71	abc
+Tom	-12.25	__HIVE_DEFAULT_PARTITION__
+Tom	-12.25	abc
+Tom	19.00	__HIVE_DEFAULT_PARTITION__
+Tom	19.00	abc
+Tom	234.79	__HIVE_DEFAULT_PARTITION__
+Tom	234.79	abc
 PREHOOK: query: -- Try out replace columns
 alter table alter_partition_change_col1 partition (p1='abc') replace columns (c1 string)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
@@ -375,26 +379,26 @@ POSTHOOK: Input: default@alter_partition_change_col1
 POSTHOOK: Input: default@alter_partition_change_col1@p1=__HIVE_DEFAULT_PARTITION__
 POSTHOOK: Input: default@alter_partition_change_col1@p1=abc
 #### A masked pattern was here ####
-Tom	234.79	__HIVE_DEFAULT_PARTITION__
-Cluck	5.96	__HIVE_DEFAULT_PARTITION__
-Tom	19.00	__HIVE_DEFAULT_PARTITION__
-Mary	4.329	__HIVE_DEFAULT_PARTITION__
 Beck	0.0	__HIVE_DEFAULT_PARTITION__
-Snow	55.71	__HIVE_DEFAULT_PARTITION__
-Mary	33.33	__HIVE_DEFAULT_PARTITION__
 Beck	77.341	__HIVE_DEFAULT_PARTITION__
 Beck	79.9	__HIVE_DEFAULT_PARTITION__
-Tom	-12.25	__HIVE_DEFAULT_PARTITION__
 Beck	NULL	abc
 Beck	NULL	abc
-Tom	NULL	abc
-Mary	NULL	abc
-Tom	NULL	abc
-Mary	NULL	abc
-Snow	NULL	abc
 Beck	NULL	abc
-Tom	NULL	abc
+Cluck	5.96	__HIVE_DEFAULT_PARTITION__
 Cluck	NULL	abc
+Mary	33.33	__HIVE_DEFAULT_PARTITION__
+Mary	4.329	__HIVE_DEFAULT_PARTITION__
+Mary	NULL	abc
+Mary	NULL	abc
+Snow	55.71	__HIVE_DEFAULT_PARTITION__
+Snow	NULL	abc
+Tom	-12.25	__HIVE_DEFAULT_PARTITION__
+Tom	19.00	__HIVE_DEFAULT_PARTITION__
+Tom	234.79	__HIVE_DEFAULT_PARTITION__
+Tom	NULL	abc
+Tom	NULL	abc
+Tom	NULL	abc
 PREHOOK: query: alter table alter_partition_change_col1 replace columns (c1 string)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@alter_partition_change_col1
@@ -428,26 +432,26 @@ POSTHOOK: Input: default@alter_partition_change_col1
 POSTHOOK: Input: default@alter_partition_change_col1@p1=__HIVE_DEFAULT_PARTITION__
 POSTHOOK: Input: default@alter_partition_change_col1@p1=abc
 #### A masked pattern was here ####
-Tom	__HIVE_DEFAULT_PARTITION__
+Beck	__HIVE_DEFAULT_PARTITION__
+Beck	__HIVE_DEFAULT_PARTITION__
+Beck	__HIVE_DEFAULT_PARTITION__
+Beck	abc
+Beck	abc
+Beck	abc
 Cluck	__HIVE_DEFAULT_PARTITION__
-Tom	__HIVE_DEFAULT_PARTITION__
-Mary	__HIVE_DEFAULT_PARTITION__
-Beck	__HIVE_DEFAULT_PARTITION__
-Snow	__HIVE_DEFAULT_PARTITION__
-Mary	__HIVE_DEFAULT_PARTITION__
-Beck	__HIVE_DEFAULT_PARTITION__
-Beck	__HIVE_DEFAULT_PARTITION__
-Tom	__HIVE_DEFAULT_PARTITION__
-Beck	abc
-Beck	abc
-Tom	abc
-Mary	abc
-Tom	abc
-Mary	abc
-Snow	abc
-Beck	abc
-Tom	abc
 Cluck	abc
+Mary	__HIVE_DEFAULT_PARTITION__
+Mary	__HIVE_DEFAULT_PARTITION__
+Mary	abc
+Mary	abc
+Snow	__HIVE_DEFAULT_PARTITION__
+Snow	abc
+Tom	__HIVE_DEFAULT_PARTITION__
+Tom	__HIVE_DEFAULT_PARTITION__
+Tom	__HIVE_DEFAULT_PARTITION__
+Tom	abc
+Tom	abc
+Tom	abc
 PREHOOK: query: -- Try add columns
 alter table alter_partition_change_col1 add columns (c2 decimal(14,4))
 PREHOOK: type: ALTERTABLE_ADDCOLS
@@ -497,26 +501,26 @@ POSTHOOK: Input: default@alter_partition_change_col1
 POSTHOOK: Input: default@alter_partition_change_col1@p1=__HIVE_DEFAULT_PARTITION__
 POSTHOOK: Input: default@alter_partition_change_col1@p1=abc
 #### A masked pattern was here ####
-Tom	234.79	__HIVE_DEFAULT_PARTITION__
-Cluck	5.96	__HIVE_DEFAULT_PARTITION__
-Tom	19.00	__HIVE_DEFAULT_PARTITION__
-Mary	4.329	__HIVE_DEFAULT_PARTITION__
 Beck	0.0	__HIVE_DEFAULT_PARTITION__
-Snow	55.71	__HIVE_DEFAULT_PARTITION__
-Mary	33.33	__HIVE_DEFAULT_PARTITION__
 Beck	77.341	__HIVE_DEFAULT_PARTITION__
 Beck	79.9	__HIVE_DEFAULT_PARTITION__
-Tom	-12.25	__HIVE_DEFAULT_PARTITION__
 Beck	NULL	abc
 Beck	NULL	abc
-Tom	NULL	abc
-Mary	NULL	abc
-Tom	NULL	abc
-Mary	NULL	abc
-Snow	NULL	abc
 Beck	NULL	abc
-Tom	NULL	abc
+Cluck	5.96	__HIVE_DEFAULT_PARTITION__
 Cluck	NULL	abc
+Mary	33.33	__HIVE_DEFAULT_PARTITION__
+Mary	4.329	__HIVE_DEFAULT_PARTITION__
+Mary	NULL	abc
+Mary	NULL	abc
+Snow	55.71	__HIVE_DEFAULT_PARTITION__
+Snow	NULL	abc
+Tom	-12.25	__HIVE_DEFAULT_PARTITION__
+Tom	19.00	__HIVE_DEFAULT_PARTITION__
+Tom	234.79	__HIVE_DEFAULT_PARTITION__
+Tom	NULL	abc
+Tom	NULL	abc
+Tom	NULL	abc
 PREHOOK: query: alter table alter_partition_change_col1 partition (p1='abc') add columns (c2 decimal(14,4))
 PREHOOK: type: ALTERTABLE_ADDCOLS
 PREHOOK: Input: default@alter_partition_change_col1
@@ -552,23 +556,23 @@ POSTHOOK: Input: default@alter_partition_change_col1
 POSTHOOK: Input: default@alter_partition_change_col1@p1=__HIVE_DEFAULT_PARTITION__
 POSTHOOK: Input: default@alter_partition_change_col1@p1=abc
 #### A masked pattern was here ####
-Tom	234.79	__HIVE_DEFAULT_PARTITION__
-Cluck	5.96	__HIVE_DEFAULT_PARTITION__
-Tom	19.00	__HIVE_DEFAULT_PARTITION__
-Mary	4.329	__HIVE_DEFAULT_PARTITION__
 Beck	0.0	__HIVE_DEFAULT_PARTITION__
-Snow	55.71	__HIVE_DEFAULT_PARTITION__
-Mary	33.33	__HIVE_DEFAULT_PARTITION__
-Beck	77.341	__HIVE_DEFAULT_PARTITION__
-Beck	79.9	__HIVE_DEFAULT_PARTITION__
-Tom	-12.25	__HIVE_DEFAULT_PARTITION__
-Beck	79.9	abc
 Beck	0.0	abc
-Tom	19.00	abc
-Mary	33.33	abc
-Tom	-12.25	abc
-Mary	4.329	abc
-Snow	55.71	abc
+Beck	77.341	__HIVE_DEFAULT_PARTITION__
 Beck	77.341	abc
-Tom	234.79	abc
+Beck	79.9	__HIVE_DEFAULT_PARTITION__
+Beck	79.9	abc
+Cluck	5.96	__HIVE_DEFAULT_PARTITION__
 Cluck	5.96	abc
+Mary	33.33	__HIVE_DEFAULT_PARTITION__
+Mary	33.33	abc
+Mary	4.329	__HIVE_DEFAULT_PARTITION__
+Mary	4.329	abc
+Snow	55.71	__HIVE_DEFAULT_PARTITION__
+Snow	55.71	abc
+Tom	-12.25	__HIVE_DEFAULT_PARTITION__
+Tom	-12.25	abc
+Tom	19.00	__HIVE_DEFAULT_PARTITION__
+Tom	19.00	abc
+Tom	234.79	__HIVE_DEFAULT_PARTITION__
+Tom	234.79	abc

@@ -71,7 +71,6 @@ import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
-import org.apache.hadoop.io.IntWritable;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -85,6 +84,7 @@ import com.google.common.collect.Maps;
  */
 public class SortedDynPartitionOptimizer implements Transform {
 
+  private static final String BUCKET_NUMBER_COL_NAME = "_bucket_number";
   @Override
   public ParseContext transform(ParseContext pCtx) throws SemanticException {
 
@@ -215,6 +215,13 @@ public class SortedDynPartitionOptimizer implements Transform {
       }
       ReduceSinkDesc rsConf = getReduceSinkDesc(partitionPositions, sortPositions, sortOrder,
           newValueCols, bucketColumns, numBuckets, fsParent, fsOp.getConf().getWriteType());
+
+      if (!bucketColumns.isEmpty()) {
+        String tableAlias = outRR.getColumnInfos().get(0).getTabAlias();
+        ColumnInfo ci = new ColumnInfo(BUCKET_NUMBER_COL_NAME, TypeInfoFactory.stringTypeInfo,
+            tableAlias, true, true);
+        outRR.put(tableAlias, BUCKET_NUMBER_COL_NAME, ci);
+      }
 
       // Create ReduceSink operator
       ReduceSinkOperator rsOp = (ReduceSinkOperator) putOpInsertMap(
@@ -380,8 +387,11 @@ public class SortedDynPartitionOptimizer implements Transform {
       // corresponding with bucket number and hence their OIs
       for (Integer idx : keyColsPosInVal) {
         if (idx < 0) {
-          newKeyCols.add(new ExprNodeConstantDesc(TypeInfoFactory
-              .getPrimitiveTypeInfoFromPrimitiveWritable(IntWritable.class), -1));
+          // add bucket number column to both key and value
+          ExprNodeConstantDesc encd = new ExprNodeConstantDesc(TypeInfoFactory.stringTypeInfo,
+              BUCKET_NUMBER_COL_NAME);
+          newKeyCols.add(encd);
+          newValueCols.add(encd);
         } else {
           newKeyCols.add(newValueCols.get(idx).clone());
         }
@@ -418,6 +428,9 @@ public class SortedDynPartitionOptimizer implements Transform {
       List<String> outCols = Utilities.getInternalColumnNamesFromSignature(parent.getSchema()
           .getSignature());
       ArrayList<String> outValColNames = Lists.newArrayList(outCols);
+      if (!bucketColumns.isEmpty()) {
+        outValColNames.add(BUCKET_NUMBER_COL_NAME);
+      }
       List<FieldSchema> valFields = PlanUtils.getFieldSchemasFromColumnList(newValueCols,
           outValColNames, 0, "");
       TableDesc valueTable = PlanUtils.getReduceValueTableDesc(valFields);

@@ -67,9 +67,6 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-2
     Tez
-      Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE)
-        Reducer 3 <- Map 1 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -84,12 +81,14 @@ STAGE PLANS:
                       expressions: key (type: string), value (type: string), ds (type: string), hr (type: string)
                       outputColumnNames: _col0, _col1, _col2, _col3
                       Statistics: Num rows: 666 Data size: 7075 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        key expressions: _col2 (type: string), _col3 (type: string)
-                        sort order: ++
-                        Map-reduce partition columns: _col2 (type: string), _col3 (type: string)
+                      File Output Operator
+                        compressed: false
                         Statistics: Num rows: 666 Data size: 7075 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string)
+                        table:
+                            input format: org.apache.hadoop.mapred.TextInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                            name: default.nzhang_part1
                   Filter Operator
                     predicate: (ds > '2008-04-08') (type: boolean)
                     Statistics: Num rows: 666 Data size: 7075 Basic stats: COMPLETE Column stats: NONE
@@ -97,36 +96,14 @@ STAGE PLANS:
                       expressions: key (type: string), value (type: string), hr (type: string)
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 666 Data size: 7075 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        key expressions: _col2 (type: string)
-                        sort order: +
-                        Map-reduce partition columns: _col2 (type: string)
+                      File Output Operator
+                        compressed: false
                         Statistics: Num rows: 666 Data size: 7075 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
-        Reducer 2 
-            Reduce Operator Tree:
-              Extract
-                Statistics: Num rows: 666 Data size: 7075 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 666 Data size: 7075 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.nzhang_part1
-        Reducer 3 
-            Reduce Operator Tree:
-              Extract
-                Statistics: Num rows: 666 Data size: 7075 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 666 Data size: 7075 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.nzhang_part2
+                        table:
+                            input format: org.apache.hadoop.mapred.TextInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                            name: default.nzhang_part2
 
   Stage: Stage-3
     Dependency Collection

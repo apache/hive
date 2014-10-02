@@ -624,10 +624,10 @@ Protect Mode:       	None
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
-	numFiles            	4                   
+	numFiles            	1                   
 	numRows             	50                  
-	rawDataSize         	21980               
-	totalSize           	4959                
+	rawDataSize         	21950               
+	totalSize           	2024                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -669,10 +669,10 @@ Protect Mode:       	None
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
-	numFiles            	4                   
+	numFiles            	1                   
 	numRows             	50                  
-	rawDataSize         	22048               
-	totalSize           	5044                
+	rawDataSize         	22050               
+	totalSize           	2043                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -777,10 +777,10 @@ Protect Mode:       	None
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
-	numFiles            	4                   
+	numFiles            	1                   
 	numRows             	50                  
-	rawDataSize         	21980               
-	totalSize           	4959                
+	rawDataSize         	21950               
+	totalSize           	2024                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -822,10 +822,10 @@ Protect Mode:       	None
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
-	numFiles            	4                   
+	numFiles            	1                   
 	numRows             	50                  
-	rawDataSize         	22048               
-	totalSize           	5044                
+	rawDataSize         	22050               
+	totalSize           	2043                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
