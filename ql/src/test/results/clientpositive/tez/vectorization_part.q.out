@@ -1,0 +1,72 @@
+PREHOOK: query: CREATE TABLE alltypesorc_part(ctinyint tinyint, csmallint smallint, cint int, cbigint bigint, cfloat float, cdouble double, cstring1 string, cstring2 string, ctimestamp1 timestamp, ctimestamp2 timestamp, cboolean1 boolean, cboolean2 boolean) partitioned by (ds string) STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@alltypesorc_part
+POSTHOOK: query: CREATE TABLE alltypesorc_part(ctinyint tinyint, csmallint smallint, cint int, cbigint bigint, cfloat float, cdouble double, cstring1 string, cstring2 string, ctimestamp1 timestamp, ctimestamp2 timestamp, cboolean1 boolean, cboolean2 boolean) partitioned by (ds string) STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@alltypesorc_part
+PREHOOK: query: insert overwrite table alltypesorc_part partition (ds='2011') select * from alltypesorc limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: default@alltypesorc_part@ds=2011
+POSTHOOK: query: insert overwrite table alltypesorc_part partition (ds='2011') select * from alltypesorc limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: default@alltypesorc_part@ds=2011
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2011).cbigint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2011).cboolean1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2011).cboolean2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean2, type:boolean, comment:null), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2011).cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2011).cfloat SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2011).cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2011).csmallint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2011).cstring1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2011).cstring2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring2, type:string, comment:null), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2011).ctimestamp1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2011).ctimestamp2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2011).ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
+PREHOOK: query: insert overwrite table alltypesorc_part partition (ds='2012') select * from alltypesorc limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: default@alltypesorc_part@ds=2012
+POSTHOOK: query: insert overwrite table alltypesorc_part partition (ds='2012') select * from alltypesorc limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: default@alltypesorc_part@ds=2012
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2012).cbigint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2012).cboolean1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2012).cboolean2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean2, type:boolean, comment:null), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2012).cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2012).cfloat SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2012).cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2012).csmallint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2012).cstring1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2012).cstring2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring2, type:string, comment:null), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2012).ctimestamp1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2012).ctimestamp2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2012).ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
+PREHOOK: query: select count(cdouble), cint from alltypesorc_part where ds='2011' group by cint limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc_part
+PREHOOK: Input: default@alltypesorc_part@ds=2011
+#### A masked pattern was here ####
+POSTHOOK: query: select count(cdouble), cint from alltypesorc_part where ds='2011' group by cint limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc_part
+POSTHOOK: Input: default@alltypesorc_part@ds=2011
+#### A masked pattern was here ####
+100	528534767
+PREHOOK: query: select count(*) from alltypesorc_part A join alltypesorc_part B on A.ds=B.ds
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc_part
+PREHOOK: Input: default@alltypesorc_part@ds=2011
+PREHOOK: Input: default@alltypesorc_part@ds=2012
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from alltypesorc_part A join alltypesorc_part B on A.ds=B.ds
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc_part
+POSTHOOK: Input: default@alltypesorc_part@ds=2011
+POSTHOOK: Input: default@alltypesorc_part@ds=2012
+#### A masked pattern was here ####
+20000
