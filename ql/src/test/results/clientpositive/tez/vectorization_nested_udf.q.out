@@ -1,0 +1,9 @@
+PREHOOK: query: SELECT SUM(abs(ctinyint)) from alltypesorc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT SUM(abs(ctinyint)) from alltypesorc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+261468
