@@ -302,6 +302,11 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
     if (work == null) {
       return -1;
     }
+
+    if (execContext == null) {
+      execContext = new ExecMapperContext(job);
+    }
+
     memoryMXBean = ManagementFactory.getMemoryMXBean();
     long startTime = System.currentTimeMillis();
     console.printInfo(Utilities.now()
