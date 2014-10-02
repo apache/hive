@@ -86,7 +86,8 @@ public class ReduceRecordSource implements RecordSource {
 
   List<Object> row = new ArrayList<Object>(Utilities.reduceFieldNameList.size());
 
-  private DataOutputBuffer buffer;
+  private DataOutputBuffer keyBuffer;
+  private DataOutputBuffer valueBuffer;
   private VectorizedRowBatchCtx batchContext;
   private VectorizedRowBatch batch;
 
@@ -135,7 +136,8 @@ public class ReduceRecordSource implements RecordSource {
       if(vectorized) {
         keyStructInspector = (StructObjectInspector) keyObjectInspector;
         keysColumnOffset = keyStructInspector.getAllStructFieldRefs().size();
-        buffer = new DataOutputBuffer();
+        keyBuffer = new DataOutputBuffer();
+        valueBuffer = new DataOutputBuffer();
       }
 
       // We should initialize the SerDe with the TypeInfo when available.
@@ -323,11 +325,9 @@ public class ReduceRecordSource implements RecordSource {
    * @return true if it is not done and can take more inputs
    */
   private void processVectors(Iterable<Object> values, byte tag) throws HiveException {
-    batch.reset();
-
     /* deserialize key into columns */
     VectorizedBatchUtil.addRowToBatchFrom(keyObject, keyStructInspector,
-        0, 0, batch, buffer);
+        0, 0, batch, keyBuffer);
     for(int i = 0; i < keysColumnOffset; i++) {
       VectorizedBatchUtil.setRepeatingColumn(batch, i);
     }
@@ -340,18 +340,28 @@ public class ReduceRecordSource implements RecordSource {
         Object valueObj = deserializeValue(valueWritable, tag);
 
         VectorizedBatchUtil.addRowToBatchFrom(valueObj, valueStructInspectors,
-            rowIdx, keysColumnOffset, batch, buffer);
+            rowIdx, keysColumnOffset, batch, valueBuffer);
         rowIdx++;
         if (rowIdx >= BATCH_SIZE) {
           VectorizedBatchUtil.setBatchSize(batch, rowIdx);
           reducer.processOp(batch, tag);
+
+          // Reset just the value columns and value buffer.
+          for (int i = keysColumnOffset; i < batch.numCols; i++) {
+            batch.cols[i].reset();
+          }
+          valueBuffer.reset();
           rowIdx = 0;
         }
       }
       if (rowIdx > 0) {
+        // Flush final partial batch.
         VectorizedBatchUtil.setBatchSize(batch, rowIdx);
         reducer.processOp(batch, tag);
       }
+      batch.reset();
+      keyBuffer.reset();
+      valueBuffer.reset();
     } catch (Exception e) {
       String rowString = null;
       try {
