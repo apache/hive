@@ -30,7 +30,9 @@ import org.apache.avro.generic.GenericData.Fixed;
 import org.apache.avro.generic.GenericEnumSymbol;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -193,6 +195,12 @@ class AvroSerializer {
     case DECIMAL:
       HiveDecimal dec = (HiveDecimal)fieldOI.getPrimitiveJavaObject(structFieldData);
       return AvroSerdeUtils.getBufferFromDecimal(dec, ((DecimalTypeInfo)typeInfo).scale());
+    case CHAR:
+      HiveChar ch = (HiveChar)fieldOI.getPrimitiveJavaObject(structFieldData);
+      return ch.getStrippedValue();
+    case VARCHAR:
+      HiveVarchar vc = (HiveVarchar)fieldOI.getPrimitiveJavaObject(structFieldData);
+      return vc.getValue();
     case UNKNOWN:
       throw new AvroSerdeException("Received UNKNOWN primitive category.");
     case VOID:

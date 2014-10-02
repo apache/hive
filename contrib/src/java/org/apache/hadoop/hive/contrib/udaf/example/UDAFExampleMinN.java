@@ -19,11 +19,13 @@
 
 package org.apache.hadoop.hive.contrib.udaf.example;
 
+import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDAF;
 
 /**
  * Returns the min N double values.
  */
+@Description(name = "example_min_n", value = "_FUNC_(expr) - Example UDAF that returns the min N double values")
 public class UDAFExampleMinN extends UDAF{
 
   /**

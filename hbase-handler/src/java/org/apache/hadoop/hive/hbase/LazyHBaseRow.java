@@ -20,15 +20,15 @@ package org.apache.hadoop.hive.hbase;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hive.hbase.ColumnMappings.ColumnMapping;
+import org.apache.hadoop.hive.hbase.struct.HBaseValueFactory;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
-import org.apache.hadoop.hive.serde2.lazy.LazyFactory;
 import org.apache.hadoop.hive.serde2.lazy.LazyObjectBase;
 import org.apache.hadoop.hive.serde2.lazy.LazyStruct;
-import org.apache.hadoop.hive.serde2.lazy.objectinspector.LazyMapObjectInspector;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.LazySimpleStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 
@@ -47,18 +47,21 @@ public class LazyHBaseRow extends LazyStruct {
 
   private final int iKey;
   private final HBaseKeyFactory keyFactory;
+  private final List<HBaseValueFactory> valueFactories;
 
   public LazyHBaseRow(LazySimpleStructObjectInspector oi) {
-    this(oi, -1, null);
+    this(oi, -1, null, null);
   }
 
   /**
    * Construct a LazyHBaseRow object with the ObjectInspector.
    */
-  public LazyHBaseRow(LazySimpleStructObjectInspector oi, int iKey, HBaseKeyFactory keyFactory) {
+  public LazyHBaseRow(LazySimpleStructObjectInspector oi, int iKey, HBaseKeyFactory keyFactory,
+      List<HBaseValueFactory> valueFactories) {
     super(oi);
     this.iKey = iKey;
     this.keyFactory = keyFactory;
+    this.valueFactories = valueFactories;
   }
 
   /**
@@ -76,13 +79,14 @@ public class LazyHBaseRow extends LazyStruct {
     if (fieldID == iKey) {
       return keyFactory.createKey(fieldRef.getFieldObjectInspector());
     }
-    ColumnMapping colMap = columnsMapping[fieldID];
-    if (colMap.qualifierName == null && !colMap.hbaseRowKey) {
-      // a column family
-      return new LazyHBaseCellMap((LazyMapObjectInspector) fieldRef.getFieldObjectInspector());
+
+    if (valueFactories != null) {
+      return valueFactories.get(fieldID).createValueObject(fieldRef.getFieldObjectInspector());
     }
-    return LazyFactory.createLazyObject(fieldRef.getFieldObjectInspector(),
-        colMap.binaryStorage.get(0));
+
+    // fallback to default
+    return HBaseSerDeHelper.createLazyField(columnsMapping, fieldID,
+        fieldRef.getFieldObjectInspector());
   }
 
   /**

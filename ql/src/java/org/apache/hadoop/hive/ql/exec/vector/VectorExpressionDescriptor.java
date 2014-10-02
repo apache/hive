@@ -67,6 +67,7 @@ public class VectorExpressionDescriptor {
     DATE                    (0x040),
     TIMESTAMP               (0x080),
     DATETIME_FAMILY         (DATE.value | TIMESTAMP.value),
+    INT_TIMESTAMP_FAMILY    (INT_FAMILY.value | TIMESTAMP.value),
     INT_DATETIME_FAMILY     (INT_FAMILY.value | DATETIME_FAMILY.value),
     STRING_DATETIME_FAMILY  (STRING_FAMILY.value | DATETIME_FAMILY.value),
     ALL_FAMILY              (0xFFF);

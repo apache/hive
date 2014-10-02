@@ -106,10 +106,8 @@ STAGE PLANS:
         Reducer 3 
             Reduce Operator Tree:
               Extract
-                Statistics: Num rows: 0 Data size: 60 Basic stats: PARTIAL Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 0 Data size: 60 Basic stats: PARTIAL Column stats: NONE
                   table:
                       input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat

@@ -1,4 +1,25 @@
 set hive.stats.fetch.column.stats=true;
+set hive.map.aggr.hash.percentmemory=0.0f;
+
+-- hash aggregation is disabled
+
+-- There are different cases for Group By depending on map/reduce side, hash aggregation,
+-- grouping sets and column stats. If we don't have column stats, we just assume hash
+-- aggregation is disabled. Following are the possible cases and rule for cardinality
+-- estimation
+
+-- MAP SIDE:
+-- Case 1: NO column stats, NO hash aggregation, NO grouping sets — numRows
+-- Case 2: NO column stats, NO hash aggregation, grouping sets — numRows * sizeOfGroupingSet
+-- Case 3: column stats, hash aggregation, NO grouping sets — Min(numRows / 2, ndvProduct * parallelism)
+-- Case 4: column stats, hash aggregation, grouping sets — Min((numRows * sizeOfGroupingSet) / 2, ndvProduct * parallelism * sizeOfGroupingSet)
+-- Case 5: column stats, NO hash aggregation, NO grouping sets — numRows
+-- Case 6: column stats, NO hash aggregation, grouping sets — numRows * sizeOfGroupingSet
+
+-- REDUCE SIDE:
+-- Case 7: NO column stats — numRows / 2
+-- Case 8: column stats, grouping sets — Min(numRows, ndvProduct * sizeOfGroupingSet)
+-- Case 9: column stats, NO grouping sets - Min(numRows, ndvProduct)
 
 create table if not exists loc_staging (
   state string,
@@ -29,71 +50,91 @@ from ( select state as a, locid as b, count(*) as c
      ) sq1
 group by a,c;
 
-analyze table loc_orc compute statistics for columns state,locid,zip,year;
+analyze table loc_orc compute statistics for columns state,locid,year;
 
--- only one distinct value in year column + 1 NULL value
--- map-side GBY: numRows: 8 (map-side will not do any reduction)
--- reduce-side GBY: numRows: 2
+-- Case 5: column stats, NO hash aggregation, NO grouping sets - cardinality = 8
+-- Case 9: column stats, NO grouping sets - caridnality = 2
 explain select year from loc_orc group by year;
 
--- map-side GBY: numRows: 8
--- reduce-side GBY: numRows: 4
+-- Case 5: column stats, NO hash aggregation, NO grouping sets - cardinality = 8
+-- Case 9: column stats, NO grouping sets - caridnality = 8
 explain select state,locid from loc_orc group by state,locid;
 
--- map-side GBY numRows: 32 reduce-side GBY numRows: 16
+-- Case 6: column stats, NO hash aggregation, grouping sets - cardinality = 32
+-- Case 8: column stats, grouping sets - cardinality = 32
 explain select state,locid from loc_orc group by state,locid with cube;
 
--- map-side GBY numRows: 24 reduce-side GBY numRows: 12
+-- Case 6: column stats, NO hash aggregation, grouping sets - cardinality = 24
+-- Case 8: column stats, grouping sets - cardinality = 24
 explain select state,locid from loc_orc group by state,locid with rollup;
 
--- map-side GBY numRows: 8 reduce-side GBY numRows: 4
+-- Case 6: column stats, NO hash aggregation, grouping sets - cardinality = 8
+-- Case 8: column stats, grouping sets - cardinality = 8
 explain select state,locid from loc_orc group by state,locid grouping sets((state));
 
--- map-side GBY numRows: 16 reduce-side GBY numRows: 8
+-- Case 6: column stats, NO hash aggregation, grouping sets - cardinality = 16
+-- Case 8: column stats, grouping sets - cardinality = 16
 explain select state,locid from loc_orc group by state,locid grouping sets((state),(locid));
 
--- map-side GBY numRows: 24 reduce-side GBY numRows: 12
+-- Case 6: column stats, NO hash aggregation, grouping sets - cardinality = 24
+-- Case 8: column stats, grouping sets - cardinality = 24
 explain select state,locid from loc_orc group by state,locid grouping sets((state),(locid),());
 
--- map-side GBY numRows: 32 reduce-side GBY numRows: 16
+-- Case 6: column stats, NO hash aggregation, grouping sets - cardinality = 32
+-- Case 8: column stats, grouping sets - cardinality = 32
 explain select state,locid from loc_orc group by state,locid grouping sets((state,locid),(state),(locid),());
 
-set hive.stats.map.parallelism=10;
+set hive.map.aggr.hash.percentmemory=0.5f;
+set mapred.max.split.size=80;
+-- map-side parallelism will be 10
 
--- map-side GBY: numRows: 80 (map-side will not do any reduction)
--- reduce-side GBY: numRows: 2 Reason: numDistinct of year is 2. numRows = min(80/2, 2)
+-- Case 3: column stats, hash aggregation, NO grouping sets - cardinality = 4
+-- Case 9: column stats, NO grouping sets - caridnality = 2
 explain select year from loc_orc group by year;
 
--- map-side GBY numRows: 320 reduce-side GBY numRows: 42 Reason: numDistinct of state and locid are 6,7 resp. numRows = min(320/2, 6*7)
+-- Case 4: column stats, hash aggregation, grouping sets - cardinality = 16
+-- Case 8: column stats, grouping sets - cardinality = 16
 explain select state,locid from loc_orc group by state,locid with cube;
 
+-- ndvProduct becomes 0 as zip does not have column stats
+-- Case 3: column stats, hash aggregation, NO grouping sets - cardinality = 4
+-- Case 9: column stats, NO grouping sets - caridnality = 2
+explain select state,zip from loc_orc group by state,zip;
+
+set mapred.max.split.size=1000;
 set hive.stats.fetch.column.stats=false;
-set hive.stats.map.parallelism=1;
 
--- map-side GBY numRows: 32 reduce-side GBY numRows: 16
+-- Case 2: NO column stats, NO hash aggregation, NO grouping sets - cardinality = 32
+-- Case 7: NO column stats - cardinality = 16
 explain select state,locid from loc_orc group by state,locid with cube;
 
--- map-side GBY numRows: 24 reduce-side GBY numRows: 12
+-- Case 2: NO column stats, NO hash aggregation, NO grouping sets - cardinality = 24
+-- Case 7: NO column stats - cardinality = 12
 explain select state,locid from loc_orc group by state,locid with rollup;
 
--- map-side GBY numRows: 8 reduce-side GBY numRows: 4
+-- Case 2: NO column stats, NO hash aggregation, NO grouping sets - cardinality = 8
+-- Case 7: NO column stats - cardinality = 4
 explain select state,locid from loc_orc group by state,locid grouping sets((state));
 
--- map-side GBY numRows: 16 reduce-side GBY numRows: 8
+-- Case 2: NO column stats, NO hash aggregation, NO grouping sets - cardinality = 16
+-- Case 7: NO column stats - cardinality = 8
 explain select state,locid from loc_orc group by state,locid grouping sets((state),(locid));
 
--- map-side GBY numRows: 24 reduce-side GBY numRows: 12
+-- Case 2: NO column stats, NO hash aggregation, NO grouping sets - cardinality = 24
+-- Case 7: NO column stats - cardinality = 12
 explain select state,locid from loc_orc group by state,locid grouping sets((state),(locid),());
 
--- map-side GBY numRows: 32 reduce-side GBY numRows: 16
+-- Case 2: NO column stats, NO hash aggregation, NO grouping sets - cardinality = 32
+-- Case 7: NO column stats - cardinality = 16
 explain select state,locid from loc_orc group by state,locid grouping sets((state,locid),(state),(locid),());
 
-set hive.stats.map.parallelism=10;
+set mapred.max.split.size=80;
 
--- map-side GBY: numRows: 80 (map-side will not do any reduction)
--- reduce-side GBY: numRows: 2 Reason: numDistinct of year is 2. numRows = min(80/2, 2)
+-- Case 1: NO column stats, NO hash aggregation, NO grouping sets - cardinality = 8
+-- Case 7: NO column stats - cardinality = 4
 explain select year from loc_orc group by year;
 
--- map-side GBY numRows: 320 reduce-side GBY numRows: 42 Reason: numDistinct of state and locid are 6,7 resp. numRows = min(320/2, 6*7)
+-- Case 2: NO column stats, NO hash aggregation, NO grouping sets - cardinality = 32
+-- Case 7: NO column stats - cardinality = 16
 explain select state,locid from loc_orc group by state,locid with cube;
 

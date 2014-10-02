@@ -44,10 +44,10 @@ import org.apache.tez.runtime.api.events.InputInitializerEvent;
 @SuppressWarnings({ "deprecation", "serial" })
 public class AppMasterEventOperator extends Operator<AppMasterEventDesc> {
 
-  private transient Serializer serializer;
-  private transient DataOutputBuffer buffer;
-  private transient boolean hasReachedMaxSize = false;
-  private transient long MAX_SIZE;
+  protected transient Serializer serializer;
+  protected transient DataOutputBuffer buffer;
+  protected transient boolean hasReachedMaxSize = false;
+  protected transient long MAX_SIZE;
 
   @Override
   public void initializeOp(Configuration hconf) throws HiveException {
@@ -57,7 +57,7 @@ public class AppMasterEventOperator extends Operator<AppMasterEventDesc> {
     initDataBuffer(false);
   }
 
-  private void initDataBuffer(boolean skipPruning) throws HiveException {
+  protected void initDataBuffer(boolean skipPruning) throws HiveException {
     buffer = new DataOutputBuffer();
     try {
       // where does this go to?

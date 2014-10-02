@@ -1249,7 +1249,7 @@ public class SessionState {
 
     try {
       if (tezSessionState != null) {
-        TezSessionPoolManager.getInstance().close(tezSessionState);
+        TezSessionPoolManager.getInstance().close(tezSessionState, false);
       }
     } catch (Exception e) {
       LOG.info("Error closing tez session", e);
