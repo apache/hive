@@ -1565,6 +1565,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       tbl.replaceFiles(loadPath, isSrcLocal);
     } else {
       tbl.copyFiles(loadPath, isSrcLocal, isAcid);
+      tbl.getParameters().put(StatsSetupConst.STATS_GENERATED_VIA_STATS_TASK, "true");
     }
 
     try {
@@ -1678,17 +1679,6 @@ private void constructOneLBLocationMap(FileStatus fSta,
     return getPartition(tbl, partSpec, forceCreate, null, true);
   }
 
-  private static void clearPartitionStats(org.apache.hadoop.hive.metastore.api.Partition tpart) {
-    Map<String,String> tpartParams = tpart.getParameters();
-    if (tpartParams == null) {
-      return;
-    }
-
-    for (String statType : StatsSetupConst.supportedStats) {
-      tpartParams.remove(statType);
-    }
-  }
-
   /**
    * Returns partition metadata
    *
@@ -1756,7 +1746,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
             throw new HiveException("new partition path should not be null or empty.");
           }
           tpart.getSd().setLocation(partPath);
-          clearPartitionStats(tpart);
+          tpart.getParameters().put(StatsSetupConst.STATS_GENERATED_VIA_STATS_TASK,"true");
           String fullName = tbl.getTableName();
           if (!org.apache.commons.lang.StringUtils.isEmpty(tbl.getDbName())) {
             fullName = tbl.getDbName() + "." + tbl.getTableName();

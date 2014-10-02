@@ -930,8 +930,8 @@ Protect Mode:       	None
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	2                   
-	numRows             	16                  
-	rawDataSize         	320                 
+	numRows             	32                  
+	rawDataSize         	640                 
 	totalSize           	1348                
 #### A masked pattern was here ####
 	 	 
@@ -974,8 +974,8 @@ Protect Mode:       	None
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	2                   
-	numRows             	3                   
-	rawDataSize         	60                  
+	numRows             	6                   
+	rawDataSize         	120                 
 	totalSize           	1050                
 #### A masked pattern was here ####
 	 	 
@@ -1018,8 +1018,8 @@ Protect Mode:       	None
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	2                   
-	numRows             	7                   
-	rawDataSize         	140                 
+	numRows             	14                  
+	rawDataSize         	280                 
 	totalSize           	1166                
 #### A masked pattern was here ####
 	 	 
@@ -1062,8 +1062,8 @@ Protect Mode:       	None
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	2                   
-	numRows             	3                   
-	rawDataSize         	60                  
+	numRows             	6                   
+	rawDataSize         	120                 
 	totalSize           	1050                
 #### A masked pattern was here ####
 	 	 
@@ -1105,8 +1105,8 @@ Protect Mode:       	None
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	8                   
-	numRows             	16                  
-	rawDataSize         	320                 
+	numRows             	32                  
+	rawDataSize         	640                 
 	totalSize           	4340                
 #### A masked pattern was here ####
 	 	 
@@ -1148,8 +1148,8 @@ Protect Mode:       	None
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	8                   
-	numRows             	3                   
-	rawDataSize         	60                  
+	numRows             	6                   
+	rawDataSize         	120                 
 	totalSize           	2094                
 #### A masked pattern was here ####
 	 	 
@@ -1191,8 +1191,8 @@ Protect Mode:       	None
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	8                   
-	numRows             	16                  
-	rawDataSize         	320                 
+	numRows             	32                  
+	rawDataSize         	640                 
 	totalSize           	4326                
 #### A masked pattern was here ####
 	 	 
@@ -1234,8 +1234,8 @@ Protect Mode:       	None
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	8                   
-	numRows             	3                   
-	rawDataSize         	60                  
+	numRows             	6                   
+	rawDataSize         	120                 
 	totalSize           	2094                
 #### A masked pattern was here ####
 	 	 
