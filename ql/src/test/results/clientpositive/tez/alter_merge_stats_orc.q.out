@@ -247,8 +247,8 @@ Protect Mode:       	None
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	3                   
-	numRows             	500                 
-	rawDataSize         	47000               
+	numRows             	1500                
+	rawDataSize         	141000              
 	totalSize           	7488                
 #### A masked pattern was here ####
 	 	 
