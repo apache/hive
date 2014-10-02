@@ -41,7 +41,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardUnionObjectInspector.StandardUnion;
 import org.apache.hadoop.io.BytesWritable;
-import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 // import org.apache.hadoop.util.StringUtils;
 
@@ -270,10 +269,9 @@ public class VectorReduceSinkOperator extends ReduceSinkOperator {
         populatedCachedDistributionKeys(vrg, rowIndex, 0);
 
         // replace bucketing columns with hashcode % numBuckets
-        int buckNum = -1;
         if (bucketEval != null) {
-          buckNum = computeBucketNumber(vrg, rowIndex, conf.getNumBuckets());
-          cachedKeys[0][buckColIdxInKey] = new IntWritable(buckNum);
+          bucketNumber = computeBucketNumber(vrg, rowIndex, conf.getNumBuckets());
+          cachedKeys[0][buckColIdxInKey] = new Text(String.valueOf(bucketNumber));
         }
         HiveKey firstKey = toHiveKey(cachedKeys[0], tag, null);
         int distKeyLength = firstKey.getDistKeyLength();
@@ -289,7 +287,7 @@ public class VectorReduceSinkOperator extends ReduceSinkOperator {
         if (autoParallel && partitionEval.length > 0) {
           hashCode = computeMurmurHash(firstKey);
         } else {
-          hashCode = computeHashCode(vrg, rowIndex, buckNum);
+          hashCode = computeHashCode(vrg, rowIndex);
         }
 
         firstKey.setHashCode(hashCode);
@@ -417,7 +415,15 @@ public class VectorReduceSinkOperator extends ReduceSinkOperator {
 
   private BytesWritable makeValueWritable(VectorizedRowBatch vrg, int rowIndex)
       throws HiveException, SerDeException {
-    for (int i = 0; i < valueEval.length; i++) {
+    int length = valueEval.length;
+
+    // in case of bucketed table, insert the bucket number as the last column in value
+    if (bucketEval != null) {
+      length -= 1;
+      cachedValues[length] = new Text(String.valueOf(bucketNumber));
+    }
+
+    for (int i = 0; i < length; i++) {
       int batchColumn = valueEval[i].getOutputColumn();
       ColumnVector vectorColumn = vrg.cols[batchColumn];
       cachedValues[i] = valueWriters[i].writeValue(vectorColumn, rowIndex);
@@ -426,7 +432,7 @@ public class VectorReduceSinkOperator extends ReduceSinkOperator {
     return (BytesWritable)valueSerializer.serialize(cachedValues, valueObjectInspector);
   }
 
-  private int computeHashCode(VectorizedRowBatch vrg, int rowIndex, int buckNum) throws HiveException {
+  private int computeHashCode(VectorizedRowBatch vrg, int rowIndex) throws HiveException {
     // Evaluate the HashCode
     int keyHashCode = 0;
     if (partitionEval.length == 0) {
@@ -449,7 +455,7 @@ public class VectorReduceSinkOperator extends ReduceSinkOperator {
                 partitionWriters[p].getObjectInspector());
       }
     }
-    return buckNum < 0  ? keyHashCode : keyHashCode * 31 + buckNum;
+    return bucketNumber < 0  ? keyHashCode : keyHashCode * 31 + bucketNumber;
   }
 
   private boolean partitionKeysAreNull(VectorizedRowBatch vrg, int rowIndex)

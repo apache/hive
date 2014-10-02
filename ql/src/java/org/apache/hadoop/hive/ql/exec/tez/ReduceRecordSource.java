@@ -131,7 +131,6 @@ public class ReduceRecordSource implements RecordSource {
           .getDeserializerClass(), null);
       SerDeUtils.initializeSerDe(inputKeyDeserializer, null, keyTableDesc.getProperties(), null);
       keyObjectInspector = inputKeyDeserializer.getObjectInspector();
-      reducer.setGroupKeyObjectInspector(keyObjectInspector);
 
       if(vectorized) {
         keyStructInspector = (StructObjectInspector) keyObjectInspector;
@@ -240,8 +239,8 @@ public class ReduceRecordSource implements RecordSource {
         }
 
         groupKey.set(keyWritable.getBytes(), 0, keyWritable.getLength());
-        reducer.setGroupKeyObject(keyObject);
         reducer.startGroup();
+        reducer.setGroupKeyObject(keyObject);
       }
 
       /* this.keyObject passed via reference */

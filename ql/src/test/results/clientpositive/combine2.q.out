@@ -263,7 +263,7 @@ STAGE PLANS:
               columns.types string
 #### A masked pattern was here ####
               name default.combine2
-              numFiles 1
+              numFiles 3
               numRows 3
               partition_columns value
               partition_columns.types string
@@ -398,7 +398,7 @@ STAGE PLANS:
               columns.types string
 #### A masked pattern was here ####
               name default.combine2
-              numFiles 1
+              numFiles 3
               numRows 3
               partition_columns value
               partition_columns.types string
