@@ -390,8 +390,13 @@ public class Driver implements CommandProcessor {
       tree = ParseUtils.findRootNonNullToken(tree);
       perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.PARSE);
 
-      // Initialize the transaction manager.  This must be done before analyze is called
+      // Initialize the transaction manager.  This must be done before analyze is called.  Also
+      // record the valid transactions for this query.  We have to do this at compile time
+      // because we use the information in planning the query.  Also,
+      // we want to record it at this point so that users see data valid at the point that they
+      // submit the query.
       SessionState.get().initTxnMgr(conf);
+      recordValidTxns();
 
       perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.ANALYZE);
       BaseSemanticAnalyzer sem = SemanticAnalyzerFactory.get(conf, tree);
@@ -873,21 +878,14 @@ public class Driver implements CommandProcessor {
 
   // Write the current set of valid transactions into the conf file so that it can be read by
   // the input format.
-  private int recordValidTxns() {
-    try {
-      ValidTxnList txns = SessionState.get().getTxnMgr().getValidTxns();
-      String txnStr = txns.toString();
-      conf.set(ValidTxnList.VALID_TXNS_KEY, txnStr);
-      LOG.debug("Encoding valid txns info " + txnStr);
-      return 0;
-    } catch (LockException e) {
-      errorMessage = "FAILED: Error in determing valid transactions: " + e.getMessage();
-      SQLState = ErrorMsg.findSQLState(e.getMessage());
-      downstreamError = e;
-      console.printError(errorMessage, "\n"
-          + org.apache.hadoop.util.StringUtils.stringifyException(e));
-      return 10;
-    }
+  private void recordValidTxns() throws LockException {
+    ValidTxnList txns = SessionState.get().getTxnMgr().getValidTxns();
+    String txnStr = txns.toString();
+    conf.set(ValidTxnList.VALID_TXNS_KEY, txnStr);
+    LOG.debug("Encoding valid txns info " + txnStr);
+    // TODO I think when we switch to cross query transactions we need to keep this list in
+    // session state rather than agressively encoding it in the conf like this.  We can let the
+    // TableScanOperators then encode it in the conf before calling the input formats.
   }
 
   /**
@@ -933,11 +931,14 @@ public class Driver implements CommandProcessor {
             desc.setTransactionId(txnId);
           }
         }
+
+        // TODO Once we move to cross query transactions we need to add the open transaction to
+        // our list of valid transactions.  We don't have a way to do that right now.
       }
 
       txnMgr.acquireLocks(plan, ctx, userFromUGI);
 
-      return recordValidTxns();
+      return 0;
     } catch (LockException e) {
       errorMessage = "FAILED: Error in acquiring locks: " + e.getMessage();
       SQLState = ErrorMsg.findSQLState(e.getMessage());
