@@ -5,6 +5,10 @@ select key from src where false;
 select key from src where false;
 
 explain extended
+select count(key) from srcpart where 1=2 group by key;
+select count(key) from srcpart where 1=2 group by key;
+
+explain extended
 select * from (select key from src where false) a left outer join (select key from srcpart limit 0) b on a.key=b.key;
 select * from (select key from src where false) a left outer join (select key from srcpart limit 0) b on a.key=b.key;
 
