@@ -47,6 +47,7 @@ import org.apache.hadoop.security.SaslRpcServer.AuthMethod;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.UserGroupInformation.AuthenticationMethod;
 import org.apache.hadoop.security.authorize.AuthorizationException;
+import org.apache.hadoop.security.authorize.DefaultImpersonationProvider;
 import org.apache.hadoop.security.authorize.ProxyUsers;
 import org.apache.hadoop.security.token.SecretManager.InvalidToken;
 import org.apache.hadoop.security.token.Token;
@@ -129,7 +130,7 @@ public class TestHadoop20SAuthBridge extends TestCase {
     }
     builder.append("127.0.1.1,");
     builder.append(InetAddress.getLocalHost().getCanonicalHostName());
-    conf.setStrings(ProxyUsers.getProxySuperuserIpConfKey(superUserShortName),
+    conf.setStrings(DefaultImpersonationProvider.getProxySuperuserIpConfKey(superUserShortName),
         builder.toString());
   }
 
@@ -292,7 +293,7 @@ public class TestHadoop20SAuthBridge extends TestCase {
   private void setGroupsInConf(String[] groupNames, String proxyUserName)
   throws IOException {
    conf.set(
-      ProxyUsers.getProxySuperuserGroupConfKey(proxyUserName),
+       DefaultImpersonationProvider.getProxySuperuserGroupConfKey(proxyUserName),
       StringUtils.join(",", Arrays.asList(groupNames)));
     configureSuperUserIPAddresses(conf, proxyUserName);
     ProxyUsers.refreshSuperUserGroupsConfiguration(conf);
