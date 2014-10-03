@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -60,7 +59,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.util.ReflectionUtils;
-import org.apache.tez.dag.api.event.VertexState;
 import org.apache.tez.runtime.api.InputInitializerContext;
 import org.apache.tez.runtime.api.events.InputInitializerEvent;
 
@@ -79,13 +77,12 @@ public class DynamicPartitionPruner {
 
   private final BytesWritable writable = new BytesWritable();
 
-  private final BlockingQueue<Object> queue = new LinkedBlockingQueue<Object>();
-
-  private final Set<String> sourcesWaitingForEvents = new HashSet<String>();
+  private final BlockingQueue<InputInitializerEvent> queue =
+      new LinkedBlockingQueue<InputInitializerEvent>();
 
   private int sourceInfoCount = 0;
 
-  private final Object endOfEvents = new Object();
+  private InputInitializerContext context;
 
   public DynamicPartitionPruner() {
   }
@@ -94,21 +91,8 @@ public class DynamicPartitionPruner {
       throws SerDeException, IOException,
       InterruptedException, HiveException {
 
-    synchronized(sourcesWaitingForEvents) {
-      initialize(work, jobConf);
-
-      if (sourcesWaitingForEvents.isEmpty()) {
-        return;
-      }
-
-      Set<VertexState> states = Collections.singleton(VertexState.SUCCEEDED);
-      for (String source : sourcesWaitingForEvents) {
-        // we need to get state transition updates for the vertices that will send
-        // events to us. once we have received all events and a vertex has succeeded,
-        // we can move to do the pruning.
-        context.registerForVertexStateUpdates(source, states);
-      }
-    }
+    this.context = context;
+    this.initialize(work, jobConf);
 
     LOG.info("Waiting for events (" + sourceInfoCount + " items) ...");
     // synchronous event processing loop. Won't return until all events have
@@ -118,7 +102,7 @@ public class DynamicPartitionPruner {
     LOG.info("Ok to proceed.");
   }
 
-  public BlockingQueue<Object> getQueue() {
+  public BlockingQueue<InputInitializerEvent> getQueue() {
     return queue;
   }
 
@@ -127,14 +111,11 @@ public class DynamicPartitionPruner {
     sourceInfoCount = 0;
   }
 
-  public void initialize(MapWork work, JobConf jobConf) throws SerDeException {
+  private void initialize(MapWork work, JobConf jobConf) throws SerDeException {
     this.clear();
     Map<String, SourceInfo> columnMap = new HashMap<String, SourceInfo>();
-    Set<String> sources = work.getEventSourceTableDescMap().keySet();
 
-    sourcesWaitingForEvents.addAll(sources);
-
-    for (String s : sources) {
+    for (String s : work.getEventSourceTableDescMap().keySet()) {
       List<TableDesc> tables = work.getEventSourceTableDescMap().get(s);
       List<String> columnNames = work.getEventSourceColumnNameMap().get(s);
       List<ExprNodeDesc> partKeyExprs = work.getEventSourcePartKeyExprMap().get(s);
@@ -296,30 +277,46 @@ public class DynamicPartitionPruner {
 
   private void processEvents() throws SerDeException, IOException, InterruptedException {
     int eventCount = 0;
+    int neededEvents = getExpectedNumberOfEvents();
 
-    while (true) {
-      Object element = queue.take();
-
-      if (element == endOfEvents) {
-        // we're done processing events
-        break;
-      }
-
-      InputInitializerEvent event = (InputInitializerEvent) element;
-
+    while (neededEvents > eventCount) {
+      InputInitializerEvent event = queue.take();
       LOG.info("Input event: " + event.getTargetInputName() + ", " + event.getTargetVertexName()
           + ", " + (event.getUserPayload().limit() - event.getUserPayload().position()));
-      processPayload(event.getUserPayload(), event.getSourceVertexName());
+      processPayload(event.getUserPayload());
       eventCount += 1;
+      neededEvents = getExpectedNumberOfEvents();
+      LOG.info("Needed events: " + neededEvents + ", received events: " + eventCount);
     }
-    LOG.info("Received events: " + eventCount);
+  }
+
+  private int getExpectedNumberOfEvents() throws InterruptedException {
+    int neededEvents = 0;
+
+    boolean notInitialized;
+    do {
+      neededEvents = 0;
+      notInitialized = false;
+      for (String s : sourceInfoMap.keySet()) {
+        int multiplier = sourceInfoMap.get(s).size();
+        int taskNum = context.getVertexNumTasks(s);
+        LOG.info("Vertex " + s + " has " + taskNum + " events.");
+        if (taskNum < 0) {
+          notInitialized = true;
+          Thread.sleep(10);
+          continue;
+        }
+        neededEvents += (taskNum * multiplier);
+      }
+    } while (notInitialized);
+
+    return neededEvents;
   }
 
   @SuppressWarnings("deprecation")
-  private String processPayload(ByteBuffer payload, String sourceName) throws SerDeException,
-      IOException {
-
+  private String processPayload(ByteBuffer payload) throws SerDeException, IOException {
     DataInputStream in = new DataInputStream(new ByteBufferBackedInputStream(payload));
+    String sourceName = in.readUTF();
     String columnName = in.readUTF();
     boolean skip = in.readBoolean();
 
@@ -393,26 +390,4 @@ public class DynamicPartitionPruner {
     }
   }
 
-  public void addEvent(InputInitializerEvent event) {
-    synchronized(sourcesWaitingForEvents) {
-      if (sourcesWaitingForEvents.contains(event.getSourceVertexName())) {
-          queue.offer(event);
-      }
-    }
-  }
-
-  public void processVertex(String name) {
-    LOG.info("Vertex succeeded: " + name);
-
-    synchronized(sourcesWaitingForEvents) {
-      sourcesWaitingForEvents.remove(name);
-
-      if (sourcesWaitingForEvents.isEmpty()) {
-        // we've got what we need; mark the queue
-        queue.offer(endOfEvents);
-      } else {
-        LOG.info("Waiting for " + sourcesWaitingForEvents.size() + " events.");
-      }
-    }
-  }
 }

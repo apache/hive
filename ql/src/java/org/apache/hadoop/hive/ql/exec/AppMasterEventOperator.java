@@ -60,6 +60,9 @@ public class AppMasterEventOperator extends Operator<AppMasterEventDesc> {
   protected void initDataBuffer(boolean skipPruning) throws HiveException {
     buffer = new DataOutputBuffer();
     try {
+      // where does this go to?
+      buffer.writeUTF(((TezContext) TezContext.get()).getTezProcessorContext().getTaskVertexName());
+
       // add any other header info
       getConf().writeEventHeader(buffer);
 
