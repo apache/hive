@@ -23,6 +23,7 @@ import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
+
 import javax.security.auth.login.LoginException;
 import javax.security.sasl.Sasl;
 
@@ -31,6 +32,7 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.security.authentication.util.KerberosName;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.thrift.ThriftCLIService;
 import org.apache.thrift.TProcessorFactory;
@@ -289,7 +291,9 @@ public class HiveAuthFactory {
     try {
       UserGroupInformation sessionUgi;
       if (ShimLoader.getHadoopShims().isSecurityEnabled()) {
-        sessionUgi = ShimLoader.getHadoopShims().createProxyUser(realUser);
+    	KerberosName kerbName = new KerberosName(realUser);
+    	String shortPrincipalName = kerbName.getServiceName();
+        sessionUgi = ShimLoader.getHadoopShims().createProxyUser(shortPrincipalName);
       } else {
         sessionUgi = ShimLoader.getHadoopShims().createRemoteUser(realUser, null);
       }
@@ -302,5 +306,5 @@ public class HiveAuthFactory {
         "Failed to validate proxy privilege of " + realUser + " for " + proxyUser, e);
     }
   }
-
+  
 }
