@@ -638,10 +638,6 @@
                   <pattern>com.esotericsoftware</pattern>
                   <shadedPattern>org.apache.hive.com.esotericsoftware</shadedPattern>
                 </relocation>
-                <relocation>
-                  <pattern>org.codehaus.jackson</pattern>
-                  <shadedPattern>org.apache.hive.org.codehaus.jackson</shadedPattern>
-                </relocation>
               </relocations>
             </configuration>
           </execution>
