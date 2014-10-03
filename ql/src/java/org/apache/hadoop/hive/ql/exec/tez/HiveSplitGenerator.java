@@ -38,8 +38,9 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapreduce.split.TezMapReduceSplitsGrouper;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.tez.common.TezUtils;
-import org.apache.tez.dag.api.VertexLocationHint;
 import org.apache.tez.dag.api.TaskLocationHint;
+import org.apache.tez.dag.api.VertexLocationHint;
+import org.apache.tez.dag.api.event.VertexStateUpdate;
 import org.apache.tez.mapreduce.hadoop.InputSplitInfoMem;
 import org.apache.tez.mapreduce.hadoop.MRInputHelpers;
 import org.apache.tez.mapreduce.protos.MRRuntimeProtos.MRInputUserPayloadProto;
@@ -243,9 +244,14 @@ public class HiveSplitGenerator extends InputInitializer {
   }
 
   @Override
+  public void onVertexStateUpdated(VertexStateUpdate stateUpdate) {
+    pruner.processVertex(stateUpdate.getVertexName());
+  }
+
+  @Override
   public void handleInputInitializerEvent(List<InputInitializerEvent> events) throws Exception {
     for (InputInitializerEvent e : events) {
-      pruner.getQueue().put(e);
+      pruner.addEvent(e);
     }
   }
 }
