@@ -430,7 +430,8 @@ public class Driver implements CommandProcessor {
       sem.validate();
       perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.ANALYZE);
 
-      plan = new QueryPlan(command, sem, perfLogger.getStartTime(PerfLogger.DRIVER_RUN), queryId);
+      plan = new QueryPlan(command, sem, perfLogger.getStartTime(PerfLogger.DRIVER_RUN), queryId,
+        SessionState.get().getCommandType());
 
       String queryStr = plan.getQueryStr();
       conf.setVar(HiveConf.ConfVars.HIVEQUERYSTRING, queryStr);
