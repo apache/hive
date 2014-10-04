@@ -306,15 +306,15 @@ POSTHOOK: Input: default@outputtbl1@ds=17
 POSTHOOK: Input: default@outputtbl1@ds=18
 POSTHOOK: Input: default@outputtbl1@ds=28
 #### A masked pattern was here ####
-1	1	13
-1	1	13
-2	1	13
-2	1	13
+1	1	11
+1	1	11
+2	1	12
+2	1	12
 3	1	13
 3	1	13
-7	1	13
-7	1	13
-8	1	28
-8	1	28
+7	1	17
+7	1	17
+8	1	18
+8	1	18
 8	1	28
 8	1	28

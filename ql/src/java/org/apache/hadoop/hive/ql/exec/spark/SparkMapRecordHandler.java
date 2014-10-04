@@ -88,7 +88,6 @@ public class SparkMapRecordHandler extends SparkRecordHandler {
       }
       mo.setConf(mrwork);
       l4j.info("Main input name is " + mrwork.getName());
-      jc.set(Utilities.INPUT_NAME, mrwork.getName());
       // initialize map operator
       mo.setChildren(job);
       l4j.info(mo.dump(0));
