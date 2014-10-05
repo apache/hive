@@ -42,19 +42,25 @@ STAGE PLANS:
 
 PREHOOK: query: select * from src where key = '238' limit 0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: select * from src where key = '238' limit 0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 PREHOOK: query: select src.key, count(src.value) from src group by src.key limit 0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: select src.key, count(src.value) from src group by src.key limit 0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 PREHOOK: query: select * from ( select key from src limit 3) sq1 limit 0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: select * from ( select key from src limit 3) sq1 limit 0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
 #### A masked pattern was here ####

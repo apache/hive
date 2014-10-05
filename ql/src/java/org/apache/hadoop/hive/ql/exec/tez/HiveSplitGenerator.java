@@ -38,8 +38,9 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapreduce.split.TezMapReduceSplitsGrouper;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.tez.common.TezUtils;
-import org.apache.tez.dag.api.VertexLocationHint;
 import org.apache.tez.dag.api.TaskLocationHint;
+import org.apache.tez.dag.api.VertexLocationHint;
+import org.apache.tez.dag.api.event.VertexStateUpdate;
 import org.apache.tez.mapreduce.hadoop.InputSplitInfoMem;
 import org.apache.tez.mapreduce.hadoop.MRInputHelpers;
 import org.apache.tez.mapreduce.protos.MRRuntimeProtos.MRInputUserPayloadProto;
@@ -152,8 +153,21 @@ public class HiveSplitGenerator extends InputInitializer {
   public static Multimap<Integer, InputSplit> generateGroupedSplits(JobConf jobConf,
       Configuration conf, InputSplit[] splits, float waves, int availableSlots)
       throws Exception {
+    return generateGroupedSplits(jobConf, conf, splits, waves, availableSlots, null);
+  }
 
-    MapWork work = Utilities.getMapWork(jobConf);
+  public static Multimap<Integer, InputSplit> generateGroupedSplits(JobConf jobConf,
+      Configuration conf, InputSplit[] splits, float waves, int availableSlots,
+      String inputName) throws Exception {
+
+    MapWork work = null;
+    if (inputName != null) {
+      work = (MapWork) Utilities.getMergeWork(jobConf, inputName);
+      // work can still be null if there is no merge work for this input
+    }
+    if (work == null) {
+      work = Utilities.getMapWork(jobConf);
+    }
 
     Multimap<Integer, InputSplit> bucketSplitMultiMap =
         ArrayListMultimap.<Integer, InputSplit> create();
@@ -230,9 +244,14 @@ public class HiveSplitGenerator extends InputInitializer {
   }
 
   @Override
+  public void onVertexStateUpdated(VertexStateUpdate stateUpdate) {
+    pruner.processVertex(stateUpdate.getVertexName());
+  }
+
+  @Override
   public void handleInputInitializerEvent(List<InputInitializerEvent> events) throws Exception {
     for (InputInitializerEvent e : events) {
-      pruner.getQueue().put(e);
+      pruner.addEvent(e);
     }
   }
 }

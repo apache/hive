@@ -918,4 +918,14 @@ public class Hadoop20Shims implements HadoopShims {
   public boolean hasStickyBit(FsPermission permission) {
     return false;   // not supported
   }
+
+  @Override
+  public boolean supportTrashFeature() {
+    return false;
+  }
+
+  @Override
+  public Path getCurrentTrashPath(Configuration conf, FileSystem fs) {
+    return null;
+  }
 }

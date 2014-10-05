@@ -115,7 +115,7 @@
     <groovy.version>2.1.6</groovy.version>
     <hadoop-20.version>0.20.2</hadoop-20.version>
     <hadoop-20S.version>1.2.1</hadoop-20S.version>
-    <hadoop-23.version>2.4.0</hadoop-23.version>
+    <hadoop-23.version>2.5.0</hadoop-23.version>
     <hadoop.bin.path>${basedir}/${hive.path.to.root}/testutils/hadoop</hadoop.bin.path>
     <hbase.hadoop1.version>0.98.3-hadoop1</hbase.hadoop1.version>
     <hbase.hadoop2.version>0.98.3-hadoop2</hbase.hadoop2.version>
@@ -151,7 +151,7 @@
     <stax.version>1.0.1</stax.version>
     <slf4j.version>1.7.5</slf4j.version>
     <ST4.version>4.0.4</ST4.version>
-    <tez.version>0.5.0</tez.version>
+    <tez.version>0.5.1</tez.version>
     <super-csv.version>2.2.0</super-csv.version>
     <spark.version>1.2.0-SNAPSHOT</spark.version>
     <scala.binary.version>2.10</scala.binary.version>
@@ -982,6 +982,11 @@
         <dependencies>
           <dependency>
             <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-client</artifactId>
+            <version>${hadoop-20S.version}</version>
+          </dependency>
+          <dependency>
+            <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-core</artifactId>
             <version>${hadoop-20S.version}</version>
           </dependency>
@@ -1022,6 +1027,11 @@
       <id>hadoop-2</id>
       <dependencyManagement>
         <dependencies>
+          <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-client</artifactId>
+            <version>${hadoop-23.version}</version>
+          </dependency>
           <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-common</artifactId>

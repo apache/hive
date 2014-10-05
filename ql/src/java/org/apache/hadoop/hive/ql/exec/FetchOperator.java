@@ -165,7 +165,7 @@ public class FetchOperator implements Serializable {
 
   private void setupExecContext() {
     if (hasVC || work.getSplitSample() != null) {
-      context = new ExecMapperContext();
+      context = new ExecMapperContext(job);
       if (operator != null) {
         operator.setExecContext(context);
       }

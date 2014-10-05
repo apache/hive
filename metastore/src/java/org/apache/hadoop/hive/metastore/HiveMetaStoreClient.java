@@ -28,7 +28,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.net.InetAddress;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -98,7 +97,6 @@ import org.apache.hadoop.hive.metastore.api.OpenTxnRequest;
 import org.apache.hadoop.hive.metastore.api.OpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PartitionEventType;
-import org.apache.hadoop.hive.metastore.api.PartitionSpec;
 import org.apache.hadoop.hive.metastore.api.PartitionsByExprRequest;
 import org.apache.hadoop.hive.metastore.api.PartitionsByExprResult;
 import org.apache.hadoop.hive.metastore.api.PartitionsStatsRequest;
@@ -122,7 +120,6 @@ import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
 import org.apache.hadoop.hive.metastore.api.UnlockRequest;
-import org.apache.hadoop.hive.metastore.partition.spec.CompositePartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.txn.TxnHandler;
 import org.apache.hadoop.hive.shims.HadoopShims;
@@ -763,18 +760,35 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   }
 
   /**
-   * @param name
-   * @param dbname
-   * @throws NoSuchObjectException
-   * @throws MetaException
-   * @throws TException
-   * @see org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface#drop_table(java.lang.String,
-   *      java.lang.String, boolean)
+   * {@inheritDoc}
+   * @see #dropTable(String, String, boolean, boolean, EnvironmentContext)
    */
   @Override
-  public void dropTable(String dbname, String name)
-      throws NoSuchObjectException, MetaException, TException {
-    dropTable(dbname, name, true, true, null);
+  public void dropTable(String dbname, String name, boolean deleteData,
+      boolean ignoreUnknownTab) throws MetaException, TException,
+      NoSuchObjectException, UnsupportedOperationException {
+    dropTable(dbname, name, deleteData, ignoreUnknownTab, null);
+  }
+
+  /**
+   * Drop the table and choose whether to save the data in the trash.
+   * @param ifPurge completely purge the table (skipping trash) while removing
+   *                data from warehouse
+   * @see #dropTable(String, String, boolean, boolean, EnvironmentContext)
+   */
+  @Override
+  public void dropTable(String dbname, String name, boolean deleteData,
+      boolean ignoreUnknownTab, boolean ifPurge)
+      throws MetaException, TException, NoSuchObjectException, UnsupportedOperationException {
+    //build new environmentContext with ifPurge;
+    EnvironmentContext envContext = null;
+    if(ifPurge){
+      Map<String, String> warehouseOptions = null;
+      warehouseOptions = new HashMap<String, String>();
+      warehouseOptions.put("ifPurge", "TRUE");
+      envContext = new EnvironmentContext(warehouseOptions);
+    }
+    dropTable(dbname, name, deleteData, ignoreUnknownTab, envContext);
   }
 
   /** {@inheritDoc} */
@@ -786,23 +800,37 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   }
 
   /**
+   * @see #dropTable(String, String, boolean, boolean, EnvironmentContext)
+   */
+  @Override
+  public void dropTable(String dbname, String name)
+      throws NoSuchObjectException, MetaException, TException {
+    dropTable(dbname, name, true, true, null);
+  }
+
+  /**
+   * Drop the table and choose whether to: delete the underlying table data;
+   * throw if the table doesn't exist; save the data in the trash.
+   *
    * @param dbname
    * @param name
    * @param deleteData
    *          delete the underlying data or just delete the table in metadata
-   * @throws NoSuchObjectException
+   * @param ignoreUnknownTab
+   *          don't throw if the requested table doesn't exist
+   * @param envContext
+   *          for communicating with thrift
    * @throws MetaException
+   *           could not drop table properly
+   * @throws NoSuchObjectException
+   *           the table wasn't found
    * @throws TException
+   *           a thrift communication error occurred
+   * @throws UnsupportedOperationException
+   *           dropping an index table is not allowed
    * @see org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface#drop_table(java.lang.String,
    *      java.lang.String, boolean)
    */
-  @Override
-  public void dropTable(String dbname, String name, boolean deleteData,
-      boolean ignoreUnknownTab) throws MetaException, TException,
-      NoSuchObjectException, UnsupportedOperationException {
-    dropTable(dbname, name, deleteData, ignoreUnknownTab, null);
-  }
-
   public void dropTable(String dbname, String name, boolean deleteData,
       boolean ignoreUnknownTab, EnvironmentContext envContext) throws MetaException, TException,
       NoSuchObjectException, UnsupportedOperationException {
@@ -1283,6 +1311,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   }
 
   /** {@inheritDoc} */
+  @Override
   public boolean setPartitionColumnStatistics(SetPartitionsStatsRequest request)
     throws NoSuchObjectException, InvalidObjectException, MetaException, TException,
     InvalidInputException{
@@ -1659,7 +1688,12 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
 
   @Override
   public ValidTxnList getValidTxns() throws TException {
-    return TxnHandler.createValidTxnList(client.get_open_txns());
+    return TxnHandler.createValidTxnList(client.get_open_txns(), 0);
+  }
+
+  @Override
+  public ValidTxnList getValidTxns(long currentTxn) throws TException {
+    return TxnHandler.createValidTxnList(client.get_open_txns(), currentTxn);
   }
 
   @Override

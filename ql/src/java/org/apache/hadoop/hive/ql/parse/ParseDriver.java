@@ -131,7 +131,7 @@ public class ParseDriver {
    * so that the graph walking algorithms and the rules framework defined in
    * ql.lib can be used with the AST Nodes.
    */
-  static final TreeAdaptor adaptor = new CommonTreeAdaptor() {
+  public static final TreeAdaptor adaptor = new CommonTreeAdaptor() {
     /**
      * Creates an ASTNode for the given token. The ASTNode is a wrapper around
      * antlr's CommonTree class that implements the Node interface.

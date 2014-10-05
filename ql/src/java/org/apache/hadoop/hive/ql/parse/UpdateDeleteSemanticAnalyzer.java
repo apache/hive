@@ -17,6 +17,13 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.Context;
@@ -27,17 +34,10 @@ import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.session.SessionState;
-
-
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 
 /**
@@ -128,11 +128,16 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
     Table mTable;
     try {
       mTable = db.getTable(tableName[0], tableName[1]);
+    } catch (InvalidTableException e) {
+      LOG.error("Failed to find table " + getDotName(tableName) + " got exception "
+          + e.getMessage());
+      throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(getDotName(tableName)), e);
     } catch (HiveException e) {
-      LOG.error("Failed to find table " + getDotName(tableName) + " got exception " +
-          e.getMessage());
-      throw new SemanticException(ErrorMsg.INVALID_TABLE, getDotName(tableName));
+      LOG.error("Failed to find table " + getDotName(tableName) + " got exception "
+          + e.getMessage());
+      throw new SemanticException(e.getMessage(), e);
     }
+
     List<FieldSchema> partCols = mTable.getPartCols();
 
     rewrittenQueryStr.append("insert into table ");
@@ -343,8 +348,10 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
 
       // Add the setRCols to the input list
       for (String colName : setRCols) {
-        columnAccessInfo.add(Table.getCompleteName(mTable.getDbName(), mTable.getTableName()),
+        if(columnAccessInfo != null) {//assuming this means we are not doing Auth
+          columnAccessInfo.add(Table.getCompleteName(mTable.getDbName(), mTable.getTableName()),
             colName);
+        }
       }
     }
 
@@ -386,7 +393,7 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
       setRCols.add(colName.getText());
     } else if (node.getChildren() != null) {
       for (Node n : node.getChildren()) {
-        addSetRCols(node, setRCols);
+        addSetRCols((ASTNode)n, setRCols);
       }
     }
   }

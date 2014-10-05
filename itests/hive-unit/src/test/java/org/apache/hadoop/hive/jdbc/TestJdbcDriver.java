@@ -1115,6 +1115,12 @@ public class TestJdbcDriver extends TestCase {
 
   }
 
+  public void testInvalidUrl() throws SQLException {
+    HiveDriver driver = new HiveDriver();
+
+    assertNull(driver.connect("jdbc:hive2://localhost:1000", null));
+  }
+
   private static void assertDpi(DriverPropertyInfo dpi, String name,
       String value) {
     assertEquals("Invalid DriverPropertyInfo name", name, dpi.name);

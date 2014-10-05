@@ -66,6 +66,8 @@ import org.apache.hadoop.util.StringUtils;
 public class ExecReducer extends MapReduceBase implements Reducer {
 
   private static final Log LOG = LogFactory.getLog("ExecReducer");
+  private static final boolean isInfoEnabled = LOG.isInfoEnabled();
+  private static final boolean isTraceEnabled = LOG.isTraceEnabled();
   private static final String PLAN_KEY = "__REDUCE_PLAN__";
 
   // used to log memory usage periodically
@@ -75,7 +77,6 @@ public class ExecReducer extends MapReduceBase implements Reducer {
   private final Deserializer[] inputValueDeserializer = new Deserializer[Byte.MAX_VALUE];
   private final Object[] valueObject = new Object[Byte.MAX_VALUE];
   private final List<Object> row = new ArrayList<Object>(Utilities.reduceFieldNameList.size());
-  private final boolean isLogInfoEnabled = LOG.isInfoEnabled();
 
   // TODO: move to DynamicSerDe when it's ready
   private Deserializer inputKeyDeserializer;
@@ -101,16 +102,18 @@ public class ExecReducer extends MapReduceBase implements Reducer {
     ObjectInspector[] valueObjectInspector = new ObjectInspector[Byte.MAX_VALUE];
     ObjectInspector keyObjectInspector;
 
-    LOG.info("maximum memory = " + memoryMXBean.getHeapMemoryUsage().getMax());
+    if (isInfoEnabled) {
+      LOG.info("maximum memory = " + memoryMXBean.getHeapMemoryUsage().getMax());
 
-    try {
-      LOG.info("conf classpath = "
-          + Arrays.asList(((URLClassLoader) job.getClassLoader()).getURLs()));
-      LOG.info("thread classpath = "
-          + Arrays.asList(((URLClassLoader) Thread.currentThread()
-          .getContextClassLoader()).getURLs()));
-    } catch (Exception e) {
-      LOG.info("cannot get classpath: " + e.getMessage());
+      try {
+        LOG.info("conf classpath = "
+            + Arrays.asList(((URLClassLoader) job.getClassLoader()).getURLs()));
+        LOG.info("thread classpath = "
+            + Arrays.asList(((URLClassLoader) Thread.currentThread()
+            .getContextClassLoader()).getURLs()));
+      } catch (Exception e) {
+        LOG.info("cannot get classpath: " + e.getMessage());
+      }
     }
     jc = job;
 
@@ -147,7 +150,6 @@ public class ExecReducer extends MapReduceBase implements Reducer {
         ArrayList<ObjectInspector> ois = new ArrayList<ObjectInspector>();
         ois.add(keyObjectInspector);
         ois.add(valueObjectInspector[tag]);
-        reducer.setGroupKeyObjectInspector(keyObjectInspector);
         rowObjectInspector[tag] = ObjectInspectorFactory
             .getStandardStructObjectInspector(Utilities.reduceFieldNameList, ois);
       }
@@ -202,7 +204,9 @@ public class ExecReducer extends MapReduceBase implements Reducer {
           groupKey = new BytesWritable();
         } else {
           // If a operator wants to do some work at the end of a group
-          LOG.trace("End Group");
+          if (isTraceEnabled) {
+            LOG.trace("End Group");
+          }
           reducer.endGroup();
         }
 
@@ -217,9 +221,11 @@ public class ExecReducer extends MapReduceBase implements Reducer {
         }
 
         groupKey.set(keyWritable.get(), 0, keyWritable.getSize());
-        LOG.trace("Start Group");
-        reducer.setGroupKeyObject(keyObject);
+        if (isTraceEnabled) {
+          LOG.trace("Start Group");
+        }
         reducer.startGroup();
+        reducer.setGroupKeyObject(keyObject);
       }
       // System.err.print(keyObject.toString());
       while (values.hasNext()) {
@@ -239,12 +245,14 @@ public class ExecReducer extends MapReduceBase implements Reducer {
         row.clear();
         row.add(keyObject);
         row.add(valueObject[tag]);
-        if (isLogInfoEnabled) {
+        if (isInfoEnabled) {
           cntr++;
           if (cntr == nextCntr) {
             long used_memory = memoryMXBean.getHeapMemoryUsage().getUsed();
-            LOG.info("ExecReducer: processing " + cntr
-                + " rows: used memory = " + used_memory);
+            if (isInfoEnabled) {
+              LOG.info("ExecReducer: processing " + cntr
+                  + " rows: used memory = " + used_memory);
+            }
             nextCntr = getNextCntr(cntr);
           }
         }
@@ -290,17 +298,19 @@ public class ExecReducer extends MapReduceBase implements Reducer {
   public void close() {
 
     // No row was processed
-    if (oc == null) {
+    if (oc == null && isTraceEnabled) {
       LOG.trace("Close called without any rows processed");
     }
 
     try {
       if (groupKey != null) {
         // If a operator wants to do some work at the end of a group
-        LOG.trace("End Group");
+        if (isTraceEnabled) {
+          LOG.trace("End Group");
+        }
         reducer.endGroup();
       }
-      if (isLogInfoEnabled) {
+      if (isInfoEnabled) {
         LOG.info("ExecReducer: processed " + cntr + " rows: used memory = "
             + memoryMXBean.getHeapMemoryUsage().getUsed());
       }

@@ -1,0 +1,21 @@
+PREHOOK: query: create table alter_partition_change_col_nonexist (c1 string, c2 decimal(10,0)) partitioned by (p1 string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@alter_partition_change_col_nonexist
+POSTHOOK: query: create table alter_partition_change_col_nonexist (c1 string, c2 decimal(10,0)) partitioned by (p1 string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@alter_partition_change_col_nonexist
+PREHOOK: query: alter table alter_partition_change_col_nonexist add partition (p1='abc')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@alter_partition_change_col_nonexist
+POSTHOOK: query: alter table alter_partition_change_col_nonexist add partition (p1='abc')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@alter_partition_change_col_nonexist
+POSTHOOK: Output: default@alter_partition_change_col_nonexist@p1=abc
+PREHOOK: query: -- should fail because of nonexistent column c3
+alter table alter_partition_change_col_nonexist change c3 c4 decimal(14,4)
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@alter_partition_change_col_nonexist
+PREHOOK: Output: default@alter_partition_change_col_nonexist
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Invalid column reference c3

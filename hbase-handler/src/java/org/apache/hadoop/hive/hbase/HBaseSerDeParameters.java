@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.hbase.ColumnMappings.ColumnMapping;
 import org.apache.hadoop.hive.hbase.struct.AvroHBaseValueFactory;
 import org.apache.hadoop.hive.hbase.struct.DefaultHBaseValueFactory;
 import org.apache.hadoop.hive.hbase.struct.HBaseValueFactory;
+import org.apache.hadoop.hive.hbase.struct.StructHBaseValueFactory;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.avro.AvroSerdeUtils;
@@ -204,11 +205,21 @@ public class HBaseSerDeParameters {
       for (int i = 0; i < columnMappings.size(); i++) {
         String serType = getSerializationType(conf, tbl, columnMappings.getColumnsMapping()[i]);
 
-        if (serType != null && serType.equals(AVRO_SERIALIZATION_TYPE)) {
+        if (AVRO_SERIALIZATION_TYPE.equals(serType)) {
           Schema schema = getSchema(conf, tbl, columnMappings.getColumnsMapping()[i]);
-          valueFactories.add(new AvroHBaseValueFactory(schema));
+          valueFactories.add(new AvroHBaseValueFactory(i, schema));
+        } else if (STRUCT_SERIALIZATION_TYPE.equals(serType)) {
+          String structValueClassName = tbl.getProperty(HBaseSerDe.HBASE_STRUCT_SERIALIZER_CLASS);
+
+          if (structValueClassName == null) {
+            throw new IllegalArgumentException(HBaseSerDe.HBASE_STRUCT_SERIALIZER_CLASS
+                + " must be set for hbase columns of type [" + STRUCT_SERIALIZATION_TYPE + "]");
+          }
+
+          Class<?> structValueClass = job.getClassByName(structValueClassName);
+          valueFactories.add(new StructHBaseValueFactory(i, structValueClass));
         } else {
-          valueFactories.add(new DefaultHBaseValueFactory());
+          valueFactories.add(new DefaultHBaseValueFactory(i));
         }
       }
     } catch (Exception e) {

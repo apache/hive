@@ -18,12 +18,15 @@
 
 package org.apache.hadoop.hive.ql.udf;
 
+import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
 
 /**
  * A UDF for testing, which evaluates the length of a string. This UDF uses Java
  * Primitive classes for parameters.
  */
+@Description(name = "testlength2",
+value = "_FUNC_(col) - UDF evaluates the length of the string and returns value as Java Integer")
 public class UDFTestLength2 extends UDF {
 
   public Integer evaluate(String s) {

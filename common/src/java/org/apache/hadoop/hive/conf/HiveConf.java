@@ -649,6 +649,9 @@ public class HiveConf extends Configuration {
     HIVEJOINCACHESIZE("hive.join.cache.size", 25000,
         "How many rows in the joining tables (except the streaming table) should be cached in memory."),
 
+    // CBO related
+    HIVE_CBO_ENABLED("hive.cbo.enable", false, "Flag to control enabling Cost Based Optimizations using Optiq framework."),
+
     // hive.mapjoin.bucket.cache.size has been replaced by hive.smbjoin.cache.row,
     // need to remove by hive .13. Also, do not change default (see SMB operator)
     HIVEMAPJOINBUCKETCACHESIZE("hive.mapjoin.bucket.cache.size", 100, ""),
@@ -1051,7 +1054,7 @@ public class HiveConf extends Configuration {
         "That means if reducer-num of the child RS is fixed (order by or forced bucketing) and small, it can make very slow, single MR.\n" +
         "The optimization will be automatically disabled if number of reducers would be less than specified value."),
 
-    HIVEOPTSORTDYNAMICPARTITION("hive.optimize.sort.dynamic.partition", true,
+    HIVEOPTSORTDYNAMICPARTITION("hive.optimize.sort.dynamic.partition", false,
         "When enabled dynamic partitioning column will be globally sorted.\n" +
         "This way we can keep only one record writer open for each partition value\n" +
         "in the reducer thereby reducing the memory pressure on reducers."),
@@ -1196,13 +1199,6 @@ public class HiveConf extends Configuration {
         "Average row size is computed from average column size of all columns in the row. In the absence\n" +
         "of column statistics and for variable length complex columns like map, the average number of\n" +
         "entries/values can be specified using this config."),
-    // to accurately compute statistics for GROUPBY map side parallelism needs to be known
-    HIVE_STATS_MAP_SIDE_PARALLELISM("hive.stats.map.parallelism", 1,
-        "Hive/Tez optimizer estimates the data size flowing through each of the operators.\n" +
-        "For GROUPBY operator, to accurately compute the data size map-side parallelism needs to\n" +
-        "be known. By default, this value is set to 1 since optimizer is not aware of the number of\n" +
-        "mappers during compile-time. This Hive config can be used to specify the number of mappers\n" +
-        "to be used for data size computation of GROUPBY operator."),
     // statistics annotation fetches stats for each partition, which can be expensive. turning
     // this off will result in basic sizes being fetched from namenode instead
     HIVE_STATS_FETCH_PARTITION_STATS("hive.stats.fetch.partition.stats", true,
@@ -1384,6 +1380,8 @@ public class HiveConf extends Configuration {
         "authorization manager class name to be used in the metastore for authorization.\n" +
         "The user defined authorization class should implement interface \n" +
         "org.apache.hadoop.hive.ql.security.authorization.HiveMetastoreAuthorizationProvider. "),
+    HIVE_METASTORE_AUTHORIZATION_AUTH_READS("hive.security.metastore.authorization.auth.reads", true,
+        "If this is true, metastore authorizer authorizes read actions on database, table"),
     HIVE_METASTORE_AUTHENTICATOR_MANAGER("hive.security.metastore.authenticator.manager",
         "org.apache.hadoop.hive.ql.security.HadoopDefaultMetastoreAuthenticator",
         "authenticator manager class name to be used in the metastore for authentication. \n" +
@@ -1479,10 +1477,10 @@ public class HiveConf extends Configuration {
     HIVE_INSERT_INTO_MULTILEVEL_DIRS("hive.insert.into.multilevel.dirs", false,
         "Where to insert into multilevel directories like\n" +
         "\"insert directory '/HIVEFT25686/chinna/' from table\""),
-    HIVE_WAREHOUSE_SUBDIR_INHERIT_PERMS("hive.warehouse.subdir.inherit.perms", false,
-        "Set this to true if the the table directories should inherit the\n" +
-        "permission of the warehouse or database directory instead of being created\n" +
-        "with the permissions derived from dfs umask"),
+    HIVE_WAREHOUSE_SUBDIR_INHERIT_PERMS("hive.warehouse.subdir.inherit.perms", true,
+        "Set this to false if the table directories should be created\n" +
+        "with the permissions derived from dfs umask instead of\n" +
+        "inheriting the permission of the warehouse or database directory."),
     HIVE_INSERT_INTO_EXTERNAL_TABLES("hive.insert.into.external.tables", true,
         "whether insert into external tables is allowed"),
 
@@ -1513,8 +1511,8 @@ public class HiveConf extends Configuration {
         "The parent node in ZooKeeper used by HiveServer2 when supporting dynamic service discovery."),
     // HiveServer2 global init file location
     HIVE_SERVER2_GLOBAL_INIT_FILE_LOCATION("hive.server2.global.init.file.location", "${env:HIVE_CONF_DIR}",
-        "The location of HS2 global init file (.hiverc).\n" +
-        "If the property is reset, the value must be a valid path where the init file is located."),
+        "Either the location of a HS2 global init file or a directory containing a .hiverc file. If the \n" +
+        "property is set, the value must be a valid path to an init file or directory where the init file is located."),
     HIVE_SERVER2_TRANSPORT_MODE("hive.server2.transport.mode", "binary", new StringSet("binary", "http"),
         "Transport mode of HiveServer2."),
     HIVE_SERVER2_THRIFT_BIND_HOST("hive.server2.thrift.bind.host", "",
@@ -1721,6 +1719,9 @@ public class HiveConf extends Configuration {
         "The default value is false."),
     HIVE_VECTORIZATION_REDUCE_ENABLED("hive.vectorized.execution.reduce.enabled", true,
             "This flag should be set to true to enable vectorized mode of the reduce-side of query execution.\n" +
+            "The default value is true."),
+    HIVE_VECTORIZATION_REDUCE_GROUPBY_ENABLED("hive.vectorized.execution.reduce.groupby.enabled", true,
+            "This flag should be set to true to enable vectorized mode of the reduce-side GROUP BY query execution.\n" +
             "The default value is true."),
     HIVE_VECTORIZATION_GROUPBY_CHECKINTERVAL("hive.vectorized.groupby.checkinterval", 100000,
         "Number of entries added to the group by aggregation hash before a recomputation of average entry size is performed."),

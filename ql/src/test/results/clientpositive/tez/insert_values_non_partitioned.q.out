@@ -10,7 +10,7 @@ PREHOOK: query: create table acid_ivnp(ti tinyint,
                  b boolean,
                  s string,
                  vc varchar(128),
-                 ch char(12)) clustered by (i) into 2 buckets stored as orc
+                 ch char(12)) clustered by (i) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@acid_ivnp
@@ -26,7 +26,7 @@ POSTHOOK: query: create table acid_ivnp(ti tinyint,
                  b boolean,
                  s string,
                  vc varchar(128),
-                 ch char(12)) clustered by (i) into 2 buckets stored as orc
+                 ch char(12)) clustered by (i) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@acid_ivnp
