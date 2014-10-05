@@ -76,7 +76,7 @@ public class FilterOperator extends Operator<FilterDesc> implements
       statsMap.put(Counter.FILTERED, filtered_count);
       statsMap.put(Counter.PASSED, passed_count);
       conditionInspector = null;
-      ioContext = IOContext.get(hconf.get(Utilities.INPUT_NAME));
+      ioContext = IOContext.get(hconf);
     } catch (Throwable e) {
       throw new HiveException(e);
     }

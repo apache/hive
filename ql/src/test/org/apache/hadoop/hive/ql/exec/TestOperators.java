@@ -331,7 +331,7 @@ public class TestOperators extends TestCase {
       Configuration hconf = new JobConf(TestOperators.class);
       HiveConf.setVar(hconf, HiveConf.ConfVars.HADOOPMAPFILENAME,
           "hdfs:///testDir/testFile");
-      IOContext.get(hconf.get(Utilities.INPUT_NAME)).setInputPath(
+      IOContext.get(hconf).setInputPath(
           new Path("hdfs:///testDir/testFile"));
 
       // initialize pathToAliases
