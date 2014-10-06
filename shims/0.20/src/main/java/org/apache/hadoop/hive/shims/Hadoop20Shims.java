@@ -59,6 +59,7 @@ import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.io.HiveIOExceptionHandlerUtil;
+import org.apache.hadoop.hive.shims.HadoopShims.KerberosNameShim;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapred.ClusterStatus;
 import org.apache.hadoop.mapred.FileInputFormat;
@@ -926,6 +927,12 @@ public class Hadoop20Shims implements HadoopShims {
 
   @Override
   public Path getCurrentTrashPath(Configuration conf, FileSystem fs) {
+    return null;
+  }
+
+  @Override
+  public KerberosNameShim getKerberosNameShim(String name) throws IOException {
+    // Not supported
     return null;
   }
 }
