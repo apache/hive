@@ -22,19 +22,14 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.hadoop.classification.InterfaceStability.Evolving;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
+import org.apache.hadoop.hive.common.classification.InterfaceStability.Unstable;
 
 /**
- * Represents the object on which privilege is being granted/revoked, and objects
- * being used in queries.
- *
- * Check the get* function documentation for information on what value it returns based on
- * the {@link HivePrivilegeObjectType}.
- *
+ * Represents the object on which privilege is being granted/revoked
  */
-@LimitedPrivate(value = { "Apache Argus (incubating)" })
-@Evolving
+@LimitedPrivate(value = { "" })
+@Unstable
 public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
 
   @Override
@@ -82,20 +77,9 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
     return o1.size() > o2.size() ? 1 : (o1.size() < o2.size() ? -1 : 0);
   }
 
-  /**
-   * Note that GLOBAL, PARTITION, COLUMN fields are populated only for Hive's old default
-   * authorization mode.
-   * When the authorization manager is an instance of HiveAuthorizerFactory, these types are not
-   * used.
-   */
   public enum HivePrivilegeObjectType {
     GLOBAL, DATABASE, TABLE_OR_VIEW, PARTITION, COLUMN, LOCAL_URI, DFS_URI, COMMAND_PARAMS, FUNCTION
-  };
-
-  /**
-   * When {@link HiveOperationType} is QUERY, this action type is set so that it is possible
-   * to determine if the action type on this object is an INSERT or INSERT_OVERWRITE
-   */
+  } ;
   public enum HivePrivObjectActionType {
     OTHER, INSERT, INSERT_OVERWRITE, UPDATE, DELETE
   };
@@ -155,9 +139,6 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
     return type;
   }
 
-  /**
-   * @return the db name if type is DATABASE, TABLE, or FUNCTION
-   */
   public String getDbname() {
     return dbname;
   }
@@ -169,10 +150,6 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
     return objectName;
   }
 
-  /**
-   * See javadoc of {@link HivePrivObjectActionType}
-   * @return action type
-   */
   public HivePrivObjectActionType getActionType() {
     return actionType;
   }
@@ -181,15 +158,12 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
     return commandParams;
   }
 
-  /**
-   * @return  partiton key information. Used only for old default authorization mode.
-   */
   public List<String> getPartKeys() {
     return partKeys;
   }
 
   /**
-   * Applicable columns in this object, when the type is {@link HivePrivilegeObjectType.TABLE}
+   * Applicable columns in this object
    * In case of DML read operations, this is the set of columns being used.
    * Column information is not set for DDL operations and for tables being written into
    * @return list of applicable columns

@@ -48,8 +48,7 @@ public class AvroHBaseValueFactory extends DefaultHBaseValueFactory {
    * 
    * @param schema the associated {@link Schema schema}
    * */
-  public AvroHBaseValueFactory(int fieldID, Schema schema) {
-    super(fieldID);
+  public AvroHBaseValueFactory(Schema schema) {
     this.schema = schema;
   }
 

@@ -19,14 +19,12 @@ package org.apache.hadoop.hive.contrib.udf.example;
 
 import java.util.List;
 
-import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
 
 /**
  * UDFExampleArraySum.
  *
  */
-@Description(name = "example_arraysum", value = "_FUNC_(expr) - Example UDAF that returns the sum")
 public class UDFExampleArraySum extends UDF {
 
   public Double evaluate(List<Double> a) {

@@ -534,188 +534,794 @@
                <object class="java.util.HashMap"> 
                 <void method="put"> 
                  <string>_col8</string> 
-                 <object id="ExprNodeConstantDesc0" class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                 <object class="org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc"> 
+                  <void property="children"> 
+                   <object class="java.util.ArrayList"> 
+                    <void method="add"> 
+                     <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                      <void property="typeInfo"> 
+                       <object idref="PrimitiveTypeInfo1"/> 
+                      </void> 
+                      <void property="value"> 
+                       <string></string> 
+                      </void> 
+                     </object> 
+                    </void> 
+                    <void method="add"> 
+                     <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                      <void property="typeInfo"> 
+                       <object idref="PrimitiveTypeInfo1"/> 
+                      </void> 
+                      <void property="value"> 
+                       <string>.*</string> 
+                      </void> 
+                     </object> 
+                    </void> 
+                   </object> 
+                  </void> 
+                  <void property="genericUDF"> 
+                   <object class="org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge"> 
+                    <void property="operator"> 
+                     <boolean>true</boolean> 
+                    </void> 
+                    <void property="udfClassName"> 
+                     <string>org.apache.hadoop.hive.ql.udf.UDFRegExp</string> 
+                    </void> 
+                    <void property="udfName"> 
+                     <string>rlike</string> 
+                    </void> 
+                   </object> 
+                  </void> 
                   <void property="typeInfo"> 
                    <object idref="PrimitiveTypeInfo0"/> 
-                  </void> 
-                  <void property="value"> 
-                   <boolean>true</boolean> 
                   </void> 
                  </object> 
                 </void> 
                 <void method="put"> 
                  <string>_col7</string> 
-                 <object id="ExprNodeConstantDesc1" class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                 <object class="org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc"> 
+                  <void property="children"> 
+                   <object class="java.util.ArrayList"> 
+                    <void method="add"> 
+                     <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                      <void property="typeInfo"> 
+                       <object idref="PrimitiveTypeInfo1"/> 
+                      </void> 
+                      <void property="value"> 
+                       <string>ab</string> 
+                      </void> 
+                     </object> 
+                    </void> 
+                    <void method="add"> 
+                     <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                      <void property="typeInfo"> 
+                       <object idref="PrimitiveTypeInfo1"/> 
+                      </void> 
+                      <void property="value"> 
+                       <string>a</string> 
+                      </void> 
+                     </object> 
+                    </void> 
+                   </object> 
+                  </void> 
+                  <void property="genericUDF"> 
+                   <object class="org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge"> 
+                    <void property="operator"> 
+                     <boolean>true</boolean> 
+                    </void> 
+                    <void property="udfClassName"> 
+                     <string>org.apache.hadoop.hive.ql.udf.UDFLike</string> 
+                    </void> 
+                    <void property="udfName"> 
+                     <string>like</string> 
+                    </void> 
+                   </object> 
+                  </void> 
                   <void property="typeInfo"> 
                    <object idref="PrimitiveTypeInfo0"/> 
-                  </void> 
-                  <void property="value"> 
-                   <boolean>false</boolean> 
                   </void> 
                  </object> 
                 </void> 
                 <void method="put"> 
                  <string>_col6</string> 
-                 <object id="ExprNodeConstantDesc2" class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                 <object class="org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc"> 
+                  <void property="children"> 
+                   <object class="java.util.ArrayList"> 
+                    <void method="add"> 
+                     <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                      <void property="typeInfo"> 
+                       <object idref="PrimitiveTypeInfo1"/> 
+                      </void> 
+                      <void property="value"> 
+                       <string>ab</string> 
+                      </void> 
+                     </object> 
+                    </void> 
+                    <void method="add"> 
+                     <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                      <void property="typeInfo"> 
+                       <object idref="PrimitiveTypeInfo1"/> 
+                      </void> 
+                      <void property="value"> 
+                       <string>_a%</string> 
+                      </void> 
+                     </object> 
+                    </void> 
+                   </object> 
+                  </void> 
+                  <void property="genericUDF"> 
+                   <object class="org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge"> 
+                    <void property="operator"> 
+                     <boolean>true</boolean> 
+                    </void> 
+                    <void property="udfClassName"> 
+                     <string>org.apache.hadoop.hive.ql.udf.UDFLike</string> 
+                    </void> 
+                    <void property="udfName"> 
+                     <string>like</string> 
+                    </void> 
+                   </object> 
+                  </void> 
                   <void property="typeInfo"> 
                    <object idref="PrimitiveTypeInfo0"/> 
-                  </void> 
-                  <void property="value"> 
-                   <boolean>false</boolean> 
                   </void> 
                  </object> 
                 </void> 
                 <void method="put"> 
                  <string>_col5</string> 
-                 <object id="ExprNodeConstantDesc3" class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                 <object class="org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc"> 
+                  <void property="children"> 
+                   <object class="java.util.ArrayList"> 
+                    <void method="add"> 
+                     <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                      <void property="typeInfo"> 
+                       <object idref="PrimitiveTypeInfo1"/> 
+                      </void> 
+                      <void property="value"> 
+                       <string>ab</string> 
+                      </void> 
+                     </object> 
+                    </void> 
+                    <void method="add"> 
+                     <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                      <void property="typeInfo"> 
+                       <object idref="PrimitiveTypeInfo1"/> 
+                      </void> 
+                      <void property="value"> 
+                       <string>\%\_</string> 
+                      </void> 
+                     </object> 
+                    </void> 
+                   </object> 
+                  </void> 
+                  <void property="genericUDF"> 
+                   <object class="org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge"> 
+                    <void property="operator"> 
+                     <boolean>true</boolean> 
+                    </void> 
+                    <void property="udfClassName"> 
+                     <string>org.apache.hadoop.hive.ql.udf.UDFLike</string> 
+                    </void> 
+                    <void property="udfName"> 
+                     <string>like</string> 
+                    </void> 
+                   </object> 
+                  </void> 
                   <void property="typeInfo"> 
                    <object idref="PrimitiveTypeInfo0"/> 
-                  </void> 
-                  <void property="value"> 
-                   <boolean>false</boolean> 
                   </void> 
                  </object> 
                 </void> 
                 <void method="put"> 
                  <string>_col4</string> 
-                 <object id="ExprNodeConstantDesc4" class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                 <object class="org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc"> 
+                  <void property="children"> 
+                   <object class="java.util.ArrayList"> 
+                    <void method="add"> 
+                     <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                      <void property="typeInfo"> 
+                       <object idref="PrimitiveTypeInfo1"/> 
+                      </void> 
+                      <void property="value"> 
+                       <string>%_</string> 
+                      </void> 
+                     </object> 
+                    </void> 
+                    <void method="add"> 
+                     <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                      <void property="typeInfo"> 
+                       <object idref="PrimitiveTypeInfo1"/> 
+                      </void> 
+                      <void property="value"> 
+                       <string>\%\_</string> 
+                      </void> 
+                     </object> 
+                    </void> 
+                   </object> 
+                  </void> 
+                  <void property="genericUDF"> 
+                   <object class="org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge"> 
+                    <void property="operator"> 
+                     <boolean>true</boolean> 
+                    </void> 
+                    <void property="udfClassName"> 
+                     <string>org.apache.hadoop.hive.ql.udf.UDFLike</string> 
+                    </void> 
+                    <void property="udfName"> 
+                     <string>like</string> 
+                    </void> 
+                   </object> 
+                  </void> 
                   <void property="typeInfo"> 
                    <object idref="PrimitiveTypeInfo0"/> 
-                  </void> 
-                  <void property="value"> 
-                   <boolean>true</boolean> 
                   </void> 
                  </object> 
                 </void> 
                 <void method="put"> 
                  <string>_col3</string> 
-                 <object id="ExprNodeConstantDesc5" class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                 <object class="org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc"> 
+                  <void property="children"> 
+                   <object class="java.util.ArrayList"> 
+                    <void method="add"> 
+                     <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                      <void property="typeInfo"> 
+                       <object idref="PrimitiveTypeInfo1"/> 
+                      </void> 
+                      <void property="value"> 
+                       <string>ab</string> 
+                      </void> 
+                     </object> 
+                    </void> 
+                    <void method="add"> 
+                     <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                      <void property="typeInfo"> 
+                       <object idref="PrimitiveTypeInfo1"/> 
+                      </void> 
+                      <void property="value"> 
+                       <string>%a_</string> 
+                      </void> 
+                     </object> 
+                    </void> 
+                   </object> 
+                  </void> 
+                  <void property="genericUDF"> 
+                   <object class="org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge"> 
+                    <void property="operator"> 
+                     <boolean>true</boolean> 
+                    </void> 
+                    <void property="udfClassName"> 
+                     <string>org.apache.hadoop.hive.ql.udf.UDFLike</string> 
+                    </void> 
+                    <void property="udfName"> 
+                     <string>like</string> 
+                    </void> 
+                   </object> 
+                  </void> 
                   <void property="typeInfo"> 
                    <object idref="PrimitiveTypeInfo0"/> 
-                  </void> 
-                  <void property="value"> 
-                   <boolean>true</boolean> 
                   </void> 
                  </object> 
                 </void> 
                 <void method="put"> 
                  <string>_col2</string> 
-                 <object id="ExprNodeConstantDesc6" class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                 <object class="org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc"> 
+                  <void property="children"> 
+                   <object class="java.util.ArrayList"> 
+                    <void method="add"> 
+                     <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                      <void property="typeInfo"> 
+                       <object idref="PrimitiveTypeInfo1"/> 
+                      </void> 
+                      <void property="value"> 
+                       <string>ab</string> 
+                      </void> 
+                     </object> 
+                    </void> 
+                    <void method="add"> 
+                     <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                      <void property="typeInfo"> 
+                       <object idref="PrimitiveTypeInfo1"/> 
+                      </void> 
+                      <void property="value"> 
+                       <string>%a%</string> 
+                      </void> 
+                     </object> 
+                    </void> 
+                   </object> 
+                  </void> 
+                  <void property="genericUDF"> 
+                   <object class="org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge"> 
+                    <void property="operator"> 
+                     <boolean>true</boolean> 
+                    </void> 
+                    <void property="udfClassName"> 
+                     <string>org.apache.hadoop.hive.ql.udf.UDFLike</string> 
+                    </void> 
+                    <void property="udfName"> 
+                     <string>like</string> 
+                    </void> 
+                   </object> 
+                  </void> 
                   <void property="typeInfo"> 
                    <object idref="PrimitiveTypeInfo0"/> 
-                  </void> 
-                  <void property="value"> 
-                   <boolean>true</boolean> 
                   </void> 
                  </object> 
                 </void> 
                 <void method="put"> 
                  <string>_col1</string> 
-                 <object id="ExprNodeConstantDesc7" class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                 <object class="org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc"> 
+                  <void property="children"> 
+                   <object class="java.util.ArrayList"> 
+                    <void method="add"> 
+                     <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                      <void property="typeInfo"> 
+                       <object idref="PrimitiveTypeInfo1"/> 
+                      </void> 
+                      <void property="value"> 
+                       <string>b</string> 
+                      </void> 
+                     </object> 
+                    </void> 
+                    <void method="add"> 
+                     <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                      <void property="typeInfo"> 
+                       <object idref="PrimitiveTypeInfo1"/> 
+                      </void> 
+                      <void property="value"> 
+                       <string>%a%</string> 
+                      </void> 
+                     </object> 
+                    </void> 
+                   </object> 
+                  </void> 
+                  <void property="genericUDF"> 
+                   <object class="org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge"> 
+                    <void property="operator"> 
+                     <boolean>true</boolean> 
+                    </void> 
+                    <void property="udfClassName"> 
+                     <string>org.apache.hadoop.hive.ql.udf.UDFLike</string> 
+                    </void> 
+                    <void property="udfName"> 
+                     <string>like</string> 
+                    </void> 
+                   </object> 
+                  </void> 
                   <void property="typeInfo"> 
                    <object idref="PrimitiveTypeInfo0"/> 
-                  </void> 
-                  <void property="value"> 
-                   <boolean>false</boolean> 
                   </void> 
                  </object> 
                 </void> 
                 <void method="put"> 
                  <string>_col9</string> 
-                 <object id="ExprNodeConstantDesc8" class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                 <object class="org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc"> 
+                  <void property="children"> 
+                   <object class="java.util.ArrayList"> 
+                    <void method="add"> 
+                     <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                      <void property="typeInfo"> 
+                       <object idref="PrimitiveTypeInfo1"/> 
+                      </void> 
+                      <void property="value"> 
+                       <string>a</string> 
+                      </void> 
+                     </object> 
+                    </void> 
+                    <void method="add"> 
+                     <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                      <void property="typeInfo"> 
+                       <object idref="PrimitiveTypeInfo1"/> 
+                      </void> 
+                      <void property="value"> 
+                       <string>[ab]</string> 
+                      </void> 
+                     </object> 
+                    </void> 
+                   </object> 
+                  </void> 
+                  <void property="genericUDF"> 
+                   <object class="org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge"> 
+                    <void property="operator"> 
+                     <boolean>true</boolean> 
+                    </void> 
+                    <void property="udfClassName"> 
+                     <string>org.apache.hadoop.hive.ql.udf.UDFRegExp</string> 
+                    </void> 
+                    <void property="udfName"> 
+                     <string>rlike</string> 
+                    </void> 
+                   </object> 
+                  </void> 
                   <void property="typeInfo"> 
                    <object idref="PrimitiveTypeInfo0"/> 
-                  </void> 
-                  <void property="value"> 
-                   <boolean>true</boolean> 
                   </void> 
                  </object> 
                 </void> 
                 <void method="put"> 
                  <string>_col13</string> 
-                 <object id="ExprNodeConstantDesc9" class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                 <object class="org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc"> 
+                  <void property="children"> 
+                   <object class="java.util.ArrayList"> 
+                    <void method="add"> 
+                     <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                      <void property="typeInfo"> 
+                       <object idref="PrimitiveTypeInfo1"/> 
+                      </void> 
+                      <void property="value"> 
+                       <string>abc</string> 
+                      </void> 
+                     </object> 
+                    </void> 
+                    <void method="add"> 
+                     <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                      <void property="typeInfo"> 
+                       <object idref="PrimitiveTypeInfo1"/> 
+                      </void> 
+                      <void property="value"> 
+                       <string>b</string> 
+                      </void> 
+                     </object> 
+                    </void> 
+                    <void method="add"> 
+                     <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                      <void property="typeInfo"> 
+                       <object idref="PrimitiveTypeInfo1"/> 
+                      </void> 
+                      <void property="value"> 
+                       <string>c</string> 
+                      </void> 
+                     </object> 
+                    </void> 
+                   </object> 
+                  </void> 
+                  <void property="genericUDF"> 
+                   <object class="org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge"> 
+                    <void property="udfClassName"> 
+                     <string>org.apache.hadoop.hive.ql.udf.UDFRegExpReplace</string> 
+                    </void> 
+                    <void property="udfName"> 
+                     <string>regexp_replace</string> 
+                    </void> 
+                   </object> 
+                  </void> 
                   <void property="typeInfo"> 
                    <object idref="PrimitiveTypeInfo1"/> 
-                  </void> 
-                  <void property="value"> 
-                   <string>acc</string> 
                   </void> 
                  </object> 
                 </void> 
                 <void method="put"> 
                  <string>_col12</string> 
-                 <object id="ExprNodeConstantDesc10" class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                 <object class="org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc"> 
+                  <void property="children"> 
+                   <object class="java.util.ArrayList"> 
+                    <void method="add"> 
+                     <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                      <void property="typeInfo"> 
+                       <object idref="PrimitiveTypeInfo1"/> 
+                      </void> 
+                      <void property="value"> 
+                       <string>hadoop</string> 
+                      </void> 
+                     </object> 
+                    </void> 
+                    <void method="add"> 
+                     <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                      <void property="typeInfo"> 
+                       <object idref="PrimitiveTypeInfo1"/> 
+                      </void> 
+                      <void property="value"> 
+                       <string>o*</string> 
+                      </void> 
+                     </object> 
+                    </void> 
+                   </object> 
+                  </void> 
+                  <void property="genericUDF"> 
+                   <object class="org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge"> 
+                    <void property="operator"> 
+                     <boolean>true</boolean> 
+                    </void> 
+                    <void property="udfClassName"> 
+                     <string>org.apache.hadoop.hive.ql.udf.UDFRegExp</string> 
+                    </void> 
+                    <void property="udfName"> 
+                     <string>rlike</string> 
+                    </void> 
+                   </object> 
+                  </void> 
                   <void property="typeInfo"> 
                    <object idref="PrimitiveTypeInfo0"/> 
-                  </void> 
-                  <void property="value"> 
-                   <boolean>true</boolean> 
                   </void> 
                  </object> 
                 </void> 
                 <void method="put"> 
                  <string>_col11</string> 
-                 <object id="ExprNodeConstantDesc11" class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                 <object class="org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc"> 
+                  <void property="children"> 
+                   <object class="java.util.ArrayList"> 
+                    <void method="add"> 
+                     <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                      <void property="typeInfo"> 
+                       <object idref="PrimitiveTypeInfo1"/> 
+                      </void> 
+                      <void property="value"> 
+                       <string>hadoop</string> 
+                      </void> 
+                     </object> 
+                    </void> 
+                    <void method="add"> 
+                     <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                      <void property="typeInfo"> 
+                       <object idref="PrimitiveTypeInfo1"/> 
+                      </void> 
+                      <void property="value"> 
+                       <string>[a-z]*</string> 
+                      </void> 
+                     </object> 
+                    </void> 
+                   </object> 
+                  </void> 
+                  <void property="genericUDF"> 
+                   <object class="org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge"> 
+                    <void property="operator"> 
+                     <boolean>true</boolean> 
+                    </void> 
+                    <void property="udfClassName"> 
+                     <string>org.apache.hadoop.hive.ql.udf.UDFRegExp</string> 
+                    </void> 
+                    <void property="udfName"> 
+                     <string>rlike</string> 
+                    </void> 
+                   </object> 
+                  </void> 
                   <void property="typeInfo"> 
                    <object idref="PrimitiveTypeInfo0"/> 
-                  </void> 
-                  <void property="value"> 
-                   <boolean>true</boolean> 
                   </void> 
                  </object> 
                 </void> 
                 <void method="put"> 
                  <string>_col10</string> 
-                 <object id="ExprNodeConstantDesc12" class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                 <object class="org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc"> 
+                  <void property="children"> 
+                   <object class="java.util.ArrayList"> 
+                    <void method="add"> 
+                     <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                      <void property="typeInfo"> 
+                       <object idref="PrimitiveTypeInfo1"/> 
+                      </void> 
+                      <void property="value"> 
+                       <string></string> 
+                      </void> 
+                     </object> 
+                    </void> 
+                    <void method="add"> 
+                     <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                      <void property="typeInfo"> 
+                       <object idref="PrimitiveTypeInfo1"/> 
+                      </void> 
+                      <void property="value"> 
+                       <string>[ab]</string> 
+                      </void> 
+                     </object> 
+                    </void> 
+                   </object> 
+                  </void> 
+                  <void property="genericUDF"> 
+                   <object class="org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge"> 
+                    <void property="operator"> 
+                     <boolean>true</boolean> 
+                    </void> 
+                    <void property="udfClassName"> 
+                     <string>org.apache.hadoop.hive.ql.udf.UDFRegExp</string> 
+                    </void> 
+                    <void property="udfName"> 
+                     <string>rlike</string> 
+                    </void> 
+                   </object> 
+                  </void> 
                   <void property="typeInfo"> 
                    <object idref="PrimitiveTypeInfo0"/> 
-                  </void> 
-                  <void property="value"> 
-                   <boolean>false</boolean> 
                   </void> 
                  </object> 
                 </void> 
                 <void method="put"> 
                  <string>_col16</string> 
-                 <object id="ExprNodeConstantDesc13" class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                 <object class="org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc"> 
+                  <void property="children"> 
+                   <object class="java.util.ArrayList"> 
+                    <void method="add"> 
+                     <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                      <void property="typeInfo"> 
+                       <object idref="PrimitiveTypeInfo1"/> 
+                      </void> 
+                      <void property="value"> 
+                       <string>hadoop</string> 
+                      </void> 
+                     </object> 
+                    </void> 
+                    <void method="add"> 
+                     <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                      <void property="typeInfo"> 
+                       <object idref="PrimitiveTypeInfo1"/> 
+                      </void> 
+                      <void property="value"> 
+                       <string>(.)[a-z]*</string> 
+                      </void> 
+                     </object> 
+                    </void> 
+                    <void method="add"> 
+                     <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                      <void property="typeInfo"> 
+                       <object idref="PrimitiveTypeInfo1"/> 
+                      </void> 
+                      <void property="value"> 
+                       <string>$1ive</string> 
+                      </void> 
+                     </object> 
+                    </void> 
+                   </object> 
+                  </void> 
+                  <void property="genericUDF"> 
+                   <object class="org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge"> 
+                    <void property="udfClassName"> 
+                     <string>org.apache.hadoop.hive.ql.udf.UDFRegExpReplace</string> 
+                    </void> 
+                    <void property="udfName"> 
+                     <string>regexp_replace</string> 
+                    </void> 
+                   </object> 
+                  </void> 
                   <void property="typeInfo"> 
                    <object idref="PrimitiveTypeInfo1"/> 
-                  </void> 
-                  <void property="value"> 
-                   <string>hive</string> 
                   </void> 
                  </object> 
                 </void> 
                 <void method="put"> 
                  <string>_col15</string> 
-                 <object id="ExprNodeConstantDesc14" class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                 <object class="org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc"> 
+                  <void property="children"> 
+                   <object class="java.util.ArrayList"> 
+                    <void method="add"> 
+                     <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                      <void property="typeInfo"> 
+                       <object idref="PrimitiveTypeInfo1"/> 
+                      </void> 
+                      <void property="value"> 
+                       <string>abbbb</string> 
+                      </void> 
+                     </object> 
+                    </void> 
+                    <void method="add"> 
+                     <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                      <void property="typeInfo"> 
+                       <object idref="PrimitiveTypeInfo1"/> 
+                      </void> 
+                      <void property="value"> 
+                       <string>bb</string> 
+                      </void> 
+                     </object> 
+                    </void> 
+                    <void method="add"> 
+                     <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                      <void property="typeInfo"> 
+                       <object idref="PrimitiveTypeInfo1"/> 
+                      </void> 
+                      <void property="value"> 
+                       <string>b</string> 
+                      </void> 
+                     </object> 
+                    </void> 
+                   </object> 
+                  </void> 
+                  <void property="genericUDF"> 
+                   <object class="org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge"> 
+                    <void property="udfClassName"> 
+                     <string>org.apache.hadoop.hive.ql.udf.UDFRegExpReplace</string> 
+                    </void> 
+                    <void property="udfName"> 
+                     <string>regexp_replace</string> 
+                    </void> 
+                   </object> 
+                  </void> 
                   <void property="typeInfo"> 
                    <object idref="PrimitiveTypeInfo1"/> 
-                  </void> 
-                  <void property="value"> 
-                   <string>abb</string> 
                   </void> 
                  </object> 
                 </void> 
                 <void method="put"> 
                  <string>_col14</string> 
-                 <object id="ExprNodeConstantDesc15" class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                 <object class="org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc"> 
+                  <void property="children"> 
+                   <object class="java.util.ArrayList"> 
+                    <void method="add"> 
+                     <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                      <void property="typeInfo"> 
+                       <object idref="PrimitiveTypeInfo1"/> 
+                      </void> 
+                      <void property="value"> 
+                       <string>abc</string> 
+                      </void> 
+                     </object> 
+                    </void> 
+                    <void method="add"> 
+                     <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                      <void property="typeInfo"> 
+                       <object idref="PrimitiveTypeInfo1"/> 
+                      </void> 
+                      <void property="value"> 
+                       <string>z</string> 
+                      </void> 
+                     </object> 
+                    </void> 
+                    <void method="add"> 
+                     <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                      <void property="typeInfo"> 
+                       <object idref="PrimitiveTypeInfo1"/> 
+                      </void> 
+                      <void property="value"> 
+                       <string>a</string> 
+                      </void> 
+                     </object> 
+                    </void> 
+                   </object> 
+                  </void> 
+                  <void property="genericUDF"> 
+                   <object class="org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge"> 
+                    <void property="udfClassName"> 
+                     <string>org.apache.hadoop.hive.ql.udf.UDFRegExpReplace</string> 
+                    </void> 
+                    <void property="udfName"> 
+                     <string>regexp_replace</string> 
+                    </void> 
+                   </object> 
+                  </void> 
                   <void property="typeInfo"> 
                    <object idref="PrimitiveTypeInfo1"/> 
-                  </void> 
-                  <void property="value"> 
-                   <string>abc</string> 
                   </void> 
                  </object> 
                 </void> 
                 <void method="put"> 
                  <string>_col0</string> 
-                 <object id="ExprNodeConstantDesc16" class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                 <object class="org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc"> 
+                  <void property="children"> 
+                   <object class="java.util.ArrayList"> 
+                    <void method="add"> 
+                     <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                      <void property="typeInfo"> 
+                       <object idref="PrimitiveTypeInfo1"/> 
+                      </void> 
+                      <void property="value"> 
+                       <string>a</string> 
+                      </void> 
+                     </object> 
+                    </void> 
+                    <void method="add"> 
+                     <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                      <void property="typeInfo"> 
+                       <object idref="PrimitiveTypeInfo1"/> 
+                      </void> 
+                      <void property="value"> 
+                       <string>%a%</string> 
+                      </void> 
+                     </object> 
+                    </void> 
+                   </object> 
+                  </void> 
+                  <void property="genericUDF"> 
+                   <object class="org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge"> 
+                    <void property="operator"> 
+                     <boolean>true</boolean> 
+                    </void> 
+                    <void property="udfClassName"> 
+                     <string>org.apache.hadoop.hive.ql.udf.UDFLike</string> 
+                    </void> 
+                    <void property="udfName"> 
+                     <string>like</string> 
+                    </void> 
+                   </object> 
+                  </void> 
                   <void property="typeInfo"> 
                    <object idref="PrimitiveTypeInfo0"/> 
-                  </void> 
-                  <void property="value"> 
-                   <boolean>true</boolean> 
                   </void> 
                  </object> 
                 </void> 
@@ -726,55 +1332,174 @@
                 <void property="colList"> 
                  <object class="java.util.ArrayList"> 
                   <void method="add"> 
-                   <object idref="ExprNodeConstantDesc16"/> 
+                   <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                    <void property="typeInfo"> 
+                     <object idref="PrimitiveTypeInfo0"/> 
+                    </void> 
+                    <void property="value"> 
+                     <boolean>true</boolean> 
+                    </void> 
+                   </object> 
                   </void> 
                   <void method="add"> 
-                   <object idref="ExprNodeConstantDesc7"/> 
+                   <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                    <void property="typeInfo"> 
+                     <object idref="PrimitiveTypeInfo0"/> 
+                    </void> 
+                    <void property="value"> 
+                     <boolean>false</boolean> 
+                    </void> 
+                   </object> 
                   </void> 
                   <void method="add"> 
-                   <object idref="ExprNodeConstantDesc6"/> 
+                   <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                    <void property="typeInfo"> 
+                     <object idref="PrimitiveTypeInfo0"/> 
+                    </void> 
+                    <void property="value"> 
+                     <boolean>true</boolean> 
+                    </void> 
+                   </object> 
                   </void> 
                   <void method="add"> 
-                   <object idref="ExprNodeConstantDesc5"/> 
+                   <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                    <void property="typeInfo"> 
+                     <object idref="PrimitiveTypeInfo0"/> 
+                    </void> 
+                    <void property="value"> 
+                     <boolean>true</boolean> 
+                    </void> 
+                   </object> 
                   </void> 
                   <void method="add"> 
-                   <object idref="ExprNodeConstantDesc4"/> 
+                   <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                    <void property="typeInfo"> 
+                     <object idref="PrimitiveTypeInfo0"/> 
+                    </void> 
+                    <void property="value"> 
+                     <boolean>true</boolean> 
+                    </void> 
+                   </object> 
                   </void> 
                   <void method="add"> 
-                   <object idref="ExprNodeConstantDesc3"/> 
+                   <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                    <void property="typeInfo"> 
+                     <object idref="PrimitiveTypeInfo0"/> 
+                    </void> 
+                    <void property="value"> 
+                     <boolean>false</boolean> 
+                    </void> 
+                   </object> 
                   </void> 
                   <void method="add"> 
-                   <object idref="ExprNodeConstantDesc2"/> 
+                   <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                    <void property="typeInfo"> 
+                     <object idref="PrimitiveTypeInfo0"/> 
+                    </void> 
+                    <void property="value"> 
+                     <boolean>false</boolean> 
+                    </void> 
+                   </object> 
                   </void> 
                   <void method="add"> 
-                   <object idref="ExprNodeConstantDesc1"/> 
+                   <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                    <void property="typeInfo"> 
+                     <object idref="PrimitiveTypeInfo0"/> 
+                    </void> 
+                    <void property="value"> 
+                     <boolean>false</boolean> 
+                    </void> 
+                   </object> 
                   </void> 
                   <void method="add"> 
-                   <object idref="ExprNodeConstantDesc0"/> 
+                   <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                    <void property="typeInfo"> 
+                     <object idref="PrimitiveTypeInfo0"/> 
+                    </void> 
+                    <void property="value"> 
+                     <boolean>true</boolean> 
+                    </void> 
+                   </object> 
                   </void> 
                   <void method="add"> 
-                   <object idref="ExprNodeConstantDesc8"/> 
+                   <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                    <void property="typeInfo"> 
+                     <object idref="PrimitiveTypeInfo0"/> 
+                    </void> 
+                    <void property="value"> 
+                     <boolean>true</boolean> 
+                    </void> 
+                   </object> 
                   </void> 
                   <void method="add"> 
-                   <object idref="ExprNodeConstantDesc12"/> 
+                   <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                    <void property="typeInfo"> 
+                     <object idref="PrimitiveTypeInfo0"/> 
+                    </void> 
+                    <void property="value"> 
+                     <boolean>false</boolean> 
+                    </void> 
+                   </object> 
                   </void> 
                   <void method="add"> 
-                   <object idref="ExprNodeConstantDesc11"/> 
+                   <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                    <void property="typeInfo"> 
+                     <object idref="PrimitiveTypeInfo0"/> 
+                    </void> 
+                    <void property="value"> 
+                     <boolean>true</boolean> 
+                    </void> 
+                   </object> 
                   </void> 
                   <void method="add"> 
-                   <object idref="ExprNodeConstantDesc10"/> 
+                   <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                    <void property="typeInfo"> 
+                     <object idref="PrimitiveTypeInfo0"/> 
+                    </void> 
+                    <void property="value"> 
+                     <boolean>true</boolean> 
+                    </void> 
+                   </object> 
                   </void> 
                   <void method="add"> 
-                   <object idref="ExprNodeConstantDesc9"/> 
+                   <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                    <void property="typeInfo"> 
+                     <object idref="PrimitiveTypeInfo1"/> 
+                    </void> 
+                    <void property="value"> 
+                     <string>acc</string> 
+                    </void> 
+                   </object> 
                   </void> 
                   <void method="add"> 
-                   <object idref="ExprNodeConstantDesc15"/> 
+                   <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                    <void property="typeInfo"> 
+                     <object idref="PrimitiveTypeInfo1"/> 
+                    </void> 
+                    <void property="value"> 
+                     <string>abc</string> 
+                    </void> 
+                   </object> 
                   </void> 
                   <void method="add"> 
-                   <object idref="ExprNodeConstantDesc14"/> 
+                   <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                    <void property="typeInfo"> 
+                     <object idref="PrimitiveTypeInfo1"/> 
+                    </void> 
+                    <void property="value"> 
+                     <string>abb</string> 
+                    </void> 
+                   </object> 
                   </void> 
                   <void method="add"> 
-                   <object idref="ExprNodeConstantDesc13"/> 
+                   <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                    <void property="typeInfo"> 
+                     <object idref="PrimitiveTypeInfo1"/> 
+                    </void> 
+                    <void property="value"> 
+                     <string>hive</string> 
+                    </void> 
+                   </object> 
                   </void> 
                  </object> 
                 </void> 

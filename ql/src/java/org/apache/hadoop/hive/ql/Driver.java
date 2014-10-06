@@ -390,9 +390,6 @@ public class Driver implements CommandProcessor {
       tree = ParseUtils.findRootNonNullToken(tree);
       perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.PARSE);
 
-      // Initialize the transaction manager.  This must be done before analyze is called
-      SessionState.get().initTxnMgr(conf);
-
       perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.ANALYZE);
       BaseSemanticAnalyzer sem = SemanticAnalyzerFactory.get(conf, tree);
       List<HiveSemanticAnalyzerHook> saHooks =
@@ -892,12 +889,9 @@ public class Driver implements CommandProcessor {
 
   /**
    * Acquire read and write locks needed by the statement. The list of objects to be locked are
-   * obtained from the inputs and outputs populated by the compiler. The lock acuisition scheme is
+   * obtained from he inputs and outputs populated by the compiler. The lock acuisition scheme is
    * pretty simple. If all the locks cannot be obtained, error out. Deadlock is avoided by making
    * sure that the locks are lexicographically sorted.
-   *
-   * This method also records the list of valid transactions.  This must be done after any
-   * transactions have been opened and locks acquired.
    **/
   private int acquireLocksAndOpenTxn() {
     PerfLogger perfLogger = PerfLogger.getPerfLogger();
@@ -937,7 +931,7 @@ public class Driver implements CommandProcessor {
 
       txnMgr.acquireLocks(plan, ctx, userFromUGI);
 
-      return recordValidTxns();
+      return 0;
     } catch (LockException e) {
       errorMessage = "FAILED: Error in acquiring locks: " + e.getMessage();
       SQLState = ErrorMsg.findSQLState(e.getMessage());
@@ -1114,6 +1108,11 @@ public class Driver implements CommandProcessor {
     SessionState ss = SessionState.get();
     try {
       ckLock = checkConcurrency();
+      try {
+        ss.initTxnMgr(conf);
+      } catch (LockException e) {
+        throw new SemanticException(e.getMessage(), e);
+      }
     } catch (SemanticException e) {
       errorMessage = "FAILED: Error in semantic analysis: " + e.getMessage();
       SQLState = ErrorMsg.findSQLState(e.getMessage());
@@ -1122,8 +1121,11 @@ public class Driver implements CommandProcessor {
           + org.apache.hadoop.util.StringUtils.stringifyException(e));
       return createProcessorResponse(10);
     }
+    int ret = recordValidTxns();
+    if (ret != 0) {
+      return createProcessorResponse(ret);
+    }
 
-    int ret;
     if (!alreadyCompiled) {
       ret = compileInternal(command);
       if (ret != 0) {

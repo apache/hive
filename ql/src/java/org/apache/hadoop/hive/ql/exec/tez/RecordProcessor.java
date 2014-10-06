@@ -115,7 +115,8 @@ public abstract class RecordProcessor  {
    */
   protected void logCloseInfo() {
     long used_memory = memoryMXBean.getHeapMemoryUsage().getUsed();
-    l4j.info("TezProcessor: processed " + numRows + " rows/groups: used memory = " + used_memory);
+    l4j.info("ExecMapper: processed " + numRows + " rows: used memory = "
+        + used_memory);
   }
 
   /**
@@ -125,7 +126,8 @@ public abstract class RecordProcessor  {
     numRows++;
     if (numRows == nextUpdateCntr) {
       long used_memory = memoryMXBean.getHeapMemoryUsage().getUsed();
-      l4j.info("TezProcessor: processing " + numRows + " rows/groups: used memory = " + used_memory);
+      l4j.info("ExecMapper: processing " + numRows
+          + " rows: used memory = " + used_memory);
       nextUpdateCntr = getNextUpdateRecordCounter(numRows);
     }
   }

@@ -17,18 +17,15 @@
  */
 package org.apache.hadoop.hive.ql.io.orc;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.math.BigInteger;
 
-import org.junit.Test;
-
-import com.google.common.math.LongMath;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
 
 public class TestSerializationUtils {
 
@@ -113,47 +110,6 @@ public class TestSerializationUtils {
     assertEquals(
         new BigInteger("ff000000000000000000000000000000000000000000ff",16),
         SerializationUtils.readBigInteger(fromBuffer(buffer)));
-  }
-
-  @Test
-  public void testSubtractionOverflow() {
-    // cross check results with Guava results below
-    SerializationUtils utils = new SerializationUtils();
-    assertEquals(false, utils.isSafeSubtract(22222222222L, Long.MIN_VALUE));
-    assertEquals(false, utils.isSafeSubtract(-22222222222L, Long.MAX_VALUE));
-    assertEquals(false, utils.isSafeSubtract(Long.MIN_VALUE, Long.MAX_VALUE));
-    assertEquals(true, utils.isSafeSubtract(-1553103058346370095L, 6553103058346370095L));
-    assertEquals(true, utils.isSafeSubtract(0, Long.MAX_VALUE));
-    assertEquals(true, utils.isSafeSubtract(Long.MIN_VALUE, 0));
-  }
-
-  @Test
-  public void testSubtractionOverflowGuava() {
-    try {
-      LongMath.checkedSubtract(22222222222L, Long.MIN_VALUE);
-      fail("expected ArithmeticException for overflow");
-    } catch (ArithmeticException ex) {
-      assertEquals(ex.getMessage(), "overflow");
-    }
-
-    try {
-      LongMath.checkedSubtract(-22222222222L, Long.MAX_VALUE);
-      fail("expected ArithmeticException for overflow");
-    } catch (ArithmeticException ex) {
-      assertEquals(ex.getMessage(), "overflow");
-    }
-
-    try {
-      LongMath.checkedSubtract(Long.MIN_VALUE, Long.MAX_VALUE);
-      fail("expected ArithmeticException for overflow");
-    } catch (ArithmeticException ex) {
-      assertEquals(ex.getMessage(), "overflow");
-    }
-
-    assertEquals(-8106206116692740190L,
-        LongMath.checkedSubtract(-1553103058346370095L, 6553103058346370095L));
-    assertEquals(-Long.MAX_VALUE, LongMath.checkedSubtract(0, Long.MAX_VALUE));
-    assertEquals(Long.MIN_VALUE, LongMath.checkedSubtract(Long.MIN_VALUE, 0));
   }
 
   public static void main(String[] args) throws Exception {

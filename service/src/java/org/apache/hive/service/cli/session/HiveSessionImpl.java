@@ -166,20 +166,15 @@ public class HiveSessionImpl implements HiveSession {
     IHiveFileProcessor processor = new GlobalHivercFileProcessor();
 
     try {
-      String hiverc = hiveConf.getVar(ConfVars.HIVE_SERVER2_GLOBAL_INIT_FILE_LOCATION);
-      if (hiverc != null) {
-        File hivercFile = new File(hiverc);
-        if (hivercFile.isDirectory()) {
-          hivercFile = new File(hivercFile, SessionManager.HIVERCFILE);
-        }
-        if (hivercFile.isFile()) {
-          LOG.info("Running global init file: " + hivercFile);
-          int rc = processor.processFile(hivercFile.getAbsolutePath());
+      if (hiveConf.getVar(ConfVars.HIVE_SERVER2_GLOBAL_INIT_FILE_LOCATION) != null) {
+        String hiverc = hiveConf.getVar(ConfVars.HIVE_SERVER2_GLOBAL_INIT_FILE_LOCATION)
+            + File.separator + SessionManager.HIVERCFILE;
+        if (new File(hiverc).exists()) {
+          LOG.info("Running global init file: " + hiverc);
+          int rc = processor.processFile(hiverc);
           if (rc != 0) {
-            LOG.error("Failed on initializing global .hiverc file");
+            LOG.warn("Failed on initializing global .hiverc file");
           }
-        } else {
-          LOG.debug("Global init file " + hivercFile + " does not exist");
         }
       }
     } catch (IOException e) {

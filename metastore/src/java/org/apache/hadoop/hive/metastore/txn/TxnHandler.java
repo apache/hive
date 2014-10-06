@@ -233,22 +233,12 @@ public class TxnHandler {
     }
   }
 
-  /**
-   * Transform a {@link org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse} to a
-   * {@link org.apache.hadoop.hive.common.ValidTxnList}.
-   * @param txns txn list from the metastore
-   * @param currentTxn Current transaction that the user has open.  If this is greater than 0 it
-   *                   will be removed from the exceptions list so that the user sees his own
-   *                   transaction as valid.
-   * @return a valid txn list.
-   */
-  public static ValidTxnList createValidTxnList(GetOpenTxnsResponse txns, long currentTxn) {
+  public static ValidTxnList createValidTxnList(GetOpenTxnsResponse txns) {
     long highWater = txns.getTxn_high_water_mark();
     Set<Long> open = txns.getOpen_txns();
-    long[] exceptions = new long[open.size() - (currentTxn > 0 ? 1 : 0)];
+    long[] exceptions = new long[open.size()];
     int i = 0;
     for(long txn: open) {
-      if (currentTxn > 0 && currentTxn == txn) continue;
       exceptions[i++] = txn;
     }
     return new ValidTxnListImpl(exceptions, highWater);

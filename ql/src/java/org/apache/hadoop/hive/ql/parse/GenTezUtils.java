@@ -167,8 +167,7 @@ public class GenTezUtils {
     GenMapRedUtils.setKeyAndValueDesc(reduceWork, reduceSink);
 
     // remember which parent belongs to which tag
-    int tag = reduceSink.getConf().getTag();
-    reduceWork.getTagToInput().put(tag == -1 ? 0 : tag,
+    reduceWork.getTagToInput().put(reduceSink.getConf().getTag(),
          context.preceedingWork.getName());
 
     // remember the output name of the reduce sink

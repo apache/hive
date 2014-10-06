@@ -416,9 +416,9 @@ POSTHOOK: query: SELECT strct from orc_create_complex
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_create_complex
 #### A masked pattern was here ####
-{"A":"five","B":"six"}
-{"A":"one","B":"two"}
-{"A":"three","B":"four"}
+{"a":"five","b":"six"}
+{"a":"one","b":"two"}
+{"a":"three","b":"four"}
 PREHOOK: query: CREATE TABLE orc_create_people_staging (
   id int,
   first_name string,

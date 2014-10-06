@@ -17,14 +17,12 @@
  */
 package org.apache.hadoop.hive.contrib.udf.example;
 
-import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
 
 /**
  * UDFExampleFormat.
  *
  */
-@Description(name = "example_format", value = "_FUNC_(expr) - Example UDAF that returns formated String")
 public class UDFExampleFormat extends UDF {
 
   public String evaluate(String format, Object... args) {

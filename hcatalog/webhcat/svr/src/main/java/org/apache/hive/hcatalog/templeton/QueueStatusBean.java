@@ -32,7 +32,7 @@ public class QueueStatusBean {
   public JobStatus status;
   public JobProfile profile;
 
-  public final String id;
+  public String id;
   public String parentId;
   public String percentComplete;
   public Long exitValue;
@@ -40,11 +40,8 @@ public class QueueStatusBean {
   public String callback;
   public String completed;
   public Map<String, Object> userargs;
-  public String msg;
 
-  public QueueStatusBean(String jobId, String errMsg) {
-    this.id = jobId;
-    this.msg = errMsg;
+  public QueueStatusBean() {
   }
 
   /**

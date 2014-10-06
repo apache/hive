@@ -32,7 +32,6 @@ import org.apache.commons.codec.binary.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.security.UserGroupInformation;
-import org.apache.hadoop.security.authentication.util.KerberosName;
 import org.apache.hive.service.auth.AuthenticationProviderFactory;
 import org.apache.hive.service.auth.AuthenticationProviderFactory.AuthMethods;
 import org.apache.hive.service.auth.HiveAuthFactory;
@@ -220,7 +219,7 @@ public class ThriftHttpServlet extends TServlet {
               "provided by the client.");
         }
         else {
-          return getPrincipalWithoutRealmAndHost(gssContext.getSrcName().toString());
+          return getPrincipalWithoutRealm(gssContext.getSrcName().toString());
         }
       }
       catch (GSSException e) {
@@ -238,19 +237,8 @@ public class ThriftHttpServlet extends TServlet {
     }
 
     private String getPrincipalWithoutRealm(String fullPrincipal) {
-      KerberosName fullKerberosName = new KerberosName(fullPrincipal);
-      String serviceName = fullKerberosName.getServiceName();
-      String hostName =  fullKerberosName.getHostName();
-      String principalWithoutRealm = serviceName;
-      if (hostName != null) {
-        principalWithoutRealm = serviceName + "/" + hostName;
-      }
-      return principalWithoutRealm;
-    }
-    
-    private String getPrincipalWithoutRealmAndHost(String fullPrincipal) {
-      KerberosName fullKerberosName = new KerberosName(fullPrincipal);
-      return fullKerberosName.getServiceName();
+      String names[] = fullPrincipal.split("[@]");
+      return names[0];
     }
   }
 

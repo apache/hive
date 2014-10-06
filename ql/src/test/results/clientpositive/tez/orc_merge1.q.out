@@ -146,7 +146,7 @@ Partition Parameters:
 	numFiles            	6                   
 	numRows             	242                 
 	rawDataSize         	22748               
-	totalSize           	3037                
+	totalSize           	3046                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -315,7 +315,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	242                 
 	rawDataSize         	22748               
-	totalSize           	1325                
+	totalSize           	1328                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -476,7 +476,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	242                 
 	rawDataSize         	22748               
-	totalSize           	2392                
+	totalSize           	2401                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

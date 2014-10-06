@@ -58,7 +58,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
   private Table tbl;
 
   public ColumnStatsSemanticAnalyzer(HiveConf conf) throws SemanticException {
-    super(conf, false);
+    super(conf);
   }
 
   private boolean shouldRewrite(ASTNode tree) {
@@ -377,7 +377,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
     QBParseInfo qbp;
 
     // initialize QB
-    init(true);
+    init();
 
     // check if it is no scan. grammar prevents coexit noscan/columns
     super.processNoScanCommand(ast);

@@ -1,4 +1,4 @@
-Warning: Shuffle Join MERGEJOIN[7][tables = [src, src2]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join JOIN[4][tables = [src, src2]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: -- current
 explain select src.key from src join src src2
 PREHOOK: type: QUERY
@@ -35,7 +35,7 @@ STAGE PLANS:
                     value expressions: key (type: string)
         Reducer 2 
             Reduce Operator Tree:
-              Merge Join Operator
+              Join Operator
                 condition map:
                      Inner Join 0 to 1
                 condition expressions:
@@ -61,7 +61,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[7][tables = [src, src2]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join JOIN[4][tables = [src, src2]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: -- ansi cross join
 explain select src.key from src cross join src src2
 PREHOOK: type: QUERY
@@ -98,7 +98,7 @@ STAGE PLANS:
                     value expressions: key (type: string)
         Reducer 2 
             Reduce Operator Tree:
-              Merge Join Operator
+              Join Operator
                 condition map:
                      Inner Join 0 to 1
                 condition expressions:
@@ -169,7 +169,7 @@ STAGE PLANS:
                       Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
-              Merge Join Operator
+              Join Operator
                 condition map:
                      Inner Join 0 to 1
                 condition expressions:

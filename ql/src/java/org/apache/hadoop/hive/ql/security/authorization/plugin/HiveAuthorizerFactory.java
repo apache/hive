@@ -27,7 +27,7 @@ import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
  * create  {@link HiveAuthorizer} instance used for hive authorization.
  *
  */
-@LimitedPrivate(value = { "Apache Argus (incubating)" })
+@LimitedPrivate(value = { "" })
 @Evolving
 public interface HiveAuthorizerFactory {
   /**

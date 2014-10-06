@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.udf;
 
-import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDAF;
 import org.apache.hadoop.hive.ql.exec.UDAFEvaluator;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
@@ -33,8 +32,6 @@ import org.apache.hadoop.io.Text;
  * UDAFTestMax.
  *
  */
-@Description(name = "test_max",
-value = "_FUNC_(col) - UDF to report Max Value")
 public class UDAFTestMax extends UDAF {
 
   /**

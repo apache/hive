@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.contrib.udaf.example;
 import java.util.ArrayList;
 import java.util.Collections;
 
-import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDAF;
 import org.apache.hadoop.hive.ql.exec.UDAFEvaluator;
 
@@ -36,8 +35,6 @@ import org.apache.hadoop.hive.ql.exec.UDAFEvaluator;
  * implement built-in aggregation functions, which are harder to program but
  * more efficient.
  */
-@Description(name = "example_group_concat",
-value = "_FUNC_(col) - Example UDAF that concatenates all arguments from different rows into a single string")
 public class UDAFExampleGroupConcat extends UDAF {
 
   /**

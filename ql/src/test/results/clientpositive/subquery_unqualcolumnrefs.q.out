@@ -928,7 +928,7 @@ STAGE PLANS:
             predicate: (_col0 = 0) (type: boolean)
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             Select Operator
-              expressions: 0 (type: bigint)
+              expressions: _col0 (type: bigint)
               outputColumnNames: _col0
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Group By Operator

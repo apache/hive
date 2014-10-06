@@ -18,10 +18,7 @@
 
 package org.apache.hadoop.hive.serde2.io;
 
-import com.google.code.tempusfugit.concurrency.annotations.*;
-import com.google.code.tempusfugit.concurrency.*;
-import org.junit.*;
-import static org.junit.Assert.*;
+import junit.framework.Assert;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -32,6 +29,8 @@ import java.util.ArrayList;
 import org.apache.hadoop.hive.common.type.Decimal128;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hive.common.util.Decimal128FastBuffer;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Unit tests for tsting the fast allocation-free conversion
@@ -39,15 +38,14 @@ import org.apache.hive.common.util.Decimal128FastBuffer;
  */
 public class TestHiveDecimalWritable {
 
-    @Rule public ConcurrentRule concurrentRule = new ConcurrentRule();
-    @Rule public RepeatingRule repeatingRule = new RepeatingRule();
+    private Decimal128FastBuffer scratch;
 
     @Before
     public void setUp() throws Exception {
+      scratch = new Decimal128FastBuffer();
     }
 
     private void doTestFastStreamForHiveDecimal(String valueString) {
-      Decimal128FastBuffer scratch = new Decimal128FastBuffer();
       BigDecimal value = new BigDecimal(valueString);
       Decimal128 dec = new Decimal128();
       dec.update(value);
@@ -63,23 +61,21 @@ public class TestHiveDecimalWritable {
 
       BigDecimal readValue = hd.bigDecimalValue();
 
-      assertEquals(value, readValue);
+      Assert.assertEquals(value, readValue);
 
       // Now test fastUpdate from the same serialized HiveDecimal
       Decimal128 decRead = new Decimal128().fastUpdateFromInternalStorage(
               witness.getInternalStorage(), (short) witness.getScale());
 
-      assertEquals(dec, decRead);
+      Assert.assertEquals(dec, decRead);
 
       // Test fastUpdate from it's own (not fully compacted) serialized output
       Decimal128 decReadSelf = new Decimal128().fastUpdateFromInternalStorage(
               hdw.getInternalStorage(), (short) hdw.getScale());
-      assertEquals(dec, decReadSelf);
+      Assert.assertEquals(dec, decReadSelf);
     }
 
     @Test
-    @Concurrent(count=4)
-    @Repeating(repetition=100)
     public void testFastStreamForHiveDecimal() {
 
       doTestFastStreamForHiveDecimal("0");
@@ -221,10 +217,7 @@ public class TestHiveDecimalWritable {
     }
 
     @Test
-    @Concurrent(count=4)
-    @Repeating(repetition=100)
     public void testHive6594() {
-      Decimal128FastBuffer scratch = new Decimal128FastBuffer();
       String[] vs = new String[] {
           "-4033.445769230769",
           "6984454.211097692"};
@@ -243,7 +236,7 @@ public class TestHiveDecimalWritable {
 
       BigDecimal readValue = hd.bigDecimalValue();
 
-      assertEquals(d.toBigDecimal().stripTrailingZeros(),
+      Assert.assertEquals(d.toBigDecimal().stripTrailingZeros(),
           readValue.stripTrailingZeros());
     }
 }

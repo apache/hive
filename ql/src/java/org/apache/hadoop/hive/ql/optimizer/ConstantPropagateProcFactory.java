@@ -670,15 +670,10 @@ public final class ConstantPropagateProcFactory {
       cppCtx.getOpToConstantExprs().put(op, constants);
       foldOperator(op, cppCtx);
       List<ExprNodeDesc> colList = op.getConf().getColList();
-      List<String> columnNames = op.getConf().getOutputColumnNames();
-      Map<String, ExprNodeDesc> columnExprMap = op.getColumnExprMap();
       if (colList != null) {
         for (int i = 0; i < colList.size(); i++) {
           ExprNodeDesc newCol = foldExpr(colList.get(i), constants, cppCtx, op, 0, false);
           colList.set(i, newCol);
-          if (columnExprMap != null) {
-            columnExprMap.put(columnNames.get(i), newCol);
-          }
         }
         LOG.debug("New column list:(" + StringUtils.join(colList, " ") + ")");
       }

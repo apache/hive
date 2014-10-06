@@ -24,7 +24,7 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@B
-Warning: Shuffle Join MERGEJOIN[7][tables = [a, b]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join JOIN[4][tables = [a, b]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain select * from A join B
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from A join B
@@ -60,7 +60,7 @@ STAGE PLANS:
                     value expressions: key (type: string), value (type: string)
         Reducer 2 
             Reduce Operator Tree:
-              Merge Join Operator
+              Join Operator
                 condition map:
                      Inner Join 0 to 1
                 condition expressions:
@@ -86,7 +86,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[18][tables = [d1, d2, a]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join JOIN[10][tables = [d1, d2, a]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: explain select * from B d1 join B d2 on d1.key = d2.key join A
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from B d1 join B d2 on d1.key = d2.key join A
@@ -142,7 +142,7 @@ STAGE PLANS:
                     value expressions: key (type: string), value (type: string)
         Reducer 2 
             Reduce Operator Tree:
-              Merge Join Operator
+              Join Operator
                 condition map:
                      Inner Join 0 to 1
                 condition expressions:
@@ -156,7 +156,7 @@ STAGE PLANS:
                   value expressions: _col0 (type: string), _col1 (type: string), _col5 (type: string), _col6 (type: string)
         Reducer 3 
             Reduce Operator Tree:
-              Merge Join Operator
+              Join Operator
                 condition map:
                      Inner Join 0 to 1
                 condition expressions:
@@ -182,7 +182,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[25][tables = [a, od1]] in Stage 'Reducer 4' is a cross product
+Warning: Shuffle Join JOIN[16][tables = [a, od1]] in Stage 'Reducer 4' is a cross product
 PREHOOK: query: explain select * from A join 
          (select d1.key 
           from B d1 join B d2 on d1.key = d2.key 
@@ -243,7 +243,7 @@ STAGE PLANS:
                     value expressions: key (type: string), value (type: string)
         Reducer 2 
             Reduce Operator Tree:
-              Merge Join Operator
+              Join Operator
                 condition map:
                      Inner Join 0 to 1
                 condition expressions:
@@ -282,7 +282,7 @@ STAGE PLANS:
                     value expressions: _col0 (type: string)
         Reducer 4 
             Reduce Operator Tree:
-              Merge Join Operator
+              Join Operator
                 condition map:
                      Inner Join 0 to 1
                 condition expressions:
@@ -308,8 +308,8 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[18][tables = [d1, d2]] in Stage 'Reducer 2' is a cross product
-Warning: Shuffle Join MERGEJOIN[19][tables = [a, od1]] in Stage 'Reducer 4' is a cross product
+Warning: Shuffle Join JOIN[4][tables = [d1, d2]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join JOIN[14][tables = [a, od1]] in Stage 'Reducer 4' is a cross product
 PREHOOK: query: explain select * from A join (select d1.key from B d1 join B d2 where 1 = 1 group by d1.key) od1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from A join (select d1.key from B d1 join B d2 where 1 = 1 group by d1.key) od1
@@ -355,7 +355,7 @@ STAGE PLANS:
                     value expressions: key (type: string), value (type: string)
         Reducer 2 
             Reduce Operator Tree:
-              Merge Join Operator
+              Join Operator
                 condition map:
                      Inner Join 0 to 1
                 condition expressions:
@@ -394,7 +394,7 @@ STAGE PLANS:
                     value expressions: _col0 (type: string)
         Reducer 4 
             Reduce Operator Tree:
-              Merge Join Operator
+              Join Operator
                 condition map:
                      Inner Join 0 to 1
                 condition expressions:
@@ -420,7 +420,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[30][tables = [ss, od1]] in Stage 'Reducer 4' is a cross product
+Warning: Shuffle Join JOIN[21][tables = [ss, od1]] in Stage 'Reducer 4' is a cross product
 PREHOOK: query: explain select * from 
 (select A.key from A group by key) ss join 
 (select d1.key from B d1 join B d2 on d1.key = d2.key where 1 = 1 group by d1.key) od1
@@ -490,7 +490,7 @@ STAGE PLANS:
                         Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
-              Merge Join Operator
+              Join Operator
                 condition map:
                      Inner Join 0 to 1
                 condition expressions:
@@ -529,7 +529,7 @@ STAGE PLANS:
                     value expressions: _col0 (type: string)
         Reducer 4 
             Reduce Operator Tree:
-              Merge Join Operator
+              Join Operator
                 condition map:
                      Inner Join 0 to 1
                 condition expressions:

@@ -22,8 +22,6 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.Database;
@@ -83,7 +81,7 @@ public class FunctionSemanticAnalyzer extends BaseSemanticAnalyzer {
         new CreateFunctionDesc(functionName, isTemporaryFunction, className, resources);
     rootTasks.add(TaskFactory.get(new FunctionWork(desc), conf));
 
-    addEntities(functionName, isTemporaryFunction, resources);
+    addEntities(functionName, isTemporaryFunction);
   }
 
   private void analyzeDropFunction(ASTNode ast) throws SemanticException {
@@ -108,7 +106,7 @@ public class FunctionSemanticAnalyzer extends BaseSemanticAnalyzer {
     DropFunctionDesc desc = new DropFunctionDesc(functionName, isTemporaryFunction);
     rootTasks.add(TaskFactory.get(new FunctionWork(desc), conf));
 
-    addEntities(functionName, isTemporaryFunction, null);
+    addEntities(functionName, isTemporaryFunction);
   }
 
   private ResourceType getResourceType(ASTNode token) throws SemanticException {
@@ -154,8 +152,8 @@ public class FunctionSemanticAnalyzer extends BaseSemanticAnalyzer {
   /**
    * Add write entities to the semantic analyzer to restrict function creation to privileged users.
    */
-  private void addEntities(String functionName, boolean isTemporaryFunction,
-      List<ResourceUri> resources) throws SemanticException {
+  private void addEntities(String functionName, boolean isTemporaryFunction)
+      throws SemanticException {
     // If the function is being added under a database 'namespace', then add an entity representing
     // the database (only applicable to permanent/metastore functions).
     // We also add a second entity representing the function name.
@@ -185,13 +183,5 @@ public class FunctionSemanticAnalyzer extends BaseSemanticAnalyzer {
     // Add the function name as a WriteEntity
     outputs.add(new WriteEntity(database, functionName, Type.FUNCTION,
         WriteEntity.WriteType.DDL_NO_LOCK));
-
-    if (resources != null) {
-      for (ResourceUri resource : resources) {
-        String uriPath = resource.getUri();
-        outputs.add(new WriteEntity(new Path(uriPath),
-            FileUtils.isLocalFile(conf, uriPath)));
-      }
-    }
   }
 }

@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.contrib.udaf.example;
 
-import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDAF;
 import org.apache.hadoop.hive.ql.exec.UDAFEvaluator;
 
@@ -33,8 +32,6 @@ import org.apache.hadoop.hive.ql.exec.UDAFEvaluator;
  * more efficient.
  * 
  */
-@Description(name = "example_avg",
-value = "_FUNC_(col) - Example UDAF to compute average")
 public final class UDAFExampleAvg extends UDAF {
 
   /**

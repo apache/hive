@@ -19,7 +19,6 @@ package org.apache.hadoop.hive.serde2.avro;
 
 import org.apache.avro.Schema;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
-import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
@@ -27,7 +26,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.node.JsonNodeFactory;
 
@@ -107,16 +105,10 @@ public class TypeInfoToSchema {
         schema = Schema.create(Schema.Type.STRING);
         break;
       case CHAR:
-        schema = AvroSerdeUtils.getSchemaFor("{" +
-            "\"type\":\"" + AvroSerDe.AVRO_STRING_TYPE_NAME + "\"," +
-            "\"logicalType\":\"" + AvroSerDe.CHAR_TYPE_NAME + "\"," +
-            "\"maxLength\":" + ((CharTypeInfo) typeInfo).getLength() + "}");
+        schema = Schema.create(Schema.Type.STRING);
         break;
       case VARCHAR:
-        schema = AvroSerdeUtils.getSchemaFor("{" +
-            "\"type\":\"" + AvroSerDe.AVRO_STRING_TYPE_NAME + "\"," +
-            "\"logicalType\":\"" + AvroSerDe.VARCHAR_TYPE_NAME + "\"," +
-            "\"maxLength\":" + ((VarcharTypeInfo) typeInfo).getLength() + "}");
+        schema = Schema.create(Schema.Type.STRING);
         break;
       case BINARY:
         schema = Schema.create(Schema.Type.BYTES);

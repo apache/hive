@@ -65,7 +65,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.Object
  */
 public class DummyStoreOperator extends Operator<DummyStoreDesc> implements Serializable {
 
-  protected transient InspectableObject result;
+  private transient InspectableObject result;
 
   public DummyStoreOperator() {
     super();

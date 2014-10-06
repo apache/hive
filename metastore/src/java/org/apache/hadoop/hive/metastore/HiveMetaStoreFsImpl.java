@@ -37,14 +37,12 @@ public class HiveMetaStoreFsImpl implements MetaStoreFS {
 
   @Override
   public boolean deleteDir(FileSystem fs, Path f, boolean recursive,
-      boolean ifPurge, Configuration conf) throws MetaException {
+      Configuration conf) throws MetaException {
     LOG.info("deleting  " + f);
     HadoopShims hadoopShim = ShimLoader.getHadoopShims();
 
     try {
-      if (ifPurge) {
-        LOG.info("Not moving "+ f +" to trash");
-      } else if (hadoopShim.moveToAppropriateTrash(fs, f, conf)) {
+      if (hadoopShim.moveToAppropriateTrash(fs, f, conf)) {
         LOG.info("Moved to trash: " + f);
         return true;
       }

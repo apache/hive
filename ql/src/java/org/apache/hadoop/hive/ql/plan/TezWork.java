@@ -19,13 +19,12 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.LinkedList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -47,22 +46,6 @@ import org.apache.hadoop.mapred.JobConf;
 @Explain(displayName = "Tez")
 public class TezWork extends AbstractOperatorDesc {
 
-  public enum VertexType {
-    AUTO_INITIALIZED_EDGES, // no custom vertex or edge
-    INITIALIZED_EDGES, // custom vertex and custom edge but single MR Input
-    MULTI_INPUT_INITIALIZED_EDGES, // custom vertex, custom edge and multi MR Input
-    MULTI_INPUT_UNINITIALIZED_EDGES // custom vertex, no custom edge, multi MR Input
-    ;
-
-    public static boolean isCustomInputType(VertexType vertex) {
-      if ((vertex == null) || (vertex == AUTO_INITIALIZED_EDGES)) {
-        return false;
-      } else {
-        return true;
-      }
-    }
-  }
-
   private static transient final Log LOG = LogFactory.getLog(TezWork.class);
 
   private static int counter;
@@ -73,7 +56,6 @@ public class TezWork extends AbstractOperatorDesc {
   private final Map<BaseWork, List<BaseWork>> invertedWorkGraph = new HashMap<BaseWork, List<BaseWork>>();
   private final Map<Pair<BaseWork, BaseWork>, TezEdgeProperty> edgeProperties =
       new HashMap<Pair<BaseWork, BaseWork>, TezEdgeProperty>();
-  private final Map<BaseWork, VertexType> workVertexTypeMap = new HashMap<BaseWork, VertexType>();
 
   public TezWork(String name) {
     this.name = name + ":" + (++counter);
@@ -323,23 +305,15 @@ public class TezWork extends AbstractOperatorDesc {
       work.configureJobConf(jobConf);
     }
     String[] newTmpJars = jobConf.getStrings(MR_JAR_PROPERTY);
-    if (oldTmpJars != null || newTmpJars != null) {
-      String[] finalTmpJars;
-      if (oldTmpJars == null || oldTmpJars.length == 0) {
-        // Avoid a copy when oldTmpJars is null or empty
-        finalTmpJars = newTmpJars;
-      } else if (newTmpJars == null || newTmpJars.length == 0) {
-        // Avoid a copy when newTmpJars is null or empty
-        finalTmpJars = oldTmpJars;
+    if (oldTmpJars != null && (oldTmpJars.length != 0)) {
+      if (newTmpJars != null && (newTmpJars.length != 0)) {
+        String[] combinedTmpJars = new String[newTmpJars.length + oldTmpJars.length];
+        System.arraycopy(oldTmpJars, 0, combinedTmpJars, 0, oldTmpJars.length);
+        System.arraycopy(newTmpJars, 0, combinedTmpJars, oldTmpJars.length, newTmpJars.length);
+        jobConf.setStrings(MR_JAR_PROPERTY, combinedTmpJars);
       } else {
-        // Both are non-empty, only copy now
-        finalTmpJars = new String[oldTmpJars.length + newTmpJars.length];
-        System.arraycopy(oldTmpJars, 0, finalTmpJars, 0, oldTmpJars.length);
-        System.arraycopy(newTmpJars, 0, finalTmpJars, oldTmpJars.length, newTmpJars.length);
+        jobConf.setStrings(MR_JAR_PROPERTY, oldTmpJars);
       }
-
-      jobConf.setStrings(MR_JAR_PROPERTY, finalTmpJars);
-      return finalTmpJars;
     }
     return newTmpJars;
    }
@@ -357,41 +331,5 @@ public class TezWork extends AbstractOperatorDesc {
     leaves.remove(a);
     ImmutablePair workPair = new ImmutablePair(a, b);
     edgeProperties.put(workPair, edgeProp);
-  }
-
-  public void setVertexType(BaseWork w, VertexType incomingVertexType) {
-    VertexType vertexType = workVertexTypeMap.get(w);
-    if (vertexType == null) {
-      vertexType = VertexType.AUTO_INITIALIZED_EDGES;
-    }
-    switch (vertexType) {
-    case INITIALIZED_EDGES:
-      if (incomingVertexType == VertexType.MULTI_INPUT_UNINITIALIZED_EDGES) {
-        vertexType = VertexType.MULTI_INPUT_INITIALIZED_EDGES;
-      }
-      break;
-
-    case MULTI_INPUT_INITIALIZED_EDGES:
-      // nothing to do
-      break;
-
-    case MULTI_INPUT_UNINITIALIZED_EDGES:
-      if (incomingVertexType == VertexType.INITIALIZED_EDGES) {
-        vertexType = VertexType.MULTI_INPUT_INITIALIZED_EDGES;
-      }
-      break;
-
-    case AUTO_INITIALIZED_EDGES:
-      vertexType = incomingVertexType;
-      break;
-
-    default:
-      break;
-    }
-    workVertexTypeMap.put(w, vertexType);
-  }
-
-  public VertexType getVertexType(BaseWork w) {
-    return workVertexTypeMap.get(w);
   }
 }

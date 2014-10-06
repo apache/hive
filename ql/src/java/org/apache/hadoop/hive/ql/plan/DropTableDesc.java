@@ -52,7 +52,6 @@ public class DropTableDesc extends DDLDesc implements Serializable {
   ArrayList<PartSpec> partSpecs;
   boolean expectView;
   boolean ifExists;
-  boolean ifPurge;
   boolean ignoreProtection;
 
   public DropTableDesc() {
@@ -60,14 +59,12 @@ public class DropTableDesc extends DDLDesc implements Serializable {
 
   /**
    * @param tableName
-   * @param ifPurge
    */
-  public DropTableDesc(String tableName, boolean expectView, boolean ifExists, boolean ifPurge) {
+  public DropTableDesc(String tableName, boolean expectView, boolean ifExists) {
     this.tableName = tableName;
     this.partSpecs = null;
     this.expectView = expectView;
     this.ifExists = ifExists;
-    this.ifPurge = ifPurge;
     this.ignoreProtection = false;
   }
 
@@ -151,20 +148,5 @@ public class DropTableDesc extends DDLDesc implements Serializable {
    */
   public void setIfExists(boolean ifExists) {
     this.ifExists = ifExists;
-  }
-
-  /**
-   *  @return whether Purge was specified
-   */
-  public boolean getIfPurge() {
-      return ifPurge;
-  }
-
-  /**
-   * @param ifPurge
-   *          set whether Purge was specified
-   */
-  public void setIfPurge(boolean ifPurge) {
-      this.ifPurge = ifPurge;
   }
 }

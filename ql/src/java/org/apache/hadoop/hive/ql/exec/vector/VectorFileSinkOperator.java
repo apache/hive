@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.exec.vector;
 
+import java.io.IOException;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
@@ -25,7 +27,16 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriterF
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.SerDeStats;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.io.ObjectWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.Writable;
 
 /**
  * File Sink operator implementation.
@@ -58,10 +69,113 @@ public class VectorFileSinkOperator extends FileSinkOperator {
 
   @Override
   public void processOp(Object data, int tag) throws HiveException {
+
     VectorizedRowBatch vrg = (VectorizedRowBatch)data;
+
+    Writable [] records = null;
+    boolean vectorizedSerde = false;
+    try {
+      if (serializer instanceof VectorizedSerde) {
+        recordValue = ((VectorizedSerde) serializer).serializeVector(vrg,
+            inputObjInspectors[0]);
+        records = (Writable[]) ((ObjectWritable) recordValue).get();
+        vectorizedSerde = true;
+      }
+    } catch (SerDeException e1) {
+      throw new HiveException(e1);
+    }
+
     for (int i = 0; i < vrg.size; i++) {
-      Object[] row = getRowObject(vrg, i);
-      super.processOp(row, tag);
+      Writable row = null;
+      if (vectorizedSerde) {
+        row = records[i];
+      } else {
+        if (vrg.valueWriters == null) {
+          vrg.setValueWriters(this.valueWriters);
+        }
+        try {
+          row = serializer.serialize(getRowObject(vrg, i), inputObjInspectors[0]);
+        } catch (SerDeException ex) {
+          throw new HiveException(ex);
+        }
+      }
+    /* Create list bucketing sub-directory only if stored-as-directories is on. */
+    String lbDirName = null;
+    lbDirName = (lbCtx == null) ? null : generateListBucketingDirName(row);
+
+    FSPaths fpaths;
+
+    if (!bDynParts && !filesCreated) {
+      if (lbDirName != null) {
+        FSPaths fsp2 = lookupListBucketingPaths(lbDirName);
+      } else {
+        createBucketFiles(fsp);
+      }
+    }
+
+    try {
+      updateProgress();
+
+      // if DP is enabled, get the final output writers and prepare the real output row
+      assert inputObjInspectors[0].getCategory() == ObjectInspector.Category.STRUCT : "input object inspector is not struct";
+
+      if (bDynParts) {
+        // copy the DP column values from the input row to dpVals
+        dpVals.clear();
+        dpWritables.clear();
+        ObjectInspectorUtils.partialCopyToStandardObject(dpWritables, row, dpStartCol, numDynParts,
+            (StructObjectInspector) inputObjInspectors[0], ObjectInspectorCopyOption.WRITABLE);
+        // get a set of RecordWriter based on the DP column values
+        // pass the null value along to the escaping process to determine what the dir should be
+        for (Object o : dpWritables) {
+          if (o == null || o.toString().length() == 0) {
+            dpVals.add(dpCtx.getDefaultPartitionName());
+          } else {
+            dpVals.add(o.toString());
+          }
+        }
+        fpaths = getDynOutPaths(dpVals, lbDirName);
+
+      } else {
+        if (lbDirName != null) {
+          fpaths = lookupListBucketingPaths(lbDirName);
+        } else {
+          fpaths = fsp;
+        }
+      }
+
+      rowOutWriters = fpaths.getOutWriters();
+      // check if all record writers implement statistics. if atleast one RW
+      // doesn't implement stats interface we will fallback to conventional way
+      // of gathering stats
+      isCollectRWStats = areAllTrue(statsFromRecordWriter);
+      if (conf.isGatherStats() && !isCollectRWStats) {
+        if (statsCollectRawDataSize) {
+          SerDeStats stats = serializer.getSerDeStats();
+          if (stats != null) {
+            fpaths.getStat().addToStat(StatsSetupConst.RAW_DATA_SIZE, stats.getRawDataSize());
+          }
+        }
+        fpaths.getStat().addToStat(StatsSetupConst.ROW_COUNT, 1);
+      }
+
+
+      if (row_count != null) {
+        row_count.set(row_count.get() + 1);
+      }
+
+      if (!multiFileSpray) {
+        rowOutWriters[0].write(row);
+      } else {
+        int keyHashCode = 0;
+        key.setHashCode(keyHashCode);
+        int bucketNum = prtner.getBucket(key, null, totalFiles);
+        int idx = bucketMap.get(bucketNum);
+        rowOutWriters[idx].write(row);
+      }
+    } catch (IOException e) {
+      throw new HiveException(e);
+    }
     }
   }
 
@@ -73,7 +187,7 @@ public class VectorFileSinkOperator extends FileSinkOperator {
     }
     for (int i = 0; i < vrg.projectionSize; i++) {
       ColumnVector vectorColumn = vrg.cols[vrg.projectedColumns[i]];
-      singleRow[i] = valueWriters[i].writeValue(vectorColumn, batchIndex);
+      singleRow[i] = vrg.valueWriters[i].writeValue(vectorColumn, batchIndex);
     }
     return singleRow;
   }

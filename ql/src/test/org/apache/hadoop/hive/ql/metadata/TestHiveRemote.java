@@ -84,13 +84,6 @@ public class TestHiveRemote extends TestHive {
   }
 
   /**
-   * Cannot control trash in remote metastore, so skip this test
-   */
-  @Override
-  public void testDropTableTrash() {
-  }
-
-  /**
    * Finds a free port.
    *
    * @return a free port

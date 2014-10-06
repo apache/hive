@@ -8,15 +8,13 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@acid_ivtt
 PREHOOK: query: insert into table acid_ivtt values 
     (1, 109.23, 'mary had a little lamb'),
-    (429496729, 0.14, 'its fleece was white as snow'),
-    (-29496729, -0.14, 'negative values test')
+    (429496729, 0.14, 'its fleece was white as snow')
 PREHOOK: type: QUERY
 PREHOOK: Input: default@values__tmp__table__1
 PREHOOK: Output: default@acid_ivtt
 POSTHOOK: query: insert into table acid_ivtt values 
     (1, 109.23, 'mary had a little lamb'),
-    (429496729, 0.14, 'its fleece was white as snow'),
-    (-29496729, -0.14, 'negative values test')
+    (429496729, 0.14, 'its fleece was white as snow')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@values__tmp__table__1
 POSTHOOK: Output: default@acid_ivtt
@@ -31,6 +29,5 @@ POSTHOOK: query: select i, de, vc from acid_ivtt order by i
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@acid_ivtt
 #### A masked pattern was here ####
--29496729	-0.14	negative values test
 1	109.23	mary had a little lamb
 429496729	0.14	its fleece was white as snow

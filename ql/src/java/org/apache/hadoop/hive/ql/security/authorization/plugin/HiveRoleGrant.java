@@ -26,7 +26,7 @@ import com.google.common.collect.ComparisonChain;
 /**
  * Represents a grant of a role to a principal
  */
-@LimitedPrivate(value = { "Apache Argus (incubating)" })
+@LimitedPrivate(value = { "" })
 @Evolving
 public class HiveRoleGrant implements Comparable<HiveRoleGrant> {
 

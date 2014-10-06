@@ -54,8 +54,6 @@ STAGE PLANS:
                       0 cint (type: int)
                       1 cint (type: int)
                     outputColumnNames: _col0
-                    input vertices:
-                      1 Map 4
                     Statistics: Num rows: 13516 Data size: 414960 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
@@ -66,8 +64,6 @@ STAGE PLANS:
                       keys:
                         0 _col0 (type: tinyint)
                         1 ctinyint (type: tinyint)
-                      input vertices:
-                        1 Map 1
                       Statistics: Num rows: 14867 Data size: 456456 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
                         Statistics: Num rows: 14867 Data size: 456456 Basic stats: COMPLETE Column stats: NONE

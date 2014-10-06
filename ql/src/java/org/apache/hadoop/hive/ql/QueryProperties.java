@@ -48,37 +48,12 @@ public class QueryProperties {
   boolean mapJoinRemoved = false;
   boolean hasMapGroupBy = false;
 
-  private int noOfJoins = 0;
-  private int noOfOuterJoins = 0;
-  private boolean hasLateralViews;
-  
-  private boolean multiDestQuery;
-  private boolean filterWithSubQuery;
-  
   public boolean hasJoin() {
-    return (noOfJoins > 0);
+    return hasJoin;
   }
 
-  public void incrementJoinCount(boolean outerJoin) {
-    noOfJoins++;
-    if (outerJoin)
-      noOfOuterJoins++;
-  }
-
-  public int getJoinCount() {
-    return noOfJoins;
-  }
-
-  public int getOuterJoinCount() {
-    return noOfOuterJoins;
-  }
-
-  public void setHasLateralViews(boolean hasLateralViews) {
-    this.hasLateralViews = hasLateralViews;
-  }
-
-  public boolean hasLateralViews() {
-    return hasLateralViews;
+  public void setHasJoin(boolean hasJoin) {
+    this.hasJoin = hasJoin;
   }
 
   public boolean hasGroupBy() {
@@ -169,22 +144,6 @@ public class QueryProperties {
     this.hasMapGroupBy = hasMapGroupBy;
   }
 
-  public boolean hasMultiDestQuery() {
-    return this.multiDestQuery;
-  }
-
-  public void setMultiDestQuery(boolean multiDestQuery) {
-    this.multiDestQuery = multiDestQuery;
-  }
-
-  public void setFilterWithSubQuery(boolean filterWithSubQuery) {
-    this.filterWithSubQuery = filterWithSubQuery;
-  }
-
-  public boolean hasFilterWithSubQuery() {
-    return this.filterWithSubQuery;
-  }
-
   public void clear() {
     hasJoin = false;
     hasGroupBy = false;
@@ -201,11 +160,5 @@ public class QueryProperties {
     hasClusterBy = false;
     mapJoinRemoved = false;
     hasMapGroupBy = false;
-
-    noOfJoins = 0;
-    noOfOuterJoins = 0;
-    
-    multiDestQuery = false;
-    filterWithSubQuery = false;
   }
 }

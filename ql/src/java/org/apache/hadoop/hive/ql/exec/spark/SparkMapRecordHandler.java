@@ -59,14 +59,16 @@ public class SparkMapRecordHandler extends SparkRecordHandler {
   private static final String PLAN_KEY = "__MAP_PLAN__";
   private MapOperator mo;
   public static final Log l4j = LogFactory.getLog(SparkMapRecordHandler.class);
+  private boolean done;
+
   private MapredLocalWork localWork = null;
   private boolean isLogInfoEnabled = false;
 
-  private ExecMapperContext execContext;
+  private final ExecMapperContext execContext = new ExecMapperContext();
 
   public void init(JobConf job, OutputCollector output, Reporter reporter) {
     super.init(job, output, reporter);
-    execContext = new ExecMapperContext(job);
+
     isLogInfoEnabled = l4j.isInfoEnabled();
     ObjectCache cache = ObjectCacheFactory.getCache(job);
 
@@ -87,8 +89,6 @@ public class SparkMapRecordHandler extends SparkRecordHandler {
         mo = new MapOperator();
       }
       mo.setConf(mrwork);
-      l4j.info("Main input name is " + mrwork.getName());
-      jc.set(Utilities.INPUT_NAME, mrwork.getName());
       // initialize map operator
       mo.setChildren(job);
       l4j.info(mo.dump(0));

@@ -140,20 +140,6 @@ public class VectorizedRowBatchCtx {
   
 
   /**
-   * Initializes the VectorizedRowBatch context based on an scratch column type map and
-   * object inspector.
-   * @param columnTypeMap
-   * @param rowOI
-   *          Object inspector that shapes the column types
-   */
-  public void init(Map<Integer, String> columnTypeMap,
-      StructObjectInspector rowOI) {
-    this.columnTypeMap = columnTypeMap;
-    this.rowOI= rowOI;
-    this.rawRowOI = rowOI;
-  }
-
-  /**
    * Initializes VectorizedRowBatch context based on the
    * split and Hive configuration (Job conf with hive Plan).
    *

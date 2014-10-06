@@ -76,7 +76,7 @@ public class Initiator extends CompactorThread {
         // don't doom the entire thread.
         try {
           ShowCompactResponse currentCompactions = txnHandler.showCompact(new ShowCompactRequest());
-          ValidTxnList txns = TxnHandler.createValidTxnList(txnHandler.getOpenTxns(), 0);
+          ValidTxnList txns = TxnHandler.createValidTxnList(txnHandler.getOpenTxns());
           Set<CompactionInfo> potentials = txnHandler.findPotentialCompactions(abortedThreshold);
           LOG.debug("Found " + potentials.size() + " potential compactions, " +
               "checking to see if we should compact any of them");

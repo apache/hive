@@ -35,8 +35,7 @@ public enum OperatorType implements org.apache.thrift.TEnum {
   DEMUX(20),
   EVENT(21),
   ORCFILEMERGE(22),
-  RCFILEMERGE(23),
-  MERGEJOIN(24);
+  RCFILEMERGE(23);
 
   private final int value;
 
@@ -105,8 +104,6 @@ public enum OperatorType implements org.apache.thrift.TEnum {
         return ORCFILEMERGE;
       case 23:
         return RCFILEMERGE;
-      case 24:
-        return MERGEJOIN;
       default:
         return null;
     }

@@ -23,7 +23,7 @@ import org.apache.hadoop.hive.common.classification.InterfaceStability.Evolving;
 /**
  * Represents the user or role in grant/revoke statements
  */
-@LimitedPrivate(value = { "Apache Argus (incubating)" })
+@LimitedPrivate(value = { "" })
 @Evolving
 public class HivePrincipal implements Comparable<HivePrincipal> {
 

@@ -102,9 +102,8 @@ public class HiveDriver implements Driver {
     return Pattern.matches(URL_PREFIX + ".*", url);
   }
 
-  @Override
   public Connection connect(String url, Properties info) throws SQLException {
-    return acceptsURL(url) ? new HiveConnection(url, info) : null;
+    return new HiveConnection(url, info);
   }
 
   /**

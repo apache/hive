@@ -16,6 +16,7 @@ package org.apache.hadoop.hive.ql.io.parquet.convert;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.io.ArrayWritable;
 import org.apache.hadoop.io.Writable;
 
@@ -36,19 +37,21 @@ public class DataWritableGroupConverter extends HiveGroupConverter {
   private final Object[] currentArr;
   private Writable[] rootMap;
 
-  public DataWritableGroupConverter(final GroupType requestedSchema, final GroupType tableSchema) {
-    this(requestedSchema, null, 0, tableSchema);
+  public DataWritableGroupConverter(final GroupType requestedSchema, final GroupType tableSchema,
+      final List<TypeInfo> hiveSchemaTypeInfos) {
+    this(requestedSchema, null, 0, tableSchema, hiveSchemaTypeInfos);
     final int fieldCount = tableSchema.getFieldCount();
     this.rootMap = new Writable[fieldCount];
   }
 
   public DataWritableGroupConverter(final GroupType groupType, final HiveGroupConverter parent,
-      final int index) {
-    this(groupType, parent, index, groupType);
+      final int index, final List<TypeInfo> hiveSchemaTypeInfos) {
+    this(groupType, parent, index, groupType, hiveSchemaTypeInfos);
   }
 
   public DataWritableGroupConverter(final GroupType selectedGroupType,
-      final HiveGroupConverter parent, final int index, final GroupType containingGroupType) {
+      final HiveGroupConverter parent, final int index, final GroupType containingGroupType,
+      final List<TypeInfo> hiveSchemaTypeInfos) {
     this.parent = parent;
     this.index = index;
     final int totalFieldCount = containingGroupType.getFieldCount();
@@ -62,7 +65,8 @@ public class DataWritableGroupConverter extends HiveGroupConverter {
       Type subtype = selectedFields.get(i);
       if (containingGroupType.getFields().contains(subtype)) {
         converters[i] = getConverterFromDescription(subtype,
-            containingGroupType.getFieldIndex(subtype.getName()), this);
+            containingGroupType.getFieldIndex(subtype.getName()), this,
+            hiveSchemaTypeInfos);
       } else {
         throw new IllegalStateException("Group type [" + containingGroupType +
             "] does not contain requested field: " + subtype);

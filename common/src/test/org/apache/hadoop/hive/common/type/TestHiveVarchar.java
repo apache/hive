@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.common.type;
 
+import junit.framework.TestCase;
 
 import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.common.LogUtils;
@@ -27,15 +28,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Random;
 
-import com.google.code.tempusfugit.concurrency.annotations.*;
-import com.google.code.tempusfugit.concurrency.*;
-import org.junit.*;
-import static org.junit.Assert.*;
 
-public class TestHiveVarchar {
-  @Rule public ConcurrentRule concurrentRule = new ConcurrentRule();
-  @Rule public RepeatingRule repeatingRule = new RepeatingRule();
-
+public class TestHiveVarchar extends TestCase {
   public TestHiveVarchar() {
     super();
   }
@@ -71,9 +65,6 @@ public class TestHiveVarchar {
     }
   }
 
-  @Test
-  @Concurrent(count=4)
-  @Repeating(repetition=100)
   public void testStringLength() throws Exception {
     int strLen = 20;
     int[] lengths = { 15, 20, 25 };
@@ -133,9 +124,6 @@ public class TestHiveVarchar {
     assertEquals(5, vc1.getCharacterLength());
   }
 
-  @Test
-  @Concurrent(count=4)
-  @Repeating(repetition=100)
   public void testComparison() throws Exception {
     HiveVarchar hc1 = new HiveVarchar("abcd", 20);
     HiveVarchar hc2 = new HiveVarchar("abcd", 20);

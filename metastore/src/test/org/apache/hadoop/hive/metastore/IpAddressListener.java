@@ -47,10 +47,15 @@ public class IpAddressListener extends MetaStoreEventListener{
     super(config);
   }
 
+  private String getIpFromInetAddress(String addr) {
+    return addr.substring(addr.indexOf('/') + 1);
+  }
+
   private void checkIpAddress() {
     try {
-      String localhostIp = InetAddress.getByName(LOCAL_HOST).getHostAddress();
-      Assert.assertEquals(localhostIp, HMSHandler.getIpAddress());
+      String localhostIp = InetAddress.getByName(LOCAL_HOST).toString();
+      Assert.assertEquals(getIpFromInetAddress(localhostIp),
+          getIpFromInetAddress(HMSHandler.getIpAddress()));
     } catch (UnknownHostException e) {
       Assert.assertTrue("InetAddress.getLocalHost threw an exception: " + e.getMessage(), false);
     }

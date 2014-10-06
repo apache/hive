@@ -155,8 +155,6 @@ STAGE PLANS:
                         0 key (type: int)
                         1 key (type: int)
                       outputColumnNames: _col0, _col1
-                      input vertices:
-                        0 Map 3
                       Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
                       Map Join Operator
                         condition map:
@@ -168,8 +166,6 @@ STAGE PLANS:
                           0 _col1 (type: string)
                           1 value (type: string)
                         outputColumnNames: _col0, _col12
-                        input vertices:
-                          1 Map 1
                         Statistics: Num rows: 302 Data size: 3213 Basic stats: COMPLETE Column stats: NONE
                         Select Operator
                           expressions: _col0 (type: int), _col12 (type: int)
@@ -262,8 +258,6 @@ STAGE PLANS:
                         0 UDFToDouble(key) (type: double)
                         1 UDFToDouble(key) (type: double)
                       outputColumnNames: _col0, _col1, _col6
-                      input vertices:
-                        0 Map 2
                       Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
                         expressions: _col0 (type: int), _col1 (type: string), _col6 (type: string)
@@ -336,8 +330,6 @@ STAGE PLANS:
                           0 _col0 (type: int)
                           1 _col0 (type: int)
                         outputColumnNames: _col0, _col1
-                        input vertices:
-                          1 Map 2
                         Statistics: Num rows: 91 Data size: 969 Basic stats: COMPLETE Column stats: NONE
                         Select Operator
                           expressions: _col0 (type: int), _col1 (type: int)
@@ -413,8 +405,6 @@ STAGE PLANS:
                           0 _col0 (type: int)
                           1 _col0 (type: int)
                         outputColumnNames: _col0, _col1
-                        input vertices:
-                          1 Map 2
                         Statistics: Num rows: 182 Data size: 1939 Basic stats: COMPLETE Column stats: NONE
                         Select Operator
                           expressions: _col0 (type: int), _col1 (type: int)
@@ -507,8 +497,6 @@ STAGE PLANS:
                           0 _col0 (type: int)
                           1 _col0 (type: int)
                         outputColumnNames: _col0, _col1
-                        input vertices:
-                          0 Map 1
                         Statistics: Num rows: 182 Data size: 1939 Basic stats: COMPLETE Column stats: NONE
                         Select Operator
                           expressions: _col0 (type: int), _col1 (type: int)
@@ -562,8 +550,6 @@ STAGE PLANS:
                         0 _col0 (type: int)
                         1 key (type: int)
                       outputColumnNames: _col0, _col1
-                      input vertices:
-                        0 Reducer 3
                       Statistics: Num rows: 133 Data size: 1411 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
                         expressions: _col0 (type: int), _col1 (type: int)
@@ -655,8 +641,6 @@ STAGE PLANS:
                         0 UDFToDouble(_col0) (type: double)
                         1 UDFToDouble(key) (type: double)
                       outputColumnNames: _col0, _col2
-                      input vertices:
-                        0 Reducer 3
                       Statistics: Num rows: 133 Data size: 1411 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
                         expressions: _col0 (type: string), _col2 (type: string)
