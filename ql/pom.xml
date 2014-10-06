@@ -28,7 +28,7 @@
   <name>Hive Query Language</name>
 
   <properties>
-    <optiq.version>0.9.1-incubating-SNAPSHOT</optiq.version>
+    <calcite.version>0.9.1-incubating-SNAPSHOT</calcite.version>
     <hive.path.to.root>..</hive.path.to.root>
   </properties>
 
@@ -183,9 +183,9 @@
       <version>${datanucleus-core.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.apache.optiq</groupId>
-      <artifactId>optiq-core</artifactId>
-      <version>${optiq.version}</version>
+      <groupId>org.apache.calcite</groupId>
+      <artifactId>calcite-core</artifactId>
+      <version>${calcite.version}</version>
       <exclusions>
         <!-- hsqldb interferes with the use of derby as the default db
           in hive's use of datanucleus. 
@@ -201,9 +201,9 @@
       </exclusions>
     </dependency>   
     <dependency>
-      <groupId>org.apache.optiq</groupId>
-      <artifactId>optiq-avatica</artifactId>
-      <version>${optiq.version}</version>
+      <groupId>org.apache.calcite</groupId>
+      <artifactId>calcite-avatica</artifactId>
+      <version>${calcite.version}</version>
       <exclusions>
         <!-- hsqldb interferes with the use of derby as the default db
           in hive's use of datanucleus. 
