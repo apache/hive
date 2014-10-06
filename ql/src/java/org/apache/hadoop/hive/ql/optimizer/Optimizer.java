@@ -53,6 +53,7 @@ public class Optimizer {
   public void initialize(HiveConf hiveConf) {
 
     boolean isTezExecEngine = HiveConf.getVar(hiveConf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez");
+    boolean isSparkExecEngine = HiveConf.getVar(hiveConf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("spark");
     boolean bucketMapJoinOptimizer = false;
 
     transformations = new ArrayList<Transform>();
@@ -134,7 +135,7 @@ public class Optimizer {
     if(HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTIMIZEMETADATAQUERIES)) {
       transformations.add(new StatsOptimizer());
     }
-    if (pctx.getContext().getExplain() && !isTezExecEngine) {
+    if (pctx.getContext().getExplain() && !isSparkExecEngine && !isTezExecEngine) {
       transformations.add(new AnnotateWithStatistics());
       transformations.add(new AnnotateWithOpTraits());
     }

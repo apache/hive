@@ -63,8 +63,7 @@ public class SparkMapRecordHandler extends SparkRecordHandler {
 
   private MapredLocalWork localWork = null;
   private boolean isLogInfoEnabled = false;
-
-  private final ExecMapperContext execContext = new ExecMapperContext();
+  private ExecMapperContext execContext;
 
   public void init(JobConf job, OutputCollector output, Reporter reporter) {
     super.init(job, output, reporter);
@@ -74,7 +73,7 @@ public class SparkMapRecordHandler extends SparkRecordHandler {
 
     try {
       jc = job;
-      execContext.setJc(jc);
+      execContext = new ExecMapperContext(jc);
       // create map and fetch operators
       MapWork mrwork = (MapWork) cache.retrieve(PLAN_KEY);
       if (mrwork == null) {

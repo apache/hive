@@ -76,7 +76,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src_10
-                  Statistics: Num rows: 1 Data size: 114 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
                     table:
@@ -92,21 +91,16 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   Lateral View Forward
-                    Statistics: Num rows: 1 Data size: 114 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: key
-                      Statistics: Num rows: 1 Data size: 114 Basic stats: COMPLETE Column stats: NONE
                       Lateral View Join Operator
                         outputColumnNames: _col0, _col5
-                        Statistics: Num rows: 2 Data size: 228 Basic stats: COMPLETE Column stats: NONE
                         Select Operator
                           expressions: _col0 (type: string), _col5 (type: double)
                           outputColumnNames: _col0, _col1
-                          Statistics: Num rows: 2 Data size: 228 Basic stats: COMPLETE Column stats: NONE
                           File Output Operator
                             compressed: false
-                            Statistics: Num rows: 2 Data size: 228 Basic stats: COMPLETE Column stats: NONE
                             table:
                                 input format: org.apache.hadoop.mapred.TextInputFormat
                                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -115,20 +109,15 @@ STAGE PLANS:
                     Select Operator
                       expressions: array((key + 1),(key + 2)) (type: array<double>)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 114 Basic stats: COMPLETE Column stats: NONE
                       UDTF Operator
-                        Statistics: Num rows: 1 Data size: 114 Basic stats: COMPLETE Column stats: NONE
                         function name: explode
                         Lateral View Join Operator
                           outputColumnNames: _col0, _col5
-                          Statistics: Num rows: 2 Data size: 228 Basic stats: COMPLETE Column stats: NONE
                           Select Operator
                             expressions: _col0 (type: string), _col5 (type: double)
                             outputColumnNames: _col0, _col1
-                            Statistics: Num rows: 2 Data size: 228 Basic stats: COMPLETE Column stats: NONE
                             File Output Operator
                               compressed: false
-                              Statistics: Num rows: 2 Data size: 228 Basic stats: COMPLETE Column stats: NONE
                               table:
                                   input format: org.apache.hadoop.mapred.TextInputFormat
                                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -172,21 +161,16 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   Lateral View Forward
-                    Statistics: Num rows: 1 Data size: 114 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: key
-                      Statistics: Num rows: 1 Data size: 114 Basic stats: COMPLETE Column stats: NONE
                       Lateral View Join Operator
                         outputColumnNames: _col0, _col5
-                        Statistics: Num rows: 2 Data size: 228 Basic stats: COMPLETE Column stats: NONE
                         Select Operator
                           expressions: _col0 (type: string), _col5 (type: double)
                           outputColumnNames: _col0, _col1
-                          Statistics: Num rows: 2 Data size: 228 Basic stats: COMPLETE Column stats: NONE
                           File Output Operator
                             compressed: false
-                            Statistics: Num rows: 2 Data size: 228 Basic stats: COMPLETE Column stats: NONE
                             table:
                                 input format: org.apache.hadoop.mapred.TextInputFormat
                                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -195,20 +179,15 @@ STAGE PLANS:
                     Select Operator
                       expressions: array((key + 3),(key + 4)) (type: array<double>)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 114 Basic stats: COMPLETE Column stats: NONE
                       UDTF Operator
-                        Statistics: Num rows: 1 Data size: 114 Basic stats: COMPLETE Column stats: NONE
                         function name: explode
                         Lateral View Join Operator
                           outputColumnNames: _col0, _col5
-                          Statistics: Num rows: 2 Data size: 228 Basic stats: COMPLETE Column stats: NONE
                           Select Operator
                             expressions: _col0 (type: string), _col5 (type: double)
                             outputColumnNames: _col0, _col1
-                            Statistics: Num rows: 2 Data size: 228 Basic stats: COMPLETE Column stats: NONE
                             File Output Operator
                               compressed: false
-                              Statistics: Num rows: 2 Data size: 228 Basic stats: COMPLETE Column stats: NONE
                               table:
                                   input format: org.apache.hadoop.mapred.TextInputFormat
                                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -330,7 +309,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src_10
-                  Statistics: Num rows: 1 Data size: 114 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
                     table:
@@ -348,55 +326,43 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   Lateral View Forward
-                    Statistics: Num rows: 1 Data size: 114 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: key
-                      Statistics: Num rows: 1 Data size: 114 Basic stats: COMPLETE Column stats: NONE
                       Lateral View Join Operator
                         outputColumnNames: _col0, _col5
-                        Statistics: Num rows: 2 Data size: 228 Basic stats: COMPLETE Column stats: NONE
                         Select Operator
                           expressions: _col0 (type: string), _col5 (type: double)
                           outputColumnNames: _col0, _col5
-                          Statistics: Num rows: 2 Data size: 228 Basic stats: COMPLETE Column stats: NONE
                           Group By Operator
                             aggregations: sum(_col5)
                             keys: _col0 (type: string)
                             mode: hash
                             outputColumnNames: _col0, _col1
-                            Statistics: Num rows: 2 Data size: 228 Basic stats: COMPLETE Column stats: NONE
                             Reduce Output Operator
                               key expressions: _col0 (type: string)
                               sort order: +
                               Map-reduce partition columns: _col0 (type: string)
-                              Statistics: Num rows: 2 Data size: 228 Basic stats: COMPLETE Column stats: NONE
                               value expressions: _col1 (type: double)
                     Select Operator
                       expressions: array((key + 1),(key + 2)) (type: array<double>)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 114 Basic stats: COMPLETE Column stats: NONE
                       UDTF Operator
-                        Statistics: Num rows: 1 Data size: 114 Basic stats: COMPLETE Column stats: NONE
                         function name: explode
                         Lateral View Join Operator
                           outputColumnNames: _col0, _col5
-                          Statistics: Num rows: 2 Data size: 228 Basic stats: COMPLETE Column stats: NONE
                           Select Operator
                             expressions: _col0 (type: string), _col5 (type: double)
                             outputColumnNames: _col0, _col5
-                            Statistics: Num rows: 2 Data size: 228 Basic stats: COMPLETE Column stats: NONE
                             Group By Operator
                               aggregations: sum(_col5)
                               keys: _col0 (type: string)
                               mode: hash
                               outputColumnNames: _col0, _col1
-                              Statistics: Num rows: 2 Data size: 228 Basic stats: COMPLETE Column stats: NONE
                               Reduce Output Operator
                                 key expressions: _col0 (type: string)
                                 sort order: +
                                 Map-reduce partition columns: _col0 (type: string)
-                                Statistics: Num rows: 2 Data size: 228 Basic stats: COMPLETE Column stats: NONE
                                 value expressions: _col1 (type: double)
         Reducer 4 
             Reduce Operator Tree:
@@ -405,14 +371,11 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 114 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: _col0 (type: string), _col1 (type: double)
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 1 Data size: 114 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 1 Data size: 114 Basic stats: COMPLETE Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -458,55 +421,43 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   Lateral View Forward
-                    Statistics: Num rows: 1 Data size: 114 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: key
-                      Statistics: Num rows: 1 Data size: 114 Basic stats: COMPLETE Column stats: NONE
                       Lateral View Join Operator
                         outputColumnNames: _col0, _col5
-                        Statistics: Num rows: 2 Data size: 228 Basic stats: COMPLETE Column stats: NONE
                         Select Operator
                           expressions: _col0 (type: string), _col5 (type: double)
                           outputColumnNames: _col0, _col5
-                          Statistics: Num rows: 2 Data size: 228 Basic stats: COMPLETE Column stats: NONE
                           Group By Operator
                             aggregations: sum(_col5)
                             keys: _col0 (type: string)
                             mode: hash
                             outputColumnNames: _col0, _col1
-                            Statistics: Num rows: 2 Data size: 228 Basic stats: COMPLETE Column stats: NONE
                             Reduce Output Operator
                               key expressions: _col0 (type: string)
                               sort order: +
                               Map-reduce partition columns: _col0 (type: string)
-                              Statistics: Num rows: 2 Data size: 228 Basic stats: COMPLETE Column stats: NONE
                               value expressions: _col1 (type: double)
                     Select Operator
                       expressions: array((key + 3),(key + 4)) (type: array<double>)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 114 Basic stats: COMPLETE Column stats: NONE
                       UDTF Operator
-                        Statistics: Num rows: 1 Data size: 114 Basic stats: COMPLETE Column stats: NONE
                         function name: explode
                         Lateral View Join Operator
                           outputColumnNames: _col0, _col5
-                          Statistics: Num rows: 2 Data size: 228 Basic stats: COMPLETE Column stats: NONE
                           Select Operator
                             expressions: _col0 (type: string), _col5 (type: double)
                             outputColumnNames: _col0, _col5
-                            Statistics: Num rows: 2 Data size: 228 Basic stats: COMPLETE Column stats: NONE
                             Group By Operator
                               aggregations: sum(_col5)
                               keys: _col0 (type: string)
                               mode: hash
                               outputColumnNames: _col0, _col1
-                              Statistics: Num rows: 2 Data size: 228 Basic stats: COMPLETE Column stats: NONE
                               Reduce Output Operator
                                 key expressions: _col0 (type: string)
                                 sort order: +
                                 Map-reduce partition columns: _col0 (type: string)
-                                Statistics: Num rows: 2 Data size: 228 Basic stats: COMPLETE Column stats: NONE
                                 value expressions: _col1 (type: double)
         Reducer 5 
             Reduce Operator Tree:
@@ -515,14 +466,11 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 114 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: _col0 (type: string), _col1 (type: double)
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 1 Data size: 114 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 1 Data size: 114 Basic stats: COMPLETE Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -628,7 +576,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src_10
-                  Statistics: Num rows: 0 Data size: 114 Basic stats: PARTIAL Column stats: NONE
                   File Output Operator
                     compressed: false
                     table:
@@ -646,55 +593,43 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   Lateral View Forward
-                    Statistics: Num rows: 0 Data size: 114 Basic stats: PARTIAL Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: key
-                      Statistics: Num rows: 0 Data size: 114 Basic stats: PARTIAL Column stats: NONE
                       Lateral View Join Operator
                         outputColumnNames: _col0, _col5
-                        Statistics: Num rows: 0 Data size: 228 Basic stats: PARTIAL Column stats: NONE
                         Select Operator
                           expressions: _col0 (type: string), _col5 (type: double)
                           outputColumnNames: _col0, _col5
-                          Statistics: Num rows: 0 Data size: 228 Basic stats: PARTIAL Column stats: NONE
                           Group By Operator
                             aggregations: sum(_col5)
                             keys: _col0 (type: string)
                             mode: hash
                             outputColumnNames: _col0, _col1
-                            Statistics: Num rows: 0 Data size: 228 Basic stats: PARTIAL Column stats: NONE
                             Reduce Output Operator
                               key expressions: _col0 (type: string)
                               sort order: +
                               Map-reduce partition columns: _col0 (type: string)
-                              Statistics: Num rows: 0 Data size: 228 Basic stats: PARTIAL Column stats: NONE
                               value expressions: _col1 (type: double)
                     Select Operator
                       expressions: array((key + 1),(key + 2)) (type: array<double>)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 0 Data size: 114 Basic stats: PARTIAL Column stats: NONE
                       UDTF Operator
-                        Statistics: Num rows: 0 Data size: 114 Basic stats: PARTIAL Column stats: NONE
                         function name: explode
                         Lateral View Join Operator
                           outputColumnNames: _col0, _col5
-                          Statistics: Num rows: 0 Data size: 228 Basic stats: PARTIAL Column stats: NONE
                           Select Operator
                             expressions: _col0 (type: string), _col5 (type: double)
                             outputColumnNames: _col0, _col5
-                            Statistics: Num rows: 0 Data size: 228 Basic stats: PARTIAL Column stats: NONE
                             Group By Operator
                               aggregations: sum(_col5)
                               keys: _col0 (type: string)
                               mode: hash
                               outputColumnNames: _col0, _col1
-                              Statistics: Num rows: 0 Data size: 228 Basic stats: PARTIAL Column stats: NONE
                               Reduce Output Operator
                                 key expressions: _col0 (type: string)
                                 sort order: +
                                 Map-reduce partition columns: _col0 (type: string)
-                                Statistics: Num rows: 0 Data size: 228 Basic stats: PARTIAL Column stats: NONE
                                 value expressions: _col1 (type: double)
         Reducer 4 
             Reduce Operator Tree:
@@ -703,14 +638,11 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 Select Operator
                   expressions: _col0 (type: string), _col1 (type: double)
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -770,37 +702,29 @@ STAGE PLANS:
                 TableScan
                   Filter Operator
                     predicate: ((key > 200) or (key < 200)) (type: boolean)
-                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                     Select Operator
                       expressions: key (type: string), value (type: string)
                       outputColumnNames: key, value
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                       Reduce Output Operator
                         key expressions: key (type: string)
                         sort order: +
                         Map-reduce partition columns: key (type: string)
-                        Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                         value expressions: value (type: string)
         Reducer 5 
             Reduce Operator Tree:
               Forward
-                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 Filter Operator
                   predicate: (KEY._col0 > 200) (type: boolean)
-                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                   Group By Operator
                     aggregations: count(VALUE._col0)
                     keys: KEY._col0 (type: string)
                     mode: complete
                     outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                     Select Operator
                       expressions: _col0 (type: string), _col1 (type: bigint)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                       File Output Operator
                         compressed: false
-                        Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                         table:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -808,20 +732,16 @@ STAGE PLANS:
                             name: default.src_lv2
                 Filter Operator
                   predicate: (KEY._col0 < 200) (type: boolean)
-                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                   Group By Operator
                     aggregations: count(VALUE._col0)
                     keys: KEY._col0 (type: string)
                     mode: complete
                     outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                     Select Operator
                       expressions: _col0 (type: string), _col1 (type: bigint)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                       File Output Operator
                         compressed: false
-                        Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                         table:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -947,7 +867,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src_10
-                  Statistics: Num rows: 0 Data size: 114 Basic stats: PARTIAL Column stats: NONE
                   File Output Operator
                     compressed: false
                     table:
@@ -965,54 +884,42 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   Lateral View Forward
-                    Statistics: Num rows: 0 Data size: 114 Basic stats: PARTIAL Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: key
-                      Statistics: Num rows: 0 Data size: 114 Basic stats: PARTIAL Column stats: NONE
                       Lateral View Join Operator
                         outputColumnNames: _col0, _col5
-                        Statistics: Num rows: 0 Data size: 228 Basic stats: PARTIAL Column stats: NONE
                         Select Operator
                           expressions: _col5 (type: double), _col0 (type: string)
                           outputColumnNames: _col5, _col0
-                          Statistics: Num rows: 0 Data size: 228 Basic stats: PARTIAL Column stats: NONE
                           Group By Operator
                             aggregations: sum(DISTINCT _col0)
                             keys: _col5 (type: double), _col0 (type: string)
                             mode: hash
                             outputColumnNames: _col0, _col1, _col2
-                            Statistics: Num rows: 0 Data size: 228 Basic stats: PARTIAL Column stats: NONE
                             Reduce Output Operator
                               key expressions: _col0 (type: double), _col1 (type: string)
                               sort order: ++
                               Map-reduce partition columns: _col0 (type: double)
-                              Statistics: Num rows: 0 Data size: 228 Basic stats: PARTIAL Column stats: NONE
                     Select Operator
                       expressions: array((key + 1),(key + 2)) (type: array<double>)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 0 Data size: 114 Basic stats: PARTIAL Column stats: NONE
                       UDTF Operator
-                        Statistics: Num rows: 0 Data size: 114 Basic stats: PARTIAL Column stats: NONE
                         function name: explode
                         Lateral View Join Operator
                           outputColumnNames: _col0, _col5
-                          Statistics: Num rows: 0 Data size: 228 Basic stats: PARTIAL Column stats: NONE
                           Select Operator
                             expressions: _col5 (type: double), _col0 (type: string)
                             outputColumnNames: _col5, _col0
-                            Statistics: Num rows: 0 Data size: 228 Basic stats: PARTIAL Column stats: NONE
                             Group By Operator
                               aggregations: sum(DISTINCT _col0)
                               keys: _col5 (type: double), _col0 (type: string)
                               mode: hash
                               outputColumnNames: _col0, _col1, _col2
-                              Statistics: Num rows: 0 Data size: 228 Basic stats: PARTIAL Column stats: NONE
                               Reduce Output Operator
                                 key expressions: _col0 (type: double), _col1 (type: string)
                                 sort order: ++
                                 Map-reduce partition columns: _col0 (type: double)
-                                Statistics: Num rows: 0 Data size: 228 Basic stats: PARTIAL Column stats: NONE
         Reducer 5 
             Reduce Operator Tree:
               Group By Operator
@@ -1020,14 +927,11 @@ STAGE PLANS:
                 keys: KEY._col0 (type: double)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 Select Operator
                   expressions: _col0 (type: double), _col1 (type: double)
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1086,54 +990,42 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   Lateral View Forward
-                    Statistics: Num rows: 0 Data size: 114 Basic stats: PARTIAL Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: key
-                      Statistics: Num rows: 0 Data size: 114 Basic stats: PARTIAL Column stats: NONE
                       Lateral View Join Operator
                         outputColumnNames: _col0, _col5
-                        Statistics: Num rows: 0 Data size: 228 Basic stats: PARTIAL Column stats: NONE
                         Select Operator
                           expressions: _col5 (type: double), _col0 (type: string)
                           outputColumnNames: _col5, _col0
-                          Statistics: Num rows: 0 Data size: 228 Basic stats: PARTIAL Column stats: NONE
                           Group By Operator
                             aggregations: sum(DISTINCT _col0)
                             keys: _col5 (type: double), _col0 (type: string)
                             mode: hash
                             outputColumnNames: _col0, _col1, _col2
-                            Statistics: Num rows: 0 Data size: 228 Basic stats: PARTIAL Column stats: NONE
                             Reduce Output Operator
                               key expressions: _col0 (type: double), _col1 (type: string)
                               sort order: ++
                               Map-reduce partition columns: _col0 (type: double)
-                              Statistics: Num rows: 0 Data size: 228 Basic stats: PARTIAL Column stats: NONE
                     Select Operator
                       expressions: array((key + 3),(key + 4)) (type: array<double>)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 0 Data size: 114 Basic stats: PARTIAL Column stats: NONE
                       UDTF Operator
-                        Statistics: Num rows: 0 Data size: 114 Basic stats: PARTIAL Column stats: NONE
                         function name: explode
                         Lateral View Join Operator
                           outputColumnNames: _col0, _col5
-                          Statistics: Num rows: 0 Data size: 228 Basic stats: PARTIAL Column stats: NONE
                           Select Operator
                             expressions: _col5 (type: double), _col0 (type: string)
                             outputColumnNames: _col5, _col0
-                            Statistics: Num rows: 0 Data size: 228 Basic stats: PARTIAL Column stats: NONE
                             Group By Operator
                               aggregations: sum(DISTINCT _col0)
                               keys: _col5 (type: double), _col0 (type: string)
                               mode: hash
                               outputColumnNames: _col0, _col1, _col2
-                              Statistics: Num rows: 0 Data size: 228 Basic stats: PARTIAL Column stats: NONE
                               Reduce Output Operator
                                 key expressions: _col0 (type: double), _col1 (type: string)
                                 sort order: ++
                                 Map-reduce partition columns: _col0 (type: double)
-                                Statistics: Num rows: 0 Data size: 228 Basic stats: PARTIAL Column stats: NONE
         Reducer 6 
             Reduce Operator Tree:
               Group By Operator
@@ -1141,14 +1033,11 @@ STAGE PLANS:
                 keys: KEY._col0 (type: double)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 Select Operator
                   expressions: _col0 (type: double), _col1 (type: double)
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1167,18 +1056,15 @@ STAGE PLANS:
                   Select Operator
                     expressions: value (type: string), key (type: string)
                     outputColumnNames: value, key
-                    Statistics: Num rows: 0 Data size: 114 Basic stats: PARTIAL Column stats: NONE
                     Group By Operator
                       aggregations: sum(DISTINCT key)
                       keys: value (type: string), key (type: string)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 0 Data size: 114 Basic stats: PARTIAL Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: string)
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 0 Data size: 114 Basic stats: PARTIAL Column stats: NONE
         Reducer 7 
             Reduce Operator Tree:
               Group By Operator
@@ -1186,14 +1072,11 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 Select Operator
                   expressions: _col0 (type: string), _col1 (type: double)
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1349,7 +1232,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src_10
-                  Statistics: Num rows: 0 Data size: 114 Basic stats: PARTIAL Column stats: NONE
                   File Output Operator
                     compressed: false
                     table:
@@ -1367,54 +1249,42 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   Lateral View Forward
-                    Statistics: Num rows: 0 Data size: 114 Basic stats: PARTIAL Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: key
-                      Statistics: Num rows: 0 Data size: 114 Basic stats: PARTIAL Column stats: NONE
                       Lateral View Join Operator
                         outputColumnNames: _col0, _col5
-                        Statistics: Num rows: 0 Data size: 228 Basic stats: PARTIAL Column stats: NONE
                         Select Operator
                           expressions: _col0 (type: string), _col5 (type: double)
                           outputColumnNames: _col0, _col5
-                          Statistics: Num rows: 0 Data size: 228 Basic stats: PARTIAL Column stats: NONE
                           Group By Operator
                             aggregations: sum(DISTINCT _col5)
                             keys: _col0 (type: string), _col5 (type: double)
                             mode: hash
                             outputColumnNames: _col0, _col1, _col2
-                            Statistics: Num rows: 0 Data size: 228 Basic stats: PARTIAL Column stats: NONE
                             Reduce Output Operator
                               key expressions: _col0 (type: string), _col1 (type: double)
                               sort order: ++
                               Map-reduce partition columns: _col0 (type: string)
-                              Statistics: Num rows: 0 Data size: 228 Basic stats: PARTIAL Column stats: NONE
                     Select Operator
                       expressions: array((key + 1),(key + 2)) (type: array<double>)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 0 Data size: 114 Basic stats: PARTIAL Column stats: NONE
                       UDTF Operator
-                        Statistics: Num rows: 0 Data size: 114 Basic stats: PARTIAL Column stats: NONE
                         function name: explode
                         Lateral View Join Operator
                           outputColumnNames: _col0, _col5
-                          Statistics: Num rows: 0 Data size: 228 Basic stats: PARTIAL Column stats: NONE
                           Select Operator
                             expressions: _col0 (type: string), _col5 (type: double)
                             outputColumnNames: _col0, _col5
-                            Statistics: Num rows: 0 Data size: 228 Basic stats: PARTIAL Column stats: NONE
                             Group By Operator
                               aggregations: sum(DISTINCT _col5)
                               keys: _col0 (type: string), _col5 (type: double)
                               mode: hash
                               outputColumnNames: _col0, _col1, _col2
-                              Statistics: Num rows: 0 Data size: 228 Basic stats: PARTIAL Column stats: NONE
                               Reduce Output Operator
                                 key expressions: _col0 (type: string), _col1 (type: double)
                                 sort order: ++
                                 Map-reduce partition columns: _col0 (type: string)
-                                Statistics: Num rows: 0 Data size: 228 Basic stats: PARTIAL Column stats: NONE
         Reducer 5 
             Reduce Operator Tree:
               Group By Operator
@@ -1422,14 +1292,11 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 Select Operator
                   expressions: _col0 (type: string), _col1 (type: double)
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1501,54 +1368,42 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   Lateral View Forward
-                    Statistics: Num rows: 0 Data size: 114 Basic stats: PARTIAL Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: key
-                      Statistics: Num rows: 0 Data size: 114 Basic stats: PARTIAL Column stats: NONE
                       Lateral View Join Operator
                         outputColumnNames: _col0, _col5
-                        Statistics: Num rows: 0 Data size: 228 Basic stats: PARTIAL Column stats: NONE
                         Select Operator
                           expressions: _col0 (type: string), _col5 (type: double)
                           outputColumnNames: _col0, _col5
-                          Statistics: Num rows: 0 Data size: 228 Basic stats: PARTIAL Column stats: NONE
                           Group By Operator
                             aggregations: sum(DISTINCT _col5)
                             keys: _col0 (type: string), _col5 (type: double)
                             mode: hash
                             outputColumnNames: _col0, _col1, _col2
-                            Statistics: Num rows: 0 Data size: 228 Basic stats: PARTIAL Column stats: NONE
                             Reduce Output Operator
                               key expressions: _col0 (type: string), _col1 (type: double)
                               sort order: ++
                               Map-reduce partition columns: _col0 (type: string)
-                              Statistics: Num rows: 0 Data size: 228 Basic stats: PARTIAL Column stats: NONE
                     Select Operator
                       expressions: array((key + 3),(key + 4)) (type: array<double>)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 0 Data size: 114 Basic stats: PARTIAL Column stats: NONE
                       UDTF Operator
-                        Statistics: Num rows: 0 Data size: 114 Basic stats: PARTIAL Column stats: NONE
                         function name: explode
                         Lateral View Join Operator
                           outputColumnNames: _col0, _col5
-                          Statistics: Num rows: 0 Data size: 228 Basic stats: PARTIAL Column stats: NONE
                           Select Operator
                             expressions: _col0 (type: string), _col5 (type: double)
                             outputColumnNames: _col0, _col5
-                            Statistics: Num rows: 0 Data size: 228 Basic stats: PARTIAL Column stats: NONE
                             Group By Operator
                               aggregations: sum(DISTINCT _col5)
                               keys: _col0 (type: string), _col5 (type: double)
                               mode: hash
                               outputColumnNames: _col0, _col1, _col2
-                              Statistics: Num rows: 0 Data size: 228 Basic stats: PARTIAL Column stats: NONE
                               Reduce Output Operator
                                 key expressions: _col0 (type: string), _col1 (type: double)
                                 sort order: ++
                                 Map-reduce partition columns: _col0 (type: string)
-                                Statistics: Num rows: 0 Data size: 228 Basic stats: PARTIAL Column stats: NONE
         Reducer 6 
             Reduce Operator Tree:
               Group By Operator
@@ -1556,14 +1411,11 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 Select Operator
                   expressions: _col0 (type: string), _col1 (type: double)
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1581,36 +1433,28 @@ STAGE PLANS:
                 TableScan
                   Filter Operator
                     predicate: ((key > 200) or (key < 200)) (type: boolean)
-                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                     Select Operator
                       expressions: key (type: string), value (type: string)
                       outputColumnNames: key, value
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                       Reduce Output Operator
                         key expressions: value (type: string), key (type: string)
                         sort order: ++
                         Map-reduce partition columns: value (type: string)
-                        Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
         Reducer 7 
             Reduce Operator Tree:
               Forward
-                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 Filter Operator
                   predicate: (KEY._col1:0._col0 > 200) (type: boolean)
-                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                   Group By Operator
                     aggregations: sum(DISTINCT KEY._col1:0._col0)
                     keys: KEY._col0 (type: string)
                     mode: complete
                     outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                     Select Operator
                       expressions: _col0 (type: string), _col1 (type: double)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                       File Output Operator
                         compressed: false
-                        Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                         table:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1618,20 +1462,16 @@ STAGE PLANS:
                             name: default.src_lv3
                 Filter Operator
                   predicate: (KEY._col1:0._col0 < 200) (type: boolean)
-                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                   Group By Operator
                     aggregations: sum(DISTINCT KEY._col1:0._col0)
                     keys: KEY._col0 (type: string)
                     mode: complete
                     outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                     Select Operator
                       expressions: _col0 (type: string), _col1 (type: double)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                       File Output Operator
                         compressed: false
-                        Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                         table:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
