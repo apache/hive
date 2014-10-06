@@ -72,6 +72,7 @@ import org.apache.hadoop.mapreduce.TaskType;
 import org.apache.hadoop.mapreduce.task.JobContextImpl;
 import org.apache.hadoop.mapreduce.task.TaskAttemptContextImpl;
 import org.apache.hadoop.net.NetUtils;
+import org.apache.hadoop.security.authentication.util.KerberosName;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.Progressable;
 import org.apache.tez.test.MiniTezCluster;
@@ -846,5 +847,45 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   public Path getCurrentTrashPath(Configuration conf, FileSystem fs) {
     TrashPolicy tp = TrashPolicy.getInstance(conf, fs, fs.getHomeDirectory());
     return tp.getCurrentTrashDir();
+  }
+
+  /**
+   * Returns a shim to wrap KerberosName
+   */
+  @Override
+  public KerberosNameShim getKerberosNameShim(String name) throws IOException {
+    return new KerberosNameShim(name);
+  }
+
+  /**
+   * Shim for KerberosName
+   */
+  public class KerberosNameShim implements HadoopShimsSecure.KerberosNameShim {
+
+    private KerberosName kerberosName;
+
+    public KerberosNameShim(String name) {
+      kerberosName = new KerberosName(name);
+    }
+
+    public String getDefaultRealm() {
+      return kerberosName.getDefaultRealm();
+    }
+
+    public String getServiceName() {
+      return kerberosName.getServiceName();
+    }
+
+    public String getHostName() {
+      return kerberosName.getHostName();
+    }
+
+    public String getRealm() {
+      return kerberosName.getRealm();
+    }
+
+    public String getShortName() throws IOException {
+      return kerberosName.getShortName();
+    }
   }
 }
