@@ -60,6 +60,7 @@ import org.apache.hadoop.mapreduce.OutputFormat;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.TaskAttemptID;
 import org.apache.hadoop.mapreduce.TaskID;
+import org.apache.hadoop.security.KerberosName;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.Progressable;
 import org.apache.hadoop.util.VersionInfo;
@@ -545,5 +546,45 @@ public class Hadoop20SShims extends HadoopShimsSecure {
   @Override
   public Path getCurrentTrashPath(Configuration conf, FileSystem fs) {
     return null;
+  }
+
+  /**
+   * Returns a shim to wrap KerberosName
+   */
+  @Override
+  public KerberosNameShim getKerberosNameShim(String name) throws IOException {
+    return new KerberosNameShim(name);
+  }
+
+  /**
+   * Shim for KerberosName
+   */
+  public class KerberosNameShim implements HadoopShimsSecure.KerberosNameShim {
+
+    private KerberosName kerberosName;
+
+    public KerberosNameShim(String name) {
+      kerberosName = new KerberosName(name);
+    }
+
+    public String getDefaultRealm() {
+      return kerberosName.getDefaultRealm();
+    }
+
+    public String getServiceName() {
+      return kerberosName.getServiceName();
+    }
+
+    public String getHostName() {
+      return kerberosName.getHostName();
+    }
+
+    public String getRealm() {
+      return kerberosName.getRealm();
+    }
+
+    public String getShortName() throws IOException {
+      return kerberosName.getShortName();
+    }
   }
 }
