@@ -731,4 +731,21 @@ public interface HadoopShims {
    * @return Path to HDFS trash, if current hadoop supports trash feature.  Null otherwise.
    */
   Path getCurrentTrashPath(Configuration conf, FileSystem fs);
+
+  /**
+   * Returns a shim to wrap KerberosName
+   */
+  public KerberosNameShim getKerberosNameShim(String name) throws IOException;
+
+  /**
+   * Shim for KerberosName
+   */
+  public interface KerberosNameShim {
+    public String getDefaultRealm();
+    public String getServiceName();
+    public String getHostName();
+    public String getRealm();
+    public String getShortName() throws IOException;
+  }
+
 }
