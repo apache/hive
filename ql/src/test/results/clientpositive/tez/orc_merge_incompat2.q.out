@@ -207,18 +207,22 @@ POSTHOOK: Lineage: orc_merge5a PARTITION(st=80.0).ts SIMPLE [(orc_merge5)orc_mer
 POSTHOOK: Lineage: orc_merge5a PARTITION(st=80.0).userid SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:userid, type:bigint, comment:null), ]
 PREHOOK: query: analyze table orc_merge5a partition(st=80.0) compute statistics noscan
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_merge5a
 PREHOOK: Output: default@orc_merge5a
 PREHOOK: Output: default@orc_merge5a@st=80.0
 POSTHOOK: query: analyze table orc_merge5a partition(st=80.0) compute statistics noscan
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_merge5a
 POSTHOOK: Output: default@orc_merge5a
 POSTHOOK: Output: default@orc_merge5a@st=80.0
 PREHOOK: query: analyze table orc_merge5a partition(st=0.8) compute statistics noscan
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_merge5a
 PREHOOK: Output: default@orc_merge5a
 PREHOOK: Output: default@orc_merge5a@st=0.8
 POSTHOOK: query: analyze table orc_merge5a partition(st=0.8) compute statistics noscan
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_merge5a
 POSTHOOK: Output: default@orc_merge5a
 POSTHOOK: Output: default@orc_merge5a@st=0.8
 PREHOOK: query: desc formatted orc_merge5a partition(st=80.0)
@@ -252,7 +256,7 @@ Partition Parameters:
 	numFiles            	4                   
 	numRows             	4                   
 	rawDataSize         	1020                
-	totalSize           	2092                
+	totalSize           	2060                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -296,7 +300,7 @@ Partition Parameters:
 	numFiles            	4                   
 	numRows             	8                   
 	rawDataSize         	2040                
-	totalSize           	2204                
+	totalSize           	2188                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -392,18 +396,22 @@ POSTHOOK: Input: default@orc_merge5a
 POSTHOOK: Output: default@orc_merge5a@st=0.8
 PREHOOK: query: analyze table orc_merge5a partition(st=80.0) compute statistics noscan
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_merge5a
 PREHOOK: Output: default@orc_merge5a
 PREHOOK: Output: default@orc_merge5a@st=80.0
 POSTHOOK: query: analyze table orc_merge5a partition(st=80.0) compute statistics noscan
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_merge5a
 POSTHOOK: Output: default@orc_merge5a
 POSTHOOK: Output: default@orc_merge5a@st=80.0
 PREHOOK: query: analyze table orc_merge5a partition(st=0.8) compute statistics noscan
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_merge5a
 PREHOOK: Output: default@orc_merge5a
 PREHOOK: Output: default@orc_merge5a@st=0.8
 POSTHOOK: query: analyze table orc_merge5a partition(st=0.8) compute statistics noscan
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_merge5a
 POSTHOOK: Output: default@orc_merge5a
 POSTHOOK: Output: default@orc_merge5a@st=0.8
 PREHOOK: query: desc formatted orc_merge5a partition(st=80.0)
@@ -437,7 +445,7 @@ Partition Parameters:
 	numFiles            	3                   
 	numRows             	4                   
 	rawDataSize         	1020                
-	totalSize           	1851                
+	totalSize           	1819                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -481,7 +489,7 @@ Partition Parameters:
 	numFiles            	3                   
 	numRows             	8                   
 	rawDataSize         	2040                
-	totalSize           	1944                
+	totalSize           	1928                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

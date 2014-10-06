@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.exec.vector;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
@@ -45,7 +46,8 @@ public class VectorExtractOperator extends ExtractOperator {
   private int keyColCount;
   private int valueColCount;
   
-  private transient int [] projectedColumns = null;
+  private transient VectorizedRowBatch outputBatch;
+  private transient int remainingColCount;
 
   public VectorExtractOperator(VectorizationContext vContext, OperatorDesc conf)
       throws HiveException {
@@ -57,26 +59,25 @@ public class VectorExtractOperator extends ExtractOperator {
     super();
   }
 
-  private StructObjectInspector makeStandardStructObjectInspector(StructObjectInspector structObjectInspector) {
-    List<? extends StructField> fields = structObjectInspector.getAllStructFieldRefs();
-    ArrayList<ObjectInspector> ois = new ArrayList<ObjectInspector>();
-    ArrayList<String> colNames = new ArrayList<String>();
-    for (StructField field: fields) {
-      colNames.add(field.getFieldName());
-      ois.add(field.getFieldObjectInspector());
-    }
-    return ObjectInspectorFactory
-              .getStandardStructObjectInspector(colNames, ois);
-    }
- 
   @Override
   protected void initializeOp(Configuration hconf) throws HiveException {
-    outputObjInspector = inputObjInspectors[0];
-    LOG.info("VectorExtractOperator class of outputObjInspector is " + outputObjInspector.getClass().getName());
-    projectedColumns = new int [valueColCount];
-    for (int i = 0; i < valueColCount; i++) {
-      projectedColumns[i] = keyColCount + i;
+    StructObjectInspector structInputObjInspector = (StructObjectInspector) inputObjInspectors[0];
+    List<? extends StructField> fields = structInputObjInspector.getAllStructFieldRefs();
+    ArrayList<ObjectInspector> ois = new ArrayList<ObjectInspector>();
+    ArrayList<String> colNames = new ArrayList<String>();
+    for (int i = keyColCount; i < fields.size(); i++) {
+      StructField field = fields.get(i);
+      String fieldName = field.getFieldName();
+
+      // Remove "VALUE." prefix.
+      int dotIndex = fieldName.indexOf(".");
+      colNames.add(fieldName.substring(dotIndex + 1));
+      ois.add(field.getFieldObjectInspector());
     }
+    outputObjInspector = ObjectInspectorFactory
+              .getStandardStructObjectInspector(colNames, ois);
+    remainingColCount = fields.size() - keyColCount;
+    outputBatch =  new VectorizedRowBatch(remainingColCount);
     initializeChildren(hconf);
   }
 
@@ -86,20 +87,16 @@ public class VectorExtractOperator extends ExtractOperator {
   }
   
   @Override
-  // Evaluate vectorized batches of rows and forward them.
+  // Remove the key columns and forward the values (and scratch columns).
   public void processOp(Object row, int tag) throws HiveException {
-    VectorizedRowBatch vrg = (VectorizedRowBatch) row;
+    VectorizedRowBatch inputBatch = (VectorizedRowBatch) row;
 
-    // Project away the key columns...
-    int[] originalProjections = vrg.projectedColumns;
-    int originalProjectionSize = vrg.projectionSize;
-    vrg.projectionSize = valueColCount;
-    vrg.projectedColumns = this.projectedColumns;
+    // Copy references to the input columns array starting after the keys...
+    for (int i = 0; i < remainingColCount; i++) {
+      outputBatch.cols[i] = inputBatch.cols[keyColCount + i];
+    }
+    outputBatch.size = inputBatch.size;
 
-    forward(vrg, outputObjInspector);
-
-    // Revert the projected columns back, because vrg will be re-used.
-    vrg.projectionSize = originalProjectionSize;
-    vrg.projectedColumns = originalProjections;
+    forward(outputBatch, outputObjInspector);
   }
 }

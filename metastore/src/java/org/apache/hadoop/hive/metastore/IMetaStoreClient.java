@@ -192,6 +192,10 @@ public interface IMetaStoreClient {
    *          The database for this table
    * @param tableName
    *          The table to drop
+   * @param deleteData
+   *          Should we delete the underlying data
+   * @param ignoreUnknownTab
+   *          don't throw if the requested table doesn't exist
    * @throws MetaException
    *           Could not drop table properly.
    * @throws NoSuchObjectException
@@ -200,7 +204,16 @@ public interface IMetaStoreClient {
    *           A thrift communication error occurred
    */
   void dropTable(String dbname, String tableName, boolean deleteData,
-      boolean ignoreUknownTab) throws MetaException, TException,
+      boolean ignoreUnknownTab) throws MetaException, TException,
+      NoSuchObjectException;
+
+  /**
+   * @param ifPurge
+   *          completely purge the table (skipping trash) while removing data from warehouse
+   * @see #dropTable(String, String, boolean, boolean)
+   */
+  public void dropTable(String dbname, String tableName, boolean deleteData,
+      boolean ignoreUnknownTab, boolean ifPurge) throws MetaException, TException,
       NoSuchObjectException;
 
   /**
@@ -226,6 +239,9 @@ public interface IMetaStoreClient {
   void dropTable(String tableName, boolean deleteData)
       throws MetaException, UnknownTableException, TException, NoSuchObjectException;
 
+  /**
+   * @see #dropTable(String, String, boolean, boolean)
+   */
   void dropTable(String dbname, String tableName)
       throws MetaException, TException, NoSuchObjectException;
 
@@ -1068,6 +1084,15 @@ public interface IMetaStoreClient {
    * @throws TException
    */
   ValidTxnList getValidTxns() throws TException;
+
+  /**
+   * Get a structure that details valid transactions.
+   * @param currentTxn The current transaction of the caller.  This will be removed from the
+   *                   exceptions list so that the caller sees records from his own transaction.
+   * @return list of valid transactions
+   * @throws TException
+   */
+  ValidTxnList getValidTxns(long currentTxn) throws TException;
 
   /**
    * Initiate a transaction.

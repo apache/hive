@@ -159,7 +159,7 @@ STAGE PLANS:
                       value expressions: value (type: string)
         Reducer 2 
             Reduce Operator Tree:
-              Join Operator
+              Merge Join Operator
                 condition map:
                      Left Semi Join 0 to 1
                 condition expressions:
@@ -276,7 +276,7 @@ STAGE PLANS:
                           Statistics: Num rows: 42 Data size: 446 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
-              Join Operator
+              Merge Join Operator
                 condition map:
                      Left Semi Join 0 to 1
                 condition expressions:
@@ -439,7 +439,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
         Reducer 4 
             Reduce Operator Tree:
-              Join Operator
+              Merge Join Operator
                 condition map:
                      Left Semi Join 0 to 1
                 condition expressions:
@@ -545,7 +545,7 @@ STAGE PLANS:
                     value expressions: p_mfgr (type: string), p_size (type: int)
         Reducer 2 
             Reduce Operator Tree:
-              Join Operator
+              Merge Join Operator
                 condition map:
                      Left Semi Join 0 to 1
                 condition expressions:
@@ -714,7 +714,7 @@ STAGE PLANS:
                           Statistics: Num rows: 42 Data size: 446 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
-              Join Operator
+              Merge Join Operator
                 condition map:
                      Left Semi Join 0 to 1
                 condition expressions:
@@ -901,7 +901,7 @@ STAGE PLANS:
                           Statistics: Num rows: 432 Data size: 3024 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
-              Join Operator
+              Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
                 condition expressions:
@@ -917,7 +917,7 @@ STAGE PLANS:
                   value expressions: _col0 (type: int), _col3 (type: int)
         Reducer 3 
             Reduce Operator Tree:
-              Join Operator
+              Merge Join Operator
                 condition map:
                      Left Semi Join 0 to 1
                 condition expressions:

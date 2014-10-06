@@ -147,7 +147,7 @@ public class HookContext {
  }
 
   public String getOperationName() {
-    return SessionState.get().getHiveOperation().name();
+    return queryPlan.getOperationName();
   }
 
   public String getUserName() {

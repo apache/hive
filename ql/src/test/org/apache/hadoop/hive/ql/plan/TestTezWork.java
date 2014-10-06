@@ -23,11 +23,16 @@ import java.util.List;
 import junit.framework.Assert;
 
 import org.apache.hadoop.hive.ql.plan.TezEdgeProperty.EdgeType;
+import org.apache.hadoop.mapred.JobConf;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 public class TestTezWork {
 
+  private static final String MR_JAR_PROPERTY = "tmpjars";
   private List<BaseWork> nodes;
   private TezWork work;
 
@@ -155,5 +160,76 @@ public class TestTezWork {
     for (int i = 0; i < 5; ++i) {
       Assert.assertEquals(sorted.get(i), nodes.get(4-i));
     }
+  }
+
+  @Test
+  public void testConfigureJars() throws Exception {
+    final JobConf conf = new JobConf();
+    conf.set(MR_JAR_PROPERTY, "file:///tmp/foo1.jar");
+    BaseWork baseWork = Mockito.mock(BaseWork.class);
+    Mockito.doAnswer(new Answer<Void>() {
+
+      @Override
+      public Void answer(InvocationOnMock invocation) throws Throwable {
+        conf.set(MR_JAR_PROPERTY, "file:///tmp/foo2.jar");
+        return null;
+      }
+
+    }).when(baseWork).configureJobConf(conf);
+
+    work.add(baseWork);
+    work.configureJobConfAndExtractJars(conf);
+    Assert.assertEquals("file:///tmp/foo1.jar,file:///tmp/foo2.jar", conf.get(MR_JAR_PROPERTY));
+  }
+
+  @Test
+  public void testConfigureJarsNoExtraJars() throws Exception {
+    final JobConf conf = new JobConf();
+    conf.set(MR_JAR_PROPERTY, "file:///tmp/foo1.jar");
+    BaseWork baseWork = Mockito.mock(BaseWork.class);
+
+    work.add(baseWork);
+    work.configureJobConfAndExtractJars(conf);
+    Assert.assertEquals("file:///tmp/foo1.jar", conf.get(MR_JAR_PROPERTY));
+  }
+
+  @Test
+  public void testConfigureJarsWithNull() throws Exception {
+    final JobConf conf = new JobConf();
+    conf.set(MR_JAR_PROPERTY, "file:///tmp/foo1.jar");
+    BaseWork baseWork = Mockito.mock(BaseWork.class);
+    Mockito.doAnswer(new Answer<Void>() {
+
+      @Override
+      public Void answer(InvocationOnMock invocation) throws Throwable {
+        conf.unset(MR_JAR_PROPERTY);
+        return null;
+      }
+
+    }).when(baseWork).configureJobConf(conf);
+
+    work.add(baseWork);
+    work.configureJobConfAndExtractJars(conf);
+    Assert.assertEquals("file:///tmp/foo1.jar", conf.get(MR_JAR_PROPERTY));
+  }
+
+  @Test
+  public void testConfigureJarsStartingWithNull() throws Exception {
+    final JobConf conf = new JobConf();
+    conf.unset(MR_JAR_PROPERTY);
+    BaseWork baseWork = Mockito.mock(BaseWork.class);
+    Mockito.doAnswer(new Answer<Void>() {
+
+      @Override
+      public Void answer(InvocationOnMock invocation) throws Throwable {
+        conf.setStrings(MR_JAR_PROPERTY, "file:///tmp/foo1.jar", "file:///tmp/foo2.jar");
+        return null;
+      }
+
+    }).when(baseWork).configureJobConf(conf);
+
+    work.add(baseWork);
+    work.configureJobConfAndExtractJars(conf);
+    Assert.assertEquals("file:///tmp/foo1.jar,file:///tmp/foo2.jar", conf.get(MR_JAR_PROPERTY));
   }
 }

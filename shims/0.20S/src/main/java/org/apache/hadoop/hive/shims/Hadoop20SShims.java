@@ -534,6 +534,16 @@ public class Hadoop20SShims extends HadoopShimsSecure {
 
   @Override
   public boolean hasStickyBit(FsPermission permission) {
-    return false;   // not supported
+    return false;
+  }
+
+  @Override
+  public boolean supportTrashFeature() {
+    return false;
+  }
+
+  @Override
+  public Path getCurrentTrashPath(Configuration conf, FileSystem fs) {
+    return null;
   }
 }

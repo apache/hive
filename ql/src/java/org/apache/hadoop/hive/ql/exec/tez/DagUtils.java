@@ -20,6 +20,23 @@ package org.apache.hadoop.hive.ql.exec.tez;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
+import com.google.protobuf.ByteString;
+
+import javax.security.auth.login.LoginException;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -32,6 +49,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.exec.CommonMergeJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapper;
 import org.apache.hadoop.hive.ql.exec.mr.ExecReducer;
@@ -47,10 +65,12 @@ import org.apache.hadoop.hive.ql.io.merge.MergeFileWork;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.MapWork;
+import org.apache.hadoop.hive.ql.plan.MergeJoinWork;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.TezEdgeProperty;
 import org.apache.hadoop.hive.ql.plan.TezEdgeProperty.EdgeType;
 import org.apache.hadoop.hive.ql.plan.TezWork;
+import org.apache.hadoop.hive.ql.plan.TezWork.VertexType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.stats.StatsFactory;
 import org.apache.hadoop.hive.ql.stats.StatsPublisher;
@@ -90,12 +110,16 @@ import org.apache.tez.dag.api.Vertex;
 import org.apache.tez.dag.api.VertexGroup;
 import org.apache.tez.dag.api.VertexManagerPluginDescriptor;
 import org.apache.tez.dag.library.vertexmanager.ShuffleVertexManager;
+import org.apache.tez.mapreduce.common.MRInputAMSplitGenerator;
 import org.apache.tez.mapreduce.hadoop.MRHelpers;
 import org.apache.tez.mapreduce.hadoop.MRInputHelpers;
 import org.apache.tez.mapreduce.hadoop.MRJobConfig;
+import org.apache.tez.mapreduce.input.MRInput;
 import org.apache.tez.mapreduce.input.MRInputLegacy;
+import org.apache.tez.mapreduce.input.MultiMRInput;
 import org.apache.tez.mapreduce.output.MROutput;
 import org.apache.tez.mapreduce.partition.MRPartitioner;
+import org.apache.tez.mapreduce.protos.MRRuntimeProtos;
 import org.apache.tez.runtime.library.api.TezRuntimeConfiguration;
 import org.apache.tez.runtime.library.common.comparator.TezBytesComparator;
 import org.apache.tez.runtime.library.common.serializer.TezBytesWritableSerialization;
@@ -103,21 +127,6 @@ import org.apache.tez.runtime.library.conf.OrderedPartitionedKVEdgeConfig;
 import org.apache.tez.runtime.library.conf.UnorderedKVEdgeConfig;
 import org.apache.tez.runtime.library.conf.UnorderedPartitionedKVEdgeConfig;
 import org.apache.tez.runtime.library.input.ConcatenatedMergedKeyValueInput;
-
-import javax.security.auth.login.LoginException;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 /**
  * DagUtils. DagUtils is a collection of helper methods to convert
@@ -130,6 +139,11 @@ public class DagUtils {
   private static final Log LOG = LogFactory.getLog(DagUtils.class.getName());
   private static final String TEZ_DIR = "_tez_scratch_dir";
   private static DagUtils instance;
+  // The merge file being currently processed.
+  public static final String TEZ_MERGE_CURRENT_MERGE_FILE_PREFIX =
+      "hive.tez.current.merge.file.prefix";
+  // "A comma separated list of work names used as prefix.
+  public static final String TEZ_MERGE_WORK_FILE_PREFIXES = "hive.tez.merge.file.prefixes";
 
   private void addCredentials(MapWork mapWork, DAG dag) {
     Set<String> paths = mapWork.getPathToAliases().keySet();
@@ -238,8 +252,8 @@ public class DagUtils {
    * endpoints.
    */
   @SuppressWarnings("rawtypes")
-  public GroupInputEdge createEdge(VertexGroup group, JobConf vConf,
-      Vertex w, TezEdgeProperty edgeProp)
+  public GroupInputEdge createEdge(VertexGroup group, JobConf vConf, Vertex w,
+      TezEdgeProperty edgeProp, VertexType vertexType)
     throws IOException {
 
     Class mergeInputClass;
@@ -254,10 +268,14 @@ public class DagUtils {
     case CUSTOM_EDGE: {
       mergeInputClass = ConcatenatedMergedKeyValueInput.class;
       int numBuckets = edgeProp.getNumBuckets();
+      CustomVertexConfiguration vertexConf =
+          new CustomVertexConfiguration(numBuckets, vertexType, "");
+      DataOutputBuffer dob = new DataOutputBuffer();
+      vertexConf.write(dob);
       VertexManagerPluginDescriptor desc =
           VertexManagerPluginDescriptor.create(CustomPartitionVertex.class.getName());
-      ByteBuffer userPayload = ByteBuffer.allocate(4).putInt(numBuckets);
-      userPayload.flip();
+      byte[] userPayloadBytes = dob.getData();
+      ByteBuffer userPayload = ByteBuffer.wrap(userPayloadBytes);
       desc.setUserPayload(UserPayload.create(userPayload));
       w.setVertexManagerPlugin(desc);
       break;
@@ -289,17 +307,21 @@ public class DagUtils {
    * @param w The second vertex (sink)
    * @return
    */
-  public Edge createEdge(JobConf vConf, Vertex v, Vertex w,
-      TezEdgeProperty edgeProp)
+  public Edge createEdge(JobConf vConf, Vertex v, Vertex w, TezEdgeProperty edgeProp,
+      VertexType vertexType)
     throws IOException {
 
     switch(edgeProp.getEdgeType()) {
     case CUSTOM_EDGE: {
       int numBuckets = edgeProp.getNumBuckets();
-      ByteBuffer userPayload = ByteBuffer.allocate(4).putInt(numBuckets);
-      userPayload.flip();
+      CustomVertexConfiguration vertexConf =
+          new CustomVertexConfiguration(numBuckets, vertexType, "");
+      DataOutputBuffer dob = new DataOutputBuffer();
+      vertexConf.write(dob);
       VertexManagerPluginDescriptor desc = VertexManagerPluginDescriptor.create(
           CustomPartitionVertex.class.getName());
+      byte[] userPayloadBytes = dob.getData();
+      ByteBuffer userPayload = ByteBuffer.wrap(userPayloadBytes);
       desc.setUserPayload(UserPayload.create(userPayload));
       w.setVertexManagerPlugin(desc);
       break;
@@ -405,7 +427,7 @@ public class DagUtils {
    * from yarn. Falls back to Map-reduce's map size if tez
    * container size isn't set.
    */
-  private Resource getContainerResource(Configuration conf) {
+  public static Resource getContainerResource(Configuration conf) {
     int memory = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVETEZCONTAINERSIZE) > 0 ?
       HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVETEZCONTAINERSIZE) :
       conf.getInt(MRJobConfig.MAP_MEMORY_MB, MRJobConfig.DEFAULT_MAP_MEMORY_MB);
@@ -443,12 +465,61 @@ public class DagUtils {
     return MRHelpers.getJavaOptsForMRMapper(conf);
   }
 
+  private Vertex createVertex(JobConf conf, MergeJoinWork mergeJoinWork, LocalResource appJarLr,
+      List<LocalResource> additionalLr, FileSystem fs, Path mrScratchDir, Context ctx,
+      VertexType vertexType)
+      throws Exception {
+    Utilities.setMergeWork(conf, mergeJoinWork, mrScratchDir, false);
+    if (mergeJoinWork.getMainWork() instanceof MapWork) {
+      List<BaseWork> mapWorkList = mergeJoinWork.getBaseWorkList();
+      MapWork mapWork = (MapWork) (mergeJoinWork.getMainWork());
+      CommonMergeJoinOperator mergeJoinOp = mergeJoinWork.getMergeJoinOperator();
+      Vertex mergeVx =
+          createVertex(conf, mapWork, appJarLr, additionalLr, fs, mrScratchDir, ctx, vertexType);
+
+      // grouping happens in execution phase. Setting the class to TezGroupedSplitsInputFormat
+      // here would cause pre-mature grouping which would be incorrect.
+      Class inputFormatClass = HiveInputFormat.class;
+      conf.setClass("mapred.input.format.class", HiveInputFormat.class, InputFormat.class);
+      // mapreduce.tez.input.initializer.serialize.event.payload should be set
+      // to false when using this plug-in to avoid getting a serialized event at run-time.
+      conf.setBoolean("mapreduce.tez.input.initializer.serialize.event.payload", false);
+      for (int i = 0; i < mapWorkList.size(); i++) {
+
+        mapWork = (MapWork) (mapWorkList.get(i));
+        conf.set(TEZ_MERGE_CURRENT_MERGE_FILE_PREFIX, mapWork.getName());
+        conf.set(Utilities.INPUT_NAME, mapWork.getName());
+        LOG.info("Going through each work and adding MultiMRInput");
+        mergeVx.addDataSource(mapWork.getName(),
+            MultiMRInput.createConfigBuilder(conf, HiveInputFormat.class).build());
+      }
+
+      VertexManagerPluginDescriptor desc =
+        VertexManagerPluginDescriptor.create(CustomPartitionVertex.class.getName());
+      CustomVertexConfiguration vertexConf =
+          new CustomVertexConfiguration(mergeJoinWork.getMergeJoinOperator().getConf()
+              .getNumBuckets(), vertexType, mergeJoinWork.getBigTableAlias());
+      DataOutputBuffer dob = new DataOutputBuffer();
+      vertexConf.write(dob);
+      byte[] userPayload = dob.getData();
+      desc.setUserPayload(UserPayload.create(ByteBuffer.wrap(userPayload)));
+      mergeVx.setVertexManagerPlugin(desc);
+      return mergeVx;
+    } else {
+      Vertex mergeVx =
+          createVertex(conf, (ReduceWork) mergeJoinWork.getMainWork(), appJarLr, additionalLr, fs,
+              mrScratchDir, ctx);
+      return mergeVx;
+    }
+  }
+
   /*
    * Helper function to create Vertex from MapWork.
    */
   private Vertex createVertex(JobConf conf, MapWork mapWork,
       LocalResource appJarLr, List<LocalResource> additionalLr, FileSystem fs,
-      Path mrScratchDir, Context ctx, TezWork tezWork) throws Exception {
+      Path mrScratchDir, Context ctx, VertexType vertexType)
+      throws Exception {
 
     Path tezDir = getTezDir(mrScratchDir);
 
@@ -470,15 +541,8 @@ public class DagUtils {
     Class inputFormatClass = conf.getClass("mapred.input.format.class",
         InputFormat.class);
 
-    boolean vertexHasCustomInput = false;
-    if (tezWork != null) {
-      for (BaseWork baseWork : tezWork.getParents(mapWork)) {
-        if (tezWork.getEdgeType(baseWork, mapWork) == EdgeType.CUSTOM_EDGE) {
-          vertexHasCustomInput = true;
-        }
-      }
-    }
-
+    boolean vertexHasCustomInput = VertexType.isCustomInputType(vertexType);
+    LOG.info("Vertex has custom input? " + vertexHasCustomInput);
     if (vertexHasCustomInput) {
       groupSplitsInInputInitializer = false;
       // grouping happens in execution phase. The input payload should not enable grouping here,
@@ -513,6 +577,8 @@ public class DagUtils {
       }
     }
 
+    // remember mapping of plan to input
+    conf.set(Utilities.INPUT_NAME, mapWork.getName());
     if (HiveConf.getBoolVar(conf, ConfVars.HIVE_AM_SPLIT_GENERATION)
         && !mapWork.isUseOneNullRowInputFormat()) {
 
@@ -593,6 +659,7 @@ public class DagUtils {
       Path mrScratchDir, Context ctx) throws Exception {
 
     // set up operator plan
+    conf.set(Utilities.INPUT_NAME, reduceWork.getName());
     Utilities.setReduceWork(conf, reduceWork, mrScratchDir, false);
 
     // create the directories FileSinkOperators need
@@ -937,9 +1004,19 @@ public class DagUtils {
       return initializeVertexConf(conf, context, (MapWork)work);
     } else if (work instanceof ReduceWork) {
       return initializeVertexConf(conf, context, (ReduceWork)work);
+    } else if (work instanceof MergeJoinWork) {
+      return initializeVertexConf(conf, context, (MergeJoinWork) work);
     } else {
       assert false;
       return null;
+    }
+  }
+
+  private JobConf initializeVertexConf(JobConf conf, Context context, MergeJoinWork work) {
+    if (work.getMainWork() instanceof MapWork) {
+      return initializeVertexConf(conf, context, (MapWork) (work.getMainWork()));
+    } else {
+      return initializeVertexConf(conf, context, (ReduceWork) (work.getMainWork()));
     }
   }
 
@@ -958,18 +1035,21 @@ public class DagUtils {
    */
   public Vertex createVertex(JobConf conf, BaseWork work,
       Path scratchDir, LocalResource appJarLr,
-      List<LocalResource> additionalLr,
-      FileSystem fileSystem, Context ctx, boolean hasChildren, TezWork tezWork) throws Exception {
+      List<LocalResource> additionalLr, FileSystem fileSystem, Context ctx, boolean hasChildren,
+      TezWork tezWork, VertexType vertexType) throws Exception {
 
     Vertex v = null;
     // simply dispatch the call to the right method for the actual (sub-) type of
     // BaseWork.
     if (work instanceof MapWork) {
-      v = createVertex(conf, (MapWork) work, appJarLr,
-          additionalLr, fileSystem, scratchDir, ctx, tezWork);
+      v = createVertex(conf, (MapWork) work, appJarLr, additionalLr, fileSystem, scratchDir, ctx,
+              vertexType);
     } else if (work instanceof ReduceWork) {
       v = createVertex(conf, (ReduceWork) work, appJarLr,
           additionalLr, fileSystem, scratchDir, ctx);
+    } else if (work instanceof MergeJoinWork) {
+      v = createVertex(conf, (MergeJoinWork) work, appJarLr, additionalLr, fileSystem, scratchDir,
+              ctx, vertexType);
     } else {
       // something is seriously wrong if this is happening
       throw new HiveException(ErrorMsg.GENERIC_ERROR.getErrorCodedMsg());

@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
+import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -27,6 +28,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspe
 /**
  * A test GenericUDF to return native Java's boolean type
  */
+@Description(name = "test_udf_get_java_boolean",
+value = "_FUNC_(str) - GenericUDF to return native Java's boolean type")
 public class GenericUDFTestGetJavaBoolean extends GenericUDF {
   ObjectInspector[] argumentOIs;
 

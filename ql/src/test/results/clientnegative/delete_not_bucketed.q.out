@@ -1,0 +1,9 @@
+PREHOOK: query: create table acid_notbucketed(a int, b varchar(128)) stored as orc TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@acid_notbucketed
+POSTHOOK: query: create table acid_notbucketed(a int, b varchar(128)) stored as orc TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@acid_notbucketed
+FAILED: SemanticException [Error 10297]: Attempt to do update or delete on table acid_notbucketed that does not use an AcidOutputFormat or is not bucketed

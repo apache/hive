@@ -266,9 +266,12 @@ public class TestUpdateDeleteSemanticAnalyzer {
 
     // I have to create the tables here (rather than in setup()) because I need the Hive
     // connection, which is conviently created by the semantic analyzer.
-    db.createTable("T", Arrays.asList("a", "b"), null, OrcInputFormat.class, OrcOutputFormat.class);
+    Map<String, String> params = new HashMap<String, String>(1);
+    params.put(SemanticAnalyzer.ACID_TABLE_PROPERTY, "true");
+    db.createTable("T", Arrays.asList("a", "b"), null, OrcInputFormat.class,
+        OrcOutputFormat.class, 2, Arrays.asList("a"), params);
     db.createTable("U", Arrays.asList("a", "b"), Arrays.asList("ds"), OrcInputFormat.class,
-        OrcOutputFormat.class);
+        OrcOutputFormat.class, 2, Arrays.asList("a"), params);
     Table u = db.getTable("U");
     Map<String, String> partVals = new HashMap<String, String>(2);
     partVals.put("ds", "yesterday");
@@ -280,7 +283,7 @@ public class TestUpdateDeleteSemanticAnalyzer {
     // validate the plan
     sem.validate();
 
-    QueryPlan plan = new QueryPlan(query, sem, 0L, testName);
+    QueryPlan plan = new QueryPlan(query, sem, 0L, testName, null);
 
     return new ReturnInfo(tree, sem, plan);
   }

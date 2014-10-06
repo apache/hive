@@ -33,9 +33,10 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
-import org.apache.hadoop.hive.ql.io.IOContext;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
+import org.apache.hadoop.hive.ql.exec.tez.MapRecordProcessor;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
+import org.apache.hadoop.hive.ql.io.IOContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.plan.MapWork;
@@ -181,7 +182,7 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
 
     PartitionDesc pd = ctx.partDesc;
     TableDesc td = pd.getTableDesc();
-    
+
     MapOpCtx opCtx = new MapOpCtx();
     // Use table properties in case of unpartitioned tables,
     // and the union of table properties and partition properties, with partition
@@ -205,42 +206,42 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
 
     opCtx.partTblObjectInspectorConverter = ObjectInspectorConverters.getConverter(
         partRawRowObjectInspector, opCtx.tblRawRowObjectInspector);
-    
+
     // Next check if this table has partitions and if so
     // get the list of partition names as well as allocate
     // the serdes for the partition columns
     String pcols = overlayedProps.getProperty(hive_metastoreConstants.META_TABLE_PARTITION_COLUMNS);
-    
+
     if (pcols != null && pcols.length() > 0) {
       String[] partKeys = pcols.trim().split("/");
       String pcolTypes = overlayedProps
           .getProperty(hive_metastoreConstants.META_TABLE_PARTITION_COLUMN_TYPES);
       String[] partKeyTypes = pcolTypes.trim().split(":");
-      
+
       if (partKeys.length > partKeyTypes.length) {
           throw new HiveException("Internal error : partKeys length, " +partKeys.length +
                   " greater than partKeyTypes length, " + partKeyTypes.length);
       }
-      
+
       List<String> partNames = new ArrayList<String>(partKeys.length);
       Object[] partValues = new Object[partKeys.length];
       List<ObjectInspector> partObjectInspectors = new ArrayList<ObjectInspector>(partKeys.length);
-      
+
       for (int i = 0; i < partKeys.length; i++) {
         String key = partKeys[i];
         partNames.add(key);
         ObjectInspector oi = PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector
             (TypeInfoFactory.getPrimitiveTypeInfo(partKeyTypes[i]));
-        
+
         // Partitions do not exist for this table
         if (partSpec == null) {
           // for partitionless table, initialize partValue to null
           partValues[i] = null;
         } else {
-            partValues[i] = 
+            partValues[i] =
                 ObjectInspectorConverters.
                 getConverter(PrimitiveObjectInspectorFactory.
-                    javaStringObjectInspector, oi).convert(partSpec.get(key)); 
+                    javaStringObjectInspector, oi).convert(partSpec.get(key));
         }
         partObjectInspectors.add(oi);
       }
@@ -337,13 +338,8 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
     return tableDescOI;
   }
 
-  private boolean isPartitioned(PartitionDesc pd) {
-    return pd.getPartSpec() != null && !pd.getPartSpec().isEmpty();
-  }
-
   public void setChildren(Configuration hconf) throws HiveException {
-
-    Path fpath = IOContext.get().getInputPath();
+    Path fpath = IOContext.get(hconf.get(Utilities.INPUT_NAME)).getInputPath();
 
     boolean schemeless = fpath.toUri().getScheme() == null;
 
@@ -639,4 +635,8 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
     return null;
   }
 
+  @Override
+  public Map<Integer, DummyStoreOperator> getTagToOperatorTree() {
+    return MapRecordProcessor.getConnectOps();
+  }
 }

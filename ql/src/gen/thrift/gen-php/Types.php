@@ -59,6 +59,7 @@ final class OperatorType {
   const EVENT = 21;
   const ORCFILEMERGE = 22;
   const RCFILEMERGE = 23;
+  const MERGEJOIN = 24;
   static public $__names = array(
     0 => 'JOIN',
     1 => 'MAPJOIN',
@@ -84,6 +85,7 @@ final class OperatorType {
     21 => 'EVENT',
     22 => 'ORCFILEMERGE',
     23 => 'RCFILEMERGE',
+    24 => 'MERGEJOIN',
   );
 }
 

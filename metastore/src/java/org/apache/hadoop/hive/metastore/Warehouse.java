@@ -224,8 +224,12 @@ public class Warehouse {
   }
 
   public boolean deleteDir(Path f, boolean recursive) throws MetaException {
+    return deleteDir(f, recursive, false);
+  }
+
+  public boolean deleteDir(Path f, boolean recursive, boolean ifPurge) throws MetaException {
     FileSystem fs = getFs(f);
-    return fsHandler.deleteDir(fs, f, recursive, conf);
+    return fsHandler.deleteDir(fs, f, recursive, ifPurge, conf);
   }
 
   public boolean isEmpty(Path path) throws IOException, MetaException {

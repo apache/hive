@@ -37,35 +37,51 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Tests information retrieved from hooks, in Kerberos mode.
  */
 public class TestHs2HooksWithMiniKdc {
+  private static final Logger LOG = LoggerFactory.getLogger(TestHs2HooksWithMiniKdc.class);
+
   public static class PostExecHook implements ExecuteWithHookContext {
-    public static String userName = null;
-    public static String ipAddress = null;
+    private static String userName;
+    private static String ipAddress;
+    private static String operation;
+    private static Throwable error;
 
     public void run(HookContext hookContext) {
-      if (hookContext.getHookType().equals(HookType.POST_EXEC_HOOK)) {
-        Assert.assertNotNull(hookContext.getIpAddress(), "IP Address is null");
-        ipAddress = hookContext.getIpAddress();
-        Assert.assertNotNull(hookContext.getUserName(), "Username is null");
-        userName = hookContext.getUserName();
+      try {
+        if (hookContext.getHookType().equals(HookType.POST_EXEC_HOOK)) {
+          ipAddress = hookContext.getIpAddress();
+          userName = hookContext.getUserName();
+          operation = hookContext.getOperationName();
+        }
+      } catch (Throwable t) {
+        LOG.error("Error in PostExecHook: " + t, t);
+        error = t;
       }
     }
   }
 
   public static class PreExecHook implements ExecuteWithHookContext {
-    public static String userName = null;
-    public static String ipAddress = null;
+    private static String userName;
+    private static String ipAddress;
+    private static String operation;
+    private static Throwable error;
 
     public void run(HookContext hookContext) {
-      if (hookContext.getHookType().equals(HookType.PRE_EXEC_HOOK)) {
-        Assert.assertNotNull(hookContext.getIpAddress(), "IP Address is null");
-        ipAddress = hookContext.getIpAddress();
-        Assert.assertNotNull(hookContext.getUserName(), "Username is null");
-        userName = hookContext.getUserName();
+      try {
+        if (hookContext.getHookType().equals(HookType.PRE_EXEC_HOOK)) {
+          ipAddress = hookContext.getIpAddress();
+          userName = hookContext.getUserName();
+          operation = hookContext.getOperationName();
+        }
+      } catch (Throwable t) {
+        LOG.error("Error in PreExecHook: " + t, t);
+        error = t;
       }
     }
   }
@@ -108,22 +124,36 @@ public class TestHs2HooksWithMiniKdc {
 
   /**
    * Test get IpAddress and username from hook.
-   * @throws Exception
    */
   @Test
-  public void testIpUserName() throws Exception {
+  public void testIpUserName() throws Throwable {
     miniHiveKdc.loginUser(MiniHiveKdc.HIVE_TEST_USER_1);
     hs2Conn = DriverManager.getConnection(miniHS2.getJdbcURL());
 
     Statement stmt = hs2Conn.createStatement();
+    stmt.executeQuery("show databases");
     stmt.executeQuery("show tables");
+    Throwable error = PostExecHook.error;
+    if (error != null) {
+      throw error;
+    }
+    error = PreExecHook.error;
+    if (error != null) {
+      throw error;
+    }
 
+    Assert.assertNotNull(PostExecHook.ipAddress, "ipaddress is null");
+    Assert.assertNotNull(PostExecHook.userName, "userName is null");
+    Assert.assertNotNull(PostExecHook.operation , "operation is null");
     Assert.assertEquals(MiniHiveKdc.HIVE_TEST_USER_1, PostExecHook.userName);
-    Assert.assertNotNull(PostExecHook.ipAddress);
-    Assert.assertTrue(PostExecHook.ipAddress.contains("127.0.0.1"));
+    Assert.assertTrue(PostExecHook.ipAddress, PostExecHook.ipAddress.contains("127.0.0.1"));
+    Assert.assertEquals("SHOWTABLES", PostExecHook.operation);
 
+    Assert.assertNotNull(PreExecHook.ipAddress, "ipaddress is null");
+    Assert.assertNotNull(PreExecHook.userName, "userName is null");
+    Assert.assertNotNull(PreExecHook.operation , "operation is null");
     Assert.assertEquals(MiniHiveKdc.HIVE_TEST_USER_1, PreExecHook.userName);
-    Assert.assertNotNull(PreExecHook.ipAddress);
-    Assert.assertTrue(PreExecHook.ipAddress.contains("127.0.0.1"));
+    Assert.assertTrue(PreExecHook.ipAddress, PreExecHook.ipAddress.contains("127.0.0.1"));
+    Assert.assertEquals("SHOWTABLES", PreExecHook.operation);
   }
 }

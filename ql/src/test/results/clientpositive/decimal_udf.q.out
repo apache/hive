@@ -633,6 +633,61 @@ NULL
 1.00000000000000000000
 NULL
 NULL
+PREHOOK: query: EXPLAIN SELECT key, value FROM DECIMAL_UDF where key * value > 0
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN SELECT key, value FROM DECIMAL_UDF where key * value > 0
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: decimal_udf
+          Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+          Filter Operator
+            predicate: ((key * value) > 0) (type: boolean)
+            Statistics: Num rows: 1 Data size: 119 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: key (type: decimal(20,10)), value (type: int)
+              outputColumnNames: _col0, _col1
+              Statistics: Num rows: 1 Data size: 119 Basic stats: COMPLETE Column stats: NONE
+              ListSink
+
+PREHOOK: query: SELECT key, value FROM DECIMAL_UDF where key * value > 0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT key, value FROM DECIMAL_UDF where key * value > 0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
+100	100
+10	10
+1	1
+200	200
+20	20
+2	2
+1.0	1
+2	2
+3.14	3
+-1.12	-1
+-1.12	-1
+-1.122	-11
+1.12	1
+1.122	1
+124.00	124
+125.2	125
+-1255.49	-1255
+3.14	3
+3.14	3
+3.140	4
+1.0000000000	1
+-1234567890.1234567890	-1234567890
+1234567890.1234567800	1234567890
 PREHOOK: query: EXPLAIN SELECT key * value FROM DECIMAL_UDF
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN SELECT key * value FROM DECIMAL_UDF

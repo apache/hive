@@ -1,6 +1,5 @@
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
-set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
 set hive.enforce.bucketing=true;
 
 dfs ${system:test.dfs.mkdir} ${system:test.tmp.dir}/update_orig_table;
@@ -18,7 +17,7 @@ create table acid_uot(
     ctimestamp1 TIMESTAMP,
     ctimestamp2 TIMESTAMP,
     cboolean1 BOOLEAN,
-    cboolean2 BOOLEAN) clustered by (cint) into 1 buckets stored as orc location '${system:test.tmp.dir}/update_orig_table';
+    cboolean2 BOOLEAN) clustered by (cint) into 1 buckets stored as orc location '${system:test.tmp.dir}/update_orig_table' TBLPROPERTIES ('transactional'='true');
 
 update acid_uot set cstring1 = 'fred' where cint < -1070551679;
 

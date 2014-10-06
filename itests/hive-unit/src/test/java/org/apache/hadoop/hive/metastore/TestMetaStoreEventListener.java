@@ -193,43 +193,39 @@ public class TestMetaStoreEventListener extends TestCase {
 
     driver.run("create database " + dbName);
     listSize++;
+    PreCreateDatabaseEvent preDbEvent = (PreCreateDatabaseEvent)(preNotifyList.get(preNotifyList.size() - 1));
     Database db = msc.getDatabase(dbName);
     assertEquals(listSize, notifyList.size());
-    assertEquals(listSize, preNotifyList.size());
+    assertEquals(listSize + 1, preNotifyList.size());
+    validateCreateDb(db, preDbEvent.getDatabase());
 
     CreateDatabaseEvent dbEvent = (CreateDatabaseEvent)(notifyList.get(listSize - 1));
     assert dbEvent.getStatus();
     validateCreateDb(db, dbEvent.getDatabase());
 
-    PreCreateDatabaseEvent preDbEvent = (PreCreateDatabaseEvent)(preNotifyList.get(listSize - 1));
-    validateCreateDb(db, preDbEvent.getDatabase());
 
     driver.run("use " + dbName);
     driver.run(String.format("create table %s (a string) partitioned by (b string)", tblName));
+    PreCreateTableEvent preTblEvent = (PreCreateTableEvent)(preNotifyList.get(preNotifyList.size() - 1));
     listSize++;
     Table tbl = msc.getTable(dbName, tblName);
+    validateCreateTable(tbl, preTblEvent.getTable());
     assertEquals(notifyList.size(), listSize);
-    assertEquals(preNotifyList.size(), listSize);
 
     CreateTableEvent tblEvent = (CreateTableEvent)(notifyList.get(listSize - 1));
     assert tblEvent.getStatus();
     validateCreateTable(tbl, tblEvent.getTable());
 
-    PreCreateTableEvent preTblEvent = (PreCreateTableEvent)(preNotifyList.get(listSize - 1));
-    validateCreateTable(tbl, preTblEvent.getTable());
-
     driver.run("alter table tmptbl add partition (b='2011')");
     listSize++;
-    Partition part = msc.getPartition("hive2038", "tmptbl", "b=2011");
     assertEquals(notifyList.size(), listSize);
-    assertEquals(preNotifyList.size(), listSize);
+    PreAddPartitionEvent prePartEvent = (PreAddPartitionEvent)(preNotifyList.get(preNotifyList.size() - 1));
 
     AddPartitionEvent partEvent = (AddPartitionEvent)(notifyList.get(listSize-1));
     assert partEvent.getStatus();
+    Partition part = msc.getPartition("hive2038", "tmptbl", "b=2011");
     validateAddPartition(part, partEvent.getPartitions().get(0));
     validateTableInAddPartition(tbl, partEvent.getTable());
-
-    PreAddPartitionEvent prePartEvent = (PreAddPartitionEvent)(preNotifyList.get(listSize-1));
     validateAddPartition(part, prePartEvent.getPartitions().get(0));
 
     // Test adding multiple partitions in a single partition-set, atomically.
@@ -254,7 +250,8 @@ public class TestMetaStoreEventListener extends TestCase {
     driver.run(String.format("alter table %s touch partition (%s)", tblName, "b='2011'"));
     listSize++;
     assertEquals(notifyList.size(), listSize);
-    assertEquals(preNotifyList.size(), listSize);
+    PreAlterPartitionEvent preAlterPartEvent =
+        (PreAlterPartitionEvent)preNotifyList.get(preNotifyList.size() - 1);
 
     //the partition did not change,
     // so the new partition should be similar to the original partition
@@ -266,40 +263,39 @@ public class TestMetaStoreEventListener extends TestCase {
         alterPartEvent.getOldPartition().getTableName(),
         alterPartEvent.getOldPartition().getValues(), alterPartEvent.getNewPartition());
 
-    PreAlterPartitionEvent preAlterPartEvent =
-        (PreAlterPartitionEvent)preNotifyList.get(listSize - 1);
+
     validateAlterPartition(origP, origP, preAlterPartEvent.getDbName(),
         preAlterPartEvent.getTableName(), preAlterPartEvent.getNewPartition().getValues(),
         preAlterPartEvent.getNewPartition());
 
     List<String> part_vals = new ArrayList<String>();
     part_vals.add("c=2012");
+    int preEventListSize;
+    preEventListSize = preNotifyList.size() + 1;
     Partition newPart = msc.appendPartition(dbName, tblName, part_vals);
 
     listSize++;
     assertEquals(notifyList.size(), listSize);
-    assertEquals(preNotifyList.size(), listSize);
+    assertEquals(preNotifyList.size(), preEventListSize);
 
     AddPartitionEvent appendPartEvent =
         (AddPartitionEvent)(notifyList.get(listSize-1));
     validateAddPartition(newPart, appendPartEvent.getPartitions().get(0));
 
     PreAddPartitionEvent preAppendPartEvent =
-        (PreAddPartitionEvent)(preNotifyList.get(listSize-1));
+        (PreAddPartitionEvent)(preNotifyList.get(preNotifyList.size() - 1));
     validateAddPartition(newPart, preAppendPartEvent.getPartitions().get(0));
 
     driver.run(String.format("alter table %s rename to %s", tblName, renamed));
     listSize++;
     assertEquals(notifyList.size(), listSize);
-    assertEquals(preNotifyList.size(), listSize);
+    PreAlterTableEvent preAlterTableE = (PreAlterTableEvent) preNotifyList.get(preNotifyList.size() - 1);
 
     Table renamedTable = msc.getTable(dbName, renamed);
 
     AlterTableEvent alterTableE = (AlterTableEvent) notifyList.get(listSize-1);
     assert alterTableE.getStatus();
     validateAlterTable(tbl, renamedTable, alterTableE.getOldTable(), alterTableE.getNewTable());
-
-    PreAlterTableEvent preAlterTableE = (PreAlterTableEvent) preNotifyList.get(listSize-1);
     validateAlterTable(tbl, renamedTable, preAlterTableE.getOldTable(),
         preAlterTableE.getNewTable());
 
@@ -307,20 +303,17 @@ public class TestMetaStoreEventListener extends TestCase {
     driver.run(String.format("alter table %s rename to %s", renamed, tblName));
     listSize++;
     assertEquals(notifyList.size(), listSize);
-    assertEquals(preNotifyList.size(), listSize);
 
     driver.run(String.format("alter table %s ADD COLUMNS (c int)", tblName));
     listSize++;
     assertEquals(notifyList.size(), listSize);
-    assertEquals(preNotifyList.size(), listSize);
+    preAlterTableE = (PreAlterTableEvent) preNotifyList.get(preNotifyList.size() - 1);
 
     Table altTable = msc.getTable(dbName, tblName);
 
     alterTableE = (AlterTableEvent) notifyList.get(listSize-1);
     assert alterTableE.getStatus();
     validateAlterTableColumns(tbl, altTable, alterTableE.getOldTable(), alterTableE.getNewTable());
-
-    preAlterTableE = (PreAlterTableEvent) preNotifyList.get(listSize-1);
     validateAlterTableColumns(tbl, altTable, preAlterTableE.getOldTable(),
         preAlterTableE.getNewTable());
 
@@ -329,7 +322,6 @@ public class TestMetaStoreEventListener extends TestCase {
     msc.markPartitionForEvent("hive2038", "tmptbl", kvs, PartitionEventType.LOAD_DONE);
     listSize++;
     assertEquals(notifyList.size(), listSize);
-    assertEquals(preNotifyList.size(), listSize);
 
     LoadPartitionDoneEvent partMarkEvent = (LoadPartitionDoneEvent)notifyList.get(listSize - 1);
     assert partMarkEvent.getStatus();
@@ -337,46 +329,42 @@ public class TestMetaStoreEventListener extends TestCase {
         partMarkEvent.getPartitionName());
 
     PreLoadPartitionDoneEvent prePartMarkEvent =
-        (PreLoadPartitionDoneEvent)preNotifyList.get(listSize - 1);
+        (PreLoadPartitionDoneEvent)preNotifyList.get(preNotifyList.size() - 1);
     validateLoadPartitionDone("tmptbl", kvs, prePartMarkEvent.getTableName(),
         prePartMarkEvent.getPartitionName());
 
     driver.run(String.format("alter table %s drop partition (b='2011')", tblName));
     listSize++;
     assertEquals(notifyList.size(), listSize);
-    assertEquals(preNotifyList.size(), listSize);
+    PreDropPartitionEvent preDropPart = (PreDropPartitionEvent) preNotifyList.get(preNotifyList
+        .size() - 1);
 
     DropPartitionEvent dropPart = (DropPartitionEvent)notifyList.get(listSize - 1);
     assert dropPart.getStatus();
     validateDropPartition(part, dropPart.getPartition());
     validateTableInDropPartition(tbl, dropPart.getTable());
 
-    PreDropPartitionEvent preDropPart = (PreDropPartitionEvent)preNotifyList.get(listSize - 1);
     validateDropPartition(part, preDropPart.getPartition());
     validateTableInDropPartition(tbl, preDropPart.getTable());
 
     driver.run("drop table " + tblName);
     listSize++;
     assertEquals(notifyList.size(), listSize);
-    assertEquals(preNotifyList.size(), listSize);
+    PreDropTableEvent preDropTbl = (PreDropTableEvent)preNotifyList.get(preNotifyList.size() - 1);
 
     DropTableEvent dropTbl = (DropTableEvent)notifyList.get(listSize-1);
     assert dropTbl.getStatus();
     validateDropTable(tbl, dropTbl.getTable());
-
-    PreDropTableEvent preDropTbl = (PreDropTableEvent)preNotifyList.get(listSize-1);
     validateDropTable(tbl, preDropTbl.getTable());
 
     driver.run("drop database " + dbName);
     listSize++;
     assertEquals(notifyList.size(), listSize);
-    assertEquals(preNotifyList.size(), listSize);
+    PreDropDatabaseEvent preDropDB = (PreDropDatabaseEvent)preNotifyList.get(preNotifyList.size() - 1);
 
     DropDatabaseEvent dropDB = (DropDatabaseEvent)notifyList.get(listSize-1);
     assert dropDB.getStatus();
     validateDropDb(db, dropDB.getDatabase());
-
-    PreDropDatabaseEvent preDropDB = (PreDropDatabaseEvent)preNotifyList.get(listSize-1);
     validateDropDb(db, preDropDB.getDatabase());
 
     SetProcessor.setVariable("metaconf:hive.metastore.try.direct.sql", "false");

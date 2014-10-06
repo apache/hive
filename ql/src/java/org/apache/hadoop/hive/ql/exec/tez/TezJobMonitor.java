@@ -78,7 +78,7 @@ public class TezJobMonitor {
         try {
           for (TezSessionState s: TezSessionState.getOpenSessions()) {
             System.err.println("Shutting down tez session.");
-            TezSessionPoolManager.getInstance().close(s);
+            TezSessionPoolManager.getInstance().close(s, false);
           }
         } catch (Exception e) {
           // ignore
@@ -113,6 +113,7 @@ public class TezJobMonitor {
     String lastReport = null;
     Set<StatusGetOpts> opts = new HashSet<StatusGetOpts>();
     Heartbeater heartbeater = new Heartbeater(txnMgr, conf);
+    long startTime = 0;
 
     shutdownList.add(dagClient);
 
@@ -145,6 +146,7 @@ public class TezJobMonitor {
               for (String s: progressMap.keySet()) {
                 perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_RUN_VERTEX + s);
               }
+              startTime = System.currentTimeMillis();
               running = true;
             }
 
@@ -152,7 +154,8 @@ public class TezJobMonitor {
             break;
           case SUCCEEDED:
             lastReport = printStatus(progressMap, lastReport, console);
-            console.printInfo("Status: Finished successfully");
+            double duration = (System.currentTimeMillis() - startTime)/1000.0;
+            console.printInfo("Status: Finished successfully in " + String.format("%.2f seconds", duration));
             running = false;
             done = true;
             break;

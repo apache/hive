@@ -37,23 +37,14 @@ STAGE PLANS:
               expressions: key (type: string), value (type: string), hr (type: string)
               outputColumnNames: _col0, _col1, _col2
               Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: _col2 (type: string)
-                sort order: +
-                Map-reduce partition columns: _col2 (type: string)
+              File Output Operator
+                compressed: false
                 Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
-      Reduce Operator Tree:
-        Extract
-          Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                name: default.nzhang_part
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.nzhang_part
 
   Stage: Stage-7
     Conditional Operator
@@ -2830,12 +2821,14 @@ STAGE PLANS:
                   expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
                   outputColumnNames: _col0, _col1, _col2
                   Statistics: Num rows: 1001 Data size: 10883 Basic stats: COMPLETE Column stats: COMPLETE
-                  Reduce Output Operator
-                    key expressions: _col2 (type: string)
-                    sort order: +
-                    Map-reduce partition columns: _col2 (type: string)
+                  File Output Operator
+                    compressed: false
                     Statistics: Num rows: 1001 Data size: 10883 Basic stats: COMPLETE Column stats: COMPLETE
-                    value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.nzhang_part
           TableScan
             Union
               Statistics: Num rows: 1001 Data size: 10883 Basic stats: COMPLETE Column stats: COMPLETE
@@ -2843,23 +2836,14 @@ STAGE PLANS:
                 expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1001 Data size: 10883 Basic stats: COMPLETE Column stats: COMPLETE
-                Reduce Output Operator
-                  key expressions: _col2 (type: string)
-                  sort order: +
-                  Map-reduce partition columns: _col2 (type: string)
+                File Output Operator
+                  compressed: false
                   Statistics: Num rows: 1001 Data size: 10883 Basic stats: COMPLETE Column stats: COMPLETE
-                  value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
-      Reduce Operator Tree:
-        Extract
-          Statistics: Num rows: 1001 Data size: 10883 Basic stats: COMPLETE Column stats: COMPLETE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 1001 Data size: 10883 Basic stats: COMPLETE Column stats: COMPLETE
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                name: default.nzhang_part
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.nzhang_part
 
   Stage: Stage-8
     Conditional Operator

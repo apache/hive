@@ -94,6 +94,31 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@insert_into1
 #### A masked pattern was here ####
 10226524244
+PREHOOK: query: explain 
+select count(*) from insert_into1
+PREHOOK: type: QUERY
+POSTHOOK: query: explain 
+select count(*) from insert_into1
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(*) from insert_into1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@insert_into1
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from insert_into1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@insert_into1
+#### A masked pattern was here ####
+100
 PREHOOK: query: EXPLAIN INSERT INTO TABLE insert_into1 SELECT * FROM src LIMIT 100
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN INSERT INTO TABLE insert_into1 SELECT * FROM src LIMIT 100
@@ -178,11 +203,27 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@insert_into1
 #### A masked pattern was here ####
 20453048488
-PREHOOK: query: SELECT COUNT(*) FROM insert_into1
+PREHOOK: query: explain
+SELECT COUNT(*) FROM insert_into1
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+SELECT COUNT(*) FROM insert_into1
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(*) from insert_into1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@insert_into1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT COUNT(*) FROM insert_into1
+POSTHOOK: query: select count(*) from insert_into1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@insert_into1
 #### A masked pattern was here ####
@@ -271,6 +312,31 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@insert_into1
 #### A masked pattern was here ####
 -826625916
+PREHOOK: query: explain
+SELECT COUNT(*) FROM insert_into1
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+SELECT COUNT(*) FROM insert_into1
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(*) from insert_into1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@insert_into1
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from insert_into1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@insert_into1
+#### A masked pattern was here ####
+10
 PREHOOK: query: DROP TABLE insert_into1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@insert_into1

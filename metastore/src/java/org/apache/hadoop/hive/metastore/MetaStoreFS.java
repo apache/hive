@@ -32,11 +32,12 @@ public interface MetaStoreFS {
    * delete a directory
    *
    * @param f
+   * @param ifPurge
    * @param recursive
    * @return true on success
    * @throws MetaException
    */
   public boolean deleteDir(FileSystem fs, Path f, boolean recursive,
-      Configuration conf) throws MetaException;
+      boolean ifPurge, Configuration conf) throws MetaException;
 
 }

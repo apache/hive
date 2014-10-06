@@ -88,6 +88,7 @@ public class TestMultiAuthorizationPreEventListener {
 
     // verify that the actual action also went through
     Database db = msc.getDatabase(dbName);
+    listSize += 2; // 1 read database auth calls for each authorization provider
     Database dbFromEvent = (Database)assertAndExtractSingleObjectFromEvent(listSize, authCalls,
         DummyHiveMetastoreAuthorizationProvider.AuthCallContextType.DB);
     validateCreateDb(db,dbFromEvent);

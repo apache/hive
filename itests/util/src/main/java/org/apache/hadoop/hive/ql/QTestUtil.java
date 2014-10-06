@@ -690,7 +690,10 @@ public class QTestUtil {
     // conf.logVars(System.out);
     // System.out.flush();
 
+    String execEngine = conf.get("hive.execution.engine");
+    conf.set("hive.execution.engine", "mr");
     SessionState.start(conf);
+    conf.set("hive.execution.engine", execEngine);
     db = Hive.get(conf);
     fs = FileSystem.get(conf);
     drv = new Driver(conf);
@@ -771,6 +774,8 @@ public class QTestUtil {
     HiveConf.setVar(conf, HiveConf.ConfVars.HIVE_AUTHENTICATOR_MANAGER,
         "org.apache.hadoop.hive.ql.security.DummyAuthenticator");
 
+    String execEngine = conf.get("hive.execution.engine");
+    conf.set("hive.execution.engine", "mr");
     CliSessionState ss = new CliSessionState(conf);
     assert ss != null;
     ss.in = System.in;
@@ -788,6 +793,7 @@ public class QTestUtil {
 
     isSessionStateStarted = true;
 
+    conf.set("hive.execution.engine", execEngine);
     return ss;
   }
 

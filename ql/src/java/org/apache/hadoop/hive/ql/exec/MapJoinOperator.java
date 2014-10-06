@@ -171,8 +171,9 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
 
   private void loadHashTable() throws HiveException {
 
-    if (this.getExecContext().getLocalWork() == null
-        || !this.getExecContext().getLocalWork().getInputFileChangeSensitive()) {
+    if ((this.getExecContext() != null)
+        && ((this.getExecContext().getLocalWork() == null) || (!this.getExecContext()
+            .getLocalWork().getInputFileChangeSensitive()))) {
       if (hashTblInitedOnce) {
         return;
       } else {
@@ -313,8 +314,8 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
         tableContainer.dumpMetrics();
       }
     }
-    if ((this.getExecContext().getLocalWork() != null
-        && this.getExecContext().getLocalWork().getInputFileChangeSensitive())
+    if ((this.getExecContext() != null) && (this.getExecContext().getLocalWork() != null)
+        && (this.getExecContext().getLocalWork().getInputFileChangeSensitive())
         && mapJoinTables != null) {
       for (MapJoinTableContainer tableContainer : mapJoinTables) {
         if (tableContainer != null) {

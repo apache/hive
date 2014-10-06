@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.udf.generic;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
@@ -34,6 +35,8 @@ import org.apache.hadoop.io.Text;
 /**
  * Mimics oracle's function translate(str1, str2, str3).
  */
+@Description(name = "test_translate",
+value = "_FUNC_(str1, str2, str3) - Mimics oracle's function translate(str1, str2, str3)")
 public class GenericUDFTestTranslate extends GenericUDF {
   private transient ObjectInspector[] argumentOIs;
 
