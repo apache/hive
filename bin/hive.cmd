@@ -284,9 +284,6 @@ if defined CATSERVICE (
 	) else (
 	  call %HADOOP_HOME%\libexec\hadoop-config.cmd
 	)
-  if %TORUN% == hiveserver2 (
-        call %HIVE_BIN_PATH%\ext\hiveserver2.cmd hiveserver2_catcmd > %HIVE_BIN_PATH%\ext\hs2service.cmd
-  )  
 	call %HIVE_BIN_PATH%\ext\%TORUN%.cmd %TORUN%%CATSERVICE% %*
 	goto :EOF
 )
