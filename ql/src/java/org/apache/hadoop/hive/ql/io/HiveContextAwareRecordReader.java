@@ -161,7 +161,7 @@ public abstract class HiveContextAwareRecordReader<K, V> implements RecordReader
   }
 
   public IOContext getIOContext() {
-    return IOContext.get(jobConf);
+    return IOContext.get(jobConf.get(Utilities.INPUT_NAME));
   }
 
   private void initIOContext(long startPos, boolean isBlockPointer,

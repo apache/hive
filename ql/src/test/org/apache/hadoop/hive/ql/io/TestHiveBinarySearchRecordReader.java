@@ -116,7 +116,7 @@ public class TestHiveBinarySearchRecordReader extends TestCase {
 
   private void resetIOContext() {
     conf.set(Utilities.INPUT_NAME, "TestHiveBinarySearchRecordReader");
-    ioContext = IOContext.get(conf);
+    ioContext = IOContext.get(conf.get(Utilities.INPUT_NAME));
     ioContext.setUseSorted(false);
     ioContext.setIsBinarySearching(false);
     ioContext.setEndBinarySearch(false);
