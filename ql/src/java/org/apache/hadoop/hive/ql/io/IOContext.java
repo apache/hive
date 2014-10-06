@@ -21,11 +21,7 @@ package org.apache.hadoop.hive.ql.io;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.mapred.JobConf;
 
 
 /**
@@ -53,17 +49,13 @@ public class IOContext {
     return inputNameIOContextMap;
   }
 
-  public static IOContext get(Configuration conf) {
-    if (HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("spark")) {
-      return get();
-    } else {
-      String inputName = conf.get(Utilities.INPUT_NAME);
-      if (inputNameIOContextMap.containsKey(inputName) == false) {
-        IOContext ioContext = new IOContext();
-        inputNameIOContextMap.put(inputName, ioContext);
-      }
-      return inputNameIOContextMap.get(inputName);
+  public static IOContext get(String inputName) {
+    if (inputNameIOContextMap.containsKey(inputName) == false) {
+      IOContext ioContext = new IOContext();
+      inputNameIOContextMap.put(inputName, ioContext);
     }
+
+    return inputNameIOContextMap.get(inputName);
   }
 
   public static void clear() {
