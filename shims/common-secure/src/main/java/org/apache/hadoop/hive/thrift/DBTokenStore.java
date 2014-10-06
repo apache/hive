@@ -108,18 +108,17 @@ public class DBTokenStore implements DelegationTokenStore {
     return delTokenIdents;
   }
 
-  private Object hmsHandler;
+  private Object rawStore;
 
   @Override
-  public void setStore(Object hms) throws TokenStoreException {
-    hmsHandler = hms;
+  public void setStore(Object rawStore) throws TokenStoreException {
+    this.rawStore = rawStore;
   }
 
   private Object invokeOnRawStore(String methName, Object[] params, Class<?> ... paramTypes)
       throws TokenStoreException{
 
     try {
-      Object rawStore = hmsHandler.getClass().getMethod("getMS").invoke(hmsHandler);
       return rawStore.getClass().getMethod(methName, paramTypes).invoke(rawStore, params);
     } catch (IllegalArgumentException e) {
         throw new TokenStoreException(e);

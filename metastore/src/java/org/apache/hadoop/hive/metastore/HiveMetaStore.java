@@ -5489,13 +5489,20 @@ public class HiveMetaStore extends ThriftHiveMetastore {
   }
 
 
-  public static IHMSHandler newHMSHandler(String name, HiveConf hiveConf) throws MetaException {
-    return newHMSHandler(name, hiveConf, false);
+  public static IHMSHandler newRetryingHMSHandler(IHMSHandler baseHandler, HiveConf hiveConf)
+      throws MetaException {
+    return newRetryingHMSHandler(baseHandler, hiveConf, false);
   }
 
-  public static IHMSHandler newHMSHandler(String name, HiveConf hiveConf, boolean local)
+  public static IHMSHandler newRetryingHMSHandler(IHMSHandler baseHandler, HiveConf hiveConf,
+      boolean local) throws MetaException {
+    return RetryingHMSHandler.getProxy(hiveConf, baseHandler, local);
+  }
+
+  public static Iface newRetryingHMSHandler(String name, HiveConf conf, boolean local)
       throws MetaException {
-    return RetryingHMSHandler.getProxy(hiveConf, name, local);
+    HMSHandler baseHandler = new HiveMetaStore.HMSHandler(name, conf, false);
+    return RetryingHMSHandler.getProxy(conf, baseHandler, local);
   }
 
   /**
@@ -5704,6 +5711,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
       TProcessor processor;
       TTransportFactory transFactory;
+      HMSHandler baseHandler = new HiveMetaStore.HMSHandler("new db based metaserver", conf,
+          false);
+      IHMSHandler handler = newRetryingHMSHandler(baseHandler, conf);
       if (useSasl) {
         // we are in secure mode.
         if (useFramedTransport) {
@@ -5713,17 +5723,14 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             conf.getVar(HiveConf.ConfVars.METASTORE_KERBEROS_KEYTAB_FILE),
             conf.getVar(HiveConf.ConfVars.METASTORE_KERBEROS_PRINCIPAL));
         // start delegation token manager
-        HMSHandler hmsHandler = new HMSHandler("new db based metaserver", conf);
-        saslServer.startDelegationTokenSecretManager(conf, hmsHandler);
+        saslServer.startDelegationTokenSecretManager(conf, baseHandler.getMS());
         transFactory = saslServer.createTransportFactory(
                 MetaStoreUtils.getMetaStoreSaslProperties(conf));
         processor = saslServer.wrapProcessor(
-          new ThriftHiveMetastore.Processor<HMSHandler>(hmsHandler));
+          new ThriftHiveMetastore.Processor<IHMSHandler>(handler));
         LOG.info("Starting DB backed MetaStore Server in Secure Mode");
       } else {
         // we are in unsecure mode.
-        IHMSHandler handler = newHMSHandler("new db based metaserver", conf);
-
         if (conf.getBoolVar(ConfVars.METASTORE_EXECUTE_SET_UGI)) {
           transFactory = useFramedTransport ?
               new ChainedTTransportFactory(new TFramedTransport.Factory(),
