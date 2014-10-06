@@ -475,6 +475,67 @@ public class TestAvroDeserializer {
     assertTrue(theMap2.containsKey("mu"));
     assertEquals(null, theMap2.get("mu"));
   }
+  
+  @Test
+  public void canDeserializeMapsWithJavaLangStringKeys() throws IOException, SerDeException {
+    // Ensures maps can be deserialized when avro.java.string=String.
+    // See http://stackoverflow.com/a/19868919/312944 for why that might be used.
+    String schemaString = "{\n" +
+        "  \"namespace\": \"testing\",\n" +
+        "  \"name\": \"oneMap\",\n" +
+        "  \"type\": \"record\",\n" +
+        "  \"fields\": [\n" +
+        "    {\n" +
+        "      \"name\":\"aMap\",\n" +
+        "      \"type\":{\"type\":\"map\",\n" +
+        "      \"avro.java.string\":\"String\",\n" +
+        "      \"values\":\"long\"}\n" +
+        "\t}\n" +
+        "  ]\n" +
+        "}";
+    Schema s = AvroSerdeUtils.getSchemaFor(schemaString);
+    GenericData.Record record = new GenericData.Record(s);
+
+    Map<String, Long> m = new Hashtable<String, Long>();
+    m.put("one", 1l);
+    m.put("two", 2l);
+    m.put("three", 3l);
+
+    record.put("aMap", m);
+    assertTrue(GENERIC_DATA.validate(s, record));
+    System.out.println("record = " + record);
+
+    AvroGenericRecordWritable garw = Utils.serializeAndDeserializeRecord(record);
+
+    AvroObjectInspectorGenerator aoig = new AvroObjectInspectorGenerator(s);
+
+    AvroDeserializer de = new AvroDeserializer();
+
+    ArrayList<Object> row = (ArrayList<Object>)de.deserialize(aoig.getColumnNames(),
+            aoig.getColumnTypes(), garw, s);
+    assertEquals(1, row.size());
+    Object theMapObject = row.get(0);
+    assertTrue(theMapObject instanceof Map);
+    Map theMap = (Map)theMapObject;
+
+    // Verify the raw object that's been created
+    assertEquals(1l, theMap.get("one"));
+    assertEquals(2l, theMap.get("two"));
+    assertEquals(3l, theMap.get("three"));
+
+    // Verify that the provided object inspector can pull out these same values
+    StandardStructObjectInspector oi =
+            (StandardStructObjectInspector)aoig.getObjectInspector();
+
+    List<Object> z = oi.getStructFieldsDataAsList(row);
+    assertEquals(1, z.size());
+    StructField fieldRef = oi.getStructFieldRef("amap");
+
+    Map theMap2 = (Map)oi.getStructFieldData(row, fieldRef);
+    assertEquals(1l, theMap2.get("one"));
+    assertEquals(2l, theMap2.get("two"));
+    assertEquals(3l, theMap2.get("three"));
+  }
 
   private void verifyNullableType(GenericData.Record record, Schema s, String fieldName,
                                   String expected) throws SerDeException, IOException {
