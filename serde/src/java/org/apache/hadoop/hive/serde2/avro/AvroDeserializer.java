@@ -40,7 +40,6 @@ import org.apache.avro.io.BinaryDecoder;
 import org.apache.avro.io.BinaryEncoder;
 import org.apache.avro.io.DecoderFactory;
 import org.apache.avro.io.EncoderFactory;
-import org.apache.avro.util.Utf8;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.type.HiveChar;
@@ -370,10 +369,10 @@ class AvroDeserializer {
     // Avro only allows maps with Strings for keys, so we only have to worry
     // about deserializing the values
     Map<String, Object> map = new HashMap<String, Object>();
-    Map<Utf8, Object> mapDatum = (Map)datum;
+    Map<CharSequence, Object> mapDatum = (Map)datum;
     Schema valueSchema = mapSchema.getValueType();
     TypeInfo valueTypeInfo = columnType.getMapValueTypeInfo();
-    for (Utf8 key : mapDatum.keySet()) {
+    for (CharSequence key : mapDatum.keySet()) {
       Object value = mapDatum.get(key);
       map.put(key.toString(), worker(value, fileSchema == null ? null : fileSchema.getValueType(),
           valueSchema, valueTypeInfo));
