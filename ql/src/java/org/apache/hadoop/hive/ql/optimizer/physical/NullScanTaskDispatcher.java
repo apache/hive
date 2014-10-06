@@ -102,13 +102,19 @@ public class NullScanTaskDispatcher implements Dispatcher {
   }
 
   private void processAlias(MapWork work, String alias) {
+    List<String> paths = getPathsForAlias(work, alias);
+    if (paths.isEmpty()) {
+      // partitioned table which don't select any partitions
+      // there are no paths to replace with fakePath
+      return;
+    }
     work.setUseOneNullRowInputFormat(true);
 
     // Change the alias partition desc
     PartitionDesc aliasPartn = work.getAliasToPartnInfo().get(alias);
     changePartitionToMetadataOnly(aliasPartn);
 
-    List<String> paths = getPathsForAlias(work, alias);
+
     for (String path : paths) {
       PartitionDesc partDesc = work.getPathToPartitionInfo().get(path);
       PartitionDesc newPartition = changePartitionToMetadataOnly(partDesc);

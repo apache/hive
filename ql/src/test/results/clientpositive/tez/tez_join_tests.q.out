@@ -52,7 +52,7 @@ STAGE PLANS:
                     Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
-              Join Operator
+              Merge Join Operator
                 condition map:
                      Left Outer Join0 to 1
                 condition expressions:
@@ -83,7 +83,7 @@ STAGE PLANS:
                   value expressions: _col0 (type: string)
         Reducer 4 
             Reduce Operator Tree:
-              Join Operator
+              Merge Join Operator
                 condition map:
                      Right Outer Join0 to 1
                 condition expressions:

@@ -390,6 +390,14 @@ public class Driver implements CommandProcessor {
       tree = ParseUtils.findRootNonNullToken(tree);
       perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.PARSE);
 
+      // Initialize the transaction manager.  This must be done before analyze is called.  Also
+      // record the valid transactions for this query.  We have to do this at compile time
+      // because we use the information in planning the query.  Also,
+      // we want to record it at this point so that users see data valid at the point that they
+      // submit the query.
+      SessionState.get().initTxnMgr(conf);
+      recordValidTxns();
+
       perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.ANALYZE);
       BaseSemanticAnalyzer sem = SemanticAnalyzerFactory.get(conf, tree);
       List<HiveSemanticAnalyzerHook> saHooks =
@@ -422,7 +430,8 @@ public class Driver implements CommandProcessor {
       sem.validate();
       perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.ANALYZE);
 
-      plan = new QueryPlan(command, sem, perfLogger.getStartTime(PerfLogger.DRIVER_RUN), queryId);
+      plan = new QueryPlan(command, sem, perfLogger.getStartTime(PerfLogger.DRIVER_RUN), queryId,
+        SessionState.get().getCommandType());
 
       String queryStr = plan.getQueryStr();
       conf.setVar(HiveConf.ConfVars.HIVEQUERYSTRING, queryStr);
@@ -870,28 +879,24 @@ public class Driver implements CommandProcessor {
 
   // Write the current set of valid transactions into the conf file so that it can be read by
   // the input format.
-  private int recordValidTxns() {
-    try {
-      ValidTxnList txns = SessionState.get().getTxnMgr().getValidTxns();
-      String txnStr = txns.toString();
-      conf.set(ValidTxnList.VALID_TXNS_KEY, txnStr);
-      LOG.debug("Encoding valid txns info " + txnStr);
-      return 0;
-    } catch (LockException e) {
-      errorMessage = "FAILED: Error in determing valid transactions: " + e.getMessage();
-      SQLState = ErrorMsg.findSQLState(e.getMessage());
-      downstreamError = e;
-      console.printError(errorMessage, "\n"
-          + org.apache.hadoop.util.StringUtils.stringifyException(e));
-      return 10;
-    }
+  private void recordValidTxns() throws LockException {
+    ValidTxnList txns = SessionState.get().getTxnMgr().getValidTxns();
+    String txnStr = txns.toString();
+    conf.set(ValidTxnList.VALID_TXNS_KEY, txnStr);
+    LOG.debug("Encoding valid txns info " + txnStr);
+    // TODO I think when we switch to cross query transactions we need to keep this list in
+    // session state rather than agressively encoding it in the conf like this.  We can let the
+    // TableScanOperators then encode it in the conf before calling the input formats.
   }
 
   /**
    * Acquire read and write locks needed by the statement. The list of objects to be locked are
-   * obtained from he inputs and outputs populated by the compiler. The lock acuisition scheme is
+   * obtained from the inputs and outputs populated by the compiler. The lock acuisition scheme is
    * pretty simple. If all the locks cannot be obtained, error out. Deadlock is avoided by making
    * sure that the locks are lexicographically sorted.
+   *
+   * This method also records the list of valid transactions.  This must be done after any
+   * transactions have been opened and locks acquired.
    **/
   private int acquireLocksAndOpenTxn() {
     PerfLogger perfLogger = PerfLogger.getPerfLogger();
@@ -927,6 +932,9 @@ public class Driver implements CommandProcessor {
             desc.setTransactionId(txnId);
           }
         }
+
+        // TODO Once we move to cross query transactions we need to add the open transaction to
+        // our list of valid transactions.  We don't have a way to do that right now.
       }
 
       txnMgr.acquireLocks(plan, ctx, userFromUGI);
@@ -1108,11 +1116,6 @@ public class Driver implements CommandProcessor {
     SessionState ss = SessionState.get();
     try {
       ckLock = checkConcurrency();
-      try {
-        ss.initTxnMgr(conf);
-      } catch (LockException e) {
-        throw new SemanticException(e.getMessage(), e);
-      }
     } catch (SemanticException e) {
       errorMessage = "FAILED: Error in semantic analysis: " + e.getMessage();
       SQLState = ErrorMsg.findSQLState(e.getMessage());
@@ -1121,11 +1124,8 @@ public class Driver implements CommandProcessor {
           + org.apache.hadoop.util.StringUtils.stringifyException(e));
       return createProcessorResponse(10);
     }
-    int ret = recordValidTxns();
-    if (ret != 0) {
-      return createProcessorResponse(ret);
-    }
 
+    int ret;
     if (!alreadyCompiled) {
       ret = compileInternal(command);
       if (ret != 0) {

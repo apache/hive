@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.ql.exec.Task;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -104,6 +105,7 @@ public class HCatSemanticAnalyzer extends HCatSemanticAnalyzerBase {
     case HiveParser.TOK_ALTERVIEW_DROPPARTS:
     case HiveParser.TOK_ALTERVIEW_PROPERTIES:
     case HiveParser.TOK_ALTERVIEW_RENAME:
+    case HiveParser.TOK_ALTERVIEW:
     case HiveParser.TOK_CREATEVIEW:
     case HiveParser.TOK_DROPVIEW:
 
@@ -359,7 +361,7 @@ public class HCatSemanticAnalyzer extends HCatSemanticAnalyzerBase {
     AlterTableDesc alterTable = work.getAlterTblDesc();
     if (alterTable != null) {
       Table table = hive.getTable(SessionState.get().getCurrentDatabase(),
-        alterTable.getOldName(), false);
+          Utilities.getDbTableName(alterTable.getOldName())[1], false);
 
       Partition part = null;
       if (alterTable.getPartSpec() != null) {

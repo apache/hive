@@ -69,6 +69,7 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
 
   // Hash table memory usage allowed; used in case of non-staged mapjoin.
   private float hashtableMemoryUsage;
+  protected boolean genJoinKeys = true;
 
   public MapJoinDesc() {
     bigTableBucketNumMapping = new LinkedHashMap<String, Integer>();
@@ -122,6 +123,7 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
     }
   }
 
+  @Explain(displayName = "input vertices")
   public Map<Integer, String> getParentToInput() {
     return parentToInput;
   }
@@ -330,5 +332,17 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
   
   public boolean getCustomBucketMapJoin() {
     return this.customBucketMapJoin;
+  }
+
+  public boolean isMapSideJoin() {
+    return true;
+  }
+
+  public void setGenJoinKeys(boolean genJoinKeys) {
+    this.genJoinKeys = genJoinKeys;
+  }
+
+  public boolean getGenJoinKeys() {
+    return genJoinKeys;
   }
 }

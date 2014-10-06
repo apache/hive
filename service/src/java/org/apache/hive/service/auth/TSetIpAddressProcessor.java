@@ -18,7 +18,6 @@
 
 package org.apache.hive.service.auth;
 
-import org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Processor;
 import org.apache.hive.service.cli.thrift.TCLIService;
 import org.apache.hive.service.cli.thrift.TCLIService.Iface;
 import org.apache.thrift.TException;
@@ -43,7 +42,7 @@ import org.slf4j.LoggerFactory;
  */
 public class TSetIpAddressProcessor<I extends Iface> extends TCLIService.Processor<Iface> {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(Processor.class.getName());
+  private static final Logger LOGGER = LoggerFactory.getLogger(TSetIpAddressProcessor.class.getName());
 
   public TSetIpAddressProcessor(Iface iface) {
     super(iface);
@@ -75,7 +74,7 @@ public class TSetIpAddressProcessor<I extends Iface> extends TCLIService.Process
     if (tSocket == null) {
       LOGGER.warn("Unknown Transport, cannot determine ipAddress");
     } else {
-      THREAD_LOCAL_IP_ADDRESS.set(tSocket.getSocket().getInetAddress().toString());
+      THREAD_LOCAL_IP_ADDRESS.set(tSocket.getSocket().getInetAddress().getHostAddress());
     }
   }
 

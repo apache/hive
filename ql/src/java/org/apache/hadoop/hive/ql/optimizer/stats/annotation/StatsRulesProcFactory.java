@@ -18,8 +18,14 @@
 
 package org.apache.hadoop.hive.ql.optimizer.stats.annotation;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
+import java.lang.reflect.Field;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Stack;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -31,10 +37,12 @@ import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.LimitOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.OperatorUtils;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
+import org.apache.hadoop.hive.ql.exec.tez.DagUtils;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
@@ -48,10 +56,12 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
@@ -66,17 +76,15 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotNull;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNull;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
 import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Stack;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 public class StatsRulesProcFactory {
 
   private static final Log LOG = LogFactory.getLog(StatsRulesProcFactory.class.getName());
+  private static final boolean isDebugEnabled = LOG.isDebugEnabled();
 
   /**
    * Collect basic statistics like number of rows, data size and column level statistics from the
@@ -103,9 +111,9 @@ public class StatsRulesProcFactory {
         Statistics stats = StatsUtils.collectStatistics(aspCtx.getConf(), partList, table, tsop);
         tsop.setStatistics(stats.clone());
 
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("[0] STATS-" + tsop.toString() + " (" + table.getTableName()
-              + "): " + stats.extendedToString());
+        if (isDebugEnabled) {
+          LOG.debug("[0] STATS-" + tsop.toString() + " (" + table.getTableName() + "): " +
+              stats.extendedToString());
         }
       } catch (CloneNotSupportedException e) {
         throw new SemanticException(ErrorMsg.STATISTICS_CLONING_FAILED.getMsg());
@@ -167,14 +175,14 @@ public class StatsRulesProcFactory {
           stats.setDataSize(setMaxIfInvalid(dataSize));
           sop.setStatistics(stats);
 
-          if (LOG.isDebugEnabled()) {
+          if (isDebugEnabled) {
             LOG.debug("[0] STATS-" + sop.toString() + ": " + stats.extendedToString());
           }
         } else {
           if (parentStats != null) {
             sop.setStatistics(parentStats.clone());
 
-            if (LOG.isDebugEnabled()) {
+            if (isDebugEnabled) {
               LOG.debug("[1] STATS-" + sop.toString() + ": " + parentStats.extendedToString());
             }
           }
@@ -264,7 +272,7 @@ public class StatsRulesProcFactory {
               updateStats(st, newNumRows, true, fop);
             }
 
-            if (LOG.isDebugEnabled()) {
+            if (isDebugEnabled) {
               LOG.debug("[0] STATS-" + fop.toString() + ": " + st.extendedToString());
             }
           } else {
@@ -274,7 +282,7 @@ public class StatsRulesProcFactory {
               updateStats(st, newNumRows, false, fop);
             }
 
-            if (LOG.isDebugEnabled()) {
+            if (isDebugEnabled) {
               LOG.debug("[1] STATS-" + fop.toString() + ": " + st.extendedToString());
             }
           }
@@ -576,52 +584,103 @@ public class StatsRulesProcFactory {
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
+
       GroupByOperator gop = (GroupByOperator) nd;
       Operator<? extends OperatorDesc> parent = gop.getParentOperators().get(0);
       Statistics parentStats = parent.getStatistics();
+
+      // parent stats are not populated yet
+      if (parentStats == null) {
+        return null;
+      }
+
       AnnotateStatsProcCtx aspCtx = (AnnotateStatsProcCtx) procCtx;
       HiveConf conf = aspCtx.getConf();
-      int mapSideParallelism =
-          HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_STATS_MAP_SIDE_PARALLELISM);
+      long maxSplitSize = HiveConf.getLongVar(conf, HiveConf.ConfVars.MAPREDMAXSPLITSIZE);
       List<AggregationDesc> aggDesc = gop.getConf().getAggregators();
       Map<String, ExprNodeDesc> colExprMap = gop.getColumnExprMap();
       RowSchema rs = gop.getSchema();
       Statistics stats = null;
+      List<ColStatistics> colStats = StatsUtils.getColStatisticsFromExprMap(conf, parentStats,
+          colExprMap, rs);
+      long cardinality;
+      long parallelism = 1L;
       boolean mapSide = false;
-      int multiplier = mapSideParallelism;
-      long newNumRows;
-      long newDataSize;
+      boolean mapSideHashAgg = false;
+      long inputSize = 1L;
+      boolean containsGroupingSet = gop.getConf().isGroupingSetsPresent();
+      long sizeOfGroupingSet =
+          containsGroupingSet ? gop.getConf().getListGroupingSets().size() : 1L;
 
-      // map side
+      // There are different cases for Group By depending on map/reduce side, hash aggregation,
+      // grouping sets and column stats. If we don't have column stats, we just assume hash
+      // aggregation is disabled. Following are the possible cases and rule for cardinality
+      // estimation
+
+      // MAP SIDE:
+      // Case 1: NO column stats, NO hash aggregation, NO grouping sets — numRows
+      // Case 2: NO column stats, NO hash aggregation, grouping sets — numRows * sizeOfGroupingSet
+      // Case 3: column stats, hash aggregation, NO grouping sets — Min(numRows / 2, ndvProduct * parallelism)
+      // Case 4: column stats, hash aggregation, grouping sets — Min((numRows * sizeOfGroupingSet) / 2, ndvProduct * parallelism * sizeOfGroupingSet)
+      // Case 5: column stats, NO hash aggregation, NO grouping sets — numRows
+      // Case 6: column stats, NO hash aggregation, grouping sets — numRows * sizeOfGroupingSet
+
+      // REDUCE SIDE:
+      // Case 7: NO column stats — numRows / 2
+      // Case 8: column stats, grouping sets — Min(numRows, ndvProduct * sizeOfGroupingSet)
+      // Case 9: column stats, NO grouping sets - Min(numRows, ndvProduct)
+
       if (gop.getChildOperators().get(0) instanceof ReduceSinkOperator ||
           gop.getChildOperators().get(0) instanceof AppMasterEventOperator) {
 
-         mapSide = true;
+        mapSide = true;
 
-        // map-side grouping set present. if grouping set is present then
-        // multiply the number of rows by number of elements in grouping set
-        if (gop.getConf().isGroupingSetsPresent()) {
-          multiplier *= gop.getConf().getListGroupingSets().size();
+        // consider approximate map side parallelism to be table data size
+        // divided by max split size
+        TableScanOperator top = OperatorUtils.findSingleOperatorUpstream(gop,
+            TableScanOperator.class);
+        // if top is null then there are multiple parents (RS as well), hence
+        // lets use parent statistics to get data size. Also maxSplitSize should
+        // be updated to bytes per reducer (1GB default)
+        if (top == null) {
+          inputSize = parentStats.getDataSize();
+          maxSplitSize = HiveConf.getLongVar(conf, HiveConf.ConfVars.BYTESPERREDUCER);
+        } else {
+          inputSize = top.getConf().getStatistics().getDataSize();
         }
+        parallelism = (int) Math.ceil((double) inputSize / maxSplitSize);
+      }
+
+      if (isDebugEnabled) {
+        LOG.debug("STATS-" + gop.toString() + ": inputSize: " + inputSize + " maxSplitSize: " +
+            maxSplitSize + " parallelism: " + parallelism + " containsGroupingSet: " +
+            containsGroupingSet + " sizeOfGroupingSet: " + sizeOfGroupingSet);
       }
 
       try {
+        // satisfying precondition means column statistics is available
         if (satisfyPrecondition(parentStats)) {
-          stats = parentStats.clone();
 
-          List<ColStatistics> colStats =
-              StatsUtils.getColStatisticsFromExprMap(conf, parentStats, colExprMap, rs);
+          // check if map side aggregation is possible or not based on column stats
+          mapSideHashAgg = checkMapSideAggregation(gop, colStats, conf);
+
+          if (isDebugEnabled) {
+            LOG.debug("STATS-" + gop.toString() + " mapSideHashAgg: " + mapSideHashAgg);
+          }
+
+          stats = parentStats.clone();
           stats.setColumnStats(colStats);
-          long dvProd = 1;
+          long ndvProduct = 1;
+          final long parentNumRows = stats.getNumRows();
 
           // compute product of distinct values of grouping columns
           for (ColStatistics cs : colStats) {
             if (cs != null) {
-              long dv = cs.getCountDistint();
+              long ndv = cs.getCountDistint();
               if (cs.getNumNulls() > 0) {
-                dv += 1;
+                ndv += 1;
               }
-              dvProd *= dv;
+              ndvProduct *= ndv;
             } else {
               if (parentStats.getColumnStatsState().equals(Statistics.State.COMPLETE)) {
                 // the column must be an aggregate column inserted by GBY. We
@@ -632,65 +691,130 @@ public class StatsRulesProcFactory {
                 // partial column statistics on grouping attributes case.
                 // if column statistics on grouping attribute is missing, then
                 // assume worst case.
-                // GBY rule will emit half the number of rows if dvProd is 0
-                dvProd = 0;
+                // GBY rule will emit half the number of rows if ndvProduct is 0
+                ndvProduct = 0;
               }
               break;
             }
           }
 
-          // map side
+          // if ndvProduct is 0 then column stats state must be partial and we are missing
+          // column stats for a group by column
+          if (ndvProduct == 0) {
+            ndvProduct = parentNumRows / 2;
+
+            if (isDebugEnabled) {
+              LOG.debug("STATS-" + gop.toString() + ": ndvProduct became 0 as some column does not" +
+                  " have stats. ndvProduct changed to: " + ndvProduct);
+            }
+          }
+
           if (mapSide) {
+            // MAP SIDE
 
-            // since we do not know if hash-aggregation will be enabled or disabled
-            // at runtime we will assume that map-side group by does not do any
-            // reduction.hence no group by rule will be applied
+            if (mapSideHashAgg) {
+              if (containsGroupingSet) {
+                // Case 4: column stats, hash aggregation, grouping sets
+                cardinality = Math.min((parentNumRows * sizeOfGroupingSet) / 2,
+                    ndvProduct * parallelism * sizeOfGroupingSet);
 
-            // map-side grouping set present. if grouping set is present then
-            // multiply the number of rows by number of elements in grouping set
-            if (gop.getConf().isGroupingSetsPresent()) {
-              newNumRows = setMaxIfInvalid(multiplier * stats.getNumRows());
-              newDataSize = setMaxIfInvalid(multiplier * stats.getDataSize());
-              stats.setNumRows(newNumRows);
-              stats.setDataSize(newDataSize);
-              for (ColStatistics cs : colStats) {
-                if (cs != null) {
-                  long oldNumNulls = cs.getNumNulls();
-                  long newNumNulls = multiplier * oldNumNulls;
-                  cs.setNumNulls(newNumNulls);
+                if (isDebugEnabled) {
+                  LOG.debug("[Case 4] STATS-" + gop.toString() + ": cardinality: " + cardinality);
+                }
+              } else {
+                // Case 3: column stats, hash aggregation, NO grouping sets
+                cardinality = Math.min(parentNumRows / 2, ndvProduct * parallelism);
+
+                if (isDebugEnabled) {
+                  LOG.debug("[Case 3] STATS-" + gop.toString() + ": cardinality: " + cardinality);
                 }
               }
             } else {
+              if (containsGroupingSet) {
+                // Case 6: column stats, NO hash aggregation, grouping sets
+                cardinality = parentNumRows * sizeOfGroupingSet;
 
-              // map side no grouping set
-              newNumRows = stats.getNumRows() * multiplier;
-              updateStats(stats, newNumRows, true, gop);
+                if (isDebugEnabled) {
+                  LOG.debug("[Case 6] STATS-" + gop.toString() + ": cardinality: " + cardinality);
+                }
+              } else {
+                // Case 5: column stats, NO hash aggregation, NO grouping sets
+                cardinality = parentNumRows;
+
+                if (isDebugEnabled) {
+                  LOG.debug("[Case 5] STATS-" + gop.toString() + ": cardinality: " + cardinality);
+                }
+              }
             }
           } else {
+            // REDUCE SIDE
 
-            // reduce side
-            newNumRows = applyGBYRule(stats.getNumRows(), dvProd);
-            updateStats(stats, newNumRows, true, gop);
+            // in reduce side GBY, we don't know if the grouping set was present or not. so get it
+            // from map side GBY
+            GroupByOperator mGop = OperatorUtils.findSingleOperatorUpstream(parent, GroupByOperator.class);
+            if (mGop != null) {
+              containsGroupingSet = mGop.getConf().isGroupingSetsPresent();
+              sizeOfGroupingSet = mGop.getConf().getListGroupingSets().size();
+            }
+
+            if (containsGroupingSet) {
+              // Case 8: column stats, grouping sets
+              cardinality = Math.min(parentNumRows, ndvProduct * sizeOfGroupingSet);
+
+              if (isDebugEnabled) {
+                LOG.debug("[Case 8] STATS-" + gop.toString() + ": cardinality: " + cardinality);
+              }
+            } else {
+              // Case 9: column stats, NO grouping sets
+              cardinality = Math.min(parentNumRows, ndvProduct);
+
+              if (isDebugEnabled) {
+                LOG.debug("[Case 9] STATS-" + gop.toString() + ": cardinality: " + cardinality);
+              }
+            }
           }
+
+          // update stats, but don't update NDV as it will not change
+          updateStats(stats, cardinality, true, gop, false);
         } else {
+
+          // NO COLUMN STATS
           if (parentStats != null) {
 
             stats = parentStats.clone();
+            final long parentNumRows = stats.getNumRows();
 
-            // worst case, in the absence of column statistics assume half the rows are emitted
+            // if we don't have column stats, we just assume hash aggregation is disabled
             if (mapSide) {
+              // MAP SIDE
 
-              // map side
-              newNumRows = multiplier * stats.getNumRows();
-              newDataSize = multiplier * stats.getDataSize();
-              stats.setNumRows(newNumRows);
-              stats.setDataSize(newDataSize);
+              if (containsGroupingSet) {
+                // Case 2: NO column stats, NO hash aggregation, grouping sets
+                cardinality = parentNumRows * sizeOfGroupingSet;
+
+                if (isDebugEnabled) {
+                  LOG.debug("[Case 2] STATS-" + gop.toString() + ": cardinality: " + cardinality);
+                }
+              } else {
+                // Case 1: NO column stats, NO hash aggregation, NO grouping sets
+                cardinality = parentNumRows;
+
+                if (isDebugEnabled) {
+                  LOG.debug("[Case 1] STATS-" + gop.toString() + ": cardinality: " + cardinality);
+                }
+              }
             } else {
+              // REDUCE SIDE
 
-              // reduce side
-              newNumRows = parentStats.getNumRows() / 2;
-              updateStats(stats, newNumRows, false, gop);
+              // Case 7: NO column stats
+              cardinality = parentNumRows / 2;
+
+              if (isDebugEnabled) {
+                LOG.debug("[Case 7] STATS-" + gop.toString() + ": cardinality: " + cardinality);
+              }
             }
+
+            updateStats(stats, cardinality, false, gop);
           }
         }
 
@@ -738,13 +862,114 @@ public class StatsRulesProcFactory {
 
         gop.setStatistics(stats);
 
-        if (LOG.isDebugEnabled() && stats != null) {
+        if (isDebugEnabled && stats != null) {
           LOG.debug("[0] STATS-" + gop.toString() + ": " + stats.extendedToString());
         }
       } catch (CloneNotSupportedException e) {
         throw new SemanticException(ErrorMsg.STATISTICS_CLONING_FAILED.getMsg());
       }
       return null;
+    }
+
+    /**
+     * This method does not take into account many configs used at runtime to
+     * disable hash aggregation like HIVEMAPAGGRHASHMINREDUCTION. This method
+     * roughly estimates the number of rows and size of each row to see if it
+     * can fit in hashtable for aggregation.
+     * @param gop - group by operator
+     * @param colStats - column stats for key columns
+     * @param conf - hive conf
+     * @return
+     */
+    private boolean checkMapSideAggregation(GroupByOperator gop,
+        List<ColStatistics> colStats, HiveConf conf) {
+
+      List<AggregationDesc> aggDesc = gop.getConf().getAggregators();
+      GroupByDesc desc = gop.getConf();
+      GroupByDesc.Mode mode = desc.getMode();
+
+      if (mode.equals(GroupByDesc.Mode.HASH)) {
+        float hashAggMem = conf.getFloatVar(
+            HiveConf.ConfVars.HIVEMAPAGGRHASHMEMORY);
+        float hashAggMaxThreshold = conf.getFloatVar(
+            HiveConf.ConfVars.HIVEMAPAGGRMEMORYTHRESHOLD);
+
+        // get memory for container. May be use mapreduce.map.java.opts instead?
+        long totalMemory =
+            DagUtils.getContainerResource(conf).getMemory() * 1000L * 1000L;
+        long maxMemHashAgg = Math
+            .round(totalMemory * hashAggMem * hashAggMaxThreshold);
+
+        // estimated number of rows will be product of NDVs
+        long numEstimatedRows = 1;
+
+        // estimate size of key from column statistics
+        long avgKeySize = 0;
+        for (ColStatistics cs : colStats) {
+          if (cs != null) {
+            numEstimatedRows *= cs.getCountDistint();
+            avgKeySize += Math.ceil(cs.getAvgColLen());
+          }
+        }
+
+        // average value size will be sum of all sizes of aggregation buffers
+        long avgValSize = 0;
+        // go over all aggregation buffers and see they implement estimable
+        // interface if so they aggregate the size of the aggregation buffer
+        GenericUDAFEvaluator[] aggregationEvaluators;
+        aggregationEvaluators = new GenericUDAFEvaluator[aggDesc.size()];
+
+        // get aggregation evaluators
+        for (int i = 0; i < aggregationEvaluators.length; i++) {
+          AggregationDesc agg = aggDesc.get(i);
+          aggregationEvaluators[i] = agg.getGenericUDAFEvaluator();
+        }
+
+        // estimate size of aggregation buffer
+        for (int i = 0; i < aggregationEvaluators.length; i++) {
+
+          // each evaluator has constant java object overhead
+          avgValSize += gop.javaObjectOverHead;
+          GenericUDAFEvaluator.AggregationBuffer agg = null;
+          try {
+            agg = aggregationEvaluators[i].getNewAggregationBuffer();
+          } catch (HiveException e) {
+            // in case of exception assume unknown type (256 bytes)
+            avgValSize += gop.javaSizeUnknownType;
+          }
+
+          // aggregate size from aggregation buffers
+          if (agg != null) {
+            if (GenericUDAFEvaluator.isEstimable(agg)) {
+              avgValSize += ((GenericUDAFEvaluator.AbstractAggregationBuffer) agg)
+                  .estimate();
+            } else {
+              // if the aggregation buffer is not estimable then get all the
+              // declared fields and compute the sizes from field types
+              Field[] fArr = ObjectInspectorUtils
+                  .getDeclaredNonStaticFields(agg.getClass());
+              for (Field f : fArr) {
+                long avgSize = StatsUtils
+                    .getAvgColLenOfFixedLengthTypes(f.getType().getName());
+                avgValSize += avgSize == 0 ? gop.javaSizeUnknownType : avgSize;
+              }
+            }
+          }
+        }
+
+        // total size of each hash entry
+        long hashEntrySize = gop.javaHashEntryOverHead + avgKeySize + avgValSize;
+
+        // estimated hash table size
+        long estHashTableSize = numEstimatedRows * hashEntrySize;
+
+        if (estHashTableSize < maxMemHashAgg) {
+          return true;
+        }
+      }
+
+      // worst-case, hash aggregation disabled
+      return false;
     }
 
     private long applyGBYRule(long numRows, long dvProd) {
@@ -967,7 +1192,7 @@ public class StatsRulesProcFactory {
               outInTabAlias);
           jop.setStatistics(stats);
 
-          if (LOG.isDebugEnabled()) {
+          if (isDebugEnabled) {
             LOG.debug("[0] STATS-" + jop.toString() + ": " + stats.extendedToString());
           }
         } else {
@@ -1001,7 +1226,7 @@ public class StatsRulesProcFactory {
           wcStats.setDataSize(setMaxIfInvalid(newDataSize));
           jop.setStatistics(wcStats);
 
-          if (LOG.isDebugEnabled()) {
+          if (isDebugEnabled) {
             LOG.debug("[1] STATS-" + jop.toString() + ": " + wcStats.extendedToString());
           }
         }
@@ -1195,7 +1420,7 @@ public class StatsRulesProcFactory {
           }
           lop.setStatistics(stats);
 
-          if (LOG.isDebugEnabled()) {
+          if (isDebugEnabled) {
             LOG.debug("[0] STATS-" + lop.toString() + ": " + stats.extendedToString());
           }
         } else {
@@ -1213,7 +1438,7 @@ public class StatsRulesProcFactory {
             }
             lop.setStatistics(wcStats);
 
-            if (LOG.isDebugEnabled()) {
+            if (isDebugEnabled) {
               LOG.debug("[1] STATS-" + lop.toString() + ": " + wcStats.extendedToString());
             }
           }
@@ -1281,7 +1506,7 @@ public class StatsRulesProcFactory {
             outStats.setColumnStats(colStats);
           }
           rop.setStatistics(outStats);
-          if (LOG.isDebugEnabled()) {
+          if (isDebugEnabled) {
             LOG.debug("[0] STATS-" + rop.toString() + ": " + outStats.extendedToString());
           }
         } catch (CloneNotSupportedException e) {
@@ -1322,7 +1547,7 @@ public class StatsRulesProcFactory {
                   stats.addToColumnStats(parentStats.getColumnStats());
                   op.getConf().setStatistics(stats);
 
-                  if (LOG.isDebugEnabled()) {
+                  if (isDebugEnabled) {
                     LOG.debug("[0] STATS-" + op.toString() + ": " + stats.extendedToString());
                   }
                 }
@@ -1378,6 +1603,7 @@ public class StatsRulesProcFactory {
     return new DefaultStatsRule();
   }
 
+
   /**
    * Update the basic statistics of the statistics object based on the row number
    * @param stats
@@ -1389,6 +1615,12 @@ public class StatsRulesProcFactory {
    */
   static void updateStats(Statistics stats, long newNumRows,
       boolean useColStats, Operator<? extends OperatorDesc> op) {
+    updateStats(stats, newNumRows, useColStats, op, true);
+  }
+
+  static void updateStats(Statistics stats, long newNumRows,
+      boolean useColStats, Operator<? extends OperatorDesc> op,
+      boolean updateNDV) {
 
     if (newNumRows <= 0) {
       LOG.info("STATS-" + op.toString() + ": Overflow in number of rows."
@@ -1406,17 +1638,19 @@ public class StatsRulesProcFactory {
         long oldNumNulls = cs.getNumNulls();
         long oldDV = cs.getCountDistint();
         long newNumNulls = Math.round(ratio * oldNumNulls);
-        long newDV = oldDV;
-
-        // if ratio is greater than 1, then number of rows increases. This can happen
-        // when some operators like GROUPBY duplicates the input rows in which case
-        // number of distincts should not change. Update the distinct count only when
-        // the output number of rows is less than input number of rows.
-        if (ratio <= 1.0) {
-          newDV = (long) Math.ceil(ratio * oldDV);
-        }
         cs.setNumNulls(newNumNulls);
-        cs.setCountDistint(newDV);
+        if (updateNDV) {
+          long newDV = oldDV;
+
+          // if ratio is greater than 1, then number of rows increases. This can happen
+          // when some operators like GROUPBY duplicates the input rows in which case
+          // number of distincts should not change. Update the distinct count only when
+          // the output number of rows is less than input number of rows.
+          if (ratio <= 1.0) {
+            newDV = (long) Math.ceil(ratio * oldDV);
+          }
+          cs.setCountDistint(newDV);
+        }
       }
       stats.setColumnStats(colStats);
       long newDataSize = StatsUtils.getDataSizeFromColumnStats(newNumRows, colStats);

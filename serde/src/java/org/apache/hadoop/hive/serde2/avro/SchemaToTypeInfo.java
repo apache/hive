@@ -128,6 +128,33 @@ class SchemaToTypeInfo {
       return TypeInfoFactory.getDecimalTypeInfo(precision, scale);
     }
 
+    if (type == Schema.Type.STRING &&
+        AvroSerDe.CHAR_TYPE_NAME.equalsIgnoreCase(schema.getProp(AvroSerDe.AVRO_PROP_LOGICAL_TYPE))) {
+      int maxLength = 0;
+      try {
+        maxLength = schema.getJsonProp(AvroSerDe.AVRO_PROP_MAX_LENGTH).getValueAsInt();
+      } catch (Exception ex) {
+        throw new AvroSerdeException("Failed to obtain maxLength value from file schema: " + schema, ex);
+      }
+      return TypeInfoFactory.getCharTypeInfo(maxLength);
+    }
+
+    if (type == Schema.Type.STRING &&
+        AvroSerDe.VARCHAR_TYPE_NAME.equalsIgnoreCase(schema.getProp(AvroSerDe.AVRO_PROP_LOGICAL_TYPE))) {
+      int maxLength = 0;
+      try {
+        maxLength = schema.getJsonProp(AvroSerDe.AVRO_PROP_MAX_LENGTH).getValueAsInt();
+      } catch (Exception ex) {
+        throw new AvroSerdeException("Failed to obtain maxLength value from file schema: " + schema, ex);
+      }
+      return TypeInfoFactory.getVarcharTypeInfo(maxLength);
+    }
+
+    if (type == Schema.Type.INT &&
+        AvroSerDe.DATE_TYPE_NAME.equals(schema.getProp(AvroSerDe.AVRO_PROP_LOGICAL_TYPE))) {
+      return TypeInfoFactory.dateTypeInfo;
+    }
+
     return typeInfoCache.retrieve(schema);
   }
 

@@ -48,12 +48,10 @@ import org.apache.hadoop.util.ReflectionUtils;
 public class PartitionDesc implements Serializable, Cloneable {
 
   static {
-    TABLE_INTERNER = Interners.newWeakInterner();
     STRING_INTERNER = Interners.newWeakInterner();
     CLASS_INTERNER = Interners.newWeakInterner();
   }
 
-  private static final Interner<TableDesc> TABLE_INTERNER;
   private static final Interner<String> STRING_INTERNER;
   private static final Interner<Class<?>> CLASS_INTERNER;
 
@@ -73,12 +71,12 @@ public class PartitionDesc implements Serializable, Cloneable {
   }
 
   public PartitionDesc(final TableDesc table, final LinkedHashMap<String, String> partSpec) {
-    setTableDesc(table);
+    this.tableDesc = table;
     this.partSpec = partSpec;
   }
 
   public PartitionDesc(final Partition part) throws HiveException {
-    setTableDesc(Utilities.getTableDesc(part.getTable()));
+    this.tableDesc = Utilities.getTableDesc(part.getTable());
     setProperties(part.getMetadataFromPartitionSchema());
     partSpec = part.getSpec();
     setInputFileFormatClass(part.getInputFormatClass());
@@ -86,7 +84,7 @@ public class PartitionDesc implements Serializable, Cloneable {
   }
 
   public PartitionDesc(final Partition part,final TableDesc tblDesc) throws HiveException {
-    setTableDesc(tblDesc);
+    this.tableDesc = tblDesc;
     setProperties(part.getSchemaFromTableSchema(tblDesc.getProperties())); // each partition maintains a large properties
     partSpec = part.getSpec();
     setOutputFileFormatClass(part.getInputFormatClass());
@@ -99,7 +97,7 @@ public class PartitionDesc implements Serializable, Cloneable {
   }
 
   public void setTableDesc(TableDesc tableDesc) {
-    this.tableDesc = TABLE_INTERNER.intern(tableDesc);
+    this.tableDesc = tableDesc;
   }
 
   @Explain(displayName = "partition values")
@@ -265,5 +263,9 @@ public class PartitionDesc implements Serializable, Cloneable {
       // the last component at the minimum - so set to the complete path
       baseFileName = path;
     }
+  }
+
+  public void intern(Interner<TableDesc> interner) {
+    this.tableDesc = interner.intern(tableDesc);
   }
 }

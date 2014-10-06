@@ -372,5 +372,42 @@ public class ExprNodeDescUtils {
     } catch (Exception e) {
       return null;
     }
-  }
+	}
+
+	public static void getExprNodeColumnDesc(List<ExprNodeDesc> exprDescList,
+			Map<Integer, ExprNodeDesc> hashCodeTocolumnDescMap) {
+		for (ExprNodeDesc exprNodeDesc : exprDescList) {
+			getExprNodeColumnDesc(exprNodeDesc, hashCodeTocolumnDescMap);
+		}
+	}
+
+	/**
+	 * Get Map of ExprNodeColumnDesc HashCode to ExprNodeColumnDesc.
+	 * 
+	 * @param exprDesc
+	 * @param hashCodeTocolumnDescMap
+	 *            Assumption: If two ExprNodeColumnDesc have same hash code then
+	 *            they are logically referring to same projection
+	 */
+	public static void getExprNodeColumnDesc(ExprNodeDesc exprDesc,
+			Map<Integer, ExprNodeDesc> hashCodeTocolumnDescMap) {
+		if (exprDesc instanceof ExprNodeColumnDesc) {
+			hashCodeTocolumnDescMap.put(
+					((ExprNodeColumnDesc) exprDesc).hashCode(),
+					((ExprNodeColumnDesc) exprDesc));
+		} else if (exprDesc instanceof ExprNodeColumnListDesc) {
+			for (ExprNodeDesc child : ((ExprNodeColumnListDesc) exprDesc)
+					.getChildren()) {
+				getExprNodeColumnDesc(child, hashCodeTocolumnDescMap);
+			}
+		} else if (exprDesc instanceof ExprNodeGenericFuncDesc) {
+			for (ExprNodeDesc child : ((ExprNodeGenericFuncDesc) exprDesc)
+					.getChildren()) {
+				getExprNodeColumnDesc(child, hashCodeTocolumnDescMap);
+			}
+		} else if (exprDesc instanceof ExprNodeFieldDesc) {
+			getExprNodeColumnDesc(((ExprNodeFieldDesc) exprDesc).getDesc(),
+					hashCodeTocolumnDescMap);
+		}
+	}
 }

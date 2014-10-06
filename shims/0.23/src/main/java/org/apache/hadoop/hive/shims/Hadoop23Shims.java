@@ -46,6 +46,7 @@ import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.fs.ProxyFileSystem;
 import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.fs.Trash;
+import org.apache.hadoop.fs.TrashPolicy;
 import org.apache.hadoop.fs.permission.AclEntry;
 import org.apache.hadoop.fs.permission.AclEntryScope;
 import org.apache.hadoop.fs.permission.AclEntryType;
@@ -834,5 +835,16 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   @Override
   public boolean hasStickyBit(FsPermission permission) {
     return permission.getStickyBit();
+  }
+
+  @Override
+  public boolean supportTrashFeature() {
+    return true;
+  }
+
+  @Override
+  public Path getCurrentTrashPath(Configuration conf, FileSystem fs) {
+    TrashPolicy tp = TrashPolicy.getInstance(conf, fs, fs.getHomeDirectory());
+    return tp.getCurrentTrashDir();
   }
 }

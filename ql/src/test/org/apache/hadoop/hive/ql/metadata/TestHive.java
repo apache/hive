@@ -21,14 +21,18 @@ package org.apache.hadoop.hive.ql.metadata;
 import static org.apache.hadoop.hive.metastore.MetaStoreUtils.DEFAULT_DATABASE_NAME;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import junit.framework.TestCase;
 
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
@@ -45,6 +49,7 @@ import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.thrift.ThriftDeserializer;
 import org.apache.hadoop.hive.serde2.thrift.test.Complex;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
 import org.apache.hadoop.mapred.TextInputFormat;
@@ -63,6 +68,9 @@ public class TestHive extends TestCase {
   protected void setUp() throws Exception {
     super.setUp();
     hiveConf = new HiveConf(this.getClass());
+    // enable trash so it can be tested
+    hiveConf.setFloat("fs.trash.checkpoint.interval", 30);  // FS_TRASH_CHECKPOINT_INTERVAL_KEY (hadoop-2)
+    hiveConf.setFloat("fs.trash.interval", 30);             // FS_TRASH_INTERVAL_KEY (hadoop-2)
     SessionState.start(hiveConf);
     try {
       hm = Hive.get(hiveConf);
@@ -79,6 +87,9 @@ public class TestHive extends TestCase {
   protected void tearDown() throws Exception {
     try {
       super.tearDown();
+      // disable trash
+      hiveConf.setFloat("fs.trash.checkpoint.interval", 30);  // FS_TRASH_CHECKPOINT_INTERVAL_KEY (hadoop-2)
+      hiveConf.setFloat("fs.trash.interval", 30);             // FS_TRASH_INTERVAL_KEY (hadoop-2)
       Hive.closeCurrent();
     } catch (Exception e) {
       System.err.println(StringUtils.stringifyException(e));
@@ -294,7 +305,7 @@ public class TestHive extends TestCase {
     try {
       String dbName = "db_for_testgettables";
       String table1Name = "table1";
-      hm.dropDatabase(dbName, true, true);
+      hm.dropDatabase(dbName, true, true, true);
 
       Database db = new Database();
       db.setName(dbName);
@@ -330,15 +341,91 @@ public class TestHive extends TestCase {
 
       // Drop all tables
       for (String tableName : hm.getAllTables(dbName)) {
+        Table table = hm.getTable(dbName, tableName);
         hm.dropTable(dbName, tableName);
+        assertFalse(fs.exists(table.getPath()));
       }
       hm.dropDatabase(dbName);
     } catch (Throwable e) {
       System.err.println(StringUtils.stringifyException(e));
-      System.err.println("testGetTables() failed");
+      System.err.println("testGetAndDropTables() failed");
       throw e;
     }
   }
+
+  public void testDropTableTrash() throws Throwable {
+    if (!ShimLoader.getHadoopShims().supportTrashFeature()) {
+      return; // it's hadoop-1
+    }
+    try {
+      String dbName = "db_for_testdroptable";
+      hm.dropDatabase(dbName, true, true, true);
+
+      Database db = new Database();
+      db.setName(dbName);
+      hm.createDatabase(db);
+
+      List<String> ts = new ArrayList<String>(2);
+      String tableBaseName = "droptable";
+      ts.add(tableBaseName + "1");
+      ts.add(tableBaseName + "2");
+      Table tbl1 = createTestTable(dbName, ts.get(0));
+      hm.createTable(tbl1);
+      Table tbl2 = createTestTable(dbName, ts.get(1));
+      hm.createTable(tbl2);
+      // test dropping tables and trash behavior
+      Table table1 = hm.getTable(dbName, ts.get(0));
+      assertNotNull(table1);
+      assertEquals(ts.get(0), table1.getTableName());
+      Path path1 = table1.getPath();
+      FileSystem fs = path1.getFileSystem(hiveConf);
+      assertTrue(fs.exists(path1));
+      // drop table and check that trash works
+      Path trashDir = ShimLoader.getHadoopShims().getCurrentTrashPath(hiveConf, fs);
+      assertNotNull("trash directory should not be null", trashDir);
+      Path trash1 = mergePaths(trashDir, path1);
+      Path pathglob = trash1.suffix("*");;
+      FileStatus before[] = fs.globStatus(pathglob);
+      hm.dropTable(dbName, ts.get(0));
+      assertFalse(fs.exists(path1));
+      FileStatus after[] = fs.globStatus(pathglob);
+      assertTrue("trash dir before and after DROP TABLE noPURGE are not different",
+                 before.length != after.length);
+
+      // drop a table without saving to trash by setting the purge option
+      Table table2 = hm.getTable(dbName, ts.get(1));
+      assertNotNull(table2);
+      assertEquals(ts.get(1), table2.getTableName());
+      Path path2 = table2.getPath();
+      assertTrue(fs.exists(path2));
+      Path trash2 = mergePaths(trashDir, path2);
+      System.out.println("trashDir2 is " + trash2);
+      pathglob = trash2.suffix("*");
+      before = fs.globStatus(pathglob);
+      hm.dropTable(dbName, ts.get(1), true, true, true); // deleteData, ignoreUnknownTable, ifPurge
+      assertFalse(fs.exists(path2));
+      after = fs.globStatus(pathglob);
+      Arrays.sort(before);
+      Arrays.sort(after);
+      assertEquals("trash dir before and after DROP TABLE PURGE are different",
+                   before.length, after.length);
+      assertTrue("trash dir before and after DROP TABLE PURGE are different",
+                 Arrays.equals(before, after));
+
+      // Drop all tables
+      for (String tableName : hm.getAllTables(dbName)) {
+        Table table = hm.getTable(dbName, tableName);
+        hm.dropTable(dbName, tableName);
+        assertFalse(fs.exists(table.getPath()));
+      }
+      hm.dropDatabase(dbName);
+    } catch (Throwable e) {
+      System.err.println(StringUtils.stringifyException(e));
+      System.err.println("testDropTableTrash() failed");
+      throw e;
+    }
+  }
+
 
   public void testPartition() throws Throwable {
     try {
@@ -532,5 +619,40 @@ public class TestHive extends TestCase {
         newHconf.getIntVar(ConfVars.METASTORETHRIFTCONNECTIONRETRIES) + 1);
     newHiveObj = Hive.get(newHconf);
     assertTrue(prevHiveObj != newHiveObj);
+  }
+
+  // shamelessly copied from Path in hadoop-2
+  private static final String SEPARATOR = "/";
+  private static final char SEPARATOR_CHAR = '/';
+
+  private static final String CUR_DIR = ".";
+
+  private static final boolean WINDOWS
+      = System.getProperty("os.name").startsWith("Windows");
+
+  private static final Pattern hasDriveLetterSpecifier =
+      Pattern.compile("^/?[a-zA-Z]:");
+
+  private static Path mergePaths(Path path1, Path path2) {
+    String path2Str = path2.toUri().getPath();
+    path2Str = path2Str.substring(startPositionWithoutWindowsDrive(path2Str));
+    // Add path components explicitly, because simply concatenating two path
+    // string is not safe, for example:
+    // "/" + "/foo" yields "//foo", which will be parsed as authority in Path
+    return new Path(path1.toUri().getScheme(),
+        path1.toUri().getAuthority(),
+        path1.toUri().getPath() + path2Str);
+  }
+
+  private static int startPositionWithoutWindowsDrive(String path) {
+    if (hasWindowsDrive(path)) {
+      return path.charAt(0) ==  SEPARATOR_CHAR ? 3 : 2;
+    } else {
+      return 0;
+    }
+  }
+
+  private static boolean hasWindowsDrive(String path) {
+    return (WINDOWS && hasDriveLetterSpecifier.matcher(path).find());
   }
 }

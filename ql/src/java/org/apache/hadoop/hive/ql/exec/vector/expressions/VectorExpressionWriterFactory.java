@@ -1060,6 +1060,31 @@ public final class VectorExpressionWriterFactory {
     closure.assign(writers, oids);
   }
 
+  /**
+   * Creates the value writers for an struct object inspector.
+   * Creates an appropriate output object inspector.
+   */
+  public static void processVectorInspector(
+      StructObjectInspector structObjInspector,
+      SingleOIDClosure closure)
+      throws HiveException {
+    List<? extends StructField> fields = structObjInspector.getAllStructFieldRefs();
+    VectorExpressionWriter[] writers = new VectorExpressionWriter[fields.size()];
+    List<ObjectInspector> oids = new ArrayList<ObjectInspector>(writers.length);
+    ArrayList<String> columnNames = new ArrayList<String>();
+    int i = 0;
+    for(StructField field : fields) {
+      ObjectInspector fieldObjInsp = field.getFieldObjectInspector();
+      writers[i] = VectorExpressionWriterFactory.
+                genVectorExpressionWritable(fieldObjInsp);
+      columnNames.add(field.getFieldName());
+      oids.add(writers[i].getObjectInspector());
+      i++;
+    }
+    ObjectInspector objectInspector = ObjectInspectorFactory.
+        getStandardStructObjectInspector(columnNames,oids);
+    closure.assign(writers, objectInspector);
+  }
 
   /**
    * Returns {@link VectorExpressionWriter} objects for the fields in the given

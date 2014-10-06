@@ -23,7 +23,7 @@ import org.apache.hadoop.hive.common.classification.InterfaceStability.Evolving;
 /**
  * List of hive operations types.
  */
-@LimitedPrivate(value = { "" })
+@LimitedPrivate(value = { "Apache Argus (incubating)" })
 @Evolving
 public enum HiveOperationType {
   EXPLAIN,

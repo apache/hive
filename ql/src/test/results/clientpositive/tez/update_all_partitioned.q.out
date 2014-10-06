@@ -1,8 +1,8 @@
-PREHOOK: query: create table acid_uap(a int, b varchar(128)) partitioned by (ds string) clustered by (a) into 2 buckets stored as orc
+PREHOOK: query: create table acid_uap(a int, b varchar(128)) partitioned by (ds string) clustered by (a) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@acid_uap
-POSTHOOK: query: create table acid_uap(a int, b varchar(128)) partitioned by (ds string) clustered by (a) into 2 buckets stored as orc
+POSTHOOK: query: create table acid_uap(a int, b varchar(128)) partitioned by (ds string) clustered by (a) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@acid_uap
@@ -85,15 +85,21 @@ POSTHOOK: Input: default@acid_uap@ds=today
 POSTHOOK: Input: default@acid_uap@ds=tomorrow
 #### A masked pattern was here ####
 -1073279343	fred	today
+-1073279343	oj1YrV5Wa	today
 -1073051226	fred	today
 -1072910839	fred	today
+-1072081801	dPkN74F7	today
 -1072081801	fred	today
 -1072076362	fred	today
 -1071480828	fred	today
+-1071363017	Anj0oF	today
 -1071363017	fred	today
+-1070883071	0ruyd6Y50JpdGRf6HqD	today
 -1070883071	fred	today
 -1070551679	fred	today
+-1070551679	iUR3Q	today
 -1069736047	fred	today
+-1069736047	k17Am8uPHWk02cEf1jet	today
 762	fred	tomorrow
 762	fred	tomorrow
 762	fred	tomorrow

@@ -104,8 +104,16 @@ public class QBMetaData {
     return nameToDestTable.get(alias.toLowerCase());
   }
 
+  public Map<String, Table> getNameToDestTable() {
+    return nameToDestTable;
+  }
+
   public Partition getDestPartitionForAlias(String alias) {
     return nameToDestPartition.get(alias.toLowerCase());
+  }
+
+  public Map<String, Partition> getNameToDestPartition() {
+    return nameToDestPartition;
   }
 
   public String getDestFileForAlias(String alias) {

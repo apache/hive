@@ -43,7 +43,22 @@ if not exist %HADOOP_HOME%\libexec\hadoop-config.cmd (
 @rem supress the HADOOP_HOME warnings in 1.x.x
 set HADOOP_HOME_WARN_SUPPRESS=true
 call %HADOOP_HOME%\libexec\hadoop-config.cmd
-set CLASSPATH=%CLASSPATH%;%HIVE_HOME%\lib\*;
+
+@rem include only the beeline client jar and its dependencies
+pushd %HIVE_HOME%\lib
+for /f %%a IN ('dir /b hive-beeline-**.jar') do (
+  set CLASSPATH=%CLASSPATH%;%HIVE_HOME%\lib\%%a
+)
+for /f %%a IN ('dir /b super-csv-**.jar') do (
+  set CLASSPATH=%CLASSPATH%;%HIVE_HOME%\lib\%%a
+)
+for /f %%a IN ('dir /b jline-**.jar') do (
+  set CLASSPATH=%CLASSPATH%;%HIVE_HOME%\lib\%%a
+)
+for /f %%a IN ('dir /b hive-jdbc-**-standalone.jar') do (
+  set CLASSPATH=%CLASSPATH%;%HIVE_HOME%\lib\%%a
+)
+popd
 
 call %JAVA_HOME%\bin\java %JAVA_HEAP_MAX% %HADOOP_OPTS% -classpath %CLASSPATH% org.apache.hive.beeline.BeeLine %*
 

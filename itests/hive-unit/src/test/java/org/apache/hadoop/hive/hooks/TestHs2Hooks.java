@@ -20,6 +20,7 @@
 package org.apache.hadoop.hive.hooks;
 
 import java.util.Properties;
+import java.sql.Statement;
 
 import junit.framework.Assert;
 
@@ -32,38 +33,52 @@ import org.apache.hive.service.server.HiveServer2;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Tests information retrieved from hooks.
  */
 public class TestHs2Hooks {
-
+  private static final Logger LOG = LoggerFactory.getLogger(TestHs2Hooks.class);
   private static HiveServer2 hiveServer2;
 
-  public static class PreExecHook implements ExecuteWithHookContext {
-    public static String userName = null;
-    public static String ipAddress = null;
+  public static class PostExecHook implements ExecuteWithHookContext {
+    private static String userName;
+    private static String ipAddress;
+    private static String operation;
+    private static Throwable error;
 
     public void run(HookContext hookContext) {
-      if (hookContext.getHookType().equals(HookType.PRE_EXEC_HOOK)) {
-        Assert.assertNotNull(hookContext.getIpAddress(), "IP Address is null");
-        ipAddress = hookContext.getIpAddress();
-        Assert.assertNotNull(hookContext.getUserName(), "Username is null");
-        userName = hookContext.getUserName();
+      try {
+        if (hookContext.getHookType().equals(HookType.POST_EXEC_HOOK)) {
+          ipAddress = hookContext.getIpAddress();
+          userName = hookContext.getUserName();
+          operation = hookContext.getOperationName();
+        }
+      } catch (Throwable t) {
+        LOG.error("Error in PostExecHook: " + t, t);
+        error = t;
       }
     }
   }
 
-  public static class PostExecHook implements ExecuteWithHookContext {
-    public static String userName = null;
-    public static String ipAddress = null;
+  public static class PreExecHook implements ExecuteWithHookContext {
+    private static String userName;
+    private static String ipAddress;
+    private static String operation;
+    private static Throwable error;
 
     public void run(HookContext hookContext) {
-      if (hookContext.getHookType().equals(HookType.POST_EXEC_HOOK)) {
-        Assert.assertNotNull(hookContext.getIpAddress(), "IP Address is null");
-        ipAddress = hookContext.getIpAddress();
-        Assert.assertNotNull(hookContext.getUserName(), "Username is null");
-        userName = hookContext.getUserName();
+      try {
+        if (hookContext.getHookType().equals(HookType.PRE_EXEC_HOOK)) {
+          ipAddress = hookContext.getIpAddress();
+          userName = hookContext.getUserName();
+          operation = hookContext.getOperationName();
+        }
+      } catch (Throwable t) {
+        LOG.error("Error in PreExecHook: " + t, t);
+        error = t;
       }
     }
   }
@@ -94,26 +109,39 @@ public class TestHs2Hooks {
 
   /**
    * Test get IpAddress and username from hook.
-   * @throws Exception
    */
   @Test
-  public void testIpUserName() throws Exception {
+  public void testIpUserName() throws Throwable {
     Properties connProp = new Properties();
     connProp.setProperty("user", System.getProperty("user.name"));
     connProp.setProperty("password", "");
     HiveConnection connection = new HiveConnection("jdbc:hive2://localhost:10000/default", connProp);
 
-    connection.createStatement().execute("show tables");
+    Statement stmt = connection.createStatement();
+    stmt.executeQuery("show databases");
+    stmt.executeQuery("show tables");
+    Throwable error = PostExecHook.error;
+    if (error != null) {
+      throw error;
+    }
+    error = PreExecHook.error;
+    if (error != null) {
+      throw error;
+    }
 
     Assert.assertEquals(System.getProperty("user.name"), PostExecHook.userName);
-    Assert.assertNotNull(PostExecHook.ipAddress);
-    Assert.assertTrue(PostExecHook.ipAddress.contains("127.0.0.1"));
+    Assert.assertNotNull(PostExecHook.ipAddress, "ipaddress is null");
+    Assert.assertNotNull(PostExecHook.userName, "userName is null");
+    Assert.assertNotNull(PostExecHook.operation , "operation is null");
+    Assert.assertTrue(PostExecHook.ipAddress, PostExecHook.ipAddress.contains("127.0.0.1"));
+    Assert.assertEquals("SHOWTABLES", PostExecHook.operation);
 
     Assert.assertEquals(System.getProperty("user.name"), PreExecHook.userName);
-    Assert.assertNotNull(PreExecHook.ipAddress);
-    Assert.assertTrue(PreExecHook.ipAddress.contains("127.0.0.1"));
-
-    connection.close();
+    Assert.assertNotNull(PreExecHook.ipAddress, "ipaddress is null");
+    Assert.assertNotNull(PreExecHook.userName, "userName is null");
+    Assert.assertNotNull(PreExecHook.operation , "operation is null");
+    Assert.assertTrue(PreExecHook.ipAddress, PreExecHook.ipAddress.contains("127.0.0.1"));
+    Assert.assertEquals("SHOWTABLES", PreExecHook.operation);
   }
 }
 

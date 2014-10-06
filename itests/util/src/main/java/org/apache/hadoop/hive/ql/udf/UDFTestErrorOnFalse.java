@@ -18,11 +18,14 @@
 
 package org.apache.hadoop.hive.ql.udf;
 
+import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
 
 /**
  * A UDF for testing, which throws RuntimeException if  the length of a string.
  */
+@Description(name = "test_error",
+value = "_FUNC_(col) - UDF throws RuntimeException if  expression evaluates to false")
 public class UDFTestErrorOnFalse extends UDF {
 
   public int evaluate(Boolean b) {

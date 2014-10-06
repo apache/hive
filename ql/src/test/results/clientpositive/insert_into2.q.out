@@ -87,6 +87,31 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@insert_into2@ds=1
 POSTHOOK: Lineage: insert_into2 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: insert_into2 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: explain
+select count (*) from insert_into2 where ds = '1'
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select count (*) from insert_into2 where ds = '1'
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count (*) from insert_into2 where ds = '1'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@insert_into2
+#### A masked pattern was here ####
+POSTHOOK: query: select count (*) from insert_into2 where ds = '1'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@insert_into2
+#### A masked pattern was here ####
+100
 PREHOOK: query: INSERT INTO TABLE insert_into2 PARTITION (ds='1') SELECT * FROM src limit 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -97,15 +122,29 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@insert_into2@ds=1
 POSTHOOK: Lineage: insert_into2 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: insert_into2 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: explain
+SELECT COUNT(*) FROM insert_into2 WHERE ds='1'
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+SELECT COUNT(*) FROM insert_into2 WHERE ds='1'
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
 PREHOOK: query: SELECT COUNT(*) FROM insert_into2 WHERE ds='1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@insert_into2
-PREHOOK: Input: default@insert_into2@ds=1
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT COUNT(*) FROM insert_into2 WHERE ds='1'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@insert_into2
-POSTHOOK: Input: default@insert_into2@ds=1
 #### A masked pattern was here ####
 200
 PREHOOK: query: SELECT SUM(HASH(c)) FROM (
@@ -217,6 +256,31 @@ POSTHOOK: Input: default@insert_into2@ds=1
 POSTHOOK: Input: default@insert_into2@ds=2
 #### A masked pattern was here ####
 -36239931656
+PREHOOK: query: explain
+SELECT COUNT(*) FROM insert_into2 WHERE ds='2'
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+SELECT COUNT(*) FROM insert_into2 WHERE ds='2'
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT COUNT(*) FROM insert_into2 WHERE ds='2'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@insert_into2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COUNT(*) FROM insert_into2 WHERE ds='2'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@insert_into2
+#### A masked pattern was here ####
+100
 PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE insert_into2 PARTITION (ds='2')
   SELECT * FROM src LIMIT 50
 PREHOOK: type: QUERY
@@ -311,6 +375,31 @@ POSTHOOK: Input: default@insert_into2@ds=1
 POSTHOOK: Input: default@insert_into2@ds=2
 #### A masked pattern was here ####
 -27100860056
+PREHOOK: query: explain
+SELECT COUNT(*) FROM insert_into2 WHERE ds='2'
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+SELECT COUNT(*) FROM insert_into2 WHERE ds='2'
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT COUNT(*) FROM insert_into2 WHERE ds='2'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@insert_into2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COUNT(*) FROM insert_into2 WHERE ds='2'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@insert_into2
+#### A masked pattern was here ####
+50
 PREHOOK: query: DROP TABLE insert_into2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@insert_into2

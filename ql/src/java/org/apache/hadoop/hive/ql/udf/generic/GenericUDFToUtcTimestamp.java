@@ -17,7 +17,11 @@
  */
 package org.apache.hadoop.hive.ql.udf.generic;
 
+import org.apache.hadoop.hive.ql.exec.Description;
 
+@Description(name = "to_utc_timestamp",
+             value = "to_utc_timestamp(timestamp, string timezone) - "
+                     + "Assumes given timestamp is in given timezone and converts to UTC (as of Hive 0.8.0)")
 public class GenericUDFToUtcTimestamp extends
     GenericUDFFromUtcTimestamp {
 
