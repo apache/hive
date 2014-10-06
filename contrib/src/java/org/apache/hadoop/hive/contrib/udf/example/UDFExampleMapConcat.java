@@ -21,15 +21,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Map;
 
-import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
 
 /**
  * UDFExampleMapConcat.
  *
  */
-@Description(name = "example_mapconcat",
-value = "_FUNC_(expr) - Example UDAF that returns contents of Map as a formated String")
 public class UDFExampleMapConcat extends UDF {
 
   public String evaluate(Map<String, String> a) {

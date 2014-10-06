@@ -639,14 +639,6 @@ public final class FunctionRegistry {
     }
   }
 
-  public static String getNormalizedFunctionName(String fn) {
-    // Does the same thing as getFunctionInfo, except for getting the function info.
-    fn = fn.toLowerCase();
-    return (FunctionUtils.isQualifiedFunctionName(fn) || mFunctions.get(fn) != null) ? fn
-        : FunctionUtils.qualifyFunctionName(
-            fn, SessionState.get().getCurrentDatabase().toLowerCase());
-  }
-
   private static <T extends CommonFunctionInfo> T getFunctionInfo(
       Map<String, T> mFunctions, String functionName) {
     functionName = functionName.toLowerCase();
@@ -869,7 +861,15 @@ public final class FunctionRegistry {
             TypeInfoUtils.getCharacterLengthForType(b));
         return TypeInfoFactory.getVarcharTypeInfo(maxLength);
       case DECIMAL:
-      return HiveDecimalUtils.getDecimalTypeForPrimitiveCategories(a, b);
+          int prec1 = HiveDecimalUtils.getPrecisionForType(a);
+          int prec2 = HiveDecimalUtils.getPrecisionForType(b);
+          int scale1 = HiveDecimalUtils.getScaleForType(a);
+          int scale2 = HiveDecimalUtils.getScaleForType(b);
+          int intPart = Math.max(prec1 - scale1, prec2 - scale2);
+          int decPart = Math.max(scale1, scale2);
+          int prec =  Math.min(intPart + decPart, HiveDecimal.MAX_PRECISION);
+          int scale = Math.min(decPart, HiveDecimal.MAX_PRECISION - intPart);
+          return TypeInfoFactory.getDecimalTypeInfo(prec, scale);
       default:
         // Type doesn't require any qualifiers.
         return TypeInfoFactory.getPrimitiveTypeInfo(

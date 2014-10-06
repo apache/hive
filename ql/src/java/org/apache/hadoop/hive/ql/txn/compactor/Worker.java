@@ -120,7 +120,7 @@ public class Worker extends CompactorThread {
 
         final boolean isMajor = ci.isMajorCompaction();
         final ValidTxnList txns =
-            TxnHandler.createValidTxnList(txnHandler.getOpenTxns(), 0);
+            TxnHandler.createValidTxnList(txnHandler.getOpenTxns());
         final StringBuffer jobName = new StringBuffer(name);
         jobName.append("-compactor-");
         jobName.append(ci.getFullPartitionName());

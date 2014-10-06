@@ -23,7 +23,7 @@ import org.apache.hadoop.hive.common.classification.InterfaceStability.Evolving;
 /**
  * Represents a privilege granted for an object to a principal
  */
-@LimitedPrivate(value = { "Apache Argus (incubating)" })
+@LimitedPrivate(value = { "" })
 @Evolving
 public class HivePrivilegeInfo{
   private final HivePrincipal principal;

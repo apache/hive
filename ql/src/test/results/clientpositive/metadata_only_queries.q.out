@@ -340,11 +340,9 @@ STAGE PLANS:
 
 PREHOOK: query: select count(*), sum(1), sum(0.2), count(1), count(s), count(bo), count(bin), count(si) from stats_tbl
 PREHOOK: type: QUERY
-PREHOOK: Input: default@stats_tbl
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*), sum(1), sum(0.2), count(1), count(s), count(bo), count(bin), count(si) from stats_tbl
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@stats_tbl
 #### A masked pattern was here ####
 9999	9999	1999.8	9999	9999	9999	9999	9999
 PREHOOK: query: explain
@@ -365,11 +363,9 @@ STAGE PLANS:
 
 PREHOOK: query: select min(i), max(i), min(b), max(b), min(f), max(f), min(d), max(d) from stats_tbl
 PREHOOK: type: QUERY
-PREHOOK: Input: default@stats_tbl
 #### A masked pattern was here ####
 POSTHOOK: query: select min(i), max(i), min(b), max(b), min(f), max(f), min(d), max(d) from stats_tbl
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@stats_tbl
 #### A masked pattern was here ####
 65536	65791	4294967296	4294967551	0.009999999776482582	99.9800033569336	0.01	50.0
 PREHOOK: query: explain 
@@ -390,11 +386,9 @@ STAGE PLANS:
 
 PREHOOK: query: select count(*), sum(1), sum(0.2), count(1), count(s), count(bo), count(bin), count(si) from stats_tbl_part
 PREHOOK: type: QUERY
-PREHOOK: Input: default@stats_tbl_part
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*), sum(1), sum(0.2), count(1), count(s), count(bo), count(bin), count(si) from stats_tbl_part
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@stats_tbl_part
 #### A masked pattern was here ####
 9489	9489	1897.8	9489	9489	9489	9489	9489
 PREHOOK: query: explain
@@ -415,11 +409,9 @@ STAGE PLANS:
 
 PREHOOK: query: select min(i), max(i), min(b), max(b), min(f), max(f), min(d), max(d) from stats_tbl_part
 PREHOOK: type: QUERY
-PREHOOK: Input: default@stats_tbl_part
 #### A masked pattern was here ####
 POSTHOOK: query: select min(i), max(i), min(b), max(b), min(f), max(f), min(d), max(d) from stats_tbl_part
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@stats_tbl_part
 #### A masked pattern was here ####
 65536	65791	4294967296	4294967551	0.009999999776482582	99.9800033569336	0.01	50.0
 PREHOOK: query: explain select count(ts) from stats_tbl_part

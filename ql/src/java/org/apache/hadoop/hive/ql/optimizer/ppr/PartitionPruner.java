@@ -57,7 +57,6 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
 /**
  * The transformation step that does partition pruning.
@@ -156,85 +155,27 @@ public class PartitionPruner implements Transform {
    *         pruner condition.
    * @throws HiveException
    */
-  public static PrunedPartitionList prune(Table tab, ExprNodeDesc prunerExpr,
+  private static PrunedPartitionList prune(Table tab, ExprNodeDesc prunerExpr,
       HiveConf conf, String alias, Map<String, PrunedPartitionList> prunedPartitionsMap)
           throws SemanticException {
-
     LOG.trace("Started pruning partiton");
     LOG.trace("dbname = " + tab.getDbName());
     LOG.trace("tabname = " + tab.getTableName());
-    LOG.trace("prune Expression = " + prunerExpr == null ? "" : prunerExpr);
+    LOG.trace("prune Expression = " + prunerExpr);
 
     String key = tab.getDbName() + "." + tab.getTableName() + ";";
 
-    if (!tab.isPartitioned()) {
-      // If the table is not partitioned, return empty list.
-      return getAllPartsFromCacheOrServer(tab, key, false, prunedPartitionsMap);
+    if (prunerExpr != null) {
+      key = key + prunerExpr.getExprString();
+    }
+    PrunedPartitionList ret = prunedPartitionsMap.get(key);
+    if (ret != null) {
+      return ret;
     }
 
-    if ("strict".equalsIgnoreCase(HiveConf.getVar(conf, HiveConf.ConfVars.HIVEMAPREDMODE))
-        && !hasColumnExpr(prunerExpr)) {
-      // If the "strict" mode is on, we have to provide partition pruner for each table.
-      throw new SemanticException(ErrorMsg.NO_PARTITION_PREDICATE
-          .getMsg("for Alias \"" + alias + "\" Table \"" + tab.getTableName() + "\""));
-    }
-
-    if (prunerExpr == null) {
-      // In non-strict mode and there is no predicates at all - get everything.
-      return getAllPartsFromCacheOrServer(tab, key, false, prunedPartitionsMap);
-    }
-
-    Set<String> partColsUsedInFilter = new LinkedHashSet<String>();
-    // Replace virtual columns with nulls. See javadoc for details.
-    prunerExpr = removeNonPartCols(prunerExpr, extractPartColNames(tab), partColsUsedInFilter);
-    // Remove all parts that are not partition columns. See javadoc for details.
-    ExprNodeGenericFuncDesc compactExpr = (ExprNodeGenericFuncDesc)compactExpr(prunerExpr.clone());
-    String oldFilter = prunerExpr.getExprString();
-    if (compactExpr == null) {
-      // Non-strict mode, and all the predicates are on non-partition columns - get everything.
-      LOG.debug("Filter " + oldFilter + " was null after compacting");
-      return getAllPartsFromCacheOrServer(tab, key, true, prunedPartitionsMap);
-    }
-    LOG.debug("Filter w/ compacting: " + compactExpr.getExprString()
-        + "; filter w/o compacting: " + oldFilter);
-
-    key = key + compactExpr.getExprString();
-    PrunedPartitionList ppList = prunedPartitionsMap.get(key);
-    if (ppList != null) {
-      return ppList;
-    }
-
-    ppList = getPartitionsFromServer(tab, compactExpr, conf, alias, partColsUsedInFilter, oldFilter.equals(compactExpr.getExprString()));
-    prunedPartitionsMap.put(key, ppList);
-    return ppList;
-  }
-
-  private static PrunedPartitionList getAllPartsFromCacheOrServer(Table tab, String key, boolean unknownPartitions,
-    Map<String, PrunedPartitionList> partsCache)  throws SemanticException {
-    PrunedPartitionList ppList = partsCache.get(key);
-    if (ppList != null) {
-      return ppList;
-    }
-    Set<Partition> parts;
-    try {
-      parts = getAllPartitions(tab);
-    } catch (HiveException e) {
-      throw new SemanticException(e);
-    }
-    ppList = new PrunedPartitionList(tab, parts, null, unknownPartitions);
-    partsCache.put(key, ppList);
-    return ppList;
-  }
-
-  private static ExprNodeDesc removeTruePredciates(ExprNodeDesc e) {
-    if (e instanceof ExprNodeConstantDesc) {
-      ExprNodeConstantDesc eC = (ExprNodeConstantDesc) e;
-      if (e.getTypeInfo() == TypeInfoFactory.booleanTypeInfo
-          && eC.getValue() == Boolean.TRUE) {
-        return null;
-      }
-    }
-    return e;
+    ret = getPartitionsFromServer(tab, prunerExpr, conf, alias);
+    prunedPartitionsMap.put(key, ret);
+    return ret;
   }
 
   /**
@@ -246,8 +187,7 @@ public class PartitionPruner implements Transform {
    */
   static private ExprNodeDesc compactExpr(ExprNodeDesc expr) {
     if (expr instanceof ExprNodeConstantDesc) {
-      expr = removeTruePredciates(expr);
-      if (expr == null || ((ExprNodeConstantDesc)expr).getValue() == null) {
+      if (((ExprNodeConstantDesc)expr).getValue() == null) {
         return null;
       } else {
         throw new IllegalStateException("Unexpected non-null ExprNodeConstantDesc: "
@@ -258,11 +198,10 @@ public class PartitionPruner implements Transform {
       boolean isAnd = udf instanceof GenericUDFOPAnd;
       if (isAnd || udf instanceof GenericUDFOPOr) {
         List<ExprNodeDesc> children = expr.getChildren();
-        ExprNodeDesc left = removeTruePredciates(children.get(0));
-        children.set(0, left == null ? null : compactExpr(left));
-        ExprNodeDesc right = removeTruePredciates(children.get(1));
-        children.set(1, right == null ? null : compactExpr(right));
-
+        ExprNodeDesc left = children.get(0);
+        children.set(0, compactExpr(left));
+        ExprNodeDesc right = children.get(1);
+        children.set(1, compactExpr(right));
         // Note that one does not simply compact (not-null or null) to not-null.
         // Only if we have an "and" is it valid to send one side to metastore.
         if (children.get(0) == null && children.get(1) == null) {
@@ -328,8 +267,40 @@ public class PartitionPruner implements Transform {
   }
 
   private static PrunedPartitionList getPartitionsFromServer(Table tab,
-      final ExprNodeGenericFuncDesc compactExpr, HiveConf conf, String alias, Set<String> partColsUsedInFilter, boolean isPruningByExactFilter) throws SemanticException {
+      ExprNodeDesc prunerExpr, HiveConf conf, String alias) throws SemanticException {
     try {
+      if (!tab.isPartitioned()) {
+        // If the table is not partitioned, return everything.
+        return new PrunedPartitionList(tab, getAllPartitions(tab), null, false);
+      }
+      LOG.debug("tabname = " + tab.getTableName() + " is partitioned");
+
+      if ("strict".equalsIgnoreCase(HiveConf.getVar(conf, HiveConf.ConfVars.HIVEMAPREDMODE))
+          && !hasColumnExpr(prunerExpr)) {
+        // If the "strict" mode is on, we have to provide partition pruner for each table.
+        throw new SemanticException(ErrorMsg.NO_PARTITION_PREDICATE
+            .getMsg("for Alias \"" + alias + "\" Table \"" + tab.getTableName() + "\""));
+      }
+
+      if (prunerExpr == null) {
+        // Non-strict mode, and there is no predicates at all - get everything.
+        return new PrunedPartitionList(tab, getAllPartitions(tab), null, false);
+      }
+
+      Set<String> referred = new LinkedHashSet<String>();
+      // Replace virtual columns with nulls. See javadoc for details.
+      prunerExpr = removeNonPartCols(prunerExpr, extractPartColNames(tab), referred);
+      // Remove all parts that are not partition columns. See javadoc for details.
+      ExprNodeGenericFuncDesc compactExpr = (ExprNodeGenericFuncDesc)compactExpr(prunerExpr.clone());
+      String oldFilter = prunerExpr.getExprString();
+      if (compactExpr == null) {
+        // Non-strict mode, and all the predicates are on non-partition columns - get everything.
+        LOG.debug("Filter " + oldFilter + " was null after compacting");
+        return new PrunedPartitionList(tab, getAllPartitions(tab), null, true);
+      }
+
+      LOG.debug("Filter w/ compacting: " + compactExpr.getExprString()
+        + "; filter w/o compacting: " + oldFilter);
 
       // Finally, check the filter for non-built-in UDFs. If these are present, we cannot
       // do filtering on the server, and have to fall back to client path.
@@ -359,8 +330,9 @@ public class PartitionPruner implements Transform {
       // The partitions are "unknown" if the call says so due to the expression
       // evaluator returning null for a partition, or if we sent a partial expression to
       // metastore and so some partitions may have no data based on other filters.
+      boolean isPruningByExactFilter = oldFilter.equals(compactExpr.getExprString());
       return new PrunedPartitionList(tab, new LinkedHashSet<Partition>(partitions),
-          new ArrayList<String>(partColsUsedInFilter),
+          new ArrayList<String>(referred),
           hasUnknownPartitions || !isPruningByExactFilter);
     } catch (SemanticException e) {
       throw e;

@@ -61,8 +61,8 @@ POSTHOOK: Input: default@dynpart
 POSTHOOK: Input: default@dynpart@value=0
 POSTHOOK: Input: default@dynpart@value=1
 #### A masked pattern was here ####
-10
 20
+10
 PREHOOK: query: select key from src where (key = 10) order by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src

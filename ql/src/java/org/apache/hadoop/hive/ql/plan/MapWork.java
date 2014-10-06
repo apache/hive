@@ -30,7 +30,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import com.google.common.collect.Interner;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.Path;
@@ -97,7 +96,6 @@ public class MapWork extends BaseWork {
   private Long minSplitSize;
   private Long minSplitSizePerNode;
   private Long minSplitSizePerRack;
-  private final int tag = 0;
 
   //use sampled partitioning
   private int samplingType;
@@ -127,8 +125,6 @@ public class MapWork extends BaseWork {
       new LinkedHashMap<String, List<String>>();
   private Map<String, List<ExprNodeDesc>> eventSourcePartKeyExprMap =
       new LinkedHashMap<String, List<ExprNodeDesc>>();
-
-  private boolean doSplitsGrouping = true;
 
   public MapWork() {}
 
@@ -196,22 +192,6 @@ public class MapWork extends BaseWork {
     }
     if (mapLocalWork != null) {
       mapLocalWork.deriveExplainAttributes();
-    }
-  }
-
-  public void internTable(Interner<TableDesc> interner) {
-    if (aliasToPartnInfo != null) {
-      for (PartitionDesc part : aliasToPartnInfo.values()) {
-        if (part == null) {
-          continue;
-        }
-        part.intern(interner);
-      }
-    }
-    if (pathToPartitionInfo != null) {
-      for (PartitionDesc part : pathToPartitionInfo.values()) {
-        part.intern(interner);
-      }
     }
   }
 
@@ -586,13 +566,5 @@ public class MapWork extends BaseWork {
 
   public void setEventSourcePartKeyExprMap(Map<String, List<ExprNodeDesc>> map) {
     this.eventSourcePartKeyExprMap = map;
-  }
-
-  public void setDoSplitsGrouping(boolean doSplitsGrouping) {
-    this.doSplitsGrouping = doSplitsGrouping;
-  }
-
-  public boolean getDoSplitsGrouping() {
-    return this.doSplitsGrouping;
   }
 }

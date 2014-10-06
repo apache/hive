@@ -37,8 +37,6 @@ public class TezContext extends MapredContext {
 
   private ProcessorContext processorContext;
 
-  private RecordSource[] sources;
-
   public TezContext(boolean isMap, JobConf jobConf) {
     super(isMap, jobConf);
   }
@@ -71,13 +69,5 @@ public class TezContext extends MapredContext {
 
   public ProcessorContext getTezProcessorContext() {
     return processorContext;
-  }
-
-  public RecordSource[] getRecordSources() {
-    return sources;
-  }
-
-  public void setRecordSources(RecordSource[] sources) {
-    this.sources = sources;
   }
 }

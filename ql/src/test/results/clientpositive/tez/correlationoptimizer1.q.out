@@ -61,7 +61,7 @@ STAGE PLANS:
                       Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
-              Merge Join Operator
+              Join Operator
                 condition map:
                      Inner Join 0 to 1
                 condition expressions:
@@ -201,7 +201,7 @@ STAGE PLANS:
                       Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
-              Merge Join Operator
+              Join Operator
                 condition map:
                      Inner Join 0 to 1
                 condition expressions:
@@ -352,8 +352,6 @@ STAGE PLANS:
                         0 key (type: string)
                         1 key (type: string)
                       outputColumnNames: _col0
-                      input vertices:
-                        0 Map 1
                       Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
                         expressions: _col0 (type: string)
@@ -502,7 +500,7 @@ STAGE PLANS:
                           Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
-              Merge Join Operator
+              Join Operator
                 condition map:
                      Left Semi Join 0 to 1
                 condition expressions:
@@ -651,7 +649,7 @@ STAGE PLANS:
                           Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
-              Merge Join Operator
+              Join Operator
                 condition map:
                      Left Semi Join 0 to 1
                 condition expressions:
@@ -791,7 +789,7 @@ STAGE PLANS:
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
-              Merge Join Operator
+              Join Operator
                 condition map:
                      Left Outer Join0 to 1
                 condition expressions:
@@ -925,7 +923,7 @@ STAGE PLANS:
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
-              Merge Join Operator
+              Join Operator
                 condition map:
                      Left Outer Join0 to 1
                 condition expressions:
@@ -1065,7 +1063,7 @@ STAGE PLANS:
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
-              Merge Join Operator
+              Join Operator
                 condition map:
                      Left Outer Join0 to 1
                 condition expressions:
@@ -1199,7 +1197,7 @@ STAGE PLANS:
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
-              Merge Join Operator
+              Join Operator
                 condition map:
                      Left Outer Join0 to 1
                 condition expressions:
@@ -1336,7 +1334,7 @@ STAGE PLANS:
                     Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
-              Merge Join Operator
+              Join Operator
                 condition map:
                      Left Outer Join0 to 1
                 condition expressions:
@@ -1460,7 +1458,7 @@ STAGE PLANS:
                     Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
-              Merge Join Operator
+              Join Operator
                 condition map:
                      Left Outer Join0 to 1
                 condition expressions:
@@ -1593,7 +1591,7 @@ STAGE PLANS:
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
-              Merge Join Operator
+              Join Operator
                 condition map:
                      Right Outer Join0 to 1
                 condition expressions:
@@ -1727,7 +1725,7 @@ STAGE PLANS:
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
-              Merge Join Operator
+              Join Operator
                 condition map:
                      Right Outer Join0 to 1
                 condition expressions:
@@ -1867,7 +1865,7 @@ STAGE PLANS:
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
-              Merge Join Operator
+              Join Operator
                 condition map:
                      Right Outer Join0 to 1
                 condition expressions:
@@ -2001,7 +1999,7 @@ STAGE PLANS:
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
-              Merge Join Operator
+              Join Operator
                 condition map:
                      Right Outer Join0 to 1
                 condition expressions:
@@ -2143,7 +2141,7 @@ STAGE PLANS:
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
-              Merge Join Operator
+              Join Operator
                 condition map:
                      Outer Join 0 to 1
                 condition expressions:
@@ -2277,7 +2275,7 @@ STAGE PLANS:
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
-              Merge Join Operator
+              Join Operator
                 condition map:
                      Outer Join 0 to 1
                 condition expressions:
@@ -2420,7 +2418,7 @@ STAGE PLANS:
                       Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
-              Merge Join Operator
+              Join Operator
                 condition map:
                      Inner Join 0 to 1
                 condition expressions:
@@ -2561,7 +2559,7 @@ STAGE PLANS:
                       Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
-              Merge Join Operator
+              Join Operator
                 condition map:
                      Inner Join 0 to 1
                 condition expressions:
@@ -2703,7 +2701,7 @@ STAGE PLANS:
                       Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
-              Merge Join Operator
+              Join Operator
                 condition map:
                      Inner Join 0 to 1
                 condition expressions:
@@ -2843,7 +2841,7 @@ STAGE PLANS:
                       Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
-              Merge Join Operator
+              Join Operator
                 condition map:
                      Inner Join 0 to 1
                 condition expressions:

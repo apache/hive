@@ -18,9 +18,6 @@
 
 package org.apache.hadoop.hive.ql.io;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.apache.hadoop.fs.Path;
 
 
@@ -34,6 +31,7 @@ import org.apache.hadoop.fs.Path;
  */
 public class IOContext {
 
+
   private static ThreadLocal<IOContext> threadLocal = new ThreadLocal<IOContext>(){
     @Override
     protected synchronized IOContext initialValue() { return new IOContext(); }
@@ -41,21 +39,6 @@ public class IOContext {
 
   public static IOContext get() {
     return IOContext.threadLocal.get();
-  }
-
-  private static Map<String, IOContext> inputNameIOContextMap = new HashMap<String, IOContext>();
-
-  public static Map<String, IOContext> getMap() {
-    return inputNameIOContextMap;
-  }
-
-  public static IOContext get(String inputName) {
-    if (inputNameIOContextMap.containsKey(inputName) == false) {
-      IOContext ioContext = new IOContext();
-      inputNameIOContextMap.put(inputName, ioContext);
-    }
-
-    return inputNameIOContextMap.get(inputName);
   }
 
   public static void clear() {

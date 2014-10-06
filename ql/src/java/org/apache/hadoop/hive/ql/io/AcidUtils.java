@@ -40,8 +40,6 @@ import java.util.regex.Pattern;
  * are used by the compactor and cleaner and thus must be format agnostic.
  */
 public class AcidUtils {
-  // This key will be put in the conf file when planning an acid operation
-  public static final String CONF_ACID_KEY = "hive.doing.acid";
   public static final String BASE_PREFIX = "base_";
   public static final String DELTA_PREFIX = "delta_";
   public static final PathFilter deltaFileFilter = new PathFilter() {

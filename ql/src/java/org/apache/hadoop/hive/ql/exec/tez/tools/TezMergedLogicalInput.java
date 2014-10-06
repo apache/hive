@@ -40,7 +40,7 @@ public class TezMergedLogicalInput extends MergedLogicalInput {
  
   @Override
   public Reader getReader() throws Exception {
-    return new KeyValuesInputMerger(getInputs());
+    return new InputMerger(getInputs());
   }
 
   @Override

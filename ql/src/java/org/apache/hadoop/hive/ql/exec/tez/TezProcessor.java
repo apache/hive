@@ -17,14 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.exec.tez;
 
-import java.io.IOException;
-import java.text.NumberFormat;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -34,7 +26,6 @@ import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.tez.common.TezUtils;
 import org.apache.tez.mapreduce.input.MRInputLegacy;
-import org.apache.tez.mapreduce.input.MultiMRInput;
 import org.apache.tez.mapreduce.processor.MRTaskReporter;
 import org.apache.tez.runtime.api.AbstractLogicalIOProcessor;
 import org.apache.tez.runtime.api.Event;
@@ -42,6 +33,11 @@ import org.apache.tez.runtime.api.LogicalInput;
 import org.apache.tez.runtime.api.LogicalOutput;
 import org.apache.tez.runtime.api.ProcessorContext;
 import org.apache.tez.runtime.library.api.KeyValueWriter;
+
+import java.io.IOException;
+import java.text.NumberFormat;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Hive processor for Tez that forms the vertices in Tez and processes the data.
@@ -94,8 +90,7 @@ public class TezProcessor extends AbstractLogicalIOProcessor {
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_INITIALIZE_PROCESSOR);
     Configuration conf = TezUtils.createConfFromUserPayload(getContext().getUserPayload());
     this.jobConf = new JobConf(conf);
-    this.processorContext = getContext();
-    setupMRLegacyConfigs(processorContext);
+    setupMRLegacyConfigs(getContext());
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_INITIALIZE_PROCESSOR);
   }
 
@@ -135,6 +130,12 @@ public class TezProcessor extends AbstractLogicalIOProcessor {
 
       if (isMap) {
         rproc = new MapRecordProcessor(jobConf);
+        MRInputLegacy mrInput = getMRInput(inputs);
+        try {
+          mrInput.init();
+        } catch (IOException e) {
+          throw new RuntimeException("Failed while initializing MRInput", e);
+        }
       } else {
         rproc = new ReduceRecordProcessor();
       }
@@ -147,7 +148,6 @@ public class TezProcessor extends AbstractLogicalIOProcessor {
       throws Exception {
     Throwable originalThrowable = null;
     try {
-      // Outputs will be started later by the individual Processors.
       TezCacheAccess cacheAccess = TezCacheAccess.createInstance(jobConf);
       // Start the actual Inputs. After MRInput initialization.
       for (Map.Entry<String, LogicalInput> inputEntry : inputs.entrySet()) {
@@ -155,9 +155,12 @@ public class TezProcessor extends AbstractLogicalIOProcessor {
           LOG.info("Input: " + inputEntry.getKey() + " is not cached");
           inputEntry.getValue().start();
         } else {
-          LOG.info("Input: " + inputEntry.getKey() + " is already cached. Skipping start");
+          LOG.info("Input: " + inputEntry.getKey() +
+              " is already cached. Skipping start");
         }
       }
+
+      // Outputs will be started later by the individual Processors.
 
       MRTaskReporter mrReporter = new MRTaskReporter(getContext());
       rproc.init(jobConf, getContext(), mrReporter, inputs, outputs);
@@ -210,5 +213,20 @@ public class TezProcessor extends AbstractLogicalIOProcessor {
     public void collect(Object key, Object value) throws IOException {
       writer.write(key, value);
     }
+  }
+
+  static  MRInputLegacy getMRInput(Map<String, LogicalInput> inputs) {
+    //there should be only one MRInput
+    MRInputLegacy theMRInput = null;
+    for(LogicalInput inp : inputs.values()){
+      if(inp instanceof MRInputLegacy){
+        if(theMRInput != null){
+          throw new IllegalArgumentException("Only one MRInput is expected");
+        }
+        //a better logic would be to find the alias
+        theMRInput = (MRInputLegacy)inp;
+      }
+    }
+    return theMRInput;
   }
 }

@@ -148,12 +148,10 @@ POSTHOOK: Lineage: orc_merge5b.userid SIMPLE [(orc_merge5)orc_merge5.FieldSchema
 PREHOOK: query: -- 5 files total
 analyze table orc_merge5b compute statistics noscan
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_merge5b
 PREHOOK: Output: default@orc_merge5b
 POSTHOOK: query: -- 5 files total
 analyze table orc_merge5b compute statistics noscan
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_merge5b
 POSTHOOK: Output: default@orc_merge5b
 PREHOOK: query: desc formatted orc_merge5b
 PREHOOK: type: DESCTABLE
@@ -181,7 +179,7 @@ Table Parameters:
 	numFiles            	5                   
 	numRows             	15                  
 	rawDataSize         	3825                
-	totalSize           	2877                
+	totalSize           	2862                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -228,12 +226,10 @@ POSTHOOK: Output: default@orc_merge5b
 PREHOOK: query: -- 3 file after merging - all 0.12 format files will be merged and 0.11 files will be left behind
 analyze table orc_merge5b compute statistics noscan
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_merge5b
 PREHOOK: Output: default@orc_merge5b
 POSTHOOK: query: -- 3 file after merging - all 0.12 format files will be merged and 0.11 files will be left behind
 analyze table orc_merge5b compute statistics noscan
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_merge5b
 POSTHOOK: Output: default@orc_merge5b
 PREHOOK: query: desc formatted orc_merge5b
 PREHOOK: type: DESCTABLE
@@ -261,7 +257,7 @@ Table Parameters:
 	numFiles            	3                   
 	numRows             	15                  
 	rawDataSize         	3825                
-	totalSize           	2340                
+	totalSize           	2325                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

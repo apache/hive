@@ -692,6 +692,10 @@ public class BeeLine implements Closeable {
 
     int code = 0;
     if (!commands.isEmpty()) {
+      // for single command execute, disable color
+      getOpts().setColor(false);
+      getOpts().setHeaderInterval(-1);
+
       for (Iterator<String> i = commands.iterator(); i.hasNext();) {
         String command = i.next().toString();
         debug(loc("executing-command", command));

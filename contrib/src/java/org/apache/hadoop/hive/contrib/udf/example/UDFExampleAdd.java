@@ -17,14 +17,12 @@
  */
 package org.apache.hadoop.hive.contrib.udf.example;
 
-import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
 
 /**
  * UDFExampleAdd.
  *
  */
-@Description(name = "example_add", value = "_FUNC_(expr) - Example UDAF that returns the sum")
 public class UDFExampleAdd extends UDF {
 
   public Integer evaluate(Integer... a) {

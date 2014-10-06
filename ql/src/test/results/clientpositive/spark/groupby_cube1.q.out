@@ -39,18 +39,22 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t1
+                  Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
                   Select Operator
                     expressions: key (type: string), val (type: string)
                     outputColumnNames: key, val
+                    Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
                     Group By Operator
                       aggregations: count(1)
                       keys: key (type: string), val (type: string), '0' (type: string)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
+                      Statistics: Num rows: 0 Data size: 120 Basic stats: PARTIAL Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
                         sort order: +++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: string)
+                        Statistics: Num rows: 0 Data size: 120 Basic stats: PARTIAL Column stats: NONE
                         value expressions: _col3 (type: bigint)
         Reducer 2 
             Reduce Operator Tree:
@@ -59,11 +63,14 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 Select Operator
                   expressions: _col0 (type: string), _col1 (type: string), _col3 (type: bigint)
                   outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                   File Output Operator
                     compressed: false
+                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -122,18 +129,22 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t1
+                  Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
                   Select Operator
                     expressions: key (type: string), val (type: string)
                     outputColumnNames: key, val
+                    Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
                     Group By Operator
                       aggregations: count(DISTINCT val)
                       keys: key (type: string), '0' (type: string), val (type: string)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
+                      Statistics: Num rows: 0 Data size: 60 Basic stats: PARTIAL Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
                         sort order: +++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
+                        Statistics: Num rows: 0 Data size: 60 Basic stats: PARTIAL Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
               Group By Operator
@@ -141,11 +152,14 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string), KEY._col1 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 Select Operator
                   expressions: _col0 (type: string), _col2 (type: bigint)
                   outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                   File Output Operator
                     compressed: false
+                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -193,18 +207,22 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t1
+                  Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
                   Select Operator
                     expressions: key (type: string), val (type: string)
                     outputColumnNames: key, val
+                    Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
                     Group By Operator
                       aggregations: count(1)
                       keys: key (type: string), val (type: string), '0' (type: string)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
+                      Statistics: Num rows: 0 Data size: 120 Basic stats: PARTIAL Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
                         sort order: +++
                         Map-reduce partition columns: rand() (type: double)
+                        Statistics: Num rows: 0 Data size: 120 Basic stats: PARTIAL Column stats: NONE
                         value expressions: _col3 (type: bigint)
         Reducer 2 
             Reduce Operator Tree:
@@ -213,10 +231,12 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: string)
                 mode: partials
                 outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics: Num rows: 0 Data size: 120 Basic stats: PARTIAL Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
                   sort order: +++
                   Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
+                  Statistics: Num rows: 0 Data size: 120 Basic stats: PARTIAL Column stats: NONE
                   value expressions: _col3 (type: bigint)
         Reducer 3 
             Reduce Operator Tree:
@@ -225,11 +245,14 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: string)
                 mode: final
                 outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 Select Operator
                   expressions: _col0 (type: string), _col1 (type: string), _col3 (type: bigint)
                   outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                   File Output Operator
                     compressed: false
+                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -288,18 +311,22 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t1
+                  Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
                   Select Operator
                     expressions: key (type: string), val (type: string)
                     outputColumnNames: key, val
+                    Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
                     Group By Operator
                       aggregations: count(DISTINCT val)
                       keys: key (type: string), '0' (type: string), val (type: string)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
+                      Statistics: Num rows: 0 Data size: 60 Basic stats: PARTIAL Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
                         sort order: +++
                         Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 0 Data size: 60 Basic stats: PARTIAL Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
               Group By Operator
@@ -307,11 +334,14 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string), KEY._col1 (type: string)
                 mode: complete
                 outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 Select Operator
                   expressions: _col0 (type: string), _col2 (type: bigint)
                   outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                   File Output Operator
                     compressed: false
+                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -382,6 +412,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t1
+                  Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
                   File Output Operator
                     compressed: false
                     table:
@@ -402,15 +433,18 @@ STAGE PLANS:
                   Select Operator
                     expressions: key (type: string), val (type: string)
                     outputColumnNames: key, val
+                    Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
                     Group By Operator
                       aggregations: count(1)
                       keys: key (type: string), val (type: string), '0' (type: string)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
+                      Statistics: Num rows: 0 Data size: 120 Basic stats: PARTIAL Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
                         sort order: +++
                         Map-reduce partition columns: rand() (type: double)
+                        Statistics: Num rows: 0 Data size: 120 Basic stats: PARTIAL Column stats: NONE
                         value expressions: _col3 (type: bigint)
         Reducer 4 
             Reduce Operator Tree:
@@ -419,10 +453,12 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: string)
                 mode: partials
                 outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics: Num rows: 0 Data size: 120 Basic stats: PARTIAL Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
                   sort order: +++
                   Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
+                  Statistics: Num rows: 0 Data size: 120 Basic stats: PARTIAL Column stats: NONE
                   value expressions: _col3 (type: bigint)
         Reducer 5 
             Reduce Operator Tree:
@@ -431,11 +467,14 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: string)
                 mode: final
                 outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 Select Operator
                   expressions: _col0 (type: string), _col1 (type: string), UDFToInteger(_col3) (type: int)
                   outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                   File Output Operator
                     compressed: false
+                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -484,15 +523,18 @@ STAGE PLANS:
                   Select Operator
                     expressions: key (type: string), val (type: string)
                     outputColumnNames: key, val
+                    Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
                     Group By Operator
                       aggregations: sum(1)
                       keys: key (type: string), val (type: string), '0' (type: string)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
+                      Statistics: Num rows: 0 Data size: 120 Basic stats: PARTIAL Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
                         sort order: +++
                         Map-reduce partition columns: rand() (type: double)
+                        Statistics: Num rows: 0 Data size: 120 Basic stats: PARTIAL Column stats: NONE
                         value expressions: _col3 (type: bigint)
         Reducer 6 
             Reduce Operator Tree:
@@ -501,10 +543,12 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: string)
                 mode: partials
                 outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics: Num rows: 0 Data size: 120 Basic stats: PARTIAL Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
                   sort order: +++
                   Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
+                  Statistics: Num rows: 0 Data size: 120 Basic stats: PARTIAL Column stats: NONE
                   value expressions: _col3 (type: bigint)
         Reducer 7 
             Reduce Operator Tree:
@@ -513,11 +557,14 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: string)
                 mode: final
                 outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 Select Operator
                   expressions: _col0 (type: string), _col1 (type: string), UDFToInteger(_col3) (type: int)
                   outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                   File Output Operator
                     compressed: false
+                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat

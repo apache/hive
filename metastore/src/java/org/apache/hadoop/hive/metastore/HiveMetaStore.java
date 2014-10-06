@@ -1424,14 +1424,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         if (!success) {
           ms.rollbackTransaction();
         } else if (deleteData && !isExternal) {
-          boolean ifPurge = false;
-          if (envContext != null){
-            ifPurge = Boolean.parseBoolean(envContext.getProperties().get("ifPurge"));
-          }
           // Delete the data in the partitions which have other locations
-          deletePartitionData(partPaths, ifPurge);
+          deletePartitionData(partPaths);
           // Delete the data in the table
-          deleteTableData(tblPath, ifPurge);
+          deleteTableData(tblPath);
           // ok even if the data is not deleted
         }
         for (MetaStoreEventListener listener : listeners) {
@@ -1448,21 +1444,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
      * @param tablePath
      */
     private void deleteTableData(Path tablePath) {
-      deleteTableData(tablePath, false);
-    }
-
-    /**
-     * Deletes the data in a table's location, if it fails logs an error
-     *
-     * @param tablePath
-     * @param ifPurge completely purge the table (skipping trash) while removing
-     *                data from warehouse
-     */
-    private void deleteTableData(Path tablePath, boolean ifPurge) {
-
       if (tablePath != null) {
         try {
-          wh.deleteDir(tablePath, true, ifPurge);
+          wh.deleteDir(tablePath, true);
         } catch (Exception e) {
           LOG.error("Failed to delete table directory: " + tablePath +
               " " + e.getMessage());
@@ -1477,22 +1461,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
      * @param partPaths
      */
     private void deletePartitionData(List<Path> partPaths) {
-      deletePartitionData(partPaths, false);
-    }
-
-    /**
-    * Give a list of partitions' locations, tries to delete each one
-    * and for each that fails logs an error.
-    *
-    * @param partPaths
-    * @param ifPurge completely purge the partition (skipping trash) while
-    *                removing data from warehouse
-    */
-    private void deletePartitionData(List<Path> partPaths, boolean ifPurge) {
       if (partPaths != null && !partPaths.isEmpty()) {
         for (Path partPath : partPaths) {
           try {
-            wh.deleteDir(partPath, true, ifPurge);
+            wh.deleteDir(partPath, true);
           } catch (Exception e) {
             LOG.error("Failed to delete partition directory: " + partPath +
                 " " + e.getMessage());

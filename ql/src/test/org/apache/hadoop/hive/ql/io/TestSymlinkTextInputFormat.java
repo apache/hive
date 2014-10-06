@@ -165,7 +165,7 @@ public class TestSymlinkTextInputFormat extends TestCase {
             + " failed with exit code= " + ecode);
       }
 
-      String cmd = "select key*1 from " + tblName;
+      String cmd = "select key from " + tblName;
       drv.compile(cmd);
 
       //create scratch dir

@@ -53,7 +53,6 @@ public class HBaseSerDe extends AbstractSerDe {
   public static final String HBASE_COMPOSITE_KEY_CLASS = "hbase.composite.key.class";
   public static final String HBASE_COMPOSITE_KEY_TYPES = "hbase.composite.key.types";
   public static final String HBASE_COMPOSITE_KEY_FACTORY = "hbase.composite.key.factory";
-  public static final String HBASE_STRUCT_SERIALIZER_CLASS = "hbase.struct.serialization.class";
   public static final String HBASE_SCAN_CACHE = "hbase.scan.cache";
   public static final String HBASE_SCAN_CACHEBLOCKS = "hbase.scan.cacheblock";
   public static final String HBASE_SCAN_BATCH = "hbase.scan.batch";
@@ -99,7 +98,7 @@ public class HBaseSerDe extends AbstractSerDe {
 
     cachedHBaseRow = new LazyHBaseRow(
         (LazySimpleStructObjectInspector) cachedObjectInspector,
-            serdeParams.getKeyIndex(), serdeParams.getKeyFactory(), serdeParams.getValueFactories());
+        serdeParams.getKeyIndex(), serdeParams.getKeyFactory());
 
     serializer = new HBaseRowSerializer(serdeParams);
 

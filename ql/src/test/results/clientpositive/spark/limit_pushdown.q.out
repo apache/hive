@@ -27,12 +27,15 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string), value (type: string)
                     outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
                       sort order: +
+                      Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                       TopN Hash Memory Usage: 0.3
                       value expressions: _col1 (type: string)
         Reducer 2 
@@ -40,10 +43,13 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string)
                 outputColumnNames: _col0, _col1
+                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                 Limit
                   Number of rows: 20
+                  Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
+                    Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -104,12 +110,15 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string), value (type: string)
                     outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
                       sort order: -
+                      Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                       TopN Hash Memory Usage: 0.3
                       value expressions: _col1 (type: string)
         Reducer 2 
@@ -117,10 +126,13 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string)
                 outputColumnNames: _col0, _col1
+                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                 Limit
                   Number of rows: 20
+                  Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
+                    Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -181,18 +193,22 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: value (type: string), key (type: string)
                     outputColumnNames: value, key
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: sum((key + 1))
                       keys: value (type: string)
                       mode: hash
                       outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                         TopN Hash Memory Usage: 0.3
                         value expressions: _col1 (type: double)
         Reducer 2 
@@ -202,13 +218,17 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
+                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: _col0 (type: string), _col1 (type: double)
                   outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                   Limit
                     Number of rows: 20
+                    Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
+                      Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: NONE
                       table:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -271,18 +291,22 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: value (type: string), key (type: string)
                     outputColumnNames: value, key
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: avg((key + 1))
                       keys: value (type: string)
                       mode: hash
                       outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                         TopN Hash Memory Usage: 0.3
                         value expressions: _col1 (type: struct<count:bigint,sum:double,input:double>)
         Reducer 2 
@@ -292,13 +316,17 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
+                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: _col0 (type: string), _col1 (type: double)
                   outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                   Limit
                     Number of rows: 20
+                    Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
+                      Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: NONE
                       table:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -361,17 +389,21 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
+                  Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: cdouble (type: double)
                     outputColumnNames: cdouble
+                    Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       keys: cdouble (type: double)
                       mode: hash
                       outputColumnNames: _col0
+                      Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: double)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: double)
+                        Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
                         TopN Hash Memory Usage: 0.3
         Reducer 2 
             Reduce Operator Tree:
@@ -379,13 +411,17 @@ STAGE PLANS:
                 keys: KEY._col0 (type: double)
                 mode: mergepartial
                 outputColumnNames: _col0
+                Statistics: Num rows: 6144 Data size: 188618 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: _col0 (type: double)
                   outputColumnNames: _col0
+                  Statistics: Num rows: 6144 Data size: 188618 Basic stats: COMPLETE Column stats: NONE
                   Limit
                     Number of rows: 20
+                    Statistics: Num rows: 20 Data size: 600 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
+                      Statistics: Num rows: 20 Data size: 600 Basic stats: COMPLETE Column stats: NONE
                       table:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -446,18 +482,22 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
+                  Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: ctinyint (type: tinyint), cdouble (type: double)
                     outputColumnNames: ctinyint, cdouble
+                    Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count(DISTINCT cdouble)
                       keys: ctinyint (type: tinyint), cdouble (type: double)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: tinyint), _col1 (type: double)
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: tinyint)
+                        Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
                         TopN Hash Memory Usage: 0.3
         Reducer 2 
             Reduce Operator Tree:
@@ -466,13 +506,17 @@ STAGE PLANS:
                 keys: KEY._col0 (type: tinyint)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
+                Statistics: Num rows: 6144 Data size: 188618 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: _col0 (type: tinyint), _col1 (type: bigint)
                   outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 6144 Data size: 188618 Basic stats: COMPLETE Column stats: NONE
                   Limit
                     Number of rows: 20
+                    Statistics: Num rows: 20 Data size: 600 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
+                      Statistics: Num rows: 20 Data size: 600 Basic stats: COMPLETE Column stats: NONE
                       table:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -535,18 +579,22 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
+                  Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: ctinyint (type: tinyint), cstring1 (type: string), cstring2 (type: string)
                     outputColumnNames: ctinyint, cstring1, cstring2
+                    Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count(DISTINCT cstring1), count(DISTINCT cstring2)
                       keys: ctinyint (type: tinyint), cstring1 (type: string), cstring2 (type: string)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                      Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: tinyint), _col1 (type: string), _col2 (type: string)
                         sort order: +++
                         Map-reduce partition columns: _col0 (type: tinyint)
+                        Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
                         TopN Hash Memory Usage: 0.3
         Reducer 2 
             Reduce Operator Tree:
@@ -555,13 +603,17 @@ STAGE PLANS:
                 keys: KEY._col0 (type: tinyint)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 6144 Data size: 188618 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: _col0 (type: tinyint), _col1 (type: bigint), _col2 (type: bigint)
                   outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 6144 Data size: 188618 Basic stats: COMPLETE Column stats: NONE
                   Limit
                     Number of rows: 20
+                    Statistics: Num rows: 20 Data size: 600 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
+                      Statistics: Num rows: 20 Data size: 600 Basic stats: COMPLETE Column stats: NONE
                       table:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -621,11 +673,9 @@ STAGE PLANS:
 
 PREHOOK: query: select key,value from src order by key limit 0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: select key,value from src order by key limit 0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 PREHOOK: query: -- 2MR (applied to last RS)
 explain
@@ -651,18 +701,22 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: value (type: string), key (type: string)
                     outputColumnNames: value, key
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: sum(key)
                       keys: value (type: string)
                       mode: hash
                       outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: double)
         Reducer 2 
             Reduce Operator Tree:
@@ -671,12 +725,15 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
+                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: _col0 (type: string), _col1 (type: double)
                   outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col1 (type: double)
                     sort order: +
+                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     TopN Hash Memory Usage: 0.3
                     value expressions: _col0 (type: string)
         Reducer 3 
@@ -684,10 +741,13 @@ STAGE PLANS:
               Select Operator
                 expressions: VALUE._col0 (type: string), KEY.reducesinkkey0 (type: double)
                 outputColumnNames: _col0, _col1
+                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                 Limit
                   Number of rows: 20
+                  Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
+                    Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -761,36 +821,44 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string)
                     outputColumnNames: key
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count(1)
                       keys: key (type: string)
                       mode: hash
                       outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                         TopN Hash Memory Usage: 0.3
                         value expressions: _col1 (type: bigint)
         Map 4 
             Map Operator Tree:
                 TableScan
                   alias: src
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string)
                     outputColumnNames: key
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count(1)
                       keys: key (type: string)
                       mode: hash
                       outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                         TopN Hash Memory Usage: 0.3
                         value expressions: _col1 (type: bigint)
         Reducer 2 
@@ -800,17 +868,22 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
+                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: _col0 (type: string), _col1 (type: bigint)
                   outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                   Limit
                     Number of rows: 2
+                    Statistics: Num rows: 2 Data size: 20 Basic stats: COMPLETE Column stats: NONE
                     Filter Operator
                       predicate: _col0 is not null (type: boolean)
+                      Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: bigint)
         Reducer 3 
             Reduce Operator Tree:
@@ -821,13 +894,17 @@ STAGE PLANS:
                   0 {KEY.reducesinkkey0} {VALUE._col0}
                   1 {KEY.reducesinkkey0} {VALUE._col0}
                 outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics: Num rows: 2 Data size: 22 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: _col0 (type: string), _col1 (type: bigint), _col2 (type: string), _col3 (type: bigint)
                   outputColumnNames: _col0, _col1, _col2, _col3
+                  Statistics: Num rows: 2 Data size: 22 Basic stats: COMPLETE Column stats: NONE
                   Limit
                     Number of rows: 4
+                    Statistics: Num rows: 2 Data size: 22 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
+                      Statistics: Num rows: 2 Data size: 22 Basic stats: COMPLETE Column stats: NONE
                       table:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -839,13 +916,17 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
+                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: _col0 (type: string), _col1 (type: bigint)
                   outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                   Limit
                     Number of rows: 3
+                    Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       sort order: 
+                      Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                       TopN Hash Memory Usage: 0.3
                       value expressions: _col0 (type: string), _col1 (type: bigint)
         Reducer 6 
@@ -853,14 +934,18 @@ STAGE PLANS:
               Select Operator
                 expressions: VALUE._col0 (type: string), VALUE._col1 (type: bigint)
                 outputColumnNames: _col0, _col1
+                Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                 Limit
                   Number of rows: 3
+                  Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: _col0 is not null (type: boolean)
+                    Statistics: Num rows: 2 Data size: 20 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 2 Data size: 20 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col1 (type: bigint)
 
   Stage: Stage-0
@@ -892,13 +977,16 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string), value (type: string)
                     outputColumnNames: key, value
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: value (type: string)
                       sort order: +
                       Map-reduce partition columns: value (type: string)
+                      Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                       TopN Hash Memory Usage: 0.3
                       value expressions: key (type: string)
         Reducer 2 
@@ -908,13 +996,17 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: complete
                 outputColumnNames: _col0, _col1
+                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: _col0 (type: string), _col1 (type: double)
                   outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                   Limit
                     Number of rows: 20
+                    Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
+                      Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: NONE
                       table:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -977,12 +1069,15 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string), value (type: string)
                     outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
                       sort order: +
+                      Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                       TopN Hash Memory Usage: 2.0E-5
                       value expressions: _col1 (type: string)
         Reducer 2 
@@ -990,10 +1085,13 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string), VALUE._col0 (type: string), VALUE._col0 (type: string), VALUE._col0 (type: string), VALUE._col0 (type: string), VALUE._col0 (type: string), VALUE._col0 (type: string), VALUE._col0 (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                 Limit
                   Number of rows: 100
+                  Statistics: Num rows: 100 Data size: 1000 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
+                    Statistics: Num rows: 100 Data size: 1000 Basic stats: COMPLETE Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1136,13 +1234,16 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string), value (type: string)
                     outputColumnNames: key, value
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: concat(key, value, value, value, value, value, value, value, value, value) (type: string)
                       sort order: +
                       Map-reduce partition columns: concat(key, value, value, value, value, value, value, value, value, value) (type: string)
+                      Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                       TopN Hash Memory Usage: 2.0E-5
                       value expressions: key (type: string)
         Reducer 2 
@@ -1152,13 +1253,17 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: complete
                 outputColumnNames: _col0, _col1
+                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: _col1 (type: double)
                   outputColumnNames: _col0
+                  Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                   Limit
                     Number of rows: 100
+                    Statistics: Num rows: 100 Data size: 1000 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
+                      Statistics: Num rows: 100 Data size: 1000 Basic stats: COMPLETE Column stats: NONE
                       table:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat

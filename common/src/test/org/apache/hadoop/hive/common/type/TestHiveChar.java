@@ -18,19 +18,10 @@
 
 package org.apache.hadoop.hive.common.type;
 
-import com.google.code.tempusfugit.concurrency.annotations.*;
-import com.google.code.tempusfugit.concurrency.*;
-import org.junit.*;
-import static org.junit.Assert.*;
+import junit.framework.TestCase;
 
-public class TestHiveChar {
+public class TestHiveChar extends TestCase {
 
-  @Rule public ConcurrentRule concurrentRule = new ConcurrentRule();
-  @Rule public RepeatingRule repeatingRule = new RepeatingRule();
-
-  @Test
-  @Concurrent(count=4)
-  @Repeating(repetition=100)
   public void testBasic() {
     HiveChar hc = new HiveChar("abc", 10);
     assertEquals("abc       ", hc.toString());
@@ -56,9 +47,6 @@ public class TestHiveChar {
     assertEquals(3, hc.getCharacterLength());
   }
 
-  @Test
-  @Concurrent(count=4)
-  @Repeating(repetition=100)
   public void testStringLength() {
     HiveChar hc = new HiveChar();
 
@@ -72,9 +60,6 @@ public class TestHiveChar {
     assertEquals("0123456789     ", hc.toString());
   }
 
-  @Test
-  @Concurrent(count=4)
-  @Repeating(repetition=100)
   public void testComparison() {
     HiveChar hc1 = new HiveChar();
     HiveChar hc2 = new HiveChar();

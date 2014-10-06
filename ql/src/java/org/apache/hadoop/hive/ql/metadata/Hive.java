@@ -878,23 +878,6 @@ public class Hive {
 
   /**
    * Drops table along with the data in it. If the table doesn't exist then it
-   * is a no-op. If ifPurge option is specified it is passed to the
-   * hdfs command that removes table data from warehouse to make it skip trash.
-   *
-   * @param tableName
-   *          table to drop
-   * @param ifPurge
-   *          completely purge the table (skipping trash) while removing data from warehouse
-   * @throws HiveException
-   *           thrown if the drop fails
-   */
-  public void dropTable(String tableName, boolean ifPurge) throws HiveException {
-    String[] names = Utilities.getDbTableName(tableName);
-    dropTable(names[0], names[1], true, true, ifPurge);
-  }
-
-  /**
-   * Drops table along with the data in it. If the table doesn't exist then it
    * is a no-op
    *
    * @param tableName
@@ -903,7 +886,8 @@ public class Hive {
    *           thrown if the drop fails
    */
   public void dropTable(String tableName) throws HiveException {
-    dropTable(tableName, false);
+    String[] names = Utilities.getDbTableName(tableName);
+    dropTable(names[0], names[1], true, true);
   }
 
   /**
@@ -918,7 +902,7 @@ public class Hive {
    *           thrown if the drop fails
    */
   public void dropTable(String dbName, String tableName) throws HiveException {
-    dropTable(dbName, tableName, true, true, false);
+    dropTable(dbName, tableName, true, true);
   }
 
   /**
@@ -929,31 +913,14 @@ public class Hive {
    * @param deleteData
    *          deletes the underlying data along with metadata
    * @param ignoreUnknownTab
-   *          an exception is thrown if this is false and the table doesn't exist
+   *          an exception if thrown if this is falser and table doesn't exist
    * @throws HiveException
    */
   public void dropTable(String dbName, String tableName, boolean deleteData,
       boolean ignoreUnknownTab) throws HiveException {
-    dropTable(dbName, tableName, deleteData, ignoreUnknownTab, false);
-  }
 
-  /**
-   * Drops the table.
-   *
-   * @param dbName
-   * @param tableName
-   * @param deleteData
-   *          deletes the underlying data along with metadata
-   * @param ignoreUnknownTab
-   *          an exception is thrown if this is false and the table doesn't exist
-   * @param ifPurge
-   *          completely purge the table skipping trash while removing data from warehouse
-   * @throws HiveException
-   */
-  public void dropTable(String dbName, String tableName, boolean deleteData,
-      boolean ignoreUnknownTab, boolean ifPurge) throws HiveException {
     try {
-      getMSC().dropTable(dbName, tableName, deleteData, ignoreUnknownTab, ifPurge);
+      getMSC().dropTable(dbName, tableName, deleteData, ignoreUnknownTab);
     } catch (NoSuchObjectException e) {
       if (!ignoreUnknownTab) {
         throw new HiveException(e);
@@ -1237,15 +1204,6 @@ public class Hive {
     return getDatabase(currentDb);
   }
 
-  public void loadPartition(Path loadPath, String tableName,
-      Map<String, String> partSpec, boolean replace, boolean holdDDLTime,
-      boolean inheritTableSpecs, boolean isSkewedStoreAsSubdir,
-      boolean isSrcLocal, boolean isAcid) throws HiveException {
-    Table tbl = getTable(tableName);
-    loadPartition(loadPath, tbl, partSpec, replace, holdDDLTime, inheritTableSpecs,
-        isSkewedStoreAsSubdir, isSrcLocal, isAcid);
-  }
-
   /**
    * Load a directory into a Hive Table Partition - Alters existing content of
    * the partition with the contents of loadPath. - If the partition does not
@@ -1254,7 +1212,7 @@ public class Hive {
    *
    * @param loadPath
    *          Directory containing files to load into Table
-   * @param  tbl
+   * @param tableName
    *          name of table to be loaded.
    * @param partSpec
    *          defines which partition needs to be loaded
@@ -1267,12 +1225,12 @@ public class Hive {
    * @param isSrcLocal
    *          If the source directory is LOCAL
    */
-  public Partition loadPartition(Path loadPath, Table tbl,
+  public void loadPartition(Path loadPath, String tableName,
       Map<String, String> partSpec, boolean replace, boolean holdDDLTime,
       boolean inheritTableSpecs, boolean isSkewedStoreAsSubdir,
       boolean isSrcLocal, boolean isAcid) throws HiveException {
+    Table tbl = getTable(tableName);
     Path tblDataLocationPath =  tbl.getDataLocation();
-    Partition newTPart = null;
     try {
       /**
        * Move files before creating the partition since down stream processes
@@ -1321,10 +1279,10 @@ public class Hive {
         Hive.copyFiles(conf, loadPath, newPartPath, fs, isSrcLocal, isAcid);
       }
 
-      boolean forceCreate = (!holdDDLTime) ? true : false;
-      newTPart = getPartition(tbl, partSpec, forceCreate, newPartPath.toString(), inheritTableSpecs);
       // recreate the partition if it existed before
       if (!holdDDLTime) {
+        Partition newTPart = getPartition(tbl, partSpec, true, newPartPath.toString(),
+            inheritTableSpecs);
         if (isSkewedStoreAsSubdir) {
           org.apache.hadoop.hive.metastore.api.Partition newCreatedTpart = newTPart.getTPartition();
           SkewedInfo skewedInfo = newCreatedTpart.getSd().getSkewedInfo();
@@ -1334,9 +1292,9 @@ public class Hive {
           /* Add list bucketing location mappings. */
           skewedInfo.setSkewedColValueLocationMaps(skewedColValueLocationMaps);
           newCreatedTpart.getSd().setSkewedInfo(skewedInfo);
-          alterPartition(tbl.getDbName(), tbl.getTableName(), new Partition(tbl, newCreatedTpart));
+          alterPartition(tbl.getTableName(), new Partition(tbl, newCreatedTpart));
           newTPart = getPartition(tbl, partSpec, true, newPartPath.toString(), inheritTableSpecs);
-          return new Partition(tbl, newCreatedTpart);
+          newCreatedTpart = newTPart.getTPartition();
         }
       }
     } catch (IOException e) {
@@ -1349,7 +1307,7 @@ public class Hive {
       LOG.error(StringUtils.stringifyException(e));
       throw new HiveException(e);
     }
-    return newTPart;
+
   }
 
   /**
@@ -1445,18 +1403,18 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @param replace
    * @param numDP number of dynamic partitions
    * @param holdDDLTime
-   * @return partition map details (PartitionSpec and Partition)
+   * @return a list of strings with the dynamic partition paths
    * @throws HiveException
    */
-  public Map<Map<String, String>, Partition> loadDynamicPartitions(Path loadPath,
+  public ArrayList<LinkedHashMap<String, String>> loadDynamicPartitions(Path loadPath,
       String tableName, Map<String, String> partSpec, boolean replace,
       int numDP, boolean holdDDLTime, boolean listBucketingEnabled, boolean isAcid)
       throws HiveException {
 
     Set<Path> validPartitions = new HashSet<Path>();
     try {
-      Map<Map<String, String>, Partition> partitionsMap = new
-          LinkedHashMap<Map<String, String>, Partition>();
+      ArrayList<LinkedHashMap<String, String>> fullPartSpecs =
+        new ArrayList<LinkedHashMap<String, String>>();
 
       FileSystem fs = loadPath.getFileSystem(conf);
       FileStatus[] leafStatus = HiveStatsUtils.getFileStatusRecurse(loadPath, numDP+1, fs);
@@ -1490,7 +1448,6 @@ private void constructOneLBLocationMap(FileStatus fSta,
             + " to at least " + validPartitions.size() + '.');
       }
 
-      Table tbl = getTable(tableName);
       // for each dynamically created DP directory, construct a full partition spec
       // and load the partition based on that
       Iterator<Path> iter = validPartitions.iterator();
@@ -1503,12 +1460,14 @@ private void constructOneLBLocationMap(FileStatus fSta,
         // generate a full partition specification
         LinkedHashMap<String, String> fullPartSpec = new LinkedHashMap<String, String>(partSpec);
         Warehouse.makeSpecFromName(fullPartSpec, partPath);
-        Partition newPartition = loadPartition(partPath, tbl, fullPartSpec, replace,
-            holdDDLTime, true, listBucketingEnabled, false, isAcid);
-        partitionsMap.put(fullPartSpec, newPartition);
+        fullPartSpecs.add(fullPartSpec);
+
+        // finally load the partition -- move the file to the final table address
+        loadPartition(partPath, tableName, fullPartSpec, replace, holdDDLTime, true,
+            listBucketingEnabled, false, isAcid);
         LOG.info("New loading path = " + partPath + " with partSpec " + fullPartSpec);
       }
-      return partitionsMap;
+      return fullPartSpecs;
     } catch (IOException e) {
       throw new HiveException(e);
     }
@@ -1777,7 +1736,6 @@ private void constructOneLBLocationMap(FileStatus fSta,
   public List<Partition> dropPartitions(String dbName, String tblName,
       List<DropTableDesc.PartSpec> partSpecs,  boolean deleteData, boolean ignoreProtection,
       boolean ifExists) throws HiveException {
-    //TODO: add support for ifPurge
     try {
       Table tbl = getTable(dbName, tblName);
       List<ObjectPair<Integer, byte[]>> partExprs =

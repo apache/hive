@@ -19,15 +19,12 @@ package org.apache.hadoop.hive.contrib.udf.example;
 
 import java.util.List;
 
-import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
 
 /**
  * UDFExampleStructPrint.
  *
  */
-@Description(name = "example_structprint",
-value = "_FUNC_(obj) - Example UDAF that returns contents of an object")
 public class UDFExampleStructPrint extends UDF {
 
   public String evaluate(Object a) {

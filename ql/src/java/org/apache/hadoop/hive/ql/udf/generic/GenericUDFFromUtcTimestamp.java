@@ -22,7 +22,6 @@ import java.util.TimeZone;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -34,9 +33,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.io.Text;
 
-@Description(name = "from_utc_timestamp",
-             value = "from_utc_timestamp(timestamp, string timezone) - "
-                     + "Assumes given timestamp ist UTC and converts to given timezone (as of Hive 0.8.0)")
+
 public class GenericUDFFromUtcTimestamp extends GenericUDF {
 
   static final Log LOG = LogFactory.getLog(GenericUDFFromUtcTimestamp.class);

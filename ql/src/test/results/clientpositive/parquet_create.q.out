@@ -181,6 +181,6 @@ POSTHOOK: query: SELECT strct from parquet_create
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_create
 #### A masked pattern was here ####
-{"A":"one","B":"two"}
-{"A":"three","B":"four"}
-{"A":"five","B":"six"}
+{"a":"one","b":"two"}
+{"a":"three","b":"four"}
+{"a":"five","b":"six"}

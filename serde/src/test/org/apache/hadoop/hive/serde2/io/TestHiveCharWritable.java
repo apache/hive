@@ -18,20 +18,10 @@
 
 package org.apache.hadoop.hive.serde2.io;
 
-import com.google.code.tempusfugit.concurrency.annotations.*;
-import com.google.code.tempusfugit.concurrency.*;
-import org.junit.*;
-
-import static org.junit.Assert.*;
+import junit.framework.TestCase;
 import org.apache.hadoop.hive.common.type.HiveChar;
 
-public class TestHiveCharWritable {
-  @Rule public ConcurrentRule concurrentRule = new ConcurrentRule();
-  @Rule public RepeatingRule repeatingRule = new RepeatingRule();
-
-  @Test
-  @Concurrent(count=4)
-  @Repeating(repetition=100)
+public class TestHiveCharWritable extends TestCase {
   public void testConstructor() throws Exception {
     HiveCharWritable hcw1 = new HiveCharWritable(new HiveChar("abc", 5));
     assertEquals("abc  ", hcw1.toString());
@@ -40,9 +30,6 @@ public class TestHiveCharWritable {
     assertEquals("abc  ", hcw2.toString());
   }
 
-  @Test
-  @Concurrent(count=4)
-  @Repeating(repetition=100)
   public void testSet() throws Exception {
     HiveCharWritable hcw1 = new HiveCharWritable();
 
@@ -83,27 +70,18 @@ public class TestHiveCharWritable {
     assertEquals("ab", hcw1.getTextValue().toString());
   }
 
-  @Test
-  @Concurrent(count=4)
-  @Repeating(repetition=100)
   public void testGetHiveChar() throws Exception {
     HiveCharWritable hcw = new HiveCharWritable();
     hcw.set("abcd", 10);
     assertEquals("abcd      ", hcw.getHiveChar().toString());
   }
 
-  @Test
-  @Concurrent(count=4)
-  @Repeating(repetition=100)
   public void testGetCharacterLength() throws Exception {
     HiveCharWritable hcw = new HiveCharWritable();
     hcw.set("abcd", 10);
     assertEquals(4, hcw.getCharacterLength());
   }
 
-  @Test
-  @Concurrent(count=4)
-  @Repeating(repetition=100)
   public void testEnforceMaxLength() {
     HiveCharWritable hcw1 = new HiveCharWritable();
     hcw1.set("abcdefghij", 10);
@@ -114,9 +92,6 @@ public class TestHiveCharWritable {
     assertEquals("abcde", hcw1.toString());
   }
 
-  @Test
-  @Concurrent(count=4)
-  @Repeating(repetition=100)
   public void testComparison() throws Exception {
     HiveCharWritable hcw1 = new HiveCharWritable();
     HiveCharWritable hcw2 = new HiveCharWritable();

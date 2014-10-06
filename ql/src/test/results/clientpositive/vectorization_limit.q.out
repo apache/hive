@@ -433,11 +433,9 @@ STAGE PLANS:
 
 PREHOOK: query: select ctinyint,cdouble from alltypesorc order by ctinyint limit 0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: select ctinyint,cdouble from alltypesorc order by ctinyint limit 0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 PREHOOK: query: -- 2MR (applied to last RS)
 explain

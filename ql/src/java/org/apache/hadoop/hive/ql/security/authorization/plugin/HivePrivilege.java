@@ -27,7 +27,7 @@ import org.apache.hadoop.hive.ql.security.authorization.PrivilegeScope;
 /**
  * Represents the hive privilege being granted/revoked
  */
-@LimitedPrivate(value = { "Apache Argus (incubating)" })
+@LimitedPrivate(value = { "" })
 @Evolving
 public class HivePrivilege implements Comparable<HivePrivilege> {
   @Override
@@ -97,7 +97,6 @@ public class HivePrivilege implements Comparable<HivePrivilege> {
     return supportedScope != null && supportedScope.contains(scope.name());
   }
 
-  @Override
   public int compareTo(HivePrivilege privilege) {
     int compare = columns != null ?
         (privilege.columns != null ? compare(columns, privilege.columns) : 1) :

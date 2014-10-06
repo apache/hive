@@ -66,7 +66,7 @@ STAGE PLANS:
                           Statistics: Num rows: 42 Data size: 446 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
-              Merge Join Operator
+              Join Operator
                 condition map:
                      Left Semi Join 0 to 1
                 condition expressions:

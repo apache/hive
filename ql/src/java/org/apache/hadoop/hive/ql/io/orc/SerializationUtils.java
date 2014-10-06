@@ -1283,9 +1283,4 @@ final class SerializationUtils {
         + ((readBuffer[rbOffset + 7] & 255) << 0));
   }
 
-  // Do not want to use Guava LongMath.checkedSubtract() here as it will throw
-  // ArithmeticException in case of overflow
-  public boolean isSafeSubtract(long left, long right) {
-    return (left ^ right) >= 0 | (left ^ (left - right)) >= 0;
-  }
 }

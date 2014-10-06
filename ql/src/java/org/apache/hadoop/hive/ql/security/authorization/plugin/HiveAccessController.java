@@ -19,7 +19,8 @@ package org.apache.hadoop.hive.ql.security.authorization.plugin;
 
 import java.util.List;
 
-import org.apache.hadoop.classification.InterfaceAudience.Private;
+import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
+import org.apache.hadoop.hive.common.classification.InterfaceStability.Evolving;
 import org.apache.hadoop.hive.conf.HiveConf;
 
 /**
@@ -27,7 +28,8 @@ import org.apache.hadoop.hive.conf.HiveConf;
  * create/drop roles, and commands to read the state of authorization rules.
  * Methods here have corresponding methods in HiveAuthorizer, check method documentation there.
  */
-@Private
+@LimitedPrivate(value = { "" })
+@Evolving
 public interface HiveAccessController {
 
   void grantPrivileges(List<HivePrincipal> hivePrincipals, List<HivePrivilege> hivePrivileges,

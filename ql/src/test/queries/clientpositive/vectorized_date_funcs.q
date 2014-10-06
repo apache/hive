@@ -123,19 +123,3 @@ FROM date_udf_flight_orc LIMIT 10;
 
 -- Test extracting the date part of expression that includes time
 SELECT to_date('2009-07-30 04:17:52') FROM date_udf_flight_orc LIMIT 1;
-
-EXPLAIN SELECT
-  min(fl_date) AS c1,
-  max(fl_date),
-  count(fl_date),
-  count(*)
-FROM date_udf_flight_orc
-ORDER BY c1;
-
-SELECT
-  min(fl_date) AS c1,
-  max(fl_date),
-  count(fl_date),
-  count(*)
-FROM date_udf_flight_orc
-ORDER BY c1;

@@ -479,9 +479,8 @@ import java.util.HashMap;
     xlateMap.put("KW_SUBQUERY", "SUBQUERY");
     xlateMap.put("KW_REWRITE", "REWRITE");
     xlateMap.put("KW_UPDATE", "UPDATE");
-    xlateMap.put("KW_VALUES", "VALUES");
-    xlateMap.put("KW_PURGE", "PURGE");
 
+    xlateMap.put("KW_VALUES", "VALUES");
 
     // Operators
     xlateMap.put("DOT", ".");
@@ -930,7 +929,7 @@ dropIndexStatement
 dropTableStatement
 @init { pushMsg("drop statement", state); }
 @after { popMsg(state); }
-    : KW_DROP KW_TABLE ifExists? tableName KW_PURGE? -> ^(TOK_DROPTABLE tableName ifExists? KW_PURGE?)
+    : KW_DROP KW_TABLE ifExists? tableName -> ^(TOK_DROPTABLE tableName ifExists?)
     ;
 
 alterStatement
@@ -946,6 +945,8 @@ alterTableStatementSuffix
 @init { pushMsg("alter table statement", state); }
 @after { popMsg(state); }
     : alterStatementSuffixRename[true]
+    | alterStatementSuffixAddCol
+    | alterStatementSuffixRenameCol
     | alterStatementSuffixUpdateStatsCol
     | alterStatementSuffixDropPartitions[true]
     | alterStatementSuffixAddPartitions[true]
@@ -973,8 +974,6 @@ alterTblPartitionStatementSuffix
   | alterStatementSuffixClusterbySortby
   | alterStatementSuffixCompact
   | alterStatementSuffixUpdateStatsCol
-  | alterStatementSuffixRenameCol
-  | alterStatementSuffixAddCol
   ;
 
 alterStatementPartitionKeyType
@@ -2238,7 +2237,7 @@ deleteStatement
 /*SET <columName> = (3 + col2)*/
 columnAssignmentClause
    :
-   tableOrColumn EQUAL^ precedencePlusExpression
+   tableOrColumn EQUAL^ atomExpression
    ;
 
 /*SET col1 = 5, col2 = (4 + col4), ...*/

@@ -451,11 +451,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
     // Delete table data
     if (deleteData && !MetaStoreUtils.isExternalTable(table)) {
       try {
-        boolean ifPurge = false;
-        if (envContext != null){
-          ifPurge = Boolean.parseBoolean(envContext.getProperties().get("ifPurge"));
-        }
-        getWh().deleteDir(tablePath, true, ifPurge);
+        getWh().deleteDir(tablePath, true);
       } catch (Exception err) {
         LOG.error("Failed to delete temp table directory: " + tablePath, err);
         // Forgive error

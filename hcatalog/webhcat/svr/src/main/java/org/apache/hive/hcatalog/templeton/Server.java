@@ -1008,15 +1008,8 @@ public class Server {
       jobItem.id = job;
       if (showDetails) {
         StatusDelegator sd = new StatusDelegator(appConf);
-        try {
-          jobItem.detail = sd.run(getDoAsUser(), job);
-        }
-        catch(Exception ex) {
-          /*if we could not get status for some reason, log it, and send empty status back with
-          * just the ID so that caller knows to even look in the log file*/
-          LOG.info("Failed to get status detail for jobId='" + job + "'", ex);
-          jobItem.detail = new QueueStatusBean(job, "Failed to retrieve status; see WebHCat logs");
-        }
+        QueueStatusBean statusBean = sd.run(getDoAsUser(), job);
+        jobItem.detail = statusBean;
       }
       detailList.add(jobItem);
     }

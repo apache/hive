@@ -24,7 +24,7 @@ import org.apache.hadoop.hive.common.classification.InterfaceStability.Evolving;
  * Provides session context information.
  * It is an immutable class. Builder inner class is used instantiate it.
  */
-@LimitedPrivate(value = { "Apache Argus (incubating)" })
+@LimitedPrivate(value = { "" })
 @Evolving
 public final class HiveAuthzSessionContext {
 

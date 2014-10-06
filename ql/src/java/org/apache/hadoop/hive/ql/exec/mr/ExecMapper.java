@@ -78,11 +78,10 @@ public class ExecMapper extends MapReduceBase implements Mapper {
   private MapredLocalWork localWork = null;
   private boolean isLogInfoEnabled = false;
 
-  private ExecMapperContext execContext = null;
+  private final ExecMapperContext execContext = new ExecMapperContext();
 
   @Override
   public void configure(JobConf job) {
-    execContext = new ExecMapperContext(job);
     // Allocate the bean at the beginning -
     memoryMXBean = ManagementFactory.getMemoryMXBean();
     l4j.info("maximum memory = " + memoryMXBean.getHeapMemoryUsage().getMax());
@@ -293,7 +292,6 @@ public class ExecMapper extends MapReduceBase implements Mapper {
       this.rp = rp;
     }
 
-    @Override
     public void func(Operator op) {
       Map<Enum<?>, Long> opStats = op.getStats();
       for (Map.Entry<Enum<?>, Long> e : opStats.entrySet()) {

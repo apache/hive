@@ -145,8 +145,6 @@ STAGE PLANS:
                         0 key (type: int)
                         1 key (type: int)
                       outputColumnNames: _col0, _col1, _col7
-                      input vertices:
-                        0 Map 2
                       Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
                         expressions: _col0 (type: int), _col1 (type: string), _col7 (type: string)
@@ -224,8 +222,6 @@ STAGE PLANS:
                         0 _col1 (type: int)
                         1 key (type: int)
                       outputColumnNames: _col0, _col1, _col3
-                      input vertices:
-                        0 Reducer 3
                       Statistics: Num rows: 133 Data size: 1411 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
                         expressions: _col1 (type: int), _col0 (type: double), _col3 (type: string)
@@ -341,8 +337,6 @@ STAGE PLANS:
                         0 key (type: int)
                         1 key (type: int)
                       outputColumnNames: _col6, _col7
-                      input vertices:
-                        1 Map 4
                       Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
                         expressions: _col6 (type: int), _col7 (type: string)
@@ -396,8 +390,6 @@ STAGE PLANS:
                       0 _col1 (type: int)
                       1 key (type: int)
                     outputColumnNames: _col0, _col1, _col3
-                    input vertices:
-                      1 Map 1
                     Statistics: Num rows: 150 Data size: 1600 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: _col1 (type: int), _col0 (type: double), _col3 (type: string)
@@ -458,8 +450,6 @@ STAGE PLANS:
                         0 _col1 (type: int)
                         1 key (type: int)
                       outputColumnNames: _col0, _col1, _col3
-                      input vertices:
-                        0 Reducer 3
                       Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
                         expressions: _col1 (type: int), _col0 (type: double), _col3 (type: string)
@@ -490,8 +480,6 @@ STAGE PLANS:
                         0 key (type: int)
                         1 key (type: int)
                       outputColumnNames: _col0, _col1
-                      input vertices:
-                        1 Map 4
                       Statistics: Num rows: 133 Data size: 1411 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
                         expressions: _col0 (type: int), _col1 (type: string)
@@ -616,9 +604,6 @@ STAGE PLANS:
                         1 key (type: int)
                         2 key (type: int)
                       outputColumnNames: _col0, _col1, _col7
-                      input vertices:
-                        1 Map 1
-                        2 Map 2
                       Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
                         expressions: _col0 (type: int), _col1 (type: string), _col7 (type: string)
@@ -689,8 +674,6 @@ STAGE PLANS:
                         0 key (type: int)
                         1 key (type: int)
                       outputColumnNames: _col0, _col1
-                      input vertices:
-                        1 Map 3
                       Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
                         expressions: _col0 (type: int), _col1 (type: string)
@@ -706,8 +689,6 @@ STAGE PLANS:
                             0 _col0 (type: int)
                             1 key (type: int)
                           outputColumnNames: _col0, _col1, _col3
-                          input vertices:
-                            1 Map 1
                           Statistics: Num rows: 302 Data size: 3213 Basic stats: COMPLETE Column stats: NONE
                           Select Operator
                             expressions: _col0 (type: int), _col1 (type: string), _col3 (type: string)
@@ -782,8 +763,6 @@ STAGE PLANS:
                         0 _col0 (type: int)
                         1 key (type: int)
                       outputColumnNames: _col0, _col1, _col3
-                      input vertices:
-                        0 Reducer 3
                       Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
                         expressions: _col0 (type: int), _col1 (type: double), _col3 (type: string)
@@ -885,8 +864,6 @@ STAGE PLANS:
                         0 _col0 (type: int)
                         1 key (type: int)
                       outputColumnNames: _col0, _col1, _col3
-                      input vertices:
-                        0 Reducer 3
                       Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
                         expressions: _col0 (type: int), _col1 (type: double), _col3 (type: string)
@@ -981,8 +958,6 @@ STAGE PLANS:
                         0 value (type: string)
                         1 value (type: string)
                       outputColumnNames: _col0, _col1, _col7
-                      input vertices:
-                        0 Map 2
                       Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
                         expressions: _col0 (type: int), _col1 (type: string), _col7 (type: string)
@@ -1075,8 +1050,6 @@ STAGE PLANS:
                         0 key (type: int)
                         1 key (type: int)
                       outputColumnNames: _col0, _col1, _col6
-                      input vertices:
-                        0 Map 2
                       Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
                         expressions: _col0 (type: int), _col1 (type: string), _col6 (type: string)
@@ -1157,8 +1130,6 @@ STAGE PLANS:
                         0 key (type: int)
                         1 key (type: int)
                       outputColumnNames: _col0, _col1
-                      input vertices:
-                        0 Map 3
                       Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
                       Map Join Operator
                         condition map:
@@ -1170,8 +1141,6 @@ STAGE PLANS:
                           0 _col1 (type: string)
                           1 value (type: string)
                         outputColumnNames: _col0, _col12
-                        input vertices:
-                          1 Map 1
                         Statistics: Num rows: 302 Data size: 3213 Basic stats: COMPLETE Column stats: NONE
                         Select Operator
                           expressions: _col0 (type: int), _col12 (type: int)

@@ -104,7 +104,6 @@ public class HCatSemanticAnalyzer extends HCatSemanticAnalyzerBase {
     case HiveParser.TOK_ALTERVIEW_DROPPARTS:
     case HiveParser.TOK_ALTERVIEW_PROPERTIES:
     case HiveParser.TOK_ALTERVIEW_RENAME:
-    case HiveParser.TOK_ALTERVIEW:
     case HiveParser.TOK_CREATEVIEW:
     case HiveParser.TOK_DROPVIEW:
 

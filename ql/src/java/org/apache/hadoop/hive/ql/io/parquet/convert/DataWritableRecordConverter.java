@@ -31,8 +31,10 @@ public class DataWritableRecordConverter extends RecordMaterializer<ArrayWritabl
 
   private final DataWritableGroupConverter root;
 
-  public DataWritableRecordConverter(final GroupType requestedSchema, final GroupType tableSchema) {
-    this.root = new DataWritableGroupConverter(requestedSchema, tableSchema);
+  public DataWritableRecordConverter(final GroupType requestedSchema, final GroupType tableSchema,
+      final List<TypeInfo> hiveColumnTypeInfos) {
+    this.root = new DataWritableGroupConverter(requestedSchema, tableSchema,
+        hiveColumnTypeInfos);
   }
 
   @Override

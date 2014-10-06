@@ -76,21 +76,6 @@ public class TestHiveMetaStoreTxns {
   }
 
   @Test
-  public void testOpenTxnNotExcluded() throws Exception {
-    List<Long> tids = client.openTxns("me", 3).getTxn_ids();
-    Assert.assertEquals(1L, (long) tids.get(0));
-    Assert.assertEquals(2L, (long) tids.get(1));
-    Assert.assertEquals(3L, (long) tids.get(2));
-    client.rollbackTxn(1);
-    client.commitTxn(2);
-    ValidTxnList validTxns = client.getValidTxns(3);
-    Assert.assertFalse(validTxns.isTxnCommitted(1));
-    Assert.assertTrue(validTxns.isTxnCommitted(2));
-    Assert.assertTrue(validTxns.isTxnCommitted(3));
-    Assert.assertFalse(validTxns.isTxnCommitted(4));
-  }
-
-  @Test
   public void testTxnRange() throws Exception {
     ValidTxnList validTxns = client.getValidTxns();
     Assert.assertEquals(ValidTxnList.RangeResponse.NONE,

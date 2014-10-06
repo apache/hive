@@ -231,7 +231,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	1381                
+	totalSize           	1342                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -302,7 +302,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	722                 
+	totalSize           	719                 
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -344,7 +344,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	741                 
+	totalSize           	722                 
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -523,8 +523,8 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             Reduce Output Operator
-              key expressions: _col2 (type: string)
-              sort order: +
+              key expressions: _col2 (type: string), _col0 (type: string)
+              sort order: ++
               Map-reduce partition columns: _col2 (type: string)
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
@@ -681,7 +681,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	1346                
+	totalSize           	1341                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
