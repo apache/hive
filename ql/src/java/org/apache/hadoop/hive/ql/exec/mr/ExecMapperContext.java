@@ -63,7 +63,7 @@ public class ExecMapperContext {
 
   public ExecMapperContext(JobConf jc) {
     this.jc = jc;
-    ioCxt = IOContext.get(jc.get(Utilities.INPUT_NAME));
+    ioCxt = IOContext.get(jc);
   }
 
   public void clear() {

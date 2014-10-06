@@ -339,7 +339,7 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
   }
 
   public void setChildren(Configuration hconf) throws HiveException {
-    Path fpath = IOContext.get(hconf.get(Utilities.INPUT_NAME)).getInputPath();
+    Path fpath = IOContext.get(hconf).getInputPath();
 
     boolean schemeless = fpath.toUri().getScheme() == null;
 

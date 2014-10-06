@@ -186,7 +186,7 @@ public class SparkReduceRecordHandler extends SparkRecordHandler{
 	} else {
 	  ois.add(keyObjectInspector);
 	  ois.add(valueObjectInspector[tag]);
-	  reducer.setGroupKeyObjectInspector(keyObjectInspector);
+	  //reducer.setGroupKeyObjectInspector(keyObjectInspector);
 	  rowObjectInspector[tag] = ObjectInspectorFactory.getStandardStructObjectInspector(
 	      Utilities.reduceFieldNameList, ois);
 	}
