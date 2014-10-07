@@ -44,6 +44,7 @@ import org.apache.hive.service.auth.HiveAuthFactory;
 import org.apache.hive.service.cli.operation.Operation;
 import org.apache.hive.service.cli.session.SessionManager;
 import org.apache.hive.service.cli.thrift.TProtocolVersion;
+import org.apache.hive.service.server.HiveServer2;
 
 /**
  * CLIService.
@@ -64,15 +65,18 @@ public class CLIService extends CompositeService implements ICLIService {
   private SessionManager sessionManager;
   private UserGroupInformation serviceUGI;
   private UserGroupInformation httpUGI;
+  // The HiveServer2 instance running this service
+  private final HiveServer2 hiveServer2;
 
-  public CLIService() {
+  public CLIService(HiveServer2 hiveServer2) {
     super(CLIService.class.getSimpleName());
+    this.hiveServer2 = hiveServer2;
   }
 
   @Override
   public synchronized void init(HiveConf hiveConf) {
     this.hiveConf = hiveConf;
-    sessionManager = new SessionManager();
+    sessionManager = new SessionManager(hiveServer2);
     addService(sessionManager);
     //  If the hadoop cluster is secure, do a kerberos login for the service from the keytab
     if (ShimLoader.getHadoopShims().isSecurityEnabled()) {
@@ -201,7 +205,8 @@ public class CLIService extends CompositeService implements ICLIService {
    * @see org.apache.hive.service.cli.ICLIService#closeSession(org.apache.hive.service.cli.SessionHandle)
    */
   @Override
-  public void closeSession(SessionHandle sessionHandle) throws HiveSQLException {
+  public void closeSession(SessionHandle sessionHandle)
+      throws HiveSQLException {
     sessionManager.closeSession(sessionHandle);
     LOG.debug(sessionHandle + ": closeSession()");
   }

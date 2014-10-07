@@ -52,7 +52,7 @@ public class TestSessionGlobalInitFile extends TestCase {
    */
   private class FakeEmbeddedThriftBinaryCLIService extends ThriftBinaryCLIService {
     public FakeEmbeddedThriftBinaryCLIService(HiveConf hiveConf) {
-      super(new CLIService());
+      super(new CLIService(null));
       isEmbedded = true;
       cliService.init(hiveConf);
       cliService.start();
