@@ -77,6 +77,7 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
 
     case NOT_EQUALS: {
       selectivity = computeNotEqualitySelectivity(call);
+      break;
     }
 
     case LESS_THAN_OR_EQUAL:
