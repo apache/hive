@@ -48,6 +48,8 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Pattern;
 
+import javax.jdo.JDOException;
+
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -570,22 +572,50 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     /**
-     * create default database if it doesn't exist
+     * create default database if it doesn't exist.
+     *
+     * This is a potential contention when HiveServer2 using embedded metastore and Metastore
+     * Server try to concurrently invoke createDefaultDB. If one failed, JDOException was caught
+     * for one more time try, if failed again, simply ignored by warning, which meant another
+     * succeeds.
      *
      * @throws MetaException
      */
     private void createDefaultDB() throws MetaException {
       try {
         createDefaultDB_core(getMS());
+      } catch (JDOException e) {
+        LOG.warn("Retrying creating default database after error: " + e.getMessage(), e);
+        try {
+          createDefaultDB_core(getMS());
+        } catch (InvalidObjectException e1) {
+          throw new MetaException(e1.getMessage());
+        }
       } catch (InvalidObjectException e) {
         throw new MetaException(e.getMessage());
-      } catch (MetaException e) {
-        throw e;
       }
     }
 
-
+    /**
+     * create default roles if they don't exist.
+     *
+     * This is a potential contention when HiveServer2 using embedded metastore and Metastore
+     * Server try to concurrently invoke createDefaultRoles. If one failed, JDOException was caught
+     * for one more time try, if failed again, simply ignored by warning, which meant another
+     * succeeds.
+     *
+     * @throws MetaException
+     */
     private void createDefaultRoles() throws MetaException {
+      try {
+        createDefaultRoles_core();
+      } catch (JDOException e) {
+        LOG.warn("Retrying creating default roles after error: " + e.getMessage(), e);
+        createDefaultRoles_core();
+      }
+    }
+
+    private void createDefaultRoles_core() throws MetaException {
 
       RawStore ms = getMS();
       try {
@@ -622,7 +652,25 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
     }
 
+    /**
+     * add admin users if they don't exist.
+     *
+     * This is a potential contention when HiveServer2 using embedded metastore and Metastore
+     * Server try to concurrently invoke addAdminUsers. If one failed, JDOException was caught for
+     * one more time try, if failed again, simply ignored by warning, which meant another succeeds.
+     *
+     * @throws MetaException
+     */
     private void addAdminUsers() throws MetaException {
+      try {
+        addAdminUsers_core();
+      } catch (JDOException e) {
+        LOG.warn("Retrying adding admin users after error: " + e.getMessage(), e);
+        addAdminUsers_core();
+      }
+    }
+
+    private void addAdminUsers_core() throws MetaException {
 
       // now add pre-configured users to admin role
       String userStr = HiveConf.getVar(hiveConf,ConfVars.USERS_IN_ADMIN_ROLE,"").trim();
