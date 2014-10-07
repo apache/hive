@@ -212,7 +212,14 @@ public class ExprNodeDescUtils {
     if (source instanceof ExprNodeGenericFuncDesc) {
       // all children expression should be resolved
       ExprNodeGenericFuncDesc function = (ExprNodeGenericFuncDesc) source.clone();
-      function.setChildren(backtrack(function.getChildren(), current, terminal));
+      List<ExprNodeDesc> children = backtrack(function.getChildren(), current, terminal);
+      for (ExprNodeDesc child : children) {
+        if (child == null) {
+          // Could not resolve all of the function children, fail
+          return null;
+        }
+      }
+      function.setChildren(children);
       return function;
     }
     if (source instanceof ExprNodeColumnDesc) {
@@ -222,7 +229,11 @@ public class ExprNodeDescUtils {
     if (source instanceof ExprNodeFieldDesc) {
       // field expression should be resolved
       ExprNodeFieldDesc field = (ExprNodeFieldDesc) source.clone();
-      field.setDesc(backtrack(field.getDesc(), current, terminal));
+      ExprNodeDesc fieldDesc = backtrack(field.getDesc(), current, terminal);
+      if (fieldDesc == null) {
+        return null;
+      }
+      field.setDesc(fieldDesc);
       return field;
     }
     // constant or null expr, just return
