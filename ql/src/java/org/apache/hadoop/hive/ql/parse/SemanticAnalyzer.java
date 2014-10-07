@@ -235,6 +235,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.mapred.InputFormat;
 import org.eigenbase.rel.AggregateCall;
+import org.eigenbase.rel.AggregateRelBase;
 import org.eigenbase.rel.Aggregation;
 import org.eigenbase.rel.FilterRelBase;
 import org.eigenbase.rel.InvalidRelException;
@@ -249,6 +250,7 @@ import org.eigenbase.rel.metadata.CachingRelMetadataProvider;
 import org.eigenbase.rel.metadata.ChainedRelMetadataProvider;
 import org.eigenbase.rel.metadata.RelMetadataProvider;
 import org.eigenbase.rel.rules.ConvertMultiJoinRule;
+import org.eigenbase.rel.rules.FilterAggregateTransposeRule;
 import org.eigenbase.rel.rules.LoptOptimizeJoinRule;
 import org.eigenbase.rel.rules.MergeFilterRule;
 import org.eigenbase.rel.rules.PushFilterPastProjectRule;
@@ -12327,7 +12329,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           HiveProjectRel.DEFAULT_PROJECT_FACTORY), new PushFilterPastSetOpRule(
           HiveFilterRel.DEFAULT_FILTER_FACTORY), new MergeFilterRule(
           HiveFilterRel.DEFAULT_FILTER_FACTORY), HivePushFilterPastJoinRule.JOIN,
-          HivePushFilterPastJoinRule.FILTER_ON_JOIN);
+          HivePushFilterPastJoinRule.FILTER_ON_JOIN,
+          new FilterAggregateTransposeRule(
+              FilterRelBase.class,
+                    HiveFilterRel.DEFAULT_FILTER_FACTORY,
+                    AggregateRelBase.class));
 
       basePlan = hepPlan(basePlan, false, mdProvider, new TransitivePredicatesOnJoinRule(
           JoinRelBase.class, HiveFilterRel.DEFAULT_FILTER_FACTORY),
