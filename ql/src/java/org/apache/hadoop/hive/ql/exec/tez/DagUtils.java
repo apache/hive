@@ -971,7 +971,7 @@ public class DagUtils {
   public JobConf createConfiguration(HiveConf hiveConf) throws IOException {
     hiveConf.setBoolean("mapred.mapper.new-api", false);
 
-    JobConf conf = new JobConf(hiveConf);
+    JobConf conf = new JobConf(new TezConfiguration(hiveConf));
 
     conf.set("mapred.output.committer.class", NullOutputCommitter.class.getName());
 
