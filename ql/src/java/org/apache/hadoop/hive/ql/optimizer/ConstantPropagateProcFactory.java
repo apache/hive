@@ -29,6 +29,7 @@ import java.util.Stack;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
@@ -675,6 +676,21 @@ public final class ConstantPropagateProcFactory {
       if (colList != null) {
         for (int i = 0; i < colList.size(); i++) {
           ExprNodeDesc newCol = foldExpr(colList.get(i), constants, cppCtx, op, 0, false);
+          if (!(colList.get(i) instanceof ExprNodeConstantDesc) && newCol instanceof ExprNodeConstantDesc) {
+            // Lets try to store original column name, if this column got folded
+            // This is useful for optimizations like GroupByOptimizer
+            String colName = colList.get(i).getExprString();
+            if (HiveConf.getPositionFromInternalName(colName) == -1) {
+              // if its not an internal name, this is what we want.
+              ((ExprNodeConstantDesc)newCol).setFoldedFromCol(colName);
+            } else {
+              // If it was internal column, lets try to get name from columnExprMap
+              ExprNodeDesc desc = columnExprMap.get(colName);
+              if (desc instanceof ExprNodeConstantDesc) {
+                ((ExprNodeConstantDesc)newCol).setFoldedFromCol(((ExprNodeConstantDesc)desc).getFoldedFromCol());
+              }
+            }
+          }
           colList.set(i, newCol);
           if (columnExprMap != null) {
             columnExprMap.put(columnNames.get(i), newCol);

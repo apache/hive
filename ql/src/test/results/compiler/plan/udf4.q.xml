@@ -548,6 +548,9 @@
              <void method="put"> 
               <string>_col8</string> 
               <object id="ExprNodeConstantDesc0" class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+               <void property="foldedFromCol"> 
+                <string>sqrt(0.0)</string> 
+               </void> 
                <void property="typeInfo"> 
                 <object idref="PrimitiveTypeInfo0"/> 
                </void> 
@@ -563,6 +566,9 @@
              <void method="put"> 
               <string>_col6</string> 
               <object id="ExprNodeConstantDesc1" class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+               <void property="foldedFromCol"> 
+                <string>sqrt(1.0)</string> 
+               </void> 
                <void property="typeInfo"> 
                 <object idref="PrimitiveTypeInfo0"/> 
                </void> 
@@ -574,6 +580,9 @@
              <void method="put"> 
               <string>_col5</string> 
               <object id="ExprNodeConstantDesc2" class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+               <void property="foldedFromCol"> 
+                <string>floor((- 1.5))</string> 
+               </void> 
                <void property="typeInfo"> 
                 <object idref="PrimitiveTypeInfo1"/> 
                </void> 
@@ -585,6 +594,9 @@
              <void method="put"> 
               <string>_col4</string> 
               <object id="ExprNodeConstantDesc3" class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+               <void property="foldedFromCol"> 
+                <string>floor(1.5)</string> 
+               </void> 
                <void property="typeInfo"> 
                 <object idref="PrimitiveTypeInfo1"/> 
                </void> 
@@ -596,6 +608,9 @@
              <void method="put"> 
               <string>_col3</string> 
               <object id="ExprNodeConstantDesc4" class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+               <void property="foldedFromCol"> 
+                <string>floor(1.0)</string> 
+               </void> 
                <void property="typeInfo"> 
                 <object idref="PrimitiveTypeInfo1"/> 
                </void> 
@@ -607,6 +622,9 @@
              <void method="put"> 
               <string>_col2</string> 
               <object id="ExprNodeConstantDesc5" class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+               <void property="foldedFromCol"> 
+                <string>round((- 1.5))</string> 
+               </void> 
                <void property="typeInfo"> 
                 <object idref="PrimitiveTypeInfo0"/> 
                </void> 
@@ -618,6 +636,9 @@
              <void method="put"> 
               <string>_col1</string> 
               <object id="ExprNodeConstantDesc6" class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+               <void property="foldedFromCol"> 
+                <string>round(1.5)</string> 
+               </void> 
                <void property="typeInfo"> 
                 <object idref="PrimitiveTypeInfo0"/> 
                </void> 
@@ -629,6 +650,9 @@
              <void method="put"> 
               <string>_col9</string> 
               <object id="ExprNodeConstantDesc7" class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+               <void property="foldedFromCol"> 
+                <string>ceil(1.0)</string> 
+               </void> 
                <void property="typeInfo"> 
                 <object idref="PrimitiveTypeInfo1"/> 
                </void> 
@@ -672,6 +696,9 @@
              <void method="put"> 
               <string>_col12</string> 
               <object id="ExprNodeConstantDesc8" class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+               <void property="foldedFromCol"> 
+                <string>ceil(1.0)</string> 
+               </void> 
                <void property="typeInfo"> 
                 <object idref="PrimitiveTypeInfo1"/> 
                </void> 
@@ -683,6 +710,9 @@
              <void method="put"> 
               <string>_col11</string> 
               <object id="ExprNodeConstantDesc9" class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+               <void property="foldedFromCol"> 
+                <string>ceil((- 1.5))</string> 
+               </void> 
                <void property="typeInfo"> 
                 <object idref="PrimitiveTypeInfo1"/> 
                </void> 
@@ -694,6 +724,9 @@
              <void method="put"> 
               <string>_col10</string> 
               <object id="ExprNodeConstantDesc10" class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+               <void property="foldedFromCol"> 
+                <string>ceil(1.5)</string> 
+               </void> 
                <void property="typeInfo"> 
                 <object idref="PrimitiveTypeInfo1"/> 
                </void> 
@@ -705,6 +738,9 @@
              <void method="put"> 
               <string>_col17</string> 
               <object id="ExprNodeConstantDesc11" class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+               <void property="foldedFromCol"> 
+                <string>(1 + (- 2))</string> 
+               </void> 
                <void property="typeInfo"> 
                 <object idref="PrimitiveTypeInfo2"/> 
                </void> 
@@ -716,6 +752,9 @@
              <void method="put"> 
               <string>_col16</string> 
               <object id="ExprNodeConstantDesc12" class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+               <void property="foldedFromCol"> 
+                <string>(1 + 2)</string> 
+               </void> 
                <void property="typeInfo"> 
                 <object idref="PrimitiveTypeInfo2"/> 
                </void> 
@@ -727,6 +766,9 @@
              <void method="put"> 
               <string>_col15</string> 
               <object id="ExprNodeConstantDesc13" class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+               <void property="foldedFromCol"> 
+                <string>(- 3)</string> 
+               </void> 
                <void property="typeInfo"> 
                 <object idref="PrimitiveTypeInfo2"/> 
                </void> 
@@ -749,6 +791,9 @@
              <void method="put"> 
               <string>_col0</string> 
               <object id="ExprNodeConstantDesc15" class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+               <void property="foldedFromCol"> 
+                <string>round(1.0)</string> 
+               </void> 
                <void property="typeInfo"> 
                 <object idref="PrimitiveTypeInfo0"/> 
                </void> 
@@ -760,6 +805,9 @@
              <void method="put"> 
               <string>_col18</string> 
               <object id="ExprNodeConstantDesc16" class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+               <void property="foldedFromCol"> 
+                <string>(~ 1)</string> 
+               </void> 
                <void property="typeInfo"> 
                 <object idref="PrimitiveTypeInfo2"/> 
                </void> 

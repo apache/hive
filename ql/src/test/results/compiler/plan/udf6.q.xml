@@ -338,6 +338,9 @@
              <void method="put"> 
               <string>_col0</string> 
               <object id="ExprNodeConstantDesc0" class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+               <void property="foldedFromCol"> 
+                <string>concat(&apos;a&apos;, &apos;b&apos;)</string> 
+               </void> 
                <void property="typeInfo"> 
                 <object idref="PrimitiveTypeInfo0"/> 
                </void> 

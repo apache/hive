@@ -535,6 +535,9 @@
                 <void method="put"> 
                  <string>_col8</string> 
                  <object id="ExprNodeConstantDesc0" class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                  <void property="foldedFromCol"> 
+                   <string>(&apos;&apos; rlike &apos;.*&apos;)</string> 
+                  </void> 
                   <void property="typeInfo"> 
                    <object idref="PrimitiveTypeInfo0"/> 
                   </void> 
@@ -546,6 +549,9 @@
                 <void method="put"> 
                  <string>_col7</string> 
                  <object id="ExprNodeConstantDesc1" class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                  <void property="foldedFromCol"> 
+                   <string>(&apos;ab&apos; like &apos;a&apos;)</string> 
+                  </void> 
                   <void property="typeInfo"> 
                    <object idref="PrimitiveTypeInfo0"/> 
                   </void> 
@@ -557,6 +563,9 @@
                 <void method="put"> 
                  <string>_col6</string> 
                  <object id="ExprNodeConstantDesc2" class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                  <void property="foldedFromCol"> 
+                   <string>(&apos;ab&apos; like &apos;_a%&apos;)</string> 
+                  </void> 
                   <void property="typeInfo"> 
                    <object idref="PrimitiveTypeInfo0"/> 
                   </void> 
@@ -568,6 +577,9 @@
                 <void method="put"> 
                  <string>_col5</string> 
                  <object id="ExprNodeConstantDesc3" class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                  <void property="foldedFromCol"> 
+                   <string>(&apos;ab&apos; like &apos;\%\_&apos;)</string> 
+                  </void> 
                   <void property="typeInfo"> 
                    <object idref="PrimitiveTypeInfo0"/> 
                   </void> 
@@ -579,6 +591,9 @@
                 <void method="put"> 
                  <string>_col4</string> 
                  <object id="ExprNodeConstantDesc4" class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                  <void property="foldedFromCol"> 
+                   <string>(&apos;%_&apos; like &apos;\%\_&apos;)</string> 
+                  </void> 
                   <void property="typeInfo"> 
                    <object idref="PrimitiveTypeInfo0"/> 
                   </void> 
@@ -590,6 +605,9 @@
                 <void method="put"> 
                  <string>_col3</string> 
                  <object id="ExprNodeConstantDesc5" class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                  <void property="foldedFromCol"> 
+                   <string>(&apos;ab&apos; like &apos;%a_&apos;)</string> 
+                  </void> 
                   <void property="typeInfo"> 
                    <object idref="PrimitiveTypeInfo0"/> 
                   </void> 
@@ -601,6 +619,9 @@
                 <void method="put"> 
                  <string>_col2</string> 
                  <object id="ExprNodeConstantDesc6" class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                  <void property="foldedFromCol"> 
+                   <string>(&apos;ab&apos; like &apos;%a%&apos;)</string> 
+                  </void> 
                   <void property="typeInfo"> 
                    <object idref="PrimitiveTypeInfo0"/> 
                   </void> 
@@ -612,6 +633,9 @@
                 <void method="put"> 
                  <string>_col1</string> 
                  <object id="ExprNodeConstantDesc7" class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                  <void property="foldedFromCol"> 
+                   <string>(&apos;b&apos; like &apos;%a%&apos;)</string> 
+                  </void> 
                   <void property="typeInfo"> 
                    <object idref="PrimitiveTypeInfo0"/> 
                   </void> 
@@ -623,6 +647,9 @@
                 <void method="put"> 
                  <string>_col9</string> 
                  <object id="ExprNodeConstantDesc8" class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                  <void property="foldedFromCol"> 
+                   <string>(&apos;a&apos; rlike &apos;[ab]&apos;)</string> 
+                  </void> 
                   <void property="typeInfo"> 
                    <object idref="PrimitiveTypeInfo0"/> 
                   </void> 
@@ -634,6 +661,9 @@
                 <void method="put"> 
                  <string>_col13</string> 
                  <object id="ExprNodeConstantDesc9" class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                  <void property="foldedFromCol"> 
+                   <string>regexp_replace(&apos;abc&apos;, &apos;b&apos;, &apos;c&apos;)</string> 
+                  </void> 
                   <void property="typeInfo"> 
                    <object idref="PrimitiveTypeInfo1"/> 
                   </void> 
@@ -645,6 +675,9 @@
                 <void method="put"> 
                  <string>_col12</string> 
                  <object id="ExprNodeConstantDesc10" class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                  <void property="foldedFromCol"> 
+                   <string>(&apos;hadoop&apos; rlike &apos;o*&apos;)</string> 
+                  </void> 
                   <void property="typeInfo"> 
                    <object idref="PrimitiveTypeInfo0"/> 
                   </void> 
@@ -656,6 +689,9 @@
                 <void method="put"> 
                  <string>_col11</string> 
                  <object id="ExprNodeConstantDesc11" class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                  <void property="foldedFromCol"> 
+                   <string>(&apos;hadoop&apos; rlike &apos;[a-z]*&apos;)</string> 
+                  </void> 
                   <void property="typeInfo"> 
                    <object idref="PrimitiveTypeInfo0"/> 
                   </void> 
@@ -667,6 +703,9 @@
                 <void method="put"> 
                  <string>_col10</string> 
                  <object id="ExprNodeConstantDesc12" class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                  <void property="foldedFromCol"> 
+                   <string>(&apos;&apos; rlike &apos;[ab]&apos;)</string> 
+                  </void> 
                   <void property="typeInfo"> 
                    <object idref="PrimitiveTypeInfo0"/> 
                   </void> 
@@ -678,6 +717,9 @@
                 <void method="put"> 
                  <string>_col16</string> 
                  <object id="ExprNodeConstantDesc13" class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                  <void property="foldedFromCol"> 
+                   <string>regexp_replace(&apos;hadoop&apos;, &apos;(.)[a-z]*&apos;, &apos;$1ive&apos;)</string> 
+                  </void> 
                   <void property="typeInfo"> 
                    <object idref="PrimitiveTypeInfo1"/> 
                   </void> 
@@ -689,6 +731,9 @@
                 <void method="put"> 
                  <string>_col15</string> 
                  <object id="ExprNodeConstantDesc14" class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                  <void property="foldedFromCol"> 
+                   <string>regexp_replace(&apos;abbbb&apos;, &apos;bb&apos;, &apos;b&apos;)</string> 
+                  </void> 
                   <void property="typeInfo"> 
                    <object idref="PrimitiveTypeInfo1"/> 
                   </void> 
@@ -700,6 +745,9 @@
                 <void method="put"> 
                  <string>_col14</string> 
                  <object id="ExprNodeConstantDesc15" class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                  <void property="foldedFromCol"> 
+                   <string>regexp_replace(&apos;abc&apos;, &apos;z&apos;, &apos;a&apos;)</string> 
+                  </void> 
                   <void property="typeInfo"> 
                    <object idref="PrimitiveTypeInfo1"/> 
                   </void> 
@@ -711,6 +759,9 @@
                 <void method="put"> 
                  <string>_col0</string> 
                  <object id="ExprNodeConstantDesc16" class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+                  <void property="foldedFromCol"> 
+                   <string>(&apos;a&apos; like &apos;%a%&apos;)</string> 
+                  </void> 
                   <void property="typeInfo"> 
                    <object idref="PrimitiveTypeInfo0"/> 
                   </void> 
