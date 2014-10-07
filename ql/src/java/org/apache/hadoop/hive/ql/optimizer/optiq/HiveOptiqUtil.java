@@ -77,7 +77,8 @@ public class HiveOptiqUtil {
 
   public static boolean validateASTForCBO(ASTNode ast) {
     String astTree = ast.toStringTree();
-    String[] tokens = { "TOK_CHARSETLITERAL" };
+    // if any of following tokens are present in AST, bail out
+    String[] tokens = { "TOK_CHARSETLITERAL","TOK_TABLESPLITSAMPLE" };
     for (String token : tokens) {
       if (astTree.contains(token)) {
         return false;
