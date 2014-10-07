@@ -22,6 +22,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -86,6 +87,9 @@ public class Utils {
     // Use ZooKeeper for indirection while using dynamic service discovery
     static final String SERVICE_DISCOVERY_MODE_ZOOKEEPER = "zooKeeper";
     static final String ZOOKEEPER_NAMESPACE = "zooKeeperNamespace";
+    // Default namespace value on ZooKeeper.
+    // This value is used if the param "zooKeeperNamespace" is not specified in the JDBC Uri.
+    static final String ZOOKEEPER_DEFAULT_NAMESPACE = "hiveserver2";
 
     // Non-configurable params:
     // ZOOKEEPER_SESSION_TIMEOUT is not exposed as client configurable
@@ -367,14 +371,30 @@ public class Utils {
   private static String getAuthorities(String uri, JdbcConnectionParams connParams)
       throws JdbcUriParseException {
     String authorities;
-    // For a jdbc uri like: jdbc:hive2://host1:port1,host2:port2,host3:port3/
-    // Extract the uri host:port list starting after "jdbc:hive2://", till the 1st "/" or EOL
+    /**
+     * For a jdbc uri like:
+     * jdbc:hive2://<host1>:<port1>,<host2>:<port2>/dbName;sess_var_list?conf_list#var_list
+     * Extract the uri host:port list starting after "jdbc:hive2://",
+     * till the 1st "/" or "?" or "#" whichever comes first & in the given order
+     * Examples:
+     * jdbc:hive2://host1:port1,host2:port2,host3:port3/db;k1=v1?k2=v2#k3=v3
+     * jdbc:hive2://host1:port1,host2:port2,host3:port3/;k1=v1?k2=v2#k3=v3
+     * jdbc:hive2://host1:port1,host2:port2,host3:port3?k2=v2#k3=v3
+     * jdbc:hive2://host1:port1,host2:port2,host3:port3#k3=v3
+     */
     int fromIndex = Utils.URL_PREFIX.length();
-    int toIndex = uri.indexOf("/", fromIndex);
+    int toIndex = -1;
+    ArrayList<String> toIndexChars = new ArrayList<String>(Arrays.asList("/", "?", "#"));
+    for (String toIndexChar : toIndexChars) {
+      toIndex = uri.indexOf(toIndexChar, fromIndex);
+      if (toIndex > 0) {
+        break;
+      }
+    }
     if (toIndex < 0) {
       authorities = uri.substring(fromIndex);
     } else {
-      authorities = uri.substring(fromIndex, uri.indexOf("/", fromIndex));
+      authorities = uri.substring(fromIndex, toIndex);
     }
     return authorities;
   }

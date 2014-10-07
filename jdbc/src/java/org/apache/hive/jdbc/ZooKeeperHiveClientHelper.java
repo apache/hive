@@ -53,6 +53,9 @@ public class ZooKeeperHiveClientHelper {
     String zooKeeperEnsemble = connParams.getZooKeeperEnsemble();
     String zooKeeperNamespace =
         connParams.getSessionVars().get(JdbcConnectionParams.ZOOKEEPER_NAMESPACE);
+    if ((zooKeeperNamespace == null) || (zooKeeperNamespace.isEmpty())) {
+      zooKeeperNamespace = JdbcConnectionParams.ZOOKEEPER_DEFAULT_NAMESPACE;
+    }
     List<String> serverHosts;
     Random randomizer = new Random();
     String serverNode;
