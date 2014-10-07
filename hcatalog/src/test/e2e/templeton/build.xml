@@ -111,6 +111,7 @@
             <env key="USER_NAME" value="${test.user.name}"/>
             <env key="HARNESS_CONF" value="${basedir}/conf/default.conf"/>
             <env key="SECURE_MODE" value="${secure.mode}"/>
+            <env key="USER_REALM" value="${user.realm}"/>
             <env key="HADOOP_VERSION" value="${hadoopversion}"/>
             <arg value="./test_harness.pl"/>
             <arg line="${tests.to.run}"/>
@@ -148,6 +149,7 @@
             <env key="OTHER_USER_NAME" value="${test.other.user.name}"/>
             <env key="HARNESS_CONF" value="${basedir}/conf/default.conf"/>
             <env key="SECURE_MODE" value="${secure.mode}"/>
+            <env key="USER_REALM" value="${user.realm}"/>
             <env key="KEYTAB_DIR" value="${keytab.dir}"/>
             <arg value="./test_harness.pl"/>
             <arg line="${tests.to.run}"/>
@@ -186,7 +188,9 @@
             <env key="USER_NAME" value="${test.user.name}"/>
             <env key="DOAS_USER" value="${doas.user}"/>
             <env key="HARNESS_CONF" value="${basedir}/conf/default.conf"/>
+            <env key="USER_REALM" value="${user.realm}"/>
             <env key="SECURE_MODE" value="${secure.mode}"/>
+            <env key="USER_REALM" value="${user.realm}"/>
             <arg value="./test_harness.pl"/>
             <arg line="${tests.to.run}"/>
             <arg value="${basedir}/tests/doas.conf"/>
