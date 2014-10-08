@@ -240,9 +240,9 @@ public class HiveConf extends Configuration {
         "The compression codec and other options are determined from Hadoop config variables mapred.output.compress*"),
     COMPRESSINTERMEDIATECODEC("hive.intermediate.compression.codec", "", ""),
     COMPRESSINTERMEDIATETYPE("hive.intermediate.compression.type", "", ""),
-    BYTESPERREDUCER("hive.exec.reducers.bytes.per.reducer", (long) (1000 * 1000 * 1000),
-        "size per reducer.The default is 1G, i.e if the input size is 10G, it will use 10 reducers."),
-    MAXREDUCERS("hive.exec.reducers.max", 999,
+    BYTESPERREDUCER("hive.exec.reducers.bytes.per.reducer", (long) (256 * 1000 * 1000),
+        "size per reducer.The default is 256Mb, i.e if the input size is 1G, it will use 4 reducers."),
+    MAXREDUCERS("hive.exec.reducers.max", 1009,
         "max number of reducers will be used. If the one specified in the configuration parameter mapred.reduce.tasks is\n" +
         "negative, Hive will use this one as the max number of reducers when automatically determine number of reducers."),
     PREEXECHOOKS("hive.exec.pre.hooks", "",
