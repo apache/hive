@@ -72,8 +72,8 @@ import org.apache.hadoop.mapreduce.TaskType;
 import org.apache.hadoop.mapreduce.task.JobContextImpl;
 import org.apache.hadoop.mapreduce.task.TaskAttemptContextImpl;
 import org.apache.hadoop.net.NetUtils;
-import org.apache.hadoop.security.authentication.util.KerberosName;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.security.authentication.util.KerberosName;
 import org.apache.hadoop.util.Progressable;
 import org.apache.tez.test.MiniTezCluster;
 
@@ -90,16 +90,47 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   HadoopShims.MiniDFSShim cluster = null;
 
   final boolean zeroCopy;
+  final Method timelineClientGetDelTokMethod;
+  final Method timelineClientCreateMethod;
 
   public Hadoop23Shims() {
+    this.zeroCopy = getZeroCopy();
+    Class<?> tlClientClass = getTimeLineClientClass();
+    this.timelineClientGetDelTokMethod = getTimelineClientMethod(tlClientClass, "getDelegationToken");
+    this.timelineClientCreateMethod = getTimelineClientMethod(tlClientClass, "createTimelineClient");
+  }
+
+  private Class<?> getTimeLineClientClass() {
+    Class<?> tlClientClass = null;
+    try {
+      tlClientClass = Class.forName("org.apache.hadoop.yarn.client.api.TimelineClient");
+    } catch (ClassNotFoundException e) {
+      // this must be a pre 2.4.0 version of hadoop
+    }
+    return tlClientClass;
+  }
+
+  private Method getTimelineClientMethod(Class<?> tlClientClass, String methodName) {
+    if (tlClientClass == null) {
+      return null;
+    }
+    Method getDTokenMethod = null;
+    try {
+      getDTokenMethod = tlClientClass.getMethod(methodName, String.class);
+    } catch (Exception e) {
+      // this must be a pre 2.4.0/2.5.0 version of hadoop
+    }
+    return getDTokenMethod;
+  }
+
+  private boolean getZeroCopy() {
     boolean zcr = false;
     try {
-      Class.forName("org.apache.hadoop.fs.CacheFlag", false,
-          ShimLoader.class.getClassLoader());
+      Class.forName("org.apache.hadoop.fs.CacheFlag", false, ShimLoader.class.getClassLoader());
       zcr = true;
     } catch (ClassNotFoundException ce) {
     }
-    this.zeroCopy = zcr;
+    return zcr;
   }
 
   @Override
@@ -419,7 +450,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
                 Reporter.class);
         construct.setAccessible(true);
         newContext = (org.apache.hadoop.mapred.TaskAttemptContext) construct.newInstance(
-                new JobConf(conf), taskId, (Reporter) progressable);
+                new JobConf(conf), taskId, progressable);
       } catch (Exception e) {
         throw new RuntimeException(e);
       }
@@ -437,7 +468,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     public org.apache.hadoop.mapred.JobContext createJobContext(org.apache.hadoop.mapred.JobConf conf,
                                                                 org.apache.hadoop.mapreduce.JobID jobId, Progressable progressable) {
       return new org.apache.hadoop.mapred.JobContextImpl(
-              new JobConf(conf), jobId, (org.apache.hadoop.mapred.Reporter) progressable);
+              new JobConf(conf), jobId, progressable);
     }
 
     @Override
@@ -581,8 +612,8 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   }
 
   public class Hadoop23FileStatus implements HdfsFileStatus {
-    private FileStatus fileStatus;
-    private AclStatus aclStatus;
+    private final FileStatus fileStatus;
+    private final AclStatus aclStatus;
     public Hadoop23FileStatus(FileStatus fileStatus, AclStatus aclStatus) {
       this.fileStatus = fileStatus;
       this.aclStatus = aclStatus;
@@ -650,7 +681,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     public RemoteIterator<LocatedFileStatus> listLocatedStatus(final Path f)
       throws FileNotFoundException, IOException {
       return new RemoteIterator<LocatedFileStatus>() {
-        private RemoteIterator<LocatedFileStatus> stats =
+        private final RemoteIterator<LocatedFileStatus> stats =
             ProxyFileSystem23.super.listLocatedStatus(
                 ProxyFileSystem23.super.swizzleParamPath(f));
 
@@ -862,30 +893,44 @@ public class Hadoop23Shims extends HadoopShimsSecure {
    */
   public class KerberosNameShim implements HadoopShimsSecure.KerberosNameShim {
 
-    private KerberosName kerberosName;
+    private final KerberosName kerberosName;
 
     public KerberosNameShim(String name) {
       kerberosName = new KerberosName(name);
     }
 
+    @Override
     public String getDefaultRealm() {
       return kerberosName.getDefaultRealm();
     }
 
+    @Override
     public String getServiceName() {
       return kerberosName.getServiceName();
     }
 
+    @Override
     public String getHostName() {
       return kerberosName.getHostName();
     }
 
+    @Override
     public String getRealm() {
       return kerberosName.getRealm();
     }
 
+    @Override
     public String getShortName() throws IOException {
       return kerberosName.getShortName();
     }
+  }
+
+  @Override
+  public Object getTimelineDelToken(String renewer) throws Exception {
+    if (timelineClientGetDelTokMethod == null || timelineClientCreateMethod == null) {
+      return null;
+    }
+    Object timelineClient = timelineClientCreateMethod.invoke(null);
+    return timelineClientCreateMethod.invoke(timelineClient, renewer);
   }
 }

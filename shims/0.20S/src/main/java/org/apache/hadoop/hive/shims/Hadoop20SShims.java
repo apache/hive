@@ -450,7 +450,7 @@ public class Hadoop20SShims extends HadoopShimsSecure {
   }
 
   public class Hadoop20SFileStatus implements HdfsFileStatus {
-    private FileStatus fileStatus;
+    private final FileStatus fileStatus;
     public Hadoop20SFileStatus(FileStatus fileStatus) {
       this.fileStatus = fileStatus;
     }
@@ -561,30 +561,41 @@ public class Hadoop20SShims extends HadoopShimsSecure {
    */
   public class KerberosNameShim implements HadoopShimsSecure.KerberosNameShim {
 
-    private KerberosName kerberosName;
+    private final KerberosName kerberosName;
 
     public KerberosNameShim(String name) {
       kerberosName = new KerberosName(name);
     }
 
+    @Override
     public String getDefaultRealm() {
       return kerberosName.getDefaultRealm();
     }
 
+    @Override
     public String getServiceName() {
       return kerberosName.getServiceName();
     }
 
+    @Override
     public String getHostName() {
       return kerberosName.getHostName();
     }
 
+    @Override
     public String getRealm() {
       return kerberosName.getRealm();
     }
 
+    @Override
     public String getShortName() throws IOException {
       return kerberosName.getShortName();
     }
+  }
+
+  @Override
+  public Object getTimelineDelToken(String renewer) throws Exception {
+    // not supported
+    return null;
   }
 }

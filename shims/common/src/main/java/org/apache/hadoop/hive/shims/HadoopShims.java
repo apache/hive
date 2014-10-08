@@ -258,6 +258,17 @@ public interface HadoopShims {
   public String addServiceToToken(String tokenStr, String tokenService)
       throws IOException;
 
+
+  /**
+   * Calls TimelineClient.getDelegationToken(renewer) if the class and method
+   * are available in the version of hadoop in use.
+   * @param renewer
+   * @return Token object from above call. If the class/method are not present in current
+   * hadoop version, it returns null
+   * @throws Exception
+   */
+  Object getTimelineDelToken(String renewer) throws Exception;
+
   enum JobTrackerState { INITIALIZING, RUNNING };
 
   /**
