@@ -937,7 +937,7 @@ public class Hadoop20Shims implements HadoopShims {
   }
 
   @Override
-  public Object getTimelineDelToken(String renewer) throws Exception {
+  public Object getTimelineDelToken(Configuration conf, String renewer) throws Exception {
     // Not supported
     return null;
   }

@@ -96,8 +96,8 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   public Hadoop23Shims() {
     this.zeroCopy = getZeroCopy();
     Class<?> tlClientClass = getTimeLineClientClass();
-    this.timelineClientGetDelTokMethod = getTimelineClientMethod(tlClientClass, "getDelegationToken");
-    this.timelineClientCreateMethod = getTimelineClientMethod(tlClientClass, "createTimelineClient");
+    this.timelineClientGetDelTokMethod = getDelegationTokenMethod(tlClientClass);
+    this.timelineClientCreateMethod = getTLClientCreateMethod(tlClientClass);
   }
 
   private Class<?> getTimeLineClientClass() {
@@ -106,19 +106,35 @@ public class Hadoop23Shims extends HadoopShimsSecure {
       tlClientClass = Class.forName("org.apache.hadoop.yarn.client.api.TimelineClient");
     } catch (ClassNotFoundException e) {
       // this must be a pre 2.4.0 version of hadoop
+      System.err.println(org.apache.hadoop.util.StringUtils.stringifyException(e));
     }
     return tlClientClass;
   }
 
-  private Method getTimelineClientMethod(Class<?> tlClientClass, String methodName) {
+  private Method getTLClientCreateMethod(Class<?> tlClientClass) {
+    if (tlClientClass == null) {
+      return null;
+    }
+    Method getTLCreateMethod = null;
+    try {
+      getTLCreateMethod = tlClientClass.getMethod("createTimelineClient");
+    } catch (Exception e) {
+      // this must be a pre 2.4.0/2.5.0 version of hadoop
+      System.err.println(org.apache.hadoop.util.StringUtils.stringifyException(e));
+    }
+    return getTLCreateMethod;
+  }
+
+  private Method getDelegationTokenMethod(Class<?> tlClientClass) {
     if (tlClientClass == null) {
       return null;
     }
     Method getDTokenMethod = null;
     try {
-      getDTokenMethod = tlClientClass.getMethod(methodName, String.class);
+      getDTokenMethod = tlClientClass.getMethod("getDelegationToken", String.class);
     } catch (Exception e) {
       // this must be a pre 2.4.0/2.5.0 version of hadoop
+      System.err.println(org.apache.hadoop.util.StringUtils.stringifyException(e));
     }
     return getDTokenMethod;
   }
@@ -926,11 +942,16 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   }
 
   @Override
-  public Object getTimelineDelToken(String renewer) throws Exception {
+  public Object getTimelineDelToken(Configuration conf, String renewer) throws Exception {
     if (timelineClientGetDelTokMethod == null || timelineClientCreateMethod == null) {
       return null;
     }
     Object timelineClient = timelineClientCreateMethod.invoke(null);
-    return timelineClientCreateMethod.invoke(timelineClient, renewer);
+    // the following methods are going to be present if the ones we have looked up are there
+    ReflectionUtils.invokeMethod(timelineClient, "init", conf);
+    ReflectionUtils.invokeMethod(timelineClient, "start");
+    Object delegationToken = timelineClientGetDelTokMethod.invoke(timelineClient, renewer);
+    ReflectionUtils.invokeMethod(timelineClient, "stop");
+    return delegationToken;
   }
 }

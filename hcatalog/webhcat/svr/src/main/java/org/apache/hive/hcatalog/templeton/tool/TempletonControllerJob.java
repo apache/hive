@@ -95,6 +95,7 @@ public class TempletonControllerJob extends Configured implements Tool, JobSubmi
    * Enqueue the job and print out the job id for later collection.
    * @see org.apache.hive.hcatalog.templeton.CompleteDelegator
    */
+
   @Override
   public int run(String[] args) throws IOException, InterruptedException, ClassNotFoundException,
           TException {
@@ -126,10 +127,14 @@ public class TempletonControllerJob extends Configured implements Tool, JobSubmi
     Token<? extends TokenIdentifier> tldt;
     try {
       tldt = (Token<? extends TokenIdentifier>) ShimLoader.getHadoopShims().getTimelineDelToken(
-          "timeline token");
+          conf, "timeline token");
     } catch (Exception e) {
       throw new IOException(e.getMessage(), e);
     }
+    if(tldt == null) {
+      throw new IOException("tldt is null");
+    }
+    LOG.error("TLDT" + tldt);
     job.getCredentials().addToken(new Text("timeline token"), tldt);
 
     Token<? extends TokenIdentifier> mrdt = jc.getDelegationToken(new Text("mr token"));

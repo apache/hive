@@ -594,7 +594,7 @@ public class Hadoop20SShims extends HadoopShimsSecure {
   }
 
   @Override
-  public Object getTimelineDelToken(String renewer) throws Exception {
+  public Object getTimelineDelToken(Configuration conf, String renewer) throws Exception {
     // not supported
     return null;
   }
