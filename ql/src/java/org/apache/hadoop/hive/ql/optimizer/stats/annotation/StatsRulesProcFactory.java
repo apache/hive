@@ -42,7 +42,6 @@ import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
-import org.apache.hadoop.hive.ql.exec.tez.DagUtils;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
@@ -889,16 +888,12 @@ public class StatsRulesProcFactory {
       GroupByDesc.Mode mode = desc.getMode();
 
       if (mode.equals(GroupByDesc.Mode.HASH)) {
-        float hashAggMem = conf.getFloatVar(
-            HiveConf.ConfVars.HIVEMAPAGGRHASHMEMORY);
-        float hashAggMaxThreshold = conf.getFloatVar(
-            HiveConf.ConfVars.HIVEMAPAGGRMEMORYTHRESHOLD);
+        float hashAggMem = conf.getFloatVar(HiveConf.ConfVars.HIVEMAPAGGRHASHMEMORY);
+        float hashAggMaxThreshold = conf.getFloatVar(HiveConf.ConfVars.HIVEMAPAGGRMEMORYTHRESHOLD);
 
-        // get memory for container. May be use mapreduce.map.java.opts instead?
-        long totalMemory =
-            DagUtils.getContainerResource(conf).getMemory() * 1000L * 1000L;
-        long maxMemHashAgg = Math
-            .round(totalMemory * hashAggMem * hashAggMaxThreshold);
+        // get available map memory
+        long totalMemory = StatsUtils.getAvailableMemory(conf) * 1000L * 1000L;
+        long maxMemHashAgg = Math.round(totalMemory * hashAggMem * hashAggMaxThreshold);
 
         // estimated number of rows will be product of NDVs
         long numEstimatedRows = 1;
