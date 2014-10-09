@@ -60,7 +60,6 @@ if [%1]==[hiveserver2_help] goto :hiveserver2_help
 if [%1]==[hiveserver2_catservice] goto :hiveserver2_catservice
 
 :hiveserver2
-  echo "Starting Hive Thrift Server"
 
   @rem hadoop 20 or newer - skip the aux_jars option and hiveconf
   call %HIVE_BIN_PATH%\ext\util\execHiveCmd.cmd %CLASS%
