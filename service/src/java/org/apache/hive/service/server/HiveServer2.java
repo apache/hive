@@ -19,7 +19,15 @@
 package org.apache.hive.service.server;
 
 import java.nio.charset.Charset;
+import java.util.List;
+import java.util.Properties;
 
+import org.apache.commons.cli.GnuParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.OptionBuilder;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.LogUtils;
@@ -31,7 +39,6 @@ import org.apache.hadoop.hive.ql.util.ZooKeeperHiveHelper;
 import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.hive.common.util.HiveVersionInfo;
 import org.apache.hive.service.CompositeService;
-import org.apache.hive.service.ServiceException;
 import org.apache.hive.service.cli.CLIService;
 import org.apache.hive.service.cli.thrift.ThriftBinaryCLIService;
 import org.apache.hive.service.cli.thrift.ThriftCLIService;
@@ -124,12 +131,12 @@ public class HiveServer2 extends CompositeService {
       }
     }
     // Create a znode under the rootNamespace parent for this instance of the server
-    // Znode name: server-host:port-versionInfo-sequence
+    // Znode name: serverUri=host:port;version=versionInfo;sequence=sequenceNumber
     try {
       String znodePath =
           ZooKeeperHiveHelper.ZOOKEEPER_PATH_SEPARATOR + rootNamespace
-              + ZooKeeperHiveHelper.ZOOKEEPER_PATH_SEPARATOR + "server-" + instanceURI + "-"
-              + HiveVersionInfo.getVersion() + "-";
+              + ZooKeeperHiveHelper.ZOOKEEPER_PATH_SEPARATOR + "serverUri=" + instanceURI + ";"
+              + "version=" + HiveVersionInfo.getVersion() + ";" + "sequence=";
       znodePath =
           zooKeeperClient.create(znodePath, znodeDataUTF8, Ids.OPEN_ACL_UNSAFE,
               CreateMode.EPHEMERAL_SEQUENTIAL);
@@ -223,6 +230,7 @@ public class HiveServer2 extends CompositeService {
   private static void startHiveServer2() throws Throwable {
     long attempts = 0, maxAttempts = 1;
     while (true) {
+      LOG.info("Starting HiveServer2");
       HiveConf hiveConf = new HiveConf();
       maxAttempts = hiveConf.getLongVar(HiveConf.ConfVars.HIVE_SERVER2_MAX_START_ATTEMPTS);
       HiveServer2 server = null;
@@ -266,31 +274,203 @@ public class HiveServer2 extends CompositeService {
     }
   }
 
+  /**
+   * Remove all znodes corresponding to the given version number from ZooKeeper
+   *
+   * @param versionNumber
+   * @throws Exception
+   */
+  static void deleteServerInstancesFromZooKeeper(String versionNumber) throws Exception {
+    HiveConf hiveConf = new HiveConf();
+    int zooKeeperSessionTimeout =
+        hiveConf.getIntVar(HiveConf.ConfVars.HIVE_ZOOKEEPER_SESSION_TIMEOUT);
+    String zooKeeperEnsemble = ZooKeeperHiveHelper.getQuorumServers(hiveConf);
+    String rootNamespace = hiveConf.getVar(HiveConf.ConfVars.HIVE_SERVER2_ZOOKEEPER_NAMESPACE);
+    ZooKeeper zooKeeperClient =
+        new ZooKeeper(zooKeeperEnsemble, zooKeeperSessionTimeout,
+            new ZooKeeperHiveHelper.DummyWatcher());
+    // Get all znode paths
+    List<String> znodePaths =
+        zooKeeperClient.getChildren(ZooKeeperHiveHelper.ZOOKEEPER_PATH_SEPARATOR + rootNamespace,
+            false);
+    // Now for each path that is for the given versionNumber, delete the znode from ZooKeeper
+    for (String znodePath : znodePaths) {
+      if (znodePath.contains("version=" + versionNumber + ";")) {
+        zooKeeperClient.delete(ZooKeeperHiveHelper.ZOOKEEPER_PATH_SEPARATOR + rootNamespace
+            + ZooKeeperHiveHelper.ZOOKEEPER_PATH_SEPARATOR + znodePath, -1);
+      }
+    }
+  }
+
   public static void main(String[] args) {
     HiveConf.setLoadHiveServer2Config(true);
     try {
       ServerOptionsProcessor oproc = new ServerOptionsProcessor("hiveserver2");
-      if (!oproc.process(args)) {
-        System.err.println("Error starting HiveServer2 with given arguments");
-        System.exit(-1);
-      }
+      ServerOptionsProcessorResponse oprocResponse = oproc.parse(args);
 
       // NOTE: It is critical to do this here so that log4j is reinitialized
       // before any of the other core hive classes are loaded
       String initLog4jMessage = LogUtils.initHiveLog4j();
       LOG.debug(initLog4jMessage);
-
       HiveStringUtils.startupShutdownMessage(HiveServer2.class, args, LOG);
-      // log debug message from "oproc" after log4j initialize properly
+
+      // Log debug message from "oproc" after log4j initialize properly
       LOG.debug(oproc.getDebugMessage().toString());
 
-      startHiveServer2();
+      // Call the executor which will execute the appropriate command based on the parsed options
+      oprocResponse.getServerOptionsExecutor().execute();
     } catch (LogInitializationException e) {
       LOG.error("Error initializing log: " + e.getMessage(), e);
       System.exit(-1);
-    } catch (Throwable t) {
-      LOG.fatal("Error starting HiveServer2", t);
-      System.exit(-1);
+    }
+  }
+
+  /**
+   * ServerOptionsProcessor.
+   * Process arguments given to HiveServer2 (-hiveconf property=value)
+   * Set properties in System properties
+   * Create an appropriate response object,
+   * which has executor to execute the appropriate command based on the parsed options.
+   */
+  static class ServerOptionsProcessor {
+    private final Options options = new Options();
+    private org.apache.commons.cli.CommandLine commandLine;
+    private final String serverName;
+    private StringBuilder debugMessage = new StringBuilder();
+
+    @SuppressWarnings("static-access")
+    ServerOptionsProcessor(String serverName) {
+      this.serverName = serverName;
+      // -hiveconf x=y
+      options.addOption(OptionBuilder
+          .withValueSeparator()
+          .hasArgs(2)
+          .withArgName("property=value")
+          .withLongOpt("hiveconf")
+          .withDescription("Use value for given property")
+          .create());
+      // -deregister <versionNumber>
+      options.addOption(OptionBuilder
+          .hasArgs(1)
+          .withArgName("versionNumber")
+          .withLongOpt("deregister")
+          .withDescription("Deregister all instances of given version from dynamic service discovery")
+          .create());
+      options.addOption(new Option("H", "help", false, "Print help information"));
+    }
+
+    ServerOptionsProcessorResponse parse(String[] argv) {
+      try {
+        commandLine = new GnuParser().parse(options, argv);
+        // Process --hiveconf
+        // Get hiveconf param values and set the System property values
+        Properties confProps = commandLine.getOptionProperties("hiveconf");
+        for (String propKey : confProps.stringPropertyNames()) {
+          // save logging message for log4j output latter after log4j initialize properly
+          debugMessage.append("Setting " + propKey + "=" + confProps.getProperty(propKey) + ";\n");
+          System.setProperty(propKey, confProps.getProperty(propKey));
+        }
+
+        // Process --help
+        if (commandLine.hasOption('H')) {
+          return new ServerOptionsProcessorResponse(new HelpOptionExecutor(serverName, options));
+        }
+
+        // Process --deregister
+        if (commandLine.hasOption("deregister")) {
+          return new ServerOptionsProcessorResponse(new DeregisterOptionExecutor(
+              commandLine.getOptionValue("deregister")));
+        }
+      } catch (ParseException e) {
+        // Error out & exit - we were not able to parse the args successfully
+        System.err.println("Error starting HiveServer2 with given arguments: ");
+        System.err.println(e.getMessage());
+        System.exit(-1);
+      }
+      // Default executor, when no option is specified
+      return new ServerOptionsProcessorResponse(new StartOptionExecutor());
+    }
+
+    StringBuilder getDebugMessage() {
+      return debugMessage;
+    }
+  }
+
+  /**
+   * The response sent back from {@link ServerOptionsProcessor#parse(String[])}
+   */
+  static class ServerOptionsProcessorResponse {
+    private ServerOptionsExecutor serverOptionsExecutor;
+
+    ServerOptionsProcessorResponse(ServerOptionsExecutor serverOptionsExecutor) {
+      this.serverOptionsExecutor = serverOptionsExecutor;
+    }
+
+    ServerOptionsExecutor getServerOptionsExecutor() {
+      return serverOptionsExecutor;
+    }
+  }
+
+  /**
+   * The executor interface for running the appropriate HiveServer2 command based on parsed options
+   */
+  static interface ServerOptionsExecutor {
+    public void execute();
+  }
+
+  /**
+   * HelpOptionExecutor: executes the --help option by printing out the usage
+   */
+  static class HelpOptionExecutor implements ServerOptionsExecutor {
+    private final Options options;
+    private final String serverName;
+
+    HelpOptionExecutor(String serverName, Options options) {
+      this.options = options;
+      this.serverName = serverName;
+    }
+
+    public void execute() {
+      new HelpFormatter().printHelp(serverName, options);
+      System.exit(0);
+    }
+  }
+
+  /**
+   * StartOptionExecutor: starts HiveServer2.
+   * This is the default executor, when no option is specified.
+   */
+  static class StartOptionExecutor implements ServerOptionsExecutor {
+    public void execute() {
+      try {
+        startHiveServer2();
+      } catch (Throwable t) {
+        LOG.fatal("Error starting HiveServer2", t);
+        System.exit(-1);
+      }
+    }
+  }
+
+  /**
+   * DeregisterOptionExecutor: executes the --deregister option by
+   * deregistering all HiveServer2 instances from ZooKeeper of a specific version.
+   */
+  static class DeregisterOptionExecutor implements ServerOptionsExecutor {
+    private final String versionNumber;
+
+    DeregisterOptionExecutor(String versionNumber) {
+      this.versionNumber = versionNumber;
+    }
+
+    public void execute() {
+      try {
+        deleteServerInstancesFromZooKeeper(versionNumber);
+      } catch (Exception e) {
+        LOG.fatal("Error deregistering HiveServer2 instances for version: " + versionNumber
+            + " from ZooKeeper", e);
+        System.exit(-1);
+      }
+      System.exit(0);
     }
   }
 }
