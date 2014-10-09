@@ -10048,14 +10048,19 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     Map<String, List<String>> tableToColumnAccessMap = columnAccessInfo.getTableToColumnAccessMap();
     if (tableToColumnAccessMap != null && !tableToColumnAccessMap.isEmpty()) {
       for(ReadEntity entity: inputs) {
+        List<String> cols;
         switch (entity.getType()) {
           case TABLE:
-            entity.getAccessedColumns().addAll(
-                tableToColumnAccessMap.get(entity.getTable().getCompleteName()));
+            cols = tableToColumnAccessMap.get(entity.getTable().getCompleteName());
+            if (cols != null && !cols.isEmpty()) {
+              entity.getAccessedColumns().addAll(cols);
+            }
             break;
           case PARTITION:
-            entity.getAccessedColumns().addAll(
-                tableToColumnAccessMap.get(entity.getPartition().getTable().getCompleteName()));
+            cols = tableToColumnAccessMap.get(entity.getPartition().getTable().getCompleteName());
+            if (cols != null && !cols.isEmpty()) {
+              entity.getAccessedColumns().addAll(cols);
+            }
             break;
           default:
             // no-op
