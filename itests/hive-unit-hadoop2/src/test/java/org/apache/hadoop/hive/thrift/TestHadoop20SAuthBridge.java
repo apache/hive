@@ -1,3 +1,4 @@
+package org.apache.hadoop.hive.thrift;
 /**
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -16,7 +17,6 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.thrift;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
