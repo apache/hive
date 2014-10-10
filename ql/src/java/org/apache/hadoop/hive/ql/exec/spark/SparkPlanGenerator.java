@@ -74,27 +74,30 @@ public class SparkPlanGenerator {
   }
 
   public SparkPlan generate(SparkWork sparkWork) throws Exception {
-    SparkPlan result = new SparkPlan();
-    Map<BaseWork, SparkTran> createdTransMap = new HashMap<BaseWork, SparkTran>();
+    SparkPlan sparkPlan = new SparkPlan();
+    Map<BaseWork, SparkTran> workToTranMap = new HashMap<BaseWork, SparkTran>();
 
     for (BaseWork work : sparkWork.getAllWork()) {
       SparkTran tran;
       if (work instanceof MapWork) {
-        JavaPairRDD<HiveKey, BytesWritable> inputRDD = generateRDD((MapWork)work);
+        MapInput mapInput = generateMapInput((MapWork)work);
+        sparkPlan.addTran(mapInput);
         tran = generate(work, null);
-        result.addInput(tran, inputRDD);
+        sparkPlan.addTran(tran);
+        sparkPlan.connect(mapInput, tran);
       } else {
         List<BaseWork> parentWorks = sparkWork.getParents(work);
         tran = generate(work, sparkWork.getEdgeProperty(parentWorks.get(0), work));
+        sparkPlan.addTran(tran);
         for (BaseWork parentWork : parentWorks) {
-          SparkTran parentTran = createdTransMap.get(parentWork);
-          result.connect(parentTran, tran);
+          SparkTran parentTran = workToTranMap.get(parentWork);
+          sparkPlan.connect(parentTran, tran);
         }
       }
-      createdTransMap.put(work, tran);
+      workToTranMap.put(work, tran);
     }
 
-    return result;
+    return sparkPlan;
   }
 
   private Class getInputFormat(JobConf jobConf, MapWork mWork) throws HiveException {
@@ -144,13 +147,14 @@ public class SparkPlanGenerator {
     }
   }
 
-  private JavaPairRDD<HiveKey, BytesWritable> generateRDD(MapWork mapWork)
+  private MapInput generateMapInput(MapWork mapWork)
       throws Exception {
     JobConf jobConf = cloneJobConf(mapWork);
     Class ifClass = getInputFormat(jobConf, mapWork);
 
-    return sc.hadoopRDD(jobConf, ifClass, WritableComparable.class,
-        Writable.class);
+    JavaPairRDD<HiveKey, BytesWritable> hadoopRDD = sc.hadoopRDD(jobConf, ifClass,
+        WritableComparable.class, Writable.class);
+    return new MapInput(hadoopRDD);
   }
 
   private SparkShuffler generate(SparkEdgeProperty edge) {
