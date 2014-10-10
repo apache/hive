@@ -1,0 +1,121 @@
+PREHOOK: query: explain select sum(t1.td) from (select  v1.csmallint as tsi, v1.cdouble as td from alltypesorc v1, alltypesorc v2 where v1.ctinyint=v2.ctinyint) t1 join alltypesorc v3 on t1.tsi=v3.csmallint
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select sum(t1.td) from (select  v1.csmallint as tsi, v1.cdouble as td from alltypesorc v1, alltypesorc v2 where v1.ctinyint=v2.ctinyint) t1 join alltypesorc v3 on t1.tsi=v3.csmallint
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (GROUP PARTITION-LEVEL SORT), Reducer 5 (GROUP PARTITION-LEVEL SORT)
+        Reducer 3 <- Reducer 2 (GROUP)
+        Reducer 5 <- Map 4 (GROUP PARTITION-LEVEL SORT), Map 6 (GROUP PARTITION-LEVEL SORT)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: v3
+                  Filter Operator
+                    predicate: csmallint is not null (type: boolean)
+                    Reduce Output Operator
+                      key expressions: csmallint (type: smallint)
+                      sort order: +
+                      Map-reduce partition columns: csmallint (type: smallint)
+            Execution mode: vectorized
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: v1
+                  Filter Operator
+                    predicate: (ctinyint is not null and csmallint is not null) (type: boolean)
+                    Reduce Output Operator
+                      key expressions: ctinyint (type: tinyint)
+                      sort order: +
+                      Map-reduce partition columns: ctinyint (type: tinyint)
+                      value expressions: csmallint (type: smallint), cdouble (type: double)
+            Execution mode: vectorized
+        Map 6 
+            Map Operator Tree:
+                TableScan
+                  alias: v2
+                  Filter Operator
+                    predicate: ctinyint is not null (type: boolean)
+                    Reduce Output Operator
+                      key expressions: ctinyint (type: tinyint)
+                      sort order: +
+                      Map-reduce partition columns: ctinyint (type: tinyint)
+            Execution mode: vectorized
+        Reducer 2 
+            Reduce Operator Tree:
+              Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                condition expressions:
+                  0 {VALUE._col0}
+                  1 
+                outputColumnNames: _col1
+                Select Operator
+                  expressions: _col1 (type: double)
+                  outputColumnNames: _col1
+                  Group By Operator
+                    aggregations: sum(_col1)
+                    mode: hash
+                    outputColumnNames: _col0
+                    Reduce Output Operator
+                      sort order: 
+                      value expressions: _col0 (type: double)
+        Reducer 3 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Select Operator
+                  expressions: _col0 (type: double)
+                  outputColumnNames: _col0
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+        Reducer 5 
+            Reduce Operator Tree:
+              Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                condition expressions:
+                  0 {KEY.reducesinkkey0} {VALUE._col0} {VALUE._col4}
+                  1 {KEY.reducesinkkey0}
+                outputColumnNames: _col0, _col1, _col5, _col15
+                Filter Operator
+                  predicate: (_col0 = _col15) (type: boolean)
+                  Select Operator
+                    expressions: _col1 (type: smallint), _col5 (type: double)
+                    outputColumnNames: _col0, _col1
+                    Reduce Output Operator
+                      key expressions: _col0 (type: smallint)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: smallint)
+                      value expressions: _col1 (type: double)
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select sum(t1.td) from (select  v1.csmallint as tsi, v1.cdouble as td from alltypesorc v1, alltypesorc v2 where v1.ctinyint=v2.ctinyint) t1 join alltypesorc v3 on t1.tsi=v3.csmallint
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select sum(t1.td) from (select  v1.csmallint as tsi, v1.cdouble as td from alltypesorc v1, alltypesorc v2 where v1.ctinyint=v2.ctinyint) t1 join alltypesorc v3 on t1.tsi=v3.csmallint
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+6.065190932485957E11
