@@ -1,0 +1,132 @@
+PREHOOK: query: explain 
+select count(*) from (select c.ctinyint 
+from alltypesorc c
+left outer join alltypesorc cd
+  on cd.cint = c.cint 
+left outer join alltypesorc hd
+  on hd.ctinyint = c.ctinyint
+) t1
+PREHOOK: type: QUERY
+POSTHOOK: query: explain 
+select count(*) from (select c.ctinyint 
+from alltypesorc c
+left outer join alltypesorc cd
+  on cd.cint = c.cint 
+left outer join alltypesorc hd
+  on hd.ctinyint = c.ctinyint
+) t1
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (GROUP PARTITION-LEVEL SORT), Reducer 5 (GROUP PARTITION-LEVEL SORT)
+        Reducer 3 <- Reducer 2 (GROUP)
+        Reducer 5 <- Map 4 (GROUP PARTITION-LEVEL SORT), Map 6 (GROUP PARTITION-LEVEL SORT)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: hd
+                  Reduce Output Operator
+                    key expressions: ctinyint (type: tinyint)
+                    sort order: +
+                    Map-reduce partition columns: ctinyint (type: tinyint)
+            Execution mode: vectorized
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: c
+                  Reduce Output Operator
+                    key expressions: cint (type: int)
+                    sort order: +
+                    Map-reduce partition columns: cint (type: int)
+                    value expressions: ctinyint (type: tinyint)
+            Execution mode: vectorized
+        Map 6 
+            Map Operator Tree:
+                TableScan
+                  alias: cd
+                  Reduce Output Operator
+                    key expressions: cint (type: int)
+                    sort order: +
+                    Map-reduce partition columns: cint (type: int)
+            Execution mode: vectorized
+        Reducer 2 
+            Reduce Operator Tree:
+              Join Operator
+                condition map:
+                     Left Outer Join0 to 1
+                condition expressions:
+                  0 
+                  1 
+                Select Operator
+                  Group By Operator
+                    aggregations: count()
+                    mode: hash
+                    outputColumnNames: _col0
+                    Reduce Output Operator
+                      sort order: 
+                      value expressions: _col0 (type: bigint)
+        Reducer 3 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Select Operator
+                  expressions: _col0 (type: bigint)
+                  outputColumnNames: _col0
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+        Reducer 5 
+            Reduce Operator Tree:
+              Join Operator
+                condition map:
+                     Left Outer Join0 to 1
+                condition expressions:
+                  0 {VALUE._col0}
+                  1 
+                outputColumnNames: _col0
+                Reduce Output Operator
+                  key expressions: _col0 (type: tinyint)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: tinyint)
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(*) from (select c.ctinyint
+from alltypesorc c
+left outer join alltypesorc cd
+  on cd.cint = c.cint 
+left outer join alltypesorc hd
+  on hd.ctinyint = c.ctinyint
+) t1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from (select c.ctinyint
+from alltypesorc c
+left outer join alltypesorc cd
+  on cd.cint = c.cint 
+left outer join alltypesorc hd
+  on hd.ctinyint = c.ctinyint
+) t1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+225951785
