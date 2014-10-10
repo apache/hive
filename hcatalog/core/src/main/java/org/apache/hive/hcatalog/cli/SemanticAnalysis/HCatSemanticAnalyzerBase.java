@@ -22,7 +22,6 @@ package org.apache.hive.hcatalog.cli.SemanticAnalysis;
 import java.io.Serializable;
 import java.util.List;
 
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.metadata.AuthorizationException;
@@ -89,8 +88,7 @@ public class HCatSemanticAnalyzerBase extends AbstractSemanticAnalyzerHook {
   protected void authorizeDDL(HiveSemanticAnalyzerHookContext context,
                 List<Task<? extends Serializable>> rootTasks) throws SemanticException {
 
-    if (!HiveConf.getBoolVar(context.getConf(),
-      HiveConf.ConfVars.HIVE_AUTHORIZATION_ENABLED)) {
+    if (!HCatAuthUtil.isAuthorizationEnabled(context.getConf())) {
       return;
     }
 
