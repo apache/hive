@@ -2240,6 +2240,10 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     if (ast.getChildCount() == 1) {
       String funcNames = stripQuotes(ast.getChild(0).getText());
       showFuncsDesc = new ShowFunctionsDesc(ctx.getResFile(), funcNames);
+    } else if (ast.getChildCount() == 2) {
+      assert (ast.getChild(0).getType() == HiveParser.KW_LIKE);
+      String funcNames = stripQuotes(ast.getChild(1).getText());
+      showFuncsDesc = new ShowFunctionsDesc(ctx.getResFile(), funcNames, true);
     } else {
       showFuncsDesc = new ShowFunctionsDesc(ctx.getResFile());
     }
