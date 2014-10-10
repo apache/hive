@@ -732,6 +732,34 @@ public final class FunctionRegistry {
   }
 
   /**
+   * Returns a set of registered function names which matchs the given pattern.
+   * This is used for the CLI command "SHOW FUNCTIONS LIKE 'regular expression';"
+   *
+   * @param funcPatternStr
+   *          regular expression of the interested function names
+   * @return set of strings contains function names
+   */
+  public static Set<String> getFunctionNamesByLikePattern(String funcPatternStr) {
+    Set<String> funcNames = new TreeSet<String>();
+    Set<String> allFuncs = getFunctionNames(true);
+    String[] subpatterns = funcPatternStr.trim().split("\\|");
+    for (String subpattern : subpatterns) {
+      subpattern = "(?i)" + subpattern.replaceAll("\\*", ".*");
+      try {
+        Pattern patternObj = Pattern.compile(subpattern);
+        for (String funcName : allFuncs) {
+          if (patternObj.matcher(funcName).matches()) {
+            funcNames.add(funcName);
+          }
+        }
+      } catch (PatternSyntaxException e) {
+        continue;
+      }
+    }
+    return funcNames;
+  }
+
+  /**
    * Returns the set of synonyms of the supplied function.
    *
    * @param funcName

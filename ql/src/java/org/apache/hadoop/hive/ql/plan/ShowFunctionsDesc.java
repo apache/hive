@@ -32,6 +32,10 @@ public class ShowFunctionsDesc extends DDLDesc implements Serializable {
   String pattern;
   String resFile;
   /**
+   * whether like keyword is specified
+   */
+  private boolean isLikePattern = false;
+  /**
    * table name for the result of show tables.
    */
   private static final String table = "show";
@@ -69,6 +73,18 @@ public class ShowFunctionsDesc extends DDLDesc implements Serializable {
   }
 
   /**
+   * @param pattern
+   *          names of tables to show
+   * @param like
+   *          is like keyword used
+   */
+  public ShowFunctionsDesc(Path resFile, String pattern, boolean isLikePattern) {
+    this(resFile, pattern);
+    this.isLikePattern = isLikePattern;
+  }
+
+
+  /**
    * @return the pattern
    */
   @Explain(displayName = "pattern")
@@ -98,5 +114,12 @@ public class ShowFunctionsDesc extends DDLDesc implements Serializable {
    */
   public void setResFile(String resFile) {
     this.resFile = resFile;
+  }
+
+  /**
+   * @return isLikePattern
+   */
+  public boolean getIsLikePattern() {
+    return isLikePattern;
   }
 }

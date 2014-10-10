@@ -2278,7 +2278,12 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     Set<String> funcs = null;
     if (showFuncs.getPattern() != null) {
       LOG.info("pattern: " + showFuncs.getPattern());
-      funcs = FunctionRegistry.getFunctionNames(showFuncs.getPattern());
+      if (showFuncs.getIsLikePattern()) {
+         funcs = FunctionRegistry.getFunctionNamesByLikePattern(showFuncs.getPattern());
+      } else {
+         console.printInfo("SHOW FUNCTIONS is deprecated, please use SHOW FUNCTIONS LIKE instead.");
+         funcs = FunctionRegistry.getFunctionNames(showFuncs.getPattern());
+      }
       LOG.info("results : " + funcs.size());
     } else {
       funcs = FunctionRegistry.getFunctionNames();
