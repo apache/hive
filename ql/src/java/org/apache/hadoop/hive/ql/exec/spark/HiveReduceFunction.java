@@ -30,25 +30,19 @@ import org.apache.spark.api.java.function.PairFlatMapFunction;
 
 import scala.Tuple2;
 
-public class HiveReduceFunction implements PairFlatMapFunction<
-    Iterator<Tuple2<HiveKey, Iterable<BytesWritable>>>, HiveKey, BytesWritable> {
+public class HiveReduceFunction extends HivePairFlatMapFunction<
+  Iterator<Tuple2<HiveKey, Iterable<BytesWritable>>>, HiveKey, BytesWritable> {
+
   private static final long serialVersionUID = 1L;
 
-  private transient JobConf jobConf;
-
-  private byte[] buffer;
-
   public HiveReduceFunction(byte[] buffer) {
-    this.buffer = buffer;
+    super(buffer);
   }
 
   @Override
   public Iterable<Tuple2<HiveKey, BytesWritable>>
   call(Iterator<Tuple2<HiveKey, Iterable<BytesWritable>>> it) throws Exception {
-    if (jobConf == null) {
-      jobConf = KryoSerializer.deserializeJobConf(this.buffer);
-      SparkUtilities.setTaskInfoInJobConf(jobConf, TaskContext.get());
-    }
+    initJobConf();
 
     SparkReduceRecordHandler reducerRecordhandler = new SparkReduceRecordHandler();
     HiveReduceFunctionResultList result =
@@ -56,5 +50,10 @@ public class HiveReduceFunction implements PairFlatMapFunction<
     reducerRecordhandler.init(jobConf, result, Reporter.NULL);
 
     return result;
+  }
+
+  @Override
+  protected boolean isMap() {
+    return false;
   }
 }

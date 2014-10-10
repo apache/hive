@@ -31,25 +31,19 @@ import org.apache.spark.api.java.function.PairFlatMapFunction;
 
 import scala.Tuple2;
 
-public class HiveMapFunction implements PairFlatMapFunction<Iterator<Tuple2<BytesWritable, BytesWritable>>,
-    HiveKey, BytesWritable> {
+public class HiveMapFunction extends HivePairFlatMapFunction<
+  Iterator<Tuple2<BytesWritable, BytesWritable>>, HiveKey, BytesWritable> {
+
   private static final long serialVersionUID = 1L;
 
-  private transient JobConf jobConf;
-
-  private byte[] buffer;
-
   public HiveMapFunction(byte[] buffer) {
-    this.buffer = buffer;
+    super(buffer);
   }
 
   @Override
   public Iterable<Tuple2<HiveKey, BytesWritable>>
   call(Iterator<Tuple2<BytesWritable, BytesWritable>> it) throws Exception {
-    if (jobConf == null) {
-      jobConf = KryoSerializer.deserializeJobConf(this.buffer);
-      SparkUtilities.setTaskInfoInJobConf(jobConf, TaskContext.get());
-    }
+    initJobConf();
 
     SparkRecordHandler mapRecordHandler;
 
@@ -65,6 +59,11 @@ public class HiveMapFunction implements PairFlatMapFunction<Iterator<Tuple2<Byte
     mapRecordHandler.init(jobConf, result, Reporter.NULL);
 
     return result;
+  }
+
+  @Override
+  protected boolean isMap() {
+    return true;
   }
 
 }
