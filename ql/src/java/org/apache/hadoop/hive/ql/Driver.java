@@ -409,6 +409,8 @@ public class Driver implements CommandProcessor {
         HiveSemanticAnalyzerHookContext hookCtx = new HiveSemanticAnalyzerHookContextImpl();
         hookCtx.setConf(conf);
         hookCtx.setUserName(userName);
+        hookCtx.setIpAddress(SessionState.get().getUserIpAddress());
+        hookCtx.setCommand(command);
         for (HiveSemanticAnalyzerHook hook : saHooks) {
           tree = hook.preAnalyze(hookCtx, tree);
         }
