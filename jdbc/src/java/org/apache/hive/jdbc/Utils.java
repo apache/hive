@@ -66,7 +66,9 @@ public class Utils {
 
     // Client param names:
     static final String AUTH_TYPE = "auth";
-    static final String AUTH_QOP = "sasl.qop";
+    // We're deprecating this variable's name.
+    static final String AUTH_QOP_DEPRECATED = "sasl.qop";
+    static final String AUTH_QOP = "saslQop";
     static final String AUTH_SIMPLE = "noSasl";
     static final String AUTH_TOKEN = "delegationToken";
     static final String AUTH_USER = "user";
@@ -79,8 +81,14 @@ public class Utils {
     static final String USE_SSL = "ssl";
     static final String SSL_TRUST_STORE = "sslTrustStore";
     static final String SSL_TRUST_STORE_PASSWORD = "trustStorePassword";
-    static final String TRANSPORT_MODE = "hive.server2.transport.mode";
-    static final String HTTP_PATH = "hive.server2.thrift.http.path";
+    // We're deprecating the name and placement of this in the parsed map (from hive conf vars to
+    // hive session vars).
+    static final String TRANSPORT_MODE_DEPRECATED = "hive.server2.transport.mode";
+    static final String TRANSPORT_MODE = "transportMode";
+    // We're deprecating the name and placement of this in the parsed map (from hive conf vars to
+    // hive session vars).
+    static final String HTTP_PATH_DEPRECATED = "hive.server2.thrift.http.path";
+    static final String HTTP_PATH = "httpPath";
     static final String SERVICE_DISCOVERY_MODE = "serviceDiscoveryMode";
     // Don't use dynamic serice discovery
     static final String SERVICE_DISCOVERY_MODE_NONE = "none";
@@ -287,6 +295,10 @@ public class Utils {
     // key=value pattern
     Pattern pattern = Pattern.compile("([^;]*)=([^;]*)[;]?");
 
+    Map<String, String> sessionVarMap = connParams.getSessionVars();
+    Map<String, String> hiveConfMap = connParams.getHiveConfs();
+    Map<String, String> hiveVarMap = connParams.getHiveVars();
+
     // dbname and session settings
     String sessVars = jdbcURI.getPath();
     if ((sessVars != null) && !sessVars.isEmpty()) {
@@ -303,7 +315,7 @@ public class Utils {
         if (sessVars != null) {
           Matcher sessMatcher = pattern.matcher(sessVars);
           while (sessMatcher.find()) {
-            if (connParams.getSessionVars().put(sessMatcher.group(1), sessMatcher.group(2)) != null) {
+            if (sessionVarMap.put(sessMatcher.group(1), sessMatcher.group(2)) != null) {
               throw new JdbcUriParseException("Bad URL format: Multiple values for property "
                   + sessMatcher.group(1));
             }
@@ -320,7 +332,7 @@ public class Utils {
     if (confStr != null) {
       Matcher confMatcher = pattern.matcher(confStr);
       while (confMatcher.find()) {
-        connParams.getHiveConfs().put(confMatcher.group(1), confMatcher.group(2));
+        hiveConfMap.put(confMatcher.group(1), confMatcher.group(2));
       }
     }
 
@@ -329,9 +341,28 @@ public class Utils {
     if (varStr != null) {
       Matcher varMatcher = pattern.matcher(varStr);
       while (varMatcher.find()) {
-        connParams.getHiveVars().put(varMatcher.group(1), varMatcher.group(2));
+        hiveVarMap.put(varMatcher.group(1), varMatcher.group(2));
       }
     }
+
+    // Handle all deprecations here:
+    String newUsage;
+    String usageUrlBase = "jdbc:hive2://<host>:<port>/dbName;";
+    // Handle deprecation of AUTH_QOP_DEPRECATED
+    newUsage = usageUrlBase + JdbcConnectionParams.AUTH_QOP + "=<qop_value>";
+    handleParamDeprecation(sessionVarMap, sessionVarMap, JdbcConnectionParams.AUTH_QOP_DEPRECATED,
+        JdbcConnectionParams.AUTH_QOP, newUsage);
+
+    // Handle deprecation of TRANSPORT_MODE_DEPRECATED
+    newUsage = usageUrlBase + JdbcConnectionParams.TRANSPORT_MODE + "=<transport_mode_value>";
+    handleParamDeprecation(hiveConfMap, sessionVarMap,
+        JdbcConnectionParams.TRANSPORT_MODE_DEPRECATED, JdbcConnectionParams.TRANSPORT_MODE,
+        newUsage);
+
+    // Handle deprecation of HTTP_PATH_DEPRECATED
+    newUsage = usageUrlBase + JdbcConnectionParams.HTTP_PATH + "=<http_path_value>";
+    handleParamDeprecation(hiveConfMap, sessionVarMap, JdbcConnectionParams.HTTP_PATH_DEPRECATED,
+        JdbcConnectionParams.HTTP_PATH, newUsage);
 
     // Extract host, port
     if (connParams.isEmbeddedMode()) {
@@ -357,6 +388,25 @@ public class Utils {
     }
 
     return connParams;
+  }
+
+  /**
+   * Remove the deprecatedName param from the fromMap and put the key value in the toMap.
+   * Also log a deprecation message for the client.
+   * @param fromMap
+   * @param toMap
+   * @param oldName
+   * @param newName
+   */
+  private static void handleParamDeprecation(Map<String, String> fromMap, Map<String, String> toMap,
+      String deprecatedName, String newName, String newUsage) {
+    if (fromMap.containsKey(deprecatedName)) {
+      LOG.warn("***** JDBC param deprecation *****");
+      LOG.warn("The use of " + deprecatedName + " is deprecated.");
+      LOG.warn("Please use " + newName +" like so: " + newUsage);
+      String paramValue = fromMap.remove(deprecatedName);
+      toMap.put(newName, paramValue);
+    }
   }
 
   /**
