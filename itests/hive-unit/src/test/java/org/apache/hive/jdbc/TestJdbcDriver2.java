@@ -1682,29 +1682,24 @@ public class TestJdbcDriver2 {
   }
 
   private static final String[][] HTTP_URL_PROPERTIES = new String[][] {
-    {"jdbc:hive2://server:10002/db;" +
-        "user=foo;password=bar?" +
-        "hive.server2.transport.mode=http;" +
-        "hive.server2.thrift.http.path=hs2", "server", "10002", "db", "http", "hs2"},
-        {"jdbc:hive2://server:10000/testdb;" +
-            "user=foo;password=bar?" +
-            "hive.server2.transport.mode=binary;" +
-            "hive.server2.thrift.http.path=", "server", "10000", "testdb", "binary", ""},
-  };
+      { "jdbc:hive2://server:10002/db;user=foo;password=bar;transportMode=http;httpPath=hs2",
+          "server", "10002", "db", "http", "hs2" },
+      { "jdbc:hive2://server:10000/testdb;user=foo;password=bar;transportMode=binary;httpPath=",
+          "server", "10000", "testdb", "binary", "" }, };
 
-  @Test
-  public void testParseUrlHttpMode() throws SQLException, JdbcUriParseException,
-      ZooKeeperHiveClientException {
-    new HiveDriver();
-    for (String[] testValues : HTTP_URL_PROPERTIES) {
-      JdbcConnectionParams params = Utils.parseURL(testValues[0]);
-      assertEquals(params.getHost(), testValues[1]);
-      assertEquals(params.getPort(), Integer.parseInt(testValues[2]));
-      assertEquals(params.getDbName(), testValues[3]);
-      assertEquals(params.getHiveConfs().get("hive.server2.transport.mode"), testValues[4]);
-      assertEquals(params.getHiveConfs().get("hive.server2.thrift.http.path"), testValues[5]);
-    }
+@Test
+public void testParseUrlHttpMode() throws SQLException, JdbcUriParseException,
+    ZooKeeperHiveClientException {
+  new HiveDriver();
+  for (String[] testValues : HTTP_URL_PROPERTIES) {
+    JdbcConnectionParams params = Utils.parseURL(testValues[0]);
+    assertEquals(params.getHost(), testValues[1]);
+    assertEquals(params.getPort(), Integer.parseInt(testValues[2]));
+    assertEquals(params.getDbName(), testValues[3]);
+    assertEquals(params.getSessionVars().get("transportMode"), testValues[4]);
+    assertEquals(params.getSessionVars().get("httpPath"), testValues[5]);
   }
+}
 
   private static void assertDpi(DriverPropertyInfo dpi, String name,
       String value) {

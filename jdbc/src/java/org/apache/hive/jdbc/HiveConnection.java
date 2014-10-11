@@ -218,7 +218,7 @@ public class HiveConnection implements java.sql.Connection {
     String schemeName = useSsl ? "https" : "http";
     // http path should begin with "/"
     String httpPath;
-    httpPath = hiveConfMap.get(JdbcConnectionParams.HTTP_PATH);
+    httpPath = sessConfMap.get(JdbcConnectionParams.HTTP_PATH);
     if (httpPath == null) {
       httpPath = "/";
     } else if (!httpPath.startsWith("/")) {
@@ -485,7 +485,7 @@ public class HiveConnection implements java.sql.Connection {
   }
 
   private boolean isHttpTransportMode() {
-    String transportMode = hiveConfMap.get(JdbcConnectionParams.TRANSPORT_MODE);
+    String transportMode = sessConfMap.get(JdbcConnectionParams.TRANSPORT_MODE);
     if(transportMode != null && (transportMode.equalsIgnoreCase("http"))) {
       return true;
     }
