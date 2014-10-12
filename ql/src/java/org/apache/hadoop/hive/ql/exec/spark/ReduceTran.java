@@ -22,27 +22,16 @@ import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.spark.api.java.JavaPairRDD;
 
-public class ReduceTran implements SparkTran<HiveKey, HiveKey> {
-  private SparkShuffler shuffler;
+public class ReduceTran implements SparkTran<HiveKey, Iterable<BytesWritable>, HiveKey, BytesWritable> {
   private HiveReduceFunction reduceFunc;
-  private int numPartitions;
 
   @Override
   public JavaPairRDD<HiveKey, BytesWritable> transform(
-      JavaPairRDD<HiveKey, BytesWritable> input) {
-    return shuffler.shuffle(input, numPartitions).mapPartitionsToPair(reduceFunc);
+      JavaPairRDD<HiveKey, Iterable<BytesWritable>> input) {
+    return input.mapPartitionsToPair(reduceFunc);
   }
 
   public void setReduceFunction(HiveReduceFunction redFunc) {
     this.reduceFunc = redFunc;
   }
-
-  public void setShuffler(SparkShuffler shuffler) {
-    this.shuffler = shuffler;
-  }
-
-  public void setNumPartitions(int numPartitions) {
-    this.numPartitions = numPartitions;
-  }
-
 }

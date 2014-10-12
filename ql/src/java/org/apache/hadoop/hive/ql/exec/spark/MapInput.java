@@ -24,7 +24,7 @@ import org.apache.spark.api.java.JavaPairRDD;
 
 import com.google.common.base.Preconditions;
 
-public class MapInput implements SparkTran<BytesWritable, HiveKey> {
+public class MapInput implements SparkTran<BytesWritable, BytesWritable, HiveKey, BytesWritable> {
   private JavaPairRDD<HiveKey, BytesWritable> hadoopRDD;
   private boolean toCache;
 

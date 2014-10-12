@@ -22,17 +22,24 @@ import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.spark.api.java.JavaPairRDD;
 
-public class MapTran implements SparkTran<BytesWritable, BytesWritable, HiveKey, BytesWritable> {
-  private HiveMapFunction mapFunc;
+public class ShuffleTran implements SparkTran<HiveKey, BytesWritable, HiveKey, Iterable<BytesWritable>> {
+  private final SparkShuffler shuffler;
+  private final int numOfPartitions;
+  private final boolean toCache;
+
+  public ShuffleTran(SparkShuffler sf, int n) {
+    this(sf, n, false);
+  }
+
+  public ShuffleTran(SparkShuffler sf, int n, boolean c) {
+    shuffler = sf;
+    numOfPartitions = n;
+    toCache = c;
+  }
 
   @Override
-  public JavaPairRDD<HiveKey, BytesWritable> transform(
-      JavaPairRDD<BytesWritable, BytesWritable> input) {
-    return input.mapPartitionsToPair(mapFunc);
+  public JavaPairRDD<HiveKey, Iterable<BytesWritable>> transform(JavaPairRDD<HiveKey, BytesWritable> input) {
+    JavaPairRDD<HiveKey, Iterable<BytesWritable>> result = shuffler.shuffle(input, numOfPartitions);
+    return toCache ? result.cache() : result;
   }
-
-  public void setMapFunction(HiveMapFunction mapFunc) {
-    this.mapFunc = mapFunc;
-  }
-
 }
