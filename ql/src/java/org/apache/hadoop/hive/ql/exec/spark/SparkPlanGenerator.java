@@ -82,12 +82,23 @@ public class SparkPlanGenerator {
       if (work instanceof MapWork) {
         MapInput mapInput = generateMapInput((MapWork)work);
         sparkPlan.addTran(mapInput);
-        tran = generate(work, null);
+        tran = generate((MapWork)work);
         sparkPlan.addTran(tran);
         sparkPlan.connect(mapInput, tran);
+      } else if (work instanceof ReduceWork) {
+        List<BaseWork> parentWorks = sparkWork.getParents(work);
+        tran = generate((ReduceWork)work);
+        sparkPlan.addTran(tran);
+        ShuffleTran shuffleTran = generate(sparkWork.getEdgeProperty(parentWorks.get(0), work));
+        sparkPlan.addTran(shuffleTran);
+        sparkPlan.connect(shuffleTran, tran);
+        for (BaseWork parentWork : parentWorks) {
+          SparkTran parentTran = workToTranMap.get(parentWork);
+          sparkPlan.connect(parentTran, shuffleTran);
+        }
       } else {
         List<BaseWork> parentWorks = sparkWork.getParents(work);
-        tran = generate(work, sparkWork.getEdgeProperty(parentWorks.get(0), work));
+        tran = new IdentityTran();
         sparkPlan.addTran(tran);
         for (BaseWork parentWork : parentWorks) {
           SparkTran parentTran = workToTranMap.get(parentWork);
@@ -129,24 +140,6 @@ public class SparkPlanGenerator {
     return inputFormatClass;
   }
 
-  public SparkTran generate(BaseWork work, SparkEdgeProperty edge) throws Exception {
-    if (work instanceof MapWork) {
-      MapWork mw = (MapWork) work;
-      return generate(mw);
-    } else if (work instanceof ReduceWork) {
-      ReduceWork rw = (ReduceWork) work;
-      ReduceTran tran = generate(rw);
-      SparkShuffler shuffler = generate(edge);
-      tran.setShuffler(shuffler);
-      tran.setNumPartitions(edge.getNumPartitions());
-      return tran;
-    } else if (work instanceof UnionWork) {
-      return new IdentityTran();
-    } else {
-      throw new HiveException("Unexpected work: " + work.getName());
-    }
-  }
-
   private MapInput generateMapInput(MapWork mapWork)
       throws Exception {
     JobConf jobConf = cloneJobConf(mapWork);
@@ -157,15 +150,18 @@ public class SparkPlanGenerator {
     return new MapInput(hadoopRDD);
   }
 
-  private SparkShuffler generate(SparkEdgeProperty edge) {
+  private ShuffleTran generate(SparkEdgeProperty edge) {
     Preconditions.checkArgument(!edge.isShuffleNone(),
         "AssertionError: SHUFFLE_NONE should only be used for UnionWork.");
+    SparkShuffler shuffler;
     if (edge.isMRShuffle()) {
-      return new SortByShuffler(false);
+      shuffler = new SortByShuffler(false);
     } else if (edge.isShuffleSort()) {
-      return new SortByShuffler(true);
+      shuffler = new SortByShuffler(true);
+    } else {
+      shuffler = new GroupByShuffler();
     }
-    return new GroupByShuffler();
+    return new ShuffleTran(shuffler, edge.getNumPartitions());
   }
 
   private MapTran generate(MapWork mw) throws Exception {

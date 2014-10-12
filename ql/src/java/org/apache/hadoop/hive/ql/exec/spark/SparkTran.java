@@ -21,7 +21,7 @@ package org.apache.hadoop.hive.ql.exec.spark;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.spark.api.java.JavaPairRDD;
 
-public interface SparkTran<KI extends BytesWritable, KO extends BytesWritable> {
-  JavaPairRDD<KO, BytesWritable> transform(
-      JavaPairRDD<KI, BytesWritable> input);
+public interface SparkTran<KI extends BytesWritable, VI, KO extends BytesWritable, VO> {
+  JavaPairRDD<KO, VO> transform(
+      JavaPairRDD<KI, VI> input);
 }

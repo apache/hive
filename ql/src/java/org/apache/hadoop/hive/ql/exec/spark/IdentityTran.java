@@ -18,15 +18,13 @@
 
 package org.apache.hadoop.hive.ql.exec.spark;
 
-import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.spark.api.java.JavaPairRDD;
 
-public class IdentityTran implements SparkTran<HiveKey, HiveKey> {
+public class IdentityTran<K extends BytesWritable, V> implements SparkTran<K, V, K, V> {
 
   @Override
-  public JavaPairRDD<HiveKey, BytesWritable> transform(
-      JavaPairRDD<HiveKey, BytesWritable> input) {
+  public JavaPairRDD<K, V> transform(JavaPairRDD<K, V> input) {
     return input;
   }
 }
