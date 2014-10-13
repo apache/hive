@@ -41,6 +41,12 @@ PREHOOK: query: set role src_role_WadMin
 PREHOOK: type: SHOW_ROLES
 POSTHOOK: query: set role src_role_WadMin
 POSTHOOK: type: SHOW_ROLES
+PREHOOK: query: show principals src_role_wadmin
+PREHOOK: type: SHOW_ROLE_PRINCIPALS
+POSTHOOK: query: show principals src_role_wadmin
+POSTHOOK: type: SHOW_ROLE_PRINCIPALS
+principal_name	principal_type	grant_option	grantor	grantor_type	grant_time
+user2	USER	true	hive_admin_user	USER	-1
 PREHOOK: query: -- grant role to another user
 grant src_Role_wadmin to user user3
 PREHOOK: type: GRANT_ROLE
