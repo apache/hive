@@ -56,6 +56,7 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 
 public class TestOrcRawRecordMerger {
@@ -574,12 +575,14 @@ public class TestOrcRawRecordMerger {
         OrcRecordUpdater.getOperation(event));
     assertEquals(new ReaderKey(0, BUCKET, 0, 200), id);
     assertEquals("update 1", getValue(event));
+    assertFalse(merger.isDelete(event));
 
     assertEquals(true, merger.next(id, event));
     assertEquals(OrcRecordUpdater.INSERT_OPERATION,
         OrcRecordUpdater.getOperation(event));
     assertEquals(new ReaderKey(0, BUCKET, 1, 0), id);
     assertEquals("second", getValue(event));
+    assertFalse(merger.isDelete(event));
 
     assertEquals(true, merger.next(id, event));
     assertEquals(OrcRecordUpdater.UPDATE_OPERATION,
@@ -616,6 +619,7 @@ public class TestOrcRawRecordMerger {
         OrcRecordUpdater.getOperation(event));
     assertEquals(new ReaderKey(0, BUCKET, 7, 200), id);
     assertNull(OrcRecordUpdater.getRow(event));
+    assertTrue(merger.isDelete(event));
 
     assertEquals(true, merger.next(id, event));
     assertEquals(OrcRecordUpdater.DELETE_OPERATION,
