@@ -63,12 +63,13 @@ public abstract class CompactorTest {
   protected CompactionTxnHandler txnHandler;
   protected IMetaStoreClient ms;
   protected long sleepTime = 1000;
+  protected HiveConf conf;
 
   private final MetaStoreThread.BooleanPointer stop = new MetaStoreThread.BooleanPointer();
   private final File tmpdir;
 
   protected CompactorTest() throws Exception {
-    HiveConf conf = new HiveConf();
+    conf = new HiveConf();
     TxnDbUtil.setConfValues(conf);
     TxnDbUtil.cleanDb();
     ms = new HiveMetaStoreClient(conf);
@@ -79,16 +80,20 @@ public abstract class CompactorTest {
     tmpdir.deleteOnExit();
   }
 
-  protected void startInitiator(HiveConf conf) throws Exception {
-    startThread('i', conf);
+  protected void startInitiator() throws Exception {
+    startThread('i', true);
   }
 
-  protected void startWorker(HiveConf conf) throws Exception {
-    startThread('w', conf);
+  protected void startWorker() throws Exception {
+    startThread('w', true);
   }
 
-  protected void startCleaner(HiveConf conf) throws Exception {
-    startThread('c', conf);
+  protected void startCleaner() throws Exception {
+    startThread('c', true);
+  }
+
+  protected void startCleaner(MetaStoreThread.BooleanPointer looped) throws Exception {
+    startThread('c', false, looped);
   }
 
   protected Table newTable(String dbName, String tableName, boolean partitioned) throws TException {
@@ -117,6 +122,9 @@ public abstract class CompactorTest {
 
     table.setParameters(parameters);
 
+    // drop the table first, in case some previous test created it
+    ms.dropTable(dbName, tableName);
+
     ms.createTable(table);
     return table;
   }
@@ -142,37 +150,27 @@ public abstract class CompactorTest {
     return txns.get(0);
   }
 
-  protected void addDeltaFile(HiveConf conf, Table t, Partition p, long minTxn, long maxTxn,
-                              int numRecords) throws Exception{
-    addFile(conf, t, p, minTxn, maxTxn, numRecords, FileType.DELTA, 2, true);
-  }
-
-  protected void addBaseFile(HiveConf conf, Table t, Partition p, long maxTxn,
-                             int numRecords) throws Exception{
-    addFile(conf, t, p, 0, maxTxn, numRecords, FileType.BASE, 2, true);
-  }
-
-  protected void addLegacyFile(HiveConf conf, Table t, Partition p,
-                               int numRecords) throws Exception {
-    addFile(conf, t, p, 0, 0, numRecords, FileType.LEGACY, 2, true);
-  }
-
-  protected void addDeltaFile(HiveConf conf, Table t, Partition p, long minTxn, long maxTxn,
-                              int numRecords, int numBuckets, boolean allBucketsPresent)
+  protected void addDeltaFile(Table t, Partition p, long minTxn, long maxTxn, int numRecords)
       throws Exception {
-    addFile(conf, t, p, minTxn, maxTxn, numRecords, FileType.DELTA, numBuckets, allBucketsPresent);
+    addFile(t, p, minTxn, maxTxn, numRecords, FileType.DELTA, 2, true);
   }
 
-  protected void addBaseFile(HiveConf conf, Table t, Partition p, long maxTxn,
-                             int numRecords, int numBuckets, boolean allBucketsPresent)
-      throws Exception {
-    addFile(conf, t, p, 0, maxTxn, numRecords, FileType.BASE, numBuckets, allBucketsPresent);
+  protected void addBaseFile(Table t, Partition p, long maxTxn, int numRecords) throws Exception {
+    addFile(t, p, 0, maxTxn, numRecords, FileType.BASE, 2, true);
   }
 
-  protected void addLegacyFile(HiveConf conf, Table t, Partition p,
-                               int numRecords, int numBuckets, boolean allBucketsPresent)
-      throws Exception {
-    addFile(conf, t, p, 0, 0, numRecords, FileType.LEGACY, numBuckets, allBucketsPresent);
+  protected void addLegacyFile(Table t, Partition p, int numRecords) throws Exception {
+    addFile(t, p, 0, 0, numRecords, FileType.LEGACY, 2, true);
+  }
+
+  protected void addDeltaFile(Table t, Partition p, long minTxn, long maxTxn, int numRecords,
+                              int numBuckets, boolean allBucketsPresent) throws Exception {
+    addFile(t, p, minTxn, maxTxn, numRecords, FileType.DELTA, numBuckets, allBucketsPresent);
+  }
+
+  protected void addBaseFile(Table t, Partition p, long maxTxn, int numRecords, int numBuckets,
+                             boolean allBucketsPresent) throws Exception {
+    addFile(t, p, 0, maxTxn, numRecords, FileType.BASE, numBuckets, allBucketsPresent);
   }
 
   protected List<Path> getDirectories(HiveConf conf, Table t, Partition p) throws Exception {
@@ -189,6 +187,10 @@ public abstract class CompactorTest {
   protected void burnThroughTransactions(int num) throws MetaException, NoSuchTxnException, TxnAbortedException {
     OpenTxnsResponse rsp = txnHandler.openTxns(new OpenTxnRequest(num, "me", "localhost"));
     for (long tid : rsp.getTxn_ids()) txnHandler.commitTxn(new CommitTxnRequest(tid));
+  }
+
+  protected void stopThread() {
+    stop.boolVal = true;
   }
 
   private StorageDescriptor newStorageDescriptor(String location, List<Order> sortCols) {
@@ -214,9 +216,13 @@ public abstract class CompactorTest {
     return sd;
   }
 
-  // I can't do this with @Before because I want to be able to control the config file provided
-  // to each test.
-  private void startThread(char type, HiveConf conf) throws Exception {
+  // I can't do this with @Before because I want to be able to control when the thead starts
+  private void startThread(char type, boolean stopAfterOne) throws Exception {
+    startThread(type, stopAfterOne, new MetaStoreThread.BooleanPointer());
+  }
+
+  private void startThread(char type, boolean stopAfterOne, MetaStoreThread.BooleanPointer looped)
+    throws Exception {
     TxnDbUtil.setConfValues(conf);
     CompactorThread t = null;
     switch (type) {
@@ -227,9 +233,10 @@ public abstract class CompactorTest {
     }
     t.setThreadId((int) t.getId());
     t.setHiveConf(conf);
-    stop.boolVal = true;
-    t.init(stop);
-    t.run();
+    stop.boolVal = stopAfterOne;
+    t.init(stop, looped);
+    if (stopAfterOne) t.run();
+    else t.start();
   }
 
   private String getLocation(String tableName, String partValue) {
@@ -243,7 +250,7 @@ public abstract class CompactorTest {
 
   private enum FileType {BASE, DELTA, LEGACY};
 
-  private void addFile(HiveConf conf, Table t, Partition p, long minTxn, long maxTxn,
+  private void addFile(Table t, Partition p, long minTxn, long maxTxn,
                        int numRecords,  FileType type, int numBuckets,
                        boolean allBucketsPresent) throws Exception {
     String partValue = (p == null) ? null : p.getValues().get(0);

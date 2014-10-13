@@ -1296,6 +1296,9 @@ public class HiveConf extends Configuration {
         "Number of aborted transactions involving a particular table or partition before major\n" +
         "compaction is initiated."),
 
+    HIVE_COMPACTOR_CLEANER_RUN_INTERVAL("hive.compactor.cleaner.run.interval", "5000ms",
+        new TimeValidator(TimeUnit.MILLISECONDS), "Time between runs of the cleaner thread"),
+
     // For HBase storage handler
     HIVE_HBASE_WAL_ENABLED("hive.hbase.wal.enabled", true,
         "Whether writes to HBase should be forced to the write-ahead log. \n" +
