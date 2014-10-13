@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -350,9 +351,9 @@ public class SQLStdHiveAccessController implements HiveAccessController {
   @Override
   public List<HiveRoleGrant> getPrincipalGrantInfoForRole(String roleName) throws HiveAuthzPluginException, HiveAccessControlException {
     // only user belonging to admin role can list role
-    if (!isUserAdmin()) {
+    if (!isUserAdmin() &&  !doesUserHasAdminOption(Arrays.asList(roleName))) {
       throw new HiveAccessControlException("Current user : " + currentUserName+ " is not"
-        + " allowed get principals in a role. " + ADMIN_ONLY_MSG);
+        + " allowed get principals in a role. " + ADMIN_ONLY_MSG + " Otherwise, " + HAS_ADMIN_PRIV_MSG);
     }
     try {
       return getHiveRoleGrants(metastoreClientFactory.getHiveMetastoreClient(), roleName);
