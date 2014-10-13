@@ -337,17 +337,20 @@ public class PTFOperator extends Operator<PTFDesc> implements Serializable {
         handleOutputRows(tabFn.finishPartition());
       } else {
         if ( tabFn.canIterateOutput() ) {
-          outputPartRowsItr = tabFn.iterator(inputPart.iterator());
+          outputPartRowsItr = inputPart == null ? null :
+            tabFn.iterator(inputPart.iterator());
         } else {
-          outputPart = tabFn.execute(inputPart);
-          outputPartRowsItr = outputPart.iterator();
+          outputPart = inputPart == null ? null : tabFn.execute(inputPart);
+          outputPartRowsItr = outputPart == null ? null : outputPart.iterator();
         }
         if ( next != null ) {
           if (!next.isStreaming() && !isOutputIterator() ) {
             next.inputPart = outputPart;
           } else {
-            while(outputPartRowsItr.hasNext() ) {
-              next.processRow(outputPartRowsItr.next());
+            if ( outputPartRowsItr != null ) {
+              while(outputPartRowsItr.hasNext() ) {
+                next.processRow(outputPartRowsItr.next());
+              }
             }
           }
         }
@@ -357,8 +360,10 @@ public class PTFOperator extends Operator<PTFDesc> implements Serializable {
         next.finishPartition();
       } else {
         if (!isStreaming() ) {
-          while(outputPartRowsItr.hasNext() ) {
-            forward(outputPartRowsItr.next(), outputObjInspector);
+          if ( outputPartRowsItr != null ) {
+            while(outputPartRowsItr.hasNext() ) {
+              forward(outputPartRowsItr.next(), outputObjInspector);
+            }
           }
         }
       }
