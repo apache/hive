@@ -5933,7 +5933,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     LOG.info("Starting metastore thread of type " + thread.getClass().getName());
     thread.setHiveConf(conf);
     thread.setThreadId(nextThreadId++);
-    thread.init(new MetaStoreThread.BooleanPointer());
+    thread.init(new MetaStoreThread.BooleanPointer(), new MetaStoreThread.BooleanPointer());
     thread.start();
   }
 }

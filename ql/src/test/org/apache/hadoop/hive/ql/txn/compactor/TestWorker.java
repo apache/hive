@@ -48,7 +48,7 @@ public class TestWorker extends CompactorTest {
   public void nothing() throws Exception {
     // Test that the whole things works when there's nothing in the queue.  This is just a
     // survival test.
-    startWorker(new HiveConf());
+    startWorker();
   }
 
   @Test
@@ -205,19 +205,17 @@ public class TestWorker extends CompactorTest {
 
     Table t = newTable("default", "st", false, new HashMap<String, String>(), sortCols);
 
-    HiveConf conf = new HiveConf();
-
-    addBaseFile(conf, t, null, 20L, 20);
-    addDeltaFile(conf, t, null, 21L, 22L, 2);
-    addDeltaFile(conf, t, null, 23L, 24L, 2);
-    addDeltaFile(conf, t, null, 21L, 24L, 4);
+    addBaseFile(t, null, 20L, 20);
+    addDeltaFile(t, null, 21L, 22L, 2);
+    addDeltaFile(t, null, 23L, 24L, 2);
+    addDeltaFile(t, null, 21L, 24L, 4);
 
     burnThroughTransactions(25);
 
     CompactionRequest rqst = new CompactionRequest("default", "st", CompactionType.MINOR);
     txnHandler.compact(rqst);
 
-    startWorker(new HiveConf());
+    startWorker();
 
     // There should still be four directories in the location.
     FileSystem fs = FileSystem.get(conf);
@@ -232,12 +230,11 @@ public class TestWorker extends CompactorTest {
 
     Table t = newTable("default", "sp", true, new HashMap<String, String>(), sortCols);
     Partition p = newPartition(t, "today", sortCols);
-    HiveConf conf = new HiveConf();
 
-    addBaseFile(conf, t, p, 20L, 20);
-    addDeltaFile(conf, t, p, 21L, 22L, 2);
-    addDeltaFile(conf, t, p, 23L, 24L, 2);
-    addDeltaFile(conf, t, p, 21L, 24L, 4);
+    addBaseFile(t, p, 20L, 20);
+    addDeltaFile(t, p, 21L, 22L, 2);
+    addDeltaFile(t, p, 23L, 24L, 2);
+    addDeltaFile(t, p, 21L, 24L, 4);
 
     burnThroughTransactions(25);
 
@@ -245,7 +242,7 @@ public class TestWorker extends CompactorTest {
     rqst.setPartitionname("ds=today");
     txnHandler.compact(rqst);
 
-    startWorker(new HiveConf());
+    startWorker();
 
     // There should still be four directories in the location.
     FileSystem fs = FileSystem.get(conf);
@@ -258,18 +255,16 @@ public class TestWorker extends CompactorTest {
     LOG.debug("Starting minorTableWithBase");
     Table t = newTable("default", "mtwb", false);
 
-    HiveConf conf = new HiveConf();
-
-    addBaseFile(conf, t, null, 20L, 20);
-    addDeltaFile(conf, t, null, 21L, 22L, 2);
-    addDeltaFile(conf, t, null, 23L, 24L, 2);
+    addBaseFile(t, null, 20L, 20);
+    addDeltaFile(t, null, 21L, 22L, 2);
+    addDeltaFile(t, null, 23L, 24L, 2);
 
     burnThroughTransactions(25);
 
     CompactionRequest rqst = new CompactionRequest("default", "mtwb", CompactionType.MINOR);
     txnHandler.compact(rqst);
 
-    startWorker(conf);
+    startWorker();
 
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
     List<ShowCompactResponseElement> compacts = rsp.getCompacts();
@@ -304,11 +299,10 @@ public class TestWorker extends CompactorTest {
   public void minorPartitionWithBase() throws Exception {
     Table t = newTable("default", "mpwb", true);
     Partition p = newPartition(t, "today");
-    HiveConf conf = new HiveConf();
 
-    addBaseFile(conf, t, p, 20L, 20);
-    addDeltaFile(conf, t, p, 21L, 22L, 2);
-    addDeltaFile(conf, t, p, 23L, 24L, 2);
+    addBaseFile(t, p, 20L, 20);
+    addDeltaFile(t, p, 21L, 22L, 2);
+    addDeltaFile(t, p, 23L, 24L, 2);
 
     burnThroughTransactions(25);
 
@@ -316,7 +310,7 @@ public class TestWorker extends CompactorTest {
     rqst.setPartitionname("ds=today");
     txnHandler.compact(rqst);
 
-    startWorker(new HiveConf());
+    startWorker();
 
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
     List<ShowCompactResponseElement> compacts = rsp.getCompacts();
@@ -351,17 +345,15 @@ public class TestWorker extends CompactorTest {
     LOG.debug("Starting minorTableWithBase");
     Table t = newTable("default", "mtnb", false);
 
-    HiveConf conf = new HiveConf();
-
-    addDeltaFile(conf, t, null, 1L, 2L, 2);
-    addDeltaFile(conf, t, null, 3L, 4L, 2);
+    addDeltaFile(t, null, 1L, 2L, 2);
+    addDeltaFile(t, null, 3L, 4L, 2);
 
     burnThroughTransactions(5);
 
     CompactionRequest rqst = new CompactionRequest("default", "mtnb", CompactionType.MINOR);
     txnHandler.compact(rqst);
 
-    startWorker(new HiveConf());
+    startWorker();
 
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
     List<ShowCompactResponseElement> compacts = rsp.getCompacts();
@@ -396,18 +388,16 @@ public class TestWorker extends CompactorTest {
     LOG.debug("Starting majorTableWithBase");
     Table t = newTable("default", "matwb", false);
 
-    HiveConf conf = new HiveConf();
-
-    addBaseFile(conf, t, null, 20L, 20);
-    addDeltaFile(conf, t, null, 21L, 22L, 2);
-    addDeltaFile(conf, t, null, 23L, 24L, 2);
+    addBaseFile(t, null, 20L, 20);
+    addDeltaFile(t, null, 21L, 22L, 2);
+    addDeltaFile(t, null, 23L, 24L, 2);
 
     burnThroughTransactions(25);
 
     CompactionRequest rqst = new CompactionRequest("default", "matwb", CompactionType.MAJOR);
     txnHandler.compact(rqst);
 
-    startWorker(new HiveConf());
+    startWorker();
 
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
     List<ShowCompactResponseElement> compacts = rsp.getCompacts();
@@ -442,11 +432,10 @@ public class TestWorker extends CompactorTest {
     LOG.debug("Starting majorPartitionWithBase");
     Table t = newTable("default", "mapwb", true);
     Partition p = newPartition(t, "today");
-    HiveConf conf = new HiveConf();
 
-    addBaseFile(conf, t, p, 20L, 20);
-    addDeltaFile(conf, t, p, 21L, 22L, 2);
-    addDeltaFile(conf, t, p, 23L, 24L, 2);
+    addBaseFile(t, p, 20L, 20);
+    addDeltaFile(t, p, 21L, 22L, 2);
+    addDeltaFile(t, p, 23L, 24L, 2);
 
     burnThroughTransactions(25);
 
@@ -454,7 +443,7 @@ public class TestWorker extends CompactorTest {
     rqst.setPartitionname("ds=today");
     txnHandler.compact(rqst);
 
-    startWorker(new HiveConf());
+    startWorker();
 
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
     List<ShowCompactResponseElement> compacts = rsp.getCompacts();
@@ -489,17 +478,15 @@ public class TestWorker extends CompactorTest {
     LOG.debug("Starting majorTableNoBase");
     Table t = newTable("default", "matnb", false);
 
-    HiveConf conf = new HiveConf();
-
-    addDeltaFile(conf, t, null, 1L, 2L, 2);
-    addDeltaFile(conf, t, null, 3L, 4L, 2);
+    addDeltaFile(t, null, 1L, 2L, 2);
+    addDeltaFile(t, null, 3L, 4L, 2);
 
     burnThroughTransactions(5);
 
     CompactionRequest rqst = new CompactionRequest("default", "matnb", CompactionType.MAJOR);
     txnHandler.compact(rqst);
 
-    startWorker(new HiveConf());
+    startWorker();
 
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
     List<ShowCompactResponseElement> compacts = rsp.getCompacts();
@@ -534,18 +521,16 @@ public class TestWorker extends CompactorTest {
     LOG.debug("Starting majorTableLegacy");
     Table t = newTable("default", "matl", false);
 
-    HiveConf conf = new HiveConf();
-
-    addLegacyFile(conf, t, null, 20);
-    addDeltaFile(conf, t, null, 21L, 22L, 2);
-    addDeltaFile(conf, t, null, 23L, 24L, 2);
+    addLegacyFile(t, null, 20);
+    addDeltaFile(t, null, 21L, 22L, 2);
+    addDeltaFile(t, null, 23L, 24L, 2);
 
     burnThroughTransactions(25);
 
     CompactionRequest rqst = new CompactionRequest("default", "matl", CompactionType.MAJOR);
     txnHandler.compact(rqst);
 
-    startWorker(new HiveConf());
+    startWorker();
 
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
     List<ShowCompactResponseElement> compacts = rsp.getCompacts();
@@ -580,18 +565,16 @@ public class TestWorker extends CompactorTest {
     LOG.debug("Starting minorTableLegacy");
     Table t = newTable("default", "mtl", false);
 
-    HiveConf conf = new HiveConf();
-
-    addLegacyFile(conf, t, null, 20);
-    addDeltaFile(conf, t, null, 21L, 22L, 2);
-    addDeltaFile(conf, t, null, 23L, 24L, 2);
+    addLegacyFile(t, null, 20);
+    addDeltaFile(t, null, 21L, 22L, 2);
+    addDeltaFile(t, null, 23L, 24L, 2);
 
     burnThroughTransactions(25);
 
     CompactionRequest rqst = new CompactionRequest("default", "mtl", CompactionType.MINOR);
     txnHandler.compact(rqst);
 
-    startWorker(new HiveConf());
+    startWorker();
 
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
     List<ShowCompactResponseElement> compacts = rsp.getCompacts();
@@ -622,11 +605,10 @@ public class TestWorker extends CompactorTest {
   public void majorPartitionWithBaseMissingBuckets() throws Exception {
     Table t = newTable("default", "mapwbmb", true);
     Partition p = newPartition(t, "today");
-    HiveConf conf = new HiveConf();
 
-    addBaseFile(conf, t, p, 20L, 20, 2, false);
-    addDeltaFile(conf, t, p, 21L, 22L, 2, 2, false);
-    addDeltaFile(conf, t, p, 23L, 24L, 2);
+    addBaseFile(t, p, 20L, 20, 2, false);
+    addDeltaFile(t, p, 21L, 22L, 2, 2, false);
+    addDeltaFile(t, p, 23L, 24L, 2);
 
     burnThroughTransactions(25);
 
@@ -634,7 +616,7 @@ public class TestWorker extends CompactorTest {
     rqst.setPartitionname("ds=today");
     txnHandler.compact(rqst);
 
-    startWorker(new HiveConf());
+    startWorker();
 
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
     List<ShowCompactResponseElement> compacts = rsp.getCompacts();
@@ -668,10 +650,5 @@ public class TestWorker extends CompactorTest {
       }
     }
     Assert.assertTrue(sawNewBase);
-  }
-
-  @Before
-  public void setUpTxnDb() throws Exception {
-    TxnDbUtil.setConfValues(new HiveConf());
   }
 }
