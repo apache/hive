@@ -456,7 +456,29 @@ from (select b.key, count(*)
 ) a
 ;
 
--- 17. get stats with empty partition list
+-- 20. Test get stats with empty partition list
 select t1.value from t1 join t2 on t1.key = t2.key where t1.dt = '10' and t1.c_boolean = true;
 
+-- 21. Test groupby is empty and there is no other cols in aggr
+select unionsrc.key FROM (select 'tst1' as key, count(1) as value from src) unionsrc;
+
+select unionsrc.key, unionsrc.value FROM (select 'tst1' as key, count(1) as value from src) unionsrc;
+
+select unionsrc.key FROM (select 'max' as key, max(c_int) as value from t3 s1
+	UNION  ALL
+    	select 'min' as key,  min(c_int) as value from t3 s2
+    UNION ALL
+        select 'avg' as key,  avg(c_int) as value from t3 s3) unionsrc order by unionsrc.key;
+        
+select unionsrc.key, unionsrc.value FROM (select 'max' as key, max(c_int) as value from t3 s1
+	UNION  ALL
+    	select 'min' as key,  min(c_int) as value from t3 s2
+    UNION ALL
+        select 'avg' as key,  avg(c_int) as value from t3 s3) unionsrc order by unionsrc.key;
+
+select unionsrc.key, count(1) FROM (select 'max' as key, max(c_int) as value from t3 s1
+    UNION  ALL
+        select 'min' as key,  min(c_int) as value from t3 s2
+    UNION ALL
+        select 'avg' as key,  avg(c_int) as value from t3 s3) unionsrc group by unionsrc.key order by unionsrc.key;
 
