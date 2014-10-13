@@ -664,6 +664,11 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
         (OrcStruct.createObjectInspector(rowType));
   }
 
+  @Override
+  public boolean isDelete(OrcStruct value) {
+    return OrcRecordUpdater.getOperation(value) == OrcRecordUpdater.DELETE_OPERATION;
+  }
+
   /**
    * Get the number of columns in the underlying rows.
    * @return 0 if there are no base and no deltas.
