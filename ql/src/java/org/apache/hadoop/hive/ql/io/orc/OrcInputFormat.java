@@ -1134,7 +1134,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
 
       @Override
       public ObjectInspector getObjectInspector() {
-        return ((StructObjectInspector) reader.getObjectInspector())
+        return ((StructObjectInspector) records.getObjectInspector())
             .getAllStructFieldRefs().get(OrcRecordUpdater.ROW)
             .getFieldObjectInspector();
       }
