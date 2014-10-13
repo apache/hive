@@ -73,6 +73,7 @@ import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
@@ -1266,6 +1267,8 @@ public class TestInputOutputFormat {
     }
     conf.set("hive.io.file.readcolumn.ids", columnIds.toString());
     conf.set("partition_columns", "p");
+    conf.set(serdeConstants.LIST_COLUMNS, columnNames.toString());
+    conf.set(serdeConstants.LIST_COLUMN_TYPES, columnTypes.toString());
     MockFileSystem fs = (MockFileSystem) warehouseDir.getFileSystem(conf);
     fs.clear();
 
