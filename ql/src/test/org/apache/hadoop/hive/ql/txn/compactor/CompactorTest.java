@@ -339,6 +339,7 @@ public abstract class CompactorTest {
     private final Configuration conf;
     private FSDataInputStream is = null;
     private final FileSystem fs;
+    private boolean lastWasDelete = true;
 
     MockRawReader(Configuration conf, List<Path> files) throws IOException {
       filesToRead = new Stack<Path>();
@@ -350,6 +351,15 @@ public abstract class CompactorTest {
     @Override
     public ObjectInspector getObjectInspector() {
       return null;
+    }
+
+    @Override
+    public boolean isDelete(Text value) {
+      // Alternate between returning deleted and not.  This is easier than actually
+      // tracking operations. We test that this is getting properly called by checking that only
+      // half the records show up in base files after major compactions.
+      lastWasDelete = !lastWasDelete;
+      return lastWasDelete;
     }
 
     @Override
