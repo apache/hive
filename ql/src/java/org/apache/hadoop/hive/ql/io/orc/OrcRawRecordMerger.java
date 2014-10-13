@@ -450,6 +450,10 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
 
     // we always want to read all of the deltas
     eventOptions.range(0, Long.MAX_VALUE);
+    // Turn off the sarg before pushing it to delta.  We never want to push a sarg to a delta as
+    // it can produce wrong results (if the latest valid version of the record is filtered out by
+    // the sarg) or ArrayOutOfBounds errors (when the sarg is applied to a delete record)
+    eventOptions.searchArgument(null, null);
     if (deltaDirectory != null) {
       for(Path delta: deltaDirectory) {
         ReaderKey key = new ReaderKey();
