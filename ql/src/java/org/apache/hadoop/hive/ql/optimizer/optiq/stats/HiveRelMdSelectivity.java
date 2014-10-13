@@ -37,6 +37,7 @@ import org.eigenbase.rel.metadata.RelMetadataProvider;
 import org.eigenbase.rel.metadata.RelMetadataQuery;
 import org.eigenbase.rex.RexNode;
 import org.eigenbase.rex.RexUtil;
+import org.eigenbase.util.Pair;
 
 import com.google.common.collect.ImmutableMap;
 
@@ -67,7 +68,15 @@ public class HiveRelMdSelectivity extends RelMdSelectivity {
 
   private Double computeInnerJoinSelectivity(HiveJoinRel j, RexNode predicate) {
     double ndvCrossProduct = 1;
-    RexNode combinedPredicate = getCombinedPredicateForJoin(j, predicate);
+    Pair<Boolean, RexNode> predInfo =
+        getCombinedPredicateForJoin(j, predicate);
+    if (!predInfo.getKey()) {
+      return
+          new FilterSelectivityEstimator(j).
+          estimateSelectivity(predInfo.getValue());
+    }
+
+    RexNode combinedPredicate = predInfo.getValue();
     JoinPredicateInfo jpi = JoinPredicateInfo.constructJoinPredicateInfo(j,
         combinedPredicate);
     ImmutableMap.Builder<Integer, Double> colStatMapBuilder = ImmutableMap
@@ -175,7 +184,14 @@ public class HiveRelMdSelectivity extends RelMdSelectivity {
     return ndvCrossProduct;
   }
 
-  private RexNode getCombinedPredicateForJoin(HiveJoinRel j, RexNode additionalPredicate) {
+  /**
+   * 
+   * @param j
+   * @param additionalPredicate
+   * @return if predicate is the join condition return (true, joinCond)
+   * else return (false, minusPred)
+   */
+  private Pair<Boolean,RexNode> getCombinedPredicateForJoin(HiveJoinRel j, RexNode additionalPredicate) {
     RexNode minusPred = RelMdUtil.minusPreds(j.getCluster().getRexBuilder(), additionalPredicate,
         j.getCondition());
 
@@ -184,10 +200,10 @@ public class HiveRelMdSelectivity extends RelMdSelectivity {
       minusList.add(j.getCondition());
       minusList.add(minusPred);
 
-      return RexUtil.composeConjunction(j.getCluster().getRexBuilder(), minusList, true);
+      return new Pair<Boolean,RexNode>(false, minusPred);
     }
 
-    return j.getCondition();
+    return new Pair<Boolean,RexNode>(true,j.getCondition());
   }
 
   /**
