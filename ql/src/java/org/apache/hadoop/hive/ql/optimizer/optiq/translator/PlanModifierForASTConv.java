@@ -28,7 +28,10 @@ import org.apache.hadoop.hive.ql.optimizer.optiq.OptiqSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.optiq.reloperators.HiveAggregateRel;
 import org.apache.hadoop.hive.ql.optimizer.optiq.reloperators.HiveProjectRel;
 import org.apache.hadoop.hive.ql.optimizer.optiq.reloperators.HiveSortRel;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.eigenbase.rel.AggregateCall;
 import org.eigenbase.rel.AggregateRelBase;
+import org.eigenbase.rel.Aggregation;
 import org.eigenbase.rel.EmptyRel;
 import org.eigenbase.rel.FilterRelBase;
 import org.eigenbase.rel.JoinRelBase;
@@ -43,9 +46,12 @@ import org.eigenbase.rel.rules.MultiJoinRel;
 import org.eigenbase.relopt.hep.HepRelVertex;
 import org.eigenbase.relopt.volcano.RelSubset;
 import org.eigenbase.reltype.RelDataType;
+import org.eigenbase.reltype.RelDataTypeFactory;
 import org.eigenbase.rex.RexNode;
+import org.eigenbase.sql.SqlKind;
 import org.eigenbase.util.Pair;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 public class PlanModifierForASTConv {
@@ -108,8 +114,14 @@ public class PlanModifierForASTConv {
           introduceDerivedTable(((HiveSortRel) rel).getChild(), rel);
         }
       } else if (rel instanceof HiveAggregateRel) {
+        RelNode newParent = parent;
         if (!validGBParent(rel, parent)) {
-          introduceDerivedTable(rel, parent);
+          newParent = introduceDerivedTable(rel, parent);
+        }
+        // check if groupby is empty and there is no other cols in aggr
+        // this should only happen when newParent is constant.
+        if (isEmptyGrpAggr(rel)) {
+          replaceEmptyGroupAggr(rel, newParent);
         }
       }
     }
@@ -206,7 +218,7 @@ public class PlanModifierForASTConv {
     return select;
   }
 
-  private static void introduceDerivedTable(final RelNode rel, RelNode parent) {
+  private static RelNode introduceDerivedTable(final RelNode rel, RelNode parent) {
     int i = 0;
     int pos = -1;
     List<RelNode> childList = parent.getInputs();
@@ -226,6 +238,8 @@ public class PlanModifierForASTConv {
     RelNode select = introduceDerivedTable(rel);
 
     parent.replaceInput(pos, select);
+    
+    return select;
   }
 
   private static boolean validJoinParent(RelNode joinNode, RelNode parent) {
@@ -309,5 +323,41 @@ public class PlanModifierForASTConv {
     }
 
     return validChild;
+  }
+  
+  private static boolean isEmptyGrpAggr(RelNode gbNode) {
+    // Verify if both groupset and aggrfunction are empty)
+    AggregateRelBase aggrnode = (AggregateRelBase) gbNode;
+    if (aggrnode.getGroupSet().isEmpty() && aggrnode.getAggCallList().isEmpty()) {
+      return true;
+    }
+    return false;
+  }
+  
+  private static void replaceEmptyGroupAggr(final RelNode rel, RelNode parent) {
+    // If this function is called, the parent should only include constant
+    List<RexNode> exps = parent.getChildExps();
+    for (RexNode rexNode : exps) {
+      if (rexNode.getKind() != SqlKind.LITERAL) {
+        throw new RuntimeException("We expect " + parent.toString()
+            + " to contain only constants. However, " + rexNode.toString() + " is "
+            + rexNode.getKind());
+      }
+    }
+    HiveAggregateRel oldAggRel = (HiveAggregateRel) rel;
+    RelDataTypeFactory typeFactory = oldAggRel.getCluster().getTypeFactory();
+    RelDataType longType = TypeConverter.convert(TypeInfoFactory.longTypeInfo, typeFactory);
+    RelDataType intType = TypeConverter.convert(TypeInfoFactory.intTypeInfo, typeFactory);
+    // Create the dummy aggregation.
+    Aggregation countFn = (Aggregation) SqlFunctionConverter.getOptiqAggFn("count",
+        ImmutableList.of(intType), longType);
+    // TODO: Using 0 might be wrong; might need to walk down to find the
+    // proper index of a dummy.
+    List<Integer> argList = ImmutableList.of(0);
+    AggregateCall dummyCall = new AggregateCall(countFn, false, argList, longType, null);
+    AggregateRelBase newAggRel = oldAggRel.copy(oldAggRel.getTraitSet(), oldAggRel.getChild(),
+        oldAggRel.getGroupSet(), ImmutableList.of(dummyCall));
+    RelNode select = introduceDerivedTable(newAggRel);
+    parent.replaceInput(0, select);
   }
 }
