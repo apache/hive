@@ -165,6 +165,19 @@
 
   <repositories>
     <repository>
+      <id>datanucleus</id>
+      <name>datanucleus maven repository</name>
+      <url>http://www.datanucleus.org/downloads/maven2</url>
+      <layout>default</layout>
+      <releases>
+        <enabled>true</enabled>
+        <checksumPolicy>warn</checksumPolicy>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+    <repository>
       <id>glassfish-repository</id>
       <url>http://maven.glassfish.org/content/groups/glassfish</url>
       <releases>
@@ -194,11 +207,6 @@
          <enabled>false</enabled>
        </snapshots>
      </repository>
-    <repository>
-      <id>repository.jboss.org-public</id>
-      <name>JBoss repository</name>
-      <url>https://repository.jboss.org/nexus/content/groups/public</url>
-    </repository>
   </repositories>
 
   <!-- Hadoop dependency management is done at the bottom under profiles -->
