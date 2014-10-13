@@ -230,8 +230,9 @@ public class TestCompactor {
     t.setThreadId((int) t.getId());
     t.setHiveConf(conf);
     MetaStoreThread.BooleanPointer stop = new MetaStoreThread.BooleanPointer();
+    MetaStoreThread.BooleanPointer looped = new MetaStoreThread.BooleanPointer();
     stop.boolVal = true;
-    t.init(stop);
+    t.init(stop, looped);
     t.run();
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
     List<ShowCompactResponseElement> compacts = rsp.getCompacts();
