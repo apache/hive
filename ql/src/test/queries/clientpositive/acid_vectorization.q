@@ -12,3 +12,5 @@ set hive.vectorized.execution.enabled=true;
 update acid_vectorized set b = 'foo' where b = 'bar';
 set hive.vectorized.execution.enabled=true;
 delete from acid_vectorized where b = 'foo';
+set hive.vectorized.execution.enabled=true;
+select a, b from acid_vectorized order by a, b;
