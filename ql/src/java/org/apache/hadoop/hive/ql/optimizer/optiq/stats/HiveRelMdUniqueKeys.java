@@ -30,6 +30,7 @@ import net.hydromatic.optiq.util.BitSets;
 
 import org.apache.hadoop.hive.ql.optimizer.optiq.reloperators.HiveTableScanRel;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
+import org.eigenbase.rel.FilterRelBase;
 import org.eigenbase.rel.ProjectRelBase;
 import org.eigenbase.rel.RelNode;
 import org.eigenbase.rel.metadata.BuiltInMetadata;
@@ -37,6 +38,7 @@ import org.eigenbase.rel.metadata.Metadata;
 import org.eigenbase.rel.metadata.ReflectiveRelMetadataProvider;
 import org.eigenbase.rel.metadata.RelMdUniqueKeys;
 import org.eigenbase.rel.metadata.RelMetadataProvider;
+import org.eigenbase.relopt.hep.HepRelVertex;
 import org.eigenbase.rex.RexInputRef;
 import org.eigenbase.rex.RexNode;
 
@@ -59,16 +61,15 @@ public class HiveRelMdUniqueKeys {
    */
   public Set<BitSet> getUniqueKeys(ProjectRelBase rel, boolean ignoreNulls) {
 
-    RelNode child = rel.getChild();
+    HiveTableScanRel tScan = getTableScan(rel.getChild(), false);
 
-    if (!(child instanceof HiveTableScanRel)) {
+    if ( tScan == null ) {
       Function<RelNode, Metadata> fn = RelMdUniqueKeys.SOURCE.apply(
           rel.getClass(), BuiltInMetadata.UniqueKeys.class);
       return ((BuiltInMetadata.UniqueKeys) fn.apply(rel))
           .getUniqueKeys(ignoreNulls);
     }
 
-    HiveTableScanRel tScan = (HiveTableScanRel) child;
     Map<Integer, Integer> posMap = new HashMap<Integer, Integer>();
     int projectPos = 0;
     int colStatsPos = 0;
@@ -110,6 +111,28 @@ public class HiveRelMdUniqueKeys {
     }
 
     return keys;
+  }
+
+  /*
+   * traverse a path of Filter, Projects to get to the TableScan.
+   * In case of Unique keys, stop if you reach a Project, it will be handled
+   * by the invocation on the Project.
+   * In case of getting the base rowCount of a Path, keep going past a Project.
+   */
+  static HiveTableScanRel getTableScan(RelNode r, boolean traverseProject) {
+
+    while (r != null && !(r instanceof HiveTableScanRel)) {
+      if (r instanceof HepRelVertex) {
+        r = ((HepRelVertex) r).getCurrentRel();
+      } else if (r instanceof FilterRelBase) {
+        r = ((FilterRelBase) r).getChild();
+      } else if (traverseProject && r instanceof ProjectRelBase) {
+        r = ((ProjectRelBase) r).getChild();
+      } else {
+        r = null;
+      }
+    }
+    return r == null ? null : (HiveTableScanRel) r;
   }
 
 }
