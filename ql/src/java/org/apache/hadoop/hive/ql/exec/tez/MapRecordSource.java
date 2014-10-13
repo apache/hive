@@ -45,7 +45,7 @@ public class MapRecordSource implements RecordSource {
   private final boolean grouped = false;
 
   void init(JobConf jconf, MapOperator mapOp, KeyValueReader reader) throws IOException {
-    execContext = new ExecMapperContext(jconf);
+    execContext = mapOp.getExecContext();
     this.mapOp = mapOp;
     this.reader = reader;
   }
