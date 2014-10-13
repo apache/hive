@@ -64,6 +64,7 @@ public class OrcFileMergeOperator extends
 
   private void processKeyValuePairs(Object key, Object value)
       throws HiveException {
+    String filePath = "";
     try {
       OrcFileValueWrapper v;
       OrcFileKeyWrapper k;
@@ -72,6 +73,7 @@ public class OrcFileMergeOperator extends
       } else {
         k = (OrcFileKeyWrapper) key;
       }
+      filePath = k.getInputPath().toUri().getPath();
 
       fixTmpPath(k.getInputPath().getParent());
 
@@ -131,6 +133,16 @@ public class OrcFileMergeOperator extends
       this.exception = true;
       closeOp(true);
       throw new HiveException(e);
+    } finally {
+      if (fdis != null) {
+        try {
+          fdis.close();
+        } catch (IOException e) {
+          throw new HiveException(String.format("Unable to close file %s", filePath), e);
+        } finally {
+          fdis = null;
+        }
+      }
     }
   }
 
