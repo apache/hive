@@ -28,6 +28,7 @@ import net.hydromatic.optiq.util.BitSets;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.ql.optimizer.optiq.reloperators.HiveTableScanRel;
 import org.eigenbase.rel.FilterRelBase;
 import org.eigenbase.rel.JoinRelBase;
 import org.eigenbase.rel.JoinRelType;
@@ -41,6 +42,7 @@ import org.eigenbase.rel.metadata.RelMetadataProvider;
 import org.eigenbase.rel.metadata.RelMetadataQuery;
 import org.eigenbase.rel.rules.SemiJoinRel;
 import org.eigenbase.relopt.RelOptUtil;
+import org.eigenbase.relopt.hep.HepRelVertex;
 import org.eigenbase.rex.RexBuilder;
 import org.eigenbase.rex.RexCall;
 import org.eigenbase.rex.RexInputRef;
@@ -270,10 +272,11 @@ public class HiveRelMdRowCount extends RelMdRowCount {
     if (pkSide == 0) {
       FKSideInfo fkInfo = new FKSideInfo(rightRowCount,
           rightNDV);
+      double pkSelectivity = pkSelectivity(joinRel, true, left, leftRowCount);
       PKSideInfo pkInfo = new PKSideInfo(leftRowCount,
           leftNDV,
           joinRel.getJoinType().generatesNullsOnRight() ? 1.0 :
-            isPKSideSimpleTree ? RelMetadataQuery.getSelectivity(left, leftPred) : 1.0);
+            pkSelectivity);
 
       return new PKFKRelationInfo(1, fkInfo, pkInfo, ndvScalingFactor, isPKSideSimpleTree);
     }
@@ -281,15 +284,33 @@ public class HiveRelMdRowCount extends RelMdRowCount {
     if (pkSide == 1) {
       FKSideInfo fkInfo = new FKSideInfo(leftRowCount,
           leftNDV);
+      double pkSelectivity = pkSelectivity(joinRel, false, right, rightRowCount);
       PKSideInfo pkInfo = new PKSideInfo(rightRowCount,
           rightNDV,
           joinRel.getJoinType().generatesNullsOnLeft() ? 1.0 :
-            isPKSideSimpleTree ?  RelMetadataQuery.getSelectivity(right, rightPred) : 1.0);
+            pkSelectivity);
 
       return new PKFKRelationInfo(1, fkInfo, pkInfo, ndvScalingFactor, isPKSideSimpleTree);
     }
 
     return null;
+  }
+
+  private static double pkSelectivity(JoinRelBase joinRel, boolean leftChild,
+      RelNode child,
+      double childRowCount) {
+    if ((leftChild && joinRel.getJoinType().generatesNullsOnRight()) ||
+        (!leftChild && joinRel.getJoinType().generatesNullsOnLeft())) {
+      return 1.0;
+    } else {
+      HiveTableScanRel tScan = HiveRelMdUniqueKeys.getTableScan(child, true);
+      if (tScan != null) {
+        double tRowCount = RelMetadataQuery.getRowCount(tScan);
+        return childRowCount / tRowCount;
+      } else {
+        return 1.0;
+      }
+    }
   }
 
   private static boolean isKey(BitSet c, RelNode rel) {
@@ -383,6 +404,10 @@ public class HiveRelMdRowCount extends RelMdRowCount {
 
     @Override
     public void visit(RelNode node, int ordinal, RelNode parent) {
+
+      if (node instanceof HepRelVertex) {
+        node = ((HepRelVertex) node).getCurrentRel();
+      }
 
       if (node instanceof TableAccessRelBase) {
         simpleTree = true;
