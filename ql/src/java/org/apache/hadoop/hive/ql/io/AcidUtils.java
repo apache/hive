@@ -348,7 +348,7 @@ public class AcidUtils {
     long bestBaseTxn = 0;
     final List<ParsedDelta> deltas = new ArrayList<ParsedDelta>();
     List<ParsedDelta> working = new ArrayList<ParsedDelta>();
-    final List<FileStatus> original = new ArrayList<FileStatus>();
+    List<FileStatus> originalDirectories = new ArrayList<FileStatus>();
     final List<FileStatus> obsolete = new ArrayList<FileStatus>();
     List<FileStatus> children = SHIMS.listLocatedStatus(fs, directory,
         hiddenFileFilter);
@@ -375,16 +375,26 @@ public class AcidUtils {
           working.add(delta);
         }
       } else {
-        findOriginals(fs, child, original);
+        // This is just the directory.  We need to recurse and find the actual files.  But don't
+        // do this until we have determined there is no base.  This saves time.  Plus,
+        // it is possible that the cleaner is running and removing these original files,
+        // in which case recursing through them could cause us to get an error.
+        originalDirectories.add(child);
       }
     }
 
+    final List<FileStatus> original = new ArrayList<FileStatus>();
     // if we have a base, the original files are obsolete.
     if (bestBase != null) {
-      obsolete.addAll(original);
       // remove the entries so we don't get confused later and think we should
       // use them.
       original.clear();
+    } else {
+      // Okay, we're going to need these originals.  Recurse through them and figure out what we
+      // really need.
+      for (FileStatus origDir : originalDirectories) {
+        findOriginals(fs, origDir, original);
+      }
     }
 
     Collections.sort(working);
