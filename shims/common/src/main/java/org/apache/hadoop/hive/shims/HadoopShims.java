@@ -366,6 +366,15 @@ public interface HadoopShims {
   public short getDefaultReplication(FileSystem fs, Path path);
 
   /**
+   * Reset the default fair scheduler queue mapping to end user.
+   *
+   * @param conf
+   * @param userName end user name
+   */
+  public void refreshDefaultQueue(Configuration conf, String userName)
+      throws IOException;
+
+  /**
    * Create the proxy ugi for the given userid
    * @param userName
    * @return

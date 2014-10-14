@@ -1625,6 +1625,12 @@ public class HiveConf extends Configuration {
     HIVE_SERVER2_USE_SSL("hive.server2.use.SSL", false, ""),
     HIVE_SERVER2_SSL_KEYSTORE_PATH("hive.server2.keystore.path", "", ""),
     HIVE_SERVER2_SSL_KEYSTORE_PASSWORD("hive.server2.keystore.password", "", ""),
+    HIVE_SERVER2_MAP_FAIR_SCHEDULER_QUEUE("hive.server2.map.fair.scheduler.queue", true,
+        "If the YARN fair scheduler is configured and HiveServer2 is running in non-impersonation mode,\n" +
+        "this setting determines the user for fair scheduler queue mapping.\n" +
+        "If set to true (default), the logged-in user determines the fair scheduler queue\n" +
+        "for submitted jobs, so that map reduce resource usage can be tracked by user.\n" +
+        "If set to false, all Hive jobs go to the 'hive' user's queue."),
 
     HIVE_SECURITY_COMMAND_WHITELIST("hive.security.command.whitelist", "set,reset,dfs,add,list,delete,reload,compile",
         "Comma separated list of non-SQL Hive commands users are authorized to execute"),

@@ -120,6 +120,11 @@
      <optional>true</optional>
    </dependency>
    <dependency>
+     <groupId>org.apache.hadoop</groupId>
+     <artifactId>hadoop-yarn-server-resourcemanager</artifactId>
+     <version>${hadoop-23.version}</version>
+   </dependency>
+   <dependency>
      <groupId>org.apache.tez</groupId>
      <artifactId>tez-tests</artifactId>
      <version>${tez.version}</version>

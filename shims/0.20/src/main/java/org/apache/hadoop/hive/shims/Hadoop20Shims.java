@@ -825,6 +825,11 @@ public class Hadoop20Shims implements HadoopShims {
   }
 
   @Override
+  public void refreshDefaultQueue(Configuration conf, String userName) {
+    // MR1 does not expose API required to set MR queue mapping for user
+  }
+
+  @Override
   public String getTokenFileLocEnvName() {
     throw new UnsupportedOperationException(
         "Kerberos not supported in current hadoop version");
