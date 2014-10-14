@@ -481,7 +481,9 @@ public class DynamicPartitionPruner {
       if (sourcesWaitingForEvents.contains(event.getSourceVertexName())) {
         ++totalEventCount;
         numEventsSeenPerSource.get(event.getSourceVertexName()).increment();
-        queue.offer(event);
+        if(!queue.offer(event)) {
+          throw new IllegalStateException("Queue full");
+        }
         checkForSourceCompletion(event.getSourceVertexName());
       }
     }
@@ -511,7 +513,9 @@ public class DynamicPartitionPruner {
         sourcesWaitingForEvents.remove(name);
         if (sourcesWaitingForEvents.isEmpty()) {
           // we've got what we need; mark the queue
-          queue.offer(endOfEvents);
+          if(!queue.offer(endOfEvents)) {
+            throw new IllegalStateException("Queue full");
+          }
         } else {
           LOG.info("Waiting for " + sourcesWaitingForEvents.size() + " sources.");
         }
