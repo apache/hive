@@ -18946,17 +18946,94 @@ POSTHOOK: Input: default@src_cbo
 96	1
 97	2
 98	2
-PREHOOK: query: -- 17. get stats with empty partition list
+PREHOOK: query: -- 20. Test get stats with empty partition list
 select t1.value from t1 join t2 on t1.key = t2.key where t1.dt = '10' and t1.c_boolean = true
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t2@dt=2014
 #### A masked pattern was here ####
-POSTHOOK: query: -- 17. get stats with empty partition list
+POSTHOOK: query: -- 20. Test get stats with empty partition list
 select t1.value from t1 join t2 on t1.key = t2.key where t1.dt = '10' and t1.c_boolean = true
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t2@dt=2014
 #### A masked pattern was here ####
+PREHOOK: query: -- 21. Test groupby is empty and there is no other cols in aggr
+select unionsrc.key FROM (select 'tst1' as key, count(1) as value from src) unionsrc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: -- 21. Test groupby is empty and there is no other cols in aggr
+select unionsrc.key FROM (select 'tst1' as key, count(1) as value from src) unionsrc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+tst1
+PREHOOK: query: select unionsrc.key, unionsrc.value FROM (select 'tst1' as key, count(1) as value from src) unionsrc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select unionsrc.key, unionsrc.value FROM (select 'tst1' as key, count(1) as value from src) unionsrc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+tst1	500
+PREHOOK: query: select unionsrc.key FROM (select 'max' as key, max(c_int) as value from t3 s1
+	UNION  ALL
+    	select 'min' as key,  min(c_int) as value from t3 s2
+    UNION ALL
+        select 'avg' as key,  avg(c_int) as value from t3 s3) unionsrc order by unionsrc.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t3
+#### A masked pattern was here ####
+POSTHOOK: query: select unionsrc.key FROM (select 'max' as key, max(c_int) as value from t3 s1
+	UNION  ALL
+    	select 'min' as key,  min(c_int) as value from t3 s2
+    UNION ALL
+        select 'avg' as key,  avg(c_int) as value from t3 s3) unionsrc order by unionsrc.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t3
+#### A masked pattern was here ####
+avg
+max
+min
+PREHOOK: query: select unionsrc.key, unionsrc.value FROM (select 'max' as key, max(c_int) as value from t3 s1
+	UNION  ALL
+    	select 'min' as key,  min(c_int) as value from t3 s2
+    UNION ALL
+        select 'avg' as key,  avg(c_int) as value from t3 s3) unionsrc order by unionsrc.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t3
+#### A masked pattern was here ####
+POSTHOOK: query: select unionsrc.key, unionsrc.value FROM (select 'max' as key, max(c_int) as value from t3 s1
+	UNION  ALL
+    	select 'min' as key,  min(c_int) as value from t3 s2
+    UNION ALL
+        select 'avg' as key,  avg(c_int) as value from t3 s3) unionsrc order by unionsrc.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t3
+#### A masked pattern was here ####
+avg	1.5
+max	3.0
+min	1.0
+PREHOOK: query: select unionsrc.key, count(1) FROM (select 'max' as key, max(c_int) as value from t3 s1
+    UNION  ALL
+        select 'min' as key,  min(c_int) as value from t3 s2
+    UNION ALL
+        select 'avg' as key,  avg(c_int) as value from t3 s3) unionsrc group by unionsrc.key order by unionsrc.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t3
+#### A masked pattern was here ####
+POSTHOOK: query: select unionsrc.key, count(1) FROM (select 'max' as key, max(c_int) as value from t3 s1
+    UNION  ALL
+        select 'min' as key,  min(c_int) as value from t3 s2
+    UNION ALL
+        select 'avg' as key,  avg(c_int) as value from t3 s3) unionsrc group by unionsrc.key order by unionsrc.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t3
+#### A masked pattern was here ####
+avg	1
+max	1
+min	1
