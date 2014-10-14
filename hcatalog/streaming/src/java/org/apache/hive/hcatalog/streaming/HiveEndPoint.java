@@ -240,6 +240,7 @@ public class HiveEndPoint {
     private final HiveEndPoint endPt;
     private final UserGroupInformation ugi;
     private final String username;
+    private final boolean secureMode;
 
     /**
      * @param endPoint end point to connect to
@@ -261,7 +262,8 @@ public class HiveEndPoint {
       if (conf==null) {
         conf = HiveEndPoint.createHiveConf(this.getClass(), endPoint.metaStoreUri);
       }
-      this.msClient = getMetaStoreClient(endPoint, conf);
+      this.secureMode = ugi==null ? false : ugi.hasKerberosCredentials();
+      this.msClient = getMetaStoreClient(endPoint, conf, secureMode);
       if (createPart  &&  !endPoint.partitionVals.isEmpty()) {
         createPartitionIfNotExists(endPoint, msClient, conf);
       }
@@ -425,13 +427,15 @@ public class HiveEndPoint {
       return buff.toString();
     }
 
-    private static IMetaStoreClient getMetaStoreClient(HiveEndPoint endPoint, HiveConf conf)
+    private static IMetaStoreClient getMetaStoreClient(HiveEndPoint endPoint, HiveConf conf, boolean secureMode)
             throws ConnectionError {
 
       if (endPoint.metaStoreUri!= null) {
         conf.setVar(HiveConf.ConfVars.METASTOREURIS, endPoint.metaStoreUri);
       }
-
+      if(secureMode) {
+        conf.setBoolVar(HiveConf.ConfVars.METASTORE_USE_THRIFT_SASL,true);
+      }
       try {
         return new HiveMetaStoreClient(conf);
       } catch (MetaException e) {
