@@ -91,26 +91,6 @@ public class AvroSerdeUtils {
     }
   }
 
-  /**
-   * Attempt to determine the schema via the usual means, but do not throw
-   * an exception if we fail.  Instead, signal failure via a special
-   * schema.  This is used because Hive calls init on the serde during
-   * any call, including calls to update the serde properties, meaning
-   * if the serde is in a bad state, there is no way to update that state.
-   */
-  public static Schema determineSchemaOrReturnErrorSchema(Properties props) {
-    try {
-      return determineSchemaOrThrowException(props);
-    } catch(AvroSerdeException he) {
-      LOG.warn("Encountered AvroSerdeException determining schema. Returning " +
-              "signal schema to indicate problem", he);
-      return SchemaResolutionProblem.SIGNAL_BAD_SCHEMA;
-    } catch (Exception e) {
-      LOG.warn("Encountered exception determining schema. Returning signal " +
-              "schema to indicate problem", e);
-      return SchemaResolutionProblem.SIGNAL_BAD_SCHEMA;
-    }
-  }
   // Protected for testing and so we can pass in a conf for testing.
   protected static Schema getSchemaFromFS(String schemaFSUrl,
                           Configuration conf) throws IOException, URISyntaxException {

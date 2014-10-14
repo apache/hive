@@ -192,7 +192,7 @@ public class Table implements Serializable {
           "at least one column must be specified for the table");
     }
     if (!isView()) {
-      if (null == getDeserializerFromMetaStore()) {
+      if (null == getDeserializerFromMetaStore(false)) {
         throw new HiveException("must specify a non-null serDe");
       }
       if (null == getInputFormatClass()) {
@@ -253,14 +253,21 @@ public class Table implements Serializable {
 
   final public Deserializer getDeserializer() {
     if (deserializer == null) {
-      deserializer = getDeserializerFromMetaStore();
+      deserializer = getDeserializerFromMetaStore(false);
     }
     return deserializer;
   }
 
-  private Deserializer getDeserializerFromMetaStore() {
+  final public Deserializer getDeserializer(boolean skipConfError) {
+    if (deserializer == null) {
+      deserializer = getDeserializerFromMetaStore(skipConfError);
+    }
+    return deserializer;
+  }
+
+  final public Deserializer getDeserializerFromMetaStore(boolean skipConfError) {
     try {
-      return MetaStoreUtils.getDeserializer(Hive.get().getConf(), tTable);
+      return MetaStoreUtils.getDeserializer(Hive.get().getConf(), tTable, skipConfError);
     } catch (MetaException e) {
       throw new RuntimeException(e);
     } catch (HiveException e) {

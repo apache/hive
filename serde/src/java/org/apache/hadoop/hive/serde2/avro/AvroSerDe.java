@@ -89,7 +89,7 @@ public class AvroSerDe extends AbstractSerDe {
         || properties.getProperty(AvroSerdeUtils.SCHEMA_URL) != null
         || columnNameProperty == null || columnNameProperty.isEmpty()
         || columnTypeProperty == null || columnTypeProperty.isEmpty()) {
-      schema = AvroSerdeUtils.determineSchemaOrReturnErrorSchema(properties);
+      schema = determineSchemaOrReturnErrorSchema(properties);
     } else {
       // Get column names and sort order
       columnNames = Arrays.asList(columnNameProperty.split(","));
@@ -133,6 +133,32 @@ public class AvroSerDe extends AbstractSerDe {
     this.columnNames = aoig.getColumnNames();
     this.columnTypes = aoig.getColumnTypes();
     this.oi = aoig.getObjectInspector();
+  }
+
+  /**
+   * Attempt to determine the schema via the usual means, but do not throw
+   * an exception if we fail.  Instead, signal failure via a special
+   * schema.  This is used because Hive calls init on the serde during
+   * any call, including calls to update the serde properties, meaning
+   * if the serde is in a bad state, there is no way to update that state.
+   */
+  public Schema determineSchemaOrReturnErrorSchema(Properties props) {
+    try {
+      configErrors = "";
+      return AvroSerdeUtils.determineSchemaOrThrowException(props);
+    } catch(AvroSerdeException he) {
+      LOG.warn("Encountered AvroSerdeException determining schema. Returning " +
+              "signal schema to indicate problem", he);
+      configErrors = new String("Encountered AvroSerdeException determining schema. Returning " +
+              "signal schema to indicate problem: " + he.getMessage());
+      return schema = SchemaResolutionProblem.SIGNAL_BAD_SCHEMA;
+    } catch (Exception e) {
+      LOG.warn("Encountered exception determining schema. Returning signal " +
+              "schema to indicate problem", e);
+      configErrors = new String("Encountered exception determining schema. Returning signal " +
+              "schema to indicate problem: " + e.getMessage());
+      return SchemaResolutionProblem.SIGNAL_BAD_SCHEMA;
+    }
   }
 
   @Override

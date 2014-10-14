@@ -85,77 +85,59 @@ public class TestAvroSerde {
   }
 
   @Test
-  public void noSchemaProvidedReturnsErrorSchema() throws SerDeException {
+  public void noSchemaProvidedThrowsException() {
     Properties props = new Properties();
 
-    verifyErrorSchemaReturned(props);
+    verifyExpectedException(props);
   }
 
   @Test
-  public void gibberishSchemaProvidedReturnsErrorSchema() throws SerDeException {
+  public void gibberishSchemaProvidedReturnsErrorSchema() {
     Properties props = new Properties();
     props.put(AvroSerdeUtils.SCHEMA_LITERAL, "blahblahblah");
 
-    verifyErrorSchemaReturned(props);
+    verifyExpectedException(props);
   }
 
   @Test
-  public void emptySchemaProvidedReturnsErrorSchema() throws SerDeException {
+  public void emptySchemaProvidedThrowsException() {
     Properties props = new Properties();
     props.put(AvroSerdeUtils.SCHEMA_LITERAL, "");
 
-    verifyErrorSchemaReturned(props);
+    verifyExpectedException(props);
   }
 
   @Test
-  public void badSchemaURLProvidedReturnsErrorSchema() throws SerDeException {
+  public void badSchemaURLProvidedThrowsException() {
     Properties props = new Properties();
     props.put(AvroSerdeUtils.SCHEMA_URL, "not://a/url");
 
-    verifyErrorSchemaReturned(props);
+    verifyExpectedException(props);
   }
 
   @Test
-  public void emptySchemaURLProvidedReturnsErrorSchema() throws SerDeException {
+  public void emptySchemaURLProvidedThrowsException() {
     Properties props = new Properties();
     props.put(AvroSerdeUtils.SCHEMA_URL, "");
 
-    verifyErrorSchemaReturned(props);
+    verifyExpectedException(props);
   }
 
   @Test
-  public void bothPropertiesSetToNoneReturnsErrorSchema() throws SerDeException {
+  public void bothPropertiesSetToNoneThrowsException() {
     Properties props = new Properties();
     props.put(AvroSerdeUtils.SCHEMA_URL, AvroSerdeUtils.SCHEMA_NONE);
     props.put(AvroSerdeUtils.SCHEMA_LITERAL, AvroSerdeUtils.SCHEMA_NONE);
 
-    verifyErrorSchemaReturned(props);
+    verifyExpectedException(props);
   }
 
-  private void verifyErrorSchemaReturned(Properties props) throws SerDeException {
+  private void verifyExpectedException(Properties props) {
     AvroSerDe asd = new AvroSerDe();
-    SerDeUtils.initializeSerDe(asd, new Configuration(), props, null);
-    assertTrue(asd.getObjectInspector() instanceof StandardStructObjectInspector);
-    StandardStructObjectInspector oi = (StandardStructObjectInspector)asd.getObjectInspector();
-    List<? extends StructField> allStructFieldRefs = oi.getAllStructFieldRefs();
-    assertEquals(SchemaResolutionProblem.SIGNAL_BAD_SCHEMA.getFields().size(), allStructFieldRefs.size());
-    StructField firstField = allStructFieldRefs.get(0);
-    assertTrue(firstField.toString().contains("error_error_error_error_error_error_error"));
-
     try {
-      Writable mock = Mockito.mock(Writable.class);
-      asd.deserialize(mock);
-      fail("Should have thrown a BadSchemaException");
-    } catch (BadSchemaException bse) {
-      // good
-    }
-
-    try {
-      Object o = Mockito.mock(Object.class);
-      ObjectInspector mockOI = Mockito.mock(ObjectInspector.class);
-      asd.serialize(o, mockOI);
-      fail("Should have thrown a BadSchemaException");
-    } catch (BadSchemaException bse) {
+      SerDeUtils.initializeSerDe(asd, new Configuration(), props, null);
+      fail("Expected Exception did not be thrown");
+    } catch (SerDeException e) {
       // good
     }
   }
