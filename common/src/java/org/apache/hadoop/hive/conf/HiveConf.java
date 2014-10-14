@@ -1317,10 +1317,11 @@ public class HiveConf extends Configuration {
 
     HIVEOUTERJOINSUPPORTSFILTERS("hive.outerjoin.supports.filters", true, ""),
 
-    HIVEFETCHTASKCONVERSION("hive.fetch.task.conversion", "more", new StringSet("minimal", "more"),
+    HIVEFETCHTASKCONVERSION("hive.fetch.task.conversion", "more", new StringSet("none", "minimal", "more"),
         "Some select queries can be converted to single FETCH task minimizing latency.\n" +
         "Currently the query should be single sourced not having any subquery and should not have\n" +
         "any aggregations or distincts (which incurs RS), lateral views and joins.\n" +
+        "0. none : disable hive.fetch.task.conversion\n" +
         "1. minimal : SELECT STAR, FILTER on partition columns, LIMIT only\n" +
         "2. more    : SELECT, FILTER, LIMIT only (support TABLESAMPLE and virtual columns)"
     ),
