@@ -29,12 +29,21 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.spark.status.SparkJobMonitor;
+import org.apache.hadoop.hive.ql.exec.spark.status.impl.JobStateListener;
+import org.apache.hadoop.hive.ql.exec.spark.status.impl.SimpleSparkJobStatus;
+import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.spark.FutureAction;
+import org.apache.spark.SimpleFutureAction;
 import org.apache.spark.SparkConf;
+import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.ui.jobs.JobProgressListener;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -69,8 +78,17 @@ public class SparkClient implements Serializable {
 
   private List<String> localFiles = new ArrayList<String>();
 
+  private JobStateListener jobStateListener;
+
+  private JobProgressListener jobProgressListener;
+
   private SparkClient(Configuration hiveConf) {
-    sc = new JavaSparkContext(initiateSparkConf(hiveConf));
+    SparkConf sparkConf = initiateSparkConf(hiveConf);
+    sc = new JavaSparkContext(sparkConf);
+    jobStateListener = new JobStateListener();
+    jobProgressListener = new JobProgressListener(sparkConf);
+    sc.sc().listenerBus().addListener(jobStateListener);
+    sc.sc().listenerBus().addListener(jobProgressListener);
   }
 
   private SparkConf initiateSparkConf(Configuration hiveConf) {
@@ -161,7 +179,15 @@ public class SparkClient implements Serializable {
 
     // Execute generated plan.
     try {
-      plan.execute();
+      JavaPairRDD<HiveKey, BytesWritable> finalRDD = plan.generateGraph();
+      // We use Spark RDD async action to submit job as it's the only way to get jobId now.
+      FutureAction future = finalRDD.foreachAsync(HiveVoidFunction.getInstance());
+      // An action may trigger multi jobs in Spark, we only monitor the latest job here
+      // until we found that Hive does trigger multi jobs.
+      SimpleSparkJobStatus sparkJobStatus = new SimpleSparkJobStatus(
+        (Integer) future.jobIds().last(), jobStateListener, jobProgressListener);
+      SparkJobMonitor monitor = new SparkJobMonitor(sparkJobStatus);
+      monitor.startMonitor();
     } catch (Exception e) {
       LOG.error("Error executing Spark Plan", e);
       return 1;
