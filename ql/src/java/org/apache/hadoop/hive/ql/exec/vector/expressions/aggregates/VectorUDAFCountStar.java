@@ -44,8 +44,7 @@ public class VectorUDAFCountStar extends VectorAggregateExpression {
 
       private static final long serialVersionUID = 1L;
 
-      transient private long value;
-      transient private boolean isNull;
+      transient private long count;
 
       @Override
       public int getVariableSize() {
@@ -54,8 +53,7 @@ public class VectorUDAFCountStar extends VectorAggregateExpression {
 
       @Override
       public void reset() {
-        isNull = true;
-        value = 0L;
+        count = 0L;
       }
     }
 
@@ -95,8 +93,7 @@ public class VectorUDAFCountStar extends VectorAggregateExpression {
       for (int i=0; i < batchSize; ++i) {
         Aggregation myAgg = getCurrentAggregationBuffer(
             aggregationBufferSets, aggregateIndex, i);
-        myAgg.isNull = false;
-        ++myAgg.value;
+        ++myAgg.count;
       }
     }
 
@@ -111,8 +108,7 @@ public class VectorUDAFCountStar extends VectorAggregateExpression {
       }
 
       Aggregation myagg = (Aggregation)agg;
-      myagg.isNull = false;
-      myagg.value += batchSize;
+      myagg.count += batchSize;
     }
 
     @Override
@@ -128,14 +124,9 @@ public class VectorUDAFCountStar extends VectorAggregateExpression {
 
     @Override
     public Object evaluateOutput(AggregationBuffer agg) throws HiveException {
-    Aggregation myagg = (Aggregation) agg;
-      if (myagg.isNull) {
-        return null;
-      }
-      else {
-        result.set (myagg.value);
+      Aggregation myagg = (Aggregation) agg;
+      result.set (myagg.count);
       return result;
-      }
     }
 
     @Override

@@ -43,6 +43,7 @@ import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.SessionHandle;
 import org.apache.hive.service.cli.operation.OperationManager;
 import org.apache.hive.service.cli.thrift.TProtocolVersion;
+import org.apache.hive.service.server.HiveServer2;
 import org.apache.hive.service.server.ThreadFactoryWithGarbageCleanup;
 
 /**
@@ -65,9 +66,12 @@ public class SessionManager extends CompositeService {
   private long sessionTimeout;
 
   private volatile boolean shutdown;
+  // The HiveServer2 instance running this service
+  private final HiveServer2 hiveServer2;
 
-  public SessionManager() {
-    super("SessionManager");
+  public SessionManager(HiveServer2 hiveServer2) {
+    super(SessionManager.class.getSimpleName());
+    this.hiveServer2 = hiveServer2;
   }
 
   @Override
@@ -229,6 +233,23 @@ public class SessionManager extends CompositeService {
     return openSession(protocol, username, password, ipAddress, sessionConf, false, null);
   }
 
+  /**
+   * Opens a new session and creates a session handle.
+   * The username passed to this method is the effective username.
+   * If withImpersonation is true (==doAs true) we wrap all the calls in HiveSession
+   * within a UGI.doAs, where UGI corresponds to the effective user.
+   * @see org.apache.hive.service.cli.thrift.ThriftCLIService#getUserName()
+   *
+   * @param protocol
+   * @param username
+   * @param password
+   * @param ipAddress
+   * @param sessionConf
+   * @param withImpersonation
+   * @param delegationToken
+   * @return
+   * @throws HiveSQLException
+   */
   public SessionHandle openSession(TProtocolVersion protocol, String username, String password, String ipAddress,
       Map<String, String> sessionConf, boolean withImpersonation, String delegationToken)
           throws HiveSQLException {
@@ -271,6 +292,24 @@ public class SessionManager extends CompositeService {
       throw new HiveSQLException("Session does not exist!");
     }
     session.close();
+    // Shutdown HiveServer2 if it has been deregistered from ZooKeeper and has no active sessions
+    if (!(hiveServer2 == null) && (hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_SUPPORT_DYNAMIC_SERVICE_DISCOVERY))
+        && (!hiveServer2.isRegisteredWithZooKeeper())) {
+      // Asynchronously shutdown this instance of HiveServer2,
+      // if there are no active client sessions
+      if (getOpenSessionCount() == 0) {
+        LOG.info("This instance of HiveServer2 has been removed from the list of server "
+            + "instances available for dynamic service discovery. "
+            + "The last client session has ended - will shutdown now.");
+        Thread shutdownThread = new Thread() {
+          @Override
+          public void run() {
+            hiveServer2.stop();
+          }
+        };
+        shutdownThread.start();
+      }
+    }
   }
 
   public HiveSession getSession(SessionHandle sessionHandle) throws HiveSQLException {
@@ -356,5 +395,8 @@ public class SessionManager extends CompositeService {
     return backgroundOperationPool.submit(r);
   }
 
+  public int getOpenSessionCount() {
+    return handleToSession.size();
+  }
 }
 

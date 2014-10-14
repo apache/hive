@@ -21,6 +21,8 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.EnumSet;
 
+import javax.annotation.Nullable;
+
 interface CompressionCodec {
 
   public enum Modifier {
@@ -62,6 +64,6 @@ interface CompressionCodec {
    * @param modifiers compression modifiers
    * @return codec for use after optional modification
    */
-  CompressionCodec modify(EnumSet<Modifier> modifiers);
+  CompressionCodec modify(@Nullable EnumSet<Modifier> modifiers);
 
 }

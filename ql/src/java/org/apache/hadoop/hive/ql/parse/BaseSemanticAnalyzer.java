@@ -115,6 +115,10 @@ public abstract class BaseSemanticAnalyzer {
   protected LineageInfo linfo;
   protected TableAccessInfo tableAccessInfo;
   protected ColumnAccessInfo columnAccessInfo;
+  /**
+   * Columns accessed by updates
+   */
+  protected ColumnAccessInfo updateColumnAccessInfo;
 
 
   public boolean skipAuthorization() {
@@ -203,7 +207,7 @@ public abstract class BaseSemanticAnalyzer {
   }
 
   public abstract void analyzeInternal(ASTNode ast) throws SemanticException;
-  public void init() {
+  public void init(boolean clearPartsCache) {
     //no-op
   }
 
@@ -213,7 +217,7 @@ public abstract class BaseSemanticAnalyzer {
 
   public void analyze(ASTNode ast, Context ctx) throws SemanticException {
     initCtx(ctx);
-    init();
+    init(true);
     analyzeInternal(ast);
   }
 
@@ -240,7 +244,7 @@ public abstract class BaseSemanticAnalyzer {
     this.fetchTask = fetchTask;
   }
 
-  protected void reset() {
+  protected void reset(boolean clearPartsCache) {
     rootTasks = new ArrayList<Task<? extends Serializable>>();
   }
 
@@ -402,7 +406,6 @@ public abstract class BaseSemanticAnalyzer {
 
   @SuppressWarnings("nls")
   public static String unescapeSQLString(String b) {
-
     Character enclosure = null;
 
     // Some of the strings can be passed in as unicode. For example, the
@@ -483,7 +486,7 @@ public abstract class BaseSemanticAnalyzer {
         case '\\':
           sb.append("\\");
           break;
-        // The following 2 lines are exactly what MySQL does
+        // The following 2 lines are exactly what MySQL does TODO: why do we do this?
         case '%':
           sb.append("\\%");
           break;
@@ -499,6 +502,58 @@ public abstract class BaseSemanticAnalyzer {
       }
     }
     return sb.toString();
+  }
+
+  /**
+   * Escapes the string for AST; doesn't enclose it in quotes, however.
+   */
+  public static String escapeSQLString(String b) {
+    // There's usually nothing to escape so we will be optimistic.
+    String result = b;
+    for (int i = 0; i < result.length(); ++i) {
+      char currentChar = result.charAt(i);
+      if (currentChar == '\\' && ((i + 1) < result.length())) {
+        // TODO: do we need to handle the "this is what MySQL does" here?
+        char nextChar = result.charAt(i + 1);
+        if (nextChar == '%' || nextChar == '_') {
+          ++i;
+          continue;
+        }
+      }
+      switch (currentChar) {
+      case '\0': result = spliceString(result, i, "\\0"); ++i; break;
+      case '\'': result = spliceString(result, i, "\\'"); ++i; break;
+      case '\"': result = spliceString(result, i, "\\\""); ++i; break;
+      case '\b': result = spliceString(result, i, "\\b"); ++i; break;
+      case '\n': result = spliceString(result, i, "\\n"); ++i; break;
+      case '\r': result = spliceString(result, i, "\\r"); ++i; break;
+      case '\t': result = spliceString(result, i, "\\t"); ++i; break;
+      case '\\': result = spliceString(result, i, "\\\\"); ++i; break;
+      case '\u001A': result = spliceString(result, i, "\\Z"); ++i; break;
+      default: {
+        if (currentChar < ' ') {
+          String hex = Integer.toHexString(currentChar);
+          String unicode = "\\u";
+          for (int j = 4; j > hex.length(); --j) {
+            unicode += '0';
+          }
+          unicode += hex;
+          result = spliceString(result, i, unicode);
+          i += (unicode.length() - 1);
+        }
+        break; // if not a control character, do nothing
+      }
+      }
+    }
+    return result;
+  }
+
+  private static String spliceString(String str, int i, String replacement) {
+    return spliceString(str, i, 1, replacement);
+  }
+
+  private static String spliceString(String str, int i, int length, String replacement) {
+    return str.substring(0, i) + replacement + str.substring(i + length);
   }
 
   public HashSet<ReadEntity> getInputs() {
@@ -866,6 +921,14 @@ public abstract class BaseSemanticAnalyzer {
     this.columnAccessInfo = columnAccessInfo;
   }
 
+  public ColumnAccessInfo getUpdateColumnAccessInfo() {
+    return updateColumnAccessInfo;
+  }
+
+  public void setUpdateColumnAccessInfo(ColumnAccessInfo updateColumnAccessInfo) {
+    this.updateColumnAccessInfo = updateColumnAccessInfo;
+  }
+
   protected LinkedHashMap<String, String> extractPartitionSpecs(Tree partspec)
       throws SemanticException {
     LinkedHashMap<String, String> partSpec = new LinkedHashMap<String, String>();
@@ -1222,7 +1285,7 @@ public abstract class BaseSemanticAnalyzer {
     try {
       database = db.getDatabase(dbName);
     } catch (Exception e) {
-      throw new SemanticException(ErrorMsg.DATABASE_NOT_EXISTS.getMsg(dbName), e);
+      throw new SemanticException(e.getMessage(), e);
     }
     if (database == null && throwException) {
       throw new SemanticException(ErrorMsg.DATABASE_NOT_EXISTS.getMsg(dbName));
@@ -1252,8 +1315,12 @@ public abstract class BaseSemanticAnalyzer {
     try {
       tab = database == null ? db.getTable(tblName, false)
           : db.getTable(database, tblName, false);
-    } catch (Exception e) {
+    }
+    catch (InvalidTableException e) {
       throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(tblName), e);
+    }
+    catch (Exception e) {
+      throw new SemanticException(e.getMessage(), e);
     }
     if (tab == null && throwException) {
       throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(tblName));

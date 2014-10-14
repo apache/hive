@@ -479,8 +479,9 @@ import java.util.HashMap;
     xlateMap.put("KW_SUBQUERY", "SUBQUERY");
     xlateMap.put("KW_REWRITE", "REWRITE");
     xlateMap.put("KW_UPDATE", "UPDATE");
-
     xlateMap.put("KW_VALUES", "VALUES");
+    xlateMap.put("KW_PURGE", "PURGE");
+
 
     // Operators
     xlateMap.put("DOT", ".");
@@ -929,7 +930,7 @@ dropIndexStatement
 dropTableStatement
 @init { pushMsg("drop statement", state); }
 @after { popMsg(state); }
-    : KW_DROP KW_TABLE ifExists? tableName -> ^(TOK_DROPTABLE tableName ifExists?)
+    : KW_DROP KW_TABLE ifExists? tableName KW_PURGE? -> ^(TOK_DROPTABLE tableName ifExists? KW_PURGE?)
     ;
 
 alterStatement
@@ -945,8 +946,6 @@ alterTableStatementSuffix
 @init { pushMsg("alter table statement", state); }
 @after { popMsg(state); }
     : alterStatementSuffixRename[true]
-    | alterStatementSuffixAddCol
-    | alterStatementSuffixRenameCol
     | alterStatementSuffixUpdateStatsCol
     | alterStatementSuffixDropPartitions[true]
     | alterStatementSuffixAddPartitions[true]
@@ -974,6 +973,8 @@ alterTblPartitionStatementSuffix
   | alterStatementSuffixClusterbySortby
   | alterStatementSuffixCompact
   | alterStatementSuffixUpdateStatsCol
+  | alterStatementSuffixRenameCol
+  | alterStatementSuffixAddCol
   ;
 
 alterStatementPartitionKeyType
@@ -1333,7 +1334,7 @@ showStatement
     | KW_SHOW KW_TABLES ((KW_FROM|KW_IN) db_name=identifier)? (KW_LIKE showStmtIdentifier|showStmtIdentifier)?  -> ^(TOK_SHOWTABLES (TOK_FROM $db_name)? showStmtIdentifier?)
     | KW_SHOW KW_COLUMNS (KW_FROM|KW_IN) tableName ((KW_FROM|KW_IN) db_name=identifier)?
     -> ^(TOK_SHOWCOLUMNS tableName $db_name?)
-    | KW_SHOW KW_FUNCTIONS showFunctionIdentifier?  -> ^(TOK_SHOWFUNCTIONS showFunctionIdentifier?)
+    | KW_SHOW KW_FUNCTIONS (KW_LIKE showFunctionIdentifier|showFunctionIdentifier)?  -> ^(TOK_SHOWFUNCTIONS KW_LIKE? showFunctionIdentifier?)
     | KW_SHOW KW_PARTITIONS tabName=tableName partitionSpec? -> ^(TOK_SHOWPARTITIONS $tabName partitionSpec?) 
     | KW_SHOW KW_CREATE KW_TABLE tabName=tableName -> ^(TOK_SHOW_CREATETABLE $tabName)
     | KW_SHOW KW_TABLE KW_EXTENDED ((KW_FROM|KW_IN) db_name=identifier)? KW_LIKE showStmtIdentifier partitionSpec?
@@ -1530,8 +1531,8 @@ principalSpecification
 principalName
 @init {pushMsg("user|group|role name", state);}
 @after {popMsg(state);}
-    : KW_USER identifier -> ^(TOK_USER identifier)
-    | KW_GROUP identifier -> ^(TOK_GROUP identifier)
+    : KW_USER principalIdentifier -> ^(TOK_USER principalIdentifier)
+    | KW_GROUP principalIdentifier -> ^(TOK_GROUP principalIdentifier)
     | KW_ROLE identifier -> ^(TOK_ROLE identifier)
     ;
 
@@ -2237,7 +2238,7 @@ deleteStatement
 /*SET <columName> = (3 + col2)*/
 columnAssignmentClause
    :
-   tableOrColumn EQUAL^ atomExpression
+   tableOrColumn EQUAL^ precedencePlusExpression
    ;
 
 /*SET col1 = 5, col2 = (4 + col4), ...*/

@@ -1,0 +1,48 @@
+PREHOOK: query: -- current user has been set (comment line before the set cmd is resulting in parse error!!)
+
+CREATE TABLE t_auth_del(i int) clustered by (i) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t_auth_del
+POSTHOOK: query: -- current user has been set (comment line before the set cmd is resulting in parse error!!)
+
+CREATE TABLE t_auth_del(i int) clustered by (i) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t_auth_del
+PREHOOK: query: -- grant update privilege to another user
+GRANT DELETE ON t_auth_del TO USER userWIns
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@t_auth_del
+POSTHOOK: query: -- grant update privilege to another user
+GRANT DELETE ON t_auth_del TO USER userWIns
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@t_auth_del
+PREHOOK: query: GRANT SELECT ON t_auth_del TO USER userWIns
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@t_auth_del
+POSTHOOK: query: GRANT SELECT ON t_auth_del TO USER userWIns
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@t_auth_del
+PREHOOK: query: set role admin
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: set role admin
+POSTHOOK: type: SHOW_ROLES
+PREHOOK: query: SHOW GRANT ON TABLE t_auth_del
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: SHOW GRANT ON TABLE t_auth_del
+POSTHOOK: type: SHOW_GRANT
+default	t_auth_del			user1	USER	DELETE	true	-1	user1
+default	t_auth_del			user1	USER	INSERT	true	-1	user1
+default	t_auth_del			user1	USER	SELECT	true	-1	user1
+default	t_auth_del			user1	USER	UPDATE	true	-1	user1
+default	t_auth_del			userWIns	USER	DELETE	false	-1	user1
+default	t_auth_del			userWIns	USER	SELECT	false	-1	user1
+PREHOOK: query: delete from t_auth_del where i > 0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_auth_del
+PREHOOK: Output: default@t_auth_del
+POSTHOOK: query: delete from t_auth_del where i > 0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_auth_del
+POSTHOOK: Output: default@t_auth_del

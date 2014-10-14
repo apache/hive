@@ -54,6 +54,19 @@ public class TypeCheckCtx implements NodeProcessorCtx {
 
   private boolean allowDistinctFunctions;
 
+  private final boolean allowGBExprElimination;
+
+  private final boolean allowAllColRef;
+
+  private final boolean allowFunctionStar;
+
+  private final boolean allowWindowing;
+
+  // "[]" : LSQUARE/INDEX Expression
+  private final boolean allowIndexExpr;
+
+  private final boolean allowSubQueryExpr;
+
   /**
    * Constructor.
    *
@@ -61,10 +74,23 @@ public class TypeCheckCtx implements NodeProcessorCtx {
    *          The input row resolver of the previous operator.
    */
   public TypeCheckCtx(RowResolver inputRR) {
+    this(inputRR, false, true, true, true, true, true, true, true);
+  }
+
+  public TypeCheckCtx(RowResolver inputRR, boolean allowStatefulFunctions,
+      boolean allowDistinctFunctions, boolean allowGBExprElimination, boolean allowAllColRef,
+      boolean allowFunctionStar, boolean allowWindowing,
+      boolean allowIndexExpr, boolean allowSubQueryExpr) {
     setInputRR(inputRR);
     error = null;
-    allowStatefulFunctions = false;
-    allowDistinctFunctions = true;
+    this.allowStatefulFunctions = allowStatefulFunctions;
+    this.allowDistinctFunctions = allowDistinctFunctions;
+    this.allowGBExprElimination = allowGBExprElimination;
+    this.allowAllColRef = allowAllColRef;
+    this.allowFunctionStar = allowFunctionStar;
+    this.allowWindowing = allowWindowing;
+    this.allowIndexExpr = allowIndexExpr;
+    this.allowSubQueryExpr = allowSubQueryExpr;
   }
 
   /**
@@ -98,7 +124,8 @@ public class TypeCheckCtx implements NodeProcessorCtx {
   }
 
   /**
-   * @param allowStatefulFunctions whether to allow stateful UDF invocations
+   * @param allowStatefulFunctions
+   *          whether to allow stateful UDF invocations
    */
   public void setAllowStatefulFunctions(boolean allowStatefulFunctions) {
     this.allowStatefulFunctions = allowStatefulFunctions;
@@ -136,7 +163,31 @@ public class TypeCheckCtx implements NodeProcessorCtx {
     this.allowDistinctFunctions = allowDistinctFunctions;
   }
 
-  public boolean isAllowDistinctFunctions() {
+  public boolean getAllowDistinctFunctions() {
     return allowDistinctFunctions;
+  }
+
+  public boolean getAllowGBExprElimination() {
+    return allowGBExprElimination;
+  }
+
+  public boolean getallowAllColRef() {
+    return allowAllColRef;
+  }
+
+  public boolean getallowFunctionStar() {
+    return allowFunctionStar;
+  }
+
+  public boolean getallowWindowing() {
+    return allowWindowing;
+  }
+
+  public boolean getallowIndexExpr() {
+    return allowIndexExpr;
+  }
+
+  public boolean getallowSubQueryExpr() {
+    return allowSubQueryExpr;
   }
 }

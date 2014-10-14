@@ -29,12 +29,21 @@ public class LazyHiveVarcharObjectInspector
     extends AbstractPrimitiveLazyObjectInspector<HiveVarcharWritable>
     implements HiveVarcharObjectInspector {
 
+  private boolean escaped;
+  private byte escapeChar;
+
   // no-arg ctor required for Kyro
   public LazyHiveVarcharObjectInspector() {
   }
 
   public LazyHiveVarcharObjectInspector(VarcharTypeInfo typeInfo) {
+    this(typeInfo, false, (byte)0);
+  }
+
+  public LazyHiveVarcharObjectInspector(VarcharTypeInfo typeInfo, boolean escaped, byte escapeChar) {
     super(typeInfo);
+    this.escaped = escaped;
+    this.escapeChar = escapeChar;
   }
 
   @Override
@@ -61,6 +70,14 @@ public class LazyHiveVarcharObjectInspector
       return newValue;
     }
     return ret;
+  }
+
+  public boolean isEscaped() {
+    return escaped;
+  }
+
+  public byte getEscapeChar() {
+    return escapeChar;
   }
 
   @Override

@@ -57,6 +57,9 @@ enum OperatorType {
   MUX,
   DEMUX,
   EVENT,
+  ORCFILEMERGE,
+  RCFILEMERGE,
+  MERGEJOIN,
 }
 
 struct Operator {

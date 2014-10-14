@@ -27,7 +27,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
  * an error while performing authorization, and not a authorization being
  * denied.
  */
-@LimitedPrivate(value = { "" })
+@LimitedPrivate(value = { "Apache Argus (incubating)" })
 @Evolving
 public class HiveAuthzPluginException extends HiveException{
 

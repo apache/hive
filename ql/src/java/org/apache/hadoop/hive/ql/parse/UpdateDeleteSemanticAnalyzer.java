@@ -17,6 +17,13 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.Context;
@@ -27,15 +34,10 @@ import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.session.SessionState;
-
-
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 
 /**
@@ -126,9 +128,16 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
     Table mTable;
     try {
       mTable = db.getTable(tableName[0], tableName[1]);
+    } catch (InvalidTableException e) {
+      LOG.error("Failed to find table " + getDotName(tableName) + " got exception "
+          + e.getMessage());
+      throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(getDotName(tableName)), e);
     } catch (HiveException e) {
-      throw new SemanticException(ErrorMsg.UPDATEDELETE_PARSE_ERROR.getMsg(), e);
+      LOG.error("Failed to find table " + getDotName(tableName) + " got exception "
+          + e.getMessage());
+      throw new SemanticException(e.getMessage(), e);
     }
+
     List<FieldSchema> partCols = mTable.getPartCols();
 
     rewrittenQueryStr.append("insert into table ");
@@ -148,6 +157,8 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
 
     rewrittenQueryStr.append(" select ROW__ID");
     Map<Integer, ASTNode> setColExprs = null;
+    Map<String, ASTNode> setCols = null;
+    Set<String> setRCols = new HashSet<String>();
     if (updating()) {
       // An update needs to select all of the columns, as we rewrite the entire row.  Also,
       // we need to figure out which columns we are going to replace.  We won't write the set
@@ -160,7 +171,7 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
 
       // Get the children of the set clause, each of which should be a column assignment
       List<? extends Node> assignments = setClause.getChildren();
-      Map<String, ASTNode> setCols = new HashMap<String, ASTNode>(assignments.size());
+      setCols = new HashMap<String, ASTNode>(assignments.size());
       setColExprs = new HashMap<Integer, ASTNode>(assignments.size());
       for (Node a : assignments) {
         ASTNode assignment = (ASTNode)a;
@@ -172,6 +183,8 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
         ASTNode colName = (ASTNode)tableOrColTok.getChildren().get(0);
         assert colName.getToken().getType() == HiveParser.Identifier :
             "Expected column name";
+
+        addSetRCols((ASTNode) assignment.getChildren().get(1), setRCols);
 
         String columnName = colName.getText();
 
@@ -223,7 +236,7 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
     }
 
     // Add a sort by clause so that the row ids come out in the correct order
-    rewrittenQueryStr.append(" sort by ROW__ID desc ");
+    rewrittenQueryStr.append(" sort by ROW__ID ");
 
     // Parse the rewritten query string
     Context rewrittenCtx;
@@ -323,6 +336,30 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
             WriteEntity.WriteType.UPDATE);
       }
     }
+
+    // For updates, we need to set the column access info so that it contains information on
+    // the columns we are updating.
+    if (updating()) {
+      ColumnAccessInfo cai = new ColumnAccessInfo();
+      for (String colName : setCols.keySet()) {
+        cai.add(Table.getCompleteName(mTable.getDbName(), mTable.getTableName()), colName);
+      }
+      setUpdateColumnAccessInfo(cai);
+
+      // Add the setRCols to the input list
+      for (String colName : setRCols) {
+        if(columnAccessInfo != null) {//assuming this means we are not doing Auth
+          columnAccessInfo.add(Table.getCompleteName(mTable.getDbName(), mTable.getTableName()),
+            colName);
+        }
+      }
+    }
+
+    // We need to weed ROW__ID out of the input column info, as it doesn't make any sense to
+    // require the user to have authorization on that column.
+    if (columnAccessInfo != null) {
+      columnAccessInfo.stripVirtualColumn(VirtualColumn.ROWID);
+    }
   }
 
   private String operation() {
@@ -341,5 +378,23 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
       }
     }
     return false;
+  }
+
+  // This method find any columns on the right side of a set statement (thus rcols) and puts them
+  // in a set so we can add them to the list of input cols to check.
+  private void addSetRCols(ASTNode node, Set<String> setRCols) {
+
+    // See if this node is a TOK_TABLE_OR_COL.  If so, find the value and put it in the list.  If
+    // not, recurse on any children
+    if (node.getToken().getType() == HiveParser.TOK_TABLE_OR_COL) {
+      ASTNode colName = (ASTNode)node.getChildren().get(0);
+      assert colName.getToken().getType() == HiveParser.Identifier :
+          "Expected column name";
+      setRCols.add(colName.getText());
+    } else if (node.getChildren() != null) {
+      for (Node n : node.getChildren()) {
+        addSetRCols((ASTNode)n, setRCols);
+      }
+    }
   }
 }

@@ -45,6 +45,7 @@ import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
+import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
@@ -131,18 +132,27 @@ public class VectorizedRowBatchCtx {
    */
   public void init(Configuration hiveConf, String fileKey,
       StructObjectInspector rowOI) {
-    MapredWork mapredWork = Utilities.getMapRedWork(hiveConf);
-    Map<String, Map<Integer, String>> scratchColumnVectorTypes;
-    if (mapredWork.getMapWork() != null) {
-      scratchColumnVectorTypes = mapredWork.getMapWork().getScratchColumnVectorTypes();
-    } else {
-      scratchColumnVectorTypes = mapredWork.getReduceWork().getScratchColumnVectorTypes();
-    }
+    Map<String, Map<Integer, String>> scratchColumnVectorTypes =
+            Utilities.getScratchColumnVectorTypes(hiveConf);
     columnTypeMap = scratchColumnVectorTypes.get(fileKey);
     this.rowOI= rowOI;
     this.rawRowOI = rowOI;
   }
   
+
+  /**
+   * Initializes the VectorizedRowBatch context based on an scratch column type map and
+   * object inspector.
+   * @param columnTypeMap
+   * @param rowOI
+   *          Object inspector that shapes the column types
+   */
+  public void init(Map<Integer, String> columnTypeMap,
+      StructObjectInspector rowOI) {
+    this.columnTypeMap = columnTypeMap;
+    this.rowOI= rowOI;
+    this.rawRowOI = rowOI;
+  }
 
   /**
    * Initializes VectorizedRowBatch context based on the
@@ -174,7 +184,7 @@ public class VectorizedRowBatchCtx {
 
     String partitionPath = split.getPath().getParent().toString();
     columnTypeMap = Utilities
-        .getMapRedWork(hiveConf).getMapWork().getScratchColumnVectorTypes()
+        .getScratchColumnVectorTypes(hiveConf)
         .get(partitionPath);
 
     Properties partProps =
@@ -476,7 +486,7 @@ public class VectorizedRowBatchCtx {
             lcv.isNull[0] = true;
             lcv.isRepeating = true;
           } else { 
-            lcv.fill(((Date) value).getTime());
+            lcv.fill(DateWritable.dateToDays((Date) value));
             lcv.isNull[0] = false;
           }          
         }
@@ -489,7 +499,7 @@ public class VectorizedRowBatchCtx {
             lcv.isNull[0] = true;
             lcv.isRepeating = true;
           } else { 
-            lcv.fill((long)(((Timestamp) value).getTime()));
+            lcv.fill(TimestampUtils.getTimeNanoSec((Timestamp) value));
             lcv.isNull[0] = false;
           }
         }

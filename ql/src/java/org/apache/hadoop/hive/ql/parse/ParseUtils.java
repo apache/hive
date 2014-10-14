@@ -111,7 +111,7 @@ public final class ParseUtils {
    * @param tableFieldTypeInfo TypeInfo to convert to
    * @return Expression converting column to the type specified by tableFieldTypeInfo
    */
-  static ExprNodeDesc createConversionCast(ExprNodeDesc column, PrimitiveTypeInfo tableFieldTypeInfo)
+  public static ExprNodeDesc createConversionCast(ExprNodeDesc column, PrimitiveTypeInfo tableFieldTypeInfo)
       throws SemanticException {
     // Get base type, since type string may be parameterized
     String baseType = TypeInfoUtils.getBaseName(tableFieldTypeInfo.getTypeName());

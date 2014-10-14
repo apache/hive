@@ -78,8 +78,10 @@ public final class LazyPrimitiveObjectInspectorFactory {
     // prevent instantiation
   }
 
-  private static HashMap<ArrayList<Object>, LazyStringObjectInspector> cachedLazyStringObjectInspector =
-      new HashMap<ArrayList<Object>, LazyStringObjectInspector>();
+  // Lazy object inspectors for string/char/varchar will all be cached in the same map.
+  // Map key will be list of [typeInfo, isEscaped, escapeChar]
+  private static HashMap<ArrayList<Object>, AbstractPrimitiveLazyObjectInspector> cachedLazyStringTypeOIs =
+      new HashMap<ArrayList<Object>, AbstractPrimitiveLazyObjectInspector>();
 
   private static Map<PrimitiveTypeInfo, AbstractPrimitiveLazyObjectInspector<?>>
      cachedPrimitiveLazyObjectInspectors =
@@ -121,6 +123,10 @@ public final class LazyPrimitiveObjectInspectorFactory {
     switch(primitiveCategory) {
     case STRING:
       return getLazyStringObjectInspector(escaped, escapeChar);
+    case CHAR:
+      return getLazyHiveCharObjectInspector((CharTypeInfo)typeInfo, escaped, escapeChar);
+    case VARCHAR:
+      return getLazyHiveVarcharObjectInspector((VarcharTypeInfo)typeInfo, escaped, escapeChar);
     case BOOLEAN:
       return getLazyBooleanObjectInspector(extBoolean);
     default:
@@ -157,13 +163,44 @@ public final class LazyPrimitiveObjectInspectorFactory {
 
   public static LazyStringObjectInspector getLazyStringObjectInspector(boolean escaped, byte escapeChar) {
     ArrayList<Object> signature = new ArrayList<Object>();
+    signature.add(TypeInfoFactory.stringTypeInfo);
     signature.add(Boolean.valueOf(escaped));
     signature.add(Byte.valueOf(escapeChar));
-    LazyStringObjectInspector result = cachedLazyStringObjectInspector
+    LazyStringObjectInspector result = (LazyStringObjectInspector) cachedLazyStringTypeOIs
         .get(signature);
     if (result == null) {
       result = new LazyStringObjectInspector(escaped, escapeChar);
-      cachedLazyStringObjectInspector.put(signature, result);
+      cachedLazyStringTypeOIs.put(signature, result);
+    }
+    return result;
+  }
+
+  public static LazyHiveCharObjectInspector getLazyHiveCharObjectInspector(
+      CharTypeInfo typeInfo, boolean escaped, byte escapeChar) {
+    ArrayList<Object> signature = new ArrayList<Object>();
+    signature.add(typeInfo);
+    signature.add(Boolean.valueOf(escaped));
+    signature.add(Byte.valueOf(escapeChar));
+    LazyHiveCharObjectInspector result = (LazyHiveCharObjectInspector) cachedLazyStringTypeOIs
+        .get(signature);
+    if (result == null) {
+      result = new LazyHiveCharObjectInspector(typeInfo, escaped, escapeChar);
+      cachedLazyStringTypeOIs.put(signature, result);
+    }
+    return result;
+  }
+
+  public static LazyHiveVarcharObjectInspector getLazyHiveVarcharObjectInspector(
+      VarcharTypeInfo typeInfo, boolean escaped, byte escapeChar) {
+    ArrayList<Object> signature = new ArrayList<Object>();
+    signature.add(typeInfo);
+    signature.add(Boolean.valueOf(escaped));
+    signature.add(Byte.valueOf(escapeChar));
+    LazyHiveVarcharObjectInspector result = (LazyHiveVarcharObjectInspector) cachedLazyStringTypeOIs
+        .get(signature);
+    if (result == null) {
+      result = new LazyHiveVarcharObjectInspector(typeInfo, escaped, escapeChar);
+      cachedLazyStringTypeOIs.put(signature, result);
     }
     return result;
   }

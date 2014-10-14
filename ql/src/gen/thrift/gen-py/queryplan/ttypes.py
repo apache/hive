@@ -67,6 +67,9 @@ class OperatorType:
   MUX = 19
   DEMUX = 20
   EVENT = 21
+  ORCFILEMERGE = 22
+  RCFILEMERGE = 23
+  MERGEJOIN = 24
 
   _VALUES_TO_NAMES = {
     0: "JOIN",
@@ -91,6 +94,9 @@ class OperatorType:
     19: "MUX",
     20: "DEMUX",
     21: "EVENT",
+    22: "ORCFILEMERGE",
+    23: "RCFILEMERGE",
+    24: "MERGEJOIN",
   }
 
   _NAMES_TO_VALUES = {
@@ -116,6 +122,9 @@ class OperatorType:
     "MUX": 19,
     "DEMUX": 20,
     "EVENT": 21,
+    "ORCFILEMERGE": 22,
+    "RCFILEMERGE": 23,
+    "MERGEJOIN": 24,
   }
 
 class TaskType:

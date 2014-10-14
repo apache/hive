@@ -76,7 +76,7 @@ public class Initiator extends CompactorThread {
         // don't doom the entire thread.
         try {
           ShowCompactResponse currentCompactions = txnHandler.showCompact(new ShowCompactRequest());
-          ValidTxnList txns = TxnHandler.createValidTxnList(txnHandler.getOpenTxns());
+          ValidTxnList txns = TxnHandler.createValidTxnList(txnHandler.getOpenTxns(), 0);
           Set<CompactionInfo> potentials = txnHandler.findPotentialCompactions(abortedThreshold);
           LOG.debug("Found " + potentials.size() + " potential compactions, " +
               "checking to see if we should compact any of them");
@@ -137,8 +137,8 @@ public class Initiator extends CompactorThread {
   }
 
   @Override
-  public void init(BooleanPointer stop) throws MetaException {
-    super.init(stop);
+  public void init(BooleanPointer stop, BooleanPointer looped) throws MetaException {
+    super.init(stop, looped);
     checkInterval =
         conf.getTimeVar(HiveConf.ConfVars.HIVE_COMPACTOR_CHECK_INTERVAL, TimeUnit.MILLISECONDS) ;
   }

@@ -207,8 +207,7 @@ public class VectorMapJoinOperator extends MapJoinOperator implements Vectorizat
     Object[] values = (Object[]) row;
     VectorColumnAssign[] vcas = outputVectorAssigners.get(outputOI);
     if (null == vcas) {
-      Map<String, Map<String, Integer>> allColumnMaps = Utilities.
-          getMapRedWork(hconf).getMapWork().getScratchColumnMap();
+      Map<String, Map<String, Integer>> allColumnMaps = Utilities.getScratchColumnMap(hconf);
       Map<String, Integer> columnMap = allColumnMaps.get(fileKey);
       vcas = VectorColumnAssignFactory.buildAssigners(
           outputBatch, outputOI, columnMap, conf.getOutputColumnNames());

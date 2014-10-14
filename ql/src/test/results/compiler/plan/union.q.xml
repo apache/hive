@@ -235,7 +235,7 @@
                          </object> 
                         </void> 
                         <void property="tableDesc"> 
-                         <object class="org.apache.hadoop.hive.ql.plan.TableDesc"> 
+                         <object id="TableDesc0" class="org.apache.hadoop.hive.ql.plan.TableDesc"> 
                           <void property="inputFileFormatClass"> 
                            <class>org.apache.hadoop.mapred.TextInputFormat</class> 
                           </void> 
@@ -449,7 +449,7 @@
          </object> 
         </void> 
         <void property="tableDesc"> 
-         <object id="TableDesc0" class="org.apache.hadoop.hive.ql.plan.TableDesc"> 
+         <object id="TableDesc1" class="org.apache.hadoop.hive.ql.plan.TableDesc"> 
           <void property="inputFileFormatClass"> 
            <class>org.apache.hadoop.mapred.TextInputFormat</class> 
           </void> 
@@ -593,7 +593,7 @@
          </object> 
         </void> 
         <void property="tableDesc"> 
-         <object idref="TableDesc0"/> 
+         <object idref="TableDesc1"/> 
         </void> 
        </object> 
       </void> 
@@ -640,34 +640,7 @@
                           <boolean>true</boolean> 
                          </void> 
                          <void property="tableInfo"> 
-                          <object class="org.apache.hadoop.hive.ql.plan.TableDesc"> 
-                           <void property="inputFileFormatClass"> 
-                            <class>org.apache.hadoop.mapred.TextInputFormat</class> 
-                           </void> 
-                           <void property="outputFileFormatClass"> 
-                            <class>org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat</class> 
-                           </void> 
-                           <void property="properties"> 
-                            <object class="java.util.Properties"> 
-                             <void method="put"> 
-                              <string>columns</string> 
-                              <string>_col0,_col1</string> 
-                             </void> 
-                             <void method="put"> 
-                              <string>serialization.lib</string> 
-                              <string>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</string> 
-                             </void> 
-                             <void method="put"> 
-                              <string>serialization.format</string> 
-                              <string>1</string> 
-                             </void> 
-                             <void method="put"> 
-                              <string>columns.types</string> 
-                              <string>string:string</string> 
-                             </void> 
-                            </object> 
-                           </void> 
-                          </object> 
+                          <object idref="TableDesc0"/> 
                          </void> 
                          <void property="totalFiles"> 
                           <int>1</int> 
@@ -1634,7 +1607,7 @@
          </object> 
         </void> 
         <void property="tableDesc"> 
-         <object idref="TableDesc0"/> 
+         <object idref="TableDesc1"/> 
         </void> 
        </object> 
       </void> 

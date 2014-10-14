@@ -205,8 +205,8 @@ public class HiveConf extends Configuration {
     PLAN_SERIALIZATION("hive.plan.serialization.format", "kryo",
         "Query plan format serialization between client and task nodes. \n" +
         "Two supported values are : kryo and javaXML. Kryo is default."),
-    SCRATCHDIR("hive.exec.scratchdir", "/tmp/hive", 
-        "HDFS root scratch dir for Hive jobs which gets created with 777 permission. " +
+    SCRATCHDIR("hive.exec.scratchdir", "/tmp/hive",
+        "HDFS root scratch dir for Hive jobs which gets created with write all (733) permission. " +
         "For each connecting user, an HDFS scratch dir: ${hive.exec.scratchdir}/<username> is created, " +
         "with ${hive.scratch.dir.permission}."),
     LOCALSCRATCHDIR("hive.exec.local.scratchdir",
@@ -215,7 +215,7 @@ public class HiveConf extends Configuration {
     DOWNLOADED_RESOURCES_DIR("hive.downloaded.resources.dir",
         "${system:java.io.tmpdir}" + File.separator + "${hive.session.id}_resources",
         "Temporary local directory for added resources in the remote file system."),
-    SCRATCHDIRPERMISSION("hive.scratch.dir.permission", "700", 
+    SCRATCHDIRPERMISSION("hive.scratch.dir.permission", "700",
         "The permission for the user specific scratch directories that get created."),
     SUBMITVIACHILD("hive.exec.submitviachild", false, ""),
     SUBMITLOCALTASKVIACHILD("hive.exec.submit.local.task.via.child", true,
@@ -240,9 +240,9 @@ public class HiveConf extends Configuration {
         "The compression codec and other options are determined from Hadoop config variables mapred.output.compress*"),
     COMPRESSINTERMEDIATECODEC("hive.intermediate.compression.codec", "", ""),
     COMPRESSINTERMEDIATETYPE("hive.intermediate.compression.type", "", ""),
-    BYTESPERREDUCER("hive.exec.reducers.bytes.per.reducer", (long) (1000 * 1000 * 1000),
-        "size per reducer.The default is 1G, i.e if the input size is 10G, it will use 10 reducers."),
-    MAXREDUCERS("hive.exec.reducers.max", 999,
+    BYTESPERREDUCER("hive.exec.reducers.bytes.per.reducer", (long) (256 * 1000 * 1000),
+        "size per reducer.The default is 256Mb, i.e if the input size is 1G, it will use 4 reducers."),
+    MAXREDUCERS("hive.exec.reducers.max", 1009,
         "max number of reducers will be used. If the one specified in the configuration parameter mapred.reduce.tasks is\n" +
         "negative, Hive will use this one as the max number of reducers when automatically determine number of reducers."),
     PREEXECHOOKS("hive.exec.pre.hooks", "",
@@ -639,6 +639,9 @@ public class HiveConf extends Configuration {
         "How many rows in the right-most join operand Hive should buffer before emitting the join result."),
     HIVEJOINCACHESIZE("hive.join.cache.size", 25000,
         "How many rows in the joining tables (except the streaming table) should be cached in memory."),
+
+    // CBO related
+    HIVE_CBO_ENABLED("hive.cbo.enable", false, "Flag to control enabling Cost Based Optimizations using Calcite framework."),
 
     // hive.mapjoin.bucket.cache.size has been replaced by hive.smbjoin.cache.row,
     // need to remove by hive .13. Also, do not change default (see SMB operator)
@@ -1041,7 +1044,7 @@ public class HiveConf extends Configuration {
         "That means if reducer-num of the child RS is fixed (order by or forced bucketing) and small, it can make very slow, single MR.\n" +
         "The optimization will be automatically disabled if number of reducers would be less than specified value."),
 
-    HIVEOPTSORTDYNAMICPARTITION("hive.optimize.sort.dynamic.partition", true,
+    HIVEOPTSORTDYNAMICPARTITION("hive.optimize.sort.dynamic.partition", false,
         "When enabled dynamic partitioning column will be globally sorted.\n" +
         "This way we can keep only one record writer open for each partition value\n" +
         "in the reducer thereby reducing the memory pressure on reducers."),
@@ -1186,13 +1189,6 @@ public class HiveConf extends Configuration {
         "Average row size is computed from average column size of all columns in the row. In the absence\n" +
         "of column statistics and for variable length complex columns like map, the average number of\n" +
         "entries/values can be specified using this config."),
-    // to accurately compute statistics for GROUPBY map side parallelism needs to be known
-    HIVE_STATS_MAP_SIDE_PARALLELISM("hive.stats.map.parallelism", 1,
-        "Hive/Tez optimizer estimates the data size flowing through each of the operators.\n" +
-        "For GROUPBY operator, to accurately compute the data size map-side parallelism needs to\n" +
-        "be known. By default, this value is set to 1 since optimizer is not aware of the number of\n" +
-        "mappers during compile-time. This Hive config can be used to specify the number of mappers\n" +
-        "to be used for data size computation of GROUPBY operator."),
     // statistics annotation fetches stats for each partition, which can be expensive. turning
     // this off will result in basic sizes being fetched from namenode instead
     HIVE_STATS_FETCH_PARTITION_STATS("hive.stats.fetch.partition.stats", true,
@@ -1243,10 +1239,16 @@ public class HiveConf extends Configuration {
         "This param is to control whether or not only do lock on queries\n" +
         "that need to execute at least one mapred job."),
 
+     // Zookeeper related configs
     HIVE_ZOOKEEPER_QUORUM("hive.zookeeper.quorum", "",
-        "The list of ZooKeeper servers to talk to. This is only needed for read/write locks."),
+        "List of ZooKeeper servers to talk to. This is needed for: " +
+        "1. Read/write locks - when hive.lock.manager is set to " +
+        "org.apache.hadoop.hive.ql.lockmgr.zookeeper.ZooKeeperHiveLockManager, " +
+        "2. When HiveServer2 supports service discovery via Zookeeper."),
     HIVE_ZOOKEEPER_CLIENT_PORT("hive.zookeeper.client.port", "2181",
-        "The port of ZooKeeper servers to talk to. This is only needed for read/write locks."),
+        "The port of ZooKeeper servers to talk to. " +
+        "If the list of Zookeeper servers specified in hive.zookeeper.quorum," +
+        "does not contain port numbers, this value is used."),
     HIVE_ZOOKEEPER_SESSION_TIMEOUT("hive.zookeeper.session.timeout", 600*1000,
         "ZooKeeper client's session timeout. The client is disconnected, and as a result, all locks released, \n" +
         "if a heartbeat is not sent in the timeout."),
@@ -1293,6 +1295,9 @@ public class HiveConf extends Configuration {
     HIVE_COMPACTOR_ABORTEDTXN_THRESHOLD("hive.compactor.abortedtxn.threshold", 1000,
         "Number of aborted transactions involving a particular table or partition before major\n" +
         "compaction is initiated."),
+
+    HIVE_COMPACTOR_CLEANER_RUN_INTERVAL("hive.compactor.cleaner.run.interval", "5000ms",
+        new TimeValidator(TimeUnit.MILLISECONDS), "Time between runs of the cleaner thread"),
 
     // For HBase storage handler
     HIVE_HBASE_WAL_ENABLED("hive.hbase.wal.enabled", true,
@@ -1368,6 +1373,8 @@ public class HiveConf extends Configuration {
         "authorization manager class name to be used in the metastore for authorization.\n" +
         "The user defined authorization class should implement interface \n" +
         "org.apache.hadoop.hive.ql.security.authorization.HiveMetastoreAuthorizationProvider. "),
+    HIVE_METASTORE_AUTHORIZATION_AUTH_READS("hive.security.metastore.authorization.auth.reads", true,
+        "If this is true, metastore authorizer authorizes read actions on database, table"),
     HIVE_METASTORE_AUTHENTICATOR_MANAGER("hive.security.metastore.authenticator.manager",
         "org.apache.hadoop.hive.ql.security.HadoopDefaultMetastoreAuthenticator",
         "authenticator manager class name to be used in the metastore for authentication. \n" +
@@ -1446,11 +1453,6 @@ public class HiveConf extends Configuration {
         "If the property is set, the value must be a valid URI (java.net.URI, e.g. \"file:///tmp/my-logging.properties\"), \n" +
         "which you can then extract a URL from and pass to PropertyConfigurator.configure(URL)."),
 
-    // Hive global init file location
-    HIVE_GLOBAL_INIT_FILE_LOCATION("hive.server2.global.init.file.location", "${env:HIVE_CONF_DIR}",
-        "The location of HS2 global init file (.hiverc).\n" +
-        "If the property is reset, the value must be a valid path where the init file is located."),
-
     // prefix used to auto generated column aliases (this should be started with '_')
     HIVE_AUTOGEN_COLUMNALIAS_PREFIX_LABEL("hive.autogen.columnalias.prefix.label", "_c",
         "String used as a prefix when auto generating column alias.\n" +
@@ -1468,10 +1470,10 @@ public class HiveConf extends Configuration {
     HIVE_INSERT_INTO_MULTILEVEL_DIRS("hive.insert.into.multilevel.dirs", false,
         "Where to insert into multilevel directories like\n" +
         "\"insert directory '/HIVEFT25686/chinna/' from table\""),
-    HIVE_WAREHOUSE_SUBDIR_INHERIT_PERMS("hive.warehouse.subdir.inherit.perms", false,
-        "Set this to true if the the table directories should inherit the\n" +
-        "permission of the warehouse or database directory instead of being created\n" +
-        "with the permissions derived from dfs umask"),
+    HIVE_WAREHOUSE_SUBDIR_INHERIT_PERMS("hive.warehouse.subdir.inherit.perms", true,
+        "Set this to false if the table directories should be created\n" +
+        "with the permissions derived from dfs umask instead of\n" +
+        "inheriting the permission of the warehouse or database directory."),
     HIVE_INSERT_INTO_EXTERNAL_TABLES("hive.insert.into.external.tables", true,
         "whether insert into external tables is allowed"),
 
@@ -1489,16 +1491,29 @@ public class HiveConf extends Configuration {
         "table. From 0.12 onwards, they are displayed separately. This flag will let you\n" +
         "get old behavior, if desired. See, test-case in patch for HIVE-6689."),
 
+     // HiveServer2 specific configs
     HIVE_SERVER2_MAX_START_ATTEMPTS("hive.server2.max.start.attempts", 30L, new RangeValidator(0L, null),
-        "This number of times HiveServer2 will attempt to start before exiting, sleeping 60 seconds between retries. \n" +
-        "The default of 30 will keep trying for 30 minutes."),
-
+        "Number of times HiveServer2 will attempt to start before exiting, sleeping 60 seconds " +
+        "between retries. \n The default of 30 will keep trying for 30 minutes."),
+    HIVE_SERVER2_SUPPORT_DYNAMIC_SERVICE_DISCOVERY("hive.server2.support.dynamic.service.discovery", false,
+        "Whether HiveServer2 supports dynamic service discovery for its clients. " +
+        "To support this, each instance of HiveServer2 currently uses ZooKeeper to register itself, " +
+        "when it is brought up. JDBC/ODBC clients should use the ZooKeeper ensemble: " +
+        "hive.zookeeper.quorum in their connection string."),
+    HIVE_SERVER2_ZOOKEEPER_NAMESPACE("hive.server2.zookeeper.namespace", "hiveserver2",
+        "The parent node in ZooKeeper used by HiveServer2 when supporting dynamic service discovery."),
+    // HiveServer2 global init file location
+    HIVE_SERVER2_GLOBAL_INIT_FILE_LOCATION("hive.server2.global.init.file.location", "${env:HIVE_CONF_DIR}",
+        "Either the location of a HS2 global init file or a directory containing a .hiverc file. If the \n" +
+        "property is set, the value must be a valid path to an init file or directory where the init file is located."),
     HIVE_SERVER2_TRANSPORT_MODE("hive.server2.transport.mode", "binary", new StringSet("binary", "http"),
         "Transport mode of HiveServer2."),
+    HIVE_SERVER2_THRIFT_BIND_HOST("hive.server2.thrift.bind.host", "",
+        "Bind host on which to run the HiveServer2 Thrift service."),
 
     // http (over thrift) transport settings
     HIVE_SERVER2_THRIFT_HTTP_PORT("hive.server2.thrift.http.port", 10001,
-        "Port number when in HTTP mode."),
+        "Port number of HiveServer2 Thrift interface when hive.server2.transport.mode is 'http'."),
     HIVE_SERVER2_THRIFT_HTTP_PATH("hive.server2.thrift.http.path", "cliservice",
         "Path component of URL endpoint when in HTTP mode."),
     HIVE_SERVER2_THRIFT_HTTP_MIN_WORKER_THREADS("hive.server2.thrift.http.min.worker.threads", 5,
@@ -1515,11 +1530,7 @@ public class HiveConf extends Configuration {
 
     // binary transport settings
     HIVE_SERVER2_THRIFT_PORT("hive.server2.thrift.port", 10000,
-        "Port number of HiveServer2 Thrift interface.\n" +
-        "Can be overridden by setting $HIVE_SERVER2_THRIFT_PORT"),
-    HIVE_SERVER2_THRIFT_BIND_HOST("hive.server2.thrift.bind.host", "",
-        "Bind host on which to run the HiveServer2 Thrift interface.\n" +
-        "Can be overridden by setting $HIVE_SERVER2_THRIFT_BIND_HOST"),
+        "Port number of HiveServer2 Thrift interface when hive.server2.transport.mode is 'binary'."),
     // hadoop.rpc.protection being set to a higher level than HiveServer2
     // does not make sense in most situations.
     // HiveServer2 ignores hadoop.rpc.protection in favor of hive.server2.thrift.sasl.qop.
@@ -1702,6 +1713,9 @@ public class HiveConf extends Configuration {
     HIVE_VECTORIZATION_REDUCE_ENABLED("hive.vectorized.execution.reduce.enabled", true,
             "This flag should be set to true to enable vectorized mode of the reduce-side of query execution.\n" +
             "The default value is true."),
+    HIVE_VECTORIZATION_REDUCE_GROUPBY_ENABLED("hive.vectorized.execution.reduce.groupby.enabled", true,
+            "This flag should be set to true to enable vectorized mode of the reduce-side GROUP BY query execution.\n" +
+            "The default value is true."),
     HIVE_VECTORIZATION_GROUPBY_CHECKINTERVAL("hive.vectorized.groupby.checkinterval", 100000,
         "Number of entries added to the group by aggregation hash before a recomputation of average entry size is performed."),
     HIVE_VECTORIZATION_GROUPBY_MAXENTRIES("hive.vectorized.groupby.maxentries", 1000000,
@@ -1710,8 +1724,10 @@ public class HiveConf extends Configuration {
     HIVE_VECTORIZATION_GROUPBY_FLUSH_PERCENT("hive.vectorized.groupby.flush.percent", (float) 0.1,
         "Percent of entries in the group by aggregation hash flushed when the memory threshold is exceeded."),
 
-
     HIVE_TYPE_CHECK_ON_INSERT("hive.typecheck.on.insert", true, ""),
+    HIVE_HADOOP_CLASSPATH("hive.hadoop.classpath", null,
+        "For Windows OS, we need to pass HIVE_HADOOP_CLASSPATH Java parameter while starting HiveServer2 \n" +
+        "using \"-hiveconf hive.hadoop.classpath=%HIVE_LIB%\"."),
 
     HIVE_RPC_QUERY_PLAN("hive.rpc.query.plan", false,
         "Whether to send the query plan via local resource or RPC"),

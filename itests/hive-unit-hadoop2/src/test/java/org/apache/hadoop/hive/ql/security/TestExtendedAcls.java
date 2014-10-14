@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
 public class TestExtendedAcls extends FolderPermissionBase {
@@ -46,7 +47,7 @@ public class TestExtendedAcls extends FolderPermissionBase {
     baseSetup();
   }
 
-  List<AclEntry> aclSpec1 = Lists.newArrayList(
+  private final ImmutableList<AclEntry> aclSpec1 = ImmutableList.of(
       aclEntry(ACCESS, USER, FsAction.ALL),
       aclEntry(ACCESS, GROUP, FsAction.ALL),
       aclEntry(ACCESS, OTHER, FsAction.ALL),
@@ -55,7 +56,7 @@ public class TestExtendedAcls extends FolderPermissionBase {
       aclEntry(ACCESS, GROUP, "bar", FsAction.READ_WRITE),
       aclEntry(ACCESS, GROUP, "foo", FsAction.READ_EXECUTE));
 
-  List<AclEntry> aclSpec2 = Lists.newArrayList(
+  private final ImmutableList<AclEntry> aclSpec2 = ImmutableList.of(
       aclEntry(ACCESS, USER, FsAction.ALL),
       aclEntry(ACCESS, GROUP, FsAction.ALL),
       aclEntry(ACCESS, OTHER, FsAction.READ_EXECUTE),
@@ -83,20 +84,20 @@ public class TestExtendedAcls extends FolderPermissionBase {
     switch (permIndex) {
       case 0:
         FsPermission perm = fs.getFileStatus(new Path(locn)).getPermission();
-        Assert.assertEquals(perm.toString(), "rwxrwxrwx");
+        Assert.assertEquals("Location: " + locn, "rwxrwxrwx", String.valueOf(perm));
 
         List<AclEntry> actual = getAcl(locn);
         verifyAcls(aclSpec1, actual);
         break;
       case 1:
         perm = fs.getFileStatus(new Path(locn)).getPermission();
-        Assert.assertEquals(perm.toString(), "rwxrwxr-x");
+        Assert.assertEquals("Location: " + locn, "rwxrwxr-x", String.valueOf(perm));
 
         List<AclEntry> acls = getAcl(locn);
         verifyAcls(aclSpec2, acls);
         break;
       default:
-        throw new RuntimeException("Only 2 permissions by this test");
+        throw new RuntimeException("Only 2 permissions by this test: " + permIndex);
     }
   }
 

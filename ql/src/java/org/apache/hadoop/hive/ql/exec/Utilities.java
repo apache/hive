@@ -27,6 +27,7 @@ import org.antlr.runtime.CommonToken;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.WordUtils;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -87,6 +88,7 @@ import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
+import org.apache.hadoop.hive.ql.plan.MergeJoinWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
@@ -199,6 +201,8 @@ public final class Utilities {
   public static String HADOOP_LOCAL_FS = "file:///";
   public static String MAP_PLAN_NAME = "map.xml";
   public static String REDUCE_PLAN_NAME = "reduce.xml";
+  public static String MERGE_PLAN_NAME = "merge.xml";
+  public static final String INPUT_NAME = "iocontext.input.name";
   public static final String MAPRED_MAPPER_CLASS = "mapred.mapper.class";
   public static final String MAPRED_REDUCER_CLASS = "mapred.reducer.class";
 
@@ -289,6 +293,39 @@ public final class Utilities {
     return (ReduceWork) getBaseWork(conf, REDUCE_PLAN_NAME);
   }
 
+  public static Path setMergeWork(JobConf conf, MergeJoinWork mergeJoinWork, Path mrScratchDir,
+      boolean useCache) {
+    for (BaseWork baseWork : mergeJoinWork.getBaseWorkList()) {
+      setBaseWork(conf, baseWork, mrScratchDir, baseWork.getName() + MERGE_PLAN_NAME, useCache);
+      String prefixes = conf.get(DagUtils.TEZ_MERGE_WORK_FILE_PREFIXES);
+      if (prefixes == null) {
+        prefixes = baseWork.getName();
+      } else {
+        prefixes = prefixes + "," + baseWork.getName();
+      }
+      conf.set(DagUtils.TEZ_MERGE_WORK_FILE_PREFIXES, prefixes);
+    }
+
+    // nothing to return
+    return null;
+  }
+
+  public static BaseWork getMergeWork(JobConf jconf) {
+    if ((jconf.get(DagUtils.TEZ_MERGE_CURRENT_MERGE_FILE_PREFIX) == null)
+        || (jconf.get(DagUtils.TEZ_MERGE_CURRENT_MERGE_FILE_PREFIX).isEmpty())) {
+      return null;
+    }
+    return getMergeWork(jconf, jconf.get(DagUtils.TEZ_MERGE_CURRENT_MERGE_FILE_PREFIX));
+  }
+
+  public static BaseWork getMergeWork(JobConf jconf, String prefix) {
+    if (prefix == null || prefix.isEmpty()) {
+      return null;
+    }
+
+    return getBaseWork(jconf, prefix + MERGE_PLAN_NAME);
+  }
+
   public static void cacheBaseWork(Configuration conf, String name, BaseWork work,
       Path hiveScratchDir) {
     try {
@@ -367,6 +404,8 @@ public final class Utilities {
             throw new RuntimeException("unable to determine work from configuration ."
                 + MAPRED_REDUCER_CLASS +" was "+ conf.get(MAPRED_REDUCER_CLASS)) ;
           }
+        } else if (name.contains(MERGE_PLAN_NAME)) {
+          gWork = deserializePlan(in, MapWork.class, conf);
         }
         gWorkMap.put(path, gWork);
       } else {
@@ -388,6 +427,22 @@ public final class Utilities {
         } catch (IOException cantBlameMeForTrying) { }
       }
     }
+  }
+
+  public static Map<String, Map<Integer, String>> getScratchColumnVectorTypes(Configuration hiveConf) {
+    BaseWork baseWork = getMapWork(hiveConf);
+    if (baseWork == null) {
+      baseWork = getReduceWork(hiveConf);
+    }
+    return baseWork.getScratchColumnVectorTypes();
+  }
+
+  public static Map<String, Map<String, Integer>> getScratchColumnMap(Configuration hiveConf) {
+    BaseWork baseWork = getMapWork(hiveConf);
+    if (baseWork == null) {
+      baseWork = getReduceWork(hiveConf);
+    }
+    return baseWork.getScratchColumnMap();
   }
 
   public static void setWorkflowAdjacencies(Configuration conf, QueryPlan plan) {
@@ -583,8 +638,14 @@ public final class Utilities {
   }
 
   public static void setMapRedWork(Configuration conf, MapredWork w, Path hiveScratchDir) {
+    String useName = conf.get(INPUT_NAME);
+    if (useName == null) {
+      useName = "mapreduce";
+    }
+    conf.set(INPUT_NAME, useName);
     setMapWork(conf, w.getMapWork(), hiveScratchDir, true);
     if (w.getReduceWork() != null) {
+      conf.set(INPUT_NAME, useName);
       setReduceWork(conf, w.getReduceWork(), hiveScratchDir, true);
     }
   }
@@ -1821,7 +1882,7 @@ public final class Utilities {
 
       for (int i = 0; i < parts.length; ++i) {
         assert parts[i].isDir() : "dynamic partition " + parts[i].getPath()
-            + " is not a direcgtory";
+            + " is not a directory";
         FileStatus[] items = fs.listStatus(parts[i].getPath());
 
         // remove empty directory since DP insert should not generate empty partitions.
@@ -2259,13 +2320,15 @@ public final class Utilities {
    *          configuration which receives configured properties
    */
   public static void copyTableJobPropertiesToConf(TableDesc tbl, JobConf job) {
-    String bucketString = tbl.getProperties()
-        .getProperty(hive_metastoreConstants.BUCKET_COUNT);
-    // copy the bucket count
-    if (bucketString != null) {
-      job.set(hive_metastoreConstants.BUCKET_COUNT, bucketString);
+    Properties tblProperties = tbl.getProperties();
+    for(String name: tblProperties.stringPropertyNames()) {
+      if (job.get(name) == null) {
+        String val = (String) tblProperties.get(name);
+        if (val != null) {
+          job.set(name, StringEscapeUtils.escapeJava(val));
+        }
+      }
     }
-
     Map<String, String> jobProperties = tbl.getJobProperties();
     if (jobProperties == null) {
       return;

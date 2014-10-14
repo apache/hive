@@ -36,8 +36,13 @@ public abstract class HiveMetaDataResultSet<M> extends HiveBaseResultSet {
     }
     if (columnNames!=null) {
       this.columnNames = new ArrayList<String>(columnNames);
+      this.normalizedColumnNames = new ArrayList<String>();
+      for (String colName : columnNames) {
+        this.normalizedColumnNames.add(colName.toLowerCase());
+      }
     } else {
       this.columnNames =  new ArrayList<String>();
+      this.normalizedColumnNames = new ArrayList<String>();
     }
     if (columnTypes!=null) {
       this.columnTypes = new ArrayList<String>(columnTypes);

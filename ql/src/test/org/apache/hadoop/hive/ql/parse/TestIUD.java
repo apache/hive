@@ -24,6 +24,9 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+/**
+ * various Parser tests for INSERT/UPDATE/DELETE
+ */
 public class TestIUD {
   private static HiveConf conf;
 
@@ -98,6 +101,18 @@ public class TestIUD {
         "(TOK_SET_COLUMNS_CLAUSE " +
           "(= " +
             "(TOK_TABLE_OR_COL key) 3)) " +
+        "(TOK_WHERE (TOK_FUNCTION TOK_ISNULL (TOK_TABLE_OR_COL value))))",
+      ast.toStringTree());
+  }
+  @Test
+  public void testUpdateWithWhereSingleSetExpr() throws ParseException {
+    ASTNode ast = parse("UPDATE src SET key = -3+(5*9)%8, val = cast(6.1 + c as INT), d = d - 1 WHERE value IS NULL");
+    Assert.assertEquals("AST doesn't match",
+      "(TOK_UPDATE_TABLE (TOK_TABNAME src) " +
+        "(TOK_SET_COLUMNS_CLAUSE " +
+        "(= (TOK_TABLE_OR_COL key) (+ (- 3) (% (* 5 9) 8))) " +
+        "(= (TOK_TABLE_OR_COL val) (TOK_FUNCTION TOK_INT (+ 6.1 (TOK_TABLE_OR_COL c)))) " +
+        "(= (TOK_TABLE_OR_COL d) (- (TOK_TABLE_OR_COL d) 1))) " +
         "(TOK_WHERE (TOK_FUNCTION TOK_ISNULL (TOK_TABLE_OR_COL value))))",
       ast.toStringTree());
   }
@@ -207,13 +222,13 @@ public class TestIUD {
   }
   @Test
   public void testInsertIntoTableFromAnonymousTable() throws ParseException {
-    ASTNode ast = parse("insert into table page_view values(1,2),(3,4)");
+    ASTNode ast = parse("insert into table page_view values(-1,2),(3,+4)");
     Assert.assertEquals("AST doesn't match",
       "(TOK_QUERY " +
         "(TOK_FROM " +
           "(TOK_VIRTUAL_TABLE " +
           "(TOK_VIRTUAL_TABREF TOK_ANONYMOUS) " +
-          "(TOK_VALUES_TABLE (TOK_VALUE_ROW 1 2) (TOK_VALUE_ROW 3 4)))) " +
+          "(TOK_VALUES_TABLE (TOK_VALUE_ROW (- 1) 2) (TOK_VALUE_ROW 3 (+ 4))))) " +
         "(TOK_INSERT (TOK_INSERT_INTO (TOK_TAB (TOK_TABNAME page_view))) " +
           "(TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))",
       ast.toStringTree());

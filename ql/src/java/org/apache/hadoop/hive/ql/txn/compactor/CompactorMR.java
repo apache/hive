@@ -506,13 +506,15 @@ public class CompactorMR {
       ValidTxnList txnList =
           new ValidTxnListImpl(jobConf.get(ValidTxnList.VALID_TXNS_KEY));
 
+      boolean isMajor = jobConf.getBoolean(IS_MAJOR, false);
       AcidInputFormat.RawReader<V> reader =
-          aif.getRawReader(jobConf, jobConf.getBoolean(IS_MAJOR, false), split.getBucket(),
+          aif.getRawReader(jobConf, isMajor, split.getBucket(),
               txnList, split.getBaseDir(), split.getDeltaDirs());
       RecordIdentifier identifier = reader.createKey();
       V value = reader.createValue();
       getWriter(reporter, reader.getObjectInspector(), split.getBucket());
       while (reader.next(identifier, value)) {
+        if (isMajor && reader.isDelete(value)) continue;
         writer.write(value);
         reporter.progress();
       }

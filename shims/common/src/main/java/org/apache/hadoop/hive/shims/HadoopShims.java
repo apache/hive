@@ -30,6 +30,7 @@ import java.security.PrivilegedExceptionAction;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import javax.security.auth.login.LoginException;
 
@@ -477,6 +478,19 @@ public interface HadoopShims {
       FileStatus status) throws IOException;
 
   /**
+   * For the block locations returned by getLocations() convert them into a Treemap
+   * <Offset,blockLocation> by iterating over the list of blockLocation.
+   * Using TreeMap from offset to blockLocation, makes it O(logn) to get a particular
+   * block based upon offset.
+   * @param fs the file system
+   * @param status the file information
+   * @return TreeMap<Long, BlockLocation>
+   * @throws IOException
+   */
+  TreeMap<Long, BlockLocation> getLocationsWithOffset(FileSystem fs,
+      FileStatus status) throws IOException;
+
+  /**
    * Flush and make visible to other users the changes to the given stream.
    * @param stream the stream to hflush.
    * @throws IOException
@@ -707,4 +721,31 @@ public interface HadoopShims {
    * @return sticky bit
    */
   boolean hasStickyBit(FsPermission permission);
+
+  /**
+   * @return True if the current hadoop supports trash feature.
+   */
+  boolean supportTrashFeature();
+
+  /**
+   * @return Path to HDFS trash, if current hadoop supports trash feature.  Null otherwise.
+   */
+  Path getCurrentTrashPath(Configuration conf, FileSystem fs);
+
+  /**
+   * Returns a shim to wrap KerberosName
+   */
+  public KerberosNameShim getKerberosNameShim(String name) throws IOException;
+
+  /**
+   * Shim for KerberosName
+   */
+  public interface KerberosNameShim {
+    public String getDefaultRealm();
+    public String getServiceName();
+    public String getHostName();
+    public String getRealm();
+    public String getShortName() throws IOException;
+  }
+
 }

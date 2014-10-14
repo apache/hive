@@ -37,8 +37,6 @@ public class serdeConstants {
 
   public static final String SERIALIZATION_CLASS = "serialization.class";
 
-  public static final String SERIALIZATION_TYPE = "serialization.type";
-
   public static final String SERIALIZATION_FORMAT = "serialization.format";
 
   public static final String SERIALIZATION_DDL = "serialization.ddl";

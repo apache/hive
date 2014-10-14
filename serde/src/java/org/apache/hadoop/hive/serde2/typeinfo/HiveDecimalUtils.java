@@ -22,6 +22,7 @@ import java.math.BigDecimal;
 
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 
 public class HiveDecimalUtils {
 
@@ -134,4 +135,25 @@ public class HiveDecimalUtils {
     }
   }
 
+  public static TypeInfo getDecimalTypeForPrimitiveCategories(
+      PrimitiveTypeInfo a, PrimitiveTypeInfo b) {
+    int prec1 = HiveDecimalUtils.getPrecisionForType(a);
+    int prec2 = HiveDecimalUtils.getPrecisionForType(b);
+    int scale1 = HiveDecimalUtils.getScaleForType(a);
+    int scale2 = HiveDecimalUtils.getScaleForType(b);
+    int intPart = Math.max(prec1 - scale1, prec2 - scale2);
+    int decPart = Math.max(scale1, scale2);
+    int prec =  Math.min(intPart + decPart, HiveDecimal.MAX_PRECISION);
+    int scale = Math.min(decPart, HiveDecimal.MAX_PRECISION - intPart);
+    return TypeInfoFactory.getDecimalTypeInfo(prec, scale);
+  }
+
+  public static DecimalTypeInfo getDecimalTypeForPrimitiveCategory(PrimitiveTypeInfo a) {
+    if (a instanceof DecimalTypeInfo) return (DecimalTypeInfo)a;
+    int prec = HiveDecimalUtils.getPrecisionForType(a);
+    int scale = HiveDecimalUtils.getScaleForType(a);
+    prec =  Math.min(prec, HiveDecimal.MAX_PRECISION);
+    scale = Math.min(scale, HiveDecimal.MAX_PRECISION - (prec - scale));
+    return TypeInfoFactory.getDecimalTypeInfo(prec, scale);
+  }
 }

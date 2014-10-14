@@ -120,7 +120,7 @@ public class Worker extends CompactorThread {
 
         final boolean isMajor = ci.isMajorCompaction();
         final ValidTxnList txns =
-            TxnHandler.createValidTxnList(txnHandler.getOpenTxns());
+            TxnHandler.createValidTxnList(txnHandler.getOpenTxns(), 0);
         final StringBuffer jobName = new StringBuffer(name);
         jobName.append("-compactor-");
         jobName.append(ci.getFullPartitionName());
@@ -168,8 +168,8 @@ public class Worker extends CompactorThread {
   }
 
   @Override
-  public void init(BooleanPointer stop) throws MetaException {
-    super.init(stop);
+  public void init(BooleanPointer stop, BooleanPointer looped) throws MetaException {
+    super.init(stop, looped);
 
     StringBuilder name = new StringBuilder(hostname());
     name.append("-");

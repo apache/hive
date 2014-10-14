@@ -26,9 +26,11 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.io.IntWritable;
 
 /**
  * GenericUDFIndex.
@@ -36,11 +38,10 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
  */
 @Description(name = "index", value = "_FUNC_(a, n) - Returns the n-th element of a ")
 public class GenericUDFIndex extends GenericUDF {
+
   private transient MapObjectInspector mapOI;
-  private boolean mapKeyPreferWritable;
   private transient ListObjectInspector listOI;
-  private transient PrimitiveObjectInspector indexOI;
-  private transient ObjectInspector returnOI;
+  private transient ObjectInspectorConverters.Converter converter;
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
@@ -66,21 +67,22 @@ public class GenericUDFIndex extends GenericUDF {
     }
 
     // index has to be a primitive
-    if (arguments[1] instanceof PrimitiveObjectInspector) {
-      indexOI = (PrimitiveObjectInspector) arguments[1];
-    } else {
+    if (!(arguments[1] instanceof PrimitiveObjectInspector)) {
       throw new UDFArgumentTypeException(1, "Primitive Type is expected but "
           + arguments[1].getTypeName() + "\" is found");
     }
-
+    PrimitiveObjectInspector inputOI = (PrimitiveObjectInspector) arguments[1];
+    ObjectInspector returnOI;
+    ObjectInspector indexOI;
     if (mapOI != null) {
+      indexOI = ObjectInspectorConverters.getConvertedOI(
+          inputOI, mapOI.getMapKeyObjectInspector());
       returnOI = mapOI.getMapValueObjectInspector();
-      ObjectInspector keyOI = mapOI.getMapKeyObjectInspector();
-      mapKeyPreferWritable = ((PrimitiveObjectInspector) keyOI)
-          .preferWritable();
     } else {
+      indexOI = PrimitiveObjectInspectorFactory.writableIntObjectInspector;
       returnOI = listOI.getListElementObjectInspector();
     }
+    converter = ObjectInspectorConverters.getConverter(inputOI, indexOI);
 
     return returnOI;
   }
@@ -88,35 +90,16 @@ public class GenericUDFIndex extends GenericUDF {
   @Override
   public Object evaluate(DeferredObject[] arguments) throws HiveException {
     assert (arguments.length == 2);
-    Object main = arguments[0].get();
     Object index = arguments[1].get();
 
-    if (mapOI != null) {
-
-      Object indexObject;
-      if (mapKeyPreferWritable) {
-        indexObject = indexOI.getPrimitiveWritableObject(index);
-      } else {
-        indexObject = indexOI.getPrimitiveJavaObject(index);
-      }
-      return mapOI.getMapValueElement(main, indexObject);
-
-    } else {
-
-      assert (listOI != null);
-      int intIndex = 0;
-      try {
-        intIndex = PrimitiveObjectInspectorUtils.getInt(index, indexOI);
-      } catch (NullPointerException e) {
-        // If index is null, we should return null.
-        return null;
-      } catch (NumberFormatException e) {
-        // If index is not a number, we should return null.
-        return null;
-      }
-      return listOI.getListElement(main, intIndex);
-
+    Object indexObject = converter.convert(index);
+    if (indexObject == null) {
+      return null;
     }
+    if (mapOI != null) {
+      return mapOI.getMapValueElement(arguments[0].get(), indexObject);
+    }
+    return listOI.getListElement(arguments[0].get(), ((IntWritable)indexObject).get());
   }
 
   @Override

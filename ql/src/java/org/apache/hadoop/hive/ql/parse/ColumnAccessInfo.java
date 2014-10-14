@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
+import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -53,5 +55,22 @@ public class ColumnAccessInfo {
       mapping.put(entry.getKey(), sortedCols);
     }
     return mapping;
+  }
+
+  /**
+   * Strip a virtual column out of the set of columns.  This is useful in cases where we do not
+   * want to be checking against the user reading virtual columns, namely update and delete.
+   * @param vc
+   */
+  public void stripVirtualColumn(VirtualColumn vc) {
+    for (Map.Entry<String, Set<String>> e : tableToColumnAccessMap.entrySet()) {
+      for (String columnName : e.getValue()) {
+        if (vc.getName().equalsIgnoreCase(columnName)) {
+          e.getValue().remove(columnName);
+          break;
+        }
+      }
+    }
+
   }
 }

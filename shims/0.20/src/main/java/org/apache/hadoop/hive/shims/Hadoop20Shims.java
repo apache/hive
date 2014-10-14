@@ -37,6 +37,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import javax.security.auth.Subject;
 import javax.security.auth.login.LoginException;
@@ -58,6 +59,7 @@ import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.io.HiveIOExceptionHandlerUtil;
+import org.apache.hadoop.hive.shims.HadoopShims.KerberosNameShim;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapred.ClusterStatus;
 import org.apache.hadoop.mapred.FileInputFormat;
@@ -652,6 +654,17 @@ public class Hadoop20Shims implements HadoopShims {
   }
 
   @Override
+  public TreeMap<Long, BlockLocation> getLocationsWithOffset(FileSystem fs,
+                                                             FileStatus status) throws IOException {
+    TreeMap<Long, BlockLocation> offsetBlockMap = new TreeMap<Long, BlockLocation>();
+    BlockLocation[] locations = getLocations(fs, status);
+    for (BlockLocation location : locations) {
+      offsetBlockMap.put(location.getOffset(), location);
+    }
+    return offsetBlockMap;
+  }
+
+  @Override
   public void hflush(FSDataOutputStream stream) throws IOException {
     stream.sync();
   }
@@ -905,5 +918,21 @@ public class Hadoop20Shims implements HadoopShims {
   @Override
   public boolean hasStickyBit(FsPermission permission) {
     return false;   // not supported
+  }
+
+  @Override
+  public boolean supportTrashFeature() {
+    return false;
+  }
+
+  @Override
+  public Path getCurrentTrashPath(Configuration conf, FileSystem fs) {
+    return null;
+  }
+
+  @Override
+  public KerberosNameShim getKerberosNameShim(String name) throws IOException {
+    // Not supported
+    return null;
   }
 }

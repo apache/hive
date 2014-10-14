@@ -119,3 +119,21 @@ class Complex
   ::Thrift::Struct.generate_accessors self
 end
 
+class SetIntString
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  SINTSTRING = 1
+  ASTRING = 2
+
+  FIELDS = {
+    SINTSTRING => {:type => ::Thrift::Types::SET, :name => 'sIntString', :element => {:type => ::Thrift::Types::STRUCT, :class => ::IntString}},
+    ASTRING => {:type => ::Thrift::Types::STRING, :name => 'aString'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+

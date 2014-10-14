@@ -155,6 +155,8 @@ public interface AcidInputFormat<KEY extends WritableComparable, VALUE>
   public static interface RawReader<V>
       extends RecordReader<RecordIdentifier, V> {
     public ObjectInspector getObjectInspector();
+
+    public boolean isDelete(V value);
   }
 
   /**

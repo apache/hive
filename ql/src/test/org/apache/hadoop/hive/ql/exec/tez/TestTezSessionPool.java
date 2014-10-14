@@ -26,6 +26,7 @@ import java.util.Random;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.apache.hadoop.hive.conf.HiveConf;
 
 public class TestTezSessionPool {
@@ -157,4 +158,29 @@ public class TestTezSessionPool {
         }
       }
     }
+
+  @Test
+  public void testCloseAndOpenDefault() throws Exception {
+    poolManager = new TestTezSessionPoolManager();
+    TezSessionState session = Mockito.mock(TezSessionState.class);
+    Mockito.when(session.isDefault()).thenReturn(false);
+
+    poolManager.closeAndOpen(session, conf, false);
+
+    Mockito.verify(session).close(false);
+    Mockito.verify(session).open(conf, null);
+  }
+
+  @Test
+  public void testCloseAndOpenWithResources() throws Exception {
+    poolManager = new TestTezSessionPoolManager();
+    TezSessionState session = Mockito.mock(TezSessionState.class);
+    Mockito.when(session.isDefault()).thenReturn(false);
+    String[] extraResources = new String[] { "file:///tmp/foo.jar" };
+
+    poolManager.closeAndOpen(session, conf, extraResources, false);
+
+    Mockito.verify(session).close(false);
+    Mockito.verify(session).open(conf, extraResources);
+  }
 }

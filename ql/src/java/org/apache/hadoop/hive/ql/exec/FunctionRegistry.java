@@ -639,6 +639,14 @@ public final class FunctionRegistry {
     }
   }
 
+  public static String getNormalizedFunctionName(String fn) {
+    // Does the same thing as getFunctionInfo, except for getting the function info.
+    fn = fn.toLowerCase();
+    return (FunctionUtils.isQualifiedFunctionName(fn) || mFunctions.get(fn) != null) ? fn
+        : FunctionUtils.qualifyFunctionName(
+            fn, SessionState.get().getCurrentDatabase().toLowerCase());
+  }
+
   private static <T extends CommonFunctionInfo> T getFunctionInfo(
       Map<String, T> mFunctions, String functionName) {
     functionName = functionName.toLowerCase();
@@ -718,6 +726,34 @@ public final class FunctionRegistry {
     for (String funcName : mFunctions.keySet()) {
       if (funcPattern.matcher(funcName).matches()) {
         funcNames.add(funcName);
+      }
+    }
+    return funcNames;
+  }
+
+  /**
+   * Returns a set of registered function names which matchs the given pattern.
+   * This is used for the CLI command "SHOW FUNCTIONS LIKE 'regular expression';"
+   *
+   * @param funcPatternStr
+   *          regular expression of the interested function names
+   * @return set of strings contains function names
+   */
+  public static Set<String> getFunctionNamesByLikePattern(String funcPatternStr) {
+    Set<String> funcNames = new TreeSet<String>();
+    Set<String> allFuncs = getFunctionNames(true);
+    String[] subpatterns = funcPatternStr.trim().split("\\|");
+    for (String subpattern : subpatterns) {
+      subpattern = "(?i)" + subpattern.replaceAll("\\*", ".*");
+      try {
+        Pattern patternObj = Pattern.compile(subpattern);
+        for (String funcName : allFuncs) {
+          if (patternObj.matcher(funcName).matches()) {
+            funcNames.add(funcName);
+          }
+        }
+      } catch (PatternSyntaxException e) {
+        continue;
       }
     }
     return funcNames;
@@ -861,15 +897,7 @@ public final class FunctionRegistry {
             TypeInfoUtils.getCharacterLengthForType(b));
         return TypeInfoFactory.getVarcharTypeInfo(maxLength);
       case DECIMAL:
-          int prec1 = HiveDecimalUtils.getPrecisionForType(a);
-          int prec2 = HiveDecimalUtils.getPrecisionForType(b);
-          int scale1 = HiveDecimalUtils.getScaleForType(a);
-          int scale2 = HiveDecimalUtils.getScaleForType(b);
-          int intPart = Math.max(prec1 - scale1, prec2 - scale2);
-          int decPart = Math.max(scale1, scale2);
-          int prec =  Math.min(intPart + decPart, HiveDecimal.MAX_PRECISION);
-          int scale = Math.min(decPart, HiveDecimal.MAX_PRECISION - intPart);
-          return TypeInfoFactory.getDecimalTypeInfo(prec, scale);
+      return HiveDecimalUtils.getDecimalTypeForPrimitiveCategories(a, b);
       default:
         // Type doesn't require any qualifiers.
         return TypeInfoFactory.getPrimitiveTypeInfo(
@@ -903,15 +931,15 @@ public final class FunctionRegistry {
           (PrimitiveTypeInfo)a, (PrimitiveTypeInfo)b,PrimitiveCategory.STRING);
     }
 
-    if (FunctionRegistry.implicitConvertable(a, b)) {
+    if (FunctionRegistry.implicitConvertible(a, b)) {
       return getTypeInfoForPrimitiveCategory((PrimitiveTypeInfo)a, (PrimitiveTypeInfo)b, pcB);
     }
-    if (FunctionRegistry.implicitConvertable(b, a)) {
+    if (FunctionRegistry.implicitConvertible(b, a)) {
       return getTypeInfoForPrimitiveCategory((PrimitiveTypeInfo)a, (PrimitiveTypeInfo)b, pcA);
     }
     for (PrimitiveCategory t : numericTypeList) {
-      if (FunctionRegistry.implicitConvertable(pcA, t)
-          && FunctionRegistry.implicitConvertable(pcB, t)) {
+      if (FunctionRegistry.implicitConvertible(pcA, t)
+          && FunctionRegistry.implicitConvertible(pcB, t)) {
         return getTypeInfoForPrimitiveCategory((PrimitiveTypeInfo)a, (PrimitiveTypeInfo)b, t);
       }
     }
@@ -955,8 +983,8 @@ public final class FunctionRegistry {
     }
 
     for (PrimitiveCategory t : numericTypeList) {
-      if (FunctionRegistry.implicitConvertable(pcA, t)
-          && FunctionRegistry.implicitConvertable(pcB, t)) {
+      if (FunctionRegistry.implicitConvertible(pcA, t)
+          && FunctionRegistry.implicitConvertible(pcB, t)) {
         return getTypeInfoForPrimitiveCategory((PrimitiveTypeInfo)a, (PrimitiveTypeInfo)b, t);
       }
     }
@@ -1007,7 +1035,7 @@ public final class FunctionRegistry {
     return getTypeInfoForPrimitiveCategory((PrimitiveTypeInfo)a, (PrimitiveTypeInfo)b, commonCat);
   }
 
-  public static boolean implicitConvertable(PrimitiveCategory from, PrimitiveCategory to) {
+  public static boolean implicitConvertible(PrimitiveCategory from, PrimitiveCategory to) {
     if (from == to) {
       return true;
     }
@@ -1058,7 +1086,7 @@ public final class FunctionRegistry {
    * Returns whether it is possible to implicitly convert an object of Class
    * from to Class to.
    */
-  public static boolean implicitConvertable(TypeInfo from, TypeInfo to) {
+  public static boolean implicitConvertible(TypeInfo from, TypeInfo to) {
     if (from.equals(to)) {
       return true;
     }
@@ -1067,9 +1095,9 @@ public final class FunctionRegistry {
     // 2 TypeInfos from the same qualified type (varchar, decimal) should still be
     // seen as equivalent.
     if (from.getCategory() == Category.PRIMITIVE && to.getCategory() == Category.PRIMITIVE) {
-      return implicitConvertable(
-          ((PrimitiveTypeInfo)from).getPrimitiveCategory(),
-          ((PrimitiveTypeInfo)to).getPrimitiveCategory());
+      return implicitConvertible(
+          ((PrimitiveTypeInfo) from).getPrimitiveCategory(),
+          ((PrimitiveTypeInfo) to).getPrimitiveCategory());
     }
     return false;
   }
@@ -1305,7 +1333,7 @@ public final class FunctionRegistry {
       // but there is a conversion cost.
       return 1;
     }
-    if (!exact && implicitConvertable(argumentPassed, argumentAccepted)) {
+    if (!exact && implicitConvertible(argumentPassed, argumentAccepted)) {
       return 1;
     }
 

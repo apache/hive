@@ -214,7 +214,7 @@ public class NotificationListener extends MetaStoreEventListener {
       HiveConf conf = handler.getHiveConf();
       Table newTbl;
       try {
-        newTbl = handler.get_table(tbl.getDbName(), tbl.getTableName())
+        newTbl = handler.get_table_core(tbl.getDbName(), tbl.getTableName())
           .deepCopy();
         newTbl.getParameters().put(
           HCatConstants.HCAT_MSGBUS_TOPIC_NAME,

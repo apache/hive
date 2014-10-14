@@ -18,30 +18,47 @@
  */
 package org.apache.hive.hcatalog.pig;
 
+import com.google.common.collect.ImmutableSet;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
-
-import junit.framework.TestCase;
+import java.util.Set;
 
 import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.io.IOConstants;
+import org.apache.hadoop.hive.ql.io.StorageFormats;
 import org.apache.hadoop.hive.ql.session.SessionState;
+
 import org.apache.hive.hcatalog.common.HCatUtil;
 import org.apache.hive.hcatalog.data.Pair;
+
 import org.apache.pig.ExecType;
 import org.apache.pig.PigServer;
 
-public class TestHCatStorerMulti extends TestCase {
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assume.assumeTrue;
+
+@RunWith(Parameterized.class)
+public class TestHCatStorerMulti {
   public static final String TEST_DATA_DIR = HCatUtil.makePathASafeFileName(
-          System.getProperty("user.dir") + "/build/test/data/" +
-                  TestHCatStorerMulti.class.getCanonicalName() + "-" + System.currentTimeMillis());
+      System.getProperty("user.dir") + "/build/test/data/" +
+          TestHCatStorerMulti.class.getCanonicalName() + "-" + System.currentTimeMillis());
   private static final String TEST_WAREHOUSE_DIR = TEST_DATA_DIR + "/warehouse";
   private static final String INPUT_FILE_NAME = TEST_DATA_DIR + "/input.data";
 
@@ -51,9 +68,29 @@ public class TestHCatStorerMulti extends TestCase {
 
   private static Map<Integer, Pair<Integer, String>> basicInputData;
 
-  protected String storageFormat() {
-    return "RCFILE tblproperties('hcat.isd'='org.apache.hive.hcatalog.rcfile.RCFileInputDriver'," +
-      "'hcat.osd'='org.apache.hive.hcatalog.rcfile.RCFileOutputDriver')";
+  private static final Map<String, Set<String>> DISABLED_STORAGE_FORMATS =
+      new HashMap<String, Set<String>>() {{
+        put(IOConstants.AVRO, new HashSet<String>() {{
+          add("testStoreBasicTable");
+          add("testStorePartitionedTable");
+          add("testStoreTableMulti");
+        }});
+        put(IOConstants.PARQUETFILE, new HashSet<String>() {{
+          add("testStoreBasicTable");
+          add("testStorePartitionedTable");
+          add("testStoreTableMulti");
+        }});
+      }};
+
+  private String storageFormat;
+
+  @Parameterized.Parameters
+  public static Collection<Object[]> generateParameters() {
+    return StorageFormats.names();
+  }
+
+  public TestHCatStorerMulti(String storageFormat) {
+    this.storageFormat = storageFormat;
   }
 
   private void dropTable(String tablename) throws IOException, CommandNeedRetryException {
@@ -66,7 +103,7 @@ public class TestHCatStorerMulti extends TestCase {
     if ((partitionedBy != null) && (!partitionedBy.trim().isEmpty())) {
       createTable = createTable + "partitioned by (" + partitionedBy + ") ";
     }
-    createTable = createTable + "stored as " + storageFormat();
+    createTable = createTable + "stored as " + storageFormat;
     int retCode = driver.run(createTable).getResponseCode();
     if (retCode != 0) {
       throw new IOException("Failed to create table. [" + createTable + "], return code from hive driver : [" + retCode + "]");
@@ -77,8 +114,10 @@ public class TestHCatStorerMulti extends TestCase {
     createTable(tablename, schema, null);
   }
 
-  @Override
-  protected void setUp() throws Exception {
+  @Before
+  public void setUp() throws Exception {
+    assumeTrue(!TestUtil.shouldSkip(storageFormat, DISABLED_STORAGE_FORMATS));
+
     if (driver == null) {
       HiveConf hiveConf = new HiveConf(this.getClass());
       hiveConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
@@ -92,14 +131,14 @@ public class TestHCatStorerMulti extends TestCase {
     cleanup();
   }
 
-  @Override
-  protected void tearDown() throws Exception {
+  @After
+  public void tearDown() throws Exception {
     cleanup();
   }
 
+  @Test
   public void testStoreBasicTable() throws Exception {
-
-
+    assumeTrue(!TestUtil.shouldSkip(storageFormat, DISABLED_STORAGE_FORMATS));
     createTable(BASIC_TABLE, "a int, b string");
 
     populateBasicFile();
@@ -117,7 +156,9 @@ public class TestHCatStorerMulti extends TestCase {
     assertEquals(basicInputData.size(), unpartitionedTableValuesReadFromHiveDriver.size());
   }
 
+  @Test
   public void testStorePartitionedTable() throws Exception {
+    assumeTrue(!TestUtil.shouldSkip(storageFormat, DISABLED_STORAGE_FORMATS));
     createTable(PARTITIONED_TABLE, "a int, b string", "bkt string");
 
     populateBasicFile();
@@ -139,9 +180,9 @@ public class TestHCatStorerMulti extends TestCase {
     assertEquals(basicInputData.size(), partitionedTableValuesReadFromHiveDriver.size());
   }
 
+  @Test
   public void testStoreTableMulti() throws Exception {
-
-
+    assumeTrue(!TestUtil.shouldSkip(storageFormat, DISABLED_STORAGE_FORMATS));
     createTable(BASIC_TABLE, "a int, b string");
     createTable(PARTITIONED_TABLE, "a int, b string", "bkt string");
 

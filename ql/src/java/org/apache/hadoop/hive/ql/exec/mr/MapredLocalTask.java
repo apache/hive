@@ -91,7 +91,7 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
 
   // not sure we need this exec context; but all the operators in the work
   // will pass this context throught
-  private ExecMapperContext execContext = new ExecMapperContext();
+  private ExecMapperContext execContext = null;
 
   private Process executor;
 
@@ -113,6 +113,7 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
   public void initialize(HiveConf conf, QueryPlan queryPlan, DriverContext driverContext) {
     super.initialize(conf, queryPlan, driverContext);
     job = new JobConf(conf, ExecDriver.class);
+    execContext = new ExecMapperContext(job);
     //we don't use the HadoopJobExecHooks for local tasks
     this.jobExecHelper = new HadoopJobExecHelper(job, console, this, null);
   }
@@ -237,6 +238,18 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
         variables.put(HADOOP_OPTS_KEY, hadoopOpts);
       }
 
+      //For Windows OS, we need to pass HIVE_HADOOP_CLASSPATH Java parameter while starting
+      //Hiveserver2 using "-hiveconf hive.hadoop.classpath=%HIVE_LIB%". This is to combine path(s).
+      if (HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_HADOOP_CLASSPATH)!= null)
+      {
+        if (variables.containsKey("HADOOP_CLASSPATH"))
+        {
+          variables.put("HADOOP_CLASSPATH", variables.get("HADOOP_CLASSPATH") + ";" + HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_HADOOP_CLASSPATH));
+        } else {
+          variables.put("HADOOP_CLASSPATH", HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_HADOOP_CLASSPATH));
+        }
+      }
+
       if(variables.containsKey(MapRedTask.HIVE_DEBUG_RECURSIVE)) {
         MapRedTask.configureDebugVariablesForChildJVM(variables);
       }
@@ -301,6 +314,11 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
     if (work == null) {
       return -1;
     }
+
+    if (execContext == null) {
+      execContext = new ExecMapperContext(job);
+    }
+
     memoryMXBean = ManagementFactory.getMemoryMXBean();
     long startTime = System.currentTimeMillis();
     console.printInfo(Utilities.now()

@@ -412,6 +412,44 @@ public final class LazyUtils {
     }
   }
 
+  public static void copyAndEscapeStringDataToText(byte[] inputBytes, int start, int length,
+      byte escapeChar, Text data) {
+
+    // First calculate the length of the output string
+    int outputLength = 0;
+    for (int i = 0; i < length; i++) {
+      if (inputBytes[start + i] != escapeChar) {
+        outputLength++;
+      } else {
+        outputLength++;
+        i++;
+      }
+    }
+
+    // Copy the data over, so that the internal state of Text will be set to
+    // the required outputLength.
+    data.set(inputBytes, start, outputLength);
+
+    // We need to copy the data byte by byte only in case the
+    // "outputLength < length" (which means there is at least one escaped
+    // byte.
+    if (outputLength < length) {
+      int k = 0;
+      byte[] outputBytes = data.getBytes();
+      for (int i = 0; i < length; i++) {
+        byte b = inputBytes[start + i];
+        if (b != escapeChar || i == length - 1) {
+          outputBytes[k++] = b;
+        } else {
+          // get the next byte
+          i++;
+          outputBytes[k++] = inputBytes[start + i];
+        }
+      }
+      assert (k == outputLength);
+    }
+  }
+
   private LazyUtils() {
     // prevent instantiation
   }

@@ -50,7 +50,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.UnionObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspector;
 import org.apache.hadoop.io.BinaryComparable;
 import org.apache.hadoop.io.BytesWritable;
-import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.OutputCollector;
@@ -67,6 +66,9 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
   }
 
   private static final Log LOG = LogFactory.getLog(ReduceSinkOperator.class.getName());
+  private static final boolean isInfoEnabled = LOG.isInfoEnabled();
+  private static final boolean isDebugEnabled = LOG.isDebugEnabled();
+  private static final boolean isTraceEnabled = LOG.isTraceEnabled();
   private static final long serialVersionUID = 1L;
   private static final MurmurHash hash = (MurmurHash) MurmurHash.getInstance();
 
@@ -117,6 +119,8 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
   protected transient Object[] cachedValues;
   protected transient List<List<Integer>> distinctColIndices;
   protected transient Random random;
+  protected transient int bucketNumber;
+
   /**
    * This two dimensional array holds key data and a corresponding Union object
    * which contains the tag identifying the aggregate expression for distinct columns.
@@ -144,8 +148,14 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
   protected void initializeOp(Configuration hconf) throws HiveException {
     try {
       List<ExprNodeDesc> keys = conf.getKeyCols();
-      LOG.debug("keys size is " + keys.size());
-      for (ExprNodeDesc k : keys) LOG.debug("Key exprNodeDesc " + k.getExprString());
+
+      if (isDebugEnabled) {
+        LOG.debug("keys size is " + keys.size());
+        for (ExprNodeDesc k : keys) {
+          LOG.debug("Key exprNodeDesc " + k.getExprString());
+        }
+      }
+
       keyEval = new ExprNodeEvaluator[keys.size()];
       int i = 0;
       for (ExprNodeDesc e : keys) {
@@ -184,7 +194,9 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
       tag = conf.getTag();
       tagByte[0] = (byte) tag;
       skipTag = conf.getSkipTag();
-      LOG.info("Using tag = " + tag);
+      if (isInfoEnabled) {
+        LOG.info("Using tag = " + tag);
+      }
 
       TableDesc keyTableDesc = conf.getKeySerializeInfo();
       keySerializer = (Serializer) keyTableDesc.getDeserializerClass()
@@ -284,7 +296,10 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
           bucketInspector = (IntObjectInspector)bucketField.getFieldObjectInspector();
         }
 
-        LOG.info("keys are " + conf.getOutputKeyColumnNames() + " num distributions: " + conf.getNumDistributionKeys());
+        if (isInfoEnabled) {
+          LOG.info("keys are " + conf.getOutputKeyColumnNames() + " num distributions: " +
+              conf.getNumDistributionKeys());
+        }
         keyObjectInspector = initEvaluatorsAndReturnStruct(keyEval,
             distinctColIndices,
             conf.getOutputKeyColumnNames(), numDistributionKeys, rowInspector);
@@ -304,15 +319,14 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
       populateCachedDistributionKeys(row, 0);
 
       // replace bucketing columns with hashcode % numBuckets
-      int buckNum = -1;
       if (bucketEval != null) {
-        buckNum = computeBucketNumber(row, conf.getNumBuckets());
-        cachedKeys[0][buckColIdxInKey] = new IntWritable(buckNum);
+        bucketNumber = computeBucketNumber(row, conf.getNumBuckets());
+        cachedKeys[0][buckColIdxInKey] = new Text(String.valueOf(bucketNumber));
       } else if (conf.getWriteType() == AcidUtils.Operation.UPDATE ||
           conf.getWriteType() == AcidUtils.Operation.DELETE) {
         // In the non-partitioned case we still want to compute the bucket number for updates and
         // deletes.
-        buckNum = computeBucketNumber(row, conf.getNumBuckets());
+        bucketNumber = computeBucketNumber(row, conf.getNumBuckets());
       }
 
       HiveKey firstKey = toHiveKey(cachedKeys[0], tag, null);
@@ -328,7 +342,7 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
       if (autoParallel && partitionEval.length > 0) {
         hashCode = computeMurmurHash(firstKey);
       } else {
-        hashCode = computeHashCode(row, buckNum);
+        hashCode = computeHashCode(row);
       }
 
       firstKey.setHashCode(hashCode);
@@ -377,7 +391,9 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
       // column directly.
       Object recIdValue = acidRowInspector.getStructFieldData(row, recIdField);
       buckNum = bucketInspector.get(recIdInspector.getStructFieldData(recIdValue, bucketField));
-      LOG.debug("Acid choosing bucket number " + buckNum);
+      if (isTraceEnabled) {
+        LOG.trace("Acid choosing bucket number " + buckNum);
+      }
     } else {
       for (int i = 0; i < bucketEval.length; i++) {
         Object o = bucketEval[i].evaluate(row);
@@ -422,7 +438,7 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
     return hash.hash(firstKey.getBytes(), firstKey.getDistKeyLength(), 0);
   }
 
-  private int computeHashCode(Object row, int buckNum) throws HiveException {
+  private int computeHashCode(Object row) throws HiveException {
     // Evaluate the HashCode
     int keyHashCode = 0;
     if (partitionEval.length == 0) {
@@ -446,8 +462,10 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
             + ObjectInspectorUtils.hashCode(o, partitionObjectInspectors[i]);
       }
     }
-    LOG.debug("Going to return hash code " + (keyHashCode * 31 + buckNum));
-    return buckNum < 0  ? keyHashCode : keyHashCode * 31 + buckNum;
+    if (isTraceEnabled) {
+      LOG.trace("Going to return hash code " + (keyHashCode * 31 + bucketNumber));
+    }
+    return bucketNumber < 0  ? keyHashCode : keyHashCode * 31 + bucketNumber;
   }
 
   private boolean partitionKeysAreNull(Object row) throws HiveException {
@@ -493,10 +511,19 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
   }
 
   private BytesWritable makeValueWritable(Object row) throws Exception {
+    int length = valueEval.length;
+
+    // in case of bucketed table, insert the bucket number as the last column in value
+    if (bucketEval != null) {
+      length -= 1;
+      cachedValues[length] = new Text(String.valueOf(bucketNumber));
+    }
+
     // Evaluate the value
-    for (int i = 0; i < valueEval.length; i++) {
+    for (int i = 0; i < length; i++) {
       cachedValues[i] = valueEval[i].evaluate(row);
     }
+
     // Serialize the value
     return (BytesWritable) valueSerializer.serialize(cachedValues, valueObjectInspector);
   }

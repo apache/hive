@@ -6615,3 +6615,567 @@ POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 false	11.0	-11.0	-2.389090909090909	-17881597706	-1.7881597716175E10	3.8953387713327066E17	6.0	-0.8249999999999993	-2454.8879999999995	3.8953385925167296E17	-2145884705	1.66288903197104486E18	0.8249999999999993	4.7840233756130287E-17	4.098424268084119E-17	0.8249999999999993	-1051696618	28.692556844886422	2.980633855245E9	-4.032330473245E9	85.79562278396777	4.032330473245E9	-3983699.3106060605	3983699.3106060605	4.1896430920933255E15
 true	79.553	-79.553	-0.33034580136836733	-401322621137	-4.01322621147175E11	7.9255373737244976E16	34.727455139160156	-69.3780014038086	4856.6352637899645	7.9254972414623824E16	-2130544867	2.30133924842409523E18	69.3780014038086	3.456813247089758E-17	2.0387240975807185E-18	69.3780014038086	2182477964777	34.654968050508266	2.959326820263E9	2.179518637956737E12	9461.197516216069	-2.179518637956737E12	4.592756659884259E8	-4.592756659884259E8	1.002359020778021E21
+PREHOOK: query: -- These tests verify COUNT on empty or null colulmns work correctly.
+create table test_count(i int) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_count
+POSTHOOK: query: -- These tests verify COUNT on empty or null colulmns work correctly.
+create table test_count(i int) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_count
+PREHOOK: query: explain
+select count(*) from test_count
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select count(*) from test_count
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: test_count
+            Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: COMPLETE
+            Select Operator
+              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: COMPLETE
+              Group By Operator
+                aggregations: count()
+                mode: hash
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col0 (type: bigint)
+      Execution mode: vectorized
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+          Select Operator
+            expressions: _col0 (type: bigint)
+            outputColumnNames: _col0
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(*) from test_count
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_count
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from test_count
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_count
+#### A masked pattern was here ####
+0
+PREHOOK: query: explain
+select count(i) from test_count
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select count(i) from test_count
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: test_count
+            Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+            Select Operator
+              expressions: i (type: int)
+              outputColumnNames: i
+              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+              Group By Operator
+                aggregations: count(i)
+                mode: hash
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: bigint)
+      Execution mode: vectorized
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col0 (type: bigint)
+            outputColumnNames: _col0
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(i) from test_count
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_count
+#### A masked pattern was here ####
+POSTHOOK: query: select count(i) from test_count
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_count
+#### A masked pattern was here ####
+0
+PREHOOK: query: create table alltypesnull like alltypesorc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@alltypesnull
+POSTHOOK: query: create table alltypesnull like alltypesorc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@alltypesnull
+PREHOOK: query: alter table alltypesnull set fileformat textfile
+PREHOOK: type: ALTERTABLE_FILEFORMAT
+PREHOOK: Input: default@alltypesnull
+PREHOOK: Output: default@alltypesnull
+POSTHOOK: query: alter table alltypesnull set fileformat textfile
+POSTHOOK: type: ALTERTABLE_FILEFORMAT
+POSTHOOK: Input: default@alltypesnull
+POSTHOOK: Output: default@alltypesnull
+PREHOOK: query: insert into table alltypesnull select null, null, null, null, null, null, null, null, null, null, null, null from alltypesorc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: default@alltypesnull
+POSTHOOK: query: insert into table alltypesnull select null, null, null, null, null, null, null, null, null, null, null, null from alltypesorc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: default@alltypesnull
+POSTHOOK: Lineage: alltypesnull.cbigint EXPRESSION []
+POSTHOOK: Lineage: alltypesnull.cboolean1 EXPRESSION []
+POSTHOOK: Lineage: alltypesnull.cboolean2 EXPRESSION []
+POSTHOOK: Lineage: alltypesnull.cdouble EXPRESSION []
+POSTHOOK: Lineage: alltypesnull.cfloat EXPRESSION []
+POSTHOOK: Lineage: alltypesnull.cint EXPRESSION []
+POSTHOOK: Lineage: alltypesnull.csmallint EXPRESSION []
+POSTHOOK: Lineage: alltypesnull.cstring1 SIMPLE []
+POSTHOOK: Lineage: alltypesnull.cstring2 SIMPLE []
+POSTHOOK: Lineage: alltypesnull.ctimestamp1 EXPRESSION []
+POSTHOOK: Lineage: alltypesnull.ctimestamp2 EXPRESSION []
+POSTHOOK: Lineage: alltypesnull.ctinyint EXPRESSION []
+PREHOOK: query: create table alltypesnullorc stored as orc as select * from alltypesnull
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@alltypesnull
+PREHOOK: Output: database:default
+PREHOOK: Output: default@alltypesnullorc
+POSTHOOK: query: create table alltypesnullorc stored as orc as select * from alltypesnull
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@alltypesnull
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@alltypesnullorc
+PREHOOK: query: explain
+select count(*) from alltypesnullorc
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select count(*) from alltypesnullorc
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: alltypesnullorc
+            Statistics: Num rows: 12288 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
+            Select Operator
+              Statistics: Num rows: 12288 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
+              Group By Operator
+                aggregations: count()
+                mode: hash
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col0 (type: bigint)
+      Execution mode: vectorized
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+          Select Operator
+            expressions: _col0 (type: bigint)
+            outputColumnNames: _col0
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(*) from alltypesnullorc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesnullorc
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from alltypesnullorc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesnullorc
+#### A masked pattern was here ####
+12288
+PREHOOK: query: explain
+select count(ctinyint) from alltypesnullorc
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select count(ctinyint) from alltypesnullorc
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: alltypesnullorc
+            Statistics: Num rows: 12288 Data size: 168 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: ctinyint (type: tinyint)
+              outputColumnNames: ctinyint
+              Statistics: Num rows: 12288 Data size: 168 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                aggregations: count(ctinyint)
+                mode: hash
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: bigint)
+      Execution mode: vectorized
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col0 (type: bigint)
+            outputColumnNames: _col0
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(ctinyint) from alltypesnullorc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesnullorc
+#### A masked pattern was here ####
+POSTHOOK: query: select count(ctinyint) from alltypesnullorc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesnullorc
+#### A masked pattern was here ####
+0
+PREHOOK: query: explain
+select count(cint) from alltypesnullorc
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select count(cint) from alltypesnullorc
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: alltypesnullorc
+            Statistics: Num rows: 12288 Data size: 168 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: cint (type: int)
+              outputColumnNames: cint
+              Statistics: Num rows: 12288 Data size: 168 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                aggregations: count(cint)
+                mode: hash
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: bigint)
+      Execution mode: vectorized
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col0 (type: bigint)
+            outputColumnNames: _col0
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(cint) from alltypesnullorc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesnullorc
+#### A masked pattern was here ####
+POSTHOOK: query: select count(cint) from alltypesnullorc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesnullorc
+#### A masked pattern was here ####
+0
+PREHOOK: query: explain
+select count(cfloat) from alltypesnullorc
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select count(cfloat) from alltypesnullorc
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: alltypesnullorc
+            Statistics: Num rows: 12288 Data size: 168 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: cfloat (type: float)
+              outputColumnNames: cfloat
+              Statistics: Num rows: 12288 Data size: 168 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                aggregations: count(cfloat)
+                mode: hash
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: bigint)
+      Execution mode: vectorized
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col0 (type: bigint)
+            outputColumnNames: _col0
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(cfloat) from alltypesnullorc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesnullorc
+#### A masked pattern was here ####
+POSTHOOK: query: select count(cfloat) from alltypesnullorc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesnullorc
+#### A masked pattern was here ####
+0
+PREHOOK: query: explain
+select count(cstring1) from alltypesnullorc
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select count(cstring1) from alltypesnullorc
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: alltypesnullorc
+            Statistics: Num rows: 12288 Data size: 168 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: cstring1 (type: string)
+              outputColumnNames: cstring1
+              Statistics: Num rows: 12288 Data size: 168 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                aggregations: count(cstring1)
+                mode: hash
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: bigint)
+      Execution mode: vectorized
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col0 (type: bigint)
+            outputColumnNames: _col0
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(cstring1) from alltypesnullorc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesnullorc
+#### A masked pattern was here ####
+POSTHOOK: query: select count(cstring1) from alltypesnullorc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesnullorc
+#### A masked pattern was here ####
+0
+PREHOOK: query: explain
+select count(cboolean1) from alltypesnullorc
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select count(cboolean1) from alltypesnullorc
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: alltypesnullorc
+            Statistics: Num rows: 12288 Data size: 168 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: cboolean1 (type: boolean)
+              outputColumnNames: cboolean1
+              Statistics: Num rows: 12288 Data size: 168 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                aggregations: count(cboolean1)
+                mode: hash
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: bigint)
+      Execution mode: vectorized
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col0 (type: bigint)
+            outputColumnNames: _col0
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(cboolean1) from alltypesnullorc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesnullorc
+#### A masked pattern was here ####
+POSTHOOK: query: select count(cboolean1) from alltypesnullorc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesnullorc
+#### A masked pattern was here ####
+0

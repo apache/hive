@@ -29,6 +29,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -45,6 +46,7 @@ import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.fs.ProxyFileSystem;
 import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.fs.Trash;
+import org.apache.hadoop.fs.TrashPolicy;
 import org.apache.hadoop.fs.permission.AclEntry;
 import org.apache.hadoop.fs.permission.AclEntryScope;
 import org.apache.hadoop.fs.permission.AclEntryType;
@@ -70,6 +72,7 @@ import org.apache.hadoop.mapreduce.TaskType;
 import org.apache.hadoop.mapreduce.task.JobContextImpl;
 import org.apache.hadoop.mapreduce.task.TaskAttemptContextImpl;
 import org.apache.hadoop.net.NetUtils;
+import org.apache.hadoop.security.authentication.util.KerberosName;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.Progressable;
 import org.apache.tez.test.MiniTezCluster;
@@ -511,6 +514,17 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   }
 
   @Override
+  public TreeMap<Long, BlockLocation> getLocationsWithOffset(FileSystem fs,
+                                                             FileStatus status) throws IOException {
+    TreeMap<Long, BlockLocation> offsetBlockMap = new TreeMap<Long, BlockLocation>();
+    BlockLocation[] locations = getLocations(fs, status);
+    for (BlockLocation location : locations) {
+      offsetBlockMap.put(location.getOffset(), location);
+    }
+    return offsetBlockMap;
+  }
+
+  @Override
   public void hflush(FSDataOutputStream stream) throws IOException {
     stream.hflush();
   }
@@ -822,5 +836,56 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   @Override
   public boolean hasStickyBit(FsPermission permission) {
     return permission.getStickyBit();
+  }
+
+  @Override
+  public boolean supportTrashFeature() {
+    return true;
+  }
+
+  @Override
+  public Path getCurrentTrashPath(Configuration conf, FileSystem fs) {
+    TrashPolicy tp = TrashPolicy.getInstance(conf, fs, fs.getHomeDirectory());
+    return tp.getCurrentTrashDir();
+  }
+
+  /**
+   * Returns a shim to wrap KerberosName
+   */
+  @Override
+  public KerberosNameShim getKerberosNameShim(String name) throws IOException {
+    return new KerberosNameShim(name);
+  }
+
+  /**
+   * Shim for KerberosName
+   */
+  public class KerberosNameShim implements HadoopShimsSecure.KerberosNameShim {
+
+    private KerberosName kerberosName;
+
+    public KerberosNameShim(String name) {
+      kerberosName = new KerberosName(name);
+    }
+
+    public String getDefaultRealm() {
+      return kerberosName.getDefaultRealm();
+    }
+
+    public String getServiceName() {
+      return kerberosName.getServiceName();
+    }
+
+    public String getHostName() {
+      return kerberosName.getHostName();
+    }
+
+    public String getRealm() {
+      return kerberosName.getRealm();
+    }
+
+    public String getShortName() throws IOException {
+      return kerberosName.getShortName();
+    }
   }
 }

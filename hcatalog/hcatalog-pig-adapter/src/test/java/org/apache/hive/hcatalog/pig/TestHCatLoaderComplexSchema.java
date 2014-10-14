@@ -18,21 +18,28 @@
  */
 package org.apache.hive.hcatalog.pig;
 
+import com.google.common.collect.ImmutableSet;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-
-import junit.framework.Assert;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.io.IOConstants;
+import org.apache.hadoop.hive.ql.io.StorageFormats;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
+
 import org.apache.pig.ExecType;
 import org.apache.pig.PigServer;
 import org.apache.pig.backend.executionengine.ExecException;
@@ -44,11 +51,21 @@ import org.apache.pig.data.TupleFactory;
 import org.apache.pig.impl.logicalLayer.FrontendException;
 import org.apache.pig.impl.logicalLayer.schema.Schema;
 import org.apache.pig.impl.logicalLayer.schema.Schema.FieldSchema;
+
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assume.assumeTrue;
+
+@RunWith(Parameterized.class)
 public class TestHCatLoaderComplexSchema {
 
   //private static MiniCluster cluster = MiniCluster.buildCluster();
@@ -56,13 +73,33 @@ public class TestHCatLoaderComplexSchema {
   //private static Properties props;
   private static final Logger LOG = LoggerFactory.getLogger(TestHCatLoaderComplexSchema.class);
 
-  private void dropTable(String tablename) throws IOException, CommandNeedRetryException {
-    driver.run("drop table " + tablename);
+  private static final Map<String, Set<String>> DISABLED_STORAGE_FORMATS =
+      new HashMap<String, Set<String>>() {{
+        put(IOConstants.AVRO, new HashSet<String>() {{
+          add("testSyntheticComplexSchema");
+          add("testTupleInBagInTupleInBag");
+          add("testMapWithComplexData");
+        }});
+        put(IOConstants.PARQUETFILE, new HashSet<String>() {{
+          add("testSyntheticComplexSchema");
+          add("testTupleInBagInTupleInBag");
+          add("testMapWithComplexData");
+        }});
+      }};
+
+  private String storageFormat;
+
+  @Parameterized.Parameters
+  public static Collection<Object[]> generateParameters() {
+    return StorageFormats.names();
   }
 
-  protected String storageFormat() {
-    return "RCFILE tblproperties('hcat.isd'='org.apache.hive.hcatalog.rcfile.RCFileInputDriver'," +
-      "'hcat.osd'='org.apache.hive.hcatalog.rcfile.RCFileOutputDriver')";
+  public TestHCatLoaderComplexSchema(String storageFormat) {
+    this.storageFormat = storageFormat;
+  }
+
+  private void dropTable(String tablename) throws IOException, CommandNeedRetryException {
+    driver.run("drop table " + tablename);
   }
 
   private void createTable(String tablename, String schema, String partitionedBy) throws IOException, CommandNeedRetryException {
@@ -71,7 +108,7 @@ public class TestHCatLoaderComplexSchema {
     if ((partitionedBy != null) && (!partitionedBy.trim().isEmpty())) {
       createTable = createTable + "partitioned by (" + partitionedBy + ") ";
     }
-    createTable = createTable + "stored as " + storageFormat();
+    createTable = createTable + "stored as " + storageFormat;
     LOG.info("Creating table:\n {}", createTable);
     CommandProcessorResponse result = driver.run(createTable);
     int retCode = result.getResponseCode();
@@ -86,7 +123,6 @@ public class TestHCatLoaderComplexSchema {
 
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
-
     HiveConf hiveConf = new HiveConf(TestHCatLoaderComplexSchema.class);
     hiveConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
     hiveConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
@@ -95,7 +131,6 @@ public class TestHCatLoaderComplexSchema {
     SessionState.start(new CliSessionState(hiveConf));
     //props = new Properties();
     //props.setProperty("fs.default.name", cluster.getProperties().getProperty("fs.default.name"));
-
   }
 
   private static final TupleFactory tf = TupleFactory.getInstance();
@@ -115,6 +150,7 @@ public class TestHCatLoaderComplexSchema {
    */
   @Test
   public void testSyntheticComplexSchema() throws Exception {
+    assumeTrue(!TestUtil.shouldSkip(storageFormat, DISABLED_STORAGE_FORMATS));
     String pigSchema =
         "a: " +
         "(" +
@@ -183,7 +219,6 @@ public class TestHCatLoaderComplexSchema {
     verifyWriteRead("testSyntheticComplexSchema", pigSchema, tableSchema, data, false);
     verifyWriteRead("testSyntheticComplexSchema2", pigSchema, tableSchema2, data, true);
     verifyWriteRead("testSyntheticComplexSchema2", pigSchema, tableSchema2, data, false);
-
   }
 
   private void verifyWriteRead(String tablename, String pigSchema, String tableSchema, List<Tuple> data, boolean provideSchemaToStorer)
@@ -216,7 +251,7 @@ public class TestHCatLoaderComplexSchema {
       }
       Schema dumpedXSchema = server.dumpSchema("X");
 
-      Assert.assertEquals(
+      assertEquals(
         "expected " + dumpedASchema + " but was " + dumpedXSchema + " (ignoring field names)",
         "",
         compareIgnoreFiledNames(dumpedASchema, dumpedXSchema));
@@ -225,19 +260,19 @@ public class TestHCatLoaderComplexSchema {
       dropTable(tablename);
     }
   }
-  
+
   private void compareTuples(Tuple t1, Tuple t2) throws ExecException {
-    Assert.assertEquals("Tuple Sizes don't match", t1.size(), t2.size());
+    assertEquals("Tuple Sizes don't match", t1.size(), t2.size());
     for (int i = 0; i < t1.size(); i++) {
       Object f1 = t1.get(i);
       Object f2 = t2.get(i);
-      Assert.assertNotNull("left", f1);
-      Assert.assertNotNull("right", f2);
+      assertNotNull("left", f1);
+      assertNotNull("right", f2);
       String msg = "right: " + f1 + ", left: " + f2;
-      Assert.assertEquals(msg, noOrder(f1.toString()), noOrder(f2.toString()));
+      assertEquals(msg, noOrder(f1.toString()), noOrder(f2.toString()));
     }
   }
-  
+
   private String noOrder(String s) {
     char[] chars = s.toCharArray();
     Arrays.sort(chars);
@@ -275,6 +310,7 @@ public class TestHCatLoaderComplexSchema {
    */
   @Test
   public void testTupleInBagInTupleInBag() throws Exception {
+    assumeTrue(!TestUtil.shouldSkip(storageFormat, DISABLED_STORAGE_FORMATS));
     String pigSchema = "a: { b : ( c: { d: (i : long) } ) }";
 
     String tableSchema = "a array< array< bigint > >";
@@ -294,11 +330,11 @@ public class TestHCatLoaderComplexSchema {
 
     verifyWriteRead("TupleInBagInTupleInBag3", pigSchema, tableSchema2, data, true);
     verifyWriteRead("TupleInBagInTupleInBag4", pigSchema, tableSchema2, data, false);
-
   }
 
   @Test
   public void testMapWithComplexData() throws Exception {
+    assumeTrue(!TestUtil.shouldSkip(storageFormat, DISABLED_STORAGE_FORMATS));
     String pigSchema = "a: long, b: map[]";
     String tableSchema = "a bigint, b map<string, struct<aa:bigint, ab:string>>";
 
@@ -317,6 +353,5 @@ public class TestHCatLoaderComplexSchema {
     }
     verifyWriteRead("testMapWithComplexData", pigSchema, tableSchema, data, true);
     verifyWriteRead("testMapWithComplexData2", pigSchema, tableSchema, data, false);
-
   }
 }

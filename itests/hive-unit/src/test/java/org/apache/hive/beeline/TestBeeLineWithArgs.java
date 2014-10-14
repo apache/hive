@@ -210,7 +210,7 @@ public class TestBeeLineWithArgs {
     }
     scriptFile.delete();
   }
-  
+
   /**
    * Test that BeeLine will read comment lines that start with whitespace
    * @throws Throwable
@@ -476,5 +476,32 @@ public class TestBeeLineWithArgs {
         "create table ${DUMMY_TBL} (d int);\nshow tables;\n";
     final String EXPECTED_PATTERN = "embedded_table";
     testScriptFile(TEST_NAME, SCRIPT_TEXT, EXPECTED_PATTERN, true, argList);
+  }
+
+  /**
+   * Test Beeline could show the query progress for time-consuming query.
+   * @throws Throwable
+   */
+  @Test
+  public void testQueryProgress() throws Throwable {
+    final String TEST_NAME = "testQueryProgress";
+    final String SCRIPT_TEXT = "set hive.support.concurrency = false;\n" +
+        "select count(*) from " + tableName + ";\n";
+    final String EXPECTED_PATTERN = "Parsing command";
+    testScriptFile(TEST_NAME, SCRIPT_TEXT, EXPECTED_PATTERN, true, getBaseArgs(JDBC_URL));
+  }
+
+  /**
+   * Test Beeline will hide the query progress when silent option is set.
+   * @throws Throwable
+   */
+  @Test
+  public void testQueryProgressHidden() throws Throwable {
+    final String TEST_NAME = "testQueryProgress";
+    final String SCRIPT_TEXT = "set hive.support.concurrency = false;\n" +
+        "!set silent true\n" +
+        "select count(*) from " + tableName + ";\n";
+    final String EXPECTED_PATTERN = "Parsing command";
+    testScriptFile(TEST_NAME, SCRIPT_TEXT, EXPECTED_PATTERN, false, getBaseArgs(JDBC_URL));
   }
 }

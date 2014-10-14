@@ -21,6 +21,9 @@ package org.apache.hadoop.hive.ql.processors;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAccessControlException;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzContext;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzPluginException;
@@ -31,6 +34,7 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import com.google.common.base.Joiner;
 
 class CommandUtil {
+  public static final Log LOG = LogFactory.getLog(CommandUtil.class);
 
   /**
    * Authorize command of given type and arguments
@@ -47,14 +51,19 @@ class CommandUtil {
       // ss can be null in unit tests
       return null;
     }
-    if (ss.isAuthorizationModeV2()) {
+
+    if (ss.isAuthorizationModeV2() &&
+        HiveConf.getBoolVar(ss.getConf(), HiveConf.ConfVars.HIVE_AUTHORIZATION_ENABLED)) {
+      String errMsg = "Error authorizing command " + command;
       try {
         authorizeCommandThrowEx(ss, type, command);
         // authorized to perform action
         return null;
       } catch (HiveAuthzPluginException e) {
+        LOG.error(errMsg, e);
         return CommandProcessorResponse.create(e);
       } catch (HiveAccessControlException e) {
+        LOG.error(errMsg, e);
         return CommandProcessorResponse.create(e);
       }
     }

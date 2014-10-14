@@ -158,6 +158,12 @@
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
+      <artifactId>hive-jdbc</artifactId>
+      <version>${project.version}</version>
+      <classifier>${hive.jdbc.driver.classifier}</classifier>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
       <artifactId>hive-beeline</artifactId>
       <version>${project.version}</version>
     </dependency>

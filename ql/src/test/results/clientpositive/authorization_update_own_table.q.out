@@ -1,0 +1,20 @@
+PREHOOK: query: create table auth_noupd(i int) clustered by (i) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@auth_noupd
+POSTHOOK: query: create table auth_noupd(i int) clustered by (i) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@auth_noupd
+PREHOOK: query: update auth_noupd set i = 0 where i > 0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@auth_noupd
+PREHOOK: Output: default@auth_noupd
+POSTHOOK: query: update auth_noupd set i = 0 where i > 0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@auth_noupd
+POSTHOOK: Output: default@auth_noupd
+PREHOOK: query: set role admin
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: set role admin
+POSTHOOK: type: SHOW_ROLES

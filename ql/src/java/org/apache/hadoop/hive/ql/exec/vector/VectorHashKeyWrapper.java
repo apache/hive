@@ -36,6 +36,12 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
  */
 public class VectorHashKeyWrapper extends KeyWrapper {
 
+  private static final int[] EMPTY_INT_ARRAY = new int[0];
+  private static final long[] EMPTY_LONG_ARRAY = new long[0];
+  private static final double[] EMPTY_DOUBLE_ARRAY = new double[0];
+  private static final byte[][] EMPTY_BYTES_ARRAY = new byte[0][];
+  private static final Decimal128[] EMPTY_DECIMAL_ARRAY = new Decimal128[0];
+
   private long[] longValues;
   private double[] doubleValues;
 
@@ -50,15 +56,21 @@ public class VectorHashKeyWrapper extends KeyWrapper {
 
   public VectorHashKeyWrapper(int longValuesCount, int doubleValuesCount,
           int byteValuesCount, int decimalValuesCount) {
-    longValues = new long[longValuesCount];
-    doubleValues = new double[doubleValuesCount];
-    decimalValues = new Decimal128[decimalValuesCount];
+    longValues = longValuesCount > 0 ? new long[longValuesCount] : EMPTY_LONG_ARRAY;
+    doubleValues = doubleValuesCount > 0 ? new double[doubleValuesCount] : EMPTY_DOUBLE_ARRAY;
+    decimalValues = decimalValuesCount > 0 ? new Decimal128[decimalValuesCount] : EMPTY_DECIMAL_ARRAY;
     for(int i = 0; i < decimalValuesCount; ++i) {
       decimalValues[i] = new Decimal128();
     }
-    byteValues = new byte[byteValuesCount][];
-    byteStarts = new int[byteValuesCount];
-    byteLengths = new int[byteValuesCount];
+    if (byteValuesCount > 0) {
+      byteValues = new byte[byteValuesCount][];
+      byteStarts = new int[byteValuesCount];
+      byteLengths = new int[byteValuesCount];
+    } else {
+      byteValues = EMPTY_BYTES_ARRAY;
+      byteStarts = EMPTY_INT_ARRAY;
+      byteLengths = EMPTY_INT_ARRAY;
+    }
     isNull = new boolean[longValuesCount + doubleValuesCount + byteValuesCount + decimalValuesCount];
     hashcode = 0;
   }

@@ -45,6 +45,7 @@ public class ExprNodeGenericFuncEvaluator extends ExprNodeEvaluator<ExprNodeGene
   transient ExprNodeEvaluator[] children;
   transient GenericUDF.DeferredObject[] deferredChildren;
   transient boolean isEager;
+  transient boolean isConstant = false;
 
   /**
    * Class to allow deferred evaluation for GenericUDF.
@@ -124,7 +125,10 @@ public class ExprNodeGenericFuncEvaluator extends ExprNodeEvaluator<ExprNodeGene
     if (context != null) {
       context.setup(genericUDF);
     }
-    return outputOI = genericUDF.initializeAndFoldConstants(childrenOIs);
+    outputOI = genericUDF.initializeAndFoldConstants(childrenOIs);
+    isConstant = ObjectInspectorUtils.isConstantObjectInspector(outputOI)
+        && isDeterministic();
+    return outputOI;
   }
 
   @Override
@@ -154,12 +158,11 @@ public class ExprNodeGenericFuncEvaluator extends ExprNodeEvaluator<ExprNodeGene
 
   @Override
   protected Object _evaluate(Object row, int version) throws HiveException {
-    rowObject = row;
-    if (ObjectInspectorUtils.isConstantObjectInspector(outputOI) &&
-        isDeterministic()) {
+    if (isConstant) {
       // The output of this UDF is constant, so don't even bother evaluating.
-      return ((ConstantObjectInspector)outputOI).getWritableConstantValue();
+      return ((ConstantObjectInspector) outputOI).getWritableConstantValue();
     }
+    rowObject = row;
     for (int i = 0; i < deferredChildren.length; i++) {
       deferredChildren[i].prepare(version);
     }

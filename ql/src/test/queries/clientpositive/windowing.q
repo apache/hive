@@ -444,3 +444,7 @@ select p_retailprice, avg(p_retailprice) over (partition by p_mfgr order by p_na
 sum(p_retailprice) over (partition by p_mfgr order by p_name rows between current row and 6 following) 
 from part 
 where p_mfgr='Manufacturer#1';
+
+-- 47. empty partition
+select sum(p_size) over (partition by p_mfgr )
+from part where p_mfgr = 'm1';

@@ -296,6 +296,57 @@ class Complex {
 
 void swap(Complex &a, Complex &b);
 
+typedef struct _SetIntString__isset {
+  _SetIntString__isset() : sIntString(false), aString(false) {}
+  bool sIntString;
+  bool aString;
+} _SetIntString__isset;
+
+class SetIntString {
+ public:
+
+  static const char* ascii_fingerprint; // = "842B41C940D05DFB16183142A90DFC54";
+  static const uint8_t binary_fingerprint[16]; // = {0x84,0x2B,0x41,0xC9,0x40,0xD0,0x5D,0xFB,0x16,0x18,0x31,0x42,0xA9,0x0D,0xFC,0x54};
+
+  SetIntString() : aString() {
+  }
+
+  virtual ~SetIntString() throw() {}
+
+  std::set<IntString>  sIntString;
+  std::string aString;
+
+  _SetIntString__isset __isset;
+
+  void __set_sIntString(const std::set<IntString> & val) {
+    sIntString = val;
+  }
+
+  void __set_aString(const std::string& val) {
+    aString = val;
+  }
+
+  bool operator == (const SetIntString & rhs) const
+  {
+    if (!(sIntString == rhs.sIntString))
+      return false;
+    if (!(aString == rhs.aString))
+      return false;
+    return true;
+  }
+  bool operator != (const SetIntString &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const SetIntString & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(SetIntString &a, SetIntString &b);
+
 
 
 #endif

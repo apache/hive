@@ -19,6 +19,9 @@ load data local inpath '../../data/files/agg_01-p1.txt' into table agg_01 partit
 load data local inpath '../../data/files/agg_01-p2.txt' into table agg_01 partition (dim_shops_id=2);
 load data local inpath '../../data/files/agg_01-p3.txt' into table agg_01 partition (dim_shops_id=3);
 
+analyze table dim_shops compute statistics;
+analyze table agg_01 partition (dim_shops_id) compute statistics;
+
 select * from dim_shops;
 select * from agg_01;
 
@@ -39,6 +42,73 @@ and
 d1.label in ('foo', 'bar')
 GROUP BY d1.label
 ORDER BY d1.label;
+
+set hive.tez.dynamic.partition.pruning.max.event.size=1000000;
+set hive.tez.dynamic.partition.pruning.max.data.size=1;
+
+EXPLAIN SELECT d1.label, count(*), sum(agg.amount)
+FROM agg_01 agg,
+dim_shops d1
+WHERE agg.dim_shops_id = d1.id
+and
+d1.label in ('foo', 'bar')
+GROUP BY d1.label
+ORDER BY d1.label;
+
+SELECT d1.label, count(*), sum(agg.amount)
+FROM agg_01 agg,
+dim_shops d1
+WHERE agg.dim_shops_id = d1.id
+and
+d1.label in ('foo', 'bar')
+GROUP BY d1.label
+ORDER BY d1.label;
+
+EXPLAIN SELECT d1.label
+FROM agg_01 agg,
+dim_shops d1
+WHERE agg.dim_shops_id = d1.id;
+
+SELECT d1.label
+FROM agg_01 agg,
+dim_shops d1
+WHERE agg.dim_shops_id = d1.id;
+
+EXPLAIN SELECT agg.amount
+FROM agg_01 agg,
+dim_shops d1
+WHERE agg.dim_shops_id = d1.id
+and agg.dim_shops_id = 1;
+
+SELECT agg.amount
+FROM agg_01 agg,
+dim_shops d1
+WHERE agg.dim_shops_id = d1.id
+and agg.dim_shops_id = 1;
+
+set hive.tez.dynamic.partition.pruning.max.event.size=1;
+set hive.tez.dynamic.partition.pruning.max.data.size=1000000;
+
+EXPLAIN SELECT d1.label, count(*), sum(agg.amount)
+FROM agg_01 agg,
+dim_shops d1
+WHERE agg.dim_shops_id = d1.id
+and
+d1.label in ('foo', 'bar')
+GROUP BY d1.label
+ORDER BY d1.label;
+
+SELECT d1.label, count(*), sum(agg.amount)
+FROM agg_01 agg,
+dim_shops d1
+WHERE agg.dim_shops_id = d1.id
+and
+d1.label in ('foo', 'bar')
+GROUP BY d1.label
+ORDER BY d1.label;
+
+set hive.tez.dynamic.partition.pruning.max.event.size=100000;
+set hive.tez.dynamic.partition.pruning.max.data.size=1000000;
 
 EXPLAIN 
 SELECT amount FROM agg_01, dim_shops WHERE dim_shops_id = id AND label = 'foo'

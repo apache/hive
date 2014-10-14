@@ -47,7 +47,7 @@ public class OperationManager extends AbstractService {
       new HashMap<OperationHandle, Operation>();
 
   public OperationManager() {
-    super("OperationManager");
+    super(OperationManager.class.getSimpleName());
   }
 
   @Override

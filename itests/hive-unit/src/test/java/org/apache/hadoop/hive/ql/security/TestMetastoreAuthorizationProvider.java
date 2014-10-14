@@ -89,6 +89,7 @@ public class TestMetastoreAuthorizationProvider extends TestCase {
         AuthorizationPreEventListener.class.getName());
     System.setProperty(HiveConf.ConfVars.HIVE_METASTORE_AUTHORIZATION_MANAGER.varname,
         getAuthorizationProvider());
+    setupMetaStoreReadAuthorization();
     System.setProperty(HiveConf.ConfVars.HIVE_METASTORE_AUTHENTICATOR_MANAGER.varname,
         InjectableDummyAuthenticator.class.getName());
     System.setProperty(HiveConf.ConfVars.HIVE_AUTHORIZATION_TABLE_OWNER_GRANTS.varname, "");
@@ -113,6 +114,13 @@ public class TestMetastoreAuthorizationProvider extends TestCase {
     SessionState.start(new CliSessionState(clientHiveConf));
     msc = new HiveMetaStoreClient(clientHiveConf, null);
     driver = new Driver(clientHiveConf);
+  }
+
+  protected void setupMetaStoreReadAuthorization() {
+    // read authorization does not work with default/legacy authorization mode
+    // It is a chicken and egg problem granting select privilege to database, as the
+    // grant statement would invoke get_database which needs select privilege
+    System.setProperty(HiveConf.ConfVars.HIVE_METASTORE_AUTHORIZATION_AUTH_READS.varname, "false");
   }
 
   @Override

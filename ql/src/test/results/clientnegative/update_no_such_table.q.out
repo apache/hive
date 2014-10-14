@@ -1,0 +1,1 @@
+FAILED: SemanticException [Error 10001]: Table not found default.no_such_table

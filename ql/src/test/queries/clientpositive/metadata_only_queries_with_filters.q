@@ -46,6 +46,8 @@ explain
 select count(*), count(1), sum(1), sum(2), count(s), count(bo), count(bin), count(si), max(i), min(b), max(f), min(d) from stats_tbl_part where dt > 2010;
 select count(*), count(1), sum(1), sum(2), count(s), count(bo), count(bin), count(si), max(i), min(b), max(f), min(d) from stats_tbl_part where dt > 2010;
 
+select count(*) from stats_tbl_part;
+select count(*)/2 from stats_tbl_part;
 drop table stats_tbl_part;
 set hive.compute.query.using.stats=false;
 set hive.stats.dbclass=jdbc:derby;

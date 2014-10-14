@@ -57,7 +57,10 @@ struct OperatorType {
     PTF = 18,
     MUX = 19,
     DEMUX = 20,
-    EVENT = 21
+    EVENT = 21,
+    ORCFILEMERGE = 22,
+    RCFILEMERGE = 23,
+    MERGEJOIN = 24
   };
 };
 

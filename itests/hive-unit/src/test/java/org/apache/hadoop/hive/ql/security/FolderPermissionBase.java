@@ -52,7 +52,7 @@ public abstract class FolderPermissionBase {
   protected static Path warehouseDir;
   protected static Path baseDfsDir;
 
-  public static final PathFilter hiddenFileFilter = new PathFilter(){
+  protected static final PathFilter hiddenFileFilter = new PathFilter(){
     public boolean accept(Path p){
       String name = p.getName();
       return !name.startsWith("_") && !name.startsWith(".");
@@ -591,7 +591,7 @@ public abstract class FolderPermissionBase {
 
   private List<String> listStatus(String locn) throws Exception {
     List<String> results = new ArrayList<String>();
-    FileStatus[] listStatus = fs.listStatus(new Path(locn));
+    FileStatus[] listStatus = fs.listStatus(new Path(locn), hiddenFileFilter);
     for (FileStatus status : listStatus) {
       results.add(status.getPath().toString());
     }

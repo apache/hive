@@ -68,17 +68,12 @@ public class TezJobMonitor {
       @Override
       public void run() {
         for (DAGClient c: shutdownList) {
-          try {
-            System.err.println("Trying to shutdown DAG");
-            c.tryKillDAG();
-          } catch (Exception e) {
-            // ignore
-          }
+          TezJobMonitor.killRunningJobs();
         }
         try {
           for (TezSessionState s: TezSessionState.getOpenSessions()) {
             System.err.println("Shutting down tez session.");
-            TezSessionPoolManager.getInstance().close(s);
+            TezSessionPoolManager.getInstance().close(s, false);
           }
         } catch (Exception e) {
           // ignore
@@ -113,6 +108,7 @@ public class TezJobMonitor {
     String lastReport = null;
     Set<StatusGetOpts> opts = new HashSet<StatusGetOpts>();
     Heartbeater heartbeater = new Heartbeater(txnMgr, conf);
+    long startTime = 0;
 
     shutdownList.add(dagClient);
 
@@ -141,11 +137,11 @@ public class TezJobMonitor {
           case RUNNING:
             if (!running) {
               perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_SUBMIT_TO_RUNNING);
-              console.printInfo("Status: Running (application id: "
-                +dagClient.getExecutionContext()+")\n");
+              console.printInfo("Status: Running (" + dagClient.getExecutionContext() + ")\n");
               for (String s: progressMap.keySet()) {
                 perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_RUN_VERTEX + s);
               }
+              startTime = System.currentTimeMillis();
               running = true;
             }
 
@@ -153,7 +149,8 @@ public class TezJobMonitor {
             break;
           case SUCCEEDED:
             lastReport = printStatus(progressMap, lastReport, console);
-            console.printInfo("Status: Finished successfully");
+            double duration = (System.currentTimeMillis() - startTime)/1000.0;
+            console.printInfo("Status: Finished successfully in " + String.format("%.2f seconds", duration));
             running = false;
             done = true;
             break;
@@ -208,6 +205,21 @@ public class TezJobMonitor {
     }
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_RUN_DAG);
     return rc;
+  }
+
+  /**
+   * killRunningJobs tries to terminate execution of all
+   * currently running tez queries. No guarantees, best effort only.
+   */
+  public static void killRunningJobs() {
+    for (DAGClient c: shutdownList) {
+      try {
+        System.err.println("Trying to shutdown DAG");
+        c.tryKillDAG();
+      } catch (Exception e) {
+        // ignore
+      }
+    }
   }
 
   private String printStatus(Map<String, Progress> progressMap, String lastReport, LogHelper console) {

@@ -46,7 +46,7 @@ STAGE PLANS:
               predicate: (x+1 = '10') (type: boolean)
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: '10' (type: string), y&y (type: string), !@#$%^&*()_q (type: string)
+                expressions: '10' (type: string), y&y (type: string), 'a' (type: string)
                 outputColumnNames: x+1, y&y, !@#$%^&*()_q
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator

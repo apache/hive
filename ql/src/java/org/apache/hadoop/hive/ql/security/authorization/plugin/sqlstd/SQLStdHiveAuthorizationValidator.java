@@ -25,12 +25,15 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAccessControlException;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizationValidator;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzContext;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzPluginException;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzSessionContext;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzSessionContext.CLIENT_TYPE;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveMetastoreClientFactory;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrincipal;
@@ -44,16 +47,30 @@ public class SQLStdHiveAuthorizationValidator implements HiveAuthorizationValida
   private final HiveConf conf;
   private final HiveAuthenticationProvider authenticator;
   private final SQLStdHiveAccessControllerWrapper privController;
+  private final HiveAuthzSessionContext ctx;
   public static final Log LOG = LogFactory.getLog(SQLStdHiveAuthorizationValidator.class);
 
   public SQLStdHiveAuthorizationValidator(HiveMetastoreClientFactory metastoreClientFactory,
       HiveConf conf, HiveAuthenticationProvider authenticator,
-      SQLStdHiveAccessControllerWrapper privilegeManager) {
+      SQLStdHiveAccessControllerWrapper privilegeManager, HiveAuthzSessionContext ctx)
+      throws HiveAuthzPluginException {
 
     this.metastoreClientFactory = metastoreClientFactory;
     this.conf = conf;
     this.authenticator = authenticator;
     this.privController = privilegeManager;
+    this.ctx = SQLAuthorizationUtils.applyTestSettings(ctx, conf);
+    assertHiveCliAuthDisabled(conf);
+  }
+
+  private void assertHiveCliAuthDisabled(HiveConf conf) throws HiveAuthzPluginException {
+    if (ctx.getClientType() == CLIENT_TYPE.HIVECLI
+        && conf.getBoolVar(ConfVars.HIVE_AUTHORIZATION_ENABLED)) {
+      throw new HiveAuthzPluginException(
+          "SQL standards based authorization should not be enabled from hive cli"
+              + "Instead the use of storage based authorization in hive metastore is reccomended. Set "
+              + ConfVars.HIVE_AUTHORIZATION_ENABLED.varname + "=false to disable authz within cli");
+    }
   }
 
   @Override

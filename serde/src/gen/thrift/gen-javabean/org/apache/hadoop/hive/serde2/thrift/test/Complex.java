@@ -1267,7 +1267,7 @@ public class Complex implements org.apache.thrift.TBase<Complex, Complex._Fields
                 for (int _i28 = 0; _i28 < _map27.size; ++_i28)
                 {
                   String _key29; // required
-                  String _val30; // optional
+                  String _val30; // required
                   _key29 = iprot.readString();
                   _val30 = iprot.readString();
                   struct.mStringString.put(_key29, _val30);
@@ -1287,7 +1287,7 @@ public class Complex implements org.apache.thrift.TBase<Complex, Complex._Fields
                 for (int _i32 = 0; _i32 < _map31.size; ++_i32)
                 {
                   String _key33; // required
-                  Map<String,Map<String,PropValueUnion>> _val34; // optional
+                  Map<String,Map<String,PropValueUnion>> _val34; // required
                   _key33 = iprot.readString();
                   {
                     org.apache.thrift.protocol.TMap _map35 = iprot.readMapBegin();
@@ -1295,7 +1295,7 @@ public class Complex implements org.apache.thrift.TBase<Complex, Complex._Fields
                     for (int _i36 = 0; _i36 < _map35.size; ++_i36)
                     {
                       String _key37; // required
-                      Map<String,PropValueUnion> _val38; // optional
+                      Map<String,PropValueUnion> _val38; // required
                       _key37 = iprot.readString();
                       {
                         org.apache.thrift.protocol.TMap _map39 = iprot.readMapBegin();
@@ -1303,7 +1303,7 @@ public class Complex implements org.apache.thrift.TBase<Complex, Complex._Fields
                         for (int _i40 = 0; _i40 < _map39.size; ++_i40)
                         {
                           String _key41; // required
-                          PropValueUnion _val42; // optional
+                          PropValueUnion _val42; // required
                           _key41 = iprot.readString();
                           _val42 = new PropValueUnion();
                           _val42.read(iprot);
@@ -1651,7 +1651,7 @@ public class Complex implements org.apache.thrift.TBase<Complex, Complex._Fields
           for (int _i67 = 0; _i67 < _map66.size; ++_i67)
           {
             String _key68; // required
-            String _val69; // optional
+            String _val69; // required
             _key68 = iprot.readString();
             _val69 = iprot.readString();
             struct.mStringString.put(_key68, _val69);
@@ -1666,7 +1666,7 @@ public class Complex implements org.apache.thrift.TBase<Complex, Complex._Fields
           for (int _i71 = 0; _i71 < _map70.size; ++_i71)
           {
             String _key72; // required
-            Map<String,Map<String,PropValueUnion>> _val73; // optional
+            Map<String,Map<String,PropValueUnion>> _val73; // required
             _key72 = iprot.readString();
             {
               org.apache.thrift.protocol.TMap _map74 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.MAP, iprot.readI32());
@@ -1674,7 +1674,7 @@ public class Complex implements org.apache.thrift.TBase<Complex, Complex._Fields
               for (int _i75 = 0; _i75 < _map74.size; ++_i75)
               {
                 String _key76; // required
-                Map<String,PropValueUnion> _val77; // optional
+                Map<String,PropValueUnion> _val77; // required
                 _key76 = iprot.readString();
                 {
                   org.apache.thrift.protocol.TMap _map78 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
@@ -1682,7 +1682,7 @@ public class Complex implements org.apache.thrift.TBase<Complex, Complex._Fields
                   for (int _i79 = 0; _i79 < _map78.size; ++_i79)
                   {
                     String _key80; // required
-                    PropValueUnion _val81; // optional
+                    PropValueUnion _val81; // required
                     _key80 = iprot.readString();
                     _val81 = new PropValueUnion();
                     _val81.read(iprot);

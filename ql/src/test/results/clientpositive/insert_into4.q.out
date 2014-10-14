@@ -214,14 +214,14 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: insert_into4a
-            Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 20 Data size: 208 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int), value (type: string)
               outputColumnNames: _col0, _col1
-              Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 20 Data size: 208 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 20 Data size: 208 Basic stats: COMPLETE Column stats: NONE
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat

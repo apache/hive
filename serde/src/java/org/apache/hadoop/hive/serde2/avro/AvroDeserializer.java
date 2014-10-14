@@ -22,6 +22,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.rmi.server.UID;
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -39,10 +40,12 @@ import org.apache.avro.io.BinaryDecoder;
 import org.apache.avro.io.BinaryEncoder;
 import org.apache.avro.io.DecoderFactory;
 import org.apache.avro.io.EncoderFactory;
-import org.apache.avro.util.Utf8;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.HiveVarchar;
+import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardUnionObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaHiveDecimalObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
@@ -200,7 +203,6 @@ class AvroDeserializer {
       return deserializeNullableUnion(datum, fileSchema, recordSchema, columnType);
     }
 
-
     switch(columnType.getCategory()) {
     case STRUCT:
       return deserializeStruct((GenericData.Record) datum, fileSchema, (StructTypeInfo) columnType);
@@ -249,6 +251,42 @@ class AvroDeserializer {
       JavaHiveDecimalObjectInspector oi = (JavaHiveDecimalObjectInspector)
           PrimitiveObjectInspectorFactory.getPrimitiveJavaObjectInspector((DecimalTypeInfo)columnType);
       return oi.set(null, dec);
+    case CHAR:
+      if (fileSchema == null) {
+        throw new AvroSerdeException("File schema is missing for char field. Reader schema is " + columnType);
+      }
+
+      int maxLength = 0;
+      try {
+        maxLength = fileSchema.getJsonProp(AvroSerDe.AVRO_PROP_MAX_LENGTH).getValueAsInt();
+      } catch (Exception ex) {
+        throw new AvroSerdeException("Failed to obtain maxLength value for char field from file schema: " + fileSchema, ex);
+      }
+
+      String str = datum.toString();
+      HiveChar hc = new HiveChar(str, maxLength);
+      return hc;
+    case VARCHAR:
+      if (fileSchema == null) {
+        throw new AvroSerdeException("File schema is missing for varchar field. Reader schema is " + columnType);
+      }
+
+      maxLength = 0;
+      try {
+        maxLength = fileSchema.getJsonProp(AvroSerDe.AVRO_PROP_MAX_LENGTH).getValueAsInt();
+      } catch (Exception ex) {
+        throw new AvroSerdeException("Failed to obtain maxLength value for varchar field from file schema: " + fileSchema, ex);
+      }
+
+      str = datum.toString();
+      HiveVarchar hvc = new HiveVarchar(str, maxLength);
+      return hvc;
+    case DATE:
+      if (recordSchema.getType() != Type.INT) {
+        throw new AvroSerdeException("Unexpected Avro schema for Date TypeInfo: " + recordSchema.getType());
+      }
+
+      return new Date(DateWritable.daysToMillis((Integer)datum));
     default:
       return datum;
     }
@@ -331,10 +369,10 @@ class AvroDeserializer {
     // Avro only allows maps with Strings for keys, so we only have to worry
     // about deserializing the values
     Map<String, Object> map = new HashMap<String, Object>();
-    Map<Utf8, Object> mapDatum = (Map)datum;
+    Map<CharSequence, Object> mapDatum = (Map)datum;
     Schema valueSchema = mapSchema.getValueType();
     TypeInfo valueTypeInfo = columnType.getMapValueTypeInfo();
-    for (Utf8 key : mapDatum.keySet()) {
+    for (CharSequence key : mapDatum.keySet()) {
       Object value = mapDatum.get(key);
       map.put(key.toString(), worker(value, fileSchema == null ? null : fileSchema.getValueType(),
           valueSchema, valueTypeInfo));

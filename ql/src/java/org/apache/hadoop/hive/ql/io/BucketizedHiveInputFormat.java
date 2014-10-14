@@ -122,24 +122,7 @@ public class BucketizedHiveInputFormat<K extends WritableComparable, V extends W
   public InputSplit[] getSplits(JobConf job, int numSplits) throws IOException {
     init(job);
 
-    Path[] dirs = FileInputFormat.getInputPaths(job);
-    if (dirs.length == 0) {
-      // on tez we're avoiding to duplicate the file info in FileInputFormat.
-      if (HiveConf.getVar(job, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) {
-        try {
-          List<Path> paths = Utilities.getInputPathsTez(job, mrwork);
-          dirs = paths.toArray(new Path[paths.size()]);
-          if (dirs.length == 0) {
-            // if we still don't have any files it's time to fail.
-            throw new IOException("No input paths specified in job");
-          }
-        } catch (Exception e) {
-          throw new IOException("Could not create input paths", e);
-        }
-      } else {
-        throw new IOException("No input paths specified in job");
-      }
-    }
+    Path[] dirs = getInputPaths(job);
 
     JobConf newjob = new JobConf(job);
     ArrayList<InputSplit> result = new ArrayList<InputSplit>();

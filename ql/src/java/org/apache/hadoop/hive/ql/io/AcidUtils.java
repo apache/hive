@@ -40,6 +40,8 @@ import java.util.regex.Pattern;
  * are used by the compactor and cleaner and thus must be format agnostic.
  */
 public class AcidUtils {
+  // This key will be put in the conf file when planning an acid operation
+  public static final String CONF_ACID_KEY = "hive.doing.acid";
   public static final String BASE_PREFIX = "base_";
   public static final String DELTA_PREFIX = "delta_";
   public static final PathFilter deltaFileFilter = new PathFilter() {
@@ -305,6 +307,28 @@ public class AcidUtils {
   }
 
   /**
+   * Is the given directory in ACID format?
+   * @param directory the partition directory to check
+   * @param conf the query configuration
+   * @return true, if it is an ACID directory
+   * @throws IOException
+   */
+  public static boolean isAcid(Path directory,
+                               Configuration conf) throws IOException {
+    FileSystem fs = directory.getFileSystem(conf);
+    for(FileStatus file: fs.listStatus(directory)) {
+      String filename = file.getPath().getName();
+      if (filename.startsWith(BASE_PREFIX) ||
+          filename.startsWith(DELTA_PREFIX)) {
+        if (file.isDir()) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  /**
    * Get the ACID state of the given directory. It finds the minimal set of
    * base and diff directories. Note that because major compactions don't
    * preserve the history, we can't use a base directory that includes a
@@ -324,7 +348,7 @@ public class AcidUtils {
     long bestBaseTxn = 0;
     final List<ParsedDelta> deltas = new ArrayList<ParsedDelta>();
     List<ParsedDelta> working = new ArrayList<ParsedDelta>();
-    final List<FileStatus> original = new ArrayList<FileStatus>();
+    List<FileStatus> originalDirectories = new ArrayList<FileStatus>();
     final List<FileStatus> obsolete = new ArrayList<FileStatus>();
     List<FileStatus> children = SHIMS.listLocatedStatus(fs, directory,
         hiddenFileFilter);
@@ -351,16 +375,26 @@ public class AcidUtils {
           working.add(delta);
         }
       } else {
-        findOriginals(fs, child, original);
+        // This is just the directory.  We need to recurse and find the actual files.  But don't
+        // do this until we have determined there is no base.  This saves time.  Plus,
+        // it is possible that the cleaner is running and removing these original files,
+        // in which case recursing through them could cause us to get an error.
+        originalDirectories.add(child);
       }
     }
 
+    final List<FileStatus> original = new ArrayList<FileStatus>();
     // if we have a base, the original files are obsolete.
     if (bestBase != null) {
-      obsolete.addAll(original);
       // remove the entries so we don't get confused later and think we should
       // use them.
       original.clear();
+    } else {
+      // Okay, we're going to need these originals.  Recurse through them and figure out what we
+      // really need.
+      for (FileStatus origDir : originalDirectories) {
+        findOriginals(fs, origDir, original);
+      }
     }
 
     Collections.sort(working);

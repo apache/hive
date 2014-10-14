@@ -697,6 +697,7 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
     // But if hive supports assigning bucket number for each partition, this can be vary
     public void setupContext(List<Path> paths) throws HiveException {
       int segmentLen = paths.size();
+      FetchOperator.setFetchOperatorContext(jobConf, fetchWork.getPartDir());
       FetchOperator[] segments = segmentsForSize(segmentLen);
       for (int i = 0 ; i < segmentLen; i++) {
         Path path = paths.get(i);

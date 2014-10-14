@@ -84,7 +84,8 @@ public enum ErrorMsg {
   INVALID_PATH(10027, "Invalid path"),
   ILLEGAL_PATH(10028, "Path is not legal"),
   INVALID_NUMERICAL_CONSTANT(10029, "Invalid numerical constant"),
-  INVALID_ARRAYINDEX_CONSTANT(10030, "Non-constant expressions for array indexes not supported"),
+  INVALID_ARRAYINDEX_TYPE(10030,
+      "Not proper type for index of ARRAY. Currently, only integer type is supported"),
   INVALID_MAPINDEX_CONSTANT(10031, "Non-constant expression for map indexes not supported"),
   INVALID_MAPINDEX_TYPE(10032, "MAP key type does not match index expression type"),
   NON_COLLECTION_TYPE(10033, "[] not valid on non-collection types"),
@@ -416,6 +417,10 @@ public enum ErrorMsg {
       "that implements AcidOutputFormat while transaction manager that supports ACID is in use"),
   VALUES_TABLE_CONSTRUCTOR_NOT_SUPPORTED(10296,
       "Values clause with table constructor not yet supported"),
+  ACID_OP_ON_NONACID_TABLE(10297, "Attempt to do update or delete on table {0} that does not use " +
+      "an AcidOutputFormat or is not bucketed", true),
+  ACID_NO_SORTED_BUCKETS(10298, "ACID insert, update, delete not supported on tables that are " +
+      "sorted, table {0}", true),
 
   //========================== 20000 range starts here ========================//
   SCRIPT_INIT_ERROR(20000, "Unable to initialize custom script."),

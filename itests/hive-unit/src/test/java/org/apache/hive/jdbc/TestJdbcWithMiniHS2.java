@@ -388,7 +388,7 @@ public class TestJdbcWithMiniHS2 {
   }
 
   /**
-   * Tests the creation of the root hdfs scratch dir, which should be writable by all (777).
+   * Tests the creation of the root hdfs scratch dir, which should be writable by all.
    *
    * @throws Exception
    */
@@ -410,7 +410,7 @@ public class TestJdbcWithMiniHS2 {
     hs2Conn = getConnection(miniHS2.getJdbcURL(), userName, "password");
     // FS
     FileSystem fs = miniHS2.getLocalFS();
-    FsPermission expectedFSPermission = new FsPermission("777");
+    FsPermission expectedFSPermission = new FsPermission((short)00733);
     // Verify scratch dir paths and permission
     // HDFS scratch dir
     scratchDirPath = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCHDIR));

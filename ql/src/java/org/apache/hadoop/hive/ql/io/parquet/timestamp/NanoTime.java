@@ -14,6 +14,7 @@
 package org.apache.hadoop.hive.ql.io.parquet.timestamp;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 import parquet.Preconditions;
 import parquet.io.api.Binary;
@@ -28,7 +29,10 @@ public class NanoTime {
   public static NanoTime fromBinary(Binary bytes) {
     Preconditions.checkArgument(bytes.length() == 12, "Must be 12 bytes");
     ByteBuffer buf = bytes.toByteBuffer();
-    return new NanoTime(buf.getInt(), buf.getLong());
+    buf.order(ByteOrder.LITTLE_ENDIAN);
+    long timeOfDayNanos = buf.getLong();
+    int julianDay = buf.getInt();
+    return new NanoTime(julianDay, timeOfDayNanos);
   }
 
   public NanoTime(int julianDay, long timeOfDayNanos) {
@@ -46,8 +50,9 @@ public class NanoTime {
 
   public Binary toBinary() {
     ByteBuffer buf = ByteBuffer.allocate(12);
-    buf.putInt(julianDay);
+    buf.order(ByteOrder.LITTLE_ENDIAN);
     buf.putLong(timeOfDayNanos);
+    buf.putInt(julianDay);
     buf.flip();
     return Binary.fromByteBuffer(buf);
   }

@@ -53,6 +53,7 @@ abstract class CompactorThread extends Thread implements MetaStoreThread {
   protected RawStore rs;
   protected int threadId;
   protected BooleanPointer stop;
+  protected BooleanPointer looped;
 
   @Override
   public void setHiveConf(HiveConf conf) {
@@ -66,8 +67,9 @@ abstract class CompactorThread extends Thread implements MetaStoreThread {
   }
 
   @Override
-  public void init(BooleanPointer stop) throws MetaException {
+  public void init(BooleanPointer stop, BooleanPointer looped) throws MetaException {
     this.stop = stop;
+    this.looped = looped;
     setPriority(MIN_PRIORITY);
     setDaemon(true); // this means the process will exit without waiting for this thread
 

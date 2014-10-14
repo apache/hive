@@ -171,8 +171,14 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
 
   private void loadHashTable() throws HiveException {
 
-    if (this.getExecContext().getLocalWork() == null
-        || !this.getExecContext().getLocalWork().getInputFileChangeSensitive()) {
+    if ((this.getExecContext() == null)
+        || (this.getExecContext().getLocalWork() == null)
+        || (this.getExecContext().getLocalWork().getInputFileChangeSensitive() == false)
+    ) {
+      /*
+       * This early-exit criteria is not applicable if the local work is sensitive to input file changes.
+       * But the check does no apply if there is no local work, or if this is a reducer vertex (execContext is null).
+       */
       if (hashTblInitedOnce) {
         return;
       } else {
@@ -313,8 +319,8 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
         tableContainer.dumpMetrics();
       }
     }
-    if ((this.getExecContext().getLocalWork() != null
-        && this.getExecContext().getLocalWork().getInputFileChangeSensitive())
+    if ((this.getExecContext() != null) && (this.getExecContext().getLocalWork() != null)
+        && (this.getExecContext().getLocalWork().getInputFileChangeSensitive())
         && mapJoinTables != null) {
       for (MapJoinTableContainer tableContainer : mapJoinTables) {
         if (tableContainer != null) {

@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -90,39 +91,8 @@ public class SQLStdHiveAccessController implements HiveAccessController {
       HiveAuthenticationProvider authenticator, HiveAuthzSessionContext ctx) throws HiveAuthzPluginException {
     this.metastoreClientFactory = metastoreClientFactory;
     this.authenticator = authenticator;
-    this.sessionCtx = applyTestSettings(ctx, conf);
-
-    assertHiveCliAuthDisabled(conf);
-    initUserRoles();
+    this.sessionCtx = SQLAuthorizationUtils.applyTestSettings(ctx, conf);
     LOG.info("Created SQLStdHiveAccessController for session context : " + sessionCtx);
-  }
-
-  /**
-   * Change the session context based on configuration to aid in testing of sql std auth
-   * @param ctx
-   * @param conf
-   * @return
-   */
-  private HiveAuthzSessionContext applyTestSettings(HiveAuthzSessionContext ctx, HiveConf conf) {
-    if(conf.getBoolVar(ConfVars.HIVE_TEST_AUTHORIZATION_SQLSTD_HS2_MODE) &&
-        ctx.getClientType() == CLIENT_TYPE.HIVECLI
-        ){
-      // create new session ctx object with HS2 as client type
-      HiveAuthzSessionContext.Builder ctxBuilder = new HiveAuthzSessionContext.Builder(ctx);
-      ctxBuilder.setClientType(CLIENT_TYPE.HIVESERVER2);
-      return ctxBuilder.build();
-    }
-    return ctx;
-  }
-
-  private void assertHiveCliAuthDisabled(HiveConf conf) throws HiveAuthzPluginException {
-    if (sessionCtx.getClientType() == CLIENT_TYPE.HIVECLI
-        && conf.getBoolVar(ConfVars.HIVE_AUTHORIZATION_ENABLED)) {
-      throw new HiveAuthzPluginException(
-          "SQL standards based authorization should not be enabled from hive cli"
-              + "Instead the use of storage based authorization in hive metastore is reccomended. Set "
-              + ConfVars.HIVE_AUTHORIZATION_ENABLED.varname + "=false to disable authz within cli");
-    }
   }
 
   /**
@@ -381,9 +351,9 @@ public class SQLStdHiveAccessController implements HiveAccessController {
   @Override
   public List<HiveRoleGrant> getPrincipalGrantInfoForRole(String roleName) throws HiveAuthzPluginException, HiveAccessControlException {
     // only user belonging to admin role can list role
-    if (!isUserAdmin()) {
+    if (!isUserAdmin() &&  !doesUserHasAdminOption(Arrays.asList(roleName))) {
       throw new HiveAccessControlException("Current user : " + currentUserName+ " is not"
-        + " allowed get principals in a role. " + ADMIN_ONLY_MSG);
+        + " allowed get principals in a role. " + ADMIN_ONLY_MSG + " Otherwise, " + HAS_ADMIN_PRIV_MSG);
     }
     try {
       return getHiveRoleGrants(metastoreClientFactory.getHiveMetastoreClient(), roleName);
