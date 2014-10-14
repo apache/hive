@@ -75,6 +75,10 @@ import org.apache.hadoop.net.NetUtils;
 import org.apache.hadoop.security.authentication.util.KerberosName;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.Progressable;
+import org.apache.hadoop.yarn.conf.YarnConfiguration;
+import org.apache.hadoop.yarn.server.resourcemanager.scheduler.fair.AllocationConfiguration;
+import org.apache.hadoop.yarn.server.resourcemanager.scheduler.fair.FairScheduler;
+import org.apache.hadoop.yarn.server.resourcemanager.scheduler.fair.QueuePlacementPolicy;
 import org.apache.tez.test.MiniTezCluster;
 
 import com.google.common.base.Joiner;
@@ -86,6 +90,7 @@ import com.google.common.collect.Iterables;
  * Implemention of shims against Hadoop 0.23.0.
  */
 public class Hadoop23Shims extends HadoopShimsSecure {
+  private static final String MR2_JOB_QUEUE_PROPERTY = "mapreduce.job.queuename";
 
   HadoopShims.MiniDFSShim cluster = null;
 
@@ -218,6 +223,30 @@ public class Hadoop23Shims extends HadoopShimsSecure {
         return o1.compareTo(o2);
       }
     };
+  }
+
+  /**
+   * Load the fair scheduler queue for given user if available.
+   */
+  @Override
+  public void refreshDefaultQueue(Configuration conf, String userName) throws IOException {
+    String requestedQueue = YarnConfiguration.DEFAULT_QUEUE_NAME;
+    if (StringUtils.isNotBlank(userName) && isFairScheduler(conf)) {
+      AllocationConfiguration allocConf = new AllocationConfiguration(conf);
+      QueuePlacementPolicy queuePolicy = allocConf.getPlacementPolicy();
+      if (queuePolicy != null) {
+        requestedQueue = queuePolicy.assignAppToQueue(requestedQueue, userName);
+        if (StringUtils.isNotBlank(requestedQueue)) {
+          LOG.debug("Setting queue name to " + requestedQueue + " for user " + userName);
+          conf.set(MR2_JOB_QUEUE_PROPERTY, requestedQueue);
+        }
+      }
+    }
+  }
+
+  private boolean isFairScheduler (Configuration conf) {
+    return FairScheduler.class.getName().
+        equalsIgnoreCase(conf.get(YarnConfiguration.RM_SCHEDULER));
   }
 
   /**

@@ -159,6 +159,11 @@ public class Hadoop20SShims extends HadoopShimsSecure {
   }
 
   @Override
+  public void refreshDefaultQueue(Configuration conf, String userName) {
+    // MR1 does not expose API required to set MR queue mapping for user
+  }
+
+  @Override
   public void setTotalOrderPartitionFile(JobConf jobConf, Path partitionFile){
     TotalOrderPartitioner.setPartitionFile(jobConf, partitionFile);
   }
