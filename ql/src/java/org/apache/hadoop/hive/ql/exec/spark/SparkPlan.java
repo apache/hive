@@ -38,7 +38,7 @@ public class SparkPlan {
   private final Map<SparkTran, List<SparkTran>> transGraph = new HashMap<SparkTran, List<SparkTran>>();
   private final Map<SparkTran, List<SparkTran>> invertedTransGraph = new HashMap<SparkTran, List<SparkTran>>();
 
-  public void execute() throws IllegalStateException {
+  public JavaPairRDD<HiveKey, BytesWritable> generateGraph() throws IllegalStateException {
     Map<SparkTran, JavaPairRDD<HiveKey, BytesWritable>> tranToOutputRDDMap
         = new HashMap<SparkTran, JavaPairRDD<HiveKey, BytesWritable>>();
     for (SparkTran tran : getAllTrans()) {
@@ -74,7 +74,7 @@ public class SparkPlan {
       }
     }
 
-    finalRDD.foreach(HiveVoidFunction.getInstance());
+    return finalRDD;
   }
 
   public void addTran(SparkTran tran) {
