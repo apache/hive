@@ -3355,7 +3355,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           ret = tbl.getSd().getCols();
         } else {
           try {
-            Deserializer s = MetaStoreUtils.getDeserializer(hiveConf, tbl);
+            Deserializer s = MetaStoreUtils.getDeserializer(hiveConf, tbl, false);
             ret = MetaStoreUtils.getFieldsFromDeserializer(tableName, s);
           } catch (SerDeException e) {
             StringUtils.stringifyException(e);

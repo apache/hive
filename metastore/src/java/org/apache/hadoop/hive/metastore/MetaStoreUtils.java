@@ -357,15 +357,21 @@ public class MetaStoreUtils {
    *
    */
   static public Deserializer getDeserializer(Configuration conf,
-      org.apache.hadoop.hive.metastore.api.Table table) throws MetaException {
+      org.apache.hadoop.hive.metastore.api.Table table, boolean skipConfError) throws
+          MetaException {
     String lib = table.getSd().getSerdeInfo().getSerializationLib();
     if (lib == null) {
       return null;
     }
     try {
       Deserializer deserializer = ReflectionUtils.newInstance(conf.getClassByName(lib).
-        asSubclass(Deserializer.class), conf);
-      SerDeUtils.initializeSerDe(deserializer, conf, MetaStoreUtils.getTableMetadata(table), null);
+              asSubclass(Deserializer.class), conf);
+      if (skipConfError) {
+        SerDeUtils.initializeSerDeWithoutErrorCheck(deserializer, conf,
+                MetaStoreUtils.getTableMetadata(table), null);
+      } else {
+        SerDeUtils.initializeSerDe(deserializer, conf, MetaStoreUtils.getTableMetadata(table), null);
+      }
       return deserializer;
     } catch (RuntimeException e) {
       throw e;
