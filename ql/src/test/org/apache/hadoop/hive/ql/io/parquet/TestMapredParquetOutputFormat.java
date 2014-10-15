@@ -73,7 +73,8 @@ public class TestMapredParquetOutputFormat {
             ParquetOutputFormat<ArrayWritable> realOutputFormat,
             JobConf jobConf,
             String finalOutPath,
-            Progressable progress
+            Progressable progress,
+            Properties tableProperties
             ) throws IOException {
           assertEquals(outputFormat, realOutputFormat);
           assertNotNull(jobConf.get(DataWritableWriteSupport.PARQUET_HIVE_SCHEMA));
@@ -86,5 +87,18 @@ public class TestMapredParquetOutputFormat {
     } catch (RuntimeException e) {
       assertEquals("passed tests", e.getMessage());
     }
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testInvalidCompressionTableProperties() throws IOException {
+    Properties tableProps = new Properties();
+    tableProps.setProperty("parquet.compression", "unsupported");
+    tableProps.setProperty("columns", "foo,bar");
+    tableProps.setProperty("columns.types", "int:int");
+
+    JobConf jobConf = new JobConf();
+
+    new MapredParquetOutputFormat().getHiveRecordWriter(jobConf,
+            new Path("/foo"), null, false, tableProps, null);
   }
 }
