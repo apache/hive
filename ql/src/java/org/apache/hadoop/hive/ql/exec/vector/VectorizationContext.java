@@ -790,6 +790,8 @@ public class VectorizationContext {
     switch (vectorArgType) {
     case INT_FAMILY:
       return new ConstantVectorExpression(outCol, ((Number) constantValue).longValue());
+    case TIMESTAMP:
+      return new ConstantVectorExpression(outCol, TimestampUtils.getTimeNanoSec((Timestamp) constantValue));
     case FLOAT_FAMILY:
       return new ConstantVectorExpression(outCol, ((Number) constantValue).doubleValue());
     case DECIMAL:
@@ -804,7 +806,7 @@ public class VectorizationContext {
     case VARCHAR:
       return new ConstantVectorExpression(outCol, ((HiveVarchar) constantValue));
     default:
-      throw new HiveException("Unsupported constant type: " + typeName);
+      throw new HiveException("Unsupported constant type: " + typeName + ", object class " + constantValue.getClass().getSimpleName());
     }
   }
 
