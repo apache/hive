@@ -138,6 +138,9 @@ function start_webhcat() {
 
         log "starting ..."
         log "$start_cmd"
+        if [ ! -d ${WEBHCAT_LOG_DIR} ]; then
+                mkdir ${WEBHCAT_LOG_DIR}
+        fi
         nohup $start_cmd >>$CONSOLE_LOG 2>>$ERROR_LOG &
         local pid=$!
 
