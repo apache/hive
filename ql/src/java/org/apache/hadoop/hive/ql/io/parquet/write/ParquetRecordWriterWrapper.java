@@ -14,6 +14,7 @@
 package org.apache.hadoop.hive.ql.io.parquet.write;
 
 import java.io.IOException;
+import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -29,6 +30,7 @@ import org.apache.hadoop.mapreduce.TaskAttemptID;
 import org.apache.hadoop.util.Progressable;
 
 import parquet.hadoop.ParquetOutputFormat;
+import parquet.hadoop.metadata.CompressionCodecName;
 import parquet.hadoop.util.ContextUtil;
 
 public class ParquetRecordWriterWrapper implements RecordWriter<Void, ArrayWritable>,
@@ -43,7 +45,8 @@ public class ParquetRecordWriterWrapper implements RecordWriter<Void, ArrayWrita
       final OutputFormat<Void, ArrayWritable> realOutputFormat,
       final JobConf jobConf,
       final String name,
-      final Progressable progress) throws IOException {
+      final Progressable progress, Properties tableProperties) throws
+          IOException {
     try {
       // create a TaskInputOutputContext
       TaskAttemptID taskAttemptID = TaskAttemptID.forName(jobConf.get("mapred.task.id"));
@@ -53,7 +56,21 @@ public class ParquetRecordWriterWrapper implements RecordWriter<Void, ArrayWrita
       taskContext = ContextUtil.newTaskAttemptContext(jobConf, taskAttemptID);
 
       LOG.info("creating real writer to write at " + name);
-      realWriter = ((ParquetOutputFormat) realOutputFormat).getRecordWriter(taskContext, new Path(name));
+
+      String compressionName = tableProperties.getProperty(ParquetOutputFormat.COMPRESSION);
+      if (compressionName != null && !compressionName.isEmpty()) {
+        //get override compression properties via "tblproperties" clause if it is set
+        LOG.debug("get override compression properties via tblproperties");
+
+        ContextUtil.getConfiguration(taskContext);
+        CompressionCodecName codecName = CompressionCodecName.fromConf(compressionName);
+        realWriter = ((ParquetOutputFormat) realOutputFormat).getRecordWriter(jobConf,
+                new Path(name), codecName);
+      } else {
+        realWriter = ((ParquetOutputFormat) realOutputFormat).getRecordWriter(taskContext,
+                new Path(name));
+      }
+
       LOG.info("real writer: " + realWriter);
     } catch (final InterruptedException e) {
       throw new IOException(e);
