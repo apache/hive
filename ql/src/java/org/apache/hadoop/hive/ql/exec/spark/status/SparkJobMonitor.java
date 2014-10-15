@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.exec.spark.status;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -25,7 +27,6 @@ import java.util.TreeSet;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 
 /**
@@ -39,7 +40,7 @@ public class SparkJobMonitor {
 
   private transient LogHelper console;
   private final int checkInterval = 200;
-  private final int  maxRetryInterval = 2500;
+  private final int maxRetryInterval = 2500;
   private final int printInterval = 3000;
   private long lastPrintTime;
   private Set<String> completed;
@@ -59,19 +60,19 @@ public class SparkJobMonitor {
     int failedCounter = 0;
     int rc = 0;
     SparkJobState lastState = null;
-    String lastReport = null;
+    Map<String, SparkStageProgress> lastProgressMap = null;
     long startTime = 0;
 
-    while(true) {
+    while (true) {
 
       try {
-        Map<String, SparkProgress> progressMap = sparkJobStatus.getSparkStageProgress();
+        Map<String, SparkStageProgress> progressMap = sparkJobStatus.getSparkStageProgress();
         SparkJobState state = sparkJobStatus.getState();
 
         if (state != lastState || state == SparkJobState.RUNNING) {
           lastState = state;
 
-          switch(state) {
+          switch (state) {
           case SUBMITTED:
             console.printInfo("Status: Submitted");
             break;
@@ -88,16 +89,22 @@ public class SparkJobMonitor {
               }
 
               console.printInfo("\nStatus: Running (Hive on Spark job[" +
-                sparkJobStatus.getJobId() + "])\n");
+                sparkJobStatus.getJobId() + "])");
               startTime = System.currentTimeMillis();
               running = true;
+
+              console.printInfo("Job Progress Format\nCurrentTime StageId_StageAttemptId: " +
+                "SucceededTasksCount(+RunningTasksCount-FailedTasksCount)/TotalTasksCount [StageCost]");
             }
 
-            lastReport = printStatus(progressMap, lastReport, console);
+
+            printStatus(progressMap, lastProgressMap);
+            lastProgressMap = progressMap;
             break;
           case SUCCEEDED:
-            lastReport = printStatus(progressMap, lastReport, console);
-            double duration = (System.currentTimeMillis() - startTime)/1000.0;
+            printStatus(progressMap, lastProgressMap);
+            lastProgressMap = progressMap;
+            double duration = (System.currentTimeMillis() - startTime) / 1000.0;
             console.printInfo("Status: Finished successfully in " +
               String.format("%.2f seconds", duration));
             running = false;
@@ -122,8 +129,8 @@ public class SparkJobMonitor {
           Thread.sleep(checkInterval);
         }
       } catch (Exception e) {
-        console.printInfo("Exception: "+e.getMessage());
-        if (++failedCounter % maxRetryInterval/checkInterval == 0
+        console.printInfo("Exception: " + e.getMessage());
+        if (++failedCounter % maxRetryInterval / checkInterval == 0
           || e instanceof InterruptedException) {
           console.printInfo("Killing Job...");
           console.printError("Execution has failed.");
@@ -141,53 +148,97 @@ public class SparkJobMonitor {
     return rc;
   }
 
-  private String printStatus(
-    Map<String, SparkProgress> progressMap,
-    String lastReport,
-    LogHelper console) {
+  private void printStatus(Map<String, SparkStageProgress> progressMap, Map<String, SparkStageProgress> lastProgressMap) {
+
+    // do not print duplicate status while still in middle of print interval.
+    boolean isDuplicateState = isSameAsPreviousProgress(progressMap, lastProgressMap);
+    boolean isPassedInterval = System.currentTimeMillis() <= lastPrintTime + printInterval;
+    if (isDuplicateState && isPassedInterval) {
+      return;
+    }
 
     StringBuffer reportBuffer = new StringBuffer();
+    SimpleDateFormat dt = new SimpleDateFormat("yyyy-mm-dd hh:mm:ss,SSS");
+    String currentDate = dt.format(new Date());
+    reportBuffer.append(currentDate + "\t");
 
     SortedSet<String> keys = new TreeSet<String>(progressMap.keySet());
-    for (String s: keys) {
-      SparkProgress progress = progressMap.get(s);
+    for (String s : keys) {
+      SparkStageProgress progress = progressMap.get(s);
       final int complete = progress.getSucceededTaskCount();
       final int total = progress.getTotalTaskCount();
       final int running = progress.getRunningTaskCount();
       final int failed = progress.getFailedTaskCount();
+      String stageName = "Stage-" + s;
       if (total <= 0) {
-        reportBuffer.append(String.format("%s: -/-\t", s, complete, total));
+        reportBuffer.append(String.format("%s: -/-\t", stageName, complete, total));
       } else {
         if (complete == total && !completed.contains(s)) {
           completed.add(s);
         }
-        if(complete < total && (complete > 0 || running > 0 || failed > 0)) {
+        if (complete < total && (complete > 0 || running > 0 || failed > 0)) {
           /* stage is started, but not complete */
           if (failed > 0) {
             reportBuffer.append(
-              String.format("%s: %d(+%d,-%d)/%d\t", s, complete, running, failed, total));
+              String.format(
+                "%s: %d(+%d,-%d)/%d\t", stageName, complete, running, failed, total));
           } else {
-            reportBuffer.append(String.format("%s: %d(+%d)/%d\t", s, complete, running, total));
+            reportBuffer.append(
+              String.format("%s: %d(+%d)/%d\t", stageName, complete, running, total));
           }
         } else {
+          double cost = progress.getCumulativeTime() / 1000.0;
           /* stage is waiting for input/slots or complete */
           if (failed > 0) {
             /* tasks finished but some failed */
-            reportBuffer.append(String.format("%s: %d(-%d)/%d\t", s, complete, failed, total));
+            reportBuffer.append(
+              String.format(
+                "%s: %d(-%d)/%d Finished in %,.2fs\t", stageName, complete, failed, total, cost));
           } else {
-            reportBuffer.append(String.format("%s: %d/%d\t", s, complete, total));
+            if (complete == total) {
+              reportBuffer.append(
+                String.format("%s: %d/%d Finished in %,.2fs\t", stageName, complete, total, cost));
+            } else {
+              reportBuffer.append(String.format("%s: %d/%d\t", stageName, complete, total));
+            }
           }
         }
       }
     }
 
-    String report = reportBuffer.toString();
-    if (!report.equals(lastReport)
-      || System.currentTimeMillis() >= lastPrintTime + printInterval) {
-      console.printInfo(report);
-      lastPrintTime = System.currentTimeMillis();
+    lastPrintTime = System.currentTimeMillis();
+    console.printInfo(reportBuffer.toString());
+  }
+
+  private boolean isSameAsPreviousProgress(
+    Map<String, SparkStageProgress> progressMap,
+    Map<String, SparkStageProgress> lastProgressMap) {
+
+    if (lastProgressMap == null) {
+      return false;
     }
 
-    return report;
+    if (progressMap.isEmpty()) {
+      if (lastProgressMap.isEmpty()) {
+        return true;
+      } else {
+        return false;
+      }
+    } else {
+      if (lastProgressMap.isEmpty()) {
+        return false;
+      } else {
+        if (progressMap.size() != lastProgressMap.size()) {
+          return false;
+        }
+        for (String key : progressMap.keySet()) {
+          if (!lastProgressMap.containsKey(key) ||
+            !progressMap.get(key).equals(lastProgressMap.get(key))) {
+            return false;
+          }
+        }
+      }
+    }
+    return true;
   }
 }

@@ -17,26 +17,29 @@
  */
 package org.apache.hadoop.hive.ql.exec.spark.status;
 
-public class SparkProgress {
+public class SparkStageProgress {
 
   private int totalTaskCount;
   private int succeededTaskCount;
   private int runningTaskCount;
   private int failedTaskCount;
   private int killedTaskCount;
+  private long cumulativeTime;
 
-  public SparkProgress(
+  public SparkStageProgress(
     int totalTaskCount,
     int succeededTaskCount,
     int runningTaskCount,
     int failedTaskCount,
-    int killedTaskCount) {
+    int killedTaskCount,
+    long cumulativeTime) {
 
     this.totalTaskCount = totalTaskCount;
     this.succeededTaskCount = succeededTaskCount;
     this.runningTaskCount = runningTaskCount;
     this.failedTaskCount = failedTaskCount;
     this.killedTaskCount = killedTaskCount;
+    this.cumulativeTime = cumulativeTime;
   }
 
   public int getTotalTaskCount() {
@@ -59,10 +62,14 @@ public class SparkProgress {
     return killedTaskCount;
   }
 
+  public long getCumulativeTime() {
+    return cumulativeTime;
+  }
+
   @Override
   public boolean equals(Object obj) {
-    if (obj instanceof SparkProgress) {
-      SparkProgress other = (SparkProgress) obj;
+    if (obj instanceof SparkStageProgress) {
+      SparkStageProgress other = (SparkStageProgress) obj;
       return getTotalTaskCount() == other.getTotalTaskCount()
         && getSucceededTaskCount() == other.getSucceededTaskCount()
         && getRunningTaskCount() == other.getRunningTaskCount()
@@ -85,6 +92,8 @@ public class SparkProgress {
     sb.append(getFailedTaskCount());
     sb.append(" Killed: ");
     sb.append(getKilledTaskCount());
+    sb.append(" CumulativeTime: ");
+    sb.append(getCumulativeTime() + "ms");
     return sb.toString();
   }
 }

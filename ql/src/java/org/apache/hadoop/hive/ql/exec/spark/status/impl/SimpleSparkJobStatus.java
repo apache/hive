@@ -24,11 +24,12 @@ import java.util.Map;
 
 import org.apache.hadoop.hive.ql.exec.spark.status.SparkJobState;
 import org.apache.hadoop.hive.ql.exec.spark.status.SparkJobStatus;
-import org.apache.hadoop.hive.ql.exec.spark.status.SparkProgress;
+import org.apache.hadoop.hive.ql.exec.spark.status.SparkStageProgress;
 import org.apache.spark.scheduler.StageInfo;
 import org.apache.spark.ui.jobs.JobProgressListener;
 import org.apache.spark.ui.jobs.UIData;
 
+import scala.Option;
 import scala.Tuple2;
 
 import static scala.collection.JavaConversions.bufferAsJavaList;
@@ -61,35 +62,13 @@ public class SimpleSparkJobStatus implements SparkJobStatus {
   }
 
   @Override
-  public SparkProgress getSparkJobProgress() {
-    Map<String, SparkProgress> stageProgresses = getSparkStageProgress();
-
-    int totalTaskCount = 0;
-    int runningTaskCount = 0;
-    int completedTaskCount = 0;
-    int failedTaskCount = 0;
-    int killedTaskCount = 0;
-
-    for (SparkProgress sparkProgress : stageProgresses.values()) {
-      totalTaskCount += sparkProgress.getTotalTaskCount();
-      runningTaskCount += sparkProgress.getRunningTaskCount();
-      completedTaskCount += sparkProgress.getSucceededTaskCount();
-      failedTaskCount += sparkProgress.getFailedTaskCount();
-      killedTaskCount += sparkProgress.getKilledTaskCount();
-    }
-
-    return new SparkProgress(
-      totalTaskCount, completedTaskCount, runningTaskCount, failedTaskCount, killedTaskCount);
-  }
-
-  @Override
   public int[] getStageIds() {
     return jobStateListener.getStageIds(jobId);
   }
 
   @Override
-  public Map<String, SparkProgress> getSparkStageProgress() {
-    Map<String, SparkProgress> stageProgresses = new HashMap<String, SparkProgress>();
+  public Map<String, SparkStageProgress> getSparkStageProgress() {
+    Map<String, SparkStageProgress> stageProgresses = new HashMap<String, SparkStageProgress>();
     int[] stageIds = jobStateListener.getStageIds(jobId);
     if (stageIds != null) {
       for (int stageId : stageIds) {
@@ -104,12 +83,26 @@ public class SimpleSparkJobStatus implements SparkJobStatus {
             int failedTaskCount = uiData.numFailedTasks();
             int totalTaskCount = stageInfo.numTasks();
             int killedTaskCount = 0;
-            SparkProgress stageProgress = new SparkProgress(
+            long costTime;
+            Option<Object> startOption = stageInfo.submissionTime();
+            Option<Object> completeOption = stageInfo.completionTime();
+            if (startOption.isEmpty()) {
+              costTime = 0;
+            } else if (completeOption.isEmpty()) {
+              long startTime = (Long)startOption.get();
+              costTime = System.currentTimeMillis() - startTime;
+            } else {
+              long startTime = (Long)startOption.get();
+              long completeTime = (Long)completeOption.get();
+              costTime = completeTime - startTime;
+            }
+            SparkStageProgress stageProgress = new SparkStageProgress(
               totalTaskCount,
               completedTaskCount,
               runningTaskCount,
               failedTaskCount,
-              killedTaskCount);
+              killedTaskCount,
+              costTime);
             stageProgresses.put(stageInfo.stageId() + "_" + stageInfo.attemptId(), stageProgress);
           }
         }
