@@ -982,6 +982,12 @@ public final class FunctionRegistry {
           (PrimitiveTypeInfo)a, (PrimitiveTypeInfo)b,PrimitiveCategory.STRING);
     }
 
+    // Another special case, because timestamp is not implicitly convertible to numeric types.
+    if ((pgA == PrimitiveGrouping.NUMERIC_GROUP || pgB == PrimitiveGrouping.NUMERIC_GROUP)
+        && (pcA == PrimitiveCategory.TIMESTAMP || pcB == PrimitiveCategory.TIMESTAMP)) {
+      return TypeInfoFactory.doubleTypeInfo;
+    }
+
     for (PrimitiveCategory t : numericTypeList) {
       if (FunctionRegistry.implicitConvertible(pcA, t)
           && FunctionRegistry.implicitConvertible(pcB, t)) {
