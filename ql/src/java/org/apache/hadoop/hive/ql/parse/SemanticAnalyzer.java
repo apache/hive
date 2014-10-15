@@ -42,6 +42,7 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import com.google.common.annotations.VisibleForTesting;
+
 import net.hydromatic.optiq.SchemaPlus;
 import net.hydromatic.optiq.tools.Frameworks;
 
@@ -274,6 +275,7 @@ import org.eigenbase.reltype.RelDataTypeField;
 import org.eigenbase.rex.RexBuilder;
 import org.eigenbase.rex.RexInputRef;
 import org.eigenbase.rex.RexNode;
+import org.eigenbase.rex.RexUtil;
 import org.eigenbase.rex.RexWindowBound;
 import org.eigenbase.rex.RexFieldCollation;
 import org.eigenbase.sql.SqlAggFunction;
@@ -12821,8 +12823,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           .get(srcRel);
       RexNode convertedFilterExpr = new RexNodeConverter(cluster, srcRel.getRowType(),
           hiveColNameOptiqPosMap, 0, true).convert(filterCondn);
+      RexNode factoredFilterExpr = RexUtil.pullFactors(cluster.getRexBuilder(), convertedFilterExpr);
       RelNode filterRel = new HiveFilterRel(cluster, cluster.traitSetOf(HiveRel.CONVENTION),
-          srcRel, convertedFilterExpr);
+          srcRel, factoredFilterExpr);
       this.relToHiveColNameOptiqPosMap.put(filterRel, hiveColNameOptiqPosMap);
       relToHiveRR.put(filterRel, relToHiveRR.get(srcRel));
       relToHiveColNameOptiqPosMap.put(filterRel, hiveColNameOptiqPosMap);
