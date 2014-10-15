@@ -72,8 +72,8 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 3 <- Union 2 (GROUP)
-        Union 2 <- Map 1 (NONE), Map 10 (NONE), Map 11 (NONE), Map 12 (NONE), Map 13 (NONE), Map 14 (NONE), Map 15 (NONE), Map 16 (NONE), Map 17 (NONE), Map 18 (NONE), Map 19 (NONE), Map 20 (NONE), Map 21 (NONE), Map 22 (NONE), Map 23 (NONE), Map 24 (NONE), Map 25 (NONE), Map 26 (NONE), Map 27 (NONE), Map 4 (NONE), Map 5 (NONE), Map 6 (NONE), Map 7 (NONE), Map 8 (NONE), Map 9 (NONE)
+        Reducer 3 <- Union 2 (GROUP, 1)
+        Union 2 <- Map 1 (NONE, 0), Map 10 (NONE, 0), Map 11 (NONE, 0), Map 12 (NONE, 0), Map 13 (NONE, 0), Map 14 (NONE, 0), Map 15 (NONE, 0), Map 16 (NONE, 0), Map 17 (NONE, 0), Map 18 (NONE, 0), Map 19 (NONE, 0), Map 20 (NONE, 0), Map 21 (NONE, 0), Map 22 (NONE, 0), Map 23 (NONE, 0), Map 24 (NONE, 0), Map 25 (NONE, 0), Map 26 (NONE, 0), Map 27 (NONE, 0), Map 4 (NONE, 0), Map 5 (NONE, 0), Map 6 (NONE, 0), Map 7 (NONE, 0), Map 8 (NONE, 0), Map 9 (NONE, 0)
 #### A masked pattern was here ####
       Vertices:
         Map 1 

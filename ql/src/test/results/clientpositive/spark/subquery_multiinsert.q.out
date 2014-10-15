@@ -85,10 +85,10 @@ STAGE PLANS:
   Stage: Stage-4
     Spark
       Edges:
-        Reducer 10 <- Map 9 (GROUP)
-        Reducer 11 <- Map 1 (GROUP PARTITION-LEVEL SORT), Reducer 10 (GROUP PARTITION-LEVEL SORT)
-        Reducer 7 <- Map 6 (GROUP PARTITION-LEVEL SORT), Reducer 11 (GROUP PARTITION-LEVEL SORT)
-        Reducer 8 <- Reducer 7 (GROUP SORT)
+        Reducer 10 <- Map 9 (GROUP, 1)
+        Reducer 11 <- Map 1 (GROUP PARTITION-LEVEL SORT, 1), Reducer 10 (GROUP PARTITION-LEVEL SORT, 1)
+        Reducer 7 <- Map 6 (GROUP PARTITION-LEVEL SORT, 1), Reducer 11 (GROUP PARTITION-LEVEL SORT, 1)
+        Reducer 8 <- Reducer 7 (GROUP SORT, 1)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -218,7 +218,7 @@ STAGE PLANS:
   Stage: Stage-5
     Spark
       Edges:
-        Reducer 5 <- Map 2 (GROUP PARTITION-LEVEL SORT), Map 4 (GROUP PARTITION-LEVEL SORT)
+        Reducer 5 <- Map 2 (GROUP PARTITION-LEVEL SORT, 1), Map 4 (GROUP PARTITION-LEVEL SORT, 1)
 #### A masked pattern was here ####
       Vertices:
         Map 2 
@@ -514,10 +514,10 @@ STAGE PLANS:
   Stage: Stage-4
     Spark
       Edges:
-        Reducer 10 <- Map 9 (GROUP)
-        Reducer 11 <- Map 1 (GROUP PARTITION-LEVEL SORT), Reducer 10 (GROUP PARTITION-LEVEL SORT)
-        Reducer 7 <- Map 6 (GROUP PARTITION-LEVEL SORT), Reducer 11 (GROUP PARTITION-LEVEL SORT)
-        Reducer 8 <- Reducer 7 (GROUP SORT)
+        Reducer 10 <- Map 9 (GROUP, 1)
+        Reducer 11 <- Map 1 (GROUP PARTITION-LEVEL SORT, 1), Reducer 10 (GROUP PARTITION-LEVEL SORT, 1)
+        Reducer 7 <- Map 6 (GROUP PARTITION-LEVEL SORT, 1), Reducer 11 (GROUP PARTITION-LEVEL SORT, 1)
+        Reducer 8 <- Reducer 7 (GROUP SORT, 1)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -647,7 +647,7 @@ STAGE PLANS:
   Stage: Stage-5
     Spark
       Edges:
-        Reducer 5 <- Map 2 (GROUP PARTITION-LEVEL SORT), Map 4 (GROUP PARTITION-LEVEL SORT)
+        Reducer 5 <- Map 2 (GROUP PARTITION-LEVEL SORT, 1), Map 4 (GROUP PARTITION-LEVEL SORT, 1)
 #### A masked pattern was here ####
       Vertices:
         Map 2 

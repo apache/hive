@@ -75,7 +75,7 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Union 2 <- Map 1 (NONE), Map 3 (NONE), Map 4 (NONE)
+        Union 2 <- Map 1 (NONE, 0), Map 3 (NONE, 0), Map 4 (NONE, 0)
 #### A masked pattern was here ####
       Vertices:
         Map 1 

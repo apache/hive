@@ -48,8 +48,8 @@ STAGE PLANS:
   Stage: Stage-2
     Spark
       Edges:
-        Reducer 2 <- Map 1 (GROUP SORT)
-        Reducer 3 <- Reducer 2 (GROUP SORT)
+        Reducer 2 <- Map 1 (GROUP SORT, 1)
+        Reducer 3 <- Reducer 2 (GROUP SORT, 1)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -162,8 +162,8 @@ STAGE PLANS:
   Stage: Stage-2
     Spark
       Edges:
-        Reducer 2 <- Map 1 (GROUP SORT)
-        Reducer 3 <- Reducer 2 (GROUP SORT)
+        Reducer 2 <- Map 1 (GROUP SORT, 1)
+        Reducer 3 <- Reducer 2 (GROUP SORT, 1)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -1611,7 +1611,7 @@ STAGE PLANS:
   Stage: Stage-4
     Spark
       Edges:
-        Reducer 4 <- Map 1 (GROUP SORT)
+        Reducer 4 <- Map 1 (GROUP SORT, 1)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -1679,7 +1679,7 @@ STAGE PLANS:
   Stage: Stage-5
     Spark
       Edges:
-        Reducer 5 <- Map 2 (GROUP SORT)
+        Reducer 5 <- Map 2 (GROUP SORT, 1)
 #### A masked pattern was here ####
       Vertices:
         Map 2 
@@ -1749,7 +1749,7 @@ STAGE PLANS:
   Stage: Stage-3
     Spark
       Edges:
-        Reducer 4 <- Map 3 (GROUP SORT)
+        Reducer 4 <- Map 3 (GROUP SORT, 1)
 #### A masked pattern was here ####
       Vertices:
         Map 3 
@@ -1779,7 +1779,7 @@ STAGE PLANS:
   Stage: Stage-5
     Spark
       Edges:
-        Reducer 5 <- Map 1 (GROUP SORT)
+        Reducer 5 <- Map 1 (GROUP SORT, 1)
 #### A masked pattern was here ####
       Vertices:
         Map 1 

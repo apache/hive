@@ -57,7 +57,7 @@ STAGE PLANS:
   Stage: Stage-4
     Spark
       Edges:
-        Reducer 4 <- Map 1 (GROUP)
+        Reducer 4 <- Map 1 (GROUP, 31)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -126,7 +126,7 @@ STAGE PLANS:
   Stage: Stage-5
     Spark
       Edges:
-        Reducer 5 <- Map 2 (GROUP)
+        Reducer 5 <- Map 2 (GROUP, 31)
 #### A masked pattern was here ####
       Vertices:
         Map 2 

@@ -267,6 +267,11 @@ public class SparkWork extends AbstractOperatorDesc {
       return prop.getShuffleType();
     }
 
+    @Explain(displayName = "Number of Partitions")
+    public String getNumPartitions() {
+      return Integer.toString(prop.getNumPartitions());
+    }
+
     @Override
     public int compareTo(Dependency o) {
       int compare = getName().compareTo(o.getName());
