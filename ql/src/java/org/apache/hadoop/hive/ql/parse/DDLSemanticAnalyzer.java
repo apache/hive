@@ -53,6 +53,7 @@ import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.ql.Driver;
@@ -212,24 +213,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       typeName = TokenToTypeName.get(token);
     }
     return typeName;
-  }
-
-  static class TablePartition {
-    String tableName;
-    HashMap<String, String> partSpec = null;
-
-    public TablePartition() {
-    }
-
-    public TablePartition(ASTNode tblPart) throws SemanticException {
-      tableName = getDotName((getQualifiedTableName((ASTNode) tblPart.getChild(0))));
-      if (tblPart.getChildCount() > 1) {
-        ASTNode part = (ASTNode) tblPart.getChild(1);
-        if (part.getToken().getType() == HiveParser.TOK_PARTSPEC) {
-          this.partSpec = DDLSemanticAnalyzer.getPartSpec(part);
-        }
-      }
-    }
   }
 
   public DDLSemanticAnalyzer(HiveConf conf) throws SemanticException {
@@ -1139,20 +1122,25 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     // configured not to ignore this
     boolean throwException =
         !ifExists && !HiveConf.getBoolVar(conf, ConfVars.DROPIGNORESNONEXISTENT);
-    if (throwException) {
-      try {
-        Index idx = db.getIndex(tableName, indexName);
-      } catch (HiveException e) {
+    Table tbl = getTable(tableName, false);
+    if (throwException && tbl == null) {
+      throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(tableName));
+    }
+    try {
+      Index idx = db.getIndex(tableName, indexName);
+    } catch (HiveException e) {
+      if (!(e.getCause() instanceof NoSuchObjectException)) {
+        throw new SemanticException(ErrorMsg.GENERIC_ERROR.getMsg("dropping index"), e);
+      }
+      if (throwException) {
         throw new SemanticException(ErrorMsg.INVALID_INDEX.getMsg(indexName));
       }
     }
-
-    Table tbl = getTable(tableName, false);
     if (tbl != null) {
-      inputs.add(new ReadEntity(getTable(tableName)));
+      inputs.add(new ReadEntity(tbl));
     }
 
-    DropIndexDesc dropIdxDesc = new DropIndexDesc(indexName, tableName);
+    DropIndexDesc dropIdxDesc = new DropIndexDesc(indexName, tableName, throwException);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
         dropIdxDesc), conf));
   }
@@ -2809,7 +2797,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
    * @param ast
    *          The parsed command tree.
    * @throws SemanticException
-   *           Parsin failed
+   *           Parsing failed
    */
   private void analyzeAlterTableTouch(String[] qualified, CommonTree ast)
       throws SemanticException {
@@ -2933,8 +2921,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
    *
    * @param ast Tree to extract partitions from.
    * @param tab Table.
-   * @param result Map of partitions by prefix length. Most of the time prefix length will
-   *               be the same for all partition specs, so we can just OR the expressions.
+   * @return    Map of partitions by prefix length. Most of the time prefix length will
+   *            be the same for all partition specs, so we can just OR the expressions.
    */
   private Map<Integer, List<ExprNodeGenericFuncDesc>> getFullPartitionSpecs(
       CommonTree ast, Table tab, boolean canGroupExprs) throws SemanticException {

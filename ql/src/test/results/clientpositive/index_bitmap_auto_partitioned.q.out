@@ -52,7 +52,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: default__srcpart_src_part_index__
+            alias: default.default__srcpart_src_part_index__
             filterExpr: ((key = 86) and (not EWAH_BITMAP_EMPTY(_bitmaps))) (type: boolean)
             Filter Operator
               predicate: ((key = 86) and (not EWAH_BITMAP_EMPTY(_bitmaps))) (type: boolean)

@@ -312,7 +312,7 @@ public class HiveConf extends Configuration {
         "When hive.exec.mode.local.auto is true, the number of tasks should less than this for local mode."),
 
     DROPIGNORESNONEXISTENT("hive.exec.drop.ignorenonexistent", true,
-        "Do not report an error if DROP TABLE/VIEW specifies a non-existent table/view"),
+        "Do not report an error if DROP TABLE/VIEW/Index specifies a non-existent table/view/index"),
 
     HIVEIGNOREMAPJOINHINT("hive.ignore.mapjoin.hint", true, "Ignore the mapjoin hint"),
 

@@ -64,7 +64,6 @@ import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
-import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
@@ -92,7 +91,6 @@ import org.apache.hadoop.hive.metastore.api.ResourceType;
 import org.apache.hadoop.hive.metastore.api.ResourceUri;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
-import org.apache.hadoop.hive.metastore.api.SetPartitionsStatsRequest;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -197,7 +195,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   /**
-   * Called whenever this object is instantiated using ReflectionUils, and also
+   * Called whenever this object is instantiated using ReflectionUtils, and also
    * on connection retries. In cases of connection retries, conf will usually
    * contain modified values.
    */
@@ -2665,7 +2663,7 @@ public class ObjectStore implements RawStore, Configurable {
         throw new MetaException("table " + name + " doesn't exist");
       }
 
-      // For now only alter name, owner, paramters, cols, bucketcols are allowed
+      // For now only alter name, owner, parameters, cols, bucketcols are allowed
       oldt.setDatabase(newt.getDatabase());
       oldt.setTableName(newt.getTableName().toLowerCase());
       oldt.setParameters(newt.getParameters());
@@ -2708,7 +2706,7 @@ public class ObjectStore implements RawStore, Configurable {
         throw new MetaException("index " + name + " doesn't exist");
       }
 
-      // For now only alter paramters are allowed
+      // For now only alter parameters are allowed
       oldi.setParameters(newi.getParameters());
 
       // commit the changes
@@ -2878,7 +2876,7 @@ public class ObjectStore implements RawStore, Configurable {
     MColumnDescriptor mcd = msd.getCD();
     // Because there is a 1-N relationship between CDs and SDs,
     // we must set the SD's CD to null first before dropping the storage descriptor
-    // to satisfy foriegn key constraints.
+    // to satisfy foreign key constraints.
     msd.setCD(null);
     removeUnusedColumnDescriptor(mcd);
   }
@@ -3019,19 +3017,26 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   private Index convertToIndex(MIndex mIndex) throws MetaException {
-    if(mIndex == null) {
+    if (mIndex == null) {
       return null;
     }
+
+    MTable origTable = mIndex.getOrigTable();
+    MTable indexTable = mIndex.getIndexTable();
+
+    String[] qualified = MetaStoreUtils.getQualifiedName(
+        origTable.getDatabase().getName(), indexTable.getTableName());
+    String indexTableName = qualified[0] + "." + qualified[1];
 
     return new Index(
     mIndex.getIndexName(),
     mIndex.getIndexHandlerClass(),
-    mIndex.getOrigTable().getDatabase().getName(),
-    mIndex.getOrigTable().getTableName(),
+    origTable.getDatabase().getName(),
+    origTable.getTableName(),
     mIndex.getCreateTime(),
     mIndex.getLastAccessTime(),
-    mIndex.getIndexTable().getTableName(),
-    this.convertToStorageDescriptor(mIndex.getSd()),
+    indexTableName,
+    convertToStorageDescriptor(mIndex.getSd()),
     mIndex.getParameters(),
     mIndex.getDeferredRebuild());
 

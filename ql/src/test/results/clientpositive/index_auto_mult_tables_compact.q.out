@@ -213,7 +213,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: default__srcpart_srcpart_index__
+            alias: default.default__srcpart_srcpart_index__
             filterExpr: ((((key > 70) and (key < 90)) and (key > 80)) and (key < 100)) (type: boolean)
             Filter Operator
               predicate: ((((key > 70) and (key < 90)) and (key > 80)) and (key < 100)) (type: boolean)
@@ -323,7 +323,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: default__src_src_index__
+            alias: default.default__src_src_index__
             filterExpr: ((((key > 80) and (key < 100)) and (key > 70)) and (key < 90)) (type: boolean)
             Filter Operator
               predicate: ((((key > 80) and (key < 100)) and (key > 70)) and (key < 90)) (type: boolean)

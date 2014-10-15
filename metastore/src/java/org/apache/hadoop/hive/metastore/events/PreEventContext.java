@@ -39,7 +39,10 @@ public abstract class PreEventContext {
     LOAD_PARTITION_DONE,
     AUTHORIZATION_API_CALL,
     READ_TABLE,
-    READ_DATABASE
+    READ_DATABASE,
+    ADD_INDEX,
+    ALTER_INDEX,
+    DROP_INDEX
   }
 
   private final PreEventType eventType;
