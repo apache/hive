@@ -53,8 +53,8 @@ STAGE PLANS:
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: _col0 (type: string), _col1 (type: string)
-            outputColumnNames: _col0, _col1
+            expressions: _col0 (type: string), _col0 (type: string), _col1 (type: string)
+            outputColumnNames: _col0, _col1, _col2
             Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
@@ -124,8 +124,8 @@ STAGE PLANS:
           outputColumnNames: _col0
           Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: _col0 (type: string)
-            outputColumnNames: _col0
+            expressions: _col0 (type: string), _col0 (type: string)
+            outputColumnNames: _col0, _col1
             Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
@@ -195,8 +195,8 @@ STAGE PLANS:
           outputColumnNames: _col0
           Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: _col0 (type: string)
-            outputColumnNames: _col0
+            expressions: _col0 (type: string), _col0 (type: string)
+            outputColumnNames: _col0, _col1
             Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
