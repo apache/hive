@@ -50,4 +50,12 @@ public final class TimestampUtils {
     int nanos = t.getNanos();
     return (time * 1000000) + (nanos % 1000000);
   }
+
+  public static long secondsToNanoseconds(long seconds) {
+    return seconds * 1000000000;
+  }
+
+  public static long doubleToNanoseconds(double d) {
+    return (long) (d * 1000000000);
+  }
 }

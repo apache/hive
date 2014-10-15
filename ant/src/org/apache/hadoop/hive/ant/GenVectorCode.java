@@ -180,6 +180,46 @@ public class GenVectorCode extends Task {
       {"ScalarCompareColumn", "GreaterEqual", "long", "long", ">="},
       {"ScalarCompareColumn", "GreaterEqual", "double", "long", ">="},
 
+      {"TimestampColumnCompareTimestampScalar", "Equal"},
+      {"TimestampColumnCompareTimestampScalar", "NotEqual"},
+      {"TimestampColumnCompareTimestampScalar", "Less"},
+      {"TimestampColumnCompareTimestampScalar", "LessEqual"},
+      {"TimestampColumnCompareTimestampScalar", "Greater"},
+      {"TimestampColumnCompareTimestampScalar", "GreaterEqual"},
+
+      {"TimestampColumnCompareScalar", "Equal", "long"},
+      {"TimestampColumnCompareScalar", "Equal", "double"},
+      {"TimestampColumnCompareScalar", "NotEqual", "long"},
+      {"TimestampColumnCompareScalar", "NotEqual", "double"},
+      {"TimestampColumnCompareScalar", "Less", "long"},
+      {"TimestampColumnCompareScalar", "Less", "double"},
+      {"TimestampColumnCompareScalar", "LessEqual", "long"},
+      {"TimestampColumnCompareScalar", "LessEqual", "double"},
+      {"TimestampColumnCompareScalar", "Greater", "long"},
+      {"TimestampColumnCompareScalar", "Greater", "double"},
+      {"TimestampColumnCompareScalar", "GreaterEqual", "long"},
+      {"TimestampColumnCompareScalar", "GreaterEqual", "double"},
+
+      {"TimestampScalarCompareTimestampColumn", "Equal"},
+      {"TimestampScalarCompareTimestampColumn", "NotEqual"},
+      {"TimestampScalarCompareTimestampColumn", "Less"},
+      {"TimestampScalarCompareTimestampColumn", "LessEqual"},
+      {"TimestampScalarCompareTimestampColumn", "Greater"},
+      {"TimestampScalarCompareTimestampColumn", "GreaterEqual"},
+
+      {"ScalarCompareTimestampColumn", "Equal", "long"},
+      {"ScalarCompareTimestampColumn", "Equal", "double"},
+      {"ScalarCompareTimestampColumn", "NotEqual", "long"},
+      {"ScalarCompareTimestampColumn", "NotEqual", "double"},
+      {"ScalarCompareTimestampColumn", "Less", "long"},
+      {"ScalarCompareTimestampColumn", "Less", "double"},
+      {"ScalarCompareTimestampColumn", "LessEqual", "long"},
+      {"ScalarCompareTimestampColumn", "LessEqual", "double"},
+      {"ScalarCompareTimestampColumn", "Greater", "long"},
+      {"ScalarCompareTimestampColumn", "Greater", "double"},
+      {"ScalarCompareTimestampColumn", "GreaterEqual", "long"},
+      {"ScalarCompareTimestampColumn", "GreaterEqual", "double"},
+
       {"FilterColumnCompareScalar", "Equal", "long", "double", "=="},
       {"FilterColumnCompareScalar", "Equal", "double", "double", "=="},
       {"FilterColumnCompareScalar", "NotEqual", "long", "double", "!="},
@@ -231,6 +271,46 @@ public class GenVectorCode extends Task {
       {"FilterScalarCompareColumn", "Greater", "double", "long", ">"},
       {"FilterScalarCompareColumn", "GreaterEqual", "long", "long", ">="},
       {"FilterScalarCompareColumn", "GreaterEqual", "double", "long", ">="},
+
+      {"FilterTimestampColumnCompareTimestampScalar", "Equal"},
+      {"FilterTimestampColumnCompareTimestampScalar", "NotEqual"},
+      {"FilterTimestampColumnCompareTimestampScalar", "Less"},
+      {"FilterTimestampColumnCompareTimestampScalar", "LessEqual"},
+      {"FilterTimestampColumnCompareTimestampScalar", "Greater"},
+      {"FilterTimestampColumnCompareTimestampScalar", "GreaterEqual"},
+
+      {"FilterTimestampColumnCompareScalar", "Equal", "long"},
+      {"FilterTimestampColumnCompareScalar", "Equal", "double"},
+      {"FilterTimestampColumnCompareScalar", "NotEqual", "long"},
+      {"FilterTimestampColumnCompareScalar", "NotEqual", "double"},
+      {"FilterTimestampColumnCompareScalar", "Less", "long"},
+      {"FilterTimestampColumnCompareScalar", "Less", "double"},
+      {"FilterTimestampColumnCompareScalar", "LessEqual", "long"},
+      {"FilterTimestampColumnCompareScalar", "LessEqual", "double"},
+      {"FilterTimestampColumnCompareScalar", "Greater", "long"},
+      {"FilterTimestampColumnCompareScalar", "Greater", "double"},
+      {"FilterTimestampColumnCompareScalar", "GreaterEqual", "long"},
+      {"FilterTimestampColumnCompareScalar", "GreaterEqual", "double"},
+
+      {"FilterTimestampScalarCompareTimestampColumn", "Equal"},
+      {"FilterTimestampScalarCompareTimestampColumn", "NotEqual"},
+      {"FilterTimestampScalarCompareTimestampColumn", "Less"},
+      {"FilterTimestampScalarCompareTimestampColumn", "LessEqual"},
+      {"FilterTimestampScalarCompareTimestampColumn", "Greater"},
+      {"FilterTimestampScalarCompareTimestampColumn", "GreaterEqual"},
+
+      {"FilterScalarCompareTimestampColumn", "Equal", "long"},
+      {"FilterScalarCompareTimestampColumn", "Equal", "double"},
+      {"FilterScalarCompareTimestampColumn", "NotEqual", "long"},
+      {"FilterScalarCompareTimestampColumn", "NotEqual", "double"},
+      {"FilterScalarCompareTimestampColumn", "Less", "long"},
+      {"FilterScalarCompareTimestampColumn", "Less", "double"},
+      {"FilterScalarCompareTimestampColumn", "LessEqual", "long"},
+      {"FilterScalarCompareTimestampColumn", "LessEqual", "double"},
+      {"FilterScalarCompareTimestampColumn", "Greater", "long"},
+      {"FilterScalarCompareTimestampColumn", "Greater", "double"},
+      {"FilterScalarCompareTimestampColumn", "GreaterEqual", "long"},
+      {"FilterScalarCompareTimestampColumn", "GreaterEqual", "double"},
 
       {"FilterStringGroupColumnCompareStringGroupScalarBase", "Equal", "=="},
       {"FilterStringGroupColumnCompareStringGroupScalarBase", "NotEqual", "!="},
@@ -401,26 +481,26 @@ public class GenVectorCode extends Task {
       {"FilterColumnCompareColumn", "GreaterEqual", "long", "double", ">="},
       {"FilterColumnCompareColumn", "GreaterEqual", "double", "double", ">="},
 
-        {"FilterColumnCompareColumn", "Equal", "long", "long", "=="},
-        {"FilterColumnCompareColumn", "Equal", "double", "long", "=="},
-        {"FilterColumnCompareColumn", "NotEqual", "long", "long", "!="},
-        {"FilterColumnCompareColumn", "NotEqual", "double", "long", "!="},
-        {"FilterColumnCompareColumn", "Less", "long", "long", "<"},
-        {"FilterColumnCompareColumn", "Less", "double", "long", "<"},
-        {"FilterColumnCompareColumn", "LessEqual", "long", "long", "<="},
-        {"FilterColumnCompareColumn", "LessEqual", "double", "long", "<="},
-        {"FilterColumnCompareColumn", "Greater", "long", "long", ">"},
-        {"FilterColumnCompareColumn", "Greater", "double", "long", ">"},
-        {"FilterColumnCompareColumn", "GreaterEqual", "long", "long", ">="},
-        {"FilterColumnCompareColumn", "GreaterEqual", "double", "long", ">="},
+      {"FilterColumnCompareColumn", "Equal", "long", "long", "=="},
+      {"FilterColumnCompareColumn", "Equal", "double", "long", "=="},
+      {"FilterColumnCompareColumn", "NotEqual", "long", "long", "!="},
+      {"FilterColumnCompareColumn", "NotEqual", "double", "long", "!="},
+      {"FilterColumnCompareColumn", "Less", "long", "long", "<"},
+      {"FilterColumnCompareColumn", "Less", "double", "long", "<"},
+      {"FilterColumnCompareColumn", "LessEqual", "long", "long", "<="},
+      {"FilterColumnCompareColumn", "LessEqual", "double", "long", "<="},
+      {"FilterColumnCompareColumn", "Greater", "long", "long", ">"},
+      {"FilterColumnCompareColumn", "Greater", "double", "long", ">"},
+      {"FilterColumnCompareColumn", "GreaterEqual", "long", "long", ">="},
+      {"FilterColumnCompareColumn", "GreaterEqual", "double", "long", ">="},
 
       {"FilterColumnBetween", "long", ""},
       {"FilterColumnBetween", "double", ""},
       {"FilterColumnBetween", "long", "!"},
       {"FilterColumnBetween", "double", "!"},
 
-        {"FilterDecimalColumnBetween", ""},
-        {"FilterDecimalColumnBetween", "!"},
+      {"FilterDecimalColumnBetween", ""},
+      {"FilterDecimalColumnBetween", "!"},
 
       {"ColumnCompareColumn", "Equal", "long", "double", "=="},
       {"ColumnCompareColumn", "Equal", "double", "double", "=="},
@@ -718,10 +798,26 @@ public class GenVectorCode extends Task {
         generateColumnCompareScalar(tdesc);
       } else if (tdesc[0].equals("ScalarCompareColumn")) {
         generateScalarCompareColumn(tdesc);
+      } else if (tdesc[0].equals("TimestampScalarCompareTimestampColumn")) {
+          generateTimestampScalarCompareTimestampColumn(tdesc);
+      } else if (tdesc[0].equals("ScalarCompareTimestampColumn")) {
+          generateScalarCompareTimestampColumn(tdesc);
+      } else if (tdesc[0].equals("TimestampColumnCompareTimestampScalar")) {
+          generateTimestampColumnCompareTimestampScalar(tdesc);
+      } else if (tdesc[0].equals("TimestampColumnCompareScalar")) {
+          generateTimestampColumnCompareScalar(tdesc);
       } else if (tdesc[0].equals("FilterColumnCompareScalar")) {
         generateFilterColumnCompareScalar(tdesc);
       } else if (tdesc[0].equals("FilterScalarCompareColumn")) {
         generateFilterScalarCompareColumn(tdesc);
+      } else if (tdesc[0].equals("FilterTimestampColumnCompareTimestampScalar")) {
+          generateFilterTimestampColumnCompareTimestampScalar(tdesc);
+      } else if (tdesc[0].equals("FilterTimestampColumnCompareScalar")) {
+          generateFilterTimestampColumnCompareScalar(tdesc);
+      } else if (tdesc[0].equals("FilterTimestampScalarCompareTimestampColumn")) {
+          generateFilterTimestampScalarCompareTimestampColumn(tdesc);
+      } else if (tdesc[0].equals("FilterScalarCompareTimestampColumn")) {
+          generateFilterScalarCompareTimestampColumn(tdesc);
       } else if (tdesc[0].equals("FilterColumnBetween")) {
         generateFilterColumnBetween(tdesc);
       } else if (tdesc[0].equals("ScalarArithmeticColumn") || tdesc[0].equals("ScalarDivideColumn")) {
@@ -1253,6 +1349,8 @@ public class GenVectorCode extends Task {
     templateString = templateString.replaceAll("<InputColumnVectorType>", inputColumnVectorType);
     templateString = templateString.replaceAll("<OperandType>", operandType);
     String vectorExprArgType = operandType;
+
+    // Toss in timestamp and date.
     if (operandType.equals("long")) {
       // Let comparisons occur for DATE and TIMESTAMP, too.
       vectorExprArgType = "int_datetime_family";
@@ -1281,10 +1379,12 @@ public class GenVectorCode extends Task {
     templateString = templateString.replaceAll("<OperandType2>", operandType2);
     templateString = templateString.replaceAll("<OperandType3>", operandType3);
     templateString = templateString.replaceAll("<OutputColumnVectorType>", outputColumnVectorType);
+
     String vectorExprArgType2 = operandType2;
     String vectorExprArgType3 = operandType3;
+
+    // Toss in timestamp and date.
     if (operandType2.equals("long") && operandType3.equals("long")) {
-      // Let this work occur for DATE and TIMESTAMP, too.
       vectorExprArgType2 = "int_datetime_family";
       vectorExprArgType3 = "int_datetime_family";
     }
@@ -1312,10 +1412,12 @@ public class GenVectorCode extends Task {
     templateString = templateString.replaceAll("<OperandType2>", operandType2);
     templateString = templateString.replaceAll("<OperandType3>", operandType3);
     templateString = templateString.replaceAll("<OutputColumnVectorType>", outputColumnVectorType);
+
     String vectorExprArgType2 = operandType2;
     String vectorExprArgType3 = operandType3;
+
+    // Toss in timestamp and date.
     if (operandType2.equals("long") && operandType3.equals("long")) {
-      // Let this work occur for DATE and TIMESTAMP, too.
       vectorExprArgType2 = "int_datetime_family";
       vectorExprArgType3 = "int_datetime_family";
     }
@@ -1342,10 +1444,12 @@ public class GenVectorCode extends Task {
     templateString = templateString.replaceAll("<OperandType2>", operandType2);
     templateString = templateString.replaceAll("<OperandType3>", operandType3);
     templateString = templateString.replaceAll("<OutputColumnVectorType>", outputColumnVectorType);
+
     String vectorExprArgType2 = operandType2;
     String vectorExprArgType3 = operandType3;
+
+    // Toss in timestamp and date.
     if (operandType2.equals("long") && operandType3.equals("long")) {
-      // Let this work occur for DATE and TIMESTAMP, too.
       vectorExprArgType2 = "int_datetime_family";
       vectorExprArgType3 = "int_datetime_family";
     }
@@ -1477,6 +1581,9 @@ public class GenVectorCode extends Task {
     templateString = templateString.replaceAll("<CamelReturnType>", getCamelCaseType(returnType));
     String vectorExprArgType1 = operandType1;
     String vectorExprArgType2 = operandType2;
+
+    // For column to column only, we toss in timestamp and date.
+    // But {timestamp|date} and scalar must be handled separately.
     if (operandType1.equals("long") && operandType2.equals("long")) {
       // Let comparisons occur for DATE and TIMESTAMP, too.
       vectorExprArgType1 = "int_datetime_family";
@@ -1501,6 +1608,133 @@ public class GenVectorCode extends Task {
           outputColumnVectorType);
     }
   }
+
+  private void generateTimestampScalarCompareTimestampColumn(String[] tdesc) throws Exception {
+    String operatorName = tdesc[1];
+    String className = "TimestampScalar" + operatorName + "TimestampColumn";
+    String baseClassName = "LongScalar" + operatorName + "LongColumn";
+    //Read the template into a string;
+    File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
+    String templateString = readFile(templateFile);
+    templateString = templateString.replaceAll("<ClassName>", className);
+    templateString = templateString.replaceAll("<BaseClassName>", baseClassName);
+    writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
+        className, templateString);
+  }
+
+  private void generateTimestampColumnCompareTimestampScalar(String[] tdesc) throws Exception {
+    String operatorName = tdesc[1];
+    String className = "TimestampCol" + operatorName + "TimestampScalar";
+    String baseClassName = "LongCol" + operatorName + "LongScalar";
+    //Read the template into a string;
+    File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
+    String templateString = readFile(templateFile);
+    templateString = templateString.replaceAll("<ClassName>", className);
+    templateString = templateString.replaceAll("<BaseClassName>", baseClassName);
+    writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
+        className, templateString);
+  }
+
+  private void generateFilterTimestampColumnCompareTimestampScalar(String[] tdesc) throws Exception {
+    String operatorName = tdesc[1];
+    String className = "FilterTimestampCol" + operatorName + "TimestampScalar";
+    String baseClassName = "FilterLongCol" + operatorName + "LongScalar";
+    //Read the template into a string;
+    File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
+    String templateString = readFile(templateFile);
+    templateString = templateString.replaceAll("<ClassName>", className);
+    templateString = templateString.replaceAll("<BaseClassName>", baseClassName);
+    writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
+        className, templateString);
+  }
+
+  private void generateFilterTimestampScalarCompareTimestampColumn(String[] tdesc) throws Exception {
+    String operatorName = tdesc[1];
+    String className = "FilterTimestampScalar" + operatorName + "TimestampColumn";
+    String baseClassName = "FilterLongScalar" + operatorName + "LongColumn";
+    //Read the template into a string;
+    File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
+    String templateString = readFile(templateFile);
+    templateString = templateString.replaceAll("<ClassName>", className);
+    templateString = templateString.replaceAll("<BaseClassName>", baseClassName);
+    writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
+        className, templateString);
+  }
+
+  private String timestampScalarConversion(String operandType) {
+    if (operandType.equals("long")) {
+      return "secondsToNanoseconds";
+    } else if (operandType.equals("double")) {
+      return "doubleToNanoseconds";
+    } else {
+      return "unknown";
+    }
+  }
+
+  private void generateScalarCompareTimestampColumn(String[] tdesc) throws Exception {
+    String operatorName = tdesc[1];
+    String operandType = tdesc[2];
+    String className = getCamelCaseType(operandType) + "Scalar" + operatorName + "TimestampColumn";
+    String baseClassName = "LongScalar" + operatorName + "LongColumn";
+    //Read the template into a string;
+    File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
+    String templateString = readFile(templateFile);
+    templateString = templateString.replaceAll("<ClassName>", className);
+    templateString = templateString.replaceAll("<BaseClassName>", baseClassName);
+    templateString = templateString.replaceAll("<OperandType>", operandType);
+    templateString = templateString.replaceAll("<TimestampScalarConversion>", timestampScalarConversion(operandType));
+    writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
+        className, templateString);
+  }
+
+  private void generateTimestampColumnCompareScalar(String[] tdesc) throws Exception {
+    String operatorName = tdesc[1];
+    String operandType = tdesc[2];
+    String className = "TimestampCol" + operatorName + getCamelCaseType(operandType) + "Scalar";
+    String baseClassName = "LongCol" + operatorName + "LongScalar";
+    //Read the template into a string;
+    File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
+    String templateString = readFile(templateFile);
+    templateString = templateString.replaceAll("<ClassName>", className);
+    templateString = templateString.replaceAll("<BaseClassName>", baseClassName);
+    templateString = templateString.replaceAll("<OperandType>", operandType);
+    templateString = templateString.replaceAll("<TimestampScalarConversion>", timestampScalarConversion(operandType));
+    writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
+        className, templateString);
+  }
+
+  private void generateFilterTimestampColumnCompareScalar(String[] tdesc) throws Exception {
+    String operatorName = tdesc[1];
+    String operandType = tdesc[2];
+    String className = "FilterTimestampCol" + operatorName + getCamelCaseType(operandType) + "Scalar";
+    String baseClassName = "FilterLongCol" + operatorName + "LongScalar";
+    //Read the template into a string;
+    File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
+    String templateString = readFile(templateFile);
+    templateString = templateString.replaceAll("<ClassName>", className);
+    templateString = templateString.replaceAll("<BaseClassName>", baseClassName);
+    templateString = templateString.replaceAll("<OperandType>", operandType);
+    templateString = templateString.replaceAll("<TimestampScalarConversion>", timestampScalarConversion(operandType));
+    writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
+        className, templateString);
+  }
+
+  private void generateFilterScalarCompareTimestampColumn(String[] tdesc) throws Exception {
+    String operatorName = tdesc[1];
+    String operandType = tdesc[2];
+    String className = "Filter" + getCamelCaseType(operandType) + "Scalar" + operatorName + "TimestampColumn";
+    String baseClassName = "FilterLongScalar" + operatorName + "LongColumn";
+    //Read the template into a string;
+    File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
+    String templateString = readFile(templateFile);
+    templateString = templateString.replaceAll("<ClassName>", className);
+    templateString = templateString.replaceAll("<BaseClassName>", baseClassName);
+    templateString = templateString.replaceAll("<OperandType>", operandType);
+    templateString = templateString.replaceAll("<TimestampScalarConversion>", timestampScalarConversion(operandType));
+    writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
+        className, templateString);
+  }
+
 
   private void generateColumnArithmeticOperatorColumn(String[] tdesc, String returnType,
          String className) throws Exception {
@@ -1555,11 +1789,6 @@ public class GenVectorCode extends Task {
     templateString = templateString.replaceAll("<CamelReturnType>", getCamelCaseType(returnType));
     String vectorExprArgType1 = operandType1;
     String vectorExprArgType2 = operandType2;
-    if (operandType1.equals("long") && operandType2.equals("long")) {
-      // Let comparisons occur for DATE and TIMESTAMP, too.
-      vectorExprArgType1 = "int_datetime_family";
-      vectorExprArgType2 = "int_datetime_family";
-    }
     templateString = templateString.replaceAll("<VectorExprArgType1>", vectorExprArgType1);
     templateString = templateString.replaceAll("<VectorExprArgType2>", vectorExprArgType2);
     writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
@@ -1633,11 +1862,6 @@ public class GenVectorCode extends Task {
      templateString = templateString.replaceAll("<CamelReturnType>", getCamelCaseType(returnType));
      String vectorExprArgType1 = operandType1;
      String vectorExprArgType2 = operandType2;
-     if (operandType1.equals("long") && operandType2.equals("long")) {
-       // Let comparisons occur for DATE and TIMESTAMP, too.
-       vectorExprArgType1 = "int_datetime_family";
-       vectorExprArgType2 = "int_datetime_family";
-     }
      templateString = templateString.replaceAll("<VectorExprArgType1>", vectorExprArgType1);
      templateString = templateString.replaceAll("<VectorExprArgType2>", vectorExprArgType2);
      writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
