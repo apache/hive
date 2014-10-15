@@ -37,7 +37,6 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -70,7 +69,6 @@ import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Order;
-import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryProperties;
 import org.apache.hadoop.hive.ql.exec.AbstractMapJoinOperator;
@@ -2710,7 +2708,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   @SuppressWarnings("nls")
   private Integer genColListRegex(String colRegex, String tabAlias,
       ASTNode sel, ArrayList<ExprNodeDesc> col_list,
-      RowResolver input, Integer pos, RowResolver output, List<String> aliases, boolean subQuery)
+      RowResolver input, Integer pos, RowResolver output, List<String> aliases)
       throws SemanticException {
 
     // The table alias should exist
@@ -2768,9 +2766,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           continue;
         }
 
-        if (subQuery) {
-          output.checkColumn(tmp[0], tmp[1]);
-        }
         ColumnInfo oColInfo = inputColsProcessed.get(colInfo);
         if (oColInfo == null) {
           ExprNodeColumnDesc expr = new ExprNodeColumnDesc(colInfo.getType(),
@@ -3396,7 +3391,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       posn++;
     }
 
-    boolean subQuery = qb.getParseInfo().getIsSubQ();
     boolean isInTransform = (selExprList.getChild(posn).getChild(0).getType() ==
         HiveParser.TOK_TRANSFORM);
     if (isInTransform) {
@@ -3434,7 +3428,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
       if (isUDTF && (selectStar = udtfExprType == HiveParser.TOK_FUNCTIONSTAR)) {
         genColListRegex(".*", null, (ASTNode) udtfExpr.getChild(0),
-            col_list, inputRR, pos, out_rwsch, qb.getAliases(), subQuery);
+            col_list, inputRR, pos, out_rwsch, qb.getAliases());
       }
     }
 
@@ -3556,7 +3550,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if (expr.getType() == HiveParser.TOK_ALLCOLREF) {
         pos = genColListRegex(".*", expr.getChildCount() == 0 ? null
             : getUnescapedName((ASTNode) expr.getChild(0)).toLowerCase(),
-            expr, col_list, inputRR, pos, out_rwsch, qb.getAliases(), subQuery);
+            expr, col_list, inputRR, pos, out_rwsch, qb.getAliases());
         selectStar = true;
       } else if (expr.getType() == HiveParser.TOK_TABLE_OR_COL && !hasAsClause
           && !inputRR.getIsExprResolver()
@@ -3565,7 +3559,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         // This can only happen without AS clause
         // We don't allow this for ExprResolver - the Group By case
         pos = genColListRegex(unescapeIdentifier(expr.getChild(0).getText()),
-            null, expr, col_list, inputRR, pos, out_rwsch, qb.getAliases(), subQuery);
+            null, expr, col_list, inputRR, pos, out_rwsch, qb.getAliases());
       } else if (expr.getType() == HiveParser.DOT
           && expr.getChild(0).getType() == HiveParser.TOK_TABLE_OR_COL
           && inputRR.hasTableAlias(unescapeIdentifier(expr.getChild(0)
@@ -3578,7 +3572,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         pos = genColListRegex(unescapeIdentifier(expr.getChild(1).getText()),
             unescapeIdentifier(expr.getChild(0).getChild(0).getText()
                 .toLowerCase()), expr, col_list, inputRR, pos, out_rwsch,
-            qb.getAliases(), subQuery);
+            qb.getAliases());
       } else {
         // Case when this is an expression
         TypeCheckCtx tcCtx = new TypeCheckCtx(inputRR);
@@ -3592,9 +3586,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           colAlias = recommended;
         }
         col_list.add(exp);
-        if (subQuery) {
-          out_rwsch.checkColumn(tabAlias, colAlias);
-        }
 
         ColumnInfo colInfo = new ColumnInfo(getColumnInternalName(pos),
             exp.getWritableObjectInspector(), tabAlias, false);
@@ -8909,24 +8900,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
 
-    // change curr ops row resolver's tab aliases to query alias if it
-    // exists
-    if (qb.getParseInfo().getAlias() != null) {
-      RowResolver rr = opParseCtx.get(curr).getRowResolver();
-      RowResolver newRR = new RowResolver();
-      String alias = qb.getParseInfo().getAlias();
-      for (ColumnInfo colInfo : rr.getColumnInfos()) {
-        String name = colInfo.getInternalName();
-        String[] tmp = rr.reverseLookup(name);
-        if ("".equals(tmp[0]) || tmp[1] == null) {
-          // ast expression is not a valid column name for table
-          tmp[1] = colInfo.getInternalName();
-        }
-        newRR.put(alias, tmp[1], colInfo);
-      }
-      opParseCtx.get(curr).setRowResolver(newRR);
-    }
-
     return curr;
   }
 
@@ -9511,13 +9484,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
-  private Operator genPlan(QBExpr qbexpr) throws SemanticException {
+  private Operator genPlan(QB parent, QBExpr qbexpr) throws SemanticException {
     if (qbexpr.getOpcode() == QBExpr.Opcode.NULLOP) {
-      return genPlan(qbexpr.getQB());
+      boolean skipAmbiguityCheck = viewSelect == null && parent.isTopLevelSelectStarQuery();
+      return genPlan(qbexpr.getQB(), skipAmbiguityCheck);
     }
     if (qbexpr.getOpcode() == QBExpr.Opcode.UNION) {
-      Operator qbexpr1Ops = genPlan(qbexpr.getQBExpr1());
-      Operator qbexpr2Ops = genPlan(qbexpr.getQBExpr2());
+      Operator qbexpr1Ops = genPlan(parent, qbexpr.getQBExpr1());
+      Operator qbexpr2Ops = genPlan(parent, qbexpr.getQBExpr2());
 
       return genUnionPlan(qbexpr.getAlias(), qbexpr.getQBExpr1().getAlias(),
           qbexpr1Ops, qbexpr.getQBExpr2().getAlias(), qbexpr2Ops);
@@ -9525,8 +9499,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return null;
   }
 
-  @SuppressWarnings("nls")
   public Operator genPlan(QB qb) throws SemanticException {
+    return genPlan(qb, false);
+  }
+
+  @SuppressWarnings("nls")
+  public Operator genPlan(QB qb, boolean skipAmbiguityCheck)
+      throws SemanticException {
 
     // First generate all the opInfos for the elements in the from clause
     Map<String, Operator> aliasToOpInfo = new HashMap<String, Operator>();
@@ -9534,8 +9513,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // Recurse over the subqueries to fill the subquery part of the plan
     for (String alias : qb.getSubqAliases()) {
       QBExpr qbexpr = qb.getSubqForAlias(alias);
-      aliasToOpInfo.put(alias, genPlan(qbexpr));
-      qbexpr.setAlias(alias);
+      aliasToOpInfo.put(alias, genPlan(qb, qbexpr));
     }
 
     // Recurse over all the source tables
@@ -9634,8 +9612,36 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       LOG.debug("Created Plan for Query Block " + qb.getId());
     }
 
+    if (qb.getAlias() != null) {
+      rewriteRRForSubQ(qb.getAlias(), bodyOpInfo, skipAmbiguityCheck);
+    }
+
     this.qb = qb;
     return bodyOpInfo;
+  }
+
+  // change curr ops row resolver's tab aliases to subq alias
+  private void rewriteRRForSubQ(String alias, Operator operator, boolean skipAmbiguityCheck)
+      throws SemanticException {
+    RowResolver rr = opParseCtx.get(operator).getRowResolver();
+    RowResolver newRR = new RowResolver();
+    for (ColumnInfo colInfo : rr.getColumnInfos()) {
+      String name = colInfo.getInternalName();
+      String[] tmp = rr.reverseLookup(name);
+      if ("".equals(tmp[0]) || tmp[1] == null) {
+        // ast expression is not a valid column name for table
+        tmp[1] = colInfo.getInternalName();
+      } else if (newRR.get(alias, tmp[1]) != null) {
+        // enforce uniqueness of column names
+        if (!skipAmbiguityCheck) {
+          throw new SemanticException(ErrorMsg.AMBIGUOUS_COLUMN.getMsg(tmp[1] + " in " + alias));
+        }
+        // if it's wrapped by top-level select star query, skip ambiguity check (for backward compatibility)
+        tmp[1] = colInfo.getInternalName();
+      }
+      newRR.put(alias, tmp[1], colInfo);
+    }
+    opParseCtx.get(operator).setRowResolver(newRR);
   }
 
   private Table getDummyTable() throws SemanticException {
@@ -13686,7 +13692,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
               ColumnInfo oColInfo = new ColumnInfo(
                   getColumnInternalName(projsForWindowSelOp.size()), wtp.getValue(), null, false);
               if (false) {
-                out_rwsch.checkColumn(null, wExprSpec.getAlias());
                 out_rwsch.put(null, wExprSpec.getAlias(), oColInfo);
               } else {
                 out_rwsch.putExpression(wExprSpec.getExpression(), oColInfo);
@@ -13823,9 +13828,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         throw new OptiqSemanticException(msg);
       }
 
-      // 4. Determine if select corresponds to a subquery
-      subQuery = qb.getParseInfo().getIsSubQ();
-
       // 4. Bailout if select involves Transform
       boolean isInTransform = (selExprList.getChild(posn).getChild(0).getType() == HiveParser.TOK_TRANSFORM);
       if (isInTransform) {
@@ -13883,8 +13885,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         if (expr.getType() == HiveParser.TOK_ALLCOLREF) {
           pos = genColListRegex(".*",
               expr.getChildCount() == 0 ? null : getUnescapedName((ASTNode) expr.getChild(0))
-                  .toLowerCase(), expr, col_list, inputRR, pos, out_rwsch, tabAliasesForAllProjs,
-              subQuery);
+                  .toLowerCase(), expr, col_list, inputRR, pos, out_rwsch, tabAliasesForAllProjs);
           selectStar = true;
         } else if (expr.getType() == HiveParser.TOK_TABLE_OR_COL && !hasAsClause
             && !inputRR.getIsExprResolver()
@@ -13893,7 +13894,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           // This can only happen without AS clause
           // We don't allow this for ExprResolver - the Group By case
           pos = genColListRegex(unescapeIdentifier(expr.getChild(0).getText()), null, expr,
-              col_list, inputRR, pos, out_rwsch, tabAliasesForAllProjs, subQuery);
+              col_list, inputRR, pos, out_rwsch, tabAliasesForAllProjs);
         } else if (expr.getType() == HiveParser.DOT
             && expr.getChild(0).getType() == HiveParser.TOK_TABLE_OR_COL
             && inputRR.hasTableAlias(unescapeIdentifier(expr.getChild(0).getChild(0).getText()
@@ -13904,7 +13905,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           // We don't allow this for ExprResolver - the Group By case
           pos = genColListRegex(unescapeIdentifier(expr.getChild(1).getText()),
               unescapeIdentifier(expr.getChild(0).getChild(0).getText().toLowerCase()), expr,
-              col_list, inputRR, pos, out_rwsch, tabAliasesForAllProjs, subQuery);
+              col_list, inputRR, pos, out_rwsch, tabAliasesForAllProjs);
         } else if (expr.toStringTree().contains("TOK_FUNCTIONDI") && !(srcRel instanceof HiveAggregateRel)) {
           // Likely a malformed query eg, select hash(distinct c1) from t1;
           throw new OptiqSemanticException("Distinct without an aggreggation.");
@@ -13919,9 +13920,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             colAlias = recommended;
           }
           col_list.add(exp);
-          if (subQuery) {
-            out_rwsch.checkColumn(tabAlias, colAlias);
-          }
 
           ColumnInfo colInfo = new ColumnInfo(getColumnInternalName(pos),
               exp.getWritableObjectInspector(), tabAlias, false);
@@ -13997,7 +13995,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       for (String subqAlias : qb.getSubqAliases()) {
         QBExpr qbexpr = qb.getSubqForAlias(subqAlias);
         aliasToRel.put(subqAlias, genLogicalPlan(qbexpr));
-        qbexpr.setAlias(subqAlias);
       }
 
       // 1.2 Recurse over all the source tables
