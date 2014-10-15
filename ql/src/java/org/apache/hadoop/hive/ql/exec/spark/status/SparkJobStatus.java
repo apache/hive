@@ -28,10 +28,8 @@ public interface SparkJobStatus {
 
   public SparkJobState getState();
 
-  public SparkProgress getSparkJobProgress();
-
   public int[] getStageIds();
 
-  public Map<String, SparkProgress> getSparkStageProgress();
+  public Map<String, SparkStageProgress> getSparkStageProgress();
 
 }
