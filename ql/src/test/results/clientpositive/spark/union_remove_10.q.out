@@ -90,8 +90,8 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (GROUP)
-        Union 3 <- Map 4 (NONE), Map 5 (NONE), Reducer 2 (NONE)
+        Reducer 2 <- Map 1 (GROUP, 1)
+        Union 3 <- Map 4 (NONE, 0), Map 5 (NONE, 0), Reducer 2 (NONE, 0)
 #### A masked pattern was here ####
       Vertices:
         Map 1 

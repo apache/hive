@@ -437,6 +437,8 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
               out.print(dep.getName());
               out.print(" (");
               out.print(dep.getShuffleType());
+              out.print(", ");
+              out.print(dep.getNumPartitions());
               out.print(")");
             }
             out.println();
@@ -446,6 +448,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
               JSONObject jsonDep = new JSONObject();
               jsonDep.put("parent", dep.getName());
               jsonDep.put("type", dep.getShuffleType());
+              jsonDep.put("partitions", dep.getNumPartitions());
               json.accumulate(ent.getKey().toString(), jsonDep);
             }
           }

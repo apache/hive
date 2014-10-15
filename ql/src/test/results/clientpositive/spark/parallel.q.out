@@ -40,8 +40,8 @@ STAGE PLANS:
   Stage: Stage-2
     Spark
       Edges:
-        Reducer 2 <- Map 1 (GROUP)
-        Reducer 3 <- Reducer 2 (GROUP SORT)
+        Reducer 2 <- Map 1 (GROUP, 1)
+        Reducer 3 <- Reducer 2 (GROUP SORT, 1)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -149,6 +149,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@src_a
 POSTHOOK: Output: default@src_b
+POSTHOOK: Lineage: src_a.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_a.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: src_b.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_b.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]

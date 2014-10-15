@@ -26,11 +26,11 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (GROUP)
-        Reducer 4 <- Union 3 (GROUP)
-        Reducer 6 <- Map 5 (GROUP)
-        Reducer 8 <- Map 7 (GROUP)
-        Union 3 <- Reducer 2 (NONE), Reducer 6 (NONE), Reducer 8 (NONE)
+        Reducer 2 <- Map 1 (GROUP, 1)
+        Reducer 4 <- Union 3 (GROUP, 1)
+        Reducer 6 <- Map 5 (GROUP, 1)
+        Reducer 8 <- Map 7 (GROUP, 1)
+        Union 3 <- Reducer 2 (NONE, 0), Reducer 6 (NONE, 0), Reducer 8 (NONE, 0)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
