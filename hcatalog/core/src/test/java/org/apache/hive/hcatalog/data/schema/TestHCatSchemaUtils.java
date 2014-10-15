@@ -35,10 +35,10 @@ public class TestHCatSchemaUtils extends TestCase {
 
   public void testSimpleOperation() throws Exception {
     String typeString = "struct<name:string,studentid:int,"
-        + "contact:struct<phno:string,email:string>,"
+        + "contact:struct<phNo:string,email:string>,"
         + "currently_registered_courses:array<string>,"
         + "current_grades:map<string,string>,"
-        + "phnos:array<struct<phno:string,type:string>>,blah:array<int>>";
+        + "phNos:array<struct<phNo:string,type:string>>,blah:array<int>>";
 
     TypeInfo ti = TypeInfoUtils.getTypeInfoFromTypeString(typeString);
 
@@ -46,8 +46,9 @@ public class TestHCatSchemaUtils extends TestCase {
     LOG.info("Type name : {}", ti.getTypeName());
     LOG.info("HCatSchema : {}", hsch);
     assertEquals(hsch.size(), 1);
-    assertEquals(ti.getTypeName(), hsch.get(0).getTypeString());
-    assertEquals(hsch.get(0).getTypeString(), typeString);
+    // Looks like HCatFieldSchema.getTypeString() lower-cases its results
+    assertEquals(ti.getTypeName().toLowerCase(), hsch.get(0).getTypeString());
+    assertEquals(hsch.get(0).getTypeString(), typeString.toLowerCase());
   }
 
   @SuppressWarnings("unused")
