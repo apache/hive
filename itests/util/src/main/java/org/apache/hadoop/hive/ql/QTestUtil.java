@@ -559,7 +559,7 @@ public class QTestUtil {
          List<Index> indexes = db.getIndexes(dbName, tblName, (short)-1);
           if (indexes != null && indexes.size() > 0) {
             for (Index index : indexes) {
-              db.dropIndex(dbName, tblName, index.getIndexName(), true);
+              db.dropIndex(dbName, tblName, index.getIndexName(), true, true);
             }
           }
         }
