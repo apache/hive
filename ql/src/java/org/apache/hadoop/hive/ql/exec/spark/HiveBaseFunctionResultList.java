@@ -17,19 +17,19 @@
  */
 package org.apache.hadoop.hive.ql.exec.spark;
 
-import com.google.common.base.Preconditions;
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.mapred.OutputCollector;
+
 import scala.Tuple2;
 
-import java.io.IOException;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.NoSuchElementException;
+import com.google.common.base.Preconditions;
 
 /**
  * Base class for
@@ -38,9 +38,10 @@ import java.util.NoSuchElementException;
  *     are processed in lazy fashion i.e when output records are requested
  *     through Iterator interface.
  */
+@SuppressWarnings("rawtypes")
 public abstract class HiveBaseFunctionResultList<T> implements
     Iterable, OutputCollector<HiveKey, BytesWritable>, Serializable {
-
+  private static final long serialVersionUID = -1L;
   private final Iterator<T> inputIterator;
   private boolean isClosed = false;
 
@@ -106,11 +107,9 @@ public abstract class HiveBaseFunctionResultList<T> implements
       while (inputIterator.hasNext() && !processingDone()) {
         try {
           processNextRecord(inputIterator.next());
-          // TODO Current HiveKVResultCache does not support read-then-write,
-          // should not enable lazy execution here. See HIVE-7873
-          // if (lastRecordOutput.hasNext()) {
-          //   return true;
-          // }
+          if (lastRecordOutput.hasNext()) {
+            return true;
+          }
         } catch (IOException ex) {
           // TODO: better handling of exception.
           throw new RuntimeException("Error while processing input.", ex);
