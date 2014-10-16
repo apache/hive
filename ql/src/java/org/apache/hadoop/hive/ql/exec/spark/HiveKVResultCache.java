@@ -17,7 +17,9 @@
  */
 package org.apache.hadoop.hive.ql.exec.spark;
 
-import com.google.common.base.Preconditions;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.persistence.RowContainer;
@@ -32,14 +34,17 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.mapred.Reporter;
+
 import scala.Tuple2;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.google.common.base.Preconditions;
 
 /**
  * Wrapper around {@link org.apache.hadoop.hive.ql.exec.persistence.RowContainer}
+ *
+ * This class is thread safe.
  */
+@SuppressWarnings({"deprecation", "unchecked", "rawtypes"})
 public class HiveKVResultCache {
 
   public static final int IN_MEMORY_CACHE_SIZE = 512;
@@ -47,14 +52,20 @@ public class HiveKVResultCache {
   private static final String COL_TYPES =
       serdeConstants.BINARY_TYPE_NAME + ":" + serdeConstants.BINARY_TYPE_NAME;
 
+  // Used to cache rows added while container is iterated.
+  private RowContainer backupContainer;
+
   private RowContainer container;
+  private Configuration conf;
   private int cursor = 0;
 
   public HiveKVResultCache(Configuration conf) {
-    initRowContainer(conf);
+    container = initRowContainer(conf);
+    this.conf = conf;
   }
 
-  private void initRowContainer(Configuration conf) {
+  private static RowContainer initRowContainer(Configuration conf) {
+    RowContainer container;
     try {
       container = new RowContainer(IN_MEMORY_CACHE_SIZE, conf, Reporter.NULL);
 
@@ -71,6 +82,7 @@ public class HiveKVResultCache {
     } catch(Exception ex) {
       throw new RuntimeException("Failed to create RowContainer", ex);
     }
+    return container;
   }
 
   public void add(HiveKey key, BytesWritable value) {
@@ -80,14 +92,26 @@ public class HiveKVResultCache {
     row.add(wrappedHiveKey);
     row.add(value);
 
-    try {
-      container.addRow(row);
-    } catch (HiveException ex) {
-      throw new RuntimeException("Failed to add KV pair to RowContainer", ex);
+    synchronized (this) {
+      try {
+        if (cursor == 0) {
+          container.addRow(row);
+        } else {
+          if (backupContainer == null) {
+            backupContainer = initRowContainer(conf);
+          }
+          backupContainer.addRow(row);
+        }
+      } catch (HiveException ex) {
+        throw new RuntimeException("Failed to add KV pair to RowContainer", ex);
+      }
     }
   }
 
-  public void clear() {
+  public synchronized void clear() {
+    if (cursor == 0) {
+      return;
+    }
     try {
       container.clearRows();
     } catch(HiveException ex) {
@@ -96,21 +120,34 @@ public class HiveKVResultCache {
     cursor = 0;
   }
 
-  public boolean hasNext() {
-    return container.rowCount() > 0 && cursor < container.rowCount();
+  public synchronized boolean hasNext() {
+    if (container.rowCount() > 0 && cursor < container.rowCount()) {
+      return true;
+    }
+    if (backupContainer == null
+        || backupContainer.rowCount() == 0) {
+      return false;
+    }
+    clear();
+    // Switch containers
+    RowContainer tmp = container;
+    container = backupContainer;
+    backupContainer = tmp;
+    return true;
   }
 
   public Tuple2<HiveKey, BytesWritable> next() {
-    Preconditions.checkState(hasNext());
-
     try {
       List<BytesWritable> row;
-      if (cursor == 0) {
-        row = container.first();
-      } else {
-        row = container.next();
+      synchronized (this) {
+        Preconditions.checkState(hasNext());
+        if (cursor == 0) {
+          row = container.first();
+        } else {
+          row = container.next();
+        }
+        cursor++;
       }
-      cursor++;
       HiveKey key = KryoSerializer.deserialize(row.get(0).getBytes(), HiveKey.class);
       return new Tuple2<HiveKey, BytesWritable>(key, row.get(1));
     } catch (HiveException ex) {
