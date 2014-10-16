@@ -139,8 +139,10 @@ public class Optimizer {
       transformations.add(new AnnotateWithOpTraits());
     }
 
-    transformations.add(new SimpleFetchOptimizer());  // must be called last
-
+    if (!HiveConf.getVar(hiveConf, HiveConf.ConfVars.HIVEFETCHTASKCONVERSION).equals("none")) {
+      transformations.add(new SimpleFetchOptimizer()); // must be called last
+    }
+    
     if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEFETCHTASKAGGR)) {
       transformations.add(new SimpleFetchAggregation());
     }

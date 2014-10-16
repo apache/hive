@@ -1,4 +1,4 @@
--- should fail: hive.fetch.task.conversion accepts minimal or more
+-- should fail: hive.fetch.task.conversion accepts none, minimal or more
 desc src;
 
 set hive.conf.validation=true;

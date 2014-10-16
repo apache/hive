@@ -182,6 +182,29 @@ public class IndexPredicateAnalyzer {
     }
     ExprNodeDesc expr1 = (ExprNodeDesc) nodeOutputs[0];
     ExprNodeDesc expr2 = (ExprNodeDesc) nodeOutputs[1];
+    // We may need to peel off the GenericUDFBridge that is added by CBO or user
+    boolean peelOffGenericUDFBridge = false;
+    while (expr1 instanceof ExprNodeGenericFuncDesc && expr2 instanceof ExprNodeGenericFuncDesc) {
+      GenericUDF udf1 = ((ExprNodeGenericFuncDesc) expr1).getGenericUDF();
+      GenericUDF udf2 = ((ExprNodeGenericFuncDesc) expr2).getGenericUDF();
+      // We assume that GenericUDFBridge that is added by CBO or user if they
+      // have the same udf names.
+      if (udf1.getUdfName() == udf2.getUdfName()) {
+        peelOffGenericUDFBridge = true;
+        expr1 = expr1.getChildren().get(0);
+        expr2 = expr2.getChildren().get(0);
+      } else {
+        break;
+      }
+    }
+    // We also need to update the expr so that the index query can be generated.
+    // Note that, hive does not support UDFToDouble in the query text.
+    if (peelOffGenericUDFBridge) {
+      List<ExprNodeDesc> list = new ArrayList<ExprNodeDesc>();
+      list.add(expr1);
+      list.add(expr2);
+      expr = new ExprNodeGenericFuncDesc(expr.getTypeInfo(), expr.getGenericUDF(), list);
+    }
     ExprNodeDesc[] extracted = ExprNodeDescUtils.extractComparePair(expr1, expr2);
     if (extracted == null || (extracted.length > 2 && !acceptsFields)) {
       return expr;
