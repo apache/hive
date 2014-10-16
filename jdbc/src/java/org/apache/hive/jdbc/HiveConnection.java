@@ -443,6 +443,12 @@ public class HiveConnection implements java.sql.Connection {
     }
     openReq.setConfiguration(openConf);
 
+    // Store the user name in the open request in case no non-sasl authentication
+    if (JdbcConnectionParams.AUTH_SIMPLE.equals(sessConfMap.get(JdbcConnectionParams.AUTH_TYPE))) {
+      openReq.setUsername(sessConfMap.get(JdbcConnectionParams.AUTH_USER));
+      openReq.setPassword(sessConfMap.get(JdbcConnectionParams.AUTH_PASSWD));
+    }
+
     try {
       TOpenSessionResp openResp = client.OpenSession(openReq);
 
