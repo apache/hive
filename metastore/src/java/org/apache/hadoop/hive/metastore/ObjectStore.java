@@ -523,6 +523,34 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public Database getDatabase(String name) throws NoSuchObjectException {
+    try {
+      return getDatabaseInternal(name);
+    } catch (MetaException e) {
+      // Signature restriction to NSOE, and NSOE being a flat exception prevents us from
+      // setting the cause of the NSOE as the MetaException. We should not lose the info
+      // we got here, but it's very likely that the MetaException is irrelevant and is
+      // actually an NSOE message, so we should log it and throw an NSOE with the msg.
+      LOG.warn("Got a MetaException trying to call getDatabase("
+          +name+"), returning NoSuchObjectException", e);
+      throw new NoSuchObjectException(e.getMessage());
+    }
+  }
+
+  public Database getDatabaseInternal(String name) throws MetaException, NoSuchObjectException {
+    return new GetDbHelper(name, null, true, true) {
+      @Override
+      protected Database getSqlResult(GetHelper<Database> ctx) throws MetaException {
+        return directSql.getDatabase(dbName);
+      }
+
+      @Override
+      protected Database getJdoResult(GetHelper<Database> ctx) throws MetaException, NoSuchObjectException {
+        return getJDODatabase(dbName);
+      }
+    }.run(false);
+   }
+
+  public Database getJDODatabase(String name) throws NoSuchObjectException {
     MDatabase mdb = null;
     boolean commited = false;
     try {
@@ -2282,7 +2310,14 @@ public class ObjectStore implements RawStore, Configurable {
       assert allowSql || allowJdo;
       this.allowJdo = allowJdo;
       this.dbName = dbName.toLowerCase();
-      this.tblName = tblName.toLowerCase();
+      if (tblName != null){
+        this.tblName = tblName.toLowerCase();
+      } else {
+        // tblName can be null in cases of Helper being used at a higher
+        // abstraction level, such as with datbases
+        this.tblName = null;
+        this.table = null;
+      }
       this.doTrace = LOG.isDebugEnabled();
       this.isInTxn = isActiveTransaction();
 
@@ -2331,7 +2366,7 @@ public class ObjectStore implements RawStore, Configurable {
     private void start(boolean initTable) throws MetaException, NoSuchObjectException {
       start = doTrace ? System.nanoTime() : 0;
       openTransaction();
-      if (initTable) {
+      if (initTable && (tblName != null)) {
         table = ensureGetTable(dbName, tblName);
       }
     }
@@ -2395,6 +2430,27 @@ public class ObjectStore implements RawStore, Configurable {
     @Override
     protected String describeResult() {
       return results.size() + " entries";
+    }
+  }
+
+  private abstract class GetDbHelper extends GetHelper<Database> {
+    /**
+     * GetHelper for returning db info using directSql/JDO.
+     * Since this is a db-level call, tblName is ignored, and null is passed irrespective of what is passed in.
+     * @param dbName The Database Name
+     * @param tblName Placeholder param to match signature, always ignored.
+     * @param allowSql Whether or not we allow DirectSQL to perform this query.
+     * @param allowJdo Whether or not we allow ORM to perform this query.
+     * @throws MetaException
+     */
+    public GetDbHelper(
+        String dbName, String tblName, boolean allowSql, boolean allowJdo) throws MetaException {
+      super(dbName,null,allowSql,allowJdo);
+    }
+
+    @Override
+    protected String describeResult() {
+      return "db details for db " + dbName;
     }
   }
 
