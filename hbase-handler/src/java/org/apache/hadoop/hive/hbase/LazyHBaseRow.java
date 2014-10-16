@@ -22,13 +22,17 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hive.hbase.ColumnMappings.ColumnMapping;
 import org.apache.hadoop.hive.hbase.struct.HBaseValueFactory;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
+import org.apache.hadoop.hive.serde2.lazy.LazyFactory;
+import org.apache.hadoop.hive.serde2.lazy.LazyLong;
 import org.apache.hadoop.hive.serde2.lazy.LazyObjectBase;
 import org.apache.hadoop.hive.serde2.lazy.LazyStruct;
+import org.apache.hadoop.hive.serde2.lazy.LazyTimestamp;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.LazySimpleStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 
@@ -42,42 +46,47 @@ public class LazyHBaseRow extends LazyStruct {
    * The HBase columns mapping of the row.
    */
   private Result result;
-  private ColumnMapping[] columnsMapping;
   private ArrayList<Object> cachedList;
 
-  private final int iKey;
   private final HBaseKeyFactory keyFactory;
   private final List<HBaseValueFactory> valueFactories;
+  private final ColumnMapping[] columnsMapping;
 
-  public LazyHBaseRow(LazySimpleStructObjectInspector oi) {
-    this(oi, -1, null, null);
+  @VisibleForTesting
+  LazyHBaseRow(LazySimpleStructObjectInspector oi, ColumnMappings columnMappings) {
+    super(oi);
+    this.keyFactory = DefaultHBaseKeyFactory.forTest(null, columnMappings);
+    this.valueFactories = null;
+    this.columnsMapping = columnMappings.getColumnsMapping();
   }
 
   /**
    * Construct a LazyHBaseRow object with the ObjectInspector.
    */
-  public LazyHBaseRow(LazySimpleStructObjectInspector oi, int iKey, HBaseKeyFactory keyFactory,
-      List<HBaseValueFactory> valueFactories) {
+  public LazyHBaseRow(LazySimpleStructObjectInspector oi, HBaseSerDeParameters serdeParams) {
     super(oi);
-    this.iKey = iKey;
-    this.keyFactory = keyFactory;
-    this.valueFactories = valueFactories;
+    this.keyFactory = serdeParams.getKeyFactory();
+    this.valueFactories = serdeParams.getValueFactories();
+    this.columnsMapping = serdeParams.getColumnMappings().getColumnsMapping();
   }
 
   /**
    * Set the HBase row data(a Result writable) for this LazyStruct.
    * @see LazyHBaseRow#init(org.apache.hadoop.hbase.client.Result)
    */
-  public void init(Result r, ColumnMappings columnsMappings) {
+  public void init(Result r) {
     this.result = r;
-    this.columnsMapping = columnsMappings.getColumnsMapping();
     setParsed(false);
   }
 
   @Override
-  protected LazyObjectBase createLazyField(int fieldID, StructField fieldRef) throws SerDeException {
-    if (fieldID == iKey) {
+  protected LazyObjectBase createLazyField(final int fieldID, final StructField fieldRef)
+      throws SerDeException {
+    if (columnsMapping[fieldID].hbaseRowKey) {
       return keyFactory.createKey(fieldRef.getFieldObjectInspector());
+    }
+    if (columnsMapping[fieldID].hbaseTimestamp) {
+      return LazyFactory.createLazyObject(fieldRef.getFieldObjectInspector());
     }
 
     if (valueFactories != null) {
@@ -121,7 +130,6 @@ public class LazyHBaseRow extends LazyStruct {
    * Get the field out of the row without checking whether parsing is needed.
    * This is called by both getField and getFieldsAsList.
    * @param fieldID  The id of the field starting from 0.
-   * @param nullSequence  The sequence representing NULL value.
    * @return  The value of the field
    */
   private Object uncheckedGetField(int fieldID) {
@@ -136,6 +144,14 @@ public class LazyHBaseRow extends LazyStruct {
       if (colMap.hbaseRowKey) {
         ref = new ByteArrayRef();
         ref.setData(result.getRow());
+      } else if (colMap.hbaseTimestamp) {
+        long timestamp = result.rawCells()[0].getTimestamp(); // from hbase-0.96.0
+        LazyObjectBase lz = fields[fieldID];
+        if (lz instanceof LazyTimestamp) {
+          ((LazyTimestamp) lz).getWritableObject().setTime(timestamp);
+        } else {
+          ((LazyLong) lz).getWritableObject().set(timestamp);
+        }
       } else {
         if (colMap.qualifierName == null) {
           // it is a column family

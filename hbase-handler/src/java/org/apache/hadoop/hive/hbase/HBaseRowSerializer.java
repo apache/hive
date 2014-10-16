@@ -35,7 +35,9 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.io.Writable;
 
 public class HBaseRowSerializer {
@@ -45,7 +47,9 @@ public class HBaseRowSerializer {
   private final LazySimpleSerDe.SerDeParameters serdeParam;
 
   private final int keyIndex;
+  private final int timestampIndex;
   private final ColumnMapping keyMapping;
+  private final ColumnMapping timestampMapping;
   private final ColumnMapping[] columnMappings;
   private final byte[] separators;      // the separators array
   private final boolean escaped;        // whether we need to escape the data when writing out
@@ -66,8 +70,10 @@ public class HBaseRowSerializer {
     this.escapeChar = serdeParam.getEscapeChar();
     this.needsEscape = serdeParam.getNeedsEscape();
     this.keyIndex = hbaseParam.getKeyIndex();
+    this.timestampIndex = hbaseParam.getTimestampIndex();
     this.columnMappings = hbaseParam.getColumnMappings().getColumnsMapping();
     this.keyMapping = hbaseParam.getColumnMappings().getKeyMapping();
+    this.timestampMapping = hbaseParam.getColumnMappings().getTimestampMapping();
     this.putTimestamp = hbaseParam.getPutTimestamp();
   }
 
@@ -81,25 +87,36 @@ public class HBaseRowSerializer {
     // Prepare the field ObjectInspectors
     StructObjectInspector soi = (StructObjectInspector) objInspector;
     List<? extends StructField> fields = soi.getAllStructFieldRefs();
-    List<Object> list = soi.getStructFieldsDataAsList(obj);
+    List<Object> values = soi.getStructFieldsDataAsList(obj);
 
     StructField field = fields.get(keyIndex);
-    Object value = list.get(keyIndex);
+    Object value = values.get(keyIndex);
 
     byte[] key = keyFactory.serializeKey(value, field);
     if (key == null) {
       throw new SerDeException("HBase row key cannot be NULL");
     }
+    long timestamp = putTimestamp;
+    if (timestamp < 0 && timestampIndex >= 0) {
+      ObjectInspector inspector = fields.get(timestampIndex).getFieldObjectInspector();
+      value = values.get(timestampIndex);
+      if (inspector instanceof LongObjectInspector) {
+        timestamp = ((LongObjectInspector)inspector).get(value);
+      } else {
+        PrimitiveObjectInspector primitive = (PrimitiveObjectInspector) inspector;
+        timestamp = PrimitiveObjectInspectorUtils.getTimestamp(value, primitive).getTime();
+      }
+    }
 
-    Put put = putTimestamp >= 0 ? new Put(key, putTimestamp) : new Put(key);
+    Put put = timestamp >= 0 ? new Put(key, timestamp) : new Put(key);
 
     // Serialize each field
     for (int i = 0; i < fields.size(); i++) {
-      if (i == keyIndex) {
+      if (i == keyIndex || i == timestampIndex) {
         continue;
       }
       field = fields.get(i);
-      value = list.get(i);
+      value = values.get(i);
       serializeField(value, field, columnMappings[i], put);
     }
 

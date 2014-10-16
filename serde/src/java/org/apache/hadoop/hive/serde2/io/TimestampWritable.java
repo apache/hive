@@ -26,10 +26,7 @@ import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
-import org.apache.hadoop.hive.serde2.ByteStream.Output;
 import org.apache.hadoop.hive.serde2.ByteStream.RandomAccessOutput;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinaryUtils;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinaryUtils.VInt;
@@ -55,7 +52,6 @@ import org.apache.hadoop.io.WritableUtils;
  *
  */
 public class TimestampWritable implements WritableComparable<TimestampWritable> {
-  static final private Log LOG = LogFactory.getLog(TimestampWritable.class);
 
   static final public byte[] nullBytes = {0x0, 0x0, 0x0, 0x0};
 
@@ -123,6 +119,12 @@ public class TimestampWritable implements WritableComparable<TimestampWritable> 
     currentBytes = externalBytes;
 
     clearTimestamp();
+  }
+
+  public void setTime(long time) {
+    timestamp.setTime(time);
+    bytesEmpty = true;
+    timestampEmpty = false;
   }
 
   public void set(Timestamp t) {
@@ -301,7 +303,7 @@ public class TimestampWritable implements WritableComparable<TimestampWritable> 
       seconds = getSeconds();
       nanos = getNanos();
     }
-    return seconds + ((double) nanos) / 1000000000;
+    return seconds + nanos / 1000000000;
   }
 
 
@@ -453,7 +455,7 @@ public class TimestampWritable implements WritableComparable<TimestampWritable> 
 
   /**
    * Writes a Timestamp's serialized value to byte array b at the given offset
-   * @param timestamp to convert to bytes
+   * @param t to convert to bytes
    * @param b destination byte array
    * @param offset destination offset in the byte array
    */
@@ -538,7 +540,7 @@ public class TimestampWritable implements WritableComparable<TimestampWritable> 
 
     // We must ensure the exactness of the double's fractional portion.
     // 0.6 as the fraction part will be converted to 0.59999... and
-    // significantly reduce the savings from binary serializtion
+    // significantly reduce the savings from binary serialization
     BigDecimal bd = new BigDecimal(String.valueOf(f));
     bd = bd.subtract(new BigDecimal(seconds)).multiply(new BigDecimal(1000000000));
     int nanos = bd.intValue();

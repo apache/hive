@@ -49,6 +49,7 @@ public class HBaseSerDe extends AbstractSerDe {
   public static final String HBASE_TABLE_NAME = "hbase.table.name";
   public static final String HBASE_TABLE_DEFAULT_STORAGE_TYPE = "hbase.table.default.storage.type";
   public static final String HBASE_KEY_COL = ":key";
+  public static final String HBASE_TIMESTAMP_COL = ":timestamp";
   public static final String HBASE_PUT_TIMESTAMP = "hbase.put.timestamp";
   public static final String HBASE_COMPOSITE_KEY_CLASS = "hbase.composite.key.class";
   public static final String HBASE_COMPOSITE_KEY_TYPES = "hbase.composite.key.types";
@@ -98,8 +99,7 @@ public class HBaseSerDe extends AbstractSerDe {
                 serdeParams.getValueFactories());
 
     cachedHBaseRow = new LazyHBaseRow(
-        (LazySimpleStructObjectInspector) cachedObjectInspector,
-            serdeParams.getKeyIndex(), serdeParams.getKeyFactory(), serdeParams.getValueFactories());
+        (LazySimpleStructObjectInspector) cachedObjectInspector, serdeParams);
 
     serializer = new HBaseRowSerializer(serdeParams);
 
@@ -135,6 +135,7 @@ public class HBaseSerDe extends AbstractSerDe {
     }
 
     int rowKeyIndex = -1;
+    int timestampIndex = -1;
     List<ColumnMapping> columnsMapping = new ArrayList<ColumnMapping>();
     String[] columnSpecs = columnsMappingSpec.split(",");
 
@@ -160,12 +161,20 @@ public class HBaseSerDe extends AbstractSerDe {
         columnMapping.qualifierName = null;
         columnMapping.qualifierNameBytes = null;
         columnMapping.hbaseRowKey = true;
+      } else if (colInfo.equals(HBASE_TIMESTAMP_COL)) {
+        timestampIndex = i;
+        columnMapping.familyName = colInfo;
+        columnMapping.familyNameBytes = Bytes.toBytes(colInfo);
+        columnMapping.qualifierName = null;
+        columnMapping.qualifierNameBytes = null;
+        columnMapping.hbaseTimestamp = true;
       } else {
         String [] parts = colInfo.split(":");
         assert(parts.length > 0 && parts.length <= 2);
         columnMapping.familyName = parts[0];
         columnMapping.familyNameBytes = Bytes.toBytes(parts[0]);
         columnMapping.hbaseRowKey = false;
+        columnMapping.hbaseTimestamp = false;
 
         if (parts.length == 2) {
 
@@ -205,7 +214,7 @@ public class HBaseSerDe extends AbstractSerDe {
       columnsMapping.add(0, columnMapping);
     }
 
-    return new ColumnMappings(columnsMapping, rowKeyIndex);
+    return new ColumnMappings(columnsMapping, rowKeyIndex, timestampIndex);
   }
 
   public LazySimpleSerDe.SerDeParameters getSerdeParams() {
@@ -228,7 +237,7 @@ public class HBaseSerDe extends AbstractSerDe {
       throw new SerDeException(getClass().getName() + ": expects ResultWritable!");
     }
 
-    cachedHBaseRow.init(((ResultWritable) result).getResult(), serdeParams.getColumnMappings());
+    cachedHBaseRow.init(((ResultWritable) result).getResult());
 
     return cachedHBaseRow;
   }
