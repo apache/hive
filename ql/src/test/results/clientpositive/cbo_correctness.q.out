@@ -19037,3 +19037,71 @@ POSTHOOK: Input: default@t3
 avg	1
 max	1
 min	1
+PREHOOK: query: -- Windowing
+select *, rank() over(partition by key order by value) as rr from src1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
+POSTHOOK: query: -- Windowing
+select *, rank() over(partition by key order by value) as rr from src1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
+		1
+		1
+		1
+		1
+	val_165	5
+	val_193	6
+	val_265	7
+	val_27	8
+	val_409	9
+	val_484	10
+128		1
+146	val_146	1
+150	val_150	1
+213	val_213	1
+224		1
+238	val_238	1
+255	val_255	1
+273	val_273	1
+278	val_278	1
+311	val_311	1
+369		1
+401	val_401	1
+406	val_406	1
+66	val_66	1
+98	val_98	1
+PREHOOK: query: select *, rank() over(partition by key order by value) from src1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
+POSTHOOK: query: select *, rank() over(partition by key order by value) from src1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
+		1
+		1
+		1
+		1
+	val_165	5
+	val_193	6
+	val_265	7
+	val_27	8
+	val_409	9
+	val_484	10
+128		1
+146	val_146	1
+150	val_150	1
+213	val_213	1
+224		1
+238	val_238	1
+255	val_255	1
+273	val_273	1
+278	val_278	1
+311	val_311	1
+369		1
+401	val_401	1
+406	val_406	1
+66	val_66	1
+98	val_98	1
