@@ -128,6 +128,14 @@ public class HBaseSerDeParameters {
     return columnMappings.getKeyMapping();
   }
 
+  public int getTimestampIndex() {
+    return columnMappings.getTimestampIndex();
+  }
+
+  public ColumnMapping getTimestampColumnMapping() {
+    return columnMappings.getTimestampMapping();
+  }
+
   public ColumnMappings getColumnMappings() {
     return columnMappings;
   }
@@ -175,12 +183,12 @@ public class HBaseSerDeParameters {
       throws Exception {
     String factoryClassName = tbl.getProperty(HBaseSerDe.HBASE_COMPOSITE_KEY_FACTORY);
     if (factoryClassName != null) {
-      Class<?> factoryClazz = Class.forName(factoryClassName);
+      Class<?> factoryClazz = job.getClassByName(factoryClassName);
       return (HBaseKeyFactory) ReflectionUtils.newInstance(factoryClazz, job);
     }
     String keyClassName = tbl.getProperty(HBaseSerDe.HBASE_COMPOSITE_KEY_CLASS);
     if (keyClassName != null) {
-      Class<?> keyClass = Class.forName(keyClassName);
+      Class<?> keyClass = job.getClassByName(keyClassName);
       return new CompositeHBaseKeyFactory(keyClass);
     }
     return new DefaultHBaseKeyFactory();
@@ -319,6 +327,10 @@ public class HBaseSerDeParameters {
 
       schemaUrl =
           tbl.getProperty(colMap.familyName + "." + qualifierName + "." + AvroSerdeUtils.SCHEMA_URL);
+    }
+
+    if (serType == null) {
+      throw new IllegalArgumentException("serialization.type property is missing");
     }
 
     String avroSchemaRetClass = tbl.getProperty(AvroSerdeUtils.SCHEMA_RETRIEVER);

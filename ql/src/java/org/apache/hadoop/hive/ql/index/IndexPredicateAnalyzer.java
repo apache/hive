@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.index;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -57,14 +58,14 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseCompare;
 public class IndexPredicateAnalyzer {
 
   private final Set<String> udfNames;
-  private final Set<String> allowedColumnNames;
+  private final Map<String, Set<String>> columnToUDFs;
   private FieldValidator fieldValidator;
 
   private boolean acceptsFields;
 
   public IndexPredicateAnalyzer() {
     udfNames = new HashSet<String>();
-    allowedColumnNames = new HashSet<String>();
+    columnToUDFs = new HashMap<String, Set<String>>();
   }
 
   public void setFieldValidator(FieldValidator fieldValidator) {
@@ -89,7 +90,7 @@ public class IndexPredicateAnalyzer {
    * column names are allowed.)
    */
   public void clearAllowedColumnNames() {
-    allowedColumnNames.clear();
+    columnToUDFs.clear();
   }
 
   /**
@@ -98,7 +99,22 @@ public class IndexPredicateAnalyzer {
    * @param columnName name of column to be allowed
    */
   public void allowColumnName(String columnName) {
-    allowedColumnNames.add(columnName);
+    columnToUDFs.put(columnName, udfNames);
+  }
+
+  /**
+   * add allowed functions per column
+   * @param columnName
+   * @param udfs
+   */
+  public void addComparisonOp(String columnName, String... udfs) {
+    Set<String> allowed = columnToUDFs.get(columnName);
+    if (allowed == null || allowed == udfNames) {
+      // override
+      columnToUDFs.put(columnName, new HashSet<String>(Arrays.asList(udfs)));
+    } else {
+      allowed.addAll(Arrays.asList(udfs));
+    }
   }
 
   /**
@@ -221,12 +237,13 @@ public class IndexPredicateAnalyzer {
       constantDesc = (ExprNodeConstantDesc) extracted[1];
     }
 
-    String udfName = genericUDF.getUdfName();
-    if (!udfNames.contains(genericUDF.getUdfName())) {
+    Set<String> allowed = columnToUDFs.get(columnDesc.getColumn());
+    if (allowed == null) {
       return expr;
     }
 
-    if (!allowedColumnNames.contains(columnDesc.getColumn())) {
+    String udfName = genericUDF.getUdfName();
+    if (!allowed.contains(genericUDF.getUdfName())) {
       return expr;
     }
 
