@@ -138,4 +138,6 @@ insert overwrite table foo_field partition (ds=7) select strct from ab where str
 select s,ds from foo_field where ((ds + s.a) > 0) order by ds,s;
 
 drop table foo_field;
-
+explain select key,value from srcpart where cast(hr as double)  = cast(11 as double);
+explain select key,value from srcpart where hr  = cast(11 as double);
+explain select key,value from srcpart where cast(hr as double)  = 11 ;

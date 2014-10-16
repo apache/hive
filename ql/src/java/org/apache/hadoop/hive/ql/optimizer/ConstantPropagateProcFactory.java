@@ -188,6 +188,14 @@ public final class ConstantPropagateProcFactory {
     return new ExprNodeConstantDesc(ti, convObj);
   }
 
+  public static ExprNodeDesc foldExpr(ExprNodeGenericFuncDesc funcDesc) {
+
+    GenericUDF udf = funcDesc.getGenericUDF();
+    if (!isDeterministicUdf(udf)) {
+      return funcDesc;
+    }
+    return evaluateFunction(funcDesc.getGenericUDF(),funcDesc.getChildren(), funcDesc.getChildren());
+  }
   /**
    * Fold input expression desc.
    *
@@ -279,7 +287,7 @@ public final class ConstantPropagateProcFactory {
             (UDF) Class.forName(bridge.getUdfClassName(), true, Utilities.getSessionSpecifiedClassLoader())
                 .newInstance();
         files = udfInternal.getRequiredFiles();
-        jars = udf.getRequiredJars();
+        jars = udfInternal.getRequiredJars();
       } catch (Exception e) {
         LOG.error("The UDF implementation class '" + udfClassName
             + "' is not present in the class path");
@@ -471,6 +479,16 @@ public final class ConstantPropagateProcFactory {
 
         // FIXME: add null support.
         return null;
+      } else if (desc instanceof ExprNodeGenericFuncDesc) {
+        ExprNodeDesc evaluatedFn = foldExpr((ExprNodeGenericFuncDesc)desc);
+        if (null == evaluatedFn || !(evaluatedFn instanceof ExprNodeConstantDesc)) {
+          return null;
+        }
+        ExprNodeConstantDesc constant = (ExprNodeConstantDesc) evaluatedFn;
+        Object writableValue = PrimitiveObjectInspectorFactory.getPrimitiveJavaObjectInspector(
+          (PrimitiveTypeInfo) constant.getTypeInfo()).getPrimitiveWritableObject(constant.getValue());
+        arguments[i] = new DeferredJavaObject(writableValue);
+        argois[i] = ObjectInspectorUtils.getConstantObjectInspector(constant.getWritableObjectInspector(), writableValue);
       } else {
         return null;
       }
