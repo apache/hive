@@ -45,10 +45,13 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
+import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
@@ -143,13 +146,18 @@ class MetaStoreDirectSql {
   }
 
   /**
-   * See {@link #trySetAnsiQuotesForMysql()}.
+   * This function is intended to be called by functions before they put together a query
+   * Thus, any query-specific instantiation to be done from within the transaction is done
+   * here - for eg., for MySQL, we signal that we want to use ANSI SQL quoting behaviour
    */
-  private void setAnsiQuotesForMysql() throws MetaException {
-    try {
-      trySetAnsiQuotesForMysql();
-    } catch (SQLException sqlEx) {
-      throw new MetaException("Error setting ansi quotes: " + sqlEx.getMessage());
+  private void doDbSpecificInitializationsBeforeQuery() throws MetaException {
+    if (isMySql){
+      try {
+        assert pm.currentTransaction().isActive(); // must be inside tx together with queries
+        trySetAnsiQuotesForMysql();
+      } catch (SQLException sqlEx) {
+        throw new MetaException("Error setting ansi quotes: " + sqlEx.getMessage());
+      }
     }
   }
 
@@ -168,6 +176,78 @@ class MetaStoreDirectSql {
       timingTrace(doTrace, queryText, start, doTrace ? System.nanoTime() : 0);
     } finally {
       jdoConn.close(); // We must release the connection before we call other pm methods.
+    }
+  }
+
+  public Database getDatabase(String dbName) throws MetaException{
+    Query queryDbSelector = null;
+    Query queryDbParams = null;
+    try {
+      dbName = dbName.toLowerCase();
+
+      doDbSpecificInitializationsBeforeQuery();
+
+      String queryTextDbSelector= "select "
+          + "\"DB_ID\", \"NAME\", \"DB_LOCATION_URI\", \"DESC\", "
+          + "\"OWNER_NAME\", \"OWNER_TYPE\" "
+          + "FROM \"DBS\" where \"NAME\" = ? ";
+      Object[] params = new Object[] { dbName };
+      queryDbSelector = pm.newQuery("javax.jdo.query.SQL", queryTextDbSelector);
+
+      LOG.debug("getDatabase:query instantiated : " + queryTextDbSelector + " with param ["+params[0]+"]");
+
+      List<Object[]> sqlResult = (List<Object[]>)queryDbSelector.executeWithArray(params);
+      if ((sqlResult == null) || sqlResult.isEmpty()) {
+        LOG.debug("getDatabase:queryDbSelector ran, returned no/empty results, returning NoSuchObjectException");
+        throw new MetaException("There is no database named " + dbName);
+      }
+
+      assert(sqlResult.size() == 1);
+      if (sqlResult.get(0) == null){
+        LOG.debug("getDatabase:queryDbSelector ran, returned results, but the result entry was null, returning NoSuchObjectException");
+        throw new MetaException("There is no database named " + dbName);
+      }
+
+      Object[] dbline = sqlResult.get(0);
+      Long dbid = StatObjectConverter.extractSqlLong(dbline[0]);
+
+      String queryTextDbParams = "select \"PARAM_KEY\", \"PARAM_VALUE\" "
+          + " FROM \"DATABASE_PARAMS\" "
+          + " WHERE \"DB_ID\" = ? "
+          + " AND \"PARAM_KEY\" IS NOT NULL";
+      Object[] params2 = new Object[] { dbid };
+      queryDbParams = pm.newQuery("javax.jdo.query.SQL",queryTextDbParams);
+      LOG.debug("getDatabase:query2 instantiated : " + queryTextDbParams + " with param ["+params2[0]+"]");
+
+      Map<String,String> dbParams = new HashMap<String,String>();
+      List<Object[]> sqlResult2 = ensureList(queryDbParams.executeWithArray(params2));
+      if (!sqlResult2.isEmpty()){
+        for (Object[] line : sqlResult2){
+          dbParams.put(extractSqlString(line[0]),extractSqlString(line[1]));
+        }
+      }
+      LOG.debug("getDatabase: instantiating db object to return");
+      Database db = new Database();
+      db.setName(extractSqlString(dbline[1]));
+      db.setLocationUri(extractSqlString(dbline[2]));
+      db.setDescription(extractSqlString(dbline[3]));
+      db.setOwnerName(extractSqlString(dbline[4]));
+      String type = extractSqlString(dbline[5]);
+      db.setOwnerType((null == type || type.trim().isEmpty()) ? null : PrincipalType.valueOf(type));
+      db.setParameters(dbParams);
+      if (LOG.isDebugEnabled()){
+        LOG.debug("getDatabase: directsql returning db " + db.getName()
+            + " locn["+db.getLocationUri()  +"] desc [" +db.getDescription()
+            + "] owner [" + db.getOwnerName() + "] ownertype ["+ db.getOwnerType() +"]");
+      }
+      return db;
+    } finally {
+      if (queryDbSelector != null){
+        queryDbSelector.closeAll();
+      }
+      if (queryDbParams != null){
+        queryDbParams.closeAll();
+      }
     }
   }
 
@@ -260,10 +340,8 @@ class MetaStoreDirectSql {
     tblName = tblName.toLowerCase();
     // We have to be mindful of order during filtering if we are not returning all partitions.
     String orderForFilter = (max != null) ? " order by \"PART_NAME\" asc" : "";
-    if (isMySql) {
-      assert pm.currentTransaction().isActive();
-      setAnsiQuotesForMysql(); // must be inside tx together with queries
-    }
+
+    doDbSpecificInitializationsBeforeQuery();
 
     // Get all simple fields for partitions and related objects, which we can map one-on-one.
     // We will do this in 2 queries to use different existing indices for each one.
@@ -619,6 +697,11 @@ class MetaStoreDirectSql {
 
   private int extractSqlInt(Object field) {
     return ((Number)field).intValue();
+  }
+
+  private String extractSqlString(Object value) {
+    if (value == null) return null;
+    return value.toString();
   }
 
   private static String trimCommaList(StringBuilder sb) {
