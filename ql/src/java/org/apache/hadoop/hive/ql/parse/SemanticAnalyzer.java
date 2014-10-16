@@ -2707,7 +2707,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   @SuppressWarnings("nls")
   private Integer genColListRegex(String colRegex, String tabAlias,
-      ASTNode sel, ArrayList<ExprNodeDesc> col_list,
+      ASTNode sel, ArrayList<ExprNodeDesc> col_list, HashSet<ColumnInfo> excludeCols,
       RowResolver input, Integer pos, RowResolver output, List<String> aliases)
       throws SemanticException {
 
@@ -2749,6 +2749,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // from the input schema
       for (Map.Entry<String, ColumnInfo> entry : fMap.entrySet()) {
         ColumnInfo colInfo = entry.getValue();
+        if (excludeCols != null && excludeCols.contains(colInfo)) {
+          continue; // This was added during plan generation.
+        }
         String name = colInfo.getInternalName();
         String[] tmp = input.reverseLookup(name);
 
@@ -3428,7 +3431,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
       if (isUDTF && (selectStar = udtfExprType == HiveParser.TOK_FUNCTIONSTAR)) {
         genColListRegex(".*", null, (ASTNode) udtfExpr.getChild(0),
-            col_list, inputRR, pos, out_rwsch, qb.getAliases());
+            col_list, null, inputRR, pos, out_rwsch, qb.getAliases());
       }
     }
 
@@ -3550,7 +3553,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if (expr.getType() == HiveParser.TOK_ALLCOLREF) {
         pos = genColListRegex(".*", expr.getChildCount() == 0 ? null
             : getUnescapedName((ASTNode) expr.getChild(0)).toLowerCase(),
-            expr, col_list, inputRR, pos, out_rwsch, qb.getAliases());
+            expr, col_list, null, inputRR, pos, out_rwsch, qb.getAliases());
         selectStar = true;
       } else if (expr.getType() == HiveParser.TOK_TABLE_OR_COL && !hasAsClause
           && !inputRR.getIsExprResolver()
@@ -3559,7 +3562,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         // This can only happen without AS clause
         // We don't allow this for ExprResolver - the Group By case
         pos = genColListRegex(unescapeIdentifier(expr.getChild(0).getText()),
-            null, expr, col_list, inputRR, pos, out_rwsch, qb.getAliases());
+            null, expr, col_list, null, inputRR, pos, out_rwsch, qb.getAliases());
       } else if (expr.getType() == HiveParser.DOT
           && expr.getChild(0).getType() == HiveParser.TOK_TABLE_OR_COL
           && inputRR.hasTableAlias(unescapeIdentifier(expr.getChild(0)
@@ -3570,9 +3573,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         // This can only happen without AS clause
         // We don't allow this for ExprResolver - the Group By case
         pos = genColListRegex(unescapeIdentifier(expr.getChild(1).getText()),
-            unescapeIdentifier(expr.getChild(0).getChild(0).getText()
-                .toLowerCase()), expr, col_list, inputRR, pos, out_rwsch,
-            qb.getAliases());
+            unescapeIdentifier(expr.getChild(0).getChild(0).getText().toLowerCase()),
+             expr, col_list, null, inputRR, pos, out_rwsch, qb.getAliases());
       } else {
         // Case when this is an expression
         TypeCheckCtx tcCtx = new TypeCheckCtx(inputRR);
@@ -13660,50 +13662,46 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       return new Pair(w, wHiveRetType);
     }
 
-    private RelNode genSelectForWindowing(QB qb, RelNode srcRel) throws SemanticException {
-      RelNode selOpForWindow = null;
+    private RelNode genSelectForWindowing(
+        QB qb, RelNode srcRel, HashSet<ColumnInfo> newColumns) throws SemanticException {
       QBParseInfo qbp = getQBParseInfo(qb);
       WindowingSpec wSpec = (!qb.getAllWindowingSpecs().isEmpty()) ? qb.getAllWindowingSpecs()
           .values().iterator().next() : null;
+      if (wSpec == null) return null;
+      // 1. Get valid Window Function Spec
+      wSpec.validateAndMakeEffective();
+      List<WindowExpressionSpec> windowExpressions = wSpec.getWindowExpressions();
+      if (windowExpressions == null || windowExpressions.isEmpty()) return null;
 
-      if (wSpec != null) {
-        // 1. Get valid Window Function Spec
-        wSpec.validateAndMakeEffective();
-        List<WindowExpressionSpec> windowExpressions = wSpec.getWindowExpressions();
+      RowResolver inputRR = this.relToHiveRR.get(srcRel);
+      // 2. Get RexNodes for original Projections from below
+      List<RexNode> projsForWindowSelOp = new ArrayList<RexNode>(
+          HiveOptiqUtil.getProjsFromBelowAsInputRef(srcRel));
 
-        if (windowExpressions != null && !windowExpressions.isEmpty()) {
-          RowResolver inputRR = this.relToHiveRR.get(srcRel);
-          // 2. Get RexNodes for original Projections from below
-          List<RexNode> projsForWindowSelOp = new ArrayList<RexNode>(
-              HiveOptiqUtil.getProjsFromBelowAsInputRef(srcRel));
+      // 3. Construct new Row Resolver with everything from below.
+      RowResolver out_rwsch = new RowResolver();
+      RowResolver.add(out_rwsch, inputRR, 0);
 
-          // 3. Construct new Row Resolver with everything from below.
-          RowResolver out_rwsch = new RowResolver();
-          RowResolver.add(out_rwsch, inputRR, 0);
+      // 4. Walk through Window Expressions & Construct RexNodes for those,
+      // Update out_rwsch
+      for (WindowExpressionSpec wExprSpec : windowExpressions) {
+        if (out_rwsch.getExpression(wExprSpec.getExpression()) == null) {
+          Pair<RexNode, TypeInfo> wtp = genWindowingProj(qb, wExprSpec, srcRel);
+          projsForWindowSelOp.add(wtp.getKey());
 
-          // 4. Walk through Window Expressions & Construct RexNodes for those,
-          // Update out_rwsch
-          for (WindowExpressionSpec wExprSpec : windowExpressions) {
-            if (out_rwsch.getExpression(wExprSpec.getExpression()) == null) {
-              Pair<RexNode, TypeInfo> wtp = genWindowingProj(qb, wExprSpec, srcRel);
-              projsForWindowSelOp.add(wtp.getKey());
-
-              // 6.2.2 Update Output Row Schema
-              ColumnInfo oColInfo = new ColumnInfo(
-                  getColumnInternalName(projsForWindowSelOp.size()), wtp.getValue(), null, false);
-              if (false) {
-                out_rwsch.put(null, wExprSpec.getAlias(), oColInfo);
-              } else {
-                out_rwsch.putExpression(wExprSpec.getExpression(), oColInfo);
-              }
-            }
+          // 6.2.2 Update Output Row Schema
+          ColumnInfo oColInfo = new ColumnInfo(
+              getColumnInternalName(projsForWindowSelOp.size()), wtp.getValue(), null, false);
+          if (false) {
+            out_rwsch.put(null, wExprSpec.getAlias(), oColInfo);
+          } else {
+            out_rwsch.putExpression(wExprSpec.getExpression(), oColInfo);
           }
-
-          selOpForWindow = genSelectRelNode(projsForWindowSelOp, out_rwsch, srcRel);
+          newColumns.add(oColInfo);
         }
       }
 
-      return selOpForWindow;
+      return genSelectRelNode(projsForWindowSelOp, out_rwsch, srcRel);
     }
 
     private RelNode genSelectRelNode(List<RexNode> optiqColLst, RowResolver out_rwsch,
@@ -13792,9 +13790,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
      * @throws SemanticException
      */
     private RelNode genSelectLogicalPlan(QB qb, RelNode srcRel) throws SemanticException {
-
       // 0. Generate a Select Node for Windowing
-      RelNode selForWindow = genSelectForWindowing(qb, srcRel);
+      //    Exclude the newly-generated select columns from */etc. resolution.
+      HashSet<ColumnInfo> excludedColumns = new HashSet<ColumnInfo>();
+      RelNode selForWindow = genSelectForWindowing(qb, srcRel, excludedColumns);
       srcRel = (selForWindow == null) ? srcRel : selForWindow;
 
       boolean subQuery;
@@ -13885,7 +13884,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         if (expr.getType() == HiveParser.TOK_ALLCOLREF) {
           pos = genColListRegex(".*",
               expr.getChildCount() == 0 ? null : getUnescapedName((ASTNode) expr.getChild(0))
-                  .toLowerCase(), expr, col_list, inputRR, pos, out_rwsch, tabAliasesForAllProjs);
+                  .toLowerCase(), expr, col_list, excludedColumns, inputRR, pos, out_rwsch,
+                  tabAliasesForAllProjs);
           selectStar = true;
         } else if (expr.getType() == HiveParser.TOK_TABLE_OR_COL && !hasAsClause
             && !inputRR.getIsExprResolver()
@@ -13894,7 +13894,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           // This can only happen without AS clause
           // We don't allow this for ExprResolver - the Group By case
           pos = genColListRegex(unescapeIdentifier(expr.getChild(0).getText()), null, expr,
-              col_list, inputRR, pos, out_rwsch, tabAliasesForAllProjs);
+              col_list, excludedColumns, inputRR, pos, out_rwsch, tabAliasesForAllProjs);
         } else if (expr.getType() == HiveParser.DOT
             && expr.getChild(0).getType() == HiveParser.TOK_TABLE_OR_COL
             && inputRR.hasTableAlias(unescapeIdentifier(expr.getChild(0).getChild(0).getText()
@@ -13905,7 +13905,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           // We don't allow this for ExprResolver - the Group By case
           pos = genColListRegex(unescapeIdentifier(expr.getChild(1).getText()),
               unescapeIdentifier(expr.getChild(0).getChild(0).getText().toLowerCase()), expr,
-              col_list, inputRR, pos, out_rwsch, tabAliasesForAllProjs);
+              col_list, excludedColumns, inputRR, pos, out_rwsch, tabAliasesForAllProjs);
         } else if (expr.toStringTree().contains("TOK_FUNCTIONDI") && !(srcRel instanceof HiveAggregateRel)) {
           // Likely a malformed query eg, select hash(distinct c1) from t1;
           throw new OptiqSemanticException("Distinct without an aggreggation.");
