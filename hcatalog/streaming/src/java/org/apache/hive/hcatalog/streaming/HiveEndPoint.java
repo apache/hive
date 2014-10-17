@@ -130,11 +130,16 @@ public class HiveEndPoint {
   }
 
   /**
-   * Acquire a new connection to MetaStore for streaming
+   * Acquire a new connection to MetaStore for streaming. To connect using Kerberos,
+   *   'authenticatedUser' argument should have been used to do a kerberos login.  Additionally the
+   *   'hive.metastore.kerberos.principal' setting should be set correctly either in hive-site.xml or
+   *    in the 'conf' argument (if not null). If using hive-site.xml, it should be in classpath.
+   *
    * @param createPartIfNotExists If true, the partition specified in the endpoint
    *                              will be auto created if it does not exist
+   * @param conf               HiveConf object to be used for the connection. Can be null.
    * @param authenticatedUser  UserGroupInformation object obtained from successful authentication.
-   *                           Uses insecure mode if this argument is null.
+   *                           Uses non-secure mode if this argument is null.
    * @return
    * @throws ConnectionError if there is a connection problem
    * @throws InvalidPartition  if specified partition is not valid (createPartIfNotExists = false)
