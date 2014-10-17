@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.serde2.lazy;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -31,10 +30,10 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractEncodingAwareSerDe;
-import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.ByteStream;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.SerDeSpec;
 import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
@@ -64,6 +63,14 @@ import org.apache.hadoop.io.Writable;
  * Also LazySimpleSerDe outputs typed columns instead of treating all columns as
  * String like MetadataTypedColumnsetSerDe.
  */
+@SerDeSpec(schemaProps = {
+    serdeConstants.LIST_COLUMNS, serdeConstants.LIST_COLUMN_TYPES,
+    serdeConstants.FIELD_DELIM, serdeConstants.COLLECTION_DELIM, serdeConstants.MAPKEY_DELIM,
+    serdeConstants.SERIALIZATION_FORMAT, serdeConstants.SERIALIZATION_NULL_FORMAT,
+    serdeConstants.SERIALIZATION_LAST_COLUMN_TAKES_REST,
+    serdeConstants.ESCAPE_CHAR,
+    serdeConstants.SERIALIZATION_ENCODING,
+    LazySimpleSerDe.SERIALIZATION_EXTEND_NESTING_LEVELS})
 public class LazySimpleSerDe extends AbstractEncodingAwareSerDe {
 
   public static final Log LOG = LogFactory.getLog(LazySimpleSerDe.class

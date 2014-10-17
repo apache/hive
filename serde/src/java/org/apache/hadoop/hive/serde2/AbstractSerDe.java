@@ -113,10 +113,6 @@ public abstract class AbstractSerDe implements SerDe {
    * @return The error messages in the configuration which are empty if no error occurred
    */
   public String getConfigurationErrors() {
-    if (configErrors == null || configErrors.isEmpty()) {
-      return "";
-    } else {
-      return configErrors;
-    }
+    return configErrors == null ? "" : configErrors;
   }
 }

@@ -33,3 +33,32 @@ DROP TABLE table4;
 
 CREATE EXTERNAL TABLE table4 (a INT) LOCATION '${system:hive.root}/data/files/ext_test';
 SELECT * FROM table4;
+
+CREATE TABLE doctors STORED AS AVRO TBLPROPERTIES ('avro.schema.literal'='{
+  "namespace": "testing.hive.avro.serde",
+  "name": "doctors",
+  "type": "record",
+  "fields": [
+    {
+      "name":"number",
+      "type":"int",
+      "doc":"Order of playing the role"
+    },
+    {
+      "name":"first_name",
+      "type":"string",
+      "doc":"first name of actor playing role"
+    },
+    {
+      "name":"last_name",
+      "type":"string",
+      "doc":"last name of actor playing role"
+    }
+  ]
+}');
+
+alter table doctors set tblproperties ('k1'='v1', 'k2'='v2');
+DESCRIBE FORMATTED doctors;
+
+CREATE TABLE doctors2 like doctors;
+DESCRIBE FORMATTED doctors2;

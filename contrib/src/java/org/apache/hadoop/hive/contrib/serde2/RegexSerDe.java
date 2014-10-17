@@ -31,6 +31,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.SerDeSpec;
 import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
@@ -70,9 +71,17 @@ import org.apache.hadoop.io.Writable;
  * writableStringObjectInspector. We should switch to that when we have a UTF-8
  * based Regex library.
  */
+@SerDeSpec(schemaProps = {
+    serdeConstants.LIST_COLUMNS, serdeConstants.LIST_COLUMN_TYPES,
+    RegexSerDe.INPUT_REGEX, RegexSerDe.OUTPUT_FORMAT_STRING,
+    RegexSerDe.INPUT_REGEX_CASE_SENSITIVE })
 public class RegexSerDe extends AbstractSerDe {
 
   public static final Log LOG = LogFactory.getLog(RegexSerDe.class.getName());
+
+  public static final String INPUT_REGEX = "input.regex";
+  public static final String OUTPUT_FORMAT_STRING = "output.format.string";
+  public static final String INPUT_REGEX_CASE_SENSITIVE = "input.regex.case.insensitive";
 
   int numColumns;
   String inputRegex;
@@ -90,12 +99,12 @@ public class RegexSerDe extends AbstractSerDe {
     // We can get the table definition from tbl.
 
     // Read the configuration parameters
-    inputRegex = tbl.getProperty("input.regex");
-    outputFormatString = tbl.getProperty("output.format.string");
+    inputRegex = tbl.getProperty(INPUT_REGEX);
+    outputFormatString = tbl.getProperty(OUTPUT_FORMAT_STRING);
     String columnNameProperty = tbl.getProperty(serdeConstants.LIST_COLUMNS);
     String columnTypeProperty = tbl.getProperty(serdeConstants.LIST_COLUMN_TYPES);
     boolean inputRegexIgnoreCase = "true".equalsIgnoreCase(tbl
-        .getProperty("input.regex.case.insensitive"));
+        .getProperty(INPUT_REGEX_CASE_SENSITIVE));
 
     // Parse the configuration parameters
     if (inputRegex != null) {
@@ -258,6 +267,7 @@ public class RegexSerDe extends AbstractSerDe {
     return outputRowText;
   }
 
+  @Override
   public SerDeStats getSerDeStats() {
     // no support for statistics
     return null;
