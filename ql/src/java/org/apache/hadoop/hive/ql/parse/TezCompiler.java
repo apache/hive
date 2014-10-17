@@ -306,7 +306,9 @@ public class TezCompiler extends TaskCompiler {
 
     // need a new run of the constant folding because we might have created lots
     // of "and true and true" conditions.
-    new ConstantPropagate().transform(procCtx.parseContext);
+    if(procCtx.conf.getBoolVar(ConfVars.HIVEOPTCONSTANTPROPAGATION)) {
+      new ConstantPropagate().transform(procCtx.parseContext);
+    }
   }
 
   @Override
