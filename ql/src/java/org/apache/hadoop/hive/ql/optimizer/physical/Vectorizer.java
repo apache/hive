@@ -1040,6 +1040,10 @@ public class Vectorizer implements PhysicalPlanResolver {
         return false;    
       }
       if (desc.getKeys().size() > 0) {
+        if (op.getParentOperators().size() > 0) {
+          LOG.info("Reduce vector mode can only handle a key group GROUP BY operator when it is fed by reduce-shuffle");
+          return false;
+        }
         LOG.info("Reduce-side GROUP BY will process key groups");
         vectorDesc.setVectorGroupBatches(true);
       } else {
