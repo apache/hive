@@ -57,6 +57,8 @@ import org.apache.hadoop.hive.ql.plan.UnionWork;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 
+import static org.apache.hadoop.hive.ql.plan.ReduceSinkDesc.ReducerTraits.AUTOPARALLEL;
+
 /**
  * GenTezUtils is a collection of shared helper methods to produce
  * TezWork
@@ -117,7 +119,7 @@ public class GenTezUtils {
 
     reduceWork.setNumReduceTasks(reduceSink.getConf().getNumReducers());
 
-    if (isAutoReduceParallelism && reduceSink.getConf().isAutoParallel()) {
+    if (isAutoReduceParallelism && reduceSink.getConf().getReducerTraits().contains(AUTOPARALLEL)) {
       reduceWork.setAutoReduceParallelism(true);
 
       // configured limit for reducers

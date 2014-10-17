@@ -429,6 +429,14 @@
                      </void> 
                     </object> 
                    </void> 
+                   <void property="reducerTraits">
+                    <void method="clear"/>
+                    <void method="add">
+                     <object class="org.apache.hadoop.hive.ql.plan.ReduceSinkDesc$ReducerTraits" method="valueOf">
+                      <string>UNSET</string>
+                     </object>
+                    </void>
+                   </void>
                    <void property="tag"> 
                     <int>-1</int> 
                    </void> 
