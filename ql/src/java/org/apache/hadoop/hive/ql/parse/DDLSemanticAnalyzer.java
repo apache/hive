@@ -1017,7 +1017,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     rootTasks.add(truncateTask);
   }
 
-  private boolean isFullSpec(Table table, Map<String, String> partSpec) {
+  public static boolean isFullSpec(Table table, Map<String, String> partSpec) {
     for (FieldSchema partCol : table.getPartCols()) {
       if (partSpec.get(partCol.getName()) == null) {
         return false;
@@ -1387,11 +1387,21 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       // ReadEntity as no lock.
       re.noLockNeeded();
       inputs.add(re);
-      if (desc == null || desc.getOp() != AlterTableDesc.AlterTableTypes.ALTERPROTECTMODE) {
+
+      if (isFullSpec(tab, partSpec)) {
+        // Fully specified partition spec
         Partition part = getPartition(tab, partSpec, true);
-        outputs.add(new WriteEntity(part, writeType));
-      }
-      else {
+        outputs.add(new WriteEntity(part, writeType));        
+      } else {
+        // Partial partition spec supplied. Make sure this is allowed.
+        if (desc == null
+            || !AlterTableDesc.doesAlterTableTypeSupportPartialPartitionSpec(desc.getOp())) {
+          throw new SemanticException(
+              ErrorMsg.ALTER_TABLE_TYPE_PARTIAL_PARTITION_SPEC_NO_SUPPORTED, desc.getOp().name());
+        } else if (!conf.getBoolVar(HiveConf.ConfVars.DYNAMICPARTITIONING)) {
+          throw new SemanticException(ErrorMsg.DYNAMIC_PARTITION_DISABLED);
+        }
+
         for (Partition part : getPartitions(tab, partSpec, true)) {
           outputs.add(new WriteEntity(part, writeType));
         }

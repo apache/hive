@@ -88,6 +88,7 @@ import org.apache.hadoop.hive.ql.metadata.formatting.MetaDataFormatUtils;
 import org.apache.hadoop.hive.ql.metadata.formatting.MetaDataFormatter;
 import org.apache.hadoop.hive.ql.parse.AlterTablePartMergeFilesDesc;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
+import org.apache.hadoop.hive.ql.parse.DDLSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
 import org.apache.hadoop.hive.ql.plan.AlterDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.AlterIndexDesc;
@@ -3279,22 +3280,77 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     // alter the table
     Table tbl = db.getTable(alterTbl.getOldName());
 
-    Partition part = null;
     List<Partition> allPartitions = null;
     if (alterTbl.getPartSpec() != null) {
-      if (alterTbl.getOp() != AlterTableDesc.AlterTableTypes.ALTERPROTECTMODE) {
-        part = db.getPartition(tbl, alterTbl.getPartSpec(), false);
+      Map<String, String> partSpec = alterTbl.getPartSpec(); 
+      if (DDLSemanticAnalyzer.isFullSpec(tbl, partSpec)) {
+        allPartitions = new ArrayList<Partition>();
+        Partition part = db.getPartition(tbl, partSpec, false);
         if (part == null) {
+          // User provided a fully specified partition spec but it doesn't exist, fail.
           throw new HiveException(ErrorMsg.INVALID_PARTITION,
-              StringUtils.join(alterTbl.getPartSpec().keySet(), ',') + " for table " + alterTbl.getOldName());
+                StringUtils.join(alterTbl.getPartSpec().keySet(), ',') + " for table " + alterTbl.getOldName());
+
         }
-      }
-      else {
+        allPartitions.add(part);
+      } else {
+        // DDLSemanticAnalyzer has already checked if partial partition specs are allowed,
+        // thus we should not need to check it here.
         allPartitions = db.getPartitions(tbl, alterTbl.getPartSpec());
       }
     }
 
     Table oldTbl = tbl.copy();
+    if (allPartitions != null) {
+      // Alter all partitions
+      for (Partition part : allPartitions) {
+        alterTableOrSinglePartition(alterTbl, tbl, part);
+      }
+    } else {
+      // Just alter the table
+      alterTableOrSinglePartition(alterTbl, tbl, null);
+    }
+
+    if (allPartitions == null) {
+      updateModifiedParameters(tbl.getTTable().getParameters(), conf);
+      tbl.checkValidity();
+    } else {
+      for (Partition tmpPart: allPartitions) {
+        updateModifiedParameters(tmpPart.getParameters(), conf);
+      }
+    }
+
+    try {
+      if (allPartitions == null) {
+        db.alterTable(alterTbl.getOldName(), tbl);
+      } else {
+        db.alterPartitions(tbl.getTableName(), allPartitions);
+      }
+    } catch (InvalidOperationException e) {
+      LOG.error("alter table: " + stringifyException(e));
+      throw new HiveException(e, ErrorMsg.GENERIC_ERROR);
+    }
+
+    // This is kind of hacky - the read entity contains the old table, whereas
+    // the write entity
+    // contains the new table. This is needed for rename - both the old and the
+    // new table names are
+    // passed
+    // Don't acquire locks for any of these, we have already asked for them in DDLSemanticAnalyzer.
+    if (allPartitions != null ) {
+      for (Partition tmpPart: allPartitions) {
+        work.getInputs().add(new ReadEntity(tmpPart));
+        work.getOutputs().add(new WriteEntity(tmpPart, WriteEntity.WriteType.DDL_NO_LOCK));
+      }
+    } else {
+      work.getInputs().add(new ReadEntity(oldTbl));
+      work.getOutputs().add(new WriteEntity(tbl, WriteEntity.WriteType.DDL_NO_LOCK));
+    }
+    return 0;
+  }
+
+  private int alterTableOrSinglePartition(AlterTableDesc alterTbl, Table tbl, Partition part)
+      throws HiveException {
     List<FieldSchema> oldCols = (part == null ? tbl.getCols() : part.getCols());
     StorageDescriptor sd = (part == null ? tbl.getTTable().getSd() : part.getTPartition().getSd());
 
@@ -3440,12 +3496,10 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       AlterTableDesc.ProtectModeType protectMode = alterTbl.getProtectModeType();
 
       ProtectMode mode = null;
-      if (allPartitions != null) {
-        for (Partition tmpPart: allPartitions) {
-          mode = tmpPart.getProtectMode();
-          setAlterProtectMode(protectModeEnable, protectMode, mode);
-          tmpPart.setProtectMode(mode);
-        }
+      if (part != null) {
+        mode = part.getProtectMode();
+        setAlterProtectMode(protectModeEnable, protectMode, mode);
+        part.setProtectMode(mode);
       } else {
         mode = tbl.getProtectMode();
         setAlterProtectMode(protectModeEnable,protectMode, mode);
@@ -3488,12 +3542,12 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         throw new HiveException(e);
       }
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ADDSKEWEDBY) {
-      /* Validation's been done at compile time. no validation is needed here. */
+      // Validation's been done at compile time. no validation is needed here.
       List<String> skewedColNames = null;
       List<List<String>> skewedValues = null;
 
       if (alterTbl.isTurnOffSkewed()) {
-        /* Convert skewed table to non-skewed table. */
+        // Convert skewed table to non-skewed table.
         skewedColNames = new ArrayList<String>();
         skewedValues = new ArrayList<List<String>>();
       } else {
@@ -3502,7 +3556,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       }
 
       if ( null == tbl.getSkewedInfo()) {
-        /* Convert non-skewed table to skewed table. */
+        // Convert non-skewed table to skewed table.
         SkewedInfo skewedInfo = new SkewedInfo();
         skewedInfo.setSkewedColNames(skewedColNames);
         skewedInfo.setSkewedColValues(skewedValues);
@@ -3544,59 +3598,12 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         }
         tbl.setNumBuckets(alterTbl.getNumberBuckets());
       }
-   } else {
+    } else {
       throw new HiveException(ErrorMsg.UNSUPPORTED_ALTER_TBL_OP, alterTbl.getOp().toString());
     }
 
-    if (part == null && allPartitions == null) {
-      updateModifiedParameters(tbl.getTTable().getParameters(), conf);
-      tbl.checkValidity();
-    } else if (part != null) {
-      updateModifiedParameters(part.getParameters(), conf);
-    }
-    else {
-      for (Partition tmpPart: allPartitions) {
-        updateModifiedParameters(tmpPart.getParameters(), conf);
-      }
-    }
-
-    try {
-      if (part == null && allPartitions == null) {
-        db.alterTable(alterTbl.getOldName(), tbl);
-      } else if (part != null) {
-        db.alterPartition(tbl.getTableName(), part);
-      }
-      else {
-        db.alterPartitions(tbl.getTableName(), allPartitions);
-      }
-    } catch (InvalidOperationException e) {
-      LOG.info("alter table: " + stringifyException(e));
-      throw new HiveException(e, ErrorMsg.GENERIC_ERROR);
-    }
-
-    // This is kind of hacky - the read entity contains the old table, whereas
-    // the write entity
-    // contains the new table. This is needed for rename - both the old and the
-    // new table names are
-    // passed
-    // Don't acquire locks for any of these, we have already asked for them in DDLSemanticAnalyzer.
-    if(part != null) {
-      work.getInputs().add(new ReadEntity(part));
-      work.getOutputs().add(new WriteEntity(part, WriteEntity.WriteType.DDL_NO_LOCK));
-    }
-    else if (allPartitions != null ){
-      for (Partition tmpPart: allPartitions) {
-        work.getInputs().add(new ReadEntity(tmpPart));
-        work.getOutputs().add(new WriteEntity(tmpPart, WriteEntity.WriteType.DDL_NO_LOCK));
-      }
-    }
-    else {
-      work.getInputs().add(new ReadEntity(oldTbl));
-      work.getOutputs().add(new WriteEntity(tbl, WriteEntity.WriteType.DDL_NO_LOCK));
-    }
     return 0;
   }
-
   /**
    * Drop a given table or some partitions. DropTableDesc is currently used for both.
    *

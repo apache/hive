@@ -421,6 +421,8 @@ public enum ErrorMsg {
       "an AcidOutputFormat or is not bucketed", true),
   ACID_NO_SORTED_BUCKETS(10298, "ACID insert, update, delete not supported on tables that are " +
       "sorted, table {0}", true),
+  ALTER_TABLE_TYPE_PARTIAL_PARTITION_SPEC_NO_SUPPORTED(10299,
+      "Alter table partition type {0} does not allow partial partition spec"),
 
   //========================== 20000 range starts here ========================//
   SCRIPT_INIT_ERROR(20000, "Unable to initialize custom script."),
