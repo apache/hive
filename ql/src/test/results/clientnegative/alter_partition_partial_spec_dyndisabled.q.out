@@ -1,0 +1,40 @@
+PREHOOK: query: create table alter_partition_partial_spec_dyndisabled0 (c1 string) partitioned by (p1 string, p2 string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@alter_partition_partial_spec_dyndisabled0
+POSTHOOK: query: create table alter_partition_partial_spec_dyndisabled0 (c1 string) partitioned by (p1 string, p2 string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@alter_partition_partial_spec_dyndisabled0
+PREHOOK: query: alter table alter_partition_partial_spec_dyndisabled0 add partition (p1='abc', p2='123')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@alter_partition_partial_spec_dyndisabled0
+POSTHOOK: query: alter table alter_partition_partial_spec_dyndisabled0 add partition (p1='abc', p2='123')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@alter_partition_partial_spec_dyndisabled0
+POSTHOOK: Output: default@alter_partition_partial_spec_dyndisabled0@p1=abc/p2=123
+PREHOOK: query: alter table alter_partition_partial_spec_dyndisabled0 partition (p1, p2) change c1 c1 int
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@alter_partition_partial_spec_dyndisabled0
+PREHOOK: Output: default@alter_partition_partial_spec_dyndisabled0@p1=abc/p2=123
+POSTHOOK: query: alter table alter_partition_partial_spec_dyndisabled0 partition (p1, p2) change c1 c1 int
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@alter_partition_partial_spec_dyndisabled0
+POSTHOOK: Input: default@alter_partition_partial_spec_dyndisabled0@p1=abc/p2=123
+POSTHOOK: Output: default@alter_partition_partial_spec_dyndisabled0@p1=abc/p2=123
+PREHOOK: query: describe alter_partition_partial_spec_dyndisabled0 partition (p1='abc', p2='123')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_partition_partial_spec_dyndisabled0
+POSTHOOK: query: describe alter_partition_partial_spec_dyndisabled0 partition (p1='abc', p2='123')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_partition_partial_spec_dyndisabled0
+c1                  	int                 	                    
+p1                  	string              	                    
+p2                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+p1                  	string              	                    
+p2                  	string              	                    
+FAILED: SemanticException [Error 10095]: Dynamic partition is disabled. Either enable it by setting hive.exec.dynamic.partition=true or specify partition column values
