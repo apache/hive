@@ -34,7 +34,6 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
@@ -256,6 +255,10 @@ public class Table implements Serializable {
       deserializer = getDeserializerFromMetaStore(false);
     }
     return deserializer;
+  }
+
+  final public Class<? extends Deserializer> getDeserializerClass() throws Exception {
+    return MetaStoreUtils.getDeserializerClass(Hive.get().getConf(), tTable);
   }
 
   final public Deserializer getDeserializer(boolean skipConfError) {
