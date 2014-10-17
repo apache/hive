@@ -135,13 +135,9 @@ class JIRAService {
       }
       comments.add("This message is automatically generated.");
       String attachmentId = parseAttachementId(mPatch);
-      if(!attachmentId.isEmpty()) {
-        comments.add("");
-        comments.add("ATTACHMENT ID: " + attachmentId);
-      }
-      if(!buildInfo.getBuildName().isEmpty()) {
-        comments.add(" - " + buildInfo.getBuildName());
-      }
+      comments.add("");
+      comments.add("ATTACHMENT ID: " + attachmentId +
+          " - " + buildInfo.getBuildName());
       mLogger.info("Comment: " + Joiner.on("\n").join(comments));
       String body = Joiner.on("\n").join(comments);
       String url = String.format("%s/rest/api/2/issue/%s/comment", mUrl, mName);
