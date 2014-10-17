@@ -851,11 +851,19 @@ public class VectorGroupByOperator extends GroupByOperator implements Vectorizat
   @Override
   public void startGroup() throws HiveException {
     processingMode.startGroup();
+
+    // We do not call startGroup on operators below because we are batching rows in
+    // an output batch and the semantics will not work.
+    // super.startGroup();
   }
 
   @Override
   public void endGroup() throws HiveException {
     processingMode.endGroup();
+
+    // We do not call endGroup on operators below because we are batching rows in
+    // an output batch and the semantics will not work.
+    // super.endGroup();
   }
 
   @Override
