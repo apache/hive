@@ -55,6 +55,8 @@ import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.util.hash.MurmurHash;
 
+import static org.apache.hadoop.hive.ql.plan.ReduceSinkDesc.ReducerTraits.UNIFORM;
+
 /**
  * Reduce Sink Operator sends output to the reduce stage.
  **/
@@ -110,7 +112,7 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
   protected transient int numDistributionKeys;
   protected transient int numDistinctExprs;
   protected transient String[] inputAliases;  // input aliases of this RS for join (used for PPD)
-  protected transient boolean autoParallel = false;
+  protected transient boolean useUniformHash = false;
   // picks topN K:V pairs from input.
   protected transient TopNHash reducerHash = new TopNHash();
   protected transient HiveKey keyWritable = new HiveKey();
@@ -217,7 +219,7 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
         reducerHash.initialize(limit, memUsage, conf.isMapGroupBy(), this);
       }
 
-      autoParallel = conf.isAutoParallel();
+      useUniformHash = conf.getReducerTraits().contains(UNIFORM);
 
       firstRow = true;
       initializeChildren(hconf);
@@ -339,7 +341,7 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
       final int hashCode;
 
       // distKeyLength doesn't include tag, but includes buckNum in cachedKeys[0]
-      if (autoParallel && partitionEval.length > 0) {
+      if (useUniformHash && partitionEval.length > 0) {
         hashCode = computeMurmurHash(firstKey);
       } else {
         hashCode = computeHashCode(row);

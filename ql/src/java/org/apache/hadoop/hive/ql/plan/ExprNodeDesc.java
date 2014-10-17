@@ -19,6 +19,8 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.apache.hadoop.hive.ql.lib.Node;
@@ -124,6 +126,20 @@ public abstract class ExprNodeDesc implements Serializable, Node {
     @Override
     public int hashCode() {
       return exprNodeDesc == null ? 0 : exprNodeDesc.hashCode();
+    }
+
+    /* helper function to allow Set()/Collection() operations with ExprNodeDesc */
+    public static Collection<ExprNodeDescEqualityWrapper> transform(
+        Collection<ExprNodeDesc> descs) {
+      if (descs == null) {
+        return null;
+      }
+      final Collection<ExprNodeDescEqualityWrapper> wrapped = new ArrayList<ExprNodeDesc.ExprNodeDescEqualityWrapper>(
+          descs.size());
+      for (ExprNodeDesc desc : descs) {
+        wrapped.add(new ExprNodeDescEqualityWrapper(desc));
+      }
+      return wrapped;
     }
   }
 }
