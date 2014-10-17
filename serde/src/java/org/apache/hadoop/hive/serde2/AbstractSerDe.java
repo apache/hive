@@ -24,6 +24,8 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.io.Writable;
 
+import javax.annotation.Nullable;
+
 /**
  * Abstract class for implementing SerDe. The abstract class has been created, so that
  * new methods can be added in the underlying interface, SerDe, and only implementations
@@ -56,13 +58,14 @@ public abstract class AbstractSerDe implements SerDe {
    * Initialize the HiveSerializer.
    *
    * @param conf
-   *          System properties
+   *          System properties. Can be null in compile time
    * @param tbl
    *          table properties
    * @throws SerDeException
    */
   @Deprecated
-  public abstract void initialize(Configuration conf, Properties tbl) throws SerDeException;
+  public abstract void initialize(@Nullable Configuration conf, Properties tbl)
+      throws SerDeException;
 
   /**
    * Returns the Writable class that would be returned by the serialize method.
