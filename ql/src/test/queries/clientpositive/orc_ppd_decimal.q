@@ -22,9 +22,7 @@ set hive.optimize.index.filter=false;
 select sum(hash(*)) from newtypesorc where d=cast('0.22' as float);
 
 set hive.optimize.index.filter=true;
-set hive.optimize.constant.propagation=false;
 select sum(hash(*)) from newtypesorc where d=cast('0.22' as float);
-set hive.optimize.constant.propagation=true;
 
 set hive.optimize.index.filter=false;
 select sum(hash(*)) from newtypesorc where d!=0.22;
