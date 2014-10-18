@@ -431,8 +431,9 @@ public class DagUtils {
     int memory = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVETEZCONTAINERSIZE) > 0 ?
       HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVETEZCONTAINERSIZE) :
       conf.getInt(MRJobConfig.MAP_MEMORY_MB, MRJobConfig.DEFAULT_MAP_MEMORY_MB);
-    int cpus = conf.getInt(MRJobConfig.MAP_CPU_VCORES,
-        MRJobConfig.DEFAULT_MAP_CPU_VCORES);
+    int cpus = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVETEZCPUVCORES) > 0 ?
+      HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVETEZCPUVCORES) : 
+      conf.getInt(MRJobConfig.MAP_CPU_VCORES, MRJobConfig.DEFAULT_MAP_CPU_VCORES);
     return Resource.newInstance(memory, cpus);
   }
 
@@ -452,17 +453,29 @@ public class DagUtils {
    */
   private String getContainerJavaOpts(Configuration conf) {
     String javaOpts = HiveConf.getVar(conf, HiveConf.ConfVars.HIVETEZJAVAOPTS);
-    if (javaOpts != null && !javaOpts.isEmpty()) {
-      String logLevel = HiveConf.getVar(conf, HiveConf.ConfVars.HIVETEZLOGLEVEL);
-      List<String> logProps = Lists.newArrayList();
-      TezUtils.addLog4jSystemProperties(logLevel, logProps);
-      StringBuilder sb = new StringBuilder();
-      for (String str : logProps) {
-        sb.append(str).append(" ");
-      }
-      return javaOpts + " " + sb.toString();
+
+    String logLevel = HiveConf.getVar(conf, HiveConf.ConfVars.HIVETEZLOGLEVEL);
+    List<String> logProps = Lists.newArrayList();
+    TezUtils.addLog4jSystemProperties(logLevel, logProps);
+    StringBuilder sb = new StringBuilder();
+    for (String str : logProps) {
+      sb.append(str).append(" ");
     }
-    return MRHelpers.getJavaOptsForMRMapper(conf);
+    logLevel = sb.toString();
+
+    if (HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVETEZCONTAINERSIZE) > 0) {
+      if (javaOpts != null) {
+        return javaOpts + " " + logLevel;
+      } else  {
+        return logLevel;
+      }
+    } else {
+      if (javaOpts != null && !javaOpts.isEmpty()) {
+        LOG.warn(HiveConf.ConfVars.HIVETEZJAVAOPTS + " will be ignored because "
+                 + HiveConf.ConfVars.HIVETEZCONTAINERSIZE + " is not set!");
+      }
+      return logLevel + " " + MRHelpers.getJavaOptsForMRMapper(conf);
+    }
   }
 
   private Vertex createVertex(JobConf conf, MergeJoinWork mergeJoinWork, LocalResource appJarLr,
