@@ -109,55 +109,6 @@ public class TestOperators extends TestCase {
     }
   }
 
-  public void testBaseFilterOperator() throws Throwable {
-    try {
-      System.out.println("Testing Filter Operator");
-      ExprNodeDesc col0 = TestExecDriver.getStringColumn("col0");
-      ExprNodeDesc col1 = TestExecDriver.getStringColumn("col1");
-      ExprNodeDesc col2 = TestExecDriver.getStringColumn("col2");
-      ExprNodeDesc zero = new ExprNodeConstantDesc("0");
-      ExprNodeDesc func1 = TypeCheckProcFactory.DefaultExprProcessor
-          .getFuncExprNodeDesc(">", col2, col1);
-      ExprNodeDesc func2 = TypeCheckProcFactory.DefaultExprProcessor
-          .getFuncExprNodeDesc("==", col0, zero);
-      ExprNodeDesc func3 = TypeCheckProcFactory.DefaultExprProcessor
-          .getFuncExprNodeDesc("and", func1, func2);
-      assert (func3 != null);
-      FilterDesc filterCtx = new FilterDesc(func3, false);
-
-      // Configuration
-      Operator<FilterDesc> op = OperatorFactory.get(FilterDesc.class);
-      op.setConf(filterCtx);
-
-      // runtime initialization
-      op.initialize(new JobConf(TestOperators.class),
-          new ObjectInspector[] {r[0].oi});
-
-      for (InspectableObject oner : r) {
-        op.processOp(oner.o, 0);
-      }
-
-      Map<Enum<?>, Long> results = op.getStats();
-      System.out.println("filtered = "
-          + results.get(FilterOperator.Counter.FILTERED));
-      assertEquals(Long.valueOf(4), results
-          .get(FilterOperator.Counter.FILTERED));
-      System.out.println("passed = "
-          + results.get(FilterOperator.Counter.PASSED));
-      assertEquals(Long.valueOf(1), results.get(FilterOperator.Counter.PASSED));
-
-      /*
-       * for(Enum e: results.keySet()) { System.out.println(e.toString() + ":" +
-       * results.get(e)); }
-       */
-      System.out.println("Filter Operator ok");
-
-    } catch (Throwable e) {
-      e.printStackTrace();
-      throw e;
-    }
-  }
-
   private void testTaskIds(String [] taskIds, String expectedAttemptId, String expectedTaskId) {
     Configuration conf = new JobConf(TestOperators.class);
     for (String one: taskIds) {

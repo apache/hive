@@ -236,8 +236,8 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
   protected void initializeOp(Configuration hconf) throws HiveException {
     firstRow = true;
 
-    statsMap.put(Counter.DESERIALIZE_ERRORS, deserialize_error_count);
-    statsMap.put(Counter.SERIALIZE_ERRORS, serialize_error_count);
+    statsMap.put(Counter.DESERIALIZE_ERRORS.toString(), deserialize_error_count);
+    statsMap.put(Counter.SERIALIZE_ERRORS.toString(), serialize_error_count);
 
     try {
       this.hconf = hconf;
