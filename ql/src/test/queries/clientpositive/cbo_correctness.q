@@ -482,3 +482,7 @@ select unionsrc.key, count(1) FROM (select 'max' as key, max(c_int) as value fro
     UNION ALL
         select 'avg' as key,  avg(c_int) as value from t3 s3) unionsrc group by unionsrc.key order by unionsrc.key;
 
+-- Windowing
+select *, rank() over(partition by key order by value) as rr from src1;
+
+select *, rank() over(partition by key order by value) from src1;
