@@ -75,10 +75,16 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
    *
    */
   public static enum Counter {
-    DESERIALIZE_ERRORS
+    DESERIALIZE_ERRORS,
+    RECORDS_IN
   }
 
   private final transient LongWritable deserialize_error_count = new LongWritable();
+  private final transient LongWritable recordCounter = new LongWritable();
+  protected transient long numRows = 0;
+  protected transient long cntr = 1;
+  protected final boolean isInfoEnabled = LOG.isInfoEnabled();
+  protected final boolean isDebugEnabled = LOG.isDebugEnabled();
 
   private final Map<MapInputPath, MapOpCtx> opCtxMap = new HashMap<MapInputPath, MapOpCtx>();
   private final Map<Operator<? extends OperatorDesc>, MapOpCtx> childrenOpToOpCtxMap =
@@ -362,7 +368,7 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
 
         for (String onealias : aliases) {
           Operator<? extends OperatorDesc> op = conf.getAliasToWork().get(onealias);
-          if (LOG.isDebugEnabled()) {
+          if (isDebugEnabled) {
             LOG.debug("Adding alias " + onealias + " to work list for file "
                + onefile);
           }
@@ -380,8 +386,10 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
           if (!onepath.toUri().relativize(fpath.toUri()).equals(fpath.toUri())) {
             children.add(op);
             childrenOpToOpCtxMap.put(op, opCtx);
-            LOG.info("dump " + op + " "
+            if (isInfoEnabled) {
+              LOG.info("dump " + op + " "
                 + opCtxMap.get(inp).rowObjectInspector.getTypeName());
+            }
           }
           current = opCtx;  // just need for TestOperators.testMapOperator
         }
@@ -406,7 +414,13 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
   public void initializeOp(Configuration hconf) throws HiveException {
     // set that parent initialization is done and call initialize on children
     state = State.INIT;
-    statsMap.put(Counter.DESERIALIZE_ERRORS, deserialize_error_count);
+    statsMap.put(Counter.DESERIALIZE_ERRORS.toString(), deserialize_error_count);
+
+    String context = hconf.get(Operator.CONTEXT_NAME_KEY, "");
+    if (context != null && !context.isEmpty()) {
+      context = "_" + context.replace(" ","_");
+    }
+    statsMap.put(Counter.RECORDS_IN + context, recordCounter);
 
     List<Operator<? extends OperatorDesc>> children = getChildOperators();
 
@@ -451,6 +465,7 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
         op.close(abort);
       }
     }
+    recordCounter.set(numRows);
   }
 
   // Find context for current input file
@@ -473,7 +488,9 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
         MapOpCtx context = opCtxMap.get(inp);
         if (context != null) {
           current = context;
-          LOG.info("Processing alias " + onealias + " for file " + onefile);
+          if (isInfoEnabled) {
+            LOG.info("Processing alias " + onealias + " for file " + onefile);
+          }
           return;
         }
       }
@@ -533,6 +550,13 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
     // The row has been converted to comply with table schema, irrespective of partition schema.
     // So, use tblOI (and not partOI) for forwarding
     try {
+      numRows++;
+      if (isInfoEnabled) {
+        if (numRows == cntr) {
+          cntr *= 10;
+          LOG.info(toString() + ": records read - " + numRows);
+        }
+      }
       forward(row, current.rowObjectInspector);
     } catch (Exception e) {
       // Serialize the row and output the error message.

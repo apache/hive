@@ -51,6 +51,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspecto
 import org.apache.hadoop.io.BinaryComparable;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.util.hash.MurmurHash;
@@ -65,6 +66,13 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
 
   static {
     PTFUtils.makeTransient(ReduceSinkOperator.class, "inputAliases", "valueIndex");
+  }
+
+  /**
+   * Counters.
+   */
+  public static enum Counter {
+    RECORDS_OUT_INTERMEDIATE
   }
 
   private static final Log LOG = LogFactory.getLog(ReduceSinkOperator.class.getName());
@@ -146,9 +154,19 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
   private StructObjectInspector recIdInspector; // OI for the record identifier
   private IntObjectInspector bucketInspector; // OI for the bucket field in the record id
 
+  protected transient long numRows = 0;
+  protected transient long cntr = 1;
+  private final transient LongWritable recordCounter = new LongWritable();
+
   @Override
   protected void initializeOp(Configuration hconf) throws HiveException {
     try {
+      String context = hconf.get(Operator.CONTEXT_NAME_KEY, "");
+      if (context != null && !context.isEmpty()) {
+        context = "_" + context.replace(" ","_");
+      }
+      statsMap.put(Counter.RECORDS_OUT_INTERMEDIATE + context, recordCounter);
+
       List<ExprNodeDesc> keys = conf.getKeyCols();
 
       if (isDebugEnabled) {
@@ -508,6 +526,13 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
     // Since this is a terminal operator, update counters explicitly -
     // forward is not called
     if (null != out) {
+      numRows++;
+      if (isInfoEnabled) {
+        if (numRows == cntr) {
+          cntr *= 10;
+          LOG.info(toString() + ": records written - " + numRows);
+        }
+      }
       out.collect(keyWritable, valueWritable);
     }
   }
@@ -537,6 +562,10 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
     }
     super.closeOp(abort);
     out = null;
+    if (isInfoEnabled) {
+      LOG.info(toString() + ": records written - " + numRows);
+    }
+    recordCounter.set(numRows);
   }
 
   /**
