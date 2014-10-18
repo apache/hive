@@ -70,8 +70,6 @@ public class ExecReducer extends MapReduceBase implements Reducer {
   private static final boolean isTraceEnabled = LOG.isTraceEnabled();
   private static final String PLAN_KEY = "__REDUCE_PLAN__";
 
-  // used to log memory usage periodically
-  private final MemoryMXBean memoryMXBean = ManagementFactory.getMemoryMXBean();
   // Input value serde needs to be an array to support different SerDe
   // for different tags
   private final Deserializer[] inputValueDeserializer = new Deserializer[Byte.MAX_VALUE];
@@ -86,8 +84,6 @@ public class ExecReducer extends MapReduceBase implements Reducer {
   private Reporter rp;
   private boolean abort = false;
   private boolean isTagged = false;
-  private long cntr = 0;
-  private long nextCntr = 1;
   private TableDesc keyTableDesc;
   private TableDesc[] valueTableDesc;
   private ObjectInspector[] rowObjectInspector;
@@ -103,8 +99,6 @@ public class ExecReducer extends MapReduceBase implements Reducer {
     ObjectInspector keyObjectInspector;
 
     if (isInfoEnabled) {
-      LOG.info("maximum memory = " + memoryMXBean.getHeapMemoryUsage().getMax());
-
       try {
         LOG.info("conf classpath = "
             + Arrays.asList(((URLClassLoader) job.getClassLoader()).getURLs()));
@@ -245,17 +239,7 @@ public class ExecReducer extends MapReduceBase implements Reducer {
         row.clear();
         row.add(keyObject);
         row.add(valueObject[tag]);
-        if (isInfoEnabled) {
-          cntr++;
-          if (cntr == nextCntr) {
-            long used_memory = memoryMXBean.getHeapMemoryUsage().getUsed();
-            if (isInfoEnabled) {
-              LOG.info("ExecReducer: processing " + cntr
-                  + " rows: used memory = " + used_memory);
-            }
-            nextCntr = getNextCntr(cntr);
-          }
-        }
+
         try {
           reducer.processOp(row, tag);
         } catch (Exception e) {
@@ -283,17 +267,6 @@ public class ExecReducer extends MapReduceBase implements Reducer {
     }
   }
 
-  private long getNextCntr(long cntr) {
-    // A very simple counter to keep track of number of rows processed by the
-    // reducer. It dumps
-    // every 1 million times, and quickly before that
-    if (cntr >= 1000000) {
-      return cntr + 1000000;
-    }
-
-    return 10 * cntr;
-  }
-
   @Override
   public void close() {
 
@@ -310,13 +283,9 @@ public class ExecReducer extends MapReduceBase implements Reducer {
         }
         reducer.endGroup();
       }
-      if (isInfoEnabled) {
-        LOG.info("ExecReducer: processed " + cntr + " rows: used memory = "
-            + memoryMXBean.getHeapMemoryUsage().getUsed());
-      }
 
       reducer.close(abort);
-      ReportStats rps = new ReportStats(rp);
+      ReportStats rps = new ReportStats(rp, jc);
       reducer.preorderMap(rps);
 
     } catch (Exception e) {

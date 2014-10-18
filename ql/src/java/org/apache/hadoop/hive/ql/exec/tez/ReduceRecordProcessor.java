@@ -165,11 +165,7 @@ public class ReduceRecordProcessor  extends RecordProcessor{
     }
 
     // run the operator pipeline
-    while (sources[position].pushRecord()) {
-      if (isLogInfoEnabled) {
-        logProgress();
-      }
-    }
+    while (sources[position].pushRecord()) {}
   }
 
   /**
@@ -208,7 +204,7 @@ public class ReduceRecordProcessor  extends RecordProcessor{
           dummyOp.close(abort);
         }
       }
-      ReportStats rps = new ReportStats(reporter);
+      ReportStats rps = new ReportStats(reporter, jconf);
       reducer.preorderMap(rps);
 
     } catch (Exception e) {
