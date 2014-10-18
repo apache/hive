@@ -269,11 +269,7 @@ public class MapRecordProcessor extends RecordProcessor {
   @Override
   void run() throws Exception {
 
-    while (sources[position].pushRecord()) {
-      if (isLogInfoEnabled) {
-        logProgress();
-      }
-    }
+    while (sources[position].pushRecord()) {}
   }
 
   @Override
@@ -305,10 +301,7 @@ public class MapRecordProcessor extends RecordProcessor {
         }
       }
 
-      if (isLogInfoEnabled) {
-        logCloseInfo();
-      }
-      ReportStats rps = new ReportStats(reporter);
+      ReportStats rps = new ReportStats(reporter, jconf);
       mapOp.preorderMap(rps);
       return;
     } catch (Exception e) {

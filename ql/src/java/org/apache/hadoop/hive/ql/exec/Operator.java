@@ -61,6 +61,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
 
   public static final String HIVECOUNTERCREATEDFILES = "CREATED_FILES";
   public static final String HIVECOUNTERFATAL = "FATAL_ERROR";
+  public static final String CONTEXT_NAME_KEY = "__hive.context.name";
 
   private transient Configuration configuration;
   protected List<Operator<? extends OperatorDesc>> childOperators;
@@ -210,7 +211,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
 
   // non-bean ..
 
-  protected transient HashMap<Enum<?>, LongWritable> statsMap = new HashMap<Enum<?>, LongWritable>();
+  protected transient Map<String, LongWritable> statsMap = new HashMap<String, LongWritable>();
   @SuppressWarnings("rawtypes")
   protected transient OutputCollector out;
   protected transient Log LOG = LogFactory.getLog(this.getClass().getName());
@@ -287,9 +288,9 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     }
   }
 
-  public Map<Enum<?>, Long> getStats() {
-    HashMap<Enum<?>, Long> ret = new HashMap<Enum<?>, Long>();
-    for (Enum<?> one : statsMap.keySet()) {
+  public Map<String, Long> getStats() {
+    HashMap<String, Long> ret = new HashMap<String, Long>();
+    for (String one : statsMap.keySet()) {
       ret.put(one, Long.valueOf(statsMap.get(one).get()));
     }
     return (ret);
@@ -807,7 +808,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   }
 
   public void resetStats() {
-    for (Enum<?> e : statsMap.keySet()) {
+    for (String e : statsMap.keySet()) {
       statsMap.get(e).set(0L);
     }
   }
@@ -840,7 +841,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   }
 
   public void logStats() {
-    for (Enum<?> e : statsMap.keySet()) {
+    for (String e : statsMap.keySet()) {
       LOG.info(e.toString() + ":" + statsMap.get(e).toString());
     }
   }

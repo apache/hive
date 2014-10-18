@@ -156,10 +156,7 @@ public class MergeFileRecordProcessor extends RecordProcessor {
       }
       mergeOp.close(abort);
 
-      if (isLogInfoEnabled) {
-        logCloseInfo();
-      }
-      ExecMapper.ReportStats rps = new ExecMapper.ReportStats(reporter);
+      ExecMapper.ReportStats rps = new ExecMapper.ReportStats(reporter, jconf);
       mergeOp.preorderMap(rps);
     } catch (Exception e) {
       if (!abort) {
@@ -190,9 +187,6 @@ public class MergeFileRecordProcessor extends RecordProcessor {
         row[0] = key;
         row[1] = value;
         mergeOp.processOp(row, 0);
-        if (isLogInfoEnabled) {
-          logProgress();
-        }
       }
     } catch (Throwable e) {
       abort = true;

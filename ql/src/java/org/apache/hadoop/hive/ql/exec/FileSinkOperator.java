@@ -109,6 +109,15 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   private StructField bucketField; // field bucket is in in record id
   private StructObjectInspector recIdInspector; // OI for inspecting record id
   private IntObjectInspector bucketInspector; // OI for inspecting bucket id
+  protected transient long numRows = 0;
+  protected transient long cntr = 1;
+
+  /**
+   * Counters.
+   */
+  public static enum Counter {
+    RECORDS_OUT
+  }
 
   /**
    * RecordWriter.
@@ -249,7 +258,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   private static final long serialVersionUID = 1L;
   protected transient FileSystem fs;
   protected transient Serializer serializer;
-  protected transient LongWritable row_count;
+  protected final transient LongWritable row_count = new LongWritable();
   private transient boolean isNativeTable = true;
 
   /**
@@ -352,7 +361,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         prtner = (HivePartitioner<HiveKey, Object>) ReflectionUtils.newInstance(
             jc.getPartitionerClass(), null);
       }
-      row_count = new LongWritable();
+
       if (dpCtx != null) {
         dpSetup();
       }
@@ -381,6 +390,13 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         bucketField = recIdInspector.getAllStructFieldRefs().get(1);
         bucketInspector = (IntObjectInspector)bucketField.getFieldObjectInspector();
       }
+
+      String context = jc.get(Operator.CONTEXT_NAME_KEY, "");
+      if (context != null && !context.isEmpty()) {
+        context = "_" + context.replace(" ","_");
+      }
+      statsMap.put(Counter.RECORDS_OUT + context, row_count);
+
       initializeChildren(hconf);
     } catch (HiveException e) {
       throw e;
@@ -657,9 +673,9 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         fpaths.stat.addToStat(StatsSetupConst.ROW_COUNT, 1);
       }
 
-
-      if (row_count != null) {
-        row_count.set(row_count.get() + 1);
+      if (++numRows == cntr) {
+        cntr *= 10;
+        LOG.info(toString() + ": records written - " + numRows);
       }
 
       int writerOffset = findWriterOffset(row);
@@ -920,6 +936,9 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
 
   @Override
   public void closeOp(boolean abort) throws HiveException {
+
+    row_count.set(numRows);
+    LOG.info(toString() + ": records written - " + numRows);    
 
     if (!bDynParts && !filesCreated) {
       createBucketFiles(fsp);
