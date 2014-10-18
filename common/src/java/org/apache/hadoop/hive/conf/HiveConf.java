@@ -958,6 +958,9 @@ public class HiveConf extends Configuration {
 
     HIVETEZCONTAINERSIZE("hive.tez.container.size", -1,
         "By default Tez will spawn containers of the size of a mapper. This can be used to overwrite."),
+    HIVETEZCPUVCORES("hive.tez.cpu.vcores", -1,
+        "By default Tez will ask for however many cpus map-reduce is configured to use per container. "
+        +"This can be used to overwrite."),
     HIVETEZJAVAOPTS("hive.tez.java.opts", null,
         "By default Tez will use the Java options from map tasks. This can be used to overwrite."),
     HIVETEZLOGLEVEL("hive.tez.log.level", "INFO",
