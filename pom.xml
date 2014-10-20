@@ -161,6 +161,7 @@
     <zookeeper.version>3.4.5</zookeeper.version>
     <jpam.version>1.1</jpam.version>
     <felix.version>2.4.0</felix.version>
+    <curator.version>2.5.0</curator.version>
   </properties>
 
   <repositories>
@@ -472,7 +473,13 @@
           </exclusion>
         </exclusions>
       </dependency>
-      <dependency>
+        <dependency>
+            <groupId>org.apache.curator</groupId>
+            <artifactId>curator-framework</artifactId>
+            <version>${curator.version}</version>
+        </dependency>
+
+        <dependency>
         <groupId>org.codehaus.groovy</groupId>
         <artifactId>groovy-all</artifactId>
         <version>${groovy.version}</version>
