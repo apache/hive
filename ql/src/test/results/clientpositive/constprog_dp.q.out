@@ -32,7 +32,7 @@ STAGE PLANS:
             alias: srcpart
             Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: key (type: string), value (type: string), ds (type: string)
+              expressions: key (type: string), value (type: string), '2008-04-08' (type: string)
               outputColumnNames: _col0, _col1, _col2
               Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
