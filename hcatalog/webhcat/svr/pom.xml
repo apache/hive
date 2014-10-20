@@ -38,7 +38,7 @@
   </properties>
 
   <dependencies>
-    <!-- dependencies are always listed in sorted order by groupId, artifectId -->
+    <!-- dependencies are always listed in sorted order by groupId, artifactId -->
     <!-- intra-project -->
     <dependency>
       <groupId>org.apache.hive.hcatalog</groupId>
@@ -72,6 +72,14 @@
       <artifactId>commons-exec</artifactId>
       <version>${commons-exec.version}</version>
     </dependency>
+
+      
+      <dependency>
+      <groupId>org.apache.curator</groupId>
+      <artifactId>curator-framework</artifactId>
+       <version>${curator.version}</version>
+    </dependency>
+
     <dependency>
       <groupId>org.apache.zookeeper</groupId>
       <artifactId>zookeeper</artifactId>
@@ -191,6 +199,37 @@
                 </docletArtifact>
               </docletArtifacts>
               <additionalparam>-output ${project.build.outputDirectory}/resourcedoc.xml</additionalparam>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>include-curator</id>
+            <!-- WebHCat uses Curator library to work with ZooKeeper.  Thus it must be available
+            on a random node in the cluster where LaunchMapper runs to actually execute the job.
+            The simplest way is to include it in webhcat jar which is shipped to target node since
+            it contains LaunchMapper.java.-->
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <minimizeJar>true</minimizeJar>
+              <artifactSet>
+                <includes>
+                  <include>org.apache.curator</include>
+                </includes>
+              </artifactSet>
+              <relocations>
+                <relocation>
+                  <pattern>org.apache.curator</pattern>
+                  <shadedPattern>webhcat.org.apache.curator</shadedPattern>
+                </relocation>
+              </relocations>
             </configuration>
           </execution>
         </executions>
