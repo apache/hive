@@ -18,7 +18,9 @@
 
 package org.apache.hive.service.server;
 
+import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
@@ -36,6 +38,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.exec.tez.TezSessionPoolManager;
 import org.apache.hadoop.hive.ql.util.ZooKeeperHiveHelper;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.hive.common.util.HiveVersionInfo;
 import org.apache.hive.service.CompositeService;
@@ -48,7 +51,10 @@ import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooDefs.Ids;
+import org.apache.zookeeper.ZooDefs.Perms;
 import org.apache.zookeeper.ZooKeeper;
+import org.apache.zookeeper.client.ZooKeeperSaslClient;
+import org.apache.zookeeper.data.ACL;
 
 /**
  * HiveServer2.
@@ -115,14 +121,19 @@ public class HiveServer2 extends CompositeService {
     String rootNamespace = hiveConf.getVar(HiveConf.ConfVars.HIVE_SERVER2_ZOOKEEPER_NAMESPACE);
     String instanceURI = getServerInstanceURI(hiveConf);
     byte[] znodeDataUTF8 = instanceURI.getBytes(Charset.forName("UTF-8"));
+    // Znode ACLs
+    List<ACL> nodeAcls = new ArrayList<ACL>();
+    setUpAuthAndAcls(hiveConf, nodeAcls);
+    // Create a ZooKeeper client
     zooKeeperClient =
         new ZooKeeper(zooKeeperEnsemble, zooKeeperSessionTimeout,
             new ZooKeeperHiveHelper.DummyWatcher());
-
-    // Create the parent znodes recursively; ignore if the parent already exists
+    // Create the parent znodes recursively; ignore if the parent already exists.
+    // If pre-creating the parent on a kerberized cluster, ensure that you give ACLs,
+    // as explained in {@link #setUpAuthAndAcls(HiveConf, List<ACL>) setUpAuthAndAcls}
     try {
-      ZooKeeperHiveHelper.createPathRecursively(zooKeeperClient, rootNamespace,
-          Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
+      ZooKeeperHiveHelper.createPathRecursively(zooKeeperClient, rootNamespace, nodeAcls,
+          CreateMode.PERSISTENT);
       LOG.info("Created the root name space: " + rootNamespace + " on ZooKeeper for HiveServer2");
     } catch (KeeperException e) {
       if (e.code() != KeeperException.Code.NODEEXISTS) {
@@ -133,12 +144,12 @@ public class HiveServer2 extends CompositeService {
     // Create a znode under the rootNamespace parent for this instance of the server
     // Znode name: serverUri=host:port;version=versionInfo;sequence=sequenceNumber
     try {
-      String znodePath =
+      String pathPrefix =
           ZooKeeperHiveHelper.ZOOKEEPER_PATH_SEPARATOR + rootNamespace
               + ZooKeeperHiveHelper.ZOOKEEPER_PATH_SEPARATOR + "serverUri=" + instanceURI + ";"
               + "version=" + HiveVersionInfo.getVersion() + ";" + "sequence=";
       znodePath =
-          zooKeeperClient.create(znodePath, znodeDataUTF8, Ids.OPEN_ACL_UNSAFE,
+          zooKeeperClient.create(pathPrefix, znodeDataUTF8, nodeAcls,
               CreateMode.EPHEMERAL_SEQUENTIAL);
       setRegisteredWithZooKeeper(true);
       // Set a watch on the znode
@@ -150,6 +161,48 @@ public class HiveServer2 extends CompositeService {
     } catch (KeeperException e) {
       LOG.fatal("Unable to create a znode for this server instance", e);
       throw new Exception(e);
+    }
+  }
+
+  /**
+   * Set up ACLs for znodes based on whether the cluster is secure or not.
+   * On a kerberized cluster, ZooKeeper performs Kerberos-SASL authentication.
+   * We give Read privilege to the world, but Create/Delete/Write/Admin to the authenticated user.
+   * On a non-kerberized cluster, we give Create/Read/Delete/Write/Admin privileges to the world.
+   *
+   * For a kerberized cluster, we also dynamically set up the client's JAAS conf.
+   * @param hiveConf
+   * @param nodeAcls
+   * @return
+   * @throws Exception
+   */
+  private void setUpAuthAndAcls(HiveConf hiveConf, List<ACL> nodeAcls) throws Exception {
+    if (ShimLoader.getHadoopShims().isSecurityEnabled()) {
+      String principal =
+          ShimLoader.getHadoopShims().getResolvedPrincipal(
+              hiveConf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL));
+      String keyTabFile = hiveConf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_KEYTAB);
+      if (principal.isEmpty()) {
+        throw new IOException(
+            "HiveServer2 Kerberos principal is empty");
+      }
+      if (keyTabFile.isEmpty()) {
+        throw new IOException(
+            "HiveServer2 Kerberos keytab is empty");
+      }
+      // ZooKeeper property name to pick the correct JAAS conf section
+      System.setProperty(ZooKeeperSaslClient.LOGIN_CONTEXT_NAME_KEY,
+          ZooKeeperHiveHelper.SASL_LOGIN_CONTEXT_NAME);
+      // Install the JAAS Configuration for the runtime
+      ZooKeeperHiveHelper.setUpJaasConfiguration(principal, keyTabFile);
+      // Read all to the world
+      nodeAcls.addAll(Ids.READ_ACL_UNSAFE);
+      // Create/Delete/Write/Admin to the authenticated user
+      nodeAcls.add(new ACL(Perms.ALL, Ids.AUTH_IDS));
+    } else {
+      // ACLs for znodes on a non-kerberized cluster
+      // Create/Read/Delete/Write/Admin to the world
+      nodeAcls.addAll(Ids.OPEN_ACL_UNSAFE);
     }
   }
 

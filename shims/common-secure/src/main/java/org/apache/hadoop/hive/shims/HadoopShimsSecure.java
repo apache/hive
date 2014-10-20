@@ -573,6 +573,17 @@ public abstract class HadoopShimsSecure implements HadoopShims {
     return UserGroupInformation.loginUserFromKeytabAndReturnUGI(hostPrincipal, keytabFile);
   }
 
+  /**
+   * Convert Kerberos principal name pattern to valid Kerberos principal names.
+   * @param principal (principal name pattern)
+   * @return
+   * @throws IOException
+   */
+  @Override
+  public String getResolvedPrincipal(String principal) throws IOException {
+    return SecurityUtil.getServerPrincipal(principal, "0.0.0.0");
+  }
+
   @Override
   public String getTokenFileLocEnvName() {
     return UserGroupInformation.HADOOP_TOKEN_FILE_LOCATION;
