@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
+import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -58,7 +59,6 @@ import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.JoinCondDesc;
 import org.apache.hadoop.hive.ql.plan.JoinDesc;
-import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.udf.UDFType;
@@ -317,15 +317,22 @@ public final class ConstantPropagateProcFactory {
     if (udf instanceof GenericUDFOPEqual) {
       ExprNodeDesc lOperand = newExprs.get(0);
       ExprNodeDesc rOperand = newExprs.get(1);
-      ExprNodeColumnDesc c;
       ExprNodeConstantDesc v;
-      if (lOperand instanceof ExprNodeColumnDesc && rOperand instanceof ExprNodeConstantDesc) {
-        c = (ExprNodeColumnDesc) lOperand;
-        v = (ExprNodeConstantDesc) rOperand;
-      } else if (rOperand instanceof ExprNodeColumnDesc && lOperand instanceof ExprNodeConstantDesc) {
-        c = (ExprNodeColumnDesc) rOperand;
+      if (lOperand instanceof ExprNodeConstantDesc) {
         v = (ExprNodeConstantDesc) lOperand;
+      } else if (rOperand instanceof ExprNodeConstantDesc) {
+        v = (ExprNodeConstantDesc) rOperand;
       } else {
+        // we need a constant on one side.
+        return;
+      }
+      // If both sides are constants, there is nothing to propagate
+      ExprNodeColumnDesc c = getColumnExpr(lOperand);
+      if (null == c) {
+        c = getColumnExpr(rOperand);
+      }
+      if (null == c) {
+        // we need a column expression on other side.
         return;
       }
       ColumnInfo ci = resolveColumn(rr, c);
@@ -349,6 +356,16 @@ public final class ConstantPropagateProcFactory {
         }
       }
     }
+  }
+
+  private static ExprNodeColumnDesc getColumnExpr(ExprNodeDesc expr) {
+    if (expr instanceof ExprNodeColumnDesc) {
+      return (ExprNodeColumnDesc)expr;
+    }
+    if (FunctionRegistry.isOpCast(expr)) {
+      return (ExprNodeColumnDesc)expr.getChildren().get(0);
+    }
+    return null;
   }
 
   private static ExprNodeDesc shortcutFunction(GenericUDF udf, List<ExprNodeDesc> newExprs) {
