@@ -258,15 +258,12 @@ public class HiveConnection implements java.sql.Connection {
     HttpRequestInterceptor requestInterceptor;
     // If Kerberos
     if (isKerberosAuthMode()) {
-      if (useSsl) {
-        String msg = "SSL encryption is currently not supported with " +
-            "kerberos authentication";
-        throw new SQLException(msg, " 08S01");
-      }
       /**
        * Add an interceptor which sets the appropriate header in the request.
        * It does the kerberos authentication and get the final service ticket,
        * for sending to the server before every request.
+       * In https mode, the entire information is encrypted
+       * TODO: Optimize this with a mix of kerberos + using cookie.
        */
       requestInterceptor = new HttpKerberosRequestInterceptor(
           sessConfMap.get(JdbcConnectionParams.AUTH_PRINCIPAL), host, getServerHttpUrl(false));
@@ -277,46 +274,46 @@ public class HiveConnection implements java.sql.Connection {
        * In https mode, the entire information is encrypted
        */
       requestInterceptor = new HttpBasicAuthInterceptor(getUserName(), getPassword());
-      // Configure httpClient for SSL
-      if (useSsl) {
-        String sslTrustStorePath = sessConfMap.get(JdbcConnectionParams.SSL_TRUST_STORE);
-        String sslTrustStorePassword = sessConfMap.get(
-            JdbcConnectionParams.SSL_TRUST_STORE_PASSWORD);
-        KeyStore sslTrustStore;
-        SSLSocketFactory socketFactory;
-        /**
-         * The code within the try block throws:
-         * 1. SSLInitializationException
-         * 2. KeyStoreException
-         * 3. IOException
-         * 4. NoSuchAlgorithmException
-         * 5. CertificateException
-         * 6. KeyManagementException
-         * 7. UnrecoverableKeyException
-         * We don't want the client to retry on any of these, hence we catch all
-         * and throw a SQLException.
-         */
-        try {
-          if (sslTrustStorePath == null || sslTrustStorePath.isEmpty()) {
-            // Create a default socket factory based on standard JSSE trust material
-            socketFactory = SSLSocketFactory.getSocketFactory();
-          }
-          else {
-            // Pick trust store config from the given path
-            sslTrustStore = KeyStore.getInstance(JdbcConnectionParams.SSL_TRUST_STORE_TYPE);
-            sslTrustStore.load(new FileInputStream(sslTrustStorePath),
-                sslTrustStorePassword.toCharArray());
-            socketFactory = new SSLSocketFactory(sslTrustStore);
-          }
-          socketFactory.setHostnameVerifier(SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
-          Scheme sslScheme = new Scheme("https", 443, socketFactory);
-          httpClient.getConnectionManager().getSchemeRegistry().register(sslScheme);
+    }
+    // Configure httpClient for SSL
+    if (useSsl) {
+      String sslTrustStorePath = sessConfMap.get(JdbcConnectionParams.SSL_TRUST_STORE);
+      String sslTrustStorePassword = sessConfMap.get(
+          JdbcConnectionParams.SSL_TRUST_STORE_PASSWORD);
+      KeyStore sslTrustStore;
+      SSLSocketFactory socketFactory;
+      /**
+       * The code within the try block throws:
+       * 1. SSLInitializationException
+       * 2. KeyStoreException
+       * 3. IOException
+       * 4. NoSuchAlgorithmException
+       * 5. CertificateException
+       * 6. KeyManagementException
+       * 7. UnrecoverableKeyException
+       * We don't want the client to retry on any of these, hence we catch all
+       * and throw a SQLException.
+       */
+      try {
+        if (sslTrustStorePath == null || sslTrustStorePath.isEmpty()) {
+          // Create a default socket factory based on standard JSSE trust material
+          socketFactory = SSLSocketFactory.getSocketFactory();
         }
-        catch (Exception e) {
-          String msg =  "Could not create an https connection to " +
-              jdbcUriString + ". " + e.getMessage();
-          throw new SQLException(msg, " 08S01", e);
+        else {
+          // Pick trust store config from the given path
+          sslTrustStore = KeyStore.getInstance(JdbcConnectionParams.SSL_TRUST_STORE_TYPE);
+          sslTrustStore.load(new FileInputStream(sslTrustStorePath),
+              sslTrustStorePassword.toCharArray());
+          socketFactory = new SSLSocketFactory(sslTrustStore);
         }
+        socketFactory.setHostnameVerifier(SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+        Scheme sslScheme = new Scheme("https", 443, socketFactory);
+        httpClient.getConnectionManager().getSchemeRegistry().register(sslScheme);
+      }
+      catch (Exception e) {
+        String msg =  "Could not create an https connection to " +
+            jdbcUriString + ". " + e.getMessage();
+        throw new SQLException(msg, " 08S01", e);
       }
     }
     httpClient.addRequestInterceptor(requestInterceptor);
