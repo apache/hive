@@ -61,6 +61,7 @@ import org.apache.hadoop.mapreduce.OutputFormat;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.TaskAttemptID;
 import org.apache.hadoop.mapreduce.TaskID;
+import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.Progressable;
 
@@ -320,6 +321,14 @@ public interface HadoopShims {
    */
   public UserGroupInformation loginUserFromKeytabAndReturnUGI(String principal,
       String keytabFile) throws IOException;
+
+  /**
+   * Convert Kerberos principal name pattern to valid Kerberos principal names.
+   * @param principal (principal name pattern)
+   * @return
+   * @throws IOException
+   */
+  public String getResolvedPrincipal(String principal) throws IOException;
 
   /**
    * Perform kerberos re-login using the given principal and keytab, to renew
