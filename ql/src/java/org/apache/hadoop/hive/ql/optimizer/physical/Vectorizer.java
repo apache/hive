@@ -907,7 +907,12 @@ public class Vectorizer implements PhysicalPlanResolver {
         }
         break;
       case GROUPBY:
-        ret = validateGroupByOperator((GroupByOperator) op, true, true);
+        if (HiveConf.getBoolVar(physicalContext.getConf(),
+                    HiveConf.ConfVars.HIVE_VECTORIZATION_REDUCE_GROUPBY_ENABLED)) {
+          ret = validateGroupByOperator((GroupByOperator) op, true, true);
+        } else {
+          ret = false;
+        }
         break;
       case FILTER:
         ret = validateFilterOperator((FilterOperator) op);
@@ -1015,12 +1020,10 @@ public class Vectorizer implements PhysicalPlanResolver {
     if (!ret) {
       return false;
     }
-    boolean isVectorOutput = isTez && aggregatorsOutputIsPrimitive(desc.getAggregators(), isReduce);
-    vectorDesc.setVectorOutput(isVectorOutput);
     if (isReduce) {
       if (desc.isDistinct()) {
         LOG.info("Distinct not supported in reduce vector mode");
-        return false;    
+        return false;
       }
       // Sort-based GroupBy?
       if (desc.getMode() != GroupByDesc.Mode.COMPLETE &&
@@ -1033,11 +1036,11 @@ public class Vectorizer implements PhysicalPlanResolver {
       LOG.info("Reduce GROUP BY mode is " + desc.getMode().name());
       if (desc.getGroupKeyNotReductionKey()) {
         LOG.info("Reduce vector mode not supported when group key is not reduction key");
-        return false;    
+        return false;
       }
-      if (!isVectorOutput) {
+      if (!aggregatorsOutputIsPrimitive(desc.getAggregators(), isReduce)) {
         LOG.info("Reduce vector mode only supported when aggregate outputs are primitive types");
-        return false;    
+        return false;
       }
       if (desc.getKeys().size() > 0) {
         if (op.getParentOperators().size() > 0) {
@@ -1049,9 +1052,8 @@ public class Vectorizer implements PhysicalPlanResolver {
       } else {
         LOG.info("Reduce-side GROUP BY will do global aggregation");
       }
+      vectorDesc.setVectorOutput(true);
       vectorDesc.setIsReduce(true);
-    } else {
-      LOG.info("Downstream operators of map-side GROUP BY will be vectorized: " + isVectorOutput);
     }
     return true;
   }
