@@ -157,14 +157,17 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+                  Statistics: Num rows: 116 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: key (type: string)
                       sort order: +
                       Map-reduce partition columns: key (type: string)
+                      Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
                       tag: 1
                       auto parallelism: true
             Path -> Alias:
@@ -273,14 +276,17 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  Statistics: Num rows: 1 Data size: 114 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 1 Data size: 114 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: key (type: string)
                       sort order: +
                       Map-reduce partition columns: key (type: string)
+                      Statistics: Num rows: 1 Data size: 114 Basic stats: COMPLETE Column stats: NONE
                       tag: 0
                       auto parallelism: true
             Path -> Alias:
@@ -345,13 +351,17 @@ STAGE PLANS:
                 condition expressions:
                   0 
                   1 
+                Statistics: Num rows: 63 Data size: 6393 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
+                  Statistics: Num rows: 63 Data size: 6393 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     aggregations: count()
                     mode: hash
                     outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       sort order: 
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
                       value expressions: _col0 (type: bigint)
                       auto parallelism: false
@@ -362,14 +372,17 @@ STAGE PLANS:
                 aggregations: count(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: _col0 (type: bigint)
                   outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
                     GlobalTableId: 0
 #### A masked pattern was here ####
                     NumFilesPerFileSink: 1
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
@@ -461,14 +474,17 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+                  Statistics: Num rows: 1 Data size: 114 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 1 Data size: 114 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: key (type: string)
                       sort order: +
                       Map-reduce partition columns: key (type: string)
+                      Statistics: Num rows: 1 Data size: 114 Basic stats: COMPLETE Column stats: NONE
                       tag: 1
                       auto parallelism: true
             Path -> Alias:
@@ -528,14 +544,17 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  Statistics: Num rows: 116 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: key (type: string)
                       sort order: +
                       Map-reduce partition columns: key (type: string)
+                      Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
                       tag: 0
                       auto parallelism: true
             Path -> Alias:
@@ -649,13 +668,17 @@ STAGE PLANS:
                 condition expressions:
                   0 
                   1 
+                Statistics: Num rows: 63 Data size: 6393 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
+                  Statistics: Num rows: 63 Data size: 6393 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     aggregations: count()
                     mode: hash
                     outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       sort order: 
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
                       value expressions: _col0 (type: bigint)
                       auto parallelism: false
@@ -666,14 +689,17 @@ STAGE PLANS:
                 aggregations: count(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: _col0 (type: bigint)
                   outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
                     GlobalTableId: 0
 #### A masked pattern was here ####
                     NumFilesPerFileSink: 1
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
@@ -765,14 +791,17 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+                  Statistics: Num rows: 1 Data size: 114 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 1 Data size: 114 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: key (type: string)
                       sort order: +
                       Map-reduce partition columns: key (type: string)
+                      Statistics: Num rows: 1 Data size: 114 Basic stats: COMPLETE Column stats: NONE
                       tag: 1
                       auto parallelism: true
             Path -> Alias:
@@ -832,14 +861,17 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  Statistics: Num rows: 116 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: key (type: string)
                       sort order: +
                       Map-reduce partition columns: key (type: string)
+                      Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
                       tag: 0
                       auto parallelism: true
             Path -> Alias:
@@ -953,13 +985,17 @@ STAGE PLANS:
                 condition expressions:
                   0 
                   1 
+                Statistics: Num rows: 63 Data size: 6393 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
+                  Statistics: Num rows: 63 Data size: 6393 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     aggregations: count()
                     mode: hash
                     outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       sort order: 
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
                       value expressions: _col0 (type: bigint)
                       auto parallelism: false
@@ -970,14 +1006,17 @@ STAGE PLANS:
                 aggregations: count(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: _col0 (type: bigint)
                   outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
                     GlobalTableId: 0
 #### A masked pattern was here ####
                     NumFilesPerFileSink: 1
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
