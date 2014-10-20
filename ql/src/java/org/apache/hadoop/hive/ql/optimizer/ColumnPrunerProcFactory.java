@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.LateralViewForwardOperator;
 import org.apache.hadoop.hive.ql.exec.LateralViewJoinOperator;
+import org.apache.hadoop.hive.ql.exec.LimitOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
@@ -213,6 +214,24 @@ public final class ColumnPrunerProcFactory {
       cppCtx.getPrunedColLists().put(op, colList);
       return null;
     }
+  }
+
+  public static class ColumnPrunerLimitProc extends ColumnPrunerDefaultProc {
+
+    @Override
+    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx,
+        Object... nodeOutputs) throws SemanticException {
+      super.process(nd, stack, ctx, nodeOutputs);
+      List<String> cols = ((ColumnPrunerProcCtx)ctx).getPrunedColLists().get(nd);
+      if (null != cols) {
+        pruneOperator(ctx, (LimitOperator) nd, cols);
+      }
+      return null;
+    }
+  }
+
+  public static ColumnPrunerLimitProc getLimitProc() {
+    return new ColumnPrunerLimitProc();
   }
 
   public static ColumnPrunerScriptProc getScriptProc() {
