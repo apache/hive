@@ -620,6 +620,12 @@ public class Hadoop20Shims implements HadoopShims {
   }
 
   @Override
+  public String getResolvedPrincipal(String principal) throws IOException {
+    // Not supported
+    return null;
+  }
+
+  @Override
   public void reLoginUserFromKeytab() throws IOException{
     throwKerberosUnsupportedError();
   }
