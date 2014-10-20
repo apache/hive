@@ -500,7 +500,7 @@ public final class FunctionRegistry {
       Class<? extends GenericUDF> genericUDFClass) {
     if (GenericUDF.class.isAssignableFrom(genericUDFClass)) {
       FunctionInfo fI = new FunctionInfo(isNative, functionName,
-          (GenericUDF) ReflectionUtils.newInstance(genericUDFClass, null));
+          ReflectionUtils.newInstance(genericUDFClass, null));
       mFunctions.put(functionName.toLowerCase(), fI);
       registerNativeStatus(fI);
     } else {
@@ -523,7 +523,7 @@ public final class FunctionRegistry {
       Class<? extends GenericUDTF> genericUDTFClass) {
     if (GenericUDTF.class.isAssignableFrom(genericUDTFClass)) {
       FunctionInfo fI = new FunctionInfo(isNative, functionName,
-          (GenericUDTF) ReflectionUtils.newInstance(genericUDTFClass, null));
+          ReflectionUtils.newInstance(genericUDTFClass, null));
       mFunctions.put(functionName.toLowerCase(), fI);
       registerNativeStatus(fI);
     } else {
@@ -534,7 +534,7 @@ public final class FunctionRegistry {
 
   private static FunctionInfo getFunctionInfoFromMetastore(String functionName) {
     FunctionInfo ret = null;
-  
+
     try {
       String dbName;
       String fName;
@@ -577,7 +577,7 @@ public final class FunctionRegistry {
       // Lookup of UDf class failed
       LOG.error("Unable to load UDF class: " + e);
     }
-  
+
     return ret;
   }
 
@@ -599,7 +599,7 @@ public final class FunctionRegistry {
     if (functionInfo != null) {
       loadFunctionResourcesIfNecessary(functionName, functionInfo);
     }
-    
+
     return functionInfo;
   }
 
@@ -1018,7 +1018,7 @@ public final class FunctionRegistry {
       // If either is not a numeric type, return null.
       return null;
     }
-    
+
     return (ai > bi) ? pcA : pcB;
   }
 
@@ -1223,7 +1223,7 @@ public final class FunctionRegistry {
       Class<? extends UDAF> udafClass) {
     FunctionInfo fi = new FunctionInfo(isNative,
         functionName.toLowerCase(), new GenericUDAFBridge(
-        (UDAF) ReflectionUtils.newInstance(udafClass, null)));
+        ReflectionUtils.newInstance(udafClass, null)));
     mFunctions.put(functionName.toLowerCase(), fi);
 
     // All aggregate functions should also be usable as window functions
@@ -1571,7 +1571,7 @@ public final class FunctionRegistry {
       clonedUDF = new GenericUDFMacro(bridge.getMacroName(), bridge.getBody(),
           bridge.getColNames(), bridge.getColTypes());
     } else {
-      clonedUDF = (GenericUDF) ReflectionUtils
+      clonedUDF = ReflectionUtils
           .newInstance(genericUDF.getClass(), null);
     }
 
@@ -1610,7 +1610,7 @@ public final class FunctionRegistry {
     if (null == genericUDTF) {
       return null;
     }
-    return (GenericUDTF) ReflectionUtils.newInstance(genericUDTF.getClass(),
+    return ReflectionUtils.newInstance(genericUDTF.getClass(),
         null);
   }
 
@@ -1735,7 +1735,7 @@ public final class FunctionRegistry {
   /**
    * Returns whether the exprNodeDesc is node of "cast".
    */
-  private static boolean isOpCast(ExprNodeDesc desc) {
+  public static boolean isOpCast(ExprNodeDesc desc) {
     if (!(desc instanceof ExprNodeGenericFuncDesc)) {
       return false;
     }
@@ -1968,7 +1968,7 @@ public final class FunctionRegistry {
   {
     return getTableFunctionResolver(WINDOWING_TABLE_FUNCTION);
   }
-  
+
   public static boolean isNoopFunction(String fnName) {
     fnName = fnName.toLowerCase();
     return fnName.equals(NOOP_MAP_TABLE_FUNCTION) ||
