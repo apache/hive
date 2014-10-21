@@ -29,6 +29,9 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.spark.counter.SparkCounter;
+import org.apache.hadoop.hive.ql.exec.spark.counter.SparkCounterGroup;
+import org.apache.hadoop.hive.ql.exec.spark.counter.SparkCounters;
 import org.apache.hadoop.hive.ql.exec.spark.status.SparkJobMonitor;
 import org.apache.hadoop.hive.ql.exec.spark.status.impl.JobStateListener;
 import org.apache.hadoop.hive.ql.exec.spark.status.impl.SimpleSparkJobStatus;
@@ -166,9 +169,12 @@ public class SparkClient implements Serializable {
       return 5;
     }
 
+    SparkCounters sparkCounters = new SparkCounters(sc, hiveConf);
+    SparkReporter sparkReporter = new SparkReporter(sparkCounters);
+
     // Generate Spark plan
-    SparkPlanGenerator gen = new SparkPlanGenerator(sc, ctx, jobConf,
-        emptyScratchDir);
+    SparkPlanGenerator gen =
+      new SparkPlanGenerator(sc, ctx, jobConf, emptyScratchDir, sparkReporter);
     SparkPlan plan;
     try {
       plan = gen.generate(sparkWork);
@@ -192,6 +198,7 @@ public class SparkClient implements Serializable {
       LOG.error("Error executing Spark Plan", e);
       return 1;
     }
+
     return 0;
   }
 

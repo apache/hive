@@ -23,8 +23,11 @@ import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.FilterOperator;
+import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.MapOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.ScriptOperator;
 import org.apache.hadoop.mapreduce.util.ResourceBundles;
 import org.apache.spark.api.java.JavaSparkContext;
 
@@ -61,6 +64,11 @@ public class SparkCounters implements Serializable {
     createCounter(HiveConf.getVar(hiveConf, HiveConf.ConfVars.HIVECOUNTERGROUP),
       Operator.HIVECOUNTERCREATEDFILES);
     createCounter(MapOperator.Counter.DESERIALIZE_ERRORS);
+    createCounter(FilterOperator.Counter.FILTERED);
+    createCounter(FilterOperator.Counter.PASSED);
+    createCounter(ScriptOperator.Counter.DESERIALIZE_ERRORS);
+    createCounter(ScriptOperator.Counter.SERIALIZE_ERRORS);
+    createCounter(JoinOperator.SkewkeyTableCounter.SKEWJOINFOLLOWUPJOBS);
   }
 
   public void createCounter(Enum<?> key) {
