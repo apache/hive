@@ -608,6 +608,10 @@ public class HiveConf extends Configuration {
         "transform function (the custom mapper/reducer that the user has specified in the query)"),
     HIVESCRIPTTRUNCATEENV("hive.script.operator.truncate.env", false,
         "Truncate each environment variable for external script in scripts operator to 20KB (to fit system limits)"),
+    HIVESCRIPT_ENV_BLACKLIST("hive.script.operator.env.blacklist",
+        "hive.txn.valid.txns,hive.script.operator.env.blacklist",
+        "Comma separated list of keys from the configuration file not to convert to environment " +
+        "variables when envoking the script operator"),
     HIVEMAPREDMODE("hive.mapred.mode", "nonstrict",
         "The mode in which the Hive operations are being performed. \n" +
         "In strict mode, some risky queries are not allowed to run. They include:\n" +
