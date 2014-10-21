@@ -51,7 +51,7 @@ public abstract class SparkRecordHandler {
 
     oc = output;
     rp = reporter;
-    MapredContext.get().setReporter(reporter);
+//    MapredContext.get().setReporter(reporter);
 
     LOG.info("maximum memory = " + memoryMXBean.getHeapMemoryUsage().getMax());
 

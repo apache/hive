@@ -9,13 +9,8 @@ import org.apache.spark.api.java.function.PairFlatMapFunction;
 
 public abstract class HivePairFlatMapFunction<T, K, V> implements PairFlatMapFunction<T, K, V> {
 
-  protected transient JobConf jobConf;
-
-  private byte[] buffer;
-
   protected static final NumberFormat taskIdFormat = NumberFormat.getInstance();
   protected static final NumberFormat stageIdFormat = NumberFormat.getInstance();
-
   static {
     taskIdFormat.setGroupingUsed(false);
     taskIdFormat.setMinimumIntegerDigits(6);
@@ -23,8 +18,14 @@ public abstract class HivePairFlatMapFunction<T, K, V> implements PairFlatMapFun
     stageIdFormat.setMinimumIntegerDigits(4);
   }
 
-  public HivePairFlatMapFunction(byte[] buffer) {
+  protected transient JobConf jobConf;
+  protected SparkReporter sparkReporter;
+
+  private byte[] buffer;
+
+  public HivePairFlatMapFunction(byte[] buffer, SparkReporter sparkReporter) {
     this.buffer = buffer;
+    this.sparkReporter = sparkReporter;
   }
 
   protected void initJobConf() {

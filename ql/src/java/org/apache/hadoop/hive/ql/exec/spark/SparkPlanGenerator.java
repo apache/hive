@@ -71,12 +71,18 @@ public class SparkPlanGenerator {
   private final JobConf jobConf;
   private Context context;
   private Path scratchDir;
+  private SparkReporter sparkReporter;
   private final Map<BaseWork, BaseWork> cloneToWork;
   private final Map<BaseWork, SparkTran> workToTranMap;
   private final Map<BaseWork, SparkTran> workToParentWorkTranMap;
 
-  public SparkPlanGenerator(JavaSparkContext sc, Context context,
-      JobConf jobConf, Path scratchDir) {
+  public SparkPlanGenerator(
+    JavaSparkContext sc,
+    Context context,
+    JobConf jobConf,
+    Path scratchDir,
+    SparkReporter sparkReporter) {
+
     this.sc = sc;
     this.context = context;
     this.jobConf = jobConf;
@@ -84,6 +90,7 @@ public class SparkPlanGenerator {
     this.cloneToWork = new HashMap<BaseWork, BaseWork>();
     this.workToTranMap = new HashMap<BaseWork, SparkTran>();
     this.workToParentWorkTranMap = new HashMap<BaseWork, SparkTran>();
+    this.sparkReporter = sparkReporter;
   }
 
   public SparkPlan generate(SparkWork sparkWork) throws Exception {
@@ -311,7 +318,7 @@ public class SparkPlanGenerator {
     MapTran result = new MapTran();
     JobConf newJobConf = cloneJobConf(mw);
     byte[] confBytes = KryoSerializer.serializeJobConf(newJobConf);
-    HiveMapFunction mapFunc = new HiveMapFunction(confBytes);
+    HiveMapFunction mapFunc = new HiveMapFunction(confBytes, sparkReporter);
     result.setMapFunction(mapFunc);
     return result;
   }
@@ -320,7 +327,7 @@ public class SparkPlanGenerator {
     ReduceTran result = new ReduceTran();
     JobConf newJobConf = cloneJobConf(rw);
     byte[] confBytes = KryoSerializer.serializeJobConf(newJobConf);
-    HiveReduceFunction redFunc = new HiveReduceFunction(confBytes);
+    HiveReduceFunction redFunc = new HiveReduceFunction(confBytes, sparkReporter);
     result.setReduceFunction(redFunc);
     return result;
   }

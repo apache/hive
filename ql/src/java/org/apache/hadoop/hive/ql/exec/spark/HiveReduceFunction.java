@@ -18,21 +18,19 @@
 
 package org.apache.hadoop.hive.ql.exec.spark;
 
-import java.util.Iterator;
-
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.io.BytesWritable;
-import org.apache.hadoop.mapred.Reporter;
-
 import scala.Tuple2;
+
+import java.util.Iterator;
 
 public class HiveReduceFunction extends HivePairFlatMapFunction<
   Iterator<Tuple2<HiveKey, Iterable<BytesWritable>>>, HiveKey, BytesWritable> {
 
   private static final long serialVersionUID = 1L;
 
-  public HiveReduceFunction(byte[] buffer) {
-    super(buffer);
+  public HiveReduceFunction(byte[] buffer, SparkReporter sparkReporter) {
+    super(buffer, sparkReporter);
   }
 
   @Override
@@ -43,7 +41,7 @@ public class HiveReduceFunction extends HivePairFlatMapFunction<
     SparkReduceRecordHandler reducerRecordhandler = new SparkReduceRecordHandler();
     HiveReduceFunctionResultList result =
         new HiveReduceFunctionResultList(jobConf, it, reducerRecordhandler);
-    reducerRecordhandler.init(jobConf, result, Reporter.NULL);
+    reducerRecordhandler.init(jobConf, result, sparkReporter);
 
     return result;
   }
