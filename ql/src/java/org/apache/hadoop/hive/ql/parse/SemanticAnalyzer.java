@@ -22,6 +22,9 @@ import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVESTATSDBCLASS;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.UndeclaredThrowableException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -9940,13 +9943,21 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
          * .getRowResolver(), true);
          */
       } catch (Exception e) {
-        LOG.error("CBO failed, skipping CBO. ", e);
-        if (!conf.getBoolVar(ConfVars.HIVE_IN_TEST) ||
-            (optiqPlanner.noColsMissingStats.get() > 0) ||
-            e instanceof OptiqSemanticException) {
-          reAnalyzeAST = true;
+        boolean isMissingStats = optiqPlanner.noColsMissingStats.get() > 0;
+        if (isMissingStats) {
+          LOG.error("CBO failed due to missing column stats (see previous errors), skipping CBO");
         } else {
-          throw e instanceof SemanticException ? (SemanticException) e : new SemanticException(e);
+          LOG.error("CBO failed, skipping CBO. ", e);
+        }
+        if (!conf.getBoolVar(ConfVars.HIVE_IN_TEST) || isMissingStats
+            || e instanceof OptiqSemanticException) {
+          reAnalyzeAST = true;
+        } else if (e instanceof SemanticException) {
+          throw (SemanticException)e;
+        } else if (e instanceof RuntimeException) {
+          throw (RuntimeException)e;
+        } else {
+          throw new SemanticException(e);
         }
       } finally {
         runCBO = false;
@@ -12259,14 +12270,48 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         optimizedOptiqPlan = Frameworks.withPlanner(this,
             Frameworks.newConfigBuilder().typeSystem(new HiveTypeSystemImpl()).build());
       } catch (Exception e) {
-        if (semanticException != null)
-          throw semanticException;
-        else
-          throw new RuntimeException(e);
+        rethrowCalciteException(e);
+        throw new AssertionError("rethrowCalciteException didn't throw for " + e.getMessage());
       }
       optiqOptimizedAST = ASTConverter.convert(optimizedOptiqPlan, topLevelFieldSchema);
 
       return optiqOptimizedAST;
+    }
+
+    /*
+     * Unwraps a chain of useless UndeclaredThrowableException-s, InvocationTargetException-s
+     * and RuntimeException-s potentially coming from CBO/Calcite code.
+     */
+    private void rethrowCalciteException(Exception e) throws SemanticException {
+      Throwable first = (semanticException != null) ? semanticException : e,
+          current = first, cause = current.getCause();
+      while (cause != null) {
+        Throwable causeOfCause = cause.getCause();
+        if (current == first && causeOfCause == null && isUselessCause(first)) {
+          // "cause" is a root cause, and "e"/"first" is a useless exception it's wrapped in.
+          first = cause;
+          break;
+        } else if (causeOfCause != null && isUselessCause(cause)
+            && ExceptionHelper.resetCause(current, causeOfCause)) {
+          // "cause" was a useless intermediate cause and was replace it with its own cause.
+          cause = causeOfCause;
+          continue; // do loop once again with the new cause of "current"
+        }
+        current = cause;
+        cause = current.getCause();
+      }
+
+      if (first instanceof RuntimeException) {
+        throw (RuntimeException)first;
+      } else if (first instanceof SemanticException) {
+        throw (SemanticException)first;
+      }
+      throw new RuntimeException(first);
+    }
+
+    private boolean isUselessCause(Throwable t) {
+      return t instanceof RuntimeException || t instanceof InvocationTargetException
+          || t instanceof UndeclaredThrowableException;
     }
 
     @Override
@@ -14237,6 +14282,38 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
 
       return tabAliases;
+    }
+  }
+
+  private static class ExceptionHelper {
+    private static final Field CAUSE_FIELD = getField(Throwable.class, "cause"),
+        TARGET_FIELD = getField(InvocationTargetException.class, "target"),
+        MESSAGE_FIELD = getField(Throwable.class, "detailMessage");
+    private static Field getField(Class<?> clazz, String name) {
+      try {
+        Field f = clazz.getDeclaredField(name);
+        f.setAccessible(true);
+        return f;
+      } catch (Throwable t) {
+        return null;
+      }
+    }
+    public static boolean resetCause(Throwable target, Throwable newCause) {
+      try {
+        if (MESSAGE_FIELD == null) return false;
+        Field field = (target instanceof InvocationTargetException) ? TARGET_FIELD : CAUSE_FIELD;
+        if (field == null) return false;
+
+        Throwable oldCause = target.getCause();
+        String oldMsg = target.getMessage();
+        field.set(target, newCause);
+        if (oldMsg != null && oldMsg.equals(oldCause.toString())) {
+          MESSAGE_FIELD.set(target, newCause == null ? null : newCause.toString());
+        }
+      } catch (Throwable se) {
+        return false;
+      }
+      return true;
     }
   }
 }
