@@ -1188,7 +1188,9 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
                                  int bucket) throws IOException {
     for(FileStatus stat: fs.listStatus(directory)) {
       String name = stat.getPath().getName();
-      if (Integer.parseInt(name.substring(0, name.indexOf('_'))) == bucket) {
+      String numberPart = name.substring(0, name.indexOf('_'));
+      if (org.apache.commons.lang3.StringUtils.isNumeric(numberPart) &&
+          Integer.parseInt(numberPart) == bucket) {
         return stat.getPath();
       }
     }

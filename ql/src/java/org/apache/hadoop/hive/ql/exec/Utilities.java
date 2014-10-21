@@ -2042,15 +2042,21 @@ public final class Utilities {
   public static ClassLoader getSessionSpecifiedClassLoader() {
     SessionState state = SessionState.get();
     if (state == null || state.getConf() == null) {
-      LOG.debug("Hive Conf not found or Session not initiated, use thread based class loader instead");
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Hive Conf not found or Session not initiated, use thread based class loader instead");
+      }
       return JavaUtils.getClassLoader();
     }
     ClassLoader sessionCL = state.getConf().getClassLoader();
-    if (sessionCL != null){
-      LOG.debug("Use session specified class loader");
+    if (sessionCL != null) {
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Use session specified class loader");
+      }
       return sessionCL;
     }
-    LOG.debug("Session specified class loader not found, use thread based class loader");
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Session specified class loader not found, use thread based class loader");
+    }
     return JavaUtils.getClassLoader();
   }
 

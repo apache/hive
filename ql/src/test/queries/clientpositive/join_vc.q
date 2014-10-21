@@ -3,3 +3,10 @@
 explain select t3.BLOCK__OFFSET__INSIDE__FILE,t3.key,t3.value from src t1 join src t2 on t1.key = t2.key join src t3 on t2.value = t3.value order by t3.BLOCK__OFFSET__INSIDE__FILE,t3.key,t3.value limit 3;
 
 select t3.BLOCK__OFFSET__INSIDE__FILE,t3.key,t3.value from src t1 join src t2 on t1.key = t2.key join src t3 on t2.value = t3.value order by t3.BLOCK__OFFSET__INSIDE__FILE,t3.key,t3.value limit 3;
+
+explain
+select t2.BLOCK__OFFSET__INSIDE__FILE
+from src t1 join src t2 on t1.key = t2.key where t1.key < 100;
+
+select t2.BLOCK__OFFSET__INSIDE__FILE
+from src t1 join src t2 on t1.key = t2.key where t1.key < 100;

@@ -25,8 +25,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -75,10 +73,6 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
     RECORDS_OUT_INTERMEDIATE
   }
 
-  private static final Log LOG = LogFactory.getLog(ReduceSinkOperator.class.getName());
-  private static final boolean isInfoEnabled = LOG.isInfoEnabled();
-  private static final boolean isDebugEnabled = LOG.isDebugEnabled();
-  private static final boolean isTraceEnabled = LOG.isTraceEnabled();
   private static final long serialVersionUID = 1L;
   private static final MurmurHash hash = (MurmurHash) MurmurHash.getInstance();
 
@@ -169,7 +163,7 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
 
       List<ExprNodeDesc> keys = conf.getKeyCols();
 
-      if (isDebugEnabled) {
+      if (isLogDebugEnabled) {
         LOG.debug("keys size is " + keys.size());
         for (ExprNodeDesc k : keys) {
           LOG.debug("Key exprNodeDesc " + k.getExprString());
@@ -214,7 +208,7 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
       tag = conf.getTag();
       tagByte[0] = (byte) tag;
       skipTag = conf.getSkipTag();
-      if (isInfoEnabled) {
+      if (isLogInfoEnabled) {
         LOG.info("Using tag = " + tag);
       }
 
@@ -316,7 +310,7 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
           bucketInspector = (IntObjectInspector)bucketField.getFieldObjectInspector();
         }
 
-        if (isInfoEnabled) {
+        if (isLogInfoEnabled) {
           LOG.info("keys are " + conf.getOutputKeyColumnNames() + " num distributions: " +
               conf.getNumDistributionKeys());
         }
@@ -362,7 +356,7 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
       if (useUniformHash && partitionEval.length > 0) {
         hashCode = computeMurmurHash(firstKey);
       } else {
-        hashCode = computeHashCode(row);
+        hashCode = computeHashCode(row, bucketNumber);
       }
 
       firstKey.setHashCode(hashCode);
@@ -411,7 +405,7 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
       // column directly.
       Object recIdValue = acidRowInspector.getStructFieldData(row, recIdField);
       buckNum = bucketInspector.get(recIdInspector.getStructFieldData(recIdValue, bucketField));
-      if (isTraceEnabled) {
+      if (isLogTraceEnabled) {
         LOG.trace("Acid choosing bucket number " + buckNum);
       }
     } else {
@@ -458,7 +452,7 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
     return hash.hash(firstKey.getBytes(), firstKey.getDistKeyLength(), 0);
   }
 
-  private int computeHashCode(Object row) throws HiveException {
+  private int computeHashCode(Object row, int buckNum) throws HiveException {
     // Evaluate the HashCode
     int keyHashCode = 0;
     if (partitionEval.length == 0) {
@@ -482,10 +476,11 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
             + ObjectInspectorUtils.hashCode(o, partitionObjectInspectors[i]);
       }
     }
-    if (isTraceEnabled) {
-      LOG.trace("Going to return hash code " + (keyHashCode * 31 + bucketNumber));
+    int hashCode = buckNum < 0 ? keyHashCode : keyHashCode * 31 + buckNum;
+    if (isLogTraceEnabled) {
+      LOG.trace("Going to return hash code " + hashCode);
     }
-    return bucketNumber < 0  ? keyHashCode : keyHashCode * 31 + bucketNumber;
+    return hashCode;
   }
 
   private boolean partitionKeysAreNull(Object row) throws HiveException {
@@ -527,7 +522,7 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
     // forward is not called
     if (null != out) {
       numRows++;
-      if (isInfoEnabled) {
+      if (isLogInfoEnabled) {
         if (numRows == cntr) {
           cntr *= 10;
           LOG.info(toString() + ": records written - " + numRows);
@@ -562,7 +557,7 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
     }
     super.closeOp(abort);
     out = null;
-    if (isInfoEnabled) {
+    if (isLogInfoEnabled) {
       LOG.info(toString() + ": records written - " + numRows);
     }
     recordCounter.set(numRows);

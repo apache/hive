@@ -598,8 +598,6 @@ public class HiveConf extends Configuration {
         new TimeValidator(TimeUnit.SECONDS),
         "How long to run autoprogressor for the script/UDTF operators.\n" +
         "Set to 0 for forever."),
-    HIVETABLENAME("hive.table.name", "", ""),
-    HIVEPARTITIONNAME("hive.partition.name", "", ""),
     HIVESCRIPTAUTOPROGRESS("hive.script.auto.progress", false,
         "Whether Hive Transform/Map/Reduce Clause should automatically send progress information to TaskTracker \n" +
         "to avoid the task getting killed because of inactivity.  Hive sends progress information when the script is \n" +

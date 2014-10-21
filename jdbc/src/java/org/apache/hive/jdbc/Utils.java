@@ -90,7 +90,7 @@ public class Utils {
     static final String HTTP_PATH_DEPRECATED = "hive.server2.thrift.http.path";
     static final String HTTP_PATH = "httpPath";
     static final String SERVICE_DISCOVERY_MODE = "serviceDiscoveryMode";
-    // Don't use dynamic serice discovery
+    // Don't use dynamic service discovery
     static final String SERVICE_DISCOVERY_MODE_NONE = "none";
     // Use ZooKeeper for indirection while using dynamic service discovery
     static final String SERVICE_DISCOVERY_MODE_ZOOKEEPER = "zooKeeper";
@@ -226,10 +226,11 @@ public class Utils {
 
   // Verify success and optionally with_info status, else throw SQLException
   public static void verifySuccess(TStatus status, boolean withInfo) throws SQLException {
-    if ((status.getStatusCode() != TStatusCode.SUCCESS_STATUS) &&
-        (withInfo && (status.getStatusCode() != TStatusCode.SUCCESS_WITH_INFO_STATUS))) {
-        throw new HiveSQLException(status);
+    if (status.getStatusCode() == TStatusCode.SUCCESS_STATUS ||
+        (withInfo && status.getStatusCode() == TStatusCode.SUCCESS_WITH_INFO_STATUS)) {
+      return;
     }
+    throw new HiveSQLException(status);
   }
 
   /**
@@ -392,8 +393,9 @@ public class Utils {
    * Also log a deprecation message for the client.
    * @param fromMap
    * @param toMap
-   * @param oldName
+   * @param deprecatedName
    * @param newName
+   * @param newUsage
    */
   private static void handleParamDeprecation(Map<String, String> fromMap, Map<String, String> toMap,
       String deprecatedName, String newName, String newUsage) {
