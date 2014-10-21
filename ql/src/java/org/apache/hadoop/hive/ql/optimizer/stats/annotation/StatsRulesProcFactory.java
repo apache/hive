@@ -1021,11 +1021,17 @@ public class StatsRulesProcFactory {
    */
   public static class JoinStatsRule extends DefaultStatsRule implements NodeProcessor {
 
+    private boolean pkfkInferred = false;
+    private long newNumRows = 0;
+    private List<Operator<? extends OperatorDesc>> parents;
+    private CommonJoinOperator<? extends JoinDesc> jop;
+    private int numAttr = 1;
+
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
-      CommonJoinOperator<? extends JoinDesc> jop = (CommonJoinOperator<? extends JoinDesc>) nd;
-      List<Operator<? extends OperatorDesc>> parents = jop.getParentOperators();
+      jop = (CommonJoinOperator<? extends JoinDesc>) nd;
+      parents = jop.getParentOperators();
       AnnotateStatsProcCtx aspCtx = (AnnotateStatsProcCtx) procCtx;
       HiveConf conf = aspCtx.getConf();
       boolean allStatsAvail = true;
@@ -1052,22 +1058,25 @@ public class StatsRulesProcFactory {
           Statistics stats = new Statistics();
           Map<String, Long> rowCountParents = new HashMap<String, Long>();
           List<Long> distinctVals = Lists.newArrayList();
-
-          // 2 relations, multiple attributes
-          boolean multiAttr = false;
-          int numAttr = 1;
           int numParent = parents.size();
-
           Map<String, ColStatistics> joinedColStats = Maps.newHashMap();
           Map<Integer, List<String>> joinKeys = Maps.newHashMap();
           List<Long> rowCounts = Lists.newArrayList();
+
+          // detect if there are multiple attributes in join key
+          ReduceSinkOperator rsOp = (ReduceSinkOperator) jop.getParentOperators().get(0);
+          List<ExprNodeDesc> keyExprs = rsOp.getConf().getKeyCols();
+          numAttr = keyExprs.size();
+
+          // infer PK-FK relationship in single attribute join case
+          inferPKFKRelationship();
 
           // get the join keys from parent ReduceSink operators
           for (int pos = 0; pos < parents.size(); pos++) {
             ReduceSinkOperator parent = (ReduceSinkOperator) jop.getParentOperators().get(pos);
 
             Statistics parentStats = parent.getStatistics();
-            List<ExprNodeDesc> keyExprs = parent.getConf().getKeyCols();
+            keyExprs = parent.getConf().getKeyCols();
 
             // Parent RS may have column statistics from multiple parents.
             // Populate table alias to row count map, this will be used later to
@@ -1081,12 +1090,6 @@ public class StatsRulesProcFactory {
               rowCountParents.put(tabAlias, parentStats.getNumRows());
             }
             rowCounts.add(parentStats.getNumRows());
-
-            // multi-attribute join key
-            if (keyExprs.size() > 1) {
-              multiAttr = true;
-              numAttr = keyExprs.size();
-            }
 
             // compute fully qualified join key column names. this name will be
             // used to quickly look-up for column statistics of join key.
@@ -1110,7 +1113,7 @@ public class StatsRulesProcFactory {
           // attribute join, else max(V(R,y1), V(S,y1)) * max(V(R,y2), V(S,y2))
           // in case of multi-attribute join
           long denom = 1;
-          if (multiAttr) {
+          if (numAttr > 1) {
             List<Long> perAttrDVs = Lists.newArrayList();
             for (int idx = 0; idx < numAttr; idx++) {
               for (Integer i : joinKeys.keySet()) {
@@ -1149,9 +1152,7 @@ public class StatsRulesProcFactory {
           }
 
           // Update NDV of joined columns to be min(V(R,y), V(S,y))
-          if (multiAttr) {
-            updateJoinColumnsNDV(joinKeys, joinedColStats, numAttr);
-          }
+          updateJoinColumnsNDV(joinKeys, joinedColStats, numAttr);
 
           // column statistics from different sources are put together and rename
           // fully qualified column names based on output schema of join operator
@@ -1181,10 +1182,9 @@ public class StatsRulesProcFactory {
 
           // update join statistics
           stats.setColumnStats(outColStats);
-          long newRowCount = computeNewRowCount(rowCounts, denom);
+          long newRowCount = pkfkInferred ? newNumRows : computeNewRowCount(rowCounts, denom);
 
-          updateStatsForJoinType(stats, newRowCount, jop, rowCountParents,
-              outInTabAlias);
+          updateStatsForJoinType(stats, newRowCount, jop, rowCountParents,outInTabAlias);
           jop.setStatistics(stats);
 
           if (isDebugEnabled) {
@@ -1227,6 +1227,146 @@ public class StatsRulesProcFactory {
         }
       }
       return null;
+    }
+
+    private void inferPKFKRelationship() {
+      if (numAttr == 1) {
+        List<Integer> parentsWithPK = getPrimaryKeyCandidates(parents);
+
+        // in case of fact to many dimensional tables join, the join key in fact table will be
+        // mostly foreign key which will have corresponding primary key in dimension table.
+        // The selectivity of fact table in that case will be product of all selectivities of
+        // dimension tables (assumes conjunctivity)
+        for (Integer id : parentsWithPK) {
+          ColStatistics csPK = null;
+          Operator<? extends OperatorDesc> parent = parents.get(id);
+          for (ColStatistics cs : parent.getStatistics().getColumnStats()) {
+            if (cs.isPrimaryKey()) {
+              csPK = cs;
+              break;
+            }
+          }
+
+          // infer foreign key candidates positions
+          List<Integer> parentsWithFK = getForeignKeyCandidates(parents, csPK);
+          if (parentsWithFK.size() == 1 &&
+              parentsWithFK.size() + parentsWithPK.size() == parents.size()) {
+            Operator<? extends OperatorDesc> parentWithFK = parents.get(parentsWithFK.get(0));
+            List<Float> parentsSel = getSelectivity(parents, parentsWithPK);
+            Float prodSelectivity = 1.0f;
+            for (Float selectivity : parentsSel) {
+              prodSelectivity *= selectivity;
+            }
+            newNumRows = (long) (parentWithFK.getStatistics().getNumRows() * prodSelectivity);
+            pkfkInferred = true;
+
+            // some debug information
+            if (isDebugEnabled) {
+              List<String> parentIds = Lists.newArrayList();
+
+              // print primary key containing parents
+              for (Integer i : parentsWithPK) {
+                parentIds.add(parents.get(i).toString());
+              }
+              LOG.debug("STATS-" + jop.toString() + ": PK parent id(s) - " + parentIds);
+              parentIds.clear();
+
+              // print foreign key containing parents
+              for (Integer i : parentsWithFK) {
+                parentIds.add(parents.get(i).toString());
+              }
+              LOG.debug("STATS-" + jop.toString() + ": FK parent id(s) - " + parentIds);
+            }
+          }
+        }
+      }
+    }
+
+    /**
+     * Get selectivity of reduce sink operators.
+     * @param ops - reduce sink operators
+     * @param opsWithPK - reduce sink operators with primary keys
+     * @return - list of selectivity for primary key containing operators
+     */
+    private List<Float> getSelectivity(List<Operator<? extends OperatorDesc>> ops,
+        List<Integer> opsWithPK) {
+      List<Float> result = Lists.newArrayList();
+      for (Integer idx : opsWithPK) {
+        Operator<? extends OperatorDesc> op = ops.get(idx);
+        TableScanOperator tsOp = OperatorUtils
+            .findSingleOperatorUpstream(op, TableScanOperator.class);
+        long inputRow = tsOp.getStatistics().getNumRows();
+        long outputRow = op.getStatistics().getNumRows();
+        result.add((float) outputRow / (float) inputRow);
+      }
+      return result;
+    }
+
+    /**
+     * Returns the index of parents whose join key column statistics ranges are within the specified
+     * primary key range (inferred as foreign keys).
+     * @param ops - operators
+     * @param csPK - column statistics of primary key
+     * @return - list of foreign key containing parent ids
+     */
+    private List<Integer> getForeignKeyCandidates(List<Operator<? extends OperatorDesc>> ops,
+        ColStatistics csPK) {
+      List<Integer> result = Lists.newArrayList();
+      if (csPK == null || ops == null) {
+        return result;
+      }
+
+      for (int i = 0; i < ops.size(); i++) {
+        Operator<? extends OperatorDesc> op = ops.get(i);
+        if (op != null && op instanceof ReduceSinkOperator) {
+          ReduceSinkOperator rsOp = (ReduceSinkOperator) op;
+          List<ExprNodeDesc> keys = rsOp.getConf().getKeyCols();
+          List<String> fqCols = StatsUtils.getFullQualifedColNameFromExprs(keys,
+              rsOp.getColumnExprMap());
+          if (fqCols.size() == 1) {
+            String joinCol = fqCols.get(0);
+            if (rsOp.getStatistics() != null) {
+              ColStatistics cs = rsOp.getStatistics().getColumnStatisticsFromFQColName(joinCol);
+              if (cs != null && !cs.isPrimaryKey()) {
+                if (StatsUtils.inferForeignKey(csPK, cs)) {
+                  result.add(i);
+                }
+              }
+            }
+          }
+        }
+      }
+      return result;
+    }
+
+    /**
+     * Returns the index of parents whose join key columns are infer as primary keys
+     * @param ops - operators
+     * @return - list of primary key containing parent ids
+     */
+    private List<Integer> getPrimaryKeyCandidates(List<Operator<? extends OperatorDesc>> ops) {
+      List<Integer> result = Lists.newArrayList();
+      if (ops != null || !ops.isEmpty()) {
+        for (int i = 0; i < ops.size(); i++) {
+          Operator<? extends OperatorDesc> op = ops.get(i);
+          if (op instanceof ReduceSinkOperator) {
+            ReduceSinkOperator rsOp = (ReduceSinkOperator) op;
+            List<ExprNodeDesc> keys = rsOp.getConf().getKeyCols();
+            List<String> fqCols = StatsUtils.getFullQualifedColNameFromExprs(keys,
+                rsOp.getColumnExprMap());
+            if (fqCols.size() == 1) {
+              String joinCol = fqCols.get(0);
+              if (rsOp.getStatistics() != null) {
+                ColStatistics cs = rsOp.getStatistics().getColumnStatisticsFromFQColName(joinCol);
+                if (cs != null && cs.isPrimaryKey()) {
+                  result.add(i);
+                }
+              }
+            }
+          }
+        }
+      }
+      return result;
     }
 
     private Long getEasedOutDenominator(List<Long> distinctVals) {
