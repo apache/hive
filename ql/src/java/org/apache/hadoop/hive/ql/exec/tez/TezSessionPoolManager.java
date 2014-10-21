@@ -141,7 +141,9 @@ public class TezSessionPoolManager {
   private TezSessionState getNewSessionState(HiveConf conf,
       String queueName, boolean doOpen) throws Exception {
     TezSessionState retTezSessionState = createSession(TezSessionState.makeSessionId());
-    retTezSessionState.setQueueName(queueName);
+    if (queueName != null) {
+      conf.set("tez.queue.name", queueName);
+    }
     String what = "Created";
     if (doOpen) {
       retTezSessionState.open(conf);
@@ -221,29 +223,27 @@ public class TezSessionPoolManager {
       throw new HiveException(e);
     }
 
-    HiveConf existingConf = session.getConf();
-    if (existingConf == null) {
-      return false;
-    }
-
+    boolean doAsEnabled = conf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS);
     // either variables will never be null because a default value is returned in case of absence
-    if (existingConf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS) !=
-        conf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS)) {
+    if (doAsEnabled != conf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS)) {
       return false;
     }
 
     if (!session.isDefault()) {
-      if (existingConf.get("tez.queue.name") == conf.get("tez.queue.name")) {
-        // both are null
-        return true;
-      }
-      if ((existingConf.get("tez.queue.name") == null)) {
-        // doesn't matter if the other conf is null or not. if it is null, above case catches it
-        return false;
+      String queueName = session.getQueueName();
+      LOG.info("Current queue name is " + queueName + " incoming queue name is "
+          + conf.get("tez.queue.name"));
+      if (queueName == null) {
+        if (conf.get("tez.queue.name") != null) {
+          // queue names are different
+          return false;
+        } else {
+          return true;
+        }
       }
 
-      if (!existingConf.get("tez.queue.name").equals(conf.get("tez.queue.name"))) {
-        // handles the case of incoming conf having a null for tez.queue.name
+      if (!queueName.equals(conf.get("tez.queue.name"))) {
+        // the String.equals method handles the case of conf not having the queue name as well.
         return false;
       }
     } else {

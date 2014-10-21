@@ -37,9 +37,10 @@ import org.apache.tez.dag.api.TezException;
 public class TestTezSessionState extends TezSessionState {
 
   private boolean open;
-  private String sessionId;
+  private final String sessionId;
   private HiveConf hiveConf;
   private String user;
+  private boolean doAsEnabled;
 
   public TestTezSessionState(String sessionId) {
     super(sessionId);
@@ -47,38 +48,46 @@ public class TestTezSessionState extends TezSessionState {
   }
 
   @Override
-    public boolean isOpen() {
-      return open;
-    }
+  public boolean isOpen() {
+    return open;
+  }
 
   public void setOpen(boolean open) {
     this.open = open;
   }
 
   @Override
-    public void open(HiveConf conf) throws IOException,
-           LoginException, URISyntaxException, TezException {
-             this.hiveConf = conf;
-             UserGroupInformation ugi;
-             ugi = ShimLoader.getHadoopShims().getUGIForConf(conf);
-             user = ShimLoader.getHadoopShims().getShortUserName(ugi);
-    }
+  public void open(HiveConf conf) throws IOException, LoginException, URISyntaxException,
+      TezException {
+    this.hiveConf = conf;
+    UserGroupInformation ugi;
+    ugi = ShimLoader.getHadoopShims().getUGIForConf(conf);
+    user = ShimLoader.getHadoopShims().getShortUserName(ugi);
+    this.doAsEnabled = conf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS);
+  }
 
   @Override
-    public void close(boolean keepTmpDir) throws TezException, IOException {
-      open = keepTmpDir;
-    }
+  public void close(boolean keepTmpDir) throws TezException, IOException {
+    open = keepTmpDir;
+  }
 
+  @Override
   public HiveConf getConf() {
     return this.hiveConf;
   }
 
   @Override
-    public String getSessionId() {
-      return sessionId;
-    }
-  
+  public String getSessionId() {
+    return sessionId;
+  }
+
+  @Override
   public String getUser() {
     return user;
+  }
+
+  @Override
+  public boolean getDoAsEnabled() {
+    return this.doAsEnabled;
   }
 }
