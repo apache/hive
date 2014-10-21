@@ -8,9 +8,8 @@ import org.apache.spark.api.java.function.PairFlatMapFunction;
 
 
 public abstract class HivePairFlatMapFunction<T, K, V> implements PairFlatMapFunction<T, K, V> {
-
-  protected static final NumberFormat taskIdFormat = NumberFormat.getInstance();
-  protected static final NumberFormat stageIdFormat = NumberFormat.getInstance();
+  private static final NumberFormat taskIdFormat = NumberFormat.getInstance();
+  private static final NumberFormat stageIdFormat = NumberFormat.getInstance();
   static {
     taskIdFormat.setGroupingUsed(false);
     taskIdFormat.setMinimumIntegerDigits(6);
@@ -43,7 +42,7 @@ public abstract class HivePairFlatMapFunction<T, K, V> implements PairFlatMapFun
     StringBuilder taskAttemptIdBuilder = new StringBuilder("attempt_");
     taskAttemptIdBuilder.append(System.currentTimeMillis())
       .append("_")
-      .append(stageIdFormat.format(TaskContext.get().getStageId()))
+      .append(stageIdFormat.format(TaskContext.get().stageId()))
       .append("_");
 
     if (isMap()) {
@@ -54,12 +53,12 @@ public abstract class HivePairFlatMapFunction<T, K, V> implements PairFlatMapFun
 
     // Spark task attempt id is increased by Spark context instead of task, which may introduce
     // unstable qtest output, since non Hive features depends on this, we always set it to 0 here.
-    taskAttemptIdBuilder.append(taskIdFormat.format(TaskContext.get().getPartitionId()))
+    taskAttemptIdBuilder.append(taskIdFormat.format(TaskContext.get().partitionId()))
       .append("_0");
 
     String taskAttemptIdStr = taskAttemptIdBuilder.toString();
     jobConf.set("mapred.task.id", taskAttemptIdStr);
     jobConf.set("mapreduce.task.attempt.id", taskAttemptIdStr);
-    jobConf.setInt("mapred.task.partition", TaskContext.get().getPartitionId());
+    jobConf.setInt("mapred.task.partition", TaskContext.get().partitionId());
   }
 }

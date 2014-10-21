@@ -25,15 +25,6 @@ import org.apache.spark.TaskContext;
  * Contains utilities methods used as part of Spark tasks
  */
 public class SparkUtilities {
-  public static void setTaskInfoInJobConf(JobConf jobConf, TaskContext taskContext) {
-    // Set mapred.task.partition in executor side.
-    jobConf.setInt("mapred.task.partition", taskContext.getPartitionId());
-
-    // Set mapred.task.id as taskId_attemptId. The taskId is 6 digits in length (prefixed with 0 if
-    // necessary). Similarly attemptId is two digits in length.
-    jobConf.set("mapred.task.id",
-        String.format("%06d_%02d", taskContext.getPartitionId(), taskContext.getAttemptId()));
-  }
 
   public static BytesWritable copyBytesWritable(BytesWritable bw) {
     BytesWritable copy = new BytesWritable();
