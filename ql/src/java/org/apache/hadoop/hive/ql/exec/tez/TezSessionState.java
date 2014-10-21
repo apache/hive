@@ -67,13 +67,14 @@ public class TezSessionState {
   private LocalResource appJarLr;
   private TezClient session;
   private String sessionId;
-  private DagUtils utils;
+  private final DagUtils utils;
   private String queueName;
   private boolean defaultQueue = false;
   private String user;
 
   private final Set<String> additionalFilesNotFromConf = new HashSet<String>();
   private final Set<LocalResource> localizedResources = new HashSet<LocalResource>();
+  private boolean doAsEnabled;
 
   private static List<TezSessionState> openSessions
     = Collections.synchronizedList(new LinkedList<TezSessionState>());
@@ -130,6 +131,8 @@ public class TezSessionState {
   public void open(HiveConf conf, String[] additionalFiles)
     throws IOException, LoginException, IllegalArgumentException, URISyntaxException, TezException {
     this.conf = conf;
+    this.queueName = conf.get("tez.queue.name");
+    this.doAsEnabled = conf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS);
 
     UserGroupInformation ugi;
     ugi = ShimLoader.getHadoopShims().getUGIForConf(conf);
@@ -391,5 +394,9 @@ public class TezSessionState {
 
   public String getUser() {
     return user;
+  }
+
+  public boolean getDoAsEnabled() {
+    return doAsEnabled;
   }
 }
