@@ -18,8 +18,6 @@
 package org.apache.hadoop.hive.ql.exec.spark;
 
 import org.apache.hadoop.io.BytesWritable;
-import org.apache.hadoop.mapred.JobConf;
-import org.apache.spark.TaskContext;
 
 /**
  * Contains utilities methods used as part of Spark tasks
