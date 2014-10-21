@@ -34,7 +34,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
-import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
@@ -139,39 +138,9 @@ public class SparkCompiler extends TaskCompiler {
     GenSparkProcContext procCtx = new GenSparkProcContext(
         conf, tempParseContext, mvTask, rootTasks, inputs, outputs);
 
-    // -------------------- First Pass ---------------------
-
-    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
-    opRules.put(new RuleRegExp("TS", TableScanOperator.getOperatorName() + "%"),
-        new SparkTableScanProcessor());
-
-    Dispatcher disp = new DefaultRuleDispatcher(new SparkMultiInsertionProcessor(), opRules, procCtx);
-    ArrayList<Node> topNodes = new ArrayList<Node>();
-    topNodes.addAll(pCtx.getTopOps().values());
-    GraphWalker ogw = new GenSparkWorkWalker(disp, procCtx);
-    ogw.startWalking(topNodes, null);
-
-    // ------------------- Second Pass ----------------------
-
-    // Merge tasks upon Join/Union if possible
-    opRules.clear();
-    opRules.put(new RuleRegExp("Join", JoinOperator.getOperatorName() + "%"),
-        new SparkMergeTaskProcessor());
-    opRules.put(new RuleRegExp("Union", UnionOperator.getOperatorName() + "%"),
-        new SparkMergeTaskProcessor());
-    disp = new DefaultRuleDispatcher(null, opRules, procCtx);
-    topNodes = new ArrayList<Node>();
-    topNodes.addAll(procCtx.tempTS); // First process temp TS
-    topNodes.addAll(pCtx.getTopOps().values());
-    ogw = new GenSparkWorkWalker(disp, procCtx);
-    ogw.startWalking(topNodes, null);
-
-
-    // ------------------- Third Pass -----------------------
-
     // create a walker which walks the tree in a DFS manner while maintaining
     // the operator stack. The dispatcher generates the plan from the operator tree
-    opRules.clear();
+    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
     opRules.put(new RuleRegExp("Split Work - ReduceSink",
         ReduceSinkOperator.getOperatorName() + "%"), genSparkWork);
 
@@ -184,17 +153,7 @@ public class SparkCompiler extends TaskCompiler {
 
     opRules.put(new RuleRegExp("Handle Analyze Command",
         TableScanOperator.getOperatorName() + "%"),
-        new CompositeProcessor(
-            new NodeProcessor() {
-              @Override
-              public Object process(Node nd, Stack<Node> s,
-                                    NodeProcessorCtx procCtx, Object... no) throws SemanticException {
-                GenSparkProcContext context = (GenSparkProcContext) procCtx;
-                context.currentTask = context.opToTaskMap.get(nd);
-                return null;
-              }
-            },
-            new SparkProcessAnalyzeTable(GenSparkUtils.getUtils())));
+        new SparkProcessAnalyzeTable(GenSparkUtils.getUtils()));
 
     opRules.put(new RuleRegExp("Remember union", UnionOperator.getOperatorName() + "%"),
         new NodeProcessor() {
@@ -213,11 +172,10 @@ public class SparkCompiler extends TaskCompiler {
 
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along
-    disp = new DefaultRuleDispatcher(null, opRules, procCtx);
-    topNodes = new ArrayList<Node>();
+    Dispatcher disp = new DefaultRuleDispatcher(null, opRules, procCtx);
+    List<Node> topNodes = new ArrayList<Node>();
     topNodes.addAll(pCtx.getTopOps().values());
-    topNodes.addAll(procCtx.tempTS);
-    ogw = new GenSparkWorkWalker(disp, procCtx);
+    GraphWalker ogw = new GenSparkWorkWalker(disp, procCtx);
     ogw.startWalking(topNodes, null);
 
     // we need to clone some operator plans and remove union operators still

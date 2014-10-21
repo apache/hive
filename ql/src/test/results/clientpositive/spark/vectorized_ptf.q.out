@@ -5113,22 +5113,23 @@ TOK_QUERY
 
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
-  Stage-4 depends on stages: Stage-2
-  Stage-3 depends on stages: Stage-4, Stage-5
+  Stage-3 depends on stages: Stage-2
   Stage-1 depends on stages: Stage-3
-  Stage-6 depends on stages: Stage-1
+  Stage-4 depends on stages: Stage-1
   Stage-0 depends on stages: Stage-3
-  Stage-7 depends on stages: Stage-0
-  Stage-5 depends on stages: Stage-2
+  Stage-5 depends on stages: Stage-0
 
 STAGE PLANS:
   Stage: Stage-2
     Spark
       Edges:
-        Reducer 4 <- Map 3 (GROUP SORT, 1)
+        Reducer 2 <- Map 1 (GROUP SORT, 1)
+        Reducer 3 <- Reducer 2 (GROUP SORT, 1)
+        Reducer 4 <- Reducer 3 (GROUP SORT, 1)
+        Reducer 5 <- Reducer 2 (GROUP SORT, 1)
 #### A masked pattern was here ####
       Vertices:
-        Map 3 
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: part
@@ -5187,42 +5188,13 @@ STAGE PLANS:
                   name: default.part
             Truncated Path -> Alias:
               /part [part]
-        Reducer 4 
+        Reducer 2 
             Needs Tagging: false
             Reduce Operator Tree:
               Extract
                 Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
                   Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
-                  File Output Operator
-                    compressed: false
-                    GlobalTableId: 0
-#### A masked pattern was here ####
-                    NumFilesPerFileSink: 1
-                    table:
-                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                        properties:
-                          columns _col0,_col1,_col2,_col3,_col4,_col5,_col6,_col7,_col8,_col9,_col10,_col11
-                          columns.types int,string,string,string,string,int,string,double,string,bigint,string,struct<transactionid:bigint,bucketid:int,rowid:bigint>
-                          escape.delim \
-                          serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-                    TotalFiles: 1
-                    GatherStats: false
-                    MultiFileSpray: false
-
-  Stage: Stage-4
-    Spark
-      Edges:
-        Reducer 5 <- Map 1 (GROUP SORT, 1)
-        Reducer 6 <- Reducer 5 (GROUP SORT, 1)
-#### A masked pattern was here ####
-      Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  GatherStats: false
                   Reduce Output Operator
                     key expressions: _col2 (type: string), _col5 (type: int)
                     sort order: ++
@@ -5231,32 +5203,19 @@ STAGE PLANS:
                     tag: -1
                     value expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int)
                     auto parallelism: true
-            Path -> Alias:
-#### A masked pattern was here ####
-            Path -> Partition:
-#### A masked pattern was here ####
-                Partition
-                  base file name: -mr-10002
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  properties:
-                    columns _col0,_col1,_col2,_col3,_col4,_col5,_col6,_col7,_col8,_col9,_col10,_col11
-                    columns.types int,string,string,string,string,int,string,double,string,bigint,string,struct<transactionid:bigint,bucketid:int,rowid:bigint>
-                    escape.delim \
-                    serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-                
-                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                    properties:
-                      columns _col0,_col1,_col2,_col3,_col4,_col5,_col6,_col7,_col8,_col9,_col10,_col11
-                      columns.types int,string,string,string,string,int,string,double,string,bigint,string,struct<transactionid:bigint,bucketid:int,rowid:bigint>
-                      escape.delim \
-                      serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-                    serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-            Truncated Path -> Alias:
-#### A masked pattern was here ####
-        Reducer 5 
+                  Select Operator
+                    expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int), _col7 (type: double)
+                    outputColumnNames: _col1, _col2, _col5, _col7
+                    Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col2 (type: string), _col1 (type: string)
+                      sort order: ++
+                      Map-reduce partition columns: _col2 (type: string)
+                      Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                      tag: -1
+                      value expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int), _col7 (type: double)
+                      auto parallelism: true
+        Reducer 3 
             Needs Tagging: false
             Reduce Operator Tree:
               Extract
@@ -5271,7 +5230,7 @@ STAGE PLANS:
                     tag: -1
                     value expressions: _wcol0 (type: bigint), _col1 (type: string), _col2 (type: string), _col5 (type: int)
                     auto parallelism: true
-        Reducer 6 
+        Reducer 4 
             Needs Tagging: false
             Reduce Operator Tree:
               Extract
@@ -5308,110 +5267,7 @@ STAGE PLANS:
                       TotalFiles: 1
                       GatherStats: true
                       MultiFileSpray: false
-
-  Stage: Stage-3
-    Dependency Collection
-
-  Stage: Stage-1
-    Move Operator
-      tables:
-          replace: true
-#### A masked pattern was here ####
-          table:
-              input format: org.apache.hadoop.mapred.TextInputFormat
-              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              properties:
-                bucket_count -1
-                columns p_mfgr,p_name,p_size,s2,r,dr,cud,fv1
-                columns.comments        
-                columns.types string:string:int:int:int:int:double:int
-#### A masked pattern was here ####
-                name default.part_5
-                serialization.ddl struct part_5 { string p_mfgr, string p_name, i32 p_size, i32 s2, i32 r, i32 dr, double cud, i32 fv1}
-                serialization.format 1
-                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
-              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.part_5
-
-  Stage: Stage-6
-    Stats-Aggr Operator
-#### A masked pattern was here ####
-
-  Stage: Stage-0
-    Move Operator
-      tables:
-          replace: true
-#### A masked pattern was here ####
-          table:
-              input format: org.apache.hadoop.mapred.TextInputFormat
-              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              properties:
-                bucket_count -1
-                columns p_mfgr,p_name,p_size,r,dr,s
-                columns.comments      
-                columns.types string:string:int:int:int:double
-#### A masked pattern was here ####
-                name default.part_4
-                serialization.ddl struct part_4 { string p_mfgr, string p_name, i32 p_size, i32 r, i32 dr, double s}
-                serialization.format 1
-                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
-              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.part_4
-
-  Stage: Stage-7
-    Stats-Aggr Operator
-#### A masked pattern was here ####
-
-  Stage: Stage-5
-    Spark
-      Edges:
-        Reducer 7 <- Map 2 (GROUP SORT, 1)
-#### A masked pattern was here ####
-      Vertices:
-        Map 2 
-            Map Operator Tree:
-                TableScan
-                  GatherStats: false
-                  Select Operator
-                    expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int), _col7 (type: double)
-                    outputColumnNames: _col1, _col2, _col5, _col7
-                    Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: _col2 (type: string), _col1 (type: string)
-                      sort order: ++
-                      Map-reduce partition columns: _col2 (type: string)
-                      Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
-                      tag: -1
-                      value expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int), _col7 (type: double)
-                      auto parallelism: true
-            Path -> Alias:
-#### A masked pattern was here ####
-            Path -> Partition:
-#### A masked pattern was here ####
-                Partition
-                  base file name: -mr-10002
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  properties:
-                    columns _col0,_col1,_col2,_col3,_col4,_col5,_col6,_col7,_col8,_col9,_col10,_col11
-                    columns.types int,string,string,string,string,int,string,double,string,bigint,string,struct<transactionid:bigint,bucketid:int,rowid:bigint>
-                    escape.delim \
-                    serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-                
-                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                    properties:
-                      columns _col0,_col1,_col2,_col3,_col4,_col5,_col6,_col7,_col8,_col9,_col10,_col11
-                      columns.types int,string,string,string,string,int,string,double,string,bigint,string,struct<transactionid:bigint,bucketid:int,rowid:bigint>
-                      escape.delim \
-                      serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-                    serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-            Truncated Path -> Alias:
-#### A masked pattern was here ####
-        Reducer 7 
+        Reducer 5 
             Needs Tagging: false
             Reduce Operator Tree:
               Extract
@@ -5448,6 +5304,61 @@ STAGE PLANS:
                       TotalFiles: 1
                       GatherStats: true
                       MultiFileSpray: false
+
+  Stage: Stage-3
+    Dependency Collection
+
+  Stage: Stage-1
+    Move Operator
+      tables:
+          replace: true
+#### A masked pattern was here ####
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                bucket_count -1
+                columns p_mfgr,p_name,p_size,s2,r,dr,cud,fv1
+                columns.comments        
+                columns.types string:string:int:int:int:int:double:int
+#### A masked pattern was here ####
+                name default.part_5
+                serialization.ddl struct part_5 { string p_mfgr, string p_name, i32 p_size, i32 s2, i32 r, i32 dr, double cud, i32 fv1}
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+#### A masked pattern was here ####
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.part_5
+
+  Stage: Stage-4
+    Stats-Aggr Operator
+#### A masked pattern was here ####
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+#### A masked pattern was here ####
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                bucket_count -1
+                columns p_mfgr,p_name,p_size,r,dr,s
+                columns.comments      
+                columns.types string:string:int:int:int:double
+#### A masked pattern was here ####
+                name default.part_4
+                serialization.ddl struct part_4 { string p_mfgr, string p_name, i32 p_size, i32 r, i32 dr, double s}
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+#### A masked pattern was here ####
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.part_4
+
+  Stage: Stage-5
+    Stats-Aggr Operator
+#### A masked pattern was here ####
 
 PREHOOK: query: from noop(on part 
 partition by p_mfgr 

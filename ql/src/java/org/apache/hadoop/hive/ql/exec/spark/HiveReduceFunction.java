@@ -20,13 +20,9 @@ package org.apache.hadoop.hive.ql.exec.spark;
 
 import java.util.Iterator;
 
-import org.apache.hadoop.hive.ql.exec.mr.ExecReducer;
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.io.BytesWritable;
-import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.Reporter;
-import org.apache.spark.TaskContext;
-import org.apache.spark.api.java.function.PairFlatMapFunction;
 
 import scala.Tuple2;
 
