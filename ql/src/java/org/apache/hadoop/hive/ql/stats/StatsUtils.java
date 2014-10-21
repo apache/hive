@@ -177,6 +177,9 @@ public class StatsUtils {
         colStats = getTableColumnStats(table, schema, neededColumns);
       }
 
+      // infer if any column can be primary key based on column statistics
+      inferAndSetPrimaryKey(stats.getNumRows(), colStats);
+
       stats.setColumnStatsState(deriveStatType(colStats, neededColumns));
       stats.addToColumnStats(colStats);
     } else if (partList != null) {
@@ -263,6 +266,9 @@ public class StatsUtils {
           addParitionColumnStats(neededColumns, referencedColumns, schema, table, partList,
               columnStats);
 
+          // infer if any column can be primary key based on column statistics
+          inferAndSetPrimaryKey(stats.getNumRows(), columnStats);
+
           stats.addToColumnStats(columnStats);
           State colState = deriveStatType(columnStats, referencedColumns);
           if (aggrStats.getPartsFound() != partNames.size() && colState != State.NONE) {
@@ -275,6 +281,58 @@ public class StatsUtils {
       }
     }
     return stats;
+  }
+
+
+  /**
+   * Based on the provided column statistics and number of rows, this method infers if the column
+   * can be primary key. It checks if the difference between the min and max value is equal to
+   * number of rows specified.
+   * @param numRows - number of rows
+   * @param colStats - column statistics
+   */
+  public static void inferAndSetPrimaryKey(long numRows, List<ColStatistics> colStats) {
+    if (colStats != null) {
+      for (ColStatistics cs : colStats) {
+        if (cs != null && cs.getRange() != null && cs.getRange().minValue != null &&
+            cs.getRange().maxValue != null) {
+          if (numRows ==
+              ((cs.getRange().maxValue.longValue() - cs.getRange().minValue.longValue()) + 1)) {
+            cs.setPrimaryKey(true);
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * Infer foreign key relationship from given column statistics.
+   * @param csPK - column statistics of primary key
+   * @param csFK - column statistics of potential foreign key
+   * @return
+   */
+  public static boolean inferForeignKey(ColStatistics csPK, ColStatistics csFK) {
+    if (csPK != null && csFK != null) {
+      if (csPK.isPrimaryKey()) {
+        if (csPK.getRange() != null && csFK.getRange() != null) {
+          ColStatistics.Range pkRange = csPK.getRange();
+          ColStatistics.Range fkRange = csFK.getRange();
+          return isWithin(fkRange, pkRange);
+        }
+      }
+    }
+    return false;
+  }
+
+  private static boolean isWithin(ColStatistics.Range range1, ColStatistics.Range range2) {
+    if (range1.minValue != null && range2.minValue != null && range1.maxValue != null &&
+        range2.maxValue != null) {
+      if (range1.minValue.longValue() >= range2.minValue.longValue() &&
+          range1.maxValue.longValue() <= range2.maxValue.longValue()) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private static void addParitionColumnStats(List<String> neededColumns,
@@ -533,6 +591,7 @@ public class StatsUtils {
       // Columns statistics for complex datatypes are not supported yet
       return null;
     }
+
     return cs;
   }
 
