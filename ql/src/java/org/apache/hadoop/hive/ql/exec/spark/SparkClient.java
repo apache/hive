@@ -41,9 +41,8 @@ import org.apache.hadoop.hive.ql.plan.SparkWork;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.mapred.JobConf;
-import org.apache.spark.FutureAction;
-import org.apache.spark.SimpleFutureAction;
 import org.apache.spark.SparkConf;
+import org.apache.spark.api.java.JavaFutureAction;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.ui.jobs.JobProgressListener;
@@ -187,11 +186,14 @@ public class SparkClient implements Serializable {
     try {
       JavaPairRDD<HiveKey, BytesWritable> finalRDD = plan.generateGraph();
       // We use Spark RDD async action to submit job as it's the only way to get jobId now.
-      FutureAction future = finalRDD.foreachAsync(HiveVoidFunction.getInstance());
+      JavaFutureAction<Void> future = finalRDD.foreachAsync(HiveVoidFunction.getInstance());
       // An action may trigger multi jobs in Spark, we only monitor the latest job here
       // until we found that Hive does trigger multi jobs.
+      List<Integer> jobIds = future.jobIds();
+      // jobIds size is always bigger than or equal with 1.
+      int jobId = jobIds.get(jobIds.size() - 1);
       SimpleSparkJobStatus sparkJobStatus = new SimpleSparkJobStatus(
-        (Integer) future.jobIds().last(), jobStateListener, jobProgressListener);
+       jobId, jobStateListener, jobProgressListener);
       SparkJobMonitor monitor = new SparkJobMonitor(sparkJobStatus);
       monitor.startMonitor();
     } catch (Exception e) {
