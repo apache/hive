@@ -18,9 +18,22 @@
 
 package org.apache.hadoop.hive.common;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.Arrays;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 public class ValidTxnListImpl implements ValidTxnList {
+
+  static final private Log LOG = LogFactory.getLog(ValidTxnListImpl.class.getName());
+  final static private int MAX_UNCOMPRESSED_LENGTH = 256;
+  final static private char COMPRESSION_MARKER = 'C';
+  final static private String STRING_ENCODING = "ISO-8859-1";
 
   private long[] exceptions;
   private long highWatermark;
@@ -95,7 +108,25 @@ public class ValidTxnListImpl implements ValidTxnList {
         buf.append(except);
       }
     }
-    return buf.toString();
+    if (buf.length() > MAX_UNCOMPRESSED_LENGTH) {
+      try {
+        ByteArrayOutputStream byteBuf = new ByteArrayOutputStream();
+        GZIPOutputStream gzip = new GZIPOutputStream(byteBuf);
+        gzip.write(buf.toString().getBytes());
+        gzip.close();
+        StringBuilder buf2 = new StringBuilder();
+        buf2.append(COMPRESSION_MARKER);
+        buf2.append(buf.length());
+        buf2.append(':');
+        buf2.append(byteBuf.toString(STRING_ENCODING));
+        return buf2.toString();
+      } catch (IOException e) {
+        LOG.error("Unable to compress transaction list, " + e.getMessage());
+        throw new RuntimeException(e);
+      }
+    } else {
+      return buf.toString();
+    }
   }
 
   @Override
@@ -104,11 +135,36 @@ public class ValidTxnListImpl implements ValidTxnList {
       highWatermark = Long.MAX_VALUE;
       exceptions = new long[0];
     } else {
-      String[] values = src.split(":");
+      String[] values;
+      if (src.charAt(0) == COMPRESSION_MARKER) {
+        try {
+          int colon = src.indexOf(':');
+          int len = Integer.valueOf(src.substring(1, colon));
+          ByteArrayInputStream byteBuf =
+              new ByteArrayInputStream(src.substring(colon + 1).getBytes(STRING_ENCODING));
+          GZIPInputStream gzip = new GZIPInputStream(byteBuf);
+          byte[] buf = new byte[len];
+          int bytesRead = 0;
+          int offset = 0;
+          int maxReadLen = len;
+          do {
+            bytesRead = gzip.read(buf, offset, maxReadLen);
+            offset += bytesRead;
+            maxReadLen -= bytesRead;
+          } while (maxReadLen > 0);
+          values = new String(buf).split(":");
+        } catch (IOException e) {
+          LOG.error("Unable to decode compressed transaction list, " + e.getMessage());
+          throw new RuntimeException(e);
+        }
+
+      } else {
+        values = src.split(":");
+      }
       highWatermark = Long.parseLong(values[0]);
       exceptions = new long[values.length - 1];
-      for(int i = 1; i < values.length; ++i) {
-        exceptions[i-1] = Long.parseLong(values[i]);
+      for (int i = 1; i < values.length; ++i) {
+        exceptions[i - 1] = Long.parseLong(values[i]);
       }
     }
   }
