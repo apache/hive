@@ -19,10 +19,13 @@
 package org.apache.hadoop.hive.ql.exec.spark;
 
 import org.apache.hadoop.hive.ql.io.HiveKey;
+import org.apache.hadoop.io.BinaryComparable;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.spark.api.java.JavaPairRDD;
 
 import com.google.common.base.Preconditions;
+import org.apache.spark.api.java.function.PairFunction;
+import scala.Tuple2;
 
 public class MapInput implements SparkTran<BytesWritable, BytesWritable, HiveKey, BytesWritable> {
   private JavaPairRDD<HiveKey, BytesWritable> hadoopRDD;
@@ -46,7 +49,24 @@ public class MapInput implements SparkTran<BytesWritable, BytesWritable, HiveKey
       JavaPairRDD<BytesWritable, BytesWritable> input) {
     Preconditions.checkArgument(input == null,
         "AssertionError: MapInput doesn't take any input");
-    return toCache ? hadoopRDD.cache() : hadoopRDD;
+    JavaPairRDD result = hadoopRDD;
+    if (toCache) {
+      result = result.mapToPair(new CopyFunction());
+      return result.cache();
+    } else {
+      return result;
+    }
+  }
+
+  private static class CopyFunction implements PairFunction<Tuple2<BytesWritable, BytesWritable>,
+        BytesWritable, BytesWritable> {
+
+    @Override
+    public Tuple2<BytesWritable, BytesWritable> call(Tuple2<BytesWritable, BytesWritable> tup) throws Exception {
+      // no need to copy key since it never get used in HiveMapFunction
+      BytesWritable value = SparkUtilities.copyBytesWritable(tup._2());
+      return new Tuple2<BytesWritable, BytesWritable>(tup._1(), value);
+    }
   }
 
 }

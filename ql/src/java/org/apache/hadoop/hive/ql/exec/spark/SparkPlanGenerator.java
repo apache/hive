@@ -18,15 +18,23 @@
 
 package org.apache.hadoop.hive.ql.exec.spark;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
 
 import com.google.common.base.Preconditions;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.io.merge.MergeFileMapper;
 import org.apache.hadoop.hive.ql.io.merge.MergeFileOutputFormat;
 import org.apache.hadoop.hive.ql.io.merge.MergeFileWork;
@@ -46,7 +54,6 @@ import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.SparkEdgeProperty;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
-import org.apache.hadoop.hive.ql.plan.UnionWork;
 import org.apache.hadoop.hive.ql.stats.StatsFactory;
 import org.apache.hadoop.hive.ql.stats.StatsPublisher;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -64,6 +71,9 @@ public class SparkPlanGenerator {
   private final JobConf jobConf;
   private Context context;
   private Path scratchDir;
+  private final Map<BaseWork, BaseWork> cloneToWork;
+  private final Map<BaseWork, SparkTran> workToTranMap;
+  private final Map<BaseWork, SparkTran> workToParentWorkTranMap;
 
   public SparkPlanGenerator(JavaSparkContext sc, Context context,
       JobConf jobConf, Path scratchDir) {
@@ -71,31 +81,31 @@ public class SparkPlanGenerator {
     this.context = context;
     this.jobConf = jobConf;
     this.scratchDir = scratchDir;
+    this.cloneToWork = new HashMap<BaseWork, BaseWork>();
+    this.workToTranMap = new HashMap<BaseWork, SparkTran>();
+    this.workToParentWorkTranMap = new HashMap<BaseWork, SparkTran>();
   }
 
   public SparkPlan generate(SparkWork sparkWork) throws Exception {
     SparkPlan sparkPlan = new SparkPlan();
-    Map<BaseWork, SparkTran> workToTranMap = new HashMap<BaseWork, SparkTran>();
+    cloneToWork.clear();
+    workToTranMap.clear();
+    workToParentWorkTranMap.clear();
+
+    splitSparkWork(sparkWork);
 
     for (BaseWork work : sparkWork.getAllWork()) {
       SparkTran tran;
       if (work instanceof MapWork) {
-        MapInput mapInput = generateMapInput((MapWork)work);
-        sparkPlan.addTran(mapInput);
+        SparkTran mapInput = generateParentTran(sparkPlan, sparkWork, work);
         tran = generate((MapWork)work);
         sparkPlan.addTran(tran);
         sparkPlan.connect(mapInput, tran);
       } else if (work instanceof ReduceWork) {
-        List<BaseWork> parentWorks = sparkWork.getParents(work);
+        SparkTran shuffleTran = generateParentTran(sparkPlan, sparkWork, work);
         tran = generate((ReduceWork)work);
         sparkPlan.addTran(tran);
-        ShuffleTran shuffleTran = generate(sparkWork.getEdgeProperty(parentWorks.get(0), work));
-        sparkPlan.addTran(shuffleTran);
         sparkPlan.connect(shuffleTran, tran);
-        for (BaseWork parentWork : parentWorks) {
-          SparkTran parentTran = workToTranMap.get(parentWork);
-          sparkPlan.connect(parentTran, shuffleTran);
-        }
       } else {
         List<BaseWork> parentWorks = sparkWork.getParents(work);
         tran = new IdentityTran();
@@ -105,10 +115,142 @@ public class SparkPlanGenerator {
           sparkPlan.connect(parentTran, tran);
         }
       }
+
       workToTranMap.put(work, tran);
     }
 
     return sparkPlan;
+  }
+
+  // Generate (possibly get from a cached result) parent SparkTran
+  private SparkTran generateParentTran(SparkPlan sparkPlan, SparkWork sparkWork, BaseWork work) throws Exception {
+    if (cloneToWork.containsKey(work)) {
+      BaseWork originalWork = cloneToWork.get(work);
+      if (workToParentWorkTranMap.containsKey(originalWork)) {
+        return workToParentWorkTranMap.get(originalWork);
+      }
+    }
+
+    SparkTran result;
+    if (work instanceof MapWork) {
+      result = generateMapInput((MapWork)work);
+      sparkPlan.addTran(result);
+    } else if (work instanceof ReduceWork) {
+      List<BaseWork> parentWorks = sparkWork.getParents(work);
+      result = generate(sparkWork.getEdgeProperty(parentWorks.get(0), work), cloneToWork.containsKey(work));
+      sparkPlan.addTran(result);
+      for (BaseWork parentWork : parentWorks) {
+        sparkPlan.connect(workToTranMap.get(parentWork), result);
+      }
+    } else {
+      throw new IllegalStateException("AssertionError: generateParentTran() only expect MapWork or ReduceWork," +
+          " but found " + work.getClass().getName());
+    }
+
+    if (cloneToWork.containsKey(work)) {
+      workToParentWorkTranMap.put(cloneToWork.get(work), result);
+    }
+
+    return result;
+  }
+
+
+  private void splitSparkWork(SparkWork sparkWork) {
+    // do a BFS on the sparkWork graph, and look for any work that has more than one child.
+    // If we found such a work, we split it into multiple ones, one for each of its child.
+    Queue<BaseWork> queue = new LinkedList<BaseWork>();
+    Set<BaseWork> visited = new HashSet<BaseWork>();
+    queue.addAll(sparkWork.getRoots());
+    while (!queue.isEmpty()) {
+      BaseWork work = queue.poll();
+      if (!visited.add(work)) {
+        continue;
+      }
+
+      List<BaseWork> childWorks = sparkWork.getChildren(work);
+      // First, add all children of this work into queue, to be processed later.
+      for (BaseWork w : childWorks) {
+        queue.add(w);
+      }
+
+      // Second, check if this work has multiple reduceSinks. If so, do split.
+      splitBaseWork(sparkWork, work, childWorks);
+    }
+  }
+
+  private Set<Operator<?>> getAllReduceSinks(BaseWork work) {
+    Set<Operator<?>> resultSet = work.getAllLeafOperators();
+    Iterator<Operator<?>> it = resultSet.iterator();
+    while (it.hasNext()) {
+      if (!(it.next() instanceof ReduceSinkOperator)) {
+        it.remove();
+      }
+    }
+    return resultSet;
+  }
+
+  // Split work into multiple branches, one for each childWork in childWorks.
+  // It also set up the connection between each parent work and child work.
+  private void splitBaseWork(SparkWork sparkWork, BaseWork parentWork, List<BaseWork> childWorks) {
+    if (getAllReduceSinks(parentWork).size() <= 1) {
+      return;
+    }
+
+    // Grand-parent works - we need to set these to be the parents of the cloned works.
+    List<BaseWork> grandParentWorks = sparkWork.getParents(parentWork);
+    boolean isFirst = true;
+
+    for (BaseWork childWork : childWorks) {
+      BaseWork clonedParentWork = Utilities.cloneBaseWork(parentWork);
+      String childReducerName = childWork.getName();
+      SparkEdgeProperty clonedEdgeProperty = sparkWork.getEdgeProperty(parentWork, childWork);
+
+      // We need to remove those branches that
+      // 1, ended with a ReduceSinkOperator, and
+      // 2, the ReduceSinkOperator's name is not the same as childReducerName.
+      // Also, if the cloned work is not the first, we remove ALL leaf operators except
+      // the corresponding ReduceSinkOperator.
+      for (Operator<?> op : clonedParentWork.getAllLeafOperators()) {
+        if (op instanceof ReduceSinkOperator) {
+          if (!((ReduceSinkOperator)op).getConf().getOutputName().equals(childReducerName)) {
+            removeOpRecursive(op);
+          }
+        } else if (!isFirst) {
+          removeOpRecursive(op);
+        }
+      }
+
+      isFirst = false;
+
+      // Then, we need to set up the graph connection. Especially:
+      // 1, we need to connect this cloned parent work with all the grand-parent works.
+      // 2, we need to connect this cloned parent work with the corresponding child work.
+      sparkWork.add(clonedParentWork);
+      for (BaseWork gpw : grandParentWorks) {
+        sparkWork.connect(gpw, clonedParentWork, sparkWork.getEdgeProperty(gpw, parentWork));
+      }
+      sparkWork.connect(clonedParentWork, childWork, clonedEdgeProperty);
+      cloneToWork.put(clonedParentWork, parentWork);
+    }
+
+    sparkWork.remove(parentWork);
+  }
+
+  // Remove op from all its parents' child list.
+  // Recursively remove any of its parent who only have this op as child.
+  private void removeOpRecursive(Operator<?> operator) {
+    List<Operator<?>> parentOperators = new ArrayList<Operator<?>>();
+    for (Operator<?> op : operator.getParentOperators()) {
+      parentOperators.add(op);
+    }
+    for (Operator<?> parentOperator : parentOperators) {
+      Preconditions.checkArgument(parentOperator.getChildOperators().contains(operator),
+          "AssertionError: parent of " + operator.getName() + " doesn't have it as child.");
+      parentOperator.removeChild(operator);
+      if (parentOperator.getNumChild() == 0) {
+        removeOpRecursive(parentOperator);
+      }
+    }
   }
 
   private Class getInputFormat(JobConf jobConf, MapWork mWork) throws HiveException {
@@ -147,10 +289,10 @@ public class SparkPlanGenerator {
 
     JavaPairRDD<HiveKey, BytesWritable> hadoopRDD = sc.hadoopRDD(jobConf, ifClass,
         WritableComparable.class, Writable.class);
-    return new MapInput(hadoopRDD);
+    return new MapInput(hadoopRDD, false /*TODO: fix this after resolving HIVE-8457: cloneToWork.containsKey(mapWork)*/);
   }
 
-  private ShuffleTran generate(SparkEdgeProperty edge) {
+  private ShuffleTran generate(SparkEdgeProperty edge, boolean needCache) {
     Preconditions.checkArgument(!edge.isShuffleNone(),
         "AssertionError: SHUFFLE_NONE should only be used for UnionWork.");
     SparkShuffler shuffler;
@@ -161,7 +303,7 @@ public class SparkPlanGenerator {
     } else {
       shuffler = new GroupByShuffler();
     }
-    return new ShuffleTran(shuffler, edge.getNumPartitions());
+    return new ShuffleTran(shuffler, edge.getNumPartitions(), needCache);
   }
 
   private MapTran generate(MapWork mw) throws Exception {

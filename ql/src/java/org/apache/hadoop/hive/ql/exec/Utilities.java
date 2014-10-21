@@ -972,6 +972,23 @@ public final class Utilities {
   }
 
   /**
+   * Clones using the powers of XML. Do not use unless necessary.
+   * @param plan The plan.
+   * @return The clone.
+   */
+  public static BaseWork cloneBaseWork(BaseWork plan) {
+    PerfLogger perfLogger = PerfLogger.getPerfLogger();
+    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.CLONE_PLAN);
+    ByteArrayOutputStream baos = new ByteArrayOutputStream(4096);
+    Configuration conf = new HiveConf();
+    serializePlan(plan, baos, conf, true);
+    BaseWork newPlan = deserializePlan(new ByteArrayInputStream(baos.toByteArray()),
+        plan.getClass(), conf, true);
+    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.CLONE_PLAN);
+    return newPlan;
+  }
+
+  /**
    * Serialize the object. This helper function mainly makes sure that enums,
    * counters, etc are handled properly.
    */

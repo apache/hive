@@ -113,6 +113,31 @@ public abstract class BaseWork extends AbstractOperatorDesc {
     return returnSet;
   }
 
+  /**
+   * Returns a set containing all leaf operators from the operator tree in this work.
+   * @return a set containing all leaf operators in this operator tree.
+   */
+  public Set<Operator<?>> getAllLeafOperators() {
+    Set<Operator<?>> returnSet = new LinkedHashSet<Operator<?>>();
+    Set<Operator<?>> opSet = getAllRootOperators();
+    Stack<Operator<?>> opStack = new Stack<Operator<?>>();
+
+    // add all children
+    opStack.addAll(opSet);
+
+    while(!opStack.empty()) {
+      Operator<?> op = opStack.pop();
+      if (op.getNumChild() == 0) {
+        returnSet.add(op);
+      }
+      if (op.getChildOperators() != null) {
+        opStack.addAll(op.getChildOperators());
+      }
+    }
+
+    return returnSet;
+  }
+
   public Map<String, Map<Integer, String>> getScratchColumnVectorTypes() {
     return scratchColumnVectorTypes;
   }

@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.exec.spark;
 
+import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.spark.TaskContext;
 
@@ -33,4 +34,11 @@ public class SparkUtilities {
     jobConf.set("mapred.task.id",
         String.format("%06d_%02d", taskContext.getPartitionId(), taskContext.getAttemptId()));
   }
+
+  public static BytesWritable copyBytesWritable(BytesWritable bw) {
+    BytesWritable copy = new BytesWritable();
+    copy.set(bw);
+    return copy;
+  }
+
 }

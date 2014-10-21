@@ -90,10 +90,6 @@ public class GenSparkWork implements NodeProcessor {
       return null;
     }
 
-    if (operator instanceof FileSinkOperator) {
-      context.opToTaskMap.put(operator, context.currentTask);
-    }
-
     SparkWork sparkWork = context.currentTask.getWork();
 
     // Right now the work graph is pretty simple. If there is no

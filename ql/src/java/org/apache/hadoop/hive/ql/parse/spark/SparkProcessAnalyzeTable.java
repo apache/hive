@@ -79,10 +79,6 @@ public class SparkProcessAnalyzeTable implements NodeProcessor {
     GenSparkProcContext context = (GenSparkProcContext) procContext;
 
     TableScanOperator tableScan = (TableScanOperator) nd;
-    // If this tableScan is a generated one for multi-insertion, ignore it
-    if (context.tempTS.contains(tableScan)) {
-      return null;
-    }
 
     ParseContext parseContext = context.parseContext;
     Class<? extends InputFormat> inputFormat = parseContext.getTopToTable().get(tableScan)
