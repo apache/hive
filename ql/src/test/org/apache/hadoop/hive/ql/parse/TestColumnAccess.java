@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -45,6 +46,14 @@ public class TestColumnAccess {
     Assert.assertEquals("Checking command success", 0, ret);
     ret = driver.run("create view v1 as select * from t1").getResponseCode();
     Assert.assertEquals("Checking command success", 0, ret);
+  }
+
+  @AfterClass
+  public static void Teardown() throws Exception {
+    Driver driver = createDriver();
+    driver.run("drop table t1");
+    driver.run("drop table t2");
+    driver.run("drop view v1");
   }
 
   @Test
