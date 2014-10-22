@@ -1992,17 +1992,18 @@ public final class FunctionRegistry {
    * @return true if function is a UDAF, has WindowFunctionDescription annotation and the annotations
    *         confirms a ranking function, false otherwise
    */
-  public static boolean isRankingFunction(String name){
+  public static boolean isRankingFunction(String name) {
     FunctionInfo info = getFunctionInfo(name);
-    GenericUDAFResolver res = info.getGenericUDAFResolver();
-    if (res != null){
-      WindowFunctionDescription desc =
-          AnnotationUtils.getAnnotation(res.getClass(), WindowFunctionDescription.class);
-      if (desc != null){
-        return desc.rankingFunction();
-      }
+    if (info == null) {
+      return false;
     }
-    return false;
+    GenericUDAFResolver res = info.getGenericUDAFResolver();
+    if (res == null) {
+      return false;
+    }
+    WindowFunctionDescription desc =
+        AnnotationUtils.getAnnotation(res.getClass(), WindowFunctionDescription.class);
+    return (desc != null) && desc.rankingFunction();
   }
 
   /**
