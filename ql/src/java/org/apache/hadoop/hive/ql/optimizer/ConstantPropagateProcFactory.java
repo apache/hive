@@ -361,13 +361,10 @@ public final class ConstantPropagateProcFactory {
   }
 
   private static ExprNodeColumnDesc getColumnExpr(ExprNodeDesc expr) {
-    if (expr instanceof ExprNodeColumnDesc) {
-      return (ExprNodeColumnDesc)expr;
+    while (FunctionRegistry.isOpCast(expr)) {
+      expr = expr.getChildren().get(0);
     }
-    if (FunctionRegistry.isOpCast(expr)) {
-      return (ExprNodeColumnDesc)expr.getChildren().get(0);
-    }
-    return null;
+    return (expr instanceof ExprNodeColumnDesc) ? (ExprNodeColumnDesc)expr : null;
   }
 
   private static ExprNodeDesc shortcutFunction(GenericUDF udf, List<ExprNodeDesc> newExprs) {
