@@ -321,12 +321,12 @@ STAGE PLANS:
             alias: orc_pred
             Statistics: Num rows: 1049 Data size: 311170 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((t is not null and (t < 0)) and (t > -2)) (type: boolean)
-              Statistics: Num rows: 58 Data size: 17204 Basic stats: COMPLETE Column stats: NONE
+              predicate: ((t < 0) and (t > -2)) (type: boolean)
+              Statistics: Num rows: 116 Data size: 34409 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: t (type: tinyint)
                 outputColumnNames: t
-                Statistics: Num rows: 58 Data size: 17204 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 116 Data size: 34409 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: sum(hash(t))
                   mode: hash
@@ -380,15 +380,15 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: orc_pred
-            filterExpr: ((t is not null and (t < 0)) and (t > -2)) (type: boolean)
+            filterExpr: ((t < 0) and (t > -2)) (type: boolean)
             Statistics: Num rows: 1049 Data size: 311170 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((t is not null and (t < 0)) and (t > -2)) (type: boolean)
-              Statistics: Num rows: 58 Data size: 17204 Basic stats: COMPLETE Column stats: NONE
+              predicate: ((t < 0) and (t > -2)) (type: boolean)
+              Statistics: Num rows: 116 Data size: 34409 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: t (type: tinyint)
                 outputColumnNames: t
-                Statistics: Num rows: 58 Data size: 17204 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 116 Data size: 34409 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: sum(hash(t))
                   mode: hash
