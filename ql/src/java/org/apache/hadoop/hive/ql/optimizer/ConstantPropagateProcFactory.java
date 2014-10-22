@@ -166,6 +166,10 @@ public final class ConstantPropagateProcFactory {
     }
     LOG.debug("Casting " + desc + " to type " + ti);
     ExprNodeConstantDesc c = (ExprNodeConstantDesc) desc;
+    if (null != c.getFoldedFromVal() && priti.getTypeName().equals(serdeConstants.STRING_TYPE_NAME)) {
+      // avoid double casting to preserve original string representation of constant.
+      return new ExprNodeConstantDesc(c.getFoldedFromVal());
+    }
     ObjectInspector origOI =
         TypeInfoUtils.getStandardJavaObjectInspectorFromTypeInfo(desc.getTypeInfo());
     ObjectInspector oi =
@@ -551,7 +555,12 @@ public final class ConstantPropagateProcFactory {
         LOG.error("Unable to evaluate " + udf + ". Return value unrecoginizable.");
         return null;
       }
-      return new ExprNodeConstantDesc(o);
+      String constStr = null;
+      if(arguments.length == 1 && FunctionRegistry.isOpCast(udf)) {
+        // remember original string representation of constant.
+        constStr = arguments[0].get().toString();
+      }
+      return new ExprNodeConstantDesc(o).setFoldedFromVal(constStr);
     } catch (HiveException e) {
       LOG.error("Evaluation function " + udf.getClass()
           + " failed in Constant Propagatation Optimizer.");

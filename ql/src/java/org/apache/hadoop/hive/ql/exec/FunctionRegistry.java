@@ -1739,13 +1739,13 @@ public final class FunctionRegistry {
     if (!(desc instanceof ExprNodeGenericFuncDesc)) {
       return false;
     }
-    GenericUDF genericUDF = ((ExprNodeGenericFuncDesc)desc).getGenericUDF();
-    Class udfClass;
-    if (genericUDF instanceof GenericUDFBridge) {
-      udfClass = ((GenericUDFBridge)genericUDF).getUdfClass();
-    } else {
-      udfClass = genericUDF.getClass();
-    }
+    return isOpCast(((ExprNodeGenericFuncDesc)desc).getGenericUDF());
+  }
+
+  public static boolean isOpCast(GenericUDF genericUDF) {
+    Class udfClass = (genericUDF instanceof GenericUDFBridge) ?
+        ((GenericUDFBridge)genericUDF).getUdfClass() : genericUDF.getClass();
+
     return udfClass == UDFToBoolean.class || udfClass == UDFToByte.class ||
         udfClass == UDFToDouble.class || udfClass == UDFToFloat.class ||
         udfClass == UDFToInteger.class || udfClass == UDFToLong.class ||
