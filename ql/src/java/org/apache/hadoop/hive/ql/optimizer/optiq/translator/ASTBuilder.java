@@ -136,6 +136,10 @@ class ASTBuilder {
   }
 
   static ASTNode literal(RexLiteral literal) {
+    return literal(literal, false);
+  }
+
+  static ASTNode literal(RexLiteral literal, boolean useTypeQualInLiteral) {
     Object val = null;
     int type = 0;
     SqlTypeName sqlType = literal.getType().getSqlTypeName();
@@ -147,24 +151,44 @@ class ASTBuilder {
       type = HiveParser.BigintLiteral;
       break;
     case TINYINT:
-      val = literal.getValue3();
+      if (useTypeQualInLiteral) {
+        val = literal.getValue3() + "Y";
+      } else {
+        val = literal.getValue3();
+      }
       type = HiveParser.TinyintLiteral;
       break;
     case SMALLINT:
-      val = literal.getValue3();
+      if (useTypeQualInLiteral) {
+        val = literal.getValue3() + "S";
+      } else {
+        val = literal.getValue3();
+      }
       type = HiveParser.SmallintLiteral;
       break;
     case INTEGER:
     case BIGINT:
-      val = literal.getValue3();
+      if (useTypeQualInLiteral) {
+        val = literal.getValue3() + "L";
+      } else {
+        val = literal.getValue3();
+      }
       type = HiveParser.BigintLiteral;
       break;
     case DOUBLE:
-      val = literal.getValue3() + "D";
+      if (useTypeQualInLiteral) {
+        val = literal.getValue3() + "D";
+      } else {
+        val = literal.getValue3();
+      }
       type = HiveParser.Number;
       break;
     case DECIMAL:
-      val = literal.getValue3() + "BD";
+      if (useTypeQualInLiteral) {
+        val = literal.getValue3() + "BD";
+      } else {
+        val = literal.getValue3();
+      }
       type = HiveParser.DecimalLiteral;
       break;
     case FLOAT:
