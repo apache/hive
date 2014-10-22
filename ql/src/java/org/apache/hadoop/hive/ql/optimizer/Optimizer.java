@@ -63,13 +63,12 @@ public class Optimizer {
       transformations.add(new PredicateTransitivePropagate());
       transformations.add(new SyntheticJoinPredicate());
       transformations.add(new PredicatePushDown());
-      transformations.add(new PartitionPruner());
     }
     if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTCONSTANTPROPAGATION)) {
         transformations.add(new ConstantPropagate());
     }
-
     if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTPPD)) {
+      transformations.add(new PartitionPruner());
       transformations.add(new PartitionConditionRemover());
       if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTLISTBUCKETING)) {
         /* Add list bucketing pruner. */
