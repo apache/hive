@@ -56,7 +56,9 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
 /**
@@ -188,12 +190,18 @@ public class PartitionPruner implements Transform {
     // Replace virtual columns with nulls. See javadoc for details.
     prunerExpr = removeNonPartCols(prunerExpr, extractPartColNames(tab), partColsUsedInFilter);
     // Remove all parts that are not partition columns. See javadoc for details.
-    ExprNodeGenericFuncDesc compactExpr = (ExprNodeGenericFuncDesc)compactExpr(prunerExpr.clone());
+    ExprNodeDesc compactExpr = compactExpr(prunerExpr.clone());
     String oldFilter = prunerExpr.getExprString();
-    if (compactExpr == null) {
-      // Non-strict mode, and all the predicates are on non-partition columns - get everything.
-      LOG.debug("Filter " + oldFilter + " was null after compacting");
-      return getAllPartsFromCacheOrServer(tab, key, true, prunedPartitionsMap);
+    if (isBooleanExpr(compactExpr)) {
+    	// For null and true values, return every partition
+    	if (!isFalseExpr(compactExpr)) {
+    		// Non-strict mode, and all the predicates are on non-partition columns - get everything.
+    		LOG.debug("Filter " + oldFilter + " was null after compacting");
+    		return getAllPartsFromCacheOrServer(tab, key, true, prunedPartitionsMap);
+    	} else {
+    		return new PrunedPartitionList(tab, new LinkedHashSet<Partition>(new ArrayList<Partition>()),
+    				new ArrayList<String>(), false);
+    	}
     }
     LOG.debug("Filter w/ compacting: " + compactExpr.getExprString()
         + "; filter w/o compacting: " + oldFilter);
@@ -204,7 +212,7 @@ public class PartitionPruner implements Transform {
       return ppList;
     }
 
-    ppList = getPartitionsFromServer(tab, compactExpr, conf, alias, partColsUsedInFilter, oldFilter.equals(compactExpr.getExprString()));
+    ppList = getPartitionsFromServer(tab, (ExprNodeGenericFuncDesc)compactExpr, conf, alias, partColsUsedInFilter, oldFilter.equals(compactExpr.getExprString()));
     prunedPartitionsMap.put(key, ppList);
     return ppList;
   }
@@ -225,16 +233,22 @@ public class PartitionPruner implements Transform {
     partsCache.put(key, ppList);
     return ppList;
   }
-
-  private static ExprNodeDesc removeTruePredciates(ExprNodeDesc e) {
-    if (e instanceof ExprNodeConstantDesc) {
-      ExprNodeConstantDesc eC = (ExprNodeConstantDesc) e;
-      if (e.getTypeInfo() == TypeInfoFactory.booleanTypeInfo
-          && eC.getValue() == Boolean.TRUE) {
-        return null;
-      }
-    }
-    return e;
+  
+  static private boolean isBooleanExpr(ExprNodeDesc expr) {
+	  return  expr != null && expr instanceof ExprNodeConstantDesc && 
+              ((ExprNodeConstantDesc)expr).getTypeInfo() instanceof PrimitiveTypeInfo &&
+              ((PrimitiveTypeInfo)(((ExprNodeConstantDesc)expr).getTypeInfo())).
+              getTypeName().equals(serdeConstants.BOOLEAN_TYPE_NAME);	  
+  }
+  static private boolean isTrueExpr(ExprNodeDesc expr) {
+      return  isBooleanExpr(expr) &&  
+              ((ExprNodeConstantDesc)expr).getValue() != null &&
+              ((ExprNodeConstantDesc)expr).getValue().equals(Boolean.TRUE);
+  }
+  static private boolean isFalseExpr(ExprNodeDesc expr) {
+      return  isBooleanExpr(expr) && 
+              ((ExprNodeConstantDesc)expr).getValue() != null &&
+              ((ExprNodeConstantDesc)expr).getValue().equals(Boolean.FALSE);	  
   }
 
   /**
@@ -245,10 +259,13 @@ public class PartitionPruner implements Transform {
    * @return partition pruning expression that only contains partition columns.
    */
   static private ExprNodeDesc compactExpr(ExprNodeDesc expr) {
-    if (expr instanceof ExprNodeConstantDesc) {
-      expr = removeTruePredciates(expr);
-      if (expr == null || ((ExprNodeConstantDesc)expr).getValue() == null) {
-        return null;
+    // If this is a constant boolean expression, return the value.
+	if (expr == null) {
+		return null;
+	}
+	if (expr instanceof ExprNodeConstantDesc) {
+      if (isBooleanExpr(expr)) {
+        return expr;
       } else {
         throw new IllegalStateException("Unexpected non-null ExprNodeConstantDesc: "
           + expr.getExprString());
@@ -256,22 +273,29 @@ public class PartitionPruner implements Transform {
     } else if (expr instanceof ExprNodeGenericFuncDesc) {
       GenericUDF udf = ((ExprNodeGenericFuncDesc)expr).getGenericUDF();
       boolean isAnd = udf instanceof GenericUDFOPAnd;
-      if (isAnd || udf instanceof GenericUDFOPOr) {
+      boolean isOr = udf instanceof GenericUDFOPOr;
+      
+      if (isAnd || isOr) {
         List<ExprNodeDesc> children = expr.getChildren();
-        ExprNodeDesc left = removeTruePredciates(children.get(0));
-        children.set(0, left == null ? null : compactExpr(left));
-        ExprNodeDesc right = removeTruePredciates(children.get(1));
-        children.set(1, right == null ? null : compactExpr(right));
+        ExprNodeDesc left = children.get(0);
+        children.set(0, compactExpr(left));
+        ExprNodeDesc right = children.get(1);
+        children.set(1, compactExpr(right));
 
-        // Note that one does not simply compact (not-null or null) to not-null.
-        // Only if we have an "and" is it valid to send one side to metastore.
-        if (children.get(0) == null && children.get(1) == null) {
-          return null;
-        } else if (children.get(0) == null) {
-          return isAnd ? children.get(1) : null;
-        } else if (children.get(1) == null) {
-          return isAnd ? children.get(0) : null;
-        }
+        if (isTrueExpr(children.get(0)) && isTrueExpr(children.get(1))) {
+        	return new ExprNodeConstantDesc(Boolean.TRUE);
+        } else if (isTrueExpr(children.get(0)))  {
+        	return isAnd ? children.get(1) :  new ExprNodeConstantDesc(Boolean.TRUE);
+        } else if (isTrueExpr(children.get(1))) {
+        	return isAnd ? children.get(0) : new ExprNodeConstantDesc(Boolean.TRUE);
+        } else if (isFalseExpr(children.get(0)) && isFalseExpr(children.get(1))) {
+        	return new ExprNodeConstantDesc(Boolean.FALSE);
+        } else if (isFalseExpr(children.get(0)))  {
+            return isAnd ? new ExprNodeConstantDesc(Boolean.FALSE) : children.get(1);
+        } else if (isFalseExpr(children.get(1))) {
+            return isAnd ? new ExprNodeConstantDesc(Boolean.FALSE) : children.get(0);
+        } 
+        
       }
       return expr;
     } else {
@@ -296,9 +320,9 @@ public class PartitionPruner implements Transform {
       if (!partCols.contains(column)) {
         // Column doesn't appear to be a partition column for the table.
         return new ExprNodeConstantDesc(expr.getTypeInfo(), null);
-      }
+      } 
       referred.add(column);
-    }
+    }	        
     if (expr instanceof ExprNodeGenericFuncDesc) {
       List<ExprNodeDesc> children = expr.getChildren();
       for (int i = 0; i < children.size(); ++i) {
