@@ -171,14 +171,16 @@ public class SkewJoinOptimizer implements Transform {
         joinOpClone = (JoinOperator)currOpClone;
       }
 
+      List<TableScanOperator> tableScanCloneOpsForJoin =
+          new ArrayList<TableScanOperator>();
+      if (!getTableScanOpsForJoin(joinOpClone, tableScanCloneOpsForJoin)) {
+        LOG.debug("Operator tree not properly cloned!");
+        return null;
+      }
+
       // Put the filter "skewed column = skewed keys" in op
       // and "skewed columns != skewed keys" in selectOpClone
       insertSkewFilter(tableScanOpsForJoin, skewedValues, true);
-
-      List<TableScanOperator> tableScanCloneOpsForJoin =
-        new ArrayList<TableScanOperator>();
-      assert
-        getTableScanOpsForJoin(joinOpClone, tableScanCloneOpsForJoin);
 
       insertSkewFilter(tableScanCloneOpsForJoin, skewedValues, false);
 
