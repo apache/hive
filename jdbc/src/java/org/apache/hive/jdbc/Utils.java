@@ -226,10 +226,11 @@ public class Utils {
 
   // Verify success and optionally with_info status, else throw SQLException
   public static void verifySuccess(TStatus status, boolean withInfo) throws SQLException {
-    if ((status.getStatusCode() != TStatusCode.SUCCESS_STATUS) &&
-        (withInfo && (status.getStatusCode() != TStatusCode.SUCCESS_WITH_INFO_STATUS))) {
-        throw new HiveSQLException(status);
+    if (status.getStatusCode() == TStatusCode.SUCCESS_STATUS ||
+        (withInfo && status.getStatusCode() == TStatusCode.SUCCESS_WITH_INFO_STATUS)) {
+      return;
     }
+    throw new HiveSQLException(status);
   }
 
   /**
