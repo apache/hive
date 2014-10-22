@@ -214,8 +214,11 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   protected transient Map<String, LongWritable> statsMap = new HashMap<String, LongWritable>();
   @SuppressWarnings("rawtypes")
   protected transient OutputCollector out;
-  protected transient Log LOG = LogFactory.getLog(this.getClass().getName());
-  protected transient boolean isLogInfoEnabled = LOG.isInfoEnabled();
+  protected transient final Log LOG = LogFactory.getLog(getClass().getName());
+  protected transient final Log PLOG = LogFactory.getLog(Operator.class.getName()); // for simple disabling logs from all operators
+  protected transient final boolean isLogInfoEnabled = LOG.isInfoEnabled() && PLOG.isInfoEnabled();
+  protected transient final boolean isLogDebugEnabled = LOG.isDebugEnabled() && PLOG.isDebugEnabled();
+  protected transient final boolean isLogTraceEnabled = LOG.isTraceEnabled() && PLOG.isTraceEnabled();
   protected transient String alias;
   protected transient Reporter reporter;
   protected transient String id;
@@ -491,33 +494,45 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   public abstract void processOp(Object row, int tag) throws HiveException;
 
   protected final void defaultStartGroup() throws HiveException {
-    LOG.debug("Starting group");
+    if (isLogDebugEnabled) {
+      LOG.debug("Starting group");
+    }
 
     if (childOperators == null) {
       return;
     }
 
-    LOG.debug("Starting group for children:");
+    if (isLogDebugEnabled) {
+      LOG.debug("Starting group for children:");
+    }
     for (Operator<? extends OperatorDesc> op : childOperators) {
       op.startGroup();
     }
 
-    LOG.debug("Start group Done");
+    if (isLogDebugEnabled) {
+      LOG.debug("Start group Done");
+    }
   }
 
   protected final void defaultEndGroup() throws HiveException {
-    LOG.debug("Ending group");
+    if (isLogDebugEnabled) {
+      LOG.debug("Ending group");
+    }
 
     if (childOperators == null) {
       return;
     }
 
-    LOG.debug("Ending group for children:");
+    if (isLogDebugEnabled) {
+      LOG.debug("Ending group for children:");
+    }
     for (Operator<? extends OperatorDesc> op : childOperators) {
       op.endGroup();
     }
 
-    LOG.debug("End group Done");
+    if (isLogDebugEnabled) {
+      LOG.debug("End group Done");
+    }
   }
 
   // If a operator wants to do some work at the beginning of a group
@@ -1047,6 +1062,17 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   public void cleanUpInputFileChangedOp() throws HiveException {
   }
 
+  // called by map operator. propagated recursively to single parented descendants
+  public void setInputContext(String inputPath, String tableName, String partitionName) {
+    if (childOperators != null) {
+      for (Operator<? extends OperatorDesc> child : childOperators) {
+        if (child.getNumParent() == 1) {
+          child.setInputContext(inputPath, tableName, partitionName);
+        }
+      }
+    }
+  }
+
   public boolean supportSkewJoinOptimization() {
     return false;
   }
@@ -1264,7 +1290,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   }
 
   public void setOpTraits(OpTraits metaInfo) {
-    if (LOG.isDebugEnabled()) {
+    if (isLogDebugEnabled) {
       LOG.debug("Setting traits ("+metaInfo+") on "+this);
     }
     if (conf != null) {
@@ -1275,7 +1301,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   }
 
   public void setStatistics(Statistics stats) {
-    if (LOG.isDebugEnabled()) {
+    if (isLogDebugEnabled) {
       LOG.debug("Setting stats ("+stats+") on "+this);
     }
     if (conf != null) {

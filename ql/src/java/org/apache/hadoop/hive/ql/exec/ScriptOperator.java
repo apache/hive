@@ -308,6 +308,16 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
     return;
   }
 
+  private transient String tableName;
+  private transient String partitionName ;
+
+  @Override
+  public void setInputContext(String inputPath, String tableName, String partitionName) {
+    this.tableName = tableName;
+    this.partitionName = partitionName;
+    super.setInputContext(inputPath, tableName, partitionName);
+  }
+
   @Override
   public void processOp(Object row, int tag) throws HiveException {
     // initialize the user's process only when you receive the first row
@@ -331,10 +341,8 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
 
         String[] wrappedCmdArgs = addWrapper(cmdArgs);
         LOG.info("Executing " + Arrays.asList(wrappedCmdArgs));
-        LOG.info("tablename="
-            + hconf.get(HiveConf.ConfVars.HIVETABLENAME.varname));
-        LOG.info("partname="
-            + hconf.get(HiveConf.ConfVars.HIVEPARTITIONNAME.varname));
+        LOG.info("tablename=" + tableName);
+        LOG.info("partname=" + partitionName);
         LOG.info("alias=" + alias);
 
         ProcessBuilder pb = new ProcessBuilder(wrappedCmdArgs);
