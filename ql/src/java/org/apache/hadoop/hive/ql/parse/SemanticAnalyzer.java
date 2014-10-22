@@ -2662,7 +2662,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if (joinKeys == null || joinKeys.length == 0) {
       return input;
     }
-
+    Map<Integer, ExprNodeDesc> hashes = new HashMap<Integer, ExprNodeDesc>();
+    if (input instanceof FilterOperator) {
+      ExprNodeDescUtils.getExprNodeColumnDesc(Arrays.asList(((FilterDesc)input.getConf()).getPredicate()), hashes);
+    }
     ExprNodeDesc filterPred = null;
     List<Boolean> nullSafes = joinTree.getNullSafes();
     for (int i = 0; i < joinKeys.length; i++) {
@@ -2670,6 +2673,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
          ((ExprNodeColumnDesc)joinKeys[i]).getIsPartitionColOrVirtualCol())) {
         // no need to generate is not null predicate for partitioning or
         // virtual column, since those columns can never be null.
+        continue;
+      }
+      if(null != hashes.get(joinKeys[i].hashCode())) {
+        // there is already a predicate on this src.
         continue;
       }
       List<ExprNodeDesc> args = new ArrayList<ExprNodeDesc>();
