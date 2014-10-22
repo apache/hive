@@ -314,7 +314,7 @@ public class RexNodeConverter {
       optiqLiteral = rexBuilder.makeBinaryLiteral(bs);
       break;
     case SHORT:
-      optiqLiteral = rexBuilder.makeExactLiteral(new BigDecimal((Short) value));
+      optiqLiteral = rexBuilder.makeExactLiteral(new BigDecimal((Short) value), optiqDataType);
       break;
     case INT:
       optiqLiteral = rexBuilder.makeExactLiteral(new BigDecimal((Integer) value));
