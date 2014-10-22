@@ -64,9 +64,11 @@ import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.udf.UDFType;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredJavaObject;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseCompare;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotNull;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNull;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
 import org.apache.hadoop.hive.serde.serdeConstants;
@@ -372,16 +374,30 @@ public final class ConstantPropagateProcFactory {
     if (udf instanceof GenericUDFOPAnd) {
       for (int i = 0; i < 2; i++) {
         ExprNodeDesc childExpr = newExprs.get(i);
+        ExprNodeDesc other = newExprs.get(Math.abs(i - 1));
         if (childExpr instanceof ExprNodeConstantDesc) {
           ExprNodeConstantDesc c = (ExprNodeConstantDesc) childExpr;
           if (Boolean.TRUE.equals(c.getValue())) {
 
             // if true, prune it
-            return newExprs.get(Math.abs(i - 1));
+            return other;
           } else {
 
             // if false return false
             return childExpr;
+          }
+        } else // Try to fold (key = 86) and (key is not null) to (key = 86) 
+        if (childExpr instanceof ExprNodeGenericFuncDesc &&
+            ((ExprNodeGenericFuncDesc)childExpr).getGenericUDF() instanceof GenericUDFOPNotNull &&
+            childExpr.getChildren().get(0) instanceof ExprNodeColumnDesc && other instanceof ExprNodeGenericFuncDesc
+            && ((ExprNodeGenericFuncDesc)other).getGenericUDF() instanceof GenericUDFBaseCompare
+            && other.getChildren().size() == 2) {
+          ExprNodeColumnDesc colDesc = getColumnExpr(other.getChildren().get(0));
+          if (null == colDesc) {
+            colDesc = getColumnExpr(other.getChildren().get(1));
+          }
+          if (null != colDesc && colDesc.isSame(childExpr.getChildren().get(0))) {
+            return other;
           }
         }
       }
