@@ -22,10 +22,12 @@ import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -84,7 +86,11 @@ public class VectorizedRowBatchCtx {
   private Map<String, Object> partitionValues;
   
   //partition types
-  private Map<String, PrimitiveCategory> partitionTypes;  
+  private Map<String, PrimitiveCategory> partitionTypes;
+
+  // partition column positions, for use by classes that need to know whether a given column is a
+  // partition column
+  private Set<Integer> partitionCols;
   
   // Column projection list - List of column indexes to include. This
   // list does not contain partition columns
@@ -203,12 +209,13 @@ public class VectorizedRowBatchCtx {
     // Check to see if this split is part of a partition of a table
     String pcols = partProps.getProperty(hive_metastoreConstants.META_TABLE_PARTITION_COLUMNS);
 
+    String[] partKeys = null;
     if (pcols != null && pcols.length() > 0) {
 
       // Partitions exist for this table. Get the partition object inspector and
       // raw row object inspector (row with out partition col)
       LinkedHashMap<String, String> partSpec = part.getPartSpec();
-      String[] partKeys = pcols.trim().split("/");
+      partKeys = pcols.trim().split("/");
       String pcolTypes = partProps.getProperty(hive_metastoreConstants.META_TABLE_PARTITION_COLUMN_TYPES);      
       String[] partKeyTypes = pcolTypes.trim().split(":");      
       
@@ -262,6 +269,15 @@ public class VectorizedRowBatchCtx {
               .asList(new StructObjectInspector[] {partRawRowObjectInspector, partObjectInspector}));
       rowOI = rowObjectInspector;
       rawRowOI = partRawRowObjectInspector;
+
+      // We have to do this after we've set rowOI, as getColIndexBasedOnColName uses it
+      partitionCols = new HashSet<Integer>();
+      if (pcols != null && pcols.length() > 0) {
+        for (int i = 0; i < partKeys.length; i++) {
+          partitionCols.add(getColIndexBasedOnColName(partKeys[i]));
+        }
+      }
+
     } else {
 
       // No partitions for this table, hence row OI equals raw row OI
@@ -584,6 +600,16 @@ public class VectorizedRowBatchCtx {
         }
       }
     }
+  }
+
+  /**
+   * Determine whether a given column is a partition column
+   * @param colnum column number in
+   * {@link org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch}s created by this context.
+   * @return true if it is a partition column, false otherwise
+   */
+  public final boolean isPartitionCol(int colnum) {
+    return (partitionCols == null) ? false : partitionCols.contains(colnum);
   }
 
   private void addScratchColumnsToBatch(VectorizedRowBatch vrb) throws HiveException {
