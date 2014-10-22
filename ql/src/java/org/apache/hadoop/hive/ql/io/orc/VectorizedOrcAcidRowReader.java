@@ -48,7 +48,6 @@ class VectorizedOrcAcidRowReader
   private final OrcStruct value;
   private final VectorizedRowBatchCtx rowBatchCtx;
   private final ObjectInspector objectInspector;
-  private boolean needToSetPartition = true;
   private final DataOutputBuffer buffer = new DataOutputBuffer();
 
   VectorizedOrcAcidRowReader(AcidInputFormat.RowReader<OrcStruct> inner,
@@ -83,23 +82,20 @@ class VectorizedOrcAcidRowReader
     if (!innerReader.next(key, value)) {
       return false;
     }
-    if (needToSetPartition) {
-      try {
-        rowBatchCtx.addPartitionColsToBatch(vectorizedRowBatch);
-      } catch (HiveException e) {
-        throw new IOException("Problem adding partition column", e);
-      }
-      needToSetPartition = false;
+    try {
+      rowBatchCtx.addPartitionColsToBatch(vectorizedRowBatch);
+    } catch (HiveException e) {
+      throw new IOException("Problem adding partition column", e);
     }
     try {
-      VectorizedBatchUtil.addRowToBatch(value,
+      VectorizedBatchUtil.acidAddRowToBatch(value,
           (StructObjectInspector) objectInspector,
-          vectorizedRowBatch.size++, vectorizedRowBatch, buffer);
+          vectorizedRowBatch.size++, vectorizedRowBatch, rowBatchCtx, buffer);
       while (vectorizedRowBatch.size < vectorizedRowBatch.selected.length &&
           innerReader.next(key, value)) {
-        VectorizedBatchUtil.addRowToBatch(value,
+        VectorizedBatchUtil.acidAddRowToBatch(value,
             (StructObjectInspector) objectInspector,
-            vectorizedRowBatch.size++, vectorizedRowBatch, buffer);
+            vectorizedRowBatch.size++, vectorizedRowBatch, rowBatchCtx, buffer);
       }
     } catch (HiveException he) {
       throw new IOException("error iterating", he);
