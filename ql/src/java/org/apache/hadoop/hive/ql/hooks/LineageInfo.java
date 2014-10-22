@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.hooks;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -396,7 +397,7 @@ public class LineageInfo implements Serializable {
    * Constructor.
    */
   public LineageInfo() {
-    index = new LinkedHashMap<DependencyKey, Dependency>();
+    index = Collections.synchronizedMap(new LinkedHashMap<DependencyKey, Dependency>());
   }
 
   /**
