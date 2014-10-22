@@ -149,8 +149,9 @@ public class ASTConverter {
       int i = 0;
 
       for (RexNode r : select.getChildExps()) {
-        ASTNode selectExpr = ASTBuilder.selectExpr(r.accept(new RexVisitor(schema)), select
-            .getRowType().getFieldNames().get(i++));
+        ASTNode selectExpr = ASTBuilder.selectExpr(r.accept(
+             new RexVisitor(schema, r instanceof RexLiteral)),
+                  select.getRowType().getFieldNames().get(i++));
         b.add(selectExpr);
       }
     }
@@ -329,10 +330,16 @@ public class ASTConverter {
   static class RexVisitor extends RexVisitorImpl<ASTNode> {
 
     private final Schema schema;
+    private boolean useTypeQualInLiteral;
 
     protected RexVisitor(Schema schema) {
+      this(schema, false);
+    }
+
+    protected RexVisitor(Schema schema, boolean useTypeQualInLiteral) {
       super(true);
       this.schema = schema;
+      this.useTypeQualInLiteral = useTypeQualInLiteral;
     }
 
     @Override
@@ -357,7 +364,7 @@ public class ASTConverter {
 
     @Override
     public ASTNode visitLiteral(RexLiteral literal) {
-      return ASTBuilder.literal(literal);
+      return ASTBuilder.literal(literal, useTypeQualInLiteral);
     }
 
     private ASTNode getPSpecAST(RexWindow window) {
