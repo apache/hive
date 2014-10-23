@@ -1,8 +1,7 @@
 set hive.map.aggr=false;
 set hive.groupby.skewindata=true;
 
-
-
+-- SORT_QUERY_RESULTS
 
 CREATE TABLE dest1(key STRING, val1 INT, val2 INT) partitioned by (ds string);
 CREATE TABLE dest2(key STRING, val1 INT, val2 INT) partitioned by (ds string);

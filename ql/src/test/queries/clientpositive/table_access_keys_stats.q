@@ -1,6 +1,7 @@
 SET hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.CheckTableAccessHook;
 SET hive.stats.collect.tablekeys=true;
 
+-- SORT_QUERY_RESULTS
 -- This test is used for testing the TableAccessAnalyzer
 
 CREATE TABLE T1(key STRING, val STRING) STORED AS TEXTFILE;
