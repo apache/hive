@@ -63,15 +63,8 @@ public abstract class HiveBaseFunctionResultList<T> implements
 
   @Override
   public void collect(HiveKey key, BytesWritable value) throws IOException {
-    lastRecordOutput.add(copyHiveKey(key), SparkUtilities.copyBytesWritable(value));
-  }
-
-  private static HiveKey copyHiveKey(HiveKey key) {
-    HiveKey copy = new HiveKey();
-    copy.setDistKeyLength(key.getDistKeyLength());
-    copy.setHashCode(key.hashCode());
-    copy.set(key);
-    return copy;
+    lastRecordOutput.add(SparkUtilities.copyHiveKey(key),
+        SparkUtilities.copyBytesWritable(value));
   }
 
   /** Process the given record. */

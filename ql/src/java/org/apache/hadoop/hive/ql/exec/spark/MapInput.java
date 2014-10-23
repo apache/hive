@@ -18,24 +18,26 @@
 
 package org.apache.hadoop.hive.ql.exec.spark;
 
-import org.apache.hadoop.hive.ql.io.HiveKey;
-import org.apache.hadoop.io.BinaryComparable;
-import org.apache.hadoop.io.BytesWritable;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.io.WritableComparable;
+import org.apache.hadoop.io.WritableUtils;
 import org.apache.spark.api.java.JavaPairRDD;
-
 import com.google.common.base.Preconditions;
 import org.apache.spark.api.java.function.PairFunction;
 import scala.Tuple2;
 
-public class MapInput implements SparkTran<BytesWritable, BytesWritable, HiveKey, BytesWritable> {
-  private JavaPairRDD<HiveKey, BytesWritable> hadoopRDD;
+
+public class MapInput implements SparkTran<WritableComparable, Writable,
+    WritableComparable, Writable> {
+  private JavaPairRDD<WritableComparable, Writable> hadoopRDD;
   private boolean toCache;
 
-  public MapInput(JavaPairRDD<HiveKey, BytesWritable> hadoopRDD) {
-    this.hadoopRDD = hadoopRDD;
+  public MapInput(JavaPairRDD<WritableComparable, Writable> hadoopRDD) {
+    this(hadoopRDD, false);
   }
 
-  public MapInput(JavaPairRDD<HiveKey, BytesWritable> hadoopRDD, boolean toCache) {
+  public MapInput(JavaPairRDD<WritableComparable, Writable> hadoopRDD, boolean toCache) {
     this.hadoopRDD = hadoopRDD;
     this.toCache = toCache;
   }
@@ -45,28 +47,28 @@ public class MapInput implements SparkTran<BytesWritable, BytesWritable, HiveKey
   }
 
   @Override
-  public JavaPairRDD<HiveKey, BytesWritable> transform(
-      JavaPairRDD<BytesWritable, BytesWritable> input) {
+  public JavaPairRDD<WritableComparable, Writable> transform(
+      JavaPairRDD<WritableComparable, Writable> input) {
     Preconditions.checkArgument(input == null,
         "AssertionError: MapInput doesn't take any input");
-    JavaPairRDD result = hadoopRDD;
-    if (toCache) {
-      result = result.mapToPair(new CopyFunction());
-      return result.cache();
-    } else {
-      return result;
-    }
+    return toCache ? hadoopRDD.mapToPair(new CopyFunction()).cache() : hadoopRDD;
   }
 
-  private static class CopyFunction implements PairFunction<Tuple2<BytesWritable, BytesWritable>,
-        BytesWritable, BytesWritable> {
+  private static class CopyFunction implements PairFunction<Tuple2<WritableComparable, Writable>,
+    WritableComparable, Writable> {
+
+    private transient Configuration conf;
 
     @Override
-    public Tuple2<BytesWritable, BytesWritable> call(Tuple2<BytesWritable, BytesWritable> tup) throws Exception {
-      // no need to copy key since it never get used in HiveMapFunction
-      BytesWritable value = SparkUtilities.copyBytesWritable(tup._2());
-      return new Tuple2<BytesWritable, BytesWritable>(tup._1(), value);
-    }
-  }
+    public Tuple2<WritableComparable, Writable>
+    call(Tuple2<WritableComparable, Writable> tuple) throws Exception {
+      if (conf == null) {
+        conf = new Configuration();
+      }
 
+      return new Tuple2<WritableComparable, Writable>(tuple._1(),
+          WritableUtils.clone(tuple._2(), conf));
+    }
+
+  }
 }
