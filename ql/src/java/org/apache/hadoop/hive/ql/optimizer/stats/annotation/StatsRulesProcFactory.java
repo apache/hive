@@ -1293,13 +1293,61 @@ public class StatsRulesProcFactory {
       List<Float> result = Lists.newArrayList();
       for (Integer idx : opsWithPK) {
         Operator<? extends OperatorDesc> op = ops.get(idx);
-        TableScanOperator tsOp = OperatorUtils
-            .findSingleOperatorUpstream(op, TableScanOperator.class);
-        long inputRow = tsOp.getStatistics().getNumRows();
-        long outputRow = op.getStatistics().getNumRows();
-        result.add((float) outputRow / (float) inputRow);
+        float selectivity = getSelectivitySimpleTree(op);
+        result.add(selectivity);
       }
       return result;
+    }
+
+    private float getSelectivitySimpleTree(Operator<? extends OperatorDesc> op) {
+      TableScanOperator tsOp = OperatorUtils
+          .findSingleOperatorUpstream(op, TableScanOperator.class);
+      if (tsOp == null) {
+        // complex tree with multiple parents
+        return getSelectivityComplexTree(op);
+      } else {
+        // simple tree with single parent
+        long inputRow = tsOp.getStatistics().getNumRows();
+        long outputRow = op.getStatistics().getNumRows();
+        return (float) outputRow / (float) inputRow;
+      }
+    }
+
+    private float getSelectivityComplexTree(Operator<? extends OperatorDesc> op) {
+      Operator<? extends OperatorDesc> multiParentOp = null;
+      Operator<? extends OperatorDesc> currentOp = op;
+
+      // TS-1      TS-2
+      //  |          |
+      // RS-1      RS-2
+      //    \      /
+      //      JOIN
+      //        |
+      //       FIL
+      //        |
+      //       RS-3
+      //
+      // For the above complex operator tree,
+      // selectivity(JOIN) = selectivity(RS-1) * selectivity(RS-2) and
+      // selectivity(RS-3) = numRows(RS-3)/numRows(JOIN) * selectivity(JOIN)
+      while(multiParentOp == null) {
+        if (op.getParentOperators().size() > 1) {
+          multiParentOp = op;
+        } else {
+          op = op.getParentOperators().get(0);
+        }
+      }
+
+      float selMultiParent = 1.0f;
+      for(Operator<? extends OperatorDesc> parent : multiParentOp.getParentOperators()) {
+        // In the above example, TS-1 -> RS-1 and TS-2 -> RS-2 are simple trees
+        selMultiParent *= getSelectivitySimpleTree(parent);
+      }
+
+      float selCurrOp = ((float) currentOp.getStatistics().getNumRows() /
+          (float) multiParentOp.getStatistics().getNumRows()) * selMultiParent;
+
+      return selCurrOp;
     }
 
     /**
