@@ -60,9 +60,9 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeInfo
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveRoleGrant;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.SettableConfigUpdater;
 import org.apache.thrift.TException;
 
-import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableSet;
 
 /**
@@ -610,72 +610,8 @@ public class SQLStdHiveAccessController implements HiveAccessController {
     }
   }
 
-
-  /**
-   * Default list of modifiable config parameters for sql standard authorization
-   */
-  static final String [] defaultModWhiteListSqlStdAuth = new String [] {
-      ConfVars.BYTESPERREDUCER.varname,
-      ConfVars.MAXREDUCERS.varname,
-      ConfVars.HIVEMAPSIDEAGGREGATE.varname,
-      ConfVars.HIVEMAPAGGRHASHMEMORY.varname,
-      ConfVars.HIVEMAPAGGRMEMORYTHRESHOLD.varname,
-      ConfVars.HIVEMAPAGGRHASHMINREDUCTION.varname,
-      ConfVars.HIVEGROUPBYSKEW.varname,
-      ConfVars.HIVE_OPTIMIZE_MULTI_GROUPBY_COMMON_DISTINCTS.varname,
-      ConfVars.HIVEOPTGBYUSINGINDEX.varname,
-      ConfVars.HIVEOPTPPD.varname,
-      ConfVars.HIVEOPTPPD_STORAGE.varname,
-      ConfVars.HIVEOPTPPD_STORAGE.varname,
-      ConfVars.HIVEPPDRECOGNIZETRANSITIVITY.varname,
-      ConfVars.HIVEOPTGROUPBY.varname,
-      ConfVars.HIVEOPTSORTDYNAMICPARTITION.varname,
-      ConfVars.HIVE_OPTIMIZE_SKEWJOIN_COMPILETIME.varname,
-      ConfVars.HIVE_OPTIMIZE_UNION_REMOVE.varname,
-      ConfVars.HIVEMULTIGROUPBYSINGLEREDUCER.varname,
-      ConfVars.HIVE_MAP_GROUPBY_SORT.varname,
-      ConfVars.HIVE_MAP_GROUPBY_SORT_TESTMODE.varname,
-      ConfVars.HIVESKEWJOIN.varname,
-      ConfVars.HIVE_OPTIMIZE_SKEWJOIN_COMPILETIME.varname,
-      ConfVars.HIVEMAPREDMODE.varname,
-      ConfVars.HIVEENFORCEBUCKETMAPJOIN.varname,
-      ConfVars.COMPRESSRESULT.varname,
-      ConfVars.COMPRESSINTERMEDIATE.varname,
-      ConfVars.EXECPARALLEL.varname,
-      ConfVars.EXECPARALLETHREADNUMBER.varname,
-      ConfVars.EXECPARALLETHREADNUMBER.varname,
-      ConfVars.HIVEROWOFFSET.varname,
-      ConfVars.HIVEMERGEMAPFILES.varname,
-      ConfVars.HIVEMERGEMAPREDFILES.varname,
-      ConfVars.HIVEMERGETEZFILES.varname,
-      ConfVars.HIVEIGNOREMAPJOINHINT.varname,
-      ConfVars.HIVECONVERTJOIN.varname,
-      ConfVars.HIVECONVERTJOINNOCONDITIONALTASK.varname,
-      ConfVars.HIVECONVERTJOINNOCONDITIONALTASKTHRESHOLD.varname,
-      ConfVars.HIVECONVERTJOINUSENONSTAGED.varname,
-      ConfVars.HIVECONVERTJOINNOCONDITIONALTASK.varname,
-      ConfVars.HIVECONVERTJOINNOCONDITIONALTASKTHRESHOLD.varname,
-      ConfVars.HIVECONVERTJOINUSENONSTAGED.varname,
-      ConfVars.HIVEENFORCEBUCKETING.varname,
-      ConfVars.HIVEENFORCESORTING.varname,
-      ConfVars.HIVEENFORCESORTMERGEBUCKETMAPJOIN.varname,
-      ConfVars.HIVE_AUTO_SORTMERGE_JOIN.varname,
-      ConfVars.HIVE_EXECUTION_ENGINE.varname,
-      ConfVars.HIVE_VECTORIZATION_ENABLED.varname,
-      ConfVars.HIVEMAPJOINUSEOPTIMIZEDKEYS.varname,
-      ConfVars.HIVEMAPJOINLAZYHASHTABLE.varname,
-      ConfVars.HIVE_CHECK_CROSS_PRODUCT.varname,
-      ConfVars.HIVE_COMPAT.varname,
-      ConfVars.DYNAMICPARTITIONINGMODE.varname,
-      "mapred.reduce.tasks",
-      "mapred.output.compression.codec",
-      "mapred.map.output.compression.codec",
-      "mapreduce.job.reduce.slowstart.completedmaps",
-      "mapreduce.job.queuename",
-  };
-
   @Override
-  public void applyAuthorizationConfigPolicy(HiveConf hiveConf) {
+  public void applyAuthorizationConfigPolicy(HiveConf hiveConf) throws HiveAuthzPluginException {
     // First apply configuration applicable to both Hive Cli and HiveServer2
     // Not adding any authorization related restrictions to hive cli
     // grant all privileges for table to its owner - set this in cli as well so that owner
@@ -683,28 +619,21 @@ public class SQLStdHiveAccessController implements HiveAccessController {
     hiveConf.setVar(ConfVars.HIVE_AUTHORIZATION_TABLE_OWNER_GRANTS, "INSERT,SELECT,UPDATE,DELETE");
 
     // Apply rest of the configuration only to HiveServer2
-    if(sessionCtx.getClientType() == CLIENT_TYPE.HIVESERVER2) {
+    if (sessionCtx.getClientType() == CLIENT_TYPE.HIVESERVER2
+        && hiveConf.getBoolVar(ConfVars.HIVE_AUTHORIZATION_ENABLED)) {
+
       // Configure PREEXECHOOKS with DisallowTransformHook to disallow transform queries
       String hooks = hiveConf.getVar(ConfVars.PREEXECHOOKS).trim();
       if (hooks.isEmpty()) {
         hooks = DisallowTransformHook.class.getName();
       } else {
-        hooks = hooks + "," +DisallowTransformHook.class.getName();
+        hooks = hooks + "," + DisallowTransformHook.class.getName();
       }
       LOG.debug("Configuring hooks : " + hooks);
       hiveConf.setVar(ConfVars.PREEXECHOOKS, hooks);
 
-      // restrict the variables that can be set using set command to a list in whitelist
-      hiveConf.setIsModWhiteListEnabled(true);
-      String whiteListParamsStr = hiveConf.getVar(ConfVars.HIVE_AUTHORIZATION_SQL_STD_AUTH_CONFIG_WHITELIST);
-      if (whiteListParamsStr == null || whiteListParamsStr.trim().equals("")){
-        // set the default configs in whitelist
-        whiteListParamsStr = Joiner.on(",").join(defaultModWhiteListSqlStdAuth);
-        hiveConf.setVar(ConfVars.HIVE_AUTHORIZATION_SQL_STD_AUTH_CONFIG_WHITELIST, whiteListParamsStr);
-      }
-      for(String whiteListParam : whiteListParamsStr.split(",")){
-        hiveConf.addToModifiableWhiteList(whiteListParam);
-      }
+      SettableConfigUpdater.setHiveConfWhiteList(hiveConf);
+
     }
   }
 
