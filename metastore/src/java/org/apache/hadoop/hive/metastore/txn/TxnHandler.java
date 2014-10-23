@@ -90,6 +90,8 @@ public class TxnHandler {
   // Transaction timeout, in milliseconds.
   private long timeout;
 
+  private String identifierQuoteString; // quotes to use for quoting tables, where necessary
+
   // DEADLOCK DETECTION AND HANDLING
   // A note to developers of this class.  ALWAYS access HIVE_LOCKS before TXNS to avoid deadlock
   // between simultaneous accesses.  ALWAYS access TXN_COMPONENTS before HIVE_LOCKS .
@@ -958,6 +960,19 @@ public class TxnHandler {
     } finally {
       closeStmt(stmt);
     }
+  }
+
+  /**
+   * Determine the String that should be used to quote identifiers.
+   * @param conn Active connection
+   * @return quotes
+   * @throws SQLException
+   */
+  protected String getIdentifierQuoteString(Connection conn) throws SQLException {
+    if (identifierQuoteString == null) {
+      identifierQuoteString = conn.getMetaData().getIdentifierQuoteString();
+    }
+    return identifierQuoteString;
   }
 
   protected enum DatabaseProduct { DERBY, MYSQL, POSTGRES, ORACLE, SQLSERVER}
