@@ -122,3 +122,69 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
 #### A masked pattern was here ####
 2013-11-17	2011-04-29 20:46:56.4485
+PREHOOK: query: SELECT key, value FROM src WHERE key = cast(86 as double)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT key, value FROM src WHERE key = cast(86 as double)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+86	val_86
+PREHOOK: query: CREATE TABLE primitives1 (
+  id INT  ,
+  bool_col BOOLEAN  ,
+  tinyint_col TINYINT  ,
+  smallint_col SMALLINT  ,
+  int_col INT  ,
+  bigint_col BIGINT  ,
+  float_col FLOAT  ,
+  double_col DOUBLE  ,
+  date_string_col STRING  ,
+  string_col STRING  ,
+  timestamp_col TIMESTAMP  )
+ROW FORMAT DELIMITED
+  FIELDS TERMINATED BY ','
+  ESCAPED BY '\\'
+STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@primitives1
+POSTHOOK: query: CREATE TABLE primitives1 (
+  id INT  ,
+  bool_col BOOLEAN  ,
+  tinyint_col TINYINT  ,
+  smallint_col SMALLINT  ,
+  int_col INT  ,
+  bigint_col BIGINT  ,
+  float_col FLOAT  ,
+  double_col DOUBLE  ,
+  date_string_col STRING  ,
+  string_col STRING  ,
+  timestamp_col TIMESTAMP  )
+ROW FORMAT DELIMITED
+  FIELDS TERMINATED BY ','
+  ESCAPED BY '\\'
+STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@primitives1
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/types/primitives/090101.txt'
+OVERWRITE INTO TABLE primitives1
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@primitives1
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/types/primitives/090101.txt'
+OVERWRITE INTO TABLE primitives1
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@primitives1
+PREHOOK: query: select id,bool_col,tinyint_col,smallint_col,int_col,bigint_col,float_col,double_col from primitives1 where id = cast (0 as float) and bool_col = cast('true' as boolean) and tinyint_col = cast(0 as double) and smallint_col = cast(0 as bigint) and int_col = cast (0 as double) and bigint_col = cast(0 as tinyint) and float_col = cast(0.0 as string) and  double_col = cast (0.0 as float)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@primitives1
+#### A masked pattern was here ####
+POSTHOOK: query: select id,bool_col,tinyint_col,smallint_col,int_col,bigint_col,float_col,double_col from primitives1 where id = cast (0 as float) and bool_col = cast('true' as boolean) and tinyint_col = cast(0 as double) and smallint_col = cast(0 as bigint) and int_col = cast (0 as double) and bigint_col = cast(0 as tinyint) and float_col = cast(0.0 as string) and  double_col = cast (0.0 as float)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@primitives1
+#### A masked pattern was here ####
+0	true	0	0	0	0	0.0	0.0
