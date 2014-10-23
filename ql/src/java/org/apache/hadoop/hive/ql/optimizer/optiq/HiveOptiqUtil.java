@@ -242,7 +242,7 @@ public class HiveOptiqUtil {
    * <p>
    * JoinPredicateInfo:<br>
    * 1. preserves the order of conjuctive elements for
-   * equi-join(m_equiJoinPredicateElements)<br>
+   * equi-join(equiJoinPredicateElements)<br>
    * 2. Stores set of projection indexes from left and right child which is part
    * of equi join keys; the indexes are both in child and Join node schema.<br>
    * 3. Keeps a map of projection indexes that are part of join keys to list of
@@ -276,19 +276,19 @@ public class HiveOptiqUtil {
     }
 
     public List<JoinLeafPredicateInfo> getNonEquiJoinPredicateElements() {
-      return nonEquiJoinPredicateElements;
+      return this.nonEquiJoinPredicateElements;
     }
 
     public List<JoinLeafPredicateInfo> getEquiJoinPredicateElements() {
-      return equiJoinPredicateElements;
+      return this.equiJoinPredicateElements;
     }
 
     public Set<Integer> getProjsFromLeftPartOfJoinKeysInChildSchema() {
-      return projsFromLeftPartOfJoinKeysInChildSchema;
+      return this.projsFromLeftPartOfJoinKeysInChildSchema;
     }
 
     public Set<Integer> getProjsFromRightPartOfJoinKeysInChildSchema() {
-      return projsFromRightPartOfJoinKeysInChildSchema;
+      return this.projsFromRightPartOfJoinKeysInChildSchema;
     }
 
     /**
@@ -297,15 +297,15 @@ public class HiveOptiqUtil {
      * schema.
      */
     public Set<Integer> getProjsFromLeftPartOfJoinKeysInJoinSchema() {
-      return projsFromLeftPartOfJoinKeysInChildSchema;
+      return this.projsFromLeftPartOfJoinKeysInChildSchema;
     }
 
     public Set<Integer> getProjsFromRightPartOfJoinKeysInJoinSchema() {
-      return projsFromRightPartOfJoinKeysInJoinSchema;
+      return this.projsFromRightPartOfJoinKeysInJoinSchema;
     }
 
     public Map<Integer, ImmutableList<JoinLeafPredicateInfo>> getMapOfProjIndxToLeafPInfo() {
-      return mapOfProjIndxInJoinSchemaToLeafPInfo;
+      return this.mapOfProjIndxInJoinSchemaToLeafPInfo;
     }
 
     public static JoinPredicateInfo constructJoinPredicateInfo(HiveJoinRel j) {
@@ -337,7 +337,7 @@ public class HiveOptiqUtil {
         jlpi = JoinLeafPredicateInfo.constructJoinLeafPredicateInfo(j, ce);
 
         // 2.2 Classify leaf predicate as Equi vs Non Equi
-        if (jlpi.m_comparisonType.equals(SqlKind.EQUALS)) {
+        if (jlpi.comparisonType.equals(SqlKind.EQUALS)) {
           equiLPIList.add(jlpi);
         } else {
           nonEquiLPIList.add(jlpi);
@@ -399,38 +399,38 @@ public class HiveOptiqUtil {
    * of equi join keys; the indexes are both in child and Join node schema.<br>
    */
   public static class JoinLeafPredicateInfo {
-    private final SqlKind                m_comparisonType;
-    private final ImmutableList<RexNode> m_joinKeyExprsFromLeft;
-    private final ImmutableList<RexNode> m_joinKeyExprsFromRight;
-    private final ImmutableSet<Integer>  m_projsFromLeftPartOfJoinKeysInChildSchema;
-    private final ImmutableSet<Integer>  m_projsFromRightPartOfJoinKeysInChildSchema;
-    private final ImmutableSet<Integer>  m_projsFromRightPartOfJoinKeysInJoinSchema;
+    private final SqlKind                comparisonType;
+    private final ImmutableList<RexNode> joinKeyExprsFromLeft;
+    private final ImmutableList<RexNode> joinKeyExprsFromRight;
+    private final ImmutableSet<Integer>  projsFromLeftPartOfJoinKeysInChildSchema;
+    private final ImmutableSet<Integer>  projsFromRightPartOfJoinKeysInChildSchema;
+    private final ImmutableSet<Integer>  projsFromRightPartOfJoinKeysInJoinSchema;
 
     public JoinLeafPredicateInfo(SqlKind comparisonType, List<RexNode> joinKeyExprsFromLeft,
         List<RexNode> joinKeyExprsFromRight, Set<Integer> projsFromLeftPartOfJoinKeysInChildSchema,
         Set<Integer> projsFromRightPartOfJoinKeysInChildSchema,
         Set<Integer> projsFromRightPartOfJoinKeysInJoinSchema) {
-      m_comparisonType = comparisonType;
-      m_joinKeyExprsFromLeft = ImmutableList.copyOf(joinKeyExprsFromLeft);
-      m_joinKeyExprsFromRight = ImmutableList.copyOf(joinKeyExprsFromRight);
-      m_projsFromLeftPartOfJoinKeysInChildSchema = ImmutableSet
+      this.comparisonType = comparisonType;
+      this.joinKeyExprsFromLeft = ImmutableList.copyOf(joinKeyExprsFromLeft);
+      this.joinKeyExprsFromRight = ImmutableList.copyOf(joinKeyExprsFromRight);
+      this.projsFromLeftPartOfJoinKeysInChildSchema = ImmutableSet
           .copyOf(projsFromLeftPartOfJoinKeysInChildSchema);
-      m_projsFromRightPartOfJoinKeysInChildSchema = ImmutableSet
+      this.projsFromRightPartOfJoinKeysInChildSchema = ImmutableSet
           .copyOf(projsFromRightPartOfJoinKeysInChildSchema);
-      m_projsFromRightPartOfJoinKeysInJoinSchema = ImmutableSet
+      this.projsFromRightPartOfJoinKeysInJoinSchema = ImmutableSet
           .copyOf(projsFromRightPartOfJoinKeysInJoinSchema);
     }
 
     public List<RexNode> getJoinKeyExprsFromLeft() {
-      return m_joinKeyExprsFromLeft;
+      return this.joinKeyExprsFromLeft;
     }
 
     public List<RexNode> getJoinKeyExprsFromRight() {
-      return m_joinKeyExprsFromRight;
+      return this.joinKeyExprsFromRight;
     }
 
     public Set<Integer> getProjsFromLeftPartOfJoinKeysInChildSchema() {
-      return m_projsFromLeftPartOfJoinKeysInChildSchema;
+      return this.projsFromLeftPartOfJoinKeysInChildSchema;
     }
 
     /**
@@ -439,15 +439,15 @@ public class HiveOptiqUtil {
      * schema.
      */
     public Set<Integer> getProjsFromLeftPartOfJoinKeysInJoinSchema() {
-      return m_projsFromLeftPartOfJoinKeysInChildSchema;
+      return this.projsFromLeftPartOfJoinKeysInChildSchema;
     }
 
     public Set<Integer> getProjsFromRightPartOfJoinKeysInChildSchema() {
-      return m_projsFromRightPartOfJoinKeysInChildSchema;
+      return this.projsFromRightPartOfJoinKeysInChildSchema;
     }
 
     public Set<Integer> getProjsFromRightPartOfJoinKeysInJoinSchema() {
-      return m_projsFromRightPartOfJoinKeysInJoinSchema;
+      return this.projsFromRightPartOfJoinKeysInJoinSchema;
     }
 
     private static JoinLeafPredicateInfo constructJoinLeafPredicateInfo(HiveJoinRel j, RexNode pe) {
