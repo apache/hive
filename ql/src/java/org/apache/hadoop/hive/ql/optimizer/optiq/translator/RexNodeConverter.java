@@ -82,35 +82,35 @@ public class RexNodeConverter {
   private static final Log LOG = LogFactory.getLog(RexNodeConverter.class);
 
   private static class InputCtx {
-    private final RelDataType                   m_optiqInpDataType;
-    private final ImmutableMap<String, Integer> m_hiveNameToPosMap;
-    private final RowResolver                   m_hiveRR;
-    private final int                           m_offsetInOptiqSchema;
+    private final RelDataType                   optiqInpDataType;
+    private final ImmutableMap<String, Integer> hiveNameToPosMap;
+    private final RowResolver                   hiveRR;
+    private final int                           offsetInOptiqSchema;
 
     private InputCtx(RelDataType optiqInpDataType, ImmutableMap<String, Integer> hiveNameToPosMap,
         RowResolver hiveRR, int offsetInOptiqSchema) {
-      m_optiqInpDataType = optiqInpDataType;
-      m_hiveNameToPosMap = hiveNameToPosMap;
-      m_hiveRR = hiveRR;
-      m_offsetInOptiqSchema = offsetInOptiqSchema;
+      this.optiqInpDataType = optiqInpDataType;
+      this.hiveNameToPosMap = hiveNameToPosMap;
+      this.hiveRR = hiveRR;
+      this.offsetInOptiqSchema = offsetInOptiqSchema;
     }
   };
 
-  private final RelOptCluster           m_cluster;
-  private final ImmutableList<InputCtx> m_inputCtxs;
-  private final boolean                 m_flattenExpr;
+  private final RelOptCluster           cluster;
+  private final ImmutableList<InputCtx> inputCtxs;
+  private final boolean                 flattenExpr;
 
   public RexNodeConverter(RelOptCluster cluster, RelDataType inpDataType,
       ImmutableMap<String, Integer> nameToPosMap, int offset, boolean flattenExpr) {
-    this.m_cluster = cluster;
-    m_inputCtxs = ImmutableList.of(new InputCtx(inpDataType, nameToPosMap, null, offset));
-    m_flattenExpr = flattenExpr;
+    this.cluster = cluster;
+    this.inputCtxs = ImmutableList.of(new InputCtx(inpDataType, nameToPosMap, null, offset));
+    this.flattenExpr = flattenExpr;
   }
 
   public RexNodeConverter(RelOptCluster cluster, List<InputCtx> inpCtxLst, boolean flattenExpr) {
-    this.m_cluster = cluster;
-    m_inputCtxs = ImmutableList.<InputCtx> builder().addAll(inpCtxLst).build();
-    m_flattenExpr = flattenExpr;
+    this.cluster = cluster;
+    this.inputCtxs = ImmutableList.<InputCtx> builder().addAll(inpCtxLst).build();
+    this.flattenExpr = flattenExpr;
   }
 
   public RexNode convert(ExprNodeDesc expr) throws SemanticException {
@@ -134,7 +134,7 @@ public class RexNodeConverter {
     RexNode rexNode = convert(fieldDesc.getDesc());
     if (rexNode instanceof RexCall) {
       // regular case of accessing nested field in a column
-      return m_cluster.getRexBuilder().makeFieldAccess(rexNode, fieldDesc.getFieldName(), true);
+      return cluster.getRexBuilder().makeFieldAccess(rexNode, fieldDesc.getFieldName(), true);
     } else {
       // This may happen for schema-less tables, where columns are dynamically
       // supplied by serdes.
@@ -184,7 +184,7 @@ public class RexNodeConverter {
         }
 
       }
-      argTypeBldr.add(TypeConverter.convert(tmpExprNode.getTypeInfo(), m_cluster.getTypeFactory()));
+      argTypeBldr.add(TypeConverter.convert(tmpExprNode.getTypeInfo(), cluster.getTypeFactory()));
       tmpRN = convert(tmpExprNode);
       childRexNodeLst.add(tmpRN);
     }
@@ -196,20 +196,20 @@ public class RexNodeConverter {
 
     if (expr == null) {
       // This is not a cast; process the function.
-      retType = TypeConverter.convert(func.getTypeInfo(), m_cluster.getTypeFactory());
+      retType = TypeConverter.convert(func.getTypeInfo(), cluster.getTypeFactory());
       SqlOperator optiqOp = SqlFunctionConverter.getOptiqOperator(func.getFuncText(),
           func.getGenericUDF(), argTypeBldr.build(), retType);
-      expr = m_cluster.getRexBuilder().makeCall(optiqOp, childRexNodeLst);
+      expr = cluster.getRexBuilder().makeCall(optiqOp, childRexNodeLst);
     } else {
       retType = expr.getType();
     }
 
     // TODO: Cast Function in Optiq have a bug where it infertype on cast throws
     // an exception
-    if (m_flattenExpr && (expr instanceof RexCall)
+    if (flattenExpr && (expr instanceof RexCall)
         && !(((RexCall) expr).getOperator() instanceof SqlCastFunction)) {
       RexCall call = (RexCall) expr;
-      expr = m_cluster.getRexBuilder().makeCall(retType, call.getOperator(),
+      expr = cluster.getRexBuilder().makeCall(retType, call.getOperator(),
           RexUtil.flatten(call.getOperands(), call.getOperator()));
     }
 
@@ -246,8 +246,8 @@ public class RexNodeConverter {
       if ((udf instanceof GenericUDFToChar) || (udf instanceof GenericUDFToVarchar)
           || (udf instanceof GenericUDFToDecimal) || (udf instanceof GenericUDFToDate)
           || (udf instanceof GenericUDFToBinary) || castExprUsingUDFBridge(udf)) {
-        castExpr = m_cluster.getRexBuilder().makeAbstractCast(
-            TypeConverter.convert(func.getTypeInfo(), m_cluster.getTypeFactory()),
+        castExpr = cluster.getRexBuilder().makeAbstractCast(
+            TypeConverter.convert(func.getTypeInfo(), cluster.getTypeFactory()),
             childRexNodeLst.get(0));
       }
     }
@@ -258,15 +258,15 @@ public class RexNodeConverter {
   private InputCtx getInputCtx(ExprNodeColumnDesc col) throws SemanticException {
     InputCtx ctxLookingFor = null;
 
-    if (m_inputCtxs.size() == 1) {
-      ctxLookingFor = m_inputCtxs.get(0);
+    if (inputCtxs.size() == 1) {
+      ctxLookingFor = inputCtxs.get(0);
     } else {
       String tableAlias = col.getTabAlias();
       String colAlias = col.getColumn();
       int noInp = 0;
-      for (InputCtx ic : m_inputCtxs) {
-        if (tableAlias == null || ic.m_hiveRR.hasTableAlias(tableAlias)) {
-          if (ic.m_hiveRR.getPosition(colAlias) >= 0) {
+      for (InputCtx ic : inputCtxs) {
+        if (tableAlias == null || ic.hiveRR.hasTableAlias(tableAlias)) {
+          if (ic.hiveRR.getPosition(colAlias) >= 0) {
             ctxLookingFor = ic;
             noInp++;
           }
@@ -282,16 +282,16 @@ public class RexNodeConverter {
 
   protected RexNode convert(ExprNodeColumnDesc col) throws SemanticException {
     InputCtx ic = getInputCtx(col);
-    int pos = ic.m_hiveNameToPosMap.get(col.getColumn());
-    return m_cluster.getRexBuilder().makeInputRef(
-        ic.m_optiqInpDataType.getFieldList().get(pos).getType(), pos + ic.m_offsetInOptiqSchema);
+    int pos = ic.hiveNameToPosMap.get(col.getColumn());
+    return cluster.getRexBuilder().makeInputRef(
+        ic.optiqInpDataType.getFieldList().get(pos).getType(), pos + ic.offsetInOptiqSchema);
   }
 
   private static final BigInteger MIN_LONG_BI = BigInteger.valueOf(Long.MIN_VALUE),
       MAX_LONG_BI = BigInteger.valueOf(Long.MAX_VALUE);
 
   protected RexNode convert(ExprNodeConstantDesc literal) throws OptiqSemanticException {
-    RexBuilder rexBuilder = m_cluster.getRexBuilder();
+    RexBuilder rexBuilder = cluster.getRexBuilder();
     RelDataTypeFactory dtFactory = rexBuilder.getTypeFactory();
     PrimitiveTypeInfo hiveType = (PrimitiveTypeInfo) literal.getTypeInfo();
     RelDataType optiqDataType = TypeConverter.convert(hiveType, dtFactory);
@@ -353,7 +353,7 @@ public class RexNodeConverter {
         // will work...
         // An alternative would be to throw CboSemanticException and fall back
         // to no CBO.
-        RelDataType relType = m_cluster.getTypeFactory().createSqlType(SqlTypeName.DECIMAL,
+        RelDataType relType = cluster.getTypeFactory().createSqlType(SqlTypeName.DECIMAL,
             bd.scale(), unscaled.toString().length());
         optiqLiteral = rexBuilder.makeExactLiteral(bd, relType);
       }
@@ -397,8 +397,8 @@ public class RexNodeConverter {
   }
 
   private RexNode createNullLiteral(ExprNodeDesc expr) throws OptiqSemanticException {
-    return m_cluster.getRexBuilder().makeNullLiteral(
-        TypeConverter.convert(expr.getTypeInfo(), m_cluster.getTypeFactory()).getSqlTypeName());
+    return cluster.getRexBuilder().makeNullLiteral(
+        TypeConverter.convert(expr.getTypeInfo(), cluster.getTypeFactory()).getSqlTypeName());
   }
 
   public static RexNode convert(RelOptCluster cluster, ExprNodeDesc joinCondnExprNode,
