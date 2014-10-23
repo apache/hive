@@ -47,6 +47,7 @@
     <module>serde</module>
     <module>service</module>
     <module>shims</module>
+    <module>spark-client</module>
     <module>testutils</module>
     <module>packaging</module>
   </modules>
