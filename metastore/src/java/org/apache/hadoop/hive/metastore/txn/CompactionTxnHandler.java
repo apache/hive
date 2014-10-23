@@ -547,10 +547,27 @@ public class CompactionTxnHandler extends TxnHandler {
     Statement stmt = null;
     ResultSet rs = null;
     try {
+      String quote = getIdentifierQuoteString(dbConn);
       stmt = dbConn.createStatement();
-      String s = "SELECT COLUMN_NAME FROM " + (ci.partName == null ? "TAB_COL_STATS" : "PART_COL_STATS")
+      StringBuilder bldr = new StringBuilder();
+      bldr.append("SELECT ").append(quote).append("COLUMN_NAME").append(quote)
+          .append(" FROM ")
+          .append(quote).append((ci.partName == null ? "TAB_COL_STATS" : "PART_COL_STATS"))
+              .append(quote)
+          .append(" WHERE ")
+          .append(quote).append("DB_NAME").append(quote).append(" = '").append(ci.dbname)
+              .append("' AND ").append(quote).append("TABLE_NAME").append(quote)
+              .append(" = '").append(ci.tableName).append("'");
+      if (ci.partName != null) {
+        bldr.append(" AND ").append(quote).append("PARTITION_NAME").append(quote).append(" = '")
+            .append(ci.partName).append("'");
+      }
+      String s = bldr.toString();
+
+      /*String s = "SELECT COLUMN_NAME FROM " + (ci.partName == null ? "TAB_COL_STATS" :
+          "PART_COL_STATS")
          + " WHERE DB_NAME='" + ci.dbname + "' AND TABLE_NAME='" + ci.tableName + "'"
-        + (ci.partName == null ? "" : " AND PARTITION_NAME='" + ci.partName + "'");
+        + (ci.partName == null ? "" : " AND PARTITION_NAME='" + ci.partName + "'");*/
       LOG.debug("Going to execute <" + s + ">");
       rs = stmt.executeQuery(s);
       List<String> columns = new ArrayList<String>();
