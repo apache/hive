@@ -2,6 +2,8 @@ set hive.map.aggr=false;
 set hive.multigroupby.singlereducer=false;
 set hive.groupby.skewindata=true;
 
+-- SORT_QUERY_RESULTS
+
 CREATE TABLE dest1(key INT, val1 INT, val2 INT);
 CREATE TABLE dest2(key INT, val1 INT, val2 INT);
 
