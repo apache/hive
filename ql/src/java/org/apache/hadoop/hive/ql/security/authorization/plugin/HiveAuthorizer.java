@@ -191,8 +191,9 @@ public interface HiveAuthorizer {
    * Modify the given HiveConf object to configure authorization related parameters
    * or other parameters related to hive security
    * @param hiveConf
+   * @throws HiveAuthzPluginException
    */
-  public void applyAuthorizationConfigPolicy(HiveConf hiveConf);
+  public void applyAuthorizationConfigPolicy(HiveConf hiveConf) throws HiveAuthzPluginException;
 
 }
 
