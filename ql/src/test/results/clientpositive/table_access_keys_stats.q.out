@@ -1,5 +1,4 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
--- This test is used for testing the TableAccessAnalyzer
+PREHOOK: query: -- This test is used for testing the TableAccessAnalyzer
 
 CREATE TABLE T1(key STRING, val STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
@@ -134,11 +133,11 @@ Operator:GBY_2
 Table:default@t1
 Keys:key
 
-14.0	1
-16.0	2
 2.0	1
 4.0	1
 6.0	1
+14.0	1
+16.0	2
 PREHOOK: query: -- group by followed by union
 SELECT * FROM (
 SELECT key, count(1) as c FROM T1 GROUP BY key
@@ -157,14 +156,14 @@ Table:default@t1
 Keys:key
 
 1	1
-1	1
-2	1
 2	1
 3	1
-3	1
-7	1
 7	1
 8	2
+1	1
+2	1
+3	1
+7	1
 8	2
 PREHOOK: query: -- group by followed by a join
 SELECT * FROM
