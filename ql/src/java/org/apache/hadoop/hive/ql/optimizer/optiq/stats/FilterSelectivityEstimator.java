@@ -34,13 +34,13 @@ import org.eigenbase.rex.RexVisitorImpl;
 import org.eigenbase.sql.SqlKind;
 
 public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
-  private final RelNode m_childRel;
-  private final double  m_childCardinality;
+  private final RelNode childRel;
+  private final double  childCardinality;
 
   protected FilterSelectivityEstimator(RelNode childRel) {
     super(true);
-    m_childRel = childRel;
-    m_childCardinality = RelMetadataQuery.getRowCount(m_childRel);
+    this.childRel = childRel;
+    this.childCardinality = RelMetadataQuery.getRowCount(childRel);
   }
 
   public Double estimateSelectivity(RexNode predicate) {
@@ -53,11 +53,10 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
     }
 
     /*
-     * Ignore any predicates on partition columns
-     * because we have already accounted for these in
-     * the Table row count.
+     * Ignore any predicates on partition columns because we have already
+     * accounted for these in the Table row count.
      */
-    if (isPartitionPredicate(call, m_childRel)) {
+    if (isPartitionPredicate(call, this.childRel)) {
       return 1.0;
     }
 
@@ -151,10 +150,10 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
       if (tmpSelectivity == null) {
         tmpSelectivity = 0.99;
       }
-      tmpCardinality = m_childCardinality * tmpSelectivity;
+      tmpCardinality = childCardinality * tmpSelectivity;
 
       if (tmpCardinality > 1)
-        tmpSelectivity = (1 - tmpCardinality / m_childCardinality);
+        tmpSelectivity = (1 - tmpCardinality / childCardinality);
       else
         tmpSelectivity = 1.0;
 
@@ -195,7 +194,7 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
 
     for (RexNode op : call.getOperands()) {
       if (op instanceof RexInputRef) {
-        tmpNDV = HiveRelMdDistinctRowCount.getDistinctRowCount(m_childRel,
+        tmpNDV = HiveRelMdDistinctRowCount.getDistinctRowCount(this.childRel,
             ((RexInputRef) op).getIndex());
         if (tmpNDV > maxNDV)
           maxNDV = tmpNDV;
@@ -203,7 +202,7 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
         irv = new InputReferencedVisitor();
         irv.apply(op);
         for (Integer childProjIndx : irv.inputPosReferenced) {
-          tmpNDV = HiveRelMdDistinctRowCount.getDistinctRowCount(m_childRel, childProjIndx);
+          tmpNDV = HiveRelMdDistinctRowCount.getDistinctRowCount(this.childRel, childProjIndx);
           if (tmpNDV > maxNDV)
             maxNDV = tmpNDV;
         }
@@ -214,14 +213,13 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
   }
 
   private boolean isPartitionPredicate(RexNode expr, RelNode r) {
-    if ( r instanceof ProjectRelBase ) {
+    if (r instanceof ProjectRelBase) {
       expr = RelOptUtil.pushFilterPastProject(expr, (ProjectRelBase) r);
       return isPartitionPredicate(expr, ((ProjectRelBase) r).getChild());
-    } else if ( r instanceof FilterRelBase ) {
+    } else if (r instanceof FilterRelBase) {
       return isPartitionPredicate(expr, ((FilterRelBase) r).getChild());
-    } else if ( r instanceof HiveTableScanRel ) {
-      RelOptHiveTable table = (RelOptHiveTable)
-          ((HiveTableScanRel)r).getTable();
+    } else if (r instanceof HiveTableScanRel) {
+      RelOptHiveTable table = (RelOptHiveTable) ((HiveTableScanRel) r).getTable();
       BitSet cols = RelOptUtil.InputFinder.bits(expr);
       return table.containsPartitionColumnsOnly(cols);
     }

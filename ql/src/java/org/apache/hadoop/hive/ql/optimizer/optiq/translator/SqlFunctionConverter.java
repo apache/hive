@@ -64,7 +64,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
 public class SqlFunctionConverter {
-  private static final Log LOG = LogFactory.getLog(SqlFunctionConverter.class);
+  private static final Log                 LOG = LogFactory.getLog(SqlFunctionConverter.class);
 
   static final Map<String, SqlOperator>    hiveToOptiq;
   static final Map<SqlOperator, HiveToken> optiqToHiveToken;
@@ -87,10 +87,12 @@ public class SqlFunctionConverter {
     } // do generic lookup
     String name = null;
     if (StringUtils.isEmpty(funcTextName)) {
-      name = getName(hiveUDF); // this should probably never happen, see getName comment
+      name = getName(hiveUDF); // this should probably never happen, see getName
+                               // comment
       LOG.warn("The function text was empty, name from annotation is " + name);
     } else {
-      // We could just do toLowerCase here and let SA qualify it, but let's be proper...
+      // We could just do toLowerCase here and let SA qualify it, but let's be
+      // proper...
       name = FunctionRegistry.getNormalizedFunctionName(funcTextName);
     }
     return getOptiqFn(name, optiqArgTypes, retType);
@@ -115,11 +117,10 @@ public class SqlFunctionConverter {
       if (castType.equals(TypeInfoFactory.byteTypeInfo)) {
         castUDF = FunctionRegistry.getFunctionInfo("tinyint");
       } else if (castType instanceof CharTypeInfo) {
-        castUDF = handleCastForParameterizedType(castType,
-          FunctionRegistry.getFunctionInfo("char"));
+        castUDF = handleCastForParameterizedType(castType, FunctionRegistry.getFunctionInfo("char"));
       } else if (castType instanceof VarcharTypeInfo) {
         castUDF = handleCastForParameterizedType(castType,
-          FunctionRegistry.getFunctionInfo("varchar"));
+            FunctionRegistry.getFunctionInfo("varchar"));
       } else if (castType.equals(TypeInfoFactory.stringTypeInfo)) {
         castUDF = FunctionRegistry.getFunctionInfo("string");
       } else if (castType.equals(TypeInfoFactory.booleanTypeInfo)) {
@@ -140,24 +141,24 @@ public class SqlFunctionConverter {
         castUDF = FunctionRegistry.getFunctionInfo("datetime");
       } else if (castType instanceof DecimalTypeInfo) {
         castUDF = handleCastForParameterizedType(castType,
-          FunctionRegistry.getFunctionInfo("decimal"));
+            FunctionRegistry.getFunctionInfo("decimal"));
       } else if (castType.equals(TypeInfoFactory.binaryTypeInfo)) {
         castUDF = FunctionRegistry.getFunctionInfo("binary");
-      } else throw new IllegalStateException("Unexpected type : " +
-        castType.getQualifiedName());
+      } else
+        throw new IllegalStateException("Unexpected type : " + castType.getQualifiedName());
     }
 
     return castUDF;
   }
 
   private static FunctionInfo handleCastForParameterizedType(TypeInfo ti, FunctionInfo fi) {
-    SettableUDF udf = (SettableUDF)fi.getGenericUDF();
+    SettableUDF udf = (SettableUDF) fi.getGenericUDF();
     try {
       udf.setTypeInfo(ti);
     } catch (UDFArgumentException e) {
       throw new RuntimeException(e);
     }
-    return new FunctionInfo(fi.isNative(),fi.getDisplayName(),(GenericUDF)udf);
+    return new FunctionInfo(fi.isNative(), fi.getDisplayName(), (GenericUDF) udf);
   }
 
   // TODO: 1) handle Agg Func Name translation 2) is it correct to add func args
@@ -175,11 +176,10 @@ public class SqlFunctionConverter {
         } else if (op.kind == SqlKind.PLUS_PREFIX) {
           node = (ASTNode) ParseDriver.adaptor.create(HiveParser.PLUS, "PLUS");
         } else {
-          if (op.getName().toUpperCase()
-              .equals(SqlStdOperatorTable.COUNT.getName())
+          if (op.getName().toUpperCase().equals(SqlStdOperatorTable.COUNT.getName())
               && children.size() == 0) {
-            node = (ASTNode) ParseDriver.adaptor.create(
-                HiveParser.TOK_FUNCTIONSTAR, "TOK_FUNCTIONSTAR");
+            node = (ASTNode) ParseDriver.adaptor.create(HiveParser.TOK_FUNCTIONSTAR,
+                "TOK_FUNCTIONSTAR");
           }
           node.addChild((ASTNode) ParseDriver.adaptor.create(HiveParser.Identifier, op.getName()));
         }
@@ -210,9 +210,12 @@ public class SqlFunctionConverter {
 
   }
 
-  // TODO: this is not valid. Function names for built-in UDFs are specified in FunctionRegistry,
-  //       and only happen to match annotations. For user UDFs, the name is what user specifies at
-  //       creation time (annotation can be absent, different, or duplicate some other function).
+  // TODO: this is not valid. Function names for built-in UDFs are specified in
+  // FunctionRegistry,
+  // and only happen to match annotations. For user UDFs, the name is what user
+  // specifies at
+  // creation time (annotation can be absent, different, or duplicate some other
+  // function).
   private static String getName(GenericUDF hiveUDF) {
     String udfName = null;
     if (hiveUDF instanceof GenericUDFBridge) {
@@ -287,70 +290,72 @@ public class SqlFunctionConverter {
   }
 
   public static class OptiqUDAF extends SqlAggFunction {
-    final ImmutableList<RelDataType> m_argTypes;
-    final RelDataType                m_retType;
+    final ImmutableList<RelDataType> argTypes;
+    final RelDataType                retType;
 
     public OptiqUDAF(String opName, SqlReturnTypeInference returnTypeInference,
         SqlOperandTypeInference operandTypeInference, SqlOperandTypeChecker operandTypeChecker,
         ImmutableList<RelDataType> argTypes, RelDataType retType) {
       super(opName, SqlKind.OTHER_FUNCTION, returnTypeInference, operandTypeInference,
           operandTypeChecker, SqlFunctionCategory.USER_DEFINED_FUNCTION);
-      m_argTypes = argTypes;
-      m_retType = retType;
+      this.argTypes = argTypes;
+      this.retType = retType;
     }
 
     @Override
     public List<RelDataType> getParameterTypes(final RelDataTypeFactory typeFactory) {
-      return m_argTypes;
+      return this.argTypes;
     }
 
     @Override
     public RelDataType getReturnType(final RelDataTypeFactory typeFactory) {
-      return m_retType;
+      return this.retType;
     }
   }
 
   private static class OptiqUDFInfo {
-    private String                     m_udfName;
-    private SqlReturnTypeInference     m_returnTypeInference;
-    private SqlOperandTypeInference    m_operandTypeInference;
-    private SqlOperandTypeChecker      m_operandTypeChecker;
-    private ImmutableList<RelDataType> m_argTypes;
-    private RelDataType                m_retType;
+    private String                     udfName;
+    private SqlReturnTypeInference     returnTypeInference;
+    private SqlOperandTypeInference    operandTypeInference;
+    private SqlOperandTypeChecker      operandTypeChecker;
+    private ImmutableList<RelDataType> argTypes;
+    private RelDataType                retType;
   }
 
   private static OptiqUDFInfo getUDFInfo(String hiveUdfName,
       ImmutableList<RelDataType> optiqArgTypes, RelDataType optiqRetType) {
     OptiqUDFInfo udfInfo = new OptiqUDFInfo();
-    udfInfo.m_udfName = hiveUdfName;
-    udfInfo.m_returnTypeInference = ReturnTypes.explicit(optiqRetType);
-    udfInfo.m_operandTypeInference = InferTypes.explicit(optiqArgTypes);
+    udfInfo.udfName = hiveUdfName;
+    udfInfo.returnTypeInference = ReturnTypes.explicit(optiqRetType);
+    udfInfo.operandTypeInference = InferTypes.explicit(optiqArgTypes);
     ImmutableList.Builder<SqlTypeFamily> typeFamilyBuilder = new ImmutableList.Builder<SqlTypeFamily>();
     for (RelDataType at : optiqArgTypes) {
       typeFamilyBuilder.add(Util.first(at.getSqlTypeName().getFamily(), SqlTypeFamily.ANY));
     }
-    udfInfo.m_operandTypeChecker = OperandTypes.family(typeFamilyBuilder.build());
+    udfInfo.operandTypeChecker = OperandTypes.family(typeFamilyBuilder.build());
 
-    udfInfo.m_argTypes = ImmutableList.<RelDataType> copyOf(optiqArgTypes);
-    udfInfo.m_retType = optiqRetType;
+    udfInfo.argTypes = ImmutableList.<RelDataType> copyOf(optiqArgTypes);
+    udfInfo.retType = optiqRetType;
 
     return udfInfo;
   }
 
   public static SqlOperator getOptiqFn(String hiveUdfName,
-      ImmutableList<RelDataType> optiqArgTypes, RelDataType optiqRetType) throws OptiqSemanticException{
+      ImmutableList<RelDataType> optiqArgTypes, RelDataType optiqRetType)
+      throws OptiqSemanticException {
 
     if (hiveUdfName != null && hiveUdfName.trim().equals("<=>")) {
       // We can create Optiq IS_DISTINCT_FROM operator for this. But since our
-      // join reordering algo cant handle this anyway there is no advantage of this.
+      // join reordering algo cant handle this anyway there is no advantage of
+      // this.
       // So, bail out for now.
       throw new OptiqSemanticException("<=> is not yet supported for cbo.");
     }
     SqlOperator optiqOp = hiveToOptiq.get(hiveUdfName);
     if (optiqOp == null) {
       OptiqUDFInfo uInf = getUDFInfo(hiveUdfName, optiqArgTypes, optiqRetType);
-      optiqOp = new SqlFunction(uInf.m_udfName, SqlKind.OTHER_FUNCTION, uInf.m_returnTypeInference,
-          uInf.m_operandTypeInference, uInf.m_operandTypeChecker,
+      optiqOp = new SqlFunction(uInf.udfName, SqlKind.OTHER_FUNCTION, uInf.returnTypeInference,
+          uInf.operandTypeInference, uInf.operandTypeChecker,
           SqlFunctionCategory.USER_DEFINED_FUNCTION);
     }
 
@@ -363,8 +368,8 @@ public class SqlFunctionConverter {
     if (optiqAggFn == null) {
       OptiqUDFInfo uInf = getUDFInfo(hiveUdfName, optiqArgTypes, optiqRetType);
 
-      optiqAggFn = new OptiqUDAF(uInf.m_udfName, uInf.m_returnTypeInference,
-          uInf.m_operandTypeInference, uInf.m_operandTypeChecker, uInf.m_argTypes, uInf.m_retType);
+      optiqAggFn = new OptiqUDAF(uInf.udfName, uInf.returnTypeInference, uInf.operandTypeInference,
+          uInf.operandTypeChecker, uInf.argTypes, uInf.retType);
     }
 
     return optiqAggFn;
