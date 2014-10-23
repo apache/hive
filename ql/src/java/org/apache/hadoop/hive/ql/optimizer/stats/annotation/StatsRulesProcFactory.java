@@ -1394,7 +1394,7 @@ public class StatsRulesProcFactory {
      */
     private List<Integer> getPrimaryKeyCandidates(List<Operator<? extends OperatorDesc>> ops) {
       List<Integer> result = Lists.newArrayList();
-      if (ops != null || !ops.isEmpty()) {
+      if (ops != null && !ops.isEmpty()) {
         for (int i = 0; i < ops.size(); i++) {
           Operator<? extends OperatorDesc> op = ops.get(i);
           if (op instanceof ReduceSinkOperator) {
