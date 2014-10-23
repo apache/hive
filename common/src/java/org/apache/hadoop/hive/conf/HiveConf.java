@@ -53,6 +53,8 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.Shell;
 import org.apache.hive.common.HiveCompat;
 
+import com.google.common.base.Joiner;
+
 /**
  * Hive Configuration.
  */
@@ -75,9 +77,7 @@ public class HiveConf extends Configuration {
   private static final Map<String, ConfVars> metaConfs = new HashMap<String, ConfVars>();
   private final List<String> restrictList = new ArrayList<String>();
 
-  private boolean isWhiteListRestrictionEnabled = false;
-  private final List<String> modWhiteList = new ArrayList<String>();
-
+  private Pattern modWhiteListPattern = null;
 
   static {
     ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
@@ -1402,11 +1402,23 @@ public class HiveConf extends Configuration {
         "the privileges automatically granted to the owner whenever a table gets created.\n" +
         "An example like \"select,drop\" will grant select and drop privilege to the owner of the table"),
 
-    // if this is not set default value is added by sql standard authorizer.
+    // if this is not set default value is set during config initialization
     // Default value can't be set in this constructor as it would refer names in other ConfVars
     // whose constructor would not have been called
-    HIVE_AUTHORIZATION_SQL_STD_AUTH_CONFIG_WHITELIST("hive.security.authorization.sqlstd.confwhitelist", "",
-        "interal variable. List of modifiable configurations by user."),
+    HIVE_AUTHORIZATION_SQL_STD_AUTH_CONFIG_WHITELIST(
+        "hive.security.authorization.sqlstd.confwhitelist", "",
+        "List of comma separated Java regexes. Configurations parameters that match these\n" +
+        "regexes can be modified by user when SQL standard authorization is enabled.\n" +
+        "To get the default value, use the 'set <param>' command.\n" +
+        "Note that the hive.conf.restricted.list checks are still enforced after the white list\n" +
+        "check"),
+
+    HIVE_AUTHORIZATION_SQL_STD_AUTH_CONFIG_WHITELIST_APPEND(
+        "hive.security.authorization.sqlstd.confwhitelist.append", "",
+        "List of comma separated Java regexes, to be appended to list set in\n" +
+        "hive.security.authorization.sqlstd.confwhitelist. Using this list instead\n" +
+        "of updating the original list means that you can append to the defaults\n" +
+        "set by SQL standard authorization instead of replacing it entirely."),
 
     HIVE_CLI_PRINT_HEADER("hive.cli.print.header", false, "Whether to print the names of the columns in query output."),
 
@@ -2031,8 +2043,9 @@ public class HiveConf extends Configuration {
   }
 
   public void verifyAndSet(String name, String value) throws IllegalArgumentException {
-    if (isWhiteListRestrictionEnabled) {
-      if (!modWhiteList.contains(name)) {
+    if (modWhiteListPattern != null) {
+      Matcher wlMatcher = modWhiteListPattern.matcher(name);
+      if (!wlMatcher.matches()) {
         throw new IllegalArgumentException("Cannot modify " + name + " at runtime. "
             + "It is not in list of params that are allowed to be modified at runtime");
       }
@@ -2369,9 +2382,144 @@ public class HiveConf extends Configuration {
         unset(key);
       }
     }
+
+    setupSQLStdAuthWhiteList();
+
     // setup list of conf vars that are not allowed to change runtime
     setupRestrictList();
+
   }
+
+  /**
+   * If the config whitelist param for sql standard authorization is not set, set it up here.
+   */
+  private void setupSQLStdAuthWhiteList() {
+    String whiteListParamsStr = getVar(ConfVars.HIVE_AUTHORIZATION_SQL_STD_AUTH_CONFIG_WHITELIST);
+    if (whiteListParamsStr == null || whiteListParamsStr.trim().isEmpty()) {
+      // set the default configs in whitelist
+      whiteListParamsStr = getSQLStdAuthDefaultWhiteListPattern();
+    }
+    setVar(ConfVars.HIVE_AUTHORIZATION_SQL_STD_AUTH_CONFIG_WHITELIST, whiteListParamsStr);
+  }
+
+  private static String getSQLStdAuthDefaultWhiteListPattern() {
+    // create the default white list from list of safe config params
+    // and regex list
+    String confVarPatternStr = Joiner.on("|").join(convertVarsToRegex(sqlStdAuthSafeVarNames));
+    String regexPatternStr = Joiner.on("|").join(sqlStdAuthSafeVarNameRegexes);
+    return regexPatternStr + "|" + confVarPatternStr;
+  }
+
+  /**
+   * @param paramList  list of parameter strings
+   * @return list of parameter strings with "." replaced by "\."
+   */
+  private static String[] convertVarsToRegex(String[] paramList) {
+    String[] regexes = new String[paramList.length];
+    for(int i=0; i<paramList.length; i++) {
+      regexes[i] = paramList[i].replace(".", "\\." );
+    }
+    return regexes;
+  }
+
+  /**
+   * Default list of modifiable config parameters for sql standard authorization
+   * For internal use only.
+   */
+  private static final String [] sqlStdAuthSafeVarNames = new String [] {
+    ConfVars.BYTESPERREDUCER.varname,
+    ConfVars.CLIENT_STATS_COUNTERS.varname,
+    ConfVars.DEFAULTPARTITIONNAME.varname,
+    ConfVars.DROPIGNORESNONEXISTENT.varname,
+    ConfVars.HIVECOUNTERGROUP.varname,
+    ConfVars.HIVEENFORCEBUCKETING.varname,
+    ConfVars.HIVEENFORCEBUCKETMAPJOIN.varname,
+    ConfVars.HIVEENFORCESORTING.varname,
+    ConfVars.HIVEENFORCESORTMERGEBUCKETMAPJOIN.varname,
+    ConfVars.HIVEEXPREVALUATIONCACHE.varname,
+    ConfVars.HIVEGROUPBYSKEW.varname,
+    ConfVars.HIVEHASHTABLELOADFACTOR.varname,
+    ConfVars.HIVEHASHTABLETHRESHOLD.varname,
+    ConfVars.HIVEIGNOREMAPJOINHINT.varname,
+    ConfVars.HIVELIMITMAXROWSIZE.varname,
+    ConfVars.HIVEMAPREDMODE.varname,
+    ConfVars.HIVEMAPSIDEAGGREGATE.varname,
+    ConfVars.HIVEOPTIMIZEMETADATAQUERIES.varname,
+    ConfVars.HIVEROWOFFSET.varname,
+    ConfVars.HIVEVARIABLESUBSTITUTE.varname,
+    ConfVars.HIVEVARIABLESUBSTITUTEDEPTH.varname,
+    ConfVars.HIVE_AUTOGEN_COLUMNALIAS_PREFIX_INCLUDEFUNCNAME.varname,
+    ConfVars.HIVE_AUTOGEN_COLUMNALIAS_PREFIX_LABEL.varname,
+    ConfVars.HIVE_CHECK_CROSS_PRODUCT.varname,
+    ConfVars.HIVE_COMPAT.varname,
+    ConfVars.HIVE_CONCATENATE_CHECK_INDEX.varname,
+    ConfVars.HIVE_DISPLAY_PARTITION_COLUMNS_SEPARATELY.varname,
+    ConfVars.HIVE_ERROR_ON_EMPTY_PARTITION.varname,
+    ConfVars.HIVE_EXECUTION_ENGINE.varname,
+    ConfVars.HIVE_EXIM_URI_SCHEME_WL.varname,
+    ConfVars.HIVE_FILE_MAX_FOOTER.varname,
+    ConfVars.HIVE_HADOOP_SUPPORTS_SUBDIRECTORIES.varname,
+    ConfVars.HIVE_INSERT_INTO_MULTILEVEL_DIRS.varname,
+    ConfVars.HIVE_LOCALIZE_RESOURCE_NUM_WAIT_ATTEMPTS.varname,
+    ConfVars.HIVE_MULTI_INSERT_MOVE_TASKS_SHARE_DEPENDENCIES.varname,
+    ConfVars.HIVE_QUOTEDID_SUPPORT.varname,
+    ConfVars.HIVE_RESULTSET_USE_UNIQUE_COLUMN_NAMES.varname,
+    ConfVars.HIVE_STATS_COLLECT_PART_LEVEL_STATS.varname,
+    ConfVars.JOB_DEBUG_CAPTURE_STACKTRACES.varname,
+    ConfVars.JOB_DEBUG_TIMEOUT.varname,
+    ConfVars.MAXCREATEDFILES.varname,
+    ConfVars.MAXREDUCERS.varname,
+    ConfVars.OUTPUT_FILE_EXTENSION.varname,
+    ConfVars.SHOW_JOB_FAIL_DEBUG_INFO.varname,
+    ConfVars.TASKLOG_DEBUG_TIMEOUT.varname,
+  };
+
+  /**
+   * Default list of regexes for config parameters that are modifiable with
+   * sql standard authorization enabled
+   */
+  static final String [] sqlStdAuthSafeVarNameRegexes = new String [] {
+    "hive\\.auto\\..*",
+    "hive\\.cbo\\..*",
+    "hive\\.convert\\..*",
+    "hive\\.exec\\..*\\.dynamic\\.partitions\\..*",
+    "hive\\.exec\\.compress\\..*",
+    "hive\\.exec\\.infer\\..*",
+    "hive\\.exec\\.mode.local\\..*",
+    "hive\\.exec\\.orc\\..*",
+    "hive\\.fetch.task\\..*",
+    "hive\\.hbase\\..*",
+    "hive\\.index\\..*",
+    "hive\\.index\\..*",
+    "hive\\.intermediate\\..*",
+    "hive\\.join\\..*",
+    "hive\\.limit\\..*",
+    "hive\\.mapjoin\\..*",
+    "hive\\.merge\\..*",
+    "hive\\.optimize\\..*",
+    "hive\\.orc\\..*",
+    "hive\\.outerjoin\\..*",
+    "hive\\.ppd\\..*",
+    "hive\\.prewarm\\..*",
+    "hive\\.skewjoin\\..*",
+    "hive\\.smbjoin\\..*",
+    "hive\\.stats\\..*",
+    "hive\\.tez\\..*",
+    "hive\\.vectorized\\..*",
+    "mapred\\.map\\..*",
+    "mapred\\.reduce\\..*",
+    "mapred\\.output\\.compression\\.codec",
+    "mapreduce\\.job\\.reduce\\.slowstart\\.completedmaps",
+    "mapreduce\\.job\\.queuename",
+    "mapreduce\\.input\\.fileinputformat\\.split\\.minsize",
+    "mapreduce\\.map\\..*",
+    "mapreduce\\.reduce\\..*",
+    "tez\\.am\\..*",
+    "tez\\.task\\..*",
+    "tez\\.runtime\\..*",
+  };
+
+
 
   /**
    * Apply system properties to this object if the property name is defined in ConfVars
@@ -2515,26 +2663,16 @@ public class HiveConf extends Configuration {
   }
 
   /**
-   * Set if whitelist check is enabled for parameter modification
+   * Set white list of parameters that are allowed to be modified
    *
-   * @param isEnabled
+   * @param paramNameRegex
    */
   @LimitedPrivate(value = { "Currently only for use by HiveAuthorizer" })
-  public void setIsModWhiteListEnabled(boolean isEnabled) {
-    this.isWhiteListRestrictionEnabled = isEnabled;
-  }
-
-  /**
-   * Add config parameter name to whitelist of parameters that can be modified
-   *
-   * @param paramname
-   */
-  @LimitedPrivate(value = { "Currently only for use by HiveAuthorizer" })
-  public void addToModifiableWhiteList(String paramname) {
-    if (paramname == null) {
+  public void setModifiableWhiteListRegex(String paramNameRegex) {
+    if (paramNameRegex == null) {
       return;
     }
-    modWhiteList.add(paramname);
+    modWhiteListPattern = Pattern.compile(paramNameRegex);
   }
 
   /**

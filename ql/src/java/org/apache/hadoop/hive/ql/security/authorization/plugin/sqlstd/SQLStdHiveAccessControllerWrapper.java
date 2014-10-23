@@ -174,7 +174,7 @@ public class SQLStdHiveAccessControllerWrapper implements HiveAccessController {
   }
 
   @Override
-  public void applyAuthorizationConfigPolicy(HiveConf hiveConf) {
+  public void applyAuthorizationConfigPolicy(HiveConf hiveConf) throws HiveAuthzPluginException {
     hiveAccessController.applyAuthorizationConfigPolicy(hiveConf);
   }
 
