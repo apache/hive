@@ -70,5 +70,5 @@ public interface HiveAccessController {
   List<HiveRoleGrant> getRoleGrantInfoForPrincipal(HivePrincipal principal) throws HiveAuthzPluginException,
       HiveAccessControlException;
 
-  void applyAuthorizationConfigPolicy(HiveConf hiveConf);
+  void applyAuthorizationConfigPolicy(HiveConf hiveConf) throws HiveAuthzPluginException;
 }

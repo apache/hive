@@ -124,7 +124,7 @@ public class HiveAuthorizerImpl implements HiveAuthorizer {
   }
 
   @Override
-  public void applyAuthorizationConfigPolicy(HiveConf hiveConf) {
+  public void applyAuthorizationConfigPolicy(HiveConf hiveConf) throws HiveAuthzPluginException {
     accessController.applyAuthorizationConfigPolicy(hiveConf);
   }
 }
