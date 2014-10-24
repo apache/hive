@@ -228,7 +228,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     @SuppressWarnings("unchecked")
     CommonMergeJoinOperator mergeJoinOp =
         (CommonMergeJoinOperator) OperatorFactory.get(new CommonMergeJoinDesc(numBuckets,
-            isSubQuery, mapJoinConversionPos, mapJoinDesc));
+            isSubQuery, mapJoinConversionPos, mapJoinDesc), joinOp.getSchema());
     OpTraits opTraits =
         new OpTraits(joinOp.getOpTraits().getBucketColNames(), numBuckets, joinOp.getOpTraits()
             .getSortCols());
