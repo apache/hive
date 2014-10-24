@@ -249,7 +249,7 @@ public class StatsUtils {
           List<ColStatistics> emptyStats = Lists.newArrayList();
 
           // add partition column stats
-          addParitionColumnStats(neededColumns, referencedColumns, schema, table, partList,
+          addParitionColumnStats(conf, neededColumns, referencedColumns, schema, table, partList,
               emptyStats);
 
           stats.addToColumnStats(emptyStats);
@@ -263,7 +263,7 @@ public class StatsUtils {
           List<ColStatistics> columnStats = convertColStats(colStats, table.getTableName(),
               colToTabAlias);
 
-          addParitionColumnStats(neededColumns, referencedColumns, schema, table, partList,
+          addParitionColumnStats(conf, neededColumns, referencedColumns, schema, table, partList,
               columnStats);
 
           // infer if any column can be primary key based on column statistics
@@ -335,7 +335,7 @@ public class StatsUtils {
     return false;
   }
 
-  private static void addParitionColumnStats(List<String> neededColumns,
+  private static void addParitionColumnStats(HiveConf conf, List<String> neededColumns,
       List<String> referencedColumns, List<ColumnInfo> schema, Table table,
       PrunedPartitionList partList, List<ColStatistics> colStats)
       throws HiveException {
@@ -358,6 +358,8 @@ public class StatsUtils {
             long numPartitions = getNDVPartitionColumn(partList.getPartitions(),
                 ci.getInternalName());
             partCS.setCountDistint(numPartitions);
+            partCS.setAvgColLen(StatsUtils.getAvgColLenOfVariableLengthTypes(conf,
+                ci.getObjectInspector(), partCS.getColumnType()));
             colStats.add(partCS);
           }
         }
@@ -1059,7 +1061,13 @@ public class StatsUtils {
 
       if (encd.getIsPartitionColOrVirtualCol()) {
 
-        // vitual columns
+        ColStatistics colStats = parentStats.getColumnStatisticsFromColName(colName);
+        if (colStats != null) {
+          /* If statistics for the column already exist use it. */
+          return colStats;
+        }
+
+        // virtual columns
         colType = encd.getTypeInfo().getTypeName();
         countDistincts = numRows;
         oi = encd.getWritableObjectInspector();
