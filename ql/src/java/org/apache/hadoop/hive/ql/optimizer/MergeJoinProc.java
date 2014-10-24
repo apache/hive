@@ -22,21 +22,6 @@ import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.apache.hadoop.hive.ql.plan.TezWork.VertexType;
 
 public class MergeJoinProc implements NodeProcessor {
-
-  public Operator<? extends OperatorDesc> getLeafOperator(Operator<? extends OperatorDesc> op) {
-    for (Operator<? extends OperatorDesc> childOp : op.getChildOperators()) {
-      // FileSink or ReduceSink operators are used to create vertices. See
-      // TezCompiler.
-      if ((childOp instanceof ReduceSinkOperator) || (childOp instanceof FileSinkOperator)) {
-        return childOp;
-      } else {
-        return getLeafOperator(childOp);
-      }
-    }
-
-    return null;
-  }
-
   @Override
   public Object
       process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs)
@@ -60,13 +45,13 @@ public class MergeJoinProc implements NodeProcessor {
     // merge work already exists for this merge join operator, add the dummy store work to the
     // merge work. Else create a merge work, add above work to the merge work
     MergeJoinWork mergeWork = null;
-    if (context.opMergeJoinWorkMap.containsKey(getLeafOperator(mergeJoinOp))) {
+    if (context.opMergeJoinWorkMap.containsKey(mergeJoinOp)) {
       // we already have the merge work corresponding to this merge join operator
-      mergeWork = context.opMergeJoinWorkMap.get(getLeafOperator(mergeJoinOp));
+      mergeWork = context.opMergeJoinWorkMap.get(mergeJoinOp);
     } else {
       mergeWork = new MergeJoinWork();
       tezWork.add(mergeWork);
-      context.opMergeJoinWorkMap.put(getLeafOperator(mergeJoinOp), mergeWork);
+      context.opMergeJoinWorkMap.put(mergeJoinOp, mergeWork);
     }
 
     mergeWork.setMergeJoinOperator(mergeJoinOp);
