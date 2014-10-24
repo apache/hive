@@ -192,7 +192,7 @@ public class HiveRelMdRowCount extends RelMdRowCount {
     RelOptUtil.classifyFilters(joinRel, joinFilters, joinRel.getJoinType(),
         false, !joinRel.getJoinType().generatesNullsOnRight(), !joinRel
             .getJoinType().generatesNullsOnLeft(), joinFilters, leftFilters,
-        rightFilters);
+        rightFilters, joinTypeHolder, false);
 
     Pair<Integer, Integer> joinCols = canHandleJoin(joinRel, leftFilters,
         rightFilters, joinFilters);
