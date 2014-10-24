@@ -1,7 +1,5 @@
 package org.apache.hadoop.hive.ql.optimizer;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Stack;
 
 import org.apache.hadoop.hive.ql.exec.CommonMergeJoinOperator;
