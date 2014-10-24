@@ -401,7 +401,7 @@ public class VectorizedBatchUtil {
           BytesWritable bw = (BytesWritable) writableCol;
           byte[] bytes = bw.getBytes();
           int start = buffer.getLength();
-          int length = bytes.length;
+          int length = bw.getLength();
           try {
             buffer.write(bytes, 0, length);
           } catch (IOException ioe) {
