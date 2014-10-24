@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapper.ReportStats;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
 import org.apache.hadoop.hive.ql.exec.vector.VectorMapOperator;
+import org.apache.hadoop.hive.ql.io.IOContext;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
@@ -88,6 +89,14 @@ public class SparkMapRecordHandler extends SparkRecordHandler {
         mo = new MapOperator();
       }
       mo.setConf(mrwork);
+
+      // If the current thread's IOContext is not initialized (because it's reading from a
+      // cached input HadoopRDD), copy from the saved result.
+      IOContext ioContext = IOContext.get();
+      if (ioContext.getInputPath() == null) {
+        IOContext.copy(ioContext, IOContext.getMap().get(SparkUtilities.MAP_IO_CONTEXT));
+      }
+
       // initialize map operator
       mo.setChildren(job);
       l4j.info(mo.dump(0));
@@ -199,6 +208,10 @@ public class SparkMapRecordHandler extends SparkRecordHandler {
     } finally {
       MapredContext.close();
       Utilities.clearWorkMap();
+
+      // It's possible that a thread get reused for different queries, so we need to
+      // reset the input path.
+      IOContext.get().setInputPath(null);
     }
   }
 
