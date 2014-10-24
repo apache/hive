@@ -204,6 +204,7 @@ public class MergeFileRecordProcessor extends RecordProcessor {
   private MRInputLegacy getMRInput(Map<String, LogicalInput> inputs) throws Exception {
     // there should be only one MRInput
     MRInputLegacy theMRInput = null;
+    LOG.info("VDK: the inputs are: " + inputs);
     for (Entry<String, LogicalInput> inp : inputs.entrySet()) {
       if (inp.getValue() instanceof MRInputLegacy) {
         if (theMRInput != null) {

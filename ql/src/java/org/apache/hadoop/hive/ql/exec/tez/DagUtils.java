@@ -20,8 +20,6 @@ package org.apache.hadoop.hive.ql.exec.tez;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
-import com.google.protobuf.ByteString;
-
 import javax.security.auth.login.LoginException;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -49,7 +47,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
-import org.apache.hadoop.hive.ql.exec.CommonMergeJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapper;
@@ -111,16 +108,13 @@ import org.apache.tez.dag.api.Vertex;
 import org.apache.tez.dag.api.VertexGroup;
 import org.apache.tez.dag.api.VertexManagerPluginDescriptor;
 import org.apache.tez.dag.library.vertexmanager.ShuffleVertexManager;
-import org.apache.tez.mapreduce.common.MRInputAMSplitGenerator;
 import org.apache.tez.mapreduce.hadoop.MRHelpers;
 import org.apache.tez.mapreduce.hadoop.MRInputHelpers;
 import org.apache.tez.mapreduce.hadoop.MRJobConfig;
-import org.apache.tez.mapreduce.input.MRInput;
 import org.apache.tez.mapreduce.input.MRInputLegacy;
 import org.apache.tez.mapreduce.input.MultiMRInput;
 import org.apache.tez.mapreduce.output.MROutput;
 import org.apache.tez.mapreduce.partition.MRPartitioner;
-import org.apache.tez.mapreduce.protos.MRRuntimeProtos;
 import org.apache.tez.runtime.library.api.TezRuntimeConfiguration;
 import org.apache.tez.runtime.library.common.comparator.TezBytesComparator;
 import org.apache.tez.runtime.library.common.serializer.TezBytesWritableSerialization;
@@ -271,8 +265,7 @@ public class DagUtils {
     case CUSTOM_EDGE: {
       mergeInputClass = ConcatenatedMergedKeyValueInput.class;
       int numBuckets = edgeProp.getNumBuckets();
-      CustomVertexConfiguration vertexConf =
-          new CustomVertexConfiguration(numBuckets, vertexType, "");
+      CustomVertexConfiguration vertexConf = new CustomVertexConfiguration(numBuckets, vertexType);
       DataOutputBuffer dob = new DataOutputBuffer();
       vertexConf.write(dob);
       VertexManagerPluginDescriptor desc =
@@ -317,8 +310,7 @@ public class DagUtils {
     switch(edgeProp.getEdgeType()) {
     case CUSTOM_EDGE: {
       int numBuckets = edgeProp.getNumBuckets();
-      CustomVertexConfiguration vertexConf =
-          new CustomVertexConfiguration(numBuckets, vertexType, "");
+      CustomVertexConfiguration vertexConf = new CustomVertexConfiguration(numBuckets, vertexType);
       DataOutputBuffer dob = new DataOutputBuffer();
       vertexConf.write(dob);
       VertexManagerPluginDescriptor desc = VertexManagerPluginDescriptor.create(
@@ -343,7 +335,6 @@ public class DagUtils {
   /*
    * Helper function to create an edge property from an edge type.
    */
-  @SuppressWarnings("rawtypes")
   private EdgeProperty createEdgeProperty(TezEdgeProperty edgeProp, Configuration conf)
       throws IOException {
     MRHelpers.translateMRConfToTez(conf);
@@ -435,7 +426,7 @@ public class DagUtils {
       HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVETEZCONTAINERSIZE) :
       conf.getInt(MRJobConfig.MAP_MEMORY_MB, MRJobConfig.DEFAULT_MAP_MEMORY_MB);
     int cpus = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVETEZCPUVCORES) > 0 ?
-      HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVETEZCPUVCORES) : 
+      HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVETEZCPUVCORES) :
       conf.getInt(MRJobConfig.MAP_CPU_VCORES, MRJobConfig.DEFAULT_MAP_CPU_VCORES);
     return Resource.newInstance(memory, cpus);
   }
@@ -489,13 +480,9 @@ public class DagUtils {
     if (mergeJoinWork.getMainWork() instanceof MapWork) {
       List<BaseWork> mapWorkList = mergeJoinWork.getBaseWorkList();
       MapWork mapWork = (MapWork) (mergeJoinWork.getMainWork());
-      CommonMergeJoinOperator mergeJoinOp = mergeJoinWork.getMergeJoinOperator();
       Vertex mergeVx =
           createVertex(conf, mapWork, appJarLr, additionalLr, fs, mrScratchDir, ctx, vertexType);
 
-      // grouping happens in execution phase. Setting the class to TezGroupedSplitsInputFormat
-      // here would cause pre-mature grouping which would be incorrect.
-      Class inputFormatClass = HiveInputFormat.class;
       conf.setClass("mapred.input.format.class", HiveInputFormat.class, InputFormat.class);
       // mapreduce.tez.input.initializer.serialize.event.payload should be set
       // to false when using this plug-in to avoid getting a serialized event at run-time.
@@ -512,9 +499,11 @@ public class DagUtils {
 
       VertexManagerPluginDescriptor desc =
         VertexManagerPluginDescriptor.create(CustomPartitionVertex.class.getName());
+      // the +1 to the size is because of the main work.
       CustomVertexConfiguration vertexConf =
           new CustomVertexConfiguration(mergeJoinWork.getMergeJoinOperator().getConf()
-              .getNumBuckets(), vertexType, mergeJoinWork.getBigTableAlias());
+              .getNumBuckets(), vertexType, mergeJoinWork.getBigTableAlias(),
+              mapWorkList.size() + 1);
       DataOutputBuffer dob = new DataOutputBuffer();
       vertexConf.write(dob);
       byte[] userPayload = dob.getData();
@@ -554,6 +543,7 @@ public class DagUtils {
     DataSourceDescriptor dataSource;
 
     int numTasks = -1;
+    @SuppressWarnings("rawtypes")
     Class inputFormatClass = conf.getClass("mapred.input.format.class",
         InputFormat.class);
 
@@ -611,7 +601,13 @@ public class DagUtils {
             .setCustomInitializerDescriptor(descriptor).build();
       } else {
         // Not HiveInputFormat, or a custom VertexManager will take care of grouping splits
-        dataSource = MRInputLegacy.createConfigBuilder(conf, inputFormatClass).groupSplits(false).build();
+        if (vertexHasCustomInput) {
+          dataSource =
+              MultiMRInput.createConfigBuilder(conf, inputFormatClass).groupSplits(false).build();
+        } else {
+          dataSource =
+              MRInputLegacy.createConfigBuilder(conf, inputFormatClass).groupSplits(false).build();
+        }
       }
     } else {
       // Setup client side split generation.
@@ -763,6 +759,7 @@ public class DagUtils {
    * @throws LoginException if we are unable to figure user information
    * @throws IOException when any dfs operation fails.
    */
+  @SuppressWarnings("deprecation")
   public Path getDefaultDestDir(Configuration conf) throws LoginException, IOException {
     UserGroupInformation ugi = ShimLoader.getHadoopShims().getUGIForConf(conf);
     String userName = ShimLoader.getHadoopShims().getShortUserName(ugi);
@@ -875,6 +872,7 @@ public class DagUtils {
     return fstatus;
   }
 
+  @SuppressWarnings("deprecation")
   public static FileStatus validateTargetDir(Path path, Configuration conf) throws IOException {
     FileSystem fs = path.getFileSystem(conf);
     FileStatus fstatus = null;
@@ -1051,6 +1049,7 @@ public class DagUtils {
    * @param ctx This query's context
    * @return Vertex
    */
+  @SuppressWarnings("deprecation")
   public Vertex createVertex(JobConf conf, BaseWork work,
       Path scratchDir, LocalResource appJarLr,
       List<LocalResource> additionalLr, FileSystem fileSystem, Context ctx, boolean hasChildren,

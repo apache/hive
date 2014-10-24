@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -42,6 +43,7 @@ public abstract class BaseWork extends AbstractOperatorDesc {
   // schema info.
   List<HashTableDummyOperator> dummyOps;
   int tag;
+  private final List<String> sortColNames = new ArrayList<String>();
 
   public BaseWork() {}
 
@@ -147,5 +149,13 @@ public abstract class BaseWork extends AbstractOperatorDesc {
 
   public int getTag() {
     return tag;
+  }
+
+  public void addSortCols(List<String> sortCols) {
+    this.sortColNames.addAll(sortCols);
+  }
+
+  public List<String> getSortCols() {
+    return sortColNames;
   }
 }
