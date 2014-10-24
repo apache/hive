@@ -46,7 +46,8 @@ public class VectorMapOperator extends MapOperator {
           childrenDone++;
         }
       }
-      rowForwarded(childrenDone);
+
+      rowsForwarded(childrenDone, ((VectorizedRowBatch)value).size);
     } catch (Exception e) {
       throw new HiveException("Hive Runtime Error while processing row ", e);
     }

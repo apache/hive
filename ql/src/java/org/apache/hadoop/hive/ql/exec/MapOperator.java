@@ -499,14 +499,16 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
         throw new HiveException("Hive Runtime Error while processing row " + message, e);
       }
     }
-    rowForwarded(childrenDone);
+    rowsForwarded(childrenDone, 1);
   }
 
-  protected final void rowForwarded(int childrenDone) {
-    numRows++;
-    if (isLogInfoEnabled && numRows == cntr) {
-      cntr *= 10;
-      LOG.info(toString() + ": records read - " + numRows);
+  protected final void rowsForwarded(int childrenDone, int rows) {
+    numRows += rows;
+    if (isLogInfoEnabled) {
+      while (numRows >= cntr) {
+        cntr *= 10;
+        LOG.info(toString() + ": records read - " + numRows);
+      }
     }
     if (childrenDone == currentCtxs.length) {
       setDone(true);
