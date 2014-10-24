@@ -1823,7 +1823,11 @@ public class HiveConf extends Configuration {
     TEZ_DYNAMIC_PARTITION_PRUNING_MAX_EVENT_SIZE("hive.tez.dynamic.partition.pruning.max.event.size", 1*1024*1024L,
         "Maximum size of events sent by processors in dynamic pruning. If this size is crossed no pruning will take place."),
     TEZ_DYNAMIC_PARTITION_PRUNING_MAX_DATA_SIZE("hive.tez.dynamic.partition.pruning.max.data.size", 100*1024*1024L,
-        "Maximum total data size of events in dynamic pruning.")
+        "Maximum total data size of events in dynamic pruning."),
+    TEZ_SMB_NUMBER_WAVES(
+        "hive.tez.smb.number.waves",
+        (float) 0.5,
+        "The number of waves in which to run the SMB join. Account for cluster being occupied. Ideally should be 1 wave.")
     ;
 
     public final String varname;

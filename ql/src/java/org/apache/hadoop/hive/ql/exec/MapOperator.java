@@ -67,6 +67,7 @@ import org.apache.hadoop.util.StringUtils;
  * different from regular operators in that it starts off by processing a
  * Writable data structure from a Table (instead of a Hive Object).
  **/
+@SuppressWarnings("deprecation")
 public class MapOperator extends Operator<MapWork> implements Serializable, Cloneable {
 
   private static final long serialVersionUID = 1L;
@@ -177,7 +178,6 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
 
   private MapOpCtx initObjectInspector(Configuration hconf, MapOpCtx opCtx,
       StructObjectInspector tableRowOI) throws Exception {
-
     PartitionDesc pd = opCtx.partDesc;
     TableDesc td = pd.getTableDesc();
 
@@ -615,5 +615,17 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
   @Override
   public Map<Integer, DummyStoreOperator> getTagToOperatorTree() {
     return MapRecordProcessor.getConnectOps();
+  }
+
+  public void initializeContexts() {
+    Path fpath = getExecContext().getCurrentInputPath();
+    String nominalPath = getNominalPath(fpath);
+    Map<Operator<?>, MapOpCtx> contexts = opCtxMap.get(nominalPath);
+    currentCtxs = contexts.values().toArray(new MapOpCtx[contexts.size()]);
+  }
+
+  public Deserializer getCurrentDeserializer() {
+
+    return currentCtxs[0].deserializer;
   }
 }
