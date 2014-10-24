@@ -123,6 +123,11 @@ public class GenTezWork implements NodeProcessor {
       context.rootToWorkMap.put(root, work);
     }
 
+    // this is where we set the sort columns that we will be using for KeyValueInputMerge
+    if (operator instanceof DummyStoreOperator) {
+      work.addSortCols(root.getOpTraits().getSortCols().get(0));
+    }
+
     if (!context.childToWorkMap.containsKey(operator)) {
       List<BaseWork> workItems = new LinkedList<BaseWork>();
       workItems.add(work);
@@ -148,6 +153,7 @@ public class GenTezWork implements NodeProcessor {
         context.opMergeJoinWorkMap.put(context.currentMergeJoinOperator, mergeJoinWork);
       }
       // connect the work correctly.
+      work.addSortCols(root.getOpTraits().getSortCols().get(0));
       mergeJoinWork.addMergedWork(work, null);
       Operator<? extends OperatorDesc> parentOp =
           getParentFromStack(context.currentMergeJoinOperator, stack);

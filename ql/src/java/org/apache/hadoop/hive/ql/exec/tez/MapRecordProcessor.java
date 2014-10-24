@@ -17,10 +17,10 @@
  */
 package org.apache.hadoop.hive.ql.exec.tez;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,15 +44,15 @@ import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
 import org.apache.hadoop.hive.ql.exec.tez.TezProcessor.TezKVOutputCollector;
 import org.apache.hadoop.hive.ql.exec.tez.tools.KeyValueInputMerger;
 import org.apache.hadoop.hive.ql.exec.vector.VectorMapOperator;
-import org.apache.hadoop.hive.ql.io.IOContext;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hadoop.hive.serde2.Deserializer;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.tez.mapreduce.input.MRInputLegacy;
 import org.apache.tez.mapreduce.input.MultiMRInput;
 import org.apache.tez.mapreduce.processor.MRTaskReporter;
-import org.apache.tez.runtime.api.Input;
 import org.apache.tez.runtime.api.LogicalInput;
 import org.apache.tez.runtime.api.LogicalOutput;
 import org.apache.tez.runtime.api.ProcessorContext;
@@ -73,6 +73,7 @@ public class MapRecordProcessor extends RecordProcessor {
   private int position = 0;
   private boolean foundCachedMergeWork = false;
   MRInputLegacy legacyMRInput = null;
+  MultiMRInput mainWorkMultiMRInput = null;
   private ExecMapperContext execContext = null;
   private boolean abort = false;
   protected static final String MAP_PLAN_KEY = "__MAP_PLAN__";
@@ -129,12 +130,14 @@ public class MapRecordProcessor extends RecordProcessor {
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_INIT_OPERATORS);
     super.init(jconf, processorContext, mrReporter, inputs, outputs);
 
-    //Update JobConf using MRInput, info like filename comes via this
+    // Update JobConf using MRInput, info like filename comes via this
     legacyMRInput = getMRInput(inputs);
-    Configuration updatedConf = legacyMRInput.getConfigUpdates();
-    if (updatedConf != null) {
-      for (Entry<String, String> entry : updatedConf) {
-        jconf.set(entry.getKey(), entry.getValue());
+    if (legacyMRInput != null) {
+      Configuration updatedConf = legacyMRInput.getConfigUpdates();
+      if (updatedConf != null) {
+        for (Entry<String, String> entry : updatedConf) {
+          jconf.set(entry.getKey(), entry.getValue());
+        }
       }
     }
 
@@ -158,8 +161,6 @@ public class MapRecordProcessor extends RecordProcessor {
       if (mergeWorkList != null) {
         MapOperator mergeMapOp = null;
         for (MapWork mergeMapWork : mergeWorkList) {
-          processorContext.waitForAnyInputReady(Collections.singletonList((Input) (inputs
-              .get(mergeMapWork.getName()))));
           if (mergeMapWork.getVectorMode()) {
             mergeMapOp = new VectorMapOperator();
           } else {
@@ -235,11 +236,17 @@ public class MapRecordProcessor extends RecordProcessor {
   }
 
   private void initializeMapRecordSources() throws Exception {
+
     int size = mergeMapOpList.size() + 1; // the +1 is for the main map operator itself
     sources = new MapRecordSource[size];
-    KeyValueReader reader = legacyMRInput.getReader();
     position = mapOp.getConf().getTag();
     sources[position] = new MapRecordSource();
+    KeyValueReader reader = null;
+    if (mainWorkMultiMRInput != null) {
+      reader = getKeyValueReader(mainWorkMultiMRInput.getKeyValueReaders(), mapOp);
+    } else {
+      reader = legacyMRInput.getReader();
+    }
     sources[position].init(jconf, mapOp, reader);
     for (MapOperator mapOp : mergeMapOpList) {
       int tag = mapOp.getConf().getTag();
@@ -248,11 +255,26 @@ public class MapRecordProcessor extends RecordProcessor {
       MultiMRInput multiMRInput = multiMRInputMap.get(inputName);
       Collection<KeyValueReader> kvReaders = multiMRInput.getKeyValueReaders();
       l4j.debug("There are " + kvReaders.size() + " key-value readers for input " + inputName);
-      List<KeyValueReader> kvReaderList = new ArrayList<KeyValueReader>(kvReaders);
-      reader = new KeyValueInputMerger(kvReaderList);
+      reader = getKeyValueReader(kvReaders, mapOp);
       sources[tag].init(jconf, mapOp, reader);
     }
     ((TezContext) MapredContext.get()).setRecordSources(sources);
+  }
+
+  @SuppressWarnings("deprecation")
+  private KeyValueReader getKeyValueReader(Collection<KeyValueReader> keyValueReaders,
+      MapOperator mapOp)
+      throws Exception {
+    List<KeyValueReader> kvReaderList = new ArrayList<KeyValueReader>(keyValueReaders);
+    // this sets up the map operator contexts correctly
+    mapOp.initializeContexts();
+    Deserializer deserializer = mapOp.getCurrentDeserializer();
+    KeyValueReader reader =
+        new KeyValueInputMerger(kvReaderList, deserializer,
+            new ObjectInspector[] { deserializer.getObjectInspector() }, mapOp
+                .getConf()
+                .getSortCols());
+    return reader;
   }
 
   private DummyStoreOperator getJoinParentOp(Operator<? extends OperatorDesc> mergeMapOp) {
@@ -335,7 +357,17 @@ public class MapRecordProcessor extends RecordProcessor {
         multiMRInputMap.put(inp.getKey(), (MultiMRInput) inp.getValue());
       }
     }
-    theMRInput.init();
+    if (theMRInput != null) {
+      theMRInput.init();
+    } else {
+      String alias = mapWork.getAliasToWork().keySet().iterator().next();
+      if (inputs.get(alias) instanceof MultiMRInput) {
+        mainWorkMultiMRInput = (MultiMRInput) inputs.get(alias);
+      } else {
+        throw new IOException("Unexpected input type found: "
+            + inputs.get(alias).getClass().getCanonicalName());
+      }
+    }
     return theMRInput;
   }
 }
