@@ -25,13 +25,13 @@ import org.apache.hadoop.hive.ql.optimizer.optiq.reloperators.HiveFilterRel;
 import org.apache.hadoop.hive.ql.optimizer.optiq.reloperators.HiveProjectRel;
 import org.eigenbase.rel.FilterRelBase;
 import org.eigenbase.rel.JoinRelBase;
+import org.eigenbase.rel.JoinRelType;
 import org.eigenbase.rel.RelFactories;
 import org.eigenbase.rel.rules.PushFilterPastJoinRule;
 import org.eigenbase.relopt.RelOptRule;
 import org.eigenbase.relopt.RelOptRuleCall;
 import org.eigenbase.relopt.RelOptRuleOperand;
 import org.eigenbase.relopt.RelOptUtil.InputFinder;
-import org.eigenbase.rex.RexBuilder;
 import org.eigenbase.rex.RexCall;
 import org.eigenbase.rex.RexNode;
 import org.eigenbase.sql.SqlKind;
@@ -96,30 +96,33 @@ public abstract class HivePushFilterPastJoinRule extends PushFilterPastJoinRule 
 	 */
 	@Override
 	protected void validateJoinFilters(List<RexNode> aboveFilters,
-			List<RexNode> joinFilters, JoinRelBase join) {
-		ListIterator<RexNode> filterIter = joinFilters.listIterator();
-		while (filterIter.hasNext()) {
-			RexNode exp = filterIter.next();
-			if (exp instanceof RexCall) {
-				RexCall c = (RexCall) exp;
-				if (c.getOperator().getKind() == SqlKind.EQUALS) {
-					boolean validHiveJoinFilter = true;
-					for (RexNode rn : c.getOperands()) {
-						// NOTE: Hive dis-allows projections from both left &
-						// right side
-						// of join condition. Example: Hive disallows
-						// (r1.x=r2.x)=(r1.y=r2.y) on join condition.
-						if (filterRefersToBothSidesOfJoin(rn, join)) {
-							validHiveJoinFilter = false;
-							break;
+			List<RexNode> joinFilters, JoinRelBase join, JoinRelType joinType) {
+		if (joinType.equals(JoinRelType.INNER)) {
+			ListIterator<RexNode> filterIter = joinFilters.listIterator();
+			while (filterIter.hasNext()) {
+				RexNode exp = filterIter.next();
+				if (exp instanceof RexCall) {
+					RexCall c = (RexCall) exp;
+					if (c.getOperator().getKind() == SqlKind.EQUALS) {
+						boolean validHiveJoinFilter = true;
+						for (RexNode rn : c.getOperands()) {
+							// NOTE: Hive dis-allows projections from both left
+							// &
+							// right side
+							// of join condition. Example: Hive disallows
+							// (r1.x=r2.x)=(r1.y=r2.y) on join condition.
+							if (filterRefersToBothSidesOfJoin(rn, join)) {
+								validHiveJoinFilter = false;
+								break;
+							}
 						}
+						if (validHiveJoinFilter)
+							continue;
 					}
-					if (validHiveJoinFilter)
-						continue;
 				}
+				aboveFilters.add(exp);
+				filterIter.remove();
 			}
-			aboveFilters.add(exp);
-			filterIter.remove();
 		}
 	}
 
