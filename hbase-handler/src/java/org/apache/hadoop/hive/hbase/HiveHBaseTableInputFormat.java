@@ -73,6 +73,7 @@ import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.security.UserGroupInformation;
 
 /**
  * HiveHBaseTableInputFormat implements InputFormat for HBase storage handler
@@ -428,7 +429,9 @@ public class HiveHBaseTableInputFormat extends TableInputFormatBase
   public InputSplit[] getSplits(JobConf jobConf, int numSplits) throws IOException {
 
     //obtain delegation tokens for the job
-    TableMapReduceUtil.initCredentials(jobConf);
+    if (UserGroupInformation.getCurrentUser().hasKerberosCredentials()) {
+      TableMapReduceUtil.initCredentials(jobConf);
+    }
 
     String hbaseTableName = jobConf.get(HBaseSerDe.HBASE_TABLE_NAME);
     setHTable(new HTable(HBaseConfiguration.create(jobConf), Bytes.toBytes(hbaseTableName)));
