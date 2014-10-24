@@ -294,8 +294,7 @@ public class SparkPlanGenerator {
 
     JavaPairRDD<WritableComparable, Writable> hadoopRDD = sc.hadoopRDD(jobConf, ifClass,
         WritableComparable.class, Writable.class);
-    MapInput result = new MapInput(hadoopRDD,
-        false /*TODO: fix this after resolving HIVE-8457: cloneToWork.containsKey(mapWork)*/);
+    MapInput result = new MapInput(hadoopRDD, cloneToWork.containsKey(mapWork));
     return result;
   }
 

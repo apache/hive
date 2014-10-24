@@ -27,9 +27,11 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.io.HiveIOExceptionHandlerUtil;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.FooterBuffer;
+import org.apache.hadoop.hive.ql.exec.spark.SparkUtilities;
 import org.apache.hadoop.hive.ql.io.IOContext.Comparison;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
@@ -171,6 +173,18 @@ public abstract class HiveContextAwareRecordReader<K, V> implements RecordReader
     ioCxtRef.isBlockPointer = isBlockPointer;
     ioCxtRef.inputPath = inputPath;
     LOG.info("Processing file " + inputPath);
+
+    // In spark, in multi-insert an input HadoopRDD maybe be shared by multiple
+    // mappers, and if we cache it, only the first thread will have its thread-local
+    // IOContext initialized, while the rest will not.
+    // To solve this issue, we need to save a copy of the initialized IOContext, so that
+    // later it can be used for other threads.
+    if (HiveConf.getVar(jobConf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("spark")) {
+      IOContext iocontext = new IOContext();
+      IOContext.copy(iocontext, ioCxtRef);
+      IOContext.getMap().put(SparkUtilities.MAP_IO_CONTEXT, iocontext);
+    }
+
     initDone = true;
   }
 
