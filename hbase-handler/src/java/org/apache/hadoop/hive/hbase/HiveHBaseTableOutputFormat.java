@@ -42,6 +42,7 @@ import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.hadoop.mapreduce.OutputCommitter;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.util.Progressable;
+import org.apache.hadoop.security.UserGroupInformation;
 
 /**
  * HiveHBaseTableOutputFormat implements HiveOutputFormat for HBase tables.
@@ -72,7 +73,9 @@ public class HiveHBaseTableOutputFormat extends
   public void checkOutputSpecs(FileSystem fs, JobConf jc) throws IOException {
 
     //obtain delegation tokens for the job
-    TableMapReduceUtil.initCredentials(jc);
+    if (UserGroupInformation.getCurrentUser().hasKerberosCredentials()) {
+      TableMapReduceUtil.initCredentials(jc);
+    }
 
     String hbaseTableName = jc.get(HBaseSerDe.HBASE_TABLE_NAME);
     jc.set(TableOutputFormat.OUTPUT_TABLE, hbaseTableName);

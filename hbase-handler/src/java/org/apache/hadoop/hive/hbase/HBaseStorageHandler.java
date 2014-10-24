@@ -475,6 +475,11 @@ public class HBaseStorageHandler extends DefaultStorageHandler
       TableMapReduceUtil.addDependencyJars(copy);
       merged.addAll(copy.getConfiguration().getStringCollection("tmpjars"));
       jobConf.set("tmpjars", StringUtils.arrayToString(merged.toArray(new String[0])));
+
+      // Get credentials using the configuration instance which has HBase properties
+      JobConf hbaseJobConf = new JobConf(getConf());
+      org.apache.hadoop.hbase.mapred.TableMapReduceUtil.initCredentials(hbaseJobConf);
+      jobConf.getCredentials().mergeAll(hbaseJobConf.getCredentials());
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
