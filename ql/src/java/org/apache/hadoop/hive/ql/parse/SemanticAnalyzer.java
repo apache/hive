@@ -1255,8 +1255,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
         qbp.setDestForClause(ctx_1.dest, (ASTNode) ast.getChild(0));
 
-        if (qbp.getClauseNamesForDest().size() > 1)
+        if (qbp.getClauseNamesForDest().size() > 1) {
           queryProperties.setMultiDestQuery(true);
+        }
         break;
 
       case HiveParser.TOK_FROM:
@@ -2716,9 +2717,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   @SuppressWarnings("nls")
-  private Integer genColListRegex(String colRegex, String tabAlias,
-      ASTNode sel, ArrayList<ExprNodeDesc> col_list, HashSet<ColumnInfo> excludeCols,
-      RowResolver input, Integer pos, RowResolver output, List<String> aliases)
+  // TODO: make aliases unique, otherwise needless rewriting takes place
+  private Integer genColListRegex(String colRegex, String tabAlias, ASTNode sel,
+    ArrayList<ExprNodeDesc> col_list, HashSet<ColumnInfo> excludeCols, RowResolver input,
+    Integer pos, RowResolver output, List<String> aliases, boolean ensureUniqueCols)
       throws SemanticException {
 
     // The table alias should exist
@@ -2790,7 +2792,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
               colInfo.getIsVirtualCol(), colInfo.isHiddenVirtualCol());
           inputColsProcessed.put(colInfo, oColInfo);
         }
-        output.put(tmp[0], tmp[1], oColInfo);
+        if (ensureUniqueCols) {
+          if (!output.putWithCheck(tmp[0], tmp[1], null, oColInfo)) {
+            throw new OptiqSemanticException("Cannot add column to RR: " + tmp[0] + "." + tmp[1]
+                + " => " + oColInfo + " due to duplication, see previous warnings");
+          }
+        } else {
+          output.put(tmp[0], tmp[1], oColInfo);
+        }
         pos = Integer.valueOf(pos.intValue() + 1);
         matched++;
 
@@ -3441,7 +3450,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
       if (isUDTF && (selectStar = udtfExprType == HiveParser.TOK_FUNCTIONSTAR)) {
         genColListRegex(".*", null, (ASTNode) udtfExpr.getChild(0),
-            col_list, null, inputRR, pos, out_rwsch, qb.getAliases());
+            col_list, null, inputRR, pos, out_rwsch, qb.getAliases(), false);
       }
     }
 
@@ -3563,7 +3572,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if (expr.getType() == HiveParser.TOK_ALLCOLREF) {
         pos = genColListRegex(".*", expr.getChildCount() == 0 ? null
             : getUnescapedName((ASTNode) expr.getChild(0)).toLowerCase(),
-            expr, col_list, null, inputRR, pos, out_rwsch, qb.getAliases());
+            expr, col_list, null, inputRR, pos, out_rwsch, qb.getAliases(), false);
         selectStar = true;
       } else if (expr.getType() == HiveParser.TOK_TABLE_OR_COL && !hasAsClause
           && !inputRR.getIsExprResolver()
@@ -3572,7 +3581,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         // This can only happen without AS clause
         // We don't allow this for ExprResolver - the Group By case
         pos = genColListRegex(unescapeIdentifier(expr.getChild(0).getText()),
-            null, expr, col_list, null, inputRR, pos, out_rwsch, qb.getAliases());
+            null, expr, col_list, null, inputRR, pos, out_rwsch, qb.getAliases(), false);
       } else if (expr.getType() == HiveParser.DOT
           && expr.getChild(0).getType() == HiveParser.TOK_TABLE_OR_COL
           && inputRR.hasTableAlias(unescapeIdentifier(expr.getChild(0)
@@ -3584,7 +3593,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         // We don't allow this for ExprResolver - the Group By case
         pos = genColListRegex(unescapeIdentifier(expr.getChild(1).getText()),
             unescapeIdentifier(expr.getChild(0).getChild(0).getText().toLowerCase()),
-             expr, col_list, null, inputRR, pos, out_rwsch, qb.getAliases());
+             expr, col_list, null, inputRR, pos, out_rwsch, qb.getAliases(), false);
       } else {
         // Case when this is an expression
         TypeCheckCtx tcCtx = new TypeCheckCtx(inputRR);
@@ -12383,12 +12392,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       if (LOG.isDebugEnabled() && !conf.getBoolVar(ConfVars.HIVE_IN_TEST)) {
         LOG.debug("CBO Planning details:\n");
-        LOG.debug("Original Plan:\n");
-        LOG.debug(RelOptUtil.toString(optiqGenPlan));
-        LOG.debug("Plan After PPD, PartPruning, ColumnPruning:\n");
-        LOG.debug(RelOptUtil.toString(optiqPreCboPlan));
-        LOG.debug("Plan After Join Reordering:\n");
-        LOG.debug(RelOptUtil.toString(optiqOptimizedPlan, SqlExplainLevel.ALL_ATTRIBUTES));
+        LOG.debug("Original Plan:\n" + RelOptUtil.toString(optiqGenPlan));
+        LOG.debug("Plan After PPD, PartPruning, ColumnPruning:\n"
+            + RelOptUtil.toString(optiqPreCboPlan));
+        LOG.debug("Plan After Join Reordering:\n"
+            + RelOptUtil.toString(optiqOptimizedPlan, SqlExplainLevel.ALL_ATTRIBUTES));
       }
 
       return optiqOptimizedPlan;
@@ -12602,7 +12610,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         joinRR = RowResolver.getCombinedRR(leftRR, rightRR);
       } else {
         joinRR = new RowResolver();
-        RowResolver.add(joinRR, leftRR, 0);
+        if (!RowResolver.add(joinRR, leftRR)) {
+          LOG.warn("Duplicates detected when adding columns to RR: see previous message");
+        }
       }
 
       // 2. Construct ExpressionNodeDesc representing Join Condition
@@ -13046,7 +13056,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     private RelNode projectLeftOuterSide(RelNode srcRel, int numColumns) throws SemanticException {
       RowResolver iRR = relToHiveRR.get(srcRel);
       RowResolver oRR = new RowResolver();
-      RowResolver.add(oRR, iRR, 0, numColumns);
+      RowResolver.add(oRR, iRR, numColumns);
 
       List<RexNode> optiqColLst = new ArrayList<RexNode>();
       List<String> oFieldNames = new ArrayList<String>();
@@ -13506,7 +13516,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                 }
               });
           RowResolver obSyntheticProjectRR = new RowResolver();
-          RowResolver.add(obSyntheticProjectRR, inputRR, 0);
+          if (!RowResolver.add(obSyntheticProjectRR, inputRR)) {
+            throw new OptiqSemanticException(
+                "Duplicates detected when adding columns to RR: see previous message");
+          }
           int vcolPos = inputRR.getRowSchema().getSignature().size();
           for (Pair<ASTNode, TypeInfo> astTypePair : vcASTTypePairs) {
             obSyntheticProjectRR.putExpression(astTypePair.getKey(), new ColumnInfo(
@@ -13517,14 +13530,23 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
               obSyntheticProjectRR, srcRel);
 
           if (outermostOB) {
-            RowResolver.add(outputRR, inputRR, 0);
+            if (!RowResolver.add(outputRR, inputRR)) {
+              throw new OptiqSemanticException(
+                  "Duplicates detected when adding columns to RR: see previous message");
+            }
 
           } else {
-            RowResolver.add(outputRR, obSyntheticProjectRR, 0);
+            if (!RowResolver.add(outputRR, obSyntheticProjectRR)) {
+              throw new OptiqSemanticException(
+                  "Duplicates detected when adding columns to RR: see previous message");
+            }
             originalOBChild = srcRel;
           }
         } else {
-          RowResolver.add(outputRR, inputRR, 0);
+          if (!RowResolver.add(outputRR, inputRR)) {
+            throw new OptiqSemanticException(
+                "Duplicates detected when adding columns to RR: see previous message");
+          }
         }
 
         // 4. Construct SortRel
@@ -13559,7 +13581,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         sortRel = new HiveSortRel(cluster, traitSet, srcRel, canonizedCollation, null, fetch);
 
         RowResolver outputRR = new RowResolver();
-        RowResolver.add(outputRR, relToHiveRR.get(srcRel), 0);
+        if (!RowResolver.add(outputRR, relToHiveRR.get(srcRel))) {
+          throw new OptiqSemanticException(
+              "Duplicates detected when adding columns to RR: see previous message");
+        }
         ImmutableMap<String, Integer> hiveColNameOptiqPosMap = buildHiveToOptiqColumnMap(outputRR,
             sortRel);
         relToHiveRR.put(sortRel, outputRR);
@@ -13739,7 +13764,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       // 3. Construct new Row Resolver with everything from below.
       RowResolver out_rwsch = new RowResolver();
-      RowResolver.add(out_rwsch, inputRR, 0);
+      if (!RowResolver.add(out_rwsch, inputRR)) {
+        LOG.warn("Duplicates detected when adding columns to RR: see previous message");
+      }
 
       // 4. Walk through Window Expressions & Construct RexNodes for those,
       // Update out_rwsch
@@ -13863,6 +13890,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       QBParseInfo qbp = getQBParseInfo(qb);
       String selClauseName = qbp.getClauseNames().iterator().next();
       ASTNode selExprList = qbp.getSelForClause(selClauseName);
+      LOG.error("TODO# for select clause, got " + selExprList.dump());
 
       // 2.Row resolvers for input, output
       RowResolver out_rwsch = new RowResolver();
@@ -13944,7 +13972,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           pos = genColListRegex(".*",
               expr.getChildCount() == 0 ? null : getUnescapedName((ASTNode) expr.getChild(0))
                   .toLowerCase(), expr, col_list, excludedColumns, inputRR, pos, out_rwsch,
-                  tabAliasesForAllProjs);
+                  tabAliasesForAllProjs, true);
           selectStar = true;
         } else if (expr.getType() == HiveParser.TOK_TABLE_OR_COL && !hasAsClause
             && !inputRR.getIsExprResolver()
@@ -13953,7 +13981,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           // This can only happen without AS clause
           // We don't allow this for ExprResolver - the Group By case
           pos = genColListRegex(unescapeIdentifier(expr.getChild(0).getText()), null, expr,
-              col_list, excludedColumns, inputRR, pos, out_rwsch, tabAliasesForAllProjs);
+              col_list, excludedColumns, inputRR, pos, out_rwsch, tabAliasesForAllProjs, true);
         } else if (expr.getType() == HiveParser.DOT
             && expr.getChild(0).getType() == HiveParser.TOK_TABLE_OR_COL
             && inputRR.hasTableAlias(unescapeIdentifier(expr.getChild(0).getChild(0).getText()
@@ -13964,7 +13992,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           // We don't allow this for ExprResolver - the Group By case
           pos = genColListRegex(unescapeIdentifier(expr.getChild(1).getText()),
               unescapeIdentifier(expr.getChild(0).getChild(0).getText().toLowerCase()), expr,
-              col_list, excludedColumns, inputRR, pos, out_rwsch, tabAliasesForAllProjs);
+              col_list, excludedColumns, inputRR, pos, out_rwsch, tabAliasesForAllProjs, true);
         } else if (expr.toStringTree().contains("TOK_FUNCTIONDI") && !(srcRel instanceof HiveAggregateRel)) {
           // Likely a malformed query eg, select hash(distinct c1) from t1;
           throw new OptiqSemanticException("Distinct without an aggreggation.");
@@ -14136,7 +14164,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           }
         });
         RowResolver topConstrainingProjRR = new RowResolver();
-        RowResolver.add(topConstrainingProjRR, this.relToHiveRR.get(topConstrainingProjArgsRel), 0);
+        if (!RowResolver.add(
+            topConstrainingProjRR, this.relToHiveRR.get(topConstrainingProjArgsRel))) {
+          LOG.warn("Duplicates detected when adding columns to RR: see previous message");
+        }
         srcRel = genSelectRelNode(originalInputRefs, topConstrainingProjRR, srcRel);
       }
 
@@ -14290,7 +14321,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     private List<String> getTabAliases(RowResolver inputRR) {
-      List<String> tabAliases = new ArrayList<String>();
+      List<String> tabAliases = new ArrayList<String>(); // TODO: this should be unique
       for (ColumnInfo ci : inputRR.getColumnInfos()) {
         tabAliases.add(ci.getTabAlias());
       }
