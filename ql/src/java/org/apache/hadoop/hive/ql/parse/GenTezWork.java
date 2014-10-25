@@ -347,7 +347,8 @@ public class GenTezWork implements NodeProcessor {
             followingWork = mergeJoinWork;
             rWork = (ReduceWork) mergeJoinWork.getMainWork();
           } else {
-            rWork = (ReduceWork) baseWork;
+            throw new SemanticException("Unknown work type found: "
+                + baseWork.getClass().getCanonicalName());
           }
         } else {
           rWork = (ReduceWork) followingWork;
@@ -402,6 +403,8 @@ public class GenTezWork implements NodeProcessor {
         } else {
           index++;
         }
+      } else {
+        index++;
       }
     }
 
