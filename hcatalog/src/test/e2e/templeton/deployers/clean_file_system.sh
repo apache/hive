@@ -28,6 +28,6 @@
 echo "Deleting artifacts from HDFS..."
 
 ${HADOOP_HOME}/bin/hdfs dfs -rm -r       /user/hive/ /user/${USER}/ /user/templeton /apps /tmp /sqoopoutputdir
-${HADOOP_HOME}/bin/hdfs dfs -mkdir -p    /tmp/hadoop-${USER} /user/hive/warehouse /user/${USER}/ /user/templeton /apps/templeton /tmp/hadoop-yarn /tmp/templeton_test_out
+${HADOOP_HOME}/bin/hdfs dfs -mkdir -p    /tmp/hadoop-${USER} /user/hive/warehouse /user/${USER}/ /user/templeton /apps/templeton/jdbc /tmp/hadoop-yarn /tmp/templeton_test_out
 ${HADOOP_HOME}/bin/hdfs dfs -chmod -R a+rwx /user /tmp/
 ${HADOOP_HOME}/bin/hdfs dfs -chmod g+rwx   /user/hive/warehouse
