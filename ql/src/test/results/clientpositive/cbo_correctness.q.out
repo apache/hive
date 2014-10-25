@@ -16719,7 +16719,7 @@ POSTHOOK: type: DROPVIEW
 POSTHOOK: Input: default@v4
 POSTHOOK: Output: default@v4
 PREHOOK: query: -- 11. Union All
-select * from t1 union all select * from t2 order by key
+select * from t1 union all select * from t2 order by key, c_boolean, value, dt
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t1@dt=2014
@@ -16727,7 +16727,7 @@ PREHOOK: Input: default@t2
 PREHOOK: Input: default@t2@dt=2014
 #### A masked pattern was here ####
 POSTHOOK: query: -- 11. Union All
-select * from t1 union all select * from t2 order by key
+select * from t1 union all select * from t2 order by key, c_boolean, value, dt
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t1@dt=2014
@@ -16738,10 +16738,10 @@ POSTHOOK: Input: default@t2@dt=2014
  1	 1	1	1.0	true	2014
  1 	 1 	1	1.0	true	2014
  1 	 1 	1	1.0	true	2014
-1	1	1	1.0	true	2014
+1	1	1	1.0	false	2014
 1	1	1	1.0	false	2014
 1	1	1	1.0	true	2014
-1	1	1	1.0	false	2014
+1	1	1	1.0	true	2014
 1	1	1	1.0	true	2014
 1	1	1	1.0	true	2014
 1	1	1	1.0	true	2014
@@ -18142,7 +18142,7 @@ from src_cbo
 where src_cbo.key not in  
   ( select key  from src_cbo s1 
     where s1.key > '2'
-  )
+  ) order by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_cbo
 #### A masked pattern was here ####
@@ -18153,7 +18153,7 @@ from src_cbo
 where src_cbo.key not in  
   ( select key  from src_cbo s1 
     where s1.key > '2'
-  )
+  ) order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_cbo
 #### A masked pattern was here ####
