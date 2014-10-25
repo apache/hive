@@ -25,6 +25,8 @@ import java.util.Map;
 
 import net.hydromatic.optiq.util.BitSets;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.optimizer.optiq.OptiqSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.optiq.RelOptHiveTable;
@@ -63,6 +65,7 @@ import org.eigenbase.sql.type.SqlTypeName;
 import com.google.common.collect.Iterables;
 
 public class ASTConverter {
+  private static final Log LOG = LogFactory.getLog(ASTConverter.class);
 
   private RelNode          root;
   private HiveAST          hiveAST;
