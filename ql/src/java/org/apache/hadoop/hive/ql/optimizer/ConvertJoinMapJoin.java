@@ -647,7 +647,6 @@ public class ConvertJoinMapJoin implements NodeProcessor {
           hasDynamicPartitionPruning = true;
           break;
         }
- 
         if (op instanceof ReduceSinkOperator || op instanceof FileSinkOperator) {
           // crossing reduce sink or file sink means the pruning isn't for this parent.
           break;
