@@ -1,6 +1,8 @@
 set hive.mapred.supports.subdirectories=true;
 set hive.optimize.skewjoin.compiletime = true;
 
+-- SORT_QUERY_RESULTS
+
 CREATE TABLE T1(key STRING, val STRING)
 SKEWED BY (key) ON ((2), (7)) STORED AS TEXTFILE;
 
