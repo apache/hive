@@ -59,9 +59,10 @@ public class ZooKeeperHiveClientHelper {
     List<String> serverHosts;
     Random randomizer = new Random();
     String serverNode;
+    ZooKeeper zooKeeperClient = null;
     // Pick a random HiveServer2 host from the ZooKeeper namspace
     try {
-      ZooKeeper zooKeeperClient =
+      zooKeeperClient =
           new ZooKeeper(zooKeeperEnsemble, JdbcConnectionParams.ZOOKEEPER_SESSION_TIMEOUT,
               new ZooKeeperHiveClientHelper.DummyWatcher());
       // All the HiveServer2 host nodes that are in ZooKeeper currently
@@ -83,7 +84,15 @@ public class ZooKeeperHiveClientHelper {
       return serverUri;
     } catch (Exception e) {
       throw new ZooKeeperHiveClientException("Unable to read HiveServer2 uri from ZooKeeper", e);
+    } finally {
+      // Try to close the client connection with ZooKeeper
+      if (zooKeeperClient != null) {
+        try {
+          zooKeeperClient.close();
+        } catch (Exception e) {
+          // No-op
+        }
+      }
     }
   }
-
 }
