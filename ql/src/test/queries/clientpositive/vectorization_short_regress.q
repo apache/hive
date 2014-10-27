@@ -326,6 +326,7 @@ WHERE  (((cstring1 RLIKE 'a.*')
             AND (cfloat >= cint))
            OR ((cint < cbigint)
                AND (ctinyint > cbigint)))
+ORDER BY cint, cdouble, ctimestamp2, cstring1, cboolean2, ctinyint, cfloat, ctimestamp1, csmallint, cbigint
 LIMIT 50;
 
 SELECT cint,
@@ -361,6 +362,7 @@ WHERE  (((cstring1 RLIKE 'a.*')
             AND (cfloat >= cint))
            OR ((cint < cbigint)
                AND (ctinyint > cbigint)))
+ORDER BY cint, cdouble, ctimestamp2, cstring1, cboolean2, ctinyint, cfloat, ctimestamp1, csmallint, cbigint
 LIMIT 50;
 
 -- TargetTypeClasses: Long, String, Double, Bool, Timestamp
@@ -400,6 +402,7 @@ WHERE  (((197 > ctinyint)
         OR (cboolean1 < 0)
            OR ((cstring1 LIKE '%ss')
                AND (cfloat <= ctinyint)))
+ORDER BY cint, cbigint, cstring1, cboolean1, cfloat, cdouble, ctimestamp2, csmallint, cstring2, cboolean2
 LIMIT 25;
 
 SELECT cint,
@@ -434,6 +437,7 @@ WHERE  (((197 > ctinyint)
         OR (cboolean1 < 0)
            OR ((cstring1 LIKE '%ss')
                AND (cfloat <= ctinyint)))
+ORDER BY cint, cbigint, cstring1, cboolean1, cfloat, cdouble, ctimestamp2, csmallint, cstring2, cboolean2
 LIMIT 25;
 
 -- TargetTypeClasses: String, Bool, Double, Long, Timestamp
@@ -728,6 +732,7 @@ WHERE    (((ctimestamp1 != 0))
                      OR ((cboolean1 IS NULL)
                          AND (cfloat < cint))))
 GROUP BY ctimestamp1, cstring1
+ORDER BY ctimestamp1, cstring1
 LIMIT 50;
 
 SELECT   ctimestamp1,
@@ -782,6 +787,7 @@ WHERE    (((ctimestamp1 != 0))
                      OR ((cboolean1 IS NULL)
                          AND (cfloat < cint))))
 GROUP BY ctimestamp1, cstring1
+ORDER BY ctimestamp1, cstring1
 LIMIT 50;
 
 -- TargetTypeClasses: Double, Long, String, Timestamp, Bool
