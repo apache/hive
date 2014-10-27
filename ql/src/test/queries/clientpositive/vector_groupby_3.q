@@ -1,5 +1,7 @@
 SET hive.vectorized.execution.enabled=true;
 
+-- SORT_QUERY_RESULTS
+
 create table vectortab2k(
             t tinyint,
             si smallint,
