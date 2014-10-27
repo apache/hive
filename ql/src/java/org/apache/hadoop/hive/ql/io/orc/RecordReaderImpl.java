@@ -47,6 +47,7 @@ import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.TimestampUtils;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.StringExpr;
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
@@ -1074,39 +1075,18 @@ class RecordReaderImpl implements RecordReader {
         result = (LongColumnVector) previousVector;
       }
 
-      // Read present/isNull stream
-      super.nextVector(result, batchSize);
-
-      data.nextVector(result, batchSize);
-      nanoVector.isNull = result.isNull;
-      nanos.nextVector(nanoVector, batchSize);
-
-      if(result.isRepeating && nanoVector.isRepeating) {
-        batchSize = 1;
-      }
-
-      // Non repeating values preset in the vector. Iterate thru the vector and populate the time
+      result.reset();
+      Object obj = null;
       for (int i = 0; i < batchSize; i++) {
-        if (!result.isNull[i]) {
-          long ms = (result.vector[result.isRepeating ? 0 : i] + WriterImpl.BASE_TIMESTAMP)
-              * WriterImpl.MILLIS_PER_SECOND;
-          long ns = parseNanos(nanoVector.vector[nanoVector.isRepeating ? 0 : i]);
-          // the rounding error exists because java always rounds up when dividing integers
-          // -42001/1000 = -42; and -42001 % 1000 = -1 (+ 1000)
-          // to get the correct value we need
-          // (-42 - 1)*1000 + 999 = -42001
-          // (42)*1000 + 1 = 42001
-          if(ms < 0 && ns != 0) {
-            ms -= 1000;
-          }
-          // Convert millis into nanos and add the nano vector value to it
-          result.vector[i] = (ms * 1000000) + ns;
+        obj = next(obj);
+        if (obj == null) {
+          result.noNulls = false;
+          result.isNull[i] = true;
+        } else {
+          TimestampWritable writable = (TimestampWritable) obj;
+          Timestamp  timestamp = writable.getTimestamp();
+          result.vector[i] = TimestampUtils.getTimeNanoSec(timestamp);
         }
-      }
-
-      if(!(result.isRepeating && nanoVector.isRepeating)) {
-        // both have to repeat for the result to be repeating
-        result.isRepeating = false;
       }
 
       return result;
