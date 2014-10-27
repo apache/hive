@@ -22,12 +22,15 @@ import java.io.Serializable;
 import com.google.common.base.Optional;
 import org.apache.spark.executor.TaskMetrics;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+
 /**
  * Metrics tracked during the execution of a job.
  *
  * Depending on how the metrics object is obtained (by calling methods in the `MetricsCollection`
  * class), metrics will refer to one or more tasks.
  */
+@InterfaceAudience.Private
 public class Metrics implements Serializable {
 
   /** Time taken on the executor to deserialize tasks. */

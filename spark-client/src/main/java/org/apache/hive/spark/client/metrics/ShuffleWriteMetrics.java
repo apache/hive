@@ -21,9 +21,12 @@ import java.io.Serializable;
 
 import org.apache.spark.executor.TaskMetrics;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+
 /**
  * Metrics pertaining to writing shuffle data.
  */
+@InterfaceAudience.Private
 public class ShuffleWriteMetrics implements Serializable {
 
   /** Number of bytes written for the shuffle by tasks. */

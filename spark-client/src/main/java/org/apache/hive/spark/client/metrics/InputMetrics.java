@@ -21,9 +21,12 @@ import java.io.Serializable;
 
 import org.apache.spark.executor.TaskMetrics;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+
 /**
  * Metrics pertaining to reading input data.
  */
+@InterfaceAudience.Private
 public class InputMetrics implements Serializable {
 
   public final DataReadMethod readMethod;

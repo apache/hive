@@ -20,12 +20,15 @@ package org.apache.hive.spark.client;
 import org.apache.spark.api.java.JavaFutureAction;
 import org.apache.spark.api.java.JavaSparkContext;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+
 /**
  * Holds runtime information about the job execution context.
  *
  * An instance of this class is kept on the node hosting a remote Spark context and is made
  * available to jobs being executed via RemoteSparkContext#submit().
  */
+@InterfaceAudience.Private
 public interface JobContext {
 
   /** The shared SparkContext instance. */

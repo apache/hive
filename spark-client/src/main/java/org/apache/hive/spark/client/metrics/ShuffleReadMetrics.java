@@ -21,9 +21,12 @@ import java.io.Serializable;
 
 import org.apache.spark.executor.TaskMetrics;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+
 /**
  * Metrics pertaining to reading shuffle data.
  */
+@InterfaceAudience.Private
 public class ShuffleReadMetrics implements Serializable {
 
   /** Number of remote blocks fetched in shuffles by tasks. */
