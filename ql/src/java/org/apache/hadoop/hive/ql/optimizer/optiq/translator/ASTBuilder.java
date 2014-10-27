@@ -167,6 +167,9 @@ class ASTBuilder {
       type = HiveParser.SmallintLiteral;
       break;
     case INTEGER:
+      val = literal.getValue3();
+      type = HiveParser.BigintLiteral;
+      break;
     case BIGINT:
       if (useTypeQualInLiteral) {
         val = literal.getValue3() + "L";
