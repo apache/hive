@@ -1,9 +1,13 @@
-PREHOOK: query: CREATE TABLE T1(key STRING, val STRING)
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+CREATE TABLE T1(key STRING, val STRING)
 SKEWED BY (key) ON ((2), (7)) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@T1
-POSTHOOK: query: CREATE TABLE T1(key STRING, val STRING)
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+CREATE TABLE T1(key STRING, val STRING)
 SKEWED BY (key) ON ((2), (7)) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -359,9 +363,9 @@ POSTHOOK: Input: default@t2
 2	12	NULL	NULL
 3	13	3	13
 7	17	NULL	NULL
+8	18	8	18
+8	18	8	18
 8	28	NULL	NULL
-8	18	8	18
-8	18	8	18
 PREHOOK: query: -- a group by at the end should not change anything
 
 EXPLAIN
