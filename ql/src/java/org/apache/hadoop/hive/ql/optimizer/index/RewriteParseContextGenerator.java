@@ -112,7 +112,7 @@ public final class RewriteParseContextGenerator {
     ((SemanticAnalyzer) sem).initParseCtx(subPCtx);
 
     LOG.info("Starting Sub-query Semantic Analysis");
-    sem.doPhase1(child, qb, sem.initPhase1Ctx());
+    sem.doPhase1(child, qb, sem.initPhase1Ctx(), null);
     LOG.info("Completed phase 1 of Sub-query Semantic Analysis");
 
     sem.getMetaData(qb);

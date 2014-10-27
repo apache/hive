@@ -96,6 +96,42 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@decimal_text
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@DECIMAL_RC
+PREHOOK: query: describe formatted DECIMAL_RC
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@decimal_rc
+POSTHOOK: query: describe formatted DECIMAL_RC
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@decimal_rc
+# col_name            	data_type           	comment             
+	 	 
+key                 	decimal(10,0)       	                    
+value               	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
+	numFiles            	1                   
+	numRows             	38                  
+	rawDataSize         	157                 
+	totalSize           	278                 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.RCFileInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.RCFileOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
 PREHOOK: query: CREATE TABLE DECIMAL_LAZY_COL
 ROW FORMAT SERDE "org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe"
 STORED AS RCFile AS
@@ -112,6 +148,42 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@decimal_rc
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@DECIMAL_LAZY_COL
+PREHOOK: query: describe formatted DECIMAL_LAZY_COL
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@decimal_lazy_col
+POSTHOOK: query: describe formatted DECIMAL_LAZY_COL
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@decimal_lazy_col
+# col_name            	data_type           	comment             
+	 	 
+key                 	decimal(10,0)       	                    
+value               	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
+	numFiles            	1                   
+	numRows             	38                  
+	rawDataSize         	157                 
+	totalSize           	278                 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.RCFileInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.RCFileOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
 PREHOOK: query: CREATE TABLE DECIMAL_SEQUENCE
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY '\001'

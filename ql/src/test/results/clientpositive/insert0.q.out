@@ -1,0 +1,208 @@
+PREHOOK: query: DROP TABLE insert_into1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE insert_into1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE ctas_table
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE ctas_table
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE ctas_part
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE ctas_part
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE insert_into1 (key int, value string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@insert_into1
+POSTHOOK: query: CREATE TABLE insert_into1 (key int, value string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@insert_into1
+PREHOOK: query: INSERT OVERWRITE TABLE insert_into1 SELECT * from src ORDER BY key LIMIT 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@insert_into1
+POSTHOOK: query: INSERT OVERWRITE TABLE insert_into1 SELECT * from src ORDER BY key LIMIT 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@insert_into1
+POSTHOOK: Lineage: insert_into1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: insert_into1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select * from insert_into1 order by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@insert_into1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from insert_into1 order by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@insert_into1
+#### A masked pattern was here ####
+0	val_0
+0	val_0
+0	val_0
+10	val_10
+100	val_100
+100	val_100
+103	val_103
+103	val_103
+104	val_104
+104	val_104
+PREHOOK: query: INSERT INTO TABLE insert_into1 SELECT * from src ORDER BY key DESC LIMIT 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@insert_into1
+POSTHOOK: query: INSERT INTO TABLE insert_into1 SELECT * from src ORDER BY key DESC LIMIT 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@insert_into1
+POSTHOOK: Lineage: insert_into1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: insert_into1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select * from insert_into1 order by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@insert_into1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from insert_into1 order by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@insert_into1
+#### A masked pattern was here ####
+0	val_0
+0	val_0
+0	val_0
+10	val_10
+90	val_90
+90	val_90
+92	val_92
+95	val_95
+95	val_95
+96	val_96
+97	val_97
+97	val_97
+98	val_98
+98	val_98
+100	val_100
+100	val_100
+103	val_103
+103	val_103
+104	val_104
+104	val_104
+PREHOOK: query: create table ctas_table as SELECT key, count(value) as foo from src GROUP BY key LIMIT 10
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ctas_table
+POSTHOOK: query: create table ctas_table as SELECT key, count(value) as foo from src GROUP BY key LIMIT 10
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ctas_table
+PREHOOK: query: describe extended ctas_table
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ctas_table
+POSTHOOK: query: describe extended ctas_table
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ctas_table
+key                 	string              	                    
+foo                 	bigint              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: select * from ctas_table order by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ctas_table
+#### A masked pattern was here ####
+POSTHOOK: query: select * from ctas_table order by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ctas_table
+#### A masked pattern was here ####
+0	3
+10	1
+100	2
+103	2
+104	2
+105	1
+11	1
+111	1
+113	2
+114	1
+PREHOOK: query: create table ctas_part (key int, value string) partitioned by (modkey bigint)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ctas_part
+POSTHOOK: query: create table ctas_part (key int, value string) partitioned by (modkey bigint)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ctas_part
+PREHOOK: query: insert overwrite table ctas_part partition (modkey) 
+select key, value, ceil(key / 100) from src where key is not null limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@ctas_part
+POSTHOOK: query: insert overwrite table ctas_part partition (modkey) 
+select key, value, ceil(key / 100) from src where key is not null limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@ctas_part@modkey=1
+POSTHOOK: Output: default@ctas_part@modkey=2
+POSTHOOK: Output: default@ctas_part@modkey=3
+POSTHOOK: Output: default@ctas_part@modkey=4
+POSTHOOK: Output: default@ctas_part@modkey=5
+POSTHOOK: Lineage: ctas_part PARTITION(modkey=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ctas_part PARTITION(modkey=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: ctas_part PARTITION(modkey=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ctas_part PARTITION(modkey=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: ctas_part PARTITION(modkey=3).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ctas_part PARTITION(modkey=3).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: ctas_part PARTITION(modkey=4).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ctas_part PARTITION(modkey=4).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: ctas_part PARTITION(modkey=5).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ctas_part PARTITION(modkey=5).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select * from ctas_part order by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ctas_part
+PREHOOK: Input: default@ctas_part@modkey=1
+PREHOOK: Input: default@ctas_part@modkey=2
+PREHOOK: Input: default@ctas_part@modkey=3
+PREHOOK: Input: default@ctas_part@modkey=4
+PREHOOK: Input: default@ctas_part@modkey=5
+#### A masked pattern was here ####
+POSTHOOK: query: select * from ctas_part order by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ctas_part
+POSTHOOK: Input: default@ctas_part@modkey=1
+POSTHOOK: Input: default@ctas_part@modkey=2
+POSTHOOK: Input: default@ctas_part@modkey=3
+POSTHOOK: Input: default@ctas_part@modkey=4
+POSTHOOK: Input: default@ctas_part@modkey=5
+#### A masked pattern was here ####
+27	val_27	1
+86	val_86	1
+98	val_98	1
+165	val_165	2
+238	val_238	3
+255	val_255	3
+278	val_278	3
+311	val_311	4
+409	val_409	5
+484	val_484	5
+PREHOOK: query: DROP TABLE insert_into1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@insert_into1
+PREHOOK: Output: default@insert_into1
+POSTHOOK: query: DROP TABLE insert_into1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@insert_into1
+POSTHOOK: Output: default@insert_into1
+PREHOOK: query: DROP TABLE ctas_table
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ctas_table
+PREHOOK: Output: default@ctas_table
+POSTHOOK: query: DROP TABLE ctas_table
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ctas_table
+POSTHOOK: Output: default@ctas_table
+PREHOOK: query: DROP TABLE ctas_part
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ctas_part
+PREHOOK: Output: default@ctas_part
+POSTHOOK: query: DROP TABLE ctas_part
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ctas_part
+POSTHOOK: Output: default@ctas_part
