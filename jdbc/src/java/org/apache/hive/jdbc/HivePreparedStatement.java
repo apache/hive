@@ -37,6 +37,8 @@ import java.sql.SQLException;
 import java.sql.SQLXML;
 import java.sql.Time;
 import java.sql.Timestamp;
+import java.sql.Types;
+import java.text.MessageFormat;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Scanner;
@@ -564,8 +566,7 @@ public class HivePreparedStatement extends HiveStatement implements PreparedStat
    */
 
   public void setNull(int parameterIndex, int sqlType) throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    this.parameters.put(parameterIndex, "NULL");
   }
 
   /*
@@ -575,8 +576,7 @@ public class HivePreparedStatement extends HiveStatement implements PreparedStat
    */
 
   public void setNull(int paramIndex, int sqlType, String typeName) throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    this.parameters.put(paramIndex, "NULL");
   }
 
   /*
@@ -586,8 +586,38 @@ public class HivePreparedStatement extends HiveStatement implements PreparedStat
    */
 
   public void setObject(int parameterIndex, Object x) throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    if (x == null) {
+      setNull(parameterIndex, Types.NULL);
+    } else if (x instanceof String) {
+      setString(parameterIndex, (String) x);
+    } else if (x instanceof Short) {
+      setShort(parameterIndex, ((Short) x).shortValue());
+    } else if (x instanceof Integer) {
+      setInt(parameterIndex, ((Integer) x).intValue());
+    } else if (x instanceof Long) {
+      setLong(parameterIndex, ((Long) x).longValue());
+    } else if (x instanceof Float) {
+      setFloat(parameterIndex, ((Float) x).floatValue());
+    } else if (x instanceof Double) {
+      setDouble(parameterIndex, ((Double) x).doubleValue());
+    } else if (x instanceof Boolean) {
+      setBoolean(parameterIndex, ((Boolean) x).booleanValue());
+    } else if (x instanceof Byte) {
+      setByte(parameterIndex, ((Byte) x).byteValue());
+    } else if (x instanceof Character) {
+      setString(parameterIndex, x.toString());
+    } else if (x instanceof Timestamp) {
+      setString(parameterIndex, x.toString());
+    } else if (x instanceof BigDecimal) {
+      setString(parameterIndex, x.toString());
+    } else {
+      // Can't infer a type.
+      throw new SQLException(
+          MessageFormat
+              .format(
+                  "Can''t infer the SQL type to use for an instance of {0}. Use setObject() with an explicit Types value to specify the type to use.",
+                  x.getClass().getName()));
+    }
   }
 
   /*
