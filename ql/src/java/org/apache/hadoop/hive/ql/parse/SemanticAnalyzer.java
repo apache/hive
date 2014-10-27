@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -368,7 +369,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   //flag for partial scan during analyze ... compute statistics
   protected boolean partialscan;
 
-  private volatile boolean runCBO = true;
+  private volatile boolean runCBO = true; // TODO: why is this volatile?
   private volatile boolean disableJoinMerge = false;
 
   /*
@@ -379,6 +380,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * Used to check recursive CTE invocations. Similar to viewsExpanded
    */
   private ArrayList<String> ctesExpanded;
+
+  /** Not thread-safe. */
+  private ASTSearcher astSearcher = new ASTSearcher();
 
   private static class Phase1Ctx {
     String dest;
@@ -512,7 +516,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     case HiveParser.TOK_QUERY: {
       QB qb = new QB(id, alias, true);
       Phase1Ctx ctx_1 = initPhase1Ctx();
-      doPhase1(ast, qb, ctx_1);
+      doPhase1(ast, qb, ctx_1, null);
 
       qbexpr.setOpcode(QBExpr.Opcode.NULLOP);
       qbexpr.setQB(qb);
@@ -1177,6 +1181,30 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return alias;
   }
 
+  /** The context that doPhase1 uses to populate information pertaining
+   *  to CBO (currently, this is used for CTAS and insert-as-select). */
+  private static class PreCboCtx {
+    enum Type {
+      NONE,
+      INSERT,
+      CTAS,
+
+      UNEXPECTED
+    }
+    public ASTNode nodeOfInterest;
+    public Type type = Type.NONE;
+    public void set(Type type, ASTNode ast) {
+      if (this.type != Type.NONE) {
+        STATIC_LOG.warn("Setting " + type + " when already " + this.type
+            + "; node " + ast.dump() + " vs old node " + nodeOfInterest.dump());
+        this.type = Type.UNEXPECTED;
+        return;
+      }
+      this.type = type;
+      this.nodeOfInterest = ast;
+    }
+  }
+
   /**
    * Phase 1: (including, but not limited to):
    *
@@ -1194,7 +1222,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * @throws SemanticException
    */
   @SuppressWarnings({"fallthrough", "nls"})
-  public boolean doPhase1(ASTNode ast, QB qb, Phase1Ctx ctx_1)
+  public boolean doPhase1(ASTNode ast, QB qb, Phase1Ctx ctx_1, PreCboCtx cboCtx)
       throws SemanticException {
 
     boolean phase1Result = true;
@@ -1238,20 +1266,26 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         String currentDatabase = SessionState.get().getCurrentDatabase();
         String tab_name = getUnescapedName((ASTNode) ast.getChild(0).getChild(0), currentDatabase);
         qbp.addInsertIntoTable(tab_name);
-        // TODO: is this supposed to fall thru?
 
       case HiveParser.TOK_DESTINATION:
         ctx_1.dest = "insclause-" + ctx_1.nextNum;
         ctx_1.nextNum++;
+        boolean isTmpFileDest = false;
+        if (ast.getChildCount() > 0 && ast.getChild(0) instanceof ASTNode) {
+          ASTNode ch = (ASTNode)ast.getChild(0);
+          if (ch.getToken().getType() == HiveParser.TOK_DIR
+              && ch.getChildCount() > 0 && ch.getChild(0) instanceof ASTNode) {
+            ch = (ASTNode)ch.getChild(0);
+            isTmpFileDest = ch.getToken().getType() == HiveParser.TOK_TMP_FILE;
+          }
+        }
 
         // is there a insert in the subquery
-        if (qbp.getIsSubQ()) {
-          ASTNode ch = (ASTNode) ast.getChild(0);
-          if ((ch.getToken().getType() != HiveParser.TOK_DIR)
-              || (((ASTNode) ch.getChild(0)).getToken().getType() != HiveParser.TOK_TMP_FILE)) {
-            throw new SemanticException(ErrorMsg.NO_INSERT_INSUBQUERY
-                .getMsg(ast));
-          }
+        if (qbp.getIsSubQ() && !isTmpFileDest) {
+          throw new SemanticException(ErrorMsg.NO_INSERT_INSUBQUERY.getMsg(ast));
+        }
+        if (cboCtx != null && !isTmpFileDest) {
+          cboCtx.set(PreCboCtx.Type.INSERT, ast);
         }
         qbp.setDestForClause(ctx_1.dest, (ASTNode) ast.getChild(0));
 
@@ -1480,10 +1514,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       int child_count = ast.getChildCount();
       for (int child_pos = 0; child_pos < child_count && phase1Result; ++child_pos) {
         // Recurse
-        phase1Result = phase1Result && doPhase1((ASTNode) ast.getChild(child_pos), qb, ctx_1);
+        phase1Result = phase1Result && doPhase1(
+            (ASTNode)ast.getChild(child_pos), qb, ctx_1, cboCtx);
       }
     }
     return phase1Result;
+  }
+
+  private void traceLogAst(ASTNode ast, String what) {
+    if (!LOG.isTraceEnabled()) return;
+    LOG.trace(what + ast.dump());
   }
 
   private void getMetaData(QBExpr qbexpr, ReadEntity parentInput)
@@ -1760,6 +1800,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                 qb.getParseInfo().addTableSpec(ts.tableName.toLowerCase(), ts);
               }
             } else {
+              // This is the only place where isQuery is set to true; it defaults to false.
               qb.setIsQuery(true);
               fname = ctx.getMRTmpPath().toString();
               ctx.setResDir(new Path(fname));
@@ -2464,7 +2505,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       ISubQueryJoinInfo subQueryPredicate) throws SemanticException {
     qbSQ.setSubQueryDef(subQueryPredicate.getSubQuery());
     Phase1Ctx ctx_1 = initPhase1Ctx();
-    doPhase1(subQueryPredicate.getSubQueryAST(), qbSQ, ctx_1);
+    doPhase1(subQueryPredicate.getSubQueryAST(), qbSQ, ctx_1, null);
     getMetaData(qbSQ);
     Operator op = genPlan(qbSQ);
     return op;
@@ -6197,8 +6238,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       ArrayList<ColumnInfo> colInfos = inputRR.getColumnInfos();
 
       // CTAS case: the file output format and serde are defined by the create
-      // table command
-      // rather than taking the default value
+      // table command rather than taking the default value
       List<FieldSchema> field_schemas = null;
       CreateTableDesc tblDesc = qb.getTableDesc();
       if (tblDesc != null) {
@@ -6219,7 +6259,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           if (!("".equals(nm[0])) && nm[1] != null) {
             colName = unescapeIdentifier(colInfo.getAlias()).toLowerCase(); // remove ``
           }
-          col.setName(colName);;
+          String ctasColName = fixCtasColumnName(colName, colInfo, inputRR);
+          col.setName(ctasColName);
           col.setType(colInfo.getType().getTypeName());
           field_schemas.add(col);
         }
@@ -6395,6 +6436,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     fsopToTable.put((FileSinkOperator) output, dest_tab);
     return output;
+  }
+
+  private static String fixCtasColumnName(String colName, ColumnInfo colInfo, RowResolver rr) {
+    int lastDot = colName.lastIndexOf('.');
+    if (lastDot < 0) return colName; // alias is not fully qualified
+    String nqColumnName = colName.substring(lastDot + 1);
+    STATIC_LOG.debug("Replacing " + colName + " (produced by CBO) by " + nqColumnName);
+    return nqColumnName;
   }
 
   // Check constraints on acid tables.  This includes
@@ -9875,11 +9924,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // analyze and process the position alias
     processPositionAlias(ast);
+    // Check configuration for CBO first.
+    runCBO = runCBO && HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_CBO_ENABLED);
 
     // analyze create table command
+    PreCboCtx cboCtx = runCBO ? new PreCboCtx() : null;
     if (ast.getToken().getType() == HiveParser.TOK_CREATETABLE) {
       // if it is not CTAS, we don't need to go further and just return
-      if ((child = analyzeCreateTable(ast, qb)) == null) {
+      if ((child = analyzeCreateTable(ast, qb, cboCtx)) == null) {
         return;
       }
     } else {
@@ -9888,7 +9940,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // analyze create view command
     if (ast.getToken().getType() == HiveParser.TOK_CREATEVIEW ||
-        (ast.getToken().getType() == HiveParser.TOK_ALTERVIEW && ast.getChild(1).getType() == HiveParser.TOK_QUERY)) {
+        (ast.getToken().getType() == HiveParser.TOK_ALTERVIEW
+          && ast.getChild(1).getType() == HiveParser.TOK_QUERY)) {
       child = analyzeCreateView(ast, qb);
       SessionState.get().setCommandType(HiveOperation.CREATEVIEW);
       if (child == null) {
@@ -9901,7 +9954,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // continue analyzing from the child ASTNode.
     Phase1Ctx ctx_1 = initPhase1Ctx();
-    if (!doPhase1(child, qb, ctx_1)) {
+    if (!doPhase1(child, qb, ctx_1, cboCtx)) {
       // if phase1Result false return
       return;
     }
@@ -9911,19 +9964,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     getMetaData(qb);
     LOG.info("Completed getting MetaData in Semantic Analysis");
 
-
+    // Note: for now, we don't actually pass the queryForCbo to CBO, because it accepts qb, not
+    //    AST, and can also access all the private stuff in SA. We rely on the fact that CBO
+    //    ignores the unknown tokens (create table, destination), so if the query is otherwise ok,
+    //    it is as if we did remove those and gave CBO the proper AST. That is kinda hacky.
     if (runCBO) {
-      boolean tokenTypeIsQuery = ast.getToken().getType() == HiveParser.TOK_QUERY
-          || ast.getToken().getType() == HiveParser.TOK_EXPLAIN;
-      if (!tokenTypeIsQuery || createVwDesc != null
-          || !HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_CBO_ENABLED)
-          || !canHandleQuery(qb, true) || !HiveOptiqUtil.validateASTForCBO(ast)) {
-        runCBO = false;
+      ASTNode queryForCbo = ast;
+      if (cboCtx.type == PreCboCtx.Type.CTAS) {
+        queryForCbo = cboCtx.nodeOfInterest; // nodeOfInterest is the query
       }
-
-      if (runCBO) {
-        disableJoinMerge = true;
-      }
+      runCBO = canHandleAstForCbo(queryForCbo, qb, cboCtx);
     }
 
     // Save the result schema derived from the sink operator produced
@@ -9933,6 +9983,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     Operator sinkOp = null;
 
     if (runCBO) {
+      disableJoinMerge = true;
       OptiqBasedPlanner optiqPlanner = new OptiqBasedPlanner();
       boolean reAnalyzeAST = false;
 
@@ -9940,10 +9991,17 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         // 1. Gen Optimized AST
         ASTNode newAST = optiqPlanner.getOptimizedAST(prunedPartitions);
 
+        // 1.1. Fix up the query for insert/ctas
+        newAST = fixUpCtasAndInsertAfterCbo(ast, newAST, cboCtx);
+
         // 2. Regen OP plan from optimized AST
         init(false);
+        if (cboCtx.type == PreCboCtx.Type.CTAS) {
+          // Redo create-table analysis, because it's not part of doPhase1.
+          newAST = reAnalyzeCtasAfterCbo(newAST);
+        }
         ctx_1 = initPhase1Ctx();
-        if (!doPhase1(newAST, qb, ctx_1)) {
+        if (!doPhase1(newAST, qb, ctx_1, null)) {
           throw new RuntimeException(
               "Couldn't do phase1 on CBO optimized query plan");
         }
@@ -10087,6 +10145,118 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     return;
+  }
+
+  private ASTNode fixUpCtasAndInsertAfterCbo(
+      ASTNode originalAst, ASTNode newAst, PreCboCtx cboCtx) throws SemanticException {
+    switch (cboCtx.type) {
+    case NONE: return newAst; // nothing to do
+    case CTAS: {
+      // Patch the optimized query back into original CTAS AST, replacing the original query.
+      replaceASTChild(cboCtx.nodeOfInterest, newAst);
+      return originalAst;
+    }
+    case INSERT: {
+      // We need to patch the dest back to original into new query.
+      // This makes assumptions about the structure of the AST.
+      ASTNode newDest = astSearcher.simpleBreadthFirstSearch(
+          newAst, HiveParser.TOK_QUERY, HiveParser.TOK_INSERT, HiveParser.TOK_DESTINATION);
+      if (newDest == null) {
+        LOG.error("Cannot find destination after CBO; new ast is "+ newAst.dump());
+        throw new SemanticException("Cannot find destination after CBO");
+      }
+      replaceASTChild(newDest, cboCtx.nodeOfInterest);
+      return newAst;
+    }
+    default: throw new AssertionError("Unexpected type " + cboCtx.type);
+    }
+  }
+
+  private ASTNode reAnalyzeCtasAfterCbo(ASTNode newAst) throws SemanticException {
+    // analyzeCreateTable uses this.ast, but doPhase1 doesn't, so only reset it here.
+    this.ast = newAst;
+    newAst = analyzeCreateTable(newAst, qb, null);
+    if (newAst == null) {
+      LOG.error("analyzeCreateTable failed to initialize CTAS after CBO;"
+          + " new ast is " + this.ast.dump());
+      throw new SemanticException("analyzeCreateTable failed to initialize CTAS after CBO");
+    }
+    return newAst;
+  }
+
+  private boolean canHandleAstForCbo(ASTNode ast, QB qb, PreCboCtx cboCtx) {
+     int root = ast.getToken().getType();
+     boolean needToLogMessage = LOG.isInfoEnabled();
+     boolean isSupportedRoot =
+         root == HiveParser.TOK_QUERY || root == HiveParser.TOK_EXPLAIN || qb.isCTAS();
+     // Check AST.
+     // Assumption: If top level QB is query then everything below it must also be Query
+     // Can there be an insert or CTAS that wouldn't
+     //        be supported and would require additional checks similar to IsQuery?
+     boolean isSupportedType =
+         qb.getIsQuery() || qb.isCTAS() || cboCtx.type == PreCboCtx.Type.INSERT;
+     boolean result = isSupportedRoot && isSupportedType && createVwDesc == null;
+     if (!result) {
+       if (needToLogMessage) {
+         String msg = "";
+         if (!isSupportedRoot) msg += "doesn't have QUERY or EXPLAIN as root and not a CTAS; ";
+         if (!isSupportedType) msg += "is not a query, CTAS, or insert; ";
+         if (createVwDesc != null) msg += "has create view; ";
+
+         if (msg.isEmpty()) msg += "has some unspecified limitations; ";
+         LOG.info("Not invoking CBO because the statement " + msg.substring(0, msg.length() - 2));
+       }
+       return false;
+     }
+     // Now check QB in more detail. canHandleQbForCbo returns null if query can be handled.
+     String msg = canHandleQbForCbo(qb, true, needToLogMessage);
+     if (msg == null) {
+       return true;
+     }
+     if (needToLogMessage) {
+       LOG.info("Not invoking CBO because the statement " + msg.substring(0, msg.length() - 2));
+     }
+     return false;
+  }
+
+  private class ASTSearcher {
+    private final LinkedList<ASTNode> searchQueue = new LinkedList<ASTNode>();
+    /**
+     * Performs breadth-first search of the AST for a nested set of tokens. Tokens don't have to be
+     * each others' direct children, they can be separated by layers of other tokens. For each token
+     * in the list, the first one found is matched and there's no backtracking; thus, if AST has
+     * multiple instances of some token, of which only one matches, it is not guaranteed to be found.
+     * We use this for simple things.
+     * Not thread-safe - reuses searchQueue.
+     */
+    public ASTNode simpleBreadthFirstSearch(ASTNode ast, int... tokens) {
+      searchQueue.clear();
+      searchQueue.add(ast);
+      for (int i = 0; i < tokens.length; ++i) {
+        boolean found = false;
+        int token = tokens[i];
+        while (!searchQueue.isEmpty() && !found) {
+          ASTNode next = searchQueue.poll();
+          found = next.getType() == token;
+          if (found) {
+            if (i == tokens.length - 1) return next;
+            searchQueue.clear();
+          }
+          for (int j = 0; j < next.getChildCount(); ++j) {
+            searchQueue.add((ASTNode)next.getChild(j));
+          }
+        }
+        if (!found) return null;
+      }
+      return null;
+    }
+  }
+
+  private void replaceASTChild(ASTNode child, ASTNode newChild) {
+    ASTNode parent = (ASTNode)child.parent;
+    int childIndex = child.childIndex;
+    parent.deleteChild(childIndex);
+    parent.insertChild(childIndex, newChild);
   }
 
   private void putAccessedColumnsToReadEntity(HashSet<ReadEntity> inputs, ColumnAccessInfo columnAccessInfo) {
@@ -10585,8 +10755,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * the semantic analyzer need to deal with the select statement with respect
    * to the SerDe and Storage Format.
    */
-  private ASTNode analyzeCreateTable(ASTNode ast, QB qb)
-      throws SemanticException {
+  private ASTNode analyzeCreateTable(
+      ASTNode ast, QB qb, PreCboCtx cboCtx) throws SemanticException {
     String[] qualifiedTabName = getQualifiedTableName((ASTNode) ast.getChild(0));
     String dbDotTab = getDotName(qualifiedTabName);
 
@@ -10676,6 +10846,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           throw new SemanticException(ErrorMsg.CTAS_EXTTBL_COEXISTENCE.getMsg());
         }
         command_type = CTAS;
+        if (cboCtx != null) {
+          cboCtx.set(PreCboCtx.Type.CTAS, child);
+        }
         selectStmt = child;
         break;
       case HiveParser.TOK_TABCOLLIST:
@@ -12247,27 +12420,43 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   /**** Temporary Place Holder For Optiq plan Gen, Optimizer ****/
 
-  /*
-   * Entry point to Optimizations using Optiq.
+  /**
+   * Entry point to Optimizations using Optiq. Checks whether Optiq can handle the query.
+   * @param qbToChk Query block to check.
+   * @param verbose Whether return value should be verbose in case of failure.
+   * @return null if the query can be handled; non-null reason string if it cannot be.
    */
-  private boolean canHandleQuery(QB qbToChk, boolean topLevelQB) {
-    boolean runOptiqPlanner = false;
+  private String canHandleQbForCbo(QB qbToChk, boolean topLevelQB, boolean verbose) {
     // Assumption:
     // 1. If top level QB is query then everything below it must also be Query
     // 2. Nested Subquery will return false for qbToChk.getIsQuery()
-    if ((!topLevelQB || qbToChk.getIsQuery())
-        && (!conf.getBoolVar(ConfVars.HIVE_IN_TEST) || conf.getVar(ConfVars.HIVEMAPREDMODE).equalsIgnoreCase("nonstrict"))
-        && (!topLevelQB || (queryProperties.getJoinCount() > 1) || conf.getBoolVar(ConfVars.HIVE_IN_TEST))
-        && !queryProperties.hasClusterBy() && !queryProperties.hasDistributeBy()
-        && !queryProperties.hasSortBy() && !queryProperties.hasPTF()
-        && !queryProperties.usesScript() && !queryProperties.hasMultiDestQuery()
-        && !queryProperties.hasLateralViews()) {
-      runOptiqPlanner = true;
-    } else {
-      LOG.info("Can not invoke CBO; query contains operators not supported for CBO.");
+    boolean isInTest = conf.getBoolVar(ConfVars.HIVE_IN_TEST);
+    boolean isStrictTest = isInTest
+        && !conf.getVar(ConfVars.HIVEMAPREDMODE).equalsIgnoreCase("nonstrict");
+    boolean hasEnoughJoins = !topLevelQB || (queryProperties.getJoinCount() > 1) || isInTest;
+    if (!isStrictTest && hasEnoughJoins && !queryProperties.hasClusterBy()
+        && !queryProperties.hasDistributeBy() && !queryProperties.hasSortBy()
+        && !queryProperties.hasPTF() && !queryProperties.usesScript()
+        && !queryProperties.hasMultiDestQuery() && !queryProperties.hasLateralViews()) {
+      return null; // Ok to run CBO.
     }
 
-    return runOptiqPlanner;
+    // Not ok to run CBO, build error message.
+    String msg = "";
+    if (verbose) {
+      if (isStrictTest) msg += "is in test running in mode other than nonstrict; ";
+      if (!hasEnoughJoins) msg += "has too few joins; ";
+      if (queryProperties.hasClusterBy()) msg += "has cluster by; ";
+      if (queryProperties.hasDistributeBy()) msg += "has distribute by; ";
+      if (queryProperties.hasSortBy()) msg += "has sort by; ";
+      if (queryProperties.hasPTF()) msg += "has PTF; ";
+      if (queryProperties.usesScript()) msg += "uses scripts; ";
+      if (queryProperties.hasMultiDestQuery()) msg += "is a multi-destination query; ";
+      if (queryProperties.hasLateralViews()) msg += "has lateral views; ";
+
+      if (msg.isEmpty()) msg += "has some unspecified limitations; ";
+    }
+    return msg;
   }
 
   private class OptiqBasedPlanner implements Frameworks.PlannerAction<RelNode> {
@@ -12984,7 +13173,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           QB qbSQ = new QB(subQuery.getOuterQueryId(), subQuery.getAlias(), true);
           qbSQ.setSubQueryDef(subQuery.getSubQuery());
           Phase1Ctx ctx_1 = initPhase1Ctx();
-          doPhase1(subQuery.getSubQueryAST(), qbSQ, ctx_1);
+          doPhase1(subQuery.getSubQueryAST(), qbSQ, ctx_1, null);
           getMetaData(qbSQ);
           RelNode subQueryRelNode = genLogicalPlan(qbSQ, false);
           aliasToRel.put(subQuery.getAlias(), subQueryRelNode);
@@ -13012,7 +13201,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             QB qbSQ_nic = new QB(subQuery.getOuterQueryId(), notInCheck.getAlias(), true);
             qbSQ_nic.setSubQueryDef(notInCheck.getSubQuery());
             ctx_1 = initPhase1Ctx();
-            doPhase1(notInCheck.getSubQueryAST(), qbSQ_nic, ctx_1);
+            doPhase1(notInCheck.getSubQueryAST(), qbSQ_nic, ctx_1, null);
             getMetaData(qbSQ_nic);
             RelNode subQueryNICRelNode = genLogicalPlan(qbSQ_nic, false);
             aliasToRel.put(notInCheck.getAlias(), subQueryNICRelNode);
@@ -14069,11 +14258,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // First generate all the opInfos for the elements in the from clause
       Map<String, RelNode> aliasToRel = new HashMap<String, RelNode>();
 
-      // 0. Check if we can handle the query
-      // This check is needed here because of SubQuery
-      if (!canHandleQuery(qb, false)) {
-        String msg = String.format("CBO Can not handle Sub Query");
-        LOG.debug(msg);
+      // 0. Check if we can handle the SubQuery;
+      // canHandleQbForCbo returns null if the query can be handled.
+      String reason = canHandleQbForCbo(qb, false, LOG.isDebugEnabled());
+      if (reason != null) {
+        String msg = "CBO can not handle Sub Query";
+        if (LOG.isDebugEnabled()) {
+          LOG.debug(msg + " because it: " + reason);
+        }
         throw new OptiqSemanticException(msg);
       }
 
