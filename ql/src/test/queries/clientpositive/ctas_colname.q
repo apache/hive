@@ -3,9 +3,11 @@
 -- HIVE-4392, column aliases from expressionRR (GBY, etc.) are not valid name for table
 
 -- group by
+
+
 explain
-create table summary as select *, sum(key), count(value) from src;
-create table summary as select *, sum(key), count(value) from src;
+create table summary as select *, key + 1, concat(value, value) from src limit 20;
+create table summary as select *, key + 1, concat(value, value) from src limit 20;
 describe formatted summary;
 select * from summary;
 

@@ -79,7 +79,7 @@ import com.google.common.annotations.VisibleForTesting;
  *
  */
 public abstract class BaseSemanticAnalyzer {
-  private static final Log STATIC_LOG = LogFactory.getLog(BaseSemanticAnalyzer.class.getName());
+  protected static final Log STATIC_LOG = LogFactory.getLog(BaseSemanticAnalyzer.class.getName());
   protected final Hive db;
   protected final HiveConf conf;
   protected List<Task<? extends Serializable>> rootTasks;
