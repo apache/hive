@@ -874,6 +874,7 @@ WHERE  (((cstring1 RLIKE 'a.*')
             AND (cfloat >= cint))
            OR ((cint < cbigint)
                AND (ctinyint > cbigint)))
+ORDER BY cint, cdouble, ctimestamp2, cstring1, cboolean2, ctinyint, cfloat, ctimestamp1, csmallint, cbigint
 LIMIT 50
 PREHOOK: type: QUERY
 POSTHOOK: query: -- TargetTypeClasses: Timestamp, String, Long, Double, Bool
@@ -914,6 +915,7 @@ WHERE  (((cstring1 RLIKE 'a.*')
             AND (cfloat >= cint))
            OR ((cint < cbigint)
                AND (ctinyint > cbigint)))
+ORDER BY cint, cdouble, ctimestamp2, cstring1, cboolean2, ctinyint, cfloat, ctimestamp1, csmallint, cbigint
 LIMIT 50
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -923,6 +925,8 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -937,16 +941,28 @@ STAGE PLANS:
                       expressions: cint (type: int), cdouble (type: double), ctimestamp2 (type: timestamp), cstring1 (type: string), cboolean2 (type: boolean), ctinyint (type: tinyint), cfloat (type: float), ctimestamp1 (type: timestamp), csmallint (type: smallint), cbigint (type: bigint), (-3728 * cbigint) (type: bigint), (- cint) (type: int), (-863.257 - cint) (type: double), (- csmallint) (type: smallint), (csmallint - (- csmallint)) (type: smallint), ((csmallint - (- csmallint)) + (- csmallint)) (type: smallint), (cint / cint) (type: double), ((-863.257 - cint) - -26.28) (type: double), (- cfloat) (type: float), (cdouble * -89010) (type: double), (ctinyint / 988888) (type: double), (- ctinyint) (type: tinyint), (79.553 / ctinyint) (type: double)
                       outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22
                       Statistics: Num rows: 9898 Data size: 303864 Basic stats: COMPLETE Column stats: NONE
-                      Limit
-                        Number of rows: 50
-                        Statistics: Num rows: 50 Data size: 1500 Basic stats: COMPLETE Column stats: NONE
-                        File Output Operator
-                          compressed: false
-                          Statistics: Num rows: 50 Data size: 1500 Basic stats: COMPLETE Column stats: NONE
-                          table:
-                              input format: org.apache.hadoop.mapred.TextInputFormat
-                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int), _col1 (type: double), _col2 (type: timestamp), _col3 (type: string), _col4 (type: boolean), _col5 (type: tinyint), _col6 (type: float), _col7 (type: timestamp), _col8 (type: smallint), _col9 (type: bigint)
+                        sort order: ++++++++++
+                        Statistics: Num rows: 9898 Data size: 303864 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col10 (type: bigint), _col11 (type: int), _col12 (type: double), _col13 (type: smallint), _col14 (type: smallint), _col15 (type: smallint), _col16 (type: double), _col17 (type: double), _col18 (type: float), _col19 (type: double), _col20 (type: double), _col21 (type: tinyint), _col22 (type: double)
+            Execution mode: vectorized
+        Reducer 2 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: double), KEY.reducesinkkey2 (type: timestamp), KEY.reducesinkkey3 (type: string), KEY.reducesinkkey4 (type: boolean), KEY.reducesinkkey5 (type: tinyint), KEY.reducesinkkey6 (type: float), KEY.reducesinkkey7 (type: timestamp), KEY.reducesinkkey8 (type: smallint), KEY.reducesinkkey9 (type: bigint), VALUE._col0 (type: bigint), VALUE._col1 (type: int), VALUE._col2 (type: double), VALUE._col3 (type: smallint), VALUE._col4 (type: smallint), VALUE._col5 (type: smallint), VALUE._col6 (type: double), VALUE._col7 (type: double), VALUE._col8 (type: float), VALUE._col9 (type: double), VALUE._col10 (type: double), VALUE._col11 (type: tinyint), VALUE._col12 (type: double)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22
+                Statistics: Num rows: 9898 Data size: 303864 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 50
+                  Statistics: Num rows: 50 Data size: 1500 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 50 Data size: 1500 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: vectorized
 
   Stage: Stage-0
@@ -988,6 +1004,7 @@ WHERE  (((cstring1 RLIKE 'a.*')
             AND (cfloat >= cint))
            OR ((cint < cbigint)
                AND (ctinyint > cbigint)))
+ORDER BY cint, cdouble, ctimestamp2, cstring1, cboolean2, ctinyint, cfloat, ctimestamp1, csmallint, cbigint
 LIMIT 50
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
@@ -1025,60 +1042,61 @@ WHERE  (((cstring1 RLIKE 'a.*')
             AND (cfloat >= cint))
            OR ((cint < cbigint)
                AND (ctinyint > cbigint)))
+ORDER BY cint, cdouble, ctimestamp2, cstring1, cboolean2, ctinyint, cfloat, ctimestamp1, csmallint, cbigint
 LIMIT 50
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
-NULL	-200.0	1969-12-31 15:59:55.451	NULL	false	38	38.0	1969-12-31 16:00:05.478	-200	-1090414113	4065063813264	NULL	NULL	200	-400	-200	NULL	NULL	-38.0	1.7802E7	3.842700083325918E-5	-38	2.0935
-NULL	-200.0	1969-12-31 15:59:55.451	NULL	false	8	8.0	1969-12-31 15:59:46.007	-200	-1236645308	4610213708224	NULL	NULL	200	-400	-200	NULL	NULL	-8.0	1.7802E7	8.08989491226509E-6	-8	9.944125
-NULL	-200.0	1969-12-31 15:59:55.451	NULL	false	-30	-30.0	1969-12-31 15:59:44.842	-200	-815881183	3041605050224	NULL	NULL	200	-400	-200	NULL	NULL	30.0	1.7802E7	-3.0337105920994087E-5	30	-2.6517666666666666
-NULL	-200.0	1969-12-31 15:59:55.451	NULL	false	24	24.0	1969-12-31 15:59:44.55	-200	-499521357	1862215618896	NULL	NULL	200	-400	-200	NULL	NULL	-24.0	1.7802E7	2.426968473679527E-5	-24	3.3147083333333334
-NULL	-200.0	1969-12-31 15:59:55.451	NULL	false	-1	-1.0	1969-12-31 16:00:14.985	-200	384222326	-1432380831328	NULL	NULL	200	-400	-200	NULL	NULL	1.0	1.7802E7	-1.0112368640331362E-6	1	-79.553
-NULL	-200.0	1969-12-31 15:59:55.451	NULL	false	-39	-39.0	1969-12-31 16:00:13.092	-200	-1111142796	4142340343488	NULL	NULL	200	-400	-200	NULL	NULL	39.0	1.7802E7	-3.9438237697292314E-5	39	-2.039820512820513
-NULL	-200.0	1969-12-31 15:59:55.451	NULL	false	22	22.0	1969-12-31 16:00:10.436	-200	-998574307	3722685016496	NULL	NULL	200	-400	-200	NULL	NULL	-22.0	1.7802E7	2.2247211008728996E-5	-22	3.6160454545454543
-NULL	-200.0	1969-12-31 15:59:55.451	NULL	false	16	16.0	1969-12-31 16:00:02.208	-200	1043214022	-3889101874016	NULL	NULL	200	-400	-200	NULL	NULL	-16.0	1.7802E7	1.617978982453018E-5	-16	4.9720625
-NULL	-200.0	1969-12-31 15:59:55.451	NULL	false	-12	-12.0	1969-12-31 15:59:58.305	-200	-997940806	3720323324768	NULL	NULL	200	-400	-200	NULL	NULL	12.0	1.7802E7	-1.2134842368397635E-5	12	-6.629416666666667
-NULL	-200.0	1969-12-31 15:59:55.451	NULL	false	46	46.0	1969-12-31 15:59:54.016	-200	-517349302	1928678197856	NULL	NULL	200	-400	-200	NULL	NULL	-46.0	1.7802E7	4.651689574552426E-5	-46	1.7294130434782609
-NULL	-200.0	1969-12-31 15:59:55.451	NULL	false	50	50.0	1969-12-31 15:59:57.847	-200	1819421386	-6782802927008	NULL	NULL	200	-400	-200	NULL	NULL	-50.0	1.7802E7	5.056184320165681E-5	-50	1.59106
-NULL	-200.0	1969-12-31 15:59:55.451	NULL	false	-20	-20.0	1969-12-31 15:59:49.764	-200	1115401141	-4158215453648	NULL	NULL	200	-400	-200	NULL	NULL	20.0	1.7802E7	-2.0224737280662725E-5	20	-3.9776499999999997
-NULL	-200.0	1969-12-31 15:59:55.451	NULL	false	-17	-17.0	1969-12-31 15:59:51.417	-200	1806593648	-6734981119744	NULL	NULL	200	-400	-200	NULL	NULL	17.0	1.7802E7	-1.7191026688563315E-5	17	-4.679588235294117
-NULL	-200.0	1969-12-31 15:59:55.451	NULL	false	60	60.0	1969-12-31 15:59:51.342	-200	1981140540	-7385691933120	NULL	NULL	200	-400	-200	NULL	NULL	-60.0	1.7802E7	6.0674211841988174E-5	-60	1.3258833333333333
-NULL	-200.0	1969-12-31 15:59:55.451	NULL	false	-55	-55.0	1969-12-31 16:00:08.896	-200	862778898	-3216439731744	NULL	NULL	200	-400	-200	NULL	NULL	55.0	1.7802E7	-5.561802752182249E-5	55	-1.4464181818181818
-NULL	-200.0	1969-12-31 15:59:55.451	NULL	false	17	17.0	1969-12-31 15:59:47.263	-200	-1100744431	4103575238768	NULL	NULL	200	-400	-200	NULL	NULL	-17.0	1.7802E7	1.7191026688563315E-5	-17	4.679588235294117
-NULL	-200.0	1969-12-31 15:59:55.451	NULL	false	-6	-6.0	1969-12-31 16:00:11.883	-200	-1874590290	6988472601120	NULL	NULL	200	-400	-200	NULL	NULL	6.0	1.7802E7	-6.067421184198818E-6	6	-13.258833333333333
-NULL	-200.0	1969-12-31 15:59:55.451	NULL	false	-43	-43.0	1969-12-31 16:00:01.901	-200	1026696124	-3827523150272	NULL	NULL	200	-400	-200	NULL	NULL	43.0	1.7802E7	-4.3483185153424856E-5	43	-1.8500697674418605
-NULL	-200.0	1969-12-31 15:59:55.451	NULL	false	-22	-22.0	1969-12-31 15:59:53.476	-200	150711504	-561852486912	NULL	NULL	200	-400	-200	NULL	NULL	22.0	1.7802E7	-2.2247211008728996E-5	22	-3.6160454545454543
-NULL	-200.0	1969-12-31 15:59:55.451	NULL	false	-59	-59.0	1969-12-31 16:00:15.861	-200	254419828	-948477118784	NULL	NULL	200	-400	-200	NULL	NULL	59.0	1.7802E7	-5.966297497795504E-5	59	-1.3483559322033898
-NULL	-200.0	1969-12-31 15:59:55.451	NULL	false	17	17.0	1969-12-31 16:00:05.562	-200	-859908363	3205738377264	NULL	NULL	200	-400	-200	NULL	NULL	-17.0	1.7802E7	1.7191026688563315E-5	-17	4.679588235294117
-NULL	-200.0	1969-12-31 15:59:55.451	NULL	false	6	6.0	1969-12-31 16:00:07.713	-200	-605449705	2257116500240	NULL	NULL	200	-400	-200	NULL	NULL	-6.0	1.7802E7	6.067421184198818E-6	-6	13.258833333333333
-NULL	-200.0	1969-12-31 15:59:55.451	NULL	false	49	49.0	1969-12-31 15:59:44.289	-200	1713733703	-6388799244784	NULL	NULL	200	-400	-200	NULL	NULL	-49.0	1.7802E7	4.9550606337623676E-5	-49	1.6235306122448978
-NULL	-200.0	1969-12-31 15:59:55.451	NULL	false	50	50.0	1969-12-31 15:59:56.217	-200	-1595717723	5948835671344	NULL	NULL	200	-400	-200	NULL	NULL	-50.0	1.7802E7	5.056184320165681E-5	-50	1.59106
-NULL	-200.0	1969-12-31 15:59:55.451	NULL	false	-13	-13.0	1969-12-31 15:59:50.858	-200	-519278910	1935871776480	NULL	NULL	200	-400	-200	NULL	NULL	13.0	1.7802E7	-1.314607923243077E-5	13	-6.119461538461538
-NULL	-200.0	1969-12-31 15:59:55.451	NULL	false	33	33.0	1969-12-31 16:00:01.27	-200	-1116511205	4162353772240	NULL	NULL	200	-400	-200	NULL	NULL	-33.0	1.7802E7	3.3370816513093494E-5	-33	2.4106969696969696
-NULL	-200.0	1969-12-31 15:59:55.451	NULL	false	-47	-47.0	1969-12-31 16:00:08.091	-200	1769663274	-6597304685472	NULL	NULL	200	-400	-200	NULL	NULL	47.0	1.7802E7	-4.7528132609557405E-5	47	-1.6926170212765956
-NULL	-200.0	1969-12-31 15:59:55.451	NULL	false	19	19.0	1969-12-31 15:59:56.099	-200	1490159561	-5555314843408	NULL	NULL	200	-400	-200	NULL	NULL	-19.0	1.7802E7	1.921350041662959E-5	-19	4.187
-NULL	-200.0	1969-12-31 15:59:55.451	NULL	false	16	16.0	1969-12-31 15:59:52.751	-200	1918188607	-7151007126896	NULL	NULL	200	-400	-200	NULL	NULL	-16.0	1.7802E7	1.617978982453018E-5	-16	4.9720625
-NULL	-200.0	1969-12-31 15:59:55.451	NULL	false	25	25.0	1969-12-31 15:59:53.743	-200	1861913153	-6941212234384	NULL	NULL	200	-400	-200	NULL	NULL	-25.0	1.7802E7	2.5280921600828406E-5	-25	3.18212
-NULL	-200.0	1969-12-31 15:59:55.451	NULL	false	18	18.0	1969-12-31 16:00:15.89	-200	1994361829	-7434980898512	NULL	NULL	200	-400	-200	NULL	NULL	-18.0	1.7802E7	1.820226355259645E-5	-18	4.419611111111111
-NULL	-200.0	1969-12-31 15:59:55.451	NULL	false	-29	-29.0	1969-12-31 15:59:57.882	-200	1896458939	-7069998924592	NULL	NULL	200	-400	-200	NULL	NULL	29.0	1.7802E7	-2.932586905696095E-5	29	-2.7432068965517242
-NULL	-200.0	1969-12-31 15:59:55.451	NULL	false	-22	-22.0	1969-12-31 16:00:05.218	-200	929143703	-3463847724784	NULL	NULL	200	-400	-200	NULL	NULL	22.0	1.7802E7	-2.2247211008728996E-5	22	-3.6160454545454543
-NULL	-200.0	1969-12-31 15:59:55.451	NULL	false	52	52.0	1969-12-31 16:00:04.024	-200	741404204	-2763954872512	NULL	NULL	200	-400	-200	NULL	NULL	-52.0	1.7802E7	5.258431692972308E-5	-52	1.5298653846153845
-NULL	-200.0	1969-12-31 15:59:55.451	NULL	false	-16	-16.0	1969-12-31 15:59:44.453	-200	-1624098865	6054640568720	NULL	NULL	200	-400	-200	NULL	NULL	16.0	1.7802E7	-1.617978982453018E-5	16	-4.9720625
-NULL	-200.0	1969-12-31 15:59:55.451	NULL	false	-55	-55.0	1969-12-31 16:00:08.229	-200	-1238304032	4616397431296	NULL	NULL	200	-400	-200	NULL	NULL	55.0	1.7802E7	-5.561802752182249E-5	55	-1.4464181818181818
-NULL	-200.0	1969-12-31 15:59:55.451	NULL	false	-16	-16.0	1969-12-31 16:00:12.574	-200	593383941	-2212135332048	NULL	NULL	200	-400	-200	NULL	NULL	16.0	1.7802E7	-1.617978982453018E-5	16	-4.9720625
-NULL	-200.0	1969-12-31 15:59:55.451	NULL	false	-14	-14.0	1969-12-31 15:59:58.148	-200	-1449446580	5403536850240	NULL	NULL	200	-400	-200	NULL	NULL	14.0	1.7802E7	-1.4157316096463906E-5	14	-5.682357142857143
-NULL	-200.0	1969-12-31 15:59:55.451	NULL	false	-29	-29.0	1969-12-31 15:59:46.536	-200	1674924283	-6244117727024	NULL	NULL	200	-400	-200	NULL	NULL	29.0	1.7802E7	-2.932586905696095E-5	29	-2.7432068965517242
-NULL	-200.0	1969-12-31 15:59:55.451	NULL	false	-60	-60.0	1969-12-31 16:00:10.953	-200	-483910982	1804020140896	NULL	NULL	200	-400	-200	NULL	NULL	60.0	1.7802E7	-6.0674211841988174E-5	60	-1.3258833333333333
-NULL	-200.0	1969-12-31 15:59:55.451	NULL	false	46	46.0	1969-12-31 16:00:09.883	-200	-436888437	1628720093136	NULL	NULL	200	-400	-200	NULL	NULL	-46.0	1.7802E7	4.651689574552426E-5	-46	1.7294130434782609
-NULL	-200.0	1969-12-31 15:59:55.451	NULL	false	-43	-43.0	1969-12-31 15:59:51.43	-200	818800198	-3052487138144	NULL	NULL	200	-400	-200	NULL	NULL	43.0	1.7802E7	-4.3483185153424856E-5	43	-1.8500697674418605
-NULL	-200.0	1969-12-31 15:59:55.451	NULL	false	-33	-33.0	1969-12-31 15:59:55.755	-200	-567292357	2114865906896	NULL	NULL	200	-400	-200	NULL	NULL	33.0	1.7802E7	-3.3370816513093494E-5	33	-2.4106969696969696
-NULL	-200.0	1969-12-31 15:59:55.451	NULL	false	-38	-38.0	1969-12-31 15:59:56.769	-200	450485340	-1679409347520	NULL	NULL	200	-400	-200	NULL	NULL	38.0	1.7802E7	-3.842700083325918E-5	38	-2.0935
-NULL	-200.0	1969-12-31 15:59:55.451	NULL	false	-4	-4.0	1969-12-31 15:59:46.449	-200	-689001045	2568595895760	NULL	NULL	200	-400	-200	NULL	NULL	4.0	1.7802E7	-4.044947456132545E-6	4	-19.88825
-NULL	-200.0	1969-12-31 15:59:55.451	NULL	false	-50	-50.0	1969-12-31 16:00:13.253	-200	594977020	-2218074330560	NULL	NULL	200	-400	-200	NULL	NULL	50.0	1.7802E7	-5.056184320165681E-5	50	-1.59106
-NULL	-200.0	1969-12-31 15:59:55.451	NULL	false	39	39.0	1969-12-31 15:59:46.368	-200	112950540	-421079613120	NULL	NULL	200	-400	-200	NULL	NULL	-39.0	1.7802E7	3.9438237697292314E-5	-39	2.039820512820513
-NULL	-200.0	1969-12-31 15:59:55.451	NULL	false	38	38.0	1969-12-31 15:59:53.592	-200	1922447714	-7166885077792	NULL	NULL	200	-400	-200	NULL	NULL	-38.0	1.7802E7	3.842700083325918E-5	-38	2.0935
-NULL	-200.0	1969-12-31 15:59:55.451	NULL	false	17	17.0	1969-12-31 16:00:13.411	-200	-915644003	3413520843184	NULL	NULL	200	-400	-200	NULL	NULL	-17.0	1.7802E7	1.7191026688563315E-5	-17	4.679588235294117
-NULL	-200.0	1969-12-31 15:59:55.451	NULL	false	16	16.0	1969-12-31 16:00:15.143	-200	-2109772858	7865233214624	NULL	NULL	200	-400	-200	NULL	NULL	-16.0	1.7802E7	1.617978982453018E-5	-16	4.9720625
+NULL	-7196.0	1969-12-31 15:59:58.174	NULL	false	-64	-64.0	1969-12-31 15:59:56.048	-7196	406535485	-1515564288080	NULL	NULL	7196	-14392	-7196	NULL	NULL	64.0	6.4051596E8	-6.471915929812072E-5	64	-1.243015625
+NULL	-7196.0	1969-12-31 15:59:58.174	NULL	false	-64	-64.0	1969-12-31 16:00:01.785	-7196	-1639157869	6110780535632	NULL	NULL	7196	-14392	-7196	NULL	NULL	64.0	6.4051596E8	-6.471915929812072E-5	64	-1.243015625
+NULL	-7196.0	1969-12-31 15:59:58.174	NULL	false	-64	-64.0	1969-12-31 16:00:11.912	-7196	-1615920595	6024151978160	NULL	NULL	7196	-14392	-7196	NULL	NULL	64.0	6.4051596E8	-6.471915929812072E-5	64	-1.243015625
+NULL	-7196.0	1969-12-31 15:59:58.174	NULL	false	-64	-64.0	1969-12-31 16:00:12.339	-7196	1805860756	-6732248898368	NULL	NULL	7196	-14392	-7196	NULL	NULL	64.0	6.4051596E8	-6.471915929812072E-5	64	-1.243015625
+NULL	-7196.0	1969-12-31 15:59:58.174	NULL	false	-63	-63.0	1969-12-31 16:00:03.552	-7196	-1224023895	4563161080560	NULL	NULL	7196	-14392	-7196	NULL	NULL	63.0	6.4051596E8	-6.370792243408759E-5	63	-1.2627460317460317
+NULL	-7196.0	1969-12-31 15:59:58.174	NULL	false	-63	-63.0	1969-12-31 16:00:07.375	-7196	-1711796768	6381578351104	NULL	NULL	7196	-14392	-7196	NULL	NULL	63.0	6.4051596E8	-6.370792243408759E-5	63	-1.2627460317460317
+NULL	-7196.0	1969-12-31 15:59:58.174	NULL	false	-63	-63.0	1969-12-31 16:00:11.946	-7196	-994504916	3707514326848	NULL	NULL	7196	-14392	-7196	NULL	NULL	63.0	6.4051596E8	-6.370792243408759E-5	63	-1.2627460317460317
+NULL	-7196.0	1969-12-31 15:59:58.174	NULL	false	-62	-62.0	1969-12-31 15:59:58.395	-7196	-1367753794	5098986144032	NULL	NULL	7196	-14392	-7196	NULL	NULL	62.0	6.4051596E8	-6.269668557005445E-5	62	-1.2831129032258064
+NULL	-7196.0	1969-12-31 15:59:58.174	NULL	false	-62	-62.0	1969-12-31 16:00:01.22	-7196	1670449519	-6227435806832	NULL	NULL	7196	-14392	-7196	NULL	NULL	62.0	6.4051596E8	-6.269668557005445E-5	62	-1.2831129032258064
+NULL	-7196.0	1969-12-31 15:59:58.174	NULL	false	-62	-62.0	1969-12-31 16:00:02.373	-7196	NULL	NULL	NULL	NULL	7196	-14392	-7196	NULL	NULL	62.0	6.4051596E8	-6.269668557005445E-5	62	-1.2831129032258064
+NULL	-7196.0	1969-12-31 15:59:58.174	NULL	false	-62	-62.0	1969-12-31 16:00:03.85	-7196	-642836823	2396495676144	NULL	NULL	7196	-14392	-7196	NULL	NULL	62.0	6.4051596E8	-6.269668557005445E-5	62	-1.2831129032258064
+NULL	-7196.0	1969-12-31 15:59:58.174	NULL	false	-62	-62.0	1969-12-31 16:00:09.025	-7196	-840223244	3132352253632	NULL	NULL	7196	-14392	-7196	NULL	NULL	62.0	6.4051596E8	-6.269668557005445E-5	62	-1.2831129032258064
+NULL	-7196.0	1969-12-31 15:59:58.174	NULL	false	-62	-62.0	1969-12-31 16:00:12.388	-7196	NULL	NULL	NULL	NULL	7196	-14392	-7196	NULL	NULL	62.0	6.4051596E8	-6.269668557005445E-5	62	-1.2831129032258064
+NULL	-7196.0	1969-12-31 15:59:58.174	NULL	false	-61	-61.0	1969-12-31 15:59:44.823	-7196	NULL	NULL	NULL	NULL	7196	-14392	-7196	NULL	NULL	61.0	6.4051596E8	-6.16854487060213E-5	61	-1.3041475409836065
+NULL	-7196.0	1969-12-31 15:59:58.174	NULL	false	-61	-61.0	1969-12-31 15:59:48.035	-7196	1237548317	-4613580125776	NULL	NULL	7196	-14392	-7196	NULL	NULL	61.0	6.4051596E8	-6.16854487060213E-5	61	-1.3041475409836065
+NULL	-7196.0	1969-12-31 15:59:58.174	NULL	false	-61	-61.0	1969-12-31 16:00:03.049	-7196	-1513172815	5641108254320	NULL	NULL	7196	-14392	-7196	NULL	NULL	61.0	6.4051596E8	-6.16854487060213E-5	61	-1.3041475409836065
+NULL	-7196.0	1969-12-31 15:59:58.174	NULL	false	-61	-61.0	1969-12-31 16:00:06.848	-7196	1415466231	-5276858109168	NULL	NULL	7196	-14392	-7196	NULL	NULL	61.0	6.4051596E8	-6.16854487060213E-5	61	-1.3041475409836065
+NULL	-7196.0	1969-12-31 15:59:58.174	NULL	false	-61	-61.0	1969-12-31 16:00:11.842	-7196	NULL	NULL	NULL	NULL	7196	-14392	-7196	NULL	NULL	61.0	6.4051596E8	-6.16854487060213E-5	61	-1.3041475409836065
+NULL	-7196.0	1969-12-31 15:59:58.174	NULL	false	-61	-61.0	1969-12-31 16:00:12.454	-7196	-2175533	8110387024	NULL	NULL	7196	-14392	-7196	NULL	NULL	61.0	6.4051596E8	-6.16854487060213E-5	61	-1.3041475409836065
+NULL	-7196.0	1969-12-31 15:59:58.174	NULL	false	-61	-61.0	1969-12-31 16:00:14.192	-7196	-2114172148	7881633767744	NULL	NULL	7196	-14392	-7196	NULL	NULL	61.0	6.4051596E8	-6.16854487060213E-5	61	-1.3041475409836065
+NULL	-7196.0	1969-12-31 15:59:58.174	NULL	false	-60	-60.0	1969-12-31 15:59:45.385	-7196	1775867066	-6620432422048	NULL	NULL	7196	-14392	-7196	NULL	NULL	60.0	6.4051596E8	-6.0674211841988174E-5	60	-1.3258833333333333
+NULL	-7196.0	1969-12-31 15:59:58.174	NULL	false	-60	-60.0	1969-12-31 15:59:52.408	-7196	1516314750	-5652821388000	NULL	NULL	7196	-14392	-7196	NULL	NULL	60.0	6.4051596E8	-6.0674211841988174E-5	60	-1.3258833333333333
+NULL	-7196.0	1969-12-31 15:59:58.174	NULL	false	-60	-60.0	1969-12-31 15:59:55.806	-7196	-1802243330	6718763134240	NULL	NULL	7196	-14392	-7196	NULL	NULL	60.0	6.4051596E8	-6.0674211841988174E-5	60	-1.3258833333333333
+NULL	-7196.0	1969-12-31 15:59:58.174	NULL	false	-60	-60.0	1969-12-31 16:00:10.618	-7196	-68838726	256630770528	NULL	NULL	7196	-14392	-7196	NULL	NULL	60.0	6.4051596E8	-6.0674211841988174E-5	60	-1.3258833333333333
+NULL	-7196.0	1969-12-31 15:59:58.174	NULL	false	-59	-59.0	1969-12-31 16:00:13.15	-7196	-1604890000	5983029920000	NULL	NULL	7196	-14392	-7196	NULL	NULL	59.0	6.4051596E8	-5.966297497795504E-5	59	-1.3483559322033898
+NULL	-7196.0	1969-12-31 15:59:58.174	NULL	false	-58	-58.0	1969-12-31 15:59:47.859	-7196	-1770443874	6600214762272	NULL	NULL	7196	-14392	-7196	NULL	NULL	58.0	6.4051596E8	-5.86517381139219E-5	58	-1.3716034482758621
+NULL	-7196.0	1969-12-31 15:59:58.174	NULL	false	-58	-58.0	1969-12-31 15:59:55.857	-7196	-825174557	3076250748496	NULL	NULL	7196	-14392	-7196	NULL	NULL	58.0	6.4051596E8	-5.86517381139219E-5	58	-1.3716034482758621
+NULL	-7196.0	1969-12-31 15:59:58.174	NULL	false	-58	-58.0	1969-12-31 16:00:12.065	-7196	1257970504	-4689714038912	NULL	NULL	7196	-14392	-7196	NULL	NULL	58.0	6.4051596E8	-5.86517381139219E-5	58	-1.3716034482758621
+NULL	-7196.0	1969-12-31 15:59:58.174	NULL	false	-57	-57.0	1969-12-31 15:59:44.539	-7196	1839592407	-6858000493296	NULL	NULL	7196	-14392	-7196	NULL	NULL	57.0	6.4051596E8	-5.764050124988876E-5	57	-1.3956666666666666
+NULL	-7196.0	1969-12-31 15:59:58.174	NULL	false	-57	-57.0	1969-12-31 16:00:04.659	-7196	-1579093262	5886859680736	NULL	NULL	7196	-14392	-7196	NULL	NULL	57.0	6.4051596E8	-5.764050124988876E-5	57	-1.3956666666666666
+NULL	-7196.0	1969-12-31 15:59:58.174	NULL	false	-57	-57.0	1969-12-31 16:00:05.5	-7196	2042351711	-7613887178608	NULL	NULL	7196	-14392	-7196	NULL	NULL	57.0	6.4051596E8	-5.764050124988876E-5	57	-1.3956666666666666
+NULL	-7196.0	1969-12-31 15:59:58.174	NULL	false	-57	-57.0	1969-12-31 16:00:12.626	-7196	248308622	-925694542816	NULL	NULL	7196	-14392	-7196	NULL	NULL	57.0	6.4051596E8	-5.764050124988876E-5	57	-1.3956666666666666
+NULL	-7196.0	1969-12-31 15:59:58.174	NULL	false	-56	-56.0	1969-12-31 16:00:02.298	-7196	-1509994296	5629258735488	NULL	NULL	7196	-14392	-7196	NULL	NULL	56.0	6.4051596E8	-5.6629264385855625E-5	56	-1.4205892857142857
+NULL	-7196.0	1969-12-31 15:59:58.174	NULL	false	-55	-55.0	1969-12-31 15:59:43.932	-7196	1982381637	-7390318742736	NULL	NULL	7196	-14392	-7196	NULL	NULL	55.0	6.4051596E8	-5.561802752182249E-5	55	-1.4464181818181818
+NULL	-7196.0	1969-12-31 15:59:58.174	NULL	false	-55	-55.0	1969-12-31 16:00:01.138	-7196	888532643	-3312449693104	NULL	NULL	7196	-14392	-7196	NULL	NULL	55.0	6.4051596E8	-5.561802752182249E-5	55	-1.4464181818181818
+NULL	-7196.0	1969-12-31 15:59:58.174	NULL	false	-55	-55.0	1969-12-31 16:00:13.249	-7196	-685064281	2553919639568	NULL	NULL	7196	-14392	-7196	NULL	NULL	55.0	6.4051596E8	-5.561802752182249E-5	55	-1.4464181818181818
+NULL	-7196.0	1969-12-31 15:59:58.174	NULL	false	-54	-54.0	1969-12-31 15:59:53.657	-7196	1476582815	-5504700734320	NULL	NULL	7196	-14392	-7196	NULL	NULL	54.0	6.4051596E8	-5.4606790657789354E-5	54	-1.4732037037037036
+NULL	-7196.0	1969-12-31 15:59:58.174	NULL	false	-54	-54.0	1969-12-31 16:00:05.688	-7196	1614836149	-6020109163472	NULL	NULL	7196	-14392	-7196	NULL	NULL	54.0	6.4051596E8	-5.4606790657789354E-5	54	-1.4732037037037036
+NULL	-7196.0	1969-12-31 15:59:58.174	NULL	false	-54	-54.0	1969-12-31 16:00:06.484	-7196	1605976008	-5987078557824	NULL	NULL	7196	-14392	-7196	NULL	NULL	54.0	6.4051596E8	-5.4606790657789354E-5	54	-1.4732037037037036
+NULL	-7196.0	1969-12-31 15:59:58.174	NULL	false	-54	-54.0	1969-12-31 16:00:11.198	-7196	1650677402	-6153725354656	NULL	NULL	7196	-14392	-7196	NULL	NULL	54.0	6.4051596E8	-5.4606790657789354E-5	54	-1.4732037037037036
+NULL	-7196.0	1969-12-31 15:59:58.174	NULL	false	-53	-53.0	1969-12-31 15:59:48.882	-7196	-1560660031	5818140595568	NULL	NULL	7196	-14392	-7196	NULL	NULL	53.0	6.4051596E8	-5.359555379375622E-5	53	-1.501
+NULL	-7196.0	1969-12-31 15:59:58.174	NULL	false	-53	-53.0	1969-12-31 15:59:57.663	-7196	898472381	-3349505036368	NULL	NULL	7196	-14392	-7196	NULL	NULL	53.0	6.4051596E8	-5.359555379375622E-5	53	-1.501
+NULL	-7196.0	1969-12-31 15:59:58.174	NULL	false	-53	-53.0	1969-12-31 16:00:11.36	-7196	-1357789899	5061840743472	NULL	NULL	7196	-14392	-7196	NULL	NULL	53.0	6.4051596E8	-5.359555379375622E-5	53	-1.501
+NULL	-7196.0	1969-12-31 15:59:58.174	NULL	false	-52	-52.0	1969-12-31 15:59:45.978	-7196	-2128720310	7935869315680	NULL	NULL	7196	-14392	-7196	NULL	NULL	52.0	6.4051596E8	-5.258431692972308E-5	52	-1.5298653846153845
+NULL	-7196.0	1969-12-31 15:59:58.174	NULL	false	-52	-52.0	1969-12-31 15:59:47.15	-7196	628698169	-2343786774032	NULL	NULL	7196	-14392	-7196	NULL	NULL	52.0	6.4051596E8	-5.258431692972308E-5	52	-1.5298653846153845
+NULL	-7196.0	1969-12-31 15:59:58.174	NULL	false	-52	-52.0	1969-12-31 15:59:57.86	-7196	-26309289	98081029392	NULL	NULL	7196	-14392	-7196	NULL	NULL	52.0	6.4051596E8	-5.258431692972308E-5	52	-1.5298653846153845
+NULL	-7196.0	1969-12-31 15:59:58.174	NULL	false	-52	-52.0	1969-12-31 15:59:58.479	-7196	-1379694191	5143499944048	NULL	NULL	7196	-14392	-7196	NULL	NULL	52.0	6.4051596E8	-5.258431692972308E-5	52	-1.5298653846153845
+NULL	-7196.0	1969-12-31 15:59:58.174	NULL	false	-52	-52.0	1969-12-31 16:00:03.963	-7196	95444104	-355815619712	NULL	NULL	7196	-14392	-7196	NULL	NULL	52.0	6.4051596E8	-5.258431692972308E-5	52	-1.5298653846153845
+NULL	-7196.0	1969-12-31 15:59:58.174	NULL	false	-52	-52.0	1969-12-31 16:00:04.518	-7196	-1658319459	6182214943152	NULL	NULL	7196	-14392	-7196	NULL	NULL	52.0	6.4051596E8	-5.258431692972308E-5	52	-1.5298653846153845
+NULL	-7196.0	1969-12-31 15:59:58.174	NULL	false	-51	-51.0	1969-12-31 15:59:43.64	-7196	-1339164819	4992406445232	NULL	NULL	7196	-14392	-7196	NULL	NULL	51.0	6.4051596E8	-5.157308006568995E-5	51	-1.5598627450980391
 PREHOOK: query: -- TargetTypeClasses: Long, String, Double, Bool, Timestamp
 -- Functions: VarP, Var, StDev, StDevP, Max, Sum
 -- ArithmeticOps: Divide, Remainder, Subtract, Multiply
@@ -1116,6 +1134,7 @@ WHERE  (((197 > ctinyint)
         OR (cboolean1 < 0)
            OR ((cstring1 LIKE '%ss')
                AND (cfloat <= ctinyint)))
+ORDER BY cint, cbigint, cstring1, cboolean1, cfloat, cdouble, ctimestamp2, csmallint, cstring2, cboolean2
 LIMIT 25
 PREHOOK: type: QUERY
 POSTHOOK: query: -- TargetTypeClasses: Long, String, Double, Bool, Timestamp
@@ -1155,6 +1174,7 @@ WHERE  (((197 > ctinyint)
         OR (cboolean1 < 0)
            OR ((cstring1 LIKE '%ss')
                AND (cfloat <= ctinyint)))
+ORDER BY cint, cbigint, cstring1, cboolean1, cfloat, cdouble, ctimestamp2, csmallint, cstring2, cboolean2
 LIMIT 25
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -1164,6 +1184,8 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -1175,19 +1197,31 @@ STAGE PLANS:
                     predicate: (((((197.0 > ctinyint) and (cint = cbigint)) or (cbigint = 359)) or (cboolean1 < 0)) or ((cstring1 like '%ss') and (cfloat <= ctinyint))) (type: boolean)
                     Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: cint (type: int), cbigint (type: bigint), cstring1 (type: string), cboolean1 (type: boolean), cfloat (type: float), cdouble (type: double), ctimestamp2 (type: timestamp), csmallint (type: smallint), cstring2 (type: string), cboolean2 (type: boolean), (cint / cbigint) (type: double), (cbigint % 79.553) (type: double), (- (cint / cbigint)) (type: double), (10.175 % cfloat) (type: double), (- cfloat) (type: float), (cfloat - (- cfloat)) (type: float), ((cfloat - (- cfloat)) % -6432) (type: float), (cdouble * csmallint) (type: double), (- cdouble) (type: double), (- cbigint) (type: bigint), (cfloat - (cint / cbigint)) (type: double), (- csmallint) (type: smallint), (3569 % cbigint) (type: bigint), (359 - cdouble) (type: double), (- csmallint) (type: smallint)
-                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24
+                      expressions: cint (type: int), cbigint (type: bigint), (cint / cbigint) (type: double), (cbigint % 79.553) (type: double), (- (cint / cbigint)) (type: double), (10.175 % cfloat) (type: double), (- cfloat) (type: float), (cfloat - (- cfloat)) (type: float), ((cfloat - (- cfloat)) % -6432) (type: float), (cdouble * csmallint) (type: double), (- cdouble) (type: double), (- cbigint) (type: bigint), cstring1 (type: string), (cfloat - (cint / cbigint)) (type: double), (- csmallint) (type: smallint), (3569 % cbigint) (type: bigint), (359 - cdouble) (type: double), cboolean1 (type: boolean), cfloat (type: float), cdouble (type: double), ctimestamp2 (type: timestamp), csmallint (type: smallint), cstring2 (type: string), cboolean2 (type: boolean)
+                      outputColumnNames: _col0, _col1, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col2, _col20, _col21, _col22, _col23, _col3, _col4, _col5, _col6, _col7, _col8, _col9
                       Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
-                      Limit
-                        Number of rows: 25
-                        Statistics: Num rows: 25 Data size: 750 Basic stats: COMPLETE Column stats: NONE
-                        File Output Operator
-                          compressed: false
-                          Statistics: Num rows: 25 Data size: 750 Basic stats: COMPLETE Column stats: NONE
-                          table:
-                              input format: org.apache.hadoop.mapred.TextInputFormat
-                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int), _col1 (type: bigint), _col2 (type: string), _col3 (type: boolean), _col4 (type: float), _col5 (type: double), _col6 (type: timestamp), _col7 (type: smallint), _col8 (type: string), _col9 (type: boolean)
+                        sort order: ++++++++++
+                        Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col10 (type: double), _col11 (type: double), _col12 (type: double), _col13 (type: double), _col14 (type: float), _col15 (type: float), _col16 (type: float), _col17 (type: double), _col18 (type: double), _col19 (type: bigint), _col20 (type: double), _col21 (type: smallint), _col22 (type: bigint), _col23 (type: double)
+            Execution mode: vectorized
+        Reducer 2 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: bigint), KEY.reducesinkkey2 (type: string), KEY.reducesinkkey3 (type: boolean), KEY.reducesinkkey4 (type: float), KEY.reducesinkkey5 (type: double), KEY.reducesinkkey6 (type: timestamp), KEY.reducesinkkey7 (type: smallint), KEY.reducesinkkey8 (type: string), KEY.reducesinkkey9 (type: boolean), VALUE._col0 (type: double), VALUE._col1 (type: double), VALUE._col2 (type: double), VALUE._col3 (type: double), VALUE._col4 (type: float), VALUE._col5 (type: float), VALUE._col6 (type: float), VALUE._col7 (type: double), VALUE._col8 (type: double), VALUE._col9 (type: bigint), VALUE._col10 (type: double), VALUE._col11 (type: smallint), VALUE._col12 (type: bigint), VALUE._col13 (type: double), VALUE._col11 (type: smallint)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24
+                Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 25
+                  Statistics: Num rows: 25 Data size: 750 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 25 Data size: 750 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: vectorized
 
   Stage: Stage-0
@@ -1228,6 +1262,7 @@ WHERE  (((197 > ctinyint)
         OR (cboolean1 < 0)
            OR ((cstring1 LIKE '%ss')
                AND (cfloat <= ctinyint)))
+ORDER BY cint, cbigint, cstring1, cboolean1, cfloat, cdouble, ctimestamp2, csmallint, cstring2, cboolean2
 LIMIT 25
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
@@ -1264,12 +1299,13 @@ WHERE  (((197 > ctinyint)
         OR (cboolean1 < 0)
            OR ((cstring1 LIKE '%ss')
                AND (cfloat <= ctinyint)))
+ORDER BY cint, cbigint, cstring1, cboolean1, cfloat, cdouble, ctimestamp2, csmallint, cstring2, cboolean2
 LIMIT 25
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
--462839731	988888	ss	false	-51.0	NULL	NULL	NULL	Lml5J2QBU77	false	-468.04059812638036	44.210000000033915	468.04059812638036	10.175	51.0	-102.0	-102.0	NULL	NULL	-988888	417.04059812638036	NULL	3569	NULL	NULL
 -635141101	-89010	ss	false	-51.0	NULL	NULL	NULL	rVWAj4N1MCg8Scyp7wj2C	true	7135.6151106617235	-69.74600000000305	-7135.6151106617235	10.175	51.0	-102.0	-102.0	NULL	NULL	89010	-7186.6151106617235	NULL	3569	NULL	NULL
+-462839731	988888	ss	false	-51.0	NULL	NULL	NULL	Lml5J2QBU77	false	-468.04059812638036	44.210000000033915	468.04059812638036	10.175	51.0	-102.0	-102.0	NULL	NULL	-988888	417.04059812638036	NULL	3569	NULL	NULL
 WARNING: Comparing a bigint and a double may result in a loss of precision.
 PREHOOK: query: -- TargetTypeClasses: String, Bool, Double, Long, Timestamp
 -- Functions: Sum, Max, Avg, Var, StDevP, VarP
@@ -2222,6 +2258,7 @@ WHERE    (((ctimestamp1 != 0))
                      OR ((cboolean1 IS NULL)
                          AND (cfloat < cint))))
 GROUP BY ctimestamp1, cstring1
+ORDER BY ctimestamp1, cstring1
 LIMIT 50
 PREHOOK: type: QUERY
 POSTHOOK: query: -- TargetTypeClasses: Bool, Timestamp, String, Double, Long
@@ -2281,6 +2318,7 @@ WHERE    (((ctimestamp1 != 0))
                      OR ((cboolean1 IS NULL)
                          AND (cfloat < cint))))
 GROUP BY ctimestamp1, cstring1
+ORDER BY ctimestamp1, cstring1
 LIMIT 50
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -2292,6 +2330,7 @@ STAGE PLANS:
     Tez
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -2328,19 +2367,31 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14
                 Statistics: Num rows: 6144 Data size: 188618 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: _col0 (type: timestamp), _col1 (type: string), _col2 (type: double), (_col2 * 10.175) (type: double), (- _col2) (type: double), _col3 (type: double), (- _col2) (type: double), (-26.28 - _col2) (type: double), _col4 (type: bigint), (- _col4) (type: bigint), ((-26.28 - _col2) * (- _col2)) (type: double), _col5 (type: tinyint), (((-26.28 - _col2) * (- _col2)) * (- _col4)) (type: double), (- (_col2 * 10.175)) (type: double), _col6 (type: double), (_col6 + (((-26.28 - _col2) * (- _col2)) * (- _col4))) (type: double), (- (- _col2)) (type: double), ((- _col4) / _col2) (type: double), _col7 (type: double), (10.175 / _col3) (type: double), _col8 (type: double), _col9 (type: double), ((_col6 + (((-26.28 - _col2) * (- _col2)) * (- _col4))) - (((-26.28 - _col2) * (- _col2)) * (- _col4))) (type: double), (- (- (_col2 * 10.175))) (type: double), _col10 (type: double), (((_col6 + (((-26.28 - _col2) * (- _col2)) * (- _col4))) - (((-26.28 - _col2) * (- _col2)) * (- _col4))) * 10.175) (type: double), (10.175 % (10.175 / _col3)) (type: double), (- _col5) (type: tinyint), _col11 (type: double), _col12 (type: double), (- ((-26.28 - _col2) * (- _col2))) (type: double), ((- _col2) % _col10) (type: double), (-26.28 / (- _col5)) (type: double), _col13 (type: double), _col14 (type: bigint), ((_col6 + (((-26.28 - _col2) * (- _col2)) * (- _col4))) / _col7) (type: double), (- (- _col4)) (type: bigint), _col4 (type: bigint), ((_col6 + (((-26.28 - _col2) * (- _col2)) * (- _col4))) % -26.28) (type: double)
-                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24, _col25, _col26, _col27, _col28, _col29, _col30, _col31, _col32, _col33, _col34, _col35, _col36, _col37, _col38
+                  expressions: _col0 (type: timestamp), _col1 (type: string), ((-26.28 - _col2) * (- _col2)) (type: double), _col5 (type: tinyint), (((-26.28 - _col2) * (- _col2)) * (- _col4)) (type: double), (- (_col2 * 10.175)) (type: double), _col6 (type: double), (_col6 + (((-26.28 - _col2) * (- _col2)) * (- _col4))) (type: double), (- (- _col2)) (type: double), ((- _col4) / _col2) (type: double), _col7 (type: double), (10.175 / _col3) (type: double), _col2 (type: double), _col8 (type: double), _col9 (type: double), ((_col6 + (((-26.28 - _col2) * (- _col2)) * (- _col4))) - (((-26.28 - _col2) * (- _col2)) * (- _col4))) (type: double), (- (- (_col2 * 10.175))) (type: double), _col10 (type: double), (((_col6 + (((-26.28 - _col2) * (- _col2)) * (- _col4))) - (((-26.28 - _col2) * (- _col2)) * (- _col4))) * 10.175) (type: double), (10.175 % (10.175 / _col3)) (type: double), (- _col5) (type: tinyint), _col11 (type: double), _col12 (type: double), (_col2 * 10.175) (type: double), (- ((-26.28 - _col2) * (- _col2))) (type: double), ((- _col2) % _col10) (type: double), (-26.28 / (- _col5)) (type: double), _col13 (type: double), _col14 (type: bigint), ((_col6 + (((-26.28 - _col2) * (- _col2)) * (- _col4))) / _col7) (type: double), (- (- _col4)) (type: bigint), ((_col6 + (((-26.28 - _col2) * (- _col2)) * (- _col4))) % -26.28) (type: double), (- _col2) (type: double), _col3 (type: double), (-26.28 - _col2) (type: double), _col4 (type: bigint), (- _col4) (type: bigint)
+                  outputColumnNames: _col0, _col1, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col2, _col20, _col21, _col22, _col23, _col24, _col25, _col26, _col27, _col28, _col29, _col3, _col30, _col31, _col32, _col33, _col34, _col35, _col36, _col38, _col4, _col5, _col7, _col8, _col9
                   Statistics: Num rows: 6144 Data size: 188618 Basic stats: COMPLETE Column stats: NONE
-                  Limit
-                    Number of rows: 50
+                  Reduce Output Operator
+                    key expressions: _col0 (type: timestamp), _col1 (type: string)
+                    sort order: ++
+                    Statistics: Num rows: 6144 Data size: 188618 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col2 (type: double), _col3 (type: double), _col4 (type: double), _col5 (type: double), _col7 (type: double), _col8 (type: bigint), _col9 (type: bigint), _col10 (type: double), _col11 (type: tinyint), _col12 (type: double), _col13 (type: double), _col14 (type: double), _col15 (type: double), _col16 (type: double), _col17 (type: double), _col18 (type: double), _col19 (type: double), _col20 (type: double), _col21 (type: double), _col22 (type: double), _col23 (type: double), _col24 (type: double), _col25 (type: double), _col26 (type: double), _col27 (type: tinyint), _col28 (type: double), _col29 (type: double), _col30 (type: double), _col31 (type: double), _col32 (type: double), _col33 (type: double), _col34 (type: bigint), _col35 (type: double), _col36 (type: bigint), _col38 (type: double)
+        Reducer 3 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: timestamp), KEY.reducesinkkey1 (type: string), VALUE._col0 (type: double), VALUE._col1 (type: double), VALUE._col2 (type: double), VALUE._col3 (type: double), VALUE._col2 (type: double), VALUE._col4 (type: double), VALUE._col5 (type: bigint), VALUE._col6 (type: bigint), VALUE._col7 (type: double), VALUE._col8 (type: tinyint), VALUE._col9 (type: double), VALUE._col10 (type: double), VALUE._col11 (type: double), VALUE._col12 (type: double), VALUE._col13 (type: double), VALUE._col14 (type: double), VALUE._col15 (type: double), VALUE._col16 (type: double), VALUE._col17 (type: double), VALUE._col18 (type: double), VALUE._col19 (type: double), VALUE._col20 (type: double), VALUE._col21 (type: double), VALUE._col22 (type: double), VALUE._col23 (type: double), VALUE._col24 (type: tinyint), VALUE._col25 (type: double), VALUE._col26 (type: double), VALUE._col27 (type: double), VALUE._col28 (type: double), VALUE._col29 (type: double), VALUE._col30 (type: double), VALUE._col31 (type: bigint), VALUE._col32 (type: double), VALUE._col33 (type: bigint), VALUE._col5 (type: bigint), VALUE._col34 (type: double)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24, _col25, _col26, _col27, _col28, _col29, _col30, _col31, _col32, _col33, _col34, _col35, _col36, _col37, _col38
+                Statistics: Num rows: 6144 Data size: 188618 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 50
+                  Statistics: Num rows: 50 Data size: 1500 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
                     Statistics: Num rows: 50 Data size: 1500 Basic stats: COMPLETE Column stats: NONE
-                    File Output Operator
-                      compressed: false
-                      Statistics: Num rows: 50 Data size: 1500 Basic stats: COMPLETE Column stats: NONE
-                      table:
-                          input format: org.apache.hadoop.mapred.TextInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -2400,6 +2451,7 @@ WHERE    (((ctimestamp1 != 0))
                      OR ((cboolean1 IS NULL)
                          AND (cfloat < cint))))
 GROUP BY ctimestamp1, cstring1
+ORDER BY ctimestamp1, cstring1
 LIMIT 50
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
@@ -2456,6 +2508,7 @@ WHERE    (((ctimestamp1 != 0))
                      OR ((cboolean1 IS NULL)
                          AND (cfloat < cint))))
 GROUP BY ctimestamp1, cstring1
+ORDER BY ctimestamp1, cstring1
 LIMIT 50
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc

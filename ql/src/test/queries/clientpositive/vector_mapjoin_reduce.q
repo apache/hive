@@ -1,6 +1,8 @@
 SET hive.vectorized.execution.enabled=true;
 SET hive.auto.convert.join=true;
 
+-- SORT_QUERY_RESULTS
+
 DROP TABLE part;
 
 -- data setup
