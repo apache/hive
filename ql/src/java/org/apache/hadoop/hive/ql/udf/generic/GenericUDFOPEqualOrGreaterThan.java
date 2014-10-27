@@ -50,7 +50,14 @@ import org.apache.hadoop.io.Text;
   FilterLongScalarGreaterEqualLongColumn.class, FilterLongScalarGreaterEqualDoubleColumn.class,
   FilterDoubleScalarGreaterEqualLongColumn.class, FilterDoubleScalarGreaterEqualDoubleColumn.class,
   FilterDecimalColGreaterEqualDecimalColumn.class, FilterDecimalColGreaterEqualDecimalScalar.class,
-  FilterDecimalScalarGreaterEqualDecimalColumn.class})
+  FilterDecimalScalarGreaterEqualDecimalColumn.class,
+  TimestampColGreaterEqualTimestampScalar.class, TimestampScalarGreaterEqualTimestampColumn.class,
+  FilterTimestampColGreaterEqualTimestampScalar.class, FilterTimestampScalarGreaterEqualTimestampColumn.class,
+  TimestampColGreaterEqualLongScalar.class, LongScalarGreaterEqualTimestampColumn.class,
+  FilterTimestampColGreaterEqualLongScalar.class, FilterLongScalarGreaterEqualTimestampColumn.class,
+  TimestampColGreaterEqualDoubleScalar.class, DoubleScalarGreaterEqualTimestampColumn.class,
+  FilterTimestampColGreaterEqualDoubleScalar.class, FilterDoubleScalarGreaterEqualTimestampColumn.class
+  })
 public class GenericUDFOPEqualOrGreaterThan extends GenericUDFBaseCompare {
   public GenericUDFOPEqualOrGreaterThan(){
     this.opName = "EQUAL OR GREATER THAN";
