@@ -20,10 +20,13 @@ package org.apache.hive.spark.client;
 import java.io.Serializable;
 import java.util.concurrent.Future;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+
 /**
  * A handle to a submitted job. Allows for monitoring and controlling of the running remote job.
  */
-interface JobHandle<T extends Serializable> extends Future<T> {
+@InterfaceAudience.Private
+public interface JobHandle<T extends Serializable> extends Future<T> {
 
   /**
    * The client job ID. This is unrelated to any Spark jobs that might be triggered by the

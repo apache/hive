@@ -33,6 +33,7 @@ import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hive.spark.client.metrics.DataReadMethod;
 import org.apache.hive.spark.client.metrics.InputMetrics;
 import org.apache.hive.spark.client.metrics.Metrics;
@@ -51,6 +52,7 @@ import org.apache.hive.spark.client.metrics.ShuffleWriteMetrics;
  * Only successful, non-speculative tasks are considered. Metrics are updated as tasks finish,
  * so snapshots can be retrieved before the whole job completes.
  */
+@InterfaceAudience.Private
 public class MetricsCollection {
 
   private final List<TaskInfo> taskMetrics = Lists.newArrayList();

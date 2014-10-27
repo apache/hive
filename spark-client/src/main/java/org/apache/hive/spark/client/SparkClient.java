@@ -21,9 +21,12 @@ import java.net.URL;
 import java.io.Serializable;
 import java.util.concurrent.Future;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+
 /**
  * Defines the API for the Spark remote client.
  */
+@InterfaceAudience.Private
 public interface SparkClient {
 
   /**

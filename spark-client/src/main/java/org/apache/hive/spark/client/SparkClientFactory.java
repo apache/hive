@@ -24,9 +24,12 @@ import akka.actor.ActorSystem;
 import com.google.common.collect.Maps;
 import org.apache.spark.SparkException;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+
 /**
  * Factory for SparkClient instances.
  */
+@InterfaceAudience.Private
 public final class SparkClientFactory {
 
   static ActorSystem actorSystem = null;

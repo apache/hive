@@ -17,10 +17,13 @@
 
 package org.apache.hive.spark.client.metrics;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+
 /**
  * Method by which input data was read. Network means that the data was read over the network
  * from a remote block manager (which may have stored the data on-disk or in-memory).
  */
+@InterfaceAudience.Private
 public enum DataReadMethod {
   Memory, Disk, Hadoop, Network, Multiple
 }

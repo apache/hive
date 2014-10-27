@@ -46,11 +46,13 @@ import org.apache.spark.api.java.JavaSparkContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hive.spark.client.metrics.Metrics;
 
 /**
  * Driver code for the Spark client library.
  */
+@InterfaceAudience.Private
 public class RemoteDriver {
 
   private final static Logger LOG = LoggerFactory.getLogger(RemoteDriver.class);

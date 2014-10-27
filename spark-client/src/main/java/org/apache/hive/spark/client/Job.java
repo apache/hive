@@ -19,10 +19,13 @@ package org.apache.hive.spark.client;
 
 import java.io.Serializable;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+
 /**
  * Interface for a Spark remote job.
  */
-interface Job<T extends Serializable> extends Serializable {
+@InterfaceAudience.Private
+public interface Job<T extends Serializable> extends Serializable {
 
   T call(JobContext jc) throws Exception;
 
