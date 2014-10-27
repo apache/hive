@@ -23,3 +23,7 @@ select * from (select key from src where false) a left outer join (select value 
 explain extended 
 select * from (select key from src union all select src.key from src left outer join srcpart on src.key = srcpart.key) a  where false;
 select * from (select key from src union all select src.key from src left outer join srcpart on src.key = srcpart.key) a  where false;
+
+explain extended 
+select * from src s1, src s2 where false and s1.value = s2.value;
+select * from src s1, src s2 where false and s1.value = s2.value;
