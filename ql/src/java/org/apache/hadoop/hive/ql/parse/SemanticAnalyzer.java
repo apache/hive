@@ -9804,14 +9804,25 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       throws SemanticException {
     RowResolver lvForwardRR = new RowResolver();
     RowResolver source = opParseCtx.get(op).getRowResolver();
+    Map<String, ExprNodeDesc> lvfColExprMap = new HashMap<String, ExprNodeDesc>();
+    Map<String, ExprNodeDesc> selColExprMap = new HashMap<String, ExprNodeDesc>();
+    List<ExprNodeDesc> colList = new ArrayList<ExprNodeDesc>();
+    List<String> colNames = new ArrayList<String>();
     for (ColumnInfo col : source.getColumnInfos()) {
       String[] tabCol = source.reverseLookup(col.getInternalName());
       lvForwardRR.put(tabCol[0], tabCol[1], col);
+      ExprNodeDesc colExpr = new ExprNodeColumnDesc(col.getType(), col.getInternalName(),
+          col.getTabAlias(), false);
+      colList.add(colExpr);
+      colNames.add(colExpr.getName());
+      lvfColExprMap.put(col.getInternalName(), colExpr);
+      selColExprMap.put(col.getInternalName(), colExpr.clone());
     }
 
     Operator lvForward = putOpInsertMap(OperatorFactory.getAndMakeChild(
         new LateralViewForwardDesc(), new RowSchema(lvForwardRR.getColumnInfos()),
         op), lvForwardRR);
+    lvForward.setColumnExprMap(lvfColExprMap);
 
     // The order in which the two paths are added is important. The
     // lateral view join operator depends on having the select operator
@@ -9820,9 +9831,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // Get the all path by making a select(*).
     RowResolver allPathRR = opParseCtx.get(lvForward).getRowResolver();
     // Operator allPath = op;
+    SelectDesc sDesc = new SelectDesc(colList, colNames, false);
+    sDesc.setSelStarNoCompute(true);
     Operator allPath = putOpInsertMap(OperatorFactory.getAndMakeChild(
-        new SelectDesc(true), new RowSchema(allPathRR.getColumnInfos()),
+        sDesc, new RowSchema(allPathRR.getColumnInfos()),
         lvForward), allPathRR);
+    allPath.setColumnExprMap(selColExprMap);
     int allColumns = allPathRR.getColumnInfos().size();
     // Get the UDTF Path
     QB blankQb = new QB(null, null, false);
