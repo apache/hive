@@ -306,6 +306,10 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
   public void closeOp(boolean abort) throws HiveException {
     joinFinalLeftData();
 
+    if (!((joinKeysObjectInspectors != null) && (joinKeysObjectInspectors[alias] != null))) {
+      super.closeOp(abort);
+    }
+
     // clean up
     for (int pos = 0; pos < order.length; pos++) {
       if (pos != posBigTable) {
@@ -362,6 +366,9 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
       joinOneGroup();
       dataInCache = false;
       for (byte pos = 0; pos < order.length; pos++) {
+        if (candidateStorage[pos] == null) {
+          continue;
+        }
         if (this.candidateStorage[pos].rowCount() > 0) {
           dataInCache = true;
           break;
