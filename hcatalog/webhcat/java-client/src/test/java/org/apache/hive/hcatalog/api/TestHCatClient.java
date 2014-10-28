@@ -758,6 +758,11 @@ public class TestHCatClient {
       assertEquals("Unexpected number of partitions.", 1, partitions.size());
       assertArrayEquals("Mismatched partition.", new String[]{"2011_12_31", "AB"}, partitions.get(0).getValues().toArray());
 
+      List<HCatFieldSchema> partColumns = partitions.get(0).getPartColumns();
+      assertEquals(2, partColumns.size());
+      assertEquals("dt", partColumns.get(0).getName());
+      assertEquals("grid", partColumns.get(1).getName());
+
       client.dropDatabase(dbName, false, HCatClient.DropDBMode.CASCADE);
     }
     catch (Exception unexpected) {
