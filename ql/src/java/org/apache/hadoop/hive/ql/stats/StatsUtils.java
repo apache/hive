@@ -1020,7 +1020,20 @@ public class StatsUtils {
           colStat.setColumnName(outColName);
           colStat.setTableAlias(outTabAlias);
         }
-        cs.add(colStat);
+        if (colStat != null) {
+          cs.add(colStat);
+        }
+      }
+
+      return cs;
+    }
+
+    // In cases where column expression map or row schema is missing, just pass on the parent column
+    // stats. This could happen in cases like TS -> FIL where FIL does not map input column names to
+    // internal names.
+    if (colExprMap == null || rowSchema == null) {
+      if (parentStats.getColumnStats() != null) {
+        cs.addAll(parentStats.getColumnStats());
       }
     }
     return cs;

@@ -485,14 +485,14 @@ STAGE PLANS:
             0 {KEY.reducesinkkey0}
             1 
           outputColumnNames: _col0
-          Statistics: Num rows: 321 Data size: 1284 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 322 Data size: 1288 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: _col0 (type: int)
             outputColumnNames: _col0
-            Statistics: Num rows: 321 Data size: 1284 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 322 Data size: 1288 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 321 Data size: 1284 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 322 Data size: 1288 Basic stats: COMPLETE Column stats: COMPLETE
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -694,14 +694,14 @@ STAGE PLANS:
             1 
             2 
           outputColumnNames: _col0
-          Statistics: Num rows: 37 Data size: 148 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 38 Data size: 152 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: _col0 (type: int)
             outputColumnNames: _col0
-            Statistics: Num rows: 37 Data size: 148 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 38 Data size: 152 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 37 Data size: 148 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 38 Data size: 152 Basic stats: COMPLETE Column stats: COMPLETE
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -768,14 +768,14 @@ STAGE PLANS:
             1 
             2 
           outputColumnNames: _col0
-          Statistics: Num rows: 321 Data size: 1284 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 322 Data size: 1288 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: _col0 (type: int)
             outputColumnNames: _col0
-            Statistics: Num rows: 321 Data size: 1284 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 322 Data size: 1288 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 321 Data size: 1284 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 322 Data size: 1288 Basic stats: COMPLETE Column stats: COMPLETE
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -942,14 +942,14 @@ STAGE PLANS:
             0 {VALUE._col0}
             1 
           outputColumnNames: _col0
-          Statistics: Num rows: 916 Data size: 3664 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 210 Data size: 840 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: _col0 (type: int)
             outputColumnNames: _col0
-            Statistics: Num rows: 916 Data size: 3664 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 210 Data size: 840 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 916 Data size: 3664 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 210 Data size: 840 Basic stats: COMPLETE Column stats: COMPLETE
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
