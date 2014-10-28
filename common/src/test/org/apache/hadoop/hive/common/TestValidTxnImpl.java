@@ -64,7 +64,6 @@ public class TestValidTxnImpl {
     for (int i = 0; i < 1000; i++) exceptions[i] = i + 100;
     ValidTxnList txnList = new ValidTxnListImpl(exceptions, 2000);
     String str = txnList.writeToString();
-    Assert.assertEquals('C', str.charAt(0));
     ValidTxnList newList = new ValidTxnListImpl();
     newList.readFromString(str);
     for (int i = 0; i < 100; i++) Assert.assertTrue(newList.isTxnCommitted(i));
@@ -79,7 +78,6 @@ public class TestValidTxnImpl {
     for (int i = 0; i < 1000; i++) exceptions[i] = i + 100;
     ValidTxnList txnList = new ValidTxnListImpl(exceptions, 2000);
     String str = txnList.writeToString();
-    Assert.assertEquals('C', str.charAt(0));
     Configuration conf = new Configuration();
     conf.set(ValidTxnList.VALID_TXNS_KEY, str);
     File tmpFile = File.createTempFile("TestValidTxnImpl", "readWriteConfig");
