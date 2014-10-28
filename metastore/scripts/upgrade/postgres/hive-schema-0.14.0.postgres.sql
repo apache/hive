@@ -1465,8 +1465,75 @@ GRANT ALL ON SCHEMA public TO PUBLIC;
 
 ------------------------------
 -- Transaction and lock tables
+-- These are not part of package jdo, so if you are going to regenerate this file you need to manually add the following section back to the file.
 ------------------------------
-\i hive-txn-schema-0.13.0.postgres.sql;
+CREATE TABLE "txns" (
+  "txn_id" bigint PRIMARY KEY,
+  "txn_state" char(1) NOT NULL,
+  "txn_started" bigint NOT NULL,
+  "txn_last_heartbeat" bigint NOT NULL,
+  "txn_user" varchar(128) NOT NULL,
+  "txn_host" varchar(128) NOT NULL
+);
+
+CREATE TABLE "txn_components" (
+  "tc_txnid" bigint REFERENCES "txns" ("txn_id"),
+  "tc_database" varchar(128) NOT NULL,
+  "tc_table" varchar(128),
+  "tc_partition" varchar(767) DEFAULT NULL
+);
+
+CREATE TABLE "completed_txn_components" (
+  "ctc_txnid" bigint,
+  "ctc_database" varchar(128) NOT NULL,
+  "ctc_table" varchar(128),
+  "ctc_partition" varchar(767)
+);
+
+CREATE TABLE "next_txn_id" (
+  "ntxn_next" bigint NOT NULL
+);
+INSERT INTO "next_txn_id" VALUES(1);
+
+CREATE TABLE "hive_locks" (
+  "hl_lock_ext_id" bigint NOT NULL,
+  "hl_lock_int_id" bigint NOT NULL,
+  "hl_txnid" bigint,
+  "hl_db" varchar(128) NOT NULL,
+  "hl_table" varchar(128),
+  "hl_partition" varchar(767) DEFAULT NULL,
+  "hl_lock_state" char(1) NOT NULL,
+  "hl_lock_type" char(1) NOT NULL,
+  "hl_last_heartbeat" bigint NOT NULL,
+  "hl_acquired_at" bigint,
+  "hl_user" varchar(128) NOT NULL,
+  "hl_host" varchar(128) NOT NULL,
+  PRIMARY KEY("hl_lock_ext_id", "hl_lock_int_id")
+); 
+
+CREATE INDEX "hl_txnid_index" ON "hive_locks" USING hash ("hl_txnid");
+
+CREATE TABLE "next_lock_id" (
+  "nl_next" bigint NOT NULL
+);
+INSERT INTO "next_lock_id" VALUES(1);
+
+CREATE TABLE "compaction_queue" (
+  "cq_id" bigint PRIMARY KEY,
+  "cq_database" varchar(128) NOT NULL,
+  "cq_table" varchar(128) NOT NULL,
+  "cq_partition" varchar(767),
+  "cq_state" char(1) NOT NULL,
+  "cq_type" char(1) NOT NULL,
+  "cq_worker_id" varchar(128),
+  "cq_start" bigint,
+  "cq_run_as" varchar(128)
+);
+
+CREATE TABLE "next_compaction_queue_id" (
+  "ncq_next" bigint NOT NULL
+);
+INSERT INTO "next_compaction_queue_id" VALUES(1);
 
 -- -----------------------------------------------------------------
 -- Record schema version. Should be the last step in the init script
