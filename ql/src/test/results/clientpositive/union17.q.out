@@ -150,14 +150,14 @@ STAGE PLANS:
           keys: KEY._col0 (type: string)
           mode: final
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 125 Data size: 24000 Basic stats: COMPLETE Column stats: PARTIAL
+          Statistics: Num rows: 250 Data size: 48000 Basic stats: COMPLETE Column stats: PARTIAL
           Select Operator
             expressions: _col0 (type: string), _col1 (type: bigint)
             outputColumnNames: _col0, _col1
-            Statistics: Num rows: 125 Data size: 24000 Basic stats: COMPLETE Column stats: PARTIAL
+            Statistics: Num rows: 250 Data size: 48000 Basic stats: COMPLETE Column stats: PARTIAL
             File Output Operator
               compressed: false
-              Statistics: Num rows: 125 Data size: 24000 Basic stats: COMPLETE Column stats: PARTIAL
+              Statistics: Num rows: 250 Data size: 48000 Basic stats: COMPLETE Column stats: PARTIAL
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -193,14 +193,14 @@ STAGE PLANS:
           keys: KEY._col0 (type: string), KEY._col1 (type: string)
           mode: final
           outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 125 Data size: 47000 Basic stats: COMPLETE Column stats: PARTIAL
+          Statistics: Num rows: 250 Data size: 94000 Basic stats: COMPLETE Column stats: PARTIAL
           Select Operator
             expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
             outputColumnNames: _col0, _col1, _col2
-            Statistics: Num rows: 125 Data size: 47000 Basic stats: COMPLETE Column stats: PARTIAL
+            Statistics: Num rows: 250 Data size: 94000 Basic stats: COMPLETE Column stats: PARTIAL
             File Output Operator
               compressed: false
-              Statistics: Num rows: 125 Data size: 47000 Basic stats: COMPLETE Column stats: PARTIAL
+              Statistics: Num rows: 250 Data size: 94000 Basic stats: COMPLETE Column stats: PARTIAL
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
