@@ -188,6 +188,15 @@ public class HCatPartition {
   }
 
   /**
+   * Gets the partition columns of the table.
+   *
+   * @return the partition columns
+   */
+  public List<HCatFieldSchema> getPartColumns() {
+    return hcatTable.getPartCols();
+  }
+
+  /**
    * Gets the input format.
    *
    * @return the input format

@@ -329,8 +329,7 @@ public class HCatClientHMSImpl extends HCatClient {
     throws HCatException {
     List<HCatPartition> hcatPtns = new ArrayList<HCatPartition>();
     try {
-      Table table = hmsClient.getTable(dbName, tblName);
-      HCatTable hcatTable = new HCatTable(table);
+      HCatTable hcatTable = getTable(dbName, tblName);
       List<Partition> hivePtns = hmsClient.listPartitions(
         checkDB(dbName), tblName, (short) -1);
       for (Partition ptn : hivePtns) {
@@ -374,7 +373,7 @@ public class HCatClientHMSImpl extends HCatClient {
                     Map<String, String> partitionSpec) throws HCatException {
     HCatPartition partition = null;
     try {
-      HCatTable hcatTable = getTable(checkDB(dbName), tableName);
+      HCatTable hcatTable = getTable(dbName, tableName);
       List<HCatFieldSchema> partitionColumns = hcatTable.getPartCols();
       if (partitionColumns.size() != partitionSpec.size()) {
         throw new HCatException("Partition-spec doesn't have the right number of partition keys.");
@@ -494,7 +493,7 @@ public class HCatClientHMSImpl extends HCatClient {
     try {
       HCatTable table = getTable(dbName, tblName);
       List<Partition> hivePtns = hmsClient.listPartitionsByFilter(
-        checkDB(dbName), tblName, filter, (short) -1);
+          table.getDbName(), table.getTableName(), filter, (short) -1);
       for (Partition ptn : hivePtns) {
         hcatPtns.add(new HCatPartition(table, ptn));
       }
