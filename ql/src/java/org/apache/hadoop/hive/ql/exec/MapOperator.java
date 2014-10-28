@@ -412,6 +412,8 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
     state = State.INIT;
     statsMap.put(Counter.DESERIALIZE_ERRORS.toString(), deserialize_error_count);
 
+    numRows = 0;
+
     String context = hconf.get(Operator.CONTEXT_NAME_KEY, "");
     if (context != null && !context.isEmpty()) {
       context = "_" + context.replace(" ","_");

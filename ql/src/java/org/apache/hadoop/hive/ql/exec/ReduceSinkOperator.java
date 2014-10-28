@@ -155,6 +155,9 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
   @Override
   protected void initializeOp(Configuration hconf) throws HiveException {
     try {
+
+      numRows = 0;
+
       String context = hconf.get(Operator.CONTEXT_NAME_KEY, "");
       if (context != null && !context.isEmpty()) {
         context = "_" + context.replace(" ","_");
