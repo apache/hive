@@ -1471,6 +1471,10 @@ public class HiveConf extends Configuration {
         "If the property is set, the value must be a valid URI (java.net.URI, e.g. \"file:///tmp/my-logging.properties\"), \n" +
         "which you can then extract a URL from and pass to PropertyConfigurator.configure(URL)."),
 
+    HIVE_LOG_EXPLAIN_OUTPUT("hive.log.explain.output", false,
+        "Whether to log explain output for every query.\n" +
+        "When enabled, will log EXPLAIN EXTENDED output for the query at INFO log4j log level."),
+
     // prefix used to auto generated column aliases (this should be started with '_')
     HIVE_AUTOGEN_COLUMNALIAS_PREFIX_LABEL("hive.autogen.columnalias.prefix.label", "_c",
         "String used as a prefix when auto generating column alias.\n" +
