@@ -1,5 +1,7 @@
 drop table date_join1;
 
+-- SORT_QUERY_RESULTS
+
 create table date_join1 (
   ORIGIN_CITY_NAME string,
   DEST_CITY_NAME string,

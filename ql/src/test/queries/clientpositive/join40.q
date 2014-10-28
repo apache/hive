@@ -1,5 +1,7 @@
 set hive.join.cache.size=1;
 
+-- SORT_QUERY_RESULTS
+
 EXPLAIN SELECT x.key, x.value, y.key, y.value
 FROM src x left outer JOIN (select * from src where key <= 100) y ON (x.key = y.key);
 
