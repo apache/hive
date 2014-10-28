@@ -27,6 +27,10 @@ public abstract class BaseCharTypeInfo extends PrimitiveTypeInfo {
   public BaseCharTypeInfo() {
   }
 
+  public BaseCharTypeInfo(String typeName) {
+    super(typeName);
+  }
+
   public BaseCharTypeInfo(String typeName, int length) {
     super(typeName);
     this.length = length;
@@ -53,4 +57,9 @@ public abstract class BaseCharTypeInfo extends PrimitiveTypeInfo {
     return sb.toString();
   }
 
+  @Override
+  public void setTypeName(String typeName) {
+    // type name should already be set by subclass
+    return;
+  }
 }
