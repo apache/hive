@@ -2119,7 +2119,7 @@ public class HiveConf extends Configuration {
 
   public static TimeUnit unitFor(String unit, TimeUnit defaultUnit) {
     unit = unit.trim().toLowerCase();
-    if (unit.isEmpty()) {
+    if (unit.isEmpty() || unit.equals("l")) {
       if (defaultUnit == null) {
         throw new IllegalArgumentException("Time unit is not specified");
       }
