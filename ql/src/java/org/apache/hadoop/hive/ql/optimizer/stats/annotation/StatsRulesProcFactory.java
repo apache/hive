@@ -150,28 +150,28 @@ public class StatsRulesProcFactory {
       Statistics parentStats = parent.getStatistics();
       AnnotateStatsProcCtx aspCtx = (AnnotateStatsProcCtx) procCtx;
       HiveConf conf = aspCtx.getConf();
+      Statistics stats = null;
 
-      // SELECT (*) does not change the statistics. Just pass on the parent statistics
-      if (sop.getConf().isSelectStar()) {
+      if (parentStats != null) {
         try {
-          if (parentStats != null) {
-            sop.setStatistics(parentStats.clone());
-          }
+          stats = parentStats.clone();
         } catch (CloneNotSupportedException e) {
           throw new SemanticException(ErrorMsg.STATISTICS_CLONING_FAILED.getMsg());
         }
-        return null;
       }
 
       try {
         if (satisfyPrecondition(parentStats)) {
-          Statistics stats = parentStats.clone();
-          List<ColStatistics> colStats =
-              StatsUtils.getColStatisticsFromExprMap(conf, parentStats, sop.getColumnExprMap(),
-                  sop.getSchema());
-          long dataSize = StatsUtils.getDataSizeFromColumnStats(stats.getNumRows(), colStats);
+          // this will take care of mapping between input column names and output column names. The
+          // returned column stats will have the output column names.
+          List<ColStatistics> colStats = StatsUtils.getColStatisticsFromExprMap(conf, parentStats,
+              sop.getColumnExprMap(), sop.getSchema());
           stats.setColumnStats(colStats);
-          stats.setDataSize(setMaxIfInvalid(dataSize));
+          // in case of select(*) the data size does not change
+          if (!sop.getConf().isSelectStar() && !sop.getConf().isSelStarNoCompute()) {
+            long dataSize = StatsUtils.getDataSizeFromColumnStats(stats.getNumRows(), colStats);
+            stats.setDataSize(setMaxIfInvalid(dataSize));
+          }
           sop.setStatistics(stats);
 
           if (isDebugEnabled) {
@@ -1069,6 +1069,7 @@ public class StatsRulesProcFactory {
           numAttr = keyExprs.size();
 
           // infer PK-FK relationship in single attribute join case
+          pkfkInferred = false;
           inferPKFKRelationship();
 
           // get the join keys from parent ReduceSink operators
@@ -1183,7 +1184,6 @@ public class StatsRulesProcFactory {
           // update join statistics
           stats.setColumnStats(outColStats);
           long newRowCount = pkfkInferred ? newNumRows : computeNewRowCount(rowCounts, denom);
-
           updateStatsForJoinType(stats, newRowCount, jop, rowCountParents,outInTabAlias);
           jop.setStatistics(stats);
 
@@ -1257,7 +1257,8 @@ public class StatsRulesProcFactory {
             for (Float selectivity : parentsSel) {
               prodSelectivity *= selectivity;
             }
-            newNumRows = (long) (parentWithFK.getStatistics().getNumRows() * prodSelectivity);
+            newNumRows = (long) Math.ceil(
+                parentWithFK.getStatistics().getNumRows() * prodSelectivity);
             pkfkInferred = true;
 
             // some debug information
@@ -1436,7 +1437,7 @@ public class StatsRulesProcFactory {
         Map<String, Long> rowCountParents,
         Map<String, String> outInTabAlias) {
 
-      if (newNumRows <= 0) {
+      if (newNumRows < 0) {
         LOG.info("STATS-" + jop.toString() + ": Overflow in number of rows."
           + newNumRows + " rows will be set to Long.MAX_VALUE");
       }
@@ -1711,6 +1712,8 @@ public class StatsRulesProcFactory {
         Object... nodeOutputs) throws SemanticException {
       Operator<? extends OperatorDesc> op = (Operator<? extends OperatorDesc>) nd;
       OperatorDesc conf = op.getConf();
+      AnnotateStatsProcCtx aspCtx = (AnnotateStatsProcCtx) procCtx;
+      HiveConf hconf = aspCtx.getConf();
 
       if (conf != null) {
         Statistics stats = conf.getStatistics();
@@ -1727,7 +1730,9 @@ public class StatsRulesProcFactory {
                   stats.addToNumRows(parentStats.getNumRows());
                   stats.addToDataSize(parentStats.getDataSize());
                   stats.updateColumnStatsState(parentStats.getColumnStatsState());
-                  stats.addToColumnStats(parentStats.getColumnStats());
+                  List<ColStatistics> colStats = StatsUtils.getColStatisticsFromExprMap(hconf,
+                      parentStats, op.getColumnExprMap(), op.getSchema());
+                  stats.addToColumnStats(colStats);
                   op.getConf().setStatistics(stats);
 
                   if (isDebugEnabled) {
@@ -1805,7 +1810,7 @@ public class StatsRulesProcFactory {
       boolean useColStats, Operator<? extends OperatorDesc> op,
       boolean updateNDV) {
 
-    if (newNumRows <= 0) {
+    if (newNumRows < 0) {
       LOG.info("STATS-" + op.toString() + ": Overflow in number of rows."
           + newNumRows + " rows will be set to Long.MAX_VALUE");
     }
