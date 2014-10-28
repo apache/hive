@@ -391,6 +391,8 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         bucketInspector = (IntObjectInspector)bucketField.getFieldObjectInspector();
       }
 
+      numRows = 0;
+
       String context = jc.get(Operator.CONTEXT_NAME_KEY, "");
       if (context != null && !context.isEmpty()) {
         context = "_" + context.replace(" ","_");
