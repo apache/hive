@@ -143,4 +143,8 @@ public class OperatorUtils {
       }
     }
   }
+
+  public static boolean sameRowSchema(Operator<?> operator1, Operator<?> operator2) {
+	  return operator1.getSchema().equals(operator2.getSchema());
+  }
 }

@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 /**
  * RowSchema Implementation.
@@ -46,6 +47,51 @@ public class RowSchema implements Serializable {
 
   public ArrayList<ColumnInfo> getSignature() {
     return signature;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (!(obj instanceof RowSchema) || (obj == null)) {
+      return false;
+    }
+    if(this == obj) {
+      return true;
+    }
+
+    RowSchema dest = (RowSchema)obj;
+    if(this.signature == null && dest.getSignature() == null) {
+      return true;
+    }
+    if((this.signature == null && dest.getSignature() != null) ||
+        (this.signature != null && dest.getSignature() == null) ) {
+      return false;
+    }
+
+    if(this.signature.size() != dest.getSignature().size()) {
+      return false;
+    }
+
+    Iterator<ColumnInfo> origIt = this.signature.iterator();
+    Iterator<ColumnInfo> destIt = dest.getSignature().iterator();
+    while(origIt.hasNext()) {
+      ColumnInfo origColumn = origIt.next();
+      ColumnInfo destColumn = destIt.next();
+
+      if(origColumn == null && destColumn == null) {
+        continue;
+      }
+
+      if((origColumn == null && destColumn != null) ||
+          (origColumn != null && destColumn == null) ) {
+        return false;
+      }
+
+      if(!origColumn.equals(destColumn)) {
+        return false;
+      }
+    }
+
+    return true;
   }
 
   @Override

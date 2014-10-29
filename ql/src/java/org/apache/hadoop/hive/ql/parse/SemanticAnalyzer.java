@@ -93,6 +93,7 @@ import org.apache.hadoop.hive.ql.exec.RecordWriter;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.SMBMapJoinOperator;
+import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
@@ -9053,38 +9054,65 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       rightOp = genInputSelectForUnion(rightOp, rightmap, rightalias, unionoutRR, unionalias);
     }
 
-    // If one of the children is a union, merge with it
+    // If one of the children (left or right) is:
+    // (i) a union, or
+    // (ii) an identity projection followed by a union,
+    // merge with it
     // else create a new one
-    if ((leftOp instanceof UnionOperator) || (rightOp instanceof UnionOperator)) {
-      if (leftOp instanceof UnionOperator) {
-        // make left a child of right
-        List<Operator<? extends OperatorDesc>> child =
-            new ArrayList<Operator<? extends OperatorDesc>>();
-        child.add(leftOp);
-        rightOp.setChildOperators(child);
+    if (leftOp instanceof UnionOperator ||
+        (leftOp instanceof SelectOperator &&
+         leftOp.getParentOperators() != null &&
+         !leftOp.getParentOperators().isEmpty() &&
+         leftOp.getParentOperators().get(0) instanceof UnionOperator &&
+         ((SelectOperator)leftOp).isIdentitySelect()) ) {
 
-        List<Operator<? extends OperatorDesc>> parent = leftOp
-            .getParentOperators();
-        parent.add(rightOp);
-
-        UnionDesc uDesc = ((UnionOperator) leftOp).getConf();
-        uDesc.setNumInputs(uDesc.getNumInputs() + 1);
-        return putOpInsertMap(leftOp, unionoutRR);
-      } else {
-        // make right a child of left
-        List<Operator<? extends OperatorDesc>> child =
-            new ArrayList<Operator<? extends OperatorDesc>>();
-        child.add(rightOp);
-        leftOp.setChildOperators(child);
-
-        List<Operator<? extends OperatorDesc>> parent = rightOp
-            .getParentOperators();
-        parent.add(leftOp);
-        UnionDesc uDesc = ((UnionOperator) rightOp).getConf();
-        uDesc.setNumInputs(uDesc.getNumInputs() + 1);
-
-        return putOpInsertMap(rightOp, unionoutRR);
+      if(!(leftOp instanceof UnionOperator)) {
+        Operator oldChild = leftOp;
+        leftOp = (Operator) leftOp.getParentOperators().get(0);
+        leftOp.removeChildAndAdoptItsChildren(oldChild);
       }
+
+      // make left a child of right
+      List<Operator<? extends OperatorDesc>> child =
+          new ArrayList<Operator<? extends OperatorDesc>>();
+      child.add(leftOp);
+      rightOp.setChildOperators(child);
+
+      List<Operator<? extends OperatorDesc>> parent = leftOp
+          .getParentOperators();
+      parent.add(rightOp);
+
+      UnionDesc uDesc = ((UnionOperator) leftOp).getConf();
+      uDesc.setNumInputs(uDesc.getNumInputs() + 1);
+      return putOpInsertMap(leftOp, unionoutRR);
+    }
+
+    if (rightOp instanceof UnionOperator ||
+        (rightOp instanceof SelectOperator &&
+         rightOp.getParentOperators() != null &&
+         !rightOp.getParentOperators().isEmpty() &&
+         rightOp.getParentOperators().get(0) instanceof UnionOperator &&
+         ((SelectOperator)rightOp).isIdentitySelect()) ) {
+
+      if(!(rightOp instanceof UnionOperator)) {
+        Operator oldChild = rightOp;
+        rightOp = (Operator) rightOp.getParentOperators().get(0);
+        rightOp.removeChildAndAdoptItsChildren(oldChild);
+      }
+
+      // make right a child of left
+      List<Operator<? extends OperatorDesc>> child =
+          new ArrayList<Operator<? extends OperatorDesc>>();
+      child.add(rightOp);
+      leftOp.setChildOperators(child);
+
+      List<Operator<? extends OperatorDesc>> parent = rightOp
+          .getParentOperators();
+      parent.add(leftOp);
+      UnionDesc uDesc = ((UnionOperator) rightOp).getConf();
+      uDesc.setNumInputs(uDesc.getNumInputs() + 1);
+
+      return putOpInsertMap(rightOp, unionoutRR);
     }
 
     // Create a new union operator
