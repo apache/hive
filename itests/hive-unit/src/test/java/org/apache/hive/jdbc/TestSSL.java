@@ -21,6 +21,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import java.io.File;
+import java.net.URLEncoder;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -55,8 +56,8 @@ public class TestSSL {
   private Connection hs2Conn = null;
   private String dataFileDir = conf.get("test.data.files");
   private Map<String, String> confOverlay;
-  private final String SSL_CONN_PARAMS = ";ssl=true;sslTrustStore=" + dataFileDir + File.separator +
-      TRUST_STORE_NAME + ";trustStorePassword=" + KEY_STORE_PASSWORD;
+  private final String SSL_CONN_PARAMS = ";ssl=true;sslTrustStore=" + URLEncoder.encode(dataFileDir + File.separator +
+      TRUST_STORE_NAME) + ";trustStorePassword=" + KEY_STORE_PASSWORD;
 
   @BeforeClass
   public static void beforeTest() throws Exception {
