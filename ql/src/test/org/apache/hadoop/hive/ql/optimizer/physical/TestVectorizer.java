@@ -45,13 +45,14 @@ public class TestVectorizer {
 
   @Before
   public void setUp() {
-    Map<String, Integer> columnMap = new HashMap<String, Integer>();
-    columnMap.put("col1", 0);
-    columnMap.put("col2", 1);
-    columnMap.put("col3", 2);
+    List<String> columns = new ArrayList<String>();
+    columns.add("col0");
+    columns.add("col1");
+    columns.add("col2");
+    columns.add("col3");
 
     //Generate vectorized expression
-    vContext = new VectorizationContext(columnMap, 3);
+    vContext = new VectorizationContext(columns);
   }
 
   @Description(name = "fake", value = "FAKE")

@@ -429,20 +429,20 @@ public final class Utilities {
     }
   }
 
-  public static Map<String, Map<Integer, String>> getScratchColumnVectorTypes(Configuration hiveConf) {
+  public static Map<String, Map<Integer, String>> getAllScratchColumnVectorTypeMaps(Configuration hiveConf) {
     BaseWork baseWork = getMapWork(hiveConf);
     if (baseWork == null) {
       baseWork = getReduceWork(hiveConf);
     }
-    return baseWork.getScratchColumnVectorTypes();
+    return baseWork.getAllScratchColumnVectorTypeMaps();
   }
 
-  public static Map<String, Map<String, Integer>> getScratchColumnMap(Configuration hiveConf) {
+  public static Map<String, Map<String, Integer>> getAllColumnVectorMaps(Configuration hiveConf) {
     BaseWork baseWork = getMapWork(hiveConf);
     if (baseWork == null) {
       baseWork = getReduceWork(hiveConf);
     }
-    return baseWork.getScratchColumnMap();
+    return baseWork.getAllColumnVectorMaps();
   }
 
   public static void setWorkflowAdjacencies(Configuration conf, QueryPlan plan) {

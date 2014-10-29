@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriterF
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 
 /**
@@ -50,10 +51,22 @@ public class VectorFileSinkOperator extends FileSinkOperator {
 
   @Override
   protected void initializeOp(Configuration hconf) throws HiveException {
-    super.initializeOp(hconf);
-    valueWriters = VectorExpressionWriterFactory.getExpressionWriters(
-        (StructObjectInspector) inputObjInspectors[0]);
+    // We need a input object inspector that is for the row we will extract out of the
+    // vectorized row batch, not for example, an original inspector for an ORC table, etc.
+    VectorExpressionWriterFactory.processVectorInspector(
+            (StructObjectInspector) inputObjInspectors[0],
+            new VectorExpressionWriterFactory.SingleOIDClosure() {
+              @Override
+              public void assign(VectorExpressionWriter[] writers,
+                  ObjectInspector objectInspector) {
+                valueWriters = writers;
+                inputObjInspectors[0] = objectInspector;
+              }
+            });
     singleRow = new Object[valueWriters.length];
+
+    // Call FileSinkOperator with new input inspector.
+    super.initializeOp(hconf);
   }
 
   @Override
