@@ -272,8 +272,9 @@ public class HiveConf extends Configuration {
     DYNAMICPARTITIONING("hive.exec.dynamic.partition", true,
         "Whether or not to allow dynamic partitions in DML/DDL."),
     DYNAMICPARTITIONINGMODE("hive.exec.dynamic.partition.mode", "strict",
-        "In strict mode, the user must specify at least one static partition \n" +
-        "in case the user accidentally overwrites all partitions."),
+        "In strict mode, the user must specify at least one static partition\n" +
+        "in case the user accidentally overwrites all partitions.\n" +
+        "In nonstrict mode all partitions are allowed to be dynamic."),
     DYNAMICPARTITIONMAXPARTS("hive.exec.max.dynamic.partitions", 1000,
         "Maximum number of dynamic partitions allowed to be created in total."),
     DYNAMICPARTITIONMAXPARTSPERNODE("hive.exec.max.dynamic.partitions.pernode", 100,
@@ -492,20 +493,33 @@ public class HiveConf extends Configuration {
         "However, it doesn't work correctly with integral values that are not normalized (e.g. have\n" +
         "leading zeroes, like 0012). If metastore direct SQL is enabled and works, this optimization\n" +
         "is also irrelevant."),
-    METASTORE_TRY_DIRECT_SQL("hive.metastore.try.direct.sql", true, ""),
-    METASTORE_TRY_DIRECT_SQL_DDL("hive.metastore.try.direct.sql.ddl", true, ""),
+    METASTORE_TRY_DIRECT_SQL("hive.metastore.try.direct.sql", true,
+        "Whether the Hive metastore should try to use direct SQL queries instead of the\n" +
+        "DataNucleus for certain read paths. This can improve metastore performance when\n" +
+        "fetching many partitions or column statistics by orders of magnitude; however, it\n" +
+        "is not guaranteed to work on all RDBMS-es and all versions. In case of SQL failures,\n" +
+        "the metastore will fall back to the DataNucleus, so it's safe even if SQL doesn't\n" +
+        "work for all queries on your datastore. If all SQL queries fail (for example, your\n" +
+        "metastore is backed by MongoDB), you might want to disable this to save the\n" +
+        "try-and-fall-back cost."),
+    METASTORE_TRY_DIRECT_SQL_DDL("hive.metastore.try.direct.sql.ddl", true,
+        "Same as hive.metastore.try.direct.sql, for read statements within a transaction that\n" +
+        "modifies metastore data. Due to non-standard behavior in Postgres, if a direct SQL\n" +
+        "select query has incorrect syntax or something similar inside a transaction, the\n" +
+        "entire transaction will fail and fall-back to DataNucleus will not be possible. You\n" +
+        "should disable the usage of direct SQL inside transactions if that happens in your case."),
     METASTORE_DISALLOW_INCOMPATIBLE_COL_TYPE_CHANGES(
         "hive.metastore.disallow.incompatible.col.type.changes", false,
-        "If true (default is false), ALTER TABLE operations which change the type of \n" +
-        "a column (say STRING) to an incompatible type (say MAP<STRING, STRING>) are disallowed.  \n" +
+        "If true (default is false), ALTER TABLE operations which change the type of a\n" +
+        "column (say STRING) to an incompatible type (say MAP) are disallowed.\n" +
         "RCFile default SerDe (ColumnarSerDe) serializes the values in such a way that the\n" +
         "datatypes can be converted from string to any type. The map is also serialized as\n" +
-        "a string, which can be read as a string as well. However, with any binary \n" +
+        "a string, which can be read as a string as well. However, with any binary\n" +
         "serialization, this is not true. Blocking the ALTER TABLE prevents ClassCastExceptions\n" +
-        "when subsequently trying to access old partitions. \n" +
+        "when subsequently trying to access old partitions.\n" +
         "\n" +
-        "Primitive types like INT, STRING, BIGINT, etc are compatible with each other and are \n" +
-        "not blocked.  \n" +
+        "Primitive types like INT, STRING, BIGINT, etc., are compatible with each other and are\n" +
+        "not blocked.\n" +
         "\n" +
         "See HIVE-4409 for more details."),
 
@@ -578,8 +592,10 @@ public class HiveConf extends Configuration {
     HIVEJOBNAMELENGTH("hive.jobname.length", 50, "max jobname length"),
 
     // hive jar
-    HIVEJAR("hive.jar.path", "", ""),
-    HIVEAUXJARS("hive.aux.jars.path", "", ""),
+    HIVEJAR("hive.jar.path", "",
+        "The location of hive_cli.jar that is used when submitting jobs in a separate jvm."),
+    HIVEAUXJARS("hive.aux.jars.path", "",
+        "The location of the plugin jars that contain implementations of user defined functions and serdes."),
 
     // reloadable jars
     HIVERELOADABLEJARS("hive.reloadable.aux.jars.path", "",
@@ -587,9 +603,9 @@ public class HiveConf extends Configuration {
             + "used as the auxiliary classes like creating a UDF or SerDe."),
 
     // hive added files and jars
-    HIVEADDEDFILES("hive.added.files.path", "", ""),
-    HIVEADDEDJARS("hive.added.jars.path", "", ""),
-    HIVEADDEDARCHIVES("hive.added.archives.path", "", ""),
+    HIVEADDEDFILES("hive.added.files.path", "", "This an internal parameter."),
+    HIVEADDEDJARS("hive.added.jars.path", "", "This an internal parameter."),
+    HIVEADDEDARCHIVES("hive.added.archives.path", "", "This an internal parameter."),
 
     HIVE_CURRENT_DATABASE("hive.current.database", "", "Database name used by current session. Internal usage only.", true),
 
@@ -812,10 +828,10 @@ public class HiveConf extends Configuration {
         "if hive.merge.mapfiles is true, and for map-reduce jobs if hive.merge.mapredfiles is true."),
     HIVEMERGERCFILEBLOCKLEVEL("hive.merge.rcfile.block.level", true, ""),
     HIVEMERGEORCFILESTRIPELEVEL("hive.merge.orcfile.stripe.level", true,
-        "When hive.merge.mapfiles or hive.merge.mapredfiles is enabled while writing a\n" +
-        " table with ORC file format, enabling this config will do stripe level fast merge\n" +
-        " for small ORC files. Note that enabling this config will not honor padding tolerance\n" +
-        " config (hive.exec.orc.block.padding.tolerance)."),
+        "When hive.merge.mapfiles, hive.merge.mapredfiles or hive.merge.tezfiles is enabled\n" +
+        "while writing a table with ORC file format, enabling this config will do stripe-level\n" +
+        "fast merge for small ORC files. Note that enabling this config will not honor the\n" +
+        "padding tolerance config (hive.exec.orc.block.padding.tolerance)."),
 
     HIVEUSEEXPLICITRCFILEHEADER("hive.exec.rcfile.use.explicit.header", true,
         "If this is set the header for RCFiles will simply be RCF.  If this is not\n" +
@@ -831,28 +847,37 @@ public class HiveConf extends Configuration {
     HIVE_ORC_FILE_MEMORY_POOL("hive.exec.orc.memory.pool", 0.5f,
         "Maximum fraction of heap that can be used by ORC file writers"),
     HIVE_ORC_WRITE_FORMAT("hive.exec.orc.write.format", null,
-        "Define the version of the file to write"),
+        "Define the version of the file to write. Possible values are 0.11 and 0.12.\n" +
+        "If this parameter is not defined, ORC will use the run length encoding (RLE)\n" +
+        "introduced in Hive 0.12. Any value other than 0.11 results in the 0.12 encoding."),
     HIVE_ORC_DEFAULT_STRIPE_SIZE("hive.exec.orc.default.stripe.size",
         64L * 1024 * 1024,
-        "Define the default ORC stripe size"),
+        "Define the default ORC stripe size, in bytes."),
     HIVE_ORC_DEFAULT_BLOCK_SIZE("hive.exec.orc.default.block.size", 256L * 1024 * 1024,
         "Define the default file system block size for ORC files."),
 
     HIVE_ORC_DICTIONARY_KEY_SIZE_THRESHOLD("hive.exec.orc.dictionary.key.size.threshold", 0.8f,
         "If the number of keys in a dictionary is greater than this fraction of the total number of\n" +
         "non-null rows, turn off dictionary encoding.  Use 1 to always use dictionary encoding."),
-    HIVE_ORC_DEFAULT_ROW_INDEX_STRIDE("hive.exec.orc.default.row.index.stride", 10000, "Define the default ORC index stride"),
+    HIVE_ORC_DEFAULT_ROW_INDEX_STRIDE("hive.exec.orc.default.row.index.stride", 10000,
+        "Define the default ORC index stride in number of rows. (Stride is the number of rows\n" +
+        "an index entry represents.)"),
     HIVE_ORC_ROW_INDEX_STRIDE_DICTIONARY_CHECK("hive.orc.row.index.stride.dictionary.check", true,
         "If enabled dictionary check will happen after first row index stride (default 10000 rows)\n" +
         "else dictionary check will happen before writing first stripe. In both cases, the decision\n" +
         "to use dictionary or not will be retained thereafter."),
-    HIVE_ORC_DEFAULT_BUFFER_SIZE("hive.exec.orc.default.buffer.size", 256 * 1024, "Define the default ORC buffer size"),
-    HIVE_ORC_DEFAULT_BLOCK_PADDING("hive.exec.orc.default.block.padding", true, "Define the default block padding"),
+    HIVE_ORC_DEFAULT_BUFFER_SIZE("hive.exec.orc.default.buffer.size", 256 * 1024,
+        "Define the default ORC buffer size, in bytes."),
+    HIVE_ORC_DEFAULT_BLOCK_PADDING("hive.exec.orc.default.block.padding", true,
+        "Define the default block padding, which pads stripes to the HDFS block boundaries."),
     HIVE_ORC_BLOCK_PADDING_TOLERANCE("hive.exec.orc.block.padding.tolerance", 0.05f,
-        "Define the tolerance for block padding as a percentage of stripe size.\n" +
-        "For the defaults of 64Mb ORC stripe and 256Mb HDFS blocks, a maximum of 3.2Mb will be reserved for padding within the 256Mb block. \n" +
-        "In that case, if the available size within the block is more than 3.2Mb, a new smaller stripe will be inserted to fit within that space. \n" +
-        "This will make sure that no stripe written will cross block boundaries and cause remote reads within a node local task."),
+        "Define the tolerance for block padding as a decimal fraction of stripe size (for\n" +
+        "example, the default value 0.05 is 5% of the stripe size). For the defaults of 64Mb\n" +
+        "ORC stripe and 256Mb HDFS blocks, the default block padding tolerance of 5% will\n" +
+        "reserve a maximum of 3.2Mb for padding within the 256Mb block. In that case, if the\n" +
+        "available size within the block is more than 3.2Mb, a new smaller stripe will be\n" +
+        "inserted to fit within that space. This will make sure that no stripe written will\n" +
+        "cross block boundaries and cause remote reads within a node local task."),
     HIVE_ORC_DEFAULT_COMPRESS("hive.exec.orc.default.compress", "ZLIB", "Define the default compression codec for ORC file"),
 
     HIVE_ORC_ENCODING_STRATEGY("hive.exec.orc.encoding.strategy", "SPEED", new StringSet("SPEED", "COMPRESSION"),
@@ -875,7 +900,8 @@ public class HiveConf extends Configuration {
         "If ORC reader encounters corrupt data, this value will be used to determine\n" +
         "whether to skip the corrupt data or throw exception. The default behavior is to throw exception."),
 
-    HIVE_ORC_ZEROCOPY("hive.exec.orc.zerocopy", false, "Use zerocopy reads with ORC."),
+    HIVE_ORC_ZEROCOPY("hive.exec.orc.zerocopy", false,
+        "Use zerocopy reads with ORC. (This requires Hadoop 2.3 or later.)"),
 
     HIVE_LAZYSIMPLE_EXTENDED_BOOLEAN_LITERAL("hive.lazysimple.extended_boolean_literal", false,
         "LazySimpleSerde uses this property to determine if it treats 'T', 't', 'F', 'f',\n" +
@@ -961,8 +987,8 @@ public class HiveConf extends Configuration {
     HIVETEZCONTAINERSIZE("hive.tez.container.size", -1,
         "By default Tez will spawn containers of the size of a mapper. This can be used to overwrite."),
     HIVETEZCPUVCORES("hive.tez.cpu.vcores", -1,
-        "By default Tez will ask for however many cpus map-reduce is configured to use per container. "
-        +"This can be used to overwrite."),
+        "By default Tez will ask for however many cpus map-reduce is configured to use per container.\n" +
+        "This can be used to overwrite."),
     HIVETEZJAVAOPTS("hive.tez.java.opts", null,
         "By default Tez will use the Java options from map tasks. This can be used to overwrite."),
     HIVETEZLOGLEVEL("hive.tez.log.level", "INFO",
@@ -1112,8 +1138,10 @@ public class HiveConf extends Configuration {
     HIVESTATSAUTOGATHER("hive.stats.autogather", true,
         "A flag to gather statistics automatically during the INSERT OVERWRITE command."),
     HIVESTATSDBCLASS("hive.stats.dbclass", "fs", new PatternSet("jdbc(:.*)", "hbase", "counter", "custom", "fs"),
-        "The storage that stores temporary Hive statistics. Currently, jdbc, hbase, counter and custom type are supported."
-    ), // StatsSetupConst.StatDB
+        "The storage that stores temporary Hive statistics. In filesystem based statistics collection ('fs'), \n" +
+        "each task writes statistics it has collected in a file on the filesystem, which will be aggregated \n" +
+        "after the job has finished. Supported values are fs (filesystem), jdbc:database (where database \n" +
+        "can be derby, mysql, etc.), hbase, counter, and custom as defined in StatsSetupConst.java."), // StatsSetupConst.StatDB
     HIVESTATSJDBCDRIVER("hive.stats.jdbcdriver",
         "org.apache.derby.jdbc.EmbeddedDriver",
         "The JDBC driver for the database that stores temporary Hive statistics."),
@@ -1251,8 +1279,8 @@ public class HiveConf extends Configuration {
         "org.apache.hadoop.hive.ql.lockmgr.zookeeper.ZooKeeperHiveLockManager, " +
         "2. When HiveServer2 supports service discovery via Zookeeper."),
     HIVE_ZOOKEEPER_CLIENT_PORT("hive.zookeeper.client.port", "2181",
-        "The port of ZooKeeper servers to talk to. " +
-        "If the list of Zookeeper servers specified in hive.zookeeper.quorum," +
+        "The port of ZooKeeper servers to talk to.\n" +
+        "If the list of Zookeeper servers specified in hive.zookeeper.quorum\n" +
         "does not contain port numbers, this value is used."),
     HIVE_ZOOKEEPER_SESSION_TIMEOUT("hive.zookeeper.session.timeout", 600*1000,
         "ZooKeeper client's session timeout. The client is disconnected, and as a result, all locks released, \n" +
@@ -1264,42 +1292,69 @@ public class HiveConf extends Configuration {
 
     // Transactions
     HIVE_TXN_MANAGER("hive.txn.manager",
-        "org.apache.hadoop.hive.ql.lockmgr.DummyTxnManager", ""),
+        "org.apache.hadoop.hive.ql.lockmgr.DummyTxnManager",
+        "Set to org.apache.hadoop.hive.ql.lockmgr.DbTxnManager as part of turning on Hive\n" +
+        "transactions, which also requires appropriate settings for hive.compactor.initiator.on,\n" +
+        "hive.compactor.worker.threads, hive.support.concurrency (true), hive.enforce.bucketing\n" +
+        "(true), and hive.exec.dynamic.partition.mode (nonstrict).\n" +
+        "The default DummyTxnManager replicates pre-Hive-0.13 behavior and provides\n" +
+        "no transactions."),
     HIVE_TXN_TIMEOUT("hive.txn.timeout", "300s", new TimeValidator(TimeUnit.SECONDS),
         "time after which transactions are declared aborted if the client has not sent a heartbeat."),
 
     HIVE_TXN_MAX_OPEN_BATCH("hive.txn.max.open.batch", 1000,
         "Maximum number of transactions that can be fetched in one call to open_txns().\n" +
-        "Increasing this will decrease the number of delta files created when\n" +
-        "streaming data into Hive.  But it will also increase the number of\n" +
-        "open transactions at any given time, possibly impacting read performance."),
+        "This controls how many transactions streaming agents such as Flume or Storm open\n" +
+        "simultaneously. The streaming agent then writes that number of entries into a single\n" +
+        "file (per Flume agent or Storm bolt). Thus increasing this value decreases the number\n" +
+        "of delta files created by streaming agents. But it also increases the number of open\n" +
+        "transactions that Hive has to track at any given time, which may negatively affect\n" +
+        "read performance."),
 
     HIVE_COMPACTOR_INITIATOR_ON("hive.compactor.initiator.on", false,
-        "Whether to run the compactor's initiator thread in this metastore instance or not."),
+        "Whether to run the initiator and cleaner threads on this metastore instance or not.\n" +
+        "Set this to true on one instance of the Thrift metastore service as part of turning\n" +
+        "on Hive transactions. For a complete list of parameters required for turning on\n" +
+        "transactions, see hive.txn.manager."),
 
     HIVE_COMPACTOR_WORKER_THREADS("hive.compactor.worker.threads", 0,
-        "Number of compactor worker threads to run on this metastore instance."),
+        "How many compactor worker threads to run on this metastore instance. Set this to a\n" +
+        "positive number on one or more instances of the Thrift metastore service as part of\n" +
+        "turning on Hive transactions. For a complete list of parameters required for turning\n" +
+        "on transactions, see hive.txn.manager.\n" +
+        "Worker threads spawn MapReduce jobs to do compactions. They do not do the compactions\n" +
+        "themselves. Increasing the number of worker threads will decrease the time it takes\n" +
+        "tables or partitions to be compacted once they are determined to need compaction.\n" +
+        "It will also increase the background load on the Hadoop cluster as more MapReduce jobs\n" +
+        "will be running in the background."),
 
     HIVE_COMPACTOR_WORKER_TIMEOUT("hive.compactor.worker.timeout", "86400s",
         new TimeValidator(TimeUnit.SECONDS),
-        "Time before a given compaction in working state is declared a failure\n" +
-        "and returned to the initiated state."),
+        "Time in seconds after which a compaction job will be declared failed and the\n" +
+        "compaction re-queued."),
 
     HIVE_COMPACTOR_CHECK_INTERVAL("hive.compactor.check.interval", "300s",
         new TimeValidator(TimeUnit.SECONDS),
-        "Time between checks to see if any partitions need compacted.\n" +
-        "This should be kept high because each check for compaction requires many calls against the NameNode."),
+        "Time in seconds between checks to see if any tables or partitions need to be\n" +
+        "compacted. This should be kept high because each check for compaction requires\n" +
+        "many calls against the NameNode.\n" +
+        "Decreasing this value will reduce the time it takes for compaction to be started\n" +
+        "for a table or partition that requires compaction. However, checking if compaction\n" +
+        "is needed requires several calls to the NameNode for each table or partition that\n" +
+        "has had a transaction done on it since the last major compaction. So decreasing this\n" +
+        "value will increase the load on the NameNode."),
 
     HIVE_COMPACTOR_DELTA_NUM_THRESHOLD("hive.compactor.delta.num.threshold", 10,
-        "Number of delta files that must exist in a directory before the compactor will attempt\n" +
-        "a minor compaction."),
+        "Number of delta directories in a table or partition that will trigger a minor\n" +
+        "compaction."),
 
     HIVE_COMPACTOR_DELTA_PCT_THRESHOLD("hive.compactor.delta.pct.threshold", 0.1f,
-        "Percentage (by size) of base that deltas can be before major compaction is initiated."),
+        "Percentage (fractional) size of the delta files relative to the base that will trigger\n" +
+        "a major compaction. (1.0 = 100%, so the default 0.1 = 10%.)"),
 
     HIVE_COMPACTOR_ABORTEDTXN_THRESHOLD("hive.compactor.abortedtxn.threshold", 1000,
-        "Number of aborted transactions involving a particular table or partition before major\n" +
-        "compaction is initiated."),
+        "Number of aborted transactions involving a given table or partition that will trigger\n" +
+        "a major compaction."),
 
     HIVE_COMPACTOR_CLEANER_RUN_INTERVAL("hive.compactor.cleaner.run.interval", "5000ms",
         new TimeValidator(TimeUnit.MILLISECONDS), "Time between runs of the cleaner thread"),
@@ -1350,7 +1405,12 @@ public class HiveConf extends Configuration {
         "The SerDe used by FetchTask to serialize the fetch output."),
 
     HIVEEXPREVALUATIONCACHE("hive.cache.expr.evaluation", true,
-        "If true, evaluation result of deterministic expression referenced twice or more will be cached."),
+        "If true, the evaluation result of a deterministic expression referenced twice or more\n" +
+        "will be cached.\n" +
+        "For example, in a filter condition like '.. where key + 10 = 100 or key + 10 = 0'\n" +
+        "the expression 'key + 10' will be evaluated/cached once and reused for the following\n" +
+        "expression ('key + 10 = 0'). Currently, this is applied only to expressions in select\n" +
+        "or filter operators."),
 
     // Hive Variables
     HIVEVARIABLESUBSTITUTE("hive.variable.substitute", true,
@@ -1376,9 +1436,11 @@ public class HiveConf extends Configuration {
         "interface org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider."),
     HIVE_METASTORE_AUTHORIZATION_MANAGER("hive.security.metastore.authorization.manager",
         "org.apache.hadoop.hive.ql.security.authorization.DefaultHiveMetastoreAuthorizationProvider",
-        "authorization manager class name to be used in the metastore for authorization.\n" +
-        "The user defined authorization class should implement interface \n" +
-        "org.apache.hadoop.hive.ql.security.authorization.HiveMetastoreAuthorizationProvider. "),
+        "Names of authorization manager classes (comma separated) to be used in the metastore\n" +
+        "for authorization. The user defined authorization class should implement interface\n" +
+        "org.apache.hadoop.hive.ql.security.authorization.HiveMetastoreAuthorizationProvider.\n" +
+        "All authorization manager classes have to successfully authorize the metastore API\n" +
+        "call for the command execution to be allowed."),
     HIVE_METASTORE_AUTHORIZATION_AUTH_READS("hive.security.metastore.authorization.auth.reads", true,
         "If this is true, metastore authorizer authorizes read actions on database, table"),
     HIVE_METASTORE_AUTHENTICATOR_MANAGER("hive.security.metastore.authenticator.manager",
@@ -1398,9 +1460,12 @@ public class HiveConf extends Configuration {
         "the privileges automatically granted to some roles whenever a table gets created.\n" +
         "An example like \"roleX,roleY:select;roleZ:create\" will grant select privilege to roleX and roleY,\n" +
         "and grant create privilege to roleZ whenever a new table created."),
-    HIVE_AUTHORIZATION_TABLE_OWNER_GRANTS("hive.security.authorization.createtable.owner.grants", "",
-        "the privileges automatically granted to the owner whenever a table gets created.\n" +
-        "An example like \"select,drop\" will grant select and drop privilege to the owner of the table"),
+    HIVE_AUTHORIZATION_TABLE_OWNER_GRANTS("hive.security.authorization.createtable.owner.grants",
+        "",
+        "The privileges automatically granted to the owner whenever a table gets created.\n" +
+        "An example like \"select,drop\" will grant select and drop privilege to the owner\n" +
+        "of the table. Note that the default gives the creator of a table no access to the\n" +
+        "table (but see HIVE-8067)."),
 
     // if this is not set default value is set during config initialization
     // Default value can't be set in this constructor as it would refer names in other ConfVars
@@ -1553,12 +1618,13 @@ public class HiveConf extends Configuration {
     // binary transport settings
     HIVE_SERVER2_THRIFT_PORT("hive.server2.thrift.port", 10000,
         "Port number of HiveServer2 Thrift interface when hive.server2.transport.mode is 'binary'."),
-    // hadoop.rpc.protection being set to a higher level than HiveServer2
-    // does not make sense in most situations.
-    // HiveServer2 ignores hadoop.rpc.protection in favor of hive.server2.thrift.sasl.qop.
-    HIVE_SERVER2_THRIFT_SASL_QOP("hive.server2.thrift.sasl.qop", "auth", new StringSet("auth", "auth-int", "auth-conf"),
-        "Sasl QOP value; Set it to one of following values to enable higher levels of\n" +
-        " protection for HiveServer2 communication with clients.\n" +
+    HIVE_SERVER2_THRIFT_SASL_QOP("hive.server2.thrift.sasl.qop", "auth",
+        new StringSet("auth", "auth-int", "auth-conf"),
+        "Sasl QOP value; set it to one of following values to enable higher levels of\n" +
+        "protection for HiveServer2 communication with clients.\n" +
+        "Setting hadoop.rpc.protection to a higher level than HiveServer2 does not\n" +
+        "make sense in most situations. HiveServer2 ignores hadoop.rpc.protection in favor\n" +
+        "of hive.server2.thrift.sasl.qop.\n" +
         "  \"auth\" - authentication only (default)\n" +
         "  \"auth-int\" - authentication plus integrity protection\n" +
         "  \"auth-conf\" - authentication plus integrity and confidentiality protection\n" +
@@ -1576,7 +1642,7 @@ public class HiveConf extends Configuration {
         "Number of threads in the async thread pool for HiveServer2"),
     HIVE_SERVER2_ASYNC_EXEC_SHUTDOWN_TIMEOUT("hive.server2.async.exec.shutdown.timeout", "10s",
         new TimeValidator(TimeUnit.SECONDS),
-        "Maximum time for which HiveServer2 shutdown will wait for async"),
+        "How long HiveServer2 shutdown will wait for async threads to terminate."),
     HIVE_SERVER2_ASYNC_EXEC_WAIT_QUEUE_SIZE("hive.server2.async.exec.wait.queue.size", 100,
         "Size of the wait queue for async thread pool in HiveServer2.\n" +
         "After hitting this limit, the async thread pool will reject new requests."),
@@ -1596,7 +1662,9 @@ public class HiveConf extends Configuration {
         "  LDAP: LDAP/AD based authentication\n" +
         "  KERBEROS: Kerberos/GSSAPI authentication\n" +
         "  CUSTOM: Custom authentication provider\n" +
-        "          (Use with property hive.server2.custom.authentication.class)"),
+        "          (Use with property hive.server2.custom.authentication.class)\n" +
+        "  PAM: Pluggable authentication module\n" +
+        "  NOSASL:  Raw transport"),
     HIVE_SERVER2_ALLOW_USER_SUBSTITUTION("hive.server2.allow.user.substitution", true,
         "Allow alternate user to be specified as part of HiveServer2 open connection request."),
     HIVE_SERVER2_KERBEROS_KEYTAB("hive.server2.authentication.kerberos.keytab", "",
@@ -1644,9 +1712,12 @@ public class HiveConf extends Configuration {
         "  HIVE : Exposes Hive's native table types like MANAGED_TABLE, EXTERNAL_TABLE, VIRTUAL_VIEW\n" +
         "  CLASSIC : More generic types like TABLE and VIEW"),
     HIVE_SERVER2_SESSION_HOOK("hive.server2.session.hook", "", ""),
-    HIVE_SERVER2_USE_SSL("hive.server2.use.SSL", false, ""),
-    HIVE_SERVER2_SSL_KEYSTORE_PATH("hive.server2.keystore.path", "", ""),
-    HIVE_SERVER2_SSL_KEYSTORE_PASSWORD("hive.server2.keystore.password", "", ""),
+    HIVE_SERVER2_USE_SSL("hive.server2.use.SSL", false,
+        "Set this to true for using SSL encryption in HiveServer2."),
+    HIVE_SERVER2_SSL_KEYSTORE_PATH("hive.server2.keystore.path", "",
+        "SSL certificate keystore location."),
+    HIVE_SERVER2_SSL_KEYSTORE_PASSWORD("hive.server2.keystore.password", "",
+        "SSL certificate keystore password."),
     HIVE_SERVER2_MAP_FAIR_SCHEDULER_QUEUE("hive.server2.map.fair.scheduler.queue", true,
         "If the YARN fair scheduler is configured and HiveServer2 is running in non-impersonation mode,\n" +
         "this setting determines the user for fair scheduler queue mapping.\n" +
@@ -1822,8 +1893,9 @@ public class HiveConf extends Configuration {
         "of reducers that tez specifies."),
     TEZ_DYNAMIC_PARTITION_PRUNING(
         "hive.tez.dynamic.partition.pruning", true,
-        "When dynamic pruning is enabled, joins on partition keys will be processed by sending events from the processing " +
-        "vertices to the tez application master. These events will be used to prune unnecessary partitions."),
+        "When dynamic pruning is enabled, joins on partition keys will be processed by sending\n" +
+        "events from the processing vertices to the Tez application master. These events will be\n" +
+        "used to prune unnecessary partitions."),
     TEZ_DYNAMIC_PARTITION_PRUNING_MAX_EVENT_SIZE("hive.tez.dynamic.partition.pruning.max.event.size", 1*1024*1024L,
         "Maximum size of events sent by processors in dynamic pruning. If this size is crossed no pruning will take place."),
     TEZ_DYNAMIC_PARTITION_PRUNING_MAX_DATA_SIZE("hive.tez.dynamic.partition.pruning.max.data.size", 100*1024*1024L,
