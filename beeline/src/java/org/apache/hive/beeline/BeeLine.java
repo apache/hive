@@ -145,9 +145,11 @@ public class BeeLine implements Closeable {
   private final Map<Object, Object> formats = map(new Object[] {
       "vertical", new VerticalOutputFormat(this),
       "table", new TableOutputFormat(this),
-      "csv", new SeparatedValuesOutputFormat(this, ','),
-      "tsv", new SeparatedValuesOutputFormat(this, '\t'),
+      "csv2", new SeparatedValuesOutputFormat(this, ','),
+      "tsv2", new SeparatedValuesOutputFormat(this, '\t'),
       "dsv", new SeparatedValuesOutputFormat(this, BeeLineOpts.DEFAULT_DELIMITER_FOR_DSV),
+      "csv", new DeprecatedSeparatedValuesOutputFormat(this, ','),
+      "tsv", new DeprecatedSeparatedValuesOutputFormat(this, '\t'),
       "xmlattr", new XMLAttributeOutputFormat(this),
       "xmlelements", new XMLElementOutputFormat(this),
   });
