@@ -275,7 +275,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       InputFormat inputFormat, Class<? extends InputFormat> inputFormatClass, int splits,
       TableDesc table, List<InputSplit> result) throws IOException {
 
-    Utilities.copyTableJobPropertiesToConf(table, conf);
+    Utilities.copyTablePropertiesToConf(table, conf);
 
     if (tableScan != null) {
       pushFilters(conf, tableScan);
