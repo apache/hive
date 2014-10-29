@@ -354,9 +354,11 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
         StructObjectInspector tableRowOI = convertedOI.get(partDesc.getTableDesc());
         contexts.put(op, initObjectInspector(hconf, context, tableRowOI));
 
-        op.setParentOperators(new ArrayList<Operator<? extends OperatorDesc>>(1));
-        op.getParentOperators().add(this);
-        children.add(op);
+        if (children.contains(op) == false) {
+          op.setParentOperators(new ArrayList<Operator<? extends OperatorDesc>>(1));
+          op.getParentOperators().add(this);
+          children.add(op);
+        }
       }
     }
 
@@ -378,8 +380,8 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
         if (prev != null && !prev.equals(context.rowObjectInspector)) {
           throw new HiveException("Conflict on row inspector for " + context.alias);
         }
-        if (isLogInfoEnabled) {
-          LOG.info("dump " + context.op + " " + context.rowObjectInspector.getTypeName());
+        if (isLogDebugEnabled) {
+          LOG.debug("dump " + context.op + " " + context.rowObjectInspector.getTypeName());
         }
       }
     }
