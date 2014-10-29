@@ -403,21 +403,27 @@ public class RowResolver implements Serializable{
   public boolean putWithCheck(String tabAlias, String colAlias,
       String internalName, ColumnInfo newCI) throws SemanticException {
     ColumnInfo existing = get(tabAlias, colAlias);
+    // Hive adds the same mapping twice... I wish we could fix stuff like that.
     if (existing == null) {
       put(tabAlias, colAlias, newCI);
       return true;
+    } else if (existing.isSameColumnForRR(newCI)) {
+      return true;
     }
-    LOG.warn("Found duplicate column alias in RR: " + existing + " for "
-        + tabAlias + "." + colAlias + " and " + internalName);
+    LOG.warn("Found duplicate column alias in RR: "
+        + existing.toMappingString(tabAlias, colAlias) + " adding "
+        + newCI.toMappingString(tabAlias, colAlias));
     if (internalName != null) {
       existing = get(tabAlias, internalName);
       if (existing == null) {
         put(tabAlias, internalName, newCI);
         return true;
+      } else if (existing.isSameColumnForRR(newCI)) {
+        return true;
       }
+      LOG.warn("Failed to use internal name after finding a duplicate: "
+          + existing.toMappingString(tabAlias, internalName));
     }
-    LOG.warn("Failed to use internal name after finding a duplicate: " + existing
-        + " for " + tabAlias + "." + internalName);
     return false;
   }
 
