@@ -83,9 +83,14 @@ public abstract class FolderPermissionBase {
     fs.mkdirs(warehouseDir);
     conf.setVar(ConfVars.METASTOREWAREHOUSE, warehouseDir.toString());
 
+    // Assuming the tests are run either in C or D drive in Windows OS!
     dataFileDir = conf.get("test.data.files").replace('\\', '/')
-        .replace("c:", "");
+        .replace("c:", "").replace("C:", "").replace("D:", "").replace("d:", "");
     dataFilePath = new Path(dataFileDir, "kv1.txt");
+
+    // Set up scratch directory
+    Path scratchDir = new Path(baseDfsDir, "scratchdir");
+    conf.setVar(HiveConf.ConfVars.SCRATCHDIR, scratchDir.toString());
 
     //set hive conf vars
     conf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);

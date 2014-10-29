@@ -157,7 +157,7 @@ public class TestHCatClient {
     assertTrue(testDb.getProperties().size() == 0);
     String warehouseDir = System
       .getProperty("test.warehouse.dir", "/user/hive/warehouse");
-    String expectedDir = fixPath(warehouseDir).replaceFirst("pfile:///", "pfile:/");
+    String expectedDir = warehouseDir.replaceFirst("pfile:///", "pfile:/");
     assertEquals(expectedDir + "/" + db + ".db", testDb.getLocation());
     ArrayList<HCatFieldSchema> cols = new ArrayList<HCatFieldSchema>();
     cols.add(new HCatFieldSchema("id", Type.INT, "id comment"));
