@@ -21,6 +21,8 @@ package org.apache.hadoop.hive.ql.optimizer;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.optimizer.correlation.CorrelationOptimizer;
 import org.apache.hadoop.hive.ql.optimizer.correlation.ReduceSinkDeDuplication;
@@ -44,6 +46,7 @@ import org.apache.hadoop.hive.ql.ppd.SyntheticJoinPredicate;
 public class Optimizer {
   private ParseContext pctx;
   private List<Transform> transformations;
+  private static final Log LOG = LogFactory.getLog(Optimizer.class.getName());
 
   /**
    * Create the list of transformations.
@@ -87,7 +90,11 @@ public class Optimizer {
     }
     transformations.add(new ColumnPruner());
     if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_OPTIMIZE_SKEWJOIN_COMPILETIME)) {
-      transformations.add(new SkewJoinOptimizer());
+      if (!isTezExecEngine) {
+        transformations.add(new SkewJoinOptimizer());
+      } else {
+        LOG.warn("Skew join is currently not supported in tez! Disabling the skew join optimization.");
+      }
     }
     if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTGBYUSINGINDEX)) {
       transformations.add(new RewriteGBUsingIndex());
