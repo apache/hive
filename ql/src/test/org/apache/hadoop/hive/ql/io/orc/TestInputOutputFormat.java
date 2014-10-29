@@ -1298,8 +1298,8 @@ public class TestInputOutputFormat {
     }
     mapWork.setPathToAliases(aliasMap);
     mapWork.setPathToPartitionInfo(partMap);
-    mapWork.setScratchColumnMap(new HashMap<String, Map<String, Integer>>());
-    mapWork.setScratchColumnVectorTypes(new HashMap<String,
+    mapWork.setAllColumnVectorMaps(new HashMap<String, Map<String, Integer>>());
+    mapWork.setAllScratchColumnVectorTypeMaps(new HashMap<String,
         Map<Integer, String>>());
 
     // write the plan out

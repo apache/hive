@@ -18,85 +18,118 @@
 
 package org.apache.hadoop.hive.ql.exec.vector;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.ArrayList;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
-import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluatorFactory;
 import org.apache.hadoop.hive.ql.exec.ExtractOperator;
-import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExtractDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.objectinspector.StructField;
-import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 
 /**
- * Vectorized extract operator implementation.  Consumes rows and outputs a
- * vectorized batch of subobjects.
+ * Vectorized extract operator implementation.
  **/
-public class VectorExtractOperator extends ExtractOperator {
+public class VectorExtractOperator extends ExtractOperator implements VectorizationContextRegion {
   private static final long serialVersionUID = 1L;
 
-  private int keyColCount;
-  private int valueColCount;
-  
-  private transient VectorizedRowBatch outputBatch;
-  private transient int remainingColCount;
+  private List<TypeInfo> reduceTypeInfos;
 
+  // Create a new outgoing vectorization context because we will project just the values.
+  private VectorizationContext vOutContext;
+
+  private int[] projectedColumns;
+
+  private String removeValueDotPrefix(String columnName) {
+    return columnName.substring("VALUE.".length());
+  }
   public VectorExtractOperator(VectorizationContext vContext, OperatorDesc conf)
       throws HiveException {
     this();
     this.conf = (ExtractDesc) conf;
+
+    List<String> reduceColumnNames = vContext.getProjectionColumnNames();
+    int reduceColCount = reduceColumnNames.size();
+
+    /*
+     * Create a new vectorization context as projection of just the values columns, but 
+     * keep same output column manager must be inherited to track the scratch the columns.
+     */
+    vOutContext = new VectorizationContext(vContext);
+
+    // Set a fileKey with vectorization context.
+    vOutContext.setFileKey(vContext.getFileKey() + "/_EXTRACT_");
+
+    // Remove "VALUE." prefix from value columns and create a new projection
+    vOutContext.resetProjectionColumns();
+    for (int i = 0; i < reduceColCount; i++) {
+      String columnName = reduceColumnNames.get(i);
+      if (columnName.startsWith("VALUE.")) {
+        vOutContext.addProjectionColumn(removeValueDotPrefix(columnName), i);
+      }
+    }
   }
 
   public VectorExtractOperator() {
     super();
   }
 
+  /*
+   * Called by the Vectorizer class to pass the types from reduce shuffle.
+   */
+  public void setReduceTypeInfos(List<TypeInfo> reduceTypeInfos) {
+    this.reduceTypeInfos = reduceTypeInfos;
+  }
+
   @Override
   protected void initializeOp(Configuration hconf) throws HiveException {
-    StructObjectInspector structInputObjInspector = (StructObjectInspector) inputObjInspectors[0];
-    List<? extends StructField> fields = structInputObjInspector.getAllStructFieldRefs();
-    ArrayList<ObjectInspector> ois = new ArrayList<ObjectInspector>();
-    ArrayList<String> colNames = new ArrayList<String>();
-    for (int i = keyColCount; i < fields.size(); i++) {
-      StructField field = fields.get(i);
-      String fieldName = field.getFieldName();
-
-      // Remove "VALUE." prefix.
-      int dotIndex = fieldName.indexOf(".");
-      colNames.add(fieldName.substring(dotIndex + 1));
-      ois.add(field.getFieldObjectInspector());
+    // Create the projection of the values and the output object inspector
+    // for just the value without their "VALUE." prefix.
+    int projectionSize = vOutContext.getProjectedColumns().size();
+    projectedColumns = new int[projectionSize];
+    List<String> columnNames = new ArrayList<String>();
+    List<ObjectInspector> ois = new ArrayList<ObjectInspector>();
+    for (int i = 0; i < projectionSize; i++) {
+      int projectedIndex = vOutContext.getProjectedColumns().get(i);
+      projectedColumns[i] = projectedIndex;
+      String colName = vOutContext.getProjectionColumnNames().get(i);
+      columnNames.add(colName);
+      TypeInfo typeInfo = reduceTypeInfos.get(projectedIndex);
+      ObjectInspector oi = TypeInfoUtils
+          .getStandardWritableObjectInspectorFromTypeInfo(typeInfo);
+      ois.add(oi);
     }
-    outputObjInspector = ObjectInspectorFactory
-              .getStandardStructObjectInspector(colNames, ois);
-    remainingColCount = fields.size() - keyColCount;
-    outputBatch =  new VectorizedRowBatch(remainingColCount);
+    outputObjInspector = ObjectInspectorFactory.
+            getStandardStructObjectInspector(columnNames, ois);
     initializeChildren(hconf);
   }
 
-  public void setKeyAndValueColCounts(int keyColCount, int valueColCount) {
-      this.keyColCount = keyColCount;
-      this.valueColCount = valueColCount;
-  }
   
   @Override
   // Remove the key columns and forward the values (and scratch columns).
   public void processOp(Object row, int tag) throws HiveException {
-    VectorizedRowBatch inputBatch = (VectorizedRowBatch) row;
+    VectorizedRowBatch vrg = (VectorizedRowBatch) row;
 
-    // Copy references to the input columns array starting after the keys...
-    for (int i = 0; i < remainingColCount; i++) {
-      outputBatch.cols[i] = inputBatch.cols[keyColCount + i];
-    }
-    outputBatch.size = inputBatch.size;
+    int[] originalProjections = vrg.projectedColumns;
+    int originalProjectionSize = vrg.projectionSize;
 
-    forward(outputBatch, outputObjInspector);
+    // Temporarily substitute our projection.
+    vrg.projectionSize = projectedColumns.length;
+    vrg.projectedColumns = projectedColumns;
+
+    forward(vrg, null);
+
+    // Revert the projected columns back, because vrg will be re-used.
+    vrg.projectionSize = originalProjectionSize;
+    vrg.projectedColumns = originalProjections;
+  }
+
+  @Override
+  public VectorizationContext getOuputVectorizationContext() {
+    return vOutContext;
   }
 }

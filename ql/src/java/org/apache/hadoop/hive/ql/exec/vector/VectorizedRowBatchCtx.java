@@ -139,7 +139,7 @@ public class VectorizedRowBatchCtx {
   public void init(Configuration hiveConf, String fileKey,
       StructObjectInspector rowOI) {
     Map<String, Map<Integer, String>> scratchColumnVectorTypes =
-            Utilities.getScratchColumnVectorTypes(hiveConf);
+            Utilities.getAllScratchColumnVectorTypeMaps(hiveConf);
     columnTypeMap = scratchColumnVectorTypes.get(fileKey);
     this.rowOI= rowOI;
     this.rawRowOI = rowOI;
@@ -190,7 +190,7 @@ public class VectorizedRowBatchCtx {
 
     String partitionPath = split.getPath().getParent().toString();
     columnTypeMap = Utilities
-        .getScratchColumnVectorTypes(hiveConf)
+        .getAllScratchColumnVectorTypeMaps(hiveConf)
         .get(partitionPath);
 
     Properties partProps =
