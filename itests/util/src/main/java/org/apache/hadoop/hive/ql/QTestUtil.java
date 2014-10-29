@@ -305,7 +305,7 @@ public class QTestUtil {
     this.outDir = outDir;
     this.logDir = logDir;
     if (confDir != null && !confDir.isEmpty()) {
-      HiveConf.setHiveSiteLocation(new URL("file://"+confDir+"/hive-site.xml"));
+      HiveConf.setHiveSiteLocation(new URL("file://"+ new File(confDir).toURI().getPath() + "/hive-site.xml"));
       System.out.println("Setting hive-site: "+HiveConf.getHiveSiteLocation());
     }
     conf = new HiveConf(Driver.class);

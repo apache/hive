@@ -68,6 +68,10 @@ public class TestStorageBasedMetastoreAuthorizationProviderWithACL
     conf.setVar(HiveConf.ConfVars.METASTOREWAREHOUSE, warehouseDir.toString());
     conf.setBoolVar(HiveConf.ConfVars.HIVE_WAREHOUSE_SUBDIR_INHERIT_PERMS, true);
 
+    // Set up scratch directory
+    Path scratchDir = new Path(new Path(fs.getUri()), "/scratchdir");
+    conf.setVar(HiveConf.ConfVars.SCRATCHDIR, scratchDir.toString());
+
     return conf;
   }
 

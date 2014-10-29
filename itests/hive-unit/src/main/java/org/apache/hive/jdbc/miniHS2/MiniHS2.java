@@ -176,7 +176,7 @@ public class MiniHS2 extends AbstractHiveService {
       baseDfsDir =  new Path(new Path(fs.getUri()), "/base");
     } else {
       fs = FileSystem.getLocal(hiveConf);
-      baseDfsDir = new Path("file://"+ baseDir.getPath());
+      baseDfsDir = new Path("file://"+ baseDir.toURI().getPath());
     }
     if (useMiniKdc) {
       hiveConf.setVar(ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL, serverPrincipal);
