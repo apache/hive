@@ -2354,6 +2354,32 @@ public final class Utilities {
     }
   }
 
+  /**
+   * Copies the storage handler proeprites configured for a table descriptor to a runtime job
+   * configuration.  This differs from {@link #copyTablePropertiesToConf(org.apache.hadoop.hive.ql.plan.TableDesc, org.apache.hadoop.mapred.JobConf)}
+   * in that it does not allow parameters already set in the job to override the values from the
+   * table.  This is important for setting the config up for reading,
+   * as the job may already have values in it from another table.
+   * @param tbl
+   * @param job
+   */
+  public static void copyTablePropertiesToConf(TableDesc tbl, JobConf job) {
+    Properties tblProperties = tbl.getProperties();
+    for(String name: tblProperties.stringPropertyNames()) {
+      String val = (String) tblProperties.get(name);
+      if (val != null) {
+        job.set(name, StringEscapeUtils.escapeJava(val));
+      }
+    }
+    Map<String, String> jobProperties = tbl.getJobProperties();
+    if (jobProperties == null) {
+      return;
+    }
+    for (Map.Entry<String, String> entry : jobProperties.entrySet()) {
+      job.set(entry.getKey(), entry.getValue());
+    }
+  }
+
   private static final Object INPUT_SUMMARY_LOCK = new Object();
 
   /**

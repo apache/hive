@@ -388,6 +388,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
           ConfVars.HIVE_ORC_INCLUDE_FILE_FOOTER_IN_SPLITS);
       numBuckets =
           Math.max(conf.getInt(hive_metastoreConstants.BUCKET_COUNT, 0), 0);
+      LOG.debug("Number of buckets specified by conf file is " + numBuckets);
       int cacheStripeDetailsSize = HiveConf.getIntVar(conf,
           ConfVars.HIVE_ORC_CACHE_STRIPE_DETAILS_SIZE);
       int numThreads = HiveConf.getIntVar(conf,
