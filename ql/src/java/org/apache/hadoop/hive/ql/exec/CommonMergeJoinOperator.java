@@ -306,9 +306,7 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
   public void closeOp(boolean abort) throws HiveException {
     joinFinalLeftData();
 
-    if (!((joinKeysObjectInspectors != null) && (joinKeysObjectInspectors[alias] != null))) {
-      super.closeOp(abort);
-    }
+    super.closeOp(abort);
 
     // clean up
     for (int pos = 0; pos < order.length; pos++) {
