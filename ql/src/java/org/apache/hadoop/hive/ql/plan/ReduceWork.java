@@ -95,8 +95,6 @@ public class ReduceWork extends BaseWork {
   private ObjectInspector keyObjectInspector = null;
   private ObjectInspector valueObjectInspector = null;
 
-  private final Map<String, Integer> reduceColumnNameMap = new LinkedHashMap<String, Integer>();
-
   /**
    * If the plan has a reducer and correspondingly a reduce-sink, then store the TableDesc pointing
    * to keySerializeInfo of the ReduceSink
@@ -140,58 +138,6 @@ public class ReduceWork extends BaseWork {
       valueObjectInspector = getObjectInspector(tagToValueDesc.get(0));
     }
     return valueObjectInspector;
-  }
-
-  private int addToReduceColumnNameMap(StructObjectInspector structObjectInspector, int startIndex, String prefix) {
-    List<? extends StructField> fields = structObjectInspector.getAllStructFieldRefs();
-    int index = startIndex;
-    for (StructField field: fields) {
-      reduceColumnNameMap.put(prefix + "." + field.getFieldName(), index);
-      index++;
-    }
-    return index;
-  }
-
-  public Boolean fillInReduceColumnNameMap() {
-    ObjectInspector keyObjectInspector = getKeyObjectInspector();
-    if (keyObjectInspector == null || !(keyObjectInspector instanceof StructObjectInspector)) {
-        return false;
-    }
-    StructObjectInspector keyStructObjectInspector = (StructObjectInspector) keyObjectInspector;
-
-    ObjectInspector valueObjectInspector = getValueObjectInspector();
-    if (valueObjectInspector == null || !(valueObjectInspector instanceof StructObjectInspector)) {
-        return false;
-    }
-    StructObjectInspector valueStructObjectInspector = (StructObjectInspector) valueObjectInspector;
-
-    int keyCount = addToReduceColumnNameMap(keyStructObjectInspector, 0, Utilities.ReduceField.KEY.toString());
-    addToReduceColumnNameMap(valueStructObjectInspector, keyCount, Utilities.ReduceField.VALUE.toString());
-    return true;
-  }
-
-  public Map<String, Integer> getReduceColumnNameMap() {
-    if (needsTagging) {
-      return null;
-    }
-    if (reduceColumnNameMap.size() == 0) {
-      if (!fillInReduceColumnNameMap()) {
-        return null;
-      }
-    }
-    return reduceColumnNameMap;
-  }
-
-  public List<String> getReduceColumnNames() {
-    if (needsTagging) {
-        return null;
-    }
-    if (reduceColumnNameMap.size() == 0) {
-        if (!fillInReduceColumnNameMap()) {
-            return null;
-        }
-    }
-    return new ArrayList<String>(reduceColumnNameMap.keySet());
   }
 
   public List<TableDesc> getTagToValueDesc() {
