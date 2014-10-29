@@ -731,7 +731,7 @@ public class TestStreaming {
           throws Exception {
     Database db = new Database();
     db.setName(databaseName);
-    String dbLocation = "raw://" + dbFolder.newFolder(databaseName + ".db").getCanonicalPath();
+    String dbLocation = "raw://" + dbFolder.newFolder(databaseName + ".db").toURI().getPath();
     db.setLocationUri(dbLocation);
     client.createDatabase(db);
 
