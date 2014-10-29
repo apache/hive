@@ -60,11 +60,16 @@ public class Optimizer {
     // Add the transformation that computes the lineage information.
     transformations.add(new Generator());
     if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTPPD)) {
-      transformations.add(new PredicateTransitivePropagate());
+    transformations.add(new PredicateTransitivePropagate());
+    if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTCONSTANTPROPAGATION)) {
+      transformations.add(new ConstantPropagate());
+    }
       transformations.add(new SyntheticJoinPredicate());
       transformations.add(new PredicatePushDown());
     }
     if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTCONSTANTPROPAGATION)) {
+      // We run constant propagation twice because after predicate pushdown, filter expressions
+      // are combined and may become eligible for reduction (like is not null filter).
         transformations.add(new ConstantPropagate());
     }
     if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTPPD)) {
@@ -145,7 +150,7 @@ public class Optimizer {
     if (!HiveConf.getVar(hiveConf, HiveConf.ConfVars.HIVEFETCHTASKCONVERSION).equals("none")) {
       transformations.add(new SimpleFetchOptimizer()); // must be called last
     }
-    
+
     if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEFETCHTASKAGGR)) {
       transformations.add(new SimpleFetchAggregation());
     }
