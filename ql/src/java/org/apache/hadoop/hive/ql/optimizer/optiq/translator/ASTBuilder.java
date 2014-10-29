@@ -179,19 +179,11 @@ class ASTBuilder {
       type = HiveParser.BigintLiteral;
       break;
     case DOUBLE:
-      if (useTypeQualInLiteral) {
-        val = literal.getValue3() + "D";
-      } else {
-        val = literal.getValue3();
-      }
+      val = literal.getValue3() + "D";
       type = HiveParser.Number;
       break;
     case DECIMAL:
-      if (useTypeQualInLiteral) {
-        val = literal.getValue3() + "BD";
-      } else {
-        val = literal.getValue3();
-      }
+      val = literal.getValue3() + "BD";
       type = HiveParser.DecimalLiteral;
       break;
     case FLOAT:
