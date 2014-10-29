@@ -14093,7 +14093,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       QBParseInfo qbp = getQBParseInfo(qb);
       String selClauseName = qbp.getClauseNames().iterator().next();
       ASTNode selExprList = qbp.getSelForClause(selClauseName);
-      LOG.error("TODO# for select clause, got " + selExprList.dump());
 
       // 2.Row resolvers for input, output
       RowResolver out_rwsch = new RowResolver();
@@ -14215,7 +14214,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
               exp.getWritableObjectInspector(), tabAlias, false);
           colInfo.setSkewedCol((exp instanceof ExprNodeColumnDesc) ? ((ExprNodeColumnDesc) exp)
               .isSkewedCol() : false);
-          out_rwsch.put(tabAlias, colAlias, colInfo);
+          if (!out_rwsch.putWithCheck(tabAlias, colAlias, null, colInfo)) {
+            throw new OptiqSemanticException("Cannot add column to RR: " + tabAlias + "."
+                + colAlias + " => " + colInfo + " due to duplication, see previous warnings");
+          }
 
           if (exp instanceof ExprNodeColumnDesc) {
             ExprNodeColumnDesc colExp = (ExprNodeColumnDesc) exp;
