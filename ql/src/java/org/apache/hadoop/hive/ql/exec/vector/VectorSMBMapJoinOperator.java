@@ -27,16 +27,13 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
-import org.apache.hadoop.hive.ql.exec.JoinUtil;
 import org.apache.hadoop.hive.ql.exec.SMBMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.exec.persistence.MapJoinKeyObject;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriterFactory;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
-import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.SMBJoinDesc;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -116,19 +113,9 @@ public class VectorSMBMapJoinOperator extends SMBMapJoinOperator implements Vect
 
     Map<Byte, List<ExprNodeDesc>> exprs = desc.getExprs();
     bigTableValueExpressions = vContext.getVectorExpressions(exprs.get(posBigTable));
-    
-    // Vectorized join operators need to create a new vectorization region for child operators.
 
-    List<String> outColNames = desc.getOutputColumnNames();
-    
-    Map<String, Integer> mapOutCols = new HashMap<String, Integer>(outColNames.size());
-    
-    int outColIndex = 0;
-    for(String outCol: outColNames) {
-      mapOutCols.put(outCol,  outColIndex++);
-    }
-
-    vOutContext = new VectorizationContext(mapOutCols, outColIndex);
+    // We are making a new output vectorized row batch.
+    vOutContext = new VectorizationContext(desc.getOutputColumnNames());
     vOutContext.setFileKey(vContext.getFileKey() + "/SMB_JOIN_" + desc.getBigTableAlias());
     this.fileKey = vOutContext.getFileKey();
   }
@@ -285,7 +272,7 @@ public class VectorSMBMapJoinOperator extends SMBMapJoinOperator implements Vect
     Object[] values = (Object[]) row;
     VectorColumnAssign[] vcas = outputVectorAssigners.get(outputOI);
     if (null == vcas) {
-      Map<String, Map<String, Integer>> allColumnMaps = Utilities.getScratchColumnMap(hconf);
+      Map<String, Map<String, Integer>> allColumnMaps = Utilities.getAllColumnVectorMaps(hconf);
       Map<String, Integer> columnMap = allColumnMaps.get(fileKey);
       vcas = VectorColumnAssignFactory.buildAssigners(
           outputBatch, outputOI, columnMap, conf.getOutputColumnNames());

@@ -28,11 +28,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
-import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.exec.persistence.MapJoinKeyObject;
-import org.apache.hadoop.hive.ql.exec.persistence.MapJoinKey;
-import org.apache.hadoop.hive.ql.exec.persistence.MapJoinKey;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainer.ReusableGetAdaptor;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
@@ -41,8 +37,6 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
-import org.apache.hadoop.hive.ql.plan.api.OperatorType;
-import org.apache.hadoop.hive.serde2.ByteStream.Output;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 
@@ -116,16 +110,8 @@ public class VectorMapJoinOperator extends MapJoinOperator implements Vectorizat
     Map<Byte, List<ExprNodeDesc>> exprs = desc.getExprs();
     bigTableValueExpressions = vContext.getVectorExpressions(exprs.get(posBigTable));
 
-    List<String> outColNames = desc.getOutputColumnNames();
-    
-    Map<String, Integer> mapOutCols = new HashMap<String, Integer>(outColNames.size());
-    
-    int outColIndex = 0;
-    for(String outCol: outColNames) {
-      mapOutCols.put(outCol,  outColIndex++);
-    }
-    
-    vOutContext = new VectorizationContext(mapOutCols, outColIndex);
+    // We are making a new output vectorized row batch.
+    vOutContext = new VectorizationContext(desc.getOutputColumnNames());
     vOutContext.setFileKey(vContext.getFileKey() + "/MAP_JOIN_" + desc.getBigTableAlias());
     this.fileKey = vOutContext.getFileKey();
   }
@@ -207,7 +193,7 @@ public class VectorMapJoinOperator extends MapJoinOperator implements Vectorizat
     Object[] values = (Object[]) row;
     VectorColumnAssign[] vcas = outputVectorAssigners.get(outputOI);
     if (null == vcas) {
-      Map<String, Map<String, Integer>> allColumnMaps = Utilities.getScratchColumnMap(hconf);
+      Map<String, Map<String, Integer>> allColumnMaps = Utilities.getAllColumnVectorMaps(hconf);
       Map<String, Integer> columnMap = allColumnMaps.get(fileKey);
       vcas = VectorColumnAssignFactory.buildAssigners(
           outputBatch, outputOI, columnMap, conf.getOutputColumnNames());
