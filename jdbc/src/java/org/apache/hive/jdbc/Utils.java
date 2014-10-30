@@ -102,6 +102,7 @@ public class Utils {
     // Non-configurable params:
     // ZOOKEEPER_SESSION_TIMEOUT is not exposed as client configurable
     static final int ZOOKEEPER_SESSION_TIMEOUT = 600 * 1000;
+    static final int ZOOKEEPER_CONNECTION_TIMEOUT = -1;
     // Currently supports JKS keystore format
     static final String SSL_TRUST_STORE_TYPE = "JKS";
 
