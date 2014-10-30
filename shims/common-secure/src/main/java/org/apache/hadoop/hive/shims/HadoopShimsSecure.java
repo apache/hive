@@ -463,6 +463,16 @@ public abstract class HadoopShimsSecure implements HadoopShims {
 
   @Override
   public UserGroupInformation getUGIForConf(Configuration conf) throws IOException {
+    String doAs = conf.get("proxy.user.name");
+    if(doAs != null && doAs.length() > 0) {
+     /*
+      * this allows doAs (proxy user) to be passed along across process boundary where
+      * delegation tokens are not supported.  For example, a DDL stmt via WebHCat with
+      * a doAs parameter, forks to 'hcat' which needs to start a Session that
+      * proxies the end user
+      */
+      return UserGroupInformation.createProxyUser(doAs, UserGroupInformation.getLoginUser());
+    }
     return UserGroupInformation.getCurrentUser();
   }
 
