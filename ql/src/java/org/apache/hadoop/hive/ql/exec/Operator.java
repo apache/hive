@@ -1093,8 +1093,9 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
 
     @SuppressWarnings("unchecked")
     T descClone = (T)conf.clone();
+    // also clone the colExprMap by default
     Operator<? extends OperatorDesc> ret =
-        OperatorFactory.getAndMakeChild(descClone, getSchema(), parentClones);
+        OperatorFactory.getAndMakeChild(descClone, getSchema(), getColumnExprMap(), parentClones);
 
     return ret;
   }
