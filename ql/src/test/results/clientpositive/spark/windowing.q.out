@@ -2362,3 +2362,15 @@ POSTHOOK: Input: default@part
 1602.59	1549.8900000000003	4649.670000000001
 1414.42	1523.5400000000004	3047.080000000001
 1632.66	1632.6600000000008	1632.6600000000008
+PREHOOK: query: -- 47. empty partition
+select sum(p_size) over (partition by p_mfgr )
+from part where p_mfgr = 'm1'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
+POSTHOOK: query: -- 47. empty partition
+select sum(p_size) over (partition by p_mfgr )
+from part where p_mfgr = 'm1'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####

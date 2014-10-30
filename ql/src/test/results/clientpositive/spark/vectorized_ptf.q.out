@@ -241,7 +241,7 @@ STAGE PLANS:
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
                     value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string), ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
-                    auto parallelism: true
+                    auto parallelism: false
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -309,7 +309,7 @@ STAGE PLANS:
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
                       value expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int), _col7 (type: double)
-                      auto parallelism: true
+                      auto parallelism: false
         Reducer 3 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -531,7 +531,7 @@ STAGE PLANS:
                       Statistics: Num rows: 13 Data size: 8021 Basic stats: COMPLETE Column stats: NONE
                       tag: 0
                       value expressions: p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string)
-                      auto parallelism: true
+                      auto parallelism: false
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -598,7 +598,7 @@ STAGE PLANS:
                       Map-reduce partition columns: p_partkey (type: int)
                       Statistics: Num rows: 13 Data size: 8021 Basic stats: COMPLETE Column stats: NONE
                       tag: 1
-                      auto parallelism: true
+                      auto parallelism: false
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -671,7 +671,7 @@ STAGE PLANS:
                     Statistics: Num rows: 14 Data size: 8823 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
                     value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
-                    auto parallelism: true
+                    auto parallelism: false
         Reducer 3 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -690,7 +690,7 @@ STAGE PLANS:
                       Statistics: Num rows: 14 Data size: 8823 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
                       value expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int)
-                      auto parallelism: true
+                      auto parallelism: false
         Reducer 4 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -847,7 +847,7 @@ STAGE PLANS:
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
                     value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string), ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
-                    auto parallelism: true
+                    auto parallelism: false
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -1104,7 +1104,7 @@ STAGE PLANS:
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
                     value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string), ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
-                    auto parallelism: true
+                    auto parallelism: false
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -1172,7 +1172,7 @@ STAGE PLANS:
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
                       value expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int), _col7 (type: double)
-                      auto parallelism: true
+                      auto parallelism: false
         Reducer 3 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -1392,7 +1392,7 @@ STAGE PLANS:
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
                     value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string), ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
-                    auto parallelism: true
+                    auto parallelism: false
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -1460,7 +1460,7 @@ STAGE PLANS:
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
                       value expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int)
-                      auto parallelism: true
+                      auto parallelism: false
         Reducer 3 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -1690,7 +1690,7 @@ STAGE PLANS:
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
                     value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string), ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
-                    auto parallelism: true
+                    auto parallelism: false
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -1762,7 +1762,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: int)
                         Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                         tag: -1
-                        auto parallelism: true
+                        auto parallelism: false
         Reducer 3 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -1778,7 +1778,7 @@ STAGE PLANS:
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   tag: -1
                   value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: int)
-                  auto parallelism: true
+                  auto parallelism: false
             Execution mode: vectorized
         Reducer 4 
             Needs Tagging: false
@@ -1957,7 +1957,7 @@ STAGE PLANS:
                       Map-reduce partition columns: p_partkey (type: int)
                       Statistics: Num rows: 13 Data size: 8021 Basic stats: COMPLETE Column stats: NONE
                       tag: 1
-                      auto parallelism: true
+                      auto parallelism: false
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -2021,7 +2021,7 @@ STAGE PLANS:
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
                     value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string), ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
-                    auto parallelism: true
+                    auto parallelism: false
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -2129,7 +2129,7 @@ STAGE PLANS:
                         Statistics: Num rows: 13 Data size: 8021 Basic stats: COMPLETE Column stats: NONE
                         tag: 0
                         value expressions: _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
-                        auto parallelism: true
+                        auto parallelism: false
 
   Stage: Stage-0
     Fetch Operator
@@ -2270,7 +2270,7 @@ STAGE PLANS:
                       Map-reduce partition columns: p_partkey (type: int)
                       Statistics: Num rows: 13 Data size: 8021 Basic stats: COMPLETE Column stats: NONE
                       tag: 0
-                      auto parallelism: true
+                      auto parallelism: false
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -2334,7 +2334,7 @@ STAGE PLANS:
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
                     value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string), ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
-                    auto parallelism: true
+                    auto parallelism: false
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -2442,7 +2442,7 @@ STAGE PLANS:
                         Statistics: Num rows: 13 Data size: 8021 Basic stats: COMPLETE Column stats: NONE
                         tag: 1
                         value expressions: _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
-                        auto parallelism: true
+                        auto parallelism: false
 
   Stage: Stage-0
     Fetch Operator
@@ -2591,7 +2591,7 @@ STAGE PLANS:
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
                       value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string), ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
-                      auto parallelism: true
+                      auto parallelism: false
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -2659,7 +2659,7 @@ STAGE PLANS:
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
                       value expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int)
-                      auto parallelism: true
+                      auto parallelism: false
         Reducer 3 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -2868,7 +2868,7 @@ STAGE PLANS:
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
                       value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string), ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
-                      auto parallelism: true
+                      auto parallelism: false
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -2936,7 +2936,7 @@ STAGE PLANS:
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
                       value expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int), _col7 (type: double)
-                      auto parallelism: true
+                      auto parallelism: false
         Reducer 3 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -3147,7 +3147,7 @@ STAGE PLANS:
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
                     value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string), ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
-                    auto parallelism: true
+                    auto parallelism: false
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -3215,7 +3215,7 @@ STAGE PLANS:
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
                       value expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int), _col7 (type: double)
-                      auto parallelism: true
+                      auto parallelism: false
         Reducer 3 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -3436,7 +3436,7 @@ STAGE PLANS:
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
                     value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string), ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
-                    auto parallelism: true
+                    auto parallelism: false
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -3502,7 +3502,7 @@ STAGE PLANS:
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
                       value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string), _col9 (type: bigint), _col10 (type: string), _col11 (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
-                      auto parallelism: true
+                      auto parallelism: false
         Reducer 3 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -3521,7 +3521,7 @@ STAGE PLANS:
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
                       value expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int), _col7 (type: double)
-                      auto parallelism: true
+                      auto parallelism: false
         Reducer 4 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -3762,7 +3762,7 @@ STAGE PLANS:
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
                     value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string), ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
-                    auto parallelism: true
+                    auto parallelism: false
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -3830,7 +3830,7 @@ STAGE PLANS:
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
                       value expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int), _col7 (type: double)
-                      auto parallelism: true
+                      auto parallelism: false
         Reducer 3 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -4151,7 +4151,7 @@ STAGE PLANS:
                       Map-reduce partition columns: p_partkey (type: int)
                       Statistics: Num rows: 13 Data size: 8021 Basic stats: COMPLETE Column stats: NONE
                       tag: 1
-                      auto parallelism: true
+                      auto parallelism: false
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -4215,7 +4215,7 @@ STAGE PLANS:
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
                     value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string), ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
-                    auto parallelism: true
+                    auto parallelism: false
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -4283,7 +4283,7 @@ STAGE PLANS:
                   Statistics: Num rows: 14 Data size: 8823 Basic stats: COMPLETE Column stats: NONE
                   tag: -1
                   value expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int), _col7 (type: double)
-                  auto parallelism: true
+                  auto parallelism: false
         Reducer 3 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -4338,7 +4338,7 @@ STAGE PLANS:
                         Statistics: Num rows: 13 Data size: 8021 Basic stats: COMPLETE Column stats: NONE
                         tag: 0
                         value expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int), _col7 (type: double)
-                        auto parallelism: true
+                        auto parallelism: false
 
   Stage: Stage-0
     Fetch Operator
@@ -4474,7 +4474,7 @@ STAGE PLANS:
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
                     value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string), ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
-                    auto parallelism: true
+                    auto parallelism: false
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -4546,7 +4546,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: int)
                         Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                         tag: -1
-                        auto parallelism: true
+                        auto parallelism: false
         Reducer 3 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -4602,31 +4602,31 @@ order by p_name)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
-Manufacturer#3	almond antique forest lavender goldenrod	14
-Manufacturer#4	almond aquamarine floral ivory bisque	27
-Manufacturer#3	almond antique olive coral navajo	45
-Manufacturer#2	almond aquamarine sandy cyan gainsboro	18
 Manufacturer#4	almond antique gainsboro frosted violet	10
-Manufacturer#2	almond aquamarine rose maroon antique	25
-Manufacturer#5	almond aquamarine dodger light gainsboro	46
-Manufacturer#1	almond antique salmon chartreuse burlywood	6
-Manufacturer#1	almond antique burnished rose metallic	2
-Manufacturer#4	almond azure aquamarine papaya violet	12
-Manufacturer#1	almond aquamarine burnished black steel	28
-Manufacturer#2	almond antique violet turquoise frosted	40
-Manufacturer#1	almond antique chartreuse lavender yellow	34
-Manufacturer#4	almond antique violet mint lemon	39
-Manufacturer#2	almond aquamarine midnight light salmon	2
 Manufacturer#5	almond azure blanched chiffon midnight	23
-Manufacturer#2	almond antique violet chocolate turquoise	14
-Manufacturer#4	almond aquamarine yellow dodger mint	7
+Manufacturer#2	almond antique violet turquoise frosted	40
 Manufacturer#1	almond aquamarine pink moccasin thistle	42
-Manufacturer#5	almond antique blue firebrick mint	31
-Manufacturer#5	almond antique medium spring khaki	6
+Manufacturer#1	almond aquamarine burnished black steel	28
+Manufacturer#2	almond aquamarine midnight light salmon	2
+Manufacturer#2	almond aquamarine rose maroon antique	25
 Manufacturer#3	almond antique misty red olive	1
+Manufacturer#4	almond aquamarine floral ivory bisque	27
+Manufacturer#1	almond antique chartreuse lavender yellow	34
+Manufacturer#1	almond antique salmon chartreuse burlywood	6
+Manufacturer#3	almond antique forest lavender goldenrod	14
+Manufacturer#5	almond antique medium spring khaki	6
 Manufacturer#3	almond antique metallic orange dim	19
+Manufacturer#4	almond antique violet mint lemon	39
 Manufacturer#5	almond antique sky peru orange	2
+Manufacturer#4	almond azure aquamarine papaya violet	12
+Manufacturer#2	almond antique violet chocolate turquoise	14
+Manufacturer#3	almond antique olive coral navajo	45
+Manufacturer#4	almond aquamarine yellow dodger mint	7
+Manufacturer#5	almond aquamarine dodger light gainsboro	46
+Manufacturer#2	almond aquamarine sandy cyan gainsboro	18
+Manufacturer#5	almond antique blue firebrick mint	31
 Manufacturer#3	almond antique chartreuse khaki white	17
+Manufacturer#1	almond antique burnished rose metallic	2
 PREHOOK: query: -- 16. testViewAsTableInputToPTF
 create view IF NOT EXISTS mfgr_price_view as 
 select p_mfgr, p_brand, 
@@ -4756,7 +4756,7 @@ STAGE PLANS:
                         Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                         tag: -1
                         value expressions: _col2 (type: double)
-                        auto parallelism: true
+                        auto parallelism: false
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -4827,7 +4827,7 @@ STAGE PLANS:
                     Statistics: Num rows: 13 Data size: 8021 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
                     value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: double)
-                    auto parallelism: true
+                    auto parallelism: false
             Execution mode: vectorized
         Reducer 3 
             Needs Tagging: false
@@ -4843,7 +4843,7 @@ STAGE PLANS:
                     Statistics: Num rows: 13 Data size: 8021 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
                     value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: double)
-                    auto parallelism: true
+                    auto parallelism: false
         Reducer 4 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -5221,7 +5221,7 @@ STAGE PLANS:
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
                     value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string), ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
-                    auto parallelism: true
+                    auto parallelism: false
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -5285,7 +5285,7 @@ STAGE PLANS:
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
                     value expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int)
-                    auto parallelism: true
+                    auto parallelism: false
                   Select Operator
                     expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int), _col7 (type: double)
                     outputColumnNames: _col1, _col2, _col5, _col7
@@ -5297,7 +5297,7 @@ STAGE PLANS:
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
                       value expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int), _col7 (type: double)
-                      auto parallelism: true
+                      auto parallelism: false
         Reducer 3 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -5312,7 +5312,7 @@ STAGE PLANS:
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
                     value expressions: _wcol0 (type: bigint), _col1 (type: string), _col2 (type: string), _col5 (type: int)
-                    auto parallelism: true
+                    auto parallelism: false
         Reducer 4 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -5729,7 +5729,7 @@ STAGE PLANS:
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
                     value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string), ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
-                    auto parallelism: true
+                    auto parallelism: false
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -5795,7 +5795,7 @@ STAGE PLANS:
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
                       value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string), _col9 (type: bigint), _col10 (type: string), _col11 (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
-                      auto parallelism: true
+                      auto parallelism: false
         Reducer 3 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -5814,7 +5814,7 @@ STAGE PLANS:
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
                       value expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int)
-                      auto parallelism: true
+                      auto parallelism: false
         Reducer 4 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -6086,7 +6086,7 @@ STAGE PLANS:
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
                     value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string), ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
-                    auto parallelism: true
+                    auto parallelism: false
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -6150,7 +6150,7 @@ STAGE PLANS:
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
                     value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string), _col9 (type: bigint), _col10 (type: string), _col11 (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
-                    auto parallelism: true
+                    auto parallelism: false
         Reducer 3 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -6165,7 +6165,7 @@ STAGE PLANS:
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
                     value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string), _col9 (type: bigint), _col10 (type: string), _col11 (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
-                    auto parallelism: true
+                    auto parallelism: false
         Reducer 4 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -6184,7 +6184,7 @@ STAGE PLANS:
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
                       value expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int)
-                      auto parallelism: true
+                      auto parallelism: false
         Reducer 5 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -6439,7 +6439,7 @@ STAGE PLANS:
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
                     value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string), ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
-                    auto parallelism: true
+                    auto parallelism: false
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -6503,7 +6503,7 @@ STAGE PLANS:
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
                     value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string), _col9 (type: bigint), _col10 (type: string), _col11 (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
-                    auto parallelism: true
+                    auto parallelism: false
         Reducer 3 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -6522,7 +6522,7 @@ STAGE PLANS:
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
                       value expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int)
-                      auto parallelism: true
+                      auto parallelism: false
         Reducer 4 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -6789,7 +6789,7 @@ STAGE PLANS:
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
                     value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string), ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
-                    auto parallelism: true
+                    auto parallelism: false
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -6853,7 +6853,7 @@ STAGE PLANS:
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
                     value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string), _col9 (type: bigint), _col10 (type: string), _col11 (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
-                    auto parallelism: true
+                    auto parallelism: false
         Reducer 3 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -6870,7 +6870,7 @@ STAGE PLANS:
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
                       value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string), _col9 (type: bigint), _col10 (type: string), _col11 (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
-                      auto parallelism: true
+                      auto parallelism: false
         Reducer 4 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -6889,7 +6889,7 @@ STAGE PLANS:
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
                       value expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int)
-                      auto parallelism: true
+                      auto parallelism: false
         Reducer 5 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -7187,7 +7187,7 @@ STAGE PLANS:
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
                     value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string), ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
-                    auto parallelism: true
+                    auto parallelism: false
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -7253,7 +7253,7 @@ STAGE PLANS:
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
                       value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string), _col9 (type: bigint), _col10 (type: string), _col11 (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
-                      auto parallelism: true
+                      auto parallelism: false
         Reducer 3 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -7272,7 +7272,7 @@ STAGE PLANS:
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
                       value expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int)
-                      auto parallelism: true
+                      auto parallelism: false
         Reducer 4 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -7536,7 +7536,7 @@ STAGE PLANS:
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
                     value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string), ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
-                    auto parallelism: true
+                    auto parallelism: false
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -7602,7 +7602,7 @@ STAGE PLANS:
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
                       value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string), _col9 (type: bigint), _col10 (type: string), _col11 (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
-                      auto parallelism: true
+                      auto parallelism: false
         Reducer 3 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -7621,7 +7621,7 @@ STAGE PLANS:
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
                       value expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int)
-                      auto parallelism: true
+                      auto parallelism: false
         Reducer 4 
             Needs Tagging: false
             Reduce Operator Tree:

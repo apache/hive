@@ -127,3 +127,235 @@ POSTHOOK: Input: default@src
 0	238	val_238
 0	238	val_238
 0	238	val_238
+PREHOOK: query: explain
+select t2.BLOCK__OFFSET__INSIDE__FILE
+from src t1 join src t2 on t1.key = t2.key where t1.key < 100
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select t2.BLOCK__OFFSET__INSIDE__FILE
+from src t1 join src t2 on t1.key = t2.key where t1.key < 100
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (GROUP PARTITION-LEVEL SORT, 1), Map 3 (GROUP PARTITION-LEVEL SORT, 1)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: t2
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (key < 100) (type: boolean)
+                    Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: key (type: string)
+                      sort order: +
+                      Map-reduce partition columns: key (type: string)
+                      Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: BLOCK__OFFSET__INSIDE__FILE (type: bigint)
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: t1
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (key < 100) (type: boolean)
+                    Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: key (type: string)
+                      sort order: +
+                      Map-reduce partition columns: key (type: string)
+                      Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+        Reducer 2 
+            Reduce Operator Tree:
+              Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                condition expressions:
+                  0 
+                  1 {VALUE._col1}
+                outputColumnNames: _col7
+                Statistics: Num rows: 182 Data size: 1939 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col7 (type: bigint)
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 182 Data size: 1939 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 182 Data size: 1939 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select t2.BLOCK__OFFSET__INSIDE__FILE
+from src t1 join src t2 on t1.key = t2.key where t1.key < 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select t2.BLOCK__OFFSET__INSIDE__FILE
+from src t1 join src t2 on t1.key = t2.key where t1.key < 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+968
+2088
+2632
+968
+2088
+2632
+968
+2088
+2632
+2846
+3170
+1720
+4362
+1720
+4362
+386
+2770
+386
+2770
+910
+5340
+5514
+5340
+5514
+2824
+4004
+1118
+1972
+4594
+1972
+4594
+2226
+5284
+2226
+5284
+34
+5616
+3494
+3592
+3192
+1238
+3138
+4012
+1238
+3138
+4012
+1238
+3138
+4012
+328
+5626
+328
+5626
+1218
+3388
+2030
+3298
+2030
+3298
+2330
+4068
+1198
+3060
+3864
+4540
+3060
+3864
+4540
+3060
+3864
+4540
+1462
+2308
+1462
+2308
+4186
+1440
+1024
+1906
+3128
+1906
+3128
+3516
+1592
+198
+1754
+5306
+1754
+5306
+3570
+3794
+4548
+4640
+3794
+4548
+4640
+3794
+4548
+4640
+1208
+2792
+1208
+2792
+3548
+3378
+3538
+3378
+3538
+2622
+3368
+1916
+4058
+396
+1674
+5070
+1674
+5070
+1872
+5606
+1872
+5606
+2612
+12
+2652
+5398
+2802
+4304
+5744
+2802
+4304
+5744
+2802
+4304
+5744
+1176
+2400
+3160
+2400
+3160
+2216
+5572
+5802
+5572
+5802
+92
+2458
+92
+2458
