@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.HadoopShims.MiniDFSShim;
 import org.apache.hadoop.hive.shims.ShimLoader;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -117,6 +118,11 @@ public abstract class FolderPermissionBase {
 
     ret = driver.run("LOAD DATA LOCAL INPATH '" + dataFilePath + "' INTO TABLE mysrc PARTITION (part1='2',part2='2')");
     Assert.assertEquals(0,ret.getResponseCode());
+  }
+
+  @Before
+  public void setupBeforeTest() throws Exception {
+    driver.run("USE default");
   }
 
   @Test
