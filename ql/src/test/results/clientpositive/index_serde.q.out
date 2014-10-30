@@ -134,7 +134,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: default__doctors_doctors_index__
+            alias: default.default__doctors_doctors_index__
             filterExpr: (number > 6) (type: boolean)
             Filter Operator
               predicate: (number > 6) (type: boolean)

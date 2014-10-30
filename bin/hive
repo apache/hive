@@ -240,7 +240,9 @@ if [[ -n $HBASE_BIN ]] ; then
 fi
 
 if [ "${AUX_PARAM}" != "" ]; then
-  HIVE_OPTS="$HIVE_OPTS --hiveconf hive.aux.jars.path=${AUX_PARAM}"
+  if [[ "$SERVICE" != beeline ]]; then
+    HIVE_OPTS="$HIVE_OPTS --hiveconf hive.aux.jars.path=${AUX_PARAM}"
+  fi
   AUX_JARS_CMD_LINE="-libjars ${AUX_PARAM}"
 fi
 

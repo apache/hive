@@ -23,13 +23,16 @@ import org.apache.hadoop.hbase.client.HTable;
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.hive.hbase.ColumnMappings.ColumnMapping;
+import org.apache.hadoop.hive.ql.index.IndexSearchCondition;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.mapred.JobConf;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Util code common between HiveHBaseTableInputFormat and HiveHBaseTableSnapshotInputFormat.
@@ -74,7 +77,7 @@ class HiveHBaseInputFormatUtil {
       ColumnMapping[] columnsMapping = columnMappings.getColumnsMapping();
       for (int i : readColIDs) {
         ColumnMapping colMap = columnsMapping[i];
-        if (colMap.hbaseRowKey) {
+        if (colMap.hbaseRowKey || colMap.hbaseTimestamp) {
           continue;
         }
 
@@ -99,7 +102,7 @@ class HiveHBaseInputFormatUtil {
     // tables column projection.
     if (empty) {
       for (ColumnMapping colMap: columnMappings) {
-        if (colMap.hbaseRowKey) {
+        if (colMap.hbaseRowKey || colMap.hbaseTimestamp) {
           continue;
         }
 
@@ -152,5 +155,20 @@ class HiveHBaseInputFormatUtil {
       default:
         throw new IOException("Malformed string: " + spec);
     }
+  }
+
+  public static Map<String, List<IndexSearchCondition>> decompose(
+      List<IndexSearchCondition> searchConditions) {
+    Map<String, List<IndexSearchCondition>> result =
+        new HashMap<String, List<IndexSearchCondition>>();
+    for (IndexSearchCondition condition : searchConditions) {
+      List<IndexSearchCondition> conditions = result.get(condition.getColumnDesc().getColumn());
+      if (conditions == null) {
+        conditions = new ArrayList<IndexSearchCondition>();
+        result.put(condition.getColumnDesc().getColumn(), conditions);
+      }
+      conditions.add(condition);
+    }
+    return result;
   }
 }

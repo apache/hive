@@ -1,0 +1,1 @@
+{"type":"record","name":"dku_record_0","namespace":"com.dataiku.dss","doc":"","fields":[{"name":"avreau_col_1","type":["null",{"type":"map","values":["null","string"]}],"default":null}]}

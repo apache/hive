@@ -14,7 +14,7 @@ STAGE PLANS:
           alias: srcpart
           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: ds (type: string)
+            expressions: '2008-04-08' (type: string)
             outputColumnNames: _col0
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             ListSink

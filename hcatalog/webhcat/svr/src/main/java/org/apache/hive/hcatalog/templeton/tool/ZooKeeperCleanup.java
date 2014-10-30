@@ -24,8 +24,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Date;
 
+import org.apache.curator.framework.CuratorFramework;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.zookeeper.ZooKeeper;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -89,7 +89,7 @@ public class ZooKeeperCleanup extends Thread {
    * @throws IOException
    */
   public void run() {
-    ZooKeeper zk = null;
+    CuratorFramework zk = null;
     List<String> nodes = null;
     isRunning = true;
     while (!stop) {
@@ -112,13 +112,7 @@ public class ZooKeeperCleanup extends Thread {
         } catch (Exception e) {
           LOG.error("Cleanup cycle failed: " + e.getMessage());
         } finally {
-          if (zk != null) {
-            try {
-              zk.close();
-            } catch (InterruptedException e) {
-              // We're trying to exit anyway, just ignore.
-            }
-          }
+          if (zk != null) zk.close();
         }
 
         long sleepMillis = (long) (Math.random() * interval);
@@ -140,7 +134,7 @@ public class ZooKeeperCleanup extends Thread {
    *
    * @throws IOException
    */
-  public List<String> getChildList(ZooKeeper zk) {
+  public List<String> getChildList(CuratorFramework zk) {
     try {
       List<String> jobs = JobStateTracker.getTrackingJobs(appConf, zk);
       Collections.sort(jobs);
@@ -154,7 +148,7 @@ public class ZooKeeperCleanup extends Thread {
   /**
    * Check to see if a job is more than maxage old, and delete it if so.
    */
-  public boolean checkAndDelete(String node, ZooKeeper zk) {
+  public boolean checkAndDelete(String node, CuratorFramework zk) {
     JobState state = null;
     try {
       JobStateTracker tracker = new JobStateTracker(node, zk, true,
@@ -167,8 +161,11 @@ public class ZooKeeperCleanup extends Thread {
       // an error in creation, and we want to delete it anyway.
       long then = 0;
       if (state.getCreated() != null) {
+        //this is set in ZooKeeperStorage.create()
         then = state.getCreated();
       }
+      //todo: this should check that the job actually completed and likely use completion time
+      //which is not tracked directly but available on /jobs/<id> node via "mtime" in Stat
       if (now - then > maxage) {
         LOG.info("Deleting " + tracker.getJobID());
         state.delete();
@@ -177,7 +174,7 @@ public class ZooKeeperCleanup extends Thread {
       }
       return false;
     } catch (Exception e) {
-      LOG.info("checkAndDelete failed for " + node);
+      LOG.info("checkAndDelete failed for " + node + " due to: " + e.getMessage());
       // We don't throw a new exception for this -- just keep going with the
       // next one.
       return true;

@@ -31,8 +31,9 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.shims.HadoopShims.KerberosNameShim;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.security.UserGroupInformation;
-import org.apache.hadoop.security.authentication.util.KerberosName;
 import org.apache.hive.service.auth.AuthenticationProviderFactory;
 import org.apache.hive.service.auth.AuthenticationProviderFactory.AuthMethods;
 import org.apache.hive.service.auth.HiveAuthFactory;
@@ -237,19 +238,31 @@ public class ThriftHttpServlet extends TServlet {
       }
     }
 
-    private String getPrincipalWithoutRealm(String fullPrincipal) {
-      KerberosName fullKerberosName = new KerberosName(fullPrincipal);
+    private String getPrincipalWithoutRealm(String fullPrincipal)
+        throws HttpAuthenticationException {
+      KerberosNameShim fullKerberosName;
+      try {
+        fullKerberosName = ShimLoader.getHadoopShims().getKerberosNameShim(fullPrincipal);
+      } catch (IOException e) {
+        throw new HttpAuthenticationException(e);
+      }
       String serviceName = fullKerberosName.getServiceName();
-      String hostName =  fullKerberosName.getHostName();
+      String hostName = fullKerberosName.getHostName();
       String principalWithoutRealm = serviceName;
       if (hostName != null) {
         principalWithoutRealm = serviceName + "/" + hostName;
       }
       return principalWithoutRealm;
     }
-    
-    private String getPrincipalWithoutRealmAndHost(String fullPrincipal) {
-      KerberosName fullKerberosName = new KerberosName(fullPrincipal);
+
+    private String getPrincipalWithoutRealmAndHost(String fullPrincipal)
+        throws HttpAuthenticationException {
+      KerberosNameShim fullKerberosName;
+      try {
+        fullKerberosName = ShimLoader.getHadoopShims().getKerberosNameShim(fullPrincipal);
+      } catch (IOException e) {
+        throw new HttpAuthenticationException(e);
+      }
       return fullKerberosName.getServiceName();
     }
   }

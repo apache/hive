@@ -47,6 +47,7 @@ import org.apache.hadoop.hive.ql.plan.UnionWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.yarn.api.records.LocalResource;
 import org.apache.tez.common.counters.CounterGroup;
@@ -272,6 +273,7 @@ public class TezTask extends Task<TezWork> {
 
     // the name of the dag is what is displayed in the AM/Job UI
     DAG dag = DAG.create(work.getName());
+    dag.setCredentials(conf.getCredentials());
 
     for (BaseWork w: ws) {
 

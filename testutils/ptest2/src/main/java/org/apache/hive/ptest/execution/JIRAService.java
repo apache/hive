@@ -87,7 +87,7 @@ class JIRAService {
       List<String> messages) {
     DefaultHttpClient httpClient = new DefaultHttpClient();
     try {
-      String buildTag = formatBuildTag(mBuildTag);
+      BuildInfo buildInfo = formatBuildTag(mBuildTag);
       String buildTagForLogs = formatBuildTagForLogs(mBuildTag);
       List<String> comments = Lists.newArrayList();
       comments.add("");
@@ -120,8 +120,10 @@ class JIRAService {
         }
         comments.add("");
       }
-      comments.add("Test results: " + mJenkinsURL + "/" + buildTag + "/testReport");
-      comments.add("Console output: " + mJenkinsURL + "/" + buildTag + "/console");
+      comments.add("Test results: " + mJenkinsURL + "/" +
+          buildInfo.getFormattedBuildTag() + "/testReport");
+      comments.add("Console output: " + mJenkinsURL + "/" +
+          buildInfo.getFormattedBuildTag() + "/console");
       comments.add("Test logs: " + mLogsURL + buildTagForLogs);
       comments.add("");
       if(!messages.isEmpty()) {
@@ -133,10 +135,9 @@ class JIRAService {
       }
       comments.add("This message is automatically generated.");
       String attachmentId = parseAttachementId(mPatch);
-      if(!attachmentId.isEmpty()) {
-        comments.add("");
-        comments.add("ATTACHMENT ID: " + attachmentId);
-      }
+      comments.add("");
+      comments.add("ATTACHMENT ID: " + attachmentId +
+          " - " + buildInfo.getBuildName());
       mLogger.info("Comment: " + Joiner.on("\n").join(comments));
       String body = Joiner.on("\n").join(comments);
       String url = String.format("%s/rest/api/2/issue/%s/comment", mUrl, mName);
@@ -193,16 +194,36 @@ class JIRAService {
     }
   }
 
+
+  public static class BuildInfo {
+    private String buildName;
+    private String formattedBuildTag;
+
+    public BuildInfo (String buildName, String formattedBuildTag) {
+      this.buildName = buildName;
+      this.formattedBuildTag = formattedBuildTag;
+    }
+
+    public String getBuildName() {
+      return buildName;
+    }
+
+    public String getFormattedBuildTag() {
+      return formattedBuildTag;
+    }
+  }
+
   /**
    * Hive-Build-123 to Hive-Build/123
    */
   @VisibleForTesting
-  static String formatBuildTag(String buildTag) {
+  static BuildInfo formatBuildTag(String buildTag) {
     if(buildTag.contains("-")) {
       int lastDashIndex = buildTag.lastIndexOf("-");
       String buildName = buildTag.substring(0, lastDashIndex);
       String buildId = buildTag.substring(lastDashIndex + 1);
-      return buildName + "/" + buildId;
+      String formattedBuildTag = buildName + "/" + buildId;
+      return new BuildInfo(buildName, formattedBuildTag);
     }
     throw new IllegalArgumentException("Build tag '" + buildTag + "' must contain a -");
   }

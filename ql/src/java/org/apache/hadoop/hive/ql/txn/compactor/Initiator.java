@@ -137,8 +137,8 @@ public class Initiator extends CompactorThread {
   }
 
   @Override
-  public void init(BooleanPointer stop) throws MetaException {
-    super.init(stop);
+  public void init(BooleanPointer stop, BooleanPointer looped) throws MetaException {
+    super.init(stop, looped);
     checkInterval =
         conf.getTimeVar(HiveConf.ConfVars.HIVE_COMPACTOR_CHECK_INTERVAL, TimeUnit.MILLISECONDS) ;
   }

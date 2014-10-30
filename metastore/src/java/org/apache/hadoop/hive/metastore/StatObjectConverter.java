@@ -417,6 +417,7 @@ public class StatObjectConverter {
   public static void fillColumnStatisticsData(String colType, ColumnStatisticsData data,
       Object llow, Object lhigh, Object dlow, Object dhigh, Object declow, Object dechigh,
       Object nulls, Object dist, Object avglen, Object maxlen, Object trues, Object falses) throws MetaException {
+    colType = colType.toLowerCase();
     if (colType.equals("boolean")) {
       BooleanColumnStatsData boolStats = new BooleanColumnStatsData();
       boolStats.setNumFalses(extractSqlLong(falses));

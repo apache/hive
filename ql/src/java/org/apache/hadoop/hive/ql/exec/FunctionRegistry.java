@@ -500,7 +500,7 @@ public final class FunctionRegistry {
       Class<? extends GenericUDF> genericUDFClass) {
     if (GenericUDF.class.isAssignableFrom(genericUDFClass)) {
       FunctionInfo fI = new FunctionInfo(isNative, functionName,
-          (GenericUDF) ReflectionUtils.newInstance(genericUDFClass, null));
+          ReflectionUtils.newInstance(genericUDFClass, null));
       mFunctions.put(functionName.toLowerCase(), fI);
       registerNativeStatus(fI);
     } else {
@@ -523,7 +523,7 @@ public final class FunctionRegistry {
       Class<? extends GenericUDTF> genericUDTFClass) {
     if (GenericUDTF.class.isAssignableFrom(genericUDTFClass)) {
       FunctionInfo fI = new FunctionInfo(isNative, functionName,
-          (GenericUDTF) ReflectionUtils.newInstance(genericUDTFClass, null));
+          ReflectionUtils.newInstance(genericUDTFClass, null));
       mFunctions.put(functionName.toLowerCase(), fI);
       registerNativeStatus(fI);
     } else {
@@ -534,7 +534,7 @@ public final class FunctionRegistry {
 
   private static FunctionInfo getFunctionInfoFromMetastore(String functionName) {
     FunctionInfo ret = null;
-  
+
     try {
       String dbName;
       String fName;
@@ -577,7 +577,7 @@ public final class FunctionRegistry {
       // Lookup of UDf class failed
       LOG.error("Unable to load UDF class: " + e);
     }
-  
+
     return ret;
   }
 
@@ -599,7 +599,7 @@ public final class FunctionRegistry {
     if (functionInfo != null) {
       loadFunctionResourcesIfNecessary(functionName, functionInfo);
     }
-    
+
     return functionInfo;
   }
 
@@ -726,6 +726,34 @@ public final class FunctionRegistry {
     for (String funcName : mFunctions.keySet()) {
       if (funcPattern.matcher(funcName).matches()) {
         funcNames.add(funcName);
+      }
+    }
+    return funcNames;
+  }
+
+  /**
+   * Returns a set of registered function names which matchs the given pattern.
+   * This is used for the CLI command "SHOW FUNCTIONS LIKE 'regular expression';"
+   *
+   * @param funcPatternStr
+   *          regular expression of the interested function names
+   * @return set of strings contains function names
+   */
+  public static Set<String> getFunctionNamesByLikePattern(String funcPatternStr) {
+    Set<String> funcNames = new TreeSet<String>();
+    Set<String> allFuncs = getFunctionNames(true);
+    String[] subpatterns = funcPatternStr.trim().split("\\|");
+    for (String subpattern : subpatterns) {
+      subpattern = "(?i)" + subpattern.replaceAll("\\*", ".*");
+      try {
+        Pattern patternObj = Pattern.compile(subpattern);
+        for (String funcName : allFuncs) {
+          if (patternObj.matcher(funcName).matches()) {
+            funcNames.add(funcName);
+          }
+        }
+      } catch (PatternSyntaxException e) {
+        continue;
       }
     }
     return funcNames;
@@ -954,6 +982,12 @@ public final class FunctionRegistry {
           (PrimitiveTypeInfo)a, (PrimitiveTypeInfo)b,PrimitiveCategory.STRING);
     }
 
+    // Another special case, because timestamp is not implicitly convertible to numeric types.
+    if ((pgA == PrimitiveGrouping.NUMERIC_GROUP || pgB == PrimitiveGrouping.NUMERIC_GROUP)
+        && (pcA == PrimitiveCategory.TIMESTAMP || pcB == PrimitiveCategory.TIMESTAMP)) {
+      return TypeInfoFactory.doubleTypeInfo;
+    }
+
     for (PrimitiveCategory t : numericTypeList) {
       if (FunctionRegistry.implicitConvertible(pcA, t)
           && FunctionRegistry.implicitConvertible(pcB, t)) {
@@ -984,7 +1018,7 @@ public final class FunctionRegistry {
       // If either is not a numeric type, return null.
       return null;
     }
-    
+
     return (ai > bi) ? pcA : pcB;
   }
 
@@ -1189,7 +1223,7 @@ public final class FunctionRegistry {
       Class<? extends UDAF> udafClass) {
     FunctionInfo fi = new FunctionInfo(isNative,
         functionName.toLowerCase(), new GenericUDAFBridge(
-        (UDAF) ReflectionUtils.newInstance(udafClass, null)));
+        ReflectionUtils.newInstance(udafClass, null)));
     mFunctions.put(functionName.toLowerCase(), fi);
 
     // All aggregate functions should also be usable as window functions
@@ -1537,7 +1571,7 @@ public final class FunctionRegistry {
       clonedUDF = new GenericUDFMacro(bridge.getMacroName(), bridge.getBody(),
           bridge.getColNames(), bridge.getColTypes());
     } else {
-      clonedUDF = (GenericUDF) ReflectionUtils
+      clonedUDF = ReflectionUtils
           .newInstance(genericUDF.getClass(), null);
     }
 
@@ -1576,7 +1610,7 @@ public final class FunctionRegistry {
     if (null == genericUDTF) {
       return null;
     }
-    return (GenericUDTF) ReflectionUtils.newInstance(genericUDTF.getClass(),
+    return ReflectionUtils.newInstance(genericUDTF.getClass(),
         null);
   }
 
@@ -1701,17 +1735,17 @@ public final class FunctionRegistry {
   /**
    * Returns whether the exprNodeDesc is node of "cast".
    */
-  private static boolean isOpCast(ExprNodeDesc desc) {
+  public static boolean isOpCast(ExprNodeDesc desc) {
     if (!(desc instanceof ExprNodeGenericFuncDesc)) {
       return false;
     }
-    GenericUDF genericUDF = ((ExprNodeGenericFuncDesc)desc).getGenericUDF();
-    Class udfClass;
-    if (genericUDF instanceof GenericUDFBridge) {
-      udfClass = ((GenericUDFBridge)genericUDF).getUdfClass();
-    } else {
-      udfClass = genericUDF.getClass();
-    }
+    return isOpCast(((ExprNodeGenericFuncDesc)desc).getGenericUDF());
+  }
+
+  public static boolean isOpCast(GenericUDF genericUDF) {
+    Class udfClass = (genericUDF instanceof GenericUDFBridge) ?
+        ((GenericUDFBridge)genericUDF).getUdfClass() : genericUDF.getClass();
+
     return udfClass == UDFToBoolean.class || udfClass == UDFToByte.class ||
         udfClass == UDFToDouble.class || udfClass == UDFToFloat.class ||
         udfClass == UDFToInteger.class || udfClass == UDFToLong.class ||
@@ -1934,7 +1968,7 @@ public final class FunctionRegistry {
   {
     return getTableFunctionResolver(WINDOWING_TABLE_FUNCTION);
   }
-  
+
   public static boolean isNoopFunction(String fnName) {
     fnName = fnName.toLowerCase();
     return fnName.equals(NOOP_MAP_TABLE_FUNCTION) ||
@@ -1958,17 +1992,18 @@ public final class FunctionRegistry {
    * @return true if function is a UDAF, has WindowFunctionDescription annotation and the annotations
    *         confirms a ranking function, false otherwise
    */
-  public static boolean isRankingFunction(String name){
+  public static boolean isRankingFunction(String name) {
     FunctionInfo info = getFunctionInfo(name);
-    GenericUDAFResolver res = info.getGenericUDAFResolver();
-    if (res != null){
-      WindowFunctionDescription desc =
-          AnnotationUtils.getAnnotation(res.getClass(), WindowFunctionDescription.class);
-      if (desc != null){
-        return desc.rankingFunction();
-      }
+    if (info == null) {
+      return false;
     }
-    return false;
+    GenericUDAFResolver res = info.getGenericUDAFResolver();
+    if (res == null) {
+      return false;
+    }
+    WindowFunctionDescription desc =
+        AnnotationUtils.getAnnotation(res.getClass(), WindowFunctionDescription.class);
+    return (desc != null) && desc.rankingFunction();
   }
 
   /**

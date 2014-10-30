@@ -168,8 +168,8 @@ public class Worker extends CompactorThread {
   }
 
   @Override
-  public void init(BooleanPointer stop) throws MetaException {
-    super.init(stop);
+  public void init(BooleanPointer stop, BooleanPointer looped) throws MetaException {
+    super.init(stop, looped);
 
     StringBuilder name = new StringBuilder(hostname());
     name.append("-");

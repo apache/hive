@@ -26,8 +26,10 @@ import org.apache.avro.Schema;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.SerDeSpec;
 import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -37,8 +39,17 @@ import org.apache.hadoop.io.Writable;
 /**
  * Read or write Avro data from Hive.
  */
+@SerDeSpec(schemaProps = {
+    serdeConstants.LIST_COLUMNS, serdeConstants.LIST_COLUMN_TYPES,
+    AvroSerDe.LIST_COLUMN_COMMENTS, AvroSerDe.TABLE_NAME, AvroSerDe.TABLE_COMMENT,
+    AvroSerdeUtils.SCHEMA_LITERAL, AvroSerdeUtils.SCHEMA_URL,
+    AvroSerdeUtils.SCHEMA_NAMESPACE, AvroSerdeUtils.SCHEMA_NAME, AvroSerdeUtils.SCHEMA_DOC})
 public class AvroSerDe extends AbstractSerDe {
   private static final Log LOG = LogFactory.getLog(AvroSerDe.class);
+
+  public static final String TABLE_NAME = "name";
+  public static final String TABLE_COMMENT = "comment";
+  public static final String LIST_COLUMN_COMMENTS = "columns.comments";
 
   public static final String DECIMAL_TYPE_NAME = "decimal";
   public static final String CHAR_TYPE_NAME = "char";
@@ -59,8 +70,6 @@ public class AvroSerDe extends AbstractSerDe {
   private AvroSerializer avroSerializer = null;
 
   private boolean badSchema = false;
-  private static String TABLE_NAME = "name";
-  private static String TABLE_COMMENT = "comment";
 
   @Override
   public void initialize(Configuration configuration, Properties tableProperties,
@@ -81,15 +90,15 @@ public class AvroSerDe extends AbstractSerDe {
     columnNames = null;
     columnTypes = null;
 
-    final String columnNameProperty = properties.getProperty("columns");
-    final String columnTypeProperty = properties.getProperty("columns.types");
-    final String columnCommentProperty = properties.getProperty("columns.comments");
+    final String columnNameProperty = properties.getProperty(serdeConstants.LIST_COLUMNS);
+    final String columnTypeProperty = properties.getProperty(serdeConstants.LIST_COLUMN_TYPES);
+    final String columnCommentProperty = properties.getProperty(LIST_COLUMN_COMMENTS);
 
     if (properties.getProperty(AvroSerdeUtils.SCHEMA_LITERAL) != null
         || properties.getProperty(AvroSerdeUtils.SCHEMA_URL) != null
         || columnNameProperty == null || columnNameProperty.isEmpty()
         || columnTypeProperty == null || columnTypeProperty.isEmpty()) {
-      schema = AvroSerdeUtils.determineSchemaOrReturnErrorSchema(properties);
+      schema = determineSchemaOrReturnErrorSchema(properties);
     } else {
       // Get column names and sort order
       columnNames = Arrays.asList(columnNameProperty.split(","));
@@ -133,6 +142,32 @@ public class AvroSerDe extends AbstractSerDe {
     this.columnNames = aoig.getColumnNames();
     this.columnTypes = aoig.getColumnTypes();
     this.oi = aoig.getObjectInspector();
+  }
+
+  /**
+   * Attempt to determine the schema via the usual means, but do not throw
+   * an exception if we fail.  Instead, signal failure via a special
+   * schema.  This is used because Hive calls init on the serde during
+   * any call, including calls to update the serde properties, meaning
+   * if the serde is in a bad state, there is no way to update that state.
+   */
+  public Schema determineSchemaOrReturnErrorSchema(Properties props) {
+    try {
+      configErrors = "";
+      return AvroSerdeUtils.determineSchemaOrThrowException(props);
+    } catch(AvroSerdeException he) {
+      LOG.warn("Encountered AvroSerdeException determining schema. Returning " +
+              "signal schema to indicate problem", he);
+      configErrors = new String("Encountered AvroSerdeException determining schema. Returning " +
+              "signal schema to indicate problem: " + he.getMessage());
+      return schema = SchemaResolutionProblem.SIGNAL_BAD_SCHEMA;
+    } catch (Exception e) {
+      LOG.warn("Encountered exception determining schema. Returning signal " +
+              "schema to indicate problem", e);
+      configErrors = new String("Encountered exception determining schema. Returning signal " +
+              "schema to indicate problem: " + e.getMessage());
+      return SchemaResolutionProblem.SIGNAL_BAD_SCHEMA;
+    }
   }
 
   @Override

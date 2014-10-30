@@ -66,7 +66,6 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
   protected int minWorkerThreads;
   protected int maxWorkerThreads;
   protected long workerKeepAliveTime;
-  private HiveServer2 hiveServer2;
 
   public ThriftCLIService(CLIService cliService, String serviceName) {
     super(serviceName);
@@ -264,9 +263,9 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
 
   /**
    * Returns the effective username.
-   * 1. If hive.server2.allow.user.substitution = false: the username of the connecting user 
+   * 1. If hive.server2.allow.user.substitution = false: the username of the connecting user
    * 2. If hive.server2.allow.user.substitution = true: the username of the end user,
-   * that the connecting user is trying to proxy for. 
+   * that the connecting user is trying to proxy for.
    * This includes a check whether the connecting user is allowed to proxy for the end user.
    * @param req
    * @return
@@ -366,24 +365,6 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
     } catch (Exception e) {
       LOG.warn("Error closing session: ", e);
       resp.setStatus(HiveSQLException.toTStatus(e));
-    } finally {
-      if (!(isEmbedded) && (hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_SUPPORT_DYNAMIC_SERVICE_DISCOVERY))
-          && (!hiveServer2.isRegisteredWithZooKeeper())) {
-        // Asynchronously shutdown this instance of HiveServer2,
-        // if there are no active client sessions
-        if (cliService.getSessionManager().getOpenSessionCount() == 0) {
-          LOG.info("This instance of HiveServer2 has been removed from the list of server "
-              + "instances available for dynamic service discovery. "
-              + "The last client session has ended - will shutdown now.");
-          Thread shutdownThread = new Thread() {
-            @Override
-            public void run() {
-              hiveServer2.stop();
-            }
-          };
-          shutdownThread.start();
-        }
-      }
     }
     return resp;
   }
@@ -666,10 +647,4 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
     return cliService.getHiveConf().getVar(ConfVars.HIVE_SERVER2_AUTHENTICATION)
         .equalsIgnoreCase(HiveAuthFactory.AuthTypes.KERBEROS.toString());
   }
-
-  public void setHiveServer2(HiveServer2 hiveServer2) {
-    this.hiveServer2 = hiveServer2;
-  }
-
 }
-

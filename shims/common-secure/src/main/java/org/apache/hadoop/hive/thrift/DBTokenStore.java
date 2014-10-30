@@ -25,6 +25,7 @@ import java.util.List;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge.Server.ServerMode;
 import org.apache.hadoop.security.token.delegation.AbstractDelegationTokenSecretManager.DelegationTokenInformation;
 import org.apache.hadoop.security.token.delegation.HiveDelegationTokenSupport;
 
@@ -108,18 +109,17 @@ public class DBTokenStore implements DelegationTokenStore {
     return delTokenIdents;
   }
 
-  private Object hmsHandler;
+  private Object rawStore;
 
   @Override
-  public void setStore(Object hms) throws TokenStoreException {
-    hmsHandler = hms;
+  public void init(Object rawStore, ServerMode smode) throws TokenStoreException {
+    this.rawStore = rawStore;
   }
 
   private Object invokeOnRawStore(String methName, Object[] params, Class<?> ... paramTypes)
       throws TokenStoreException{
 
     try {
-      Object rawStore = hmsHandler.getClass().getMethod("getMS").invoke(hmsHandler);
       return rawStore.getClass().getMethod(methName, paramTypes).invoke(rawStore, params);
     } catch (IllegalArgumentException e) {
         throw new TokenStoreException(e);
@@ -148,6 +148,5 @@ public class DBTokenStore implements DelegationTokenStore {
   public void close() throws IOException {
     // No-op.
   }
-
 
 }

@@ -416,7 +416,7 @@ public final class Utilities {
         }
         gWorkMap.put(path, gWork);
       } else {
-        LOG.debug("Found plan in cache.");
+        LOG.debug("Found plan in cache for name: " + name);
         gWork = gWorkMap.get(path);
       }
       return gWork;
@@ -437,20 +437,20 @@ public final class Utilities {
     }
   }
 
-  public static Map<String, Map<Integer, String>> getScratchColumnVectorTypes(Configuration hiveConf) {
+  public static Map<String, Map<Integer, String>> getAllScratchColumnVectorTypeMaps(Configuration hiveConf) {
     BaseWork baseWork = getMapWork(hiveConf);
     if (baseWork == null) {
       baseWork = getReduceWork(hiveConf);
     }
-    return baseWork.getScratchColumnVectorTypes();
+    return baseWork.getAllScratchColumnVectorTypeMaps();
   }
 
-  public static Map<String, Map<String, Integer>> getScratchColumnMap(Configuration hiveConf) {
+  public static Map<String, Map<String, Integer>> getAllColumnVectorMaps(Configuration hiveConf) {
     BaseWork baseWork = getMapWork(hiveConf);
     if (baseWork == null) {
       baseWork = getReduceWork(hiveConf);
     }
-    return baseWork.getScratchColumnMap();
+    return baseWork.getAllColumnVectorMaps();
   }
 
   public static void setWorkflowAdjacencies(Configuration conf, QueryPlan plan) {
@@ -1635,12 +1635,13 @@ public final class Utilities {
    * Group 6: copy     [copy keyword]
    * Group 8: 2        [copy file index]
    */
+  private static final String COPY_KEYWORD = "_copy_"; // copy keyword
   private static final Pattern COPY_FILE_NAME_TO_TASK_ID_REGEX =
       Pattern.compile("^.*?"+ // any prefix
                       "([0-9]+)"+ // taskId
                       "(_)"+ // separator
                       "([0-9]{1,6})?"+ // attemptId (limited to 6 digits)
-                      "((_)(\\Bcopy\\B)(_)"+ // copy keyword
+                      "((_)(\\Bcopy\\B)(_)" +
                       "([0-9]{1,6})$)?"+ // copy file index
                       "(\\..*)?$"); // any suffix/file extension
 
@@ -2035,6 +2036,15 @@ public final class Utilities {
     return false;
   }
 
+  public static String getBucketFileNameFromPathSubString(String bucketName) {
+    try {
+      return bucketName.split(COPY_KEYWORD)[0];
+    } catch (Exception e) {
+      e.printStackTrace();
+      return bucketName;
+    }
+  }
+
   public static String getNameMessage(Exception e) {
     return e.getClass().getName() + "(" + e.getMessage() + ")";
   }
@@ -2067,15 +2077,21 @@ public final class Utilities {
   public static ClassLoader getSessionSpecifiedClassLoader() {
     SessionState state = SessionState.get();
     if (state == null || state.getConf() == null) {
-      LOG.debug("Hive Conf not found or Session not initiated, use thread based class loader instead");
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Hive Conf not found or Session not initiated, use thread based class loader instead");
+      }
       return JavaUtils.getClassLoader();
     }
     ClassLoader sessionCL = state.getConf().getClassLoader();
-    if (sessionCL != null){
-      LOG.debug("Use session specified class loader");
+    if (sessionCL != null) {
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Use session specified class loader");
+      }
       return sessionCL;
     }
-    LOG.debug("Session specified class loader not found, use thread based class loader");
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Session specified class loader not found, use thread based class loader");
+    }
     return JavaUtils.getClassLoader();
   }
 
@@ -2352,6 +2368,32 @@ public final class Utilities {
         if (val != null) {
           job.set(name, StringEscapeUtils.escapeJava(val));
         }
+      }
+    }
+    Map<String, String> jobProperties = tbl.getJobProperties();
+    if (jobProperties == null) {
+      return;
+    }
+    for (Map.Entry<String, String> entry : jobProperties.entrySet()) {
+      job.set(entry.getKey(), entry.getValue());
+    }
+  }
+
+  /**
+   * Copies the storage handler proeprites configured for a table descriptor to a runtime job
+   * configuration.  This differs from {@link #copyTablePropertiesToConf(org.apache.hadoop.hive.ql.plan.TableDesc, org.apache.hadoop.mapred.JobConf)}
+   * in that it does not allow parameters already set in the job to override the values from the
+   * table.  This is important for setting the config up for reading,
+   * as the job may already have values in it from another table.
+   * @param tbl
+   * @param job
+   */
+  public static void copyTablePropertiesToConf(TableDesc tbl, JobConf job) {
+    Properties tblProperties = tbl.getProperties();
+    for(String name: tblProperties.stringPropertyNames()) {
+      String val = (String) tblProperties.get(name);
+      if (val != null) {
+        job.set(name, StringEscapeUtils.escapeJava(val));
       }
     }
     Map<String, String> jobProperties = tbl.getJobProperties();

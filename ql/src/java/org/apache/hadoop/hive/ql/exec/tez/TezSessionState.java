@@ -67,13 +67,14 @@ public class TezSessionState {
   private LocalResource appJarLr;
   private TezClient session;
   private String sessionId;
-  private DagUtils utils;
+  private final DagUtils utils;
   private String queueName;
   private boolean defaultQueue = false;
   private String user;
 
   private final Set<String> additionalFilesNotFromConf = new HashSet<String>();
   private final Set<LocalResource> localizedResources = new HashSet<LocalResource>();
+  private boolean doAsEnabled;
 
   private static List<TezSessionState> openSessions
     = Collections.synchronizedList(new LinkedList<TezSessionState>());
@@ -130,6 +131,8 @@ public class TezSessionState {
   public void open(HiveConf conf, String[] additionalFiles)
     throws IOException, LoginException, IllegalArgumentException, URISyntaxException, TezException {
     this.conf = conf;
+    this.queueName = conf.get("tez.queue.name");
+    this.doAsEnabled = conf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS);
 
     UserGroupInformation ugi;
     ugi = ShimLoader.getHadoopShims().getUGIForConf(conf);
@@ -207,11 +210,6 @@ public class TezSessionState {
     } catch(InterruptedException ie) {
       //ignore
     }
-    // In case we need to run some MR jobs, we'll run them under tez MR emulation. The session
-    // id is used for tez to reuse the current session rather than start a new one.
-    conf.set("mapreduce.framework.name", "yarn-tez");
-    conf.set("mapreduce.tez.session.tokill-application-id",
-        session.getAppMasterApplicationId().toString());
 
     openSessions.add(this);
   }
@@ -396,5 +394,9 @@ public class TezSessionState {
 
   public String getUser() {
     return user;
+  }
+
+  public boolean getDoAsEnabled() {
+    return doAsEnabled;
   }
 }

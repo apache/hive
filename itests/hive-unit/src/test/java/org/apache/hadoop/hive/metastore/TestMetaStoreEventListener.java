@@ -29,26 +29,33 @@ import junit.framework.TestCase;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PartitionEventType;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.events.AddIndexEvent;
 import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
+import org.apache.hadoop.hive.metastore.events.AlterIndexEvent;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterTableEvent;
 import org.apache.hadoop.hive.metastore.events.ConfigChangeEvent;
 import org.apache.hadoop.hive.metastore.events.CreateDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.CreateTableEvent;
 import org.apache.hadoop.hive.metastore.events.DropDatabaseEvent;
+import org.apache.hadoop.hive.metastore.events.DropIndexEvent;
 import org.apache.hadoop.hive.metastore.events.DropPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.DropTableEvent;
 import org.apache.hadoop.hive.metastore.events.ListenerEvent;
 import org.apache.hadoop.hive.metastore.events.LoadPartitionDoneEvent;
+import org.apache.hadoop.hive.metastore.events.PreAddIndexEvent;
 import org.apache.hadoop.hive.metastore.events.PreAddPartitionEvent;
+import org.apache.hadoop.hive.metastore.events.PreAlterIndexEvent;
 import org.apache.hadoop.hive.metastore.events.PreAlterPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.PreAlterTableEvent;
 import org.apache.hadoop.hive.metastore.events.PreCreateDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.PreCreateTableEvent;
 import org.apache.hadoop.hive.metastore.events.PreDropDatabaseEvent;
+import org.apache.hadoop.hive.metastore.events.PreDropIndexEvent;
 import org.apache.hadoop.hive.metastore.events.PreDropPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.PreDropTableEvent;
 import org.apache.hadoop.hive.metastore.events.PreEventContext;
@@ -183,12 +190,35 @@ public class TestMetaStoreEventListener extends TestCase {
     assertEquals(expectedDb, actualDb);
   }
 
+  private void validateIndex(Index expectedIndex, Index actualIndex) {
+    assertEquals(expectedIndex.getDbName(), actualIndex.getDbName());
+    assertEquals(expectedIndex.getIndexName(), actualIndex.getIndexName());
+    assertEquals(expectedIndex.getIndexHandlerClass(), actualIndex.getIndexHandlerClass());
+    assertEquals(expectedIndex.getOrigTableName(), actualIndex.getOrigTableName());
+    assertEquals(expectedIndex.getIndexTableName(), actualIndex.getIndexTableName());
+    assertEquals(expectedIndex.getSd().getLocation(), actualIndex.getSd().getLocation());
+  }
+
+  private void validateAddIndex(Index expectedIndex, Index actualIndex) {
+    validateIndex(expectedIndex, actualIndex);
+  }
+
+  private void validateAlterIndex(Index expectedOldIndex, Index actualOldIndex,
+      Index expectedNewIndex, Index actualNewIndex) {
+    validateIndex(expectedOldIndex, actualOldIndex);
+    validateIndex(expectedNewIndex, actualNewIndex);
+  }
+
+  private void validateDropIndex(Index expectedIndex, Index actualIndex) {
+    validateIndex(expectedIndex, actualIndex);
+  }
+
   public void testListener() throws Exception {
     int listSize = 0;
 
     List<ListenerEvent> notifyList = DummyListener.notifyList;
-    assertEquals(notifyList.size(), listSize);
     List<PreEventContext> preNotifyList = DummyPreListener.notifyList;
+    assertEquals(notifyList.size(), listSize);
     assertEquals(preNotifyList.size(), listSize);
 
     driver.run("create database " + dbName);
@@ -215,6 +245,48 @@ public class TestMetaStoreEventListener extends TestCase {
     CreateTableEvent tblEvent = (CreateTableEvent)(notifyList.get(listSize - 1));
     assert tblEvent.getStatus();
     validateCreateTable(tbl, tblEvent.getTable());
+
+    driver.run("create index tmptbl_i on table tmptbl(a) as 'compact' " +
+        "WITH DEFERRED REBUILD IDXPROPERTIES ('prop1'='val1', 'prop2'='val2')");
+    listSize += 2;  // creates index table internally
+    assertEquals(notifyList.size(), listSize);
+
+    AddIndexEvent addIndexEvent = (AddIndexEvent)notifyList.get(listSize - 1);
+    assert addIndexEvent.getStatus();
+    PreAddIndexEvent preAddIndexEvent = (PreAddIndexEvent)(preNotifyList.get(preNotifyList.size() - 3));
+
+    Index oldIndex = msc.getIndex(dbName, "tmptbl", "tmptbl_i");
+
+    validateAddIndex(oldIndex, addIndexEvent.getIndex());
+
+    validateAddIndex(oldIndex, preAddIndexEvent.getIndex());
+
+    driver.run("alter index tmptbl_i on tmptbl set IDXPROPERTIES " +
+        "('prop1'='val1_new', 'prop3'='val3')");
+    listSize++;
+    assertEquals(notifyList.size(), listSize);
+
+    Index newIndex = msc.getIndex(dbName, "tmptbl", "tmptbl_i");
+
+    AlterIndexEvent alterIndexEvent = (AlterIndexEvent) notifyList.get(listSize - 1);
+    assert alterIndexEvent.getStatus();
+    validateAlterIndex(oldIndex, alterIndexEvent.getOldIndex(),
+        newIndex, alterIndexEvent.getNewIndex());
+
+    PreAlterIndexEvent preAlterIndexEvent = (PreAlterIndexEvent) (preNotifyList.get(preNotifyList.size() - 1));
+    validateAlterIndex(oldIndex, preAlterIndexEvent.getOldIndex(),
+        newIndex, preAlterIndexEvent.getNewIndex());
+
+    driver.run("drop index tmptbl_i on tmptbl");
+    listSize++;
+    assertEquals(notifyList.size(), listSize);
+
+    DropIndexEvent dropIndexEvent = (DropIndexEvent) notifyList.get(listSize - 1);
+    assert dropIndexEvent.getStatus();
+    validateDropIndex(newIndex, dropIndexEvent.getIndex());
+
+    PreDropIndexEvent preDropIndexEvent = (PreDropIndexEvent) (preNotifyList.get(preNotifyList.size() - 1));
+    validateDropIndex(newIndex, preDropIndexEvent.getIndex());
 
     driver.run("alter table tmptbl add partition (b='2011')");
     listSize++;

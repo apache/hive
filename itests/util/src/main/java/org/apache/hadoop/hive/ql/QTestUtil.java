@@ -305,7 +305,7 @@ public class QTestUtil {
     this.outDir = outDir;
     this.logDir = logDir;
     if (confDir != null && !confDir.isEmpty()) {
-      HiveConf.setHiveSiteLocation(new URL("file://"+confDir+"/hive-site.xml"));
+      HiveConf.setHiveSiteLocation(new URL("file://"+ new File(confDir).toURI().getPath() + "/hive-site.xml"));
       System.out.println("Setting hive-site: "+HiveConf.getHiveSiteLocation());
     }
     conf = new HiveConf(Driver.class);
@@ -559,7 +559,7 @@ public class QTestUtil {
          List<Index> indexes = db.getIndexes(dbName, tblName, (short)-1);
           if (indexes != null && indexes.size() > 0) {
             for (Index index : indexes) {
-              db.dropIndex(dbName, tblName, index.getIndexName(), true);
+              db.dropIndex(dbName, tblName, index.getIndexName(), true, true);
             }
           }
         }

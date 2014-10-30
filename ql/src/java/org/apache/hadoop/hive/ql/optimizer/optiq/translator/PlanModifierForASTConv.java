@@ -22,13 +22,18 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.optimizer.optiq.HiveOptiqUtil;
 import org.apache.hadoop.hive.ql.optimizer.optiq.OptiqSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.optiq.reloperators.HiveAggregateRel;
 import org.apache.hadoop.hive.ql.optimizer.optiq.reloperators.HiveProjectRel;
 import org.apache.hadoop.hive.ql.optimizer.optiq.reloperators.HiveSortRel;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.eigenbase.rel.AggregateCall;
 import org.eigenbase.rel.AggregateRelBase;
+import org.eigenbase.rel.Aggregation;
 import org.eigenbase.rel.EmptyRel;
 import org.eigenbase.rel.FilterRelBase;
 import org.eigenbase.rel.JoinRelBase;
@@ -40,31 +45,52 @@ import org.eigenbase.rel.SetOpRel;
 import org.eigenbase.rel.SingleRel;
 import org.eigenbase.rel.SortRel;
 import org.eigenbase.rel.rules.MultiJoinRel;
+import org.eigenbase.relopt.RelOptUtil;
 import org.eigenbase.relopt.hep.HepRelVertex;
 import org.eigenbase.relopt.volcano.RelSubset;
 import org.eigenbase.reltype.RelDataType;
+import org.eigenbase.reltype.RelDataTypeFactory;
 import org.eigenbase.rex.RexNode;
+import org.eigenbase.sql.SqlKind;
 import org.eigenbase.util.Pair;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 public class PlanModifierForASTConv {
+  private static final Log LOG = LogFactory.getLog(PlanModifierForASTConv.class);
 
   public static RelNode convertOpTree(RelNode rel, List<FieldSchema> resultSchema)
       throws OptiqSemanticException {
     RelNode newTopNode = rel;
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Original plan for PlanModifier\n " + RelOptUtil.toString(newTopNode));
+    }
 
     if (!(newTopNode instanceof ProjectRelBase) && !(newTopNode instanceof SortRel)) {
       newTopNode = introduceDerivedTable(newTopNode);
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Plan after top-level introduceDerivedTable\n "
+            + RelOptUtil.toString(newTopNode));
+      }
     }
 
     convertOpTree(newTopNode, (RelNode) null);
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Plan after nested convertOpTree\n " + RelOptUtil.toString(newTopNode));
+    }
 
     Pair<RelNode, RelNode> topSelparentPair = HiveOptiqUtil.getTopLevelSelect(newTopNode);
     fixTopOBSchema(newTopNode, topSelparentPair, resultSchema);
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Plan after fixTopOBSchema\n " + RelOptUtil.toString(newTopNode));
+    }
+
     topSelparentPair = HiveOptiqUtil.getTopLevelSelect(newTopNode);
     newTopNode = renameTopLevelSelectInResultSchema(newTopNode, topSelparentPair, resultSchema);
-
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Final plan after modifier\n " + RelOptUtil.toString(newTopNode));
+    }
     return newTopNode;
   }
 
@@ -108,8 +134,14 @@ public class PlanModifierForASTConv {
           introduceDerivedTable(((HiveSortRel) rel).getChild(), rel);
         }
       } else if (rel instanceof HiveAggregateRel) {
+        RelNode newParent = parent;
         if (!validGBParent(rel, parent)) {
-          introduceDerivedTable(rel, parent);
+          newParent = introduceDerivedTable(rel, parent);
+        }
+        // check if groupby is empty and there is no other cols in aggr
+        // this should only happen when newParent is constant.
+        if (isEmptyGrpAggr(rel)) {
+          replaceEmptyGroupAggr(rel, newParent);
         }
       }
     }
@@ -125,36 +157,54 @@ public class PlanModifierForASTConv {
   private static void fixTopOBSchema(final RelNode rootRel,
       Pair<RelNode, RelNode> topSelparentPair, List<FieldSchema> resultSchema)
       throws OptiqSemanticException {
-    if (topSelparentPair.getKey() instanceof SortRel
-        && HiveOptiqUtil.orderRelNode(topSelparentPair.getKey())) {
-      HiveSortRel obRel = (HiveSortRel) topSelparentPair.getKey();
-      ProjectRelBase obChild = (ProjectRelBase) topSelparentPair.getValue();
+    if (!(topSelparentPair.getKey() instanceof SortRel)
+        || !HiveOptiqUtil.orderRelNode(topSelparentPair.getKey())) {
+      return;
+    }
+    HiveSortRel obRel = (HiveSortRel) topSelparentPair.getKey();
+    ProjectRelBase obChild = (ProjectRelBase) topSelparentPair.getValue();
+    if (obChild.getRowType().getFieldCount() <= resultSchema.size()) {
+      return;
+    }
 
-      if (obChild.getRowType().getFieldCount() > resultSchema.size()) {
-        RelDataType rt = obChild.getRowType();
-        Set<Integer> collationInputRefs = new HashSet(RelCollationImpl.ordinals(obRel
-            .getCollation()));
-        ImmutableMap.Builder<Integer, RexNode> inputRefToCallMapBldr = ImmutableMap.builder();
-        for (int i = resultSchema.size(); i < rt.getFieldCount(); i++) {
-          if (collationInputRefs.contains(i)) {
-            inputRefToCallMapBldr.put(i, obChild.getChildExps().get(i));
-          }
-        }
-
-        ImmutableMap<Integer, RexNode> inputRefToCallMap = inputRefToCallMapBldr.build();
-        if ((obChild.getRowType().getFieldCount() - inputRefToCallMap.size()) == resultSchema
-            .size()) {
-          HiveProjectRel replacementProjectRel = HiveProjectRel.create(obChild.getChild(), obChild
-              .getChildExps().subList(0, resultSchema.size()), obChild.getRowType().getFieldNames()
-              .subList(0, resultSchema.size()));
-          obRel.replaceInput(0, replacementProjectRel);
-          obRel.setInputRefToCallMap(inputRefToCallMap);
-        } else {
-          throw new OptiqSemanticException(
-              "Result Schema didn't match Optiq Optimized Op Tree Schema");
-        }
+    RelDataType rt = obChild.getRowType();
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    Set<Integer> collationInputRefs = new HashSet(
+        RelCollationImpl.ordinals(obRel.getCollation()));
+    ImmutableMap.Builder<Integer, RexNode> inputRefToCallMapBldr = ImmutableMap.builder();
+    for (int i = resultSchema.size(); i < rt.getFieldCount(); i++) {
+      if (collationInputRefs.contains(i)) {
+        inputRefToCallMapBldr.put(i, obChild.getChildExps().get(i));
       }
     }
+    ImmutableMap<Integer, RexNode> inputRefToCallMap = inputRefToCallMapBldr.build();
+
+    if ((obChild.getRowType().getFieldCount() - inputRefToCallMap.size()) != resultSchema.size()) {
+      LOG.error(generateInvalidSchemaMessage(obChild, resultSchema, inputRefToCallMap.size()));
+      throw new OptiqSemanticException("Result Schema didn't match Optimized Op Tree Schema");
+    }
+    // This removes order-by only expressions from the projections.
+    HiveProjectRel replacementProjectRel = HiveProjectRel.create(obChild.getChild(), obChild
+        .getChildExps().subList(0, resultSchema.size()), obChild.getRowType().getFieldNames()
+        .subList(0, resultSchema.size()));
+    obRel.replaceInput(0, replacementProjectRel);
+    obRel.setInputRefToCallMap(inputRefToCallMap);
+  }
+
+  private static String generateInvalidSchemaMessage(ProjectRelBase topLevelProj,
+      List<FieldSchema> resultSchema, int fieldsForOB) {
+    String errorDesc = "Result Schema didn't match Optiq Optimized Op Tree; schema: ";
+    for (FieldSchema fs : resultSchema) {
+      errorDesc += "[" + fs.getName() + ":" + fs.getType() + "], ";
+    }
+    errorDesc += " projection fields: ";
+    for (RexNode exp : topLevelProj.getChildExps()) {
+      errorDesc += "[" + exp.toString() + ":" + exp.getType() + "], ";
+    }
+    if (fieldsForOB != 0) {
+      errorDesc += fieldsForOB + " fields removed due to ORDER BY  ";
+    }
+    return errorDesc.substring(0, errorDesc.length() - 2);
   }
 
   private static RelNode renameTopLevelSelectInResultSchema(final RelNode rootRel,
@@ -167,22 +217,18 @@ public class PlanModifierForASTConv {
     // (limit)?(OB)?(ProjectRelBase)....
     List<RexNode> rootChildExps = originalProjRel.getChildExps();
     if (resultSchema.size() != rootChildExps.size()) {
-      // this is a bug in Hive where for queries like select key,value,value
-      // convertRowSchemaToResultSetSchema() only returns schema containing
-      // key,value
-      // Underlying issue is much deeper because it seems like RowResolver
-      // itself doesnt have
-      // those mappings. see limit_pushdown.q & limit_pushdown_negative.q
-      // Till Hive issue is fixed, disable CBO for such queries.
-      throw new OptiqSemanticException("Result Schema didn't match Optiq Optimized Op Tree Schema");
+      // Safeguard against potential issues in CBO RowResolver construction. Disable CBO for now.
+      LOG.error(generateInvalidSchemaMessage(originalProjRel, resultSchema, 0));
+      throw new OptiqSemanticException("Result Schema didn't match Optimized Op Tree Schema");
     }
 
     List<String> newSelAliases = new ArrayList<String>();
     String colAlias;
     for (int i = 0; i < rootChildExps.size(); i++) {
       colAlias = resultSchema.get(i).getName();
-      if (colAlias.startsWith("_"))
+      if (colAlias.startsWith("_")) {
         colAlias = colAlias.substring(1);
+      }
       newSelAliases.add(colAlias);
     }
 
@@ -206,7 +252,7 @@ public class PlanModifierForASTConv {
     return select;
   }
 
-  private static void introduceDerivedTable(final RelNode rel, RelNode parent) {
+  private static RelNode introduceDerivedTable(final RelNode rel, RelNode parent) {
     int i = 0;
     int pos = -1;
     List<RelNode> childList = parent.getInputs();
@@ -226,6 +272,8 @@ public class PlanModifierForASTConv {
     RelNode select = introduceDerivedTable(rel);
 
     parent.replaceInput(pos, select);
+    
+    return select;
   }
 
   private static boolean validJoinParent(RelNode joinNode, RelNode parent) {
@@ -309,5 +357,41 @@ public class PlanModifierForASTConv {
     }
 
     return validChild;
+  }
+  
+  private static boolean isEmptyGrpAggr(RelNode gbNode) {
+    // Verify if both groupset and aggrfunction are empty)
+    AggregateRelBase aggrnode = (AggregateRelBase) gbNode;
+    if (aggrnode.getGroupSet().isEmpty() && aggrnode.getAggCallList().isEmpty()) {
+      return true;
+    }
+    return false;
+  }
+  
+  private static void replaceEmptyGroupAggr(final RelNode rel, RelNode parent) {
+    // If this function is called, the parent should only include constant
+    List<RexNode> exps = parent.getChildExps();
+    for (RexNode rexNode : exps) {
+      if (rexNode.getKind() != SqlKind.LITERAL) {
+        throw new RuntimeException("We expect " + parent.toString()
+            + " to contain only constants. However, " + rexNode.toString() + " is "
+            + rexNode.getKind());
+      }
+    }
+    HiveAggregateRel oldAggRel = (HiveAggregateRel) rel;
+    RelDataTypeFactory typeFactory = oldAggRel.getCluster().getTypeFactory();
+    RelDataType longType = TypeConverter.convert(TypeInfoFactory.longTypeInfo, typeFactory);
+    RelDataType intType = TypeConverter.convert(TypeInfoFactory.intTypeInfo, typeFactory);
+    // Create the dummy aggregation.
+    Aggregation countFn = (Aggregation) SqlFunctionConverter.getOptiqAggFn("count",
+        ImmutableList.of(intType), longType);
+    // TODO: Using 0 might be wrong; might need to walk down to find the
+    // proper index of a dummy.
+    List<Integer> argList = ImmutableList.of(0);
+    AggregateCall dummyCall = new AggregateCall(countFn, false, argList, longType, null);
+    AggregateRelBase newAggRel = oldAggRel.copy(oldAggRel.getTraitSet(), oldAggRel.getChild(),
+        oldAggRel.getGroupSet(), ImmutableList.of(dummyCall));
+    RelNode select = introduceDerivedTable(newAggRel);
+    parent.replaceInput(0, select);
   }
 }

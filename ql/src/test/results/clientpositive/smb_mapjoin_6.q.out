@@ -2466,8 +2466,8 @@ STAGE PLANS:
             alias: b
             Statistics: Num rows: 500 Data size: 4812 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key is not null and (key > 1000)) (type: boolean)
-              Statistics: Num rows: 83 Data size: 798 Basic stats: COMPLETE Column stats: NONE
+              predicate: (key > 1000) (type: boolean)
+              Statistics: Num rows: 166 Data size: 1597 Basic stats: COMPLETE Column stats: NONE
               Sorted Merge Bucket Map Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -2583,8 +2583,8 @@ STAGE PLANS:
             alias: a
             Statistics: Num rows: 500 Data size: 4812 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key is not null and (key > 1000)) (type: boolean)
-              Statistics: Num rows: 83 Data size: 798 Basic stats: COMPLETE Column stats: NONE
+              predicate: (key > 1000) (type: boolean)
+              Statistics: Num rows: 166 Data size: 1597 Basic stats: COMPLETE Column stats: NONE
               Sorted Merge Bucket Map Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -2692,8 +2692,8 @@ STAGE PLANS:
             alias: a
             Statistics: Num rows: 500 Data size: 4812 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key is not null and (key > 1000)) (type: boolean)
-              Statistics: Num rows: 83 Data size: 798 Basic stats: COMPLETE Column stats: NONE
+              predicate: (key > 1000) (type: boolean)
+              Statistics: Num rows: 166 Data size: 1597 Basic stats: COMPLETE Column stats: NONE
               Sorted Merge Bucket Map Join Operator
                 condition map:
                      Inner Join 0 to 1

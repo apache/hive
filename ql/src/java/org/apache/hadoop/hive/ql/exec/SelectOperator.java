@@ -125,4 +125,31 @@ public class SelectOperator extends Operator<SelectDesc> implements Serializable
   public boolean acceptLimitPushdown() {
     return true;
   }
+
+  /**
+   * Checks whether this select operator does something to the
+   * input tuples.
+   *
+   * @return if it is an identity select operator or not
+   */
+  public boolean isIdentitySelect() {
+    //Safety check
+    if(this.getNumParent() != 1) {
+      return false;
+    }
+
+    //Select *
+    if(this.getConf().isSelStarNoCompute() ||
+        this.getConf().isSelectStar()) {
+      return true;
+    }
+
+    //Check whether the have the same schema
+    if(!OperatorUtils.sameRowSchema(this, this.getParentOperators().get(0))) {
+      return false;
+    }
+
+    return true;
+  }
+
 }

@@ -46,7 +46,7 @@ public class ExecutionContext {
   public void clearBadHosts() {
     mBadHosts.clear();
   }
-  void addHost(Host host) {
+  public void addHost(Host host) {
     mHosts.add(host);
   }
   boolean removeHost(Host host) {

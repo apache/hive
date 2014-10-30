@@ -351,6 +351,9 @@
              <void method="put"> 
               <string>_col0</string> 
               <object id="ExprNodeConstantDesc0" class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
+               <void property="foldedFromCol"> 
+                <string>CASE (1) WHEN (1) THEN (2) WHEN (3) THEN (4) ELSE (5) END</string> 
+               </void> 
                <void property="typeInfo"> 
                 <object idref="PrimitiveTypeInfo0"/> 
                </void> 

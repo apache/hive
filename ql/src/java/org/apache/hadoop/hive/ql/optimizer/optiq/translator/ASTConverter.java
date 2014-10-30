@@ -25,6 +25,8 @@ import java.util.Map;
 
 import net.hydromatic.optiq.util.BitSets;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.optimizer.optiq.OptiqSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.optiq.RelOptHiveTable;
@@ -63,6 +65,7 @@ import org.eigenbase.sql.type.SqlTypeName;
 import com.google.common.collect.Iterables;
 
 public class ASTConverter {
+  private static final Log LOG = LogFactory.getLog(ASTConverter.class);
 
   private RelNode          root;
   private HiveAST          hiveAST;
@@ -149,8 +152,9 @@ public class ASTConverter {
       int i = 0;
 
       for (RexNode r : select.getChildExps()) {
-        ASTNode selectExpr = ASTBuilder.selectExpr(r.accept(new RexVisitor(schema)), select
-            .getRowType().getFieldNames().get(i++));
+        ASTNode selectExpr = ASTBuilder.selectExpr(r.accept(
+             new RexVisitor(schema, r instanceof RexLiteral)),
+                  select.getRowType().getFieldNames().get(i++));
         b.add(selectExpr);
       }
     }
@@ -329,10 +333,16 @@ public class ASTConverter {
   static class RexVisitor extends RexVisitorImpl<ASTNode> {
 
     private final Schema schema;
+    private boolean useTypeQualInLiteral;
 
     protected RexVisitor(Schema schema) {
+      this(schema, false);
+    }
+
+    protected RexVisitor(Schema schema, boolean useTypeQualInLiteral) {
       super(true);
       this.schema = schema;
+      this.useTypeQualInLiteral = useTypeQualInLiteral;
     }
 
     @Override
@@ -357,7 +367,7 @@ public class ASTConverter {
 
     @Override
     public ASTNode visitLiteral(RexLiteral literal) {
-      return ASTBuilder.literal(literal);
+      return ASTBuilder.literal(literal, useTypeQualInLiteral);
     }
 
     private ASTNode getPSpecAST(RexWindow window) {

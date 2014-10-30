@@ -17,10 +17,13 @@
  */
 package org.apache.hadoop.hive.ql.exec.tez;
 
+import java.io.IOException;
+import java.util.Map;
+import java.util.Map.Entry;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.MapredContext;
 import org.apache.hadoop.hive.ql.exec.ObjectCacheFactory;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -40,10 +43,6 @@ import org.apache.tez.runtime.api.LogicalInput;
 import org.apache.tez.runtime.api.LogicalOutput;
 import org.apache.tez.runtime.api.ProcessorContext;
 import org.apache.tez.runtime.library.api.KeyValueReader;
-
-import java.io.IOException;
-import java.util.Map;
-import java.util.Map.Entry;
 
 /**
  * Record processor for fast merging of files.
@@ -93,15 +92,15 @@ public class MergeFileRecordProcessor extends RecordProcessor {
       MapWork mapWork = (MapWork) cache.retrieve(MAP_PLAN_KEY);
       if (mapWork == null) {
         mapWork = Utilities.getMapWork(jconf);
-        if (mapWork instanceof MergeFileWork) {
-          mfWork = (MergeFileWork) mapWork;
-        } else {
-          throw new RuntimeException("MapWork should be an instance of" +
-              " MergeFileWork.");
-        }
         cache.cache(MAP_PLAN_KEY, mapWork);
       } else {
         Utilities.setMapWork(jconf, mapWork);
+      }
+
+      if (mapWork instanceof MergeFileWork) {
+        mfWork = (MergeFileWork) mapWork;
+      } else {
+        throw new RuntimeException("MapWork should be an instance of MergeFileWork.");
       }
 
       String alias = mfWork.getAliasToWork().keySet().iterator().next();
@@ -157,10 +156,7 @@ public class MergeFileRecordProcessor extends RecordProcessor {
       }
       mergeOp.close(abort);
 
-      if (isLogInfoEnabled) {
-        logCloseInfo();
-      }
-      ExecMapper.ReportStats rps = new ExecMapper.ReportStats(reporter);
+      ExecMapper.ReportStats rps = new ExecMapper.ReportStats(reporter, jconf);
       mergeOp.preorderMap(rps);
     } catch (Exception e) {
       if (!abort) {
@@ -191,9 +187,6 @@ public class MergeFileRecordProcessor extends RecordProcessor {
         row[0] = key;
         row[1] = value;
         mergeOp.processOp(row, 0);
-        if (isLogInfoEnabled) {
-          logProgress();
-        }
       }
     } catch (Throwable e) {
       abort = true;
@@ -211,6 +204,7 @@ public class MergeFileRecordProcessor extends RecordProcessor {
   private MRInputLegacy getMRInput(Map<String, LogicalInput> inputs) throws Exception {
     // there should be only one MRInput
     MRInputLegacy theMRInput = null;
+    LOG.info("VDK: the inputs are: " + inputs);
     for (Entry<String, LogicalInput> inp : inputs.entrySet()) {
       if (inp.getValue() instanceof MRInputLegacy) {
         if (theMRInput != null) {

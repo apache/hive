@@ -18,6 +18,7 @@
  */
 package org.apache.hive.hcatalog.templeton.tool;
 
+import com.google.common.io.Files;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -33,6 +34,7 @@ import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.Shell;
 import org.apache.hadoop.util.StringUtils;
+import org.apache.hive.hcatalog.templeton.AppConfig;
 import org.apache.hive.hcatalog.templeton.BadParam;
 import org.apache.hive.hcatalog.templeton.LauncherDelegator;
 
@@ -89,6 +91,24 @@ public class LaunchMapper extends Mapper<NullWritable, NullWritable, Text, Text>
       env.put(PigConstants.PIG_OPTS, pigOpts.toString());
     }
   }
+
+  /**
+   * {@link #copyLocal(String, org.apache.hadoop.conf.Configuration)} should be called before this
+   * See {@link org.apache.hive.hcatalog.templeton.SqoopDelegator#makeBasicArgs(String, String, String, String, boolean, String)}
+   * for more comments
+   */
+  private static void handleSqoop(Configuration conf, Map<String, String> env) throws IOException {
+    if(TempletonUtils.isset(conf.get(Sqoop.LIB_JARS))) {
+      //LIB_JARS should only be set if Sqoop is auto-shipped
+      LOG.debug(Sqoop.LIB_JARS + "=" + conf.get(Sqoop.LIB_JARS));
+      //copy these (which have now been localized) jars to sqoop/lib
+      String destDir = conf.get(AppConfig.SQOOP_HOME_PATH) + File.separator + "lib";
+      String[] files = conf.getStrings(Sqoop.LIB_JARS);
+      for(String f : files) {
+        Files.copy(new File(f), new File(destDir + File.separator + f));
+      }
+    }
+  }
   protected Process startJob(Context context, String user, String overrideClasspath)
     throws IOException, InterruptedException {
     Configuration conf = context.getConfiguration();
@@ -108,6 +128,7 @@ public class LaunchMapper extends Mapper<NullWritable, NullWritable, Text, Text>
     removeEnv.add("mapredcommand");
     Map<String, String> env = TempletonUtils.hadoopUserEnv(user, overrideClasspath);
     handlePigEnvVars(conf, env);
+    handleSqoop(conf, env);
     List<String> jarArgsList = new LinkedList<String>(Arrays.asList(jarArgs));
     handleTokenFile(jarArgsList, JobSubmissionConstants.TOKEN_FILE_ARG_PLACEHOLDER, "mapreduce.job.credentials.binary");
     handleTokenFile(jarArgsList, JobSubmissionConstants.TOKEN_FILE_ARG_PLACEHOLDER_TEZ, "tez.credentials.path");

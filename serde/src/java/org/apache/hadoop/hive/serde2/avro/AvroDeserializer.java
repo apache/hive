@@ -40,7 +40,6 @@ import org.apache.avro.io.BinaryDecoder;
 import org.apache.avro.io.BinaryEncoder;
 import org.apache.avro.io.DecoderFactory;
 import org.apache.avro.io.EncoderFactory;
-import org.apache.avro.util.Utf8;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.type.HiveChar;
@@ -201,7 +200,7 @@ class AvroDeserializer {
     // Avro requires NULLable types to be defined as unions of some type T
     // and NULL.  This is annoying and we're going to hide it from the user.
     if(AvroSerdeUtils.isNullableType(recordSchema)) {
-      return deserializeNullableUnion(datum, fileSchema, recordSchema, columnType);
+      return deserializeNullableUnion(datum, fileSchema, recordSchema);
     }
 
     switch(columnType.getCategory()) {
@@ -297,8 +296,8 @@ class AvroDeserializer {
    * Extract either a null or the correct type from a Nullable type.  This is
    * horrible in that we rebuild the TypeInfo every time.
    */
-  private Object deserializeNullableUnion(Object datum, Schema fileSchema, Schema recordSchema,
-                                          TypeInfo columnType) throws AvroSerdeException {
+  private Object deserializeNullableUnion(Object datum, Schema fileSchema, Schema recordSchema)
+                                            throws AvroSerdeException {
     int tag = GenericData.get().resolveUnion(recordSchema, datum); // Determine index of value
     Schema schema = recordSchema.getTypes().get(tag);
     if (schema.getType().equals(Schema.Type.NULL)) {
@@ -307,8 +306,14 @@ class AvroDeserializer {
 
     Schema currentFileSchema = null;
     if (fileSchema != null) {
-       currentFileSchema =
-           fileSchema.getType() == Type.UNION ? fileSchema.getTypes().get(tag) : fileSchema;
+      if (fileSchema.getType() == Type.UNION) {
+        // The fileSchema may have the null value in a different position, so
+        // we need to get the correct tag
+        tag = GenericData.get().resolveUnion(fileSchema, datum);
+        currentFileSchema = fileSchema.getTypes().get(tag);
+      } else {
+        currentFileSchema = fileSchema;
+      }
     }
     return worker(datum, currentFileSchema, schema, SchemaToTypeInfo.generateTypeInfo(schema));
 
@@ -370,10 +375,10 @@ class AvroDeserializer {
     // Avro only allows maps with Strings for keys, so we only have to worry
     // about deserializing the values
     Map<String, Object> map = new HashMap<String, Object>();
-    Map<Utf8, Object> mapDatum = (Map)datum;
+    Map<CharSequence, Object> mapDatum = (Map)datum;
     Schema valueSchema = mapSchema.getValueType();
     TypeInfo valueTypeInfo = columnType.getMapValueTypeInfo();
-    for (Utf8 key : mapDatum.keySet()) {
+    for (CharSequence key : mapDatum.keySet()) {
       Object value = mapDatum.get(key);
       map.put(key.toString(), worker(value, fileSchema == null ? null : fileSchema.getValueType(),
           valueSchema, valueTypeInfo));

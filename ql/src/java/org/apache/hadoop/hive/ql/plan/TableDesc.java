@@ -24,7 +24,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.hadoop.hive.common.JavaUtils;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
@@ -76,12 +76,16 @@ public class TableDesc implements Serializable, Cloneable {
     return inputFileFormatClass;
   }
 
+  public Deserializer getDeserializer() throws Exception {
+    return getDeserializer(null);
+  }
+
   /**
    * Return a deserializer object corresponding to the tableDesc.
    */
-  public Deserializer getDeserializer() throws Exception {
+  public Deserializer getDeserializer(Configuration conf) throws Exception {
     Deserializer de = getDeserializerClass().newInstance();
-    SerDeUtils.initializeSerDe(de, null, properties, null);
+    SerDeUtils.initializeSerDe(de, conf, properties, null);
     return de;
   }
 

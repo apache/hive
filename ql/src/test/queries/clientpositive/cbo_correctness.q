@@ -251,7 +251,7 @@ drop view v3;
 drop view v4;
 
 -- 11. Union All
-select * from t1 union all select * from t2 order by key;
+select * from t1 union all select * from t2 order by key, c_boolean, value, dt;
 select key from (select key, c_int from (select * from t1 union all select * from t2 where t2.key >=0)r1 union all select key, c_int from t3)r2 where key >=0 order by key;
 select r2.key from (select key, c_int from (select key, c_int from t1 union all select key, c_int from t3 )r1 union all select key, c_int from t3)r2 join   (select key, c_int from (select * from t1 union all select * from t2 where t2.key >=0)r1 union all select key, c_int from t3)r3 on r2.key=r3.key where r3.key >=0 order by r2.key;
 
@@ -281,7 +281,7 @@ from src_cbo
 where src_cbo.key not in  
   ( select key  from src_cbo s1 
     where s1.key > '2'
-  )
+  ) order by key
 ;
 
 -- non agg, corr
@@ -456,7 +456,33 @@ from (select b.key, count(*)
 ) a
 ;
 
--- 17. get stats with empty partition list
+-- 20. Test get stats with empty partition list
 select t1.value from t1 join t2 on t1.key = t2.key where t1.dt = '10' and t1.c_boolean = true;
 
+-- 21. Test groupby is empty and there is no other cols in aggr
+select unionsrc.key FROM (select 'tst1' as key, count(1) as value from src) unionsrc;
 
+select unionsrc.key, unionsrc.value FROM (select 'tst1' as key, count(1) as value from src) unionsrc;
+
+select unionsrc.key FROM (select 'max' as key, max(c_int) as value from t3 s1
+	UNION  ALL
+    	select 'min' as key,  min(c_int) as value from t3 s2
+    UNION ALL
+        select 'avg' as key,  avg(c_int) as value from t3 s3) unionsrc order by unionsrc.key;
+        
+select unionsrc.key, unionsrc.value FROM (select 'max' as key, max(c_int) as value from t3 s1
+	UNION  ALL
+    	select 'min' as key,  min(c_int) as value from t3 s2
+    UNION ALL
+        select 'avg' as key,  avg(c_int) as value from t3 s3) unionsrc order by unionsrc.key;
+
+select unionsrc.key, count(1) FROM (select 'max' as key, max(c_int) as value from t3 s1
+    UNION  ALL
+        select 'min' as key,  min(c_int) as value from t3 s2
+    UNION ALL
+        select 'avg' as key,  avg(c_int) as value from t3 s3) unionsrc group by unionsrc.key order by unionsrc.key;
+
+-- Windowing
+select *, rank() over(partition by key order by value) as rr from src1;
+
+select *, rank() over(partition by key order by value) from src1;

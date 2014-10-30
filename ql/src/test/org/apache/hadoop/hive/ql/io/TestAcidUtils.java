@@ -217,11 +217,11 @@ public class TestAcidUtils {
     Path part = new MockPath(fs, "/tbl/part1");
     AcidUtils.Directory dir =
         AcidUtils.getAcidState(part, conf, new ValidTxnListImpl("150:"));
+    // The two original buckets won't be in the obsolete list because we don't look at those
+    // until we have determined there is no base.
     List<FileStatus> obsolete = dir.getObsolete();
-    assertEquals(3, obsolete.size());
+    assertEquals(1, obsolete.size());
     assertEquals("mock:/tbl/part1/base_5", obsolete.get(0).getPath().toString());
-    assertEquals("mock:/tbl/part1/000000_0", obsolete.get(1).getPath().toString());
-    assertEquals("mock:/tbl/part1/000001_1", obsolete.get(2).getPath().toString());
     assertEquals("mock:/tbl/part1/base_10", dir.getBaseDirectory().toString());
   }
 
