@@ -149,7 +149,7 @@ STAGE PLANS:
                       Map-reduce partition columns: key (type: string)
                       Statistics: Num rows: 1 Data size: 113 Basic stats: COMPLETE Column stats: NONE
                       tag: 1
-                      auto parallelism: true
+                      auto parallelism: false
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -219,7 +219,7 @@ STAGE PLANS:
                       Map-reduce partition columns: key (type: string)
                       Statistics: Num rows: 27 Data size: 2750 Basic stats: COMPLETE Column stats: NONE
                       tag: 0
-                      auto parallelism: true
+                      auto parallelism: false
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -468,7 +468,7 @@ STAGE PLANS:
                       Map-reduce partition columns: key (type: string)
                       Statistics: Num rows: 1 Data size: 113 Basic stats: COMPLETE Column stats: NONE
                       tag: 1
-                      auto parallelism: true
+                      auto parallelism: false
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -538,7 +538,7 @@ STAGE PLANS:
                       Map-reduce partition columns: key (type: string)
                       Statistics: Num rows: 27 Data size: 2750 Basic stats: COMPLETE Column stats: NONE
                       tag: 0
-                      auto parallelism: true
+                      auto parallelism: false
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:

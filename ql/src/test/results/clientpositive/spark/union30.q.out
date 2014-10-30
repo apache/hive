@@ -128,18 +128,15 @@ STAGE PLANS:
                     expressions: key (type: string), value (type: string)
                     outputColumnNames: _col0, _col1
                     Select Operator
-                      expressions: _col0 (type: string), _col1 (type: string)
+                      expressions: UDFToInteger(_col0) (type: int), _col1 (type: string)
                       outputColumnNames: _col0, _col1
-                      Select Operator
-                        expressions: UDFToInteger(_col0) (type: int), _col1 (type: string)
-                        outputColumnNames: _col0, _col1
-                        File Output Operator
-                          compressed: false
-                          table:
-                              input format: org.apache.hadoop.mapred.TextInputFormat
-                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                              name: default.union_subq_union
+                      File Output Operator
+                        compressed: false
+                        table:
+                            input format: org.apache.hadoop.mapred.TextInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                            name: default.union_subq_union
         Reducer 2 
             Reduce Operator Tree:
               Group By Operator
@@ -154,18 +151,15 @@ STAGE PLANS:
                     expressions: _col0 (type: string), _col1 (type: string)
                     outputColumnNames: _col0, _col1
                     Select Operator
-                      expressions: _col0 (type: string), _col1 (type: string)
+                      expressions: UDFToInteger(_col0) (type: int), _col1 (type: string)
                       outputColumnNames: _col0, _col1
-                      Select Operator
-                        expressions: UDFToInteger(_col0) (type: int), _col1 (type: string)
-                        outputColumnNames: _col0, _col1
-                        File Output Operator
-                          compressed: false
-                          table:
-                              input format: org.apache.hadoop.mapred.TextInputFormat
-                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                              name: default.union_subq_union
+                      File Output Operator
+                        compressed: false
+                        table:
+                            input format: org.apache.hadoop.mapred.TextInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                            name: default.union_subq_union
         Reducer 5 
             Reduce Operator Tree:
               Group By Operator
@@ -180,18 +174,15 @@ STAGE PLANS:
                     expressions: _col0 (type: string), _col1 (type: string)
                     outputColumnNames: _col0, _col1
                     Select Operator
-                      expressions: _col0 (type: string), _col1 (type: string)
+                      expressions: UDFToInteger(_col0) (type: int), _col1 (type: string)
                       outputColumnNames: _col0, _col1
-                      Select Operator
-                        expressions: UDFToInteger(_col0) (type: int), _col1 (type: string)
-                        outputColumnNames: _col0, _col1
-                        File Output Operator
-                          compressed: false
-                          table:
-                              input format: org.apache.hadoop.mapred.TextInputFormat
-                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                              name: default.union_subq_union
+                      File Output Operator
+                        compressed: false
+                        table:
+                            input format: org.apache.hadoop.mapred.TextInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                            name: default.union_subq_union
         Union 3 
             Vertex: Union 3
 

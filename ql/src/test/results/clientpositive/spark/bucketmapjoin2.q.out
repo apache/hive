@@ -187,7 +187,7 @@ STAGE PLANS:
                       Statistics: Num rows: 15 Data size: 1583 Basic stats: COMPLETE Column stats: NONE
                       tag: 1
                       value expressions: value (type: string)
-                      auto parallelism: true
+                      auto parallelism: false
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -257,7 +257,7 @@ STAGE PLANS:
                       Statistics: Num rows: 28 Data size: 2958 Basic stats: COMPLETE Column stats: NONE
                       tag: 0
                       value expressions: value (type: string)
-                      auto parallelism: true
+                      auto parallelism: false
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -585,7 +585,7 @@ STAGE PLANS:
                       Statistics: Num rows: 15 Data size: 1583 Basic stats: COMPLETE Column stats: NONE
                       tag: 1
                       value expressions: value (type: string)
-                      auto parallelism: true
+                      auto parallelism: false
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -655,7 +655,7 @@ STAGE PLANS:
                       Statistics: Num rows: 28 Data size: 2958 Basic stats: COMPLETE Column stats: NONE
                       tag: 0
                       value expressions: value (type: string)
-                      auto parallelism: true
+                      auto parallelism: false
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -1005,7 +1005,7 @@ STAGE PLANS:
                       Statistics: Num rows: 29 Data size: 3062 Basic stats: COMPLETE Column stats: NONE
                       tag: 1
                       value expressions: value (type: string)
-                      auto parallelism: true
+                      auto parallelism: false
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -1123,7 +1123,7 @@ STAGE PLANS:
                       Statistics: Num rows: 28 Data size: 2958 Basic stats: COMPLETE Column stats: NONE
                       tag: 0
                       value expressions: value (type: string)
-                      auto parallelism: true
+                      auto parallelism: false
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:

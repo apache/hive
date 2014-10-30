@@ -311,8 +311,8 @@ STAGE PLANS:
                   alias: srcpart
                   Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: key (type: string), value (type: string), ds (type: string)
-                    outputColumnNames: _col0, _col1, _col2
+                    expressions: key (type: string), value (type: string)
+                    outputColumnNames: _col0, _col1
                     Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                     Limit
                       Number of rows: 500
@@ -320,15 +320,15 @@ STAGE PLANS:
                       Reduce Output Operator
                         sort order: 
                         Statistics: Num rows: 500 Data size: 5000 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
+                        value expressions: _col0 (type: string), _col1 (type: string)
         Map 4 
             Map Operator Tree:
                 TableScan
                   alias: srcpart
                   Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: key (type: string), value (type: string), ds (type: string)
-                    outputColumnNames: _col0, _col1, _col2
+                    expressions: key (type: string), value (type: string)
+                    outputColumnNames: _col0, _col1
                     Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                     Limit
                       Number of rows: 500
@@ -336,16 +336,16 @@ STAGE PLANS:
                       Reduce Output Operator
                         sort order: 
                         Statistics: Num rows: 500 Data size: 5000 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
+                        value expressions: _col0 (type: string), _col1 (type: string)
         Reducer 2 
             Reduce Operator Tree:
               Select Operator
-                expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: string)
-                outputColumnNames: _col0, _col1, _col2
+                expressions: VALUE._col0 (type: string), VALUE._col1 (type: string)
+                outputColumnNames: _col0, _col1
                 Limit
                   Number of rows: 500
                   Select Operator
-                    expressions: _col0 (type: string), UDFToLong(_col1) (type: bigint), _col2 (type: string)
+                    expressions: _col0 (type: string), UDFToLong(_col1) (type: bigint), '2008-04-08' (type: string)
                     outputColumnNames: _col0, _col1, _col2
                     File Output Operator
                       compressed: false
@@ -357,12 +357,12 @@ STAGE PLANS:
         Reducer 5 
             Reduce Operator Tree:
               Select Operator
-                expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: string)
-                outputColumnNames: _col0, _col1, _col2
+                expressions: VALUE._col0 (type: string), VALUE._col1 (type: string)
+                outputColumnNames: _col0, _col1
                 Limit
                   Number of rows: 500
                   Select Operator
-                    expressions: _col0 (type: string), UDFToLong(_col1) (type: bigint), _col2 (type: string)
+                    expressions: _col0 (type: string), UDFToLong(_col1) (type: bigint), '2008-04-08' (type: string)
                     outputColumnNames: _col0, _col1, _col2
                     File Output Operator
                       compressed: false
@@ -499,8 +499,8 @@ STAGE PLANS:
                   alias: srcpart
                   Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: key (type: string), value (type: string), ds (type: string), hr (type: string)
-                    outputColumnNames: _col0, _col1, _col2, _col3
+                    expressions: key (type: string), value (type: string), hr (type: string)
+                    outputColumnNames: _col0, _col1, _col3
                     Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                     Limit
                       Number of rows: 1000
@@ -508,15 +508,15 @@ STAGE PLANS:
                       Reduce Output Operator
                         sort order: 
                         Statistics: Num rows: 1000 Data size: 10000 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string)
+                        value expressions: _col0 (type: string), _col1 (type: string), _col3 (type: string)
         Map 4 
             Map Operator Tree:
                 TableScan
                   alias: srcpart
                   Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: key (type: string), value (type: string), ds (type: string), hr (type: string)
-                    outputColumnNames: _col0, _col1, _col2, _col3
+                    expressions: key (type: string), value (type: string), hr (type: string)
+                    outputColumnNames: _col0, _col1, _col3
                     Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                     Limit
                       Number of rows: 1000
@@ -524,16 +524,16 @@ STAGE PLANS:
                       Reduce Output Operator
                         sort order: 
                         Statistics: Num rows: 1000 Data size: 10000 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string)
+                        value expressions: _col0 (type: string), _col1 (type: string), _col3 (type: string)
         Reducer 2 
             Reduce Operator Tree:
               Select Operator
-                expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: string), VALUE._col3 (type: string)
-                outputColumnNames: _col0, _col1, _col2, _col3
+                expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), VALUE._col3 (type: string)
+                outputColumnNames: _col0, _col1, _col3
                 Limit
                   Number of rows: 1000
                   Select Operator
-                    expressions: _col0 (type: string), UDFToLong(_col1) (type: bigint), _col2 (type: string), _col3 (type: string)
+                    expressions: _col0 (type: string), UDFToLong(_col1) (type: bigint), '2008-04-08' (type: string), _col3 (type: string)
                     outputColumnNames: _col0, _col1, _col2, _col3
                     File Output Operator
                       compressed: false
@@ -545,12 +545,12 @@ STAGE PLANS:
         Reducer 5 
             Reduce Operator Tree:
               Select Operator
-                expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: string), VALUE._col3 (type: string)
-                outputColumnNames: _col0, _col1, _col2, _col3
+                expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), VALUE._col3 (type: string)
+                outputColumnNames: _col0, _col1, _col3
                 Limit
                   Number of rows: 1000
                   Select Operator
-                    expressions: _col0 (type: string), UDFToLong(_col1) (type: bigint), _col2 (type: string), _col3 (type: string)
+                    expressions: _col0 (type: string), UDFToLong(_col1) (type: bigint), '2008-04-08' (type: string), _col3 (type: string)
                     outputColumnNames: _col0, _col1, _col2, _col3
                     File Output Operator
                       compressed: false
