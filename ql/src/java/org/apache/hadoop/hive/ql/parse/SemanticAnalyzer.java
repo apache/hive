@@ -259,6 +259,9 @@ import org.eigenbase.rel.rules.LoptOptimizeJoinRule;
 import org.eigenbase.rel.rules.MergeFilterRule;
 import org.eigenbase.rel.rules.PushFilterPastProjectRule;
 import org.eigenbase.rel.rules.PushFilterPastSetOpRule;
+import org.eigenbase.rel.rules.PushSemiJoinPastFilterRule;
+import org.eigenbase.rel.rules.PushSemiJoinPastJoinRule;
+import org.eigenbase.rel.rules.PushSemiJoinPastProjectRule;
 import org.eigenbase.rel.rules.SemiJoinRel;
 import org.eigenbase.rel.rules.TransitivePredicatesOnJoinRule;
 import org.eigenbase.relopt.RelOptCluster;
@@ -12644,7 +12647,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // TODO: Decorelation of subquery should be done before attempting
       // Partition Pruning; otherwise Expression evaluation may try to execute
       // corelated sub query.
-      basePlan = hepPlan(basePlan, true, mdProvider, new PushFilterPastProjectRule(
+
+      // Push Down Semi Joins
+      basePlan = hepPlan(basePlan, true, mdProvider,
+          PushSemiJoinPastJoinRule.INSTANCE,
+          new PushSemiJoinPastFilterRule(HiveFilterRel.DEFAULT_FILTER_FACTORY),
+          new PushSemiJoinPastProjectRule(HiveProjectRel.DEFAULT_PROJECT_FACTORY));
+
+      basePlan = hepPlan(basePlan, true, mdProvider,
+          new PushFilterPastProjectRule(
           FilterRelBase.class, HiveFilterRel.DEFAULT_FILTER_FACTORY, HiveProjectRel.class,
           HiveProjectRel.DEFAULT_PROJECT_FACTORY), new PushFilterPastSetOpRule(
           HiveFilterRel.DEFAULT_FILTER_FACTORY), new MergeFilterRule(
