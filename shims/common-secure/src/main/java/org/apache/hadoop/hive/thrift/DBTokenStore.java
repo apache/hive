@@ -25,6 +25,7 @@ import java.util.List;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge.Server.ServerMode;
 import org.apache.hadoop.security.token.delegation.AbstractDelegationTokenSecretManager.DelegationTokenInformation;
 import org.apache.hadoop.security.token.delegation.HiveDelegationTokenSupport;
 
@@ -111,7 +112,7 @@ public class DBTokenStore implements DelegationTokenStore {
   private Object rawStore;
 
   @Override
-  public void setStore(Object rawStore) throws TokenStoreException {
+  public void init(Object rawStore, ServerMode smode) throws TokenStoreException {
     this.rawStore = rawStore;
   }
 
@@ -147,6 +148,5 @@ public class DBTokenStore implements DelegationTokenStore {
   public void close() throws IOException {
     // No-op.
   }
-
 
 }

@@ -414,13 +414,19 @@ public class HiveConf extends Configuration {
         "The delegation token store implementation. Set to org.apache.hadoop.hive.thrift.ZooKeeperTokenStore for load-balanced cluster."),
     METASTORE_CLUSTER_DELEGATION_TOKEN_STORE_ZK_CONNECTSTR(
         "hive.cluster.delegation.token.store.zookeeper.connectString", "",
-        "The ZooKeeper token store connect string."),
+        "The ZooKeeper token store connect string. You can re-use the configuration value\n" +
+        "set in hive.zookeeper.quorum, by leaving this parameter unset."),
     METASTORE_CLUSTER_DELEGATION_TOKEN_STORE_ZK_ZNODE(
-        "hive.cluster.delegation.token.store.zookeeper.znode", "/hive/cluster/delegation",
-        "The root path for token store data."),
+        "hive.cluster.delegation.token.store.zookeeper.znode", "/hivedelegation",
+        "The root path for token store data. Note that this is used by both HiveServer2 and\n" +
+        "MetaStore to store delegation Token. One directory gets created for each of them.\n" +
+        "The final directory names would have the servername appended to it (HIVESERVER2,\n" +
+        "METASTORE)."),
     METASTORE_CLUSTER_DELEGATION_TOKEN_STORE_ZK_ACL(
         "hive.cluster.delegation.token.store.zookeeper.acl", "",
-        "ACL for token store entries. List comma separated all server principals for the cluster."),
+        "ACL for token store entries. Comma separated list of ACL entries. For example:\n" +
+        "sasl:hive/host1@MY.DOMAIN:cdrwa,sasl:hive/host2@MY.DOMAIN:cdrwa\n" +
+        "Defaults to all permissions for the hiveserver2/metastore process user."),
     METASTORE_CACHE_PINOBJTYPES("hive.metastore.cache.pinobjtypes", "Table,StorageDescriptor,SerDeInfo,Partition,Database,Type,FieldSchema,Order",
         "List of comma separated metastore object types that should be pinned in the cache"),
     METASTORE_CONNECTION_POOLING_TYPE("datanucleus.connectionPoolingType", "BONECP",
@@ -1274,10 +1280,13 @@ public class HiveConf extends Configuration {
 
      // Zookeeper related configs
     HIVE_ZOOKEEPER_QUORUM("hive.zookeeper.quorum", "",
-        "List of ZooKeeper servers to talk to. This is needed for: " +
-        "1. Read/write locks - when hive.lock.manager is set to " +
-        "org.apache.hadoop.hive.ql.lockmgr.zookeeper.ZooKeeperHiveLockManager, " +
-        "2. When HiveServer2 supports service discovery via Zookeeper."),
+        "List of ZooKeeper servers to talk to. This is needed for: \n" +
+        "1. Read/write locks - when hive.lock.manager is set to \n" +
+        "org.apache.hadoop.hive.ql.lockmgr.zookeeper.ZooKeeperHiveLockManager, \n" +
+        "2. When HiveServer2 supports service discovery via Zookeeper.\n" +
+        "3. For delegation token storage if zookeeper store is used, if\n" +
+        "hive.cluster.delegation.token.store.zookeeper.connectString is not set"),
+
     HIVE_ZOOKEEPER_CLIENT_PORT("hive.zookeeper.client.port", "2181",
         "The port of ZooKeeper servers to talk to.\n" +
         "If the list of Zookeeper servers specified in hive.zookeeper.quorum\n" +
