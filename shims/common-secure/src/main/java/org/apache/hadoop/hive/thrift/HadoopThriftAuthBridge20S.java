@@ -308,6 +308,10 @@ public class HadoopThriftAuthBridge20S extends HadoopThriftAuthBridge {
         "hive.cluster.delegation.token.store.class";
     public static final String DELEGATION_TOKEN_STORE_ZK_CONNECT_STR =
         "hive.cluster.delegation.token.store.zookeeper.connectString";
+    // alternate connect string specification configuration
+    public static final String DELEGATION_TOKEN_STORE_ZK_CONNECT_STR_ALTERNATE =
+        "hive.zookeeper.quorum";
+
     public static final String DELEGATION_TOKEN_STORE_ZK_CONNECT_TIMEOUTMILLIS =
         "hive.cluster.delegation.token.store.zookeeper.connectTimeoutMillis";
     public static final String DELEGATION_TOKEN_STORE_ZK_ZNODE =
@@ -315,7 +319,7 @@ public class HadoopThriftAuthBridge20S extends HadoopThriftAuthBridge {
     public static final String DELEGATION_TOKEN_STORE_ZK_ACL =
         "hive.cluster.delegation.token.store.zookeeper.acl";
     public static final String DELEGATION_TOKEN_STORE_ZK_ZNODE_DEFAULT =
-        "/hive/cluster/delegation";
+        "/hivedelegation";
 
     public Server() throws TTransportException {
       try {
@@ -417,7 +421,7 @@ public class HadoopThriftAuthBridge20S extends HadoopThriftAuthBridge {
     }
 
     @Override
-    public void startDelegationTokenSecretManager(Configuration conf, Object rawStore)
+    public void startDelegationTokenSecretManager(Configuration conf, Object rawStore, ServerMode smode)
         throws IOException{
       long secretKeyInterval =
           conf.getLong(DELEGATION_KEY_UPDATE_INTERVAL_KEY,
@@ -430,7 +434,7 @@ public class HadoopThriftAuthBridge20S extends HadoopThriftAuthBridge {
               DELEGATION_TOKEN_RENEW_INTERVAL_DEFAULT);
 
       DelegationTokenStore dts = getTokenStore(conf);
-      dts.setStore(rawStore);
+      dts.init(rawStore, smode);
       secretManager = new TokenStoreDelegationTokenSecretManager(secretKeyInterval,
           tokenMaxLifetime,
           tokenRenewInterval,

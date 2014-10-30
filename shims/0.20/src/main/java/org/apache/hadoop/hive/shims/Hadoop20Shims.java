@@ -59,7 +59,6 @@ import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.io.HiveIOExceptionHandlerUtil;
-import org.apache.hadoop.hive.shims.HadoopShims.KerberosNameShim;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapred.ClusterStatus;
 import org.apache.hadoop.mapred.FileInputFormat;
@@ -705,7 +704,7 @@ public class Hadoop20Shims implements HadoopShims {
   }
 
   public class Hadoop20FileStatus implements HdfsFileStatus {
-    private FileStatus fileStatus;
+    private final FileStatus fileStatus;
     public Hadoop20FileStatus(FileStatus fileStatus) {
       this.fileStatus = fileStatus;
     }
@@ -713,6 +712,7 @@ public class Hadoop20Shims implements HadoopShims {
     public FileStatus getFileStatus() {
       return fileStatus;
     }
+    @Override
     public void debugLog() {
       if (fileStatus != null) {
         LOG.debug(fileStatus.toString());
@@ -945,5 +945,10 @@ public class Hadoop20Shims implements HadoopShims {
   public KerberosNameShim getKerberosNameShim(String name) throws IOException {
     // Not supported
     return null;
+  }
+
+  @Override
+  public void setZookeeperClientKerberosJaasConfig(String principal, String keyTabFile) {
+    // Not supported
   }
 }
