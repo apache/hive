@@ -132,7 +132,7 @@
     <jms.version>1.1</jms.version>
     <jodd.version>3.5.2</jodd.version>
     <json.version>20090211</json.version>
-    <junit.version>4.10</junit.version>
+    <junit.version>4.11</junit.version>
     <kryo.version>2.22</kryo.version>
     <libfb303.version>0.9.0</libfb303.version>
     <libthrift.version>0.9.0</libthrift.version>
