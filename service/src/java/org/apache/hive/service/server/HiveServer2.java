@@ -32,6 +32,10 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.curator.framework.CuratorFramework;
+import org.apache.curator.framework.CuratorFrameworkFactory;
+import org.apache.curator.framework.api.ACLProvider;
+import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.hadoop.hive.common.LogUtils;
 import org.apache.hadoop.hive.common.LogUtils.LogInitializationException;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -52,7 +56,6 @@ import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooDefs.Ids;
 import org.apache.zookeeper.ZooDefs.Perms;
-import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.data.ACL;
 
 /**
@@ -65,14 +68,13 @@ public class HiveServer2 extends CompositeService {
   private CLIService cliService;
   private ThriftCLIService thriftCLIService;
   private String znodePath;
-  private ZooKeeper zooKeeperClient;
+  private CuratorFramework zooKeeperClient;
   private boolean registeredWithZooKeeper = false;
 
   public HiveServer2() {
     super(HiveServer2.class.getSimpleName());
     HiveConf.setLoadHiveServer2Config(true);
   }
-
 
   @Override
   public synchronized void init(HiveConf hiveConf) {
@@ -108,6 +110,33 @@ public class HiveServer2 extends CompositeService {
   }
 
   /**
+   * ACLProvider for providing appropriate ACLs to CuratorFrameworkFactory
+   */
+  private final ACLProvider zooKeeperAclProvider = new ACLProvider() {
+    List<ACL> nodeAcls = new ArrayList<ACL>();
+
+    @Override
+    public List<ACL> getDefaultAcl() {
+      if (ShimLoader.getHadoopShims().isSecurityEnabled()) {
+        // Read all to the world
+        nodeAcls.addAll(Ids.READ_ACL_UNSAFE);
+        // Create/Delete/Write/Admin to the authenticated user
+        nodeAcls.add(new ACL(Perms.ALL, Ids.AUTH_IDS));
+      } else {
+        // ACLs for znodes on a non-kerberized cluster
+        // Create/Read/Delete/Write/Admin to the world
+        nodeAcls.addAll(Ids.OPEN_ACL_UNSAFE);
+      }
+      return nodeAcls;
+    }
+
+    @Override
+    public List<ACL> getAclForPath(String path) {
+      return getDefaultAcl();
+    }
+  };
+
+  /**
    * Adds a server instance to ZooKeeper as a znode.
    *
    * @param hiveConf
@@ -116,28 +145,29 @@ public class HiveServer2 extends CompositeService {
   private void addServerInstanceToZooKeeper(HiveConf hiveConf) throws Exception {
     int zooKeeperSessionTimeout =
         hiveConf.getIntVar(HiveConf.ConfVars.HIVE_ZOOKEEPER_SESSION_TIMEOUT);
+    int connectTimeoutMillis = -1;
     String zooKeeperEnsemble = ZooKeeperHiveHelper.getQuorumServers(hiveConf);
     String rootNamespace = hiveConf.getVar(HiveConf.ConfVars.HIVE_SERVER2_ZOOKEEPER_NAMESPACE);
     String instanceURI = getServerInstanceURI(hiveConf);
     byte[] znodeDataUTF8 = instanceURI.getBytes(Charset.forName("UTF-8"));
-    // Znode ACLs
-    List<ACL> nodeAcls = new ArrayList<ACL>();
-    setUpAuthAndAcls(hiveConf, nodeAcls);
-    // Create a ZooKeeper client
+    setUpZooKeeperAuth(hiveConf);
+    // Create a CuratorFramework instance to be used as the ZooKeeper client
+    // Use the zooKeeperAclProvider to create appropriate ACLs
     zooKeeperClient =
-        new ZooKeeper(zooKeeperEnsemble, zooKeeperSessionTimeout,
-            new ZooKeeperHiveHelper.DummyWatcher());
+        CuratorFrameworkFactory.builder().connectString(zooKeeperEnsemble)
+            .sessionTimeoutMs(zooKeeperSessionTimeout).connectionTimeoutMs(connectTimeoutMillis)
+            .aclProvider(zooKeeperAclProvider).retryPolicy(new ExponentialBackoffRetry(1000, 3))
+            .build();
+    zooKeeperClient.start();
     // Create the parent znodes recursively; ignore if the parent already exists.
-    // If pre-creating the parent on a kerberized cluster, ensure that you give ACLs,
-    // as explained in {@link #setUpAuthAndAcls(HiveConf, List<ACL>) setUpAuthAndAcls}
     try {
-      ZooKeeperHiveHelper.createPathRecursively(zooKeeperClient, rootNamespace, nodeAcls,
-          CreateMode.PERSISTENT);
+      zooKeeperClient.create().creatingParentsIfNeeded().withMode(CreateMode.PERSISTENT)
+          .forPath(ZooKeeperHiveHelper.ZOOKEEPER_PATH_SEPARATOR + rootNamespace);
       LOG.info("Created the root name space: " + rootNamespace + " on ZooKeeper for HiveServer2");
     } catch (KeeperException e) {
       if (e.code() != KeeperException.Code.NODEEXISTS) {
         LOG.fatal("Unable to create HiveServer2 namespace: " + rootNamespace + " on ZooKeeper", e);
-        throw (e);
+        throw e;
       }
     }
     // Create a znode under the rootNamespace parent for this instance of the server
@@ -148,56 +178,40 @@ public class HiveServer2 extends CompositeService {
               + ZooKeeperHiveHelper.ZOOKEEPER_PATH_SEPARATOR + "serverUri=" + instanceURI + ";"
               + "version=" + HiveVersionInfo.getVersion() + ";" + "sequence=";
       znodePath =
-          zooKeeperClient.create(pathPrefix, znodeDataUTF8, nodeAcls,
-              CreateMode.EPHEMERAL_SEQUENTIAL);
+          zooKeeperClient.create().creatingParentsIfNeeded()
+              .withMode(CreateMode.EPHEMERAL_SEQUENTIAL).forPath(pathPrefix, znodeDataUTF8);
       setRegisteredWithZooKeeper(true);
       // Set a watch on the znode
-      if (zooKeeperClient.exists(znodePath, new DeRegisterWatcher()) == null) {
+      if (zooKeeperClient.checkExists().usingWatcher(new DeRegisterWatcher()).forPath(znodePath) == null) {
         // No node exists, throw exception
         throw new Exception("Unable to create znode for this HiveServer2 instance on ZooKeeper.");
       }
       LOG.info("Created a znode on ZooKeeper for HiveServer2 uri: " + instanceURI);
     } catch (KeeperException e) {
       LOG.fatal("Unable to create a znode for this server instance", e);
-      throw new Exception(e);
+      throw (e);
     }
   }
 
   /**
-   * Set up ACLs for znodes based on whether the cluster is secure or not.
-   * On a kerberized cluster, ZooKeeper performs Kerberos-SASL authentication.
-   * We give Read privilege to the world, but Create/Delete/Write/Admin to the authenticated user.
-   * On a non-kerberized cluster, we give Create/Read/Delete/Write/Admin privileges to the world.
+   * For a kerberized cluster, we dynamically set up the client's JAAS conf.
    *
-   * For a kerberized cluster, we also dynamically set up the client's JAAS conf.
    * @param hiveConf
-   * @param nodeAcls
    * @return
    * @throws Exception
    */
-  private void setUpAuthAndAcls(HiveConf hiveConf, List<ACL> nodeAcls) throws Exception {
+  private void setUpZooKeeperAuth(HiveConf hiveConf) throws Exception {
     if (ShimLoader.getHadoopShims().isSecurityEnabled()) {
       String principal = hiveConf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL);
       if (principal.isEmpty()) {
-        throw new IOException(
-            "HiveServer2 Kerberos principal is empty");
+        throw new IOException("HiveServer2 Kerberos principal is empty");
       }
       String keyTabFile = hiveConf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_KEYTAB);
       if (keyTabFile.isEmpty()) {
-        throw new IOException(
-            "HiveServer2 Kerberos keytab is empty");
+        throw new IOException("HiveServer2 Kerberos keytab is empty");
       }
-
       // Install the JAAS Configuration for the runtime
       ShimLoader.getHadoopShims().setZookeeperClientKerberosJaasConfig(principal, keyTabFile);
-      // Read all to the world
-      nodeAcls.addAll(Ids.READ_ACL_UNSAFE);
-      // Create/Delete/Write/Admin to the authenticated user
-      nodeAcls.add(new ACL(Perms.ALL, Ids.AUTH_IDS));
-    } else {
-      // ACLs for znodes on a non-kerberized cluster
-      // Create/Read/Delete/Write/Admin to the world
-      nodeAcls.addAll(Ids.OPEN_ACL_UNSAFE);
     }
   }
 
@@ -333,22 +347,27 @@ public class HiveServer2 extends CompositeService {
     HiveConf hiveConf = new HiveConf();
     int zooKeeperSessionTimeout =
         hiveConf.getIntVar(HiveConf.ConfVars.HIVE_ZOOKEEPER_SESSION_TIMEOUT);
+    int connectTimeoutMillis = -1;
     String zooKeeperEnsemble = ZooKeeperHiveHelper.getQuorumServers(hiveConf);
     String rootNamespace = hiveConf.getVar(HiveConf.ConfVars.HIVE_SERVER2_ZOOKEEPER_NAMESPACE);
-    ZooKeeper zooKeeperClient =
-        new ZooKeeper(zooKeeperEnsemble, zooKeeperSessionTimeout,
-            new ZooKeeperHiveHelper.DummyWatcher());
-    // Get all znode paths
+    CuratorFramework zooKeeperClient =
+        CuratorFrameworkFactory.builder().connectString(zooKeeperEnsemble)
+            .sessionTimeoutMs(zooKeeperSessionTimeout).connectionTimeoutMs(connectTimeoutMillis)
+            .retryPolicy(new ExponentialBackoffRetry(1000, 3)).build();
+    zooKeeperClient.start();
     List<String> znodePaths =
-        zooKeeperClient.getChildren(ZooKeeperHiveHelper.ZOOKEEPER_PATH_SEPARATOR + rootNamespace,
-            false);
+        zooKeeperClient.getChildren().forPath(
+            ZooKeeperHiveHelper.ZOOKEEPER_PATH_SEPARATOR + rootNamespace);
     // Now for each path that is for the given versionNumber, delete the znode from ZooKeeper
     for (String znodePath : znodePaths) {
       if (znodePath.contains("version=" + versionNumber + ";")) {
-        zooKeeperClient.delete(ZooKeeperHiveHelper.ZOOKEEPER_PATH_SEPARATOR + rootNamespace
-            + ZooKeeperHiveHelper.ZOOKEEPER_PATH_SEPARATOR + znodePath, -1);
+        LOG.info("Removing the znode: " + znodePath + " from ZooKeeper");
+        zooKeeperClient.delete().forPath(
+            ZooKeeperHiveHelper.ZOOKEEPER_PATH_SEPARATOR + rootNamespace
+                + ZooKeeperHiveHelper.ZOOKEEPER_PATH_SEPARATOR + znodePath);
       }
     }
+    zooKeeperClient.close();
   }
 
   public static void main(String[] args) {
@@ -503,8 +522,8 @@ public class HiveServer2 extends CompositeService {
   }
 
   /**
-   * DeregisterOptionExecutor: executes the --deregister option by
-   * deregistering all HiveServer2 instances from ZooKeeper of a specific version.
+   * DeregisterOptionExecutor: executes the --deregister option by deregistering all HiveServer2
+   * instances from ZooKeeper of a specific version.
    */
   static class DeregisterOptionExecutor implements ServerOptionsExecutor {
     private final String versionNumber;
@@ -526,4 +545,3 @@ public class HiveServer2 extends CompositeService {
     }
   }
 }
-
