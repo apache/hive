@@ -1396,8 +1396,9 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         // Partial partition spec supplied. Make sure this is allowed.
         if (desc == null
             || !AlterTableDesc.doesAlterTableTypeSupportPartialPartitionSpec(desc.getOp())) {
+          String alterTabletype = (desc != null) ? desc.getOp().name() : "";
           throw new SemanticException(
-              ErrorMsg.ALTER_TABLE_TYPE_PARTIAL_PARTITION_SPEC_NO_SUPPORTED, desc.getOp().name());
+              ErrorMsg.ALTER_TABLE_TYPE_PARTIAL_PARTITION_SPEC_NO_SUPPORTED, alterTabletype);
         } else if (!conf.getBoolVar(HiveConf.ConfVars.DYNAMICPARTITIONING)) {
           throw new SemanticException(ErrorMsg.DYNAMIC_PARTITION_DISABLED);
         }
