@@ -19,10 +19,10 @@ package org.apache.hadoop.hive.accumulo.serde;
 import java.util.Arrays;
 import java.util.Properties;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.LazySimpleStructObjectInspector;
-import org.apache.hadoop.util.StringUtils;
 import org.apache.log4j.Logger;
 
 /**

@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -42,6 +43,7 @@ public abstract class BaseWork extends AbstractOperatorDesc {
   // schema info.
   List<HashTableDummyOperator> dummyOps;
   int tag;
+  private final List<String> sortColNames = new ArrayList<String>();
 
   public BaseWork() {}
 
@@ -54,8 +56,8 @@ public abstract class BaseWork extends AbstractOperatorDesc {
   private String name;
 
   // Vectorization.
-  protected Map<String, Map<Integer, String>> scratchColumnVectorTypes = null;
-  protected Map<String, Map<String, Integer>> scratchColumnMap = null;
+  protected Map<String, Map<Integer, String>> allScratchColumnVectorTypeMaps = null;
+  protected Map<String, Map<String, Integer>> allColumnVectorMaps = null;
   protected boolean vectorMode = false;
 
   public void setGatheringStats(boolean gatherStats) {
@@ -140,19 +142,24 @@ public abstract class BaseWork extends AbstractOperatorDesc {
 
   public Map<String, Map<Integer, String>> getScratchColumnVectorTypes() {
     return scratchColumnVectorTypes;
+
   }
 
-  public void setScratchColumnVectorTypes(
-      Map<String, Map<Integer, String>> scratchColumnVectorTypes) {
-    this.scratchColumnVectorTypes = scratchColumnVectorTypes;
+  public Map<String, Map<Integer, String>> getAllScratchColumnVectorTypeMaps() {
+    return allScratchColumnVectorTypeMaps;
   }
 
-  public Map<String, Map<String, Integer>> getScratchColumnMap() {
-    return scratchColumnMap;
+  public void setAllScratchColumnVectorTypeMaps(
+      Map<String, Map<Integer, String>> allScratchColumnVectorTypeMaps) {
+    this.allScratchColumnVectorTypeMaps = allScratchColumnVectorTypeMaps;
   }
 
-  public void setScratchColumnMap(Map<String, Map<String, Integer>> scratchColumnMap) {
-    this.scratchColumnMap = scratchColumnMap;
+  public Map<String, Map<String, Integer>> getAllColumnVectorMaps() {
+    return allColumnVectorMaps;
+  }
+
+  public void setAllColumnVectorMaps(Map<String, Map<String, Integer>> allColumnVectorMaps) {
+    this.allColumnVectorMaps = allColumnVectorMaps;
   }
 
   @Override
@@ -172,5 +179,13 @@ public abstract class BaseWork extends AbstractOperatorDesc {
 
   public int getTag() {
     return tag;
+  }
+
+  public void addSortCols(List<String> sortCols) {
+    this.sortColNames.addAll(sortCols);
+  }
+
+  public List<String> getSortCols() {
+    return sortColNames;
   }
 }

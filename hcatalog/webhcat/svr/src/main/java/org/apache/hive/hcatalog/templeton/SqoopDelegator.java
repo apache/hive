@@ -25,7 +25,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.exec.ExecuteException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.fs.Path;
+import org.apache.hive.hcatalog.templeton.tool.JobSubmissionConstants;
 import org.apache.hive.hcatalog.templeton.tool.TempletonControllerJob;
 import org.apache.hive.hcatalog.templeton.tool.TempletonUtils;
 
@@ -35,6 +38,7 @@ import org.apache.hive.hcatalog.templeton.tool.TempletonUtils;
  * This is the backend of the Sqoop web service.
  */
 public class SqoopDelegator extends LauncherDelegator {
+  private static final Log LOG = LogFactory.getLog(SqoopDelegator.class);
 
   public SqoopDelegator(AppConfig appConf) {
     super(appConf);
@@ -43,24 +47,29 @@ public class SqoopDelegator extends LauncherDelegator {
   public EnqueueBean run(String user,
                Map<String, Object> userArgs, String command, 
                String optionsFile, String otherFiles, String statusdir, 
-               String callback, String completedUrl, boolean enablelog)
+               String callback, String completedUrl, boolean enablelog, String libdir)
   throws NotAuthorizedException, BadParam, BusyException, QueueException,
-  ExecuteException, IOException, InterruptedException
+  IOException, InterruptedException
   {
+    if(TempletonUtils.isset(appConf.sqoopArchive())) {
+      if(!TempletonUtils.isset(appConf.sqoopPath()) && !TempletonUtils.isset(appConf.sqoopHome())) {
+        throw new IllegalStateException("If '" + AppConfig.SQOOP_ARCHIVE_NAME + "' is defined, '" +
+        AppConfig.SQOOP_PATH_NAME + "' and '" + AppConfig.SQOOP_HOME_PATH + "' must be defined");
+      }
+    }
     runAs = user;
     List<String> args = makeArgs(command, optionsFile, otherFiles, statusdir,
-                   completedUrl, enablelog);
+                   completedUrl, enablelog, libdir);
 
     return enqueueController(user, userArgs, callback, args);
   }
-
-  List<String> makeArgs(String command, String optionsFile, String otherFiles,
-            String statusdir, String completedUrl, boolean enablelog)
+  private List<String> makeArgs(String command, String optionsFile, String otherFiles,
+            String statusdir, String completedUrl, boolean enablelog, String libdir)
     throws BadParam, IOException, InterruptedException
   {
     ArrayList<String> args = new ArrayList<String>();
     try {
-      args.addAll(makeBasicArgs(optionsFile, otherFiles, statusdir, completedUrl, enablelog));
+      args.addAll(makeBasicArgs(optionsFile, otherFiles, statusdir, completedUrl, enablelog, libdir));
       args.add("--");
       TempletonUtils.addCmdForWindows(args);
       args.add(appConf.sqoopPath());
@@ -89,7 +98,7 @@ public class SqoopDelegator extends LauncherDelegator {
   }
 
   private List<String> makeBasicArgs(String optionsFile, String otherFiles,
-            String statusdir, String completedUrl, boolean enablelog)
+            String statusdir, String completedUrl, boolean enablelog, String libdir)
     throws URISyntaxException, FileNotFoundException, IOException,
                           InterruptedException
   {
@@ -101,9 +110,34 @@ public class SqoopDelegator extends LauncherDelegator {
       String[] ofs = TempletonUtils.hadoopFsListAsArray(otherFiles, appConf, runAs);
       allFiles.addAll(Arrays.asList(ofs));
     }
+    if(TempletonUtils.isset(libdir) && TempletonUtils.isset(appConf.sqoopArchive())) {
+      /**Sqoop accesses databases via JDBC.  This means it needs to have appropriate JDBC
+      drivers available.  Normally, the user would install Sqoop and place these jars
+      into SQOOP_HOME/lib.  When WebHCat is configured to auto-ship the Sqoop tar file, we
+      need to make sure that relevant JDBC jars are available on target node.
+      The user is expected to place any JDBC jars into an HDFS directory and specify this
+      dir in "libdir" parameter.  All the files in this dir will be copied to lib/ of the
+      exploded Sqoop tar ball on target node.
+      {@link org.apache.hive.hcatalog.templeton.tool.LaunchMapper#handleSqoop(org.apache.hadoop.conf.Configuration, java.util.Map)}
+      */
+      LOG.debug("libdir=" + libdir);
+      List<Path> jarList = TempletonUtils.hadoopFsListChildren(libdir, appConf, runAs);
+      if(TempletonUtils.isset(jarList)) {
+        StringBuilder sb = new StringBuilder();
+        for(Path jar : jarList) {
+          allFiles.add(jar.toString());
+          sb.append(jar.getName()).append(',');
+        }
+        sb.setLength(sb.length() - 1);
+        //we use the same mechanism to copy "files"/"otherFiles" and "libdir", but we only want to put
+        //contents of "libdir" in Sqoop/lib, thus we pass the list of names here
+        addDef(args, JobSubmissionConstants.Sqoop.LIB_JARS, sb.toString());
+        addDef(args, AppConfig.SQOOP_HOME_PATH, appConf.get(AppConfig.SQOOP_HOME_PATH));
+      }
+    }
     args.addAll(makeLauncherArgs(appConf, statusdir, completedUrl, allFiles,
                 enablelog, JobType.SQOOP));
-    if (appConf.sqoopArchive() != null && !appConf.sqoopArchive().equals("")) {
+    if(TempletonUtils.isset(appConf.sqoopArchive())) {
       args.add("-archives");
       args.add(appConf.sqoopArchive());
     }

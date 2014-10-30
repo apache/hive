@@ -619,6 +619,12 @@ public class Hadoop20Shims implements HadoopShims {
   }
 
   @Override
+  public String getResolvedPrincipal(String principal) throws IOException {
+    // Not supported
+    return null;
+  }
+
+  @Override
   public void reLoginUserFromKeytab() throws IOException{
     throwKerberosUnsupportedError();
   }
@@ -698,7 +704,7 @@ public class Hadoop20Shims implements HadoopShims {
   }
 
   public class Hadoop20FileStatus implements HdfsFileStatus {
-    private FileStatus fileStatus;
+    private final FileStatus fileStatus;
     public Hadoop20FileStatus(FileStatus fileStatus) {
       this.fileStatus = fileStatus;
     }
@@ -706,6 +712,7 @@ public class Hadoop20Shims implements HadoopShims {
     public FileStatus getFileStatus() {
       return fileStatus;
     }
+    @Override
     public void debugLog() {
       if (fileStatus != null) {
         LOG.debug(fileStatus.toString());
@@ -824,6 +831,11 @@ public class Hadoop20Shims implements HadoopShims {
   }
 
   @Override
+  public void refreshDefaultQueue(Configuration conf, String userName) {
+    // MR1 does not expose API required to set MR queue mapping for user
+  }
+
+  @Override
   public String getTokenFileLocEnvName() {
     throw new UnsupportedOperationException(
         "Kerberos not supported in current hadoop version");
@@ -927,5 +939,16 @@ public class Hadoop20Shims implements HadoopShims {
   @Override
   public Path getCurrentTrashPath(Configuration conf, FileSystem fs) {
     return null;
+  }
+
+  @Override
+  public KerberosNameShim getKerberosNameShim(String name) throws IOException {
+    // Not supported
+    return null;
+  }
+
+  @Override
+  public void setZookeeperClientKerberosJaasConfig(String principal, String keyTabFile) {
+    // Not supported
   }
 }

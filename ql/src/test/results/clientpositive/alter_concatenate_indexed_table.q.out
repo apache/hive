@@ -76,7 +76,7 @@ PREHOOK: query: show indexes on src_rc_concatenate_test
 PREHOOK: type: SHOWINDEXES
 POSTHOOK: query: show indexes on src_rc_concatenate_test
 POSTHOOK: type: SHOWINDEXES
-src_rc_concatenate_test_index	src_rc_concatenate_test	key                 	default__src_rc_concatenate_test_src_rc_concatenate_test_index__	compact             	
+src_rc_concatenate_test_index	src_rc_concatenate_test	key                 	default.default__src_rc_concatenate_test_src_rc_concatenate_test_index__	compact             	
 PREHOOK: query: alter table src_rc_concatenate_test concatenate
 PREHOOK: type: ALTER_TABLE_MERGE
 PREHOOK: Input: default@src_rc_concatenate_test
@@ -215,7 +215,7 @@ PREHOOK: query: show indexes on src_rc_concatenate_test_part
 PREHOOK: type: SHOWINDEXES
 POSTHOOK: query: show indexes on src_rc_concatenate_test_part
 POSTHOOK: type: SHOWINDEXES
-src_rc_concatenate_test_part_index	src_rc_concatenate_test_part	key                 	default__src_rc_concatenate_test_part_src_rc_concatenate_test_part_index__	compact             	
+src_rc_concatenate_test_part_index	src_rc_concatenate_test_part	key                 	default.default__src_rc_concatenate_test_part_src_rc_concatenate_test_part_index__	compact             	
 PREHOOK: query: alter table src_rc_concatenate_test_part partition (ds='2011') concatenate
 PREHOOK: type: ALTER_PARTITION_MERGE
 PREHOOK: Input: default@src_rc_concatenate_test_part

@@ -236,7 +236,7 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
     }
 
     // Add a sort by clause so that the row ids come out in the correct order
-    rewrittenQueryStr.append(" sort by ROW__ID desc ");
+    rewrittenQueryStr.append(" sort by ROW__ID ");
 
     // Parse the rewritten query string
     Context rewrittenCtx;

@@ -427,6 +427,9 @@ class BeeLineOpts implements Completor {
   }
 
   public void setOutputFormat(String outputFormat) {
+    if(outputFormat.equalsIgnoreCase("csv") || outputFormat.equalsIgnoreCase("tsv")) {
+      beeLine.info("Format " + outputFormat + " is deprecated, please use " + outputFormat + "2");
+    }
     this.outputFormat = outputFormat;
   }
 

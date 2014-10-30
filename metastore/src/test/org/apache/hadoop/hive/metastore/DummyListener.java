@@ -23,13 +23,16 @@ import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.events.AddIndexEvent;
 import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
+import org.apache.hadoop.hive.metastore.events.AlterIndexEvent;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterTableEvent;
 import org.apache.hadoop.hive.metastore.events.ConfigChangeEvent;
 import org.apache.hadoop.hive.metastore.events.CreateDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.CreateTableEvent;
 import org.apache.hadoop.hive.metastore.events.DropDatabaseEvent;
+import org.apache.hadoop.hive.metastore.events.DropIndexEvent;
 import org.apache.hadoop.hive.metastore.events.DropPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.DropTableEvent;
 import org.apache.hadoop.hive.metastore.events.ListenerEvent;
@@ -60,52 +63,70 @@ public class DummyListener extends MetaStoreEventListener{
 
   @Override
   public void onConfigChange(ConfigChangeEvent configChange) {
-    notifyList.add(configChange);
+    addEvent(configChange);
   }
 
   @Override
   public void onAddPartition(AddPartitionEvent partition) throws MetaException {
-    notifyList.add(partition);
+    addEvent(partition);
   }
 
   @Override
   public void onCreateDatabase(CreateDatabaseEvent db) throws MetaException {
-    notifyList.add(db);
+    addEvent(db);
   }
 
   @Override
   public void onCreateTable(CreateTableEvent table) throws MetaException {
-    notifyList.add(table);
+    addEvent(table);
   }
 
   @Override
   public void onDropDatabase(DropDatabaseEvent db) throws MetaException {
-    notifyList.add(db);
+    addEvent(db);
   }
 
   @Override
   public void onDropPartition(DropPartitionEvent partition) throws MetaException {
-    notifyList.add(partition);
+    addEvent(partition);
   }
 
   @Override
   public void onDropTable(DropTableEvent table) throws MetaException {
-    notifyList.add(table);
+    addEvent(table);
   }
 
   @Override
   public void onAlterTable(AlterTableEvent event) throws MetaException {
-    notifyList.add(event);
+    addEvent(event);
   }
 
   @Override
   public void onAlterPartition(AlterPartitionEvent event) throws MetaException {
-    notifyList.add(event);
+    addEvent(event);
   }
 
   @Override
   public void onLoadPartitionDone(LoadPartitionDoneEvent partEvent) throws MetaException {
-    notifyList.add(partEvent);
+    addEvent(partEvent);
   }
 
+  @Override
+  public void onAddIndex(AddIndexEvent indexEvent) throws MetaException {
+    addEvent(indexEvent);
+  }
+
+  @Override
+  public void onDropIndex(DropIndexEvent indexEvent) throws MetaException {
+    addEvent(indexEvent);
+  }
+
+  @Override
+  public void onAlterIndex(AlterIndexEvent indexEvent) throws MetaException {
+    addEvent(indexEvent);
+  }
+
+  private void addEvent(ListenerEvent event) {
+    notifyList.add(event);
+  }
 }

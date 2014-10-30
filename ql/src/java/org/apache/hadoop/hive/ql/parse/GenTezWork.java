@@ -123,6 +123,11 @@ public class GenTezWork implements NodeProcessor {
       context.rootToWorkMap.put(root, work);
     }
 
+    // this is where we set the sort columns that we will be using for KeyValueInputMerge
+    if (operator instanceof DummyStoreOperator) {
+      work.addSortCols(root.getOpTraits().getSortCols().get(0));
+    }
+
     if (!context.childToWorkMap.containsKey(operator)) {
       List<BaseWork> workItems = new LinkedList<BaseWork>();
       workItems.add(work);
@@ -137,17 +142,18 @@ public class GenTezWork implements NodeProcessor {
       // we are currently walking the big table side of the merge join. we need to create or hook up
       // merge join work.
       MergeJoinWork mergeJoinWork = null;
-      if (context.opMergeJoinWorkMap.containsKey(operator)) {
+      if (context.opMergeJoinWorkMap.containsKey(context.currentMergeJoinOperator)) {
         // we have found a merge work corresponding to this closing operator. Hook up this work.
-        mergeJoinWork = context.opMergeJoinWorkMap.get(operator);
+        mergeJoinWork = context.opMergeJoinWorkMap.get(context.currentMergeJoinOperator);
       } else {
         // we need to create the merge join work
         mergeJoinWork = new MergeJoinWork();
         mergeJoinWork.setMergeJoinOperator(context.currentMergeJoinOperator);
         tezWork.add(mergeJoinWork);
-        context.opMergeJoinWorkMap.put(operator, mergeJoinWork);
+        context.opMergeJoinWorkMap.put(context.currentMergeJoinOperator, mergeJoinWork);
       }
       // connect the work correctly.
+      work.addSortCols(root.getOpTraits().getSortCols().get(0));
       mergeJoinWork.addMergedWork(work, null);
       Operator<? extends OperatorDesc> parentOp =
           getParentFromStack(context.currentMergeJoinOperator, stack);
@@ -334,10 +340,16 @@ public class GenTezWork implements NodeProcessor {
           UnionWork unionWork = (UnionWork) followingWork;
           int index = getMergeIndex(tezWork, unionWork, rs);
           // guaranteed to be instance of MergeJoinWork if index is valid
-          MergeJoinWork mergeJoinWork = (MergeJoinWork) tezWork.getChildren(unionWork).get(index);
-          // disconnect the connection to union work and connect to merge work
-          followingWork = mergeJoinWork;
-          rWork = (ReduceWork) mergeJoinWork.getMainWork();
+          BaseWork baseWork = tezWork.getChildren(unionWork).get(index);
+          if (baseWork instanceof MergeJoinWork) {
+            MergeJoinWork mergeJoinWork = (MergeJoinWork) baseWork;
+            // disconnect the connection to union work and connect to merge work
+            followingWork = mergeJoinWork;
+            rWork = (ReduceWork) mergeJoinWork.getMainWork();
+          } else {
+            throw new SemanticException("Unknown work type found: "
+                + baseWork.getClass().getCanonicalName());
+          }
         } else {
           rWork = (ReduceWork) followingWork;
         }
@@ -391,6 +403,8 @@ public class GenTezWork implements NodeProcessor {
         } else {
           index++;
         }
+      } else {
+        index++;
       }
     }
 

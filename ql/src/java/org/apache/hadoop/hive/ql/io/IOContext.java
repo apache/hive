@@ -21,8 +21,6 @@ package org.apache.hadoop.hive.ql.io;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -47,8 +45,6 @@ public class IOContext {
  };
 
   private static Map<String, IOContext> inputNameIOContextMap = new HashMap<String, IOContext>();
-  private static IOContext ioContext = new IOContext();
-
   public static Map<String, IOContext> getMap() {
     return inputNameIOContextMap;
   }
@@ -72,6 +68,7 @@ public class IOContext {
 
   public static void clear() {
     IOContext.threadLocal.remove();
+    inputNameIOContextMap.clear();
   }
 
   long currentBlockStart;

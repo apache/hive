@@ -33,6 +33,7 @@ import org.apache.zookeeper.data.ACL;
 public class ZooKeeperHiveHelper {
   public static final Log LOG = LogFactory.getLog(ZooKeeperHiveHelper.class.getName());
   public static final String ZOOKEEPER_PATH_SEPARATOR = "/";
+
   /**
    * Get the ensemble server addresses from the configuration. The format is: host1:port,
    * host2:port..
@@ -90,6 +91,7 @@ public class ZooKeeperHiveHelper {
    * A no-op watcher class
    */
   public static class DummyWatcher implements Watcher {
+    @Override
     public void process(org.apache.zookeeper.WatchedEvent event) {
     }
   }

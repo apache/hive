@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.exec;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -36,7 +35,6 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.CommonMergeJoinDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
-import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
@@ -64,7 +62,6 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
   private static final long serialVersionUID = 1L;
   private boolean isBigTableWork;
   private static final Log LOG = LogFactory.getLog(CommonMergeJoinOperator.class.getName());
-  private Map<Integer, String> aliasToInputNameMap;
   transient List<Object>[] keyWritables;
   transient List<Object>[] nextKeyWritables;
   transient RowContainer<List<Object>>[] nextGroupStorage;
@@ -309,6 +306,8 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
   public void closeOp(boolean abort) throws HiveException {
     joinFinalLeftData();
 
+    super.closeOp(abort);
+
     // clean up
     for (int pos = 0; pos < order.length; pos++) {
       if (pos != posBigTable) {
@@ -365,6 +364,9 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
       joinOneGroup();
       dataInCache = false;
       for (byte pos = 0; pos < order.length; pos++) {
+        if (candidateStorage[pos] == null) {
+          continue;
+        }
         if (this.candidateStorage[pos].rowCount() > 0) {
           dataInCache = true;
           break;

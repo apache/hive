@@ -29,6 +29,7 @@ import java.net.URLDecoder;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -39,8 +40,10 @@ import java.util.regex.Pattern;
 import javax.ws.rs.core.UriBuilder;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.Shell;
 import org.apache.hadoop.util.StringUtils;
@@ -211,6 +214,28 @@ public class TempletonUtils {
   }
 
   /**
+   * Returns all files (non-recursive) in {@code dirName}
+   */
+  public static List<Path> hadoopFsListChildren(String dirName, Configuration conf, String user)
+    throws URISyntaxException, IOException, InterruptedException {
+
+    Path p = hadoopFsPath(dirName, conf, user);
+    FileSystem fs =  p.getFileSystem(conf);
+    if(!fs.exists(p)) {
+      return Collections.emptyList();
+    }
+    List<FileStatus> children = ShimLoader.getHadoopShims().listLocatedStatus(fs, p, null);
+    if(!isset(children)) {
+      return Collections.emptyList();
+    }
+    List<Path> files = new ArrayList<Path>();
+    for(FileStatus stat : children) {
+      files.add(stat.getPath());
+    }
+    return files;
+  }
+
+  /**
    * @return true iff we are sure the file is not there.
    */
   public static boolean hadoopFsIsMissing(FileSystem fs, Path p) {
@@ -239,8 +264,7 @@ public class TempletonUtils {
   }
 
   public static Path hadoopFsPath(String fname, final Configuration conf, String user)
-    throws URISyntaxException, IOException,
-    InterruptedException {
+    throws URISyntaxException, IOException, InterruptedException {
     if (fname == null || conf == null) {
       return null;
     }

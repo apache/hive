@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.optimizer;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -54,6 +55,8 @@ import org.apache.hadoop.hive.ql.plan.TezEdgeProperty.EdgeType;
 import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.apache.hadoop.hive.ql.plan.TezWork.VertexType;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
+
+import static org.apache.hadoop.hive.ql.plan.ReduceSinkDesc.ReducerTraits.FIXED;
 
 public class ReduceSinkMapJoinProc implements NodeProcessor {
 
@@ -167,7 +170,7 @@ public class ReduceSinkMapJoinProc implements NodeProcessor {
     if (joinConf.isBucketMapJoin()) {
 
       // disable auto parallelism for bucket map joins
-      parentRS.getConf().setAutoParallel(false);
+      parentRS.getConf().setReducerTraits(EnumSet.of(FIXED));
 
       numBuckets = (Integer) joinConf.getBigTableBucketNumMapping().values().toArray()[0];
       if (joinConf.getCustomBucketMapJoin()) {

@@ -28,6 +28,7 @@ public class DecimalTypeInfo extends PrimitiveTypeInfo {
 
   // no-arg constructor to make kyro happy.
   public DecimalTypeInfo() {
+    super(serdeConstants.DECIMAL_TYPE_NAME);
   }
 
   public DecimalTypeInfo(int precision, int scale) {
@@ -40,6 +41,12 @@ public class DecimalTypeInfo extends PrimitiveTypeInfo {
   @Override
   public String getTypeName() {
     return getQualifiedName();
+  }
+
+  @Override
+  public void setTypeName(String typeName) {
+    // No need to set type name, it should always be decimal
+    return;
   }
 
   @Override
@@ -99,6 +106,22 @@ public class DecimalTypeInfo extends PrimitiveTypeInfo {
     DecimalTypeInfo dti = (DecimalTypeInfo)other;
     // Make sure "this" has enough integer room to accomodate other's integer digits.
     return this.precision() - this.scale() >= dti.precision() - dti.scale();
+  }
+
+  public int getPrecision() {
+    return precision;
+  }
+
+  public void setPrecision(int precision) {
+    this.precision = precision;
+  }
+
+  public int getScale() {
+    return scale;
+  }
+
+  public void setScale(int scale) {
+    this.scale = scale;
   }
 
 }

@@ -313,7 +313,7 @@ public class Hive {
    * @param name
    * @param deleteData
    * @param ignoreUnknownDb if true, will ignore NoSuchObjectException
-   * @param cascade           if true, delete all tables on the DB if exists. Othewise, the query
+   * @param cascade         if true, delete all tables on the DB if exists. Otherwise, the query
    *                        will fail if table still exists.
    * @throws HiveException
    * @throws NoSuchObjectException
@@ -331,7 +331,7 @@ public class Hive {
 
 
   /**
-   * Creates a table metdata and the directory for the table data
+   * Creates a table metadata and the directory for the table data
    *
    * @param tableName
    *          name of the table
@@ -355,7 +355,7 @@ public class Hive {
   }
 
   /**
-   * Creates a table metdata and the directory for the table data
+   * Creates a table metadata and the directory for the table data
    *
    * @param tableName
    *          name of the table
@@ -885,16 +885,21 @@ public class Hive {
     }
   }
 
-  public boolean dropIndex(String baseTableName, String index_name, boolean deleteData) throws HiveException {
+  public boolean dropIndex(String baseTableName, String index_name,
+      boolean throwException, boolean deleteData) throws HiveException {
     String[] names = Utilities.getDbTableName(baseTableName);
-    return dropIndex(names[0], names[1], index_name, deleteData);
+    return dropIndex(names[0], names[1], index_name, throwException, deleteData);
   }
 
-  public boolean dropIndex(String db_name, String tbl_name, String index_name, boolean deleteData) throws HiveException {
+  public boolean dropIndex(String db_name, String tbl_name, String index_name,
+      boolean throwException, boolean deleteData) throws HiveException {
     try {
       return getMSC().dropIndex(db_name, tbl_name, index_name, deleteData);
     } catch (NoSuchObjectException e) {
-      throw new HiveException("Partition or table doesn't exist. " + e.getMessage(), e);
+      if (throwException) {
+        throw new HiveException("Index " + index_name + " doesn't exist. ", e);
+      }
+      return false;
     } catch (Exception e) {
       throw new HiveException(e.getMessage(), e);
     }
@@ -2859,10 +2864,6 @@ private void constructOneLBLocationMap(FileStatus fSta,
       LOG.error(StringUtils.stringifyException(e));
       throw new HiveException(e);
     }
-  }
-
-  public static String[] getQualifiedNames(String qualifiedName) {
-    return qualifiedName.split("\\.");
   }
 
   public void createFunction(Function func) throws HiveException {

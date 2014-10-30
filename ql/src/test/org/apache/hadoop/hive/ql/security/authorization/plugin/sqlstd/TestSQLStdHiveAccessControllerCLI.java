@@ -55,13 +55,10 @@ public class TestSQLStdHiveAccessControllerCLI {
     assertFalse("Check for transform query disabling hook",
         processedConf.getVar(ConfVars.PREEXECHOOKS).contains(DisallowTransformHook.class.getName()));
 
-    // check that set param whitelist is not set
-    assertTrue(processedConf.getVar(ConfVars.HIVE_AUTHORIZATION_SQL_STD_AUTH_CONFIG_WHITELIST) == null
-        || processedConf.getVar(ConfVars.HIVE_AUTHORIZATION_SQL_STD_AUTH_CONFIG_WHITELIST).trim()
-            .equals(""));
-
     // verify that some dummy param can be set
     processedConf.verifyAndSet("dummy.param", "dummy.val");
+    processedConf.verifyAndSet(ConfVars.HIVE_AUTHORIZATION_ENABLED.varname, "true");
+
   }
 
   private HiveAuthzSessionContext getCLISessionCtx() {

@@ -19,7 +19,6 @@
 package org.apache.hive.minikdc;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -153,7 +152,7 @@ public class TestJdbcWithMiniKdc {
   }
 
   /***
-   * Negtive test for token based authentication
+   * Negative test for token based authentication
    * Verify that a user can't retrieve a token for user that
    * it's not allowed to impersonate
    * @throws Exception
@@ -163,13 +162,20 @@ public class TestJdbcWithMiniKdc {
     miniHiveKdc.loginUser(MiniHiveKdc.HIVE_TEST_SUPER_USER);
     hs2Conn = DriverManager.getConnection(miniHS2.getJdbcURL());
 
-    // retrieve token and store in the cache
-    String token = ((HiveConnection)hs2Conn).getDelegationToken(
-        MiniHiveKdc.HIVE_TEST_USER_2, MiniHiveKdc.HIVE_SERVICE_PRINCIPAL);
-    hs2Conn.close();
+    try {
+      // retrieve token and store in the cache
+      String token = ((HiveConnection)hs2Conn).getDelegationToken(
+          MiniHiveKdc.HIVE_TEST_USER_2, MiniHiveKdc.HIVE_SERVICE_PRINCIPAL);
 
-    assertNull(MiniHiveKdc.HIVE_TEST_SUPER_USER + " shouldn't be allowed to create token for " +
-        MiniHiveKdc.HIVE_TEST_USER_2, token);
+      fail(MiniHiveKdc.HIVE_TEST_SUPER_USER + " shouldn't be allowed to retrieve token for " +
+          MiniHiveKdc.HIVE_TEST_USER_2);
+    } catch (SQLException e) {
+      // Expected error
+      assertTrue(e.getMessage().contains("Failed to validate proxy privilege"));
+      assertTrue(e.getCause().getCause().getMessage().contains("Failed to validate proxy privilege"));
+    } finally {
+      hs2Conn.close();
+    }
   }
 
   /**
@@ -201,7 +207,9 @@ public class TestJdbcWithMiniKdc {
           + MiniHiveKdc.HIVE_TEST_USER_2);
     } catch (SQLException e) {
       // Expected error
-      assertEquals("08S01", e.getSQLState().trim());
+      e.printStackTrace();
+      assertTrue(e.getMessage().contains("Failed to validate proxy privilege"));
+      assertTrue(e.getCause().getCause().getMessage().contains("is not allowed to impersonate"));
     }
   }
 

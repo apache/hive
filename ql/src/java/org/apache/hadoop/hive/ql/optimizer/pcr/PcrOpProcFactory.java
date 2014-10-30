@@ -31,10 +31,13 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
+import org.apache.hadoop.hive.ql.optimizer.ConstantPropagateProcFactory;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 
 /**
@@ -133,7 +136,15 @@ public final class PcrOpProcFactory {
 
       if (wrapper.state == PcrExprProcFactory.WalkState.TRUE) {
         owc.getOpToRemove().add(new PcrOpWalkerCtx.OpToDeleteInfo(pop, fop));
-      } else if (wrapper.state != PcrExprProcFactory.WalkState.FALSE) {
+      } else if (wrapper.state == PcrExprProcFactory.WalkState.CONSTANT && wrapper.outExpr instanceof ExprNodeGenericFuncDesc) {
+        ExprNodeDesc desc = ConstantPropagateProcFactory.foldExpr((ExprNodeGenericFuncDesc)wrapper.outExpr);
+        if (desc != null && desc instanceof ExprNodeConstantDesc && Boolean.TRUE.equals(((ExprNodeConstantDesc)desc).getValue())) {
+          owc.getOpToRemove().add(new PcrOpWalkerCtx.OpToDeleteInfo(pop, fop));
+        } else {
+          fop.getConf().setPredicate(wrapper.outExpr);
+        }
+      }
+      else if (wrapper.state != PcrExprProcFactory.WalkState.FALSE) {
         fop.getConf().setPredicate(wrapper.outExpr);
       } else {
         LOG.warn("Filter passes no row");

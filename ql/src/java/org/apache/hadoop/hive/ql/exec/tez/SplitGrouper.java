@@ -102,14 +102,28 @@ public class SplitGrouper {
 
     // compute the total size per bucket
     long totalSize = 0;
+    boolean earlyExit = false;
     for (int bucketId : bucketSplitMap.keySet()) {
       long size = 0;
       for (InputSplit s : bucketSplitMap.get(bucketId)) {
+        // the incoming split may not be a file split when we are re-grouping TezGroupedSplits in
+        // the case of SMB join. So in this case, we can do an early exit by not doing the
+        // calculation for bucketSizeMap. Each bucket will assume it can fill availableSlots * waves
+        // (preset to 0.5) for SMB join.
+        if (!(s instanceof FileSplit)) {
+          bucketTaskMap.put(bucketId, (int) (availableSlots * waves));
+          earlyExit = true;
+          continue;
+        }
         FileSplit fsplit = (FileSplit) s;
         size += fsplit.getLength();
         totalSize += fsplit.getLength();
       }
       bucketSizeMap.put(bucketId, size);
+    }
+
+    if (earlyExit) {
+      return bucketTaskMap;
     }
 
     // compute the number of tasks

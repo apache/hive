@@ -170,10 +170,10 @@ public class TestVectorGroupByOperator {
   @Test
   public void testMemoryPressureFlush() throws HiveException {
 
-    Map<String, Integer> mapColumnNames = new HashMap<String, Integer>();
-    mapColumnNames.put("Key", 0);
-    mapColumnNames.put("Value", 1);
-    VectorizationContext ctx = new VectorizationContext(mapColumnNames, 2);
+    List<String> mapColumnNames = new ArrayList<String>();
+    mapColumnNames.add("Key");
+    mapColumnNames.add("Value");
+    VectorizationContext ctx = new VectorizationContext(mapColumnNames);
 
     GroupByDesc desc = buildKeyGroupByDesc (ctx, "max",
         "Value", TypeInfoFactory.longTypeInfo,
@@ -1710,7 +1710,7 @@ public class TestVectorGroupByOperator {
 
     mapColumnNames.put("value", i);
     outputColumnNames.add("value");
-    VectorizationContext ctx = new VectorizationContext(mapColumnNames, i+1);
+    VectorizationContext ctx = new VectorizationContext(outputColumnNames);
 
     ArrayList<AggregationDesc> aggs = new ArrayList(1);
     aggs.add(
@@ -1818,10 +1818,10 @@ public class TestVectorGroupByOperator {
       FakeVectorRowBatchFromObjectIterables data,
       Map<Object, Object> expected) throws HiveException {
 
-    Map<String, Integer> mapColumnNames = new HashMap<String, Integer>();
-    mapColumnNames.put("Key", 0);
-    mapColumnNames.put("Value", 1);
-    VectorizationContext ctx = new VectorizationContext(mapColumnNames, 2);
+    List<String> mapColumnNames = new ArrayList<String>();
+    mapColumnNames.add("Key");
+    mapColumnNames.add("Value");
+    VectorizationContext ctx = new VectorizationContext(mapColumnNames);
     Set<Object> keys = new HashSet<Object>();
 
     AggregationDesc agg = buildAggregationDesc(ctx, aggregateName,
@@ -2233,9 +2233,9 @@ public class TestVectorGroupByOperator {
   public void testAggregateCountStarIterable (
       Iterable<VectorizedRowBatch> data,
       Object expected) throws HiveException {
-    Map<String, Integer> mapColumnNames = new HashMap<String, Integer>();
-    mapColumnNames.put("A", 0);
-    VectorizationContext ctx = new VectorizationContext(mapColumnNames, 1);
+    List<String> mapColumnNames = new ArrayList<String>();
+    mapColumnNames.add("A");
+    VectorizationContext ctx = new VectorizationContext(mapColumnNames);
 
     GroupByDesc desc = buildGroupByDescCountStar (ctx);
 
@@ -2262,9 +2262,9 @@ public class TestVectorGroupByOperator {
   public void testAggregateCountReduceIterable (
       Iterable<VectorizedRowBatch> data,
       Object expected) throws HiveException {
-    Map<String, Integer> mapColumnNames = new HashMap<String, Integer>();
-    mapColumnNames.put("A", 0);
-    VectorizationContext ctx = new VectorizationContext(mapColumnNames, 1);
+    List<String> mapColumnNames = new ArrayList<String>();
+    mapColumnNames.add("A");
+    VectorizationContext ctx = new VectorizationContext(mapColumnNames);
 
     GroupByDesc desc = buildGroupByDescType(ctx, "count", "A", TypeInfoFactory.longTypeInfo);
     VectorGroupByDesc vectorDesc = desc.getVectorDesc();
@@ -2294,9 +2294,9 @@ public class TestVectorGroupByOperator {
       String aggregateName,
       Iterable<VectorizedRowBatch> data,
       Object expected) throws HiveException {
-    Map<String, Integer> mapColumnNames = new HashMap<String, Integer>();
-    mapColumnNames.put("A", 0);
-    VectorizationContext ctx = new VectorizationContext(mapColumnNames, 1);
+    List<String> mapColumnNames = new ArrayList<String>();
+    mapColumnNames.add("A");
+    VectorizationContext ctx = new VectorizationContext(mapColumnNames);
 
     GroupByDesc desc = buildGroupByDescType(ctx, aggregateName, "A",
         TypeInfoFactory.stringTypeInfo);
@@ -2325,9 +2325,9 @@ public class TestVectorGroupByOperator {
           String aggregateName,
           Iterable<VectorizedRowBatch> data,
           Object expected) throws HiveException {
-        Map<String, Integer> mapColumnNames = new HashMap<String, Integer>();
-        mapColumnNames.put("A", 0);
-        VectorizationContext ctx = new VectorizationContext(mapColumnNames, 1);
+          List<String> mapColumnNames = new ArrayList<String>();
+          mapColumnNames.add("A");
+          VectorizationContext ctx = new VectorizationContext(mapColumnNames);
 
         GroupByDesc desc = buildGroupByDescType(ctx, aggregateName, "A",
             TypeInfoFactory.getDecimalTypeInfo(30, 4));
@@ -2357,9 +2357,9 @@ public class TestVectorGroupByOperator {
       String aggregateName,
       Iterable<VectorizedRowBatch> data,
       Object expected) throws HiveException {
-    Map<String, Integer> mapColumnNames = new HashMap<String, Integer>();
-    mapColumnNames.put("A", 0);
-    VectorizationContext ctx = new VectorizationContext(mapColumnNames, 1);
+    List<String> mapColumnNames = new ArrayList<String>();
+    mapColumnNames.add("A");
+    VectorizationContext ctx = new VectorizationContext(mapColumnNames);
 
     GroupByDesc desc = buildGroupByDescType (ctx, aggregateName, "A",
         TypeInfoFactory.doubleTypeInfo);
@@ -2388,9 +2388,9 @@ public class TestVectorGroupByOperator {
       String aggregateName,
       Iterable<VectorizedRowBatch> data,
       Object expected) throws HiveException {
-    Map<String, Integer> mapColumnNames = new HashMap<String, Integer>();
-    mapColumnNames.put("A", 0);
-    VectorizationContext ctx = new VectorizationContext(mapColumnNames, 1);
+    List<String> mapColumnNames = new ArrayList<String>();
+    mapColumnNames.add("A");
+    VectorizationContext ctx = new VectorizationContext(mapColumnNames);
 
     GroupByDesc desc = buildGroupByDescType(ctx, aggregateName, "A", TypeInfoFactory.longTypeInfo);
 
@@ -2418,10 +2418,11 @@ public class TestVectorGroupByOperator {
       String aggregateName,
       Iterable<VectorizedRowBatch> data,
       HashMap<Object,Object> expected) throws HiveException {
-    Map<String, Integer> mapColumnNames = new HashMap<String, Integer>();
-    mapColumnNames.put("Key", 0);
-    mapColumnNames.put("Value", 1);
-    VectorizationContext ctx = new VectorizationContext(mapColumnNames, 2);
+    List<String> mapColumnNames = new ArrayList<String>();
+    mapColumnNames.add("Key");
+    mapColumnNames.add("Value");
+    VectorizationContext ctx = new VectorizationContext(mapColumnNames);
+
     Set<Object> keys = new HashSet<Object>();
 
     GroupByDesc desc = buildKeyGroupByDesc (ctx, aggregateName, "Value",
@@ -2484,10 +2485,10 @@ public class TestVectorGroupByOperator {
       Iterable<VectorizedRowBatch> data,
       TypeInfo dataTypeInfo,
       HashMap<Object,Object> expected) throws HiveException {
-    Map<String, Integer> mapColumnNames = new HashMap<String, Integer>();
-    mapColumnNames.put("Key", 0);
-    mapColumnNames.put("Value", 1);
-    VectorizationContext ctx = new VectorizationContext(mapColumnNames, 2);
+    List<String> mapColumnNames = new ArrayList<String>();
+    mapColumnNames.add("Key");
+    mapColumnNames.add("Value");
+    VectorizationContext ctx = new VectorizationContext(mapColumnNames);
     Set<Object> keys = new HashSet<Object>();
 
     GroupByDesc desc = buildKeyGroupByDesc (ctx, aggregateName, "Value",

@@ -30,7 +30,7 @@ import org.apache.hadoop.hive.metastore.events.PreEventContext;
  *
  * DummyPreListener.
  *
- * An implemenation of MetaStorePreEventListener which stores the Events it's seen in a list.
+ * An implementation of MetaStorePreEventListener which stores the Events it's seen in a list.
  */
 public class DummyPreListener extends MetaStorePreEventListener {
 

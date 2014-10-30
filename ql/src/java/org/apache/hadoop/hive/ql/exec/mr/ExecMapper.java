@@ -26,8 +26,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.exec.FetchOperator;
 import org.apache.hadoop.hive.ql.exec.MapOperator;
 import org.apache.hadoop.hive.ql.exec.MapredContext;
@@ -72,9 +75,6 @@ public class ExecMapper extends MapReduceBase implements Mapper {
   private static boolean done;
 
   // used to log memory usage periodically
-  public static MemoryMXBean memoryMXBean;
-  private long numRows = 0;
-  private long nextCntr = 1;
   private MapredLocalWork localWork = null;
   private boolean isLogInfoEnabled = false;
 
@@ -84,8 +84,6 @@ public class ExecMapper extends MapReduceBase implements Mapper {
   public void configure(JobConf job) {
     execContext = new ExecMapperContext(job);
     // Allocate the bean at the beginning -
-    memoryMXBean = ManagementFactory.getMemoryMXBean();
-    l4j.info("maximum memory = " + memoryMXBean.getHeapMemoryUsage().getMax());
 
     isLogInfoEnabled = l4j.isInfoEnabled();
 
@@ -176,15 +174,6 @@ public class ExecMapper extends MapReduceBase implements Mapper {
         // Since there is no concept of a group, we don't invoke
         // startGroup/endGroup for a mapper
         mo.process((Writable)value);
-        if (isLogInfoEnabled) {
-          numRows++;
-          if (numRows == nextCntr) {
-            long used_memory = memoryMXBean.getHeapMemoryUsage().getUsed();
-            l4j.info("ExecMapper: processing " + numRows
-                + " rows: used memory = " + used_memory);
-            nextCntr = getNextCntr(numRows);
-          }
-        }
       }
     } catch (Throwable e) {
       abort = true;
@@ -196,18 +185,6 @@ public class ExecMapper extends MapReduceBase implements Mapper {
         throw new RuntimeException(e);
       }
     }
-  }
-
-
-  private long getNextCntr(long cntr) {
-    // A very simple counter to keep track of number of rows processed by the
-    // reducer. It dumps
-    // every 1 million times, and quickly before that
-    if (cntr >= 1000000) {
-      return cntr + 1000000;
-    }
-
-    return 10 * cntr;
   }
 
   @Override
@@ -245,13 +222,7 @@ public class ExecMapper extends MapReduceBase implements Mapper {
         }
       }
 
-      if (isLogInfoEnabled) {
-        long used_memory = memoryMXBean.getHeapMemoryUsage().getUsed();
-        l4j.info("ExecMapper: processed " + numRows + " rows: used memory = "
-            + used_memory);
-      }
-
-      ReportStats rps = new ReportStats(rp);
+      ReportStats rps = new ReportStats(rp, jc);
       mo.preorderMap(rps);
       return;
     } catch (Exception e) {
@@ -288,17 +259,21 @@ public class ExecMapper extends MapReduceBase implements Mapper {
    */
   public static class ReportStats implements Operator.OperatorFunc {
     private final Reporter rp;
+    private final Configuration conf;
+    private final String groupName;
 
-    public ReportStats(Reporter rp) {
+    public ReportStats(Reporter rp, Configuration conf) {
       this.rp = rp;
+      this.conf = conf;
+      this.groupName = HiveConf.getVar(conf, HiveConf.ConfVars.HIVECOUNTERGROUP);
     }
 
     @Override
     public void func(Operator op) {
-      Map<Enum<?>, Long> opStats = op.getStats();
-      for (Map.Entry<Enum<?>, Long> e : opStats.entrySet()) {
+      Map<String, Long> opStats = op.getStats();
+      for (Map.Entry<String, Long> e : opStats.entrySet()) {
         if (rp != null) {
-          rp.incrCounter(e.getKey(), e.getValue());
+          rp.incrCounter(groupName, e.getKey(), e.getValue());
         }
       }
     }

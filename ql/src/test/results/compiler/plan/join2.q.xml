@@ -465,6 +465,14 @@
                    </void> 
                   </object> 
                  </void> 
+                 <void property="reducerTraits">
+                  <void method="clear"/>
+                  <void method="add">
+                   <object id="ReduceSinkDesc$ReducerTraits0" class="org.apache.hadoop.hive.ql.plan.ReduceSinkDesc$ReducerTraits" method="valueOf">
+                    <string>UNSET</string>
+                   </object>
+                  </void>
+                 </void>
                  <void property="valueCols"> 
                   <object class="java.util.ArrayList"> 
                    <void method="add"> 
@@ -741,6 +749,12 @@
                       </void> 
                      </object> 
                     </void> 
+                    <void property="reducerTraits">
+                     <void method="clear"/>
+                     <void method="add">
+                      <object idref="ReduceSinkDesc$ReducerTraits0"/>
+                     </void>
+                    </void>
                     <void property="tag"> 
                      <int>1</int> 
                     </void> 
@@ -1944,6 +1958,12 @@
                   </void> 
                  </object> 
                 </void> 
+                <void property="reducerTraits">
+                 <void method="clear"/>
+                 <void method="add">
+                  <object idref="ReduceSinkDesc$ReducerTraits0"/>
+                 </void>
+                </void>
                 <void property="tag"> 
                  <int>1</int> 
                 </void> 
@@ -2273,6 +2293,12 @@
                   </void> 
                  </object> 
                 </void> 
+                <void property="reducerTraits">
+                 <void method="clear"/>
+                 <void method="add">
+                  <object idref="ReduceSinkDesc$ReducerTraits0"/>
+                 </void>
+                </void>
                 <void property="valueCols"> 
                  <object class="java.util.ArrayList"/> 
                 </void> 

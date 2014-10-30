@@ -25,6 +25,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.net.URI;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -89,19 +90,19 @@ public class TestRCFileCat {
 
 
     try {
-      String[] params = {"--verbose","file://" + template.getAbsolutePath() };
+      String[] params = {"--verbose","file://" + template.toURI().getPath() };
 
       assertEquals(0, fileCat.run(params));
       assertTrue(dataOut.toString().contains("123\t456\t789\t1000\t5.3\thive and hadoop\t\tNULL"));
       assertTrue(dataOut.toString().contains("100\t200\t123\t1000\t5.3\thive and hadoop\t\tNULL"));
       assertTrue(dataOut.toString().contains("200\t400\t678\t1000\t4.8\thive and hadoop\t\tTEST"));
       dataOut.reset();
-       params = new String[] { "--start=-10","--file-sizes","file://" + template.getAbsolutePath() };
+       params = new String[] { "--start=-10","--file-sizes", "file://" + template.toURI().getPath() };
       assertEquals(0, fileCat.run(params));
       assertTrue(dataOut.toString().contains("File size (uncompressed): 105. File size (compressed): 134. Number of rows: 3."));
       dataOut.reset();
 
-      params = new String[] {"--start=0", "--column-sizes","file://" + template.getAbsolutePath() };
+      params = new String[] {"--start=0", "--column-sizes","file://" + template.toURI().getPath() };
       assertEquals(0, fileCat.run(params));
       assertTrue(dataOut.toString().contains("0\t9\t17"));
       assertTrue(dataOut.toString().contains("1\t9\t17"));
@@ -112,7 +113,8 @@ public class TestRCFileCat {
 
 
       dataOut.reset();
-      params = new String[] {"--start=0", "--column-sizes-pretty","file://" + template.getAbsolutePath() };
+      params = new String[] {"--start=0", "--column-sizes-pretty",
+          "file://" + template.toURI().getPath() };
       assertEquals(0, fileCat.run(params));
       assertTrue(dataOut.toString().contains("Column 0: Uncompressed size: 9 Compressed size: 17"));
       assertTrue(dataOut.toString().contains("Column 1: Uncompressed size: 9 Compressed size: 17"));
@@ -127,7 +129,8 @@ public class TestRCFileCat {
           "[--column-sizes | --column-sizes-pretty] [--file-sizes] fileName"));
 
       dataErr.reset();
-      params = new String[] { "--fakeParameter","file://" + template.getAbsolutePath()};
+      params = new String[] { "--fakeParameter",
+          "file://" + template.toURI().getPath()};
       assertEquals(-1, fileCat.run(params));
       assertTrue(dataErr.toString().contains("RCFileCat [--start=start_offet] [--length=len] [--verbose] " +
           "[--column-sizes | --column-sizes-pretty] [--file-sizes] fileName"));

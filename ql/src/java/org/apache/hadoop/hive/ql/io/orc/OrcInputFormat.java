@@ -388,6 +388,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
           ConfVars.HIVE_ORC_INCLUDE_FILE_FOOTER_IN_SPLITS);
       numBuckets =
           Math.max(conf.getInt(hive_metastoreConstants.BUCKET_COUNT, 0), 0);
+      LOG.debug("Number of buckets specified by conf file is " + numBuckets);
       int cacheStripeDetailsSize = HiveConf.getIntVar(conf,
           ConfVars.HIVE_ORC_CACHE_STRIPE_DETAILS_SIZE);
       int numThreads = HiveConf.getIntVar(conf,
@@ -1134,7 +1135,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
 
       @Override
       public ObjectInspector getObjectInspector() {
-        return ((StructObjectInspector) reader.getObjectInspector())
+        return ((StructObjectInspector) records.getObjectInspector())
             .getAllStructFieldRefs().get(OrcRecordUpdater.ROW)
             .getFieldObjectInspector();
       }
@@ -1188,7 +1189,9 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
                                  int bucket) throws IOException {
     for(FileStatus stat: fs.listStatus(directory)) {
       String name = stat.getPath().getName();
-      if (Integer.parseInt(name.substring(0, name.indexOf('_'))) == bucket) {
+      String numberPart = name.substring(0, name.indexOf('_'));
+      if (org.apache.commons.lang3.StringUtils.isNumeric(numberPart) &&
+          Integer.parseInt(numberPart) == bucket) {
         return stat.getPath();
       }
     }

@@ -29,6 +29,7 @@ import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
@@ -86,6 +87,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableShortObje
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableStringObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableTimestampObjectInspector;
 import org.apache.hadoop.io.BytesWritable;
+import org.apache.tez.mapreduce.hadoop.MRJobConfig;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
@@ -175,6 +177,9 @@ public class StatsUtils {
         colStats = getTableColumnStats(table, schema, neededColumns);
       }
 
+      // infer if any column can be primary key based on column statistics
+      inferAndSetPrimaryKey(stats.getNumRows(), colStats);
+
       stats.setColumnStatsState(deriveStatType(colStats, neededColumns));
       stats.addToColumnStats(colStats);
     } else if (partList != null) {
@@ -244,7 +249,7 @@ public class StatsUtils {
           List<ColStatistics> emptyStats = Lists.newArrayList();
 
           // add partition column stats
-          addParitionColumnStats(neededColumns, referencedColumns, schema, table, partList,
+          addParitionColumnStats(conf, neededColumns, referencedColumns, schema, table, partList,
               emptyStats);
 
           stats.addToColumnStats(emptyStats);
@@ -258,8 +263,11 @@ public class StatsUtils {
           List<ColStatistics> columnStats = convertColStats(colStats, table.getTableName(),
               colToTabAlias);
 
-          addParitionColumnStats(neededColumns, referencedColumns, schema, table, partList,
+          addParitionColumnStats(conf, neededColumns, referencedColumns, schema, table, partList,
               columnStats);
+
+          // infer if any column can be primary key based on column statistics
+          inferAndSetPrimaryKey(stats.getNumRows(), columnStats);
 
           stats.addToColumnStats(columnStats);
           State colState = deriveStatType(columnStats, referencedColumns);
@@ -275,7 +283,59 @@ public class StatsUtils {
     return stats;
   }
 
-  private static void addParitionColumnStats(List<String> neededColumns,
+
+  /**
+   * Based on the provided column statistics and number of rows, this method infers if the column
+   * can be primary key. It checks if the difference between the min and max value is equal to
+   * number of rows specified.
+   * @param numRows - number of rows
+   * @param colStats - column statistics
+   */
+  public static void inferAndSetPrimaryKey(long numRows, List<ColStatistics> colStats) {
+    if (colStats != null) {
+      for (ColStatistics cs : colStats) {
+        if (cs != null && cs.getRange() != null && cs.getRange().minValue != null &&
+            cs.getRange().maxValue != null) {
+          if (numRows ==
+              ((cs.getRange().maxValue.longValue() - cs.getRange().minValue.longValue()) + 1)) {
+            cs.setPrimaryKey(true);
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * Infer foreign key relationship from given column statistics.
+   * @param csPK - column statistics of primary key
+   * @param csFK - column statistics of potential foreign key
+   * @return
+   */
+  public static boolean inferForeignKey(ColStatistics csPK, ColStatistics csFK) {
+    if (csPK != null && csFK != null) {
+      if (csPK.isPrimaryKey()) {
+        if (csPK.getRange() != null && csFK.getRange() != null) {
+          ColStatistics.Range pkRange = csPK.getRange();
+          ColStatistics.Range fkRange = csFK.getRange();
+          return isWithin(fkRange, pkRange);
+        }
+      }
+    }
+    return false;
+  }
+
+  private static boolean isWithin(ColStatistics.Range range1, ColStatistics.Range range2) {
+    if (range1.minValue != null && range2.minValue != null && range1.maxValue != null &&
+        range2.maxValue != null) {
+      if (range1.minValue.longValue() >= range2.minValue.longValue() &&
+          range1.maxValue.longValue() <= range2.maxValue.longValue()) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private static void addParitionColumnStats(HiveConf conf, List<String> neededColumns,
       List<String> referencedColumns, List<ColumnInfo> schema, Table table,
       PrunedPartitionList partList, List<ColStatistics> colStats)
       throws HiveException {
@@ -298,6 +358,8 @@ public class StatsUtils {
             long numPartitions = getNDVPartitionColumn(partList.getPartitions(),
                 ci.getInternalName());
             partCS.setCountDistint(numPartitions);
+            partCS.setAvgColLen(StatsUtils.getAvgColLenOfVariableLengthTypes(conf,
+                ci.getObjectInspector(), partCS.getColumnType()));
             colStats.add(partCS);
           }
         }
@@ -531,6 +593,7 @@ public class StatsUtils {
       // Columns statistics for complex datatypes are not supported yet
       return null;
     }
+
     return cs;
   }
 
@@ -957,7 +1020,20 @@ public class StatsUtils {
           colStat.setColumnName(outColName);
           colStat.setTableAlias(outTabAlias);
         }
-        cs.add(colStat);
+        if (colStat != null) {
+          cs.add(colStat);
+        }
+      }
+
+      return cs;
+    }
+
+    // In cases where column expression map or row schema is missing, just pass on the parent column
+    // stats. This could happen in cases like TS -> FIL where FIL does not map input column names to
+    // internal names.
+    if (colExprMap == null || rowSchema == null) {
+      if (parentStats.getColumnStats() != null) {
+        cs.addAll(parentStats.getColumnStats());
       }
     }
     return cs;
@@ -998,7 +1074,13 @@ public class StatsUtils {
 
       if (encd.getIsPartitionColOrVirtualCol()) {
 
-        // vitual columns
+        ColStatistics colStats = parentStats.getColumnStatisticsFromColName(colName);
+        if (colStats != null) {
+          /* If statistics for the column already exist use it. */
+          return colStats;
+        }
+
+        // virtual columns
         colType = encd.getTypeInfo().getTypeName();
         countDistincts = numRows;
         oi = encd.getWritableObjectInspector();
@@ -1349,5 +1431,12 @@ public class StatsUtils {
       }
     }
 
+  }
+
+  public static long getAvailableMemory(Configuration conf) {
+    int memory = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVETEZCONTAINERSIZE) > 0 ?
+        HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVETEZCONTAINERSIZE) :
+        conf.getInt(MRJobConfig.MAP_MEMORY_MB, MRJobConfig.DEFAULT_MAP_MEMORY_MB);
+    return memory;
   }
 }

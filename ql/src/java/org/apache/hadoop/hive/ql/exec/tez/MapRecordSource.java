@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.exec.tez;
 
 import java.io.IOException;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.MapOperator;
@@ -28,7 +27,6 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.util.StringUtils;
-import org.apache.tez.mapreduce.input.MRInput;
 import org.apache.tez.runtime.library.api.KeyValueReader;
 
 /**
@@ -45,7 +43,7 @@ public class MapRecordSource implements RecordSource {
   private final boolean grouped = false;
 
   void init(JobConf jconf, MapOperator mapOp, KeyValueReader reader) throws IOException {
-    execContext = new ExecMapperContext(jconf);
+    execContext = mapOp.getExecContext();
     this.mapOp = mapOp;
     this.reader = reader;
   }

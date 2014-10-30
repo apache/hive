@@ -94,7 +94,7 @@ STAGE PLANS:
               predicate: (value like '%90%') (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Select Operator
-                expressions: key (type: int), value (type: string)
+                expressions: 90 (type: int), value (type: string)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 File Output Operator
@@ -142,7 +142,7 @@ STAGE PLANS:
               predicate: (value like '%90%') (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Select Operator
-                expressions: key (type: int), value (type: string)
+                expressions: 90 (type: int), value (type: string)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 File Output Operator
@@ -194,7 +194,7 @@ STAGE PLANS:
               predicate: ((value like '%90%') and (key = UDFToInteger(value))) (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Select Operator
-                expressions: key (type: int), value (type: string)
+                expressions: 90 (type: int), value (type: string)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 File Output Operator

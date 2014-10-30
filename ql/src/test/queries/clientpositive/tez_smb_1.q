@@ -33,6 +33,3 @@ set hive.auto.convert.join.noconditionaltask.size=500;
 explain
 select count(*) from tab s1 join tab s3 on s1.key=s3.key;
 
-select s1.key, s1.value, s3.value from tab s1 join tab s3 on s1.key=s3.key;
-select count(*) from tab s2;
-

@@ -24,15 +24,17 @@ public class DropIndexDesc {
   private String indexName;
   
   private String tableName;
+
+  private boolean throwException;
   
   /**
    * @param indexName
    * @param tableName
    */
-  public DropIndexDesc(String indexName, String tableName) {
-    super();
+  public DropIndexDesc(String indexName, String tableName, boolean throwException) {
     this.indexName = indexName;
     this.tableName = tableName;
+    this.throwException = throwException;
   }
 
   /**
@@ -63,4 +65,11 @@ public class DropIndexDesc {
     this.tableName = tableName;
   }
 
+  public boolean isThrowException() {
+    return throwException;
+  }
+
+  public void setThrowException(boolean throwException) {
+    this.throwException = throwException;
+  }
 }

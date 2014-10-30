@@ -21,8 +21,10 @@ package org.apache.hadoop.hive.ql.plan;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
@@ -63,6 +65,20 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
     NO_DROP, OFFLINE, READ_ONLY, NO_DROP_CASCADE
   }
 
+  public static final Set<AlterTableTypes> alterTableTypesWithPartialSpec =
+      new HashSet<AlterTableDesc.AlterTableTypes>();
+
+  static {
+    alterTableTypesWithPartialSpec.add(AlterTableDesc.AlterTableTypes.ALTERPROTECTMODE);
+    alterTableTypesWithPartialSpec.add(AlterTableDesc.AlterTableTypes.ADDCOLS);
+    alterTableTypesWithPartialSpec.add(AlterTableDesc.AlterTableTypes.REPLACECOLS);
+    alterTableTypesWithPartialSpec.add(AlterTableDesc.AlterTableTypes.RENAMECOLUMN);
+    alterTableTypesWithPartialSpec.add(AlterTableDesc.AlterTableTypes.ADDPROPS);
+    alterTableTypesWithPartialSpec.add(AlterTableDesc.AlterTableTypes.DROPPROPS);
+    alterTableTypesWithPartialSpec.add(AlterTableDesc.AlterTableTypes.ADDSERDE);
+    alterTableTypesWithPartialSpec.add(AlterTableDesc.AlterTableTypes.ADDSERDEPROPS);
+    alterTableTypesWithPartialSpec.add(AlterTableDesc.AlterTableTypes.ADDFILEFORMAT);
+  }
 
   AlterTableTypes op;
   String oldName;
@@ -704,5 +720,8 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
     return isDropIfExists;
   }
 
+  public static boolean doesAlterTableTypeSupportPartialPartitionSpec(AlterTableTypes type) {
+    return alterTableTypesWithPartialSpec.contains(type);
+  }
 
 }

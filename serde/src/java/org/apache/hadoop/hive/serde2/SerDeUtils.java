@@ -497,7 +497,8 @@ public final class SerDeUtils {
    * @return the overlayed properties
    */
   public static Properties createOverlayedProperties(Properties tblProps, Properties partProps) {
-    Properties props = new Properties(tblProps);
+    Properties props = new Properties();
+    props.putAll(tblProps);
     if (partProps != null) {
       props.putAll(partProps);
     }
@@ -506,7 +507,8 @@ public final class SerDeUtils {
 
   /**
    * Initializes a SerDe.
-   * @param serde
+   * @param deserializer
+   * @param conf
    * @param tblProps
    * @param partProps
    * @throws SerDeException
@@ -514,6 +516,28 @@ public final class SerDeUtils {
   public static void initializeSerDe(Deserializer deserializer, Configuration conf,
                                             Properties tblProps, Properties partProps)
                                                 throws SerDeException {
+    if (deserializer instanceof AbstractSerDe) {
+      ((AbstractSerDe) deserializer).initialize(conf, tblProps, partProps);
+      String msg = ((AbstractSerDe) deserializer).getConfigurationErrors();
+      if (msg != null && !msg.isEmpty()) {
+        throw new SerDeException(msg);
+      }
+    } else {
+      deserializer.initialize(conf, createOverlayedProperties(tblProps, partProps));
+    }
+  }
+
+  /**
+   * Initializes a SerDe.
+   * @param deserializer
+   * @param conf
+   * @param tblProps
+   * @param partProps
+   * @throws SerDeException
+   */
+  public static void initializeSerDeWithoutErrorCheck(Deserializer deserializer,
+                                                      Configuration conf, Properties tblProps,
+                                                      Properties partProps) throws SerDeException {
     if (deserializer instanceof AbstractSerDe) {
       ((AbstractSerDe) deserializer).initialize(conf, tblProps, partProps);
     } else {

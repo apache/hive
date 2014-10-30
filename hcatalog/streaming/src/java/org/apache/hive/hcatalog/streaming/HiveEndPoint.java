@@ -130,11 +130,16 @@ public class HiveEndPoint {
   }
 
   /**
-   * Acquire a new connection to MetaStore for streaming
+   * Acquire a new connection to MetaStore for streaming. To connect using Kerberos,
+   *   'authenticatedUser' argument should have been used to do a kerberos login.  Additionally the
+   *   'hive.metastore.kerberos.principal' setting should be set correctly either in hive-site.xml or
+   *    in the 'conf' argument (if not null). If using hive-site.xml, it should be in classpath.
+   *
    * @param createPartIfNotExists If true, the partition specified in the endpoint
    *                              will be auto created if it does not exist
+   * @param conf               HiveConf object to be used for the connection. Can be null.
    * @param authenticatedUser  UserGroupInformation object obtained from successful authentication.
-   *                           Uses insecure mode if this argument is null.
+   *                           Uses non-secure mode if this argument is null.
    * @return
    * @throws ConnectionError if there is a connection problem
    * @throws InvalidPartition  if specified partition is not valid (createPartIfNotExists = false)
@@ -240,6 +245,7 @@ public class HiveEndPoint {
     private final HiveEndPoint endPt;
     private final UserGroupInformation ugi;
     private final String username;
+    private final boolean secureMode;
 
     /**
      * @param endPoint end point to connect to
@@ -261,7 +267,11 @@ public class HiveEndPoint {
       if (conf==null) {
         conf = HiveEndPoint.createHiveConf(this.getClass(), endPoint.metaStoreUri);
       }
-      this.msClient = getMetaStoreClient(endPoint, conf);
+      else {
+          overrideConfSettings(conf);
+      }
+      this.secureMode = ugi==null ? false : ugi.hasKerberosCredentials();
+      this.msClient = getMetaStoreClient(endPoint, conf, secureMode);
       if (createPart  &&  !endPoint.partitionVals.isEmpty()) {
         createPartitionIfNotExists(endPoint, msClient, conf);
       }
@@ -425,13 +435,15 @@ public class HiveEndPoint {
       return buff.toString();
     }
 
-    private static IMetaStoreClient getMetaStoreClient(HiveEndPoint endPoint, HiveConf conf)
+    private static IMetaStoreClient getMetaStoreClient(HiveEndPoint endPoint, HiveConf conf, boolean secureMode)
             throws ConnectionError {
 
       if (endPoint.metaStoreUri!= null) {
         conf.setVar(HiveConf.ConfVars.METASTOREURIS, endPoint.metaStoreUri);
       }
-
+      if(secureMode) {
+        conf.setBoolVar(HiveConf.ConfVars.METASTORE_USE_THRIFT_SASL,true);
+      }
       try {
         return new HiveMetaStoreClient(conf);
       } catch (MetaException e) {
@@ -828,14 +840,35 @@ public class HiveEndPoint {
 
   static HiveConf createHiveConf(Class<?> clazz, String metaStoreUri) {
     HiveConf conf = new HiveConf(clazz);
-    conf.setVar(HiveConf.ConfVars.HIVE_TXN_MANAGER,
-            "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager");
-    conf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, true);
-    conf.setBoolVar(HiveConf.ConfVars.METASTORE_EXECUTE_SET_UGI, true);
     if (metaStoreUri!= null) {
-      conf.setVar(HiveConf.ConfVars.METASTOREURIS, metaStoreUri);
+      setHiveConf(conf, HiveConf.ConfVars.METASTOREURIS, metaStoreUri);
     }
+    HiveEndPoint.overrideConfSettings(conf);
     return conf;
   }
+
+  private static void overrideConfSettings(HiveConf conf) {
+    setHiveConf(conf, HiveConf.ConfVars.HIVE_TXN_MANAGER,
+            "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager");
+    setHiveConf(conf, HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, true);
+    setHiveConf(conf, HiveConf.ConfVars.METASTORE_EXECUTE_SET_UGI, true);
+    // Avoids creating Tez Client sessions internally as it takes much longer currently
+    setHiveConf(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE, "mr");
+  }
+
+  private static void setHiveConf(HiveConf conf, HiveConf.ConfVars var, String value) {
+    if( LOG.isDebugEnabled() ) {
+      LOG.debug("Overriding HiveConf setting : " + var + " = " + value);
+    }
+    conf.setVar(var, value);
+  }
+
+  private static void setHiveConf(HiveConf conf, HiveConf.ConfVars var, boolean value) {
+    if( LOG.isDebugEnabled() ) {
+      LOG.debug("Overriding HiveConf setting : " + var + " = " + value);
+    }
+    conf.setBoolVar(var, value);
+  }
+
 
 }  // class HiveEndPoint

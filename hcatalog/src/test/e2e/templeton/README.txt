@@ -101,7 +101,7 @@ For Hadoop 2.x you would need to upload hadoop-mapreduce-client-jobclient.jar to
 Also see https://cwiki.apache.org/confluence/display/Hive/WebHCat+InstallWebHCat#WebHCatInstallWebHCat-HadoopDistributedCache
  for notes on additional JAR files to copy to HDFS.
 
-5. Make sure TEMPLETON_HOME evnironment variable is set
+5. Make sure TEMPLETON_HOME environment variable is set
 
 6. hadoop/conf/core-site.xml should have items described in
 https://cwiki.apache.org/confluence/display/Hive/WebHCat+InstallWebHCat#WebHCatInstallWebHCat-Permissions
@@ -123,6 +123,9 @@ You may also need to adjust the following in Pig's build.xml as needed:
   <value>127.0.0.1:8085</value>
   <final>true</final>
 </property>
+
+8.Sqoop test require JDBC jar to be placed on HDFS for whichever DB the test is configured with,
+for example mysql-connector-java-5.1.30-bin.jar.
 
 ****
 **** See deployers/ for scripts that automate a lot of the set up.

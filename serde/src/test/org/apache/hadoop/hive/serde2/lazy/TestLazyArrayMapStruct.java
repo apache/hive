@@ -194,6 +194,113 @@ public class TestLazyArrayMapStruct extends TestCase {
     }
   }
 
+  /*
+   * test LazyMap with bad entries, e.g., empty key or empty entries
+   * where '[' and  ']' don't exist, only for notation purpose,
+   * STX with value of 2 as entry separator, ETX with 3 as key/value separator
+   * */
+  public void testLazyMapWithBadEntries() throws Throwable {
+    try {
+      {
+        // Map of String to String
+        Text nullSequence = new Text("");
+        ObjectInspector oi = LazyFactory.createLazyObjectInspector(
+            TypeInfoUtils.getTypeInfosFromTypeString("map<string,string>").get(
+            0), new byte[] {'\2', '\3'}, 0, nullSequence,
+            false, (byte) 0);
+        LazyMap b = (LazyMap) LazyFactory.createLazyObject(oi);
+
+       //read friendly string: ak[EXT]av[STX]bk[ETX]bv[STX]ck[ETX]cv[STX]dk[ETX]dv
+       byte[] data = new byte[] {
+            'a', 'k', '\3', 'a', 'v',
+            '\02', 'b', 'k', '\3', 'b', 'v',
+            '\02', 'c', 'k', '\3', 'c', 'v',
+            '\02', 'd', 'k', '\3', 'd', 'v'};
+        TestLazyPrimitive.initLazyObject(b, data, 0, data.length);
+
+        assertEquals(new Text("av"), ((LazyString) b
+            .getMapValueElement(new Text("ak"))).getWritableObject());
+        assertNull(b.getMapValueElement(new Text("-1")));
+        assertEquals(new Text("bv"), ((LazyString) b
+            .getMapValueElement(new Text("bk"))).getWritableObject());
+        assertEquals(new Text("cv"), ((LazyString) b
+            .getMapValueElement(new Text("ck"))).getWritableObject());
+        assertNull(b.getMapValueElement(new Text("-")));
+        assertEquals(new Text("dv"), ((LazyString) b
+            .getMapValueElement(new Text("dk"))).getWritableObject());
+        assertEquals(4, b.getMapSize());
+      }
+
+      {
+        // Map of String to String, LazyMap allows empty-string style key, e.g., {"" : null}
+        // or {"", ""}, but not null style key, e.g., {null:""}
+        Text nullSequence = new Text("");
+        ObjectInspector oi = LazyFactory.createLazyObjectInspector(
+            TypeInfoUtils.getTypeInfosFromTypeString("map<string,string>").get(
+            0), new byte[] {'\2', '\3'}, 0, nullSequence,
+            false, (byte) 0);
+        LazyMap b = (LazyMap) LazyFactory.createLazyObject(oi);
+
+       //read friendly string: [STX]ak[EXT]av[STX]bk[ETX]bv[STX]ck[ETX]cv[STX]dk[ETX]dv
+        byte[] data = new byte[] {
+            '\02', 'a', 'k', '\3', 'a', 'v',
+            '\02', 'b', 'k', '\3', 'b', 'v',
+            '\02', 'c', 'k', '\3', 'c', 'v',
+            '\02', 'd', 'k', '\3', 'd', 'v'};
+        TestLazyPrimitive.initLazyObject(b, data, 0, data.length);
+
+        assertNull(b.getMapValueElement(new Text(""))); //{"" : null}
+        assertEquals(new Text("av"), ((LazyString) b
+            .getMapValueElement(new Text("ak"))).getWritableObject());
+        assertNull(b.getMapValueElement(new Text("-1")));
+        assertEquals(new Text("bv"), ((LazyString) b
+            .getMapValueElement(new Text("bk"))).getWritableObject());
+        assertEquals(new Text("cv"), ((LazyString) b
+            .getMapValueElement(new Text("ck"))).getWritableObject());
+        assertNull(b.getMapValueElement(new Text("-")));
+        assertEquals(new Text("dv"), ((LazyString) b
+            .getMapValueElement(new Text("dk"))).getWritableObject());
+        assertEquals(4, b.getMapSize());
+      }
+
+      {
+        // Map of String to String, LazyMap allows empty-string style key, e.g., {"" : null}
+        // or {"", ""}, but not null style key, e.g., {null:""}
+        Text nullSequence = new Text("");
+        ObjectInspector oi = LazyFactory.createLazyObjectInspector(
+            TypeInfoUtils.getTypeInfosFromTypeString("map<string,string>").get(
+            0), new byte[] {'\2', '\3'}, 0, nullSequence,
+            false, (byte) 0);
+        LazyMap b = (LazyMap) LazyFactory.createLazyObject(oi);
+
+       //read friendly string: [ETX][STX]ak[EXT]av[STX]bk[ETX]bv[STX]ck[ETX]cv[STX]dk[ETX]dv
+        byte[] data = new byte[] {
+            '\03',
+            '\02', 'a', 'k', '\3', 'a', 'v',
+            '\02', 'b', 'k', '\3', 'b', 'v',
+            '\02', 'c', 'k', '\3', 'c', 'v',
+            '\02', 'd', 'k', '\3', 'd', 'v'};
+        TestLazyPrimitive.initLazyObject(b, data, 0, data.length);
+
+        assertNull(b.getMapValueElement(new Text(""))); //{"" : null}
+        assertEquals(new Text("av"), ((LazyString) b
+            .getMapValueElement(new Text("ak"))).getWritableObject());
+        assertNull(b.getMapValueElement(new Text("-1")));
+        assertEquals(new Text("bv"), ((LazyString) b
+            .getMapValueElement(new Text("bk"))).getWritableObject());
+        assertEquals(new Text("cv"), ((LazyString) b
+            .getMapValueElement(new Text("ck"))).getWritableObject());
+        assertNull(b.getMapValueElement(new Text("-")));
+        assertEquals(new Text("dv"), ((LazyString) b
+            .getMapValueElement(new Text("dk"))).getWritableObject());
+        assertEquals(4, b.getMapSize());
+      }
+    } catch(Throwable e) {
+      e.printStackTrace();
+      throw e;
+    }
+  }
+
   /**
    * Test the LazyMap class.
    */

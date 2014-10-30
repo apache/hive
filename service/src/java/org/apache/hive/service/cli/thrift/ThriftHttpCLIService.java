@@ -29,12 +29,10 @@ import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.Shell;
 import org.apache.hive.service.auth.HiveAuthFactory;
-import org.apache.hive.service.auth.HiveAuthFactory.AuthTypes;
 import org.apache.hive.service.cli.CLIService;
 import org.apache.hive.service.cli.thrift.TCLIService.Iface;
 import org.apache.hive.service.server.ThreadFactoryWithGarbageCleanup;
 import org.apache.thrift.TProcessor;
-import org.apache.thrift.TProcessorFactory;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocolFactory;
 import org.apache.thrift.server.TServlet;
@@ -60,9 +58,6 @@ public class ThriftHttpCLIService extends ThriftCLIService {
   @Override
   public void run() {
     try {
-      // Verify config validity
-      verifyHttpConfiguration(hiveConf);
-
       // HTTP Server
       httpServer = new org.eclipse.jetty.server.Server();
 
@@ -162,32 +157,4 @@ public class ThriftHttpCLIService extends ThriftCLIService {
     }
     return httpPath;
   }
-
-  /**
-   * Verify that this configuration is supported by transportMode of HTTP
-   * @param hiveConf
-   */
-  private static void verifyHttpConfiguration(HiveConf hiveConf) {
-    String authType = hiveConf.getVar(ConfVars.HIVE_SERVER2_AUTHENTICATION);
-
-    // Error out if KERBEROS auth mode is being used and use SSL is also set to true
-    if(authType.equalsIgnoreCase(AuthTypes.KERBEROS.toString()) &&
-        hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_USE_SSL)) {
-      String msg = ConfVars.HIVE_SERVER2_AUTHENTICATION + " setting of " +
-          authType + " is not supported with " +
-          ConfVars.HIVE_SERVER2_USE_SSL + " set to true";
-      LOG.fatal(msg);
-      throw new RuntimeException(msg);
-    }
-
-    // Warn that SASL is not used in http mode
-    if(authType.equalsIgnoreCase(AuthTypes.NONE.toString())) {
-      // NONE in case of thrift mode uses SASL
-      LOG.warn(ConfVars.HIVE_SERVER2_AUTHENTICATION + " setting to " +
-          authType + ". SASL is not supported with http transport mode," +
- " so using equivalent of "
-          + AuthTypes.NOSASL);
-    }
-  }
-
 }

@@ -40,8 +40,14 @@ EXPLAIN SELECT t, si, i, b, f, d, bo, s, ts, dec, bin FROM over1korc ORDER BY i 
 
 SELECT t, si, i, b, f, d, bo, s, ts, dec, bin FROM over1korc ORDER BY i LIMIT 20;
 
+SELECT SUM(HASH(*))
+FROM (SELECT t, si, i, b, f, d, bo, s, ts, dec, bin FROM over1korc ORDER BY i) as q;
+
 SET hive.vectorized.execution.enabled=true;
 
 EXPLAIN select t, si, i, b, f, d, bo, s, ts, dec, bin FROM over1korc ORDER BY i LIMIT 20;
 
 SELECT t, si, i, b, f, d, bo, s, ts, dec, bin FROM over1korc ORDER BY i LIMIT 20;
+
+SELECT SUM(HASH(*))
+FROM (SELECT t, si, i, b, f, d, bo, s, ts, dec, bin FROM over1korc ORDER BY i) as q;

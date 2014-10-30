@@ -18,17 +18,24 @@
  */
 package org.apache.hive.ptest.execution;
 
+import com.google.common.collect.Lists;
+
 import java.util.List;
 import junit.framework.Assert;
+
+import org.apache.hive.ptest.execution.JIRAService.BuildInfo;
 import org.junit.Test;
-import com.google.common.collect.Lists;
 
 public class TestJIRAService  {
 
   @Test
   public void testFormatBuildTagPositive() throws Throwable {
-    Assert.assertEquals("abc/123", JIRAService.formatBuildTag("abc-123"));
-    Assert.assertEquals("a-b-c/123", JIRAService.formatBuildTag("a-b-c-123"));
+    BuildInfo buildInfo = JIRAService.formatBuildTag("abc-123");
+    Assert.assertEquals("abc/123", buildInfo.getFormattedBuildTag());
+    Assert.assertEquals("abc", buildInfo.getBuildName());
+    buildInfo = JIRAService.formatBuildTag("PreCommit-HIVE-TRUNK-Build-1115");
+    Assert.assertEquals("PreCommit-HIVE-TRUNK-Build/1115", buildInfo.getFormattedBuildTag());
+    Assert.assertEquals("PreCommit-HIVE-TRUNK-Build", buildInfo.getBuildName());
   }
   @Test(expected=IllegalArgumentException.class)
   public void testFormatBuildTagNoDashSlash() throws Throwable {

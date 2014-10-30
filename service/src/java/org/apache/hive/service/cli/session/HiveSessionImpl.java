@@ -35,14 +35,16 @@ import org.apache.hadoop.hive.common.cli.HiveFileProcessor;
 import org.apache.hadoop.hive.common.cli.IHiveFileProcessor;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.exec.FetchFormatter;
 import org.apache.hadoop.hive.ql.exec.ListSinkOperator;
 import org.apache.hadoop.hive.ql.history.HiveHistory;
+import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.processors.SetProcessor;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hive.common.util.HiveVersionInfo;
 import org.apache.hive.service.auth.HiveAuthFactory;
 import org.apache.hive.service.cli.*;
@@ -80,7 +82,6 @@ public class HiveSessionImpl implements HiveSession {
 
   private SessionManager sessionManager;
   private OperationManager operationManager;
-  private IMetaStoreClient metastoreClient = null;
   private final Set<OperationHandle> opHandleSet = new HashSet<OperationHandle>();
   private boolean isOperationLogEnabled;
   private File sessionLogDir;
@@ -94,6 +95,17 @@ public class HiveSessionImpl implements HiveSession {
     this.sessionHandle = new SessionHandle(protocol);
     this.hiveConf = new HiveConf(serverhiveConf);
     this.ipAddress = ipAddress;
+
+    try {
+      // In non-impersonation mode, map scheduler queue to current user
+      // if fair scheduler is configured.
+      if (! hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_ENABLE_DOAS) &&
+        hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_MAP_FAIR_SCHEDULER_QUEUE)) {
+        ShimLoader.getHadoopShims().refreshDefaultQueue(hiveConf, username);
+      }
+    } catch (IOException e) {
+      LOG.warn("Error setting scheduler queue: " + e, e);
+    }
 
     // Set an explicit session name to control the download directory name
     hiveConf.set(ConfVars.HIVESESSIONID.varname,
@@ -315,14 +327,13 @@ public class HiveSessionImpl implements HiveSession {
 
   @Override
   public IMetaStoreClient getMetaStoreClient() throws HiveSQLException {
-    if (metastoreClient == null) {
-      try {
-        metastoreClient = new HiveMetaStoreClient(getHiveConf());
-      } catch (MetaException e) {
-        throw new HiveSQLException(e);
-      }
+    try {
+      return Hive.get(getHiveConf()).getMSC();
+    } catch (HiveException e) {
+      throw new HiveSQLException("Failed to get metastore connection", e);
+    } catch (MetaException e) {
+      throw new HiveSQLException("Failed to get metastore connection", e);
     }
-    return metastoreClient;
   }
 
   @Override
@@ -538,14 +549,6 @@ public class HiveSessionImpl implements HiveSession {
   public void close() throws HiveSQLException {
     try {
       acquire(true);
-      /**
-       * For metadata operations like getTables(), getColumns() etc,
-       * the session allocates a private metastore handler which should be
-       * closed at the end of the session
-       */
-      if (metastoreClient != null) {
-        metastoreClient.close();
-      }
       // Iterate through the opHandles and close their operations
       for (OperationHandle opHandle : opHandleSet) {
         operationManager.closeOperation(opHandle);
