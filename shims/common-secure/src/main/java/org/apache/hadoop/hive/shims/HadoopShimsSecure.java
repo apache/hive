@@ -29,11 +29,14 @@ import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
-import javax.security.auth.login.LoginException;
+import javax.security.auth.login.AppConfigurationEntry;
+import javax.security.auth.login.AppConfigurationEntry.LoginModuleControlFlag;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.logging.Log;
@@ -66,6 +69,7 @@ import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.security.authentication.util.KerberosUtil;
 import org.apache.hadoop.security.authorize.ProxyUsers;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.security.token.TokenIdentifier;
@@ -73,6 +77,7 @@ import org.apache.hadoop.security.token.TokenSelector;
 import org.apache.hadoop.tools.HadoopArchives;
 import org.apache.hadoop.util.Progressable;
 import org.apache.hadoop.util.ToolRunner;
+import org.apache.zookeeper.client.ZooKeeperSaslClient;
 
 import com.google.common.primitives.Longs;
 
@@ -88,6 +93,7 @@ public abstract class HadoopShimsSecure implements HadoopShims {
     return HtmlQuoting.unquoteHtmlChars(item);
   }
 
+  @Override
   public HadoopShims.CombineFileInputFormatShim getCombineFileInputFormat() {
     return new CombineFileInputFormatShim() {
       @Override
@@ -171,6 +177,7 @@ public abstract class HadoopShimsSecure implements HadoopShims {
     protected boolean isShrinked;
     protected long shrinkedLength;
 
+    @Override
     public boolean next(K key, V value) throws IOException {
 
       while ((curReader == null)
@@ -183,11 +190,13 @@ public abstract class HadoopShimsSecure implements HadoopShims {
       return true;
     }
 
+    @Override
     public K createKey() {
       K newKey = curReader.createKey();
       return (K)(new CombineHiveKey(newKey));
     }
 
+    @Override
     public V createValue() {
       return curReader.createValue();
     }
@@ -195,10 +204,12 @@ public abstract class HadoopShimsSecure implements HadoopShims {
     /**
      * Return the amount of data processed.
      */
+    @Override
     public long getPos() throws IOException {
       return progress;
     }
 
+    @Override
     public void close() throws IOException {
       if (curReader != null) {
         curReader.close();
@@ -209,6 +220,7 @@ public abstract class HadoopShimsSecure implements HadoopShims {
     /**
      * Return progress based on the amount of data processed so far.
      */
+    @Override
     public float getProgress() throws IOException {
       return Math.min(1.0f, progress / (float) (split.getLength()));
     }
@@ -309,6 +321,7 @@ public abstract class HadoopShimsSecure implements HadoopShims {
       CombineFileInputFormat<K, V>
       implements HadoopShims.CombineFileInputFormatShim<K, V> {
 
+    @Override
     public Path[] getInputPathsShim(JobConf conf) {
       try {
         return FileInputFormat.getInputPaths(conf);
@@ -339,7 +352,7 @@ public abstract class HadoopShimsSecure implements HadoopShims {
         super.setMaxSplitSize(minSize);
       }
 
-      InputSplit[] splits = (InputSplit[]) super.getSplits(job, numSplits);
+      InputSplit[] splits = super.getSplits(job, numSplits);
 
       ArrayList<InputSplitShim> inputSplitShims = new ArrayList<InputSplitShim>();
       for (int pos = 0; pos < splits.length; pos++) {
@@ -359,10 +372,12 @@ public abstract class HadoopShimsSecure implements HadoopShims {
       return inputSplitShims.toArray(new InputSplitShim[inputSplitShims.size()]);
     }
 
+    @Override
     public InputSplitShim getInputSplitShim() throws IOException {
       return new InputSplitShim();
     }
 
+    @Override
     public RecordReader getRecordReader(JobConf job, HadoopShims.InputSplitShim split,
         Reporter reporter,
         Class<RecordReader<K, V>> rrClass)
@@ -373,6 +388,7 @@ public abstract class HadoopShimsSecure implements HadoopShims {
 
   }
 
+  @Override
   public String getInputFormatClassName() {
     return "org.apache.hadoop.hive.ql.io.CombineHiveInputFormat";
   }
@@ -401,6 +417,7 @@ public abstract class HadoopShimsSecure implements HadoopShims {
    * the archive as compared to the full path in case of earlier versions.
    * See this api in Hadoop20Shims for comparison.
    */
+  @Override
   public URI getHarUri(URI original, URI base, URI originalBase)
     throws URISyntaxException {
     URI relative = originalBase.relativize(original);
@@ -431,6 +448,7 @@ public abstract class HadoopShimsSecure implements HadoopShims {
     public void abortTask(TaskAttemptContext taskContext) { }
   }
 
+  @Override
   public void prepareJobOutput(JobConf conf) {
     conf.setOutputCommitter(NullOutputCommitter.class);
 
@@ -686,4 +704,58 @@ public abstract class HadoopShimsSecure implements HadoopShims {
       throws IOException, AccessControlException, Exception {
     DefaultFileAccess.checkFileAccess(fs, stat, action);
   }
+
+  @Override
+  public void setZookeeperClientKerberosJaasConfig(String principal, String keyTabFile) throws IOException {
+    // ZooKeeper property name to pick the correct JAAS conf section
+    final String SASL_LOGIN_CONTEXT_NAME = "HiveZooKeeperClient";
+    System.setProperty(ZooKeeperSaslClient.LOGIN_CONTEXT_NAME_KEY, SASL_LOGIN_CONTEXT_NAME);
+
+    principal = getResolvedPrincipal(principal);
+    JaasConfiguration jaasConf = new JaasConfiguration(SASL_LOGIN_CONTEXT_NAME, principal, keyTabFile);
+
+    // Install the Configuration in the runtime.
+    javax.security.auth.login.Configuration.setConfiguration(jaasConf);
+  }
+
+  /**
+   * A JAAS configuration for ZooKeeper clients intended to use for SASL
+   * Kerberos.
+   */
+  private static class JaasConfiguration extends javax.security.auth.login.Configuration {
+    // Current installed Configuration
+    private final javax.security.auth.login.Configuration baseConfig = javax.security.auth.login.Configuration
+        .getConfiguration();
+    private final String loginContextName;
+    private final String principal;
+    private final String keyTabFile;
+
+    public JaasConfiguration(String hiveLoginContextName, String principal, String keyTabFile) {
+      this.loginContextName = hiveLoginContextName;
+      this.principal = principal;
+      this.keyTabFile = keyTabFile;
+    }
+
+    @Override
+    public AppConfigurationEntry[] getAppConfigurationEntry(String appName) {
+      if (loginContextName.equals(appName)) {
+        Map<String, String> krbOptions = new HashMap<String, String>();
+        krbOptions.put("doNotPrompt", "true");
+        krbOptions.put("storeKey", "true");
+        krbOptions.put("useKeyTab", "true");
+        krbOptions.put("principal", principal);
+        krbOptions.put("keyTab", keyTabFile);
+        krbOptions.put("refreshKrb5Config", "true");
+        AppConfigurationEntry hiveZooKeeperClientEntry = new AppConfigurationEntry(
+            KerberosUtil.getKrb5LoginModuleName(), LoginModuleControlFlag.REQUIRED, krbOptions);
+        return new AppConfigurationEntry[] { hiveZooKeeperClientEntry };
+      }
+      // Try the base config
+      if (baseConfig != null) {
+        return baseConfig.getAppConfigurationEntry(appName);
+      }
+      return null;
+    }
+  }
+
 }

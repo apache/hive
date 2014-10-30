@@ -53,7 +53,6 @@ import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooDefs.Ids;
 import org.apache.zookeeper.ZooDefs.Perms;
 import org.apache.zookeeper.ZooKeeper;
-import org.apache.zookeeper.client.ZooKeeperSaslClient;
 import org.apache.zookeeper.data.ACL;
 
 /**
@@ -178,23 +177,19 @@ public class HiveServer2 extends CompositeService {
    */
   private void setUpAuthAndAcls(HiveConf hiveConf, List<ACL> nodeAcls) throws Exception {
     if (ShimLoader.getHadoopShims().isSecurityEnabled()) {
-      String principal =
-          ShimLoader.getHadoopShims().getResolvedPrincipal(
-              hiveConf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL));
-      String keyTabFile = hiveConf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_KEYTAB);
+      String principal = hiveConf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL);
       if (principal.isEmpty()) {
         throw new IOException(
             "HiveServer2 Kerberos principal is empty");
       }
+      String keyTabFile = hiveConf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_KEYTAB);
       if (keyTabFile.isEmpty()) {
         throw new IOException(
             "HiveServer2 Kerberos keytab is empty");
       }
-      // ZooKeeper property name to pick the correct JAAS conf section
-      System.setProperty(ZooKeeperSaslClient.LOGIN_CONTEXT_NAME_KEY,
-          ZooKeeperHiveHelper.SASL_LOGIN_CONTEXT_NAME);
+
       // Install the JAAS Configuration for the runtime
-      ZooKeeperHiveHelper.setUpJaasConfiguration(principal, keyTabFile);
+      ShimLoader.getHadoopShims().setZookeeperClientKerberosJaasConfig(principal, keyTabFile);
       // Read all to the world
       nodeAcls.addAll(Ids.READ_ACL_UNSAFE);
       // Create/Delete/Write/Admin to the authenticated user
@@ -212,6 +207,7 @@ public class HiveServer2 extends CompositeService {
    * sessions at the time of receiving a 'NodeDeleted' notification from ZooKeeper.
    */
   private class DeRegisterWatcher implements Watcher {
+    @Override
     public void process(WatchedEvent event) {
       if (event.getType().equals(Watcher.Event.EventType.NodeDeleted)) {
         HiveServer2.this.setRegisteredWithZooKeeper(false);
@@ -389,7 +385,7 @@ public class HiveServer2 extends CompositeService {
     private final Options options = new Options();
     private org.apache.commons.cli.CommandLine commandLine;
     private final String serverName;
-    private StringBuilder debugMessage = new StringBuilder();
+    private final StringBuilder debugMessage = new StringBuilder();
 
     @SuppressWarnings("static-access")
     ServerOptionsProcessor(String serverName) {
@@ -453,7 +449,7 @@ public class HiveServer2 extends CompositeService {
    * The response sent back from {@link ServerOptionsProcessor#parse(String[])}
    */
   static class ServerOptionsProcessorResponse {
-    private ServerOptionsExecutor serverOptionsExecutor;
+    private final ServerOptionsExecutor serverOptionsExecutor;
 
     ServerOptionsProcessorResponse(ServerOptionsExecutor serverOptionsExecutor) {
       this.serverOptionsExecutor = serverOptionsExecutor;
@@ -483,6 +479,7 @@ public class HiveServer2 extends CompositeService {
       this.serverName = serverName;
     }
 
+    @Override
     public void execute() {
       new HelpFormatter().printHelp(serverName, options);
       System.exit(0);
@@ -494,6 +491,7 @@ public class HiveServer2 extends CompositeService {
    * This is the default executor, when no option is specified.
    */
   static class StartOptionExecutor implements ServerOptionsExecutor {
+    @Override
     public void execute() {
       try {
         startHiveServer2();
@@ -515,6 +513,7 @@ public class HiveServer2 extends CompositeService {
       this.versionNumber = versionNumber;
     }
 
+    @Override
     public void execute() {
       try {
         deleteServerInstancesFromZooKeeper(versionNumber);

@@ -265,6 +265,7 @@ public class TokenStoreDelegationTokenSecretManager extends DelegationTokenSecre
 
   /**
    * Extension of rollMasterKey to remove expired keys from store.
+   *
    * @throws IOException
    */
   protected void rollMasterKeyExt() throws IOException {
@@ -273,17 +274,20 @@ public class TokenStoreDelegationTokenSecretManager extends DelegationTokenSecre
     HiveDelegationTokenSupport.rollMasterKey(TokenStoreDelegationTokenSecretManager.this);
     List<DelegationKey> keysAfterRoll = Arrays.asList(getAllKeys());
     for (DelegationKey key : keysAfterRoll) {
-        keys.remove(key.getKeyId());
-        if (key.getKeyId() == currentKeyId) {
-          tokenStore.updateMasterKey(currentKeyId, encodeWritable(key));
-        }
+      keys.remove(key.getKeyId());
+      if (key.getKeyId() == currentKeyId) {
+        tokenStore.updateMasterKey(currentKeyId, encodeWritable(key));
+      }
     }
     for (DelegationKey expiredKey : keys.values()) {
       LOGGER.info("Removing expired key id={}", expiredKey.getKeyId());
-      tokenStore.removeMasterKey(expiredKey.getKeyId());
+      try {
+        tokenStore.removeMasterKey(expiredKey.getKeyId());
+      } catch (Exception e) {
+        LOGGER.error("Error removing expired key id={}", expiredKey.getKeyId(), e);
+      }
     }
   }
-
 
   /**
    * Cloned from {@link AbstractDelegationTokenSecretManager} to deal with private access
