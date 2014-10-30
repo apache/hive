@@ -43,6 +43,7 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.DependencyCollectionWork;
+import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.SparkEdgeProperty;
@@ -129,16 +130,28 @@ public class GenSparkProcContext implements NodeProcessorCtx{
   // remember which reducesinks we've already connected
   public final Set<ReduceSinkOperator> connectedReduceSinks;
 
+  // Alias to operator map, from the semantic analyzer.
+  // This is necessary as sometimes semantic analyzer's mapping is different than operator's own alias.
+  public final Map<String, Operator<? extends OperatorDesc>> topOps;
+
+  // Keep track of the current table alias (from last TableScan)
+  public String currentAliasId;
+
+  // Keep track of the current Table-Scan.
+  public TableScanOperator currentTs;
+
+
   @SuppressWarnings("unchecked")
   public GenSparkProcContext(HiveConf conf, ParseContext parseContext,
       List<Task<MoveWork>> moveTask, List<Task<? extends Serializable>> rootTasks,
-      Set<ReadEntity> inputs, Set<WriteEntity> outputs) {
+      Set<ReadEntity> inputs, Set<WriteEntity> outputs, Map<String, Operator<? extends OperatorDesc>> topOps) {
     this.conf = conf;
     this.parseContext = parseContext;
     this.moveTask = moveTask;
     this.rootTasks = rootTasks;
     this.inputs = inputs;
     this.outputs = outputs;
+    this.topOps = topOps;
     this.currentTask = (SparkTask) TaskFactory.get(
         new SparkWork(conf.getVar(HiveConf.ConfVars.HIVEQUERYID)), conf);
     this.rootTasks.add(currentTask);

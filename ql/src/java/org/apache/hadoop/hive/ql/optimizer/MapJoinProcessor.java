@@ -384,7 +384,7 @@ public class MapJoinProcessor implements Transform {
     return mapJoinOp;
   }
 
-  static MapJoinOperator convertJoinOpMapJoinOp(HiveConf hconf,
+  public static MapJoinOperator convertJoinOpMapJoinOp(HiveConf hconf,
       LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext> opParseCtxMap,
       JoinOperator op, QBJoinTree joinTree, int mapJoinPos, boolean noCheckOuterJoin)
       throws SemanticException {

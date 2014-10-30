@@ -23,33 +23,41 @@ import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.google.common.base.Strings;
-import org.apache.hadoop.fs.Path;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.exec.*;
-import org.apache.hadoop.hive.ql.exec.spark.SparkTask;
+import org.apache.hadoop.hive.ql.exec.FetchTask;
+import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
+import org.apache.hadoop.hive.ql.exec.GroupByOperator;
+import org.apache.hadoop.hive.ql.exec.HashTableDummyOperator;
+import org.apache.hadoop.hive.ql.exec.JoinOperator;
+import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
+import org.apache.hadoop.hive.ql.exec.TableScanOperator;
+import org.apache.hadoop.hive.ql.exec.UnionOperator;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.optimizer.GenMapRedUtils;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-
-import com.google.common.base.Preconditions;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.MapWork;
+import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.SparkEdgeProperty;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
-import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.UnionWork;
+
+import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 
 /**
  * GenSparkUtils is a collection of shared helper methods to produce SparkWork
@@ -313,4 +321,28 @@ public class GenSparkUtils {
     }
     return true;
   }
+
+
+  /**
+   * Is an operator of the given class a child of the given operator.  This is more flexible
+   * than GraphWalker to tell apart subclasses such as SMBMapJoinOp vs MapJoinOp that have a common name.
+   * @param op parent operator to start search
+   * @param klazz given class
+   * @return
+   * @throws SemanticException
+   */
+  public static Operator<?> getChildOperator(Operator<?> op, Class klazz) throws SemanticException {
+    if (klazz.isInstance(op)) {
+      return op;
+    }
+    List<Operator<?>> childOperators = op.getChildOperators();
+    for (Operator<?> childOp : childOperators) {
+      Operator result = getChildOperator(childOp, klazz);
+      if (result != null) {
+        return result;
+      }
+    }
+    return null;
+  }
+
 }
