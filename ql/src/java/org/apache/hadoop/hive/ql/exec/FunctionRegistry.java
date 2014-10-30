@@ -170,6 +170,8 @@ public final class FunctionRegistry {
   public static final String LAG_FUNC_NAME = "lag";
   public static final String LAST_VALUE_FUNC_NAME = "last_value";
 
+  public static final String UNARY_PLUS_FUNC_NAME = "positive";
+  public static final String UNARY_MINUS_FUNC_NAME = "negative";
 
   public static final String WINDOWING_TABLE_FUNCTION = "windowingtablefunction";
   private static final String NOOP_TABLE_FUNCTION = "noop";
@@ -252,8 +254,8 @@ public final class FunctionRegistry {
     registerGenericUDF("str_to_map", GenericUDFStringToMap.class);
     registerGenericUDF("translate", GenericUDFTranslate.class);
 
-    registerGenericUDF("positive", GenericUDFOPPositive.class);
-    registerGenericUDF("negative", GenericUDFOPNegative.class);
+    registerGenericUDF(UNARY_PLUS_FUNC_NAME, GenericUDFOPPositive.class);
+    registerGenericUDF(UNARY_MINUS_FUNC_NAME, GenericUDFOPNegative.class);
 
     registerUDF("day", UDFDayOfMonth.class, false);
     registerUDF("dayofmonth", UDFDayOfMonth.class, false);
