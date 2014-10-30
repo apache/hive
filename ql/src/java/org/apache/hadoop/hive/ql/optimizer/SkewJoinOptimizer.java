@@ -49,6 +49,7 @@ import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
+import org.apache.hadoop.hive.ql.parse.QBJoinTree;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
@@ -164,12 +165,23 @@ public class SkewJoinOptimizer implements Transform {
         return null;
       }
 
+      // have to create a QBJoinTree for the cloned join operator
+      QBJoinTree originJoinTree = parseContext.getJoinContext().get(joinOp);
+      QBJoinTree newJoinTree;
+      try {
+        newJoinTree = originJoinTree.clone();
+      } catch (CloneNotSupportedException e) {
+        LOG.debug("QBJoinTree could not be cloned: ", e);
+        return null;
+      }
+
       JoinOperator joinOpClone;
       if (processSelect) {
         joinOpClone = (JoinOperator)(currOpClone.getParentOperators().get(0));
       } else {
         joinOpClone = (JoinOperator)currOpClone;
       }
+      parseContext.getJoinContext().put(joinOpClone, newJoinTree);
 
       List<TableScanOperator> tableScanCloneOpsForJoin =
           new ArrayList<TableScanOperator>();
@@ -201,6 +213,7 @@ public class SkewJoinOptimizer implements Transform {
         }
 
         parseContext.getTopOps().put(newAlias, tso);
+        setUpAlias(originJoinTree, newJoinTree, tabAlias, newAlias, tso);
       }
 
       // Now do a union of the select operators: selectOp and selectOpClone
@@ -607,6 +620,48 @@ public class SkewJoinOptimizer implements Transform {
         (parentClones != null) && (!parentClones.isEmpty())) {
         for (int pos = 0; pos < parents.size(); pos++) {
           insertRowResolvers(parents.get(pos), parentClones.get(pos), ctx);
+        }
+      }
+    }
+
+    /**
+     * Set alias in the cloned join tree
+     */
+    private static void setUpAlias(QBJoinTree origin, QBJoinTree cloned, String origAlias,
+        String newAlias, Operator<? extends OperatorDesc> topOp) {
+      cloned.getAliasToOpInfo().remove(origAlias);
+      cloned.getAliasToOpInfo().put(newAlias, topOp);
+      if (origin.getLeftAlias().equals(origAlias)) {
+        cloned.setLeftAlias(null);
+        cloned.setLeftAlias(newAlias);
+      }
+      replaceAlias(origin.getLeftAliases(), cloned.getLeftAliases(), origAlias, newAlias);
+      replaceAlias(origin.getRightAliases(), cloned.getRightAliases(), origAlias, newAlias);
+      replaceAlias(origin.getBaseSrc(), cloned.getBaseSrc(), origAlias, newAlias);
+      replaceAlias(origin.getMapAliases(), cloned.getMapAliases(), origAlias, newAlias);
+      replaceAlias(origin.getStreamAliases(), cloned.getStreamAliases(), origAlias, newAlias);
+    }
+
+    private static void replaceAlias(String[] origin, String[] cloned,
+        String alias, String newAlias) {
+      if (origin == null || cloned == null || origin.length != cloned.length) {
+        return;
+      }
+      for (int i = 0; i < origin.length; i++) {
+        if (origin[i].equals(alias)) {
+          cloned[i] = newAlias;
+        }
+      }
+    }
+
+    private static void replaceAlias(List<String> origin, List<String> cloned,
+        String alias, String newAlias) {
+      if (origin == null || cloned == null || origin.size() != cloned.size()) {
+        return;
+      }
+      for (int i = 0; i < origin.size(); i++) {
+        if (origin.get(i).equals(alias)) {
+          cloned.set(i, newAlias);
         }
       }
     }
