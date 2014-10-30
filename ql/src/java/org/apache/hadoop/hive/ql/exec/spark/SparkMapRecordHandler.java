@@ -197,7 +197,7 @@ public class SparkMapRecordHandler extends SparkRecordHandler {
         logCloseInfo();
       }
 
-      ReportStats rps = new ReportStats(rp);
+      ReportStats rps = new ReportStats(rp, jc);
       mo.preorderMap(rps);
       return;
     } catch (Exception e) {

@@ -25,9 +25,11 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.MapOperator;
+import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ScriptOperator;
 import org.apache.hadoop.mapreduce.util.ResourceBundles;
@@ -64,11 +66,18 @@ public class SparkCounters implements Serializable {
    * pre-define all needed Counters here.
    */
   private void initializeSparkCounters() {
-    createCounter(HiveConf.getVar(hiveConf, HiveConf.ConfVars.HIVECOUNTERGROUP),
-      Operator.HIVECOUNTERCREATEDFILES);
+    String groupName = HiveConf.getVar(hiveConf, HiveConf.ConfVars.HIVECOUNTERGROUP);
+    createCounter(groupName, Operator.HIVECOUNTERCREATEDFILES);
+    createCounter(groupName, MapOperator.Counter.DESERIALIZE_ERRORS);
+    createCounter(groupName, MapOperator.Counter.RECORDS_IN);
+    createCounter(groupName, FileSinkOperator.Counter.RECORDS_OUT);
+    createCounter(groupName, ReduceSinkOperator.Counter.RECORDS_OUT_INTERMEDIATE);
+    createCounter(groupName, ScriptOperator.Counter.DESERIALIZE_ERRORS);
+    createCounter(groupName, ScriptOperator.Counter.SERIALIZE_ERRORS);
+    createCounter(groupName, JoinOperator.SkewkeyTableCounter.SKEWJOINFOLLOWUPJOBS);
+    // TODO remove? changed due to HIVE-8429
     createCounter(MapOperator.Counter.DESERIALIZE_ERRORS);
-    createCounter(FilterOperator.Counter.FILTERED);
-    createCounter(FilterOperator.Counter.PASSED);
+    createCounter(MapOperator.Counter.RECORDS_IN);
     createCounter(ScriptOperator.Counter.DESERIALIZE_ERRORS);
     createCounter(ScriptOperator.Counter.SERIALIZE_ERRORS);
     createCounter(JoinOperator.SkewkeyTableCounter.SKEWJOINFOLLOWUPJOBS);
@@ -76,6 +85,10 @@ public class SparkCounters implements Serializable {
 
   public void createCounter(Enum<?> key) {
     createCounter(key.getDeclaringClass().getName(), key.name());
+  }
+
+  public void createCounter(String groupName, Enum<?> key) {
+    createCounter(groupName, key.name(), 0L);
   }
 
   public void createCounter(String groupName, String counterName) {
