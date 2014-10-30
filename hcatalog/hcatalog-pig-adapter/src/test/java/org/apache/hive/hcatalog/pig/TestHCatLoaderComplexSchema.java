@@ -18,8 +18,6 @@
  */
 package org.apache.hive.hcatalog.pig;
 
-import com.google.common.collect.ImmutableSet;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -52,7 +50,6 @@ import org.apache.pig.impl.logicalLayer.FrontendException;
 import org.apache.pig.impl.logicalLayer.schema.Schema;
 import org.apache.pig.impl.logicalLayer.schema.Schema.FieldSchema;
 
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -79,11 +76,13 @@ public class TestHCatLoaderComplexSchema {
           add("testSyntheticComplexSchema");
           add("testTupleInBagInTupleInBag");
           add("testMapWithComplexData");
+          add("testMapNullKey");
         }});
         put(IOConstants.PARQUETFILE, new HashSet<String>() {{
           add("testSyntheticComplexSchema");
           add("testTupleInBagInTupleInBag");
           add("testMapWithComplexData");
+          add("testMapNullKey");
         }});
       }};
 
@@ -223,6 +222,10 @@ public class TestHCatLoaderComplexSchema {
 
   private void verifyWriteRead(String tablename, String pigSchema, String tableSchema, List<Tuple> data, boolean provideSchemaToStorer)
     throws IOException, CommandNeedRetryException, ExecException, FrontendException {
+    verifyWriteRead(tablename, pigSchema, tableSchema, data, data, provideSchemaToStorer);
+  }
+  private void verifyWriteRead(String tablename, String pigSchema, String tableSchema, List<Tuple> data, List<Tuple> result, boolean provideSchemaToStorer)
+    throws IOException, CommandNeedRetryException, ExecException, FrontendException {
     MockLoader.setData(tablename + "Input", data);
     try {
       createTable(tablename, tableSchema);
@@ -244,7 +247,7 @@ public class TestHCatLoaderComplexSchema {
       Iterator<Tuple> it = server.openIterator("X");
       int i = 0;
       while (it.hasNext()) {
-        Tuple input = data.get(i++);
+        Tuple input = result.get(i++);
         Tuple output = it.next();
         compareTuples(input, output);
         LOG.info("tuple : {} ", output);
@@ -353,5 +356,41 @@ public class TestHCatLoaderComplexSchema {
     }
     verifyWriteRead("testMapWithComplexData", pigSchema, tableSchema, data, true);
     verifyWriteRead("testMapWithComplexData2", pigSchema, tableSchema, data, false);
+  }
+
+  /**
+   * artificially complex nested schema to test nested schema conversion
+   * @throws Exception
+   */
+  @Test
+  public void testMapNullKey() throws Exception {
+    assumeTrue(!TestUtil.shouldSkip(storageFormat, DISABLED_STORAGE_FORMATS));
+    String pigSchema = "m:map[]";
+
+    String tableSchema = "m map<string, string>";
+
+    List<Tuple> data = new ArrayList<Tuple>();
+    Tuple t = t(
+      new HashMap<String, String>() {
+      {
+        put("ac test1", "test 1");
+        put("ac test2", "test 2");
+        put(null, "test 3");
+      };
+    });
+    data.add(t);
+
+    List<Tuple> result = new ArrayList<Tuple>();
+    t = t(
+      new HashMap<String, String>() {
+      {
+        put("ac test1", "test 1");
+        put("ac test2", "test 2");
+      };
+    });
+    result.add(t);
+
+    verifyWriteRead("testSyntheticComplexSchema", pigSchema, tableSchema, data, result, true);
+    verifyWriteRead("testSyntheticComplexSchema", pigSchema, tableSchema, data, result, false);
   }
 }
